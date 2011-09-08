@@ -40,6 +40,7 @@ import omr.selection.SelectionService;
 import omr.selection.SheetLocationEvent;
 
 import omr.sheet.grid.StaffManager;
+import omr.sheet.grid.SystemManager;
 import omr.sheet.grid.TargetBuilder;
 import omr.sheet.picture.ImageFormatException;
 import omr.sheet.picture.Picture;
@@ -142,6 +143,9 @@ public class Sheet
     /** Staves */
     private final StaffManager staffManager;
 
+    /** Systems */
+    private final SystemManager systemManager;
+
     /** Dedicated skew builder */
     private volatile SkewBuilder skewBuilder;
 
@@ -198,6 +202,7 @@ public class Sheet
 
         selectionService = new SelectionService("sheet " + page.getId());
         staffManager = new StaffManager(this);
+        systemManager = new SystemManager(this);
 
         // Related bench at sheet level
         bench = new SheetBench(this);
@@ -836,6 +841,17 @@ public class Sheet
     public SystemInfo getSystemById (int id)
     {
         return systems.get(id - 1);
+    }
+
+    //------------------//
+    // getSystemManager //
+    //------------------//
+    /**
+     * @return the systemManager
+     */
+    public SystemManager getSystemManager ()
+    {
+        return systemManager;
     }
 
     //-------------//

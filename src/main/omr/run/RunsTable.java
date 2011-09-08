@@ -18,6 +18,8 @@ import omr.math.Line;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
+import omr.selection.SelectionService;
+
 import omr.util.Implement;
 import omr.util.Predicate;
 
@@ -53,6 +55,11 @@ public class RunsTable
     /** List of Runs found in each row. This is a list of lists of Runs */
     private final List<List<Run>> runs;
 
+    /**
+     * Hosted event service for UI events related to this table (Runs)
+     */
+    protected final SelectionService runSelectionService;
+
     //~ Constructors -----------------------------------------------------------
 
     //-----------//
@@ -73,6 +80,8 @@ public class RunsTable
         this.name = name;
         this.orientation = orientation;
         this.dimension = dimension;
+
+        runSelectionService = new SelectionService(name);
 
         // Allocate the runs, according to orientation
         Rectangle rect = orientation.oriented(
@@ -148,6 +157,18 @@ public class RunsTable
     public Orientation getOrientation ()
     {
         return orientation;
+    }
+
+    //---------------------//
+    // getSelectionService //
+    //---------------------//
+    /**
+     * Report the table run selection service
+     * @return the run selection service
+     */
+    public SelectionService getSelectionService ()
+    {
+        return runSelectionService;
     }
 
     //-------------//
@@ -417,6 +438,80 @@ public class RunsTable
         }
 
         out.println('+');
+    }
+
+    //---------//
+    // include //
+    //---------//
+    /**
+     * Include the content of the provided table into this one
+     * @param that the table of runs to include into this one
+     */
+    public void include (RunsTable that)
+    {
+        if (that == null) {
+            throw new IllegalArgumentException(
+                "Cannot include a null runsTable");
+        }
+
+        if (that.orientation != orientation) {
+            throw new IllegalArgumentException(
+                "Cannot include a runsTable of different orientation");
+        }
+
+        if (!that.dimension.equals(dimension)) {
+            throw new IllegalArgumentException(
+                "Cannot include a runsTable of different dimension");
+        }
+
+        for (int row = 0; row < getSize(); row++) {
+            List<Run> thisSeq = this.getSequence(row);
+            List<Run> thatSeq = that.getSequence(row);
+
+            for (Run thatRun : thatSeq) {
+                int start = thatRun.getStart();
+                int iRun = 0;
+
+                for (; iRun < thisSeq.size(); iRun++) {
+                    Run thisRun = thisSeq.get(iRun);
+
+                    if (thisRun.getStart() > start) {
+                        break;
+                    }
+                }
+
+                thisSeq.add(iRun, thatRun);
+            }
+        }
+    }
+
+    //-----------//
+    // lookupRun //
+    //-----------//
+    /**
+     * Given an absolute point, retrieve the containing run if any
+     * @param point coordinates of the given point
+     * @return the run found, or null otherwise
+     */
+    public Run lookupRun (PixelPoint point)
+    {
+        Point target = oriented(point);
+
+        if ((target.y < 0) || (target.y >= getSize())) {
+            return null;
+        }
+
+        for (Run run : getSequence(target.y)) {
+            if (run.getStart() > target.x) {
+                return null;
+            }
+
+            if (run.getStop() >= target.x) {
+                return run;
+            }
+        }
+
+        return null;
     }
 
     //----------//

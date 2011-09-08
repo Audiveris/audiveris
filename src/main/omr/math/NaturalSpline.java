@@ -11,11 +11,13 @@
 // </editor-fold>
 package omr.math;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.Shape;
-import java.awt.geom.*;
+import java.awt.geom.CubicCurve2D;
+import java.awt.geom.Line2D;
+import java.awt.geom.PathIterator;
 import static java.awt.geom.PathIterator.*;
+import java.awt.geom.Point2D;
+import java.awt.geom.QuadCurve2D;
 
 /**
  * Class {@code NaturalSpline} defines a natural (cubic) spline interpolated
@@ -208,47 +210,46 @@ public class NaturalSpline
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-//    //------------//
-//    // renderLine //
-//    //------------//
-//    /**
-//     * Specific rendering of the curved line
-//     * @param g graphical context
-//     * @param r radius for control and defining points
-//     */
-//    public void renderLine (Graphics2D g,
-//                            double     r)
-//    {
-//        // Draw the curved line itself
-//        g.draw(this);
-//
-//        // Draw the control & defining points on top of it
-//        Color     oldColor = g.getColor();
-//        Ellipse2D ellipse = new Ellipse2D.Double();
-//        double[]  buffer = new double[6];
-//
-//        for (PathIterator it = getPathIterator(null); !it.isDone();
-//             it.next()) {
-//            int     segmentKind = it.currentSegment(buffer);
-//            int     coords = countOf(segmentKind);
-//            boolean control = false;
-//
-//            for (int ic = coords - 2; ic >= 0; ic -= 2) {
-//                ellipse.setFrame(
-//                    buffer[ic] - r,
-//                    buffer[ic + 1] - r,
-//                    2 * r,
-//                    2 * r);
-//                g.setColor(control ? Color.PINK : Color.BLUE);
-//                g.fill(ellipse);
-//
-//                control = true;
-//            }
-//        }
-//
-//        g.setColor(oldColor);
-//    }
-
+    //    //------------//
+    //    // renderLine //
+    //    //------------//
+    //    /**
+    //     * Specific rendering of the curved line
+    //     * @param g graphical context
+    //     * @param r radius for control and defining points
+    //     */
+    //    public void renderLine (Graphics2D g,
+    //                            double     r)
+    //    {
+    //        // Draw the curved line itself
+    //        g.draw(this);
+    //
+    //        // Draw the control & defining points on top of it
+    //        Color     oldColor = g.getColor();
+    //        Ellipse2D ellipse = new Ellipse2D.Double();
+    //        double[]  buffer = new double[6];
+    //
+    //        for (PathIterator it = getPathIterator(null); !it.isDone();
+    //             it.next()) {
+    //            int     segmentKind = it.currentSegment(buffer);
+    //            int     coords = countOf(segmentKind);
+    //            boolean control = false;
+    //
+    //            for (int ic = coords - 2; ic >= 0; ic -= 2) {
+    //                ellipse.setFrame(
+    //                    buffer[ic] - r,
+    //                    buffer[ic + 1] - r,
+    //                    2 * r,
+    //                    2 * r);
+    //                g.setColor(control ? Color.PINK : Color.BLUE);
+    //                g.fill(ellipse);
+    //
+    //                control = true;
+    //            }
+    //        }
+    //
+    //        g.setColor(oldColor);
+    //    }
     public Line swappedCoordinates ()
     {
         throw new UnsupportedOperationException("Not supported yet.");

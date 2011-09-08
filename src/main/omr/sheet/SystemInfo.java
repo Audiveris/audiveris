@@ -42,7 +42,14 @@ import omr.step.StepException;
 import static omr.util.HorizontalSide.*;
 import omr.util.Predicate;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 /**

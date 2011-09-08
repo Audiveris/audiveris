@@ -25,7 +25,8 @@ import omr.lag.ui.SectionView;
 
 import omr.log.Logger;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.util.List;
 
 /**
@@ -132,7 +133,7 @@ public class BarsView
     @Override
     protected void renderItems (Graphics2D g)
     {
-        barsRetriever.renderItems(g);
+        barsRetriever.renderItems(g, constants.showTangents.getValue());
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -148,5 +149,8 @@ public class BarsView
         Constant.Boolean displaySpecifics = new Constant.Boolean(
             false,
             "Dummy stuff");
+        Constant.Boolean showTangents = new Constant.Boolean(
+            true,
+            "Should we show vertical ending tangents?");
     }
 }

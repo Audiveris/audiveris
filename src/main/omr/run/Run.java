@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.run;
 
+import omr.lag.Section;
+
 import javax.xml.bind.annotation.*;
 
 /**
@@ -35,6 +37,9 @@ public class Run
     /** Abscissa (for horizontal) / ordinate (for vertical) of first pixel */
     @XmlAttribute
     private int start;
+
+    /** Containing section, if any */
+    private Section section;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -188,5 +193,27 @@ public class Run
     public final void translate (int dc)
     {
         start += dc;
+    }
+
+    //------------//
+    // setSection //
+    //------------//
+    /**
+     * @param section the section to set
+     */
+    public void setSection (Section section)
+    {
+        this.section = section;
+    }
+
+    //------------//
+    // getSection //
+    //------------//
+    /**
+     * @return the section
+     */
+    public Section getSection ()
+    {
+        return section;
     }
 }

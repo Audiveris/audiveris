@@ -1433,6 +1433,9 @@ public class Section<L extends Lag, S extends Section<L, S>>
     {
         // Invalidate cached data
         invalidateCache();
+        
+        // Link back from run to section
+        run.setSection(this);
 
         // Compute contribution of this run
         computeRunContribution(run);

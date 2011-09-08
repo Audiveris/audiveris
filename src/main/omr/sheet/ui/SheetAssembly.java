@@ -15,9 +15,6 @@ import omr.Main;
 
 import omr.log.Logger;
 
-import omr.run.RunsTable;
-import omr.run.RunsTableView;
-
 import omr.score.common.PixelRectangle;
 
 import omr.selection.SheetLocationEvent;
@@ -236,19 +233,6 @@ public class SheetAssembly
     public void setZoomRatio (double ratio)
     {
         zoom.setRatio(ratio);
-    }
-
-    //------------//
-    // addRunsTab //
-    //------------//
-    public void addRunsTab (RunsTable table)
-    {
-        RubberPanel view = new RunsTableView(
-            table,
-            sheet.getSelectionService());
-        view.setName(table.getName());
-        view.setPreferredSize(table.getDimension());
-        addViewTab(table.getName(), new ScrollView(view), null);
     }
 
     //------------//

@@ -23,6 +23,7 @@ import omr.log.Logger;
 
 import omr.run.Run;
 
+import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
 import omr.selection.MouseMovement;
@@ -41,9 +42,15 @@ import omr.ui.view.RubberPanel;
 
 import org.bushe.swing.event.EventSubscriber;
 
-import java.awt.*;
-import java.util.*;
-import omr.score.common.PixelPoint;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Stroke;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * Class <code>LagView</code> derives {@link omr.ui.view.RubberPanel} to
@@ -126,7 +133,6 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         lag.addView(this);
 
         // Location service
-        this.locationService = locationService;
         lagSelectionService = lag.getSelectionService();
         setLocationService(locationService, SheetLocationEvent.class);
 
@@ -333,7 +339,13 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
      */
     public void publish (UserEvent event)
     {
-        lagSelectionService.publish(event);
+        if (event instanceof RunEvent) {
+            // Delegate to RunsTable
+            lag.getRunSelectionService()
+               .publish(event);
+        } else {
+            lagSelectionService.publish(event);
+        }
     }
 
     //---------//
@@ -417,7 +429,13 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     public void subscribe (Class<?extends UserEvent> eventClass,
                            EventSubscriber           subscriber)
     {
-        lagSelectionService.subscribe(eventClass, subscriber);
+        if (eventClass.isAssignableFrom(RunEvent.class)) {
+            // Delegate to runs table
+            lag.getRunSelectionService()
+               .subscribe(eventClass, subscriber);
+        } else {
+            lagSelectionService.subscribe(eventClass, subscriber);
+        }
     }
 
     //-------------//
@@ -455,7 +473,13 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     public void unsubscribe (Class<?extends UserEvent> eventClass,
                              EventSubscriber           subscriber)
     {
-        lagSelectionService.unsubscribe(eventClass, subscriber);
+        if (eventClass.isAssignableFrom(RunEvent.class)) {
+            // Delegate to runs table
+            lag.getRunSelectionService()
+               .unsubscribe(eventClass, subscriber);
+        } else {
+            lagSelectionService.unsubscribe(eventClass, subscriber);
+        }
     }
 
     //-----------------//
@@ -498,8 +522,10 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
                                      boolean       drawBorders)
     {
         for (S section : collection) {
-            SectionView view = (SectionView) section.getView(index);
-            view.render(g, drawBorders);
+            if (index < section.getViewsCount()) {
+                SectionView view = (SectionView) section.getView(index);
+                view.render(g, drawBorders);
+            }
         }
     }
 
@@ -535,19 +561,6 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
             SectionView view = (SectionView) section.getView(vIndex);
             view.renderSelected(g);
         }
-    }
-
-    //---------------//
-    // selfSubscribe //
-    //---------------//
-    /**
-     * Convenient method to auto-subscribe the lag instance on its event service
-     * for a specific class
-     * @param eventClass the specific classe
-     */
-    protected void selfSubscribe (Class<?extends UserEvent> eventClass)
-    {
-        lagSelectionService.subscribe(eventClass, this);
     }
 
     //------------------//
@@ -758,7 +771,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         } else {
             // We are in glyph selection mode
             PixelPoint pt = rect.getLocation();
-            S     section = null;
+            S          section = null;
 
             // Should we first look in specific sections?
             if (showingSpecifics()) {

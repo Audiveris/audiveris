@@ -16,7 +16,6 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
-import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 import omr.glyph.ui.GlyphLagView;
 import omr.glyph.ui.GlyphsController;
@@ -41,9 +40,12 @@ import omr.selection.UserEvent;
 
 import omr.ui.util.UIUtilities;
 
-import java.awt.*;
-import java.util.*;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Stroke;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Class {@code GridView} is a special {@link GlyphLagView}, meant as a
@@ -72,17 +74,20 @@ public class GridView
     /** Level for minor color */
     private static final int minor = 220;
 
+    /** Level for major color */
+    private static final int major = 150;
+
     /** Default color for vertical stuff */
     public static final Color verticalColor = new Color(minor, minor, 255);
 
     /** Color for barline-shape glyphs */
-    public static final Color vertShapeColor = new Color(150, 150, 255);
+    public static final Color vertShapeColor = new Color(major, major, 255);
 
     /** Default color for horizontal stuff */
     private static final Color horizontalColor = new Color(255, minor, minor);
 
     /** Color for staffline-shape glyphs */
-    public static final Color horiShapeColor = new Color(255, 150, 150);
+    public static final Color horiShapeColor = new Color(255, major, major);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -145,14 +150,14 @@ public class GridView
 
             // All staff glyphs candidates
             for (Glyph glyph : lag.getActiveGlyphs()) {
-                Color color = (glyph.getShape() == Shape.STAFF_LINE)
-                              ? horiShapeColor : horizontalColor;
-                glyph.colorize(viewIndex, color);
+//                Color color = (glyph.getShape() == Shape.STAFF_LINE)
+//                              ? horiShapeColor : horizontalColor;
+                glyph.colorize(viewIndex, horiShapeColor);
             }
 
             // Glyphs actually parts of true staff lines
             for (Glyph glyph : linesRetriever.getStafflineGlyphs()) {
-                glyph.colorize(viewIndex, Color.RED);
+                glyph.colorize(viewIndex, Color.WHITE); ///Color.RED);
             }
         }
 
@@ -248,24 +253,22 @@ public class GridView
     protected void colorizeSection (GlyphSection section,
                                     int          viewIndex)
     {
-        GlyphLag theLag = section.getGraph();
+        SectionView view = (SectionView) section.getView(viewIndex);
 
-        Color    color;
+        // Determine section color
+        Color color;
 
-        if (theLag.isVertical()) {
-            // vLag
+        if (section.getGraph()
+                   .isVertical()) {
             color = verticalColor;
         } else {
-            // hLag
-            // Flag too thick sections
-            if (linesRetriever.isSectionFat(section)) {
-                color = Color.GRAY;
+            if (section.isGlyphMember()) {
+                color = Color.WHITE; ///horizontalColor;
             } else {
-                color = horizontalColor;
+                color = Color.LIGHT_GRAY;
             }
         }
 
-        SectionView view = (SectionView) section.getView(viewIndex);
         view.setColor(color);
     }
 
@@ -275,7 +278,10 @@ public class GridView
     @Override
     protected void renderItems (Graphics2D g)
     {
-        linesRetriever.renderItems(g);
+        linesRetriever.renderItems(
+            g,
+            constants.showTangents.getValue(),
+            constants.showPatterns.getValue());
     }
 
     //-------------//
@@ -290,11 +296,6 @@ public class GridView
      */
     private void handleEvent (SheetLocationEvent sheetLocationEvent)
     {
-        if (ViewParameters.getInstance()
-                          .isSectionSelectionEnabled()) {
-            return;
-        }
-
         SelectionHint  hint = sheetLocationEvent.hint;
         MouseMovement  movement = sheetLocationEvent.movement;
         PixelRectangle rect = sheetLocationEvent.rectangle;
@@ -365,5 +366,11 @@ public class GridView
         Constant.Boolean displaySpecifics = new Constant.Boolean(
             false,
             "Dummy stuff");
+        Constant.Boolean showTangents = new Constant.Boolean(
+            true,
+            "Should we show filament ending tangents?");
+        Constant.Boolean showPatterns = new Constant.Boolean(
+            true,
+            "Should we show staff lines patterns?");
     }
 }

@@ -475,7 +475,7 @@ public abstract class Constant
      * Check the unit+name have been assigned to this constant object. They are
      * mandatory to link the constant to the persistency mechanism.
      */
-    private final void checkInitialized ()
+    private void checkInitialized ()
     {
         int i = 0;
 
@@ -544,6 +544,15 @@ public abstract class Constant
         }
 
         //~ Methods ------------------------------------------------------------
+
+        /**
+         * Convenient method to access this boolean value
+         * @return true if set, false otherwise
+         */
+        public boolean isSet ()
+        {
+            return getValue();
+        }
 
         /**
          * Allows to set a new boolean value (passed as a string) to this

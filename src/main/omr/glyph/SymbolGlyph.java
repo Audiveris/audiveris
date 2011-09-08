@@ -15,7 +15,6 @@ import omr.glyph.facets.BasicStick;
 import omr.glyph.facets.Glyph;
 
 import omr.lag.JunctionAllPolicy;
-import omr.lag.SectionsBuilder;
 
 import omr.log.Logger;
 
@@ -28,10 +27,6 @@ import omr.ui.symbol.ShapeSymbol;
 import omr.ui.symbol.SymbolPicture;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-
-import javax.imageio.ImageIO;
 
 /**
  * Class <code>SymbolGlyph</code> is an articial glyph, built from a symbol.
@@ -88,11 +83,9 @@ public class SymbolGlyph
             "iLag",
             StickSection.class,
             Orientation.VERTICAL);
-        SectionsBuilder<GlyphLag, GlyphSection> lagBuilder;
-        lagBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
-            vLag,
-            new JunctionAllPolicy()); // catch all
-        lagBuilder.createSections("symbol", picture, 0); // minRunLength
+
+        new GlyphSectionsBuilder(vLag, new JunctionAllPolicy()) // catch all
+        .createSections("symbol", picture, 0); // minRunLength
 
         // Retrieve the whole glyph made of all sections
         setLag(vLag);

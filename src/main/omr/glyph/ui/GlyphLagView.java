@@ -655,12 +655,12 @@ public class GlyphLagView
         MouseMovement movement = sectionEvent.movement;
         GlyphSection  section = sectionEvent.section;
 
-        if (hint == SECTION_INIT) {
+        if ((hint == LOCATION_ADD) ||
+            (hint == LOCATION_INIT) ||
+            (hint == SECTION_INIT)) {
             // Select related Glyph if any
-            if (section != null) {
-                publish(
-                    new GlyphEvent(this, hint, movement, section.getGlyph()));
-            }
+            Glyph glyph = (section != null) ? section.getGlyph() : null;
+            publish(new GlyphEvent(this, hint, movement, glyph));
         }
     }
 

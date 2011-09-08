@@ -11,13 +11,12 @@
 // </editor-fold>
 package omr.sheet.grid;
 
+import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphSection;
 import omr.glyph.facets.BasicAlignment;
 import omr.glyph.facets.Glyph;
-
-import omr.lag.Sections;
 
 import omr.log.Logger;
 
@@ -30,9 +29,16 @@ import omr.run.Orientation;
 
 import omr.sheet.Scale;
 
-import java.awt.*;
-import java.awt.geom.*;
-import java.util.*;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -368,8 +374,8 @@ public class FilamentAlignment
             g.draw((NaturalSpline) line);
         }
 
-        // Then the absolute defining points
-        if (points != null) {
+        // Then the absolute defining points?
+        if (constants.showFilamentPoints.getValue() && (points != null)) {
             // Point radius
             double    r = glyph.getInterline() * constants.filamentPointSize.getValue();
             Color     oldColor = g.getColor();
@@ -628,6 +634,11 @@ public class FilamentAlignment
         final Scale.Fraction segmentLength = new Scale.Fraction(
             2,
             "Typical length between filament curve intermediate points");
+
+        //
+        Constant.Boolean showFilamentPoints = new Constant.Boolean(
+            false,
+            "Should we display filament points?");
 
         //
         Scale.Fraction filamentPointSize = new Scale.Fraction(

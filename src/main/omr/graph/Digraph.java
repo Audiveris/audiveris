@@ -15,7 +15,10 @@ import omr.log.Logger;
 
 import net.jcip.annotations.ThreadSafe;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -173,18 +176,6 @@ public class Digraph<D extends Digraph<D, V, SIG>, V extends Vertex, SIG>
     public int getVertexCount ()
     {
         return vertices.size();
-    }
-
-    // DEBUG
-    public boolean isVertexCurrent (int id)
-    {
-        return vertices.get(id) != null;
-    }
-
-    // DEBUG
-    public boolean isVertexOld (int id)
-    {
-        return oldVertices.get(id) != null;
     }
 
     //-------------//

@@ -135,12 +135,12 @@ public class SystemFrame
         return staves.get(staves.size() - 1);
     }
 
-    //---------//
+    //----------//
     // setLimit //
-    //---------//
+    //----------//
     /**
      * @param side proper horizontal side
-     * @param line the line to set
+     * @param limit the limit to set
      */
     public void setLimit (HorizontalSide side,
                           Object         limit)

@@ -77,8 +77,8 @@ public class TargetBuilder
     /** Related sheet */
     private final Sheet sheet;
 
-    /** Companion in charge of bar lines */
-    private final BarsRetriever barsRetriever;
+    /** Related systems */
+    private final SystemManager systemManager;
 
     /** Target width */
     private double targetWidth;
@@ -122,7 +122,7 @@ public class TargetBuilder
                           BarsRetriever barsRetriever)
     {
         this.sheet = sheet;
-        this.barsRetriever = barsRetriever;
+        systemManager = sheet.getSystemManager();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -160,10 +160,6 @@ public class TargetBuilder
      */
     public void renderSystems (Graphics2D g)
     {
-        if ((barsRetriever == null) || (barsRetriever.getSystems() == null)) {
-            return;
-        }
-
         Scale  scale = sheet.getScale();
         double absDx = scale.toPixelsDouble(constants.systemMarkWidth);
         double absDy = sheet.getSkew()
@@ -176,7 +172,7 @@ public class TargetBuilder
         g.setStroke(systemStroke);
         g.setColor(Color.YELLOW);
 
-        for (SystemFrame system : barsRetriever.getSystems()) {
+        for (SystemFrame system : systemManager.getSystems()) {
             for (HorizontalSide side : HorizontalSide.values()) {
                 Point2D top = system.getFirstStaff()
                                     .getFirstLine()
@@ -250,7 +246,7 @@ public class TargetBuilder
         TargetLine prevLine = null; // Latest staff line
 
         // Target system parameters
-        for (SystemFrame system : barsRetriever.getSystems()) {
+        for (SystemFrame system : systemManager.getSystems()) {
             StaffInfo firstStaff = system.getFirstStaff();
             LineInfo  firstLine = firstStaff.getFirstLine();
             Point2D   dskLeft = skew.deskewed(firstLine.getEndPoint(LEFT));
@@ -278,8 +274,7 @@ public class TargetBuilder
 
             // Target staff parameters
             for (StaffInfo staff : system.getStaves()) {
-                dskLeft = skew.deskewed(
-                    staff.getFirstLine().getEndPoint(LEFT));
+                dskLeft = skew.deskewed(staff.getFirstLine().getEndPoint(LEFT));
 
                 if (prevLine != null) {
                     // Preserve inter-staff vertical gap

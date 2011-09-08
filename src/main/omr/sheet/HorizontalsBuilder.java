@@ -33,11 +33,12 @@ import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphLagView;
 import omr.glyph.ui.GlyphsController;
 
-import omr.lag.ui.RunBoard;
 import omr.lag.ui.ScrollLagView;
 import omr.lag.ui.SectionBoard;
 
 import omr.log.Logger;
+
+import omr.run.RunBoard;
 
 import omr.score.common.PixelPoint;
 
@@ -54,8 +55,8 @@ import omr.step.StepException;
 import omr.step.Steps;
 
 import omr.stick.LineCleaner;
-import omr.stick.SticksBuilder;
 import omr.stick.SectionsSource;
+import omr.stick.SticksBuilder;
 
 import omr.ui.BoardsPane;
 
@@ -440,7 +441,7 @@ public class HorizontalsBuilder
         BoardsPane    boardsPane = new BoardsPane(
             new PixelBoard(unit, sheet),
             new RunBoard(unit, lag),
-            new SectionBoard(unit, lag.getLastVertexId(), lag),
+            new SectionBoard(unit, lag),
             new GlyphBoard(unit, getController(), null, true),
             new CheckBoard<Stick>(
                 unit + "-Common",

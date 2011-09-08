@@ -217,8 +217,8 @@ public class ViewParameters
     @Action(selectedProperty = SECTION_SELECTION_ENABLED)
     public void toggleSections (ActionEvent e)
     {
-        logger.info(
-            "Section mode is " + (isSectionSelectionEnabled() ? "on" : "off"));
+//        logger.info(
+//            "Section mode is " + (isSectionSelectionEnabled() ? "on" : "off"));
     }
 
     //~ Inner Classes ----------------------------------------------------------

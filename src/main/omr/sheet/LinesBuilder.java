@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.sheet.grid.LineInfo;
 import omr.Main;
 
 import omr.constant.Constant;
@@ -19,14 +18,13 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
+import omr.glyph.GlyphSectionsBuilder;
 import omr.glyph.GlyphsModel;
 import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphLagView;
 import omr.glyph.ui.GlyphsController;
 
 import omr.lag.JunctionDeltaPolicy;
-import omr.lag.SectionsBuilder;
-import omr.lag.ui.RunBoard;
 import omr.lag.ui.ScrollLagView;
 import omr.lag.ui.SectionBoard;
 
@@ -36,7 +34,9 @@ import omr.math.Population;
 
 import omr.run.Orientation;
 import omr.run.Run;
+import omr.run.RunBoard;
 
+import omr.sheet.grid.LineInfo;
 import omr.sheet.grid.StaffInfo;
 import omr.sheet.grid.StaffManager;
 import omr.sheet.ui.PixelBoard;
@@ -63,12 +63,15 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RefineryUtilities;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.ListIterator;
 
-import javax.swing.*;
+import javax.swing.WindowConstants;
 
 /**
  * Class <code>LinesBuilder</code> is dedicated to the retrieval of the grid of
@@ -144,8 +147,7 @@ public class LinesBuilder
         scale = sheet.getScale();
 
         // Populate the lag
-        SectionsBuilder<GlyphLag, GlyphSection> lagBuilder;
-        lagBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
+        GlyphSectionsBuilder lagBuilder = new GlyphSectionsBuilder(
             lag,
             new JunctionDeltaPolicy(scale.toPixels(constants.maxDeltaLength)));
         lagBuilder.createSections(lag.getName(), sheet.getPicture(), 0); // 0 = minRunLength
@@ -282,7 +284,7 @@ public class LinesBuilder
         BoardsPane    boardsPane = new BoardsPane(
             new PixelBoard(unit, sheet),
             new RunBoard(unit, lag),
-            new SectionBoard(unit, lag.getLastVertexId(), lag),
+            new SectionBoard(unit, lag),
             new GlyphBoard(unit, controller, null, true));
 
         // Create a hosting frame for the view

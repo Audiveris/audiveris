@@ -13,7 +13,10 @@ package omr.glyph.text.tesseract;
 
 import omr.WellKnowns;
 
-import omr.glyph.text.*;
+import omr.glyph.text.OCR;
+import omr.glyph.text.OcrChar;
+import omr.glyph.text.OcrLine;
+import omr.glyph.text.TextInfo;
 
 import omr.log.Logger;
 
@@ -29,9 +32,16 @@ import net.gencsoy.tesjeract.EANYCodeChar;
 import net.gencsoy.tesjeract.Tesjeract;
 
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 import javax.imageio.ImageIO;
@@ -138,7 +148,7 @@ public class TesseractOCR
                 {
                     String lang = (languageCode == null) ? "eng" : languageCode;
 
-                    synchronized (this) {
+                    synchronized (TesseractOCR.this) {
                         EANYCodeChar[] chars = new Tesjeract(lang).recognizeAllWords(
                             buf);
 

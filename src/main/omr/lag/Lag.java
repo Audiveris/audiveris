@@ -33,10 +33,14 @@ import omr.selection.SelectionService;
 import omr.util.Implement;
 import omr.util.Predicate;
 
-import java.awt.*;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Class <code>Lag</code> handles a graph of {@link Section} instances (sets of
@@ -171,6 +175,18 @@ public class Lag<L extends Lag<L, S>, S extends Section>
     public Orientation getOrientation ()
     {
         return orientation.getOrientation();
+    }
+
+    //------------------------//
+    // getRunSelectionService //
+    //------------------------//
+    /**
+     * Report the selection service for runs
+     * @return the run selection service
+     */
+    public SelectionService getRunSelectionService ()
+    {
+        return runsTable.getSelectionService();
     }
 
     //---------------//
@@ -547,17 +563,22 @@ public class Lag<L extends Lag<L, S>, S extends Section>
     }
 
     //---------//
-    // setRuns //
+    // addRuns //
     //---------//
     /**
-     * Assign the populated runs table to the lag. Package private access is
-     * provided for SectionsBuilder
+     * Include the content of runs table to the lag. Package private access is
+     * meant for SectionsBuilder
      *
-     * @param runs the populated runs
+     * @param runsTable the populated runs
      */
-    void setRuns (RunsTable runs)
+    void addRuns (RunsTable runsTable)
     {
-        this.runsTable = runs;
+        if (this.runsTable == null) {
+            this.runsTable = runsTable.clone();
+        } else {
+            // Add runs into the existing table
+            this.runsTable.include(runsTable);
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------

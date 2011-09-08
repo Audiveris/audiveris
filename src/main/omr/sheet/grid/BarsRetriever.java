@@ -18,13 +18,13 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
+import omr.glyph.GlyphSectionsBuilder;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 import omr.glyph.facets.Stick;
 
 import omr.lag.JunctionRatioPolicy;
-import omr.lag.SectionsBuilder;
 
 import omr.log.Logger;
 
@@ -49,10 +49,22 @@ import omr.stick.StickSection;
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
 
-import java.awt.*;
-import java.awt.geom.*;
-import java.util.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Stroke;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.StringTokenizer;
+import java.util.TreeSet;
 
 /**
  * Class <code>BarsRetriever</code> focuses on the retrieval of vertical bars
@@ -116,6 +128,9 @@ public class BarsRetriever
     /** Related staff manager */
     private final StaffManager staffManager;
 
+    /** Related system manager */
+    private final SystemManager systemManager;
+
     /** Candidate bar sticks */
     private final List<Stick> bars = new ArrayList<Stick>();
 
@@ -125,10 +140,10 @@ public class BarsRetriever
     /** System tops */
     private Integer[] systemTops;
 
-    /** Sequence of systems */
-    private List<SystemFrame> systems;
-
     //~ Constructors -----------------------------------------------------------
+
+    /** Sequence of systems */
+    ////////////////////////////////////////////private List<SystemFrame> systems;
 
     //---------------//
     // BarsRetriever //
@@ -144,6 +159,7 @@ public class BarsRetriever
         scale = sheet.getScale();
         params = new Parameters(scale);
         staffManager = sheet.getStaffManager();
+        systemManager = sheet.getSystemManager();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -158,18 +174,6 @@ public class BarsRetriever
     public GlyphLag getLag ()
     {
         return vLag;
-    }
-
-    //------------//
-    // getSystems //
-    //------------//
-    /**
-     * Report the sequence of detected systems
-     * @return the systems detected
-     */
-    public List<SystemFrame> getSystems ()
-    {
-        return systems;
     }
 
     //-----------//
@@ -213,7 +217,7 @@ public class BarsRetriever
     {
         vLag = new GlyphLag("vLag", StickSection.class, Orientation.VERTICAL);
 
-        SectionsBuilder sectionsBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
+        GlyphSectionsBuilder sectionsBuilder = new GlyphSectionsBuilder(
             vLag,
             new JunctionRatioPolicy(params.maxLengthRatio));
         sectionsBuilder.createSections(vertTable);
@@ -277,14 +281,55 @@ public class BarsRetriever
         return false;
     }
 
+    //------------------//
+    // adjustStaffLines //
+    //------------------//
+    /**
+     * Staff by staff, align the lines endings with the system limits, and
+     * check the intermediate line points.
+     * Package access meant for LinesRetriever companion.
+     * @param system the system to process
+     */
+    void adjustStaffLines (SystemFrame system)
+    {
+        for (StaffInfo staff : system.getStaves()) {
+            if (logger.isFineEnabled()) {
+                logger.info(staff.toString());
+            }
+
+            // Adjust left and right endings of each line in the staff
+            for (LineInfo l : staff.getLines()) {
+                FilamentLine line = (FilamentLine) l;
+                line.setEndingPoints(
+                    getLineEnding(system, staff, line, LEFT),
+                    getLineEnding(system, staff, line, RIGHT));
+            }
+
+            // Insert line intermediate points, if so needed
+            List<LineFilament> fils = new ArrayList<LineFilament>();
+
+            for (LineInfo l : staff.getLines()) {
+                FilamentLine line = (FilamentLine) l;
+                fils.add(line.fil);
+            }
+
+            for (LineInfo l : staff.getLines()) {
+                FilamentLine line = (FilamentLine) l;
+                line.fil.fillHoles(fils);
+            }
+        }
+    }
+
     //-------------//
     // renderItems //
     //-------------//
     /**
      * Render the filaments, their ending tangents, their patterns
      * @param g graphics context
+     * @param showTangents true for showing ending tangents
      */
-    void renderItems (Graphics2D g)
+    void renderItems (Graphics2D g,
+                      boolean    showTangents)
     {
         // Draw filaments
         g.setColor(PagePainter.musicColor);
@@ -296,29 +341,31 @@ public class BarsRetriever
             filament.renderLine(g);
         }
 
-        // Draw tangent at each ending point (using max coord gap)
-        g.setColor(Color.BLACK);
+        // Draw tangent at each ending point (using max coord gap)?
+        if (showTangents) {
+            g.setColor(Color.BLACK);
 
-        double dy = sheet.getScale()
-                         .toPixels(constants.maxCoordGap);
+            double dy = sheet.getScale()
+                             .toPixels(constants.maxCoordGap);
 
-        for (Filament filament : filaments) {
-            Point2D p = filament.getStartPoint();
-            double  der = filament.slopeAt(p.getY());
-            g.draw(
-                new Line2D.Double(
-                    p.getX(),
-                    p.getY(),
-                    p.getX() - (der * dy),
-                    p.getY() - dy));
-            p = filament.getStopPoint();
-            der = filament.slopeAt(p.getY());
-            g.draw(
-                new Line2D.Double(
-                    p.getX(),
-                    p.getY(),
-                    p.getX() + (der * dy),
-                    p.getY() + dy));
+            for (Filament filament : filaments) {
+                Point2D p = filament.getStartPoint();
+                double  der = filament.slopeAt(p.getY());
+                g.draw(
+                    new Line2D.Double(
+                        p.getX(),
+                        p.getY(),
+                        p.getX() - (der * dy),
+                        p.getY() - dy));
+                p = filament.getStopPoint();
+                der = filament.slopeAt(p.getY());
+                g.draw(
+                    new Line2D.Double(
+                        p.getX(),
+                        p.getY(),
+                        p.getX() + (der * dy),
+                        p.getY() + dy));
+            }
         }
 
         g.setStroke(oldStroke);
@@ -366,18 +413,20 @@ public class BarsRetriever
      */
     private void adjustSides ()
     {
-        for (SystemFrame system : systems) {
+        for (SystemFrame system : systemManager.getSystems()) {
             try {
                 for (HorizontalSide side : HorizontalSide.values()) {
                     // Determine the side limit of the system
                     adjustSystemLimit(system, side);
                 }
 
-                logger.info(
-                    "System#" + system.getId() + " left:" +
-                    system.getLimit(LEFT).getClass().getSimpleName() +
-                    " right:" +
-                    system.getLimit(RIGHT).getClass().getSimpleName());
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "System#" + system.getId() + " left:" +
+                        system.getLimit(LEFT).getClass().getSimpleName() +
+                        " right:" +
+                        system.getLimit(RIGHT).getClass().getSimpleName());
+                }
 
                 // Use system limits to adjust staff lines
                 adjustStaffLines(system);
@@ -385,44 +434,6 @@ public class BarsRetriever
                 logger.warning(
                     "BarsRetriever cannot adjust system#" + system.getId(),
                     ex);
-            }
-        }
-    }
-
-    //------------------//
-    // adjustStaffLines //
-    //------------------//
-    /**
-     * Staff by staff, align the lines endings with the system limits, and
-     * check the intermediate line points
-     * @param system the system to process
-     */
-    private void adjustStaffLines (SystemFrame system)
-    {
-        for (StaffInfo staff : system.getStaves()) {
-            if (logger.isFineEnabled()) {
-                logger.info(staff.toString());
-            }
-
-            // Adjust left and right endings of each line in the staff
-            for (LineInfo l : staff.getLines()) {
-                FilamentLine line = (FilamentLine) l;
-                line.setEndingPoints(
-                    getLineEnding(system, staff, line, LEFT),
-                    getLineEnding(system, staff, line, RIGHT));
-            }
-
-            // Insert line intermediate points, if so needed
-            List<LineFilament> fils = new ArrayList<LineFilament>();
-
-            for (LineInfo l : staff.getLines()) {
-                FilamentLine line = (FilamentLine) l;
-                fils.add(line.fil);
-            }
-
-            for (LineInfo l : staff.getLines()) {
-                FilamentLine line = (FilamentLine) l;
-                line.fil.fillHoles(fils);
             }
         }
     }
@@ -524,9 +535,11 @@ public class BarsRetriever
     private boolean canConnectSystems (SystemFrame prevSystem,
                                        SystemFrame nextSystem)
     {
-        int  maxBarPosGap = scale.toPixels(constants.maxBarPosGap);
-        int  maxBarCoordGap = scale.toPixels(constants.maxBarCoordGap);
-        Skew skew = sheet.getSkew();
+        List<SystemFrame> systems = systemManager.getSystems();
+        int               maxBarPosGap = scale.toPixels(constants.maxBarPosGap);
+        int               maxBarCoordGap = scale.toPixels(
+            constants.maxBarCoordGap);
+        Skew              skew = sheet.getSkew();
 
         if (logger.isFineEnabled()) {
             logger.info(
@@ -739,7 +752,8 @@ public class BarsRetriever
     //--------------//
     private boolean mergeSystems ()
     {
-        boolean modified = false;
+        List<SystemFrame> systems = systemManager.getSystems();
+        boolean           modified = false;
 
         // Check connection of left bars across systems
         for (int i = 1; i < systems.size(); i++) {
@@ -879,7 +893,7 @@ public class BarsRetriever
     private void retrieveStaffBar (StaffInfo      staff,
                                    HorizontalSide side)
     {
-        StickComb staffSticks = barSticks.get(staff);
+        StickComb    staffSticks = barSticks.get(staff);
         final int    dir = (side == LEFT) ? 1 : (-1);
         final double staffX = staff.getAbscissa(side);
         final double xBreak = staffX + (dir * params.maxDistanceFromStaffSide);
@@ -1105,7 +1119,7 @@ public class BarsRetriever
             logger.info("top staff ids: " + Arrays.toString(systemTops));
 
             // Create system frames using staves tops
-            systems = createSystems(systemTops);
+            systemManager.setSystems(createSystems(systemTops));
 
             // Merge of systems as much as possible
             if (mergeSystems()) {
@@ -1213,10 +1227,10 @@ public class BarsRetriever
         // --------------------------------------
         Scale.Fraction   maxSectionThickness = new Scale.Fraction(
             0.8,
-            "Maximum horizontal section thickness WRT mean line height");
+            "Maximum horizontal section thickness WRT interline");
         Scale.Fraction   maxFilamentThickness = new Scale.Fraction(
             0.8,
-            "Maximum filament thickness WRT mean line height");
+            "Maximum horizontal filament thickness WRT interline");
         Scale.Fraction   maxOverlapDeltaPos = new Scale.Fraction(
             1.0,
             "Maximum delta position between two overlapping filaments");
@@ -1227,7 +1241,7 @@ public class BarsRetriever
             0.2,
             "Maximum delta abscissa for a gap between filaments");
         Scale.Fraction   maxBarCoordGap = new Scale.Fraction(
-            2, 
+            2,
             "Maximum delta coordinate for a vertical gap between bars");
         Scale.Fraction   maxBarPosGap = new Scale.Fraction(
             0.3,

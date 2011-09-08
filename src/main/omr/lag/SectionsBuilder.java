@@ -17,6 +17,8 @@ import omr.run.Run;
 import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
 
+import omr.util.StopWatch;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,19 +47,22 @@ public class SectionsBuilder<L extends Lag<L, S>, S extends Section<L, S>>
     /** The lag to populate */
     private L lag;
 
+    /** List of sections just created by createSections() */
+    private List<S> created;
+
     /** All Active sections in the next column */
-    private List<S> nextActives = new ArrayList<S>();
+    private List<S> nextActives;
 
     /**
      * List of sections in previous column that overlap given run in next column
      */
-    private List<S> overlappingSections = new ArrayList<S>();
+    private List<S> overlappingSections;
 
     /**
      * All Active sections in the previous column, i.e. only sections that have
      * a run in previous column
      */
-    private List<S> prevActives = new ArrayList<S>();
+    private List<S> prevActives;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -85,12 +90,19 @@ public class SectionsBuilder<L extends Lag<L, S>, S extends Section<L, S>>
     /**
      * Populate a lag by creating sections out of the provided table of runs
      * @param runsTable the table of runs
+     * @return the list of created sections
      */
-    public void createSections (RunsTable runsTable)
+    public List<S> createSections (RunsTable runsTable)
     {
+        // Get brand new collections
+        created = new ArrayList<S>();
+        nextActives = new ArrayList<S>();
+        overlappingSections = new ArrayList<S>();
+        prevActives = new ArrayList<S>();
+
         // All runs (if any) in first column start each their own section
         for (Run run : runsTable.getSequence(0)) {
-            nextActives.add(lag.createSection(0, run));
+            nextActives.add(createSection(0, run));
         }
 
         // Now scan each pair of columns, starting at 2nd column
@@ -120,7 +132,7 @@ public class SectionsBuilder<L extends Lag<L, S>, S extends Section<L, S>>
                 }
 
                 for (Run run : runList) {
-                    processNextSide(lag, col, run);
+                    processNextSide(col, run);
                 }
             } else {
                 nextActives.clear();
@@ -139,13 +151,12 @@ public class SectionsBuilder<L extends Lag<L, S>, S extends Section<L, S>>
             if (id < 0) {
                 section.setId(-id);
             }
-
-            // Register the section with its signature
-            section.setSignature();
         }
 
-        // Store the runs table into the lag
-        lag.setRuns(runsTable);
+        // Store the content of runs table into the lag
+        lag.addRuns(runsTable);
+
+        return created;
     }
 
     //----------------//
@@ -157,10 +168,11 @@ public class SectionsBuilder<L extends Lag<L, S>, S extends Section<L, S>>
      * @param name a name assigned to the runs table
      * @param source the source to read pixels from
      * @param minRunLength minimum length to consider a run
+     * @return the list of created sections
      */
-    public void createSections (String      name,
-                                PixelSource source,
-                                int         minRunLength)
+    public List<S> createSections (String      name,
+                                   PixelSource source,
+                                   int         minRunLength)
     {
         // Define a proper table factory
         RunsTableFactory factory = new RunsTableFactory(
@@ -173,7 +185,7 @@ public class SectionsBuilder<L extends Lag<L, S>, S extends Section<L, S>>
         RunsTable table = factory.createTable(name);
 
         // Now proceed to section extraction
-        createSections(table);
+        return createSections(table);
     }
 
     //------------//
@@ -198,6 +210,18 @@ public class SectionsBuilder<L extends Lag<L, S>, S extends Section<L, S>>
         nextActives.add(section);
     }
 
+    //---------------//
+    // createSection //
+    //---------------//
+    private S createSection (int firstPos,
+                             Run firstRun)
+    {
+        S section = lag.createSection(firstPos, firstRun);
+        created.add(section);
+
+        return section;
+    }
+
     //--------//
     // finish //
     //--------//
@@ -213,8 +237,7 @@ public class SectionsBuilder<L extends Lag<L, S>, S extends Section<L, S>>
      * Process NextSide takes care of the second column, at the given run,
      * checking among the prevActives Sections which overlap this run.
      */
-    private void processNextSide (L   lag,
-                                  int col,
+    private void processNextSide (int col,
                                   Run run)
     {
         if (logger.isFineEnabled()) {
@@ -251,7 +274,7 @@ public class SectionsBuilder<L extends Lag<L, S>, S extends Section<L, S>>
 
         switch (overlappingSections.size()) {
         case 0 : // Begin a brand new section
-            nextActives.add(lag.createSection(col, run));
+            nextActives.add(createSection(col, run));
 
             break;
 
@@ -263,7 +286,7 @@ public class SectionsBuilder<L extends Lag<L, S>, S extends Section<L, S>>
                 continueSection(prevSection, run);
             } else {
                 // Create a new section, linked by a junction
-                S sct = lag.createSection(col, run);
+                S sct = createSection(col, run);
                 nextActives.add(sct);
                 Section.addEdge(prevSection, sct);
             }
@@ -276,7 +299,7 @@ public class SectionsBuilder<L extends Lag<L, S>, S extends Section<L, S>>
                 logger.fine("Converging at " + run);
             }
 
-            S newSection = lag.createSection(col, run);
+            S newSection = createSection(col, run);
             nextActives.add(newSection);
 
             for (S section : overlappingSections) {

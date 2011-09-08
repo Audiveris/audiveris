@@ -6,16 +6,25 @@ package omr.run;
 
 import omr.log.Logger;
 
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
+
+import omr.selection.MouseMovement;
+import omr.selection.RunEvent;
+import omr.selection.SelectionHint;
 import omr.selection.SelectionService;
+import omr.selection.SheetLocationEvent;
+import omr.selection.UserEvent;
 
 import omr.ui.view.RubberPanel;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.util.List;
-import omr.selection.SheetLocationEvent;
 
 /**
- * Class {@code RunsTableView}
+ * Class {@code RunsTableView} displays a view on an underlying runs table
  *
  * @author Hervé Bitteur
  */
@@ -46,12 +55,43 @@ public class RunsTableView
 
         // Location service
         setLocationService(locationService, SheetLocationEvent.class);
-        
+        subscribe();
+
         // Set background color
         setBackground(Color.white);
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //---------//
+    // onEvent //
+    //---------//
+    /**
+     * Notification about selection objects. We catch:
+     *
+     * SheetLocation (-> Run)
+     * @param event the notified event
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public void onEvent (UserEvent event)
+    {
+        try {
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
+                return;
+            }
+
+            // Default behavior : making point visible & drawing the markers
+            super.onEvent(event);
+
+            if (event instanceof SheetLocationEvent) { // Location => Section(s) & Run
+                handleEvent((SheetLocationEvent) event);
+            }
+        } catch (Exception ex) {
+            logger.warning(getClass().getName() + " onEvent error", ex);
+        }
+    }
 
     //--------//
     // render //
@@ -140,5 +180,42 @@ public class RunsTableView
         int level = run.getLevel();
 
         return new Color(level, level, level);
+    }
+
+    //-------------//
+    // handleEvent //
+    //-------------//
+    /**
+     * Interest in SheetLocation => Run
+     * @param sheetLocation
+     */
+    private void handleEvent (SheetLocationEvent sheetLocationEvent)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("sheetLocation: " + sheetLocationEvent);
+        }
+
+        // Lookup for Run pointed by this pixel location
+        // Search and forward run & section info
+        PixelRectangle rect = sheetLocationEvent.getData();
+
+        if (rect == null) {
+            return;
+        }
+
+        SelectionHint hint = sheetLocationEvent.hint;
+        MouseMovement movement = sheetLocationEvent.movement;
+
+        if ((hint != SelectionHint.LOCATION_ADD) &&
+            (hint != SelectionHint.LOCATION_INIT)) {
+            return;
+        }
+
+        PixelPoint pt = rect.getLocation();
+        Run        run = table.lookupRun(pt);
+
+        // Publish Run information
+        table.getSelectionService()
+             .publish(new RunEvent(this, hint, movement, run));
     }
 }

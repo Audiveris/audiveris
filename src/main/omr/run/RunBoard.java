@@ -9,16 +9,15 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.lag.ui;
+package omr.run;
 
 import omr.lag.*;
 
 import omr.log.Logger;
 
-import omr.run.Run;
-
 import omr.selection.MouseMovement;
 import omr.selection.RunEvent;
+import omr.selection.SelectionService;
 import omr.selection.UserEvent;
 
 import omr.ui.Board;
@@ -27,8 +26,9 @@ import omr.ui.util.Panel;
 
 import omr.util.Implement;
 
-import com.jgoodies.forms.builder.*;
-import com.jgoodies.forms.layout.*;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import org.bushe.swing.event.EventSubscriber;
 
@@ -82,7 +82,7 @@ public class RunBoard
     // RunBoard //
     //----------//
     /**
-     * Create a Run Board, initially collapsed
+     * Create a Run Board on a lag, initially collapsed
      * @param unitName name of the owning unit
      * @param lag the related lag
      */
@@ -96,7 +96,7 @@ public class RunBoard
     // RunBoard //
     //----------//
     /**
-     * Create a Run Board
+     * Create a Run Board on a lag
      * @param unitName name of the owning unit
      * @param lag the related lag
      * @param expanded true for expanded, false for collapsed
@@ -105,10 +105,26 @@ public class RunBoard
                      Lag     lag,
                      boolean expanded)
     {
+        this(unitName, lag.getRunSelectionService(), expanded);
+    }
+
+    //----------//
+    // RunBoard //
+    //----------//
+    /**
+     * Create a Run Board
+     * @param unitName name of the owning unit
+     * @param selectionService the service handling run selections
+     * @param expanded true for expanded, false for collapsed
+     */
+    public RunBoard (String           unitName,
+                     SelectionService selectionService,
+                     boolean          expanded)
+    {
         super(
             unitName + "-RunBoard",
             "Run",
-            lag.getSelectionService(),
+            selectionService,
             eventClasses,
             expanded);
         defineLayout();

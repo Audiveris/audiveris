@@ -27,7 +27,9 @@ import omr.ui.view.ScrollView;
 import omr.util.Implement;
 import omr.util.WeakPropertyChangeListener;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 

@@ -29,10 +29,16 @@ import static omr.util.HorizontalSide.*;
 import omr.util.VerticalSide;
 import static omr.util.VerticalSide.*;
 
-import java.awt.*;
-import java.awt.geom.*;
-import java.util.*;
+import java.awt.Graphics2D;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Class {@code StaffInfo} handles the physical informations of a staff with

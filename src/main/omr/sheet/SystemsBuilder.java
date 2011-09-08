@@ -20,7 +20,7 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
-import omr.glyph.GlyphSection;
+import omr.glyph.GlyphSectionsBuilder;
 import omr.glyph.GlyphsModel;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
@@ -31,14 +31,13 @@ import omr.glyph.ui.GlyphLagView;
 import omr.glyph.ui.GlyphsController;
 
 import omr.lag.JunctionDeltaPolicy;
-import omr.lag.SectionsBuilder;
-import omr.lag.ui.RunBoard;
 import omr.lag.ui.ScrollLagView;
 import omr.lag.ui.SectionBoard;
 
 import omr.log.Logger;
 
 import omr.run.Orientation;
+import omr.run.RunBoard;
 
 import omr.script.BoundaryTask;
 
@@ -72,9 +71,18 @@ import omr.util.VerticalSide;
 
 import org.jdesktop.application.Task;
 
-import java.awt.*;
-import java.util.*;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Class <code>SystemsBuilder</code> is in charge of retrieving the systems
@@ -189,12 +197,10 @@ public class SystemsBuilder
     {
         try {
             // Remember old vLag if any, while setting the new one
-            GlyphLag                                oldLag = sheet.setVerticalLag(
-                lag);
+            GlyphLag             oldLag = sheet.setVerticalLag(lag);
 
             // Feed lag with proper sections
-            SectionsBuilder<GlyphLag, GlyphSection> sectionsBuilder;
-            sectionsBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
+            GlyphSectionsBuilder sectionsBuilder = new GlyphSectionsBuilder(
                 lag,
                 new JunctionDeltaPolicy(
                     scale.toPixels(constants.maxDeltaLength)));
@@ -427,7 +433,7 @@ public class SystemsBuilder
         BoardsPane    boardsPane = new BoardsPane(
             new PixelBoard(unit, sheet),
             new RunBoard(unit, lag),
-            new SectionBoard(unit, lag.getLastVertexId(), lag),
+            new SectionBoard(unit, lag),
             new GlyphBoard(
                 unit,
                 lagView.getController(),

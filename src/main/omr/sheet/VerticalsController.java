@@ -24,7 +24,7 @@ import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphLagView;
 import omr.glyph.ui.GlyphsController;
 
-import omr.lag.ui.RunBoard;
+import omr.run.RunBoard;
 import omr.lag.ui.ScrollLagView;
 import omr.lag.ui.SectionBoard;
 
@@ -134,7 +134,7 @@ public class VerticalsController
             new BoardsPane(
                 new PixelBoard(unit, sheet),
                 new RunBoard(unit, lag),
-                new SectionBoard(unit, lag.getLastVertexId(), lag),
+                new SectionBoard(unit, lag),
                 new GlyphBoard(unit, this, null, true),
                 new MyCheckBoard(unit, lag.getSelectionService(), eventClasses)));
     }

@@ -18,35 +18,52 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
+import omr.glyph.GlyphSectionsBuilder;
 import omr.glyph.facets.Glyph;
 
 import omr.lag.JunctionRatioPolicy;
-import omr.lag.SectionsBuilder;
+import omr.lag.ui.SectionBoard;
 
 import omr.log.Logger;
 
 import omr.run.Orientation;
 import static omr.run.Orientation.*;
 import omr.run.Run;
+import omr.run.RunBoard;
 import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
+import omr.run.RunsTableView;
 
+import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 import omr.score.ui.PagePainter;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.Skew;
+import omr.sheet.ui.PixelBoard;
 
 import omr.stick.StickSection;
+
+import omr.ui.BoardsPane;
+import omr.ui.view.RubberPanel;
+import omr.ui.view.ScrollView;
 import static omr.util.HorizontalSide.*;
 import omr.util.Predicate;
 import omr.util.StopWatch;
 
-import java.awt.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.Stroke;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
 
 /**
  * Class <code>LinesRetriever</code> retrieves the horizontal filaments
@@ -108,6 +125,12 @@ public class LinesRetriever
     /** Companion in charge of clusters of second interline, if any */
     private ClustersRetriever secondClustersRetriever;
 
+    /** Companion in charge of bar lines */
+    private final BarsRetriever barsRetriever;
+
+    /** Too-short horizontal runs */
+    private RunsTable purgedHoriTable;
+
     //~ Constructors -----------------------------------------------------------
 
     //----------------//
@@ -118,9 +141,11 @@ public class LinesRetriever
      *
      * @param sheet the sheet to process
      */
-    public LinesRetriever (Sheet sheet)
+    public LinesRetriever (Sheet         sheet,
+                           BarsRetriever barsRetriever)
     {
         this.sheet = sheet;
+        this.barsRetriever = barsRetriever;
 
         scale = sheet.getScale();
         params = new Parameters(scale);
@@ -140,9 +165,152 @@ public class LinesRetriever
         return hLag;
     }
 
-    //-----------//
-    // buildInfo //
-    //-----------//
+    //----------//
+    // buildLag //
+    //----------//
+    /**
+     * Build the underlying lag, out of the provided runs table
+     * @param wholeVertTable the provided table of all (vertical) runs
+     * @param showRuns true to create views on runs
+     * @return the vertical runs too long to be part of any staff line
+     */
+    public RunsTable buildLag (RunsTable wholeVertTable,
+                               boolean   showRuns)
+    {
+        hLag = new GlyphLag("hLag", StickSection.class, Orientation.HORIZONTAL);
+
+        // Create filament factory
+        try {
+            factory = new FilamentsFactory(scale, hLag, LineFilament.class);
+
+            // Debug VIP sticks
+            factory.setVipGlyphs(params.vipSticks);
+        } catch (Exception ex) {
+            logger.warning("Cannot create lines filament factory", ex);
+        }
+
+        // To record the purged runs
+        RunsTable purgedVertTable = new RunsTable(
+            "purged-vert",
+            VERTICAL,
+            new Dimension(sheet.getWidth(), sheet.getHeight()));
+
+        // Remove runs whose height is somewhat greater than line thickness
+        RunsTable shortVertTable = wholeVertTable.clone("short-vert")
+                                                 .purge(
+            new Predicate<Run>() {
+                    public final boolean check (Run run)
+                    {
+                        return run.getLength() > params.maxVerticalRunLength;
+                    }
+                },
+            purgedVertTable);
+
+        if (showRuns) {
+            // Add a view on purged table (debug)
+            addRunsTab(purgedVertTable);
+
+            // Add a view on runs table (debug)
+            addRunsTab(shortVertTable);
+        }
+
+        // Build table of long horizontal runs
+        RunsTable wholeHoriTable = new RunsTableFactory(
+            HORIZONTAL,
+            shortVertTable.getBuffer(),
+            sheet.getPicture().getMaxForeground(),
+            0).createTable("whole-hori");
+
+        // To record the purged horizontal runs
+        purgedHoriTable = new RunsTable(
+            "purged-hori",
+            HORIZONTAL,
+            new Dimension(sheet.getWidth(), sheet.getHeight()));
+
+        RunsTable longHoriTable = wholeHoriTable.clone("long-hori")
+                                                .purge(
+            new Predicate<Run>() {
+                    public final boolean check (Run run)
+                    {
+                        return run.getLength() < params.minRunLength;
+                    }
+                },
+            purgedHoriTable);
+
+        if (showRuns) {
+            // Add a view on purged table (debug)
+            addRunsTab(purgedHoriTable);
+
+            // Add a view on runs table (debug)
+            addRunsTab(longHoriTable);
+        }
+
+        // Build the horizontal hLag
+        GlyphSectionsBuilder sectionsBuilder = new GlyphSectionsBuilder(
+            hLag,
+            new JunctionRatioPolicy(params.maxLengthRatio));
+        sectionsBuilder.createSections(longHoriTable);
+
+        setVipSections();
+
+        return purgedVertTable;
+    }
+
+    //-------------//
+    // removeLines //
+    //-------------//
+    /**
+     * Logically remove the pixels that compose the staff lines
+     */
+    public void removeLines (GridView     view,
+                             SectionBoard hLagSectionBoard)
+    {
+        StopWatch watch = new StopWatch("removeLines");
+
+        try {
+            // Build sections out of purgedHoriTable (too short horizontal runs)
+            watch.start("create shortSections");
+
+            List<GlyphSection> shortSections = createShortSections(
+                view,
+                hLagSectionBoard);
+
+            // Dispatch sections into thick & thin ones
+            watch.start(
+                "dispatching " + shortSections.size() + " thick / thin");
+
+            List<GlyphSection> thickSections = new ArrayList<GlyphSection>();
+            List<GlyphSection> thinSections = new ArrayList<GlyphSection>();
+
+            for (GlyphSection section : shortSections) {
+                if (section.getWeight() > params.maxThinStickerWeight) {
+                    thickSections.add(section);
+                } else {
+                    thinSections.add(section);
+                }
+            }
+
+            // First, consider thick sections and update geometry
+            watch.start("include " + thickSections.size() + " thick stickers");
+            includeStickers(thickSections, true);
+
+            // Second, consider thin sections w/o updating the geometry
+            watch.start("include " + thinSections.size() + " thin stickers");
+            includeStickers(thinSections, false);
+
+            // Update view
+            view.colorizeAllSections();
+            view.refresh();
+        } finally {
+            if (constants.printWatch.getValue()) {
+                watch.print();
+            }
+        }
+    }
+
+    //---------------//
+    // retrieveLines //
+    //---------------//
     /**
      * Organize the long and thin horizontal sections into filaments (glyphs)
      * that will be good candidates for staff lines.
@@ -151,9 +319,9 @@ public class LinesRetriever
      * <p>Second, detect patterns of filaments regularly spaced and aggregate
      * them into clusters of lines (staff candidates). </p>
      */
-    public void buildInfo ()
+    public void retrieveLines ()
     {
-        StopWatch watch = new StopWatch("LinesRetriever");
+        StopWatch watch = new StopWatch("retrieveLines");
 
         try {
             // Retrieve filaments out of merged long sections
@@ -211,120 +379,6 @@ public class LinesRetriever
         }
     }
 
-    //----------//
-    // buildLag //
-    //----------//
-    /**
-     * Build the underlying lag, out of the provided runs table
-     * @param wholeVertTable the provided runs table
-     * @param showRuns true to create views on runs
-     */
-    public RunsTable buildLag (RunsTable wholeVertTable,
-                               boolean   showRuns)
-    {
-        hLag = new GlyphLag("hLag", StickSection.class, Orientation.HORIZONTAL);
-
-        // Create filament factory
-        try {
-            factory = new FilamentsFactory(scale, hLag, LineFilament.class);
-
-            // Debug VIP sticks
-            factory.setVipGlyphs(params.vipSticks);
-        } catch (Exception ex) {
-            logger.warning("Cannot create lines filament factory", ex);
-        }
-
-        // To record the purged runs
-        RunsTable purgedVertTable = new RunsTable(
-            "purged-vert",
-            VERTICAL,
-            new Dimension(sheet.getWidth(), sheet.getHeight()));
-
-        // Remove runs whose height is somewhat greater than line thickness
-        RunsTable shortVertTable = wholeVertTable.clone("short-vert")
-                                                 .purge(
-            new Predicate<Run>() {
-                    public final boolean check (Run run)
-                    {
-                        return run.getLength() > params.maxVerticalRunLength;
-                    }
-                },
-            purgedVertTable);
-
-        if (showRuns) {
-            // Add a view on purged table (debug)
-            sheet.getAssembly()
-                 .addRunsTab(purgedVertTable);
-
-            // Add a view on runs table (debug)
-            sheet.getAssembly()
-                 .addRunsTab(shortVertTable);
-        }
-
-        // Build table of long horizontal runs
-        RunsTable wholeHoriTable = new RunsTableFactory(
-            HORIZONTAL,
-            shortVertTable.getBuffer(),
-            sheet.getPicture().getMaxForeground(),
-            0).createTable("whole-hori");
-
-        RunsTable longHoriTable = wholeHoriTable.clone("long-hori")
-                                                .purge(
-            new Predicate<Run>() {
-                    public final boolean check (Run run)
-                    {
-                        return run.getLength() < params.minRunLength;
-                    }
-                });
-
-        if (showRuns) {
-            // Add a view on runs table (debug)
-            sheet.getAssembly()
-                 .addRunsTab(longHoriTable);
-        }
-
-        // Build the horizontal hLag
-        SectionsBuilder sectionsBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
-            hLag,
-            new JunctionRatioPolicy(params.maxLengthRatio));
-        sectionsBuilder.createSections(longHoriTable);
-
-        // Debug sections VIPs
-        for (int id : params.vipSections) {
-            GlyphSection sect = hLag.getVertexById(id);
-
-            if (sect != null) {
-                sect.setVip();
-            }
-        }
-
-        // Purge hLag of too short sections
-        //        final int minSectionLength = factory.getMinSectionLength();
-        //        hLag.purgeSections(
-        //            new Predicate<GlyphSection>() {
-        //                    public final boolean check (GlyphSection section)
-        //                    {
-        //                        return section.getLength() < minSectionLength;
-        //                    }
-        //                });
-
-        //
-        return purgedVertTable;
-    }
-
-    //--------------//
-    // isSectionFat //
-    //--------------//
-    /**
-     * Detect if the provided section is a thick one
-     * @param section the section to check
-     * @return true if fat
-     */
-    boolean isSectionFat (GlyphSection section)
-    {
-        return factory.isSectionFat(section);
-    }
-
     //--------------------//
     // getStafflineGlyphs //
     //--------------------//
@@ -343,14 +397,41 @@ public class LinesRetriever
         return glyphs;
     }
 
+    //------------//
+    // addRunsTab //
+    //------------//
+    /**
+     * Add a view tab in sheet assembly for the provided runs table
+     * @param table the runs table to display
+     */
+    void addRunsTab (RunsTable table)
+    {
+        RubberPanel view = new MyRunsTableView(table);
+        view.setName(table.getName());
+        view.setPreferredSize(table.getDimension());
+
+        final String unit = sheet.getId() + ":" + table.getName();
+
+        BoardsPane   boards = new BoardsPane(
+            new PixelBoard(unit, sheet),
+            new RunBoard(unit, table.getSelectionService(), true));
+
+        sheet.getAssembly()
+             .addViewTab(table.getName(), new ScrollView(view), boards);
+    }
+
     //-------------//
     // renderItems //
     //-------------//
     /**
      * Render the filaments, their ending tangents, their patterns
      * @param g graphics context
+     * @param showTangents true to display tangents at filament ends
+     * @param showPatterns true to display cluster patterns
      */
-    void renderItems (Graphics2D g)
+    void renderItems (Graphics2D g,
+                      boolean    showTangents,
+                      boolean    showPatterns)
     {
         List<LineFilament> allFils = new ArrayList<LineFilament>(filaments);
 
@@ -368,40 +449,59 @@ public class LinesRetriever
             filament.renderLine(g);
         }
 
-        // Draw tangent at each ending point
-        g.setColor(Color.BLACK);
+        // Draw tangent at each ending point?
+        if (showTangents) {
+            g.setColor(Color.BLACK);
 
-        double dx = sheet.getScale()
-                         .toPixels(constants.tangentLg);
+            double dx = sheet.getScale()
+                             .toPixels(constants.tangentLg);
 
-        for (Filament filament : allFils) {
-            Point2D p = filament.getStartPoint();
-            double  der = filament.slopeAt(p.getX());
-            g.draw(
-                new Line2D.Double(
-                    p.getX(),
-                    p.getY(),
-                    p.getX() - dx,
-                    p.getY() - (der * dx)));
-            p = filament.getStopPoint();
-            der = filament.slopeAt(p.getX());
-            g.draw(
-                new Line2D.Double(
-                    p.getX(),
-                    p.getY(),
-                    p.getX() + dx,
-                    p.getY() + (der * dx)));
+            for (Filament filament : allFils) {
+                Point2D p = filament.getStartPoint();
+                double  der = filament.slopeAt(p.getX());
+                g.draw(
+                    new Line2D.Double(
+                        p.getX(),
+                        p.getY(),
+                        p.getX() - dx,
+                        p.getY() - (der * dx)));
+                p = filament.getStopPoint();
+                der = filament.slopeAt(p.getX());
+                g.draw(
+                    new Line2D.Double(
+                        p.getX(),
+                        p.getY(),
+                        p.getX() + dx,
+                        p.getY() + (der * dx)));
+            }
         }
 
         g.setStroke(oldStroke);
 
-        // Patterns stuff        
-        if (clustersRetriever != null) {
-            clustersRetriever.renderItems(g);
-        }
+        // Patterns stuff?
+        if (showPatterns) {
+            if (clustersRetriever != null) {
+                clustersRetriever.renderItems(g);
+            }
 
-        if (secondClustersRetriever != null) {
-            secondClustersRetriever.renderItems(g);
+            if (secondClustersRetriever != null) {
+                secondClustersRetriever.renderItems(g);
+            }
+        }
+    }
+
+    //----------------//
+    // setVipSections //
+    //----------------//
+    private void setVipSections ()
+    {
+        // Debug sections VIPs
+        for (int id : params.vipSections) {
+            GlyphSection sect = hLag.getVertexById(id);
+
+            if (sect != null) {
+                sect.setVip();
+            }
         }
     }
 
@@ -464,6 +564,188 @@ public class LinesRetriever
         }
     }
 
+    //--------------//
+    // checkSticker //
+    //--------------//
+    /**
+     * Check if the staff line filament can accept the provided sticker section
+     * @param fil the staff line filament
+     * @param section the candidate sticker
+     * @return true if OK, false otherwise
+     */
+    private boolean checkSticker (LineFilament fil,
+                                  GlyphSection section)
+    {
+        // For VIP debugging
+        final boolean isVip = section.isVip();
+        String        vips = null;
+
+        if (isVip) {
+            vips = "Sct#" + section.getId() + ": "; // BP here!
+        }
+
+        // Check section thickness
+        PixelRectangle box = section.getContourBox();
+        int            height = box.height;
+
+        if (height > params.maxStickerThickness) {
+            if (logger.isFineEnabled() || isVip) {
+                logger.info(
+                    vips + "TTT height:" + height + " vs " +
+                    params.maxStickerThickness);
+            }
+
+            return false;
+        }
+
+        // Check section centroid gap with theoretical line
+        PixelPoint center = section.getCentroid();
+        double     yFil = fil.getPositionAt(center.x);
+        double     dy = Math.abs(yFil - center.y);
+        double     gap = ((2 * dy) - scale.mainFore()) / 2;
+
+        if (gap > params.maxStickerGap) {
+            if (logger.isFineEnabled() || isVip) {
+                logger.info(
+                    vips + "GGG gap:" + (float) gap + " vs " +
+                    (float) params.maxStickerGap);
+            }
+
+            return false;
+        }
+
+        // Check max extension from theoretical line
+        double extension = Math.max(
+            Math.abs(yFil - box.y),
+            Math.abs((box.y + height) - yFil));
+
+        if (extension > params.maxStickerExtension) {
+            if (logger.isFineEnabled() || isVip) {
+                logger.info(
+                    vips + "XXX ext:" + (float) extension + " vs " +
+                    params.maxStickerExtension);
+            }
+
+            return false;
+        }
+
+        if (logger.isFineEnabled() || isVip) {
+            logger.info(vips + "---");
+        }
+
+        return true;
+    }
+
+    //---------------------//
+    // createShortSections //
+    //---------------------//
+    /**
+     * Build horizontal sections out of purgedHoriTable runs
+     * @param view the LagView to augment with new section views
+     * @param hLagSectionBoard the section board model to update
+     * @return the list of created sections
+     */
+    private List<GlyphSection> createShortSections (GridView     view,
+                                                    SectionBoard hLagSectionBoard)
+    {
+        // Augment the horizontal hLag
+        GlyphSectionsBuilder sectionsBuilder = new GlyphSectionsBuilder(
+            hLag,
+            new JunctionRatioPolicy(params.maxLengthRatioShort));
+        List<GlyphSection>   shortSections = sectionsBuilder.createSections(
+            purgedHoriTable);
+
+        // Update horizontal lag view accordingly
+        for (GlyphSection section : shortSections) {
+            view.addSectionView(section);
+        }
+
+        view.colorizeAllSections();
+        hLagSectionBoard.updateModel();
+
+        setVipSections();
+
+        return shortSections;
+    }
+
+    //-----------------//
+    // includeStickers //
+    //-----------------//
+    /**
+     * Include "sticker" sections into their related lines, when applicable
+     * @param sections List of sections that are stickers candidates
+     * @param update should we update the line geometry with stickers
+     */
+    private void includeStickers (List<GlyphSection> sections,
+                                  boolean            update)
+    {
+        // Sections are sorted according to their top run (Y first and X second)
+        int iMin = 0;
+        int iMax = sections.size() - 1;
+
+        // Inclusion on the fly would imply recomputation of filament at each 
+        // section inclusion. So we need to retrieve all "stickers" for a given 
+        // staff line, and perform a global inclusion at the end only.
+        for (SystemFrame system : sheet.getSystemManager()
+                                       .getSystems()) {
+            for (StaffInfo staff : system.getStaves()) {
+                for (LineInfo l : staff.getLines()) {
+                    FilamentLine   line = (FilamentLine) l;
+                    LineFilament   fil = line.fil;
+                    PixelRectangle lineBox = fil.getContourBox();
+                    lineBox.grow(0, scale.mainFore());
+
+                    double             minX = fil.getStartPoint()
+                                                 .getX();
+                    double             maxX = fil.getStopPoint()
+                                                 .getX();
+                    int                minY = lineBox.y;
+                    int                maxY = lineBox.y + lineBox.height;
+                    List<GlyphSection> stickers = new ArrayList<GlyphSection>();
+
+                    for (int i = iMin; i <= iMax; i++) {
+                        GlyphSection section = sections.get(i);
+
+                        if (section.isGlyphMember()) {
+                            continue;
+                        }
+
+                        int firstPos = section.getFirstPos();
+
+                        if (firstPos < minY) {
+                            iMin = i;
+
+                            continue;
+                        }
+
+                        if (firstPos > maxY) {
+                            break;
+                        }
+
+                        PixelPoint center = section.getCentroid();
+
+                        if ((center.x >= minX) && (center.x <= maxX)) {
+                            if (checkSticker(fil, section)) {
+                                stickers.add(section);
+                            }
+                        }
+                    }
+
+                    // Actually include the retrieved stickers?
+                    for (GlyphSection section : stickers) {
+                        if (update) {
+                            fil.addSection(section);
+                        } else {
+                            section.setGlyph(fil);
+                        }
+                    }
+                }
+            }
+
+            barsRetriever.adjustStaffLines(system);
+        }
+    }
+
     //---------------------//
     // retrieveGlobalSlope //
     //---------------------//
@@ -501,12 +783,27 @@ public class LinesRetriever
         Constant.Ratio     maxLengthRatio = new Constant.Ratio(
             1.5,
             "Maximum ratio in length for a run to be combined with an existing section");
+        Constant.Ratio     maxLengthRatioShort = new Constant.Ratio(
+            3.0,
+            "Maximum ratio in length for a short run to be combined with an existing section");
 
         // Constants specified WRT mean line thickness
         // -------------------------------------------
         Scale.LineFraction maxVerticalRunLength = new Scale.LineFraction(
             1.75, // 2.0
             "Maximum vertical run length WRT mean line height");
+        Scale.LineFraction maxStickerGap = new Scale.LineFraction(
+            0.5,
+            "Maximum vertical gap between sticker and closest line side");
+        Scale.LineFraction maxStickerExtension = new Scale.LineFraction(
+            1.2,
+            "Maximum vertical sticker extension from line");
+        Scale.LineFraction maxStickerThickness = new Scale.LineFraction(
+            1.4,
+            "Maximum sticker thickness");
+        Scale.AreaFraction maxThinStickerWeight = new Scale.AreaFraction(
+            0.1,
+            "Maximum weight for a thin sticker");
 
         // Constants specified WRT mean interline
         // --------------------------------------
@@ -519,6 +816,9 @@ public class LinesRetriever
 
         // Constants for display
         //
+        Constant.Boolean showLinesOnRuns = new Constant.Boolean(
+            false,
+            "Should we display lines on top of runs?");
         Constant.Double  splineThickness = new Constant.Double(
             "thickness",
             0.5,
@@ -559,8 +859,23 @@ public class LinesRetriever
         /** Used for section junction policy */
         final double maxLengthRatio;
 
+        /** Used for section junction policy for short sections */
+        final double maxLengthRatioShort;
+
         /** Percentage of top filaments used to retrieve global slope */
         final double topRatioForSlope;
+
+        /** Maximum sticker thickness */
+        final int maxStickerThickness;
+
+        /** Maximum sticker extension */
+        final int maxStickerExtension;
+
+        /** Maximum vertical gap between a sticker and the closest line side */
+        final double maxStickerGap;
+
+        /** Maximum weight for a thin sticker */
+        final int maxThinStickerWeight;
 
         // Debug
         final List<Integer> vipSections;
@@ -579,7 +894,13 @@ public class LinesRetriever
             maxVerticalRunLength = scale.toPixels(
                 constants.maxVerticalRunLength);
             maxLengthRatio = constants.maxLengthRatio.getValue();
+            maxLengthRatioShort = constants.maxLengthRatioShort.getValue();
             topRatioForSlope = constants.topRatioForSlope.getValue();
+            maxStickerGap = scale.toPixelsDouble(constants.maxStickerGap);
+            maxStickerExtension = scale.toPixels(constants.maxStickerExtension);
+            maxStickerThickness = scale.toPixels(constants.maxStickerThickness);
+            maxThinStickerWeight = scale.toPixels(
+                constants.maxThinStickerWeight);
 
             // VIPs
             vipSections = decode(constants.horizontalVipSections.getValue());
@@ -616,6 +937,33 @@ public class LinesRetriever
             }
 
             return ids;
+        }
+    }
+
+    //-----------------//
+    // MyRunsTableView //
+    //-----------------//
+    /**
+     * A specific runs view, which displays retrieved lines on top of the runs
+     */
+    private class MyRunsTableView
+        extends RunsTableView
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public MyRunsTableView (RunsTable table)
+        {
+            super(table, sheet.getSelectionService());
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        protected void renderItems (Graphics2D g)
+        {
+            if (constants.showLinesOnRuns.getValue()) {
+                LinesRetriever.this.renderItems(g, false, false);
+            }
         }
     }
 }

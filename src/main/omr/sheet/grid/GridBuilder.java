@@ -21,12 +21,12 @@ import omr.glyph.GlyphsModel;
 import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphsController;
 
-import omr.lag.ui.RunBoard;
 import omr.lag.ui.ScrollLagView;
 import omr.lag.ui.SectionBoard;
 
 import omr.log.Logger;
 import static omr.run.Orientation.*;
+import omr.run.RunBoard;
 import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
 
@@ -75,11 +75,11 @@ public class GridBuilder
     /** Companion in charge of bar lines */
     private final BarsRetriever barsRetriever;
 
-    /** Companion in charge of target grid */
-    private final TargetBuilder targetBuilder;
-
     /** The grid display if any */
     private GridView gridView;
+
+    /** Section board for hLag */
+    private SectionBoard hLagSectionBoard;
 
     /** The bars display if any */
     private BarsView barsView;
@@ -98,11 +98,8 @@ public class GridBuilder
     {
         this.sheet = sheet;
 
-        linesRetriever = new LinesRetriever(sheet);
         barsRetriever = new BarsRetriever(sheet);
-        targetBuilder = new TargetBuilder(sheet, barsRetriever);
-
-        sheet.setTargetBuilder(targetBuilder);
+        linesRetriever = new LinesRetriever(sheet, barsRetriever);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -130,31 +127,45 @@ public class GridBuilder
             }
 
             // Retrieve the horizontal staff lines filaments
-            watch.start("linesRetriever");
-            linesRetriever.buildInfo();
+            watch.start("retrieveLines");
+            linesRetriever.retrieveLines();
 
             // Retrieve the vertical barlines
             watch.start("barsRetriever");
             barsRetriever.buildInfo();
 
-            // Define the destination grid
-            watch.start("targetBuilder");
-            targetBuilder.buildInfo();
+            // Define the destination grid, if so desired
+            if (constants.buildDewarpedTarget.isSet()) {
+                watch.start("targetBuilder");
+
+                /** Companion in charge of target grid */
+                TargetBuilder targetBuilder = new TargetBuilder(
+                    sheet,
+                    barsRetriever);
+
+                sheet.setTargetBuilder(targetBuilder);
+                targetBuilder.buildInfo();
+            }
+
+            // Remove the staff lines
+            watch.start("removeLines");
+            linesRetriever.removeLines(gridView, hLagSectionBoard);
         } catch (Exception ex) {
             logger.warning("Error in GridBuilder", ex);
             ex.printStackTrace();
         } finally {
+            if (constants.printWatch.isSet()) {
+                watch.print();
+            }
+
             if (gridView != null) {
                 // Update the display
                 gridView.refresh();
             }
+
             if (barsView != null) {
                 // Update the display
                 barsView.refresh();
-            }
-
-            if (constants.printWatch.getValue()) {
-                watch.print();
             }
         }
     }
@@ -185,20 +196,21 @@ public class GridBuilder
             // and save memory, since wholeVertTable contains all foreground pixels.
             // For the time being, it is kept alive for display purpose, and to
             // allow the dewarping of the initial picture.
+
+            // View on there initial runs (just for information)
             if (showRuns) {
                 // Add a view on runs table
-                sheet.getAssembly()
-                     .addRunsTab(wholeVertTable);
+                linesRetriever.addRunsTab(wholeVertTable);
             }
 
-            // hLag
+            // hLag creation
             watch.start("linesRetriever.buildLag");
 
             RunsTable purgedVertTable = linesRetriever.buildLag(
                 wholeVertTable,
                 showRuns);
 
-            // vLag
+            // vLag creation
             watch.start("barsRetriever.buildLag");
             barsRetriever.buildLag(purgedVertTable, showRuns);
         } finally {
@@ -226,7 +238,7 @@ public class GridBuilder
         BoardsPane    boardsPane = new BoardsPane(
             new PixelBoard(unit, sheet),
             new RunBoard(unit, vLag, true),
-            new SectionBoard(unit, vLag.getLastVertexId(), vLag, true),
+            new SectionBoard(unit, vLag, true),
             new GlyphBoard(unit, controller, null, false));
 
         // Create a hosting frame for the view
@@ -242,8 +254,10 @@ public class GridBuilder
     {
         GlyphLag         hLag = linesRetriever.getLag();
         GlyphLag         vLag = barsRetriever.getLag();
-        GlyphsController controller = new GlyphsController(
+        GlyphsController hController = new GlyphsController(
             new GlyphsModel(sheet, hLag, Steps.valueOf(Steps.GRID)));
+        //        GlyphsController vController = new GlyphsController(
+        //            new GlyphsModel(sheet, vLag, Steps.valueOf(Steps.GRID)));
 
         // Create a view
         gridView = new GridView(
@@ -252,16 +266,22 @@ public class GridBuilder
             barsRetriever,
             vLag,
             null,
-            controller);
+            hController);
         gridView.colorizeAllSections();
 
         // Boards
-        final String  unit = sheet.getId() + ":GridBuilder";
+        final String unit = sheet.getId() + ":GridBuilder";
+        hLagSectionBoard = new SectionBoard(unit, hLag, true);
+
         BoardsPane    boardsPane = new BoardsPane(
             new PixelBoard(unit, sheet),
             new RunBoard(unit, hLag, true),
-            new SectionBoard(unit, hLag.getLastVertexId(), hLag, true),
-            new GlyphBoard(unit, controller, null, false));
+            hLagSectionBoard,
+            new GlyphBoard(unit, hController, null, false)//                ,
+        //            new RunBoard(unit, vLag, true),
+        //            new SectionBoard(unit, vLag, true),
+        //            new GlyphBoard(unit, vController, null, false)
+        );
 
         // Create a hosting frame for the view
         ScrollLagView slv = new ScrollLagView(gridView);
@@ -282,11 +302,20 @@ public class GridBuilder
         Constant.Boolean displayFrame = new Constant.Boolean(
             true,
             "Should we display a frame?");
+
+        //
         Constant.Boolean showRuns = new Constant.Boolean(
             false,
             "Should we show view on runs?");
+
+        //
         Constant.Boolean printWatch = new Constant.Boolean(
             true,
             "Should we print out the stop watch?");
+
+        //
+        Constant.Boolean buildDewarpedTarget = new Constant.Boolean(
+            true,
+            "Should we build a dewarped target?");
     }
 }

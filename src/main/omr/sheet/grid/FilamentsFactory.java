@@ -41,11 +41,16 @@ import omr.stick.StickSection;
 
 import omr.util.StopWatch;
 
-import java.awt.*;
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.lang.reflect.Constructor;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Class <code>FilamentsFactory</code> builds filaments out of sections

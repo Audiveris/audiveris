@@ -18,14 +18,13 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
+import omr.glyph.GlyphSectionsBuilder;
 import omr.glyph.facets.BasicStick;
 import omr.glyph.facets.Glyph;
 import omr.glyph.facets.Stick;
 
 import omr.lag.JunctionRatioPolicy;
-import omr.lag.SectionsBuilder;
 import omr.lag.ui.LagView;
-import omr.lag.ui.RunBoard;
 import omr.lag.ui.ScrollLagView;
 import omr.lag.ui.SectionBoard;
 import omr.lag.ui.SectionView;
@@ -33,6 +32,7 @@ import omr.lag.ui.SectionView;
 import omr.log.Logger;
 
 import omr.run.Orientation;
+import omr.run.RunBoard;
 
 import omr.sheet.picture.ImageFormatException;
 import omr.sheet.picture.Picture;
@@ -148,8 +148,7 @@ public class SkewBuilder
         // Retrieve the horizontal lag of runs
         sLag = new GlyphLag("sLag", StickSection.class, Orientation.HORIZONTAL);
 
-        SectionsBuilder<GlyphLag, GlyphSection> lagBuilder;
-        lagBuilder = new SectionsBuilder<GlyphLag, GlyphSection>(
+        GlyphSectionsBuilder lagBuilder = new GlyphSectionsBuilder(
             sLag,
             new JunctionRatioPolicy(constants.maxLengthRatio.getValue()));
         lagBuilder.createSections(
@@ -407,7 +406,7 @@ public class SkewBuilder
         BoardsPane    boards = new BoardsPane(
             new PixelBoard(unit, sheet),
             new RunBoard(unit, sLag),
-            new SectionBoard(unit, sLag.getLastVertexId(), sLag));
+            new SectionBoard(unit, sLag));
 
         sheet.getAssembly()
              .addViewTab(Step.SKEW_TAB, slv, boards);

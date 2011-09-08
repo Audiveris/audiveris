@@ -24,8 +24,13 @@ import omr.util.Navigable;
 import static omr.util.VerticalSide.*;
 
 import java.awt.Graphics2D;
-import java.awt.geom.*;
-import java.util.*;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Class {@code StaffManager} handles physical information about all the staves

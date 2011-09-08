@@ -21,11 +21,12 @@ import omr.glyph.Glyphs;
 import omr.glyph.facets.Glyph;
 
 import omr.lag.Sections;
-import omr.lag.ui.RunBoard;
 import omr.lag.ui.ScrollLagView;
 import omr.lag.ui.SectionBoard;
 
 import omr.log.Logger;
+
+import omr.run.RunBoard;
 
 import omr.score.common.PixelDimension;
 import omr.score.common.PixelPoint;
@@ -152,10 +153,7 @@ public class SymbolsEditor
         BoardsPane    boardsPane = new BoardsPane(
             new PixelBoard(unit, sheet),
             new RunBoard(unit, lag),
-            new SectionBoard(
-                unit,
-                symbolsController.getLag().getLastVertexId(),
-                lag),
+            new SectionBoard(unit, lag),
             new SymbolGlyphBoard(
                 unit + "-SymbolGlyphBoard",
                 symbolsController,

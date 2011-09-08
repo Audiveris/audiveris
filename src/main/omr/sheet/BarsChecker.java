@@ -414,14 +414,15 @@ public class BarsChecker
             add(1, new HeightDiffCheck());
             add(1, new RadiusCheck());
 
+            add(1, new TopLeftChunkCheck());
+            add(1, new TopRightChunkCheck());
+            add(1, new BottomLeftChunkCheck());
+            add(1, new BottomRightChunkCheck());
+
             if (!rough) {
                 add(1, new TopCheck()); // May set topStaff
                 add(1, new BottomCheck()); // May set botStaff
                 add(1, new AnchorCheck()); // Reads topStaff & botStaff
-                add(1, new TopLeftChunkCheck());
-                add(1, new TopRightChunkCheck());
-                add(1, new BottomLeftChunkCheck());
-                add(1, new BottomRightChunkCheck());
             }
 
             if (logger.isFineEnabled()) {

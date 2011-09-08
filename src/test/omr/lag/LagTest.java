@@ -296,7 +296,7 @@ public class LagTest
             "Vertical",
             Orientation.VERTICAL,
             new Dimension(20, 20));
-        vLag.setRuns(table);
+        vLag.addRuns(table);
 
         MySection s1 = vLag.createSection(1, createRun(table, 1, 2, 5));
         s1.append(createRun(table, 2, 0, 3));
@@ -328,7 +328,7 @@ public class LagTest
             "Vertical",
             Orientation.VERTICAL,
             new Dimension(20, 20));
-        vLag.setRuns(table);
+        vLag.addRuns(table);
 
         MySection s1 = vLag.createSection(1, createRun(table, 1, 2, 5));
         s1.append(createRun(table, 2, 0, 3));

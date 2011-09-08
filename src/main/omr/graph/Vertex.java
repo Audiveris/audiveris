@@ -15,9 +15,13 @@ import omr.log.Logger;
 
 import net.jcip.annotations.NotThreadSafe;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 
 /**
  * Class <code>Vertex</code> encapsulates a Vertex (or Node) in a directed
@@ -502,16 +506,6 @@ public abstract class Vertex<D extends Digraph, V extends Vertex<D, V, SIG>, SIG
     protected String internalsString ()
     {
         StringBuilder sb = new StringBuilder(100);
-
-        if (this.getGraph()
-                .isVertexCurrent(id)) {
-            sb.append(" current");
-        }
-
-        if (this.getGraph()
-                .isVertexOld(id)) {
-            sb.append(" old");
-        }
 
         sb.append(" ")
           .append(getInDegree());

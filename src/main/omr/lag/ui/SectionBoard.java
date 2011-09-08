@@ -80,6 +80,9 @@ public class SectionBoard
 
     //~ Instance fields --------------------------------------------------------
 
+    /** Underlying lag */
+    protected final Lag lag;
+
     /** Counter of section selection */
     protected final JLabel count = new JLabel("");
 
@@ -156,14 +159,12 @@ public class SectionBoard
      * Create a Section Board, initially collapsed
      *
      * @param unitName name for the owning unit
-     * @param maxSectionId the upper bound for section id
      * @param lag the related lag
      */
     public SectionBoard (String unitName,
-                         int    maxSectionId,
                          Lag    lag)
     {
-        this(unitName, maxSectionId, lag, false);
+        this(unitName, lag, false);
     }
 
     //--------------//
@@ -173,12 +174,10 @@ public class SectionBoard
      * Create a Section Board
      *
      * @param unitName name for the owning unit
-     * @param maxSectionId the upper bound for section id
      * @param lag the related lag
      * @param expanded true for initially expanded, false for collapsed
      */
     public SectionBoard (String    unitName,
-                         int       maxSectionId,
                          final Lag lag,
                          boolean   expanded)
     {
@@ -188,6 +187,8 @@ public class SectionBoard
             lag.getSelectionService(),
             eventClasses,
             expanded);
+
+        this.lag = lag;
 
         // Dump button
         dump.setToolTipText("Dump this section");
@@ -234,7 +235,7 @@ public class SectionBoard
                         }
                     }
                 });
-        id.setModel(new SpinnerNumberModel(0, 0, maxSectionId, 1));
+        id.setModel(new SpinnerNumberModel(0, 0, lag.getLastVertexId(), 1));
 
         // Relation
         if (constants.hideRelationFields.getValue()) {
@@ -283,6 +284,19 @@ public class SectionBoard
         } catch (Exception ex) {
             logger.warning(getClass().getName() + " onEvent error", ex);
         }
+    }
+
+    //-------------//
+    // updateModel //
+    //-------------//
+    /**
+     * Update the id spinner model when the lag has modified its collection
+     * of sections
+     */
+    public void updateModel ()
+    {
+        SpinnerNumberModel model = (SpinnerNumberModel) id.getModel();
+        model.setMaximum(lag.getLastVertexId());
     }
 
     //--------------//
