@@ -278,7 +278,7 @@ public class SpinnerGlyphModel
             currentId = id;
             fireStateChanged();
         } else {
-            logger.warning("Invalid spinner element : " + id);
+            logger.warning("Invalid glyph id: " + id);
         }
     }
 

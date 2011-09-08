@@ -261,8 +261,7 @@ public class LinesRetriever
     /**
      * Logically remove the pixels that compose the staff lines
      */
-    public void removeLines (GridView     view,
-                             SectionBoard hLagSectionBoard)
+    public void removeLines (GridView view)
     {
         StopWatch watch = new StopWatch("removeLines");
 
@@ -270,9 +269,7 @@ public class LinesRetriever
             // Build sections out of purgedHoriTable (too short horizontal runs)
             watch.start("create shortSections");
 
-            List<GlyphSection> shortSections = createShortSections(
-                view,
-                hLagSectionBoard);
+            List<GlyphSection> shortSections = createShortSections(view);
 
             // Dispatch sections into thick & thin ones
             watch.start(
@@ -641,11 +638,9 @@ public class LinesRetriever
     /**
      * Build horizontal sections out of purgedHoriTable runs
      * @param view the LagView to augment with new section views
-     * @param hLagSectionBoard the section board model to update
      * @return the list of created sections
      */
-    private List<GlyphSection> createShortSections (GridView     view,
-                                                    SectionBoard hLagSectionBoard)
+    private List<GlyphSection> createShortSections (GridView view)
     {
         // Augment the horizontal hLag
         GlyphSectionsBuilder sectionsBuilder = new GlyphSectionsBuilder(
@@ -660,7 +655,6 @@ public class LinesRetriever
         }
 
         view.colorizeAllSections();
-        hLagSectionBoard.updateModel();
 
         setVipSections();
 

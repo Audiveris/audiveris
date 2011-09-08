@@ -33,7 +33,7 @@ import omr.stick.StickSection;
 
 import omr.ui.Board;
 import omr.ui.field.LIntegerField;
-import static omr.ui.field.SpinnerUtilities.*;
+import omr.ui.field.SpinnerUtilities;
 import omr.ui.util.Panel;
 
 import omr.util.Implement;
@@ -55,7 +55,6 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
-import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -218,7 +217,7 @@ public class SectionBoard
         dump.setEnabled(false); // Until a section selection is made
 
         // ID Spinner
-        id.setToolTipText("General spinner for any glyph id");
+        id.setToolTipText("General spinner for any section id");
         id.addChangeListener(
             new ChangeListener() {
                     public void stateChanged (ChangeEvent e)
@@ -244,7 +243,9 @@ public class SectionBoard
                         }
                     }
                 });
-        id.setModel(new SpinnerNumberModel(0, 0, lag.getLastVertexId(), 1));
+        id.setModel(new SpinnerSectionModel(lag));
+        SpinnerUtilities.setEditable(id, true);
+        SpinnerUtilities.setRightAlignment(id);
 
         // Relation
         if (constants.hideRelationFields.getValue()) {
@@ -293,19 +294,6 @@ public class SectionBoard
         } catch (Exception ex) {
             logger.warning(getClass().getName() + " onEvent error", ex);
         }
-    }
-
-    //-------------//
-    // updateModel //
-    //-------------//
-    /**
-     * Update the id spinner model when the lag has modified its collection
-     * of sections
-     */
-    public void updateModel ()
-    {
-        SpinnerNumberModel model = (SpinnerNumberModel) id.getModel();
-        model.setMaximum(lag.getLastVertexId());
     }
 
     //--------------//
@@ -394,7 +382,7 @@ public class SectionBoard
                 if (idSelecting) {
                     id.setValue(sectionId);
                 } else {
-                    id.setValue(NO_VALUE);
+                    id.setValue(SpinnerUtilities.NO_VALUE);
                 }
 
                 if (constants.hideRelationFields.getValue()) {

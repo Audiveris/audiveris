@@ -78,12 +78,6 @@ public class GridBuilder
     /** The grid display if any */
     private GridView gridView;
 
-    /** Section board for hLag */
-    private SectionBoard hLagSectionBoard;
-
-    /** The bars display if any */
-    private BarsView barsView;
-
     //~ Constructors -----------------------------------------------------------
 
     //-------------//
@@ -122,7 +116,6 @@ public class GridBuilder
 
             // Display
             if (constants.displayFrame.getValue() && (Main.getGui() != null)) {
-                displayBarsView();
                 displayGridView();
             }
 
@@ -149,7 +142,7 @@ public class GridBuilder
 
             // Remove the staff lines
             watch.start("removeLines");
-            linesRetriever.removeLines(gridView, hLagSectionBoard);
+            linesRetriever.removeLines(gridView);
         } catch (Exception ex) {
             logger.warning("Error in GridBuilder", ex);
             ex.printStackTrace();
@@ -161,11 +154,6 @@ public class GridBuilder
             if (gridView != null) {
                 // Update the display
                 gridView.refresh();
-            }
-
-            if (barsView != null) {
-                // Update the display
-                barsView.refresh();
             }
         }
     }
@@ -221,33 +209,6 @@ public class GridBuilder
     }
 
     //-----------------//
-    // displayBarsView //
-    //-----------------//
-    private void displayBarsView ()
-    {
-        GlyphLag         vLag = barsRetriever.getLag();
-        GlyphsController controller = new GlyphsController(
-            new GlyphsModel(sheet, vLag, Steps.valueOf(Steps.GRID)));
-
-        // Create a view
-        barsView = new BarsView(vLag, barsRetriever, null, controller);
-        barsView.colorizeAllSections();
-
-        // Boards
-        final String  unit = sheet.getId() + ":BarsBuilder";
-        BoardsPane    boardsPane = new BoardsPane(
-            new PixelBoard(unit, sheet),
-            new RunBoard(unit, vLag, true),
-            new SectionBoard(unit, vLag, true),
-            new GlyphBoard(unit, controller, null, false));
-
-        // Create a hosting frame for the view
-        ScrollLagView slv = new ScrollLagView(barsView);
-        sheet.getAssembly()
-             .addViewTab("Bars", slv, boardsPane);
-    }
-
-    //-----------------//
     // displayGridView //
     //-----------------//
     private void displayGridView ()
@@ -256,8 +217,8 @@ public class GridBuilder
         GlyphLag         vLag = barsRetriever.getLag();
         GlyphsController hController = new GlyphsController(
             new GlyphsModel(sheet, hLag, Steps.valueOf(Steps.GRID)));
-        //        GlyphsController vController = new GlyphsController(
-        //            new GlyphsModel(sheet, vLag, Steps.valueOf(Steps.GRID)));
+        GlyphsController vController = new GlyphsController(
+            new GlyphsModel(sheet, vLag, Steps.valueOf(Steps.GRID)));
 
         // Create a view
         gridView = new GridView(
@@ -270,18 +231,16 @@ public class GridBuilder
         gridView.colorizeAllSections();
 
         // Boards
-        final String unit = sheet.getId() + ":GridBuilder";
-        hLagSectionBoard = new SectionBoard(unit, hLag, true);
+        final String  unit = sheet.getId() + ":GridBuilder";
 
         BoardsPane    boardsPane = new BoardsPane(
             new PixelBoard(unit, sheet),
             new RunBoard(unit, hLag, true),
-            hLagSectionBoard,
-            new GlyphBoard(unit, hController, null, false)//                ,
-        //            new RunBoard(unit, vLag, true),
-        //            new SectionBoard(unit, vLag, true),
-        //            new GlyphBoard(unit, vController, null, false)
-        );
+            new SectionBoard(unit, hLag, true),
+            new GlyphBoard(unit, hController, null, false),
+            new RunBoard(unit, vLag, true),
+            new SectionBoard(unit, vLag, true),
+            new GlyphBoard(unit, vController, null, false));
 
         // Create a hosting frame for the view
         ScrollLagView slv = new ScrollLagView(gridView);

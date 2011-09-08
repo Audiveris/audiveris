@@ -16,6 +16,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
+import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 import omr.glyph.ui.GlyphLagView;
 import omr.glyph.ui.GlyphsController;
@@ -35,6 +36,7 @@ import omr.selection.MouseMovement;
 import omr.selection.RunEvent;
 import omr.selection.SectionEvent;
 import omr.selection.SelectionHint;
+import omr.selection.SelectionService;
 import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
 
@@ -150,8 +152,8 @@ public class GridView
 
             // All staff glyphs candidates
             for (Glyph glyph : lag.getActiveGlyphs()) {
-//                Color color = (glyph.getShape() == Shape.STAFF_LINE)
-//                              ? horiShapeColor : horizontalColor;
+                //                Color color = (glyph.getShape() == Shape.STAFF_LINE)
+                //                              ? horiShapeColor : horizontalColor;
                 glyph.colorize(viewIndex, horiShapeColor);
             }
 
@@ -254,6 +256,7 @@ public class GridView
                                     int          viewIndex)
     {
         SectionView view = (SectionView) section.getView(viewIndex);
+        Glyph       glyph = section.getGlyph();
 
         // Determine section color
         Color color;
@@ -261,6 +264,15 @@ public class GridView
         if (section.getGraph()
                    .isVertical()) {
             color = verticalColor;
+
+            if (glyph != null) {
+                Shape shape = glyph.getShape();
+
+                if ((shape == Shape.THICK_BARLINE) ||
+                    (shape == Shape.THIN_BARLINE)) {
+                    color = vertShapeColor;
+                }
+            }
         } else {
             if (section.isGlyphMember()) {
                 color = Color.WHITE; ///horizontalColor;
@@ -282,6 +294,7 @@ public class GridView
             g,
             constants.showTangents.getValue(),
             constants.showPatterns.getValue());
+        barsRetriever.renderItems(g, constants.showTangents.getValue());
     }
 
     //-------------//
@@ -290,8 +303,7 @@ public class GridView
     /**
      * Interest in sheet location => run, section, glyph
      *
-     * This is meant for vLag only, however the various boards (run, section,
-     * glyph) are tied to the hLag! This is OK for output, not for user input!
+     * This is meant for vLag only
      * @param sheetLocation
      */
     private void handleEvent (SheetLocationEvent sheetLocationEvent)
@@ -309,13 +321,8 @@ public class GridView
             return;
         }
 
-        // Let's not overwrite hLag stuff if any
-        if (getLag()
-                .getSelectedSection() != null) {
-            return;
-        }
-
-        Glyph glyph = null;
+        SelectionService service = vLag.getSelectionService();
+        Glyph            glyph = null;
 
         if ((rect.width > 0) || (rect.height > 0)) {
             // This is a non-degenerated rectangle
@@ -324,8 +331,8 @@ public class GridView
             // Publish Glyph (and the related 1-glyph GlyphSet)
             glyph = glyphsFound.isEmpty() ? null : glyphsFound.iterator()
                                                               .next();
-            ////////////////////////////////vLag.getSelectionService().
-            publish(new GlyphEvent(this, hint, movement, glyph));
+            logger.info("glyph: " + glyph);
+            service.publish(new GlyphEvent(this, hint, movement, glyph));
         } else {
             // This is just a point, look for section & glyph
             PixelPoint   pt = rect.getLocation();
@@ -336,20 +343,19 @@ public class GridView
             // Publish Run information
             Point orientedPt = vLag.oriented(pt);
             Run   run = (section != null) ? section.getRunAt(orientedPt.y) : null;
-            ////////////////////////////////vLag.getSelectionService().
-            publish(new RunEvent(this, hint, movement, run));
+            vLag.getRunSelectionService()
+                .publish(new RunEvent(this, hint, movement, run));
 
             // Publish Section information
-            ////////////////////////////////vLag.getSelectionService().
-            publish(
+            service.publish(
                 new SectionEvent<GlyphSection>(this, hint, movement, section));
 
+            // Publish Glyph information
             if (section != null) {
-                // Publish Glyph information
                 glyph = section.getGlyph();
-                ////////////////////////////////vLag.getSelectionService().
-                publish(new GlyphEvent(this, hint, movement, glyph));
             }
+
+            service.publish(new GlyphEvent(this, hint, movement, glyph));
         }
     }
 

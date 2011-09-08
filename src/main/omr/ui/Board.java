@@ -181,10 +181,9 @@ public abstract class Board
                 UserEvent event = (UserEvent) selectionService.getLastEvent(
                     eventClass);
 
-                ///logger.warning("reading (" + eventClass.getSimpleName() + ") " + event);
                 if (event != null) {
                     event.movement = null;
-                    output(event);
+                    onEvent(event);
                 }
             }
         }
@@ -218,18 +217,6 @@ public abstract class Board
         if (!groom.expanded) {
             groom.actionPerformed(null);
         }
-    }
-
-    //--------//
-    // output //
-    //--------//
-    /**
-     * Used to simply fill the board output fields with the current event
-     * @param event the event whose information is to be displayed
-     */
-    public void output (UserEvent event)
-    {
-        onEvent(event); // By default
     }
 
     //----------//
@@ -360,9 +347,6 @@ public abstract class Board
 
         //~ Methods ------------------------------------------------------------
 
-        //--------------//
-        // defineLayout //
-        //--------------//
         private void defineLayout ()
         {
             /** Groom of the board */
