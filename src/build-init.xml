@@ -26,9 +26,9 @@
     <!-- Load the environment variables -->
     <property environment="env"/>
     
-    <!-- Tools classpath -->
-    <path id="tools.classpath">
-      <fileset dir="${audi-lib.dir}">
+    <!-- Externals classpath -->
+    <path id="externals.classpath">
+      <fileset dir="${externals.dir}">
         <include name="**/*.jar"/>
       </fileset>
     </path>
@@ -42,6 +42,13 @@
 
         <!-- Create the time stamp -->
         <tstamp/>
+
+	<!-- Remember if Hg is not present -->
+	<condition property="no.hg.present">
+	    <not>
+		<available file="${hg.dir}" />
+	    </not>
+	</condition>
 
     </target>
     

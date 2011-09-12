@@ -26,37 +26,19 @@
 
     <!-- Load the environment variables -->
     <property environment="env"/>
-    
-    <!-- Build classpath -->
-    <path id="build.classpath">
-<!--         <pathelement path="${build.classes.dir}"/> -->
-        <path refid="tools.classpath"/>
-    </path>
-<!--     <property name="javac.classpath" refid="build.classpath"/> -->
-    
-    <!-- Build Test classpath -->
-    <path id="build.test.classpath">
-	<pathelement location="${junit.jar}"  /> 
-        <pathelement path="${build.test.classes.dir}"/>
-        <path refid="build.classpath"/>
-    </path>
-    
-    <!-- Jar classpath -->
-    <path id="jar.classpath">
-        <path refid="tools.classpath"/>
-        <pathelement path="${icons.buttons.jar}"/>
-    </path>
-    
-    <!-- Run classpath -->
+        
+    <!-- Run classpath, to run the application from the jar file -->
     <path id="run.classpath">
         <pathelement path="${dist.jar}"/>
-        <path refid="jar.classpath"/>
+        <path refid="externals.classpath"/>
     </path>
     
-    <!-- Run Test classpath -->
-    <path id="run.test.classpath">
-        <path refid="build.test.classpath"/>
-        <pathelement path="${dist.jar}"/>
+    <!-- Test classpath, to compile and run unit tests from class files -->
+    <path id="test.classpath">
+        <path refid="externals.classpath"/>
+	<pathelement location="${junit.jar}"  /> 
+        <pathelement path="${build.test.classes.dir}"/>
+        <pathelement path="${build.classes.dir}"/>
     </path>
     
     <!-- ================================================================ -->
@@ -65,22 +47,6 @@
 
     <!-- Load internal targets common to Emacs and NetBeans -->
     <import file="${dev.dir}/build-common.xml"/>
-    
-    <!-- ========================= -->
-    <!--  - C L E A N - B U I L D  -->
-    <!-- ========================= -->
-    <target name="-clean-build">
-	<!-- description="Remove all build generated outputs." -->
-        <delete verbose="${verbose}" dir="${build.dir}"/>
-    </target>
-
-    <!-- ======================= -->
-    <!--  - C L E A N - D I S T  -->
-    <!-- ======================= -->
-    <target name="-clean-dist">
-<!--         description="Remove all dist generated outputs." -->
-        <delete verbose="${verbose}" dir="${dist.dir}"/>
-    </target>
     
     <!-- ================= -->
     <!--  - C O M P I L E  -->
@@ -95,7 +61,7 @@
         <mkdir dir="${dist.dir}/lib"/>
 	
 	<copy todir="${dist.dir}/lib">
-	    <fileset dir="${audi-lib.dir}"/>
+	    <fileset dir="${externals.dir}"/>
 	</copy>
 
     </target>
@@ -128,7 +94,7 @@
 	    includeantruntime = "false"
 	    encoding     = "${build.encoding}"
 	    target       = "${javac.target}"
-            classpathref = "build.classpath"
+            classpathref = "externals.classpath"
             debug        = "${build.compile.debug}"
             deprecation  = "${build.compile.deprecation}"
             destdir      = "${build.classes.dir}"
@@ -146,7 +112,7 @@
 	    includeantruntime = "false"
 	    encoding     = "${build.encoding}"
 	    target       = "${javac.target}"
-            classpathref = "build.classpath"
+            classpathref = "externals.classpath"
             debug        = "${build.compile.debug}"
             deprecation  = "${build.compile.deprecation}"
             destdir      = "${build.classes.dir}"
@@ -173,7 +139,7 @@
 	    includeantruntime = "false"
 	    encoding     = "${build.encoding}"
 	    target       = "${javac.target}"
-            classpathref = "build.test.classpath"
+            classpathref = "test.classpath"
             debug        = "${build.compile.debug}"
             deprecation  = "${build.compile.deprecation}"
             destdir      = "${build.test.classes.dir}"
@@ -200,9 +166,14 @@
     <!--  C L E A N  -->
     <!-- =========== -->
     <target name="clean"
-            depends="-clean-build, -clean-dist, -clean-jars"
+            depends="-clean-jars"
 	    description="Remove all the generated outputs.">
-        <delete verbose="${verbose}" file="${basedir}/manifest.mf"/>	
+	<!-- Remove build folder -->
+        <delete verbose="${verbose}" dir="${build.dir}"/>
+	
+	<!-- Remove dist folder -->
+        <delete verbose="${verbose}" dir="${dist.dir}"/>
+	
     </target>
 
     <!-- =================== -->
@@ -237,12 +208,20 @@
         description="Compile and generate the application jar file.">
 
 	<!-- Prepare the proper string of all companion jar files -->
-        <pathconvert pathsep=" " refid="jar.classpath" property="jar.string">
+        <pathconvert pathsep=" " refid="externals.classpath" property="externals.string">
             <chainedmapper>
                 <flattenmapper/>
                 <globmapper from="*" to="lib/*"/>
             </chainedmapper>
         </pathconvert>
+
+	<!-- Define the property to use as Implementation-Version -->
+        <condition
+	    property="hg-tip-string"
+	    value="${ant4hg.log.revision}:${ant4hg.log.changeset}"
+	    else="unknown">
+            <available file="${hg.dir}"/>
+        </condition>
 
         <!-- Put all ${build.classes.dir} into the application jar file -->
         <jar basedir="${build.classes.dir}"
@@ -251,15 +230,15 @@
                 <attribute name="Main-Class"
                            value="${Name}"/>
                 <attribute name="Class-Path"
-                           value="${jar.string}"/>
+                           value="${externals.string}"/>
                 <attribute name="Built-By"
                            value="${build.owner}"/>
                 <attribute name="Specification-Title"
                            value="${spec.title}"/>
                 <attribute name="Specification-Version"
                            value="${spec.version}"/>
-                <attribute name="Implementation-Version"
-                           value="${ant4hg.log.revision}:${ant4hg.log.changeset}"/>
+		<attribute name="Implementation-Version"
+			   value="${hg-tip-string}"/>
             </manifest>
         </jar>
         
@@ -271,14 +250,6 @@
     <target name="javadoc"
 	    depends="-javadoc-build, -post-javadoc, -post-post-javadoc"
 	    description="Generate project documentation."/>
-    
-    <!-- =========== -->
-    <!--  R E J A R  -->
-    <!-- =========== -->
-    <target name="rejar"
-        depends="-clean-build, jar"
-        description="Rebuild jar file from scratch.">
-    </target>
     
     <!-- ======= -->
     <!--  R U N  -->
@@ -342,7 +313,7 @@
         <junit
 	    printsummary="yes"
 	    haltonfailure="no" >
-            <classpath refid="run.test.classpath"/>
+            <classpath refid="test.classpath"/>
             <formatter type="plain" usefile="false"/>
             <formatter type="xml"/>
  	    

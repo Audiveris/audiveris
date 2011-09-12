@@ -134,7 +134,7 @@
 
 	<!-- Build the listing of lib (lib.dir) -->
 	<pathconvert pathsep="${line.separator}" property="lib-dir">
-	    <fileset dir="${audi-lib.dir}">
+	    <fileset dir="${externals.dir}">
  		<include name="*.jar"/>
  	    </fileset>
 	    <chainedmapper>
@@ -151,7 +151,7 @@
 	</checksum>
 	<checksum todir="${jars.dir}/lib"
 		  totalproperty="lib-md5">
-	    <fileset dir="${audi-lib.dir}">
+	    <fileset dir="${externals.dir}">
 		<include name="*.jar"/>
 	    </fileset>
 	</checksum>
@@ -345,7 +345,7 @@
             
             <classpath>
                 <path path="${javac.classpath}"/>
-		<path refid="tools.classpath"/>
+		<path refid="externals.classpath"/>
             </classpath>
             <sourcepath>
                 <pathelement location="${src.dir}"/>
@@ -536,11 +536,12 @@ endlocal
     <!-- =============== -->
     <!--  - H G - T I P  -->
     <!-- =============== -->
-    <target name="-hg-tip">
+    <target name="-hg-tip"
+	    unless="no.hg.present">
 	<!-- description="Retrieve Hg tip revision" -->
         
         <taskdef name="hg"
-		 classpathref="tools.classpath"
+		 classpathref="externals.classpath"
                  classname="net.sourceforge.ant4hg.taskdefs.HgTask">           
         </taskdef>
         
