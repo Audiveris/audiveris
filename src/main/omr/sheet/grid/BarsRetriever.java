@@ -189,14 +189,18 @@ public class BarsRetriever
             // Retrieve bars
             retrieveBars();
         } catch (Exception ex) {
-            logger.warning("BarsRetriever cannot retrieveBars", ex);
+            logger.warning(
+                sheet.getLogPrefix() + "BarsRetriever cannot retrieveBars",
+                ex);
         }
 
         try {
             // Detect systems of staves aggregated via barlines
             retrieveSystems();
         } catch (Exception ex) {
-            logger.warning("BarsRetriever cannot retrieveSystems", ex);
+            logger.warning(
+                sheet.getLogPrefix() + "BarsRetriever cannot retrieveSystems",
+                ex);
         }
 
         // Adjust precise sides for systems, staves & lines

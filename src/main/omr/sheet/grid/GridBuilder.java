@@ -17,6 +17,7 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLag;
+import omr.glyph.GlyphSection;
 import omr.glyph.GlyphsModel;
 import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphsController;
@@ -40,6 +41,8 @@ import omr.step.Steps;
 import omr.ui.BoardsPane;
 
 import omr.util.StopWatch;
+
+import java.util.List;
 
 /**
  * Class <code>GridBuilder</code> computes the grid of systems of a sheet
@@ -127,24 +130,30 @@ public class GridBuilder
             watch.start("barsRetriever");
             barsRetriever.buildInfo();
 
+            // Complete the staff lines
+            watch.start("completeLines");
+
+            List<GlyphSection> newSections = linesRetriever.completeLines();
+
+            // Update grid view with new horizontal sections
+            if (gridView != null) {
+                for (GlyphSection section : newSections) {
+                    gridView.addSectionView(section);
+                }
+            }
+
             // Define the destination grid, if so desired
             if (constants.buildDewarpedTarget.isSet()) {
                 watch.start("targetBuilder");
 
                 /** Companion in charge of target grid */
-                TargetBuilder targetBuilder = new TargetBuilder(
-                    sheet,
-                    barsRetriever);
+                TargetBuilder targetBuilder = new TargetBuilder(sheet);
 
                 sheet.setTargetBuilder(targetBuilder);
                 targetBuilder.buildInfo();
             }
-
-            // Remove the staff lines
-            watch.start("removeLines");
-            linesRetriever.removeLines(gridView);
         } catch (Exception ex) {
-            logger.warning("Error in GridBuilder", ex);
+            logger.warning(sheet.getLogPrefix() + "Error in GridBuilder", ex);
             ex.printStackTrace();
         } finally {
             if (constants.printWatch.isSet()) {
@@ -153,6 +162,7 @@ public class GridBuilder
 
             if (gridView != null) {
                 // Update the display
+                gridView.colorizeAllSections();
                 gridView.refresh();
             }
         }

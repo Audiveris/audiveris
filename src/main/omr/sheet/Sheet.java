@@ -78,7 +78,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * Class <code>Sheet</code> is the corner stone for Sheet processing, keeping
- * pointers to all processings related to the image.
+ * pointers to all processings related to the image, and to their results.
  *
  * @author Hervé Bitteur
  */
@@ -188,7 +188,9 @@ public class Sheet
     // Sheet //
     //-------//
     /**
-     * Create a new <code>Sheet</code> instance, based on a given image.
+     * Create a new <code>Sheet</code> instance, based on a couple made of
+     * an image (the original pixel input) and a page (the score entities 
+     * output).
      *
      * @param page the related score page
      * @param image the already loaded image
@@ -203,8 +205,6 @@ public class Sheet
         selectionService = new SelectionService("sheet " + page.getId());
         staffManager = new StaffManager(this);
         systemManager = new SystemManager(this);
-
-        // Related bench at sheet level
         bench = new SheetBench(this);
 
         // Update UI information if so needed

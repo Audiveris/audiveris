@@ -10,6 +10,8 @@ syntax: regexp
 \.rej$
 benches
 bugs
+dewarped
+dewarping
 dist
 excerpts
 jars

@@ -67,8 +67,8 @@ public class ClustersRetriever
     private static final Logger logger = Logger.getLogger(
         ClustersRetriever.class);
 
-    /** Stroke for drawing patterns */
-    private static final Stroke patternStroke = new BasicStroke(0.5f);
+    /** Stroke for drawing combs */
+    private static final Stroke combStroke = new BasicStroke(0.5f);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -104,7 +104,7 @@ public class ClustersRetriever
     /** Scale-dependent constants */
     private final Parameters params;
 
-    /** Picture width to sample for patterns */
+    /** Picture width to sample for combs */
     private final int pictureWidth;
 
     /** Long filaments to process */
@@ -117,13 +117,13 @@ public class ClustersRetriever
     private final Skew skew;
 
     /** A map (colIndex -> vertical list of samples), sorted on colIndex */
-    private Map<Integer, List<FilamentPattern>> colPatterns;
+    private Map<Integer, List<FilamentComb>> colCombs;
 
-    /** Color used for pattern display */
-    private final Color patternColor;
+    /** Color used for comb display */
+    private final Color combColor;
 
     /**
-     * The popular size of patterns detected for the specified interline
+     * The popular size of combs detected for the specified interline
      * (typically: 4, 5 or 6)
      */
     private int popSize;
@@ -145,22 +145,22 @@ public class ClustersRetriever
      * @param sheet the sheet to process
      * @param filaments the current collection of filaments
      * @param interline the precise interline to be processed
-     * @param patternColor color to be used for patterns display
+     * @param combColor color to be used for combs display
      */
     public ClustersRetriever (Sheet              sheet,
                               List<LineFilament> filaments,
                               int                interline,
-                              Color              patternColor)
+                              Color              combColor)
     {
         this.sheet = sheet;
         this.filaments = filaments;
         this.interline = interline;
-        this.patternColor = patternColor;
+        this.combColor = combColor;
 
         skew = sheet.getSkew();
         pictureWidth = sheet.getWidth();
         scale = sheet.getScale();
-        colPatterns = new TreeMap<Integer, List<FilamentPattern>>();
+        colCombs = new TreeMap<Integer, List<FilamentComb>>();
 
         params = new Parameters(scale);
     }
@@ -197,21 +197,21 @@ public class ClustersRetriever
     //-----------//
     public List<LineFilament> buildInfo ()
     {
-        // Retrieve all vertical patterns of filaments
-        retrievePatterns();
+        // Retrieve all vertical combs gathering filaments
+        retrieveCombs();
 
-        // Remember the most popular length 
+        // Remember the most popular comb length
         retrievePopularSize();
 
         // Check relevance
         if ((popSize < 4) || (popSize > 6)) {
-            logger.warning("Giving up spurious line pattern size: " + popSize);
+            logger.warning("Giving up spurious line comb size: " + popSize);
 
             return discardedFilaments;
         }
 
-        // Interconnect filaments via the network of patterns
-        followPatternsNetwork();
+        // Interconnect filaments via the network of combs
+        followCombsNetwork();
 
         // Retrieve clusters
         retrieveClusters();
@@ -248,27 +248,27 @@ public class ClustersRetriever
     // renderItems //
     //-------------//
     /**
-     * Render the vertical patterns of filaments
+     * Render the vertical combs of filaments
      * @param g graphics context
      */
     void renderItems (Graphics2D g)
     {
         Stroke oldStroke = g.getStroke();
-        g.setStroke(patternStroke);
-        g.setColor(patternColor);
+        g.setStroke(combStroke);
+        g.setColor(combColor);
 
-        for (Entry<Integer, List<FilamentPattern>> entry : colPatterns.entrySet()) {
+        for (Entry<Integer, List<FilamentComb>> entry : colCombs.entrySet()) {
             int col = entry.getKey();
             int x = colX[col];
 
-            for (FilamentPattern pattern : entry.getValue()) {
-                ///if (pattern.getCount() == popLength) {
+            for (FilamentComb comb : entry.getValue()) {
+                ///if (comb.getCount() == popLength) {
                 g.draw(
                     new Line2D.Double(
                         x,
-                        pattern.getY(0),
+                        comb.getY(0),
                         x,
-                        pattern.getY(pattern.getCount() - 1)));
+                        comb.getY(comb.getCount() - 1)));
 
                 ///}
             }
@@ -440,13 +440,13 @@ public class ClustersRetriever
             if (oneAnc.getLength() >= twoAnc.getLength()) {
                 ///logger.info("Inclusion " + twoAnc + " into " + oneAnc);
                 oneAnc.include(twoAnc);
-                oneAnc.getPatterns()
-                      .putAll(twoAnc.getPatterns());
+                oneAnc.getCombs()
+                      .putAll(twoAnc.getCombs());
             } else {
                 ///logger.info("Inclusion " + oneAnc + " into " + twoAnc);
                 twoAnc.include(oneAnc);
-                twoAnc.getPatterns()
-                      .putAll(oneAnc.getPatterns());
+                twoAnc.getCombs()
+                      .putAll(oneAnc.getCombs());
             }
         }
     }
@@ -461,7 +461,7 @@ public class ClustersRetriever
         for (LineFilament fil : filaments) {
             fil = fil.getAncestor();
 
-            if ((fil.getCluster() == null) && !fil.getPatterns()
+            if ((fil.getCluster() == null) && !fil.getCombs()
                                                   .isEmpty()) {
                 LineCluster cluster = new LineCluster(interline, fil);
                 clusters.add(cluster);
@@ -639,39 +639,39 @@ public class ClustersRetriever
         }
     }
 
-    //-----------------------//
-    // followPatternsNetwork //
-    //-----------------------//
+    //--------------------//
+    // followCombsNetwork //
+    //--------------------//
     /**
-     * Use the network of patterns and filaments to interconnect filaments via
-     * common patterns
+     * Use the network of combs and filaments to interconnect filaments via
+     * common combs
      */
-    private void followPatternsNetwork ()
+    private void followCombsNetwork ()
     {
         if (logger.isFineEnabled()) {
-            logger.info("Following patterns network");
+            logger.info("Following combs network");
         }
 
         for (LineFilament fil : filaments) {
-            Map<Integer, FilamentPattern> patterns = fil.getPatterns();
+            Map<Integer, FilamentComb> combs = fil.getCombs();
 
             // Sequence of lines around the filament, indexed by relative pos
-            Map<Integer, LineFilament>    lines = new TreeMap<Integer, LineFilament>();
+            Map<Integer, LineFilament> lines = new TreeMap<Integer, LineFilament>();
 
-            // Loop on all patterns this filament is involved in
-            for (FilamentPattern pattern : patterns.values()) {
-                int posPivot = pattern.getIndex(fil);
+            // Loop on all combs this filament is involved in
+            for (FilamentComb comb : combs.values()) {
+                int posPivot = comb.getIndex(fil);
 
-                for (int pos = 0; pos < pattern.getCount(); pos++) {
+                for (int pos = 0; pos < comb.getCount(); pos++) {
                     int line = pos - posPivot;
 
                     if (line != 0) {
                         LineFilament f = lines.get(line);
 
                         if (f != null) {
-                            connectAncestors(f, pattern.getFilament(pos));
+                            connectAncestors(f, comb.getFilament(pos));
                         } else {
-                            lines.put(line, pattern.getFilament(pos));
+                            lines.put(line, comb.getFilament(pos));
                         }
                     }
                 }
@@ -862,7 +862,7 @@ public class ClustersRetriever
     // retrieveClusters //
     //------------------//
     /**
-     * Connect filaments via the patterns they are involved in,
+     * Connect filaments via the combs they are involved in,
      * and come up with clusters of lines
      */
     private void retrieveClusters ()
@@ -897,6 +897,84 @@ public class ClustersRetriever
         }
     }
 
+    //---------------//
+    // retrieveCombs //
+    //---------------//
+    /**
+     * Detect regular patterns of (staff) lines.
+     * Use vertical sampling on regularly-spaced abscissae
+     */
+    private void retrieveCombs ()
+    {
+        /** Minimum acceptable delta y */
+        int dMin = (int) Math.floor(
+            interline * (1 - constants.maxJitter.getValue()));
+
+        /** Maximum acceptable delta y */
+        int dMax = (int) Math.ceil(
+            interline * (1 + constants.maxJitter.getValue()));
+
+        /** Number of vertical samples to collect */
+        int sampleCount = -1 +
+                          (int) Math.rint(
+            (double) pictureWidth / params.samplingDx);
+
+        /** Exact columns abscissae */
+        colX = new int[sampleCount + 1];
+
+        /** Precise x interval */
+        double samplingDx = (double) pictureWidth / (sampleCount + 1);
+
+        for (int col = 1; col <= sampleCount; col++) {
+            final List<FilamentComb> colList = new ArrayList<FilamentComb>();
+            colCombs.put(col, colList);
+
+            final int x = (int) Math.rint(samplingDx * col);
+            colX[col] = x;
+
+            // Retrieve Filaments with ordinate at x, sorted by increasing y
+            List<FilY>   filys = retrieveFilamentsAtX(x);
+
+            // Second, check y deltas to detect combs
+            FilamentComb comb = null;
+            FilY         prevFily = null;
+
+            for (FilY fily : filys) {
+                if (prevFily != null) {
+                    int dy = (int) Math.rint(fily.y - prevFily.y);
+
+                    if ((dy >= dMin) && (dy <= dMax)) {
+                        if (comb == null) {
+                            // Start of a new comb
+                            comb = new FilamentComb(col);
+                            colList.add(comb);
+                            comb.append(prevFily.filament, prevFily.y);
+
+                            if (prevFily.filament.isVip()) {
+                                logger.info(
+                                    "Created " + comb + " with " +
+                                    prevFily.filament);
+                            }
+                        }
+
+                        // Extend comb
+                        comb.append(fily.filament, fily.y);
+
+                        if (fily.filament.isVip()) {
+                            logger.info(
+                                "Appended " + fily.filament + " to " + comb);
+                        }
+                    } else {
+                        // No comb active
+                        comb = null;
+                    }
+                }
+
+                prevFily = fily;
+            }
+        }
+    }
+
     //----------------------//
     // retrieveFilamentsAtX //
     //----------------------//
@@ -924,98 +1002,20 @@ public class ClustersRetriever
         return list;
     }
 
-    //------------------//
-    // retrievePatterns //
-    //------------------//
-    /**
-     * Detect patterns of (staff) lines.
-     * Use vertical sampling on regularly-spaced abscissae
-     */
-    private void retrievePatterns ()
-    {
-        /** Minimum acceptable delta y */
-        int dMin = (int) Math.floor(
-            interline * (1 - constants.maxJitter.getValue()));
-
-        /** Maximum acceptable delta y */
-        int dMax = (int) Math.ceil(
-            interline * (1 + constants.maxJitter.getValue()));
-
-        /** Number of vertical samples to collect */
-        int sampleCount = -1 +
-                          (int) Math.rint(
-            (double) pictureWidth / params.samplingDx);
-
-        /** Exact columns abscissae */
-        colX = new int[sampleCount + 1];
-
-        /** Precise x interval */
-        double samplingDx = (double) pictureWidth / (sampleCount + 1);
-
-        for (int col = 1; col <= sampleCount; col++) {
-            final List<FilamentPattern> colList = new ArrayList<FilamentPattern>();
-            colPatterns.put(col, colList);
-
-            final int x = (int) Math.rint(samplingDx * col);
-            colX[col] = x;
-
-            // Retrieve Filaments with ordinate at x, sorted by increasing y
-            List<FilY>      filys = retrieveFilamentsAtX(x);
-
-            // Second, check y deltas to detect patterns
-            FilamentPattern pattern = null;
-            FilY            prevFily = null;
-
-            for (FilY fily : filys) {
-                if (prevFily != null) {
-                    int dy = (int) Math.rint(fily.y - prevFily.y);
-
-                    if ((dy >= dMin) && (dy <= dMax)) {
-                        if (pattern == null) {
-                            // Start of a new pattern
-                            pattern = new FilamentPattern(col);
-                            colList.add(pattern);
-                            pattern.append(prevFily.filament, prevFily.y);
-
-                            if (prevFily.filament.isVip()) {
-                                logger.info(
-                                    "Created " + pattern + " with " +
-                                    prevFily.filament);
-                            }
-                        }
-
-                        // Extend pattern
-                        pattern.append(fily.filament, fily.y);
-
-                        if (fily.filament.isVip()) {
-                            logger.info(
-                                "Appended " + fily.filament + " to " + pattern);
-                        }
-                    } else {
-                        // No pattern active
-                        pattern = null;
-                    }
-                }
-
-                prevFily = fily;
-            }
-        }
-    }
-
     //---------------------//
     // retrievePopularSize //
     //---------------------//
     /**
-     * Retrieve the most popular size (line count) among all patterns
+     * Retrieve the most popular size (line count) among all combs
      */
     private void retrievePopularSize ()
     {
-        // Build histogram of patterns lengths
+        // Build histogram of combs lengths
         Histogram<Integer> histo = new Histogram<Integer>();
 
-        for (List<FilamentPattern> list : colPatterns.values()) {
-            for (FilamentPattern pattern : list) {
-                histo.increaseCount(pattern.getCount(), pattern.getCount());
+        for (List<FilamentComb> list : colCombs.values()) {
+            for (FilamentComb comb : list) {
+                histo.increaseCount(comb.getCount(), comb.getCount());
             }
         }
 
@@ -1025,7 +1025,7 @@ public class ClustersRetriever
 
         if (logger.isFineEnabled()) {
             logger.fine(
-                sheet.getLogPrefix() + "Popular line pattern: " + popSize +
+                sheet.getLogPrefix() + "Popular line comb: " + popSize +
                 " histo:" + histo.dataString());
         }
     }
@@ -1096,7 +1096,7 @@ public class ClustersRetriever
         //
         Constant.Ratio maxJitter = new Constant.Ratio(
             0.1,
-            "Maximum gap from standard pattern dy");
+            "Maximum gap from standard comb dy");
 
         //
         Constant.Ratio minClusterLengthRatio = new Constant.Ratio(

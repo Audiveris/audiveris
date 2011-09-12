@@ -63,6 +63,18 @@ public class Filament
     };
 
     /**
+     * For comparing Filament instances on their top ordinate
+     */
+    public static final Comparator<Filament> topComparator = new Comparator<Filament>() {
+        public int compare (Filament f1,
+                            Filament f2)
+        {
+            // Sort on top ordinate
+            return Integer.signum(f1.getContourBox().y - f2.getContourBox().y);
+        }
+    };
+
+    /**
      * For comparing Filament instances on distance from reference axis
      */
     public static final Comparator<Filament> distanceComparator = new Comparator<Filament>() {

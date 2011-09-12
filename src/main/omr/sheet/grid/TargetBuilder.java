@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.sheet.grid;
 
+import omr.Main;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -116,10 +118,8 @@ public class TargetBuilder
      * Creates a new TargetBuilder object.
      *
      * @param sheet the related sheet
-     * @param barsRetriever the bars companion
      */
-    public TargetBuilder (Sheet         sheet,
-                          BarsRetriever barsRetriever)
+    public TargetBuilder (Sheet sheet)
     {
         this.sheet = sheet;
         systemManager = sheet.getSystemManager();
@@ -138,12 +138,14 @@ public class TargetBuilder
         // Dewarp the initial image
         dewarpImage();
 
-        // Add a view on dewarped image
-        sheet.getAssembly()
-             .addViewTab(
-            "DeWarped",
-            new ScrollView(new DewarpedView(dewarpedImage)),
-            null);
+        // Add a view on dewarped image?
+        if (Main.getGui() != null) {
+            sheet.getAssembly()
+                 .addViewTab(
+                "DeWarped",
+                new ScrollView(new DewarpedView(dewarpedImage)),
+                null);
+        }
 
         // Store dewarped image on disk
         if (constants.storeDewarp.getValue()) {

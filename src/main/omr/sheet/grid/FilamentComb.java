@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                       F i l a m e n t P a t t e r n                        //
+//                          F i l a m e n t C o m b                           //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -15,12 +15,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code FilamentPattern} describe a series of y values corresponding to
+ * Class {@code FilamentComb} describe a series of y values corresponding to
  * horizontal filaments rather regularly separated
  *
  * @author Hervé Bitteur
  */
-public class FilamentPattern
+public class FilamentComb
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -39,13 +39,13 @@ public class FilamentPattern
     //~ Constructors -----------------------------------------------------------
 
     //-----------------//
-    // FilamentPattern //
+    // FilamentComb //
     //-----------------//
     /**
-     * Creates a new FilamentPattern object.
+     * Creates a new FilamentComb object.
      * @param col the column index
      */
-    public FilamentPattern (int col)
+    public FilamentComb (int col)
     {
         this.col = col;
 
@@ -144,7 +144,7 @@ public class FilamentPattern
     {
         filaments.add(filament);
         ys.add(y);
-        filament.addPattern(col, this); // Link back Fil -> Pattern
+        filament.addComb(col, this); // Link back Fil -> Comb
     }
 
     //----------//

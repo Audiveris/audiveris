@@ -201,7 +201,9 @@ public class Main
 
                                 return null;
                             } else {
-                                logger.warning("Could not find sheet " + name);
+                                logger.warning(
+                                    "Could not find sheet " +
+                                    file.getCanonicalPath());
                             }
 
                             return null;

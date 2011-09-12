@@ -78,6 +78,10 @@ public class CLI
         this.toolName = toolName;
         this.args = Arrays.copyOf(args, args.length);
 
+        if (logger.isFineEnabled()) {
+            logger.fine("CLI args: " + Arrays.toString(args));
+        }
+
         parameters = parse();
     }
 

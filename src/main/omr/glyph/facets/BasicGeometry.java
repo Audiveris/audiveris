@@ -302,20 +302,34 @@ class BasicGeometry
         weight = getWeight();
 
         PointsCollector collector = new PointsCollector(null, weight);
+        Boolean         isVertical = null;
 
         // Append all points, section per section
         for (Section section : glyph.getMembers()) {
             section.cumulate(collector);
+
+            if (isVertical == null) {
+                isVertical = section.getGraph()
+                                    .isVertical();
+            }
         }
 
-        // Then compute the moments, swapping pos & coord since the lag is
+        // Then compute the moments, swapping pos & coord since if lag is
         // vertical
         try {
-            moments = new Moments(
-                collector.getYValues(),
-                collector.getXValues(),
-                collector.getCount(),
-                getInterline());
+            if (isVertical) {
+                moments = new Moments(
+                    collector.getYValues(),
+                    collector.getXValues(),
+                    collector.getCount(),
+                    getInterline());
+            } else {
+                moments = new Moments(
+                    collector.getXValues(),
+                    collector.getYValues(),
+                    collector.getCount(),
+                    getInterline());
+            }
         } catch (Exception ex) {
             logger.warning(
                 "Glyph #" + glyph.getId() +

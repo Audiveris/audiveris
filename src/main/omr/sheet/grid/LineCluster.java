@@ -32,7 +32,7 @@ import java.util.TreeMap;
 
 /**
  * Class {@code LineCluster} is meant to aggregate instances of
- * {@link Filament} that are linked by {@link FilamentPattern} instances and
+ * {@link Filament} that are linked by {@link FilamentComb} instances and
  * thus a cluster represents a staff candidate
  *
  * @author Hervé Bitteur
@@ -431,7 +431,7 @@ public class LineCluster
     {
         for (FilamentLine line : lines.values()) {
             line.fil.setCluster(null, 0);
-            line.fil.getPatterns()
+            line.fil.getCombs()
                     .clear();
         }
     }
@@ -588,7 +588,7 @@ public class LineCluster
         //            if (line.fil.trueLength() < minTrueLength) {
         //                it.remove();
         //                line.fil.setCluster(null, 0);
-        //                line.fil.getPatterns()
+        //                line.fil.getCombs()
         //                        .clear();
         //            }
         //        }
@@ -612,7 +612,7 @@ public class LineCluster
 
             // House keeping
             line.fil.setCluster(null, 0);
-            line.fil.getPatterns()
+            line.fil.getCombs()
                     .clear();
         }
 
@@ -640,7 +640,7 @@ public class LineCluster
     // include //
     //---------//
     /**
-     * Include a filament, with all its patterns.
+     * Include a filament, with all its combs.
      * @param pivot the filament to include
      * @param pivotPos the imposed position within the cluster
      */
@@ -659,25 +659,25 @@ public class LineCluster
 
         LineFilament ancestor = pivot.getAncestor();
 
-        // Loop on all patterns that involve this filament
-        for (FilamentPattern pattern : pivot.getPatterns()
-                                            .values()) {
-            if (pattern.isProcessed()) {
+        // Loop on all combs that involve this filament
+        for (FilamentComb comb : pivot.getCombs()
+                                      .values()) {
+            if (comb.isProcessed()) {
                 continue;
             }
 
-            pattern.setProcessed(true);
+            comb.setProcessed(true);
 
-            int deltaPos = pivotPos - pattern.getIndex(pivot);
+            int deltaPos = pivotPos - comb.getIndex(pivot);
 
             if (logger.isFineEnabled()) {
-                logger.fine(pattern + " deltaPos:" + deltaPos);
+                logger.fine(comb + " deltaPos:" + deltaPos);
             }
 
-            // Dispatch content of pattern to proper lines
-            for (int i = 0; i < pattern.getCount(); i++) {
-                LineFilament fil = pattern.getFilament(i)
-                                          .getAncestor();
+            // Dispatch content of comb to proper lines
+            for (int i = 0; i < comb.getCount(); i++) {
+                LineFilament fil = comb.getFilament(i)
+                                       .getAncestor();
                 LineCluster  cluster = fil.getCluster();
 
                 if (cluster == null) {

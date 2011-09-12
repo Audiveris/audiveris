@@ -19,10 +19,10 @@ import omr.constant.ConstantSet;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSection;
 import omr.glyph.GlyphSectionsBuilder;
+import omr.glyph.Glyphs;
 import omr.glyph.facets.Glyph;
 
 import omr.lag.JunctionRatioPolicy;
-import omr.lag.ui.SectionBoard;
 
 import omr.log.Logger;
 
@@ -61,6 +61,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -86,11 +87,11 @@ public class LinesRetriever
         BasicStroke.CAP_ROUND,
         BasicStroke.JOIN_ROUND);
 
-    /** Color for patterns of main interline */
-    private static final Color mainPatternColor = new Color(200, 255, 200);
+    /** Color for combs of main interline */
+    private static final Color mainCombColor = new Color(220, 200, 150);
 
-    /** Color for patterns of second interline */
-    private static final Color secondPatternColor = new Color(200, 200, 0);
+    /** Color for combs of second interline */
+    private static final Color secondCombColor = new Color(200, 200, 0);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -114,6 +115,9 @@ public class LinesRetriever
 
     /** Second collection of filaments */
     private List<LineFilament> secondFilaments;
+
+    /** Discarded filaments */
+    private List<LineFilament> discardedFilaments;
 
     /** Global slope of the sheet */
     private double globalSlope;
@@ -255,21 +259,26 @@ public class LinesRetriever
         return purgedVertTable;
     }
 
-    //-------------//
-    // removeLines //
-    //-------------//
+    //---------------//
+    // completeLines //
+    //---------------//
     /**
-     * Logically remove the pixels that compose the staff lines
+     * Complete the retrieved staff lines whenever possible with filaments and
+     * short sections left over.
      */
-    public void removeLines (GridView view)
+    public List<GlyphSection> completeLines ()
     {
-        StopWatch watch = new StopWatch("removeLines");
+        StopWatch watch = new StopWatch("completeLines");
 
         try {
+            // Browse discarded filaments for possible inclusion
+            watch.start("include discarded filaments");
+            includeDiscardedFilaments();
+
             // Build sections out of purgedHoriTable (too short horizontal runs)
             watch.start("create shortSections");
 
-            List<GlyphSection> shortSections = createShortSections(view);
+            List<GlyphSection> shortSections = createShortSections();
 
             // Dispatch sections into thick & thin ones
             watch.start(
@@ -294,9 +303,7 @@ public class LinesRetriever
             watch.start("include " + thinSections.size() + " thin stickers");
             includeStickers(thinSections, false);
 
-            // Update view
-            view.colorizeAllSections();
-            view.refresh();
+            return shortSections;
         } finally {
             if (constants.printWatch.getValue()) {
                 watch.print();
@@ -310,10 +317,12 @@ public class LinesRetriever
     /**
      * Organize the long and thin horizontal sections into filaments (glyphs)
      * that will be good candidates for staff lines.
-     * <p>First, retrieve long horizontal sections and merge them into
-     * filaments.</p>
-     * <p>Second, detect patterns of filaments regularly spaced and aggregate
-     * them into clusters of lines (staff candidates). </p>
+     * <ol>
+     * <li>First, retrieve long horizontal sections and merge them into
+     * filaments.</li>
+     * <li>Second, detect series of filaments regularly spaced and aggregate
+     * them into clusters of lines (as staff candidates). </li>
+     * </ol>
      */
     public void retrieveLines ()
     {
@@ -341,16 +350,16 @@ public class LinesRetriever
                 sheet,
                 filaments,
                 scale.interline(),
-                mainPatternColor);
+                mainCombColor);
             watch.start("clustersRetriever");
 
-            List<LineFilament> discarded = clustersRetriever.buildInfo();
+            discardedFilaments = clustersRetriever.buildInfo();
 
             // Check for a second interline
             Integer secondInterline = scale.secondInterline();
 
             if (secondInterline != null) {
-                secondFilaments = discarded;
+                secondFilaments = discardedFilaments;
                 Collections.sort(secondFilaments, Glyph.idComparator);
                 logger.info(
                     sheet.getLogPrefix() +
@@ -360,9 +369,15 @@ public class LinesRetriever
                     sheet,
                     secondFilaments,
                     secondInterline,
-                    secondPatternColor);
+                    secondCombColor);
                 watch.start("secondClustersRetriever");
-                secondClustersRetriever.buildInfo();
+                discardedFilaments = secondClustersRetriever.buildInfo();
+            }
+
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "Discarded filaments: " +
+                    Glyphs.toString(discardedFilaments));
             }
 
             // Convert clusters into staves
@@ -402,6 +417,10 @@ public class LinesRetriever
      */
     void addRunsTab (RunsTable table)
     {
+        if (Main.getGui() == null) {
+            return;
+        }
+
         RubberPanel view = new MyRunsTableView(table);
         view.setName(table.getName());
         view.setPreferredSize(table.getDimension());
@@ -420,14 +439,14 @@ public class LinesRetriever
     // renderItems //
     //-------------//
     /**
-     * Render the filaments, their ending tangents, their patterns
+     * Render the filaments, their ending tangents, their combs
      * @param g graphics context
      * @param showTangents true to display tangents at filament ends
-     * @param showPatterns true to display cluster patterns
+     * @param showCombs true to display cluster combs
      */
     void renderItems (Graphics2D g,
                       boolean    showTangents,
-                      boolean    showPatterns)
+                      boolean    showCombs)
     {
         List<LineFilament> allFils = new ArrayList<LineFilament>(filaments);
 
@@ -474,8 +493,8 @@ public class LinesRetriever
 
         g.setStroke(oldStroke);
 
-        // Patterns stuff?
-        if (showPatterns) {
+        // Combs stuff?
+        if (showCombs) {
             if (clustersRetriever != null) {
                 clustersRetriever.renderItems(g);
             }
@@ -560,6 +579,79 @@ public class LinesRetriever
         }
     }
 
+    //------------//
+    // canInclude //
+    //------------//
+    /**
+     * Check whether the provided staff linbe filament could include the
+     * candidate filament
+     * @param filament the staff line filament
+     * @param fil the candidate filament
+     * @return true if OK
+     */
+    private boolean canInclude (LineFilament filament,
+                                Filament     fil)
+    {
+        // For VIP debugging
+        final boolean isVip = fil.isVip();
+        String        vips = null;
+
+        if (isVip) {
+            vips = "Fil#" + fil.getId() + ": "; // BP here!
+        }
+
+        // Check fil thickness
+        PixelRectangle box = fil.getContourBox();
+        int            height = box.height;
+
+        if (height > params.maxStickerThickness) {
+            if (logger.isFineEnabled() || isVip) {
+                logger.info(
+                    vips + "TTT height:" + height + " vs " +
+                    params.maxStickerThickness);
+            }
+
+            return false;
+        }
+
+        // Check fil centroid gap with theoretical line
+        PixelPoint center = fil.getCentroid();
+        double     yFil = filament.getPositionAt(center.x);
+        double     dy = Math.abs(yFil - center.y);
+        double     gap = ((2 * dy) - scale.mainFore()) / 2;
+
+        if (gap > params.maxStickerGap) {
+            if (logger.isFineEnabled() || isVip) {
+                logger.info(
+                    vips + "GGG gap:" + (float) gap + " vs " +
+                    (float) params.maxStickerGap);
+            }
+
+            return false;
+        }
+
+        // Check max extension from theoretical line
+        double extension = Math.max(
+            Math.abs(yFil - box.y),
+            Math.abs((box.y + height) - yFil));
+
+        if (extension > params.maxStickerExtension) {
+            if (logger.isFineEnabled() || isVip) {
+                logger.info(
+                    vips + "XXX ext:" + (float) extension + " vs " +
+                    params.maxStickerExtension);
+            }
+
+            return false;
+        }
+
+        if (logger.isFineEnabled() || isVip) {
+            logger.info(vips + "---");
+        }
+
+        return true;
+    }
+
     //--------------//
     // checkSticker //
     //--------------//
@@ -637,10 +729,9 @@ public class LinesRetriever
     //---------------------//
     /**
      * Build horizontal sections out of purgedHoriTable runs
-     * @param view the LagView to augment with new section views
      * @return the list of created sections
      */
-    private List<GlyphSection> createShortSections (GridView view)
+    private List<GlyphSection> createShortSections ()
     {
         // Augment the horizontal hLag
         GlyphSectionsBuilder sectionsBuilder = new GlyphSectionsBuilder(
@@ -649,16 +740,74 @@ public class LinesRetriever
         List<GlyphSection>   shortSections = sectionsBuilder.createSections(
             purgedHoriTable);
 
-        // Update horizontal lag view accordingly
-        for (GlyphSection section : shortSections) {
-            view.addSectionView(section);
-        }
-
-        view.colorizeAllSections();
-
         setVipSections();
 
         return shortSections;
+    }
+
+    //---------------------------//
+    // includeDiscardedFilaments //
+    //---------------------------//
+    /**
+     * Last attempt to include discarded filaments to retrieved staff lines
+     */
+    private void includeDiscardedFilaments ()
+    {
+        // Sort these discarded filaments by top ordinate
+        Collections.sort(discardedFilaments, Filament.topComparator);
+
+        int iMin = 0;
+        int iMax = discardedFilaments.size() - 1;
+
+        for (SystemFrame system : sheet.getSystemManager()
+                                       .getSystems()) {
+            for (StaffInfo staff : system.getStaves()) {
+                for (LineInfo l : staff.getLines()) {
+                    FilamentLine   line = (FilamentLine) l;
+                    LineFilament   filament = line.fil;
+                    PixelRectangle lineBox = filament.getContourBox();
+                    lineBox.grow(0, scale.mainFore());
+
+                    double         minX = filament.getStartPoint()
+                                                  .getX();
+                    double         maxX = filament.getStopPoint()
+                                                  .getX();
+                    int            minY = lineBox.y;
+                    int            maxY = lineBox.y + lineBox.height;
+                    List<Filament> added = new ArrayList<Filament>();
+
+                    for (int i = iMin; i <= iMax; i++) {
+                        Filament fil = discardedFilaments.get(i);
+
+                        if (fil.getPartOf() != null) {
+                            continue;
+                        }
+
+                        int firstPos = fil.getContourBox().y;
+
+                        if (firstPos < minY) {
+                            iMin = i;
+
+                            continue;
+                        }
+
+                        if (firstPos > maxY) {
+                            break;
+                        }
+
+                        PixelPoint center = fil.getCentroid();
+
+                        if ((center.x >= minX) && (center.x <= maxX)) {
+                            if (canInclude(filament, fil)) {
+                                filament.include(fil);
+                            }
+                        }
+                    }
+                }
+            }
+
+            barsRetriever.adjustStaffLines(system);
+        }
     }
 
     //-----------------//
@@ -667,7 +816,8 @@ public class LinesRetriever
     /**
      * Include "sticker" sections into their related lines, when applicable
      * @param sections List of sections that are stickers candidates
-     * @param update should we update the line geometry with stickers
+     * @param update should we update the line geometry with stickers (this
+     * should be limited to large sections).
      */
     private void includeStickers (List<GlyphSection> sections,
                                   boolean            update)
@@ -676,8 +826,8 @@ public class LinesRetriever
         int iMin = 0;
         int iMax = sections.size() - 1;
 
-        // Inclusion on the fly would imply recomputation of filament at each 
-        // section inclusion. So we need to retrieve all "stickers" for a given 
+        // Inclusion on the fly would imply recomputation of filament at each
+        // section inclusion. So we need to retrieve all "stickers" for a given
         // staff line, and perform a global inclusion at the end only.
         for (SystemFrame system : sheet.getSystemManager()
                                        .getSystems()) {

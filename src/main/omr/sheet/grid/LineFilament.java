@@ -20,8 +20,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * Class {@code LineFilament} is a {@link Filament}, involved in line patterns,
- * and thus used as (part of) a candidate staff line.
+ * Class {@code LineFilament} is a {@link Filament}, used as (part of) a
+ * candidate staff line.
  */
 public class LineFilament
     extends Filament
@@ -33,8 +33,8 @@ public class LineFilament
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Patterns where this filament appears. map (column -> pattern) */
-    private SortedMap<Integer, FilamentPattern> patterns;
+    /** Combs where this filament appears. map (column index -> comb) */
+    private SortedMap<Integer, FilamentComb> combs;
 
     /** The line cluster this filament is part of, if any */
     private LineCluster cluster;
@@ -49,8 +49,6 @@ public class LineFilament
     //--------------//
     /**
      * Creates a new LineFilament object.
-     *
-     *
      * @param scale scaling data
      */
     public LineFilament (Scale scale)
@@ -107,6 +105,21 @@ public class LineFilament
         return clusterPos;
     }
 
+    //----------//
+    // getCombs //
+    //----------//
+    /**
+     * @return the combs
+     */
+    public SortedMap<Integer, FilamentComb> getCombs ()
+    {
+        if (combs != null) {
+            return combs;
+        } else {
+            return new TreeMap<Integer, FilamentComb>();
+        }
+    }
+
     //-----------//
     // getParent //
     //-----------//
@@ -116,37 +129,22 @@ public class LineFilament
         return (LineFilament) super.getPartOf();
     }
 
-    //-------------//
-    // getPatterns //
-    //-------------//
+    //---------//
+    // addComb //
+    //---------//
     /**
-     * @return the patterns
+     * Add a comb where this filament appears
+     * @param column the sheet column index of the comb
+     * @param comb the comb which contains this filament
      */
-    public SortedMap<Integer, FilamentPattern> getPatterns ()
+    public void addComb (int          column,
+                         FilamentComb comb)
     {
-        if (patterns != null) {
-            return patterns;
-        } else {
-            return new TreeMap<Integer, FilamentPattern>();
-        }
-    }
-
-    //------------//
-    // addPattern //
-    //------------//
-    /**
-     * Add a pattern where this filament appears
-     * @param column the sheet column index of the pattern
-     * @param pattern the pattern which contains this filament
-     */
-    public void addPattern (int             column,
-                            FilamentPattern pattern)
-    {
-        if (patterns == null) {
-            patterns = new TreeMap<Integer, FilamentPattern>();
+        if (combs == null) {
+            combs = new TreeMap<Integer, FilamentComb>();
         }
 
-        patterns.put(column, pattern);
+        combs.put(column, comb);
     }
 
     //------//
@@ -158,7 +156,7 @@ public class LineFilament
         super.dump();
         System.out.println("   cluster=" + cluster);
         System.out.println("   clusterPos=" + clusterPos);
-        System.out.println("   patterns=" + patterns);
+        System.out.println("   combs=" + combs);
     }
 
     //-----------//

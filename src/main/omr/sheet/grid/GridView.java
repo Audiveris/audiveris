@@ -293,7 +293,7 @@ public class GridView
         linesRetriever.renderItems(
             g,
             constants.showTangents.getValue(),
-            constants.showPatterns.getValue());
+            constants.showCombs.getValue());
         barsRetriever.renderItems(g, constants.showTangents.getValue());
     }
 
@@ -375,8 +375,8 @@ public class GridView
         Constant.Boolean showTangents = new Constant.Boolean(
             true,
             "Should we show filament ending tangents?");
-        Constant.Boolean showPatterns = new Constant.Boolean(
+        Constant.Boolean showCombs = new Constant.Boolean(
             true,
-            "Should we show staff lines patterns?");
+            "Should we show staff lines combs?");
     }
 }
