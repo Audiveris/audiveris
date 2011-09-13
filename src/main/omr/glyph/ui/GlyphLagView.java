@@ -47,6 +47,7 @@ import static omr.selection.SelectionHint.*;
 import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
 
+import omr.ui.Colors;
 import omr.ui.util.UIUtilities;
 
 import omr.util.Implement;
@@ -444,7 +445,7 @@ public class GlyphLagView
 
         // Decorations first
         Stroke oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
-        g.setColor(Color.blue);
+        g.setColor(Colors.GLYPH_ANNOTATION);
 
         for (Glyph glyph : glyphs) {
             // Draw circle arc or stick average line
@@ -511,8 +512,8 @@ public class GlyphLagView
 
         // Glyph areas second, using XOR mode for the area
         Graphics2D g2 = (Graphics2D) g.create();
-        g2.setColor(Color.black);
-        g2.setXORMode(Color.darkGray);
+        g2.setColor(Colors.GLYPH_AREA);
+        g2.setXORMode(Colors.GLYPH_AREA_XOR);
 
         for (Glyph glyph : glyphs) {
             renderGlyphArea(glyph, g2);

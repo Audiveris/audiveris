@@ -29,6 +29,8 @@ import omr.run.Orientation;
 
 import omr.sheet.Scale;
 
+import omr.ui.Colors;
+
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -369,6 +371,13 @@ public class FilamentAlignment
     @Override
     public void renderLine (Graphics2D g)
     {
+        // We render filaments differently, according to their orientation
+        Color oldColor = g.getColor();
+        g.setColor(
+            (glyph.getLag()
+                  .getOrientation() == Orientation.HORIZONTAL)
+                        ? Colors.LINE_HORIZONTAL : Colors.LINE_VERTICAL);
+
         // The curved line itself
         if (line != null) {
             g.draw((NaturalSpline) line);
@@ -378,17 +387,15 @@ public class FilamentAlignment
         if (constants.showFilamentPoints.getValue() && (points != null)) {
             // Point radius
             double    r = glyph.getInterline() * constants.filamentPointSize.getValue();
-            Color     oldColor = g.getColor();
             Ellipse2D ellipse = new Ellipse2D.Double();
 
             for (Point2D p : points) {
                 ellipse.setFrame(p.getX() - r, p.getY() - r, 2 * r, 2 * r);
-                g.setColor(getPointColor(p));
                 g.fill(ellipse);
             }
-
-            g.setColor(oldColor);
         }
+
+        g.setColor(oldColor);
     }
 
     //---------//
@@ -419,14 +426,6 @@ public class FilamentAlignment
     protected NaturalSpline getLine ()
     {
         return (NaturalSpline) line;
-    }
-
-    //---------------//
-    // getPointColor //
-    //---------------//
-    protected Color getPointColor (Point2D p)
-    {
-        return Color.YELLOW;
     }
 
     //-------------//
@@ -642,7 +641,7 @@ public class FilamentAlignment
 
         //
         Scale.Fraction filamentPointSize = new Scale.Fraction(
-            0.1,
+            0.05,
             "Size of displayed filament points");
 
         //

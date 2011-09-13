@@ -29,13 +29,13 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 import omr.sheet.grid.StaffInfo;
 
+import omr.ui.Colors;
 import omr.ui.symbol.Alignment;
 import omr.ui.symbol.MusicFont;
 import omr.ui.symbol.ShapeSymbol;
 import omr.ui.symbol.Symbols;
 import omr.ui.util.UIUtilities;
 
-import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
@@ -129,7 +129,7 @@ public class SheetPainter
             musicFont = MusicFont.getFont(sheet.getInterline());
 
             // Use specific color
-            g.setColor(Color.lightGray);
+            g.setColor(Colors.ENTITY_MINOR);
 
             if (!page.getSystems()
                      .isEmpty()) {
@@ -228,7 +228,7 @@ public class SheetPainter
 
             // Check that this system is visible
             if (bounds.intersects(g.getClipBounds())) {
-                g.setColor(Color.lightGray);
+                g.setColor(Colors.ENTITY_MINOR);
 
                 // System boundary
                 systemInfo.getBoundary()
@@ -239,7 +239,7 @@ public class SheetPainter
                     staff.render(g);
                 }
 
-                g.setColor(Color.black);
+                g.setColor(Colors.ENTITY);
 
                 // Stems
                 for (Glyph glyph : systemInfo.getGlyphs()) {
@@ -282,7 +282,7 @@ public class SheetPainter
      */
     private void paintVirtualGlyphs (SystemInfo systemInfo)
     {
-        g.setColor(Color.LIGHT_GRAY);
+        g.setColor(Colors.ENTITY_VIRTUAL);
 
         for (Glyph glyph : systemInfo.getGlyphs()) {
             if (glyph.isVirtual()) {

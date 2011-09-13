@@ -19,8 +19,9 @@ import omr.constant.ConstantSet;
 import omr.log.Logger;
 import static omr.selection.MouseMovement.*;
 
+import omr.ui.Colors;
+
 import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -96,9 +97,6 @@ public class Rubber
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Rubber.class);
-
-    /** Color used for drawing horizontal & vertical rules */
-    private static final Color ruleColor = new Color(255, 200, 0);
     private static AtomicInteger globalId = new AtomicInteger(0);
 
     //~ Instance fields --------------------------------------------------------
@@ -434,7 +432,6 @@ public class Rubber
     {
         if (rect != null) {
             Graphics2D g = (Graphics2D) unscaledGraphics.create();
-            g.setXORMode(Color.white);
 
             Rectangle r = new Rectangle(rect);
 
@@ -444,12 +441,12 @@ public class Rubber
 
             // Is this is a true rectangle ?
             if ((r.width != 0) || (r.height != 0)) {
-                g.setColor(Color.black);
+                g.setColor(Colors.RUBBER_RECT);
                 g.drawRect(r.x, r.y, r.width, r.height);
             }
 
             // Draw horizontal & vertical rules (point or rectangle)
-            g.setColor(ruleColor);
+            g.setColor(Colors.RUBBER_RULE);
 
             int   x = scaled(rect.x + (rect.width / 2));
             int   y = scaled(rect.y + (rect.height / 2));

@@ -137,19 +137,6 @@ public class LineFilamentAlignment
         }
     }
 
-    //---------------//
-    // getPointColor //
-    //---------------//
-    @Override
-    protected Color getPointColor (Point2D p)
-    {
-        if (p instanceof VirtualPoint) {
-            return Color.ORANGE;
-        } else {
-            return super.getPointColor(p);
-        }
-    }
-
     //~ Inner Classes ----------------------------------------------------------
 
     //-----------//

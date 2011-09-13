@@ -40,6 +40,7 @@ import omr.selection.SelectionService;
 import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
 
+import omr.ui.Colors;
 import omr.ui.util.UIUtilities;
 
 import java.awt.Color;
@@ -72,24 +73,6 @@ public class GridView
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(GridBuilder.class);
-
-    /** Level for minor color */
-    private static final int minor = 220;
-
-    /** Level for major color */
-    private static final int major = 150;
-
-    /** Default color for vertical stuff */
-    public static final Color verticalColor = new Color(minor, minor, 255);
-
-    /** Color for barline-shape glyphs */
-    public static final Color vertShapeColor = new Color(major, major, 255);
-
-    /** Default color for horizontal stuff */
-    private static final Color horizontalColor = new Color(255, minor, minor);
-
-    /** Color for staffline-shape glyphs */
-    public static final Color horiShapeColor = new Color(255, major, major);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -152,14 +135,12 @@ public class GridView
 
             // All staff glyphs candidates
             for (Glyph glyph : lag.getActiveGlyphs()) {
-                //                Color color = (glyph.getShape() == Shape.STAFF_LINE)
-                //                              ? horiShapeColor : horizontalColor;
-                glyph.colorize(viewIndex, horiShapeColor);
+                glyph.colorize(viewIndex, Colors.GRID_HORIZONTAL_SHAPED);
             }
 
             // Glyphs actually parts of true staff lines
             for (Glyph glyph : linesRetriever.getStafflineGlyphs()) {
-                glyph.colorize(viewIndex, Color.WHITE); ///Color.RED);
+                glyph.colorize(viewIndex, Colors.HIDDEN);
             }
         }
 
@@ -169,13 +150,14 @@ public class GridView
 
             // All bar glyphs candidates
             for (Glyph glyph : vLag.getActiveGlyphs()) {
-                Color color = glyph.isBar() ? vertShapeColor : verticalColor;
+                Color color = glyph.isBar() ? Colors.GRID_VERTICAL_SHAPED
+                              : Colors.GRID_VERTICAL;
                 glyph.colorize(viewIndex, color);
             }
 
             // Glyphs actually parts of true bar lines
             for (Glyph glyph : barsRetriever.getBarlineGlyphs()) {
-                glyph.colorize(viewIndex, Color.BLUE);
+                glyph.colorize(viewIndex, Colors.GRID_BARLINE);
             }
         }
     }
@@ -263,21 +245,21 @@ public class GridView
 
         if (section.getGraph()
                    .isVertical()) {
-            color = verticalColor;
+            color = Colors.GRID_VERTICAL;
 
             if (glyph != null) {
                 Shape shape = glyph.getShape();
 
                 if ((shape == Shape.THICK_BARLINE) ||
                     (shape == Shape.THIN_BARLINE)) {
-                    color = vertShapeColor;
+                    color = Colors.GRID_VERTICAL_SHAPED;
                 }
             }
         } else {
             if (section.isGlyphMember()) {
-                color = Color.WHITE; ///horizontalColor;
+                color = Colors.HIDDEN; ///horizontalColor;
             } else {
-                color = Color.LIGHT_GRAY;
+                color = Colors.ENTITY_MINOR;
             }
         }
 
@@ -331,7 +313,6 @@ public class GridView
             // Publish Glyph (and the related 1-glyph GlyphSet)
             glyph = glyphsFound.isEmpty() ? null : glyphsFound.iterator()
                                                               .next();
-            logger.info("glyph: " + glyph);
             service.publish(new GlyphEvent(this, hint, movement, glyph));
         } else {
             // This is just a point, look for section & glyph

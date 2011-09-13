@@ -27,6 +27,7 @@ import omr.sheet.Sheet;
 import omr.sheet.Skew;
 import omr.sheet.picture.Picture;
 
+import omr.ui.Colors;
 import omr.ui.view.RubberPanel;
 import omr.ui.view.ScrollView;
 
@@ -34,7 +35,6 @@ import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
 
 import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -172,7 +172,7 @@ public class TargetBuilder
             BasicStroke.JOIN_ROUND);
 
         g.setStroke(systemStroke);
-        g.setColor(Color.YELLOW);
+        g.setColor(Colors.SYSTEM_BRACKET);
 
         for (SystemFrame system : systemManager.getSystems()) {
             for (HorizontalSide side : HorizontalSide.values()) {
@@ -216,7 +216,7 @@ public class TargetBuilder
         List<Point2D> points = useSource ? srcPoints : dstPoints;
         double        radius = sheet.getScale()
                                     .toPixelsDouble(constants.gridPointSize);
-        g2.setColor(Color.RED);
+        g2.setColor(Colors.WARP_POINT);
 
         Rectangle2D rect = new Rectangle2D.Double();
 

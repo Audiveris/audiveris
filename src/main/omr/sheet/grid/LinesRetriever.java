@@ -36,7 +36,6 @@ import omr.run.RunsTableView;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
-import omr.score.ui.PagePainter;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
@@ -46,6 +45,7 @@ import omr.sheet.ui.PixelBoard;
 import omr.stick.StickSection;
 
 import omr.ui.BoardsPane;
+import omr.ui.Colors;
 import omr.ui.view.RubberPanel;
 import omr.ui.view.ScrollView;
 import static omr.util.HorizontalSide.*;
@@ -53,7 +53,6 @@ import omr.util.Predicate;
 import omr.util.StopWatch;
 
 import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
@@ -61,7 +60,6 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -86,12 +84,6 @@ public class LinesRetriever
         (float) constants.splineThickness.getValue(),
         BasicStroke.CAP_ROUND,
         BasicStroke.JOIN_ROUND);
-
-    /** Color for combs of main interline */
-    private static final Color mainCombColor = new Color(220, 200, 150);
-
-    /** Color for combs of second interline */
-    private static final Color secondCombColor = new Color(200, 200, 0);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -350,7 +342,7 @@ public class LinesRetriever
                 sheet,
                 filaments,
                 scale.interline(),
-                mainCombColor);
+                Colors.COMB);
             watch.start("clustersRetriever");
 
             discardedFilaments = clustersRetriever.buildInfo();
@@ -369,7 +361,7 @@ public class LinesRetriever
                     sheet,
                     secondFilaments,
                     secondInterline,
-                    secondCombColor);
+                    Colors.COMB_MINOR);
                 watch.start("secondClustersRetriever");
                 discardedFilaments = secondClustersRetriever.buildInfo();
             }
@@ -455,7 +447,7 @@ public class LinesRetriever
         }
 
         // Draw filaments
-        g.setColor(PagePainter.musicColor);
+        g.setColor(Colors.MUSIC);
 
         Stroke oldStroke = g.getStroke();
         g.setStroke(splineStroke);
@@ -466,7 +458,7 @@ public class LinesRetriever
 
         // Draw tangent at each ending point?
         if (showTangents) {
-            g.setColor(Color.BLACK);
+            g.setColor(Colors.TANGENT);
 
             double dx = sheet.getScale()
                              .toPixels(constants.tangentLg);

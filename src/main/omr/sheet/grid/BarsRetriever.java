@@ -35,8 +35,6 @@ import omr.math.Line;
 import omr.run.Orientation;
 import omr.run.RunsTable;
 
-import omr.score.ui.PagePainter;
-
 import omr.sheet.BarsChecker;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
@@ -46,11 +44,12 @@ import omr.step.StepException;
 
 import omr.stick.StickSection;
 
+import omr.ui.Colors;
+
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
 
 import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
 import java.awt.geom.Line2D;
@@ -336,8 +335,6 @@ public class BarsRetriever
                       boolean    showTangents)
     {
         // Draw filaments
-        g.setColor(PagePainter.musicColor);
-
         Stroke oldStroke = g.getStroke();
         g.setStroke(splineStroke);
 
@@ -347,7 +344,7 @@ public class BarsRetriever
 
         // Draw tangent at each ending point (using max coord gap)?
         if (showTangents) {
-            g.setColor(Color.BLACK);
+            g.setColor(Colors.TANGENT);
 
             double dy = sheet.getScale()
                              .toPixels(constants.maxCoordGap);

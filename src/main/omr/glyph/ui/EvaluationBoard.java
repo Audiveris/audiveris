@@ -33,6 +33,7 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.ui.Board;
+import omr.ui.Colors;
 import omr.ui.util.Panel;
 
 import omr.util.Implement;
@@ -352,7 +353,7 @@ class EvaluationBoard
                     button.setEnabled(enabled);
 
                     if (barred) {
-                        button.setBackground(Color.PINK);
+                        button.setBackground(Colors.EVALUATION_BARRED);
                     } else {
                         button.setBackground(null);
                     }
@@ -362,7 +363,7 @@ class EvaluationBoard
                     button.setIcon(eval.shape.getDecoratedSymbol());
                 } else {
                     if (barred) {
-                        field.setBackground(Color.PINK);
+                        field.setBackground(Colors.EVALUATION_BARRED);
                     } else {
                         field.setBackground(null);
                     }
@@ -527,9 +528,15 @@ class EvaluationBoard
 
                     if ((guess != null) && (glyph.getShape() == guess.shape)) {
                         ok++;
-                        view.colorizeGlyph(viewIndex, glyph, Shape.okColor);
+                        view.colorizeGlyph(
+                            viewIndex,
+                            glyph,
+                            Colors.SHAPE_KNOWN);
                     } else {
-                        view.colorizeGlyph(viewIndex, glyph, Shape.missedColor);
+                        view.colorizeGlyph(
+                            viewIndex,
+                            glyph,
+                            Colors.SHAPE_UNKNOWN);
                     }
                 }
             }

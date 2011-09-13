@@ -40,6 +40,8 @@ import omr.sheet.Ending;
 import omr.sheet.Ledger;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+
+import omr.ui.Colors;
 import static omr.ui.symbol.Alignment.*;
 import omr.ui.symbol.MusicFont;
 import omr.ui.util.UIUtilities;
@@ -74,15 +76,6 @@ public class PagePhysicalPainter
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
         PagePhysicalPainter.class);
-
-    //~ Instance fields --------------------------------------------------------
-
-    /** Color for slot axis */
-    private final Color slotColor = new Color(
-        192,
-        192,
-        192,
-        constants.slotAlpha.getValue());
 
     //~ Constructors -----------------------------------------------------------
 
@@ -271,7 +264,7 @@ public class PagePhysicalPainter
                 // Write the score-based measure id, on first real part only
                 if (part == measure.getSystem()
                                    .getFirstRealPart()) {
-                    g.setColor(Color.lightGray);
+                    g.setColor(Colors.ANNOTATION);
                     paint(
                         basicLayout(measure.getScoreId(), null),
                         new PixelPoint(
@@ -286,7 +279,7 @@ public class PagePhysicalPainter
                                       .isSlotPainting() &&
                     (measure.getSlots() != null)) {
                     for (Slot slot : measure.getSlots()) {
-                        drawSlot(false, measure, slot, slotColor);
+                        drawSlot(false, measure, slot, Colors.SLOT);
                     }
                 }
 
@@ -414,7 +407,7 @@ public class PagePhysicalPainter
         // System id annotation
         if (annotated) {
             Color oldColor = g.getColor();
-            g.setColor(Color.lightGray);
+            g.setColor(Colors.ANNOTATION);
 
             Point ul = systemInfo.getBoundary()
                                  .getLimit(VerticalSide.TOP)

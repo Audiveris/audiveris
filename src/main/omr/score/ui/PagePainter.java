@@ -65,7 +65,6 @@ import omr.ui.symbol.Symbols;
 import static omr.ui.symbol.Symbols.*;
 
 import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -113,9 +112,6 @@ public abstract class PagePainter
         "Sans Serif",
         Font.PLAIN,
         constants.basicFontSize.getValue());
-
-    /** Color for music symbols */
-    public static Color musicColor = constants.musicColor.getValue();
 
     /** Abscissa offset, in pixels, for annotation near system */
     protected static int annotationDx = 15;
@@ -1030,17 +1026,6 @@ public abstract class PagePainter
             "points",
             30,
             "Standard font size for annotations");
-
-        /** Alpha parameter for slot axis transparency (0 .. 255) */
-        final Constant.Integer slotAlpha = new Constant.Integer(
-            "ByteLevel",
-            150,
-            "Alpha parameter for slot axis transparency (0 .. 255)");
-
-        /** Color for score entities */
-        final Constant.Color musicColor = new Constant.Color(
-            "#aaffaa",
-            "Color for score entities");
 
         /** dx between items in a key signature */
         final Scale.Fraction keySigItemDx = new Scale.Fraction(

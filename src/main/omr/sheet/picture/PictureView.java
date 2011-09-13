@@ -13,7 +13,6 @@ package omr.sheet.picture;
 
 import omr.log.Logger;
 
-import omr.score.ui.PagePainter;
 import omr.score.ui.PagePhysicalPainter;
 import omr.score.ui.PaintingParameters;
 
@@ -21,6 +20,7 @@ import omr.selection.SheetLocationEvent;
 
 import omr.sheet.Sheet;
 
+import omr.ui.Colors;
 import omr.ui.view.RubberPanel;
 import omr.ui.view.ScrollView;
 
@@ -132,9 +132,9 @@ public class PictureView
 
             // Render the recognized score entities?
             if (painting.isOutputPainting()) {
-                Color color = PagePainter.musicColor;
                 sheet.getPage()
-                     .accept(new PagePhysicalPainter(g, color, false));
+                     .accept(
+                    new PagePhysicalPainter(g, Colors.LINE_HORIZONTAL, false));
 
                 if (sheet.getTargetBuilder() != null) {
                     sheet.getTargetBuilder()

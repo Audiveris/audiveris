@@ -581,12 +581,6 @@ public enum Shape {
     /** Last physical shape */
     public static final Shape LAST_PHYSICAL_SHAPE = PEDAL_UP_MARK;
 
-    /** Color for unknown shape */
-    public static final Color missedColor = Color.red;
-
-    /** Color for glyphs tested as OK (color used temporarily) */
-    public static final Color okColor = Color.green;
-
     //--------------------------------------------------------------------------
 
     /** Explanation of the glyph shape */

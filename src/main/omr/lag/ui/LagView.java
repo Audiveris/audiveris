@@ -38,6 +38,7 @@ import omr.selection.SelectionService;
 import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
 
+import omr.ui.Colors;
 import omr.ui.util.UIUtilities;
 import omr.ui.view.RubberPanel;
 
@@ -80,9 +81,6 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(LagView.class);
-
-    /** Color used when rendering specific sections */
-    private static final Color SPECIFIC_COLOR = Color.yellow;
 
     /** (Lag) events this entity is interested in */
     private static final Collection<Class<?extends UserEvent>> eventClasses;
@@ -248,7 +246,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         // Colorize specific sections, with a different color
         for (S section : specificSections) {
             SectionView view = (SectionView) section.getView(viewIndex);
-            view.setColor(SPECIFIC_COLOR);
+            view.setColor(Colors.SPECIFIC);
         }
     }
 

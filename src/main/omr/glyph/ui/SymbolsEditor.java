@@ -35,7 +35,6 @@ import omr.score.entity.Measure;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Slot;
 import omr.score.ui.PageMenu;
-import omr.score.ui.PagePainter;
 import omr.score.ui.PagePhysicalPainter;
 import omr.score.ui.PaintingParameters;
 
@@ -55,12 +54,12 @@ import omr.sheet.ui.SheetPainter;
 import omr.step.Step;
 
 import omr.ui.BoardsPane;
+import omr.ui.Colors;
 import omr.ui.PixelCount;
 
 import omr.util.Implement;
 import omr.util.WeakPropertyChangeListener;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -87,9 +86,6 @@ public class SymbolsEditor
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(SymbolsEditor.class);
-
-    /** Color for hiding unknown glyphs when filter is ON */
-    public static final Color hiddenColor = Color.white;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -262,7 +258,7 @@ public class SymbolsEditor
 
             // Use light gray color for past successful entities
             int viewIndex = lag.viewIndexOf(this);
-            sheet.colorize(lag, viewIndex, Color.lightGray);
+            sheet.colorize(lag, viewIndex, Colors.ENTITY_MINOR);
 
             // Listen to painting parameters
             PaintingParameters.getInstance()
@@ -301,7 +297,7 @@ public class SymbolsEditor
             colorizeGlyph(
                 viewIndex,
                 glyph,
-                focus.isDisplayed(glyph) ? glyph.getColor() : hiddenColor);
+                focus.isDisplayed(glyph) ? glyph.getColor() : Colors.HIDDEN);
         }
 
         //--------------//
@@ -456,7 +452,7 @@ public class SymbolsEditor
                 // Render the recognized score entities
                 PagePhysicalPainter painter = new PagePhysicalPainter(
                     g,
-                    PagePainter.musicColor,
+                    Colors.MUSIC,
                     painting.isAnnotationPainting());
                 sheet.getPage()
                      .accept(painter);
@@ -467,7 +463,7 @@ public class SymbolsEditor
                         true,
                         highlightedMeasure,
                         highlightedSlot,
-                        Color.MAGENTA);
+                        Colors.SLOT_CURRENT);
                 }
             }
         }

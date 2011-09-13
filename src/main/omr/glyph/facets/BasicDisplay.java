@@ -12,11 +12,12 @@
 package omr.glyph.facets;
 
 import omr.glyph.GlyphSection;
-import omr.glyph.Shape;
 
 import omr.lag.Lag;
 import omr.lag.Section;
 import omr.lag.ui.SectionView;
+
+import omr.ui.Colors;
 
 import java.awt.Color;
 import java.awt.Rectangle;
@@ -81,7 +82,7 @@ class BasicDisplay
     public Color getColor ()
     {
         if (glyph.getShape() == null) {
-            return Shape.missedColor;
+            return Colors.SHAPE_UNKNOWN;
         } else {
             return glyph.getShape()
                         .getColor();
