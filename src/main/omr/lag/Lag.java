@@ -177,6 +177,22 @@ public class Lag<L extends Lag<L, S>, S extends Section>
         return orientation.getOrientation();
     }
 
+    //----------//
+    // getRunAt //
+    //----------//
+    /**
+     * Report the run found at given coordinates, if any.
+     *
+     * @param x absolute abscissa
+     * @param y absolute ordinate
+     * @return  the run found, or null otherwise
+     */
+    public final Run getRunAt (int x,
+                               int y)
+    {
+        return runsTable.getRunAt(x, y);
+    }
+
     //------------------------//
     // getRunSelectionService //
     //------------------------//

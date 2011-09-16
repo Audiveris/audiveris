@@ -127,7 +127,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
     private PixelRectangle contourBox;
 
     /** Adjacent sections from other orientation */
-    private Set<L> crossSections;
+    private Set<S> crossSections;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -234,7 +234,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
      * A read-only access to adjacent sections from other orientation
      * @return the set of adjacent sections of the other orientation
      */
-    public Set<L> getCrossSections ()
+    public Set<S> getCrossSections ()
     {
         if (crossSections != null) {
             return Collections.unmodifiableSet(crossSections);
@@ -699,15 +699,15 @@ public class Section<L extends Lag, S extends Section<L, S>>
     //-----------------//
     /**
      * Register the adjacency of a section from the other orientation
-     * @param other the other section to remember
+     * @param otherSection the other section to remember
      */
-    public void addCrossSection (L other)
+    public void addCrossSection (S otherSection)
     {
         if (crossSections == null) {
-            crossSections = new HashSet<L>();
+            crossSections = new HashSet<S>();
         }
 
-        crossSections.add(other);
+        crossSections.add(otherSection);
     }
 
     //---------------//

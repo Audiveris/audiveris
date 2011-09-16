@@ -320,23 +320,41 @@ public class RunsTable
      * @return the pixel gray level
      */
     @Implement(PixelSource.class)
-    public int getPixel (int x,
-                         int y)
+    public final int getPixel (int x,
+                               int y)
+    {
+        Run run = getRunAt(x, y);
+
+        return (run != null) ? run.getLevel() : BACKGROUND;
+    }
+
+    //----------//
+    // getRunAt //
+    //----------//
+    /**
+     * Report the run found at given coordinates, if any.
+     *
+     * @param x absolute abscissa
+     * @param y absolute ordinate
+     * @return  the run found, or null otherwise
+     */
+    public final Run getRunAt (int x,
+                               int y)
     {
         Point     pt = orientation.oriented(new PixelPoint(x, y));
         List<Run> seq = getSequence(pt.y);
 
         for (Run run : seq) {
             if (run.getStart() > pt.x) {
-                return BACKGROUND;
+                return null;
             }
 
             if (run.getStop() >= pt.x) {
-                return run.getLevel();
+                return run;
             }
         }
 
-        return BACKGROUND;
+        return null;
     }
 
     //------------//

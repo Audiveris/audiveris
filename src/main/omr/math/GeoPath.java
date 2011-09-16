@@ -147,7 +147,7 @@ public class GeoPath
      * @param segmentKind the int-based segment kind
      * @return the label for the curve
      */
-    protected static String labelOf (int segmentKind)
+    public static String labelOf (int segmentKind)
     {
         switch (segmentKind) {
         case SEG_MOVETO :
