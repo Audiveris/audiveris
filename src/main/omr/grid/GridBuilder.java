@@ -9,7 +9,7 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.sheet.grid;
+package omr.grid;
 
 import omr.Main;
 
@@ -126,7 +126,7 @@ public class GridBuilder
             watch.start("retrieveLines");
             linesRetriever.retrieveLines();
 
-            // Retrieve the vertical barlines
+            // Retrieve the vertical barlines and thus the systems
             watch.start("barsRetriever");
             barsRetriever.buildInfo();
 
@@ -152,6 +152,9 @@ public class GridBuilder
                 sheet.setTargetBuilder(targetBuilder);
                 targetBuilder.buildInfo();
             }
+
+            // Temporary feature
+            new LagWeaver(sheet).buildInfo();
         } catch (Exception ex) {
             logger.warning(sheet.getLogPrefix() + "Error in GridBuilder", ex);
             ex.printStackTrace();
@@ -223,8 +226,8 @@ public class GridBuilder
     //-----------------//
     private void displayGridView ()
     {
-        GlyphLag         hLag = linesRetriever.getLag();
-        GlyphLag         vLag = barsRetriever.getLag();
+        GlyphLag         hLag = sheet.getHorizontalLag();
+        GlyphLag         vLag = sheet.getVerticalLag();
         GlyphsController hController = new GlyphsController(
             new GlyphsModel(sheet, hLag, Steps.valueOf(Steps.GRID)));
         GlyphsController vController = new GlyphsController(
@@ -236,8 +239,8 @@ public class GridBuilder
             hLag,
             barsRetriever,
             vLag,
-            null,
-            hController);
+            hController,
+            vController);
         gridView.colorizeAllSections();
 
         // Boards

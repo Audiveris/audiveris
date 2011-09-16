@@ -27,7 +27,7 @@ import omr.sheet.Ending;
 import omr.sheet.Ledger;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
-import omr.sheet.grid.StaffInfo;
+import omr.grid.StaffInfo;
 
 import omr.ui.Colors;
 import omr.ui.symbol.Alignment;

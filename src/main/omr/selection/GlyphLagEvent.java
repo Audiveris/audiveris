@@ -26,7 +26,7 @@ package omr.selection;
  * @author Hervé Bitteur
  */
 public abstract class GlyphLagEvent
-    extends UserEvent
+    extends LagEvent
 {
     //~ Constructors -----------------------------------------------------------
 

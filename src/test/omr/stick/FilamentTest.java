@@ -20,7 +20,7 @@ import omr.run.Run;
 import omr.score.common.PixelPoint;
 
 import omr.sheet.Scale;
-import omr.sheet.grid.Filament;
+import omr.grid.Filament;
 
 import org.junit.After;
 import org.junit.AfterClass;

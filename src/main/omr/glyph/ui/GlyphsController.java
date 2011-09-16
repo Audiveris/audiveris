@@ -152,10 +152,10 @@ public class GlyphsController
     // getLocationService //
     //--------------------//
     /**
-     * Report the event service to use for SheetLocationEvent
+     * Report the event service to use for LocationEvent
      * When no sheet is available, override this method to point to another
      * service
-     * @return the event service to use for SheetLocationEvent
+     * @return the event service to use for LocationEvent
      */
     public SelectionService getLocationService ()
     {

@@ -17,7 +17,7 @@ import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.visitor.ScoreVisitor;
 
-import omr.sheet.grid.StaffInfo;
+import omr.grid.StaffInfo;
 
 import omr.util.TreeNode;
 

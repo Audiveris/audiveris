@@ -9,7 +9,7 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.sheet.grid;
+package omr.grid;
 
 import omr.constant.ConstantSet;
 
@@ -17,6 +17,7 @@ import omr.log.Logger;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
+import omr.sheet.SystemInfo;
 
 import omr.util.Navigable;
 
@@ -48,7 +49,7 @@ public class SystemManager
     private final Sheet sheet;
 
     /** The sequence of systems, from top to bottom */
-    private final List<SystemFrame> systems = new ArrayList<SystemFrame>();
+    private final List<SystemInfo> systems = new ArrayList<SystemInfo>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -69,7 +70,7 @@ public class SystemManager
     //----------------//
     // getFirstSystem //
     //----------------//
-    public SystemFrame getFirstSystem ()
+    public SystemInfo getFirstSystem ()
     {
         if (systems.isEmpty()) {
             return null;
@@ -82,7 +83,7 @@ public class SystemManager
     // getIndexOf //
     //------------//
     ///TODO @Deprecated
-    public int getIndexOf (SystemFrame system)
+    public int getIndexOf (SystemInfo system)
     {
         return systems.indexOf(system);
     }
@@ -96,8 +97,8 @@ public class SystemManager
      * @param last the last system of the range
      * @return a view on this range
      */
-    public List<SystemFrame> getRange (SystemFrame first,
-                                       SystemFrame last)
+    public List<SystemInfo> getRange (SystemInfo first,
+                                      SystemInfo last)
     {
         return systems.subList(getIndexOf(first), getIndexOf(last) + 1);
     }
@@ -106,7 +107,7 @@ public class SystemManager
     // getSystem //
     //-----------//
     ///TODO @Deprecated
-    public SystemFrame getSystem (int index)
+    public SystemInfo getSystem (int index)
     {
         return systems.get(index);
     }
@@ -119,9 +120,9 @@ public class SystemManager
     //     * @param point the provided point
     //     * @return the nearest system, or null if none found
     //     */
-    //    public SystemFrame getSystemAt (Point2D point)
+    //    public SystemInfo getSystemAt (Point2D point)
     //    {
-    //        for (SystemFrame system : systems) {
+    //        for (SystemInfo system : systems) {
     //            Rectangle2D box = system.getAreaBounds();
     //
     //            if (point.getY() > box.getMaxY()) {
@@ -160,7 +161,7 @@ public class SystemManager
      * Assign the whole sequence of systems
      * @param systems  the (new) systems
      */
-    public void setSystems (Collection<SystemFrame> systems)
+    public void setSystems (Collection<SystemInfo> systems)
     {
         reset();
         this.systems.addAll(systems);
@@ -173,7 +174,7 @@ public class SystemManager
      * Report an unmodifiable view (perhaps empty) of list of current systems
      * @return a view on systems
      */
-    public List<SystemFrame> getSystems ()
+    public List<SystemInfo> getSystems ()
     {
         return Collections.unmodifiableList(systems);
     }
@@ -185,7 +186,7 @@ public class SystemManager
      * Append one system to the current collection
      * @param system the system to add
      */
-    public void addSystem (SystemFrame system)
+    public void addSystem (SystemInfo system)
     {
         systems.add(system);
     }
@@ -197,13 +198,13 @@ public class SystemManager
     //    {
     //        final int width = sheet.getWidth();
     //        final int height = sheet.getHeight();
-    //        SystemFrame prevSystem = null;
+    //        SystemInfo prevSystem = null;
     //        double    samplingDx = sheet.getScale()
     //                                    .toPixelsDouble(constants.samplingDx);
     //        final int sampleCount = (int) Math.rint(width / samplingDx);
     //        samplingDx = width / sampleCount;
     //
-    //        for (SystemFrame system : systems) {
+    //        for (SystemInfo system : systems) {
     //            if (prevSystem == null) {
     //                // Very first system
     //                system.setLimit(
@@ -250,7 +251,7 @@ public class SystemManager
     //     */
     //    public void render (Graphics2D g)
     //    {
-    //        for (SystemFrame system : systems) {
+    //        for (SystemInfo system : systems) {
     //            system.render(g);
     //        }
     //    }

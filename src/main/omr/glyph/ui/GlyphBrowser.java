@@ -30,7 +30,7 @@ import omr.selection.MouseMovement;
 import omr.selection.SelectionHint;
 import static omr.selection.SelectionHint.*;
 import omr.selection.SelectionService;
-import omr.selection.SheetLocationEvent;
+import omr.selection.LocationEvent;
 import omr.selection.UserEvent;
 
 import omr.ui.Board;
@@ -531,8 +531,8 @@ class GlyphBrowser
                 super.onEvent(event);
 
                 // Additional tasks
-                if (event instanceof SheetLocationEvent) {
-                    SheetLocationEvent sheetLocation = (SheetLocationEvent) event;
+                if (event instanceof LocationEvent) {
+                    LocationEvent sheetLocation = (LocationEvent) event;
 
                     if (sheetLocation.hint == SelectionHint.LOCATION_INIT) {
                         Rectangle rect = sheetLocation.rectangle;
@@ -555,7 +555,7 @@ class GlyphBrowser
                         // Display glyph contour
                         if (glyph != null) {
                             locationService.publish(
-                                new SheetLocationEvent(
+                                new LocationEvent(
                                     this,
                                     glyphEvent.hint,
                                     null,

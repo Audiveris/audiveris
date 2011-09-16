@@ -9,7 +9,7 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.sheet.grid;
+package omr.grid;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -26,18 +26,13 @@ import omr.lag.ui.SectionView;
 
 import omr.log.Logger;
 
-import omr.run.Run;
-
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
-
 import omr.selection.GlyphEvent;
+import omr.selection.GlyphIdEvent;
 import omr.selection.MouseMovement;
 import omr.selection.RunEvent;
 import omr.selection.SectionEvent;
+import omr.selection.SectionIdEvent;
 import omr.selection.SelectionHint;
-import omr.selection.SelectionService;
-import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
 
 import omr.ui.Colors;
@@ -45,21 +40,12 @@ import omr.ui.util.UIUtilities;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Stroke;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Class {@code GridView} is a special {@link GlyphLagView}, meant as a
  * companion of {@link GridBuilder} with its 2 lags (horizontal & vertical).
- *
  * <p>We paint on the same display the vertical and horizontal sections.
- * The color depends on the section length, darker for the longest and
- * brighter for the shortest.
- *
- * <p>TODO: The handling of two lags is still rudimentary both for display and
- * for boards. To be improved.
  *
  * @author Hervé Bitteur
  */
@@ -77,13 +63,19 @@ public class GridView
     //~ Instance fields --------------------------------------------------------
 
     // Companion for horizontals (staff lines)
-    private final LinesRetriever linesRetriever;
+    private final LinesRetriever     linesRetriever;
 
     // Companion for verticals (barlines)
-    private final BarsRetriever barsRetriever;
+    private final BarsRetriever      barsRetriever;
+
+    // Main lag (Horizontal)
+    private final GlyphLag           hLag;
 
     // Additional lag (Vertical)
-    private final GlyphLag vLag;
+    private final GlyphLag           vLag;
+
+    // Separate end-point for vLag events
+    private final VerticalSubscriber verticalSubscriber;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -95,22 +87,24 @@ public class GridView
      *
      * @param linesRetriever the related lines retriever
      * @param hLag horizontal lag
+     * @param barsRetriever the related bars retriever
      * @param vLag vertical lag
-     * @param specifics specific sections if any
-     * @param controller glyphs controller
+     * @param hController horizontal glyphs controller
+     * @param vController vertical glyphs controller
      */
-    public GridView (LinesRetriever     linesRetriever,
-                     GlyphLag           hLag,
-                     BarsRetriever      barsRetriever,
-                     GlyphLag           vLag,
-                     List<GlyphSection> specifics,
-                     GlyphsController   controller)
+    public GridView (LinesRetriever   linesRetriever,
+                     GlyphLag         hLag,
+                     BarsRetriever    barsRetriever,
+                     GlyphLag         vLag,
+                     GlyphsController hController,
+                     GlyphsController vController)
     {
-        super(hLag, specifics, constants.displaySpecifics, controller, null);
+        super(hLag, null, constants.displaySpecifics, hController, null);
 
         setName("Grid-View");
         this.linesRetriever = linesRetriever;
         this.barsRetriever = barsRetriever;
+        this.hLag = hLag;
 
         // Additional stuff for vLag
         this.vLag = vLag;
@@ -119,6 +113,9 @@ public class GridView
         for (GlyphSection section : vLag.getVertices()) {
             addSectionView(section);
         }
+
+        // Companion listening to vLag events
+        verticalSubscriber = new VerticalSubscriber(vController);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -135,7 +132,7 @@ public class GridView
 
             // All staff glyphs candidates
             for (Glyph glyph : lag.getActiveGlyphs()) {
-                glyph.colorize(viewIndex, Colors.GRID_HORIZONTAL_SHAPED);
+                glyph.colorize(viewIndex, Colors.GRID_HORIZONTAL_ACTIVE);
             }
 
             // Glyphs actually parts of true staff lines
@@ -186,19 +183,14 @@ public class GridView
     public void onEvent (UserEvent event)
     {
         try {
-            // Ignore RELEASING
             if (event.movement == MouseMovement.RELEASING) {
-                return;
+                return; // Ignore RELEASING
             }
 
-            // Let's work on hLag first
+            // Nullify the other side (if entering ids on this side)
+            nullifyData(event, otherLag(getLag()));
+
             super.onEvent(event);
-
-            // Then additional stuff for vLag, if any
-            if (event instanceof SheetLocationEvent) {
-                // Location => ...
-                handleEvent((SheetLocationEvent) event);
-            }
         } catch (Exception ex) {
             logger.warning(getClass().getName() + " onEvent error", ex);
         }
@@ -228,6 +220,32 @@ public class GridView
         super.render(g);
 
         g.setStroke(oldStroke);
+    }
+
+    //-----------//
+    // subscribe //
+    //-----------//
+    /**
+     * Overidden to trigger the subscription of vertical companion
+     */
+    @Override
+    public void subscribe ()
+    {
+        super.subscribe(); // GridView (hLag + location)
+        verticalSubscriber.subscribe(); // Vertical (vLag + location)
+    }
+
+    //-------------//
+    // unsubscribe //
+    //-------------//
+    /**
+     * Overidden to trigger the unsubscription of vertical companion
+     */
+    @Override
+    public void unsubscribe ()
+    {
+        super.unsubscribe(); // GridView (hLag + location)
+        verticalSubscriber.unsubscribe(); // Vertical (vLag + location)
     }
 
     //-----------------//
@@ -280,64 +298,53 @@ public class GridView
     }
 
     //-------------//
-    // handleEvent //
+    // nullifyData //
     //-------------//
     /**
-     * Interest in sheet location => run, section, glyph
-     *
-     * This is meant for vLag only
-     * @param sheetLocation
+     * Publish null values for Run, Section and Glyph events on the provided lag
+     * @param lag the lag to nullify
      */
-    private void handleEvent (SheetLocationEvent sheetLocationEvent)
+    private void nullifyData (UserEvent event,
+                              GlyphLag  lag)
     {
-        SelectionHint  hint = sheetLocationEvent.hint;
-        MouseMovement  movement = sheetLocationEvent.movement;
-        PixelRectangle rect = sheetLocationEvent.rectangle;
+        if (event instanceof SectionIdEvent || event instanceof GlyphIdEvent) {
+            SelectionHint hint = event.hint;
+            MouseMovement movement = event.movement;
 
-        if ((hint != SelectionHint.LOCATION_ADD) &&
-            (hint != SelectionHint.LOCATION_INIT)) {
-            return;
+            // Nullify Run  entity
+            lag.getRunSelectionService()
+               .publish(new RunEvent(this, hint, movement, null));
+
+            // Nullify Section entity
+            lag.getSelectionService()
+               .publish(
+                new SectionEvent<GlyphSection>(this, hint, movement, null));
+
+            // Nullify Glyph entity
+            lag.getSelectionService()
+               .publish(new GlyphEvent(this, hint, movement, null));
+        }
+    }
+
+    //----------//
+    // otherLag //
+    //----------//
+    /**
+     * Report the lag for the other orientation
+     * @param lag the current lag
+     * @return the other lag
+     */
+    private GlyphLag otherLag (GlyphLag lag)
+    {
+        if (lag == vLag) {
+            return hLag;
         }
 
-        if (rect == null) {
-            return;
+        if (lag == hLag) {
+            return vLag;
         }
 
-        SelectionService service = vLag.getSelectionService();
-        Glyph            glyph = null;
-
-        if ((rect.width > 0) || (rect.height > 0)) {
-            // This is a non-degenerated rectangle
-            // Look for enclosed glyph
-            Set<Glyph> glyphsFound = vLag.lookupGlyphs(rect);
-            // Publish Glyph (and the related 1-glyph GlyphSet)
-            glyph = glyphsFound.isEmpty() ? null : glyphsFound.iterator()
-                                                              .next();
-            service.publish(new GlyphEvent(this, hint, movement, glyph));
-        } else {
-            // This is just a point, look for section & glyph
-            PixelPoint   pt = rect.getLocation();
-
-            // No specifics, look into lag
-            GlyphSection section = vLag.lookupSection(vLag.getVertices(), pt);
-
-            // Publish Run information
-            Point orientedPt = vLag.oriented(pt);
-            Run   run = (section != null) ? section.getRunAt(orientedPt.y) : null;
-            vLag.getRunSelectionService()
-                .publish(new RunEvent(this, hint, movement, run));
-
-            // Publish Section information
-            service.publish(
-                new SectionEvent<GlyphSection>(this, hint, movement, section));
-
-            // Publish Glyph information
-            if (section != null) {
-                glyph = section.getGlyph();
-            }
-
-            service.publish(new GlyphEvent(this, hint, movement, glyph));
-        }
+        throw new IllegalArgumentException("Invalid lag: " + lag);
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -359,5 +366,46 @@ public class GridView
         Constant.Boolean showCombs = new Constant.Boolean(
             true,
             "Should we show staff lines combs?");
+    }
+
+    //--------------------//
+    // VerticalSubscriber //
+    //--------------------//
+    /**
+     * A subscriber dedicated to vLag related events, since we need an endpoint
+     * kept separate from standard GlyphLagView used for hLag.
+     */
+    private class VerticalSubscriber
+        extends GlyphLagView
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public VerticalSubscriber (GlyphsController vController)
+        {
+            super(vLag, null, constants.displaySpecifics, vController, null);
+            setName("Vertical");
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        //---------//
+        // onEvent //
+        //---------//
+        @Override
+        public void onEvent (UserEvent event)
+        {
+            try {
+                if (event.movement == MouseMovement.RELEASING) {
+                    return; // Ignore RELEASING
+                }
+
+                // Nullify the other side (if entering ids on this side)
+                nullifyData(event, otherLag(getLag()));
+
+                super.onEvent(event);
+            } catch (Exception ex) {
+                logger.warning(getClass().getName() + " onEvent error", ex);
+            }
+        }
     }
 }

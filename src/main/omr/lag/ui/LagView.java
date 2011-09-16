@@ -27,6 +27,8 @@ import omr.run.Run;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
+import omr.selection.LagEvent;
+import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
 import omr.selection.RunEvent;
 import omr.selection.SectionEvent;
@@ -35,7 +37,6 @@ import omr.selection.SectionSetEvent;
 import omr.selection.SelectionHint;
 import static omr.selection.SelectionHint.*;
 import omr.selection.SelectionService;
-import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
 
 import omr.ui.Colors;
@@ -82,11 +83,11 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(LagView.class);
 
-    /** (Lag) events this entity is interested in */
-    private static final Collection<Class<?extends UserEvent>> eventClasses;
+    /** Lag events this entity is interested in */
+    private static final Collection<Class<?extends LagEvent>> eventClasses;
 
     static {
-        eventClasses = new ArrayList<Class<?extends UserEvent>>();
+        eventClasses = new ArrayList<Class<?extends LagEvent>>();
         eventClasses.add(SectionEvent.class);
         eventClasses.add(SectionIdEvent.class);
         eventClasses.add(SectionSetEvent.class);
@@ -131,9 +132,11 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         this.lag = lag;
         lag.addView(this);
 
-        // Location service
+        // Lag-related service
         lagSelectionService = lag.getSelectionService();
-        setLocationService(locationService, SheetLocationEvent.class);
+
+        // Location service
+        setLocationService(locationService);
 
         // Remember specific sections
         this.showingSpecifics = showingSpecifics;
@@ -317,11 +320,14 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
             // Default behavior : making point visible & drawing the markers
             super.onEvent(event);
 
-            if (event instanceof SheetLocationEvent) { // Location => Section(s) & Run
-                handleEvent((SheetLocationEvent) event);
-            } else if (event instanceof SectionIdEvent) { // Section ID => Section
+            if (event instanceof LocationEvent) {
+                // Location => Section(s) & Run
+                handleEvent((LocationEvent) event);
+            } else if (event instanceof SectionIdEvent) {
+                // Section ID => Section
                 handleEvent((SectionIdEvent) event);
-            } else if (event instanceof SectionEvent) { // Section => contour & SectionSet update
+            } else if (event instanceof SectionEvent) {
+                // Section => contour & SectionSet update
                 handleEvent((SectionEvent) event);
             }
         } catch (Exception ex) {
@@ -333,18 +339,26 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     // publish //
     //---------//
     /**
-     * Publish on LagController event service
+     * Publish on Lag selection service
      * @param event the event to publish
      */
-    public void publish (UserEvent event)
+    public void publish (LagEvent event)
     {
-        if (event instanceof RunEvent) {
-            // Delegate to RunsTable
-            lag.getRunSelectionService()
-               .publish(event);
-        } else {
-            lagSelectionService.publish(event);
-        }
+        lagSelectionService.publish(event);
+    }
+
+    //---------//
+    // publish //
+    //---------//
+    /**
+     * Publish a RunEvent on RunsTable service
+     * @param event the event to publish
+     */
+    public void publish (RunEvent event)
+    {
+        // Delegate to RunsTable
+        lag.getRunSelectionService()
+           .publish(event);
     }
 
     //---------//
@@ -406,12 +420,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         super.subscribe();
 
         // Subscribe to lag events
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                getClass().getName() + " LC subscribing to " + eventClasses);
-        }
-
-        for (Class<?extends UserEvent> eventClass : eventClasses) {
+        for (Class<?extends LagEvent> eventClass : eventClasses) {
             subscribe(eventClass, this);
         }
     }
@@ -420,21 +429,15 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     // subscribe //
     //-----------//
     /**
-     * Subscribe to the LagController event service for a specific class
+     * Subscribe to the Lag selection service for a specific class
      * @param eventClass the class of published objects to subscriber listen to
      * @param subscriber The subscriber that will accept the events of the event
      * class when published.
      */
-    public void subscribe (Class<?extends UserEvent> eventClass,
+    public void subscribe (Class<?extends LagEvent> eventClass,
                            EventSubscriber           subscriber)
     {
-        if (eventClass.isAssignableFrom(RunEvent.class)) {
-            // Delegate to runs table
-            lag.getRunSelectionService()
-               .subscribe(eventClass, subscriber);
-        } else {
-            lagSelectionService.subscribe(eventClass, subscriber);
-        }
+        lagSelectionService.subscribeStrongly(eventClass, subscriber);
     }
 
     //-------------//
@@ -446,17 +449,11 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
     @Override
     public void unsubscribe ()
     {
-        // Unsubscribe to location events
+        // Unsubscribe to Location events
         super.unsubscribe();
 
         // Unsubscribe to lag events
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                getClass().getName() + " LC unsubscribing from " +
-                eventClasses);
-        }
-
-        for (Class<?extends UserEvent> eventClass : eventClasses) {
+        for (Class<?extends LagEvent> eventClass : eventClasses) {
             unsubscribe(eventClass, this);
         }
     }
@@ -469,16 +466,10 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
      * @param eventClass the class of interesting events
      * @param subscriber the entity to unsubscribe
      */
-    public void unsubscribe (Class<?extends UserEvent> eventClass,
-                             EventSubscriber           subscriber)
+    public void unsubscribe (Class<?extends LagEvent> eventClass,
+                             EventSubscriber          subscriber)
     {
-        if (eventClass.isAssignableFrom(RunEvent.class)) {
-            // Delegate to runs table
-            lag.getRunSelectionService()
-               .unsubscribe(eventClass, subscriber);
-        } else {
-            lagSelectionService.unsubscribe(eventClass, subscriber);
-        }
+        lagSelectionService.unsubscribe(eventClass, subscriber);
     }
 
     //-----------------//
@@ -600,7 +591,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
         if (hint == SelectionHint.SECTION_INIT) {
             // Publish section contour
             publish(
-                new SheetLocationEvent(
+                new LocationEvent(
                     this,
                     hint,
                     null,
@@ -697,7 +688,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
      * Interest in SheetLocation => Section(s) & Run
      * @param sheetLocation
      */
-    private void handleEvent (SheetLocationEvent sheetLocationEvent)
+    private void handleEvent (LocationEvent sheetLocationEvent)
     {
         if (logger.isFineEnabled()) {
             logger.fine("LagView. sheetLocation:" + sheetLocationEvent);
@@ -716,8 +707,7 @@ public class LagView<L extends Lag<L, S>, S extends Section<L, S>>
 
         //        // Optimization : do the lookup only if observers other
         //        // than this controller are present
-        //        if ((subscribersCount(RunEvent.class) == 0) &&
-        //            (subscribersCount(SectionEvent.class) <= 1) &&
+        //        if ((subscribersCount(SectionEvent.class) <= 1) &&
         //            (subscribersCount(GlyphEvent.class) == 0)) {
         //            return;
         //        }

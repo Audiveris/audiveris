@@ -24,7 +24,7 @@ import omr.log.Logger;
  * selected sheet as {@link SheetEvent}
  *
  * <li>Sheet event service: each Sheet instance handles events of types
- * {@link SheetLocationEvent} and {@link PixelLevelEvent}
+ * {@link LocationEvent} and {@link PixelLevelEvent}
  *
  * <li>Lag event service: each Lag instance handles {@link RunEvent}, {@link
  * SectionEvent} and {@link SectionIdEvent} (all are subclasses of {@link

@@ -23,7 +23,7 @@ import omr.score.common.PixelDimension;
 import omr.selection.MouseMovement;
 import omr.selection.PixelLevelEvent;
 import omr.selection.SelectionService;
-import omr.selection.SheetLocationEvent;
+import omr.selection.LocationEvent;
 
 import omr.util.Implement;
 import omr.util.JaiLoader;
@@ -77,7 +77,7 @@ import javax.media.jai.RenderedImageAdapter;
  * TODO: work on grayFactor
  */
 public class Picture
-    implements PixelSource, EventSubscriber<SheetLocationEvent>
+    implements PixelSource, EventSubscriber<LocationEvent>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -409,7 +409,7 @@ public class Picture
      * @param event the (sheet) location event
      */
     @Implement(EventSubscriber.class)
-    public void onEvent (SheetLocationEvent event)
+    public void onEvent (LocationEvent event)
     {
         try {
             // Ignore RELEASING

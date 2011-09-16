@@ -9,7 +9,9 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.sheet.grid;
+package omr.grid;
+
+import omr.sheet.SystemInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +27,7 @@ public class TargetSystem
     //~ Instance fields --------------------------------------------------------
 
     /** Raw information */
-    public final SystemFrame info;
+    public final SystemInfo info;
 
     /** Id for debug */
     public final int id;
@@ -55,10 +57,10 @@ public class TargetSystem
      * @param left abscissa of left
      * @param right abscissa of right
      */
-    public TargetSystem (SystemFrame info,
-                         double      top,
-                         double      left,
-                         double      right)
+    public TargetSystem (SystemInfo info,
+                         double     top,
+                         double     left,
+                         double     right)
     {
         this.info = info;
         this.top = top;

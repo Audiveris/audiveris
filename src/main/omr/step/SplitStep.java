@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                           S y s t e m s S t e p                            //
+//                             S p l i t S t e p                              //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -17,26 +17,26 @@ import omr.sheet.SystemInfo;
 import java.util.Collection;
 
 /**
- * Class {@code SystemsStep} retrieves the vertical bar lines, and thus the
- * systems
+ * Class {@code SplitStep} splits entities among retrieved systems according
+ * to precise systemss boundaries
  *
  * @author Hervé Bitteur
  */
-public class SystemsStep
+public class SplitStep
     extends AbstractStep
 {
     //~ Constructors -----------------------------------------------------------
 
-    //-------------//
-    // SystemsStep //
-    //-------------//
+    //-----------//
+    // SplitStep //
+    //-----------//
     /**
-     * Creates a new SystemsStep object.
+     * Creates a new SplitStep object.
      */
-    public SystemsStep ()
+    public SplitStep ()
     {
         super(
-            Steps.SYSTEMS,
+            Steps.SPLIT,
             Level.SHEET_LEVEL,
             Mandatory.MANDATORY,
             Redoable.REDOABLE,

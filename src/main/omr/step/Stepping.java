@@ -283,6 +283,7 @@ public class Stepping
             }
 
             // Schedule the steps on each sheet
+            logger.info("orderedSteps: " + orderedSteps);
             scheduleScoreStepSet(orderedSteps, score);
 
             // Record the step tasks to script
@@ -559,12 +560,15 @@ public class Stepping
      * Organize the scheduling of steps at score level among the sheets, since
      * some steps have certain requirements
      *
-     * @param stepSet the set of steps
+     * @param orderedSet the sequence of steps
      * @param score the score to be processed
      */
-    private static void scheduleScoreStepSet (final SortedSet<Step> stepSet,
-                                              final Score           score)
+    private static void scheduleScoreStepSet (SortedSet<Step> orderedSet,
+                                              Score           score)
     {
+        // Make a copy, so that we can modify the step set locally
+        SortedSet<Step> stepSet = new TreeSet<Step>(orderedSet);
+
         if (stepSet.isEmpty()) {
             return;
         }

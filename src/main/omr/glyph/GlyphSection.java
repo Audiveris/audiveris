@@ -29,9 +29,9 @@ import java.util.Comparator;
  * Class <code>GlyphSection</code> implements a specific class of section, meant
  * for easy glyph elaboration.
  *
- * Such sections are defined as naturally ordered, first on their position
- * (abscissa for vertical sections), then on their coordinate (ordinate for
- * vertical sections).
+ * <p>Such sections are defined as naturally ordered, first on their absolute
+ * abscissa, then on their absolute ordinate. We thus can have ordered
+ * mixed collections (composed of vertical and horizontal sections).
  *
  * @author Hervé Bitteur
  */
@@ -265,8 +265,8 @@ public class GlyphSection
     // compareTo //
     //-----------//
     /**
-     * Needed to implement Comparable, sorting sections first by coordinate,
-     * then by position.
+     * Needed to implement Comparable, sorting sections first by absolute
+     * abscissa, then by absolute ordinate.
      *
      * @param other the other section to compare to
      * @return the result of ordering

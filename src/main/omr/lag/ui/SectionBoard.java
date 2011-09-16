@@ -229,14 +229,15 @@ public class SectionBoard
                             Integer sectionId = (Integer) id.getValue();
 
                             if (logger.isFineEnabled()) {
-                                logger.fine("sectionId=" + sectionId);
+                                logger.fine(
+                                    "sectionId=" + sectionId + " for " + lag);
                             }
 
                             idSelecting = true;
                             lag.getSelectionService()
                                .publish(
                                 new SectionIdEvent(
-                                    this,
+                                    SectionBoard.this,
                                     SelectionHint.SECTION_INIT,
                                     sectionId));
                             idSelecting = false;
@@ -294,6 +295,15 @@ public class SectionBoard
         } catch (Exception ex) {
             logger.warning(getClass().getName() + " onEvent error", ex);
         }
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return lag.getName() + "SectionBoard";
     }
 
     //--------------//

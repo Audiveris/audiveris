@@ -25,7 +25,7 @@ import omr.math.Line;
 
 import omr.run.Run;
 
-import omr.sheet.grid.LineInfo;
+import omr.grid.LineInfo;
 
 import omr.step.StepException;
 

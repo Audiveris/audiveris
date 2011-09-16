@@ -9,7 +9,7 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.sheet.grid;
+package omr.grid;
 
 import omr.Main;
 
@@ -890,6 +890,8 @@ public class ClustersRetriever
 
         // Discard non-clustered filaments
         discardNonClusteredFilaments();
+
+        removeMergedFilaments();
 
         // Debug
         if (logger.isFineEnabled()) {

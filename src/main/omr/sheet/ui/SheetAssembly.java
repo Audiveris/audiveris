@@ -17,7 +17,7 @@ import omr.log.Logger;
 
 import omr.score.common.PixelRectangle;
 
-import omr.selection.SheetLocationEvent;
+import omr.selection.LocationEvent;
 
 import omr.sheet.Sheet;
 
@@ -598,19 +598,15 @@ public class SheetAssembly
                 displayBoards();
             }
 
-            // Force update of SheetLocationEvent
-            SheetLocationEvent locationEvent = (SheetLocationEvent) locationService.getLastEvent(
-                SheetLocationEvent.class);
-            PixelRectangle     location = (locationEvent != null)
-                                          ? locationEvent.getData() : null;
+            // Force update of LocationEvent
+            LocationEvent  locationEvent = (LocationEvent) locationService.getLastEvent(
+                LocationEvent.class);
+            PixelRectangle location = (locationEvent != null)
+                                      ? locationEvent.getData() : null;
 
             if (location != null) {
                 locationService.publish(
-                    new SheetLocationEvent(
-                        this,
-                        locationEvent.hint,
-                        null,
-                        location));
+                    new LocationEvent(this, locationEvent.hint, null, location));
             }
 
             // Keep the same scroll bar positions as with previous tab

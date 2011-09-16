@@ -9,7 +9,7 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.sheet.grid;
+package omr.grid;
 
 import omr.Main;
 
@@ -40,6 +40,7 @@ import omr.score.common.PixelRectangle;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.Skew;
+import omr.sheet.SystemInfo;
 import omr.sheet.ui.PixelBoard;
 
 import omr.stick.StickSection;
@@ -148,18 +149,6 @@ public class LinesRetriever
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------//
-    // getLag //
-    //--------//
-    /**
-     * Report the horizontal lag
-     * @return horizontal lag
-     */
-    public GlyphLag getLag ()
-    {
-        return hLag;
-    }
-
     //----------//
     // buildLag //
     //----------//
@@ -173,6 +162,7 @@ public class LinesRetriever
                                boolean   showRuns)
     {
         hLag = new GlyphLag("hLag", StickSection.class, Orientation.HORIZONTAL);
+        sheet.setHorizontalLag(hLag);
 
         // Create filament factory
         try {
@@ -440,6 +430,22 @@ public class LinesRetriever
                       boolean    showTangents,
                       boolean    showCombs)
     {
+        // Combs stuff?
+        if (showCombs) {
+            if (clustersRetriever != null) {
+                clustersRetriever.renderItems(g);
+            }
+
+            if (secondClustersRetriever != null) {
+                secondClustersRetriever.renderItems(g);
+            }
+        }
+
+        // Filament lines?
+        if (constants.showHorizontalLines.getValue() == false) {
+            return;
+        }
+
         List<LineFilament> allFils = new ArrayList<LineFilament>(filaments);
 
         if (secondFilaments != null) {
@@ -484,17 +490,6 @@ public class LinesRetriever
         }
 
         g.setStroke(oldStroke);
-
-        // Combs stuff?
-        if (showCombs) {
-            if (clustersRetriever != null) {
-                clustersRetriever.renderItems(g);
-            }
-
-            if (secondClustersRetriever != null) {
-                secondClustersRetriever.renderItems(g);
-            }
-        }
     }
 
     //----------------//
@@ -751,8 +746,8 @@ public class LinesRetriever
         int iMin = 0;
         int iMax = discardedFilaments.size() - 1;
 
-        for (SystemFrame system : sheet.getSystemManager()
-                                       .getSystems()) {
+        for (SystemInfo system : sheet.getSystemManager()
+                                      .getSystems()) {
             for (StaffInfo staff : system.getStaves()) {
                 for (LineInfo l : staff.getLines()) {
                     FilamentLine   line = (FilamentLine) l;
@@ -821,8 +816,8 @@ public class LinesRetriever
         // Inclusion on the fly would imply recomputation of filament at each
         // section inclusion. So we need to retrieve all "stickers" for a given
         // staff line, and perform a global inclusion at the end only.
-        for (SystemFrame system : sheet.getSystemManager()
-                                       .getSystems()) {
+        for (SystemInfo system : sheet.getSystemManager()
+                                      .getSystems()) {
             for (StaffInfo staff : system.getStaves()) {
                 for (LineInfo l : staff.getLines()) {
                     FilamentLine   line = (FilamentLine) l;
@@ -937,7 +932,7 @@ public class LinesRetriever
             1.4,
             "Maximum sticker thickness");
         Scale.AreaFraction maxThinStickerWeight = new Scale.AreaFraction(
-            0.1,
+            0.06,
             "Maximum weight for a thin sticker");
 
         // Constants specified WRT mean interline
@@ -951,9 +946,9 @@ public class LinesRetriever
 
         // Constants for display
         //
-        Constant.Boolean showLinesOnRuns = new Constant.Boolean(
-            false,
-            "Should we display lines on top of runs?");
+        Constant.Boolean showHorizontalLines = new Constant.Boolean(
+            true,
+            "Should we display the horizontal lines?");
         Constant.Double  splineThickness = new Constant.Double(
             "thickness",
             0.5,
@@ -1096,7 +1091,7 @@ public class LinesRetriever
         @Override
         protected void renderItems (Graphics2D g)
         {
-            if (constants.showLinesOnRuns.getValue()) {
+            if (constants.showHorizontalLines.getValue()) {
                 LinesRetriever.this.renderItems(g, false, false);
             }
         }

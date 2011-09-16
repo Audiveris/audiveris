@@ -16,7 +16,6 @@ import omr.run.Run;
 /**
  * Class <code>RunEvent</code> represents a Run selection
  *
- *
  * <dl>
  * <dt><b>Publishers:</b><dd>GlyphLag, Lag, LagView
  * <dt><b>Subscribers:</b><dd>RunBoard
@@ -25,7 +24,7 @@ import omr.run.Run;
  * @author Hervé Bitteur
  */
 public class RunEvent
-    extends LagEvent
+    extends UserEvent
 {
     //~ Instance fields --------------------------------------------------------
 

@@ -15,8 +15,8 @@ import omr.glyph.GlyphLag;
 
 import omr.log.Logger;
 
-import omr.sheet.grid.LineInfo;
-import omr.sheet.grid.StaffInfo;
+import omr.grid.LineInfo;
+import omr.grid.StaffInfo;
 
 import omr.step.StepException;
 

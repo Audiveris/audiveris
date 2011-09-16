@@ -22,7 +22,6 @@ import omr.constant.ConstantSet;
 import omr.glyph.GlyphLag;
 import omr.glyph.GlyphSectionsBuilder;
 import omr.glyph.GlyphsModel;
-import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 import omr.glyph.facets.Stick;
 import omr.glyph.ui.BarMenu;
@@ -45,13 +44,11 @@ import omr.selection.GlyphEvent;
 import omr.selection.MouseMovement;
 import omr.selection.SelectionHint;
 import omr.selection.SelectionService;
-import omr.selection.SheetLocationEvent;
+import omr.selection.LocationEvent;
 import omr.selection.UserEvent;
 
 import omr.sheet.BarsChecker.BarCheckSuite;
 import omr.sheet.SystemsBuilder.BarsController;
-import omr.sheet.grid.StaffInfo;
-import omr.sheet.grid.StaffManager;
 import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.SheetPainter;
 
@@ -76,9 +73,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
@@ -96,7 +91,7 @@ import java.util.TreeSet;
  * retrieved information.</p>
  *
  * <p>Systems define their own area, which may be more complex than a simple
- * ordinate getRange, in order to precisely define which glyph belongs to which
+ * ordinate range, in order to precisely define which glyph belongs to which
  * system. The user has the ability to interactively modify the broken line
  * that defines the limit between two adjacent systems.</p>
  *
@@ -163,7 +158,7 @@ public class SystemsBuilder
         super(
             sheet,
             new GlyphLag("oldvLag", StickSection.class, Orientation.VERTICAL),
-            Steps.valueOf(Steps.SYSTEMS));
+            Steps.valueOf(Steps.SPLIT));
 
         scale = sheet.getScale();
         systems = sheet.getSystems();
@@ -311,114 +306,116 @@ public class SystemsBuilder
     private void buildSystemsAndParts ()
         throws StepException
     {
-        systems.clear();
+        logger.severe("buildSystemsAndParts to be re-implemented");
 
-        final StaffManager staffManager = sheet.getStaffManager();
-        final int          staffNb = staffManager.getStaffCount();
-
-        // A way to tell the containing System for each staff, by providing the
-        // staff index of the starting staff of the containing system.
-        int[] systemStarts = new int[staffNb];
-        Arrays.fill(systemStarts, -1);
-
-        // A way to tell the containing Part for each staff, by providing the
-        // staff index of the starting staff of the containing part.
-        int[] partStarts = new int[staffNb];
-        Arrays.fill(partStarts, -1);
-
-        // We need an abscissa-ordered collection of glyphs, so that system
-        // defining bars are seen first
-        List<Glyph> glyphs = new ArrayList<Glyph>(lag.getAllGlyphs());
-        Collections.sort(glyphs, Glyph.globalComparator);
-
-        for (Glyph glyph : glyphs) {
-            Stick stick = (Stick) glyph;
-
-            if (stick.isBar() &&
-                ((stick.getResult() == BarsChecker.BAR_PART_DEFINING) ||
-                (stick.getShape() == Shape.PART_DEFINING_BARLINE))) {
-                BarsChecker.StaffAnchors pair = barsChecker.getStaffAnchors(
-                    stick);
-
-                for (int i = pair.top; i <= pair.bot; i++) {
-                    if (systemStarts[i] == -1) {
-                        systemStarts[i] = pair.top;
-                    }
-
-                    partStarts[i] = pair.top;
-                }
-            }
-        }
-
-        // Sanity check on the systems found
-        for (int i = 0; i < systemStarts.length; i++) {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "staff=" + i + " systemStart=" + systemStarts[i] +
-                    " partStart=" + partStarts[i]);
-            }
-
-            if (systemStarts[i] == -1) {
-                logger.warning("No system found for staff " + i);
-            }
-        }
-
-        int        id = 0; // Id for created SystemInfo's
-        int        sStart = -1; // Current system start
-        SystemInfo system = null; // Current system info
-        int        pStart = -1; // Current part start
-        PartInfo   part = null; // Current part info
-
-        for (int i = 0; i < systemStarts.length; i++) {
-            // Skip staves with no system
-            if (systemStarts[i] == -1) {
-                continue;
-            }
-
-            StaffInfo staff = staffManager.getStaff(i);
-
-            // System break ?
-            if (systemStarts[i] != sStart) {
-                system = new SystemInfo(++id, sheet);
-                systems.add(system);
-                sStart = i;
-            }
-
-            system.addStaff(staff);
-
-            // Part break ?
-            if (partStarts[i] != pStart) {
-                part = new PartInfo();
-                system.addPart(part);
-                pStart = i;
-            }
-
-            part.addStaff(staff);
-        }
-
-        // Specific degraded case, just one staff, no bar stick
-        if (systems.isEmpty() && (staffNb == 1)) {
-            StaffInfo singleStaff = staffManager.getFirstStaff();
-            system = new SystemInfo(++id, sheet);
-            systems.add(system);
-            system.addStaff(singleStaff);
-            part = new PartInfo();
-            system.addPart(part);
-            part.addStaff(singleStaff);
-            logger.warning("Created one system, one part, one staff");
-        }
-
-        if (logger.isFineEnabled()) {
-            for (SystemInfo systemInfo : systems) {
-                Main.dumping.dump(systemInfo);
-
-                int i = 0;
-
-                for (PartInfo partInfo : systemInfo.getParts()) {
-                    Main.dumping.dump(partInfo, "Part #" + ++i, 1);
-                }
-            }
-        }
+        //        systems.clear();
+        //
+        //        final StaffManager staffManager = sheet.getStaffManager();
+        //        final int          staffNb = staffManager.getStaffCount();
+        //
+        //        // A way to tell the containing System for each staff, by providing the
+        //        // staff index of the starting staff of the containing system.
+        //        int[] systemStarts = new int[staffNb];
+        //        Arrays.fill(systemStarts, -1);
+        //
+        //        // A way to tell the containing Part for each staff, by providing the
+        //        // staff index of the starting staff of the containing part.
+        //        int[] partStarts = new int[staffNb];
+        //        Arrays.fill(partStarts, -1);
+        //
+        //        // We need an abscissa-ordered collection of glyphs, so that system
+        //        // defining bars are seen first
+        //        List<Glyph> glyphs = new ArrayList<Glyph>(lag.getAllGlyphs());
+        //        Collections.sort(glyphs, Glyph.globalComparator);
+        //
+        //        for (Glyph glyph : glyphs) {
+        //            Stick stick = (Stick) glyph;
+        //
+        //            if (stick.isBar() &&
+        //                ((stick.getResult() == BarsChecker.BAR_PART_DEFINING) ||
+        //                (stick.getShape() == Shape.PART_DEFINING_BARLINE))) {
+        //                BarsChecker.StaffAnchors pair = barsChecker.getStaffAnchors(
+        //                    stick);
+        //
+        //                for (int i = pair.top; i <= pair.bot; i++) {
+        //                    if (systemStarts[i] == -1) {
+        //                        systemStarts[i] = pair.top;
+        //                    }
+        //
+        //                    partStarts[i] = pair.top;
+        //                }
+        //            }
+        //        }
+        //
+        //        // Sanity check on the systems found
+        //        for (int i = 0; i < systemStarts.length; i++) {
+        //            if (logger.isFineEnabled()) {
+        //                logger.fine(
+        //                    "staff=" + i + " systemStart=" + systemStarts[i] +
+        //                    " partStart=" + partStarts[i]);
+        //            }
+        //
+        //            if (systemStarts[i] == -1) {
+        //                logger.warning("No system found for staff " + i);
+        //            }
+        //        }
+        //
+        //        int        id = 0; // Id for created SystemInfo's
+        //        int        sStart = -1; // Current system start
+        //        SystemInfo system = null; // Current system info
+        //        int        pStart = -1; // Current part start
+        //        PartInfo   part = null; // Current part info
+        //
+        //        for (int i = 0; i < systemStarts.length; i++) {
+        //            // Skip staves with no system
+        //            if (systemStarts[i] == -1) {
+        //                continue;
+        //            }
+        //
+        //            StaffInfo staff = staffManager.getStaff(i);
+        //
+        //            // System break ?
+        //            if (systemStarts[i] != sStart) {
+        //                system = new SystemInfo(++id, sheet);
+        //                systems.add(system);
+        //                sStart = i;
+        //            }
+        //
+        //            system.addStaff(staff);
+        //
+        //            // Part break ?
+        //            if (partStarts[i] != pStart) {
+        //                part = new PartInfo();
+        //                system.addPart(part);
+        //                pStart = i;
+        //            }
+        //
+        //            part.addStaff(staff);
+        //        }
+        //
+        //        // Specific degraded case, just one staff, no bar stick
+        //        if (systems.isEmpty() && (staffNb == 1)) {
+        //            StaffInfo singleStaff = staffManager.getFirstStaff();
+        //            system = new SystemInfo(++id, sheet);
+        //            systems.add(system);
+        //            system.addStaff(singleStaff);
+        //            part = new PartInfo();
+        //            system.addPart(part);
+        //            part.addStaff(singleStaff);
+        //            logger.warning("Created one system, one part, one staff");
+        //        }
+        //
+        //        if (logger.isFineEnabled()) {
+        //            for (SystemInfo systemInfo : systems) {
+        //                Main.dumping.dump(systemInfo);
+        //
+        //                int i = 0;
+        //
+        //                for (PartInfo partInfo : systemInfo.getParts()) {
+        //                    Main.dumping.dump(partInfo, "Part #" + ++i, 1);
+        //                }
+        //            }
+        //        }
     }
 
     //--------------//
@@ -509,7 +506,7 @@ public class SystemsBuilder
                 sb.append("s");
             }
         } else {
-            sb.append("no system found");
+            sb.append(", no system found");
         }
 
         sheet.getBench()
@@ -788,9 +785,9 @@ public class SystemsBuilder
                     super.onEvent(event);
                 }
 
-                if (event instanceof SheetLocationEvent) {
+                if (event instanceof LocationEvent) {
                     // Update system boundary?
-                    SheetLocationEvent sheetLocation = (SheetLocationEvent) event;
+                    LocationEvent sheetLocation = (LocationEvent) event;
 
                     if (sheetLocation.hint == SelectionHint.LOCATION_INIT) {
                         Rectangle rect = sheetLocation.rectangle;

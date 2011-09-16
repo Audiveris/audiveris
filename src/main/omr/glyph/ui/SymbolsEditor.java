@@ -40,10 +40,10 @@ import omr.score.ui.PaintingParameters;
 
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphSetEvent;
+import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
 import omr.selection.SectionSetEvent;
 import omr.selection.SelectionHint;
-import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
 
 import omr.sheet.Sheet;
@@ -128,9 +128,7 @@ public class SymbolsEditor
         GlyphLag lag = symbolsController.getLag();
 
         view = new MyView(lag);
-        view.setLocationService(
-            sheet.getSelectionService(),
-            SheetLocationEvent.class);
+        view.setLocationService(sheet.getSelectionService());
 
         focus = new ShapeFocusBoard(
             sheet,

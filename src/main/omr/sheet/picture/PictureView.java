@@ -16,7 +16,7 @@ import omr.log.Logger;
 import omr.score.ui.PagePhysicalPainter;
 import omr.score.ui.PaintingParameters;
 
-import omr.selection.SheetLocationEvent;
+import omr.selection.LocationEvent;
 
 import omr.sheet.Sheet;
 
@@ -72,9 +72,7 @@ public class PictureView
         view.setPreferredSize(sheet.getDimension());
 
         // Inject dependency of pixel location
-        view.setLocationService(
-            sheet.getSelectionService(),
-            SheetLocationEvent.class);
+        view.setLocationService(sheet.getSelectionService());
 
         // Listen to painting parameters
         PaintingParameters.getInstance()

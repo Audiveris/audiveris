@@ -473,7 +473,7 @@ public class LagTest
         System.out.println("getStop=" + section.getStop());
         System.out.println("getWeight=" + section.getWeight());
         System.out.println("getContour=");
-        dump(section.getContour());
+        dump(section.getPolygon());
         //section.getLag().dump("\nLag dump:");
         section.drawAscii();
     }

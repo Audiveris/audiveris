@@ -9,7 +9,7 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.sheet.grid;
+package omr.grid;
 
 import omr.Main;
 
@@ -39,6 +39,7 @@ import omr.sheet.BarsChecker;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.Skew;
+import omr.sheet.SystemInfo;
 
 import omr.step.StepException;
 
@@ -142,7 +143,7 @@ public class BarsRetriever
     //~ Constructors -----------------------------------------------------------
 
     /** Sequence of systems */
-    ////////////////////////////////////////////private List<SystemFrame> systems;
+    ////////////////////////////////////////////private List<SystemInfo> systems;
 
     //---------------//
     // BarsRetriever //
@@ -162,18 +163,6 @@ public class BarsRetriever
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //--------//
-    // getLag //
-    //--------//
-    /**
-     * Report the horizontal lag
-     * @return the horizontal lag
-     */
-    public GlyphLag getLag ()
-    {
-        return vLag;
-    }
 
     //-----------//
     // buildInfo //
@@ -219,6 +208,7 @@ public class BarsRetriever
                           boolean   showRuns)
     {
         vLag = new GlyphLag("vLag", StickSection.class, Orientation.VERTICAL);
+        sheet.setVerticalLag(vLag);
 
         GlyphSectionsBuilder sectionsBuilder = new GlyphSectionsBuilder(
             vLag,
@@ -293,7 +283,7 @@ public class BarsRetriever
      * Package access meant for LinesRetriever companion.
      * @param system the system to process
      */
-    void adjustStaffLines (SystemFrame system)
+    void adjustStaffLines (SystemInfo system)
     {
         for (StaffInfo staff : system.getStaves()) {
             if (logger.isFineEnabled()) {
@@ -334,6 +324,10 @@ public class BarsRetriever
     void renderItems (Graphics2D g,
                       boolean    showTangents)
     {
+        if (constants.showVerticalLines.getValue() == false) {
+            return;
+        }
+
         // Draw filaments
         Stroke oldStroke = g.getStroke();
         g.setStroke(splineStroke);
@@ -382,7 +376,7 @@ public class BarsRetriever
      * @param side the desired ending
      * @return the computed ending point
      */
-    private Point2D getLineEnding (SystemFrame    system,
+    private Point2D getLineEnding (SystemInfo     system,
                                    StaffInfo      staff,
                                    LineInfo       line,
                                    HorizontalSide side)
@@ -414,7 +408,7 @@ public class BarsRetriever
      */
     private void adjustSides ()
     {
-        for (SystemFrame system : systemManager.getSystems()) {
+        for (SystemInfo system : systemManager.getSystems()) {
             try {
                 for (HorizontalSide side : HorizontalSide.values()) {
                     // Determine the side limit of the system
@@ -447,9 +441,9 @@ public class BarsRetriever
      * chosen limit (whatever it is) in the system itself.
      * @param system the system to process
      * @param side the desired side
-     * @see SystemFrame#getLimit(HorizontalSide)
+     * @see SystemInfo#getLimit(HorizontalSide)
      */
-    private void adjustSystemLimit (SystemFrame    system,
+    private void adjustSystemLimit (SystemInfo     system,
                                     HorizontalSide side)
     {
         Stick   drivingStick = null;
@@ -533,14 +527,14 @@ public class BarsRetriever
      * @param nextSystem the system below
      * @return true if left bars have been merged
      */
-    private boolean canConnectSystems (SystemFrame prevSystem,
-                                       SystemFrame nextSystem)
+    private boolean canConnectSystems (SystemInfo prevSystem,
+                                       SystemInfo nextSystem)
     {
-        List<SystemFrame> systems = systemManager.getSystems();
-        int               maxBarPosGap = scale.toPixels(constants.maxBarPosGap);
-        int               maxBarCoordGap = scale.toPixels(
+        List<SystemInfo> systems = systemManager.getSystems();
+        int              maxBarPosGap = scale.toPixels(constants.maxBarPosGap);
+        int              maxBarCoordGap = scale.toPixels(
             constants.maxBarCoordGap);
-        Skew              skew = sheet.getSkew();
+        Skew             skew = sheet.getSkew();
 
         if (logger.isFineEnabled()) {
             logger.info(
@@ -661,12 +655,12 @@ public class BarsRetriever
      * @param tops the starting staff id for each system
      * @return the sequence of system physical frames
      */
-    private List<SystemFrame> createSystems (Integer[] tops)
+    private List<SystemInfo> createSystems (Integer[] tops)
     {
-        List<SystemFrame> newSystems = new ArrayList<SystemFrame>();
-        Integer           staffTop = null;
-        int               systemId = 0;
-        SystemFrame       systemFrame = null;
+        List<SystemInfo> newSystems = new ArrayList<SystemInfo>();
+        Integer          staffTop = null;
+        int              systemId = 0;
+        SystemInfo       system = null;
 
         for (int i = 0; i < staffManager.getStaffCount(); i++) {
             StaffInfo staff = staffManager.getStaff(i);
@@ -676,14 +670,15 @@ public class BarsRetriever
                 // Start of a new system
                 staffTop = tops[i];
 
-                systemFrame = new SystemFrame(
+                system = new SystemInfo(
                     ++systemId,
+                    sheet,
                     staffManager.getRange(staff, staff));
-                newSystems.add(systemFrame);
+                newSystems.add(system);
             } else {
                 // Continuing current system
-                systemFrame.setStaves(
-                    staffManager.getRange(systemFrame.getFirstStaff(), staff));
+                system.setStaves(
+                    staffManager.getRange(system.getFirstStaff(), staff));
             }
         }
 
@@ -753,8 +748,8 @@ public class BarsRetriever
     //--------------//
     private boolean mergeSystems ()
     {
-        List<SystemFrame> systems = systemManager.getSystems();
-        boolean           modified = false;
+        List<SystemInfo> systems = systemManager.getSystems();
+        boolean          modified = false;
 
         // Check connection of left bars across systems
         for (int i = 1; i < systems.size(); i++) {
@@ -989,7 +984,7 @@ public class BarsRetriever
      * @return the bar info for the system side, or null if no consistency
      * could be ensured
      */
-    private BarInfo retrieveSystemBar (SystemFrame    system,
+    private BarInfo retrieveSystemBar (SystemInfo     system,
                                        HorizontalSide side)
     {
         // Horizontal sequence of bar sticks applied to the whole system side
@@ -1117,7 +1112,9 @@ public class BarsRetriever
                 systemTops = retrieveSystemTops();
             }
 
-            logger.info("top staff ids: " + Arrays.toString(systemTops));
+            logger.info(
+                sheet.getLogPrefix() + "top staff ids: " +
+                Arrays.toString(systemTops));
 
             // Create system frames using staves tops
             systemManager.setSystems(createSystems(systemTops));
@@ -1139,15 +1136,15 @@ public class BarsRetriever
      * @param range sublist of systems
      * @return true if OK
      */
-    private boolean tryRangeConnection (List<SystemFrame> range)
+    private boolean tryRangeConnection (List<SystemInfo> range)
     {
-        final SystemFrame firstSystem = range.get(0);
-        final StaffInfo   firstStaff = firstSystem.getFirstStaff();
-        final int         topId = firstStaff.getId();
-        int               idx = staffManager.getStaves()
-                                            .indexOf(firstStaff);
+        final SystemInfo firstSystem = range.get(0);
+        final StaffInfo  firstStaff = firstSystem.getFirstStaff();
+        final int        topId = firstStaff.getId();
+        int              idx = staffManager.getStaves()
+                                           .indexOf(firstStaff);
 
-        for (SystemFrame system : range) {
+        for (SystemInfo system : range) {
             for (StaffInfo staff : system.getStaves()) {
                 systemTops[idx++] = topId;
             }
@@ -1183,7 +1180,7 @@ public class BarsRetriever
     //        int smallestLength = Integer.MAX_VALUE;
     //        int largestLength = Integer.MIN_VALUE;
     //
-    //        for (SystemFrame system : systems) {
+    //        for (SystemInfo system : systems) {
     //            int length = system.getStaves()
     //                               .size();
     //            lengths.add(length);
@@ -1276,6 +1273,11 @@ public class BarsRetriever
             "Min height of a bar chunk past system boundaries");
 
         // Constants for display
+        //
+        Constant.Boolean showVerticalLines = new Constant.Boolean(
+            true,
+            "Should we display the vertical lines?");
+
         //
         Constant.Double  splineThickness = new Constant.Double(
             "thickness",

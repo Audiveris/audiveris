@@ -35,11 +35,15 @@ import omr.score.entity.ScoreSystem;
 import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
 
-import omr.sheet.grid.LineInfo;
-import omr.sheet.grid.StaffInfo;
+import omr.grid.BarInfo;
+import omr.grid.LineInfo;
+import omr.grid.StaffInfo;
 
 import omr.step.StepException;
+
+import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
+import omr.util.Navigable;
 import omr.util.Predicate;
 
 import java.util.ArrayList;
@@ -62,12 +66,11 @@ import java.util.concurrent.ConcurrentSkipListSet;
  * companion (such as {@link GlyphsBuilder}, {@link GlyphInspector},
  * {@link SlurInspector}, {@link SentencePattern}, {@link SystemTranslator}, etc)
  *
- * <p>Nota: All measurements are assumed in pixels.
+ * <p>Nota: All measurements are assumed to be in pixels.
  *
  * @author Hervé Bitteur
  */
 public class SystemInfo
-    implements Comparable<SystemInfo>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -77,6 +80,7 @@ public class SystemInfo
     //~ Instance fields --------------------------------------------------------
 
     /** Related sheet */
+    @Navigable(false)
     private final Sheet sheet;
 
     /** Dedicated measure builder */
@@ -101,13 +105,25 @@ public class SystemInfo
     private final SystemTranslator translator;
 
     /** Staves of this system */
-    private final List<StaffInfo> staves = new ArrayList<StaffInfo>();
+    private List<StaffInfo> staves = new ArrayList<StaffInfo>();
 
     /** Parts in this system */
     private final List<PartInfo> parts = new ArrayList<PartInfo>();
 
     /** Related System in Score hierarchy */
     private ScoreSystem scoreSystem;
+
+    /** Left system bar, if any */
+    private BarInfo leftBar;
+
+    /** Right system bar, if any */
+    private BarInfo rightBar;
+
+    /** Left system limit  (a filament or a straight line) */
+    private Object leftLimit;
+
+    /** Right system limit  (a filament or a straight line) */
+    private Object rightLimit;
 
     ///   HORIZONTALS   ////////////////////////////////////////////////////////
 
@@ -161,12 +177,6 @@ public class SystemInfo
     /** Width of widest Ledger in this system */
     private int maxLedgerWidth = -1;
 
-    /** First staff of the system */
-    private StaffInfo startStaff = null;
-
-    /** Last staff of the system */
-    private StaffInfo stopStaff;
-
     /** Ordinate of top of first staff of the system. */
     private int top = -1;
 
@@ -181,14 +191,17 @@ public class SystemInfo
     /**
      * Create a SystemInfo entity, to register the provided parameters
      *
-     * @param id       the unique identity
-     * @param sheet    the containing sheet
+     * @param id the unique identity
+     * @param sheet the containing sheet
+     * @param staves the (initial) sequence of staves
      */
-    public SystemInfo (int   id,
-                       Sheet sheet)
+    public SystemInfo (int             id,
+                       Sheet           sheet,
+                       List<StaffInfo> staves)
     {
         this.id = id;
         this.sheet = sheet;
+        this.staves = staves;
 
         measuresBuilder = new MeasuresBuilder(this);
         glyphsBuilder = new GlyphsBuilder(this);
@@ -200,6 +213,39 @@ public class SystemInfo
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //--------//
+    // setBar //
+    //--------//
+    /**
+     * @param side proper horizontal side
+     * @param bar the bar to set
+     */
+    public void setBar (HorizontalSide side,
+                        BarInfo        bar)
+    {
+        if (side == HorizontalSide.LEFT) {
+            this.leftBar = bar;
+        } else {
+            this.rightBar = bar;
+        }
+    }
+
+    //--------//
+    // getBar //
+    //--------//
+    /**
+     * @param side proper horizontal side
+     * @return the system bar on this side, or null
+     */
+    public BarInfo getBar (HorizontalSide side)
+    {
+        if (side == HorizontalSide.LEFT) {
+            return leftBar;
+        } else {
+            return rightBar;
+        }
+    }
 
     //-----------//
     // getBottom //
@@ -291,6 +337,17 @@ public class SystemInfo
         return endings;
     }
 
+    //---------------//
+    // getFirstStaff //
+    //---------------//
+    /**
+     * @return the first staff
+     */
+    public StaffInfo getFirstStaff ()
+    {
+        return staves.get(0);
+    }
+
     //-----------//
     // getGlyphs //
     //-----------//
@@ -317,6 +374,17 @@ public class SystemInfo
         return id;
     }
 
+    //--------------//
+    // getLastStaff //
+    //--------------//
+    /**
+     * @return the lastStaff
+     */
+    public StaffInfo getLastStaff ()
+    {
+        return staves.get(staves.size() - 1);
+    }
+
     //------------//
     // getLedgers //
     //------------//
@@ -341,6 +409,39 @@ public class SystemInfo
     public int getLeft ()
     {
         return left;
+    }
+
+    //----------//
+    // setLimit //
+    //----------//
+    /**
+     * @param side proper horizontal side
+     * @param limit the limit to set
+     */
+    public void setLimit (HorizontalSide side,
+                          Object         limit)
+    {
+        if (side == HorizontalSide.LEFT) {
+            this.leftLimit = limit;
+        } else {
+            this.rightLimit = limit;
+        }
+    }
+
+    //---------//
+    // getLimit //
+    //---------//
+    /**
+     * @param side proper horizontal side
+     * @return the leftBar
+     */
+    public Object getLimit (HorizontalSide side)
+    {
+        if (side == HorizontalSide.LEFT) {
+            return leftLimit;
+        } else {
+            return rightLimit;
+        }
     }
 
     //--------------//
@@ -474,6 +575,17 @@ public class SystemInfo
     }
 
     //-----------//
+    // setStaves //
+    //-----------//
+    /**
+     * @param staves the range of staves
+     */
+    public void setStaves (List<StaffInfo> staves)
+    {
+        this.staves = staves;
+    }
+
+    //-----------//
     // getStaves //
     //-----------//
     /**
@@ -560,7 +672,7 @@ public class SystemInfo
     }
 
     //----------//
-    // addStaff //
+    // addStaff // TO BE DELETED !!!!!!!!!!!!!!!!!!!!!!!!
     //----------//
     /**
      * Add a staff into this system
@@ -568,36 +680,38 @@ public class SystemInfo
      */
     public void addStaff (StaffInfo staff)
     {
-        LineInfo firstLine = staff.getFirstLine();
-        staves.add(staff);
+        logger.severe("DON't USE addStaff");
 
-        // Remember left side
-        if (left == -1) {
-            left = (int) Math.rint(staff.getAbscissa(LEFT));
-        } else {
-            left = (int) Math.rint(Math.min(left, staff.getAbscissa(LEFT)));
-        }
-
-        // Remember width
-        if (width == -1) {
-            width = (int) Math.rint(staff.getAbscissa(RIGHT) - left + 1);
-        } else {
-            width = (int) Math.rint(
-                Math.max(width, staff.getAbscissa(RIGHT) - left + 1));
-        }
-
-        // First staff ?
-        if (startStaff == null) {
-            startStaff = staff;
-            top = (int) Math.rint(firstLine.getEndPoint(LEFT).getY());
-        }
-
-        // Last staff (so far)
-        stopStaff = staff;
-        deltaY = (int) Math.rint(firstLine.getEndPoint(LEFT).getY() - top);
-
-        LineInfo lastLine = staff.getLastLine();
-        bottom = (int) Math.rint(lastLine.getEndPoint(LEFT).getY());
+        //        LineInfo firstLine = staff.getFirstLine();
+        //        staves.add(staff);
+        //
+        //        // Remember left side
+        //        if (left == -1) {
+        //            left = (int) Math.rint(staff.getAbscissa(LEFT));
+        //        } else {
+        //            left = (int) Math.rint(Math.min(left, staff.getAbscissa(LEFT)));
+        //        }
+        //
+        //        // Remember width
+        //        if (width == -1) {
+        //            width = (int) Math.rint(staff.getAbscissa(RIGHT) - left + 1);
+        //        } else {
+        //            width = (int) Math.rint(
+        //                Math.max(width, staff.getAbscissa(RIGHT) - left + 1));
+        //        }
+        //
+        //        // First staff ?
+        //        if (startStaff == null) {
+        //            startStaff = staff;
+        //            top = (int) Math.rint(firstLine.getEndPoint(LEFT).getY());
+        //        }
+        //
+        //        // Last staff (so far)
+        //        stopStaff = staff;
+        //        deltaY = (int) Math.rint(firstLine.getEndPoint(LEFT).getY() - top);
+        //
+        //        LineInfo lastLine = staff.getLastLine();
+        //        bottom = (int) Math.rint(lastLine.getEndPoint(LEFT).getY());
     }
 
     //-----------------------//
@@ -730,19 +844,6 @@ public class SystemInfo
     public void clearGlyphs ()
     {
         glyphs.clear();
-    }
-
-    //-----------//
-    // compareTo //
-    //-----------//
-    /**
-     * Needed to implement natural SystemInfo sorting, based on system id
-     * @param o the other system to compare to
-     * @return the comparison result
-     */
-    public int compareTo (SystemInfo o)
-    {
-        return Integer.signum(id - o.id);
     }
 
     //----------------------//
@@ -1127,15 +1228,35 @@ public class SystemInfo
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder(80);
+        StringBuilder sb = new StringBuilder();
         sb.append("{SystemInfo#")
           .append(id);
         sb.append(" T")
-          .append(startStaff.getId());
+          .append(getFirstStaff().getId());
 
-        if (startStaff != stopStaff) {
+        if (staves.size() > 1) {
             sb.append("..T")
-              .append(stopStaff.getId());
+              .append(getLastStaff().getId());
+        }
+
+        if (leftBar != null) {
+            sb.append(" leftBar:")
+              .append(leftBar);
+        }
+
+        if (rightBar != null) {
+            sb.append(" rightBar:")
+              .append(rightBar);
+        }
+
+        if (leftLimit != null) {
+            sb.append(" leftLimit:")
+              .append(leftLimit);
+        }
+
+        if (rightLimit != null) {
+            sb.append(" rightLimit:")
+              .append(rightLimit);
         }
 
         sb.append("}");

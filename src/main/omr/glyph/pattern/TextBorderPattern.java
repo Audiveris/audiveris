@@ -32,8 +32,8 @@ import omr.score.common.PixelRectangle;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
-import omr.sheet.grid.LineInfo;
-import omr.sheet.grid.StaffInfo;
+import omr.grid.LineInfo;
+import omr.grid.StaffInfo;
 
 import omr.util.BrokenLine;
 import omr.util.VerticalSide;

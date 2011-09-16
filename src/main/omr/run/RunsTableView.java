@@ -16,11 +16,11 @@ import omr.log.Logger;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
+import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
 import omr.selection.RunEvent;
 import omr.selection.SelectionHint;
 import omr.selection.SelectionService;
-import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
 
 import omr.ui.view.RubberPanel;
@@ -62,10 +62,10 @@ public class RunsTableView
                           SelectionService locationService)
     {
         this.table = table;
+        setName(table.getName());
 
         // Location service
-        setLocationService(locationService, SheetLocationEvent.class);
-        subscribe();
+        setLocationService(locationService);
 
         // Set background color
         setBackground(Color.white);
@@ -95,8 +95,8 @@ public class RunsTableView
             // Default behavior : making point visible & drawing the markers
             super.onEvent(event);
 
-            if (event instanceof SheetLocationEvent) { // Location => Section(s) & Run
-                handleEvent((SheetLocationEvent) event);
+            if (event instanceof LocationEvent) { // Location => Section(s) & Run
+                handleEvent((LocationEvent) event);
             }
         } catch (Exception ex) {
             logger.warning(getClass().getName() + " onEvent error", ex);
@@ -199,7 +199,7 @@ public class RunsTableView
      * Interest in SheetLocation => Run
      * @param sheetLocation
      */
-    private void handleEvent (SheetLocationEvent sheetLocationEvent)
+    private void handleEvent (LocationEvent sheetLocationEvent)
     {
         if (logger.isFineEnabled()) {
             logger.fine("sheetLocation: " + sheetLocationEvent);

@@ -39,12 +39,12 @@ import omr.score.common.PixelRectangle;
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphIdEvent;
 import omr.selection.GlyphSetEvent;
+import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
 import omr.selection.RunEvent;
 import omr.selection.SectionEvent;
 import omr.selection.SelectionHint;
 import static omr.selection.SelectionHint.*;
-import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
 
 import omr.ui.Colors;
@@ -67,6 +67,7 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import omr.selection.LagEvent;
 
 /**
  * Class <code>GlyphLagView</code> is a specific {@link omr.lag.ui.LagView}
@@ -87,10 +88,10 @@ public class GlyphLagView
     private static final Logger logger = Logger.getLogger(GlyphLagView.class);
 
     /** Events this entity is interested in */
-    private static final Collection<Class<?extends UserEvent>> eventClasses;
+    private static final Collection<Class<?extends LagEvent>> eventClasses;
 
     static {
-        eventClasses = new ArrayList<Class<?extends UserEvent>>();
+        eventClasses = new ArrayList<Class<?extends LagEvent>>();
         eventClasses.add(GlyphEvent.class);
         eventClasses.add(GlyphIdEvent.class);
         eventClasses.add(GlyphSetEvent.class);
@@ -306,13 +307,17 @@ public class GlyphLagView
             super.onEvent(event);
 
             // Additional tasks about glyphs
-            if (event instanceof SheetLocationEvent) { // Location => Glyph(s)
-                handleEvent((SheetLocationEvent) event);
-            } else if (event instanceof SectionEvent) { // Section => Glyph
+            if (event instanceof LocationEvent) {
+                // Location => Glyph(s)
+                handleEvent((LocationEvent) event);
+            } else if (event instanceof SectionEvent) {
+                // Section => Glyph
                 handleEvent((SectionEvent<GlyphSection>) event);
-            } else if (event instanceof GlyphEvent) { // Glyph => glyph contour & GlyphSet update
+            } else if (event instanceof GlyphEvent) {
+                // Glyph => glyph contour & GlyphSet update
                 handleEvent((GlyphEvent) event);
-            } else if (event instanceof GlyphIdEvent) { // Glyph Id => Glyph
+            } else if (event instanceof GlyphIdEvent) {
+                // Glyph Id => Glyph
                 handleEvent((GlyphIdEvent) event);
             }
         } catch (Exception ex) {
@@ -352,17 +357,12 @@ public class GlyphLagView
     @Override
     public void subscribe ()
     {
+        // For Location & Lag events
         super.subscribe();
 
         // Subscribe to glyph (lag) events
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                getClass().getName() + " GLV subscribing to " + eventClasses);
-        }
-
-        for (Class<?extends UserEvent> eventClass : eventClasses) {
-            lag.getSelectionService()
-               .subscribe(eventClass, this);
+        for (Class<?extends LagEvent> eventClass : eventClasses) {
+            subscribe(eventClass, this);
         }
     }
 
@@ -375,18 +375,12 @@ public class GlyphLagView
     @Override
     public void unsubscribe ()
     {
+        // Unsubscribe from Location & Lag
         super.unsubscribe();
 
         // Unsubscribe to glyph (lag) events
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                getClass().getName() + " GLV unsubscribing from " +
-                eventClasses);
-        }
-
-        for (Class<?extends UserEvent> eventClass : eventClasses) {
-            lag.getSelectionService()
-               .unsubscribe(eventClass, this);
+        for (Class<?extends LagEvent> eventClass : eventClasses) {
+            unsubscribe(eventClass, this);
         }
     }
 
@@ -590,7 +584,7 @@ public class GlyphLagView
      *  Interest in sheet location => [active] glyph(s)
      * @param sheetLocation
      */
-    private void handleEvent (SheetLocationEvent sheetLocationEvent)
+    private void handleEvent (LocationEvent sheetLocationEvent)
     {
         if (ViewParameters.getInstance()
                           .isSectionSelectionEnabled()) {
@@ -693,7 +687,7 @@ public class GlyphLagView
             // Display glyph contour
             if (glyph != null) {
                 PixelRectangle box = glyph.getContourBox();
-                publish(new SheetLocationEvent(this, hint, movement, box));
+                publish(new LocationEvent(this, hint, movement, box));
             }
         }
 

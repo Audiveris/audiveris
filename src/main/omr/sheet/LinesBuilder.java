@@ -36,9 +36,9 @@ import omr.run.Orientation;
 import omr.run.Run;
 import omr.run.RunBoard;
 
-import omr.sheet.grid.LineInfo;
-import omr.sheet.grid.StaffInfo;
-import omr.sheet.grid.StaffManager;
+import omr.grid.LineInfo;
+import omr.grid.StaffInfo;
+import omr.grid.StaffManager;
 import omr.sheet.ui.PixelBoard;
 
 import omr.step.Step;

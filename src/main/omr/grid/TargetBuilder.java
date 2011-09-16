@@ -9,7 +9,7 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.sheet.grid;
+package omr.grid;
 
 import omr.Main;
 
@@ -20,11 +20,12 @@ import omr.log.Logger;
 
 import omr.score.ScoresManager;
 
-import omr.selection.SheetLocationEvent;
+import omr.selection.LocationEvent;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.Skew;
+import omr.sheet.SystemInfo;
 import omr.sheet.picture.Picture;
 
 import omr.ui.Colors;
@@ -174,7 +175,7 @@ public class TargetBuilder
         g.setStroke(systemStroke);
         g.setColor(Colors.SYSTEM_BRACKET);
 
-        for (SystemFrame system : systemManager.getSystems()) {
+        for (SystemInfo system : systemManager.getSystems()) {
             for (HorizontalSide side : HorizontalSide.values()) {
                 Point2D top = system.getFirstStaff()
                                     .getFirstLine()
@@ -248,7 +249,7 @@ public class TargetBuilder
         TargetLine prevLine = null; // Latest staff line
 
         // Target system parameters
-        for (SystemFrame system : systemManager.getSystems()) {
+        for (SystemInfo system : systemManager.getSystems()) {
             StaffInfo firstStaff = system.getFirstStaff();
             LineInfo  firstLine = firstStaff.getFirstLine();
             Point2D   dskLeft = skew.deskewed(firstLine.getEndPoint(LEFT));
@@ -492,9 +493,7 @@ public class TargetBuilder
             setModelSize(new Dimension(image.getWidth(), image.getHeight()));
 
             // Location service
-            setLocationService(
-                sheet.getSelectionService(),
-                SheetLocationEvent.class);
+            setLocationService(sheet.getSelectionService());
 
             setName("DewarpedView");
         }

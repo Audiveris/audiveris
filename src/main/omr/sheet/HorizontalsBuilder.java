@@ -46,7 +46,7 @@ import omr.selection.GlyphEvent;
 import omr.selection.MouseMovement;
 import omr.selection.UserEvent;
 
-import omr.sheet.grid.StaffInfo;
+import omr.grid.StaffInfo;
 import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.SheetPainter;
 

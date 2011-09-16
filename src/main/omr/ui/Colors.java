@@ -59,8 +59,8 @@ public class Colors
     /** Horizontal stuff */
     public static final Color GRID_HORIZONTAL = new Color(255, 220, 220);
 
-    /** Staffline-shape glyphs */
-    public static final Color GRID_HORIZONTAL_SHAPED = new Color(255, 150, 150);
+    /** Horizontal active glyphs */
+    public static final Color GRID_HORIZONTAL_ACTIVE = new Color(255, 200, 200);
 
     /** Vertical stuff */
     public static final Color GRID_VERTICAL = new Color(220, 220, 255);

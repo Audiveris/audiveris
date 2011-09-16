@@ -159,6 +159,26 @@ public class RunsTable
         return orientation;
     }
 
+    //-------------//
+    // getRunCount //
+    //-------------//
+    /**
+     * Count and return the total number of runs in this table
+     * @return the run count
+     */
+    public int getRunCount ()
+    {
+        int runCount = 0;
+
+        for (List<Run> seq : runs) {
+            for (Run run : seq) {
+                runCount += run.getLength();
+            }
+        }
+
+        return runCount;
+    }
+
     //---------------------//
     // getSelectionService //
     //---------------------//
@@ -582,6 +602,25 @@ public class RunsTable
         }
 
         return this;
+    }
+
+    //-----------//
+    // removeRun //
+    //-----------//
+    /**
+     * Remove the provided run at indicated position
+     * @param pos the position where run is to be found
+     * @param run the run to remove
+     */
+    public void removeRun (int pos,
+                           Run run)
+    {
+        List<Run> seq = getSequence(pos);
+
+        if (!seq.remove(run)) {
+            throw new RuntimeException(
+                this + " Cannot find " + run + " at pos " + pos);
+        }
     }
 
     //-----------//

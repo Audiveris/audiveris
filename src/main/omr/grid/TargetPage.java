@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                           T a r g e t S t a f f                            //
+//                            T a r g e t P a g e                             //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -9,56 +9,46 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.sheet.grid;
+package omr.grid;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code TargetStaff} is an immutable perfect destination object for a
- * staff.
+ * Class {@code TargetPage} is an immutable perfect destination object for a
+ * page.
  *
  * @author Hervé Bitteur
  */
-public class TargetStaff
+public class TargetPage
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** Initial raw information */
-    public final StaffInfo info;
+    /** Page width */
+    public final double width;
 
-    /** Id for debug */
-    public final int id;
+    /** Page height */
+    public final double height;
 
-    /** Ordinate of top in containing page */
-    public final double top;
-
-    /** Sequence of staff lines */
-    public final List<TargetLine> lines = new ArrayList<TargetLine>();
-
-    /** Containing system */
-    public final TargetSystem system;
+    /** Sequence of systems */
+    public final List<TargetSystem> systems = new ArrayList<TargetSystem>();
 
     //~ Constructors -----------------------------------------------------------
 
-    //-------------//
-    // TargetStaff //
-    //-------------//
+    //------------//
+    // TargetPage //
+    //------------//
     /**
-     * Creates a new TargetStaff object.
+     * Creates a new TargetPage object.
      *
-     * @param info initial raw information
-     * @param top Ordinate of top in containing page
+     * @param width page width
+     * @param height page height
      */
-    public TargetStaff (StaffInfo    info,
-                        double       top,
-                        TargetSystem system)
+    public TargetPage (double width,
+                       double height)
     {
-        this.info = info;
-        this.top = top;
-        this.system = system;
-
-        id = info.getId();
+        this.width = width;
+        this.height = height;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -69,11 +59,13 @@ public class TargetStaff
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{Staff");
-        sb.append("#")
-          .append(id);
-        sb.append(" top:")
-          .append(top);
+        StringBuilder sb = new StringBuilder("{Page");
+
+        sb.append(" width:")
+          .append(width);
+        sb.append(" height:")
+          .append(height);
+
         sb.append("}");
 
         return sb.toString();

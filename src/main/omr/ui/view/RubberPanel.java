@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.ui.view;
 
+import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.log.Logger;
@@ -22,7 +23,6 @@ import omr.selection.MouseMovement;
 import omr.selection.SelectionHint;
 import static omr.selection.SelectionHint.*;
 import omr.selection.SelectionService;
-import omr.selection.SheetLocationEvent;
 import omr.selection.UserEvent;
 
 import omr.ui.PixelCount;
@@ -91,9 +91,6 @@ public class RubberPanel
     /** Location Service if any  (either SheetLocation or ScoreLocation) */
     protected SelectionService locationService;
 
-    /** Precise location information event (sheet or score related) */
-    protected Class<?extends LocationEvent> locationClass;
-
     //~ Constructors -----------------------------------------------------------
 
     //-------------//
@@ -158,18 +155,15 @@ public class RubberPanel
      * {@link #subscribe}. (TODO: Question: Why?)
      *
      * @param locationService the proper location service to be updated
-     * @param locationClass the location class of interest (score or sheet)
      */
-    public void setLocationService (SelectionService              locationService,
-                                    Class<?extends LocationEvent> locationClass)
+    public void setLocationService (SelectionService locationService)
     {
         if ((this.locationService != null) &&
             (this.locationService != locationService)) {
-            this.locationService.unsubscribe(locationClass, this);
+            this.locationService.unsubscribe(LocationEvent.class, this);
         }
 
         this.locationService = locationService;
-        this.locationClass = locationClass;
     }
 
     //--------------//
@@ -257,7 +251,7 @@ public class RubberPanel
         }
 
         LocationEvent locationEvent = (LocationEvent) locationService.getLastEvent(
-            locationClass);
+            LocationEvent.class);
 
         return (locationEvent != null) ? locationEvent.getRectangle() : null;
     }
@@ -334,10 +328,11 @@ public class RubberPanel
             }
 
             if (logger.isFineEnabled()) {
-                logger.fine(this.getClass().getName() + " onEvent " + event);
+                logger.fine(getClass().getName() + " onEvent " + event);
             }
 
             if (event instanceof LocationEvent) {
+                // Location => move view focus on this location w/ markers
                 LocationEvent locationEvent = (LocationEvent) event;
                 showFocusLocation(getEventRectangle(locationEvent), false);
             }
@@ -429,6 +424,10 @@ public class RubberPanel
     public void showFocusLocation (final Rectangle rect,
                                    final boolean   centered)
     {
+        if (zoom == null) {
+            return; // For degenerated cases (no real view)
+        }
+
         setPreferredSize(zoom.scaled(getModelSize()));
         revalidate();
         repaint();
@@ -491,9 +490,14 @@ public class RubberPanel
      */
     public void subscribe ()
     {
+        if (logger.isFineEnabled()) {
+            logger.info(
+                "Subscribe " + getClass().getSimpleName() + " " + getName());
+        }
+
         // Subscribe to location events
         if (locationService != null) {
-            locationService.subscribeStrongly(locationClass, this);
+            locationService.subscribeStrongly(LocationEvent.class, this);
         }
     }
 
@@ -543,9 +547,14 @@ public class RubberPanel
      */
     public void unsubscribe ()
     {
+        if (logger.isFineEnabled()) {
+            logger.info(
+                "Unsubscribe " + getClass().getSimpleName() + " " + getName());
+        }
+
         // Unsubscribe to location events
         if (locationService != null) {
-            locationService.unsubscribe(locationClass, this);
+            locationService.unsubscribe(LocationEvent.class, this);
         }
     }
 
@@ -582,7 +591,7 @@ public class RubberPanel
         // Publish the new user-selected location
         if (locationService != null) {
             locationService.publish(
-                new SheetLocationEvent(
+                new LocationEvent(
                     this,
                     hint,
                     movement,

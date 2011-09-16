@@ -41,7 +41,7 @@ public class Steps
     public static final String             SKEW = "SKEW";
     public static final String             LINES = "LINES";
     public static final String             HORIZONTALS = "HORIZONTALS";
-    public static final String             SYSTEMS = "SYSTEMS";
+    public static final String             SPLIT = "SPLIT";
     public static final String             MEASURES = "MEASURES";
     public static final String             SYMBOLS = "SYMBOLS";
     public static final String             VERTICALS = "VERTICALS";
@@ -63,11 +63,11 @@ public class Steps
         // Mandatory
         addStep(new LoadStep());
         addStep(new ScaleStep());
-        addStep(new GridStep()); // Can be commented out
-        addStep(new SkewStep());
-        addStep(new LinesStep());
-        addStep(new HorizontalsStep());
-        addStep(new SystemsStep());
+        addStep(new GridStep()); 
+//        addStep(new SkewStep());
+//        addStep(new LinesStep());
+//        addStep(new HorizontalsStep());
+        addStep(new SplitStep());
         addStep(new MeasuresStep());
         addStep(new SymbolsStep());
         addStep(new VerticalsStep());

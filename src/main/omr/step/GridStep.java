@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.step;
 
-import omr.sheet.grid.GridBuilder;
+import omr.grid.GridBuilder;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 

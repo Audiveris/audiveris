@@ -20,6 +20,7 @@ import omr.score.common.PixelRectangle;
 import omr.util.Implement;
 
 import java.awt.Dimension;
+import java.util.List;
 
 /**
  * Class {@code RunsTableFactory} retrieves the runs structure out of a given
@@ -211,15 +212,7 @@ public class RunsTableFactory
         public final void terminate ()
         {
             if (logger.isFineEnabled()) {
-                StringBuilder buf = new StringBuilder(2048);
-                buf.append("Retrieved runs");
-
-                for (int i = 0; i < table.getSize(); i++) {
-                    buf.append(
-                        "\nCol " + i + " = " + table.getSequence(i).size());
-                }
-
-                logger.fine(buf.toString());
+                logger.fine(table + " Retrieved runs: " + table.getRunCount());
             }
         }
     }

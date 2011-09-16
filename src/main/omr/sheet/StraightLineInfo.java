@@ -19,7 +19,7 @@ import omr.math.Line;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
-import omr.sheet.grid.LineInfo;
+import omr.grid.LineInfo;
 
 import omr.util.HorizontalSide;
 import omr.util.Implement;

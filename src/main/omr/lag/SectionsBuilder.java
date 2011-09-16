@@ -17,8 +17,6 @@ import omr.run.Run;
 import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
 
-import omr.util.StopWatch;
-
 import java.util.ArrayList;
 import java.util.List;
 

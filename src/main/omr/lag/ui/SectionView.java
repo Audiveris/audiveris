@@ -225,7 +225,7 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
         if (clip.intersects(rect)) {
             g.setColor(color);
 
-            Polygon polygon = section.getContour();
+            Polygon polygon = section.getPolygon();
             g.fillPolygon(polygon.xpoints, polygon.ypoints, polygon.npoints);
 
             if (drawBorders) {
@@ -270,7 +270,7 @@ public class SectionView<L extends Lag<L, S>, S extends Section<L, S>>
         Rectangle rect = getRectangle();
 
         if (clip.intersects(rect)) {
-            Polygon polygon = section.getContour();
+            Polygon polygon = section.getPolygon();
             g.setColor(Color.white);
             g.fillPolygon(polygon.xpoints, polygon.ypoints, polygon.npoints);
             g.setColor(Color.black);

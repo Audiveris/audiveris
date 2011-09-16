@@ -30,7 +30,7 @@ import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
 
 import omr.sheet.Scale;
-import omr.sheet.grid.StaffInfo;
+import omr.grid.StaffInfo;
 import omr.sheet.SystemInfo;
 
 import omr.util.Predicate;

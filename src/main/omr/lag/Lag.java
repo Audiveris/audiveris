@@ -498,6 +498,13 @@ public class Lag<L extends Lag<L, S>, S extends Section>
         // Now, actually perform the needed removals
         for (S section : purges) {
             section.delete();
+
+            // Remove the related runs from the underlying runsTable
+            int pos = section.getFirstPos();
+
+            for (Run run : (List<Run>) section.getRuns()) {
+                runsTable.removeRun(pos++, run);
+            }
         }
 
         // Return the sections purged
@@ -558,6 +565,9 @@ public class Lag<L extends Lag<L, S>, S extends Section>
         } else {
             sb.append(" HORIZONTAL");
         }
+
+        sb.append((" runs:"))
+          .append(runsTable.getRunCount());
 
         return sb.toString();
     }

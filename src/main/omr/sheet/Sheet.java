@@ -37,11 +37,11 @@ import omr.score.entity.Page;
 import omr.score.entity.SystemNode;
 
 import omr.selection.SelectionService;
-import omr.selection.SheetLocationEvent;
+import omr.selection.LocationEvent;
 
-import omr.sheet.grid.StaffManager;
-import omr.sheet.grid.SystemManager;
-import omr.sheet.grid.TargetBuilder;
+import omr.grid.StaffManager;
+import omr.grid.SystemManager;
+import omr.grid.TargetBuilder;
 import omr.sheet.picture.ImageFormatException;
 import omr.sheet.picture.Picture;
 import omr.sheet.picture.PictureView;
@@ -189,7 +189,7 @@ public class Sheet
     //-------//
     /**
      * Create a new <code>Sheet</code> instance, based on a couple made of
-     * an image (the original pixel input) and a page (the score entities 
+     * an image (the original pixel input) and a page (the score entities
      * output).
      *
      * @param page the related score page
@@ -555,10 +555,10 @@ public class Sheet
     public String getLogPrefix ()
     {
         if (ScoresManager.isMultiScore()) {
-            return getId() + " ";
+            return "[" + getId() + "] ";
         } else {
             if (score.isMultiPage()) {
-                return "#" + page.getIndex() + " ";
+                return "[#" + page.getIndex() + "] ";
             } else {
                 return "";
             }
@@ -678,7 +678,7 @@ public class Sheet
     //---------------------//
     /**
      * Report the sheet selection service
-     * (which handles SheetLocationEvent, PixelLevelEvent, ScoreLocationEvent)
+     * (which handles LocationEvent, PixelLevelEvent, ScoreLocationEvent)
      * @return the sheet dedicated event service
      */
     public SelectionService getSelectionService ()
@@ -1511,7 +1511,7 @@ public class Sheet
         // Attach proper Selection objects
         // (reading from pixel location & writing to gray level)
         picture.setLevelService(selectionService);
-        selectionService.subscribe(SheetLocationEvent.class, picture);
+        selectionService.subscribeStrongly(LocationEvent.class, picture);
 
         // Display sheet picture if not batch mode
         if (Main.getGui() != null) {

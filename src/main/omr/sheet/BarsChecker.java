@@ -30,9 +30,9 @@ import omr.log.Logger;
 
 import omr.score.common.PixelRectangle;
 
-import omr.sheet.grid.Filament;
-import omr.sheet.grid.StaffInfo;
-import omr.sheet.grid.StaffManager;
+import omr.grid.Filament;
+import omr.grid.StaffInfo;
+import omr.grid.StaffManager;
 
 import omr.step.StepException;
 import static omr.util.HorizontalSide.*;

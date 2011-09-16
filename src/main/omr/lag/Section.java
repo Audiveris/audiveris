@@ -30,14 +30,18 @@ import omr.sheet.picture.Picture;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.awt.geom.PathIterator;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -117,10 +121,13 @@ public class Section<L extends Lag, S extends Section<L, S>>
     private int weight;
 
     /** Absolute contour points */
-    private Polygon contour;
+    private Polygon polygon;
 
     /** Absolute contour box */
     private PixelRectangle contourBox;
+
+    /** Adjacent sections from other orientation */
+    private Set<L> crossSections;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -202,23 +209,6 @@ public class Section<L extends Lag, S extends Section<L, S>>
         return centroid;
     }
 
-    //------------//
-    // getContour //
-    //------------//
-    /**
-     * Return the absolute polygon that defines the display contour.
-     *
-     * @return the absolute perimeter contour
-     */
-    public Polygon getContour ()
-    {
-        if (contour == null) {
-            contour = computeContour();
-        }
-
-        return contour;
-    }
-
     //---------------//
     // getContourBox //
     //---------------//
@@ -231,10 +221,26 @@ public class Section<L extends Lag, S extends Section<L, S>>
     public PixelRectangle getContourBox ()
     {
         if (contourBox == null) {
-            contourBox = new PixelRectangle(getContour().getBounds());
+            contourBox = new PixelRectangle(getPolygon().getBounds());
         }
 
         return new PixelRectangle(contourBox);
+    }
+
+    //------------------//
+    // getCrossSections //
+    //------------------//
+    /**
+     * A read-only access to adjacent sections from other orientation
+     * @return the set of adjacent sections of the other orientation
+     */
+    public Set<L> getCrossSections ()
+    {
+        if (crossSections != null) {
+            return Collections.unmodifiableSet(crossSections);
+        } else {
+            return Collections.emptySet();
+        }
     }
 
     //-------------------//
@@ -471,6 +477,37 @@ public class Section<L extends Lag, S extends Section<L, S>>
         return orientedBounds;
     }
 
+    //-----------------//
+    // getPathIterator //
+    //-----------------//
+    /**
+     * Create an iterator along the absolute polygon that represents the section
+     * contour
+     * @return an iterator on the underlying polygon
+     */
+    public PathIterator getPathIterator ()
+    {
+        return getPolygon()
+                   .getPathIterator(null);
+    }
+
+    //------------//
+    // getPolygon //
+    //------------//
+    /**
+     * Return the absolute polygon that defines the display contour.
+     *
+     * @return the absolute perimeter contour
+     */
+    public Polygon getPolygon ()
+    {
+        if (polygon == null) {
+            polygon = computePolygon();
+        }
+
+        return polygon;
+    }
+
     //----------//
     // getRunAt //
     //----------//
@@ -655,6 +692,22 @@ public class Section<L extends Lag, S extends Section<L, S>>
         }
 
         return weight;
+    }
+
+    //-----------------//
+    // addCrossSection //
+    //-----------------//
+    /**
+     * Register the adjacency of a section from the other orientation
+     * @param other the other section to remember
+     */
+    public void addCrossSection (L other)
+    {
+        if (crossSections == null) {
+            crossSections = new HashSet<L>();
+        }
+
+        crossSections.add(other);
     }
 
     //---------------//
@@ -1008,7 +1061,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
                            Rectangle box)
     {
         // Determine the bounds
-        Polygon polygon = getContour();
+        Polygon polygon = getPolygon();
 
         int     xPrev = 0;
         int     yPrev = 0;
@@ -1254,6 +1307,28 @@ public class Section<L extends Lag, S extends Section<L, S>>
         }
     }
 
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("{S");
+
+        L lag = getGraph();
+        sb.append(lag.isVertical() ? "V" : "H");
+        sb.append("#")
+          .append(getId());
+
+        sb.append(internalsString());
+
+        sb.append("}");
+
+        return sb.toString();
+    }
+
     //-----------//
     // translate //
     //-----------//
@@ -1322,30 +1397,33 @@ public class Section<L extends Lag, S extends Section<L, S>>
     }
 
     //----------------//
-    // computeContour //
+    // computePolygon //
     //----------------//
     /**
      * Compute the arrays of points needed to draw the section runs. This is
      * an absolute definition.
      */
-    protected Polygon computeContour ()
+    protected Polygon computePolygon ()
     {
-        final int pointNb = 4 * getRunNb();
-        Polygon   polygon = new Polygon(
-            new int[pointNb],
-            new int[pointNb],
-            pointNb);
+        final int   maxNb = 1 + (4 * getRunNb());
+        final int[] xx = new int[maxNb];
+        final int[] yy = new int[maxNb];
+        int         idx = 0;
 
         // Here, we assume that a section with no graph is vertical
         // This trick is needed when JAXB unmarshalls the section since it needs
         // the contour in order to determine the section position in the set container
         if ((graph == null) || graph.isVertical()) {
-            computeContour(polygon.ypoints, polygon.xpoints);
+            idx = computeContour(yy, xx, idx, 1);
+            idx = computeContour(yy, xx, idx, -1);
         } else {
-            computeContour(polygon.xpoints, polygon.ypoints);
+            idx = computeContour(xx, yy, idx, 1);
+            idx = computeContour(xx, yy, idx, -1);
         }
 
-        return polygon;
+        Polygon poly = new Polygon(xx, yy, idx);
+
+        return poly;
     }
 
     //------------------//
@@ -1368,6 +1446,11 @@ public class Section<L extends Lag, S extends Section<L, S>>
     {
         StringBuilder sb = new StringBuilder(super.internalsString());
 
+        if (crossSections != null) {
+            sb.append(" cross:")
+              .append(crossSections.size());
+        }
+
         sb.append(" fPos=")
           .append(firstPos)
           .append(" ");
@@ -1382,11 +1465,11 @@ public class Section<L extends Lag, S extends Section<L, S>>
 
         sb.append(" Wt=")
           .append(weight);
-        sb.append(" lv=")
-          .append(getLevel());
-        sb.append(" fW=")
-          .append(foreWeight);
 
+        //        sb.append(" lv=")
+        //          .append(getLevel());
+        //        sb.append(" fW=")
+        //          .append(foreWeight);
         return sb.toString();
     }
 
@@ -1397,7 +1480,7 @@ public class Section<L extends Lag, S extends Section<L, S>>
     {
         orientedBounds = null;
         centroid = null;
-        contour = null;
+        polygon = null;
         contourBox = null;
         startPoint = null;
         stopPoint = null;
@@ -1450,40 +1533,74 @@ public class Section<L extends Lag, S extends Section<L, S>>
     }
 
     //----------------//
-    // computeContour //
+    // computePolygon //
     //----------------//
     /**
      * Compute the arrays of points needed to draw the section runs
-     *
      * @param xpoints to receive abscissae
      * @param ypoints to receive coordinates
+     * @param dir direction for browsing runs
+     * @param index first index available in arrays
+     * @return last index value
      */
-    private void computeContour (int[] xpoints,
-                                 int[] ypoints)
+    private int computeContour (int[] xpoints,
+                                int[] ypoints,
+                                int   index,
+                                int   dir)
     {
         // Precise delimitating points
-        int i = 0;
         int runNb = getRunNb();
-        int y = getFirstPos();
+        int iStart = (dir > 0) ? 0 : (runNb - 1);
+        int iBreak = (dir > 0) ? runNb : (-1);
+        int y = (dir > 0) ? getFirstPos() : (getFirstPos() + runNb);
+        int xPrev = -1;
 
-        for (Run run : runs) {
+        for (int i = iStart; i != iBreak; i += dir) {
+            Run run = runs.get(i);
+
+            // +----------------------------+
+            // +--+-------------------------+
+            //    +----------------------+--+
+            //    +----------------------+   
+            //
             // Order of the 4 angle points for a run is
             // Vertical lag:    Horizontal lag:
             //     1 2              1 4
             //     4 3              2 3
-            xpoints[i] = run.getStart();
-            xpoints[i + 1] = run.getStart();
-            xpoints[(4 * runNb) - i - 2] = run.getStop() + 1;
-            xpoints[(4 * runNb) - i - 1] = run.getStop() + 1;
+            int x = (dir > 0) ? run.getStart() : (run.getStop() + 1);
 
-            ypoints[i] = y;
-            ypoints[i + 1] = y + 1;
-            ypoints[(4 * runNb) - i - 2] = y + 1;
-            ypoints[(4 * runNb) - i - 1] = y;
+            if (x != xPrev) {
+                if (xPrev != -1) {
+                    // Insert last vertex
+                    xpoints[index] = xPrev;
+                    ypoints[index] = y;
+                    index++;
+                }
 
-            i += 2;
-            y += 1;
+                // Insert new vertex
+                xpoints[index] = x;
+                ypoints[index] = y;
+                index++;
+                xPrev = x;
+            }
+
+            y += dir;
         }
+
+        // Complete the sequence, with a new vertex
+        xpoints[index] = xPrev;
+        ypoints[index] = y;
+        index++;
+
+        if (dir < 0) {
+            // Finish with starting point
+            xpoints[index] = runs.get(0)
+                                 .getStart();
+            ypoints[index] = getFirstPos();
+            index++;
+        }
+
+        return index;
     }
 
     //------------------------//

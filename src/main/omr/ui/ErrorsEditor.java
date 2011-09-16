@@ -23,7 +23,7 @@ import omr.score.entity.SystemNode;
 
 import omr.selection.GlyphEvent;
 import omr.selection.SelectionHint;
-import omr.selection.SheetLocationEvent;
+import omr.selection.LocationEvent;
 
 import omr.sheet.Sheet;
 
@@ -380,7 +380,7 @@ public class ErrorsEditor
 
                             sheet.getSelectionService()
                                  .publish(
-                                new SheetLocationEvent(
+                                new LocationEvent(
                                     ErrorsEditor.this,
                                     SelectionHint.LOCATION_INIT,
                                     null,

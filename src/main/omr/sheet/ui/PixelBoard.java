@@ -18,7 +18,7 @@ import omr.score.common.PixelRectangle;
 import omr.selection.MouseMovement;
 import omr.selection.PixelLevelEvent;
 import omr.selection.SelectionHint;
-import omr.selection.SheetLocationEvent;
+import omr.selection.LocationEvent;
 import omr.selection.UserEvent;
 
 import omr.sheet.Sheet;
@@ -64,7 +64,7 @@ public class PixelBoard
     private static final Collection<Class<?extends UserEvent>> eventClasses = new ArrayList<Class<?extends UserEvent>>();
 
     static {
-        eventClasses.add(SheetLocationEvent.class);
+        eventClasses.add(LocationEvent.class);
         eventClasses.add(PixelLevelEvent.class);
     }
 
@@ -151,9 +151,9 @@ public class PixelBoard
                 logger.fine("PixelBoard: " + event);
             }
 
-            if (event instanceof SheetLocationEvent) {
+            if (event instanceof LocationEvent) {
                 // Display rectangle attributes
-                SheetLocationEvent sheetLocation = (SheetLocationEvent) event;
+                LocationEvent sheetLocation = (LocationEvent) event;
                 Rectangle          rect = sheetLocation.rectangle;
 
                 if (rect != null) {
@@ -241,7 +241,7 @@ public class PixelBoard
             // Remember & forward the new pixel selection
             // A rectangle (which can be degenerated to a point)
             selectionService.publish(
-                new SheetLocationEvent(
+                new LocationEvent(
                     PixelBoard.this,
                     SelectionHint.LOCATION_INIT,
                     MouseMovement.PRESSING,

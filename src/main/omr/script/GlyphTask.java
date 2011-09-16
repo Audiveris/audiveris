@@ -180,7 +180,7 @@ public abstract class GlyphTask
         switch (orientation) {
         case HORIZONTAL :
             Stepping.reprocessSheet(
-                Steps.valueOf(Steps.SYSTEMS),
+                Steps.valueOf(Steps.SPLIT),
                 sheet,
                 null,
                 false);

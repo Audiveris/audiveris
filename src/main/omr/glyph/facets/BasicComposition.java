@@ -29,7 +29,7 @@ import java.util.TreeSet;
 
 /**
  * Class {@code BasicComposition} implements the composition facet of a glyph
- * made of sections
+ * made of sections. These member sections may belong to different lags.
  *
  * @author Hervé Bitteur
  */
@@ -41,7 +41,8 @@ class BasicComposition
 
     /**
      * Sections that compose this glyph. The collection is kept sorted
-     * on GlyphSection order (TODO: check this statement)
+     * on natural GlyphSection order (abscissa then ordinate, even with mixed
+     * section orientations).
      */
     private final SortedSet<GlyphSection> members = new TreeSet<GlyphSection>();
 
