@@ -22,27 +22,33 @@ import omr.check.SuccessResult;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.GlyphLag;
 import omr.glyph.Shape;
-import omr.glyph.facets.Stick;
-
-import omr.log.Logger;
-
-import omr.score.common.PixelRectangle;
+import omr.glyph.facets.Glyph;
 
 import omr.grid.Filament;
 import omr.grid.StaffInfo;
 import omr.grid.StaffManager;
 
-import omr.step.StepException;
+import omr.lag.Lag;
+import omr.lag.Section;
+
+import omr.log.Logger;
+
+import omr.run.Orientation;
+import omr.run.Run;
+
+import omr.score.common.PixelRectangle;
 import static omr.util.HorizontalSide.*;
 import omr.util.Implement;
+import omr.util.Predicate;
 
 import net.jcip.annotations.NotThreadSafe;
 
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -77,6 +83,14 @@ public class BarsChecker
     /** Failure, since bar is on left or right side of the staff area */
     private static final FailureResult OUTSIDE_STAFF_WIDTH = new FailureResult(
         "Bar-OutsideStaffWidth");
+
+    /** Failure, since bar goes too high above first staff */
+    private static final FailureResult TOP_EXCESS = new FailureResult(
+        "Bar-TooHigh");
+
+    /** Failure, since bar goes too low under last staff */
+    private static final FailureResult BOTTOM_EXCESS = new FailureResult(
+        "Bar-TooLow");
 
     /** Failure, since bar has no end aligned with a staff */
     private static final FailureResult NOT_STAFF_ANCHORED = new FailureResult(
@@ -120,9 +134,6 @@ public class BarsChecker
     /** Related scale */
     private final Scale scale;
 
-    /** Related vertical lag */
-    private final GlyphLag lag;
-
     /** Related staves */
     private final StaffManager staffManager;
 
@@ -130,7 +141,7 @@ public class BarsChecker
     private final BarCheckSuite suite;
 
     /** Related context of a bar stick */
-    private final Map<Stick, GlyphContext> contexts = new HashMap<Stick, GlyphContext>();
+    private final Map<Glyph, GlyphContext> contexts = new HashMap<Glyph, GlyphContext>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -141,16 +152,13 @@ public class BarsChecker
      * Prepare a bar checker on the provided sheet
      *
      * @param sheet the sheet to process
-     * @param lag the sheet vertical lag
      * @param rough true for rough tests (when retrieving staff frames),
      * false for precise tests
      */
-    public BarsChecker (Sheet    sheet,
-                        GlyphLag lag,
-                        boolean  rough)
+    public BarsChecker (Sheet   sheet,
+                        boolean rough)
     {
         this.sheet = sheet;
-        this.lag = lag;
         this.rough = rough;
 
         scale = sheet.getScale();
@@ -170,7 +178,7 @@ public class BarsChecker
      * @return a pair of staves, top & bottom, or null if the stick is
      * not known
      */
-    public StaffAnchors getStaffAnchors (Stick stick)
+    public StaffAnchors getStaffAnchors (Glyph stick)
     {
         GlyphContext context = contexts.get(stick);
 
@@ -196,28 +204,24 @@ public class BarsChecker
         return suite;
     }
 
-    //--------------------//
-    // retrieveCandidates //
-    //--------------------//
+    //-----------------//
+    // checkCandidates //
+    //-----------------//
     /**
-     * From the list of vertical sticks, this method uses several tests based on
-     * stick location, and stick shape (the test is based on adjacency, it
-     * should be improved), to provide the initial collection of good barlines
-     * candidates.
+     * From the list of vertical sticks, this method uses several tests to
+     * provide the initial collection of good barlines candidates.
      *
      * @param sticks the collection of candidate sticks
-     * @throws StepException Raised when processing goes wrong
      */
-    public void retrieveCandidates (Collection<?extends Stick> sticks)
-        throws StepException
+    public void checkCandidates (Collection<?extends Glyph> sticks)
     {
         //        // Sort candidates according to their abscissa
-        //        List<Stick> sortedSticks = new ArrayList<Stick>(sticks);
-        //        Collections.sort(sortedSticks, Stick.midPosComparator);
+        //        List<Glyph> sortedSticks = new ArrayList<Glyph>(sticks);
+        //        Collections.sort(sortedSticks, Glyph.midPosComparator);
         double minResult = constants.minCheckResult.getValue();
 
         // Check each candidate stick in turn
-        for (Stick stick : sticks) {
+        for (Glyph stick : sticks) {
             // Allocate the candidate context, and pass the whole check suite
             GlyphContext context = new GlyphContext(stick);
             initializeContext(context); // Initialization before any check
@@ -263,8 +267,46 @@ public class BarsChecker
 
                     stick.setResult(BAR_NOT_PART_DEFINING);
                 }
+            } else {
+                if (stick.isBar()) {
+                    if (logger.isFineEnabled() || stick.isVip()) {
+                        logger.info(
+                            "Purged Glyph#" + stick.getId() + " " +
+                            stick.getShape());
+                    }
+
+                    stick.setShape(null);
+                }
             }
         }
+    }
+
+    //------------------//
+    // getAlienPixelsIn //
+    //------------------//
+    private int getAlienPixelsIn (Glyph          glyph,
+                                  PixelRectangle absRoi)
+    {
+        Predicate<Section> predicate = new Predicate<Section>() {
+            public boolean check (Section section)
+            {
+                return (section.getGlyph() == null) ||
+                       (section.getGlyph()
+                               .getShape() != Shape.STAFF_LINE);
+            }
+        };
+
+        int total = 0;
+        total += glyph.getAlienPixelsFrom(
+            sheet.getVerticalLag(),
+            absRoi,
+            predicate);
+        total += glyph.getAlienPixelsFrom(
+            sheet.getHorizontalLag(),
+            absRoi,
+            predicate);
+
+        return total;
     }
 
     //------------//
@@ -277,14 +319,15 @@ public class BarsChecker
      *
      * @return true if thick
      */
-    private boolean isThickBar (Stick stick)
+    private boolean isThickBar (Glyph stick)
     {
         // Max width of a thin bar line, otherwise this must be a thick bar
         final int maxThinWidth = scale.toPixels(constants.maxThinWidth);
 
         // Average width of the stick
         final int meanWidth = (int) Math.rint(
-            (double) stick.getWeight() / (double) stick.getLength());
+            (double) stick.getWeight() / (double) stick.getLength(
+                Orientation.VERTICAL));
 
         return meanWidth > maxThinWidth;
     }
@@ -294,7 +337,7 @@ public class BarsChecker
     //-------------------//
     private void initializeContext (GlyphContext context)
     {
-        Stick     stick = context.stick;
+        Glyph     stick = context.stick;
         StaffInfo startStaff = staffManager.getStaffAt(stick.getStartPoint());
         StaffInfo stopStaff = staffManager.getStaffAt(stick.getStopPoint());
 
@@ -343,7 +386,7 @@ public class BarsChecker
         //~ Instance fields ----------------------------------------------------
 
         /** The stick being checked */
-        Stick stick;
+        Glyph stick;
 
         /** Indicates a part-defining stick (embracing more than one staff) */
         boolean isPartDefining;
@@ -365,7 +408,7 @@ public class BarsChecker
 
         //~ Constructors -------------------------------------------------------
 
-        public GlyphContext (Stick stick)
+        public GlyphContext (Glyph stick)
         {
             this.stick = stick;
         }
@@ -430,6 +473,27 @@ public class BarsChecker
             if (logger.isFineEnabled()) {
                 dump();
             }
+
+            //            // We don't check that the bar does not start before first staff,
+            //            // this is too restrictive because of alternate endings.  We however
+            //            // do check that the bar does not end after last staff of the
+            //            // last part of the system.
+            //            int barAbscissa = bar.getMidPos();
+            //            int systemBottom = scoreSystem.getLastPart()
+            //                                          .getLastStaff()
+            //                                          .getInfo()
+            //                                          .getLastLine()
+            //                                          .yAt(barAbscissa);
+            //
+            //            if ((bar.getStop() - systemBottom) > maxDy) {
+            //                if (logger.isFineEnabled()) {
+            //                    logger.fine("Bar stopping too low");
+            //                }
+            //
+            //                bar.setResult(NOT_WITHIN_SYSTEM);
+            //
+            //                continue;
+            //            }
         }
     }
 
@@ -501,7 +565,7 @@ public class BarsChecker
                 constants.maxStaffShiftDyLow,
                 constants.maxStaffShiftDyHigh,
                 false,
-                null);
+                BOTTOM_EXCESS);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -510,7 +574,7 @@ public class BarsChecker
         @Implement(Check.class)
         protected double getValue (GlyphContext context)
         {
-            Stick     stick = context.stick;
+            Glyph     stick = context.stick;
             Point2D   stop = stick.getStopPoint();
 
             // Which staff area contains the bottom of the stick?
@@ -593,7 +657,7 @@ public class BarsChecker
             -3,
             "Rough high Minimum horizontal distance between a bar and a staff edge");
         Scale.Fraction  minStaffDxLow = new Scale.Fraction(
-            0,
+            -1,
             "Low Minimum horizontal distance between a bar and a staff edge");
         Scale.Fraction  minStaffDxLowRough = new Scale.Fraction(
             -5,
@@ -661,19 +725,20 @@ public class BarsChecker
 
         //~ Methods ------------------------------------------------------------
 
-        protected abstract PixelRectangle getBox (Stick stick);
+        protected abstract PixelRectangle getBox (Glyph stick);
 
         @Implement(Check.class)
         protected double getValue (GlyphContext context)
         {
-            Stick          stick = context.stick;
+            Glyph          stick = context.stick;
             PixelRectangle box = getBox(stick);
 
-            int            aliens = stick.getAlienPixelsIn(lag.oriented(box));
+            int            aliens = getAlienPixelsIn(stick, box);
             int            area = box.width * box.height;
 
             // Normalize the ratio with stick length
-            double ratio = (1000 * aliens) / ((double) area * stick.getLength());
+            double ratio = (1000 * aliens) / ((double) area * stick.getLength(
+                Orientation.VERTICAL));
 
             if (logger.isFineEnabled()) {
                 logger.fine(
@@ -707,7 +772,7 @@ public class BarsChecker
         //~ Methods ------------------------------------------------------------
 
         @Override
-        protected PixelRectangle getBox (Stick stick)
+        protected PixelRectangle getBox (Glyph stick)
         {
             Point2D        bottom = stick.getStopPoint();
             PixelRectangle box = new PixelRectangle(
@@ -743,7 +808,7 @@ public class BarsChecker
         //~ Methods ------------------------------------------------------------
 
         @Override
-        protected PixelRectangle getBox (Stick stick)
+        protected PixelRectangle getBox (Glyph stick)
         {
             Point2D        bottom = stick.getStopPoint();
             PixelRectangle box = new PixelRectangle(
@@ -784,7 +849,7 @@ public class BarsChecker
         @Implement(Check.class)
         protected double getValue (GlyphContext context)
         {
-            Stick stick = context.stick;
+            Glyph stick = context.stick;
             int   height = Integer.MAX_VALUE;
 
             // Check wrt every staff in the stick getRange
@@ -794,7 +859,8 @@ public class BarsChecker
             }
 
             return sheet.getScale()
-                        .pixelsToFrac(height - stick.getLength());
+                        .pixelsToFrac(
+                height - stick.getLength(Orientation.VERTICAL));
         }
     }
 
@@ -823,10 +889,10 @@ public class BarsChecker
         @Implement(Check.class)
         protected double getValue (GlyphContext context)
         {
-            Stick  stick = context.stick;
+            Glyph  stick = context.stick;
             double dist = Double.MAX_VALUE;
 
-            // Check wrt every staff in the stick getRange
+            // Check wrt every staff in the stick range
             for (int i = context.topArea; i <= context.bottomArea; i++) {
                 StaffInfo staff = staffManager.getStaff(i);
                 Point2D   top = staff.getFirstLine()
@@ -834,7 +900,7 @@ public class BarsChecker
                 Point2D   bot = staff.getLastLine()
                                      .getEndPoint(LEFT);
                 double    y = (top.getY() + bot.getY()) / 2;
-                double    x = stick.getPositionAt(y);
+                double    x = stick.getPositionAt(y, Orientation.VERTICAL);
                 double    dx = x - staff.getAbscissa(LEFT);
                 dist = Math.min(dist, dx);
             }
@@ -910,7 +976,7 @@ public class BarsChecker
         @Implement(Check.class)
         protected double getValue (GlyphContext context)
         {
-            Stick stick = context.stick;
+            Glyph stick = context.stick;
 
             if (stick instanceof Filament) {
                 Filament fil = (Filament) stick;
@@ -948,7 +1014,7 @@ public class BarsChecker
         @Implement(Check.class)
         protected double getValue (GlyphContext context)
         {
-            Stick  stick = context.stick;
+            Glyph  stick = context.stick;
             double dist = Double.MAX_VALUE;
 
             // Check wrt every staff in the stick getRange
@@ -960,9 +1026,10 @@ public class BarsChecker
                                      .getEndPoint(RIGHT);
                 double    y = (top.getY() + bot.getY()) / 2;
                 double    x = (stick instanceof Filament)
-                              ? ((Filament) stick).getPositionAt(y)
-                              : stick.getAbsoluteLine()
-                                     .xAtY(y);
+                              ? ((Filament) stick).getPositionAt(
+                    y,
+                    Orientation.VERTICAL) : stick.getLine()
+                                                 .xAtY(y);
                 dist = Math.min(dist, staff.getAbscissa(RIGHT) - x);
             }
 
@@ -987,7 +1054,7 @@ public class BarsChecker
                 constants.maxStaffShiftDyLow,
                 constants.maxStaffShiftDyHigh,
                 false,
-                null);
+                TOP_EXCESS);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -996,7 +1063,7 @@ public class BarsChecker
         @Implement(Check.class)
         protected double getValue (GlyphContext context)
         {
-            Stick     stick = context.stick;
+            Glyph     stick = context.stick;
             Point2D   start = stick.getStartPoint();
 
             // Which staff area contains the top of the stick?
@@ -1050,7 +1117,7 @@ public class BarsChecker
         //~ Methods ------------------------------------------------------------
 
         @Override
-        protected PixelRectangle getBox (Stick stick)
+        protected PixelRectangle getBox (Glyph stick)
         {
             Point2D        top = stick.getStartPoint();
             PixelRectangle box = new PixelRectangle(
@@ -1086,7 +1153,7 @@ public class BarsChecker
         //~ Methods ------------------------------------------------------------
 
         @Override
-        protected PixelRectangle getBox (Stick stick)
+        protected PixelRectangle getBox (Glyph stick)
         {
             Point2D        top = stick.getStartPoint();
             PixelRectangle box = new PixelRectangle(
@@ -1125,7 +1192,7 @@ public class BarsChecker
         @Implement(Check.class)
         protected double getValue (GlyphContext context)
         {
-            Stick   stick = context.stick;
+            Glyph   stick = context.stick;
             Point2D start = stick.getStartPoint();
             Point2D stop = stick.getStopPoint();
 

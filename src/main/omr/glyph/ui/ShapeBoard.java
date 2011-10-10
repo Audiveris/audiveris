@@ -23,8 +23,6 @@ import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
-import omr.run.Orientation;
-
 import omr.score.common.PixelPoint;
 
 import omr.script.InsertTask;
@@ -187,7 +185,7 @@ public class ShapeBoard
         public void mouseClicked (MouseEvent e)
         {
             if (e.getClickCount() == 2) {
-                Glyph glyph = sheet.getVerticalLag()
+                Glyph glyph = sheet.getScene()
                                    .getSelectedGlyph();
 
                 if (glyph != null) {
@@ -477,8 +475,8 @@ public class ShapeBoard
                         sheet,
                         shape,
                         Collections.singleton(
-                            new PixelPoint(localPt.x, localPt.y)),
-                        Orientation.VERTICAL).launch(sheet);
+                            new PixelPoint(localPt.x, localPt.y))).launch(
+                        sheet);
                 }
             }
         }

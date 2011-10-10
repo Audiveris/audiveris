@@ -24,18 +24,12 @@ public interface OCR
 {
     //~ Methods ----------------------------------------------------------------
 
-    //-----------------------//
-    // getSupportedLanguages //
-    //-----------------------//
     /**
      * Report the set of supported language codes
      * @return the set of supported 3-letter codes
      */
     Set<String> getSupportedLanguages ();
 
-    //-----------//
-    // recognize //
-    //-----------//
     /**
      * Launch the recognition of the provided image, whose language is specified
      *

@@ -14,12 +14,15 @@ package omr.glyph;
 import omr.constant.Constant;
 import static omr.glyph.Shape.*;
 
+import omr.log.Logger;
+
 import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -42,33 +45,36 @@ public class ShapeRange
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(ShapeRange.class);
+
     // Predefined instances of ShapeRange. Double-check before removing any one.
     //
-    public static final ShapeRange Accidentals = new ShapeRange(
+    public static final ShapeRange     Accidentals = new ShapeRange(
         SHARP,
         EnumSet.range(FLAT, DOUBLE_FLAT));
-    public static final ShapeRange Articulations = new ShapeRange(
+    public static final ShapeRange     Articulations = new ShapeRange(
         ARPEGGIATO,
         shapesOf(EnumSet.range(ACCENT, STRONG_ACCENT), STACCATO, ARPEGGIATO));
-    public static final ShapeRange Barlines = new ShapeRange(
+    public static final ShapeRange     Barlines = new ShapeRange(
         LEFT_REPEAT_SIGN,
         EnumSet.range(PART_DEFINING_BARLINE, BACK_TO_BACK_REPEAT_SIGN));
-    public static final ShapeRange Beams = new ShapeRange(
+    public static final ShapeRange     Beams = new ShapeRange(
         BEAM,
         shapesOf(EnumSet.range(BEAM, BEAM_HOOK), COMBINING_STEM));
-    public static final ShapeRange Clefs = new ShapeRange(
+    public static final ShapeRange     Clefs = new ShapeRange(
         G_CLEF,
         EnumSet.range(G_CLEF, PERCUSSION_CLEF));
-    public static final ShapeRange Dynamics = new ShapeRange(
+    public static final ShapeRange     Dynamics = new ShapeRange(
         DYNAMICS_F,
         EnumSet.range(DYNAMICS_CHAR_M, DECRESCENDO));
-    public static final ShapeRange Flags = new ShapeRange(
+    public static final ShapeRange     Flags = new ShapeRange(
         COMBINING_FLAG_1,
         EnumSet.range(COMBINING_FLAG_1, COMBINING_FLAG_5_UP));
-    public static final ShapeRange HeadAndFlags = new ShapeRange(
+    public static final ShapeRange     HeadAndFlags = new ShapeRange(
         HEAD_AND_FLAG_1,
         EnumSet.range(HEAD_AND_FLAG_1, HEAD_AND_FLAG_5_UP));
-    public static final ShapeRange Keys = new ShapeRange(
+    public static final ShapeRange     Keys = new ShapeRange(
         KEY_SHARP_3,
         shapesOf(
             KEY_FLAT_1,
@@ -85,19 +91,19 @@ public class ShapeRange
             KEY_SHARP_5,
             KEY_SHARP_6,
             KEY_SHARP_7));
-    public static final ShapeRange NoteHeads = new ShapeRange(
+    public static final ShapeRange     NoteHeads = new ShapeRange(
         NOTEHEAD_BLACK,
         EnumSet.range(VOID_NOTEHEAD, NOTEHEAD_BLACK_3));
-    public static final ShapeRange Markers = new ShapeRange(
+    public static final ShapeRange     Markers = new ShapeRange(
         CODA,
         EnumSet.range(DAL_SEGNO, BRACKET));
-    public static final ShapeRange Notes = new ShapeRange(
+    public static final ShapeRange     Notes = new ShapeRange(
         BREVE,
         EnumSet.range(BREVE, WHOLE_NOTE_3));
-    public static final ShapeRange Ornaments = new ShapeRange(
+    public static final ShapeRange     Ornaments = new ShapeRange(
         MORDENT,
         EnumSet.range(GRACE_NOTE_SLASH, INVERTED_MORDENT));
-    public static final ShapeRange Rests = new ShapeRange(
+    public static final ShapeRange     Rests = new ShapeRange(
         QUARTER_REST,
         shapesOf(
             LONG_REST,
@@ -111,7 +117,7 @@ public class ShapeRange
             THIRTY_SECOND_REST,
             SIXTY_FOURTH_REST,
             ONE_HUNDRED_TWENTY_EIGHTH_REST));
-    public static final ShapeRange Times = new ShapeRange(
+    public static final ShapeRange     Times = new ShapeRange(
         TIME_FOUR_FOUR,
         shapesOf(EnumSet.range(TIME_ZERO, CUT_TIME), CUSTOM_TIME_SIGNATURE));
 
@@ -128,32 +134,12 @@ public class ShapeRange
             SLUR));
 
     //
-    public static final ShapeRange Physicals = new ShapeRange(
+    public static final ShapeRange     Physicals = new ShapeRange(
         TEXT,
         shapesOf(TEXT, CHARACTER, CLUTTER, DOT, STRUCTURE));
-    public static final ShapeRange Logicals = new ShapeRange(
+    public static final ShapeRange     Logicals = new ShapeRange(
         REPEAT_DOTS,
         shapesOf(REPEAT_DOTS, COMBINING_AUGMENTATION_DOT, ENDING));
-
-    static {
-        for (Field field : ShapeRange.class.getDeclaredFields()) {
-            if (field.getType() == ShapeRange.class) {
-                try {
-                    ShapeRange range = (ShapeRange) field.get(null);
-                    range.setName(field.getName());
-
-                    // Create shape color for all contained shapes
-                    for (Shape shape : range.shapes) {
-                        shape.createShapeColor(range.getColor());
-                    }
-                } catch (IllegalAccessException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        }
-
-        WHOLE_OR_HALF_REST.createShapeColor(Rests.getColor());
-    }
 
     // =========================================================================
     // Below are EnumSet instances, used programmatically.
@@ -288,9 +274,11 @@ public class ShapeRange
 
     //~ Constructors -----------------------------------------------------------
 
+    //------------//
+    // ShapeRange //
+    //------------//
     /**
      * Creates a new ShapeRange object from a collection of shapes
-     *
      * @param rep the representative shape
      * @param shapes the provided collection of shapes
      */
@@ -313,6 +301,22 @@ public class ShapeRange
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //----------//
+    // getRange //
+    //----------//
+    public static ShapeRange getRange (String name)
+    {
+        return Ranges.map.get(name);
+    }
+
+    //-----------//
+    // getRanges //
+    //-----------//
+    public static List<ShapeRange> getRanges ()
+    {
+        return Ranges.rangeList;
+    }
 
     //----------//
     // setColor //
@@ -354,20 +358,17 @@ public class ShapeRange
         setColor(color);
     }
 
-    //----------//
-    // getRange //
-    //----------//
-    public static ShapeRange getRange (String name)
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * Report the name of the range
+     *
+     * @return the range name
+     */
+    public String getName ()
     {
-        return Ranges.map.get(name);
-    }
-
-    //-----------//
-    // getRanges //
-    //-----------//
-    public static List<ShapeRange> getRanges ()
-    {
-        return Ranges.rangeList;
+        return name;
     }
 
     //--------//
@@ -435,19 +436,6 @@ public class ShapeRange
                 menuItem.addActionListener(listener);
             }
         }
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * Report the name of the range
-     *
-     * @return the range name
-     */
-    public String getName ()
-    {
-        return name;
     }
 
     //---------------//
@@ -535,6 +523,48 @@ public class ShapeRange
     public static ShapeRange valueOf (String str)
     {
         return Ranges.map.get(str);
+    }
+
+    //----------------------//
+    // defineAllShapeColors //
+    //----------------------//
+    /**
+     * (package private access meant from Shape class)
+     * Assign a color to every shape, using the color of the containing range
+     * when no specific color is defined for a shape.
+     */
+    static void defineAllShapeColors ()
+    {
+        EnumSet<Shape> colored = EnumSet.noneOf(Shape.class);
+
+        // Define shape colors, using their containing range as default
+        for (Field field : ShapeRange.class.getDeclaredFields()) {
+            if (field.getType() == ShapeRange.class) {
+                try {
+                    ShapeRange range = (ShapeRange) field.get(null);
+                    range.setName(field.getName());
+
+                    // Create shape color for all contained shapes
+                    for (Shape shape : range.shapes) {
+                        shape.createShapeColor(range.getColor());
+                        colored.add(shape);
+                    }
+                } catch (IllegalAccessException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+
+        WHOLE_OR_HALF_REST.createShapeColor(Rests.getColor());
+        colored.add(WHOLE_OR_HALF_REST);
+
+        // Directly assign colors for shapes in no range
+        EnumSet<Shape> leftOver = EnumSet.allOf(Shape.class);
+        leftOver.removeAll(colored);
+
+        for (Shape shape : leftOver) {
+            shape.createShapeColor(Color.BLACK);
+        }
     }
 
     //----------//

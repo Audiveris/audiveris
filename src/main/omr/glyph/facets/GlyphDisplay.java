@@ -11,9 +11,7 @@
 // </editor-fold>
 package omr.glyph.facets;
 
-import omr.glyph.GlyphSection;
-
-import omr.lag.Lag;
+import omr.lag.Section;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
@@ -31,18 +29,12 @@ interface GlyphDisplay
 {
     //~ Methods ----------------------------------------------------------------
 
-    //----------------//
-    // getAttachments //
-    //----------------//
     /**
      * Report a map of attachments
-     * @return  a (perhaps empty) map of attachments
+     * @return a (perhaps empty) map of attachments
      */
     Map<String, java.awt.Shape> getAttachments ();
 
-    //----------//
-    // getColor //
-    //----------//
     /**
      * Report the color to be used to colorize the provided glyph, according to
      * the color policy which is based on the glyph shape
@@ -52,18 +44,12 @@ interface GlyphDisplay
      */
     Color getColor ();
 
-    //----------//
-    // getImage //
-    //----------//
     /**
      * Report an image of the glyph (which can be handed to the OCR)
      * @return a black & white image (contour box size )
      */
     BufferedImage getImage ();
 
-    //---------------//
-    // addAttachment //
-    //---------------//
     /**
      * Flag the glyph with a key and a rectangle. This is meant to add arbitrary
      * awt shapes to a glyph, mainly for display and analysis purposes.
@@ -73,61 +59,27 @@ interface GlyphDisplay
     void addAttachment (String         id,
                         java.awt.Shape attachment);
 
-    //----------//
-    // colorize //
-    //----------//
     /**
      * Set the display color of all sections that compose this glyph.
-     *
-     * @param viewIndex index in the view list
      * @param color     color for the whole glyph
      */
-    void colorize (int   viewIndex,
-                   Color color);
+    void colorize (Color color);
 
-    //----------//
-    // colorize //
-    //----------//
-    /**
-     * Set the display color of all sections that compose this stick.
-     *
-     * @param lag the containing lag
-     * @param viewIndex index in the view list
-     * @param color     color for the whole stick
-     */
-    void colorize (Lag   lag,
-                   int   viewIndex,
-                   Color color);
-
-    //----------//
-    // colorize //
-    //----------//
     /**
      * Set the display color of all sections gathered by the provided list
-     *
-     * @param viewIndex the proper view index
      * @param sections  the collection of sections
      * @param color     the display color
      */
-    void colorize (int                      viewIndex,
-                   Collection<GlyphSection> sections,
-                   Color                    color);
+    void colorize (Collection<Section> sections,
+                   Color               color);
 
-    //-----------//
-    // drawAscii //
-    //-----------//
     /**
      * Draw a basic representation of the glyph, using ascii characters
      */
     void drawAscii ();
 
-    //------------//
-    // recolorize //
-    //------------//
     /**
      * Reset the display color of all sections that compose this glyph.
-     *
-     * @param viewIndex index in the view list
      */
-    void recolorize (int viewIndex);
+    void recolorize ();
 }

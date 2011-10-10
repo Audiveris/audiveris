@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.glyph;
 
-import omr.lag.Lag;
+import omr.lag.Section;
 
 import omr.score.common.PixelPoint;
 
@@ -81,8 +81,7 @@ public class VirtualGlyph
     // colorize //
     //----------//
     @Override
-    public void colorize (int   viewIndex,
-                          Color color)
+    public void colorize (Color color)
     {
         // Nothing to colorize
     }
@@ -91,19 +90,8 @@ public class VirtualGlyph
     // colorize //
     //----------//
     @Override
-    public void colorize (Lag   lag,
-                          int   viewIndex,
-                          Color color)
-    {
-    }
-
-    //----------//
-    // colorize //
-    //----------//
-    @Override
-    public void colorize (int                      viewIndex,
-                          Collection<GlyphSection> sections,
-                          Color                    color)
+    public void colorize (Collection<Section> sections,
+                          Color               color)
     {
     }
 }

@@ -11,7 +11,8 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.glyph.facets.Stick;
+import omr.glyph.facets.Glyph;
+import omr.grid.StaffInfo;
 
 /**
  * Class <code>Ending</code> is a physical {@link Dash} that is the horizontal
@@ -29,11 +30,11 @@ public class Ending
     //--------//
     /**
      * Create an Ending entity, with its underlying horizontal stick.
-     *
-     * @param stick the related stick
+     * @param stick the underlying stick
+     * @param staff the related staff
      */
-    public Ending (Stick stick)
+    public Ending (Glyph stick, StaffInfo staff)
     {
-        super(stick);
+        super(stick, staff);
     }
 }

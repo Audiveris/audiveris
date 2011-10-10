@@ -32,9 +32,6 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import org.bushe.swing.event.EventSubscriber;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
 /**
  * Class <code>RunBoard</code> is dedicated to display of Run information.
  *
@@ -49,12 +46,7 @@ public class RunBoard
     private static final Logger logger = Logger.getLogger(RunBoard.class);
 
     /** Events this entity is interested in */
-    private static final Collection<Class<?extends UserEvent>> eventClasses;
-
-    static {
-        eventClasses = new ArrayList<Class<?extends UserEvent>>();
-        eventClasses.add(RunEvent.class);
-    }
+    private static final Class[] eventClasses = new Class[] { RunEvent.class };
 
     //~ Instance fields --------------------------------------------------------
 
@@ -105,7 +97,7 @@ public class RunBoard
                      Lag     lag,
                      boolean expanded)
     {
-        this(unitName, lag.getRunSelectionService(), expanded);
+        this(unitName, lag.getRunService(), expanded);
     }
 
     //----------//

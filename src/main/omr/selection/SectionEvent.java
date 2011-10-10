@@ -19,19 +19,18 @@ import omr.lag.Section;
  * <dl>
  * <dt><b>Publishers:</b><dd>GlyphLag, Lag, LagView
  * <dt><b>Subscribers:</b><dd>GlyphLag, Lag
- * <dt><b>Readers:</b><dd>GlyphLagView, SectionBoard
+ * <dt><b>Readers:</b><dd>SectionBoard
  * </dl>
  *
- * @param <S> The precise section subtype used in the event
  * @author Hervé Bitteur
  */
-public class SectionEvent<S extends Section>
+public class SectionEvent
     extends LagEvent
 {
     //~ Instance fields --------------------------------------------------------
 
     /** The selected section, which may be null */
-    public final S section;
+    public final Section section;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -49,7 +48,7 @@ public class SectionEvent<S extends Section>
     public SectionEvent (Object        source,
                          SelectionHint hint,
                          MouseMovement movement,
-                         S             section)
+                         Section       section)
     {
         super(source, hint, movement);
         this.section = section;
@@ -61,7 +60,7 @@ public class SectionEvent<S extends Section>
     // getEntity //
     //-----------//
     @Override
-    public S getData ()
+    public Section getData ()
     {
         return section;
     }

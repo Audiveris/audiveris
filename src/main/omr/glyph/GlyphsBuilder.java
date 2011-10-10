@@ -13,8 +13,11 @@ package omr.glyph;
 
 import omr.constant.ConstantSet;
 
-import omr.glyph.facets.BasicStick;
+import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
+
+import omr.lag.Lag;
+import omr.lag.Section;
 
 import omr.log.Logger;
 
@@ -27,19 +30,15 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Class <code>GlyphsBuilder</code> is, at a system level, in charge of
  * building (and removing) glyphs and of updating accordingly the containing
- * entities (GlyphLag and SystemInfo).
- *
- * <p>Though there are vertical and horizontal glyphs, a GlyphBuilder
- * is meant to handle only vertical glyphs, since it plays only with the sheet
- * vertical lag and with the system vertical sections.
+ * entities (Scene and SystemInfo).
  *
  * <p>It does not handle the shape of a glyph (this higher-level task is handled
  * by {@link GlyphInspector} among others). But it does handle all the physical
@@ -82,8 +81,8 @@ public class GlyphsBuilder
     /** The global sheet scale */
     private final Scale scale;
 
-    /** Lag of vertical runs */
-    private final GlyphLag vLag;
+    /** Global hosting scene for glyphs */
+    private final Scene scene;
 
     /** Margins for a stem */
     final int stemWiden;
@@ -105,9 +104,7 @@ public class GlyphsBuilder
 
         Sheet sheet = system.getSheet();
         scale = sheet.getScale();
-
-        // Reuse vertical lag (from bars step).
-        vLag = sheet.getVerticalLag();
+        scene = sheet.getScene();
 
         // Cache parameters
         stemWiden = scale.toPixels(constants.stemWiden);
@@ -137,12 +134,7 @@ public class GlyphsBuilder
             removeGlyph(part);
         }
 
-        // Insert in lag, which assigns an id to the glyph
-        Glyph oldGlyph = vLag.addGlyph(glyph);
-
-        system.addToGlyphsCollection(oldGlyph);
-
-        return oldGlyph;
+        return registerGlyph(glyph);
     }
 
     //------------//
@@ -154,7 +146,7 @@ public class GlyphsBuilder
      * @param sections the provided members of the future glyph
      * @return the newly built glyph
      */
-    public Glyph buildGlyph (Collection<GlyphSection> sections)
+    public Glyph buildGlyph (Collection<Section> sections)
     {
         return buildGlyph(scale, sections);
     }
@@ -169,12 +161,12 @@ public class GlyphsBuilder
      * @param sections the provided members of the future glyph
      * @return the newly built glyph
      */
-    public static Glyph buildGlyph (Scale                    scale,
-                                    Collection<GlyphSection> sections)
+    public static Glyph buildGlyph (Scale               scale,
+                                    Collection<Section> sections)
     {
-        Glyph glyph = new BasicStick(scale.interline());
+        Glyph glyph = new BasicGlyph(scale.interline());
 
-        for (GlyphSection section : sections) {
+        for (Section section : sections) {
             glyph.addSection(section, Glyph.Linking.LINK_BACK);
         }
 
@@ -197,7 +189,7 @@ public class GlyphsBuilder
     public Glyph buildTransientCompound (Collection<Glyph> parts)
     {
         // Gather all the sections involved
-        Collection<GlyphSection> sections = new HashSet<GlyphSection>();
+        Collection<Section> sections = new HashSet<Section>();
 
         for (Glyph part : parts) {
             sections.addAll(part.getMembers());
@@ -223,17 +215,13 @@ public class GlyphsBuilder
      * @param sections the collection of sections
      * @return the brand new transientglyph
      */
-    public Glyph buildTransientGlyph (Collection<GlyphSection> sections)
+    public Glyph buildTransientGlyph (Collection<Section> sections)
     {
         // Build a glyph from all sections
-        Glyph compound = new BasicStick(scale.interline());
+        Glyph compound = new BasicGlyph(scale.interline());
 
-        for (GlyphSection section : sections) {
+        for (Section section : sections) {
             compound.addSection(section, Glyph.Linking.NO_LINK_BACK);
-
-            if (compound.getLag() == null) {
-                compound.setLag(section.getGraph());
-            }
         }
 
         // Compute glyph parameters
@@ -282,11 +270,30 @@ public class GlyphsBuilder
         glyph.setWithLedger(
             checkDashIntersect(
                 system.getLedgers(),
-                system.getMaxLedgerWidth(),
                 ledgerBox(glyph.getContourBox())));
 
         // Vertical position wrt staff
         glyph.setPitchPosition(staff.pitchPositionOf(center));
+    }
+
+    //---------------//
+    // registerGlyph //
+    //---------------//
+    /**
+     * Just register this glyph (as inactive) in order to persist glyph info
+     * such as TextInfo. Use {@link #addGlyph} to fully add the glpyh as active.
+     * @param glyph the glyph to just register
+     * @return the proper (original) glyph
+     * @see #addGlyph
+     */
+    public Glyph registerGlyph (Glyph glyph)
+    {
+        // Insert in scene, which assigns an id to the glyph
+        Glyph oldGlyph = scene.addGlyph(glyph);
+
+        system.addToGlyphsCollection(oldGlyph);
+
+        return oldGlyph;
     }
 
     //-------------//
@@ -315,19 +322,41 @@ public class GlyphsBuilder
      */
     public void retrieveGlyphs (boolean compute)
     {
-        // Make sure we process each section once only
-        Set<GlyphSection> visitedSections = new HashSet<GlyphSection>();
+        // Consider all unknown vertical & horizontal sections
+        List<Section> allSections = new ArrayList<Section>();
+
+        for (Section section : system.getVerticalSections()) {
+            if (!section.isKnown()) {
+                section.setProcessed(false);
+                allSections.add(section);
+            } else {
+                section.setProcessed(true);
+            }
+        }
+
+        for (Section section : system.getHorizontalSections()) {
+            if (!section.isKnown()) {
+                section.setProcessed(false);
+                allSections.add(section);
+            } else {
+                section.setProcessed(true);
+            }
+        }
 
         // Browse the various unrecognized sections
-        for (GlyphSection section : system.getVerticalSections()) {
+        for (Section section : allSections) {
             // Not already visited ?
-            if (!section.isKnown() && !visitedSections.contains(section)) {
+            if (!section.isProcessed()) {
                 // Let's build a new glyph around this starting section
-                Glyph glyph = new BasicStick(scale.interline());
-                considerConnection(glyph, section, visitedSections);
+                Glyph glyph = new BasicGlyph(scale.interline());
+                considerConnection(glyph, section);
 
                 // Insert this newly built glyph in system collection
                 glyph = addGlyph(glyph);
+
+                if (logger.isFineEnabled()) {
+                    logger.fine("Retrieved " + glyph);
+                }
 
                 // Make sure all aggregated sections belong to the same system
                 SystemInfo alienSystem = glyph.getAlienSystem(system);
@@ -359,11 +388,10 @@ public class GlyphsBuilder
     //--------------------//
     // checkDashIntersect //
     //--------------------//
-    private boolean checkDashIntersect (List<?extends Dash> items,
-                                        int                 maxItemWidth,
-                                        PixelRectangle      box)
+    private boolean checkDashIntersect (List<Glyph>    items,
+                                        PixelRectangle box)
     {
-        for (Dash item : items) {
+        for (Glyph item : items) {
             if (item.getContourBox()
                     .intersects(box)) {
                 return true;
@@ -398,9 +426,9 @@ public class GlyphsBuilder
             if (s.isStem() && s.getContourBox()
                                .intersects(box)) {
                 // Check adjacency
-                for (GlyphSection section : glyph.getMembers()) {
+                for (Section section : glyph.getMembers()) {
                     if (onLeft) {
-                        for (GlyphSection source : section.getSources()) {
+                        for (Section source : section.getSources()) {
                             if (source.getGlyph() == s) {
                                 glyph.setLeftStem(s);
 
@@ -408,7 +436,7 @@ public class GlyphsBuilder
                             }
                         }
                     } else {
-                        for (GlyphSection target : section.getTargets()) {
+                        for (Section target : section.getTargets()) {
                             if (target.getGlyph() == s) {
                                 glyph.setRightStem(s);
 
@@ -421,7 +449,7 @@ public class GlyphsBuilder
                 // Check close distance
                 PixelRectangle b = stemBoxOf(s);
 
-                for (GlyphSection section : glyph.getMembers()) {
+                for (Section section : glyph.getMembers()) {
                     if (section.getContourBox()
                                .intersects(b)) {
                         if (onLeft) {
@@ -447,29 +475,31 @@ public class GlyphsBuilder
      * in order to populate the provided glyph.
      * @param glyph the provided glyph
      * @param section the section to consider
-     * @param visitedSections the set of sections visited so far
      */
-    private void considerConnection (Glyph             glyph,
-                                     GlyphSection      section,
-                                     Set<GlyphSection> visitedSections)
+    private void considerConnection (Glyph   glyph,
+                                     Section section)
     {
         // Check whether this section is suitable to expand the glyph
-        if (!section.isKnown() && !visitedSections.contains(section)) {
-            visitedSections.add(section);
+        if (!section.isProcessed()) {
+            section.setProcessed(true);
 
             glyph.addSection(section, Glyph.Linking.LINK_BACK);
 
             // Add recursively all linked sections in the lag
-            //
+
             // Incoming ones
-            for (GlyphSection source : section.getSources()) {
-                considerConnection(glyph, source, visitedSections);
+            for (Section source : section.getSources()) {
+                considerConnection(glyph, source);
             }
 
-            //
             // Outgoing ones
-            for (GlyphSection target : section.getTargets()) {
-                considerConnection(glyph, target, visitedSections);
+            for (Section target : section.getTargets()) {
+                considerConnection(glyph, target);
+            }
+
+            // Sections from other orientation
+            for (Section other : section.getOppositeSections()) {
+                considerConnection(glyph, other);
             }
         }
     }

@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                         G l y p h L a g E v e n t                          //
+//                            S c e n e E v e n t                             //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -13,9 +13,8 @@ package omr.selection;
 
 
 /**
- * Class <code>GlyphLagEvent</code> is an abstract class to represent any event
- * specific to a glyph lag (glyph, glyph id, glyph set) on top of basic lag
- * events (run, section, section id)
+ * Class <code>SceneEvent</code> is an abstract class to represent any event
+ * specific to a glyph service (glyph, glyph id, glyph set)
  *
  * <dl>
  * <dt><b>Publishers:</b><dd>
@@ -25,20 +24,20 @@ package omr.selection;
  *
  * @author Hervé Bitteur
  */
-public abstract class GlyphLagEvent
-    extends LagEvent
+public abstract class SceneEvent
+    extends UserEvent
 {
     //~ Constructors -----------------------------------------------------------
 
     /**
-     * Creates a new GlyphLagEvent object.
+     * Creates a new SceneEvent object.
      * @param source the actual entity that created this event
      * @param hint how the event originated
      * @param movement the precise mouse movement
      */
-    public GlyphLagEvent (Object        source,
-                          SelectionHint hint,
-                          MouseMovement movement)
+    public SceneEvent (Object        source,
+                       SelectionHint hint,
+                       MouseMovement movement)
     {
         super(source, hint, movement);
     }

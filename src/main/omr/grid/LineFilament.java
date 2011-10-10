@@ -58,15 +58,6 @@ public class LineFilament
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------------//
-    // getAncestor //
-    //-------------//
-    @Override
-    public LineFilament getAncestor ()
-    {
-        return (LineFilament) super.getAncestor();
-    }
-
     //------------//
     // setCluster //
     //------------//
@@ -118,15 +109,6 @@ public class LineFilament
         } else {
             return new TreeMap<Integer, FilamentComb>();
         }
-    }
-
-    //-----------//
-    // getParent //
-    //-----------//
-    @Override
-    public LineFilament getPartOf ()
-    {
-        return (LineFilament) super.getPartOf();
     }
 
     //---------//

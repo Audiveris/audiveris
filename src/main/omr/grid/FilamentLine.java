@@ -11,7 +11,9 @@
 // </editor-fold>
 package omr.grid;
 
-import omr.glyph.GlyphSection;
+import omr.lag.Section;
+
+import omr.run.Orientation;
 
 import omr.score.common.PixelRectangle;
 
@@ -107,7 +109,7 @@ public class FilamentLine
     //-------------//
     // getSections //
     //-------------//
-    public Collection<GlyphSection> getSections ()
+    public Collection<Section> getSections ()
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -117,7 +119,7 @@ public class FilamentLine
     //----------//
     public double getSlope (HorizontalSide side)
     {
-        return fil.slopeAt(getEndPoint(side).getX());
+        return fil.slopeAt(getEndPoint(side).getX(), Orientation.HORIZONTAL);
     }
 
     //---------------//
@@ -133,7 +135,7 @@ public class FilamentLine
     //---------------//
     public double getStartSlope ()
     {
-        return fil.slopeAt(getStartPoint().getX());
+        return fil.slopeAt(getStartPoint().getX(), Orientation.HORIZONTAL);
     }
 
     //--------------//
@@ -149,7 +151,7 @@ public class FilamentLine
     //--------------//
     public double getStopSlope ()
     {
-        return fil.slopeAt(getStopPoint().getX());
+        return fil.slopeAt(getStopPoint().getX(), Orientation.HORIZONTAL);
     }
 
     //---------------//
@@ -247,6 +249,6 @@ public class FilamentLine
     //-----//
     public double yAt (double x)
     {
-        return fil.getPositionAt(x);
+        return fil.getPositionAt(x, Orientation.HORIZONTAL);
     }
 }

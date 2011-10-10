@@ -16,13 +16,12 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.GlyphLag;
-import omr.glyph.GlyphSection;
 import omr.glyph.GlyphsModel;
 import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphsController;
 
-import omr.lag.ui.ScrollLagView;
+import omr.lag.Lag;
+import omr.lag.Section;
 import omr.lag.ui.SectionBoard;
 
 import omr.log.Logger;
@@ -39,6 +38,7 @@ import omr.step.StepException;
 import omr.step.Steps;
 
 import omr.ui.BoardsPane;
+import omr.ui.view.ScrollView;
 
 import omr.util.StopWatch;
 
@@ -102,7 +102,7 @@ public class GridBuilder
     //~ Methods ----------------------------------------------------------------
 
     //-----------//
-    // buildInfo //
+    // retrieveSystemBars //
     //-----------//
     /**
      * Compute and display the system frames of the sheet picture
@@ -126,21 +126,20 @@ public class GridBuilder
             watch.start("retrieveLines");
             linesRetriever.retrieveLines();
 
-            // Retrieve the vertical barlines and thus the systems
-            watch.start("barsRetriever");
-            barsRetriever.buildInfo();
+            // Retrieve the major vertical barlines and thus the systems
+            watch.start("retrieveSystemBars");
+            barsRetriever.retrieveSystemBars();
 
-            // Complete the staff lines
+            // Complete the staff lines w/ short sections & filaments left over
             watch.start("completeLines");
 
-            List<GlyphSection> newSections = linesRetriever.completeLines();
+            List<Section> newSections = linesRetriever.completeLines();
 
-            // Update grid view with new horizontal sections
-            if (gridView != null) {
-                for (GlyphSection section : newSections) {
-                    gridView.addSectionView(section);
-                }
-            }
+            // Retrieve minor barlines (for measures)
+            barsRetriever.retrieveMeasureBars();
+
+            // Adjust ending points of all systems (side) bars
+            barsRetriever.adjustSystemBars();
 
             // Define the destination grid, if so desired
             if (constants.buildDewarpedTarget.isSet()) {
@@ -152,10 +151,7 @@ public class GridBuilder
                 sheet.setTargetBuilder(targetBuilder);
                 targetBuilder.buildInfo();
             }
-
-            // Temporary feature
-            new LagWeaver(sheet).buildInfo();
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             logger.warning(sheet.getLogPrefix() + "Error in GridBuilder", ex);
             ex.printStackTrace();
         } finally {
@@ -164,8 +160,6 @@ public class GridBuilder
             }
 
             if (gridView != null) {
-                // Update the display
-                gridView.colorizeAllSections();
                 gridView.refresh();
             }
         }
@@ -198,7 +192,7 @@ public class GridBuilder
             // For the time being, it is kept alive for display purpose, and to
             // allow the dewarping of the initial picture.
 
-            // View on there initial runs (just for information)
+            // View on the initial runs (just for information)
             if (showRuns) {
                 // Add a view on runs table
                 linesRetriever.addRunsTab(wholeVertTable);
@@ -226,39 +220,38 @@ public class GridBuilder
     //-----------------//
     private void displayGridView ()
     {
-        GlyphLag         hLag = sheet.getHorizontalLag();
-        GlyphLag         vLag = sheet.getVerticalLag();
-        GlyphsController hController = new GlyphsController(
-            new GlyphsModel(sheet, hLag, Steps.valueOf(Steps.GRID)));
-        GlyphsController vController = new GlyphsController(
-            new GlyphsModel(sheet, vLag, Steps.valueOf(Steps.GRID)));
+        Lag              hLag = sheet.getHorizontalLag();
+        Lag              vLag = sheet.getVerticalLag();
+        GlyphsController gController = new GlyphsController(
+            new GlyphsModel(sheet, sheet.getScene(), Steps.valueOf(Steps.GRID)));
 
         // Create a view
         gridView = new GridView(
+            sheet.getScene(),
             linesRetriever,
             hLag,
             barsRetriever,
             vLag,
-            hController,
-            vController);
-        gridView.colorizeAllSections();
+            gController);
+        gridView.setLocationService(sheet.getLocationService());
+
+        ///gridView.colorizeAllSections();
 
         // Boards
-        final String  unit = sheet.getId() + ":GridBuilder";
+        final String unit = sheet.getId() + ":GridBuilder";
 
-        BoardsPane    boardsPane = new BoardsPane(
+        BoardsPane   boardsPane = new BoardsPane(
             new PixelBoard(unit, sheet),
             new RunBoard(unit, hLag, true),
             new SectionBoard(unit, hLag, true),
-            new GlyphBoard(unit, hController, null, false),
             new RunBoard(unit, vLag, true),
             new SectionBoard(unit, vLag, true),
-            new GlyphBoard(unit, vController, null, false));
+            new GlyphBoard(unit, gController, false));
 
         // Create a hosting frame for the view
-        ScrollLagView slv = new ScrollLagView(gridView);
+        ScrollView sv = new ScrollView(gridView);
         sheet.getAssembly()
-             .addViewTab(Step.GRID_TAB, slv, boardsPane);
+             .addViewTab(Step.GRID_TAB, sv, boardsPane);
     }
 
     //~ Inner Classes ----------------------------------------------------------

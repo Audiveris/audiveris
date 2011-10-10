@@ -19,21 +19,26 @@ import omr.check.SuccessResult;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.GlyphLag;
-import omr.glyph.GlyphSection;
 import omr.glyph.Glyphs;
-import omr.glyph.facets.BasicStick;
+import omr.glyph.Scene;
+import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
-import omr.glyph.facets.Stick;
 
+import omr.lag.BasicSection;
+import omr.lag.Section;
 import omr.lag.Sections;
 
 import omr.log.Logger;
+
+import omr.run.Orientation;
+
+import omr.score.common.PixelRectangle;
 
 import omr.sheet.Scale;
 import static omr.stick.SectionRole.*;
 
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -85,13 +90,10 @@ public class SticksBuilder
         "SticksBuilder-Assigned");
 
     /** For comparing sections, according to the thickening relevance */
-    private static final Comparator<GlyphSection> thickeningComparator = new Comparator<GlyphSection>() {
-        public int compare (GlyphSection gs1,
-                            GlyphSection gs2)
+    private static final Comparator<Section> thickeningComparator = new Comparator<Section>() {
+        public int compare (Section s1,
+                            Section s2)
         {
-            StickSection  s1 = (StickSection) gs1;
-            StickSection  s2 = (StickSection) gs2;
-
             // Criteria #1 is layer number (small layer numbers
             // first) Plus section thickness for non layer zero
             // sections
@@ -102,8 +104,8 @@ public class SticksBuilder
             if ((r1.layer == 0) || (r2.layer == 0)) {
                 layerDiff = r1.layer - r2.layer;
             } else {
-                layerDiff = (r1.layer + s1.getRunNb()) -
-                            (r2.layer + s2.getRunNb());
+                layerDiff = (r1.layer + s1.getRunCount()) -
+                            (r2.layer + s2.getRunCount());
             }
 
             if (layerDiff != 0) {
@@ -119,11 +121,14 @@ public class SticksBuilder
 
     //~ Instance fields --------------------------------------------------------
 
+    /** Desired orientation of sticks */
+    protected final Orientation orientation;
+
     /** The related scale */
     protected final Scale scale;
 
-    /** The containing lag */
-    protected final GlyphLag lag;
+    /** The containing scene */
+    protected final Scene scene;
 
     /** Class parameters */
     protected final Parameters params;
@@ -136,16 +141,16 @@ public class SticksBuilder
     private final boolean longAlignment;
 
     /** The <b>sorted</b> collection of sticks found in this area */
-    protected List<Stick> sticks = new ArrayList<Stick>();
+    protected List<Glyph> sticks = new ArrayList<Glyph>();
 
     /** Sections which are potential future members */
-    private List<GlyphSection> candidates = new ArrayList<GlyphSection>();
+    private List<Section> candidates = new ArrayList<Section>();
 
     /** Sections recognized as members of sticks */
-    private List<GlyphSection> members = new ArrayList<GlyphSection>();
+    private List<Section> members = new ArrayList<Section>();
 
     /** Used to flag sections already visited wrt a given stick */
-    private Map<GlyphSection, Glyph> visited;
+    private Map<Section, Glyph> visited;
 
     /** Instance data for the area */
     private int id = ++globalId;
@@ -155,19 +160,22 @@ public class SticksBuilder
     /**
      * Creates a new SticksBuilder object.
      *
+     * @param orientation general orientation of desired sticks
      * @param scale the related scale
-     * @param lag the GlyphLag which hosts the sections and the glyphs
+     * @param scene the scene which hosts the glyphs
      * @param source An adaptor to get access to participating sections
      * @param longAlignment specific flag to indicate long filament retrieval
      */
-    public SticksBuilder (Scale          scale,
-                          GlyphLag       lag,
+    public SticksBuilder (Orientation    orientation,
+                          Scale          scale,
+                          Scene          scene,
                           SectionsSource source,
                           boolean        longAlignment)
     {
         // Cache computing parameters
+        this.orientation = orientation;
         this.scale = scale;
-        this.lag = lag;
+        this.scene = scene;
         this.source = source;
         this.longAlignment = longAlignment;
 
@@ -188,7 +196,7 @@ public class SticksBuilder
      *
      * @return true if actually discarded
      */
-    public static boolean isDiscarded (StickSection section)
+    public static boolean isDiscarded (Section section)
     {
         StickRelation relation = section.getRelation();
 
@@ -235,6 +243,14 @@ public class SticksBuilder
         params.maxThickness = scale.toPixels(frac);
     }
 
+    //-----------------//
+    // setMaxThickness //
+    //-----------------//
+    public void setMaxThickness (Scale.LineFraction lFrac)
+    {
+        params.maxThickness = scale.toPixels(lFrac);
+    }
+
     //------------------//
     // setMinCoreLength //
     //------------------//
@@ -275,7 +291,7 @@ public class SticksBuilder
      *
      * @return the sticks found
      */
-    public List<Stick> getSticks ()
+    public List<Glyph> getSticks ()
     {
         return sticks;
     }
@@ -290,17 +306,17 @@ public class SticksBuilder
      *
      * @param preCandidates (maybe null) a list of predefined candidate sections
      */
-    public void createSticks (List<GlyphSection> preCandidates)
+    public void createSticks (List<Section> preCandidates)
     {
         // Use a brand new glyph map
-        visited = new HashMap<GlyphSection, Glyph>();
+        visited = new HashMap<Section, Glyph>();
 
         // Do we have pre-candidates to start with ?
         if (preCandidates != null) {
             candidates = preCandidates;
         } else {
             // Browse through our sections, to collect the long core sections
-            List<GlyphSection> target;
+            List<Section> target;
 
             if (longAlignment) {
                 // For long alignments (staff lines), we use an intermediate
@@ -313,13 +329,13 @@ public class SticksBuilder
             }
 
             while (source.hasNext()) {
-                StickSection section = (StickSection) source.next();
+                Section section = source.next();
 
                 // By vertue of the Source adaptor, all provided sections are
                 // entirely within the stick area. So tests for core sections
                 // are not already taken, thickness and length, that's all.
                 if (!section.isGlyphMember() &&
-                    (section.getRunNb() <= params.maxThickness) &&
+                    (section.getRunCount() <= params.maxThickness) &&
                     (section.getMaxRunLength() >= params.minCoreLength)) {
                     // OK, this section is candidate as core member of stick set
                     mark(section, target, SectionRole.CORE, 0, 0);
@@ -338,7 +354,7 @@ public class SticksBuilder
         }
 
         // Collect candidate sections around the core ones
-        for (GlyphSection section : members) {
+        for (Section section : members) {
             collectNeighborsOf(section, 1, -1, true); // Before the core section
 
             collectNeighborsOf(section, 1, +1, true); // After the core section
@@ -368,43 +384,37 @@ public class SticksBuilder
 
         // Compute stick lines and check the resulting slope. This may result in
         // discarded sticks.
-        for (Iterator<Stick> it = sticks.iterator(); it.hasNext();) {
-            Stick stick = it.next();
+        for (Iterator<Glyph> it = sticks.iterator(); it.hasNext();) {
+            Glyph stick = it.next();
 
-            // Stick size (at least 3 points)
+            // Glyph size (at least 3 points)
             if (stick.getWeight() < 3) {
                 stick.setResult(TOO_SMALL);
 
-                for (GlyphSection section : stick.getMembers()) {
+                for (Section section : stick.getMembers()) {
                     if (logger.isFineEnabled()) {
                         logger.fine("Discarding too small stick " + section);
                     }
 
-                    discard((StickSection) section);
+                    discard(section);
                 }
 
                 it.remove();
             } else {
-                // Stick slope must be close to expected value
-                double stickSlope = stick.getOrientedLine()
-                                         .getSlope();
+                // Glyph slope must be close to expected value
+                double stickSlope = (orientation == Orientation.VERTICAL)
+                                    ? stick.getInvertedSlope() : stick.getSlope();
 
-                //                logger.info(
-                //                    "BINGO expected:" + params.expectedSlope + " actual:" +
-                //                    stickSlope);
                 if (Math.abs(stickSlope - params.expectedSlope) > params.slopeMargin) {
                     stick.setResult(NOT_STRAIGHT);
 
-                    //                    logger.warning(
-                    //                        "BINGO expected:" + params.expectedSlope + " actual:" +
-                    //                        stickSlope);
-                    for (GlyphSection section : stick.getMembers()) {
+                    for (Section section : stick.getMembers()) {
                         if (logger.isFineEnabled()) {
                             logger.fine(
                                 "Discarding not straight stick " + section);
                         }
 
-                        discard((StickSection) section);
+                        discard(section);
                     }
 
                     it.remove();
@@ -431,7 +441,7 @@ public class SticksBuilder
         params.dump();
         System.out.println("StickArea#" + id + " size=" + sticks.size());
 
-        for (Stick stick : sticks) {
+        for (Glyph stick : sticks) {
             //stick.dump(withContent);
             stick.dump();
         }
@@ -448,6 +458,36 @@ public class SticksBuilder
         globalId = 0;
     }
 
+    //------------//
+    // canConnect //
+    //------------//
+    public boolean canConnect (Glyph one,
+                               Glyph two,
+                               int   maxDeltaCoord,
+                               int   maxDeltaPos)
+    {
+        Point2D oneStart = orientation.oriented(one.getStartPoint());
+        Point2D oneStop = orientation.oriented(one.getStopPoint());
+        Point2D twoStart = orientation.oriented(two.getStartPoint());
+        Point2D twoStop = orientation.oriented(two.getStopPoint());
+
+        if (Math.abs(oneStop.getX() - twoStart.getX()) <= maxDeltaCoord) {
+            // Case: this ... that
+            if (Math.abs(twoStart.getY() - oneStop.getY()) <= maxDeltaPos) {
+                return true;
+            }
+        }
+
+        if (Math.abs(twoStop.getX() - oneStart.getX()) <= maxDeltaCoord) {
+            // Case: that ... this
+            if (Math.abs(twoStop.getY() - oneStart.getY()) <= maxDeltaPos) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     //----------------//
     // retrieveSticks //
     //----------------//
@@ -456,7 +496,7 @@ public class SticksBuilder
      * defined for this area
      * @return the sticks retrieved
      */
-    public List<Stick> retrieveSticks ()
+    public List<Glyph> retrieveSticks ()
     {
         // Retrieve the stick(s)
         createSticks(null);
@@ -488,39 +528,40 @@ public class SticksBuilder
         final long startTime = System.currentTimeMillis();
 
         // Sort on stick mid position first
-        Collections.sort(sticks, Stick.midPosComparator);
+        Collections.sort(sticks, Glyph.midPosComparator);
 
         // Then use position to narrow the tests
-        List<Stick> removals = new ArrayList<Stick>();
+        List<Glyph> removals = new ArrayList<Glyph>();
         int         index = -1;
 
-        for (Stick stick : sticks) {
+        for (Glyph stick : sticks) {
             index++;
 
-            List<Stick> tail = sticks.subList(index + 1, sticks.size());
+            List<Glyph> tail = sticks.subList(index + 1, sticks.size());
             boolean     merging = true;
 
             while (merging) {
-                Rectangle stickBounds = stick.getOrientedBounds();
+                Rectangle stickBounds = orientation.oriented(
+                    stick.getContourBox());
                 stickBounds.grow(params.maxDeltaCoord, params.maxDeltaPos);
+
+                PixelRectangle stickBox = orientation.absolute(stickBounds);
 
                 // final int maxPos = stick.getMidPos() + (20 * maxDeltaPos);
                 merging = false;
 
-                for (Iterator<Stick> it = tail.iterator(); it.hasNext();) {
-                    Stick other = it.next();
+                for (Iterator<Glyph> it = tail.iterator(); it.hasNext();) {
+                    Glyph other = it.next();
 
                     // Check other has not been removed yet
                     if (removals.contains(other)) {
                         continue;
                     }
 
-                    //                    if (other.getMidPos() > maxPos) {
-                    //                        break;
-                    //                    }
-                    if (other.getOrientedBounds()
-                             .intersects(stickBounds)) {
-                        if (stick.isExtensionOf(
+                    if (other.getContourBox()
+                             .intersects(stickBox)) {
+                        if (canConnect(
+                            stick,
                             other,
                             params.maxDeltaCoord,
                             params.maxDeltaPos)) {
@@ -529,7 +570,7 @@ public class SticksBuilder
                             stick.addGlyphSections(
                                 other,
                                 Glyph.Linking.LINK_BACK);
-                            lag.addGlyph(stick);
+                            stick = scene.addGlyph(stick);
 
                             if (logger.isFineEnabled() &&
                                 (stick.getId() != oldId)) {
@@ -570,22 +611,22 @@ public class SticksBuilder
      *
      * @return true if OK
      */
-    private boolean isClose (Collection<GlyphSection> members,
-                             GlyphSection             section,
-                             int                      maxThickness)
+    private boolean isClose (Collection<Section> members,
+                             Section             section,
+                             int                 maxThickness)
     {
         // Just to speed up
-        final int start = section.getStart();
-        final int stop = section.getStop();
+        final int start = section.getStartCoord();
+        final int stop = section.getStopCoord();
         final int firstPos = section.getFirstPos();
         final int lastPos = section.getLastPos();
 
         // Check real stick thickness so far
-        for (GlyphSection sct : members) {
+        for (Section sct : members) {
             // Check overlap in abscissa with section at hand
-            if (Math.max(start, sct.getStart()) <= Math.min(
+            if (Math.max(start, sct.getStartCoord()) <= Math.min(
                 stop,
-                sct.getStop())) {
+                sct.getStopCoord())) {
                 // Check global thickness
                 int thick;
 
@@ -612,7 +653,7 @@ public class SticksBuilder
     //--------//
     // isFree //
     //--------//
-    private boolean isFree (StickSection section)
+    private boolean isFree (Section section)
     {
         StickRelation relation = section.getRelation();
 
@@ -630,9 +671,9 @@ public class SticksBuilder
      *
      * @return true if section is too thick
      */
-    private boolean isTooThick (GlyphSection section)
+    private boolean isTooThick (Section section)
     {
-        return section.getRunNb() > params.maxThickness;
+        return section.getRunCount() > params.maxThickness;
     }
 
     //-----------//
@@ -644,8 +685,8 @@ public class SticksBuilder
      * @param section the section to aggregate
      * @param stick   the stick to which section is to be aggregated
      */
-    private void aggregate (StickSection section,
-                            Stick        stick)
+    private void aggregate (Section section,
+                            Glyph   stick)
     {
         if (visited.get(section) != stick) {
             visited.put(section, stick);
@@ -659,12 +700,12 @@ public class SticksBuilder
                     stick.addSection(section, Glyph.Linking.LINK_BACK);
 
                     // Aggregate recursively other sections
-                    for (GlyphSection source : section.getSources()) {
-                        aggregate((StickSection) source, stick);
+                    for (Section source : section.getSources()) {
+                        aggregate(source, stick);
                     }
 
-                    for (GlyphSection target : section.getTargets()) {
-                        aggregate((StickSection) target, stick);
+                    for (Section target : section.getTargets()) {
+                        aggregate(target, stick);
                     }
                 }
             }
@@ -684,14 +725,12 @@ public class SticksBuilder
     {
         final int interline = scale.interline();
 
-        for (GlyphSection s : members) {
-            StickSection section = (StickSection) s;
-
+        for (Section section : members) {
             if (section.isAggregable()) {
-                Stick stick = new BasicStick(interline);
+                Glyph stick = new BasicGlyph(interline);
                 stick.setResult(ASSIGNED); // Needed to flag the stick
                 aggregate(section, stick);
-                stick = (Stick) lag.addGlyph(stick);
+                stick = scene.addGlyph(stick);
                 stick.setResult(ASSIGNED); // In case we are reusing a glyph
                 sticks.add(stick);
             }
@@ -711,26 +750,18 @@ public class SticksBuilder
      *                  <b>+1</b> for looking at outgoing edges, and
      *                  <b>-1</b> for looking at incoming edges.
      */
-    private void collectNeighborsOf (GlyphSection section,
-                                     int          layer,
-                                     int          direction,
-                                     boolean      internalAllowed)
+    private void collectNeighborsOf (Section section,
+                                     int     layer,
+                                     int     direction,
+                                     boolean internalAllowed)
     {
         if (direction > 0) {
-            for (GlyphSection target : section.getTargets()) {
-                collectSection(
-                    (StickSection) target,
-                    layer,
-                    direction,
-                    internalAllowed);
+            for (Section target : section.getTargets()) {
+                collectSection(target, layer, direction, internalAllowed);
             }
         } else {
-            for (GlyphSection source : section.getSources()) {
-                collectSection(
-                    (StickSection) source,
-                    layer,
-                    direction,
-                    internalAllowed);
+            for (Section source : section.getSources()) {
+                collectSection(source, layer, direction, internalAllowed);
             }
         }
     }
@@ -742,14 +773,13 @@ public class SticksBuilder
      * Try to collect this section as a candidate.
      *
      * @param section         the condidate section
-     * @param layer           current layer number
      * @param direction       which direction we are moving to
      * @param internalAllowed false if we are reaching the stick border
      */
-    private void collectSection (StickSection section,
-                                 int          layer,
-                                 int          direction,
-                                 boolean      internalAllowed)
+    private void collectSection (Section section,
+                                 int     layer,
+                                 int     direction,
+                                 boolean internalAllowed)
     {
         // We consider only free (not yet assigned) sections, which are
         // located within the given area.
@@ -778,7 +808,7 @@ public class SticksBuilder
         }
 
         // Include only sections that are slim enough
-        if ((section.getRunNb() > 1) &&
+        if ((section.getRunCount() > 1) &&
             (section.getAspect() < params.minSectionAspect)) {
             mark(section, null, TOO_FAT, layer, direction);
 
@@ -811,11 +841,11 @@ public class SticksBuilder
      *
      * @param section the section to discard
      */
-    private void discard (StickSection section)
+    private void discard (Section section)
     {
         StickRelation relation = section.getRelation();
 
-        if (relation.isCandidate()) {
+        if ((relation != null) && relation.isCandidate()) {
             relation.role = DISCARDED;
             section.setGlyph(null);
         }
@@ -834,13 +864,13 @@ public class SticksBuilder
      * @param layer     section layer in the stick
      * @param direction section direction in the stick
      */
-    private void mark (StickSection       section,
-                       List<GlyphSection> list,
-                       SectionRole        role,
-                       int                layer,
-                       int                direction)
+    private void mark (Section       section,
+                       List<Section> list,
+                       SectionRole   role,
+                       int           layer,
+                       int           direction)
     {
-        section.setParams(role, layer, direction);
+        ((BasicSection) section).setParams(role, layer, direction);
 
         if (list != null) {
             list.add(section);
@@ -859,16 +889,14 @@ public class SticksBuilder
      * @param ins  input list of candidates (consumed)
      * @param outs output list of members (appended)
      */
-    private void thickenAlignmentCore (List<GlyphSection> ins,
-                                       List<GlyphSection> outs)
+    private void thickenAlignmentCore (List<Section> ins,
+                                       List<Section> outs)
     {
         // Sort ins according to their relevance
         Collections.sort(ins, thickeningComparator);
 
         // Using the priority order, let's thicken the stick core
-        for (GlyphSection s : ins) {
-            StickSection section = (StickSection) s;
-
+        for (Section section : ins) {
             if (!isDiscarded(section)) {
                 if (isClose(outs, section, params.maxThickness)) {
                     // OK, it is now a member of the stick

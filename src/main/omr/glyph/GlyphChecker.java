@@ -18,7 +18,10 @@ import static omr.glyph.ShapeRange.*;
 import omr.glyph.facets.Glyph;
 import omr.glyph.text.Language;
 import omr.glyph.text.OcrLine;
+import omr.glyph.text.TextInfo;
 import omr.glyph.text.TextLine;
+
+import omr.grid.StaffInfo;
 
 import omr.log.Logger;
 
@@ -34,7 +37,6 @@ import omr.score.entity.SystemPart;
 import omr.sheet.Ledger;
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
-import omr.grid.StaffInfo;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -465,7 +467,7 @@ public class GlyphChecker
                     // Sort glyphs by abscissa
                     List<Glyph> glyphs = new ArrayList<Glyph>(
                         compound.getParts());
-                    Collections.sort(glyphs, Glyph.globalComparator);
+                    Collections.sort(glyphs, Glyph.abscissaComparator);
 
                     final Scale scale = new Scale(glyphs.get(0).getInterline());
                     final int   maxGap = scale.toPixels(constants.maxTextGap);
@@ -584,24 +586,42 @@ public class GlyphChecker
                     }
 
                     // Simply check the tuplet character via OCR, if available
+                    // Nota: We must avoid multiple OCR calls on the same glyph
                     if (TextLine.useOCR()) {
-                        List<OcrLine> lines = Language.getOcr()
-                                                      .recognize(
-                            glyph.getImage(),
-                            null,
-                            "g" + glyph.getId() + ".");
+                        if (glyph.isTransient()) {
+                            glyph = system.registerGlyph(glyph);
+                        }
 
-                        if ((lines != null) && !lines.isEmpty()) {
-                            String str = lines.get(0).value;
-                            Shape  shape = eval.shape;
+                        TextInfo textInfo = glyph.getTextInfo();
+                        OcrLine  line = null;
 
-                            if ((shape == TUPLET_THREE) && str.equals("3")) {
-                                return true;
+                        if (textInfo.getOcrContent() == null) {
+                            List<OcrLine> lines = Language.getOcr()
+                                                          .recognize(
+                                glyph.getImage(),
+                                null,
+                                "g" + glyph.getId() + ".");
+
+                            ///OCR logger.warning("GlyphChecker OCR " + glyph + " " + lines);
+                            if ((lines != null) && !lines.isEmpty()) {
+                                line = lines.get(0);
+                                textInfo.setOcrInfo(
+                                    Language.getDefaultLanguage(),
+                                    line);
                             }
+                        }
 
-                            if ((shape == TUPLET_SIX) && str.equals("6")) {
-                                return true;
-                            }
+                        line = textInfo.getOcrLine();
+
+                        String str = line.value;
+                        Shape  shape = eval.shape;
+
+                        if ((shape == TUPLET_THREE) && str.equals("3")) {
+                            return true;
+                        }
+
+                        if ((shape == TUPLET_SIX) && str.equals("6")) {
+                            return true;
                         }
 
                         eval.failure = new Evaluation.Failure("ocr");
@@ -713,7 +733,7 @@ public class GlyphChecker
                         return true;
                     }
 
-                    Set<Ledger> ledgers = staff.getLedgersToStaff(
+                    Set<Glyph> ledgers = staff.getLedgersToStaff(
                         point,
                         system);
 

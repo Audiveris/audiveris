@@ -17,13 +17,16 @@ import omr.constant.ConstantSet;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
-import omr.glyph.facets.Stick;
+
+import omr.lag.Section;
 
 import omr.log.Logger;
 
 import omr.math.BasicLine;
 import omr.math.Line;
 import omr.math.Population;
+
+import omr.run.Orientation;
 
 import omr.score.common.PixelRectangle;
 
@@ -71,7 +74,7 @@ public class TextBlob
     private final List<Glyph> glyphs = new ArrayList<Glyph>();
 
     // Most important lines for a text area
-    private final Line     average = new BasicLine();
+    private Line           averageLine;
 
     // Population of glyphs tops & glyphs bottoms
     private Population     tops = new Population();
@@ -249,9 +252,6 @@ public class TextBlob
         //
         medianHeight = medianWidth = null;
 
-        Line absLine = ((Stick) glyph).getAbsoluteLine();
-        average.includeLine(absLine);
-
         if (logger.isFineEnabled() && (glyphs.size() > 1)) {
             logger.fine("Added large glyph to " + this);
         }
@@ -273,7 +273,7 @@ public class TextBlob
 
         // Check that this glyph is not forbidden as text
         Glyph original = system.getSheet()
-                               .getVerticalLag()
+                               .getScene()
                                .getOriginal(compound);
 
         if (original != null) {
@@ -289,6 +289,42 @@ public class TextBlob
         } else {
             return compound;
         }
+    }
+
+    //----------------//
+    // getAverageLine //
+    //----------------//
+    public Line getAverageLine ()
+    {
+        if (averageLine == null) {
+            averageLine = new BasicLine();
+
+            for (Glyph glyph : glyphs) {
+                for (Section section : glyph.getMembers()) {
+                    averageLine.includeLine(section.getAbsoluteLine());
+                }
+            }
+        }
+
+        return averageLine;
+    }
+
+    //-----------//
+    // getWeight //
+    //-----------//
+    /**
+     * Report the total weight (number of pixels) for this blob
+     * @return the weight of the blob
+     */
+    public int getWeight ()
+    {
+        int weight = 0;
+
+        for (Glyph glyph : glyphs) {
+            weight += glyph.getWeight();
+        }
+
+        return weight;
     }
 
     //----------//
@@ -327,32 +363,42 @@ public class TextBlob
      */
     public boolean tryToInsertSmallGlyph (Glyph glyph)
     {
-        // Check whether the glyph is not too far from the blob
-        int            smallXMargin = scale.toPixels(constants.smallXMargin);
-        PixelRectangle fatBox = glyph.getContourBox();
-        fatBox.grow(
-            smallXMargin,
-            (int) Math.rint(
-                getMedianHeight() * constants.smallYRatio.getValue()));
+        try {
+            // Check whether the glyph is not too far from the blob
+            int            smallXMargin = scale.toPixels(
+                constants.smallXMargin);
+            PixelRectangle fatBox = glyph.getContourBox();
+            fatBox.grow(
+                smallXMargin,
+                (int) Math.rint(
+                    getMedianHeight() * constants.smallYRatio.getValue()));
 
-        // x check
-        if (!fatBox.intersects(blobBox)) {
+            // x check
+            if (!fatBox.intersects(blobBox)) {
+                return false;
+            }
+
+            Line2D.Double l2D = new Line2D.Double(
+                blobBox.x,
+                getAverageLine().yAtX(blobBox.x),
+                blobBox.x + blobBox.width,
+                getAverageLine().yAtX(blobBox.x + blobBox.width));
+
+            if (l2D.intersects(fatBox.x, fatBox.y, fatBox.width, fatBox.height)) {
+                glyphs.add(glyph);
+
+                return true;
+            }
+
+            return false;
+        } catch (Throwable ex) {
+            logger.warning(
+                "tryToInsertSmallGlyph error blob: " + this + " glyph#" +
+                glyph.getId(),
+                ex);
+
             return false;
         }
-
-        Line2D.Double l2D = new Line2D.Double(
-            blobBox.x,
-            average.yAtX(blobBox.x),
-            blobBox.x + blobBox.width,
-            average.yAtX(blobBox.x + blobBox.width));
-
-        if (l2D.intersects(fatBox.x, fatBox.y, fatBox.width, fatBox.height)) {
-            glyphs.add(glyph);
-
-            return true;
-        }
-
-        return false;
     }
 
     //-----------------//

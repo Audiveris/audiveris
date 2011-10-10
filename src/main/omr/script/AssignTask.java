@@ -61,37 +61,15 @@ public class AssignTask
      * which is assigned to the given shape, false if each and every glyph is to
      * be assigned to the given shape
      * @param glyphs the collection of concerned glyphs
-     * @param orientation orientation of the containing lag
-     */
-    public AssignTask (Sheet             sheet,
-                       Shape             shape,
-                       boolean           compound,
-                       Collection<Glyph> glyphs,
-                       Orientation    orientation)
-    {
-        super(sheet, orientation, glyphs);
-        this.shape = shape;
-        this.compound = compound;
-    }
-
-    //------------//
-    // AssignTask //
-    //------------//
-    /**
-     * Create an assignment task, for VERTICAL glyphs by default
-     *
-     * @param shape the assigned shape (or null for a de-assignment)
-     * @param compound true if all glyphs are to be merged into one compound
-     * which is assigned to the given shape, false if each and every glyph is to
-     * be assigned to the given shape
-     * @param glyphs the collection of concerned glyphs
      */
     public AssignTask (Sheet             sheet,
                        Shape             shape,
                        boolean           compound,
                        Collection<Glyph> glyphs)
     {
-        this(sheet, shape, compound, glyphs, Orientation.VERTICAL);
+        super(sheet, glyphs);
+        this.shape = shape;
+        this.compound = compound;
     }
 
     //------------//
@@ -101,27 +79,11 @@ public class AssignTask
      * Convenient way to create an deassignment task
      *
      * @param glyphs the collection of glyphs to deassign
-     * @param orientation orientation of the containing lag
-     */
-    public AssignTask (Sheet             sheet,
-                       Collection<Glyph> glyphs,
-                       Orientation    orientation)
-    {
-        this(sheet, null, false, glyphs, orientation);
-    }
-
-    //------------//
-    // AssignTask //
-    //------------//
-    /**
-     * Convenient way to create an deassignment task for VERTICAL glyphs
-     *
-     * @param glyphs the collection of glyphs to deassign
      */
     public AssignTask (Sheet             sheet,
                        Collection<Glyph> glyphs)
     {
-        this(sheet, null, false, glyphs, Orientation.VERTICAL);
+        this(sheet, null, false, glyphs);
     }
 
     //------------//
@@ -170,18 +132,19 @@ public class AssignTask
     public void core (Sheet sheet)
         throws Exception
     {
-        switch (orientation) {
-        case HORIZONTAL :
-            sheet.getHorizontalsBuilder()
-                 .getController()
-                 .syncAssign(this);
+        //        switch (orientation) {
+        //        case HORIZONTAL :
+        //            sheet.getHorizontalsBuilder()
+        //                 .getController()
+        //                 .syncAssign(this);
+        //
+        //            break;
+        //
+        //        case VERTICAL :
+        sheet.getSymbolsController()
+             .syncAssign(this);
 
-            break;
-
-        case VERTICAL :
-            sheet.getSymbolsController()
-                 .syncAssign(this);
-        }
+        //        }
     }
 
     //--------//
@@ -193,34 +156,35 @@ public class AssignTask
     @Override
     public void epilog (Sheet sheet)
     {
-        switch (orientation) {
-        case HORIZONTAL :
+        //        switch (orientation) {
+        //        case HORIZONTAL :
+        //            Stepping.reprocessSheet(
+        //                Steps.valueOf(Steps.SPLIT),
+        //                sheet,
+        //                null,
+        //                false);
+        //
+        //            break;
+        //
+        //        case VERTICAL :
+
+        // We rebuild from VERTICALS is case of deassignment
+        // And just from PATTERNS in case of assignment
+        if (shape == null) {
             Stepping.reprocessSheet(
-                Steps.valueOf(Steps.SPLIT),
+                Steps.valueOf(Steps.VERTICALS),
                 sheet,
-                null,
+                getImpactedSystems(sheet),
                 false);
-
-            break;
-
-        case VERTICAL :
-
-            // We rebuild from VERTICALS is case of deassignment
-            // And just from PATTERNS in case of assignment
-            if (shape == null) {
-                Stepping.reprocessSheet(
-                    Steps.valueOf(Steps.VERTICALS),
-                    sheet,
-                    getImpactedSystems(sheet),
-                    false);
-            } else {
-                Stepping.reprocessSheet(
-                    Steps.valueOf(Steps.PATTERNS),
-                    sheet,
-                    getImpactedSystems(sheet),
-                    false);
-            }
+        } else {
+            Stepping.reprocessSheet(
+                Steps.valueOf(Steps.PATTERNS),
+                sheet,
+                getImpactedSystems(sheet),
+                false);
         }
+
+        //        }
     }
 
     //-----------------//
@@ -235,9 +199,6 @@ public class AssignTask
         if (compound) {
             sb.append(" compound");
         }
-
-        sb.append(" ")
-          .append(orientation);
 
         if (shape != null) {
             sb.append(" ")

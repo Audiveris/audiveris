@@ -174,10 +174,13 @@ public class AlterPattern
 
                 if (compound != null) {
                     successNb++;
-                    logger.info(
-                        system.getLogPrefix() + "Compound #" +
-                        compound.getId() + " rebuilt as " +
-                        compound.getShape());
+
+                    if (logger.isFineEnabled()) {
+                        logger.info(
+                            system.getLogPrefix() + "Compound #" +
+                            compound.getId() + " rebuilt as " +
+                            compound.getShape());
+                    }
                 } else {
                     // Restore stem shapes
                     glyph.setShape(Shape.COMBINING_STEM);

@@ -16,9 +16,10 @@ import omr.constant.ConstantSet;
 import omr.glyph.Evaluation;
 import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphNetwork;
-import omr.glyph.GlyphSection;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
+
+import omr.lag.Section;
 
 import omr.log.Logger;
 
@@ -86,11 +87,10 @@ public class HiddenSlurPattern
                 continue;
             }
 
-            List<GlyphSection> sections = new ArrayList<GlyphSection>(
-                glyph.getMembers());
-            Collections.sort(sections, GlyphSection.reverseWeightComparator);
+            List<Section> sections = new ArrayList<Section>(glyph.getMembers());
+            Collections.sort(sections, Section.reverseWeightComparator);
 
-            for (GlyphSection section : sections) {
+            for (Section section : sections) {
                 if (section.getWeight() < minSectionWeight) {
                     break;
                 }

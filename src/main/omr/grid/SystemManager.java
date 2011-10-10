@@ -51,6 +51,12 @@ public class SystemManager
     /** The sequence of systems, from top to bottom */
     private final List<SystemInfo> systems = new ArrayList<SystemInfo>();
 
+    /** The systems tops per staff */
+    private Integer[] systemTops;
+
+    /** The parts tops per staff */
+    private Integer[] partTops;
+
     //~ Constructors -----------------------------------------------------------
 
     //---------------//
@@ -86,6 +92,28 @@ public class SystemManager
     public int getIndexOf (SystemInfo system)
     {
         return systems.indexOf(system);
+    }
+
+    //-------------//
+    // setPartTops //
+    //-------------//
+    /**
+     * @param partTops the partTops to set
+     */
+    public void setPartTops (Integer[] partTops)
+    {
+        this.partTops = partTops;
+    }
+
+    //-------------//
+    // getPartTops //
+    //-------------//
+    /**
+     * @return the partTops
+     */
+    public Integer[] getPartTops ()
+    {
+        return partTops;
     }
 
     //----------//
@@ -152,6 +180,28 @@ public class SystemManager
     public int getSystemCount ()
     {
         return systems.size();
+    }
+
+    //---------------//
+    // setSystemTops //
+    //---------------//
+    /**
+     * @param systemTops the systemTops to set
+     */
+    public void setSystemTops (Integer[] systemTops)
+    {
+        this.systemTops = systemTops;
+    }
+
+    //---------------//
+    // getSystemTops //
+    //---------------//
+    /**
+     * @return the systemTops
+     */
+    public Integer[] getSystemTops ()
+    {
+        return systemTops;
     }
 
     //------------//

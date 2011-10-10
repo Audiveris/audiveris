@@ -12,7 +12,7 @@
 import omr.WellKnowns;
 
 /**
- * Class <code>Audiveris</code> is simply the entry point to OMR, which
+ * Class {@code Audiveris} is simply the entry point to OMR, which
  * delegates the call to {@link omr.Main#doMain}.
  *
  * @author Hervé Bitteur

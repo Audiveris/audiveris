@@ -11,9 +11,7 @@
 // </editor-fold>
 package omr.grid;
 
-import omr.glyph.facets.Stick;
-
-import omr.util.HorizontalSide;
+import omr.glyph.facets.Glyph;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,7 +29,7 @@ public class BarInfo
     //~ Instance fields --------------------------------------------------------
 
     /** Composing sticks, ordered by their relative position (abscissa) */
-    private List<Stick> sticks;
+    private List<Glyph> sticks;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -41,9 +39,9 @@ public class BarInfo
     /**
      * Creates a new BarInfo object.
      *
-     * @param sticks one or several bars, from left to right
+     * @param sticks one or several physical bars, from left to right
      */
-    public BarInfo (Stick... sticks)
+    public BarInfo (Glyph... sticks)
     {
         this(Arrays.asList(sticks));
     }
@@ -54,44 +52,32 @@ public class BarInfo
     /**
      * Creates a new BarInfo object.
      *
-     * @param sticks one or several bars, from left to right
+     * @param sticks one or several physical bars, from left to right
      */
-    public BarInfo (Collection<?extends Stick> sticks)
+    public BarInfo (Collection<?extends Glyph> sticks)
     {
         setSticks(sticks);
     }
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------//
-    // getStick //
-    //----------//
-    public Stick getStick (HorizontalSide side)
-    {
-        if (side == HorizontalSide.LEFT) {
-            return sticks.get(0);
-        } else {
-            return sticks.get(sticks.size() - 1);
-        }
-    }
-
     //-----------//
     // setSticks //
     //-----------//
-    public final void setSticks (Collection<?extends Stick> sticks)
+    public final void setSticks (Collection<?extends Glyph> sticks)
     {
-        this.sticks = new ArrayList(sticks); // Copy
+        this.sticks = new ArrayList<Glyph>(sticks); // Copy
     }
 
     //--------------------//
     // getSticksAncestors //
     //--------------------//
-    public List<Stick> getSticksAncestors ()
+    public List<Glyph> getSticksAncestors ()
     {
-        List<Stick> list = new ArrayList<Stick>(sticks.size());
+        List<Glyph> list = new ArrayList<Glyph>(sticks.size());
 
-        for (Stick stick : sticks) {
-            list.add((Stick) stick.getAncestor());
+        for (Glyph stick : sticks) {
+            list.add(stick.getAncestor());
         }
 
         return list;
@@ -105,7 +91,7 @@ public class BarInfo
     {
         StringBuilder sb = new StringBuilder("{BarInfo");
 
-        for (Stick stick : sticks) {
+        for (Glyph stick : sticks) {
             sb.append(" #")
               .append(stick.getAncestor().getId());
         }

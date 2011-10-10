@@ -16,13 +16,14 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.GlyphLag;
-import omr.glyph.GlyphSection;
-import omr.glyph.GlyphSectionsBuilder;
 import omr.glyph.Glyphs;
 import omr.glyph.facets.Glyph;
 
+import omr.lag.BasicLag;
 import omr.lag.JunctionRatioPolicy;
+import omr.lag.Lag;
+import omr.lag.Section;
+import omr.lag.SectionsBuilder;
 
 import omr.log.Logger;
 
@@ -42,8 +43,6 @@ import omr.sheet.Sheet;
 import omr.sheet.Skew;
 import omr.sheet.SystemInfo;
 import omr.sheet.ui.PixelBoard;
-
-import omr.stick.StickSection;
 
 import omr.ui.BoardsPane;
 import omr.ui.Colors;
@@ -98,7 +97,7 @@ public class LinesRetriever
     private final Parameters params;
 
     /** Lag of horizontal runs */
-    private GlyphLag hLag;
+    private Lag hLag;
 
     /** Filaments factory */
     private FilamentsFactory factory;
@@ -161,15 +160,15 @@ public class LinesRetriever
     public RunsTable buildLag (RunsTable wholeVertTable,
                                boolean   showRuns)
     {
-        hLag = new GlyphLag("hLag", StickSection.class, Orientation.HORIZONTAL);
-        sheet.setHorizontalLag(hLag);
+        hLag = new BasicLag("hLag", Orientation.HORIZONTAL);
 
         // Create filament factory
         try {
-            factory = new FilamentsFactory(scale, hLag, LineFilament.class);
-
-            // Debug VIP sticks
-            factory.setVipGlyphs(params.vipSticks);
+            factory = new FilamentsFactory(
+                scale,
+                sheet.getScene(),
+                Orientation.HORIZONTAL,
+                LineFilament.class);
         } catch (Exception ex) {
             logger.warning("Cannot create lines filament factory", ex);
         }
@@ -231,10 +230,12 @@ public class LinesRetriever
         }
 
         // Build the horizontal hLag
-        GlyphSectionsBuilder sectionsBuilder = new GlyphSectionsBuilder(
+        SectionsBuilder sectionsBuilder = new SectionsBuilder(
             hLag,
             new JunctionRatioPolicy(params.maxLengthRatio));
         sectionsBuilder.createSections(longHoriTable);
+
+        sheet.setHorizontalLag(hLag);
 
         setVipSections();
 
@@ -248,7 +249,7 @@ public class LinesRetriever
      * Complete the retrieved staff lines whenever possible with filaments and
      * short sections left over.
      */
-    public List<GlyphSection> completeLines ()
+    public List<Section> completeLines ()
     {
         StopWatch watch = new StopWatch("completeLines");
 
@@ -260,16 +261,16 @@ public class LinesRetriever
             // Build sections out of purgedHoriTable (too short horizontal runs)
             watch.start("create shortSections");
 
-            List<GlyphSection> shortSections = createShortSections();
+            List<Section> shortSections = createShortSections();
 
             // Dispatch sections into thick & thin ones
             watch.start(
                 "dispatching " + shortSections.size() + " thick / thin");
 
-            List<GlyphSection> thickSections = new ArrayList<GlyphSection>();
-            List<GlyphSection> thinSections = new ArrayList<GlyphSection>();
+            List<Section> thickSections = new ArrayList<Section>();
+            List<Section> thinSections = new ArrayList<Section>();
 
-            for (GlyphSection section : shortSections) {
+            for (Section section : shortSections) {
                 if (section.getWeight() > params.maxThinStickerWeight) {
                     thickSections.add(section);
                 } else {
@@ -284,6 +285,12 @@ public class LinesRetriever
             // Second, consider thin sections w/o updating the geometry
             watch.start("include " + thinSections.size() + " thin stickers");
             includeStickers(thinSections, false);
+
+            // Update system coordinates
+            for (SystemInfo system : sheet.getSystemManager()
+                                          .getSystems()) {
+                system.updateCoordinates();
+            }
 
             return shortSections;
         } finally {
@@ -411,7 +418,7 @@ public class LinesRetriever
 
         BoardsPane   boards = new BoardsPane(
             new PixelBoard(unit, sheet),
-            new RunBoard(unit, table.getSelectionService(), true));
+            new RunBoard(unit, table.getRunService(), true));
 
         sheet.getAssembly()
              .addViewTab(table.getName(), new ScrollView(view), boards);
@@ -471,7 +478,7 @@ public class LinesRetriever
 
             for (Filament filament : allFils) {
                 Point2D p = filament.getStartPoint();
-                double  der = filament.slopeAt(p.getX());
+                double  der = filament.slopeAt(p.getX(), HORIZONTAL);
                 g.draw(
                     new Line2D.Double(
                         p.getX(),
@@ -479,7 +486,7 @@ public class LinesRetriever
                         p.getX() - dx,
                         p.getY() - (der * dx)));
                 p = filament.getStopPoint();
-                der = filament.slopeAt(p.getX());
+                der = filament.slopeAt(p.getX(), HORIZONTAL);
                 g.draw(
                     new Line2D.Double(
                         p.getX(),
@@ -499,10 +506,11 @@ public class LinesRetriever
     {
         // Debug sections VIPs
         for (int id : params.vipSections) {
-            GlyphSection sect = hLag.getVertexById(id);
+            Section sect = hLag.getVertexById(id);
 
             if (sect != null) {
                 sect.setVip();
+                logger.info("Horizontal vip section: " + sect);
             }
         }
     }
@@ -603,7 +611,7 @@ public class LinesRetriever
 
         // Check fil centroid gap with theoretical line
         PixelPoint center = fil.getCentroid();
-        double     yFil = filament.getPositionAt(center.x);
+        double     yFil = filament.getPositionAt(center.x, HORIZONTAL);
         double     dy = Math.abs(yFil - center.y);
         double     gap = ((2 * dy) - scale.mainFore()) / 2;
 
@@ -649,7 +657,7 @@ public class LinesRetriever
      * @return true if OK, false otherwise
      */
     private boolean checkSticker (LineFilament fil,
-                                  GlyphSection section)
+                                  Section      section)
     {
         // For VIP debugging
         final boolean isVip = section.isVip();
@@ -675,7 +683,7 @@ public class LinesRetriever
 
         // Check section centroid gap with theoretical line
         PixelPoint center = section.getCentroid();
-        double     yFil = fil.getPositionAt(center.x);
+        double     yFil = fil.getPositionAt(center.x, HORIZONTAL);
         double     dy = Math.abs(yFil - center.y);
         double     gap = ((2 * dy) - scale.mainFore()) / 2;
 
@@ -718,13 +726,16 @@ public class LinesRetriever
      * Build horizontal sections out of purgedHoriTable runs
      * @return the list of created sections
      */
-    private List<GlyphSection> createShortSections ()
+    private List<Section> createShortSections ()
     {
+        // Note the current section id
+        sheet.setLongSectionMaxId(hLag.getLastVertexId());
+
         // Augment the horizontal hLag
-        GlyphSectionsBuilder sectionsBuilder = new GlyphSectionsBuilder(
+        SectionsBuilder sectionsBuilder = new SectionsBuilder(
             hLag,
             new JunctionRatioPolicy(params.maxLengthRatioShort));
-        List<GlyphSection>   shortSections = sectionsBuilder.createSections(
+        List<Section>   shortSections = sectionsBuilder.createSections(
             purgedHoriTable);
 
         setVipSections();
@@ -806,8 +817,8 @@ public class LinesRetriever
      * @param update should we update the line geometry with stickers (this
      * should be limited to large sections).
      */
-    private void includeStickers (List<GlyphSection> sections,
-                                  boolean            update)
+    private void includeStickers (List<Section> sections,
+                                  boolean       update)
     {
         // Sections are sorted according to their top run (Y first and X second)
         int iMin = 0;
@@ -825,16 +836,16 @@ public class LinesRetriever
                     PixelRectangle lineBox = fil.getContourBox();
                     lineBox.grow(0, scale.mainFore());
 
-                    double             minX = fil.getStartPoint()
-                                                 .getX();
-                    double             maxX = fil.getStopPoint()
-                                                 .getX();
-                    int                minY = lineBox.y;
-                    int                maxY = lineBox.y + lineBox.height;
-                    List<GlyphSection> stickers = new ArrayList<GlyphSection>();
+                    double        minX = fil.getStartPoint()
+                                            .getX();
+                    double        maxX = fil.getStopPoint()
+                                            .getX();
+                    int           minY = lineBox.y;
+                    int           maxY = lineBox.y + lineBox.height;
+                    List<Section> stickers = new ArrayList<Section>();
 
                     for (int i = iMin; i <= iMax; i++) {
-                        GlyphSection section = sections.get(i);
+                        Section section = sections.get(i);
 
                         if (section.isGlyphMember()) {
                             continue;
@@ -862,7 +873,7 @@ public class LinesRetriever
                     }
 
                     // Actually include the retrieved stickers?
-                    for (GlyphSection section : stickers) {
+                    for (Section section : stickers) {
                         if (update) {
                             fil.addSection(section);
                         } else {
@@ -887,7 +898,9 @@ public class LinesRetriever
             1,
             (int) Math.rint(filaments.size() * ratio));
         double       slopes = 0;
-        Collections.sort(filaments, LineFilament.reverseLengthComparator);
+        Collections.sort(
+            filaments,
+            Glyphs.getReverseLengthComparator(HORIZONTAL));
 
         for (int i = 0; i < topCount; i++) {
             Filament fil = filaments.get(i);
@@ -965,9 +978,6 @@ public class LinesRetriever
         Constant.String horizontalVipSections = new Constant.String(
             "",
             "(Debug) Comma-separated list of VIP sections");
-        Constant.String horizontalVipSticks = new Constant.String(
-            "",
-            "(Debug) Comma-separated list of VIP sticks");
     }
 
     //------------//
@@ -1009,7 +1019,6 @@ public class LinesRetriever
 
         // Debug
         final List<Integer> vipSections;
-        final List<Integer> vipSticks;
 
         //~ Constructors -------------------------------------------------------
 
@@ -1034,7 +1043,6 @@ public class LinesRetriever
 
             // VIPs
             vipSections = decode(constants.horizontalVipSections.getValue());
-            vipSticks = decode(constants.horizontalVipSticks.getValue());
 
             if (logger.isFineEnabled()) {
                 Main.dumping.dump(this);
@@ -1042,10 +1050,6 @@ public class LinesRetriever
 
             if (!vipSections.isEmpty()) {
                 logger.info("Horizontal VIP sections: " + vipSections);
-            }
-
-            if (!vipSticks.isEmpty()) {
-                logger.info("Horizontal VIP sticks: " + vipSticks);
             }
         }
 
@@ -1083,7 +1087,7 @@ public class LinesRetriever
 
         public MyRunsTableView (RunsTable table)
         {
-            super(table, sheet.getSelectionService());
+            super(table, sheet.getLocationService());
         }
 
         //~ Methods ------------------------------------------------------------

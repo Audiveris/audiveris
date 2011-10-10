@@ -82,12 +82,7 @@ public class ShapeFocusBoard
         ShapeFocusBoard.class);
 
     /** Events this board is interested in */
-    private static final Collection<Class<?extends UserEvent>> eventClasses;
-
-    static {
-        eventClasses = new ArrayList<Class<?extends UserEvent>>();
-        eventClasses.add(GlyphEvent.class);
-    }
+    private static final Class[] eventsRead = new Class[] { GlyphEvent.class };
 
     //~ Enumerations -----------------------------------------------------------
 
@@ -144,8 +139,8 @@ public class ShapeFocusBoard
         super(
             sheet.getId() + "-ShapeFocusBoard",
             "Focus",
-            controller.getLag().getSelectionService(),
-            eventClasses,
+            controller.getScene().getSceneService(),
+            eventsRead,
             false);
 
         this.sheet = sheet;

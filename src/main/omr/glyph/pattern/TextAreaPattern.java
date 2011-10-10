@@ -13,9 +13,11 @@ package omr.glyph.pattern;
 
 import omr.glyph.text.TextArea;
 
-import omr.run.Orientation;
+import omr.lag.BasicRoi;
 
 import omr.log.Logger;
+
+import omr.run.Orientation;
 
 import omr.sheet.SystemInfo;
 
@@ -68,8 +70,7 @@ public class TextAreaPattern
         TextArea area = new TextArea(
             system,
             null,
-            system.getSheet().getVerticalLag().createAbsoluteRoi(
-                system.getBounds()),
+            new BasicRoi(system.getBounds()),
             Orientation.HORIZONTAL);
 
         // Find and build additional text glyphs (words most likely)

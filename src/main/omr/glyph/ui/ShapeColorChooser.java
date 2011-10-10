@@ -332,7 +332,7 @@ public class ShapeColorChooser
                 banner.setText(current.toString());
 
                 // Check if a specific color is assigned
-                Color color = current.getConstantColor();
+                Color color = current.getColor();
 
                 if (color != null) {
                     prepareDefaultOption();
@@ -483,8 +483,7 @@ public class ShapeColorChooser
             public void actionPerformed (ActionEvent e)
             {
                 // Drop specific for default
-                current.resetConstantColor(ranges.current.getColor());
-                current.setColor(ranges.current.getColor()); // Needed ?
+                current.setColor(ranges.current.getColor()); 
 
                 prepareSpecificOption();
 
@@ -508,7 +507,7 @@ public class ShapeColorChooser
             public void actionPerformed (ActionEvent e)
             {
                 // Set a specific color
-                current.setConstantColor(chosenColor);
+                current.setColor(chosenColor);
 
                 prepareDefaultOption();
 

@@ -16,9 +16,8 @@ import omr.constant.ConstantSet;
 import omr.glyph.CompoundBuilder;
 import omr.glyph.Evaluation;
 import omr.glyph.GlyphInspector;
-import omr.glyph.GlyphSection;
 import omr.glyph.Shape;
-import omr.glyph.facets.BasicStick;
+import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
 
 import omr.lag.Section;
@@ -130,18 +129,18 @@ public class SlurInspector
             weight += section.getWeight();
         }
 
-        double[] coord = new double[weight];
-        double[] pos = new double[weight];
+        double[] xx = new double[weight];
+        double[] yy = new double[weight];
 
         // Append recursively all points
         int nb = 0;
 
         for (Section section : sections) {
-            nb = section.cumulatePoints(coord, pos, nb);
+            nb = section.cumulatePoints(xx, yy, nb);
         }
 
-        // Then compute the circle (swapping coord & pos, for vertical sections)
-        return new Circle(pos, coord);
+        // Then compute the circle 
+        return new Circle(xx, yy);
     }
 
     //--------------//
@@ -173,13 +172,12 @@ public class SlurInspector
         }
 
         // Get a COPY of the member list, sorted by decreasing weight */
-        List<GlyphSection> members = new ArrayList<GlyphSection>(
-            oldSlur.getMembers());
-        Collections.sort(members, GlyphSection.reverseWeightComparator);
+        List<Section> members = new ArrayList<Section>(oldSlur.getMembers());
+        Collections.sort(members, Section.reverseWeightComparator);
 
         // Find the suitable seed
         Wrapper<Double> seedDist = new Wrapper<Double>();
-        GlyphSection    seedSection = findSeedSection(members, seedDist);
+        Section         seedSection = findSeedSection(members, seedDist);
 
         // If no significant section has been found, just give up
         if (seedSection == null) {
@@ -188,8 +186,8 @@ public class SlurInspector
             return null;
         }
 
-        List<GlyphSection> kept = new ArrayList<GlyphSection>();
-        List<GlyphSection> left = new ArrayList<GlyphSection>();
+        List<Section> kept = new ArrayList<Section>();
+        List<Section> left = new ArrayList<Section>();
 
         findSectionsOnCircle(members, seedSection, seedDist.value, kept, left);
         removeIsolatedSections(seedSection, kept, left);
@@ -208,7 +206,7 @@ public class SlurInspector
                 system.removeGlyph(oldSlur);
 
                 // Free the sections left over
-                for (GlyphSection section : left) {
+                for (Section section : left) {
                     section.setGlyph(null);
                 }
             }
@@ -317,9 +315,9 @@ public class SlurInspector
     //----------------//
     // buildFinalSlur //
     //----------------//
-    private Glyph buildFinalSlur (Glyph              oldSlur,
-                                  List<GlyphSection> kept,
-                                  List<GlyphSection> left)
+    private Glyph buildFinalSlur (Glyph         oldSlur,
+                                  List<Section> kept,
+                                  List<Section> left)
     {
         Circle circle = computeCircle(kept);
         double distance = circle.getDistance();
@@ -331,9 +329,9 @@ public class SlurInspector
 
         if (distance <= maxCircleDistance) {
             // Build new slur glyph with sections kept
-            Glyph newGlyph = new BasicStick(interline);
+            Glyph newGlyph = new BasicGlyph(interline);
 
-            for (GlyphSection section : kept) {
+            for (Section section : kept) {
                 newGlyph.addSection(section, Glyph.Linking.LINK_BACK);
             }
 
@@ -429,20 +427,20 @@ public class SlurInspector
      * @param kept
      * @param left
      */
-    private void findSectionsOnCircle (List<GlyphSection> members,
-                                       GlyphSection       seedSection,
-                                       double             seedDist,
-                                       List<GlyphSection> kept,
-                                       List<GlyphSection> left)
+    private void findSectionsOnCircle (List<Section> members,
+                                       Section       seedSection,
+                                       double        seedDist,
+                                       List<Section> kept,
+                                       List<Section> left)
     {
         // We impose the seed
         kept.add(seedSection);
 
-        List<GlyphSection> tried = new ArrayList<GlyphSection>();
-        double             distThreshold = seedDist;
-        double             bestDistance = distThreshold;
+        List<Section> tried = new ArrayList<Section>();
+        double        distThreshold = seedDist;
+        double        bestDistance = distThreshold;
 
-        for (GlyphSection section : members) {
+        for (Section section : members) {
             if (section == seedSection) {
                 continue;
             }
@@ -499,13 +497,13 @@ public class SlurInspector
      * @param sortedMembers the candidate sections, by decreasing weight
      * @return the suitable seed, perhaps null
      */
-    private GlyphSection findSeedSection (List<GlyphSection> sortedMembers,
-                                          Wrapper<Double>    seedDist)
+    private Section findSeedSection (List<Section>   sortedMembers,
+                                     Wrapper<Double> seedDist)
     {
-        GlyphSection seedSection = null;
+        Section seedSection = null;
         seedDist.value = Double.MAX_VALUE;
 
-        for (GlyphSection seed : sortedMembers) {
+        for (Section seed : sortedMembers) {
             if (seed.getWeight() >= minChunkWeight) {
                 Circle circle = computeCircle(Arrays.asList(seed));
                 double dist = circle.getDistance();
@@ -539,12 +537,12 @@ public class SlurInspector
      * @param kept
      * @param left
      */
-    private void removeIsolatedSections (GlyphSection       seedSection,
-                                         List<GlyphSection> kept,
-                                         List<GlyphSection> left)
+    private void removeIsolatedSections (Section       seedSection,
+                                         List<Section> kept,
+                                         List<Section> left)
     {
-        PixelRectangle     slurBox = seedSection.getContourBox();
-        List<GlyphSection> toCheck = new ArrayList<GlyphSection>(kept);
+        PixelRectangle slurBox = seedSection.getContourBox();
+        List<Section>  toCheck = new ArrayList<Section>(kept);
         toCheck.remove(seedSection);
         kept.clear();
         kept.add(seedSection);
@@ -554,8 +552,8 @@ public class SlurInspector
         do {
             makingProgress = false;
 
-            for (Iterator<GlyphSection> it = toCheck.iterator(); it.hasNext();) {
-                GlyphSection   section = it.next();
+            for (Iterator<Section> it = toCheck.iterator(); it.hasNext();) {
+                Section        section = it.next();
                 PixelRectangle sectBox = section.getContourBox();
                 sectBox.grow(slurBoxDx, slurBoxDy);
 

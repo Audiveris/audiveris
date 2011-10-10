@@ -24,6 +24,9 @@ import omr.glyph.text.TextBlob;
 import omr.glyph.text.TextInfo;
 import omr.glyph.text.TextLine;
 
+import omr.grid.LineInfo;
+import omr.grid.StaffInfo;
+
 import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
@@ -32,8 +35,6 @@ import omr.score.common.PixelRectangle;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
-import omr.grid.LineInfo;
-import omr.grid.StaffInfo;
 
 import omr.util.BrokenLine;
 import omr.util.VerticalSide;
@@ -76,8 +77,10 @@ public class TextBorderPattern
     private final PixelRectangle systemBox;
 
     // Scale dependent constants
-    private final int glyphMinHeight;
     private final int maxFontSize;
+
+    // Debug: A counter on tests submitted to OCR
+    private int testCount = 0;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -92,7 +95,6 @@ public class TextBorderPattern
     {
         super("TextBorder", system);
 
-        glyphMinHeight = scale.toPixels(constants.glyphMinHeight);
         maxFontSize = scale.toPixels(constants.maxFontSize);
 
         // System contour box
@@ -180,7 +182,9 @@ public class TextBorderPattern
                                       .recognize(
             compound.getImage(),
             language,
-            "g" + ".");
+            "gS" + system.getId() + "t" + (++testCount) + ".");
+
+        ///OCR logger.warning("TextBorderPattern OCR " + compound + " " + lines);
 
         // Debug
         if (logger.isFineEnabled()) {
@@ -221,6 +225,7 @@ public class TextBorderPattern
         }
 
         OcrLine ocrLine = lines.get(0);
+
         // Convert ocrLine from glyph-based to absolute coordinates
         ocrLine.translate(
             compound.getContourBox().x,
@@ -248,8 +253,7 @@ public class TextBorderPattern
             return null;
         }
 
-        float        aspect = ((float) box.height * value.length()) / box.width;
-
+        final float  aspect = ((float) box.height * value.length()) / box.width;
         final double minAspect = constants.minAspect.getValue();
 
         if (aspect < minAspect) {
@@ -287,9 +291,6 @@ public class TextBorderPattern
     {
         //~ Instance fields ----------------------------------------------------
 
-        Scale.Fraction glyphMinHeight = new Scale.Fraction(
-            0.8,
-            "Minimum height for characters");
         Scale.Fraction maxFontSize = new Scale.Fraction(
             1.8,
             "Maximum value for text font size");
@@ -323,16 +324,6 @@ public class TextBorderPattern
 
         //~ Methods ------------------------------------------------------------
 
-        //---------//
-        // isSmall //
-        //---------//
-        @Override
-        protected boolean isSmall (Glyph glyph)
-        {
-            // Add a test on weight? TODO
-            return glyph.getContourBox().height < glyphMinHeight;
-        }
-
         //-----------//
         // checkBlob //
         //-----------//
@@ -348,7 +339,12 @@ public class TextBorderPattern
                     String language = system.getScoreSystem()
                                             .getScore()
                                             .getLanguage();
+
                     ocrLine = callOCR(compound, language);
+
+                    if (logger.isFineEnabled()) {
+                        logger.fine("OCR on " + blob + " " + ocrLine);
+                    }
 
                     if (ocrLine == null) {
                         return false;
@@ -394,13 +390,8 @@ public class TextBorderPattern
         @Override
         protected boolean checkCandidate (Glyph glyph)
         {
-            // Respect user choice!
-            if (glyph.isManualShape()) {
-                return false;
-            }
-
-            // Don't go with blacklisted text
-            if (glyph.isShapeForbidden(Shape.TEXT)) {
+            // Common checks
+            if (!super.checkCandidate(glyph)) {
                 return false;
             }
 

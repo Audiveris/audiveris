@@ -24,16 +24,16 @@ import java.util.Set;
  * <dt><b>Subscribers:</b><dd>TODO
  * <dt><b>Readers:</b><dd>TODO
  * </dl>
- * @param <S> precise section type
+ *
  * @author Hervé Bitteur
  */
-public class SectionSetEvent<S extends Section>
+public class SectionSetEvent
     extends LagEvent
 {
     //~ Instance fields --------------------------------------------------------
 
     /** The selected section set, which may be null */
-    public final Set<S> sections;
+    public final Set<Section> sections;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -51,7 +51,7 @@ public class SectionSetEvent<S extends Section>
     public SectionSetEvent (Object        source,
                             SelectionHint hint,
                             MouseMovement movement,
-                            Set<S>        sections)
+                            Set<Section>  sections)
     {
         super(source, hint, movement);
         this.sections = sections;
@@ -63,7 +63,7 @@ public class SectionSetEvent<S extends Section>
     // getEntity //
     //-----------//
     @Override
-    public Set<S> getData ()
+    public Set<Section> getData ()
     {
         return sections;
     }

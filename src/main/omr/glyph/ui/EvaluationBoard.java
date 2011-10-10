@@ -16,7 +16,6 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
 import omr.glyph.GlyphEvaluator;
-import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
@@ -49,10 +48,8 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
-import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -79,13 +76,8 @@ class EvaluationBoard
     private static final Logger logger = Logger.getLogger(
         EvaluationBoard.class);
 
-    /** Events this boards is interested in */
-    private static final Collection<Class<?extends UserEvent>> eventClasses;
-
-    static {
-        eventClasses = new ArrayList<Class<?extends UserEvent>>();
-        eventClasses.add(GlyphEvent.class);
-    }
+    /** Events this board is interested in */
+    private static final Class[] eventsRead = new Class[] { GlyphEvent.class };
 
     /** Color for well recognized glyphs */
     private static final Color EVAL_GOOD_COLOR = new Color(100, 200, 100);
@@ -103,9 +95,6 @@ class EvaluationBoard
 
     /** Related sheet */
     private final Sheet sheet;
-
-    /** Lag view (if any) */
-    private final GlyphLagView view;
 
     /** Pane for detailed info display about the glyph evaluation */
     private final Selector selector;
@@ -133,7 +122,7 @@ class EvaluationBoard
     public EvaluationBoard (String           name,
                             GlyphsController glyphModel)
     {
-        this(name, glyphModel, null, null);
+        this(name, glyphModel, null);
         useAnnotations = false;
     }
 
@@ -147,23 +136,20 @@ class EvaluationBoard
      * @param name a rather unique name for this board
      * @param glyphController the related glyph controller
      * @param sheet the related sheet, or null
-     * @param view the related symbol glyph view
      */
     public EvaluationBoard (String           name,
                             GlyphsController glyphController,
-                            Sheet            sheet,
-                            GlyphLagView     view)
+                            Sheet            sheet)
     {
         super(
             name,
             "Neural",
-            glyphController.getLag().getSelectionService(),
-            eventClasses,
+            glyphController.getScene().getSceneService(),
+            eventsRead,
             true);
 
         this.glyphsController = glyphController;
         this.sheet = sheet;
-        this.view = view;
 
         selector = new Selector();
         defineLayout();
@@ -395,7 +381,7 @@ class EvaluationBoard
         {
             // Assign current glyph with selected shape
             if (glyphsController != null) {
-                Glyph glyph = glyphsController.getLag()
+                Glyph glyph = glyphsController.getScene()
                                               .getSelectedGlyph();
 
                 if (glyph != null) {
@@ -489,66 +475,66 @@ class EvaluationBoard
         }
     }
 
-    //------------//
-    // TestAction //
-    //------------//
-    /**
-     * Class <code>TestAction</code> uses the evaluator on all known glyphs
-     * within the sheet, to check if they can be correctly recognized. This does
-     * not modify the current glyph assignments.
-     */
-    private class TestAction
-        extends AbstractAction
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public TestAction ()
-        {
-            super("Global");
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            int          ok = 0;
-            int          total = 0;
-            final double maxDoubt = GlyphInspector.getSymbolMaxDoubt();
-            final int    viewIndex = glyphsController.getLag()
-                                                     .viewIndexOf(view);
-
-            for (Glyph glyph : sheet.getActiveGlyphs()) {
-                if (glyph.isKnown() &&
-                    (glyph.getShape() != Shape.COMBINING_STEM)) {
-                    total++;
-
-                    SystemInfo system = sheet.getSystemOf(glyph);
-                    Evaluation guess = evaluator.vote(glyph, maxDoubt, system);
-
-                    if ((guess != null) && (glyph.getShape() == guess.shape)) {
-                        ok++;
-                        view.colorizeGlyph(
-                            viewIndex,
-                            glyph,
-                            Colors.SHAPE_KNOWN);
-                    } else {
-                        view.colorizeGlyph(
-                            viewIndex,
-                            glyph,
-                            Colors.SHAPE_UNKNOWN);
-                    }
-                }
-            }
-
-            String pc = String.format(
-                " %5.2f%%",
-                ((double) ok * 100) / (double) total);
-            testPercent.setText(pc);
-            testResult.setText(ok + "/" + total);
-
-            // Almost all glyphs may have been modified, so...
-            view.repaint();
-        }
-    }
+    //    //------------//
+    //    // TestAction //
+    //    //------------//
+    //    /**
+    //     * Class <code>TestAction</code> uses the evaluator on all known glyphs
+    //     * within the sheet, to check if they can be correctly recognized. This does
+    //     * not modify the current glyph assignments.
+    //     */
+    //    private class TestAction
+    //        extends AbstractAction
+    //    {
+    //        //~ Constructors -------------------------------------------------------
+    //
+    //        public TestAction ()
+    //        {
+    //            super("Global");
+    //        }
+    //
+    //        //~ Methods ------------------------------------------------------------
+    //
+    //        @Implement(ActionListener.class)
+    //        public void actionPerformed (ActionEvent e)
+    //        {
+    //            int          ok = 0;
+    //            int          total = 0;
+    //            final double maxDoubt = GlyphInspector.getSymbolMaxDoubt();
+    //            final int    viewIndex = glyphsController.getLag()
+    //                                                     .viewIndexOf(view);
+    //
+    //            for (Glyph glyph : sheet.getActiveGlyphs()) {
+    //                if (glyph.isKnown() &&
+    //                    (glyph.getShape() != Shape.COMBINING_STEM)) {
+    //                    total++;
+    //
+    //                    SystemInfo system = sheet.getSystemOf(glyph);
+    //                    Evaluation guess = evaluator.vote(glyph, maxDoubt, system);
+    //
+    //                    if ((guess != null) && (glyph.getShape() == guess.shape)) {
+    //                        ok++;
+    //                        view.colorizeGlyph(
+    //                            viewIndex,
+    //                            glyph,
+    //                            Colors.SHAPE_KNOWN);
+    //                    } else {
+    //                        view.colorizeGlyph(
+    //                            viewIndex,
+    //                            glyph,
+    //                            Colors.SHAPE_UNKNOWN);
+    //                    }
+    //                }
+    //            }
+    //
+    //            String pc = String.format(
+    //                " %5.2f%%",
+    //                ((double) ok * 100) / (double) total);
+    //            testPercent.setText(pc);
+    //            testResult.setText(ok + "/" + total);
+    //
+    //            // Almost all glyphs may have been modified, so...
+    //            view.repaint();
+    //        }
+    //    }
 }

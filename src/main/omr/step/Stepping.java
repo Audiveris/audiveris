@@ -283,7 +283,7 @@ public class Stepping
             }
 
             // Schedule the steps on each sheet
-            logger.info("orderedSteps: " + orderedSteps);
+            ///logger.info("orderedSteps: " + orderedSteps);
             scheduleScoreStepSet(orderedSteps, score);
 
             // Record the step tasks to script

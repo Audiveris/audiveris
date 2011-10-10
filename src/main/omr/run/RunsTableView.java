@@ -196,25 +196,25 @@ public class RunsTableView
     // handleEvent //
     //-------------//
     /**
-     * Interest in SheetLocation => Run
-     * @param sheetLocation
+     * Interest in Location => Run
+     * @param locationEvent
      */
-    private void handleEvent (LocationEvent sheetLocationEvent)
+    private void handleEvent (LocationEvent locationEvent)
     {
         if (logger.isFineEnabled()) {
-            logger.fine("sheetLocation: " + sheetLocationEvent);
+            logger.fine("sheetLocation: " + locationEvent);
         }
 
         // Lookup for Run pointed by this pixel location
         // Search and forward run & section info
-        PixelRectangle rect = sheetLocationEvent.getData();
+        PixelRectangle rect = locationEvent.getData();
 
         if (rect == null) {
             return;
         }
 
-        SelectionHint hint = sheetLocationEvent.hint;
-        MouseMovement movement = sheetLocationEvent.movement;
+        SelectionHint hint = locationEvent.hint;
+        MouseMovement movement = locationEvent.movement;
 
         if ((hint != SelectionHint.LOCATION_ADD) &&
             (hint != SelectionHint.LOCATION_INIT)) {
@@ -225,7 +225,7 @@ public class RunsTableView
         Run        run = table.lookupRun(pt);
 
         // Publish Run information
-        table.getSelectionService()
+        table.getRunService()
              .publish(new RunEvent(this, hint, movement, run));
     }
 }

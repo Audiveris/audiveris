@@ -20,8 +20,6 @@ import omr.log.Logger;
 
 import omr.score.ScoresManager;
 
-import omr.selection.LocationEvent;
-
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.Skew;
@@ -493,7 +491,7 @@ public class TargetBuilder
             setModelSize(new Dimension(image.getWidth(), image.getHeight()));
 
             // Location service
-            setLocationService(sheet.getSelectionService());
+            setLocationService(sheet.getLocationService());
 
             setName("DewarpedView");
         }

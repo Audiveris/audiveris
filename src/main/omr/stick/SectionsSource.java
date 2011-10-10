@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.stick;
 
-import omr.glyph.GlyphSection;
+import omr.lag.Section;
 
 import omr.util.Predicate;
 
@@ -30,16 +30,16 @@ public class SectionsSource
     //~ Instance fields --------------------------------------------------------
 
     /** the predicate to check whether section is to be processed */
-    protected final Predicate<GlyphSection> predicate;
+    protected final Predicate<Section> predicate;
 
     /** Underlying list */
-    protected ArrayList<GlyphSection> list;
+    protected ArrayList<Section> list;
 
     /** the section iterator for the source */
-    protected ListIterator<GlyphSection> vi;
+    protected ListIterator<Section> vi;
 
     /** the section currently visited */
-    protected GlyphSection section;
+    protected Section section;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -52,7 +52,7 @@ public class SectionsSource
      *
      * @param collection the provided sections
      */
-    public SectionsSource (Collection<GlyphSection> collection)
+    public SectionsSource (Collection<Section> collection)
     {
         this(collection, new UnknownSectionPredicate());
     }
@@ -67,13 +67,13 @@ public class SectionsSource
      * @param collection the provided sections
      * @param predicate the predicate to check for candidate sections
      */
-    public SectionsSource (Collection<GlyphSection> collection,
-                           Predicate<GlyphSection>  predicate)
+    public SectionsSource (Collection<Section> collection,
+                           Predicate<Section>  predicate)
     {
         this.predicate = predicate;
 
         if (collection != null) {
-            list = new ArrayList<GlyphSection>(collection);
+            list = new ArrayList<Section>(collection);
             reset();
         }
     }
@@ -90,7 +90,7 @@ public class SectionsSource
      *
      * @return The boolean result of the test
      */
-    public boolean isInArea (GlyphSection section)
+    public boolean isInArea (Section section)
     {
         // Default behavior : no filtering
         return true;
@@ -116,15 +116,13 @@ public class SectionsSource
     {
         while (vi.hasNext()) {
             // Update cached data
-            section = (StickSection) vi.next();
+            section = vi.next();
 
             if (predicate.check(section)) {
-                if (section instanceof StickSection) {
-                    StickRelation relation = ((StickSection) section).getRelation();
+                StickRelation relation = section.getRelation();
 
-                    if (relation != null) {
-                        relation.role = null; // Safer ?
-                    }
+                if (relation != null) {
+                    relation.role = null; // Safer ?
                 }
 
                 section.setGlyph(null); // Safer ?
@@ -144,7 +142,7 @@ public class SectionsSource
      *
      * @return the next section
      */
-    public GlyphSection next ()
+    public Section next ()
     {
         return section;
     }

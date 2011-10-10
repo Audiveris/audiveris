@@ -242,7 +242,7 @@ public abstract class Constant
     //---------------//
     /**
      * Report whether the current constant value is the source one (not altered
-     * by either properties read from disk, of value changed later
+     * by either properties read from disk, of value changed later)
      * @return true if still the source value, false otherwise
      */
     public boolean isSourceValue ()
@@ -666,13 +666,7 @@ public abstract class Constant
          */
         public void setValue (java.awt.Color val)
         {
-            setTuple(
-                java.lang.String.format(
-                    "#%02x%02x%02x",
-                    val.getRed(),
-                    val.getGreen(),
-                    val.getBlue()),
-                val);
+            setTuple(encodeColor(val), val);
         }
 
         /**
@@ -685,10 +679,30 @@ public abstract class Constant
             return (java.awt.Color) getCachedValue();
         }
 
+        //-------------//
+        // decodeColor //
+        //-------------//
+        public static java.awt.Color decodeColor (java.lang.String str)
+        {
+            return java.awt.Color.decode(str);
+        }
+
+        //-------------//
+        // encodeColor //
+        //-------------//
+        public static java.lang.String encodeColor (java.awt.Color color)
+        {
+            return java.lang.String.format(
+                "#%02x%02x%02x",
+                color.getRed(),
+                color.getGreen(),
+                color.getBlue());
+        }
+
         @Override
         protected java.awt.Color decode (java.lang.String str)
         {
-            return java.awt.Color.decode(str);
+            return decodeColor(str);
         }
     }
 

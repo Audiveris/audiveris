@@ -19,16 +19,18 @@ import omr.check.SuccessResult;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.GlyphLag;
-import omr.glyph.GlyphSection;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
-import omr.glyph.facets.Stick;
 
+import omr.lag.Lag;
+import omr.lag.Section;
 import omr.lag.Sections;
 
 import omr.log.Logger;
+
+import omr.run.Orientation;
+import static omr.run.Orientation.*;
 
 import omr.selection.GlyphEvent;
 import omr.selection.UserEvent;
@@ -96,8 +98,8 @@ public class VerticalsBuilder
     /** Dedicated system */
     private final SystemInfo system;
 
-    /** Related glyph lag */
-    private final GlyphLag lag;
+    /** Related lag */
+    private final Lag lag;
 
     /** Global sheet scale */
     private final Scale scale;
@@ -132,7 +134,7 @@ public class VerticalsBuilder
      * @param isShort should we look for short (vs standard) stems?
      * @return the check suite ready for use
      */
-    public CheckSuite<Stick> createStemCheckSuite (boolean isShort)
+    public CheckSuite<Glyph> createStemCheckSuite (boolean isShort)
     {
         return new StemCheckSuite(isShort);
     }
@@ -154,8 +156,9 @@ public class VerticalsBuilder
         // We cannot reuse the sticks, since thick sticks are allowed for bars
         // but not for stems.
         SticksBuilder verticalsArea = new SticksBuilder(
+            Orientation.VERTICAL,
             scale,
-            lag,
+            sheet.getScene(),
             new SectionsSource(
                 system.getVerticalSections(),
                 new MySectionPredicate()),
@@ -177,7 +180,7 @@ public class VerticalsBuilder
                                      boolean isShort)
     {
         // Gather all sections to be browsed
-        Collection<GlyphSection> sections = new ArrayList<GlyphSection>(
+        Collection<Section> sections = new ArrayList<Section>(
             glyph.getMembers());
 
         if (logger.isFineEnabled()) {
@@ -187,8 +190,9 @@ public class VerticalsBuilder
         // Retrieve vertical sticks as stem candidates
         try {
             SticksBuilder verticalsArea = new SticksBuilder(
+                Orientation.VERTICAL,
                 scale,
-                lag,
+                sheet.getScene(),
                 new SectionsSource(sections, new MySectionPredicate()),
                 false);
             verticalsArea.setMaxThickness(constants.maxStemThickness);
@@ -220,7 +224,7 @@ public class VerticalsBuilder
      * @return the number of stems found
      * @throws StepException
      */
-    private int retrieveVerticals (Collection<Stick> sticks,
+    private int retrieveVerticals (Collection<Glyph> sticks,
                                    boolean           isShort)
         throws StepException
     {
@@ -235,8 +239,12 @@ public class VerticalsBuilder
                 Glyphs.toString(sticks));
         }
 
-        for (Stick stick : sticks) {
-            stick = (Stick) system.addGlyph(stick);
+        for (Glyph stick : sticks) {
+            stick = system.addGlyph(stick);
+
+            if (stick.isKnown()) {
+                continue;
+            }
 
             if (!stick.isShapeForbidden(Shape.COMBINING_STEM)) {
                 // Run the various Checks
@@ -272,7 +280,7 @@ public class VerticalsBuilder
      * A suite of checks meant for stem candidates
      */
     public class StemCheckSuite
-        extends CheckSuite<Stick>
+        extends CheckSuite<Glyph>
     {
         //~ Constructors -------------------------------------------------------
 
@@ -335,30 +343,33 @@ public class VerticalsBuilder
             6.67,
             "Low Minimum aspect ratio for a stem stick");
         Scale.Fraction minStemLengthHigh = new Scale.Fraction(
-            3.0,
+            2.1, //3.0,
             "High Minimum length for a stem");
         Scale.Fraction minStemLengthLow = new Scale.Fraction(
-            2.4,
+            1.9, //2.4,
             "Low Minimum length for a stem");
-        Scale.Fraction minShortStemLengthLow = new Scale.Fraction(
+        Scale.Fraction minShortStemLengthHigh = new Scale.Fraction(
             2.5,
+            "Low Minimum length for a short stem");
+        Scale.Fraction minShortStemLengthLow = new Scale.Fraction(
+            2.0,
             "Low Minimum length for a short stem");
         Scale.Fraction maxStemThickness = new Scale.Fraction(
             0.4,
             "Maximum thickness of an interesting vertical stick");
         Scale.Fraction minStaffDxHigh = new Scale.Fraction(
             0,
-            "HighMinimum horizontal distance between a stem and a staff edge");
+            "High Minimum horizontal distance between a stem and a staff edge");
         Scale.Fraction minStaffDxLow = new Scale.Fraction(
             0,
-            "LowMinimum horizontal distance between a stem and a staff edge");
+            "Low Minimum horizontal distance between a stem and a staff edge");
     }
 
     //---------------------//
     // FirstAdjacencyCheck //
     //---------------------//
     private static class FirstAdjacencyCheck
-        extends Check<Stick>
+        extends Check<Glyph>
     {
         //~ Constructors -------------------------------------------------------
 
@@ -377,9 +388,9 @@ public class VerticalsBuilder
 
         // Retrieve the adjacency value
         @Implement(Check.class)
-        protected double getValue (Stick stick)
+        protected double getValue (Glyph stick)
         {
-            return (double) stick.getFirstStuck() / stick.getLength();
+            return (double) stick.getFirstStuck() / stick.getLength(VERTICAL);
         }
     }
 
@@ -387,7 +398,7 @@ public class VerticalsBuilder
     // LastAdjacencyCheck //
     //--------------------//
     private static class LastAdjacencyCheck
-        extends Check<Stick>
+        extends Check<Glyph>
     {
         //~ Constructors -------------------------------------------------------
 
@@ -406,9 +417,9 @@ public class VerticalsBuilder
 
         // Retrieve the adjacency value
         @Implement(Check.class)
-        protected double getValue (Stick stick)
+        protected double getValue (Glyph stick)
         {
-            return (double) stick.getLastStuck() / stick.getLength();
+            return (double) stick.getLastStuck() / stick.getLength(VERTICAL);
         }
     }
 
@@ -416,7 +427,7 @@ public class VerticalsBuilder
     // MinAspectCheck //
     //----------------//
     private static class MinAspectCheck
-        extends Check<Stick>
+        extends Check<Glyph>
     {
         //~ Constructors -------------------------------------------------------
 
@@ -435,9 +446,9 @@ public class VerticalsBuilder
 
         // Retrieve the ratio length / thickness
         @Implement(Check.class)
-        protected double getValue (Stick stick)
+        protected double getValue (Glyph stick)
         {
-            return stick.getAspect();
+            return stick.getAspect(VERTICAL);
         }
     }
 
@@ -445,7 +456,7 @@ public class VerticalsBuilder
     // LeftCheck //
     //-----------//
     private class LeftCheck
-        extends Check<Stick>
+        extends Check<Glyph>
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -469,7 +480,7 @@ public class VerticalsBuilder
 
         // Retrieve the stick abscissa
         @Implement(Check.class)
-        protected double getValue (Stick stick)
+        protected double getValue (Glyph stick)
         {
             int x = stick.getMidPos();
 
@@ -481,7 +492,7 @@ public class VerticalsBuilder
     // MinDensityCheck //
     //-----------------//
     private static class MinDensityCheck
-        extends Check<Stick>
+        extends Check<Glyph>
     {
         //~ Constructors -------------------------------------------------------
 
@@ -500,9 +511,9 @@ public class VerticalsBuilder
 
         // Retrieve the density
         @Implement(Check.class)
-        protected double getValue (Stick stick)
+        protected double getValue (Glyph stick)
         {
-            Rectangle rect = stick.getOrientedBounds();
+            Rectangle rect = stick.getContourBox();
             double    area = rect.width * rect.height;
 
             return (double) stick.getWeight() / area;
@@ -513,7 +524,7 @@ public class VerticalsBuilder
     // MinLengthCheck //
     //----------------//
     private class MinLengthCheck
-        extends Check<Stick>
+        extends Check<Glyph>
     {
         //~ Constructors -------------------------------------------------------
 
@@ -524,7 +535,8 @@ public class VerticalsBuilder
                 "Check that stick is long enough",
                 isShort ? constants.minShortStemLengthLow
                                 : constants.minStemLengthLow,
-                constants.minStemLengthHigh,
+                isShort ? constants.minShortStemLengthHigh
+                                : constants.minStemLengthHigh,
                 true,
                 TOO_SHORT);
         }
@@ -533,9 +545,9 @@ public class VerticalsBuilder
 
         // Retrieve the length data
         @Implement(Check.class)
-        protected double getValue (Stick stick)
+        protected double getValue (Glyph stick)
         {
-            return scale.pixelsToFrac(stick.getLength());
+            return scale.pixelsToFrac(stick.getLength(VERTICAL));
         }
     }
 
@@ -543,11 +555,11 @@ public class VerticalsBuilder
     // MySectionPredicate //
     //--------------------//
     private static class MySectionPredicate
-        implements Predicate<GlyphSection>
+        implements Predicate<Section>
     {
         //~ Methods ------------------------------------------------------------
 
-        public boolean check (GlyphSection section)
+        public boolean check (Section section)
         {
             // We process section for which glyph is null
             // or GLYPH_PART, NO_LEGAL_TIME, NOISE, STRUCTURE
@@ -563,7 +575,7 @@ public class VerticalsBuilder
     // RightCheck //
     //------------//
     private class RightCheck
-        extends Check<Stick>
+        extends Check<Glyph>
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -587,7 +599,7 @@ public class VerticalsBuilder
 
         // Retrieve the stick abscissa
         @Implement(Check.class)
-        protected double getValue (Stick stick)
+        protected double getValue (Glyph stick)
         {
             return scale.pixelsToFrac(
                 (system.getLeft() + system.getWidth()) - stick.getMidPos());

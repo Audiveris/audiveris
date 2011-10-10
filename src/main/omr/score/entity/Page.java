@@ -590,7 +590,7 @@ public class Page
         //        // Discard current score location event (which contains a system id)
         //        if (Main.getGui() != null) {
         //            getSheet()
-        //                .getSelectionService()
+        //                .getLocationService()
         //                .publish(new ScoreLocationEvent(this, null, null, null));
         //        }
     }

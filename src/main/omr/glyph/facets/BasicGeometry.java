@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.glyph.facets;
 
-import omr.glyph.GlyphSection;
 import omr.glyph.GlyphSignature;
 import omr.glyph.Shape;
 
@@ -156,7 +155,7 @@ class BasicGeometry
     //------------//
     public double getDensity ()
     {
-        Rectangle rect = getOrientedBounds();
+        Rectangle rect = getContourBox();
         int       surface = (rect.width + 1) * (rect.height + 1);
 
         return (double) getWeight() / (double) surface;
@@ -282,7 +281,7 @@ class BasicGeometry
         if (weight == null) {
             weight = 0;
 
-            for (GlyphSection section : glyph.getMembers()) {
+            for (Section section : glyph.getMembers()) {
                 weight += section.getWeight();
             }
         }
@@ -294,7 +293,8 @@ class BasicGeometry
     // computeMoments //
     //----------------//
     /**
-     * Compute all the moments for this glyph
+     * Compute all the moments for this glyph, knowing that it can be a mix of
+     * vertical sections and horizontal sections.
      */
     public void computeMoments ()
     {
@@ -302,34 +302,19 @@ class BasicGeometry
         weight = getWeight();
 
         PointsCollector collector = new PointsCollector(null, weight);
-        Boolean         isVertical = null;
 
-        // Append all points, section per section
+        // Append all points, whatever section orientation
         for (Section section : glyph.getMembers()) {
             section.cumulate(collector);
-
-            if (isVertical == null) {
-                isVertical = section.getGraph()
-                                    .isVertical();
-            }
         }
 
-        // Then compute the moments, swapping pos & coord since if lag is
-        // vertical
+        // Then compute the moments with this collector
         try {
-            if (isVertical) {
-                moments = new Moments(
-                    collector.getYValues(),
-                    collector.getXValues(),
-                    collector.getCount(),
-                    getInterline());
-            } else {
-                moments = new Moments(
-                    collector.getXValues(),
-                    collector.getYValues(),
-                    collector.getCount(),
-                    getInterline());
-            }
+            moments = new Moments(
+                collector.getXValues(),
+                collector.getYValues(),
+                collector.getCount(),
+                getInterline());
         } catch (Exception ex) {
             logger.warning(
                 "Glyph #" + glyph.getId() +
@@ -343,7 +328,6 @@ class BasicGeometry
     @Override
     public void dump ()
     {
-        System.out.println("   bounds=" + getOrientedBounds());
         System.out.println("   centroid=" + getCentroid());
         System.out.println("   contourBox=" + getContourBox());
         System.out.println("   interline=" + getInterline());

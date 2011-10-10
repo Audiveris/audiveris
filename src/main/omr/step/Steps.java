@@ -38,13 +38,11 @@ public class Steps
     public static final String             LOAD = "LOAD";
     public static final String             SCALE = "SCALE";
     public static final String             GRID = "GRID";
-    public static final String             SKEW = "SKEW";
-    public static final String             LINES = "LINES";
     public static final String             HORIZONTALS = "HORIZONTALS";
     public static final String             SPLIT = "SPLIT";
     public static final String             MEASURES = "MEASURES";
-    public static final String             SYMBOLS = "SYMBOLS";
     public static final String             VERTICALS = "VERTICALS";
+    public static final String             SYMBOLS = "SYMBOLS";
     public static final String             PATTERNS = "PATTERNS";
     public static final String             PAGES = "PAGES";
     public static final String             MERGE = "MERGE";
@@ -53,29 +51,27 @@ public class Steps
     public static final String             MIDI = "MIDI";
     public static final String             EXPORT = "EXPORT";
 
-    /** Sequence of steps */
+    /** Ordered sequence of steps */
     private static final List<Step> steps = new ArrayList<Step>();
 
     /** Map of defined steps */
     private static final Map<String, Step> stepMap = new HashMap<String, Step>();
 
     static {
-        // Mandatory
+        // Mandatory steps in proper order
         addStep(new LoadStep());
         addStep(new ScaleStep());
-        addStep(new GridStep()); 
-//        addStep(new SkewStep());
-//        addStep(new LinesStep());
-//        addStep(new HorizontalsStep());
+        addStep(new GridStep());
         addStep(new SplitStep());
         addStep(new MeasuresStep());
-        addStep(new SymbolsStep());
         addStep(new VerticalsStep());
+        addStep(new HorizontalsStep());
+        addStep(new SymbolsStep());
         addStep(new PatternsStep());
         addStep(new PagesStep());
         addStep(new MergeStep());
 
-        // Optional
+        // Optional steps
         addStep(new PrintStep());
         addStep(new PlayStep());
         addStep(new MidiStep());
@@ -84,10 +80,10 @@ public class Steps
 
     /** Compare steps WRT their position in the sequence of defined steps */
     public static final Comparator<Step> comparator = new Comparator<Step>() {
-        public int compare (Step o1,
-                            Step o2)
+        public int compare (Step s1,
+                            Step s2)
         {
-            return Steps.compare(o1, o2);
+            return Steps.compare(s1, s2);
         }
     };
 
@@ -143,7 +139,7 @@ public class Steps
     // values //
     //--------//
     /**
-     * report a non-modifiable view of the step list
+     * Report a non-modifiable view of the step list
      * @return the sequence of steps defined
      */
     public static List<Step> values ()
@@ -235,7 +231,6 @@ public class Steps
 
         /**
          * Normal constructor
-         *
          * @param unit         the enclosing unit
          * @param name         the constant name
          * @param defaultValue the default Step value
@@ -252,7 +247,6 @@ public class Steps
 
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later
-         *
          * @param defaultValue the default Step value
          * @param description  the semantic of the constant
          */
@@ -266,7 +260,6 @@ public class Steps
 
         /**
          * Set a new value to the constant
-         *
          * @param val the new Step value
          */
         public void setValue (Step val)
@@ -282,7 +275,6 @@ public class Steps
 
         /**
          * Retrieve the current constant value
-         *
          * @return the current Step value
          */
         public Step getValue ()

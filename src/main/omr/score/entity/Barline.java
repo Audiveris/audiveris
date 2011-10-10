@@ -14,9 +14,10 @@ package omr.score.entity;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
-import omr.glyph.facets.Stick;
 
 import omr.log.Logger;
+
+import omr.run.Orientation;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -98,9 +99,8 @@ public class Barline
 
         for (Glyph glyph : getGlyphs()) {
             if (linePredicate.check(glyph)) {
-                Stick stick = (Stick) glyph;
-                int   x = stick.getAbsoluteLine()
-                               .xAtY(topLeft.y);
+                int x = glyph.getLine()
+                             .xAtY(topLeft.y);
 
                 return x;
             }
@@ -128,9 +128,8 @@ public class Barline
 
         for (Glyph glyph : getGlyphs()) {
             if (glyph.isBar()) {
-                Stick stick = (Stick) glyph;
-                int   x = stick.getAbsoluteLine()
-                               .xAtY(topLeft.y);
+                int x = glyph.getLine()
+                             .xAtY(topLeft.y);
 
                 if (x > right) {
                     right = x;
@@ -237,10 +236,10 @@ public class Barline
 
         for (Glyph glyph : getGlyphs()) {
             if (glyph.isBar()) {
-                Stick stick = (Stick) glyph;
-                float thickness = (float) stick.getWeight() / stick.getLength();
+                float thickness = (float) glyph.getWeight() / glyph.getLength(
+                    Orientation.VERTICAL);
                 g.setStroke(new BasicStroke(thickness));
-                stick.renderLine(g);
+                glyph.renderLine(g);
             }
         }
 
@@ -259,7 +258,7 @@ public class Barline
     {
         for (Glyph glyph : getGlyphs()) {
             if (glyph.isBar()) {
-                ((Stick) glyph).renderLine(g);
+                glyph.renderLine(g);
             }
         }
     }

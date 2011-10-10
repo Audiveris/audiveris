@@ -13,10 +13,15 @@ package omr.glyph;
 
 import omr.constant.Constant;
 
+import omr.log.Logger;
+
 import omr.ui.symbol.ShapeSymbol;
 import omr.ui.symbol.Symbols;
 
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Class <code>Shape</code> defines the comprehensive list of glyph shapes. It
@@ -578,19 +583,27 @@ public enum Shape {
     // =========================================================================
     //
 
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(Shape.class);
+
     /** Last physical shape */
     public static final Shape LAST_PHYSICAL_SHAPE = PEDAL_UP_MARK;
+
+    static {
+        // Make sure all the shape colors are defined
+        ShapeRange.defineAllShapeColors();
+
+        // Debug
+        ///dumpShapeColors();
+    }
 
     //--------------------------------------------------------------------------
 
     /** Explanation of the glyph shape */
     private final String description;
 
-    /** Related temporary display color */
+    /** Related display color */
     private Color color;
-
-    /** Related permanent display color */
-    private Constant.Color constantColor;
 
     /** Potential related symbol */
     private ShapeSymbol symbol;
@@ -757,8 +770,7 @@ public enum Shape {
     // getColor //
     //----------//
     /**
-     * Report the color currently assigned to the shape, if any
-     *
+     * Report the color assigned to the shape, if any
      * @return the related color, or null
      */
     public java.awt.Color getColor ()
@@ -770,9 +782,7 @@ public enum Shape {
     // setColor //
     //----------//
     /**
-     * Assign a color for current display. This is the specific shape color if
-     * any, otherwise it is the default color of the containing range.
-     *
+     * Assign a color for this shape
      * @param color the display color
      */
     public void setColor (java.awt.Color color)
@@ -786,62 +796,18 @@ public enum Shape {
     void createShapeColor (Color color)
     {
         // Create the underlying constant
-        constantColor = new Constant.Color(
+        Constant.Color constantColor = new Constant.Color(
             getClass().getName(), // Unit
             name() + ".color", // Name
             "#000000", // DefaultValue: Black
-            "Color code for shape " + name());
+            "Color for shape " + name());
 
         // Assign the shape display color
         if (!constantColor.isSourceValue()) {
-            // Use the shape specific color
-            setColor(constantColor.getValue());
+            setColor(constantColor.getValue()); // Use the shape specific color
         } else {
-            // Use the provided default color
-            setColor(color);
+            setColor(color); // Use the provided (range) default color
         }
-    }
-
-    //------------------//
-    // getConstantColor //
-    //------------------//
-    /**
-     * Report the color that is specifically assigned to this shape, if any
-     *
-     * @return the specific color if any, null otherwise
-     */
-    public Color getConstantColor ()
-    {
-        return constantColor.getValue();
-    }
-
-    //------------------//
-    // setConstantColor //
-    //------------------//
-    /**
-     * Assign a specific color to the shape
-     *
-     * @param color the color to be assigned
-     */
-    public void setConstantColor (java.awt.Color color)
-    {
-        constantColor.setValue(color);
-        setColor(color);
-    }
-
-    //--------------------//
-    // resetConstantColor //
-    //--------------------//
-    /**
-     * Remove the shape specific color, and reset the shape color using the
-     * provided color (typically the range default color)
-     *
-     * @param color the default color
-     */
-    public void resetConstantColor (Color color)
-    {
-        constantColor.remove();
-        createShapeColor(color); // Use range color !!!
     }
 
     //-----------//
@@ -951,5 +917,27 @@ public enum Shape {
     {
         return getPhysicalShape()
                    .getSymbol() != null;
+    }
+
+    //-----------------//
+    // dumpShapeColors //
+    //-----------------//
+    /**
+     * Dump the color of every shape
+     */
+    public static void dumpShapeColors ()
+    {
+        List<String> names = new ArrayList<String>();
+
+        for (Shape shape : Shape.values()) {
+            names.add(
+                shape + " " + Constant.Color.encodeColor(shape.getColor()));
+        }
+
+        Collections.sort(names);
+
+        for (String str : names) {
+            System.out.println(str);
+        }
     }
 }

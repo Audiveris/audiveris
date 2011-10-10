@@ -27,7 +27,6 @@ import omr.score.ui.ScoreController;
 import omr.script.RemoveTask;
 
 import omr.sheet.Sheet;
-import omr.sheet.StavesBuilder;
 
 import omr.ui.util.OmrFileFilter;
 import omr.ui.util.UIUtilities;
@@ -142,29 +141,6 @@ public class SheetActions
         return null;
     }
 
-    //----------//
-    // plotLine //
-    //----------//
-    /**
-     * Action that allows to display the plot of Line Builder.
-     * @param e the event that triggered this action
-     */
-    @Action(enabledProperty = SHEET_AVAILABLE)
-    public void plotLine (ActionEvent e)
-    {
-        Sheet sheet = SheetsController.getCurrentSheet();
-
-        if (sheet != null) {
-            StavesBuilder builder = sheet.getStavesBuilder();
-
-            if (builder != null) {
-                builder.displayChart();
-            } else {
-                logger.warning("Data from staves builder is not available");
-            }
-        }
-    }
-
     //-----------//
     // plotScale //
     //-----------//
@@ -180,28 +156,6 @@ public class SheetActions
         if (sheet != null) {
             sheet.getScale()
                  .displayChart();
-        }
-    }
-
-    //----------//
-    // plotSkew //
-    //----------//
-    /**
-     * Action that allows to display the plot of Skew Builder
-     * @param e the event that triggered this action
-     */
-    @Action(enabledProperty = SHEET_AVAILABLE)
-    public void plotSkew (ActionEvent e)
-    {
-        Sheet sheet = SheetsController.getCurrentSheet();
-
-        if (sheet != null) {
-            if (sheet.getSkewBuilder() != null) {
-                sheet.getSkewBuilder()
-                     .displayChart();
-            } else {
-                logger.warning("Data from skew builder is not available");
-            }
         }
     }
 

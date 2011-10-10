@@ -11,16 +11,18 @@
 // </editor-fold>
 package omr.glyph;
 
-import omr.glyph.facets.BasicStick;
+import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
 
+import omr.lag.BasicLag;
 import omr.lag.JunctionAllPolicy;
+import omr.lag.Lag;
+import omr.lag.Section;
+import omr.lag.SectionsBuilder;
 
 import omr.log.Logger;
 
 import omr.run.Orientation;
-
-import omr.stick.StickSection;
 
 import omr.ui.symbol.MusicFont;
 import omr.ui.symbol.ShapeSymbol;
@@ -36,7 +38,7 @@ import java.awt.image.BufferedImage;
  * @author Hervé Bitteur
  */
 public class SymbolGlyph
-    extends BasicStick
+    extends BasicGlyph
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -79,18 +81,13 @@ public class SymbolGlyph
         SymbolPicture picture = new SymbolPicture(image);
 
         /** Build related vertical lag */
-        GlyphLag vLag = new GlyphLag(
-            "iLag",
-            StickSection.class,
-            Orientation.VERTICAL);
+        Lag iLag = new BasicLag("iLag", Orientation.VERTICAL);
 
-        new GlyphSectionsBuilder(vLag, new JunctionAllPolicy()) // catch all
+        new SectionsBuilder(iLag, new JunctionAllPolicy()) // catch all
         .createSections("symbol", picture, 0); // minRunLength
 
         // Retrieve the whole glyph made of all sections
-        setLag(vLag);
-
-        for (GlyphSection section : vLag.getSections()) {
+        for (Section section : iLag.getSections()) {
             addSection(section, Glyph.Linking.LINK_BACK);
         }
 

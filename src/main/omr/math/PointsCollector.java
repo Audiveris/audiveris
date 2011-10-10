@@ -11,18 +11,18 @@
 // </editor-fold>
 package omr.math;
 
-import java.awt.Rectangle;
+import omr.score.common.PixelRectangle;
 
 /**
  * Class {@code PointsCollector} is meant to cumulate points coordinates,
- * perhaps within a provided region of interest
+ * perhaps within a provided <b>absolute</b> region of interest.
  */
 public class PointsCollector
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** The region of interest, if any */
-    private Rectangle roi;
+    /** The absolute region of interest, if any */
+    private PixelRectangle roi;
 
     /** The current number of points in this collector */
     private int count;
@@ -39,10 +39,11 @@ public class PointsCollector
     // PointsCollector //
     //-----------------//
     /**
-     * Creates a new PointsCollector object, with roi area taken as capacity
-     * @param roi the roi to be used by the collector
+     * Creates a new PointsCollector object, with absolute roi area taken as
+     * capacity
+     * @param roi the absolute roi to be used by the collector
      */
-    public PointsCollector (Rectangle roi)
+    public PointsCollector (PixelRectangle roi)
     {
         this(roi, roi.width * roi.height);
     }
@@ -52,11 +53,11 @@ public class PointsCollector
     //-----------------//
     /**
      * Creates a new PointsCollector object.
-     * @param roi the roi to be used by the collector
+     * @param roi the absolute roi to be used by the collector
      * @param capacity the collector capacity
      */
-    public PointsCollector (Rectangle roi,
-                            int       capacity)
+    public PointsCollector (PixelRectangle roi,
+                            int            capacity)
     {
         this.roi = roi;
         xx = new int[capacity];
@@ -76,7 +77,7 @@ public class PointsCollector
     //--------//
     // getRoi //
     //--------//
-    public Rectangle getRoi ()
+    public PixelRectangle getRoi ()
     {
         return roi;
     }

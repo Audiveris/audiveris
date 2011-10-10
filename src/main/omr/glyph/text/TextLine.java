@@ -18,10 +18,12 @@ import omr.glyph.Evaluation;
 import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphNetwork;
-import omr.glyph.GlyphSection;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
+
+import omr.lag.BasicRoi;
+import omr.lag.Section;
 
 import omr.log.Logger;
 
@@ -292,7 +294,7 @@ public class TextLine
 
             // Check that this glyph is not forbidden as text
             Glyph original = system.getSheet()
-                                   .getVerticalLag()
+                                   .getScene()
                                    .getOriginal(compound);
 
             if ((original != null) && original.isShapeForbidden(Shape.TEXT)) {
@@ -716,8 +718,7 @@ public class TextLine
             textArea = new TextArea(
                 system,
                 null,
-                system.getSheet().getVerticalLag().createAbsoluteRoi(
-                    getContourBox()),
+                new BasicRoi(getContourBox()),
                 Orientation.HORIZONTAL);
         }
 
@@ -829,15 +830,17 @@ public class TextLine
                                         String language)
     {
         /** Initial collection of sections */
-        SortedSet<GlyphSection> allSections = new TreeSet<GlyphSection>(
+        SortedSet<Section> allSections = new TreeSet<Section>(
             glyph.getMembers());
-        TextInfo                textInfo = glyph.getTextInfo();
-        List<OcrLine>           lines = Language.getOcr()
-                                                .recognize(
+        TextInfo           textInfo = glyph.getTextInfo();
+        List<OcrLine>      lines = Language.getOcr()
+                                           .recognize(
             glyph.getImage(),
             language,
             "g" + glyph.getId() + ".");
-        List<Sentence>          sentences = new ArrayList<Sentence>();
+
+        ///OCR logger.warning("Texte OCR " + glyph + " " + lines);
+        List<Sentence>     sentences = new ArrayList<Sentence>();
 
         if ((lines != null) && !lines.isEmpty()) {
             for (OcrLine ocrLine : lines) {
@@ -847,7 +850,7 @@ public class TextLine
                     glyph.getContourBox().y);
 
                 // Isolate proper line glyph from its enclosed sections
-                SortedSet<GlyphSection> sections = textInfo.retrieveSectionsFrom(
+                SortedSet<Section> sections = textInfo.retrieveSectionsFrom(
                     ocrLine.getChars());
 
                 if (!sections.isEmpty()) {
@@ -855,7 +858,7 @@ public class TextLine
 
                     Glyph lineGlyph = system.buildGlyph(sections);
                     Glyph original = system.getSheet()
-                                           .getVerticalLag()
+                                           .getScene()
                                            .getOriginal(glyph);
 
                     if (original != null) {
@@ -875,7 +878,7 @@ public class TextLine
                         sentences.add(createSentence(lineGlyph));
 
                         // Free all the glyphs pointed by sections left over
-                        for (GlyphSection section : allSections) {
+                        for (Section section : allSections) {
                             Glyph g = section.getGlyph();
 
                             if ((g != null) && (g.getShape() != null)) {
@@ -1097,7 +1100,7 @@ public class TextLine
 
             // Text allowed?
             Glyph original = system.getSheet()
-                                   .getVerticalLag()
+                                   .getScene()
                                    .getOriginal(compound);
 
             if ((original != null) && original.isShapeForbidden(Shape.TEXT)) {

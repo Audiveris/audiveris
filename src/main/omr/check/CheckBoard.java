@@ -23,8 +23,6 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import java.util.Collection;
-
 /**
  * Class <code>CheckBoard</code> defines a board dedicated to the display of
  * check result information.
@@ -59,10 +57,10 @@ public class CheckBoard<C extends Checkable>
      * @param selectionService which selection service to use
      * @param eventList    which even classes to expect
      */
-    public CheckBoard (String                                name,
-                       CheckSuite<C>                         suite,
-                       SelectionService                      selectionService,
-                       Collection<Class<?extends UserEvent>> eventList)
+    public CheckBoard (String           name,
+                       CheckSuite<C>    suite,
+                       SelectionService selectionService,
+                       Class[]          eventList)
     {
         super(name + "-CheckBoard", "Check", selectionService, eventList, true);
         checkPanel = new CheckPanel<C>(suite);

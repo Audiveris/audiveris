@@ -48,27 +48,18 @@ public interface Symbol
 {
     //~ Methods ----------------------------------------------------------------
 
-    //---------------//
-    // getIconHeight //
-    //---------------//
     /**
      * Report the height of the related icon
      * @return the height of the icon image in pixels
      */
     public int getIconHeight ();
 
-    //--------------//
-    // getIconWidth //
-    //--------------//
     /**
      * Report the width of the icon (used by swing when painting)
      * @return the icon image width in pixels
      */
     public int getIconWidth ();
 
-    //-------------//
-    // paintSymbol //
-    //-------------//
     /**
      * Paint the symbol that represents the related shape, using the scaled
      * font and context, the symbol being aligned at provided location
@@ -82,18 +73,12 @@ public interface Symbol
                              PixelPoint location,
                              Alignment  alignment);
 
-    //--------------//
-    // getIconImage //
-    //--------------//
     /**
      * Report the icon image, suitable for icon display
      * @return the image meant for icon display
      */
     BufferedImage getIconImage ();
 
-    //-------------//
-    // getRefPoint //
-    //-------------//
     /**
      * Report the symbol reference point, which is usually the area center,
      * but somewhat different for some symbols (such as flats)
@@ -102,9 +87,6 @@ public interface Symbol
      */
     PixelPoint getRefPoint (Rectangle area);
 
-    //------------//
-    // buildImage //
-    //------------//
     /**
      * Build the image that represents the related shape, using the scaled
      * font. The main difficulty is to determine up-front the size of the image

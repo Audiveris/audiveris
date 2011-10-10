@@ -33,6 +33,8 @@ import org.bushe.swing.event.EventSubscriber;
 import org.jdesktop.application.Action;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 
 import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
@@ -67,6 +69,9 @@ public class SheetsController
     private static final Logger logger = Logger.getLogger(
         SheetsController.class);
 
+    /** Events that can be published on sheet service */
+    private static final Class[] eventsWritten = new Class[] { SheetEvent.class };
+
     /** The single instance of this class */
     private static volatile SheetsController INSTANCE;
 
@@ -82,8 +87,9 @@ public class SheetsController
      * The global event service dedicated to publication of the currently
      * selected sheet.
      */
-    private final SelectionService sheetSetService = new SelectionService(
-        getClass().getSimpleName());
+    private final SelectionService sheetService = new SelectionService(
+        getClass().getSimpleName(),
+        eventsWritten);
 
     //~ Constructors -----------------------------------------------------------
 
@@ -158,7 +164,7 @@ public class SheetsController
      */
     public Sheet getSelectedSheet ()
     {
-        SheetEvent sheetEvent = (SheetEvent) sheetSetService.getLastEvent(
+        SheetEvent sheetEvent = (SheetEvent) sheetService.getLastEvent(
             SheetEvent.class);
 
         return (sheetEvent != null) ? sheetEvent.getData() : null;
@@ -174,7 +180,7 @@ public class SheetsController
      */
     public void callAboutSheet (Sheet sheet)
     {
-        sheetSetService.publish(new SheetEvent(this, sheet));
+        sheetService.publish(new SheetEvent(this, sheet));
     }
 
     //----------------//
@@ -245,21 +251,30 @@ public class SheetsController
             return;
         }
 
-        SelectionService.dumpSubscribers(
-            "Sheet events",
-            sheet.getSelectionService());
+        sheet.getLocationService()
+             .dumpSubscribers();
 
         if (sheet.getHorizontalLag() != null) {
-            SelectionService.dumpSubscribers(
-                "hLag events",
-                sheet.getHorizontalLag().getSelectionService());
+            sheet.getHorizontalLag()
+                 .getSectionService()
+                 .dumpSubscribers();
+            sheet.getHorizontalLag()
+                 .getRunService()
+                 .dumpSubscribers();
         }
 
         if (sheet.getVerticalLag() != null) {
-            SelectionService.dumpSubscribers(
-                "vLag events",
-                sheet.getVerticalLag().getSelectionService());
+            sheet.getVerticalLag()
+                 .getSectionService()
+                 .dumpSubscribers();
+            sheet.getVerticalLag()
+                 .getRunService()
+                 .dumpSubscribers();
         }
+
+        sheet.getScene()
+             .getSceneService()
+             .dumpSubscribers();
     }
 
     //----------------//
@@ -379,7 +394,7 @@ public class SheetsController
      */
     public void subscribe (EventSubscriber subscriber)
     {
-        sheetSetService.subscribeStrongly(SheetEvent.class, subscriber);
+        sheetService.subscribeStrongly(SheetEvent.class, subscriber);
     }
 
     //-------------//
@@ -391,7 +406,7 @@ public class SheetsController
      */
     public void unsubscribe (EventSubscriber subscriber)
     {
-        sheetSetService.unsubscribe(SheetEvent.class, subscriber);
+        sheetService.unsubscribe(SheetEvent.class, subscriber);
     }
 
     //----------------//

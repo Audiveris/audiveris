@@ -15,15 +15,19 @@ import omr.check.CheckSuite;
 
 import omr.glyph.CompoundBuilder;
 import omr.glyph.GlyphInspector;
-import omr.glyph.GlyphSection;
 import omr.glyph.Glyphs;
 import omr.glyph.GlyphsBuilder;
 import omr.glyph.facets.Glyph;
-import omr.glyph.facets.Stick;
 import omr.glyph.pattern.PatternsChecker;
 import omr.glyph.pattern.SlurInspector;
 import omr.glyph.text.Sentence;
-import omr.glyph.text.SentencePattern;
+
+import omr.grid.BarAlignment;
+import omr.grid.BarInfo;
+import omr.grid.LineInfo;
+import omr.grid.StaffInfo;
+
+import omr.lag.Section;
 
 import omr.log.Logger;
 
@@ -35,10 +39,6 @@ import omr.score.entity.ScoreSystem;
 import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
 
-import omr.grid.BarInfo;
-import omr.grid.LineInfo;
-import omr.grid.StaffInfo;
-
 import omr.step.StepException;
 
 import omr.util.HorizontalSide;
@@ -46,6 +46,7 @@ import static omr.util.HorizontalSide.*;
 import omr.util.Navigable;
 import omr.util.Predicate;
 
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -62,15 +63,15 @@ import java.util.concurrent.ConcurrentSkipListSet;
  * at system level, and thus is handled from this SystemInfo object.
  *
  * <p>Many processing tasks are actually handled by companion classes, but
- * this SystemInfo is the interface of choice, with delegation to the proper
- * companion (such as {@link GlyphsBuilder}, {@link GlyphInspector},
- * {@link SlurInspector}, {@link SentencePattern}, {@link SystemTranslator}, etc)
+ * SystemInfo is the interface of choice, with delegation to the proper
+ * companion.
  *
  * <p>Nota: All measurements are assumed to be in pixels.
  *
  * @author Hervé Bitteur
  */
 public class SystemInfo
+    implements Comparable<SystemInfo>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -94,6 +95,9 @@ public class SystemInfo
 
     /** Dedicated verticals builder */
     private final VerticalsBuilder verticalsBuilder;
+
+    /** Dedicated horizontals builder */
+    private final HorizontalsBuilder horizontalsBuilder;
 
     /** Dedicated glyph inspector */
     private final GlyphInspector glyphInspector;
@@ -125,26 +129,39 @@ public class SystemInfo
     /** Right system limit  (a filament or a straight line) */
     private Object rightLimit;
 
+    /** Bar alignments for this system */
+    private List<BarAlignment> barAlignments;
+
     ///   HORIZONTALS   ////////////////////////////////////////////////////////
 
-    /** Retrieved endings in this system */
-    private final List<Ending> endings = new ArrayList<Ending>();
+    /** Horizontal sections, assigned once for all to this system */
+    private final List<Section> hSections = new ArrayList<Section>();
+
+    /** Unmodifiable view of the horizontal section collection */
+    private final Collection<Section> hSectionsView = Collections.unmodifiableCollection(
+        hSections);
 
     /** Retrieved ledgers in this system */
-    private final List<Ledger> ledgers = new ArrayList<Ledger>();
+    private final List<Glyph> ledgers = new ArrayList<Glyph>();
+
+    /** Retrieved tenuto signs in this system */
+    private final List<Glyph> tenutos = new ArrayList<Glyph>();
+
+    /** Retrieved endings in this system */
+    private final List<Glyph> endings = new ArrayList<Glyph>();
 
     ///   VERTICALS   //////////////////////////////////////////////////////////
 
     /** Vertical sections, assigned once for all to this system */
-    private final List<GlyphSection> vSections = new ArrayList<GlyphSection>();
+    private final List<Section> vSections = new ArrayList<Section>();
 
     /** Unmodifiable view of the vertical section collection */
-    private final Collection<GlyphSection> vSectionsView = Collections.unmodifiableCollection(
+    private final Collection<Section> vSectionsView = Collections.unmodifiableCollection(
         vSections);
 
     /** Collection of (active?) glyphs in this system */
     private final SortedSet<Glyph> glyphs = new ConcurrentSkipListSet<Glyph>(
-        Glyph.globalComparator);
+        Glyph.abscissaComparator);
 
     /** Unmodifiable view of the glyphs collection */
     private final SortedSet<Glyph> glyphsView = Collections.unmodifiableSortedSet(
@@ -172,13 +189,13 @@ public class SystemInfo
     private int deltaY;
 
     /** Abscissa of beginning of system. */
-    private int left = -1;
+    private int left;
 
     /** Width of widest Ledger in this system */
     private int maxLedgerWidth = -1;
 
     /** Ordinate of top of first staff of the system. */
-    private int top = -1;
+    private int top;
 
     /** Width of the system. */
     private int width = -1;
@@ -203,10 +220,13 @@ public class SystemInfo
         this.sheet = sheet;
         this.staves = staves;
 
+        updateCoordinates();
+
         measuresBuilder = new MeasuresBuilder(this);
         glyphsBuilder = new GlyphsBuilder(this);
         compoundBuilder = new CompoundBuilder(this);
         verticalsBuilder = new VerticalsBuilder(this);
+        horizontalsBuilder = new HorizontalsBuilder(this);
         glyphInspector = new GlyphInspector(this);
         slurInspector = new SlurInspector(this);
         translator = new SystemTranslator(this);
@@ -245,6 +265,28 @@ public class SystemInfo
         } else {
             return rightBar;
         }
+    }
+
+    //------------------//
+    // setBarAlignments //
+    //------------------//
+    /**
+     * @param barAlignments the barAlignments to set
+     */
+    public void setBarAlignments (List<BarAlignment> barAlignments)
+    {
+        this.barAlignments = barAlignments;
+    }
+
+    //------------------//
+    // getBarAlignments //
+    //------------------//
+    /**
+     * @return the barAlignments
+     */
+    public List<BarAlignment> getBarAlignments ()
+    {
+        return barAlignments;
     }
 
     //-----------//
@@ -329,10 +371,9 @@ public class SystemInfo
     //------------//
     /**
      * Report the collection of endings found
-     *
      * @return the endings collection
      */
-    public List<Ending> getEndings ()
+    public List<Glyph> getEndings ()
     {
         return endings;
     }
@@ -359,6 +400,20 @@ public class SystemInfo
     public SortedSet<Glyph> getGlyphs ()
     {
         return glyphsView;
+    }
+
+    //-----------------------//
+    // getHorizontalSections //
+    //-----------------------//
+    /**
+     * Report the (unmodifiable) collection of horizontal sections in the system
+     * related area
+     *
+     * @return the area horizontal sections
+     */
+    public Collection<Section> getHorizontalSections ()
+    {
+        return hSectionsView;
     }
 
     //-------//
@@ -390,10 +445,9 @@ public class SystemInfo
     //------------//
     /**
      * Report the collection of ledgers found
-     *
      * @return the ledger collection
      */
-    public List<Ledger> getLedgers ()
+    public List<Glyph> getLedgers ()
     {
         return ledgers;
     }
@@ -466,25 +520,18 @@ public class SystemInfo
         return sb.toString();
     }
 
-    //-------------------//
-    // getMaxLedgerWidth //
-    //-------------------//
+    //------------------------------//
+    // getMutableHorizontalSections //
+    //------------------------------//
     /**
-     * Report the maximum width of ledgers within the system
+     * Report the (modifiable) collection of horizontal sections in the system
+     * related area
      *
-     * @return the maximum width in pixels
+     * @return the area vertical sections
      */
-    public int getMaxLedgerWidth ()
+    public Collection<Section> getMutableHorizontalSections ()
     {
-        if (maxLedgerWidth == -1) {
-            for (Ledger ledger : ledgers) {
-                maxLedgerWidth = Math.max(
-                    maxLedgerWidth,
-                    ledger.getContourBox().width);
-            }
-        }
-
-        return maxLedgerWidth;
+        return hSections;
     }
 
     //----------------------------//
@@ -496,7 +543,7 @@ public class SystemInfo
      *
      * @return the area vertical sections
      */
-    public Collection<GlyphSection> getMutableVerticalSections ()
+    public Collection<Section> getMutableVerticalSections ()
     {
         return vSections;
     }
@@ -583,6 +630,7 @@ public class SystemInfo
     public void setStaves (List<StaffInfo> staves)
     {
         this.staves = staves;
+        updateCoordinates();
     }
 
     //-----------//
@@ -596,6 +644,18 @@ public class SystemInfo
     public List<StaffInfo> getStaves ()
     {
         return staves;
+    }
+
+    //------------//
+    // getTenutos //
+    //------------//
+    /**
+     * Report the collection of tenutos found
+     * @return the tenutos collection
+     */
+    public List<Glyph> getTenutos ()
+    {
+        return tenutos;
     }
 
     //--------//
@@ -620,7 +680,7 @@ public class SystemInfo
      *
      * @return the area vertical sections
      */
-    public Collection<GlyphSection> getVerticalSections ()
+    public Collection<Section> getVerticalSections ()
     {
         return vSectionsView;
     }
@@ -644,7 +704,8 @@ public class SystemInfo
     /**
      * Add a brand new glyph as an active glyph in proper system and lag.
      * If the glyph is a compound, its parts are made pointing back to it and
-     * are made no longer active glyphs.
+     * are made no longer active glyphs. To just register a glyph (without
+     * impacting its sections), use {@link #registerGlyph} instead.
      *
      * <p><b>Note</b>: The caller must use the returned glyph since it may be
      * different from the provided glyph (this happens when an original glyph
@@ -653,6 +714,7 @@ public class SystemInfo
      * @param glyph the brand new glyph
      * @return the original glyph as inserted in the glyph lag. Use this entity
      * instead of the provided one.
+     * @see #registerGlyph
      */
     public Glyph addGlyph (Glyph glyph)
     {
@@ -669,49 +731,6 @@ public class SystemInfo
     public void addPart (PartInfo partInfo)
     {
         parts.add(partInfo);
-    }
-
-    //----------//
-    // addStaff // TO BE DELETED !!!!!!!!!!!!!!!!!!!!!!!!
-    //----------//
-    /**
-     * Add a staff into this system
-     * @param staff the staff to add
-     */
-    public void addStaff (StaffInfo staff)
-    {
-        logger.severe("DON't USE addStaff");
-
-        //        LineInfo firstLine = staff.getFirstLine();
-        //        staves.add(staff);
-        //
-        //        // Remember left side
-        //        if (left == -1) {
-        //            left = (int) Math.rint(staff.getAbscissa(LEFT));
-        //        } else {
-        //            left = (int) Math.rint(Math.min(left, staff.getAbscissa(LEFT)));
-        //        }
-        //
-        //        // Remember width
-        //        if (width == -1) {
-        //            width = (int) Math.rint(staff.getAbscissa(RIGHT) - left + 1);
-        //        } else {
-        //            width = (int) Math.rint(
-        //                Math.max(width, staff.getAbscissa(RIGHT) - left + 1));
-        //        }
-        //
-        //        // First staff ?
-        //        if (startStaff == null) {
-        //            startStaff = staff;
-        //            top = (int) Math.rint(firstLine.getEndPoint(LEFT).getY());
-        //        }
-        //
-        //        // Last staff (so far)
-        //        stopStaff = staff;
-        //        deltaY = (int) Math.rint(firstLine.getEndPoint(LEFT).getY() - top);
-        //
-        //        LineInfo lastLine = staff.getLastLine();
-        //        bottom = (int) Math.rint(lastLine.getEndPoint(LEFT).getY());
     }
 
     //-----------------------//
@@ -773,7 +792,7 @@ public class SystemInfo
      * @param sections the provided members of the future glyph
      * @return the newly built glyph
      */
-    public Glyph buildGlyph (Collection<GlyphSection> sections)
+    public Glyph buildGlyph (Collection<Section> sections)
     {
         return glyphsBuilder.buildGlyph(sections);
     }
@@ -819,7 +838,7 @@ public class SystemInfo
      * @param sections the collection of sections
      * @return the brand new transient glyph
      */
-    public Glyph buildTransientGlyph (Collection<GlyphSection> sections)
+    public Glyph buildTransientGlyph (Collection<Section> sections)
     {
         return glyphsBuilder.buildTransientGlyph(sections);
     }
@@ -846,6 +865,19 @@ public class SystemInfo
         glyphs.clear();
     }
 
+    //-----------//
+    // compareTo //
+    //-----------//
+    /**
+     * Needed to implement natural SystemInfo sorting, based on system id
+     * @param o the other system to compare to
+     * @return the comparison result
+     */
+    public int compareTo (SystemInfo o)
+    {
+        return Integer.signum(id - o.id);
+    }
+
     //----------------------//
     // computeGlyphFeatures //
     //----------------------//
@@ -869,7 +901,7 @@ public class SystemInfo
      * @return the newly built check suite
      * @throws omr.step.StepException
      */
-    public CheckSuite<Stick> createStemCheckSuite (boolean isShort)
+    public CheckSuite<Glyph> createStemCheckSuite (boolean isShort)
         throws StepException
     {
         return verticalsBuilder.createStemCheckSuite(isShort);
@@ -930,7 +962,7 @@ public class SystemInfo
      */
     public void dumpSections (PixelRectangle rect)
     {
-        for (GlyphSection section : getVerticalSections()) {
+        for (Section section : getVerticalSections()) {
             if ((rect == null) || (rect.contains(section.getContourBox()))) {
                 System.out.println(
                     (section.isKnown() ? "known " : "      ") +
@@ -1068,6 +1100,21 @@ public class SystemInfo
         return lookupIntersectedGlyphs(rect, null);
     }
 
+    //---------------//
+    // registerGlyph //
+    //---------------//
+    /**
+     * Just register this glyph (as inactive) in order to persist glyph info
+     * such as TextInfo. Use {@link #addGlyph} to fully add the glpyh as active.
+     * @param glyph the glyph to just register
+     * @return the proper (original) glyph
+     * @see #addGlyph
+     */
+    public Glyph registerGlyph (Glyph glyph)
+    {
+        return glyphsBuilder.registerGlyph(glyph);
+    }
+
     //----------------------------//
     // removeFromGlyphsCollection //
     //----------------------------//
@@ -1148,11 +1195,28 @@ public class SystemInfo
         glyphsBuilder.retrieveGlyphs(true);
     }
 
+    //---------------------//
+    // retrieveHorizontals //
+    //---------------------//
+    /**
+     * Retrieve ledgers (and tenuto, and horizontal endings)
+     * @throws omr.step.StepException
+     */
+    public void retrieveHorizontals ()
+        throws StepException
+    {
+        try {
+            horizontalsBuilder.buildInfo();
+        } catch (Exception ex) {
+            logger.warning("Error in retrieveHorizontals", ex);
+        }
+    }
+
     //-------------------//
     // retrieveVerticals //
     //-------------------//
     /**
-     * Build new glyphs out of system suitable sections,
+     * Retrieve stems (and vertical endings)
      * @return the number of glyphs built
      * @throws omr.step.StepException
      */
@@ -1338,6 +1402,27 @@ public class SystemInfo
     public void translateSystem ()
     {
         translator.translateSystem();
+    }
+
+    //-------------------//
+    // updateCoordinates //
+    //-------------------//
+    public void updateCoordinates ()
+    {
+        StaffInfo firstStaff = getFirstStaff();
+        LineInfo  firstLine = firstStaff.getFirstLine();
+        Point2D   topLeft = firstLine.getEndPoint(LEFT);
+        Point2D   topRight = firstLine.getEndPoint(RIGHT);
+        StaffInfo lastStaff = getLastStaff();
+        LineInfo  lastLine = lastStaff.getLastLine();
+        Point2D   botLeft = lastLine.getEndPoint(LEFT);
+
+        left = (int) Math.rint(topLeft.getX());
+        top = (int) Math.rint(topLeft.getY());
+        width = (int) Math.rint(topRight.getX() - topLeft.getX());
+        deltaY = (int) Math.rint(
+            lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
+        bottom = (int) Math.rint(botLeft.getY());
     }
 
     //-----------------//

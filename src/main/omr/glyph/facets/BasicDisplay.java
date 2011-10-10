@@ -11,11 +11,8 @@
 // </editor-fold>
 package omr.glyph.facets;
 
-import omr.glyph.GlyphSection;
-
-import omr.lag.Lag;
+import omr.lag.BasicSection;
 import omr.lag.Section;
-import omr.lag.ui.SectionView;
 
 import omr.ui.Colors;
 
@@ -124,37 +121,19 @@ class BasicDisplay
     //----------//
     // colorize //
     //----------//
-    public void colorize (int   viewIndex,
-                          Color color)
+    public void colorize (Color color)
     {
-        for (GlyphSection section : glyph.getMembers()) {
-            SectionView view = (SectionView) section.getView(viewIndex);
-            view.setColor(color);
-        }
+        colorize(glyph.getMembers(), color);
     }
 
     //----------//
     // colorize //
     //----------//
-    public void colorize (Lag   lag,
-                          int   viewIndex,
-                          Color color)
+    public void colorize (Collection<Section> sections,
+                          Color               color)
     {
-        if (lag == glyph.getLag()) {
-            colorize(viewIndex, glyph.getMembers(), color);
-        }
-    }
-
-    //----------//
-    // colorize //
-    //----------//
-    public void colorize (int                      viewIndex,
-                          Collection<GlyphSection> sections,
-                          Color                    color)
-    {
-        for (GlyphSection section : sections) {
-            SectionView view = (SectionView) section.getView(viewIndex);
-            view.setColor(color);
+        for (Section section : sections) {
+            section.setColor(color);
         }
     }
 
@@ -173,13 +152,13 @@ class BasicDisplay
         }
 
         // Allocate the drawing table
-        char[][] table = Section.allocateTable(box);
+        char[][] table = BasicSection.allocateTable(box);
 
         // Register each glyph & section in turn
         fill(table, box);
 
         // Draw the result
-        Section.drawTable(table, box);
+        BasicSection.drawTable(table, box);
     }
 
     //------//
@@ -196,11 +175,10 @@ class BasicDisplay
     //------------//
     // recolorize //
     //------------//
-    public void recolorize (int viewIndex)
+    public void recolorize ()
     {
-        for (GlyphSection section : glyph.getMembers()) {
-            SectionView view = (SectionView) section.getView(viewIndex);
-            view.resetColor();
+        for (Section section : glyph.getMembers()) {
+            section.resetColor();
         }
     }
 

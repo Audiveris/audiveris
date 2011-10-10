@@ -9,10 +9,11 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.stick;
+package omr.grid;
 
-import omr.glyph.GlyphLag;
-import omr.glyph.GlyphSection;
+import omr.lag.BasicLag;
+import omr.lag.Lag;
+import omr.lag.Section;
 
 import omr.run.Orientation;
 import omr.run.Run;
@@ -20,7 +21,6 @@ import omr.run.Run;
 import omr.score.common.PixelPoint;
 
 import omr.sheet.Scale;
-import omr.grid.Filament;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -41,7 +41,7 @@ public class FilamentTest
 
     private Scale       scale = new Scale(20, 3);
     private Orientation orientation;
-    private GlyphLag    lag;
+    private Lag         lag;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -92,8 +92,8 @@ public class FilamentTest
         for (Orientation ori : Orientation.values()) {
             setOrientation(ori);
 
-            Filament     instance = createNakedInstance();
-            GlyphSection section = createSectionOne();
+            Filament instance = createNakedInstance();
+            Section  section = createSectionOne();
             instance.addSection(section);
             instance.drawAscii();
             instance.dump();
@@ -149,7 +149,7 @@ public class FilamentTest
 
             Filament instance = createFil();
             Filament expResult = instance;
-            Filament result = instance.getAncestor();
+            Filament result = (Filament) instance.getAncestor();
             assertEquals(expResult, result);
         }
     }
@@ -170,37 +170,37 @@ public class FilamentTest
 
             double coord = 100;
             double expResult = 25.5;
-            double result = instance.getPositionAt(coord);
+            double result = instance.getPositionAt(coord, orientation);
             assertEquals(expResult, result, 0.0);
 
             coord = 115;
             expResult = 28.9;
-            result = instance.getPositionAt(coord);
+            result = instance.getPositionAt(coord, orientation);
             assertEquals(expResult, result, 0.1);
 
             coord = 119;
             expResult = 29.5;
-            result = instance.getPositionAt(coord);
+            result = instance.getPositionAt(coord, orientation);
             assertEquals(expResult, result, 0.1);
 
             coord = 158;
             expResult = 30;
-            result = instance.getPositionAt(coord);
+            result = instance.getPositionAt(coord, orientation);
             assertEquals(expResult, result, 0.1);
 
             coord = 160;
             expResult = 29.7;
-            result = instance.getPositionAt(coord);
+            result = instance.getPositionAt(coord, orientation);
             assertEquals(expResult, result, 0.1);
 
             coord = 170;
             expResult = 28;
-            result = instance.getPositionAt(coord);
+            result = instance.getPositionAt(coord, orientation);
             assertEquals(expResult, result, 0.1);
 
             coord = 180;
             expResult = 28;
-            result = instance.getPositionAt(coord);
+            result = instance.getPositionAt(coord, orientation);
             assertEquals(expResult, result, 0.1);
         }
     }
@@ -233,33 +233,6 @@ public class FilamentTest
             Integer  expResult = null;
             Integer  result = instance.getRefDistance();
             assertEquals(expResult, result);
-        }
-    }
-
-    /**
-     * Test of getResultingThicknessAt method, of class Filament.
-     */
-    @Test
-    public void testGetResultingThicknessAt ()
-    {
-        System.out.println("getResultingThicknessAt");
-
-        for (Orientation ori : Orientation.values()) {
-            setOrientation(ori);
-
-            Filament instance = createFil();
-            instance.include(createFilTwo());
-            instance.include(createFilThree());
-            instance.drawAscii();
-
-            Filament that = createFilFour();
-            that.drawAscii();
-
-            int    coord = 260;
-            double expResult = 3;
-            double result = instance.getResultingThicknessAt(that, coord);
-            System.out.println("resulting thickness: " + result);
-            assertEquals(expResult, result, 0.1);
         }
     }
 
@@ -321,32 +294,32 @@ public class FilamentTest
 
             int    coord = 100;
             int    expResult = 2;
-            double result = instance.getThicknessAt(coord);
+            double result = instance.getThicknessAt(coord, orientation);
             assertEquals(expResult, result, delta);
 
             coord = 105;
             expResult = 2;
-            result = instance.getThicknessAt(coord);
+            result = instance.getThicknessAt(coord, orientation);
             assertEquals(expResult, result, delta);
 
             coord = 110;
             expResult = 2;
-            result = instance.getThicknessAt(coord);
+            result = instance.getThicknessAt(coord, orientation);
             assertEquals(expResult, result, delta);
 
             coord = 111;
             expResult = 2;
-            result = instance.getThicknessAt(coord);
+            result = instance.getThicknessAt(coord, orientation);
             assertEquals(expResult, result, delta);
 
             coord = 115;
             expResult = 2;
-            result = instance.getThicknessAt(coord);
+            result = instance.getThicknessAt(coord, orientation);
             assertEquals(expResult, result, delta);
 
             coord = 125;
             expResult = 8;
-            result = instance.getThicknessAt(coord);
+            result = instance.getThicknessAt(coord, orientation);
             assertEquals(expResult, result, delta);
         }
     }
@@ -512,10 +485,10 @@ public class FilamentTest
 
     private Filament createFilFour ()
     {
-        Filament     fil = createNakedInstance();
-        final int    level = 127;
-        Run          r1 = new Run(260, 5, level);
-        GlyphSection s = lag.createSection(35, r1);
+        Filament  fil = createNakedInstance();
+        final int level = 127;
+        Run       r1 = new Run(260, 5, level);
+        Section   s = lag.createSection(35, r1);
         fil.addSection(s);
 
         return fil;
@@ -523,10 +496,10 @@ public class FilamentTest
 
     private Filament createFilThree ()
     {
-        Filament     fil = createNakedInstance();
-        final int    level = 127;
-        Run          r1 = new Run(227, 35, level);
-        GlyphSection s = lag.createSection(37, r1);
+        Filament  fil = createNakedInstance();
+        final int level = 127;
+        Run       r1 = new Run(227, 35, level);
+        Section   s = lag.createSection(37, r1);
         fil.addSection(s);
 
         return fil;
@@ -534,11 +507,11 @@ public class FilamentTest
 
     private Filament createFilTwo ()
     {
-        Filament     fil = createNakedInstance();
-        final int    level = 127;
-        Run          r1 = new Run(200, 5, level);
-        GlyphSection s = lag.createSection(34, r1);
-        Run          r2 = new Run(198, 10, level);
+        Filament  fil = createNakedInstance();
+        final int level = 127;
+        Run       r1 = new Run(200, 5, level);
+        Section   s = lag.createSection(34, r1);
+        Run       r2 = new Run(198, 10, level);
         s.append(r2);
         fil.addSection(s);
 
@@ -547,29 +520,29 @@ public class FilamentTest
 
     private Filament createNakedInstance ()
     {
-        lag = new GlyphLag("lag", StickSection.class, orientation);
+        lag = new BasicLag("lag", orientation);
 
         return new Filament(scale);
     }
 
-    private GlyphSection createSectionOne ()
+    private Section createSectionOne ()
     {
-        final int    level = 127;
-        Run          r1 = new Run(100, 10, level);
-        GlyphSection s = lag.createSection(25, r1);
-        Run          r2 = new Run(100, 20, level);
+        final int level = 127;
+        Run       r1 = new Run(100, 10, level);
+        Section   s = lag.createSection(25, r1);
+        Run       r2 = new Run(100, 20, level);
         s.append(r2);
 
         //s.dump();
         return s;
     }
 
-    private GlyphSection createSectionThree ()
+    private Section createSectionThree ()
     {
-        final int    level = 127;
-        Run          r1 = new Run(160, 10, level);
-        GlyphSection s = lag.createSection(27, r1);
-        Run          r2 = new Run(160, 12, level);
+        final int level = 127;
+        Run       r1 = new Run(160, 10, level);
+        Section   s = lag.createSection(27, r1);
+        Run       r2 = new Run(160, 12, level);
         s.append(r2);
 
         Run r3 = new Run(160, 5, level);
@@ -579,12 +552,12 @@ public class FilamentTest
         return s;
     }
 
-    private GlyphSection createSectionTwo ()
+    private Section createSectionTwo ()
     {
-        final int    level = 127;
-        Run          r1 = new Run(130, 20, level);
-        GlyphSection s = lag.createSection(30, r1);
-        Run          r2 = new Run(131, 20, level);
+        final int level = 127;
+        Run       r1 = new Run(130, 20, level);
+        Section   s = lag.createSection(30, r1);
+        Run       r2 = new Run(131, 20, level);
         s.append(r2);
 
         Run r3 = new Run(132, 20, level);

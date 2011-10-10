@@ -14,7 +14,7 @@ package omr.graph;
 import java.awt.Graphics2D;
 
 /**
- * Interface <code>DigraphView</code> defines what is needed to view a graph.
+ * Interface {@code DigraphView} defines what is needed to view a graph.
  *
  * @author Hervé Bitteur
  */
@@ -22,12 +22,13 @@ public interface DigraphView
 {
     //~ Methods ----------------------------------------------------------------
 
-    //--------//
-    // render //
-    //--------//
+    /**
+     * Refresh the display
+     */
+    void refresh ();
+
     /**
      * Render the whole graph view
-     *
      * @param g the graphics context
      */
     void render (Graphics2D g);

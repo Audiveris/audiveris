@@ -138,6 +138,20 @@ public class TesseractOCR
             return null;
         }
 
+        // DEBUG: This is meant to keep a copy of all images sent to Tesseract
+        if (false) {
+            try {
+                String format = "png";
+                File   file = new File(label + format);
+
+                if (!ImageIO.write(image, format, file)) {
+                    logger.warning("No writer for format " + format);
+                }
+            } catch (Throwable ex) {
+                logger.warning("Could not write image from " + label, ex);
+            }
+        }
+
         try {
             final ByteBuffer        buf = imageToTiffBuffer(image);
 
@@ -146,14 +160,13 @@ public class TesseractOCR
                 public List<OcrLine> call ()
                     throws Exception
                 {
-                    String lang = (languageCode == null) ? "eng" : languageCode;
+                    String         lang = (languageCode == null) ? "eng"
+                                          : languageCode;
 
-                    synchronized (TesseractOCR.this) {
-                        EANYCodeChar[] chars = new Tesjeract(lang).recognizeAllWords(
-                            buf);
+                    EANYCodeChar[] chars = new Tesjeract(lang).recognizeAllWords(
+                        buf);
 
-                        return getLines(chars, label);
-                    }
+                    return getLines(chars, label);
                 }
             };
 

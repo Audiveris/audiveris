@@ -57,7 +57,7 @@ public class Colors
     public static final Color GLYPH_AREA_XOR = Color.darkGray;
 
     /** Horizontal stuff */
-    public static final Color GRID_HORIZONTAL = new Color(255, 220, 220);
+    public static final Color GRID_HORIZONTAL = new Color(255, 230, 230);
 
     /** Horizontal active glyphs */
     public static final Color GRID_HORIZONTAL_ACTIVE = new Color(255, 200, 200);

@@ -13,8 +13,10 @@ package omr.glyph;
 
 import omr.Main;
 
-import omr.glyph.facets.BasicStick;
+import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
+
+import omr.lag.Section;
 
 import omr.log.Logger;
 
@@ -47,7 +49,7 @@ public class GlyphsModel
     //~ Instance fields --------------------------------------------------------
 
     /** Underlying lag (vertical or horizontal) */
-    protected final GlyphLag lag;
+    protected final Scene scene;
 
     /** Related Sheet */
     protected final Sheet sheet;
@@ -67,21 +69,21 @@ public class GlyphsModel
      * Create an instance of GlyphsModel, with its underlying glyph lag
      *
      * @param sheet the related sheet (can be null)
-     * @param lag the related lag (cannot be null)
+     * @param scene the related scene (cannot be null)
      * @param step the step after which update should be perform (can be null)
      */
-    public GlyphsModel (Sheet    sheet,
-                        GlyphLag lag,
-                        Step     step)
+    public GlyphsModel (Sheet sheet,
+                        Scene scene,
+                        Step  step)
     {
         // Null sheet is allowed (for GlyphVerifier use)
         this.sheet = sheet;
 
-        if (lag == null) {
+        if (scene == null) {
             throw new IllegalArgumentException(
-                "Attempt to create a GlyphsModel with null underlying Lag");
+                "Attempt to create a GlyphsModel with null underlying scene");
         } else {
-            this.lag = lag;
+            this.scene = scene;
         }
 
         this.step = step;
@@ -100,20 +102,7 @@ public class GlyphsModel
      */
     public Glyph getGlyphById (int id)
     {
-        return lag.getGlyph(id);
-    }
-
-    //--------//
-    // getLag //
-    //--------//
-    /**
-     * Report the underlying glyph lag
-     *
-     * @return the related glyph lag
-     */
-    public GlyphLag getLag ()
-    {
-        return lag;
+        return scene.getGlyph(id);
     }
 
     //----------------//
@@ -159,6 +148,19 @@ public class GlyphsModel
     }
 
     //----------//
+    // getScene //
+    //----------//
+    /**
+     * Report the underlying glyph scene
+     *
+     * @return the related glyph scene
+     */
+    public Scene getScene ()
+    {
+        return scene;
+    }
+
+    //----------//
     // getSheet //
     //----------//
     /**
@@ -189,20 +191,20 @@ public class GlyphsModel
     {
         if (compound) {
             // Build & insert one compound
-            Glyph glyph = null;
+            Glyph      glyph = null;
 
-            if (getLag()
-                    .isVertical()) {
-                SystemInfo system = sheet.getSystemOf(glyphs);
+            SystemInfo system = sheet.getSystemOf(glyphs);
+
+            if (system != null) {
                 glyph = system.buildTransientCompound(glyphs);
             } else {
-                glyph = new BasicStick(sheet.getScale().interline());
+                glyph = new BasicGlyph(sheet.getScale().interline());
 
                 for (Glyph g : glyphs) {
                     glyph.addGlyphSections(g, Glyph.Linking.NO_LINK_BACK);
 
-                    if (glyph.getLag() == null) {
-                        glyph.setLag(g.getLag());
+                    if (glyph.getScene() == null) {
+                        glyph.setScene(g.getScene());
                     }
                 }
 
@@ -232,9 +234,9 @@ public class GlyphsModel
      * @param doubt the doubt we have wrt the assigned shape
      * @return the newly built glyph
      */
-    public Glyph assignSections (Collection<GlyphSection> sections,
-                                 Shape                    shape,
-                                 double                   doubt)
+    public Glyph assignSections (Collection<Section> sections,
+                                 Shape               shape,
+                                 double              doubt)
     {
         // Build & insert one glyph out of the sections
         SystemInfo system = sections.iterator()
@@ -291,12 +293,13 @@ public class GlyphsModel
         }
 
         if (shape != null) {
-            if (lag.isVertical()) {
-                SystemInfo system = sheet.getSystemOf(glyph);
-                glyph = system.addGlyph(glyph);
+            SystemInfo system = sheet.getSystemOf(glyph);
+
+            if (system != null) {
+                glyph = system.addGlyph(glyph); // System then scene
             } else {
-                // Insert in lag, which assigns an id to the glyph
-                glyph = lag.addGlyph(glyph);
+                // Insert in scene directly, which assigns an id to the glyph
+                glyph = scene.addGlyph(glyph);
             }
 
             boolean isTransient = glyph.isTransient();
@@ -359,12 +362,12 @@ public class GlyphsModel
             return;
         }
 
-        if (lag.isVertical()) {
-            SystemInfo system = sheet.getSystemOf(glyph.getAreaCenter());
+        SystemInfo system = sheet.getSystemOf(glyph.getAreaCenter());
+
+        if (system != null) {
             system.removeGlyph(glyph);
-        } else {
         }
 
-        lag.removeVirtualGlyph((VirtualGlyph) glyph);
+        scene.removeVirtualGlyph((VirtualGlyph) glyph);
     }
 }

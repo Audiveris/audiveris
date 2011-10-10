@@ -13,7 +13,7 @@ package omr.glyph.facets;
 
 import omr.check.Result;
 
-import omr.glyph.GlyphSection;
+import omr.lag.Section;
 
 import omr.sheet.SystemInfo;
 
@@ -47,9 +47,6 @@ public interface GlyphComposition
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------------//
-    // getAncestor //
-    //-------------//
     /**
      * Report the top ancestor of this glyph (which is this glyph itself,
      * when it has no parent (i.e. not been included into another one))
@@ -57,9 +54,6 @@ public interface GlyphComposition
      */
     public Glyph getAncestor ();
 
-    //-----------//
-    // setPartOf //
-    //-----------//
     /**
      * Record the link from this glyph as part of a larger compound
      *
@@ -67,9 +61,6 @@ public interface GlyphComposition
      */
     public void setPartOf (Glyph compound);
 
-    //-----------//
-    // getPartOf //
-    //-----------//
     /**
      * Report the containing compound, if any
      *
@@ -77,9 +68,6 @@ public interface GlyphComposition
      */
     public Glyph getPartOf ();
 
-    //----------//
-    // setParts //
-    //----------//
     /**
      * Record the parts that compose this compound gmyph
      *
@@ -87,27 +75,18 @@ public interface GlyphComposition
      */
     public void setParts (Collection<?extends Glyph> parts);
 
-    //----------//
-    // getParts //
-    //----------//
     /**
      * Report the parts, if any, that compose this compound
      * @return the set of glyphs, perhaps empty, but never null
      */
     public Set<Glyph> getParts ();
 
-    //----------//
-    // isActive //
-    //----------//
     /**
      * Tests whether this glyph is active (all its member sections point to it)
      * @return true if glyph is active, false otherwise
      */
     boolean isActive ();
 
-    //----------------//
-    // getAlienSystem //
-    //----------------//
     /**
      * Check whether all the glyph sections belong to the same system
      * @param system the supposed containing system
@@ -115,29 +94,20 @@ public interface GlyphComposition
      */
     SystemInfo getAlienSystem (SystemInfo system);
 
-    //-----------------//
-    // getFirstSection //
-    //-----------------//
     /**
      * Report the first section in the ordered collection of glyph members
      *
      * @return the first section of the glyph
      */
-    GlyphSection getFirstSection ();
+    Section getFirstSection ();
 
-    //------------//
-    // getMembers //
-    //------------//
     /**
      * Report the set of member sections.
      *
      * @return member sections
      */
-    SortedSet<GlyphSection> getMembers ();
+    SortedSet<Section> getMembers ();
 
-    //-----------//
-    // setResult //
-    //-----------//
     /**
      * Record the analysis result in the glyph itself
      *
@@ -145,9 +115,6 @@ public interface GlyphComposition
      */
     void setResult (Result result);
 
-    //-----------//
-    // getResult //
-    //-----------//
     /**
      * Report the result found during analysis of this glyph
      *
@@ -155,18 +122,12 @@ public interface GlyphComposition
      */
     Result getResult ();
 
-    //--------------//
-    // isSuccessful //
-    //--------------//
     /**
      * Convenient method to check whether the glyph is successfully recognized
      * @return true if the glyph is successfully recognized
      */
     boolean isSuccessful ();
 
-    //------------------//
-    // addGlyphSections //
-    //------------------//
     /**
      * Add another glyph (with its sections of points) to this one
      *
@@ -176,9 +137,6 @@ public interface GlyphComposition
     void addGlyphSections (Glyph   other,
                            Linking linkSections);
 
-    //------------//
-    // addSection //
-    //------------//
     /**
      * Add a section as a member of this glyph.
      *
@@ -186,12 +144,9 @@ public interface GlyphComposition
      * @param link While adding a section to this glyph members, should we also
      *             set the link from section back to the glyph?
      */
-    void addSection (GlyphSection section,
-                     Linking      link);
+    void addSection (Section section,
+                     Linking link);
 
-    //-----------------//
-    // containsSection //
-    //-----------------//
     /**
      * Debug function that returns true if this glyph contains the section
      * whose ID is provided
@@ -200,18 +155,12 @@ public interface GlyphComposition
      */
     boolean containsSection (int id);
 
-    //-------------//
-    // cutSections //
-    //-------------//
     /**
      * Cut the link to this glyph from its member sections, only if the sections
      * actually point to this glyph
      */
     void cutSections ();
 
-    //-----------------//
-    // linkAllSections //
-    //-----------------//
     /**
      * Make all the glyph's sections point back to this glyph
      */

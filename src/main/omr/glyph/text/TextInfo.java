@@ -14,10 +14,12 @@ package omr.glyph.text;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.GlyphSection;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 import omr.glyph.text.TextRole.RoleInfo;
+
+import omr.lag.BasicRoi;
+import omr.lag.Section;
 
 import omr.log.Logger;
 
@@ -371,9 +373,9 @@ public class TextInfo
         if (textArea == null) {
             try {
                 textArea = new TextArea(
-                    null, // TODO: NO SYSTEM
+                    glyph.getMembers().first().getSystem(),
                     null,
-                    glyph.getLag().createAbsoluteRoi(glyph.getContourBox()),
+                    new BasicRoi(glyph.getContourBox()),
                     Orientation.HORIZONTAL);
             } catch (Exception ex) {
                 logger.warning("Cannot create TextArea for glyph " + this);
@@ -472,14 +474,14 @@ public class TextInfo
      * @param chars the char descriptors for each word character
      * @return the set of word-enclosed sections
      */
-    public SortedSet<GlyphSection> retrieveSectionsFrom (List<OcrChar> chars)
+    public SortedSet<Section> retrieveSectionsFrom (List<OcrChar> chars)
     {
-        SortedSet<GlyphSection> sections = new TreeSet<GlyphSection>();
+        SortedSet<Section> sections = new TreeSet<Section>();
 
         for (OcrChar charDesc : chars) {
             Rectangle charBox = charDesc.getBox();
 
-            for (GlyphSection section : glyph.getMembers()) {
+            for (Section section : glyph.getMembers()) {
                 // Do we intersect a section not (yet) assigned?
                 if (charBox.intersects(section.getContourBox())) {
                     sections.add(section);
@@ -618,7 +620,7 @@ public class TextInfo
                 ///logger.info("Word: '" + word.text + "'");
                 if (word.glyph == null) {
                     // Isolate proper word glyph from its enclosed sections
-                    SortedSet<GlyphSection> sections = retrieveSectionsFrom(
+                    SortedSet<Section> sections = retrieveSectionsFrom(
                         word.chars);
 
                     if (!sections.isEmpty()) {
@@ -638,7 +640,7 @@ public class TextInfo
                             toAdd.addAll(manualSplit(word.glyph, word.chars));
 
                             // Reset sections->glyph link
-                            for (GlyphSection section : sections) {
+                            for (Section section : sections) {
                                 section.setGlyph(this.glyph);
                             }
 

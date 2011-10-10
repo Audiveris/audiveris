@@ -22,9 +22,6 @@ public interface Visitable
 {
     //~ Methods ----------------------------------------------------------------
 
-    //--------//
-    // accept //
-    //--------//
     /**
      * General entry for any visiting
      *

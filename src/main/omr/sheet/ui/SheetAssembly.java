@@ -154,7 +154,7 @@ public class SheetAssembly
         sheet.setAssembly(this);
 
         // Service for sheet location events
-        locationService = sheet.getSelectionService();
+        locationService = sheet.getLocationService();
 
         // GUI stuff
         slider.setToolTipText("Adjust Zoom Ratio");

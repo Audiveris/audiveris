@@ -17,11 +17,12 @@ import omr.constant.ConstantSet;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 import omr.glyph.facets.Glyph;
-import omr.glyph.facets.Stick;
 
 import omr.log.Logger;
 
 import omr.math.Rational;
+
+import omr.run.Orientation;
 
 import omr.score.common.PixelDimension;
 import omr.score.common.PixelPoint;
@@ -184,10 +185,10 @@ public class PagePhysicalPainter
                 Shape shape = glyph.getShape();
 
                 if (glyph.isBar()) {
-                    Stick stick = (Stick) glyph;
-                    float thickness = (float) stick.getWeight() / stick.getLength();
+                    float thickness = (float) glyph.getWeight() / glyph.getLength(
+                        Orientation.VERTICAL);
                     g.setStroke(new BasicStroke(thickness));
-                    stick.renderLine(g);
+                    glyph.renderLine(g);
                 } else if ((shape == REPEAT_DOTS) || (shape == DOT)) {
                     paint(DOT, glyph.getCentroid());
                 } else {
@@ -470,13 +471,13 @@ public class PagePhysicalPainter
             g.setStroke(lineStroke);
 
             // Ledgers
-            for (Ledger ledger : systemInfo.getLedgers()) {
-                ledger.render(g);
+            for (Glyph ledger : systemInfo.getLedgers()) {
+                ledger.renderLine(g);
             }
 
             // Endings
-            for (Ending ending : systemInfo.getEndings()) {
-                ending.render(g);
+            for (Glyph ending : systemInfo.getEndings()) {
+                ending.renderLine(g);
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {

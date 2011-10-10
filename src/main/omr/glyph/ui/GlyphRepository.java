@@ -13,14 +13,14 @@ package omr.glyph.ui;
 
 import omr.WellKnowns;
 
-import omr.glyph.GlyphSection;
 import omr.glyph.Shape;
 import omr.glyph.SymbolGlyph;
 import omr.glyph.SymbolGlyphDescriptor;
 import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
 import omr.glyph.facets.GlyphValue;
-import omr.glyph.facets.StickValue;
+
+import omr.lag.Section;
 
 import omr.log.Logger;
 
@@ -652,7 +652,7 @@ public class GlyphRepository
                 if (isLoaded(gName)) {
                     Glyph glyph = getGlyph(gName, null);
 
-                    for (GlyphSection section : glyph.getMembers()) {
+                    for (Section section : glyph.getMembers()) {
                         section.clearViews();
                         section.delete();
                     }
@@ -682,9 +682,7 @@ public class GlyphRepository
     {
         // Lazy creation
         if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(
-                GlyphValue.class,
-                StickValue.class);
+            jaxbContext = JAXBContext.newInstance(GlyphValue.class);
         }
 
         return jaxbContext;

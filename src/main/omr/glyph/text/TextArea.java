@@ -17,18 +17,20 @@ import omr.constant.ConstantSet;
 import omr.glyph.Evaluation;
 import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphInspector;
-import omr.glyph.GlyphLag;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Glyphs;
+import omr.glyph.Scene;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
+
+import omr.lag.BasicRoi;
+import omr.lag.Roi;
 
 import omr.log.Logger;
 
 import omr.math.Histogram;
 
 import omr.run.Orientation;
-import omr.run.Oriented;
 
 import omr.score.common.PixelRectangle;
 
@@ -74,14 +76,14 @@ public class TextArea
     private final TextArea parent;
 
     /** Underlying region of interest */
-    private final GlyphLag.Roi roi;
+    private final Roi roi;
 
     /**
      * The default orientation for this area
      * - Horizontal: we expect lines or words one below the other in this area
      * - Vertical:   we expect words one beside the other in this area
      */
-    private final Oriented orientation;
+    private final Orientation orientation;
 
     /** The horizontal histogram for this area */
     private Histogram<Integer> horizontalHistogram;
@@ -120,13 +122,13 @@ public class TextArea
      *
      * @param system the containing system, if any
      * @param parent the containing text area if any
-     * @param roi the region of interest in the related lag
+     * @param roi the region of interest
      * @param orientation the default orientation when splitting this area
      */
-    public TextArea (SystemInfo   system,
-                     TextArea     parent,
-                     GlyphLag.Roi roi,
-                     Oriented     orientation)
+    public TextArea (SystemInfo  system,
+                     TextArea    parent,
+                     Roi         roi,
+                     Orientation orientation)
     {
         this.system = system;
 
@@ -183,17 +185,29 @@ public class TextArea
      * @param orientation specific orientation desired for the histogram
      * @return the histogram of projected pixels
      */
-    public Histogram<Integer> getHistogram (Oriented orientation)
+    public Histogram<Integer> getHistogram (Orientation orientation)
     {
+        if (sheet == null) {
+            logger.warning("No sheet");
+        }
+
+        Scene scene = sheet.getScene();
+
         if (orientation.isVertical()) {
             if (verticalHistogram == null) {
-                verticalHistogram = roi.getHistogram(orientation);
+                Set<Glyph> glyphs = scene.lookupIntersectedGlyphs(
+                    roi.getAbsoluteContour());
+                verticalHistogram = roi.getGlyphHistogram(orientation, glyphs);
             }
 
             return verticalHistogram;
         } else {
             if (horizontalHistogram == null) {
-                horizontalHistogram = roi.getHistogram(orientation);
+                Set<Glyph> glyphs = scene.lookupIntersectedGlyphs(
+                    roi.getAbsoluteContour());
+                horizontalHistogram = roi.getGlyphHistogram(
+                    orientation,
+                    glyphs);
             }
 
             return horizontalHistogram;
@@ -209,15 +223,15 @@ public class TextArea
      * @param glyph the provided glyph if any, otherwise the whole area
      * @return the histogram of projected pixels
      */
-    public Histogram<Integer> getHistogram (Oriented orientation,
-                                            Glyph    glyph)
+    public Histogram<Integer> getHistogram (Orientation orientation,
+                                            Glyph       glyph)
     {
         Histogram<Integer> histo = null;
 
         if (glyph == null) {
             histo = getHistogram(orientation);
         } else {
-            histo = roi.getHistogram(orientation, glyph.getMembers());
+            histo = roi.getSectionHistogram(orientation, glyph.getMembers());
         }
 
         // Cache the result
@@ -411,7 +425,7 @@ public class TextArea
         }
 
         // Retrieve glyphs in the provided rectangular area
-        Set<Glyph> glyphs = sheet.getVerticalLag()
+        Set<Glyph> glyphs = sheet.getScene()
                                  .lookupGlyphs(roi.getAbsoluteContour());
 
         // A system is not exactly a rectangular area
@@ -529,14 +543,13 @@ public class TextArea
     private TextArea createSubarea (int packetStart,
                                     int gapStart)
     {
-        GlyphLag  lag = (GlyphLag) roi.getLag();
         Rectangle contour = roi.getAbsoluteContour();
 
         if (orientation.isVertical()) {
             return new TextArea(
                 system,
                 this,
-                lag.createAbsoluteRoi(
+                new BasicRoi(
                     new PixelRectangle(
                         contour.x + packetStart,
                         contour.y,
@@ -547,7 +560,7 @@ public class TextArea
             return new TextArea(
                 system,
                 this,
-                lag.createAbsoluteRoi(
+                new BasicRoi(
                     new PixelRectangle(
                         contour.x,
                         contour.y + packetStart,
@@ -564,7 +577,7 @@ public class TextArea
                                 Evaluation eval)
     {
         // Check that this glyph is not forbidden as text
-        Glyph original = sheet.getVerticalLag()
+        Glyph original = sheet.getScene()
                               .getOriginal(glyph);
 
         if ((original != null) && original.isShapeForbidden(Shape.TEXT)) {

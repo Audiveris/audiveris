@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.sheet.ui;
 
-import omr.glyph.GlyphLag;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -39,12 +38,6 @@ public class ScoreColorizer
 
     //~ Instance fields --------------------------------------------------------
 
-    /** The lag to be colorized */
-    private final GlyphLag lag;
-
-    /** The provided lag view index */
-    private final int viewIndex;
-
     /** The color to use */
     private final Color color;
 
@@ -53,16 +46,10 @@ public class ScoreColorizer
     /**
      * Creates a new ScoreColorizer object.
      *
-     * @param lag       the lag to be colorized
-     * @param viewIndex the provided lag view index
-     * @param color     the color to use
+     * @param color the color to use
      */
-    public ScoreColorizer (GlyphLag lag,
-                           int      viewIndex,
-                           Color    color)
+    public ScoreColorizer (Color color)
     {
-        this.lag = lag;
-        this.viewIndex = viewIndex;
         this.color = color;
     }
 
@@ -80,7 +67,7 @@ public class ScoreColorizer
             }
 
             for (Glyph glyph : barline.getGlyphs()) {
-                glyph.colorize(lag, viewIndex, color);
+                glyph.colorize(color);
             }
         } catch (Exception ex) {
             logger.warning(

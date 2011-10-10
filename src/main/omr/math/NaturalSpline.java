@@ -298,7 +298,7 @@ public class NaturalSpline
 
     public int xAtY (int y)
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return (int) Math.rint(xAtY((double) y));
     }
 
     //----------------//
@@ -389,7 +389,7 @@ public class NaturalSpline
 
     public int yAtX (int x)
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return (int) Math.rint((double) x);
     }
 
     //----------------//

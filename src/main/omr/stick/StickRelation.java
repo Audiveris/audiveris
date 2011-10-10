@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.stick;
 
-import omr.glyph.GlyphSection;
-
 import java.awt.Color;
 
 /**

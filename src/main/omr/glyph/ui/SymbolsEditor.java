@@ -14,14 +14,13 @@ package omr.glyph.ui;
 import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphEvaluator;
-import omr.glyph.GlyphLag;
 import omr.glyph.GlyphNetwork;
-import omr.glyph.GlyphSection;
 import omr.glyph.Glyphs;
+import omr.glyph.Scene;
 import omr.glyph.facets.Glyph;
 
+import omr.lag.Section;
 import omr.lag.Sections;
-import omr.lag.ui.ScrollLagView;
 import omr.lag.ui.SectionBoard;
 
 import omr.log.Logger;
@@ -40,8 +39,8 @@ import omr.score.ui.PaintingParameters;
 
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphSetEvent;
-import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
+import omr.selection.SceneEvent;
 import omr.selection.SectionSetEvent;
 import omr.selection.SelectionHint;
 import omr.selection.UserEvent;
@@ -56,6 +55,7 @@ import omr.step.Step;
 import omr.ui.BoardsPane;
 import omr.ui.Colors;
 import omr.ui.PixelCount;
+import omr.ui.view.ScrollView;
 
 import omr.util.Implement;
 import omr.util.WeakPropertyChangeListener;
@@ -66,6 +66,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
 import java.util.Set;
 
 import javax.swing.SwingUtilities;
@@ -125,10 +126,10 @@ public class SymbolsEditor
         this.sheet = sheet;
         this.symbolsBuilder = symbolsController;
 
-        GlyphLag lag = symbolsController.getLag();
+        Scene scene = symbolsController.getScene();
 
-        view = new MyView(lag);
-        view.setLocationService(sheet.getSelectionService());
+        view = new MyView(scene);
+        view.setLocationService(sheet.getLocationService());
 
         focus = new ShapeFocusBoard(
             sheet,
@@ -137,7 +138,7 @@ public class SymbolsEditor
                     @Implement(ActionListener.class)
                     public void actionPerformed (ActionEvent e)
                     {
-                        view.colorizeAllGlyphs();
+                        ////////////////////////////////////////////view.colorizeAllGlyphs();
                     }
                 });
 
@@ -145,12 +146,12 @@ public class SymbolsEditor
             sheet.getPage(),
             new SymbolMenu(symbolsController, evaluator, focus));
 
-        final String  unit = sheet.getId() + ":SymbolsEditor";
+        final String unit = sheet.getId() + ":SymbolsEditor";
 
-        BoardsPane    boardsPane = new BoardsPane(
+        BoardsPane   boardsPane = new BoardsPane(
             new PixelBoard(unit, sheet),
-            new RunBoard(unit, lag),
-            new SectionBoard(unit, lag),
+            new RunBoard(unit, sheet.getVerticalLag()),
+            new SectionBoard(unit, sheet.getVerticalLag()),
             new SymbolGlyphBoard(
                 unit + "-SymbolGlyphBoard",
                 symbolsController,
@@ -159,12 +160,11 @@ public class SymbolsEditor
             new EvaluationBoard(
                 unit + "-Evaluation-ActiveBoard",
                 symbolsController,
-                sheet,
-                view),
+                sheet),
             new ShapeBoard(symbolsController, sheet));
 
         // Create a hosting pane for the view
-        ScrollLagView slv = new ScrollLagView(view);
+        ScrollView slv = new ScrollView(view);
         sheet.getAssembly()
              .addViewTab(Step.SYMBOLS_TAB, slv, boardsPane);
 
@@ -238,7 +238,7 @@ public class SymbolsEditor
     // MyView //
     //--------//
     private final class MyView
-        extends GlyphLagView
+        extends SceneView
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -248,15 +248,13 @@ public class SymbolsEditor
 
         //~ Constructors -------------------------------------------------------
 
-        private MyView (GlyphLag lag)
+        private MyView (Scene scene)
         {
-            super(lag, null, null, symbolsBuilder, null);
+            super(
+                scene,
+                symbolsBuilder,
+                Arrays.asList(sheet.getHorizontalLag(), sheet.getVerticalLag()));
             setName("SymbolsEditor-MyView");
-            colorizeAllSections();
-
-            // Use light gray color for past successful entities
-            int viewIndex = lag.viewIndexOf(this);
-            sheet.colorize(lag, viewIndex, Colors.ENTITY_MINOR);
 
             // Listen to painting parameters
             PaintingParameters.getInstance()
@@ -266,37 +264,6 @@ public class SymbolsEditor
         }
 
         //~ Methods ------------------------------------------------------------
-
-        //-------------------//
-        // colorizeAllGlyphs //
-        //-------------------//
-        /**
-         * Colorize all the glyphs of the sheet
-         */
-        @Override
-        public void colorizeAllGlyphs ()
-        {
-            int viewIndex = lag.viewIndexOf(this);
-
-            for (Glyph glyph : sheet.getActiveGlyphs()) {
-                colorizeGlyph(viewIndex, glyph);
-            }
-
-            repaint();
-        }
-
-        //---------------//
-        // colorizeGlyph //
-        //---------------//
-        @Override
-        public void colorizeGlyph (int   viewIndex,
-                                   Glyph glyph)
-        {
-            colorizeGlyph(
-                viewIndex,
-                glyph,
-                focus.isDisplayed(glyph) ? glyph.getColor() : Colors.HIDDEN);
-        }
 
         //--------------//
         // contextAdded //
@@ -311,8 +278,7 @@ public class SymbolsEditor
                               .isSectionSelectionEnabled()) {
             } else {
                 // Retrieve the selected glyphs
-                Set<Glyph> glyphs = sheet.getVerticalLag()
-                                         .getSelectedGlyphSet();
+                Set<Glyph> glyphs = scene.getSelectedGlyphSet();
 
                 if (movement == MouseMovement.RELEASING) {
                     if ((glyphs != null) && !glyphs.isEmpty()) {
@@ -429,6 +395,15 @@ public class SymbolsEditor
             }
         }
 
+        //---------//
+        // publish //
+        //---------//
+        protected void publish (SceneEvent event)
+        {
+            scene.getSceneService()
+                 .publish(event);
+        }
+
         //-------------//
         // renderItems //
         //-------------//
@@ -522,7 +497,7 @@ public class SymbolsEditor
                 return;
             }
 
-            Set<GlyphSection> sections = sectionSetEvent.getData();
+            Set<Section> sections = sectionSetEvent.getData();
 
             if ((sections == null) || sections.isEmpty()) {
                 return;

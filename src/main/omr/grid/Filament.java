@@ -11,11 +11,17 @@
 // </editor-fold>
 package omr.grid;
 
-import omr.glyph.GlyphSection;
-import omr.glyph.facets.BasicStick;
-import omr.glyph.facets.Stick;
+import omr.Main;
+
+import omr.glyph.facets.BasicGlyph;
+import omr.glyph.facets.Glyph;
+import omr.glyph.facets.GlyphComposition.Linking;
+
+import omr.lag.Section;
 
 import omr.log.Logger;
+
+import omr.run.Orientation;
 
 import omr.sheet.Scale;
 
@@ -27,7 +33,7 @@ import java.util.Comparator;
  * It is used to handle candidate staff lines and bar lines.
  */
 public class Filament
-    extends BasicStick
+    extends BasicGlyph
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -127,15 +133,6 @@ public class Filament
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------------//
-    // getAncestor //
-    //-------------//
-    @Override
-    public Filament getAncestor ()
-    {
-        return (Filament) super.getAncestor();
-    }
-
     //------------------//
     // getMeanCurvature //
     //------------------//
@@ -143,15 +140,6 @@ public class Filament
     {
         return getAlignment()
                    .getMeanCurvature();
-    }
-
-    //-----------//
-    // getParent //
-    //-----------//
-    @Override
-    public Filament getPartOf ()
-    {
-        return (Filament) super.getPartOf();
     }
 
     //----------------//
@@ -178,56 +166,44 @@ public class Filament
         return refDist;
     }
 
-    //-------------------------//
-    // getResultingThicknessAt //
-    //-------------------------//
-    /**
-     * Compute the thickness at provided coordinate of the potential merge
-     * between this and that filaments
-     * @param that the other filament
-     * @param coord the provided coordinate
-     * @return the resulting thickness
-     */
-    public double getResultingThicknessAt (Filament that,
-                                           int      coord)
+    //------------//
+    // addSection //
+    //------------//
+    public void addSection (Section section)
     {
-        double thisPos = this.getPositionAt(coord);
-        double thatPos = that.getPositionAt(coord);
-        double thisThickness = this.getThicknessAt(coord);
-        double thatThickness = that.getThicknessAt(coord);
-
-        return Math.abs(thisPos - thatPos) +
-               ((thisThickness + thatThickness) / 2);
+        addSection(section, Linking.LINK_BACK);
     }
 
     //------------//
     // addSection //
     //------------//
-    public void addSection (GlyphSection section)
+    @Override
+    public void addSection (Section section,
+                            Linking link)
     {
-        addSection(section, Linking.LINK_BACK);
+        getComposition()
+            .addSection(section, link);
     }
 
-    //    //------//
-    //    // dump //
-    //    //------//
-    //    @Override
-    //    public void dump ()
-    //    {
-    //        super.dump();
-    //        System.out.println("   refDist=" + getRefDistance());
-    //    }
-    //
+    //----------//
+    // deepDump //
+    //----------//
+    public void deepDump ()
+    {
+        Main.dumping.dump(this);
+        Main.dumping.dump(getAlignment());
+    }
+
     //---------//
     // include //
     //---------//
     /**
-     * Include a whole other filament into this one
-     * @param that the filament to swallow
+     * Include a whole other glyph into this one
+     * @param that the filament or basic glyph to swallow
      */
-    public void include (Stick that)
+    public void include (Glyph that)
     {
-        for (GlyphSection section : that.getMembers()) {
+        for (Section section : that.getMembers()) {
             addSection(section);
         }
 
@@ -263,22 +239,25 @@ public class Filament
     //---------------//
     /**
      * Report the precise filament position for the provided coordinate .
-     * @param coord the coord value (x for horizontal fil, y for vertical fil)
-     * @return the pos value (y for horizontal fil, x for vertical fil)
+     * @param coord the coord value (x for horizontal, y for vertical)
+     * @param orientation the reference orientation
+     * @return the pos value (y for horizontal, x for vertical)
      */
-    public double positionAt (double coord)
+    public double positionAt (double      coord,
+                              Orientation orientation)
     {
         return getAlignment()
-                   .getPositionAt(coord);
+                   .getPositionAt(coord, orientation);
     }
 
     //---------//
     // slopeAt //
     //---------//
-    public double slopeAt (double coord)
+    public double slopeAt (double      coord,
+                           Orientation orientation)
     {
         return getAlignment()
-                   .slopeAt(coord);
+                   .slopeAt(coord, orientation);
     }
 
     //------------//
@@ -310,9 +289,8 @@ public class Filament
     {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(" lg:")
-          .append(getLength());
-
+        //        sb.append(" lg:")
+        //          .append(getLength());
         sb.append(" start[x=")
           .append((float) getStartPoint().getX())
           .append(",y=")
@@ -337,6 +315,11 @@ public class Filament
         //            sb.append(" refDist:")
         //              .append(refDist);
         //        }
+        if (getShape() != null) {
+            sb.append(" ")
+              .append(getShape());
+        }
+
         return sb.toString();
     }
 }

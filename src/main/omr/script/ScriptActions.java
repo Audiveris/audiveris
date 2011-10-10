@@ -21,9 +21,7 @@ import omr.log.Logger;
 import omr.score.Score;
 import omr.score.ui.ScoreController;
 
-import omr.sheet.Sheet;
 import omr.sheet.ui.SheetActions;
-import omr.sheet.ui.SheetsController;
 
 import omr.ui.util.OmrFileFilter;
 import omr.ui.util.UIUtilities;

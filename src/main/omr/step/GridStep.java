@@ -16,6 +16,7 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import java.util.Collection;
+import omr.sheet.ui.SheetsController;
 
 /**
  * Class {@code GridStep} determine the systems frames of the picture.
@@ -56,5 +57,6 @@ public class GridStep
         throws StepException
     {
         new GridBuilder(sheet).buildInfo();
+        ///SheetsController.getInstance().dumpCurrentSheetServices();
     }
 }

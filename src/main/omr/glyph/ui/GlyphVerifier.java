@@ -86,18 +86,18 @@ public class GlyphVerifier
 
     /** The dedicated frame */
     private final JFrame frame;
-
-    /** The panel in charge of the current glyph */
-    private GlyphBrowser glyphBrowser = new GlyphBrowser(this);
-
-    /** The panel in charge of the glyphs selection */
-    private GlyphSelector glyphSelector = new GlyphSelector(glyphBrowser);
-
-    /** The panel in charge of the shapes selection */
-    private ShapeSelector shapeSelector = new ShapeSelector(glyphSelector);
-
-    /** The panel in charge of the sheets (or icons folder) selection */
-    private FolderSelector folderSelector = new FolderSelector(shapeSelector);
+//
+//    /** The panel in charge of the current glyph */
+//    private GlyphBrowser glyphBrowser = new GlyphBrowser(this);
+//
+//    /** The panel in charge of the glyphs selection */
+//    private GlyphSelector glyphSelector = new GlyphSelector(glyphBrowser);
+//
+//    /** The panel in charge of the shapes selection */
+//    private ShapeSelector shapeSelector = new ShapeSelector(glyphSelector);
+//
+//    /** The panel in charge of the sheets (or icons folder) selection */
+//    private FolderSelector folderSelector = new FolderSelector(shapeSelector);
 
     //~ Constructors -----------------------------------------------------------
 
@@ -110,13 +110,13 @@ public class GlyphVerifier
     private GlyphVerifier ()
     {
         frame = new JFrame();
-        frame.setName("glyphVerifierFrame");
-        frame.getContentPane()
-             .setLayout(new BorderLayout());
-        frame.getContentPane()
-             .add(getSelectorsPanel(), BorderLayout.NORTH);
-        frame.getContentPane()
-             .add(glyphBrowser.getComponent(), BorderLayout.CENTER);
+//        frame.setName("glyphVerifierFrame");
+//        frame.getContentPane()
+//             .setLayout(new BorderLayout());
+//        frame.getContentPane()
+//             .add(getSelectorsPanel(), BorderLayout.NORTH);
+//        frame.getContentPane()
+//             .add(glyphBrowser.getComponent(), BorderLayout.CENTER);
 
         // Resource injection
         ResourceMap resource = MainGui.getInstance()
@@ -169,52 +169,52 @@ public class GlyphVerifier
      */
     public void verify (Collection<String> glyphNames)
     {
-        // Glyphs
-        glyphSelector.populateWith(glyphNames);
-        glyphSelector.selectAll();
-
-        // Shapes
-        SortedSet<String> shapeSet = new TreeSet<String>();
-
-        for (String gName : glyphNames) {
-            File file = new File(gName);
-            shapeSet.add(radixOf(file.getName()));
-        }
-
-        shapeSelector.populateWith(shapeSet);
-        shapeSelector.selectAll();
-
-        // Sheets / Icons folder
-        SortedSet<String> folderSet = new TreeSet<String>();
-
-        for (String gName : glyphNames) {
-            File file = new File(gName);
-            folderSet.add(file.getParent());
-        }
-
-        folderSelector.populateWith(folderSet);
-        folderSelector.selectAll();
-
-        // Load the first glyph in the browser
-        glyphBrowser.loadGlyphNames();
+//        // Glyphs
+//        glyphSelector.populateWith(glyphNames);
+//        glyphSelector.selectAll();
+//
+//        // Shapes
+//        SortedSet<String> shapeSet = new TreeSet<String>();
+//
+//        for (String gName : glyphNames) {
+//            File file = new File(gName);
+//            shapeSet.add(radixOf(file.getName()));
+//        }
+//
+//        shapeSelector.populateWith(shapeSet);
+//        shapeSelector.selectAll();
+//
+//        // Sheets / Icons folder
+//        SortedSet<String> folderSet = new TreeSet<String>();
+//
+//        for (String gName : glyphNames) {
+//            File file = new File(gName);
+//            folderSet.add(file.getParent());
+//        }
+//
+//        folderSelector.populateWith(folderSet);
+//        folderSelector.selectAll();
+//
+//        // Load the first glyph in the browser
+//        glyphBrowser.loadGlyphNames();
     }
 
-    //---------------//
-    // getGlyphNames //
-    //---------------//
-    String[] getGlyphNames ()
-    {
-        return glyphSelector.list.getSelectedItems();
-    }
-
-    //-----------------//
-    // deleteGlyphName //
-    //-----------------//
-    void deleteGlyphName (String gName)
-    {
-        // Remove entry from list
-        glyphSelector.list.remove(gName);
-    }
+//    //---------------//
+//    // getGlyphNames //
+//    //---------------//
+//    String[] getGlyphNames ()
+//    {
+//        return glyphSelector.list.getSelectedItems();
+//    }
+//
+//    //-----------------//
+//    // deleteGlyphName //
+//    //-----------------//
+//    void deleteGlyphName (String gName)
+//    {
+//        // Remove entry from list
+//        glyphSelector.list.remove(gName);
+//    }
 
     //--------------//
     // getActualDir //
@@ -235,27 +235,27 @@ public class GlyphVerifier
         }
     }
 
-    //-------------------//
-    // getSelectorsPanel //
-    //-------------------//
-    private JPanel getSelectorsPanel ()
-    {
-        FormLayout   layout = new FormLayout(
-            "max(100dlu;pref),max(150dlu;pref),max(200dlu;pref):grow",
-            "80dlu");
-
-        PanelBuilder builder = new PanelBuilder(layout);
-        builder.setDefaultDialogBorder();
-
-        CellConstraints cst = new CellConstraints();
-
-        int             r = 1; // --------------------------------
-        builder.add(folderSelector, cst.xy(1, r));
-        builder.add(shapeSelector, cst.xy(2, r));
-        builder.add(glyphSelector, cst.xy(3, r));
-
-        return builder.getPanel();
-    }
+//    //-------------------//
+//    // getSelectorsPanel //
+//    //-------------------//
+//    private JPanel getSelectorsPanel ()
+//    {
+//        FormLayout   layout = new FormLayout(
+//            "max(100dlu;pref),max(150dlu;pref),max(200dlu;pref):grow",
+//            "80dlu");
+//
+//        PanelBuilder builder = new PanelBuilder(layout);
+//        builder.setDefaultDialogBorder();
+//
+//        CellConstraints cst = new CellConstraints();
+//
+//        int             r = 1; // --------------------------------
+//        builder.add(folderSelector, cst.xy(1, r));
+//        builder.add(shapeSelector, cst.xy(2, r));
+//        builder.add(glyphSelector, cst.xy(3, r));
+//
+//        return builder.getPanel();
+//    }
 
     //---------//
     // radixOf //
@@ -528,53 +528,53 @@ public class GlyphVerifier
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            String[]           folders = folderSelector.list.getSelectedItems();
-            String[]           shapes = shapeSelector.list.getSelectedItems();
-            Collection<String> shapeList = Arrays.asList(shapes);
-
-            // Debug
-            if (logger.isFineEnabled()) {
-                logger.fine("Glyph Selector. Got Sheets:");
-
-                for (String fName : folders) {
-                    logger.fine(fName);
-                }
-
-                logger.fine("Glyph Selector. Got Shapes:");
-
-                for (String shapeName : shapes) {
-                    logger.fine(shapeName);
-                }
-            }
-
-            if (shapes.length == 0) {
-                logger.warning("No shapes selected in Shape Selector");
-            } else {
-                list.removeAll();
-
-                // Populate with all possible glyphs, sorted by gName
-                for (String folder : folders) {
-                    // Add proper glyphs files from this directory
-                    ArrayList<String> gNames = new ArrayList<String>();
-                    File              dir = getActualDir(folder);
-
-                    for (File file : repository.getGlyphsIn(dir)) {
-                        String shapeName = radixOf(file.getName());
-
-                        if (shapeList.contains(shapeName)) {
-                            gNames.add(dir.getName() + "/" + file.getName());
-                        }
-                    }
-
-                    Collections.sort(gNames);
-
-                    for (String gName : gNames) {
-                        list.add(gName);
-                    }
-                }
-
-                updateCardinal();
-            }
+//            String[]           folders = folderSelector.list.getSelectedItems();
+//            String[]           shapes = shapeSelector.list.getSelectedItems();
+//            Collection<String> shapeList = Arrays.asList(shapes);
+//
+//            // Debug
+//            if (logger.isFineEnabled()) {
+//                logger.fine("Glyph Selector. Got Sheets:");
+//
+//                for (String fName : folders) {
+//                    logger.fine(fName);
+//                }
+//
+//                logger.fine("Glyph Selector. Got Shapes:");
+//
+//                for (String shapeName : shapes) {
+//                    logger.fine(shapeName);
+//                }
+//            }
+//
+//            if (shapes.length == 0) {
+//                logger.warning("No shapes selected in Shape Selector");
+//            } else {
+//                list.removeAll();
+//
+//                // Populate with all possible glyphs, sorted by gName
+//                for (String folder : folders) {
+//                    // Add proper glyphs files from this directory
+//                    ArrayList<String> gNames = new ArrayList<String>();
+//                    File              dir = getActualDir(folder);
+//
+//                    for (File file : repository.getGlyphsIn(dir)) {
+//                        String shapeName = radixOf(file.getName());
+//
+//                        if (shapeList.contains(shapeName)) {
+//                            gNames.add(dir.getName() + "/" + file.getName());
+//                        }
+//                    }
+//
+//                    Collections.sort(gNames);
+//
+//                    for (String gName : gNames) {
+//                        list.add(gName);
+//                    }
+//                }
+//
+//                updateCardinal();
+//            }
         }
 
         //--------//
@@ -606,26 +606,26 @@ public class GlyphVerifier
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            // Populate with shape names found in selected sheets
-            String[] sheetNames = folderSelector.list.getSelectedItems();
-
-            if (sheetNames.length == 0) {
-                logger.warning("No sheets selected in Sheet Selector");
-            } else {
-                // To avoid duplicates, and to get a sorted list
-                SortedSet<String> shapeSet = new TreeSet<String>();
-
-                for (String folder : folderSelector.list.getSelectedItems()) {
-                    File dir = getActualDir(folder);
-
-                    // Add all glyphs files from this directory
-                    for (File file : repository.getGlyphsIn(dir)) {
-                        shapeSet.add(radixOf(file.getName()));
-                    }
-                }
-
-                populateWith(shapeSet);
-            }
+//            // Populate with shape names found in selected sheets
+//            String[] sheetNames = folderSelector.list.getSelectedItems();
+//
+//            if (sheetNames.length == 0) {
+//                logger.warning("No sheets selected in Sheet Selector");
+//            } else {
+//                // To avoid duplicates, and to get a sorted list
+//                SortedSet<String> shapeSet = new TreeSet<String>();
+//
+//                for (String folder : folderSelector.list.getSelectedItems()) {
+//                    File dir = getActualDir(folder);
+//
+//                    // Add all glyphs files from this directory
+//                    for (File file : repository.getGlyphsIn(dir)) {
+//                        shapeSet.add(radixOf(file.getName()));
+//                    }
+//                }
+//
+//                populateWith(shapeSet);
+//            }
         }
     }
 }

@@ -19,14 +19,16 @@ import omr.log.Logger;
 
 import omr.math.NaturalSpline;
 
+import omr.run.Orientation;
+
 import omr.sheet.Scale;
 
-import java.awt.Color;
 import java.awt.geom.Point2D;
 import java.util.List;
 
 /**
- * Class {@code LineFilamentAlignment}
+ * Class {@code LineFilamentAlignment} is an GlyphAlignment implementation
+ * meant for long staff lines filaments.
  *
  * @author Hervé Bitteur
  */
@@ -113,7 +115,9 @@ public class LineFilamentAlignment
 
                             if (pt == null) {
                                 // Take default line point instead
-                                pt = new VirtualPoint(x, getPositionAt(x));
+                                pt = new VirtualPoint(
+                                    x,
+                                    getPositionAt(x, Orientation.HORIZONTAL));
                             }
 
                             if (logger.isFineEnabled()) {
@@ -232,7 +236,10 @@ public class LineFilamentAlignment
             for (int i = firstIdx; i != breakIdx; i += dir) {
                 LineFilament fil = subfils.get(i);
                 Point2D      pt = fil.getAlignment()
-                                     .findPoint(x, margin);
+                                     .findPoint(
+                    x,
+                    Orientation.HORIZONTAL,
+                    margin);
 
                 if (pt != null) {
                     return new Neighbor(fil.getClusterPos(), pt);

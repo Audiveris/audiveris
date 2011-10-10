@@ -14,16 +14,21 @@ package omr.glyph.facets;
 import omr.check.Result;
 
 import omr.glyph.Evaluation;
-import omr.glyph.GlyphLag;
-import omr.glyph.GlyphSection;
 import omr.glyph.GlyphSignature;
 import omr.glyph.Glyphs;
+import omr.glyph.Scene;
 import omr.glyph.Shape;
 import omr.glyph.text.TextInfo;
 
 import omr.lag.Lag;
+import omr.lag.Section;
 
+import omr.log.Logger;
+
+import omr.math.Line;
 import omr.math.Moments;
+
+import omr.run.Orientation;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -34,8 +39,10 @@ import omr.sheet.SystemInfo;
 import omr.util.Predicate;
 
 import java.awt.Color;
-import java.awt.Rectangle;
+import java.awt.Graphics2D;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -63,6 +70,11 @@ import java.util.SortedSet;
 public class BasicGlyph
     implements Glyph
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(BasicGlyph.class);
+
     //~ Instance fields --------------------------------------------------------
 
     /** All needed facets */
@@ -73,6 +85,7 @@ public class BasicGlyph
     final GlyphGeometry    geometry;
     final GlyphRecognition recognition;
     final GlyphTranslation translation;
+    final GlyphAlignment   alignment;
 
     // Sequence of all facets
     final Set<GlyphFacet> facets = new LinkedHashSet<GlyphFacet>();
@@ -95,6 +108,7 @@ public class BasicGlyph
         addFacet(geometry = new BasicGeometry(this, interline));
         addFacet(recognition = new BasicRecognition(this));
         addFacet(translation = new BasicTranslation(this));
+        addFacet(alignment = new BasicAlignment(this));
     }
 
     //------------//
@@ -103,12 +117,12 @@ public class BasicGlyph
     /**
      * Create a new BasicGlyph object from a GlyphValue instance (typically
      * unmarshalled from XML)
-     *
      * @param value the GlyphValue "builder" object
      */
     public BasicGlyph (GlyphValue value)
     {
         this(value.interline);
+
         this.setId(value.id);
         this.setShape(value.shape);
         this.setStemNumber(value.stemNumber);
@@ -118,11 +132,53 @@ public class BasicGlyph
             .addAll(value.members);
     }
 
+    //------------//
+    // BasicGlyph //
+    //------------//
+    /**
+     * Create a glyph with a specific alignment class
+     * @param interline the scaling information
+     * @param alignmentClass the specific alignment class
+     */
+    protected BasicGlyph (int                            interline,
+                          Class<?extends GlyphAlignment> alignmentClass)
+    {
+        addFacet(administration = new BasicAdministration(this));
+        addFacet(composition = new BasicComposition(this));
+        addFacet(display = new BasicDisplay(this));
+        addFacet(environment = new BasicEnvironment(this));
+        addFacet(geometry = new BasicGeometry(this, interline));
+        addFacet(recognition = new BasicRecognition(this));
+        addFacet(translation = new BasicTranslation(this));
+
+        GlyphAlignment theAlignment = null;
+
+        try {
+            Constructor constructor = alignmentClass.getConstructor(
+                new Class[] { Glyph.class });
+            theAlignment = (GlyphAlignment) constructor.newInstance(
+                new Object[] { this });
+        } catch (Exception ex) {
+            logger.severe(
+                "Cannot instantiate BasicGlyph with " + alignmentClass +
+                " ex:" + ex);
+        }
+
+        addFacet(alignment = theAlignment);
+    }
+
     //~ Methods ----------------------------------------------------------------
 
     public boolean isActive ()
     {
         return composition.isActive();
+    }
+
+    public int getAlienPixelsFrom (Lag                lag,
+                                   PixelRectangle     absRoi,
+                                   Predicate<Section> predicate)
+    {
+        return environment.getAlienPixelsFrom(lag, absRoi, predicate);
     }
 
     public SystemInfo getAlienSystem (SystemInfo system)
@@ -138,6 +194,11 @@ public class BasicGlyph
     public PixelPoint getAreaCenter ()
     {
         return geometry.getAreaCenter();
+    }
+
+    public double getAspect (Orientation orientation)
+    {
+        return alignment.getAspect(orientation);
     }
 
     public Map<String, java.awt.Shape> getAttachments ()
@@ -180,6 +241,12 @@ public class BasicGlyph
         return recognition.getDoubt();
     }
 
+    public void setEndingPoints (Point2D pStart,
+                                 Point2D pStop)
+    {
+        alignment.setEndingPoints(pStart, pStop);
+    }
+
     public void setEvaluation (Evaluation evaluation)
     {
         recognition.setEvaluation(evaluation);
@@ -190,9 +257,14 @@ public class BasicGlyph
         return recognition.getEvaluation();
     }
 
-    public GlyphSection getFirstSection ()
+    public Section getFirstSection ()
     {
         return composition.getFirstSection();
+    }
+
+    public int getFirstStuck ()
+    {
+        return alignment.getFirstStuck();
     }
 
     public void setId (int id)
@@ -215,19 +287,19 @@ public class BasicGlyph
         return geometry.getInterline();
     }
 
+    public double getInvertedSlope ()
+    {
+        return alignment.getInvertedSlope();
+    }
+
     public boolean isKnown ()
     {
         return recognition.isKnown();
     }
 
-    public void setLag (GlyphLag lag)
+    public int getLastStuck ()
     {
-        administration.setLag(lag);
-    }
-
-    public GlyphLag getLag ()
-    {
-        return administration.getLag();
+        return alignment.getLastStuck();
     }
 
     public void setLeftStem (Glyph leftStem)
@@ -240,6 +312,16 @@ public class BasicGlyph
         return environment.getLeftStem();
     }
 
+    public int getLength (Orientation orientation)
+    {
+        return alignment.getLength(orientation);
+    }
+
+    public Line getLine ()
+    {
+        return alignment.getLine();
+    }
+
     public PixelPoint getLocation ()
     {
         return geometry.getLocation();
@@ -250,9 +332,19 @@ public class BasicGlyph
         return recognition.isManualShape();
     }
 
-    public SortedSet<GlyphSection> getMembers ()
+    public double getMeanDistance ()
+    {
+        return alignment.getMeanDistance();
+    }
+
+    public SortedSet<Section> getMembers ()
     {
         return composition.getMembers();
+    }
+
+    public int getMidPos ()
+    {
+        return alignment.getMidPos();
     }
 
     public Moments getMoments ()
@@ -273,11 +365,6 @@ public class BasicGlyph
     public double getNormalizedWidth ()
     {
         return geometry.getNormalizedWidth();
-    }
-
-    public Rectangle getOrientedBounds ()
-    {
-        return geometry.getOrientedBounds();
     }
 
     public void setPartOf (Glyph compound)
@@ -310,6 +397,17 @@ public class BasicGlyph
         return environment.getPitchPosition();
     }
 
+    public double getPositionAt (double      coord,
+                                 Orientation orientation)
+    {
+        return alignment.getPositionAt(coord, orientation);
+    }
+
+    public boolean isRatherVertical ()
+    {
+        return alignment.isRatherVertical();
+    }
+
     public void setResult (Result result)
     {
         composition.setResult(result);
@@ -328,6 +426,16 @@ public class BasicGlyph
     public Glyph getRightStem ()
     {
         return environment.getRightStem();
+    }
+
+    public void setScene (Scene scene)
+    {
+        administration.setScene(scene);
+    }
+
+    public Scene getScene ()
+    {
+        return administration.getScene();
     }
 
     public void setShape (Shape  shape,
@@ -356,6 +464,16 @@ public class BasicGlyph
         return geometry.getSignature();
     }
 
+    public double getSlope ()
+    {
+        return alignment.getSlope();
+    }
+
+    public Point2D getStartPoint ()
+    {
+        return alignment.getStartPoint();
+    }
+
     public boolean isStem ()
     {
         return recognition.isStem();
@@ -369,6 +487,11 @@ public class BasicGlyph
     public int getStemNumber ()
     {
         return environment.getStemNumber();
+    }
+
+    public Point2D getStopPoint ()
+    {
+        return alignment.getStopPoint();
     }
 
     public boolean isSuccessful ()
@@ -398,6 +521,17 @@ public class BasicGlyph
     public TextInfo getTextInfo ()
     {
         return recognition.getTextInfo();
+    }
+
+    public int getThickness (Orientation orientation)
+    {
+        return alignment.getThickness(orientation);
+    }
+
+    public double getThicknessAt (double      coord,
+                                  Orientation orientation)
+    {
+        return alignment.getThicknessAt(coord, orientation);
     }
 
     public void setTimeRational (TimeRational timeRational)
@@ -477,8 +611,11 @@ public class BasicGlyph
         composition.addGlyphSections(other, linkSections);
     }
 
-    public void addSection (GlyphSection section,
-                            Linking      link)
+    //------------//
+    // addSection //
+    //------------//
+    public void addSection (Section section,
+                            Linking link)
     {
         composition.addSection(section, link);
     }
@@ -498,24 +635,15 @@ public class BasicGlyph
         translation.clearTranslations();
     }
 
-    public void colorize (int                      viewIndex,
-                          Collection<GlyphSection> sections,
-                          Color                    color)
+    public void colorize (Collection<Section> sections,
+                          Color               color)
     {
-        display.colorize(viewIndex, sections, color);
+        display.colorize(sections, color);
     }
 
-    public void colorize (Lag   lag,
-                          int   viewIndex,
-                          Color color)
+    public void colorize (Color color)
     {
-        display.colorize(lag, viewIndex, color);
-    }
-
-    public void colorize (int   viewIndex,
-                          Color color)
-    {
-        display.colorize(viewIndex, color);
+        display.colorize(color);
     }
 
     public void computeMoments ()
@@ -578,9 +706,14 @@ public class BasicGlyph
         composition.linkAllSections();
     }
 
-    public void recolorize (int viewIndex)
+    public void recolorize ()
     {
-        display.recolorize(viewIndex);
+        display.recolorize();
+    }
+
+    public void renderLine (Graphics2D g)
+    {
+        alignment.renderLine(g);
     }
 
     //----------//
@@ -609,6 +742,22 @@ public class BasicGlyph
     public void translate (PixelPoint vector)
     {
         geometry.translate(vector);
+    }
+
+    //--------------//
+    // getAlignment //
+    //--------------//
+    protected GlyphAlignment getAlignment ()
+    {
+        return alignment;
+    }
+
+    //----------------//
+    // getComposition //
+    //----------------//
+    protected GlyphComposition getComposition ()
+    {
+        return composition;
     }
 
     //-----------------//
@@ -670,6 +819,11 @@ public class BasicGlyph
             sb.append(" trans=[")
               .append(getTranslations())
               .append("]");
+        }
+
+        if (getResult() != null) {
+            sb.append(" ")
+              .append(getResult());
         }
 
         return sb.toString();

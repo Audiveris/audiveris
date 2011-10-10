@@ -12,9 +12,9 @@
 package omr.glyph.ui;
 
 import omr.glyph.Evaluation;
-import omr.glyph.GlyphLag;
 import omr.glyph.Glyphs;
 import omr.glyph.GlyphsModel;
+import omr.glyph.Scene;
 import omr.glyph.Shape;
 import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
@@ -35,7 +35,6 @@ import omr.sheet.Sheet;
 import org.jdesktop.application.Task;
 
 import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -72,9 +71,6 @@ public class GlyphsController
     /** Cached sheet */
     protected final Sheet sheet;
 
-    /** All the controlled views */
-    protected Set<GlyphLagView> views = new LinkedHashSet<GlyphLagView>();
-
     //~ Constructors -----------------------------------------------------------
 
     //------------------//
@@ -107,19 +103,6 @@ public class GlyphsController
     public Glyph getGlyphById (int id)
     {
         return model.getGlyphById(id);
-    }
-
-    //--------//
-    // getLag //
-    //--------//
-    /**
-     * Report the underlying glyph lag
-     *
-     * @return the related glyph lag
-     */
-    public GlyphLag getLag ()
-    {
-        return model.getLag();
     }
 
     //----------------//
@@ -160,7 +143,7 @@ public class GlyphsController
     public SelectionService getLocationService ()
     {
         return model.getSheet()
-                    .getSelectionService();
+                    .getLocationService();
     }
 
     //----------//
@@ -175,12 +158,17 @@ public class GlyphsController
         return model;
     }
 
-    //---------//
-    // addView //
-    //---------//
-    public void addView (GlyphLagView view)
+    //--------//
+    // getLag //
+    //--------//
+    /**
+     * Report the underlying glyph scene
+     *
+     * @return the related glyph scene
+     */
+    public Scene getScene ()
     {
-        views.add(view);
+        return model.getScene();
     }
 
     //-------------------//
@@ -216,12 +204,7 @@ public class GlyphsController
                 sheet);
         } else {
             // Normal symbol processing
-            return new AssignTask(
-                sheet,
-                shape,
-                compound,
-                glyphs,
-                getLag().getOrientation()).launch(sheet);
+            return new AssignTask(sheet, shape, compound, glyphs).launch(sheet);
         }
     }
 
@@ -245,16 +228,7 @@ public class GlyphsController
     //--------------------------//
     public Task asyncDeleteVirtualGlyphs (Collection<Glyph> glyphs)
     {
-        return new DeleteTask(sheet, getLag().getOrientation(), glyphs).launch(
-            sheet);
-    }
-
-    //------------//
-    // removeView //
-    //------------//
-    public void removeView (GlyphLagView view)
-    {
-        views.remove(view);
+        return new DeleteTask(sheet, glyphs).launch(sheet);
     }
 
     //------------//
@@ -328,8 +302,8 @@ public class GlyphsController
     {
         // Update immediately the glyph info as displayed
         if (model.getSheet() != null) {
-            getLag()
-                .getSelectionService()
+            getScene()
+                .getSceneService()
                 .publish(
                 new GlyphEvent(this, SelectionHint.GLYPH_MODIFIED, null, glyph));
         }
@@ -342,8 +316,8 @@ public class GlyphsController
     {
         // Update immediately the glyph info as displayed
         if (model.getSheet() != null) {
-            getLag()
-                .getSelectionService()
+            getScene()
+                .getSceneService()
                 .publish(
                 new GlyphSetEvent(
                     this,
@@ -353,14 +327,14 @@ public class GlyphsController
         }
     }
 
-    //--------------//
-    // refreshViews //
-    //--------------//
-    protected void refreshViews ()
-    {
-        for (GlyphLagView view : views) {
-            view.colorizeAllGlyphs();
-            view.repaint();
-        }
-    }
+    //    //--------------//
+    //    // refreshViews //
+    //    //--------------//
+    //    protected void refreshViews ()
+    //    {
+    //        for (LagView view : views) {
+    //            view.colorizeAllGlyphs();
+    //            view.repaint();
+    //        }
+    //    }
 }

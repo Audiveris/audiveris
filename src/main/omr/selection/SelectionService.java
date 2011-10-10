@@ -11,13 +11,15 @@
 // </editor-fold>
 package omr.selection;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.log.Logger;
 
 import org.bushe.swing.event.EventService;
+import org.bushe.swing.event.EventSubscriber;
 import org.bushe.swing.event.ThreadSafeEventService;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -31,23 +33,8 @@ public class SelectionService
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Catalog of really all Eventclasses, meant only for debugging */
-    private static final Collection<Class<?extends UserEvent>> allEventClasses;
-
-    static {
-        allEventClasses = new ArrayList<Class<?extends UserEvent>>();
-        allEventClasses.add(GlyphEvent.class);
-        allEventClasses.add(GlyphIdEvent.class);
-        allEventClasses.add(GlyphSetEvent.class);
-        allEventClasses.add(LocationEvent.class);
-        allEventClasses.add(PixelLevelEvent.class);
-        allEventClasses.add(RunEvent.class);
-        allEventClasses.add(SectionEvent.class);
-        allEventClasses.add(SectionIdEvent.class);
-        allEventClasses.add(SectionSetEvent.class);
-        allEventClasses.add(SheetEvent.class);
-        allEventClasses.add(UserEvent.class);
-    }
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
@@ -58,6 +45,9 @@ public class SelectionService
     /** (Debug) name of this service */
     private final String name;
 
+    /** Allowed events */
+    private final Class[] allowedEvents;
+
     //~ Constructors -----------------------------------------------------------
 
     //------------------//
@@ -66,42 +56,20 @@ public class SelectionService
     /**
      * Creates a new SelectionService object.
      * @param name a name for this service (meant for debug)
+     * @param allowedEvents classes of events that can be published here
      */
-    public SelectionService (String name)
+    public SelectionService (String  name,
+                             Class[] allowedEvents)
     {
         this.name = name;
+        this.allowedEvents = allowedEvents;
 
-        // This cache is needed to be able to retrieve the last instance of
+        // This cache is needed to be able to retrieve the last publication of
         // any event class
         setDefaultCacheSizePerClassOrTopic(1);
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //-----------------//
-    // dumpSubscribers //
-    //-----------------//
-    @SuppressWarnings("unchecked")
-    public static void dumpSubscribers (String       title,
-                                        EventService service)
-    {
-        logger.info(title);
-
-        for (Class<?extends UserEvent> eventClass : allEventClasses) {
-            List subscribers = service.getSubscribers(eventClass);
-
-            if (!subscribers.isEmpty()) {
-                UserEvent last = (UserEvent) service.getLastEvent(eventClass);
-                logger.info(
-                    "-- " + eventClass.getSimpleName() + ": " +
-                    subscribers.size() + ((last != null) ? (" " + last) : ""));
-
-                for (Object obj : subscribers) {
-                    logger.info("      " + obj);
-                }
-            }
-        }
-    }
 
     //--------------//
     // getSelection //
@@ -122,20 +90,74 @@ public class SelectionService
         }
     }
 
+    //-----------------//
+    // dumpSubscribers //
+    //-----------------//
+    public void dumpSubscribers ()
+    {
+        logger.info(toString());
+
+        for (Class eventClass : allowedEvents) {
+            List subscribers = getSubscribers(eventClass);
+
+            if (!subscribers.isEmpty()) {
+                UserEvent last = (UserEvent) getLastEvent(eventClass);
+                logger.info(
+                    "-- " + eventClass.getSimpleName() + ": " +
+                    subscribers.size() + ((last != null) ? (" " + last) : ""));
+
+                for (Object obj : subscribers) {
+                    logger.info("      " + obj);
+                }
+            }
+        }
+    }
+
     //---------//
     // publish //
     //---------//
     /**
-     * This method is overridden just to be able to trace every publication
-     * @param obj the published event
+     * This method is overridden just to be able to potentially check and trace
+     * every publication
+     * @param event the published event
      */
     @Override
-    public void publish (Object obj)
+    public void publish (Object event)
     {
         if (logger.isFineEnabled()) {
-            logger.fine(this + " published: " + obj);
+            logger.fine(this + " published: " + event);
         }
-        super.publish(obj);
+
+        // Check whether the event may be published on this service
+        if (!constants.checkPublishedEvents.isSet() ||
+            contains(allowedEvents, event.getClass())) {
+            super.publish(event);
+        } else {
+            logger.severe(
+                "Unexpected event " + event + " published on " + name);
+        }
+    }
+
+    //-------------------//
+    // subscribeStrongly //
+    //-------------------//
+    /**
+     * Overridden to check that the subscription corresponds to a declared class
+     * @param type the observed class
+     * @param es the subscriber
+     * @return I don't know
+     */
+    @Override
+    public boolean subscribeStrongly (Class           type,
+                                      EventSubscriber es)
+    {
+        if (contains(allowedEvents, type)) {
+            return super.subscribeStrongly(type, es);
+        } else {
+            logger.severe("event class " + type + " not available on " + name);
+
+            return false;
+        }
     }
 
     //------------------//
@@ -166,5 +188,35 @@ public class SelectionService
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //----------//
+    // contains //
+    //----------//
+    private boolean contains (Class[] classes,
+                              Class   classe)
+    {
+        for (Class cl : classes) {
+            if (cl == classe) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        Constant.Boolean checkPublishedEvents = new Constant.Boolean(
+            true,
+            "(debug) Should we check published events?");
     }
 }

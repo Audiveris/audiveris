@@ -11,10 +11,17 @@
 // </editor-fold>
 package omr.glyph.facets;
 
-import omr.glyph.GlyphSection;
+import omr.lag.Lag;
+import omr.lag.Section;
+
+import omr.run.Run;
+
+import omr.score.common.PixelRectangle;
 
 import omr.util.Predicate;
 
+import java.awt.Rectangle;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -61,6 +68,58 @@ class BasicEnvironment
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //--------------------//
+    // getAlienPixelsFrom //
+    //--------------------//
+    public int getAlienPixelsFrom (Lag                lag,
+                                   PixelRectangle     absRoi,
+                                   Predicate<Section> predicate)
+    {
+        // Use lag orientation
+        final Rectangle oRoi = lag.getOrientation()
+                                  .oriented(absRoi);
+        final int       posMin = oRoi.y;
+        final int       posMax = (oRoi.y + oRoi.height) - 1;
+        int             count = 0;
+
+        for (Section section : lag.getSectionsIn(oRoi)) {
+            // Exclude sections that are part of the glyph
+            if (section.getGlyph() == glyph) {
+                continue;
+            }
+
+            // Additional section predicate, if any
+            if ((predicate != null) && !predicate.check(section)) {
+                continue;
+            }
+
+            int pos = section.getFirstPos() - 1;
+
+            for (Run run : section.getRuns()) {
+                pos++;
+
+                if (pos > posMax) {
+                    break;
+                }
+
+                if (pos < posMin) {
+                    continue;
+                }
+
+                int coordMin = Math.max(oRoi.x, run.getStart());
+                int coordMax = Math.min(
+                    (oRoi.x + oRoi.width) - 1,
+                    run.getStop());
+
+                if (coordMax >= coordMin) {
+                    count += (coordMax - coordMin + 1);
+                }
+            }
+        }
+
+        return count;
+    }
 
     //-------------//
     // setLeftStem //
@@ -133,8 +192,8 @@ class BasicEnvironment
                                  Set<Glyph>       goods,
                                  Set<Glyph>       bads)
     {
-        for (GlyphSection section : glyph.getMembers()) {
-            for (GlyphSection sct : section.getTargets()) {
+        for (Section section : glyph.getMembers()) {
+            for (Section sct : section.getTargets()) {
                 if (sct.isGlyphMember()) {
                     Glyph other = sct.getGlyph();
 
@@ -157,8 +216,8 @@ class BasicEnvironment
                                   Set<Glyph>       goods,
                                   Set<Glyph>       bads)
     {
-        for (GlyphSection section : glyph.getMembers()) {
-            for (GlyphSection sct : section.getSources()) {
+        for (Section section : glyph.getMembers()) {
+            for (Section sct : section.getSources()) {
                 if (sct.isGlyphMember()) {
                     Glyph other = sct.getGlyph();
 

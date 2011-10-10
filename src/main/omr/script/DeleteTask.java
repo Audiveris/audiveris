@@ -63,15 +63,13 @@ public class DeleteTask
      * Create an glyph deletion task
      *
      * @param sheet the sheet impacted
-     * @param orientation the orientation of the containing lag
      * @param glyphs the (virtual) glyphs to delete
      * @throws IllegalArgumentException if any of the arguments is not valid
      */
     public DeleteTask (Sheet             sheet,
-                       Orientation       orientation,
                        Collection<Glyph> glyphs)
     {
-        super(sheet, orientation, glyphs);
+        super(sheet, glyphs);
 
         locations = new ArrayList<PixelPoint>();
 
@@ -97,18 +95,19 @@ public class DeleteTask
     public void core (Sheet sheet)
         throws Exception
     {
-        switch (orientation) {
-        case HORIZONTAL :
-            sheet.getHorizontalsBuilder()
-                 .getController()
-                 .syncDelete(this);
+        //        switch (orientation) {
+        //        case HORIZONTAL :
+        //            sheet.getHorizontalsBuilder()
+        //                 .getController()
+        //                 .syncDelete(this);
+        //
+        //            break;
+        //
+        //        case VERTICAL :
+        sheet.getSymbolsController()
+             .syncDelete(this);
 
-            break;
-
-        case VERTICAL :
-            sheet.getSymbolsController()
-                 .syncDelete(this);
-        }
+        //        }
     }
 
     //--------//
@@ -129,9 +128,6 @@ public class DeleteTask
     {
         StringBuilder sb = new StringBuilder(super.internalsString());
         sb.append(" delete");
-
-        sb.append(" ")
-          .append(orientation);
 
         if (!locations.isEmpty()) {
             sb.append(" locations[");
@@ -189,17 +185,8 @@ public class DeleteTask
 
         for (PixelPoint location : locations) {
             Glyph glyph = null;
-
-            if (orientation == Orientation.VERTICAL) {
-                glyph = sheet.getVerticalLag()
-                             .lookupVirtualGlyph(location);
-
-                SystemInfo system = sheet.getSystemOf(location);
-            } else {
-                glyph = sheet.getHorizontalLag()
-                             .lookupVirtualGlyph(location);
-            }
-
+            glyph = sheet.getScene()
+                         .lookupVirtualGlyph(location);
             glyphs.add(glyph);
 
             if (logger.isFineEnabled()) {

@@ -173,8 +173,8 @@ RunsTable</panel_attributes>
   <element>
     <type>com.umlet.element.custom.Systemborder</type>
     <coordinates>
-      <x>70</x>
-      <y>820</y>
+      <x>220</x>
+      <y>800</y>
       <w>50</w>
       <h>30</h>
     </coordinates>
@@ -279,11 +279,12 @@ m2=Length &lt; min</panel_attributes>
     <coordinates>
       <x>70</x>
       <y>740</y>
-      <w>50</w>
-      <h>100</h>
+      <w>170</w>
+      <h>90</h>
     </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>30;80;30;30</additional_attributes>
+    <panel_attributes>lt=&lt;-
+m1=first</panel_attributes>
+    <additional_attributes>150;70;30;70;30;30</additional_attributes>
   </element>
   <element>
     <type>com.umlet.element.UseCase</type>
@@ -347,5 +348,40 @@ bg=gray
 Image
 </panel_attributes>
     <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.UseCase</type>
+    <coordinates>
+      <x>300</x>
+      <y>730</y>
+      <w>150</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=.
+Add short sections</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>340</x>
+      <y>660</y>
+      <w>50</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>30;70;30;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>240</x>
+      <y>740</y>
+      <w>150</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=second</panel_attributes>
+    <additional_attributes>30;70;130;70;130;30</additional_attributes>
   </element>
 </diagram>

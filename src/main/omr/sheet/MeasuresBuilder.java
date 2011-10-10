@@ -11,15 +11,15 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.Main;
-
 import omr.check.FailureResult;
 
 import omr.constant.ConstantSet;
 
-import omr.glyph.Evaluation;
 import omr.glyph.facets.Glyph;
-import omr.glyph.facets.Stick;
+
+import omr.grid.BarAlignment;
+import omr.grid.StaffInfo;
+import omr.grid.StickIntersection;
 
 import omr.log.Logger;
 
@@ -34,8 +34,6 @@ import omr.util.TreeNode;
 
 import net.jcip.annotations.NotThreadSafe;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -115,6 +113,7 @@ public class MeasuresBuilder
         scoreSystem = system.getScoreSystem();
 
         allocateMeasures();
+
         checkMeasures();
     }
 
@@ -165,54 +164,44 @@ public class MeasuresBuilder
                 .clear();
         }
 
-        final int maxDy = scale.toPixels(constants.maxBarOffset);
+        // Create measures out of BarAlignment instances
+        List<BarAlignment> alignments = system.getBarAlignments();
+        int                firstId = system.getFirstStaff()
+                                           .getId();
 
-        // Measures building (Sticks are already sorted by increasing abscissa)
-        for (Glyph glyph : system.getGlyphs()) {
-            if (!glyph.isBar()) {
-                continue;
+        for (BarAlignment align : alignments) {
+            if (logger.isFineEnabled()) {
+                logger.info(align.toString());
             }
 
-            Stick bar = (Stick) glyph;
+            StickIntersection[] inters = align.getIntersections();
+            int                 ip = 0;
 
-            // We don't check that the bar does not start before first staff,
-            // this is too restrictive because of alternate endings.  We however
-            // do check that the bar does not end after last staff of the
-            // last part of the system.
-            int barAbscissa = bar.getMidPos();
-            int systemBottom = scoreSystem.getLastPart()
-                                          .getLastStaff()
-                                          .getInfo()
-                                          .getLastLine()
-                                          .yAt(barAbscissa);
-
-            if ((bar.getStop() - systemBottom) > maxDy) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("Bar stopping too low");
-                }
-
-                bar.setResult(NOT_WITHIN_SYSTEM);
-
-                continue;
-            }
-
-            // We add a measure in each relevant part of this system, provided
-            // that the part is embraced by the bar line
             for (TreeNode node : scoreSystem.getParts()) {
                 SystemPart part = (SystemPart) node;
+                PartInfo   partInfo = system.getParts()
+                                            .get(ip++);
+                Measure    measure = new Measure(part);
+                Barline    barline = new Barline(measure);
 
-                if (isPartEmbraced(part, bar)) {
-                    Measure measure = new Measure(part);
-                    Barline barline = new Barline(measure);
-                    barline.addGlyph(bar);
+                for (StaffInfo staffInfo : partInfo.getStaves()) {
+                    int               is = staffInfo.getId() - firstId;
+                    StickIntersection inter = inters[is];
 
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            "S#" + scoreSystem.getId() + " " + part +
-                            " - Created measure " + "@" +
-                            Integer.toHexString(measure.hashCode()) +
-                            " for barline " + bar);
+                    if (inter != null) {
+                        Glyph stick = inter.getStickAncestor();
+                        barline.addGlyph(stick);
+                    } else {
+                        // TODO
+                        logger.warning(
+                            "No intersection at index " + is + " in " + align);
                     }
+                }
+
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "S#" + scoreSystem.getId() + " " + part +
+                        " - Created measure " + " with " + barline);
                 }
             }
         }
@@ -224,116 +213,10 @@ public class MeasuresBuilder
             if (part.getMeasures()
                     .isEmpty()) {
                 if (logger.isFineEnabled()) {
-                    logger.fine(part + " - Creating articifial measure");
+                    logger.fine(part + " - Creating artificial measure");
                 }
 
                 Measure measure = new Measure(part);
-            }
-        }
-    }
-
-    //--------------------//
-    // checkBarAlignments //
-    //--------------------//
-    /**
-     * Check alignment of each measure of each part with the other part
-     * measures, a test that needs several parts in the system
-     */
-    private void checkBarAlignments ()
-    {
-        // We need several staves to run the test
-        if (system.getParts()
-                  .size() <= 1) {
-            return;
-        }
-
-        int maxShiftDx = scale.toPixels(constants.maxAlignShiftDx);
-
-        for (TreeNode pnode : scoreSystem.getParts()) {
-            SystemPart        part = (SystemPart) pnode;
-            Collection<Staff> staves = new ArrayList<Staff>();
-
-            for (TreeNode node : part.getStaves()) {
-                staves.add((Staff) node);
-            }
-
-            MeasureLoop: 
-            for (Iterator mit = part.getMeasures()
-                                    .iterator(); mit.hasNext();) {
-                Measure measure = (Measure) mit.next();
-
-                // If at least one of the barline sticks has been *manually*
-                // assigned, accept the bar with no further check
-                for (Glyph glyph : measure.getBarline()
-                                          .getGlyphs()) {
-                    if (glyph.isBar() &&
-                        (glyph.getDoubt() == Evaluation.MANUAL)) {
-                        if (logger.isFineEnabled()) {
-                            logger.fine(
-                                scoreSystem.getContextString() +
-                                " Accepting manual barline at x: " +
-                                measure.getLeftX());
-                        }
-
-                        continue MeasureLoop;
-                    }
-                }
-
-                // Check that all staves in this part are concerned with
-                // at least one stick of the barline
-                if (!measure.getBarline()
-                            .joinsAllStaves(staves)) {
-                    // Remove the false bar info
-                    for (Glyph glyph : measure.getBarline()
-                                              .getGlyphs()) {
-                        glyph.setResult(NOT_STAFF_ALIGNED);
-                        glyph.setShape(null);
-                    }
-
-                    // Remove this false measure
-                    mit.remove();
-
-                    break;
-                }
-
-                // Compare the abscissa with corresponding position in
-                // the other parts
-                int x = measure.getBarline()
-                               .getCenter().x;
-
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        scoreSystem.getContextString() +
-                        " Checking measure alignment at x: " + x);
-                }
-
-                for (TreeNode pn : scoreSystem.getParts()) {
-                    SystemPart prt = (SystemPart) pn;
-
-                    if (prt == part) {
-                        continue;
-                    }
-
-                    if (!prt.barlineExists(x, maxShiftDx)) {
-                        if (logger.isFineEnabled()) {
-                            logger.fine(
-                                "Singular measure removed: " +
-                                Main.dumping.dumpOf(measure));
-                        }
-
-                        // Remove the false bar info
-                        for (Glyph glyph : measure.getBarline()
-                                                  .getGlyphs()) {
-                            glyph.setResult(NOT_SYSTEM_ALIGNED);
-                            glyph.setShape(null);
-                        }
-
-                        // Remove the false measure
-                        mit.remove();
-
-                        break;
-                    }
-                }
             }
         }
     }
@@ -394,10 +277,6 @@ public class MeasuresBuilder
      */
     private void checkMeasures ()
     {
-        // Check alignment of each measure of each staff with the other
-        // staff measures, a test that needs several staves in the system
-        checkBarAlignments();
-
         // Detect very narrow measures which in fact indicate double bar
         // lines.
         mergeBarlines();
@@ -442,14 +321,14 @@ public class MeasuresBuilder
 
                     if (measureWidth <= maxDoubleDx) {
                         // Lines are side by side or one above the other?
-                        Stick stick = (Stick) measure.getBarline()
+                        Glyph stick = (Glyph) measure.getBarline()
                                                      .getGlyphs()
                                                      .toArray()[0];
-                        Stick prevStick = (Stick) prevMeasure.getBarline()
+                        Glyph prevStick = (Glyph) prevMeasure.getBarline()
                                                              .getGlyphs()
                                                              .toArray()[0];
 
-                        if (stick.overlapsWith(prevStick)) {
+                        if (yOverlap(stick, prevStick)) {
                             // Overlap => side by side
                             // Merge the two bar lines into the first one
                             prevMeasure.getBarline()
@@ -543,6 +422,22 @@ public class MeasuresBuilder
                 }
             }
         }
+    }
+
+    //----------//
+    // yOverlap //
+    //----------//
+    private boolean yOverlap (Glyph one,
+                              Glyph two)
+    {
+        double start = Math.max(
+            one.getStartPoint().getY(),
+            two.getStartPoint().getY());
+        double stop = Math.min(
+            one.getStopPoint().getY(),
+            two.getStopPoint().getY());
+
+        return start < stop;
     }
 
     //~ Inner Classes ----------------------------------------------------------

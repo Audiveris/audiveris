@@ -16,15 +16,14 @@ import omr.check.CheckBoard;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.GlyphLag;
 import omr.glyph.GlyphsModel;
+import omr.glyph.Scene;
 import omr.glyph.facets.Glyph;
-import omr.glyph.facets.Stick;
 import omr.glyph.ui.GlyphBoard;
-import omr.glyph.ui.GlyphLagView;
 import omr.glyph.ui.GlyphsController;
+import omr.glyph.ui.SceneView;
 
-import omr.lag.ui.ScrollLagView;
+import omr.lag.Lag;
 import omr.lag.ui.SectionBoard;
 
 import omr.log.Logger;
@@ -43,11 +42,12 @@ import omr.step.Step;
 import omr.step.Steps;
 
 import omr.ui.BoardsPane;
+import omr.ui.view.ScrollView;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Class <code>VerticalsController</code> is in charge of handling assignment
@@ -68,12 +68,7 @@ public class VerticalsController
         VerticalsController.class);
 
     /** Events this entity is interested in */
-    private static final Collection<Class<?extends UserEvent>> eventClasses;
-
-    static {
-        eventClasses = new ArrayList<Class<?extends UserEvent>>();
-        eventClasses.add(GlyphEvent.class);
-    }
+    private static final Class[] eventClasses = new Class[] { GlyphEvent.class };
 
     //~ Instance fields --------------------------------------------------------
 
@@ -96,7 +91,7 @@ public class VerticalsController
         super(
             new GlyphsModel(
                 sheet,
-                sheet.getVerticalLag(),
+                sheet.getScene(),
                 Steps.valueOf(Steps.VERTICALS)));
     }
 
@@ -122,10 +117,10 @@ public class VerticalsController
     //--------------//
     private void displayFrame ()
     {
-        GlyphLag lag = getLag();
+        Lag vLag = sheet.getVerticalLag();
 
         // Specific rubber display
-        view = new MyView(lag);
+        view = new MyView(sheet.getScene());
 
         // Create a hosting frame for the view
         final String unit = sheet.getId() + ":VerticalsBuilder";
@@ -133,13 +128,16 @@ public class VerticalsController
         sheet.getAssembly()
              .addViewTab(
             Step.VERTICALS_TAB,
-            new ScrollLagView(view),
+            new ScrollView(view),
             new BoardsPane(
                 new PixelBoard(unit, sheet),
-                new RunBoard(unit, lag),
-                new SectionBoard(unit, lag),
-                new GlyphBoard(unit, this, null, true),
-                new MyCheckBoard(unit, lag.getSelectionService(), eventClasses)));
+                new RunBoard(unit, vLag),
+                new SectionBoard(unit, vLag),
+                new GlyphBoard(unit, this, true),
+                new MyCheckBoard(
+                    unit,
+                    sheet.getScene().getSceneService(),
+                    eventClasses)));
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -161,13 +159,13 @@ public class VerticalsController
     // MyCheckBoard //
     //--------------//
     private class MyCheckBoard
-        extends CheckBoard<Stick>
+        extends CheckBoard<Glyph>
     {
         //~ Constructors -------------------------------------------------------
 
-        public MyCheckBoard (String                                unit,
-                             SelectionService                      eventService,
-                             Collection<Class<?extends UserEvent>> eventList)
+        public MyCheckBoard (String           unit,
+                             SelectionService eventService,
+                             Class[]          eventList)
         {
             super(unit, null, eventService, eventList);
         }
@@ -187,9 +185,9 @@ public class VerticalsController
                     GlyphEvent glyphEvent = (GlyphEvent) event;
                     Glyph      glyph = glyphEvent.getData();
 
-                    if (glyph instanceof Stick) {
+                    if (glyph instanceof Glyph) {
                         try {
-                            Stick      stick = (Stick) glyph;
+                            Glyph      stick = (Glyph) glyph;
                             SystemInfo system = sheet.getSystemOf(stick);
                             // Get a fresh suite
                             setSuite(system.createStemCheckSuite(true));
@@ -211,40 +209,23 @@ public class VerticalsController
     // MyView //
     //--------//
     private final class MyView
-        extends GlyphLagView
+        extends SceneView
     {
         //~ Constructors -------------------------------------------------------
 
-        public MyView (GlyphLag lag)
+        public MyView (Scene scene)
         {
-            super(lag, null, null, VerticalsController.this, null);
+            super(
+                scene,
+                VerticalsController.this,
+                Arrays.asList(sheet.getHorizontalLag(), sheet.getVerticalLag()));
+
+            setLocationService(sheet.getLocationService());
+
             setName("VerticalsBuilder-MyView");
-            colorizeAllSections();
         }
 
         //~ Methods ------------------------------------------------------------
-
-        //---------------------//
-        // colorizeAllSections //
-        //---------------------//
-        @Override
-        public void colorizeAllSections ()
-        {
-            super.colorizeAllSections();
-
-            int viewIndex = lag.viewIndexOf(this);
-
-            // Use light gray color for past successful entities
-            sheet.colorize(lag, viewIndex, Color.lightGray);
-
-            // Use bright yellow color for recognized stems
-            for (Glyph glyph : sheet.getActiveGlyphs()) {
-                if (glyph.isStem()) {
-                    Stick stick = (Stick) glyph;
-                    stick.colorize(lag, viewIndex, Color.yellow);
-                }
-            }
-        }
 
         //-------------//
         // renderItems //

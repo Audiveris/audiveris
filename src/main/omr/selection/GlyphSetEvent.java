@@ -20,16 +20,16 @@ import java.util.Set;
  * Class <code>GlyphSetEvent</code> represents a Glyph Set selection
  *
  * <dl>
- * <dt><b>Publishers:</b><dd>GlyphLag, GlyphLagView
- * <dt><b>Subscribers:</b><dd>GlyphBoard, GlyphLagView, ScoreMenu,
+ * <dt><b>Publishers:</b><dd>GlyphLag, 
+ * <dt><b>Subscribers:</b><dd>GlyphBoard,  ScoreMenu,
  * SymbolGlyphBoard, SymbolsEditor
- * <dt><b>Readers:</b><dd>GlyphBoard, GlyphLag, GlyphLagView, GlyphMenu,
+ * <dt><b>Readers:</b><dd>GlyphBoard, GlyphLag,  GlyphMenu,
  * SymbolsEditor
  * </dl>
  * @author Hervé Bitteur
  */
 public class GlyphSetEvent
-    extends GlyphLagEvent
+    extends SceneEvent
 {
     //~ Instance fields --------------------------------------------------------
 

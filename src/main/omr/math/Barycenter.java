@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.math;
 
+import java.awt.geom.Point2D;
 
 /**
  * Class {@code Barycenter} is meant to cumulate data when computing barycenter.
@@ -122,6 +123,32 @@ public class Barycenter
                                double y)
     {
         include(1, x, y);
+    }
+
+    //---------//
+    // include //
+    //---------//
+    /**
+     * Include one point (with default weight assigned to 1)
+     * @param point point to include
+     */
+    public final void include (Point2D point)
+    {
+        include(1, point.getX(), point.getY());
+    }
+
+    //---------//
+    // include //
+    //---------//
+    /**
+     * Include one point
+     * @param weight weight assigned to the point
+     * @param point point to include
+     */
+    public final void include (double  weight,
+                               Point2D point)
+    {
+        include(weight, point.getX(), point.getY());
     }
 
     //----------//

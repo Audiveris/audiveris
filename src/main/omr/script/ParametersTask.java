@@ -315,17 +315,6 @@ public class ParametersTask
 
         Step loadStep = Steps.valueOf(Steps.LOAD);
 
-        if (histoRatioChanged) {
-            // Nota: we should rebuild from LINES, but this step modifies
-            // the image (pixels removed, pixels added). So the have to restart
-            // from LOAD step instead.
-            if (Steps.compare(latestStep, Steps.valueOf(Steps.LINES)) >= 0) {
-                from = loadStep;
-            } else {
-                from = null;
-            }
-        }
-
         if (foregroundChanged) {
             if (Steps.compare(latestStep, loadStep) > 0) {
                 from = loadStep;

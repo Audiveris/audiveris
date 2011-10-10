@@ -28,9 +28,6 @@ public interface PixelSource
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------//
-    // getHeight //
-    //-----------//
     /**
      * Report the height of the rectangular source
      *
@@ -38,9 +35,6 @@ public interface PixelSource
      */
     int getHeight ();
 
-    //------------------//
-    // setMaxForeground //
-    //------------------//
     /**
      * Assign a new maximum value for foreground (black) pixels
      *
@@ -48,9 +42,6 @@ public interface PixelSource
      */
     void setMaxForeground (int level);
 
-    //------------------//
-    // getMaxForeground //
-    //------------------//
     /**
      * Since foreground is made of rather black pixels (level close to 0), this
      * method reports the maximum value for a pixel to be considered as
@@ -60,9 +51,6 @@ public interface PixelSource
      */
     int getMaxForeground ();
 
-    //----------//
-    // getPixel //
-    //----------//
     /**
      * Report the pixel element, as read at location (x, y) in the source.
      *
@@ -75,9 +63,6 @@ public interface PixelSource
     int getPixel (int x,
                   int y);
 
-    //----------//
-    // getWidth //
-    //----------//
     /**
      * Report the width of the rectangular source
      *

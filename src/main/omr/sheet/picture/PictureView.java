@@ -72,7 +72,7 @@ public class PictureView
         view.setPreferredSize(sheet.getDimension());
 
         // Inject dependency of pixel location
-        view.setLocationService(sheet.getSelectionService());
+        view.setLocationService(sheet.getLocationService());
 
         // Listen to painting parameters
         PaintingParameters.getInstance()

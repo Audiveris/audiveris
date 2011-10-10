@@ -137,7 +137,7 @@ public class SymbolMenu
 
         public void actionPerformed (ActionEvent e)
         {
-            for (Glyph glyph : glyphLag.getSelectedGlyphSet()) {
+            for (Glyph glyph : scene.getSelectedGlyphSet()) {
                 glyph.getTextInfo()
                      .dump();
             }
@@ -188,7 +188,7 @@ public class SymbolMenu
 
         public void actionPerformed (ActionEvent e)
         {
-            Set<Glyph> glyphs = glyphLag.getSelectedGlyphSet();
+            Set<Glyph> glyphs = scene.getSelectedGlyphSet();
             ((SymbolsController) controller).asyncFixLargeSlurs(glyphs);
         }
 
@@ -226,7 +226,7 @@ public class SymbolMenu
 
         public void actionPerformed (ActionEvent e)
         {
-            Glyph glyph = glyphLag.getSelectedGlyph();
+            Glyph glyph = scene.getSelectedGlyph();
 
             if ((glyph != null) && (glyph == proposedGlyph)) {
                 controller.asyncAssignGlyphs(
@@ -240,7 +240,7 @@ public class SymbolMenu
         public void update ()
         {
             // Proposed compound?
-            Glyph glyph = glyphLag.getSelectedGlyph();
+            Glyph glyph = scene.getSelectedGlyph();
 
             if ((glyphNb > 0) && (glyph != null) && (glyph.getId() == 0)) {
                 SystemInfo system = sheet.getSystemOf(glyph);
@@ -289,7 +289,7 @@ public class SymbolMenu
 
         public void actionPerformed (ActionEvent e)
         {
-            Set<Glyph> glyphs = glyphLag.getSelectedGlyphSet();
+            Set<Glyph> glyphs = scene.getSelectedGlyphSet();
 
             if ((glyphs != null) && (glyphs.size() == 1)) {
                 Glyph glyph = glyphs.iterator()
@@ -303,7 +303,7 @@ public class SymbolMenu
 
         public void update ()
         {
-            Glyph glyph = glyphLag.getSelectedGlyph();
+            Glyph glyph = scene.getSelectedGlyph();
 
             if ((glyph != null) && (glyph.getShape() != null)) {
                 setEnabled(true);
@@ -337,7 +337,7 @@ public class SymbolMenu
 
         public void actionPerformed (ActionEvent e)
         {
-            Set<Glyph> glyphs = glyphLag.getSelectedGlyphSet();
+            Set<Glyph> glyphs = scene.getSelectedGlyphSet();
             ((SymbolsController) controller).asyncSegment(glyphs, true); // isShort
         }
 
@@ -376,7 +376,7 @@ public class SymbolMenu
 
         public void actionPerformed (ActionEvent e)
         {
-            Set<Glyph> glyphs = glyphLag.getSelectedGlyphSet();
+            Set<Glyph> glyphs = scene.getSelectedGlyphSet();
 
             if ((glyphs != null) && (glyphs.size() == 1)) {
                 Glyph glyph = glyphs.iterator()
@@ -390,7 +390,7 @@ public class SymbolMenu
 
         public void update ()
         {
-            Glyph glyph = glyphLag.getSelectedGlyph();
+            Glyph glyph = scene.getSelectedGlyph();
 
             if (glyph != null) {
                 setEnabled(true);
@@ -426,7 +426,7 @@ public class SymbolMenu
 
         public void actionPerformed (ActionEvent e)
         {
-            Set<Glyph> glyphs = glyphLag.getSelectedGlyphSet();
+            Set<Glyph> glyphs = scene.getSelectedGlyphSet();
             ((SymbolsController) controller).asyncSegment(glyphs, false); // isShort
         }
 
@@ -465,7 +465,7 @@ public class SymbolMenu
 
         public void actionPerformed (ActionEvent e)
         {
-            Set<Glyph> glyphs = glyphLag.getSelectedGlyphSet();
+            Set<Glyph> glyphs = scene.getSelectedGlyphSet();
             ((SymbolsController) controller).showTranslations(glyphs);
         }
 
@@ -473,7 +473,7 @@ public class SymbolMenu
         public void update ()
         {
             if (glyphNb > 0) {
-                for (Glyph glyph : glyphLag.getSelectedGlyphSet()) {
+                for (Glyph glyph : scene.getSelectedGlyphSet()) {
                     if (glyph.isTranslated()) {
                         setEnabled(true);
 

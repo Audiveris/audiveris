@@ -89,10 +89,7 @@ public class TextGreedyPattern
     {
         //~ Instance fields ----------------------------------------------------
 
-        Scale.AreaFraction minWeight = new Scale.AreaFraction(
-            0.5,
-            "Minimum normalized weight to be part of a greedy text");
-        Evaluation.Doubt   maxDoubt = new Evaluation.Doubt(
+        Evaluation.Doubt maxDoubt = new Evaluation.Doubt(
             100d,
             "Maximum doubt for greedy text glyphs");
     }
@@ -105,7 +102,6 @@ public class TextGreedyPattern
     {
         //~ Instance fields ----------------------------------------------------
 
-        final double         minWeight = constants.minWeight.getValue();
         final GlyphEvaluator evaluator = GlyphNetwork.getInstance();
         final double         maxDoubt = constants.maxDoubt.getValue();
 
@@ -156,12 +152,12 @@ public class TextGreedyPattern
         @Override
         protected boolean checkCandidate (Glyph glyph)
         {
-            if (glyph.isKnown()) {
+            // Common checks
+            if (!super.checkCandidate(glyph)) {
                 return false;
             }
 
-            // Respect user choice!
-            if (glyph.isManualShape()) {
+            if (glyph.isKnown()) {
                 return false;
             }
 

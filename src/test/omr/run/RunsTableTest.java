@@ -13,7 +13,6 @@ package omr.run;
 
 import static omr.run.Orientation.*;
 
-import omr.util.Predicate;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
@@ -234,20 +233,20 @@ public class RunsTableTest
     //        fail("The test case is a prototype.");
     //    }
 
-    /**
-     * Test of isIdentical method, of class RunsTable.
-     */
-    @Test
-    public void testIsIdentical ()
-    {
-        System.out.println("isIdentical");
-
-        RunsTable that = createHorizontalInstance();
-        RunsTable instance = createHorizontalInstance();
-        boolean   expResult = true;
-        boolean   result = instance.isIdentical(that);
-        assertEquals(expResult, result);
-    }
+//    /**
+//     * Test of isIdentical method, of class RunsTable.
+//     */
+//    @Test
+//    public void testIsIdentical ()
+//    {
+//        System.out.println("isIdentical");
+//
+//        RunsTable that = createHorizontalInstance();
+//        RunsTable instance = createHorizontalInstance();
+//        boolean   expResult = true;
+//        boolean   result = instance.isIdentical(that);
+//        assertEquals(expResult, result);
+//    }
 
 //    //-----------//
 //    // testPurge //

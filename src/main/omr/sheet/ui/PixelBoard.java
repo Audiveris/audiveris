@@ -15,10 +15,10 @@ import omr.log.Logger;
 
 import omr.score.common.PixelRectangle;
 
+import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
 import omr.selection.PixelLevelEvent;
 import omr.selection.SelectionHint;
-import omr.selection.LocationEvent;
 import omr.selection.UserEvent;
 
 import omr.sheet.Sheet;
@@ -37,8 +37,6 @@ import org.bushe.swing.event.EventSubscriber;
 
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.Collection;
 
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
@@ -61,12 +59,10 @@ public class PixelBoard
     private static final Logger logger = Logger.getLogger(PixelBoard.class);
 
     /** Events this entity is interested in */
-    private static final Collection<Class<?extends UserEvent>> eventClasses = new ArrayList<Class<?extends UserEvent>>();
-
-    static {
-        eventClasses.add(LocationEvent.class);
-        eventClasses.add(PixelLevelEvent.class);
-    }
+    private static final Class[] eventClasses = new Class[] {
+                                                    LocationEvent.class,
+                                                    PixelLevelEvent.class
+                                                };
 
     //~ Instance fields --------------------------------------------------------
 
@@ -112,8 +108,8 @@ public class PixelBoard
     {
         super(
             unitName + "-PixelBoard",
-            "Pixel", // + "-" + sheet.getPage().getIndex(), // If desired
-            sheet.getSelectionService(),
+            "Pixel",
+            sheet.getLocationService(),
             eventClasses,
             true);
 
@@ -154,7 +150,7 @@ public class PixelBoard
             if (event instanceof LocationEvent) {
                 // Display rectangle attributes
                 LocationEvent sheetLocation = (LocationEvent) event;
-                Rectangle          rect = sheetLocation.rectangle;
+                Rectangle     rect = sheetLocation.rectangle;
 
                 if (rect != null) {
                     x.setValue(rect.x);

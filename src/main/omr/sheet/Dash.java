@@ -11,9 +11,11 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.glyph.GlyphSection;
 import omr.glyph.facets.Glyph;
-import omr.glyph.facets.Stick;
+
+import omr.grid.StaffInfo;
+
+import omr.lag.Section;
 
 import omr.math.Line;
 
@@ -25,6 +27,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -33,7 +36,7 @@ import java.util.Set;
  * represent a ledger, a legato sign or the horizontal part of an alternate
  * ending.
  *
- * <p>The role of a Dash, as compared to a plain {@link omr.glyph.facets.Stick}
+ * <p>The role of a Dash, as compared to a plain {@link omr.glyph.facets.Glyph}
  * is to handle the horizontal segment (its Line and contour box), even if the
  * underlying stick has been discarded. Doing so saves us the need to serialize
  * the whole horizontal GlyphLag.
@@ -42,7 +45,22 @@ import java.util.Set;
  */
 public abstract class Dash
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** A comparator based on abscissa of underlying glyph */
+    public static final Comparator<Dash> abscissaComparator = new Comparator<Dash>() {
+        public int compare (Dash o1,
+                            Dash o2)
+        {
+            return Glyph.abscissaComparator.compare(o1.stick, o2.stick);
+        }
+    };
+
+
     //~ Instance fields --------------------------------------------------------
+
+    /** Related staff */
+    private StaffInfo staff;
 
     /** Approximating line */
     private Line line;
@@ -51,10 +69,10 @@ public abstract class Dash
     private Rectangle box;
 
     /** The underlying stick if any */
-    private final Stick stick;
+    private final Glyph stick;
 
     /** The patching sections */
-    private Set<GlyphSection> patches = new HashSet<GlyphSection>();
+    private Set<Section> patches = new HashSet<Section>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -63,13 +81,16 @@ public abstract class Dash
     //------//
     /**
      * Creates a new Dash object.
-     *
      * @param stick the underlying stick
+     * @param staff the nearby staff
      */
-    public Dash (Stick stick)
+    public Dash (Glyph     stick,
+                 StaffInfo staff)
     {
         this.stick = stick;
-        line = stick.getOrientedLine();
+        this.staff = staff;
+
+        line = stick.getLine();
         box = stick.getContourBox();
     }
 
@@ -114,7 +135,7 @@ public abstract class Dash
     {
         if (line == null) {
             if (stick != null) {
-                line = stick.getOrientedLine();
+                line = stick.getLine();
             }
         }
 
@@ -128,7 +149,7 @@ public abstract class Dash
      * Remember the set of patches
      * @param patches the patches to remember
      */
-    public void setPatches (Collection<GlyphSection> patches)
+    public void setPatches (Collection<Section> patches)
     {
         if (this.getPatches() != patches) {
             this.getPatches()
@@ -145,9 +166,21 @@ public abstract class Dash
      * Report the set of patches
      * @return the patches
      */
-    public Set<GlyphSection> getPatches ()
+    public Set<Section> getPatches ()
     {
         return patches;
+    }
+
+    //----------//
+    // getStaff //
+    //----------//
+    /**
+     * Report the staff nearby this entity
+     * @return the related staff
+     */
+    public StaffInfo getStaff ()
+    {
+        return staff;
     }
 
     //----------//
@@ -158,7 +191,7 @@ public abstract class Dash
      *
      * @return the underlying stick, null otherwise
      */
-    public Stick getStick ()
+    public Glyph getStick ()
     {
         return stick;
     }
@@ -222,6 +255,9 @@ public abstract class Dash
         StringBuilder sb = new StringBuilder("{");
 
         sb.append(getClass().getSimpleName());
+
+        sb.append(" staff#")
+          .append(staff.getId());
         sb.append(" stick#")
           .append(stick.getId());
         sb.append("}");

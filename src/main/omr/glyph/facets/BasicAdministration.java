@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.glyph.facets;
 
-import omr.glyph.GlyphLag;
+import omr.glyph.Scene;
 
 /**
  * Class {@code BasicAdministration} is a basic implementation of glyph
@@ -25,10 +25,10 @@ class BasicAdministration
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** The containing glyph lag */
-    protected GlyphLag lag;
+    /** The containing glyph scene */
+    protected Scene scene;
 
-    /** Glyph instance identifier (Unique in the containing GlyphLag) */
+    /** Glyph instance identifier (Unique in the containing scene) */
     protected int id;
 
     /** VIP flag */
@@ -41,7 +41,6 @@ class BasicAdministration
     //---------------------//
     /**
      * Create a new BasicAdministration object
-     *
      * @param glyph our glyph
      */
     public BasicAdministration (Glyph glyph)
@@ -67,20 +66,20 @@ class BasicAdministration
         return id;
     }
 
-    //--------//
-    // setLag //
-    //--------//
-    public void setLag (GlyphLag lag)
+    //----------//
+    // setScene //
+    //----------//
+    public void setScene (Scene scene)
     {
-        this.lag = lag;
+        this.scene = scene;
     }
 
-    //--------//
-    // getLag //
-    //--------//
-    public GlyphLag getLag ()
+    //----------//
+    // getScene //
+    //----------//
+    public Scene getScene ()
     {
-        return lag;
+        return scene;
     }
 
     //-------------//
@@ -125,6 +124,6 @@ class BasicAdministration
             glyph.getClass().getName() + "@" +
             Integer.toHexString(glyph.hashCode()));
         System.out.println("   id=" + getId());
-        System.out.println("   lag=" + getLag());
+        System.out.println("   scene=" + getScene());
     }
 }

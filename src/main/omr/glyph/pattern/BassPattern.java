@@ -21,6 +21,8 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
 
+import omr.grid.StaffInfo;
+
 import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
@@ -28,7 +30,6 @@ import omr.score.common.PixelRectangle;
 
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
-import omr.grid.StaffInfo;
 
 import omr.util.Implement;
 
@@ -166,8 +167,8 @@ public class BassPattern
             PixelRectangle pixRect = new PixelRectangle(seed.getCentroid());
             pixRect.add(
                 new PixelPoint(
-                    pixRect.x - scale.toPixels(new Scale.Fraction(2, null)),
-                    pixRect.y + scale.toPixels(new Scale.Fraction(3, null))));
+                    pixRect.x - (2 * scale.interline()),
+                    pixRect.y + (3 * scale.interline())));
 
             return pixRect;
         }

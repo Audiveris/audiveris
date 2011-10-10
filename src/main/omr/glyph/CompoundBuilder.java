@@ -111,7 +111,7 @@ public class CompoundBuilder
                 // If this compound duplicates an original glyph,
                 // make sure the shape was not forbidden in the original
                 Glyph original = system.getSheet()
-                                       .getVerticalLag()
+                                       .getScene()
                                        .getOriginal(compound);
 
                 if ((original == null) ||

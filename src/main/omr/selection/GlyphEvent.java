@@ -18,9 +18,9 @@ import omr.glyph.facets.Glyph;
  *
  * <dl>
  * <dt><b>Publishers:</b><dd>ErrorsEditor, GlyphBoard, GlyphBrowser, GlyphLag,
- * GlyphLagView, GlyphMenu, GlyphModel, SymbolsEditor
+ *  GlyphMenu, GlyphModel, SymbolsEditor
  * <dt><b>Subscribers:</b><dd>EvaluationBoard, GlyphBoard, GlyphBrowser,
- * GlyphLag, GlyphLagView, HorizontalsBuilder CheckBoards, ShapeFocusBoard,
+ * GlyphLag,  HorizontalsBuilder CheckBoards, ShapeFocusBoard,
  * SymbolGlyphBoard, SystemsBuilder, VerticalsBuilder CheckBoard
  * <dt><b>Readers:</b><dd>EvaluationBoard, GlyphBoard, GlyphMenu, TextAreaBrowser
  * </dl>
@@ -28,7 +28,7 @@ import omr.glyph.facets.Glyph;
  * @author Hervé Bitteur
  */
 public class GlyphEvent
-    extends GlyphLagEvent
+    extends SceneEvent
 {
     //~ Instance fields --------------------------------------------------------
 

@@ -29,7 +29,6 @@ import org.bushe.swing.event.EventSubscriber;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
-import java.util.Collection;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -80,7 +79,7 @@ public abstract class Board
     protected final SelectionService selectionService;
 
     /** The collection of event classes to be observed */
-    protected final Collection<Class<?extends UserEvent>> eventList;
+    protected final Class[] eventsRead;
 
     /** The Board instance name */
     protected String name;
@@ -99,18 +98,18 @@ public abstract class Board
      * @param name a name assigned to the board, for debug reason
      * @param title the string to appear as the board title
      * @param selectionService the related selection service (for input & output)
-     * @param eventList the collection of event classes to observe
+     * @param eventsRead the collection of event classes to observe
      * @param expanded true to pre-expand the board, false to pre-collapse
      */
-    public Board (String                                name,
-                  String                                title,
-                  SelectionService                      selectionService,
-                  Collection<Class<?extends UserEvent>> eventList,
-                  boolean                               expanded)
+    public Board (String           name,
+                  String           title,
+                  SelectionService selectionService,
+                  Class[]          eventList,
+                  boolean          expanded)
     {
         this.name = name;
         this.selectionService = selectionService;
-        this.eventList = eventList;
+        this.eventsRead = eventList;
 
         groom = new Groom(expanded);
 
@@ -172,9 +171,9 @@ public abstract class Board
      */
     public void connect ()
     {
-        if ((eventList != null) && groom.expanded) {
+        if ((eventsRead != null) && groom.expanded) {
             ///logger.warning("connect " + this + " on " + selectionService);
-            for (Class eventClass : eventList) {
+            for (Class eventClass : eventsRead) {
                 selectionService.subscribeStrongly(eventClass, this);
 
                 // Refresh with latest data for this event class
@@ -198,9 +197,9 @@ public abstract class Board
      */
     public void disconnect ()
     {
-        if ((eventList != null) && groom.expanded) {
+        if ((eventsRead != null) && groom.expanded) {
             ///logger.warning("disconnect " + this + " from " + selectionService);
-            for (Class eventClass : eventList) {
+            for (Class eventClass : eventsRead) {
                 selectionService.unsubscribe(eventClass, this);
             }
         }

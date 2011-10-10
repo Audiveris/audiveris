@@ -13,6 +13,8 @@ package omr.glyph;
 
 import omr.glyph.facets.Glyph;
 
+import omr.lag.Lag;
+import omr.lag.Section;
 import omr.lag.Sections;
 
 import omr.log.Logger;
@@ -28,12 +30,11 @@ import java.util.List;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlList;
-import javax.xml.bind.annotation.XmlValue;
 
 /**
- * Class <code>SectionSets</code> handles a  collection of section sets,
+ * Class {@code SectionSets} handles a  collection of section sets,
  * with the ability to (un)marshall its content using the sections ids.
  *
  * @author Hervé Bitteur
@@ -49,11 +50,11 @@ public class SectionSets
     //~ Instance fields --------------------------------------------------------
 
     /** The collection of sections sets */
-    protected Collection<Collection<GlyphSection>> sets;
+    protected Collection<Collection<Section>> sets;
 
-    /** The collection of sets of section ids */
+    /** The collection of sets (=glyphs) of section descriptors */
     @XmlElement(name = "sections")
-    private Collection<SectionIdSet> idSets;
+    private Collection<SectionDescSet> descSets;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -65,7 +66,7 @@ public class SectionSets
      *
      * @param sets The collection of collections of sections
      */
-    public SectionSets (Collection<Collection<GlyphSection>> sets)
+    public SectionSets (Collection<Collection<Section>> sets)
     {
         this.sets = sets;
     }
@@ -91,11 +92,10 @@ public class SectionSets
     public static SectionSets createFromGlyphs (Collection<Glyph> glyphs)
     {
         SectionSets sectionSets = new SectionSets();
-        sectionSets.sets = new ArrayList<Collection<GlyphSection>>();
+        sectionSets.sets = new ArrayList<Collection<Section>>();
 
         for (Glyph glyph : glyphs) {
-            sectionSets.sets.add(
-                new ArrayList<GlyphSection>(glyph.getMembers()));
+            sectionSets.sets.add(new ArrayList<Section>(glyph.getMembers()));
         }
 
         return sectionSets;
@@ -110,10 +110,10 @@ public class SectionSets
      * @param sections the provided sections
      * @return a newly built SectionSets instance (a singleton actually)
      */
-    public static SectionSets createFromSections (Collection<GlyphSection> sections)
+    public static SectionSets createFromSections (Collection<Section> sections)
     {
         SectionSets sectionSets = new SectionSets();
-        sectionSets.sets = new ArrayList<Collection<GlyphSection>>();
+        sectionSets.sets = new ArrayList<Collection<Section>>();
         sectionSets.sets.add(sections);
 
         return sectionSets;
@@ -125,27 +125,25 @@ public class SectionSets
     /**
      * Report the collection of section sets
      * @param sheet the containing sheet (needed to get sections from their id)
-     * @param orientation orientation of the containing lag
      * @return the collection of section sets
      */
-    public Collection<Collection<GlyphSection>> getSets (Sheet       sheet,
-                                                         Orientation orientation)
+    public Collection<Collection<Section>> getSets (Sheet sheet)
     {
         if (sets == null) {
-            sets = new ArrayList<Collection<GlyphSection>>();
+            sets = new ArrayList<Collection<Section>>();
 
-            GlyphLag lag = (orientation == Orientation.VERTICAL)
-                           ? sheet.getVerticalLag() : sheet.getHorizontalLag();
+            for (SectionDescSet idSet : descSets) {
+                List<Section> sectionSet = new ArrayList<Section>();
 
-            for (SectionIdSet idSet : idSets) {
-                List<GlyphSection> sectionSet = new ArrayList<GlyphSection>();
-
-                for (int id : idSet.ids) {
-                    GlyphSection section = lag.getVertexById(id);
+                for (SectionDesc sectionId : idSet.sections) {
+                    Lag     lag = (sectionId.orientation == Orientation.VERTICAL)
+                                  ? sheet.getVerticalLag()
+                                  : sheet.getHorizontalLag();
+                    Section section = lag.getVertexById(sectionId.id);
 
                     if (section == null) {
                         logger.warning(
-                            "Cannot find section for " + id,
+                            "Cannot find section for " + sectionId,
                             new Throwable());
                     } else {
                         sectionSet.add(section);
@@ -168,7 +166,7 @@ public class SectionSets
         if (sets != null) {
             StringBuilder sb = new StringBuilder();
 
-            for (Collection<GlyphSection> set : sets) {
+            for (Collection<Section> set : sets) {
                 // Separator needed?
                 if (sb.length() > 0) {
                     sb.append(" ");
@@ -194,38 +192,96 @@ public class SectionSets
     {
         // Convert sections -> ids
         if (sets != null) {
-            idSets = new ArrayList<SectionIdSet>();
+            descSets = new ArrayList<SectionDescSet>();
 
-            for (Collection<GlyphSection> set : sets) {
-                SectionIdSet idSet = new SectionIdSet();
+            for (Collection<Section> set : sets) {
+                SectionDescSet descSet = new SectionDescSet();
 
-                for (GlyphSection section : set) {
-                    idSet.ids.add(section.getId());
+                for (Section section : set) {
+                    descSet.sections.add(
+                        new SectionDesc(
+                            section.getId(),
+                            section.getOrientation()));
                 }
 
-                idSets.add(idSet);
+                descSets.add(descSet);
             }
         }
     }
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //--------------//
-    // SectionIdSet //
-    //--------------//
+    //-------------//
+    // SectionDesc //
+    //-------------//
+    /**
+     * Descriptor for one section
+     */
+    private static class SectionDesc
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        // Annotation to get all ids, space-separated, in one single element:
+        //@XmlList
+        // Annotation to avoid any wrapper:
+        //@XmlValue
+        //private Collection<Integer> ids = new ArrayList<Integer>();
+
+        /** Section id */
+        @XmlAttribute(name = "id")
+        Integer id;
+
+        /** Section orientation */
+        @XmlAttribute(name = "orientation")
+        Orientation orientation;
+
+        //~ Constructors -------------------------------------------------------
+
+        // For JAXB
+        public SectionDesc ()
+        {
+        }
+
+        public SectionDesc (Integer     id,
+                            Orientation orientation)
+        {
+            this.id = id;
+            this.orientation = orientation;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder("{SectionDesc");
+            sb.append(" ")
+              .append(orientation);
+            sb.append(" ")
+              .append(id);
+            sb.append("}");
+
+            return super.toString();
+        }
+    }
+
+    //----------------//
+    // SectionDescSet //
+    //----------------//
     /**
      * Handles one collection of section ids.
      * The only purpose of this class (vs the direct use of List<Integer>) is
      * the ability to add annotations meant for JAXB
      */
-    private static class SectionIdSet
+    private static class SectionDescSet
     {
         //~ Instance fields ----------------------------------------------------
 
-        // Annotation to get all ids, space-separated, in one single element:
-        @XmlList
-        // Annotation to avoid any wrapper:
-        @XmlValue
-        private Collection<Integer> ids = new ArrayList<Integer>();
+        //        // Annotation to get all ids, space-separated, in one single element:
+        //        @XmlList
+        //        // Annotation to avoid any wrapper:
+        //        @XmlValue
+        @XmlElement(name = "section")
+        private Collection<SectionDesc> sections = new ArrayList<SectionDesc>();
     }
 }

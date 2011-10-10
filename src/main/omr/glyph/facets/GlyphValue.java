@@ -11,8 +11,9 @@
 // </editor-fold>
 package omr.glyph.facets;
 
-import omr.glyph.GlyphSection;
 import omr.glyph.Shape;
+
+import omr.lag.Section;
 
 import java.util.SortedSet;
 
@@ -58,7 +59,7 @@ public class GlyphValue
 
     /** Member sections */
     @XmlElement(name = "section")
-    final SortedSet<GlyphSection> members;
+    final SortedSet<Section> members;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -76,13 +77,13 @@ public class GlyphValue
      * @param pitchPosition
      * @param members
      */
-    public GlyphValue (Shape                   shape,
-                       int                     interline,
-                       int                     id,
-                       int                     stemNumber,
-                       boolean                 withLedger,
-                       double                  pitchPosition,
-                       SortedSet<GlyphSection> members)
+    public GlyphValue (Shape              shape,
+                       int                interline,
+                       int                id,
+                       int                stemNumber,
+                       boolean            withLedger,
+                       double             pitchPosition,
+                       SortedSet<Section> members)
     {
         this.shape = shape;
         this.interline = interline;

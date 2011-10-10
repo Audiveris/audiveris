@@ -177,7 +177,7 @@ public class ScoreXmlReduction
     public static void main (String... args)
         throws FileNotFoundException, IOException, JAXBException
     {
-        //        // BINGO QUICK & DIRTY HACK!!!!!!!!!!!!!!!!!!!!!!!!
+        //        // TODO QUICK & DIRTY HACK!!!!!!!!!!!!!!!!!!!!!!!!
         //        String[] args = new String[] {
         //                            "u:/soft/audi-bugs/multipage-bis/haffner", "p",
         //                            "^Smartscore-10.2.1.xml"

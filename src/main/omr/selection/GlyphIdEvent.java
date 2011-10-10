@@ -17,14 +17,14 @@ package omr.selection;
  *
  * <dl>
  * <dt><b>Publishers:</b><dd>GlyphBoard, ShapeFocusBoard
- * <dt><b>Subscribers:</b><dd>GlyphLag, GlyphLagView
+ * <dt><b>Subscribers:</b><dd>GlyphLag
  * <dt><b>Readers:</b><dd>
  * </dl>
  *
  * @author Hervé Bitteur
  */
 public class GlyphIdEvent
-    extends GlyphLagEvent
+    extends SceneEvent
 {
     //~ Instance fields --------------------------------------------------------
 

@@ -23,9 +23,6 @@ public interface GhostDropListener<A>
 {
     //~ Methods ----------------------------------------------------------------
 
-    //---------//
-    // dropped //
-    //---------//
     /**
      * Call-back function to receive the drop event
      * @param e the handed event

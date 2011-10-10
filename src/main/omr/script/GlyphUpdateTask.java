@@ -11,12 +11,10 @@
 // </editor-fold>
 package omr.script;
 
-import omr.glyph.GlyphSection;
-import omr.glyph.GlyphsBuilder;
 import omr.glyph.SectionSets;
 import omr.glyph.facets.Glyph;
 
-import omr.run.Orientation;
+import omr.lag.Section;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
@@ -65,30 +63,13 @@ public abstract class GlyphUpdateTask
      * Creates a new GlyphUpdateTask object.
      *
      * @param sheet the sheet impacted
-     * @param orientation orientation of the containing lag
      * @param glyphs the collection of glyphs concerned by this task
      */
     public GlyphUpdateTask (Sheet             sheet,
-                            Orientation       orientation,
                             Collection<Glyph> glyphs)
     {
-        super(sheet, orientation, glyphs);
+        super(sheet, glyphs);
         sectionSets = SectionSets.createFromGlyphs(glyphs);
-    }
-
-    //-----------------//
-    // GlyphUpdateTask //
-    //-----------------//
-    /**
-     * Creates a new GlyphUpdateTask object, for vertical glyphs by default
-     *
-     * @param sheet the sheet impacted
-     * @param glyphs the collection of glyphs concerned by this task
-     */
-    public GlyphUpdateTask (Sheet             sheet,
-                            Collection<Glyph> glyphs)
-    {
-        this(sheet, Orientation.VERTICAL, glyphs);
     }
 
     //-----------------//
@@ -108,25 +89,22 @@ public abstract class GlyphUpdateTask
     @Override
     protected void retrieveGlyphs ()
     {
-        glyphs = new TreeSet<Glyph>(Glyph.globalComparator);
+        glyphs = new TreeSet<Glyph>(Glyph.abscissaComparator);
 
-        for (Collection<GlyphSection> set : sectionSets.getSets(
-            sheet,
-            orientation)) {
-            Glyph glyph = null;
+        for (Collection<Section> set : sectionSets.getSets(sheet)) {
+            Glyph      glyph = null;
 
-            if (orientation == Orientation.VERTICAL) {
-                SystemInfo system = set.iterator()
-                                       .next()
-                                       .getSystem();
-                glyph = system.addGlyph(system.buildGlyph(set));
-            } else {
-                glyph = GlyphsBuilder.buildGlyph(sheet.getScale(), set);
-                glyph = sheet.getHorizontalLag()
-                             .addGlyph(glyph);
-                logger.info("Recreated " + glyph);
-            }
-
+            //            if (orientation == Orientation.VERTICAL) {
+            SystemInfo system = set.iterator()
+                                   .next()
+                                   .getSystem();
+            glyph = system.addGlyph(system.buildGlyph(set));
+            //            } else {
+            //                glyph = GlyphsBuilder.buildGlyph(sheet.getScale(), set);
+            //                glyph = sheet.getScene()
+            //                             .addGlyph(glyph);
+            //                logger.info("Recreated " + glyph);
+            //            }
             glyphs.add(glyph);
         }
     }

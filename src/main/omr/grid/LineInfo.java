@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.grid;
 
-import omr.glyph.GlyphSection;
+import omr.lag.Section;
 
 import omr.score.common.PixelRectangle;
 
@@ -30,18 +30,12 @@ public interface LineInfo
 {
     //~ Methods ----------------------------------------------------------------
 
-    //---------------//
-    // getContourBox //
-    //---------------//
     /**
      * Report the absolute contour rectangle
      * @return the contour box (with minimum height of 1)
      */
     public PixelRectangle getContourBox ();
 
-    //-------------//
-    // getEndPoint //
-    //-------------//
     /**
      * Selector for the left or right ending point of the line
      * @param side proper horizontal side
@@ -49,63 +43,42 @@ public interface LineInfo
      */
     public Point2D getEndPoint (HorizontalSide side);
 
-    //-------//
-    // getId //
-    //-------//
     /**
      * Report the id of this line
      * @return the line id (debugging info)
      */
     public int getId ();
 
-    //--------------//
-    // getLeftPoint //
-    //--------------//
     /**
      * Selector for the left point of the line
      * @return left point
      */
     public Point2D getLeftPoint ();
 
-    //---------------//
-    // getRightPoint //
-    //---------------//
     /**
      * Selector for the right point of the line
      * @return right point
      */
     public Point2D getRightPoint ();
 
-    //-------------//
-    // getSections //
-    //-------------//
     /**
      * Report the lag sections that compose the staff line
      * @return a collection of the line sections
      */
-    public Collection<GlyphSection> getSections ();
+    public Collection<Section> getSections ();
 
-    //---------//
-    // cleanup //
-    //---------//
     /**
      * Cleanup the line, by removing the sections that compose the line and by
      * extending the external crossing sections
      */
     public void cleanup ();
 
-    //--------//
-    // render //
-    //--------//
     /**
      * Paint the computed line on the provided environment.
      * @param g     the graphics context
      */
     public void render (Graphics2D g);
 
-    //-----//
-    // yAt //
-    //-----//
     /**
      * Retrieve the staff line ordinate at given abscissa x, using int values
      *
@@ -114,9 +87,6 @@ public interface LineInfo
      */
     public int yAt (int x);
 
-    //-----//
-    // yAt //
-    //-----//
     /**
      * Retrieve the staff line ordinate at given abscissa x, using double values
      *

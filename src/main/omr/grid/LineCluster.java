@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.grid;
 
-import omr.glyph.GlyphSection;
+import omr.lag.Section;
 
 import omr.log.Logger;
 
@@ -459,7 +459,7 @@ public class LineCluster
 
                 // Check for horizontal room
                 // TODO: Should check the resulting thickness !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                for (GlyphSection section : line.fil.getMembers()) {
+                for (Section section : line.fil.getMembers()) {
                     if (section.getContourBox()
                                .intersects(filBox)) {
                         if (logger.isFineEnabled()) {
@@ -657,7 +657,7 @@ public class LineCluster
             }
         }
 
-        LineFilament ancestor = pivot.getAncestor();
+        LineFilament ancestor = (LineFilament) pivot.getAncestor();
 
         // Loop on all combs that involve this filament
         for (FilamentComb comb : pivot.getCombs()
@@ -676,8 +676,8 @@ public class LineCluster
 
             // Dispatch content of comb to proper lines
             for (int i = 0; i < comb.getCount(); i++) {
-                LineFilament fil = comb.getFilament(i)
-                                       .getAncestor();
+                LineFilament fil = (LineFilament) comb.getFilament(i)
+                                                      .getAncestor();
                 LineCluster  cluster = fil.getCluster();
 
                 if (cluster == null) {

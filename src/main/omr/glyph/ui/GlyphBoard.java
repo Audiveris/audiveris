@@ -13,7 +13,7 @@ package omr.glyph.ui;
 
 import omr.constant.ConstantSet;
 
-import omr.glyph.GlyphLag;
+import omr.glyph.Scene;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
@@ -45,9 +45,9 @@ import org.jdesktop.application.Task;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
@@ -64,7 +64,7 @@ import javax.swing.event.ChangeListener;
  * {@link Glyph} information, with several spinners : <ol>
  *
  * <li>The universal <b>globalSpinner</b>, to browse through <i>all</i> glyphs
- * currently defined in the lag (note that glyphs can be dynamically created or
+ * currently defined in the scene (note that glyphs can be dynamically created or
  * destroyed). This includes all the various (vertical) sticks (which are
  * special glyphs) built during the previous steps, for example the bar
  * lines. For other instances (such as for HorizontalsBuilder), these would be
@@ -95,12 +95,10 @@ public class GlyphBoard
     private static final Logger logger = Logger.getLogger(GlyphBoard.class);
 
     /** Events this board is interested in */
-    private static final Collection<Class<?extends UserEvent>> eventClasses = new ArrayList<Class<?extends UserEvent>>();
-
-    static {
-        eventClasses.add(GlyphEvent.class);
-        eventClasses.add(GlyphSetEvent.class);
-    }
+    private static final Class[] eventClasses = new Class[] {
+                                                    GlyphEvent.class,
+                                                    GlyphSetEvent.class
+                                                };
 
     /** Predicate for known glyphs */
     protected static final Predicate<Glyph> knownPredicate = new Predicate<Glyph>() {
@@ -168,29 +166,23 @@ public class GlyphBoard
      *
      * @param unitName name of the owning unit
      * @param controller the underlying GlyphsController
-     * @param specificGlyphs additional collection of glyphs, or null
      * @param useKnownSpinner true if a spinner is to be used for known glyphs
      */
-    public GlyphBoard (String                     unitName,
-                       GlyphsController           controller,
-                       Collection<?extends Glyph> specificGlyphs,
-                       boolean                    useKnownSpinner)
+    public GlyphBoard (String           unitName,
+                       GlyphsController controller,
+                       boolean          useKnownSpinner)
     {
         this(unitName, controller);
 
         // Model for globalSpinner
-        globalSpinner = makeGlyphSpinner(
-            controller.getLag(),
-            specificGlyphs,
-            null);
+        globalSpinner = makeGlyphSpinner(controller.getScene(), null);
         globalSpinner.setName("globalSpinner");
         globalSpinner.setToolTipText("General spinner for any glyph id");
 
         // Model for knownSpinner?
         if (useKnownSpinner) {
             knownSpinner = makeGlyphSpinner(
-                controller.getLag(),
-                specificGlyphs,
+                controller.getScene(),
                 knownPredicate);
             knownSpinner.setName("knownSpinner");
             knownSpinner.setToolTipText("Specific spinner for known glyphs");
@@ -226,7 +218,7 @@ public class GlyphBoard
         super(
             name,
             "Glyph",
-            controller.getLag().getSelectionService(),
+            controller.getScene().getSceneService(),
             eventClasses,
             true);
 
@@ -289,6 +281,10 @@ public class GlyphBoard
     @Override
     public void onEvent (UserEvent event)
     {
+        if (logger.isFineEnabled()) {
+            logger.fine("GlyphBoard event:" + event);
+        }
+
         try {
             // Ignore RELEASING
             if (event.movement == MouseMovement.RELEASING) {
@@ -303,78 +299,11 @@ public class GlyphBoard
             if (event instanceof GlyphEvent) {
                 // Display Glyph parameters (while preventing circular updates)
                 selfUpdating = true;
-
-                GlyphEvent glyphEvent = (GlyphEvent) event;
-                Glyph      glyph = glyphEvent.getData();
-
-                // Active ?
-                if (glyph != null) {
-                    if (glyph.isActive()) {
-                        if (glyph.isVirtual()) {
-                            active.setText("Virtual");
-                        } else {
-                            active.setText("Active");
-                        }
-                    } else {
-                        active.setText("Non Active");
-                    }
-                } else {
-                    active.setText("");
-                }
-
-                // Dump button and deassign button
-                dumpAction.setEnabled(glyph != null);
-                getDeassignAction()
-                    .setEnabled((glyph != null) && glyph.isKnown());
-
-                // Shape text and icon
-                Shape shape = (glyph != null) ? glyph.getShape() : null;
-
-                if (shape != null) {
-                    if ((shape == Shape.GLYPH_PART) &&
-                        (glyph.getPartOf() != null)) {
-                        shapeField.setText(
-                            shape + " of #" + glyph.getPartOf().getId());
-                    } else {
-                        shapeField.setText(shape.toString());
-                    }
-
-                    shapeIcon.setIcon(shape.getDecoratedSymbol());
-                } else {
-                    shapeField.setText("");
-                    shapeIcon.setIcon(null);
-                }
-
-                // Global Spinner
-                if (globalSpinner != null) {
-                    if (glyph != null) {
-                        globalSpinner.setValue(glyph.getId());
-                    } else {
-                        globalSpinner.setValue(NO_VALUE);
-                    }
-                }
-
-                // Known Spinner
-                if (knownSpinner != null) {
-                    if (glyph != null) {
-                        knownSpinner.setValue(
-                            knownPredicate.check(glyph) ? glyph.getId() : NO_VALUE);
-                    } else {
-                        knownSpinner.setValue(NO_VALUE);
-                    }
-                }
-
+                handleEvent((GlyphEvent) event);
                 selfUpdating = false;
             } else if (event instanceof GlyphSetEvent) {
                 // Display count of glyphs in the glyph set
-                GlyphSetEvent glyphsEvent = (GlyphSetEvent) event;
-                Set<Glyph>    glyphs = glyphsEvent.getData();
-
-                if ((glyphs != null) && !glyphs.isEmpty()) {
-                    count.setText(Integer.toString(glyphs.size()));
-                } else {
-                    count.setText("");
-                }
+                handleEvent((GlyphSetEvent) event);
             }
         } catch (Exception ex) {
             logger.warning(getClass().getName() + " onEvent error", ex);
@@ -446,22 +375,107 @@ public class GlyphBoard
     /**
      * Convenient method to allocate a glyph-based spinner
      *
-     * @param lag the underlying glyph lag
-     * @param specificGlyphs additional specific glyph collection, or null
+     * @param scene the underlying glyph scene
      * @param predicate a related glyph predicate, if any
      * @return the spinner built
      */
-    protected JSpinner makeGlyphSpinner (GlyphLag                   lag,
-                                         Collection<?extends Glyph> specificGlyphs,
-                                         Predicate<Glyph>           predicate)
+    protected JSpinner makeGlyphSpinner (Scene            scene,
+                                         Predicate<Glyph> predicate)
     {
         JSpinner spinner = new JSpinner();
-        spinner.setModel(new SpinnerGlyphModel(lag, specificGlyphs, predicate));
+        spinner.setModel(new SpinnerGlyphModel(scene, predicate));
         spinner.addChangeListener(this);
         SpinnerUtilities.setRightAlignment(spinner);
         SpinnerUtilities.setEditable(spinner, true);
 
         return spinner;
+    }
+
+    //-------------//
+    // handleEvent //
+    //-------------//
+    /**
+     * Interest in Glyph
+     * @param GlyphEvent
+     */
+    private void handleEvent (GlyphEvent glyphEvent)
+    {
+        // Display Glyph parameters
+        Glyph glyph = glyphEvent.getData();
+
+        // Active ?
+        if (glyph != null) {
+            if (glyph.isActive()) {
+                if (glyph.isVirtual()) {
+                    active.setText("Virtual");
+                } else {
+                    active.setText("Active");
+                }
+            } else {
+                active.setText("Non Active");
+            }
+        } else {
+            active.setText("");
+        }
+
+        // Dump button and deassign button
+        dumpAction.setEnabled(glyph != null);
+        getDeassignAction()
+            .setEnabled((glyph != null) && glyph.isKnown());
+
+        // Shape text and icon
+        Shape shape = (glyph != null) ? glyph.getShape() : null;
+
+        if (shape != null) {
+            if ((shape == Shape.GLYPH_PART) && (glyph.getPartOf() != null)) {
+                shapeField.setText(shape + " of #" + glyph.getPartOf().getId());
+            } else {
+                shapeField.setText(shape.toString());
+            }
+
+            shapeIcon.setIcon(shape.getDecoratedSymbol());
+        } else {
+            shapeField.setText("");
+            shapeIcon.setIcon(null);
+        }
+
+        // Global Spinner
+        if (globalSpinner != null) {
+            if (glyph != null) {
+                globalSpinner.setValue(glyph.getId());
+            } else {
+                globalSpinner.setValue(NO_VALUE);
+            }
+        }
+
+        // Known Spinner
+        if (knownSpinner != null) {
+            if (glyph != null) {
+                knownSpinner.setValue(
+                    knownPredicate.check(glyph) ? glyph.getId() : NO_VALUE);
+            } else {
+                knownSpinner.setValue(NO_VALUE);
+            }
+        }
+    }
+
+    //-------------//
+    // handleEvent //
+    //-------------//
+    /**
+     * Interest in GlyphSet
+     * @param GlyphSetEvent
+     */
+    private void handleEvent (GlyphSetEvent glyphSetEvent)
+    {
+        // Display count of glyphs in the glyph set
+        Set<Glyph> glyphs = glyphSetEvent.getData();
+
+        if ((glyphs != null) && !glyphs.isEmpty()) {
+            count.setText(Integer.toString(glyphs.size()));
+        } else {
+            count.setText("");
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -505,13 +519,15 @@ public class GlyphBoard
         @Implement(ChangeListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            if ((controller != null) && !eventList.isEmpty()) {
+            List<Class> classes = Arrays.asList(eventClasses);
+
+            if ((controller != null) && !classes.isEmpty()) {
                 // Do we have selections for glyph set, or just for glyph?
-                if (eventList.contains(GlyphEvent.class)) {
+                if (classes.contains(GlyphEvent.class)) {
                     final Glyph glyph = (Glyph) selectionService.getSelection(
                         GlyphEvent.class);
 
-                    if (eventList.contains(GlyphSetEvent.class)) {
+                    if (classes.contains(GlyphSetEvent.class)) {
                         final Set<Glyph> glyphs = (Set<Glyph>) selectionService.getSelection(
                             GlyphSetEvent.class);
 

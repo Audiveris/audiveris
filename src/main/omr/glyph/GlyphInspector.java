@@ -16,6 +16,8 @@ import omr.constant.ConstantSet;
 import omr.glyph.CompoundBuilder.CompoundAdapter;
 import omr.glyph.facets.Glyph;
 
+import omr.lag.Lag;
+
 import omr.log.Logger;
 
 import omr.score.common.PixelRectangle;
@@ -55,7 +57,7 @@ public class GlyphInspector
     private final Scale scale;
 
     /** Related lag */
-    private final GlyphLag lag;
+    private final Lag lag;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -193,6 +195,10 @@ public class GlyphInspector
      */
     public void inspectGlyphs (double maxDoubt)
     {
+        if (logger.isFineEnabled()) {
+            logger.info("S#" + system.getId() + " inspectGlyphs start");
+        }
+
         // For Symbols & Leaves
         system.retrieveGlyphs();
         system.removeInactiveGlyphs();

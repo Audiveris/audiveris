@@ -11,12 +11,16 @@
 // </editor-fold>
 package omr.glyph.pattern;
 
+import omr.constant.ConstantSet;
+
 import omr.glyph.Glyphs;
+import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 import omr.glyph.text.TextBlob;
 
 import omr.log.Logger;
 
+import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
 import omr.util.Predicate;
@@ -25,6 +29,7 @@ import java.awt.Point;
 import java.awt.Polygon;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.SortedSet;
@@ -39,9 +44,9 @@ import java.util.TreeSet;
  * <p>Typical sequence:<ol>
  * <li> Define a set of regions within the system</li>
  * <li> Retrieve and filter the set of glyphs for each region</li>
- * <li> Separate the glyphs into smalls and larges</li>
+ * <li> Separate the glyphs into small and large instances</li>
  * <li> Aggregate large glyphs into blobs</li>
- * <li> Try to insert small glyphs into the blobs</li>
+ * <li> Insert small glyphs into the blobs as appropriate</li>
  * <li> Check each blob for text</li>
  * </ol>
  *
@@ -55,6 +60,9 @@ public abstract class AbstractBlobPattern
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
+
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
         AbstractBlobPattern.class);
@@ -63,6 +71,15 @@ public abstract class AbstractBlobPattern
 
     /** Number of glyphs successfully modified */
     protected int successCount = 0;
+
+    /** Minimum text glyph height, for not being a small glyph */
+    protected final int minGlyphHeight;
+
+    /** Maximum text glyph height */
+    protected final int maxGlyphHeight;
+
+    /** Minimum blob weight */
+    protected final int minBlobWeight;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -79,6 +96,10 @@ public abstract class AbstractBlobPattern
                                 SystemInfo system)
     {
         super(name, system);
+
+        minGlyphHeight = scale.toPixels(constants.minGlyphHeight);
+        maxGlyphHeight = scale.toPixels(constants.maxGlyphHeight);
+        minBlobWeight = scale.toPixels(constants.minBlobWeight);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -132,7 +153,12 @@ public abstract class AbstractBlobPattern
         return buildPolygon(Arrays.asList(points));
     }
 
-    /** Define the sequence of regions to process */
+    //--------------//
+    // buildRegions //
+    //--------------//
+    /**
+     * Define the sequence of regions to process
+     */
     protected abstract List<Region> buildRegions ();
 
     //~ Inner Classes ----------------------------------------------------------
@@ -155,9 +181,6 @@ public abstract class AbstractBlobPattern
 
         /** Blobs not impacted by remaining glyphs (too far on right) */
         protected List<TextBlob> completedBlobs = new ArrayList<TextBlob>();
-
-        /** Glyphs too small to be used for blob definition */
-        protected List<Glyph> smallGlyphs = new ArrayList<Glyph>();
 
         /** To filter the candidates (already limited to the region)  */
         protected Predicate<Glyph> additionalFilter = new Predicate<Glyph>() {
@@ -200,10 +223,13 @@ public abstract class AbstractBlobPattern
                     name);
             }
 
+            /** Glyphs too small to be used for initial blob definition */
+            List<Glyph> smallGlyphs = new ArrayList<Glyph>();
+
             /** For debug */
             int blobIndex = 0;
 
-            // Separate the glyphs into small and large ones
+            // Separate the glyphs into small and large ones (and discard some)
             glyphLoop: 
             for (Glyph glyph : retrieveGlyphs(additionalFilter)) {
                 if (isSmall(glyph)) {
@@ -245,8 +271,11 @@ public abstract class AbstractBlobPattern
 
             completedBlobs.addAll(pendingBlobs);
 
+            // Get rid of vertical or too light blobs!
+            purgeSpuriousBlobs(completedBlobs);
+
             // Re-insert small glyphs into proper blobs
-            insertSmallGlyphs(completedBlobs);
+            insertSmallGlyphs(smallGlyphs, completedBlobs);
 
             // Check each of these blobs
             for (TextBlob blob : completedBlobs) {
@@ -269,7 +298,8 @@ public abstract class AbstractBlobPattern
         public SortedSet<Glyph> retrieveGlyphs (final Predicate<Glyph> filter)
         {
             SortedSet<Glyph> glyphs = new TreeSet<Glyph>(
-                Glyph.globalComparator);
+                Glyph.abscissaComparator);
+
             glyphs.addAll(
                 Glyphs.lookupGlyphs(
                     system.getGlyphs(),
@@ -296,7 +326,17 @@ public abstract class AbstractBlobPattern
          */
         protected boolean isSmall (Glyph glyph)
         {
-            return false; // By default, we do not put small glyphs apart
+            // Test on weight
+            if (glyph.getWeight() < minBlobWeight) {
+                return true;
+            }
+
+            // Test on height
+            if (glyph.getContourBox().height < minGlyphHeight) {
+                return true;
+            }
+
+            return false;
         }
 
         //-----------//
@@ -316,6 +356,27 @@ public abstract class AbstractBlobPattern
         //----------------//
         protected boolean checkCandidate (Glyph glyph)
         {
+            // Respect user choice!
+            if (glyph.isManualShape()) {
+                return false;
+            }
+
+            // Don't go with blacklisted text
+            if (glyph.isShapeForbidden(Shape.TEXT)) {
+                return false;
+            }
+
+            Shape shape = glyph.getShape();
+
+            if ((shape == Shape.TUPLET_SIX) || (shape == Shape.TUPLET_THREE)) {
+                return false;
+            }
+
+            // Discard too tall glyphs
+            if (glyph.getContourBox().height > maxGlyphHeight) {
+                return false;
+            }
+
             return true;
         }
 
@@ -325,13 +386,16 @@ public abstract class AbstractBlobPattern
         /**
          * Re-insert the small glyphs that had been left aside when initially
          * building the blobs.
+         * @param smallGlyphs the small glyphs to insert
          * @param blobs the collection of blobs to update
          */
-        private void insertSmallGlyphs (List<TextBlob> blobs)
+        private void insertSmallGlyphs (List<Glyph>    smallGlyphs,
+                                        List<TextBlob> blobs)
         {
             glyphLoop: 
+
+            // Look for a suitable blob
             for (Glyph glyph : smallGlyphs) {
-                // Look for a suitable blob
                 for (TextBlob blob : blobs) {
                     if (blob.tryToInsertSmallGlyph(glyph)) {
                         if (logger.isFineEnabled()) {
@@ -348,5 +412,51 @@ public abstract class AbstractBlobPattern
                 }
             }
         }
+
+        //--------------------//
+        // purgeSpuriousBlobs //
+        //--------------------//
+        /**
+         * Remove blobs that are vertical or too small
+         * @param blobs the population to purge
+         */
+        private void purgeSpuriousBlobs (List<TextBlob> blobs)
+        {
+            for (Iterator<TextBlob> it = blobs.iterator(); it.hasNext();) {
+                TextBlob blob = it.next();
+
+                int      blobWeight = blob.getWeight();
+
+                if (blobWeight < minBlobWeight) {
+                    logger.info(
+                        "Purged " + blob + " weight:" +
+                        (float) scale.pixelsToAreaFrac(blobWeight));
+                    it.remove();
+                } else if (blob.getAverageLine()
+                               .isVertical()) {
+                    logger.info("Purged vertical " + blob);
+                    it.remove();
+                }
+            }
+        }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        Scale.Fraction     minGlyphHeight = new Scale.Fraction(
+            0.8,
+            "Minimum height for characters");
+        Scale.Fraction     maxGlyphHeight = new Scale.Fraction(
+            4,
+            "Maximum height for a text glyph");
+        Scale.AreaFraction minBlobWeight = new Scale.AreaFraction(
+            0.1,
+            "Minimum normalized weight for a blob character");
     }
 }

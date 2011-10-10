@@ -20,10 +20,10 @@ import omr.log.Logger;
 
 import omr.score.common.PixelDimension;
 
+import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
 import omr.selection.PixelLevelEvent;
 import omr.selection.SelectionService;
-import omr.selection.LocationEvent;
 
 import omr.util.Implement;
 import omr.util.JaiLoader;
@@ -104,7 +104,7 @@ public class Picture
 
     /** Service object where gray level of pixel is to be written to when so
        asked for by calling the update method */
-    private SelectionService levelService;
+    private final SelectionService levelService;
 
     /** Remember if we have actually rotated the image */
     private boolean rotated = false;
@@ -136,11 +136,14 @@ public class Picture
      * Build a picture instance from a given image.
      *
      * @param image the provided image
+     * @param levelService service where pixel events are to be written
      * @throws ImageFormatException
      */
-    public Picture (RenderedImage image)
+    public Picture (RenderedImage    image,
+                    SelectionService levelService)
         throws ImageFormatException
     {
+        this.levelService = levelService;
         setImage(image);
     }
 
@@ -268,20 +271,6 @@ public class Picture
         } else {
             return (grayFactor / 2) + (grayFactor * pixel[0]);
         }
-    }
-
-    //-----------------//
-    // setLevelService //
-    //-----------------//
-    /**
-     * Inject the service where pixel gray level must be written to,
-     * when triggered through the update method.
-     *
-     * @param levelService the output selection object
-     */
-    public void setLevelService (SelectionService levelService)
-    {
-        this.levelService = levelService;
     }
 
     //-----------//

@@ -15,10 +15,11 @@ import omr.glyph.Evaluation;
 import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphNetwork;
-import omr.glyph.GlyphSection;
 import omr.glyph.Shape;
 import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
+
+import omr.lag.Section;
 
 import omr.log.Logger;
 
@@ -164,7 +165,7 @@ public class StemPattern
             boolean known = false;
             Glyph   glyph = null;
 
-            for (GlyphSection section : stem.getMembers()) {
+            for (Section section : stem.getMembers()) {
                 glyph = section.getGlyph();
 
                 if ((glyph != null) && glyph.isWellKnown()) {

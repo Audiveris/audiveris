@@ -18,7 +18,7 @@ package omr.selection;
  *
  * <dl>
  * <dt><b>Publishers:</b><dd>SectionBoard
- * <dt><b>Subscribers:</b><dd>GlyphLagView, Lag, LagView
+ * <dt><b>Subscribers:</b><dd>Lag, LagView
  * <dt><b>Readers:</b><dd>
  * </dl>
  * @author Hervé Bitteur

@@ -14,8 +14,9 @@ package omr.glyph.facets;
 import omr.check.Result;
 import omr.check.SuccessResult;
 
-import omr.glyph.GlyphSection;
 import omr.glyph.Shape;
+
+import omr.lag.Section;
 
 import omr.score.common.PixelPoint;
 
@@ -41,10 +42,10 @@ class BasicComposition
 
     /**
      * Sections that compose this glyph. The collection is kept sorted
-     * on natural GlyphSection order (abscissa then ordinate, even with mixed
+     * on natural Section order (abscissa then ordinate, even with mixed
      * section orientations).
      */
-    private final SortedSet<GlyphSection> members = new TreeSet<GlyphSection>();
+    private final SortedSet<Section> members = new TreeSet<Section>();
 
     /** Contained parts, if this glyph is a compound */
     private final Set<Glyph> parts = new LinkedHashSet<Glyph>();
@@ -81,7 +82,7 @@ class BasicComposition
             return false;
         }
 
-        for (GlyphSection section : members) {
+        for (Section section : members) {
             if (section.getGlyph() != glyph) {
                 return false;
             }
@@ -96,7 +97,7 @@ class BasicComposition
     public SystemInfo getAlienSystem (SystemInfo system)
     {
         // Direct members
-        for (GlyphSection section : members) {
+        for (Section section : members) {
             if (section.getSystem() != system) {
                 return section.getSystem();
             }
@@ -132,7 +133,7 @@ class BasicComposition
     //-----------------//
     // getFirstSection //
     //-----------------//
-    public GlyphSection getFirstSection ()
+    public Section getFirstSection ()
     {
         return members.first();
     }
@@ -140,7 +141,7 @@ class BasicComposition
     //------------//
     // getMembers //
     //------------//
-    public SortedSet<GlyphSection> getMembers ()
+    public SortedSet<Section> getMembers ()
     {
         return members;
     }
@@ -211,7 +212,7 @@ class BasicComposition
                                   Linking linkSections)
     {
         // Update glyph info in other sections
-        for (GlyphSection section : other.getMembers()) {
+        for (Section section : other.getMembers()) {
             addSection(section, linkSections);
         }
     }
@@ -219,8 +220,8 @@ class BasicComposition
     //------------//
     // addSection //
     //------------//
-    public void addSection (GlyphSection section,
-                            Linking      link)
+    public void addSection (Section section,
+                            Linking link)
     {
         if (section == null) {
             throw new IllegalArgumentException("Cannot add a null section");
@@ -243,12 +244,24 @@ class BasicComposition
         glyph.invalidateCache();
     }
 
+    //------------------//
+    // addSections //
+    //------------------//
+    public void addSections (Glyph   other,
+                             Linking linkSections)
+    {
+        // Update glyph info in other sections
+        for (Section section : other.getMembers()) {
+            addSection(section, linkSections);
+        }
+    }
+
     //-----------------//
     // containsSection //
     //-----------------//
     public boolean containsSection (int id)
     {
-        for (GlyphSection section : getMembers()) {
+        for (Section section : getMembers()) {
             if (section.getId() == id) {
                 return true;
             }
@@ -262,7 +275,7 @@ class BasicComposition
     //-------------//
     public void cutSections ()
     {
-        for (GlyphSection section : members) {
+        for (Section section : members) {
             if (section.getGlyph() == glyph) {
                 section.setGlyph(null);
             }
@@ -286,7 +299,7 @@ class BasicComposition
     //-----------------//
     public void linkAllSections ()
     {
-        for (GlyphSection section : getMembers()) {
+        for (Section section : getMembers()) {
             section.setGlyph(glyph);
         }
     }
@@ -300,7 +313,7 @@ class BasicComposition
      */
     public void translate (PixelPoint vector)
     {
-        for (GlyphSection section : getMembers()) {
+        for (Section section : getMembers()) {
             section.translate(vector);
         }
     }

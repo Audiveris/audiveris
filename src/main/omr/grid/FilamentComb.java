@@ -88,7 +88,7 @@ public class FilamentComb
     //----------//
     public int getIndex (LineFilament filament)
     {
-        LineFilament ancestor = filament.getAncestor();
+        LineFilament ancestor = (LineFilament) filament.getAncestor();
 
         for (int index = 0; index < filaments.size(); index++) {
             LineFilament fil = filaments.get(index);
@@ -163,8 +163,8 @@ public class FilamentComb
           .append(filaments.size());
 
         for (int i = 0; i < filaments.size(); i++) {
-            LineFilament fil = filaments.get(i)
-                                        .getAncestor();
+            LineFilament fil = (LineFilament) filaments.get(i)
+                                                       .getAncestor();
             double       y = ys.get(i);
             sb.append(" F#")
               .append(fil.getId())

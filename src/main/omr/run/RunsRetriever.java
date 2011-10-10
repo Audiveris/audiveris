@@ -177,7 +177,7 @@ public class RunsRetriever
                 processPosition(pp, cMin, cMax);
             }
         } else {
-            // Parallel
+            // Parallel (TODO: should use Java 7 fork/join someday...)
             try {
                 // Browse one dimension
                 List<Callable<Void>> tasks = new ArrayList<Callable<Void>>(
@@ -197,6 +197,7 @@ public class RunsRetriever
                             });
                 }
 
+                // Launch the tasks and wait for their completion
                 OmrExecutors.getHighExecutor()
                             .invokeAll(tasks);
             } catch (InterruptedException ex) {

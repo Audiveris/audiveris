@@ -30,11 +30,11 @@ public class Run
 
     /** Number of pixels */
     @XmlAttribute
-    private int length;
+    private final int length;
 
     /** Average pixel level along the run */
     @XmlAttribute
-    private int level;
+    private final int level;
 
     /** Abscissa (for horizontal) / ordinate (for vertical) of first pixel */
     @XmlAttribute
@@ -71,6 +71,7 @@ public class Run
     /** Meant for XML unmarshalling only */
     private Run ()
     {
+        this(0,0,0);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -201,6 +202,7 @@ public class Run
     // setSection //
     //------------//
     /**
+     * Records the containing section
      * @param section the section to set
      */
     public void setSection (Section section)
@@ -212,7 +214,8 @@ public class Run
     // getSection //
     //------------//
     /**
-     * @return the section
+     * Report the section that contains this run
+     * @return the containing section, or null if none
      */
     public Section getSection ()
     {

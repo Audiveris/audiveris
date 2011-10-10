@@ -14,7 +14,6 @@ package omr.lag;
 import omr.math.Histogram;
 
 import omr.run.Orientation;
-import omr.run.Oriented;
 import omr.run.Run;
 import omr.run.RunsTable;
 
@@ -39,8 +38,11 @@ public class LagTest
 {
     //~ Instance fields --------------------------------------------------------
 
-    MyLag vLag;
-    MyLag hLag;
+    // Lags and RunsTable instances
+    Lag       vLag;
+    RunsTable vTable;
+    Lag       hLag;
+    RunsTable hTable;
 
     //~ Methods ----------------------------------------------------------------
 
@@ -50,7 +52,7 @@ public class LagTest
     public void testCreateSectionNoRun ()
     {
         try {
-            MySection s = hLag.createSection(123, null);
+            Section s = hLag.createSection(123, null);
             fail(
                 "IllegalArgumentException should be raised" +
                 " when creating section with a null run");
@@ -61,7 +63,9 @@ public class LagTest
 
     public void testGetRectangleCendroidEmpty ()
     {
-        MySection      s2 = hLag.createSection(180, new Run(100, 10, 127));
+        Section        s2 = hLag.createSection(
+            180,
+            createRun(hTable, 180, 100, 10));
 
         PixelRectangle roi = new PixelRectangle(0, 0, 20, 20);
         Point          pt = null;
@@ -73,17 +77,17 @@ public class LagTest
 
     public void testGetRectangleCendroidHori ()
     {
-        MySection s2 = hLag.createSection(180, new Run(100, 10, 127));
-        s2.append(new Run(102, 20, 127));
-        s2.append(new Run(102, 20, 127));
-        s2.append(new Run(102, 20, 127));
-        s2.setSignature();
+        int     p = 180;
+        Section s1 = hLag.createSection(180, createRun(hTable, p++, 100, 10));
+        s1.append(createRun(hTable, p++, 102, 20));
+        s1.append(createRun(hTable, p++, 102, 20));
+        s1.append(createRun(hTable, p++, 102, 20));
 
         PixelRectangle roi = null;
         Point          pt = null;
 
         roi = new PixelRectangle(100, 180, 1, 1);
-        pt = s2.getRectangleCentroid(roi);
+        pt = s1.getRectangleCentroid(roi);
         System.out.println("roi=" + roi + " pt=" + pt);
 
         PixelPoint expected = new PixelPoint(100, 180);
@@ -92,7 +96,7 @@ public class LagTest
 
     public void testGetRectangleCendroidNull ()
     {
-        MySection s2 = hLag.createSection(180, new Run(100, 10, 127));
+        Section s2 = hLag.createSection(180, createRun(hTable, 180, 100, 10));
 
         try {
             PixelRectangle roi = null;
@@ -109,20 +113,22 @@ public class LagTest
 
     public void testGetRectangleCendroidVert ()
     {
-        MySection s2 = vLag.createSection(180, new Run(100, 10, 127));
-        s2.append(new Run(102, 20, 127));
-        s2.append(new Run(102, 20, 127));
-        s2.append(new Run(102, 20, 127));
-        s2.setSignature();
+        int     p = 50;
+        Section s1 = vLag.createSection(p, createRun(vTable, p, 100, 10));
+        p++;
+        s1.append(createRun(vTable, p++, 102, 20));
+        s1.append(createRun(vTable, p++, 102, 20));
+        s1.append(createRun(vTable, p++, 102, 20));
+        s1.drawAscii();
 
         PixelRectangle roi = null;
         Point          pt = null;
 
-        roi = new PixelRectangle(179, 102, 4, 3);
-        pt = s2.getRectangleCentroid(roi);
+        roi = new PixelRectangle(48, 102, 5, 3);
+        pt = s1.getRectangleCentroid(roi);
         System.out.println("roi=" + roi + " pt=" + pt);
 
-        PixelPoint expected = new PixelPoint(181, 104);
+        PixelPoint expected = new PixelPoint(51, 103);
         assertEquals("Wrong pt", expected, pt);
     }
 
@@ -131,21 +137,18 @@ public class LagTest
     //-----------------//
     public void testGetSections ()
     {
-        MySection s2 = vLag.createSection(180, new Run(100, 10, 127));
+        Section s2 = vLag.createSection(180, new Run(100, 10, 127));
         s2.append(new Run(101, 20, 127));
-        s2.setSignature();
 
-        MySection s3 = vLag.createSection(180, new Run(100, 10, 127));
+        Section s3 = vLag.createSection(180, new Run(100, 10, 127));
         s3.append(new Run(101, 20, 127));
-        s3.setSignature();
 
-        List<MySection> sections = new ArrayList<MySection>();
+        List<Section> sections = new ArrayList<Section>();
         sections.add(s2);
         sections.add(s3);
         Collections.sort(sections, Section.idComparator);
 
-        List<MySection> lagSections = new ArrayList<MySection>(
-            vLag.getSections());
+        List<Section> lagSections = new ArrayList<Section>(vLag.getSections());
         Collections.sort(lagSections, Section.idComparator);
         assertEquals("Retrieved sections.", sections, lagSections);
     }
@@ -155,16 +158,14 @@ public class LagTest
     //-------------------//
     public void testGetSectionsIn ()
     {
-        MySection s2 = vLag.createSection(180, new Run(100, 10, 127));
+        Section s2 = vLag.createSection(180, new Run(100, 10, 127));
         s2.append(new Run(101, 20, 127));
-        s2.setSignature();
 
-        MySection s3 = vLag.createSection(200, new Run(150, 10, 127));
+        Section s3 = vLag.createSection(200, new Run(150, 10, 127));
         s3.append(new Run(161, 20, 127));
         s3.append(new Run(170, 15, 127));
-        s3.setSignature();
 
-        List<MySection> founds = null;
+        List<Section> founds = null;
 
         founds = vLag.getSectionsIn(new Rectangle(0, 0, 0, 0));
         assertEquals("No section.", 0, founds.size());
@@ -182,14 +183,14 @@ public class LagTest
     public void testHLag ()
     {
         assertNotNull("Lag hLag was not allocated", hLag);
-        assertFalse("hLag is not vertical", hLag.isVertical());
+        assertFalse("hLag is not vertical", hLag.getOrientation().isVertical());
     }
 
     public void testHSection ()
     {
         // Test of horizontal section
-        Run       r1 = new Run(100, 10, 127);
-        MySection s1 = hLag.createSection(180, r1);
+        Run     r1 = new Run(100, 10, 127);
+        Section s1 = hLag.createSection(180, r1);
         hLag.dump(null);
 
         Run r2 = new Run(101, 20, 127);
@@ -208,7 +209,8 @@ public class LagTest
     public void testHabsolute ()
     {
         Point      cp = new Point(12, 34);
-        PixelPoint xy = hLag.absolute(cp);
+        PixelPoint xy = hLag.getOrientation()
+                            .absolute(cp);
         assertEquals("Non expected switch.", cp, xy);
     }
 
@@ -218,7 +220,8 @@ public class LagTest
     public void testHoriented ()
     {
         PixelPoint xy = new PixelPoint(12, 34);
-        Point      cp = hLag.oriented(xy);
+        Point      cp = hLag.getOrientation()
+                            .oriented(xy);
         assertEquals("Non expected switch.", cp, xy);
     }
 
@@ -227,64 +230,19 @@ public class LagTest
     //-------------------//
     public void testPurgeTinySections ()
     {
-        MySection s2 = vLag.createSection(180, new Run(100, 10, 127));
-        s2.append(new Run(101, 20, 127));
+        Section s1 = vLag.createSection(10, createRun(vTable, 10, 25, 35));
+        s1.append(createRun(vTable, 11, 20, 36));
+        s1.dump();
+
+        Section s2 = vLag.createSection(20, createRun(vTable, 20, 10, 30));
         s2.dump();
 
-        MySection s3 = vLag.createSection(200, new Run(150, 10, 127));
-        s3.append(new Run(161, 20, 127));
-        s3.append(new Run(170, 15, 127));
-        s3.dump();
-
-        List<MySection> purged = null;
+        List<Section> purged = null;
 
         purged = vLag.purgeTinySections(4000);
         assertEquals("One section.", 1, purged.size());
-        assertSame("s2 must have been purged.", s2, purged.get(0));
+        assertSame("s2 should have been purged.", s2, purged.get(0));
         assertEquals("One section left.", 1, vLag.getVertexCount());
-    }
-
-    //---------------//
-    // testSignature //
-    //---------------//
-    public void testSignature ()
-    {
-        MySection s2 = vLag.createSection(180, new Run(100, 10, 127));
-        s2.append(new Run(101, 20, 127));
-
-        try {
-            SectionSignature sig = s2.getSignature();
-            fail(
-                "Exception should be raised" +
-                " when getting a null vertex signature");
-        } catch (Exception expected) {
-            checkException(expected);
-        }
-
-        s2.setSignature();
-
-        try {
-            s2.setSignature();
-        } catch (Exception ex) {
-            fail(
-                "Exception raised" +
-                " when setting signature with equal value");
-        }
-
-        MySection s3 = vLag.createSection(200, new Run(150, 10, 127));
-        s3.append(new Run(161, 20, 127));
-        s3.append(new Run(170, 15, 127));
-        s3.setSignature();
-
-        assertSame(
-            "Vertex retrieved via signature",
-            s2,
-            vLag.getVertexBySignature(s2.getSignature()));
-
-        assertNotSame(
-            "Vertex retrieved via wrong signature",
-            s2,
-            vLag.getVertexBySignature(s3.getSignature()));
     }
 
     //---------------//
@@ -292,17 +250,11 @@ public class LagTest
     //---------------//
     public void testTranslate ()
     {
-        RunsTable table = new RunsTable(
-            "Vertical",
-            Orientation.VERTICAL,
-            new Dimension(20, 20));
-        vLag.addRuns(table);
-
-        MySection s1 = vLag.createSection(1, createRun(table, 1, 2, 5));
-        s1.append(createRun(table, 2, 0, 3));
-        s1.append(createRun(table, 3, 1, 2));
-        s1.append(createRun(table, 4, 1, 1));
-        s1.append(createRun(table, 5, 1, 6));
+        Section s1 = vLag.createSection(1, createRun(vTable, 1, 2, 5));
+        s1.append(createRun(vTable, 2, 0, 3));
+        s1.append(createRun(vTable, 3, 1, 2));
+        s1.append(createRun(vTable, 4, 1, 1));
+        s1.append(createRun(vTable, 5, 1, 6));
         dump("Before translation", s1);
 
         PixelPoint vector = new PixelPoint(10, 2);
@@ -316,7 +268,7 @@ public class LagTest
     public void testVLag ()
     {
         assertNotNull("Lag vLag was not allocated", vLag);
-        assertTrue("vLag is vertical", vLag.isVertical());
+        assertTrue("vLag is vertical", vLag.getOrientation().isVertical());
     }
 
     //---------------//
@@ -324,26 +276,41 @@ public class LagTest
     //---------------//
     public void testVLagHisto ()
     {
-        RunsTable table = new RunsTable(
-            "Vertical",
-            Orientation.VERTICAL,
-            new Dimension(20, 20));
-        vLag.addRuns(table);
-
-        MySection s1 = vLag.createSection(1, createRun(table, 1, 2, 5));
-        s1.append(createRun(table, 2, 0, 3));
-        s1.append(createRun(table, 3, 1, 2));
-        s1.append(createRun(table, 4, 1, 1));
-        s1.append(createRun(table, 5, 1, 6));
+        Section s1 = vLag.createSection(1, createRun(vTable, 1, 2, 5));
+        s1.append(createRun(vTable, 2, 0, 3));
+        s1.append(createRun(vTable, 3, 1, 2));
+        s1.append(createRun(vTable, 4, 1, 1));
+        s1.append(createRun(vTable, 5, 1, 6));
         s1.drawAscii();
 
-        MyLag.Roi          roi = vLag.createAbsoluteRoi(
-            new PixelRectangle(0, 0, 6, 7));
-        Histogram<Integer> histoV = roi.getHistogram(Orientation.VERTICAL);
-        histoV.print(System.out);
+        Roi                roi = new BasicRoi(new PixelRectangle(0, 0, 6, 7));
 
-        Histogram<Integer> histoH = roi.getHistogram(Orientation.HORIZONTAL);
-        histoH.print(System.out);
+        String             expV = "{Histogram 1-5 size:5 [1:5 2:3 3:2 4:1 5:6]}";
+        String             expH = "{Histogram 0-6 size:7 [0:1 1:4 2:4 3:2 4:2 5:2 6:2]}";
+
+        Histogram<Integer> histoVS = roi.getSectionHistogram(
+            Orientation.VERTICAL,
+            Collections.singletonList(s1));
+        System.out.println("histoVS=" + histoVS);
+        assertEquals("Wrong histogram", expV, histoVS.toString());
+
+        Histogram<Integer> histoHS = roi.getSectionHistogram(
+            Orientation.HORIZONTAL,
+            Collections.singletonList(s1));
+        System.out.println("histoHS=" + histoHS);
+        assertEquals("Wrong histogram", expH, histoHS.toString());
+
+        Histogram<Integer> histoVR = roi.getRunHistogram(
+            Orientation.VERTICAL,
+            vTable);
+        System.out.println("histoVR=" + histoVR);
+        assertEquals("Wrong histogram", expV, histoVR.toString());
+
+        Histogram<Integer> histoHR = roi.getRunHistogram(
+            Orientation.HORIZONTAL,
+            vTable);
+        System.out.println("histoHR=" + histoHR);
+        assertEquals("Wrong histogram", expH, histoHR.toString());
     }
 
     //--------------//
@@ -352,7 +319,7 @@ public class LagTest
     public void testVSection ()
     {
         // Test of vertical sections
-        MySection s2 = vLag.createSection(180, new Run(100, 10, 127));
+        Section s2 = vLag.createSection(180, new Run(100, 10, 127));
         s2.append(new Run(101, 20, 127));
         vLag.dump(null);
         dump("s2 dump:", s2);
@@ -362,11 +329,11 @@ public class LagTest
             s2.getContourBox(),
             new Rectangle(180, 100, 2, 21));
 
-        MySection s3 = vLag.createSection(180, new Run(100, 10, 127));
+        Section s3 = vLag.createSection(180, new Run(100, 10, 127));
         s3.append(new Run(101, 20, 127));
 
         // And an edge between 2 sections (of the same lag)
-        MySection.addEdge(s2, s3);
+        s2.addTarget(s3);
     }
 
     //---------------//
@@ -375,7 +342,8 @@ public class LagTest
     public void testVabsolute ()
     {
         Point      cp = new Point(12, 34);
-        PixelPoint xy = vLag.absolute(cp);
+        PixelPoint xy = vLag.getOrientation()
+                            .absolute(cp);
         assertEquals("Expected switch.", new Point(cp.y, cp.x), xy);
     }
 
@@ -385,7 +353,8 @@ public class LagTest
     public void testVoriented ()
     {
         PixelPoint xy = new PixelPoint(12, 34);
-        Point      cp = vLag.absolute(xy);
+        Point      cp = vLag.getOrientation()
+                            .absolute(xy);
         assertEquals("Expected switch.", new Point(cp.y, cp.x), xy);
     }
 
@@ -395,14 +364,25 @@ public class LagTest
     @Override
     protected void setUp ()
     {
-        vLag = new MyLag("My Vertical Lag", Orientation.VERTICAL);
-        hLag = new MyLag("My Horizontal Lag", Orientation.HORIZONTAL);
+        vLag = new BasicLag("My Vertical Lag", Orientation.VERTICAL);
+        vTable = new RunsTable(
+            "Vert Runs",
+            Orientation.VERTICAL,
+            new Dimension(100, 200)); // Absolute
+        vLag.setRuns(vTable);
+
+        hLag = new BasicLag("My Horizontal Lag", Orientation.HORIZONTAL);
+        hTable = new RunsTable(
+            "Hori Runs",
+            Orientation.HORIZONTAL,
+            new Dimension(100, 200)); // Absolute
+        hLag.setRuns(hTable);
     }
 
     //------------------//
     // commonAssertions //
     //------------------//
-    private void commonAssertions (MySection s)
+    private void commonAssertions (Section s)
     {
         assertEquals(
             "Bad Bounds",
@@ -411,7 +391,7 @@ public class LagTest
         assertEquals(
             "Bad Centroid",
             s.getCentroid(),
-            s.getGraph().absolute(new Point(109, 180)));
+            s.getGraph().getOrientation().absolute(new Point(109, 180)));
         assertTrue("Bad Containment", s.contains(100, 180));
         assertFalse("Bad Containment", s.contains(100, 181));
         assertTrue("Bad Containment", s.contains(101, 181));
@@ -421,9 +401,9 @@ public class LagTest
         assertEquals("Bad LastPos", s.getLastPos(), 181);
         assertEquals("Bad MaxRunLength", s.getMaxRunLength(), 20);
         assertEquals("Bad MeanRunLength", s.getMeanRunLength(), 15);
-        assertEquals("Bad RunNb", s.getRunNb(), 2);
-        assertEquals("Bad Start", s.getStart(), 100);
-        assertEquals("Bad Stop", s.getStop(), 120);
+        assertEquals("Bad RunNb", s.getRunCount(), 2);
+        assertEquals("Bad Start", s.getStartCoord(), 100);
+        assertEquals("Bad Stop", s.getStopCoord(), 120);
         assertEquals("Bad Weight", s.getWeight(), 30);
     }
 
@@ -446,8 +426,8 @@ public class LagTest
     //------//
     // dump //
     //------//
-    private void dump (String    title,
-                       MySection section)
+    private void dump (String  title,
+                       Section section)
     {
         if (title != null) {
             System.out.println();
@@ -456,7 +436,7 @@ public class LagTest
 
         System.out.println(section.toString());
 
-        //        System.out.println ("getRunAt(0)=" + section.getRunAt(0));
+        //        System.out.println ("getRunAtPos(0)=" + section.getRunAtPos(0));
         System.out.println("getOrientedBounds=" + section.getOrientedBounds());
         System.out.println("getCentroid=" + section.getCentroid());
         System.out.println("getContourBox=" + section.getContourBox());
@@ -468,9 +448,9 @@ public class LagTest
         System.out.println("getLastRun=" + section.getLastRun());
         System.out.println("getMaxRunLength=" + section.getMaxRunLength());
         System.out.println("getMeanRunLength=" + section.getMeanRunLength());
-        System.out.println("getRunNb=" + section.getRunNb());
-        System.out.println("getStart=" + section.getStart());
-        System.out.println("getStop=" + section.getStop());
+        System.out.println("getRunNb=" + section.getRunCount());
+        System.out.println("getStart=" + section.getStartCoord());
+        System.out.println("getStop=" + section.getStopCoord());
         System.out.println("getWeight=" + section.getWeight());
         System.out.println("getContour=");
         dump(section.getPolygon());
@@ -506,30 +486,5 @@ public class LagTest
 
             System.out.println();
         }
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
-
-    //-------//
-    // MyLag //
-    //-------//
-    public static class MyLag
-        extends Lag<MyLag, MySection>
-    {
-        //~ Constructors -------------------------------------------------------
-
-        protected MyLag (String   name,
-                         Oriented orientation)
-        {
-            super(name, MySection.class, orientation);
-        }
-    }
-
-    //-----------//
-    // MySection //
-    //-----------//
-    public static class MySection
-        extends Section<MyLag, MySection>
-    {
     }
 }

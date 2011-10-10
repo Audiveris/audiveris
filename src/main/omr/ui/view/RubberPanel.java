@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.ui.view;
 
-import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.log.Logger;
@@ -88,7 +87,7 @@ public class RubberPanel
     /** Model size (independent of display zoom) */
     protected Dimension modelSize;
 
-    /** Location Service if any  (either SheetLocation or ScoreLocation) */
+    /** Location Service if any  (for Location event) */
     protected SelectionService locationService;
 
     //~ Constructors -----------------------------------------------------------
@@ -124,9 +123,7 @@ public class RubberPanel
         setRubber(rubber);
 
         if (logger.isFineEnabled()) {
-            logger.fine(
-                "new RubberZoomedPanel" + " zoom=" + zoom + " rubber=" +
-                rubber);
+            logger.fine("new RubberPanel zoom=" + zoom + " rubber=" + rubber);
         }
     }
 
@@ -227,7 +224,7 @@ public class RubberPanel
      *
      * @param rubber the rubber instance to be used
      */
-    public void setRubber (Rubber rubber)
+    public final void setRubber (Rubber rubber)
     {
         this.rubber = rubber;
 
@@ -246,7 +243,7 @@ public class RubberPanel
     public Rectangle getSelectedRectangle ()
     {
         if (locationService == null) {
-            ///logger.warning("No locationService for " + this);
+            logger.severe("No locationService for " + this);
             return null;
         }
 
@@ -264,7 +261,7 @@ public class RubberPanel
      *
      * @param zoom the zoom assigned
      */
-    public void setZoom (final Zoom zoom)
+    public final void setZoom (final Zoom zoom)
     {
         // Clean up if needed
         unsetZoom(this.zoom);
@@ -334,7 +331,7 @@ public class RubberPanel
             if (event instanceof LocationEvent) {
                 // Location => move view focus on this location w/ markers
                 LocationEvent locationEvent = (LocationEvent) event;
-                showFocusLocation(getEventRectangle(locationEvent), false);
+                showFocusLocation(locationEvent.getRectangle(), false);
             }
         } catch (Exception ex) {
             logger.warning(getClass().getName() + " onEvent error", ex);
@@ -556,15 +553,6 @@ public class RubberPanel
         if (locationService != null) {
             locationService.unsubscribe(LocationEvent.class, this);
         }
-    }
-
-    //-------------------//
-    // getEventRectangle //
-    //-------------------//
-    protected Rectangle getEventRectangle (LocationEvent event)
-    {
-        // By default, use directly the event carried rectangle
-        return event.getRectangle();
     }
 
     //------------------//

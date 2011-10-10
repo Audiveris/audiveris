@@ -142,15 +142,23 @@ public class ClassUtil
      * @throws Exception
      */
     public static void load (File file)
-        throws Exception
+        throws Throwable
     {
         String path = file.getAbsolutePath();
 
+        if (logger.isFineEnabled()) {
+            logger.fine("Loading file " + path + " ...");
+        }
+
         try {
             System.load(path);
-        } catch (Exception ex) {
+
             if (logger.isFineEnabled()) {
-                logger.warning("Error while loading " + path, ex);
+                logger.fine("Loaded  file " + path);
+            }
+        } catch (Throwable ex) {
+            if (logger.isFineEnabled()) {
+                logger.warning("Error while loading file " + path, ex);
             }
 
             throw ex;
@@ -166,13 +174,21 @@ public class ClassUtil
      * @throws Exception
      */
     public static void loadLibrary (String library)
-        throws Exception
+        throws Throwable
     {
+        if (logger.isFineEnabled()) {
+            logger.fine("Loading library " + library + " ...");
+        }
+
         try {
             System.loadLibrary(library);
-        } catch (Exception ex) {
+
             if (logger.isFineEnabled()) {
-                logger.warning("Error while loading " + library, ex);
+                logger.fine("Loaded  library " + library);
+            }
+        } catch (Throwable ex) {
+            if (logger.isFineEnabled()) {
+                logger.warning("Error while loading library " + library, ex);
             }
 
             throw ex;

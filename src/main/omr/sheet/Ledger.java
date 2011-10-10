@@ -11,7 +11,9 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.glyph.facets.Stick;
+import omr.glyph.facets.Glyph;
+
+import omr.grid.StaffInfo;
 
 /**
  * Class <code>Ledger</code> is a physical {@link Dash} which is logically a
@@ -22,6 +24,11 @@ import omr.glyph.facets.Stick;
 public class Ledger
     extends Dash
 {
+    //~ Instance fields --------------------------------------------------------
+
+    /** Precise line index outside of staff nearby */
+    private final int lineIndex;
+
     //~ Constructors -----------------------------------------------------------
 
     //--------//
@@ -29,11 +36,29 @@ public class Ledger
     //--------//
     /**
      * Create a Ledger, from its underlying horizontal stick
-     *
      * @param stick the related retrieved stick
+     * @param staff the staff nearby
+     * @param lineIndex the precise line index wrt staff
+     * ( -1, -2, ... above staff and +1, +2, ... below staff)
      */
-    public Ledger (Stick stick)
+    public Ledger (Glyph     stick,
+                   StaffInfo staff,
+                   int       lineIndex)
     {
-        super(stick);
+        super(stick, staff);
+        this.lineIndex = lineIndex;
+    }
+
+    //~ Methods ----------------------------------------------------------------
+
+    //--------------//
+    // getLineIndex //
+    //--------------//
+    /**
+     * @return the precise line index for this ledger
+     */
+    public int getLineIndex ()
+    {
+        return lineIndex;
     }
 }

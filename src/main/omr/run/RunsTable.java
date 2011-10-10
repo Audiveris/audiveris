@@ -13,21 +13,25 @@ package omr.run;
 
 import omr.lag.PixelSource;
 
-import omr.math.Line;
+import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
+import omr.selection.LocationEvent;
+import omr.selection.MouseMovement;
+import omr.selection.RunEvent;
+import omr.selection.SelectionHint;
 import omr.selection.SelectionService;
 
 import omr.util.Implement;
 import omr.util.Predicate;
 
+import org.bushe.swing.event.EventSubscriber;
+
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.geom.Point2D;
-import java.awt.geom.Point2D.Double;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -39,14 +43,25 @@ import java.util.List;
  * @author Hervé Bitteur
  */
 public class RunsTable
-    implements Cloneable, PixelSource, Oriented
+    implements Cloneable, PixelSource, Oriented, EventSubscriber<LocationEvent>
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(RunsTable.class);
+
+    /** Events that can be published on the table run service */
+    public static final Class[] eventsWritten = new Class[] { RunEvent.class };
+
+    /** Events observed on location service */
+    public static final Class[] eventsRead = new Class[] { LocationEvent.class };
+
     //~ Instance fields --------------------------------------------------------
 
     /** (Debugging) name of this runs table */
     private final String name;
 
-    /** Orientation of the runs */
+    /** Orientation, the same for this table and all contained runs */
     private final Orientation orientation;
 
     /** Absolute dimension of the table */
@@ -55,10 +70,8 @@ public class RunsTable
     /** List of Runs found in each row. This is a list of lists of Runs */
     private final List<List<Run>> runs;
 
-    /**
-     * Hosted event service for UI events related to this table (Runs)
-     */
-    protected final SelectionService runSelectionService;
+    /** Hosted event service for UI events related to this table (Runs) */
+    private final SelectionService runService;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -81,7 +94,7 @@ public class RunsTable
         this.orientation = orientation;
         this.dimension = dimension;
 
-        runSelectionService = new SelectionService(name);
+        runService = new SelectionService(name, eventsWritten);
 
         // Allocate the runs, according to orientation
         Rectangle rect = orientation.oriented(
@@ -119,6 +132,16 @@ public class RunsTable
         return dimension.height;
     }
 
+    //--------------------//
+    // setLocationService //
+    //--------------------//
+    public void setLocationService (SelectionService locationService)
+    {
+        for (Class eventClass : eventsRead) {
+            locationService.subscribeStrongly(eventClass, this);
+        }
+    }
+
     //------------------//
     // setMaxForeground //
     //------------------//
@@ -154,6 +177,7 @@ public class RunsTable
     /**
      * @return the orientation of the runs
      */
+    @Implement(Oriented.class)
     public Orientation getOrientation ()
     {
         return orientation;
@@ -179,16 +203,16 @@ public class RunsTable
         return runCount;
     }
 
-    //---------------------//
-    // getSelectionService //
-    //---------------------//
+    //---------------//
+    // getRunService //
+    //---------------//
     /**
      * Report the table run selection service
      * @return the run selection service
      */
-    public SelectionService getSelectionService ()
+    public SelectionService getRunService ()
     {
-        return runSelectionService;
+        return runService;
     }
 
     //-------------//
@@ -266,7 +290,7 @@ public class RunsTable
     // isIdentical //
     //-------------//
     /**
-     * Field by field comparison
+     * Field by field comparison (TODO: used by unit tests only!)
      * @param that the other RunsTable to compare with
      * @return true if identical
      */
@@ -310,11 +334,11 @@ public class RunsTable
     //----------//
     /**
      * {@inheritDoc}
+     *
      * <br><b>Beware</b>, this implementation is not efficient enough for bulk
-     * operations.
-     * For such needs, a much more efficient way is to first retrieve a full
-     * buffer, via {@link #getBuffer()} method, then use this temporary buffer
-     * as the {@link PixelSource} instead of this table.
+     * operations. For such needs, a much more efficient way is to first
+     * retrieve a full buffer, via {@link #getBuffer()} method, then use this
+     * temporary buffer as the {@link PixelSource} instead of this table.
      * @param x absolute abscissa
      * @param y absolute ordinate
      * @return the pixel gray level
@@ -341,28 +365,26 @@ public class RunsTable
     public final Run getRunAt (int x,
                                int y)
     {
-        Point     pt = orientation.oriented(new PixelPoint(x, y));
-        List<Run> seq = getSequence(pt.y);
+        Point oPt = orientation.oriented(new PixelPoint(x, y));
+
+        // Protection
+        if ((oPt.y < 0) || (oPt.y >= runs.size())) {
+            return null;
+        }
+
+        List<Run> seq = getSequence(oPt.y);
 
         for (Run run : seq) {
-            if (run.getStart() > pt.x) {
+            if (run.getStart() > oPt.x) {
                 return null;
             }
 
-            if (run.getStop() >= pt.x) {
+            if (run.getStop() >= oPt.x) {
                 return run;
             }
         }
 
         return null;
-    }
-
-    //------------//
-    // isVertical //
-    //------------//
-    public boolean isVertical ()
-    {
-        return orientation.isVertical();
     }
 
     //----------//
@@ -372,30 +394,6 @@ public class RunsTable
     public int getWidth ()
     {
         return dimension.width;
-    }
-
-    //----------//
-    // absolute //
-    //----------//
-    public Double absolute (Point2D cp)
-    {
-        return orientation.absolute(cp);
-    }
-
-    //----------//
-    // absolute //
-    //----------//
-    public PixelPoint absolute (Point cp)
-    {
-        return orientation.absolute(cp);
-    }
-
-    //-----------//
-    // absolute //
-    //-----------//
-    public PixelRectangle absolute (Rectangle cplt)
-    {
-        return orientation.absolute(cplt);
     }
 
     //-------//
@@ -533,18 +531,18 @@ public class RunsTable
      */
     public Run lookupRun (PixelPoint point)
     {
-        Point target = oriented(point);
+        Point oPt = orientation.oriented(point);
 
-        if ((target.y < 0) || (target.y >= getSize())) {
+        if ((oPt.y < 0) || (oPt.y >= getSize())) {
             return null;
         }
 
-        for (Run run : getSequence(target.y)) {
-            if (run.getStart() > target.x) {
+        for (Run run : getSequence(oPt.y)) {
+            if (run.getStart() > oPt.x) {
                 return null;
             }
 
-            if (run.getStop() >= target.x) {
+            if (run.getStop() >= oPt.x) {
                 return run;
             }
         }
@@ -552,28 +550,32 @@ public class RunsTable
         return null;
     }
 
-    //----------//
-    // oriented //
-    //----------//
-    public Point oriented (PixelPoint xy)
+    //---------//
+    // onEvent //
+    //---------//
+    /**
+     * Interest on Location => Run
+     * @param locationEVent
+     */
+    public void onEvent (LocationEvent locationEvent)
     {
-        return orientation.oriented(xy);
-    }
+        try {
+            // Ignore RELEASING
+            if (locationEvent.movement == MouseMovement.RELEASING) {
+                return;
+            }
 
-    //----------//
-    // oriented //
-    //----------//
-    public Rectangle oriented (PixelRectangle xywh)
-    {
-        return orientation.oriented(xywh);
-    }
+            if (logger.isFineEnabled()) {
+                logger.fine("RunsTable " + name + ": " + locationEvent);
+            }
 
-    //----------//
-    // oriented //
-    //----------//
-    public Point2D oriented (Point2D cp)
-    {
-        return orientation.oriented(cp);
+            if (locationEvent instanceof LocationEvent) {
+                // Location => Run
+                handleEvent(locationEvent);
+            }
+        } catch (Exception ex) {
+            logger.warning(getClass().getName() + " onEvent error", ex);
+        }
     }
 
     //-------//
@@ -602,6 +604,19 @@ public class RunsTable
     public RunsTable purge (Predicate<Run> predicate,
                             RunsTable      removed)
     {
+        // Check parameters
+        if (removed != null) {
+            if (removed.orientation != orientation) {
+                throw new IllegalArgumentException(
+                    "'removed' table is of different orientation");
+            }
+
+            if (!removed.dimension.equals(dimension)) {
+                throw new IllegalArgumentException(
+                    "'removed' table is of different dimension");
+            }
+        }
+
         for (int i = 0; i < getSize(); i++) {
             List<Run> seq = getSequence(i);
 
@@ -641,14 +656,6 @@ public class RunsTable
         }
     }
 
-    //-----------//
-    // switchRef //
-    //-----------//
-    public Line switchRef (Line relLine)
-    {
-        return orientation.switchRef(relLine);
-    }
-
     //----------//
     // toString //
     //----------//
@@ -672,5 +679,37 @@ public class RunsTable
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //-------------//
+    // handleEvent //
+    //-------------//
+    /**
+     * Interest in location => Run
+     * @param location
+     */
+    private void handleEvent (LocationEvent locationEvent)
+    {
+        PixelRectangle rect = locationEvent.getData();
+
+        if (rect == null) {
+            return;
+        }
+
+        SelectionHint hint = locationEvent.hint;
+        MouseMovement movement = locationEvent.movement;
+
+        if ((hint != SelectionHint.LOCATION_ADD) &&
+            (hint != SelectionHint.LOCATION_INIT)) {
+            return;
+        }
+
+        if ((rect.width == 0) && (rect.height == 0)) {
+            PixelPoint pt = rect.getLocation();
+
+            // Publish Run information
+            Run run = getRunAt(pt.x, pt.y);
+            runService.publish(new RunEvent(this, hint, movement, run));
+        }
     }
 }

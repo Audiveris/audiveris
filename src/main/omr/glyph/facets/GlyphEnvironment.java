@@ -11,9 +11,14 @@
 // </editor-fold>
 package omr.glyph.facets;
 
+import omr.lag.Lag;
+
+import omr.score.common.PixelRectangle;
+
 import omr.util.Predicate;
 
 import java.util.Set;
+import omr.lag.Section;
 
 /**
  * Interface {@code GlyphEnvironment} defines the facet in charge of the
@@ -27,81 +32,66 @@ interface GlyphEnvironment
 {
     //~ Methods ----------------------------------------------------------------
 
-    //-------------//
-    // setLeftStem //
-    //-------------//
+    /**
+     * Report the number of alien pixels, from the provided lag, found in the
+     * specified absolute roi
+     * @param lag the lag to serach
+     * @param absRoi the absolute region of interest
+     * @param predicate optional predicate to further filter these aliens
+     * @return the number of alien pixels found
+     */
+    int getAlienPixelsFrom (Lag                lag,
+                            PixelRectangle     absRoi,
+                            Predicate<Section> predicate);
+
     /**
      * Assign the stem on left
      * @param leftStem stem glyph
      */
     void setLeftStem (Glyph leftStem);
 
-    //-------------//
-    // getLeftStem //
-    //-------------//
     /**
      * Report the stem attached on left side, if any
      * @return stem on left, or null
      */
     Glyph getLeftStem ();
 
-    //------------------//
-    // setPitchPosition //
-    //------------------//
     /**
      * Setter for the pitch position, with respect to the containing staff
      * @param pitchPosition the pitch position wrt the staff
      */
     void setPitchPosition (double pitchPosition);
 
-    //------------------//
-    // getPitchPosition //
-    //------------------//
     /**
      * Report the pitchPosition feature (position relative to the staff)
      * @return the pitchPosition value
      */
     double getPitchPosition ();
 
-    //--------------//
-    // setRightStem //
-    //--------------//
     /**
      * Assign the stem on right
      * @param rightStem stem glyph
      */
     void setRightStem (Glyph rightStem);
 
-    //--------------//
-    // getRightStem //
-    //--------------//
     /**
      * Report the stem attached on right side, if any
      * @return stem on right, or null
      */
     Glyph getRightStem ();
 
-    //---------------//
-    // setStemNumber //
-    //---------------//
     /**
      * Remember the number of stems near by
      * @param stemNumber the number of stems
      */
     void setStemNumber (int stemNumber);
 
-    //---------------//
-    // getStemNumber //
-    //---------------//
     /**
      * Report the number of stems the glyph is close to
      * @return the number of stems near by, typically 0, 1 or 2.
      */
     int getStemNumber ();
 
-    //-----------------//
-    // getSymbolsAfter //
-    //-----------------//
     /**
      * Return the known glyphs stuck on last side of the stick (this is relevant
      * mainly for a stem glyph)
@@ -113,9 +103,6 @@ interface GlyphEnvironment
                           Set<Glyph>       goods,
                           Set<Glyph>       bads);
 
-    //------------------//
-    // getSymbolsBefore //
-    //------------------//
     /**
      * Return the known glyphs stuck on first side of the stick (this is
      * relevant mainly for a stem glyph)
@@ -127,27 +114,18 @@ interface GlyphEnvironment
                            Set<Glyph>       goods,
                            Set<Glyph>       bads);
 
-    //---------------//
-    // setWithLedger //
-    //---------------//
     /**
      * Remember info about ledger nearby
      * @param withLedger true is there is such ledger
      */
     void setWithLedger (boolean withLedger);
 
-    //--------------//
-    // isWithLedger //
-    //--------------//
     /**
      * Report whether the glyph touches a ledger
      * @return true if there is a close ledger
      */
     boolean isWithLedger ();
 
-    //---------------------//
-    // copyStemInformation //
-    //---------------------//
     /**
      * Forward stem-related information from the provided glyph
      * @param glyph the glyph whose stem information has to be used

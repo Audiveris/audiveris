@@ -27,8 +27,6 @@
     <action domain="FILE" section="30" class="omr.sheet.ui.SheetActions" method="zoomWidth"                                               button="javax.swing.JButton"/>
     <action domain="FILE" section="30" class="omr.sheet.ui.SheetActions" method="zoomHeight"                                              button="javax.swing.JButton"/>
     <action domain="FILE" section="40" class="omr.sheet.ui.SheetActions" method="plotScale"/>
-    <action domain="FILE" section="40" class="omr.sheet.ui.SheetActions" method="plotSkew"/>
-    <action domain="FILE" section="40" class="omr.sheet.ui.SheetActions" method="plotLine"/>
     <action domain="FILE" section="50" class="omr.sheet.ui.SheetActions" method="recordGlyphs"/>
     <action domain="FILE" section="60" class="omr.sheet.ui.SheetActions" method="removeSheet"/>
     <action domain="FILE" section="65" class="omr.sheet.ui.SheetActions" method="closeScore"/>
@@ -57,8 +55,8 @@
     <action domain="VIEW" section="30"  class="omr.glyph.ui.ViewParameters"                   method="toggleLetters"  item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="30"  class="omr.glyph.ui.ViewParameters"                   method="toggleAttachments" item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="30"  class="omr.glyph.ui.ViewParameters"                   method="toggleSections" item="javax.swing.JCheckBoxMenuItem" button="javax.swing.JToggleButton" />
-    <action domain="VIEW" section="40"  class="omr.sheet.LinesBuilder$LinesParameters"        method="toggleLines"    item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="40"  class="omr.sheet.HorizontalsBuilder$LedgerParameters" method="toggleLines"    item="javax.swing.JCheckBoxMenuItem"/>
+<!--    <action domain="VIEW" section="40"  class="omr.sheet.LinesBuilder$LinesParameters"        method="toggleLines"    item="javax.swing.JCheckBoxMenuItem"/>-->
+<!--    <action domain="VIEW" section="40"  class="omr.sheet.HorizontalsBuilder$LedgerParameters" method="toggleLines"    item="javax.swing.JCheckBoxMenuItem"/>-->
     <action domain="VIEW" section="50"  class="omr.ui.GuiActions"                             method="toggleErrors"   item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="50"  class="omr.ui.GuiActions"                             method="clearLog" button="javax.swing.JButton"/>
 

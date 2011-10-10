@@ -11,11 +11,11 @@
 // </editor-fold>
 package omr.step;
 
-import omr.sheet.HorizontalsBuilder;
-import omr.sheet.Sheet;
-import omr.sheet.SystemInfo;
+import omr.Main;
 
-import java.util.Collection;
+import omr.log.Logger;
+
+import omr.sheet.SystemInfo;
 
 /**
  * Class {@code HorizontalsStep} retrieves the horizontal dashes (ledgers,
@@ -24,8 +24,14 @@ import java.util.Collection;
  * @author Hervé Bitteur
  */
 public class HorizontalsStep
-    extends AbstractStep
+    extends AbstractSystemStep
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(
+        HorizontalsStep.class);
+
     //~ Constructors -----------------------------------------------------------
 
     //-----------------//
@@ -42,20 +48,28 @@ public class HorizontalsStep
             Mandatory.MANDATORY,
             Redoable.NON_REDOABLE,
             HORIZONTALS_TAB,
-            "Detect horizontal dashes");
+            "Extract ledgers, tenutos & endings");
     }
 
     //~ Methods ----------------------------------------------------------------
 
-    //------//
-    // doit //
-    //------//
+    //----------//
+    // doSystem //
+    //----------//
     @Override
-    public void doit (Collection<SystemInfo> unused,
-                      Sheet                  sheet)
+    public void doSystem (SystemInfo system)
         throws StepException
     {
-        sheet.setHorizontalsBuilder(new HorizontalsBuilder(sheet));
-        sheet.setHorizontals(sheet.getHorizontalsBuilder().buildInfo());
+        if (Main.getGui() != null) {
+            system.getSheet()
+                  .getErrorsEditor()
+                  .clearSystem(this, system.getId());
+        }
+
+        try {
+            system.retrieveHorizontals();
+        } catch (Throwable ex) {
+            logger.warning("Error in HorizontalsStep", ex);
+        }
     }
 }

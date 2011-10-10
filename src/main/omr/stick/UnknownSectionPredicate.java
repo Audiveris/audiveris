@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.stick;
 
-import omr.glyph.GlyphSection;
+import omr.lag.Section;
 
 import omr.util.Implement;
 import omr.util.Predicate;
@@ -24,7 +24,7 @@ import omr.util.Predicate;
  * @author Hervé Bitteur
  */
 public class UnknownSectionPredicate
-    implements Predicate<GlyphSection>
+    implements Predicate<Section>
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -41,7 +41,7 @@ public class UnknownSectionPredicate
     //~ Methods ----------------------------------------------------------------
 
     @Implement(Predicate.class)
-    public boolean check (GlyphSection section)
+    public boolean check (Section section)
     {
         // Check if this section is not already assigned to a recognized glyph
         return !section.isKnown();

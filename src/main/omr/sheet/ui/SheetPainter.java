@@ -12,7 +12,8 @@
 package omr.sheet.ui;
 
 import omr.glyph.facets.Glyph;
-import omr.glyph.facets.Stick;
+
+import omr.grid.StaffInfo;
 
 import omr.log.Logger;
 
@@ -27,7 +28,6 @@ import omr.sheet.Ending;
 import omr.sheet.Ledger;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
-import omr.grid.StaffInfo;
 
 import omr.ui.Colors;
 import omr.ui.symbol.Alignment;
@@ -244,20 +244,24 @@ public class SheetPainter
                 // Stems
                 for (Glyph glyph : systemInfo.getGlyphs()) {
                     if (glyph.isStem()) {
-                        Stick stick = (Stick) glyph;
-                        stick.renderLine(g);
+                        glyph.renderLine(g);
                     }
                 }
 
-                // Ledgers
-                for (Ledger ledger : systemInfo.getLedgers()) {
-                    ledger.render(g);
-                }
-
-                // Endings
-                for (Ending ending : systemInfo.getEndings()) {
-                    ending.render(g);
-                }
+//                // Ledgers
+//                for (Glyph ledger : systemInfo.getLedgers()) {
+//                    ledger.renderLine(g);
+//                }
+//
+//                // Tenutos
+//                for (Glyph tenuto : systemInfo.getTenutos()) {
+//                    tenuto.renderLine(g);
+//                }
+//
+//                // Endings
+//                for (Glyph ending : systemInfo.getEndings()) {
+//                    ending.renderLine(g);
+//                }
 
                 // Virtual glyphs
                 paintVirtualGlyphs(systemInfo);

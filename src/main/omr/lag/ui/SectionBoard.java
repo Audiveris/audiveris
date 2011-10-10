@@ -14,8 +14,6 @@ package omr.lag.ui;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.GlyphSection;
-
 import omr.lag.Lag;
 import omr.lag.Section;
 
@@ -29,7 +27,6 @@ import omr.selection.SelectionHint;
 import omr.selection.UserEvent;
 
 import omr.stick.StickRelation;
-import omr.stick.StickSection;
 
 import omr.ui.Board;
 import omr.ui.field.LIntegerField;
@@ -47,8 +44,6 @@ import org.bushe.swing.event.EventSubscriber;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Set;
 
 import javax.swing.JButton;
@@ -77,14 +72,11 @@ public class SectionBoard
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(SectionBoard.class);
 
-    /** Events this boards is interested in */
-    private static final Collection<Class<?extends UserEvent>> eventClasses;
-
-    static {
-        eventClasses = new ArrayList<Class<?extends UserEvent>>();
-        eventClasses.add(SectionEvent.class);
-        eventClasses.add(SectionSetEvent.class);
-    }
+    /** Events this board is interested in */
+    private static final Class[] eventsRead = new Class[] {
+                                                    SectionEvent.class,
+                                                    SectionSetEvent.class
+                                                };
 
     //~ Instance fields --------------------------------------------------------
 
@@ -192,8 +184,8 @@ public class SectionBoard
         super(
             unitName + "-SectionBoard",
             "Section",
-            lag.getSelectionService(),
-            eventClasses,
+            lag.getSectionService(),
+            eventsRead,
             expanded);
 
         this.lag = lag;
@@ -205,7 +197,7 @@ public class SectionBoard
                     public void actionPerformed (ActionEvent e)
                     {
                         // Retrieve current section selection
-                        Section section = (Section) lag.getSelectionService()
+                        Section section = (Section) lag.getSectionService()
                                                        .getSelection(
                             SectionEvent.class);
 
@@ -234,7 +226,7 @@ public class SectionBoard
                             }
 
                             idSelecting = true;
-                            lag.getSelectionService()
+                            lag.getSectionService()
                                .publish(
                                 new SectionIdEvent(
                                     SectionBoard.this,
@@ -290,7 +282,7 @@ public class SectionBoard
             if (event instanceof SectionEvent) {
                 handleEvent((SectionEvent) event);
             } else if (event instanceof SectionSetEvent) {
-                handleEvent((SectionSetEvent<GlyphSection>) event);
+                handleEvent((SectionSetEvent) event);
             }
         } catch (Exception ex) {
             logger.warning(getClass().getName() + " onEvent error", ex);
@@ -413,39 +405,36 @@ public class SectionBoard
                 weight.setValue(section.getWeight());
 
                 // Additional relation fields for a StickSection
-                if (section instanceof StickSection) {
-                    StickSection  ss = (StickSection) section;
-                    StickRelation relation = ss.getRelation();
+                StickRelation relation = section.getRelation();
 
-                    if (relation != null) {
-                        if (constants.hideRelationFields.getValue()) {
-                            layer.setVisible(true);
-                        }
-
-                        layer.setValue(relation.layer);
-
-                        if (constants.hideRelationFields.getValue()) {
-                            direction.setVisible(true);
-                        }
-
-                        direction.setValue(relation.direction);
-
-                        if (relation.role != null) {
-                            role.setText(relation.role.toString());
-
-                            if (constants.hideRelationFields.getValue()) {
-                                role.setVisible(true);
-                            }
-                        } else {
-                            if (constants.hideRelationFields.getValue()) {
-                                role.setVisible(false);
-                            }
-                        }
-                    } else if (constants.hideRelationFields.getValue()) {
-                        direction.setVisible(false);
-                        layer.setVisible(false);
-                        role.setVisible(false);
+                if (relation != null) {
+                    if (constants.hideRelationFields.getValue()) {
+                        layer.setVisible(true);
                     }
+
+                    layer.setValue(relation.layer);
+
+                    if (constants.hideRelationFields.getValue()) {
+                        direction.setVisible(true);
+                    }
+
+                    direction.setValue(relation.direction);
+
+                    if (relation.role != null) {
+                        role.setText(relation.role.toString());
+
+                        if (constants.hideRelationFields.getValue()) {
+                            role.setVisible(true);
+                        }
+                    } else {
+                        if (constants.hideRelationFields.getValue()) {
+                            role.setVisible(false);
+                        }
+                    }
+                } else if (constants.hideRelationFields.getValue()) {
+                    direction.setVisible(false);
+                    layer.setVisible(false);
+                    role.setVisible(false);
                 }
             }
         } finally {
@@ -460,10 +449,10 @@ public class SectionBoard
      * Interest in SectionSet
      * @param sectionSetEvent
      */
-    private void handleEvent (SectionSetEvent<GlyphSection> sectionSetEvent)
+    private void handleEvent (SectionSetEvent sectionSetEvent)
     {
         // Display count of sections in the section set
-        Set<GlyphSection> sections = sectionSetEvent.getData();
+        Set<Section> sections = sectionSetEvent.getData();
 
         if ((sections != null) && !sections.isEmpty()) {
             count.setText(Integer.toString(sections.size()));

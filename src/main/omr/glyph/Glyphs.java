@@ -14,9 +14,13 @@ package omr.glyph;
 import omr.glyph.facets.BasicAlignment;
 import omr.glyph.facets.Glyph;
 
+import omr.lag.Section;
+
 import omr.log.Logger;
 
 import omr.math.PointsCollector;
+
+import omr.run.Orientation;
 
 import omr.score.common.PixelRectangle;
 
@@ -29,6 +33,7 @@ import java.awt.Rectangle;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -94,6 +99,26 @@ public class Glyphs
         return box;
     }
 
+    //----------------------------//
+    // getReverseLengthComparator //
+    //----------------------------//
+    /**
+     * For comparing glyph instances on decreasing length
+     * @param orientation the desired orientation reference
+     * @return the comparator
+     */
+    public static Comparator<Glyph> getReverseLengthComparator (final Orientation orientation)
+    {
+        return new Comparator<Glyph>() {
+                public int compare (Glyph s1,
+                                    Glyph s2)
+                {
+                    return s2.getLength(orientation) -
+                           s1.getLength(orientation);
+                }
+            };
+    }
+
     //----------------//
     // getThicknessAt //
     //----------------//
@@ -101,10 +126,12 @@ public class Glyphs
      * Report the resulting thickness of the collection of sticks at the
      * provided coordinate
      * @param coord the desired coordinate
+     * @param orientation the desired orientation reference
      * @param glyphs glyphs contributing to the resulting thickness
      * @return the thickness measured, expressed in number of pixels.
      */
-    public static double getThicknessAt (double   coord,
+    public static double getThicknessAt (double      coord,
+                                         Orientation orientation,
                                          Glyph... glyphs)
     {
         if (glyphs.length == 0) {
@@ -112,34 +139,36 @@ public class Glyphs
         }
 
         // Retrieve global bounds
-        final Rectangle bounds = new Rectangle(-1, -1);
+        PixelRectangle absBox = null;
 
         for (Glyph g : glyphs) {
-            bounds.add(g.getOrientedBounds());
+            if (absBox == null) {
+                absBox = g.getContourBox();
+            } else {
+                absBox.add(g.getContourBox());
+            }
         }
 
-        int intCoord = (int) Math.rint(coord);
+        Rectangle oBox = orientation.oriented(absBox);
+        int       intCoord = (int) Math.rint(coord);
 
-        if ((intCoord < bounds.x) || (intCoord >= (bounds.x + bounds.width))) {
+        if ((intCoord < oBox.x) || (intCoord >= (oBox.x + oBox.width))) {
             return 0;
         }
 
         // Use a large-enough collector
-        final Rectangle roi = new Rectangle(
-            intCoord,
-            bounds.y,
-            0,
-            bounds.height);
+        final Rectangle oRoi = new Rectangle(intCoord, oBox.y, 0, oBox.height);
         final Scale     scale = new Scale(glyphs[0].getInterline());
         final int       probeHalfWidth = scale.toPixels(
             BasicAlignment.getProbeWidth()) / 2;
-        roi.grow(probeHalfWidth, 0);
+        oRoi.grow(probeHalfWidth, 0);
 
-        PointsCollector collector = new PointsCollector(roi);
+        PointsCollector collector = new PointsCollector(
+            orientation.absolute(oRoi));
 
         // Collect sections contribution
         for (Glyph g : glyphs) {
-            for (GlyphSection section : g.getMembers()) {
+            for (Section section : g.getMembers()) {
                 section.cumulate(collector);
             }
         }
@@ -147,7 +176,8 @@ public class Glyphs
         // Analyze range of Y values
         int   minVal = Integer.MAX_VALUE;
         int   maxVal = Integer.MIN_VALUE;
-        int[] vals = collector.getYValues();
+        int[] vals = (orientation == Orientation.HORIZONTAL)
+                     ? collector.getYValues() : collector.getXValues();
 
         for (int i = 0, iBreak = collector.getCount(); i < iBreak; i++) {
             int val = vals[i];
@@ -247,11 +277,11 @@ public class Glyphs
      * @param sections the provided sections
      * @return the set of active containing glyphs
      */
-    public static Set<Glyph> glyphsOf (Collection<GlyphSection> sections)
+    public static Set<Glyph> glyphsOf (Collection<Section> sections)
     {
         Set<Glyph> glyphs = new LinkedHashSet<Glyph>();
 
-        for (GlyphSection section : sections) {
+        for (Section section : sections) {
             Glyph glyph = section.getGlyph();
 
             if (glyph != null) {
@@ -341,6 +371,32 @@ public class Glyphs
         return set;
     }
 
+    //-------------------------//
+    // lookupIntersectedGlyphs //
+    //-------------------------//
+    /**
+     * Look up in a collection of glyphs for <b>all</b> glyphs intersected by a
+     * provided rectangle
+     *
+     * @param collection the collection of glyphs to be browsed
+     * @param rect the coordinates rectangle
+     *
+     * @return the glyphs found, which may be an empty list
+     */
+    public static Set<Glyph> lookupIntersectedGlyphs (Collection<?extends Glyph> collection,
+                                                      PixelRectangle             rect)
+    {
+        Set<Glyph> set = new LinkedHashSet<Glyph>();
+
+        for (Glyph glyph : collection) {
+            if (rect.intersects(glyph.getContourBox())) {
+                set.add(glyph);
+            }
+        }
+
+        return set;
+    }
+
     //--------------//
     // purgeManuals //
     //--------------//
@@ -368,9 +424,9 @@ public class Glyphs
      * @param glyphs the provided glyphs
      * @return the set of all member sections
      */
-    public static Set<GlyphSection> sectionsOf (Collection<Glyph> glyphs)
+    public static Set<Section> sectionsOf (Collection<Glyph> glyphs)
     {
-        Set<GlyphSection> sections = new TreeSet<GlyphSection>();
+        Set<Section> sections = new TreeSet<Section>();
 
         for (Glyph glyph : glyphs) {
             sections.addAll(glyph.getMembers());
@@ -413,7 +469,7 @@ public class Glyphs
      */
     public static SortedSet<Glyph> sortedSet (Glyph... glyphs)
     {
-        SortedSet<Glyph> set = new TreeSet<Glyph>(Glyph.globalComparator);
+        SortedSet<Glyph> set = new TreeSet<Glyph>(Glyph.abscissaComparator);
         set.addAll(Arrays.asList(glyphs));
 
         return set;
@@ -429,7 +485,7 @@ public class Glyphs
      */
     public static SortedSet<Glyph> sortedSet (Collection<Glyph> glyphs)
     {
-        SortedSet<Glyph> set = new TreeSet<Glyph>(Glyph.globalComparator);
+        SortedSet<Glyph> set = new TreeSet<Glyph>(Glyph.abscissaComparator);
         set.addAll(glyphs);
 
         return set;

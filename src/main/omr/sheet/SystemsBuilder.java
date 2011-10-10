@@ -19,32 +19,30 @@ import omr.check.CheckSuite;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.GlyphLag;
-import omr.glyph.GlyphSectionsBuilder;
 import omr.glyph.GlyphsModel;
+import omr.glyph.Scene;
 import omr.glyph.facets.Glyph;
-import omr.glyph.facets.Stick;
 import omr.glyph.ui.BarMenu;
 import omr.glyph.ui.GlyphBoard;
-import omr.glyph.ui.GlyphLagView;
 import omr.glyph.ui.GlyphsController;
+import omr.glyph.ui.SceneView;
 
-import omr.lag.JunctionDeltaPolicy;
-import omr.lag.ui.ScrollLagView;
+import omr.grid.StaffInfo;
+import omr.grid.SystemManager;
+
 import omr.lag.ui.SectionBoard;
 
 import omr.log.Logger;
 
-import omr.run.Orientation;
 import omr.run.RunBoard;
 
 import omr.script.BoundaryTask;
 
 import omr.selection.GlyphEvent;
+import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
 import omr.selection.SelectionHint;
 import omr.selection.SelectionService;
-import omr.selection.LocationEvent;
 import omr.selection.UserEvent;
 
 import omr.sheet.BarsChecker.BarCheckSuite;
@@ -56,23 +54,19 @@ import omr.step.Step;
 import omr.step.StepException;
 import omr.step.Steps;
 
-import omr.stick.SectionsSource;
-import omr.stick.StickSection;
-import omr.stick.SticksBuilder;
-import omr.stick.UnknownSectionPredicate;
-
 import omr.ui.BoardsPane;
+import omr.ui.view.ScrollView;
 
 import omr.util.BrokenLine;
 import omr.util.VerticalSide;
 
 import org.jdesktop.application.Task;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -119,23 +113,15 @@ public class SystemsBuilder
     private static final Logger logger = Logger.getLogger(SystemsBuilder.class);
 
     /** Events this entity is interested in */
-    private static final Collection<Class<?extends UserEvent>> eventClasses;
-
-    static {
-        eventClasses = new ArrayList<Class<?extends UserEvent>>();
-        eventClasses.add(GlyphEvent.class);
-    }
+    private static final Class[] eventClasses = new Class[] { GlyphEvent.class };
 
     //~ Instance fields --------------------------------------------------------
 
     /** Companion physical stick barsChecker */
     private final BarsChecker barsChecker;
 
-    /** Global scale */
-    private final Scale scale;
-
-    /** Lag view on bars, if so desired */
-    private GlyphLagView lagView;
+    /** View on bars, if so desired */
+    private SceneView sceneView;
 
     /** Glyphs controller */
     private BarsController barsController;
@@ -155,72 +141,27 @@ public class SystemsBuilder
      */
     public SystemsBuilder (Sheet sheet)
     {
-        super(
-            sheet,
-            new GlyphLag("oldvLag", StickSection.class, Orientation.VERTICAL),
-            Steps.valueOf(Steps.SPLIT));
+        super(sheet, sheet.getScene(), Steps.valueOf(Steps.SPLIT));
 
-        scale = sheet.getScale();
         systems = sheet.getSystems();
 
         // BarsChecker companion, in charge of purely physical tests
-        barsChecker = new BarsChecker(sheet, lag, false);
+        barsChecker = new BarsChecker(sheet, false);
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //---------------//
-    // getController //
-    //---------------//
-    public BarsController getController ()
-    {
-        return (BarsController) lagView.getController();
-    }
 
     //--------------//
     // buildSystems //
     //--------------//
     /**
-     * Process the sheet information (the vertical lag) to retrieve bars and
-     * then the systems.
-     *
-     * @throws StepException raised when step processing must stop, due to
-     *                             encountered error
+     * Process the sheet information produced by the GRID step and allocate the
+     * related score information
      */
     public void buildSystems ()
         throws StepException
     {
         try {
-            // Remember old vLag if any, while setting the new one
-            GlyphLag             oldLag = sheet.setVerticalLag(lag);
-
-            // Feed lag with proper sections
-            GlyphSectionsBuilder sectionsBuilder = new GlyphSectionsBuilder(
-                lag,
-                new JunctionDeltaPolicy(
-                    scale.toPixels(constants.maxDeltaLength)));
-            sectionsBuilder.createSections("bars", sheet.getPicture(), 0); // 0 = minRunLength
-
-            // Retrieve the initial collection of good barline candidates
-            // Results are updated shapes in vLag glyphs
-            // Retrieve (vertical) sticks
-            SticksBuilder barsArea = new SticksBuilder(
-                scale,
-                lag,
-                new SectionsSource(
-                    lag.getVertices(),
-                    new UnknownSectionPredicate()),
-                false);
-            barsArea.setMaxThickness(constants.maxBarThickness);
-            //barsArea.setExpectedSlope(expectedSlope);
-            barsChecker.retrieveCandidates(barsArea.retrieveSticks());
-
-            // Transfer manual glyphs from old lag if at all possible
-            if (oldLag != null) {
-                lag.transferManualGlyphs(oldLag);
-            }
-
-            // Processing
             doBuildSystems();
         } finally {
             // Display the resulting stickarea if so asked for
@@ -243,9 +184,8 @@ public class SystemsBuilder
         }
 
         // Update the view accordingly
-        if (lagView != null) {
-            lagView.colorizeAllGlyphs();
-            lagView.repaint();
+        if (sceneView != null) {
+            sceneView.repaint();
         }
     }
 
@@ -266,7 +206,7 @@ public class SystemsBuilder
     {
         List<Glyph> specifics = new ArrayList<Glyph>();
 
-        for (Glyph stick : lag.getAllGlyphs()) {
+        for (Glyph stick : scene.getAllGlyphs()) {
             if (!stick.isBar()) {
                 specifics.add(stick);
             }
@@ -294,105 +234,35 @@ public class SystemsBuilder
         }
     }
 
-    //----------------------//
-    // buildSystemsAndParts //
-    //----------------------//
+    //------------//
+    // buildParts //
+    //------------//
     /**
-     * Knowing the starting staff indice of each staff system, we are able to
-     * allocate and describe the proper number of systems & parts in the score.
-     *
-     * @throws StepException raised if processing failed
+     * Knowing the starting staff indice of each part, allocate the related
+     * PartInfo instances in proper SystemInfo instances
      */
-    private void buildSystemsAndParts ()
-        throws StepException
+    private void buildParts ()
     {
-        logger.severe("buildSystemsAndParts to be re-implemented");
+        final SystemManager systemManager = sheet.getSystemManager();
+        final Integer[]     partTops = systemManager.getPartTops();
 
-        //        systems.clear();
-        //
-        //        final StaffManager staffManager = sheet.getStaffManager();
-        //        final int          staffNb = staffManager.getStaffCount();
-        //
-        //        // A way to tell the containing System for each staff, by providing the
-        //        // staff index of the starting staff of the containing system.
-        //        int[] systemStarts = new int[staffNb];
-        //        Arrays.fill(systemStarts, -1);
-        //
-        //        // A way to tell the containing Part for each staff, by providing the
-        //        // staff index of the starting staff of the containing part.
-        //        int[] partStarts = new int[staffNb];
-        //        Arrays.fill(partStarts, -1);
-        //
-        //        // We need an abscissa-ordered collection of glyphs, so that system
-        //        // defining bars are seen first
-        //        List<Glyph> glyphs = new ArrayList<Glyph>(lag.getAllGlyphs());
-        //        Collections.sort(glyphs, Glyph.globalComparator);
-        //
-        //        for (Glyph glyph : glyphs) {
-        //            Stick stick = (Stick) glyph;
-        //
-        //            if (stick.isBar() &&
-        //                ((stick.getResult() == BarsChecker.BAR_PART_DEFINING) ||
-        //                (stick.getShape() == Shape.PART_DEFINING_BARLINE))) {
-        //                BarsChecker.StaffAnchors pair = barsChecker.getStaffAnchors(
-        //                    stick);
-        //
-        //                for (int i = pair.top; i <= pair.bot; i++) {
-        //                    if (systemStarts[i] == -1) {
-        //                        systemStarts[i] = pair.top;
-        //                    }
-        //
-        //                    partStarts[i] = pair.top;
-        //                }
-        //            }
-        //        }
-        //
-        //        // Sanity check on the systems found
-        //        for (int i = 0; i < systemStarts.length; i++) {
-        //            if (logger.isFineEnabled()) {
-        //                logger.fine(
-        //                    "staff=" + i + " systemStart=" + systemStarts[i] +
-        //                    " partStart=" + partStarts[i]);
-        //            }
-        //
-        //            if (systemStarts[i] == -1) {
-        //                logger.warning("No system found for staff " + i);
-        //            }
-        //        }
-        //
-        //        int        id = 0; // Id for created SystemInfo's
-        //        int        sStart = -1; // Current system start
-        //        SystemInfo system = null; // Current system info
-        //        int        pStart = -1; // Current part start
-        //        PartInfo   part = null; // Current part info
-        //
-        //        for (int i = 0; i < systemStarts.length; i++) {
-        //            // Skip staves with no system
-        //            if (systemStarts[i] == -1) {
-        //                continue;
-        //            }
-        //
-        //            StaffInfo staff = staffManager.getStaff(i);
-        //
-        //            // System break ?
-        //            if (systemStarts[i] != sStart) {
-        //                system = new SystemInfo(++id, sheet);
-        //                systems.add(system);
-        //                sStart = i;
-        //            }
-        //
-        //            system.addStaff(staff);
-        //
-        //            // Part break ?
-        //            if (partStarts[i] != pStart) {
-        //                part = new PartInfo();
-        //                system.addPart(part);
-        //                pStart = i;
-        //            }
-        //
-        //            part.addStaff(staff);
-        //        }
-        //
+        for (SystemInfo system : systemManager.getSystems()) {
+            int      partTop = -1;
+            PartInfo part = null;
+
+            for (StaffInfo staff : system.getStaves()) {
+                int topId = partTops[staff.getId() - 1];
+
+                if (topId != partTop) {
+                    part = new PartInfo();
+                    system.addPart(part);
+                    partTop = topId;
+                }
+
+                part.addStaff(staff);
+            }
+        }
+
         //        // Specific degraded case, just one staff, no bar stick
         //        if (systems.isEmpty() && (staffNb == 1)) {
         //            StaffInfo singleStaff = staffManager.getFirstStaff();
@@ -404,18 +274,17 @@ public class SystemsBuilder
         //            part.addStaff(singleStaff);
         //            logger.warning("Created one system, one part, one staff");
         //        }
-        //
-        //        if (logger.isFineEnabled()) {
-        //            for (SystemInfo systemInfo : systems) {
-        //                Main.dumping.dump(systemInfo);
-        //
-        //                int i = 0;
-        //
-        //                for (PartInfo partInfo : systemInfo.getParts()) {
-        //                    Main.dumping.dump(partInfo, "Part #" + ++i, 1);
-        //                }
-        //            }
-        //        }
+        if (logger.isFineEnabled()) {
+            for (SystemInfo systemInfo : systems) {
+                Main.dumping.dump(systemInfo);
+
+                int i = 0;
+
+                for (PartInfo partInfo : systemInfo.getParts()) {
+                    Main.dumping.dump(partInfo, "Part #" + ++i, 1);
+                }
+            }
+        }
     }
 
     //--------------//
@@ -424,28 +293,24 @@ public class SystemsBuilder
     private void displayFrame ()
     {
         barsController = new BarsController();
-        lagView = new MyView(lag, getSpecificGlyphs(), barsController);
+        sceneView = new MyView(scene, barsController);
 
-        final String  unit = sheet.getId() + ":BarsBuilder";
-        BoardsPane    boardsPane = new BoardsPane(
+        final String unit = sheet.getId() + ":BarsBuilder";
+        BoardsPane   boardsPane = new BoardsPane(
             new PixelBoard(unit, sheet),
-            new RunBoard(unit, lag),
-            new SectionBoard(unit, lag),
-            new GlyphBoard(
-                unit,
-                lagView.getController(),
-                lag.getAllGlyphs(),
-                true),
+            new RunBoard(unit, sheet.getVerticalLag()),
+            new SectionBoard(unit, sheet.getVerticalLag()),
+            new GlyphBoard(unit, sceneView.getController(), true),
             new MyCheckBoard(
                 unit,
                 barsChecker.getSuite(),
-                lag.getSelectionService(),
+                scene.getSceneService(),
                 eventClasses));
 
         // Create a hosting frame for the view
-        ScrollLagView slv = new ScrollLagView(lagView);
+        ScrollView sv = new ScrollView(sceneView);
         sheet.getAssembly()
-             .addViewTab(Step.SYSTEMS_TAB, slv, boardsPane);
+             .addViewTab(Step.SYSTEMS_TAB, sv, boardsPane);
     }
 
     //----------------//
@@ -454,10 +319,12 @@ public class SystemsBuilder
     private void doBuildSystems ()
         throws StepException
     {
-        // Build systems and parts on sheet/glyph side
-        buildSystemsAndParts();
+        // Systems have been created by GRID step on sheet side
+        // Build parts on sheet side
+        buildParts();
 
         // Create score counterparts
+        // Build systems, parts & measures on score side
         allocateScoreStructure();
 
         // Report number of systems retrieved
@@ -525,16 +392,28 @@ public class SystemsBuilder
     private SortedSet<SystemInfo> splitSystemEntities ()
     {
         // Split everything, including horizontals, per system
-        SortedSet<SystemInfo> modified = new TreeSet<SystemInfo>();
-        modified.addAll(sheet.splitHorizontals());
-        modified.addAll(sheet.splitVerticalSections());
-        modified.addAll(sheet.splitBarSticks(lag.getAllGlyphs()));
+        SortedSet<SystemInfo> modifiedSystems = new TreeSet<SystemInfo>();
+        ///modifiedSystems.addAll(sheet.splitHorizontals());
+        modifiedSystems.addAll(sheet.splitHorizontalSections());
+        modifiedSystems.addAll(sheet.splitVerticalSections());
+        modifiedSystems.addAll(sheet.splitBarSticks(scene.getAllGlyphs()));
 
-        if (!modified.isEmpty()) {
-            logger.info(sheet.getLogPrefix() + "Systems impact: " + modified);
+        if (!modifiedSystems.isEmpty()) {
+            StringBuilder sb = new StringBuilder("[");
+
+            for (SystemInfo system : modifiedSystems) {
+                sb.append("#")
+                  .append(system.getId());
+            }
+
+            sb.append("]");
+
+            if (logger.isFineEnabled()) {
+                logger.info(sheet.getLogPrefix() + "Impacted systems: " + sb);
+            }
         }
 
-        return modified;
+        return modifiedSystems;
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -626,10 +505,10 @@ public class SystemsBuilder
     {
         //~ Constructors -------------------------------------------------------
 
-        public MyCheckBoard (String                                unit,
-                             CheckSuite<BarsChecker.GlyphContext>  suite,
-                             SelectionService                      eventService,
-                             Collection<Class<?extends UserEvent>> eventList)
+        public MyCheckBoard (String                               unit,
+                             CheckSuite<BarsChecker.GlyphContext> suite,
+                             SelectionService                     eventService,
+                             Class[]                              eventList)
         {
             super(unit, suite, eventService, eventList);
         }
@@ -648,16 +527,14 @@ public class SystemsBuilder
                 if (event instanceof GlyphEvent) {
                     BarsChecker.GlyphContext context = null;
                     GlyphEvent               glyphEvent = (GlyphEvent) event;
-                    Glyph                    entity = glyphEvent.getData();
+                    Glyph                    glyph = glyphEvent.getData();
 
-                    if (entity instanceof Stick) {
-                        Stick stick = (Stick) entity;
-
+                    if (glyph != null) {
                         // Make sure this is a rather vertical stick
-                        if (Math.abs(stick.getOrientedLine().getSlope()) <= constants.maxCoTangentForCheck.getValue()) {
+                        if (Math.abs(glyph.getInvertedSlope()) <= constants.maxCoTangentForCheck.getValue()) {
                             // To get a fresh suite
                             setSuite(barsChecker.new BarCheckSuite());
-                            context = new BarsChecker.GlyphContext(stick);
+                            context = new BarsChecker.GlyphContext(glyph);
                         }
                     }
 
@@ -673,7 +550,7 @@ public class SystemsBuilder
     // MyView //
     //--------//
     private final class MyView
-        extends GlyphLagView
+        extends SceneView
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -692,47 +569,21 @@ public class SystemsBuilder
 
         //~ Constructors -------------------------------------------------------
 
-        private MyView (GlyphLag                   lag,
-                        Collection<?extends Glyph> specificGlyphs,
-                        BarsController             barsController)
+        private MyView (Scene          scene,
+                        BarsController barsController)
         {
-            super(lag, null, null, barsController, specificGlyphs);
+            super(
+                scene,
+                barsController,
+                Arrays.asList(sheet.getHorizontalLag(), sheet.getVerticalLag()));
             setName("SystemsBuilder-View");
 
-            colorizeAllSections();
-            colorizeAllGlyphs();
+            setLocationService(sheet.getLocationService());
 
             barMenu = new BarMenu(getController());
         }
 
         //~ Methods ------------------------------------------------------------
-
-        //-------------------//
-        // colorizeAllGlyphs //
-        //-------------------//
-        @Override
-        public void colorizeAllGlyphs ()
-        {
-            int viewIndex = lag.viewIndexOf(this);
-
-            // Non recognized bar lines
-            for (Glyph glyph : lag.getAllGlyphs()) {
-                Stick stick = (Stick) glyph;
-
-                if (!stick.isBar()) {
-                    stick.colorize(lag, viewIndex, Color.red);
-                }
-            }
-
-            // Recognized bar lines
-            for (Glyph glyph : lag.getAllGlyphs()) {
-                Stick stick = (Stick) glyph;
-
-                if (stick.isBar()) {
-                    stick.colorize(lag, viewIndex, Color.yellow);
-                }
-            }
-        }
 
         //-----------------//
         // contextSelected //
@@ -742,14 +593,12 @@ public class SystemsBuilder
                                      MouseMovement movement)
         {
             // Retrieve the selected glyphs
-            Set<Glyph> glyphs = getLag()
-                                    .getSelectedGlyphSet();
+            Set<Glyph> glyphs = scene.getSelectedGlyphSet();
 
             // To display point information
             if ((glyphs == null) || glyphs.isEmpty()) {
                 pointSelected(pt, movement); // This may change glyph selection
-                glyphs = getLag()
-                             .getSelectedGlyphSet();
+                glyphs = scene.getSelectedGlyphSet();
             }
 
             if ((glyphs != null) && !glyphs.isEmpty()) {
@@ -773,7 +622,6 @@ public class SystemsBuilder
         //---------//
         /**
          * Notification about selection objects
-         *
          * @param event the notified event
          */
         @Override

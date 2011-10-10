@@ -21,17 +21,11 @@ interface GlyphFacet
 {
     //~ Methods ----------------------------------------------------------------
 
-    //------//
-    // dump //
-    //------//
     /**
      * Print out facet internal data
      */
     void dump ();
 
-    //-----------------//
-    // invalidateCache //
-    //-----------------//
     /**
      * Reset relevant cached data
      */

@@ -176,7 +176,7 @@ public class SentencePattern
                         // Check the resulting text is not black-listed
                         Glyph compound = one.mergeOf(two);
                         Glyph original = system.getSheet()
-                                               .getVerticalLag()
+                                               .getScene()
                                                .getOriginal(compound);
 
                         if ((original == null) ||

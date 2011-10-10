@@ -31,7 +31,6 @@ import java.util.TreeSet;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
 
 /**
  * Class {@code  GlyphTask} handles a collection of glyphs.
@@ -50,10 +49,6 @@ public abstract class GlyphTask
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** Lag orientation */
-    @XmlAttribute
-    protected final Orientation orientation;
-
     /** The collection of glyphs which are concerned by this task */
     protected Set<Glyph> glyphs;
 
@@ -69,29 +64,20 @@ public abstract class GlyphTask
      * Creates a new GlyphTask object.
      *
      * @param sheet the sheet impacted
-     * @param orientation orientation of the containing lag
      * @param glyphs the collection of glyphs concerned by this task
      */
     protected GlyphTask (Sheet             sheet,
-                         Orientation       orientation,
                          Collection<Glyph> glyphs)
     {
         super(sheet);
 
         // Check parameters
-        if (orientation == null) {
-            throw new IllegalArgumentException(
-                getClass().getSimpleName() + " needs a non-null orientation");
-        }
-
         if ((glyphs == null) || glyphs.isEmpty()) {
             throw new IllegalArgumentException(
                 getClass().getSimpleName() + " needs at least one glyph");
         }
 
-        this.orientation = orientation;
-
-        this.glyphs = new TreeSet<Glyph>(Glyph.globalComparator);
+        this.glyphs = new TreeSet<Glyph>(Glyph.abscissaComparator);
         this.glyphs.addAll(glyphs);
     }
 
@@ -99,36 +85,12 @@ public abstract class GlyphTask
     // GlyphTask //
     //-----------//
     /**
-     * Creates a new GlyphTask object, for vertical glyphs by default
-     *
+     * Creates a new GlyphTask object
      * @param sheet the sheet impacted
-     * @param glyphs the collection of glyphs concerned by this task
      */
-    protected GlyphTask (Sheet             sheet,
-                         Collection<Glyph> glyphs)
-    {
-        this(sheet, Orientation.VERTICAL, glyphs);
-    }
-
-    //-----------//
-    // GlyphTask //
-    //-----------//
-    /**
-     * Creates a new GlyphTask object, of specified orientation
-     * @param sheet the sheet impacted
-     * @param orientation the specified lag orientation
-     */
-    protected GlyphTask (Sheet       sheet,
-                         Orientation orientation)
+    protected GlyphTask (Sheet sheet)
     {
         super(sheet);
-
-        if (orientation == null) {
-            throw new IllegalArgumentException(
-                getClass().getSimpleName() + " needs a non-null orientation");
-        } else {
-            this.orientation = orientation;
-        }
     }
 
     //-----------//
@@ -137,7 +99,6 @@ public abstract class GlyphTask
     /** No-arg constructor for JAXB only */
     protected GlyphTask ()
     {
-        orientation = null;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -177,23 +138,11 @@ public abstract class GlyphTask
     @Override
     public void epilog (Sheet sheet)
     {
-        switch (orientation) {
-        case HORIZONTAL :
-            Stepping.reprocessSheet(
-                Steps.valueOf(Steps.SPLIT),
-                sheet,
-                null,
-                false);
-
-            break;
-
-        case VERTICAL :
-            Stepping.reprocessSheet(
-                Steps.valueOf(Steps.PATTERNS),
-                sheet,
-                getImpactedSystems(sheet),
-                false);
-        }
+        Stepping.reprocessSheet(
+            Steps.valueOf(Steps.PATTERNS), // TODO: Check this
+            sheet,
+            getImpactedSystems(sheet),
+            false);
     }
 
     //------------------//

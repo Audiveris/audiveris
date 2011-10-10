@@ -16,12 +16,16 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
 import omr.math.Histogram;
+
+import omr.run.Orientation;
+import static omr.run.Orientation.*;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -433,11 +437,12 @@ public class ClustersRetriever
     private void connectAncestors (LineFilament one,
                                    LineFilament two)
     {
-        LineFilament oneAnc = one.getAncestor();
-        LineFilament twoAnc = two.getAncestor();
+        LineFilament oneAnc = (LineFilament) one.getAncestor();
+        LineFilament twoAnc = (LineFilament) two.getAncestor();
 
         if (oneAnc != twoAnc) {
-            if (oneAnc.getLength() >= twoAnc.getLength()) {
+            if (oneAnc.getLength(Orientation.HORIZONTAL) >= twoAnc.getLength(
+                Orientation.HORIZONTAL)) {
                 ///logger.info("Inclusion " + twoAnc + " into " + oneAnc);
                 oneAnc.include(twoAnc);
                 oneAnc.getCombs()
@@ -456,10 +461,12 @@ public class ClustersRetriever
     //----------------//
     private void createClusters ()
     {
-        Collections.sort(filaments, LineFilament.reverseLengthComparator);
+        Collections.sort(
+            filaments,
+            Glyphs.getReverseLengthComparator(Orientation.HORIZONTAL));
 
         for (LineFilament fil : filaments) {
-            fil = fil.getAncestor();
+            fil = (LineFilament) fil.getAncestor();
 
             if ((fil.getCluster() == null) && !fil.getCombs()
                                                   .isEmpty()) {
@@ -534,7 +541,7 @@ public class ClustersRetriever
         Rectangle    clusterBox = null;
 
         for (LineFilament fil : fils) {
-            fil = fil.getAncestor();
+            fil =  (LineFilament) fil.getAncestor();
 
             if (fil.getCluster() != null) {
                 continue;
@@ -556,7 +563,7 @@ public class ClustersRetriever
             PixelRectangle filBox = fil.getContourBox();
             PixelPoint     middle = new PixelPoint();
             middle.x = filBox.x + (filBox.width / 2);
-            middle.y = (int) Math.rint(fil.getPositionAt(middle.x));
+            middle.y = (int) Math.rint(fil.getPositionAt(middle.x, HORIZONTAL));
 
             if (clusterBox.contains(middle)) {
                 // Check if this filament matches a cluster line
@@ -995,7 +1002,7 @@ public class ClustersRetriever
                          .getX()) &&
                 (x <= fil.getStopPoint()
                          .getX())) {
-                list.add(new FilY(fil, fil.getPositionAt(x)));
+                list.add(new FilY(fil, fil.getPositionAt(x, HORIZONTAL)));
             }
         }
 

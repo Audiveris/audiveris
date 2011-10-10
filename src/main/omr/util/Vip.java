@@ -23,17 +23,11 @@ public interface Vip
 {
     //~ Methods ----------------------------------------------------------------
 
-    //--------//
-    // setVip //
-    //--------//
     /**
      * (Debug) Flag this object as VIP
      */
     void setVip ();
 
-    //-------//
-    // isVip //
-    //-------//
     /**
      * (Debug) Report whether this object is flagged as VIP
      * @return true if VIP

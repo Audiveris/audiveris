@@ -22,8 +22,8 @@ import omr.score.entity.MeasureNode;
 import omr.score.entity.SystemNode;
 
 import omr.selection.GlyphEvent;
-import omr.selection.SelectionHint;
 import omr.selection.LocationEvent;
+import omr.selection.SelectionHint;
 
 import omr.sheet.Sheet;
 
@@ -349,8 +349,8 @@ public class ErrorsEditor
 
                     // Use glyph location if available
                     if (record.glyph != null) {
-                        sheet.getVerticalLag()
-                             .getSelectionService()
+                        sheet.getScene()
+                             .getSceneService()
                              .publish(
                             new GlyphEvent(
                                 this,
@@ -378,7 +378,7 @@ public class ErrorsEditor
                                 }
                             }
 
-                            sheet.getSelectionService()
+                            sheet.getLocationService()
                                  .publish(
                                 new LocationEvent(
                                     ErrorsEditor.this,

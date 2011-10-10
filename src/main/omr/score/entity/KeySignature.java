@@ -330,7 +330,7 @@ public class KeySignature
             List<Integer>      refs = new ArrayList<Integer>();
             Histogram<Integer> histo = getPage()
                                            .getSheet()
-                                           .getVerticalLag()
+                                           .getScene()
                                            .getHistogram(
                 Orientation.VERTICAL,
                 getGlyphs());

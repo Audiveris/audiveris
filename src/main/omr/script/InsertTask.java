@@ -11,12 +11,9 @@
 // </editor-fold>
 package omr.script;
 
-import omr.glyph.GlyphLag;
 import omr.glyph.Shape;
 import omr.glyph.VirtualGlyph;
 import omr.glyph.facets.Glyph;
-
-import omr.run.Orientation;
 
 import omr.score.common.PixelPoint;
 
@@ -76,15 +73,13 @@ public class InsertTask
      * @param sheet the sheet impacted
      * @param shape the inserted shape
      * @param locations the locations for insertion
-     * @param orientation the orientation of the containing lag
      * @throws IllegalArgumentException if any of the arguments is not valid
      */
     public InsertTask (Sheet                  sheet,
                        Shape                  shape,
-                       Collection<PixelPoint> locations,
-                       Orientation            orientation)
+                       Collection<PixelPoint> locations)
     {
-        super(sheet, orientation);
+        super(sheet);
 
         // Check parameters
         if (shape == null) {
@@ -147,10 +142,9 @@ public class InsertTask
         }
 
         // Take inserted glyph(s) as selected glyph(s)
-        GlyphLag lag = (orientation == Orientation.VERTICAL)
-                       ? sheet.getVerticalLag() : sheet.getHorizontalLag();
-        lag.getSelectionService()
-           .publish(
+        sheet.getScene()
+             .getSceneService()
+             .publish(
             new GlyphSetEvent(
                 this,
                 SelectionHint.GLYPH_INIT,
@@ -166,9 +160,6 @@ public class InsertTask
     {
         StringBuilder sb = new StringBuilder(super.internalsString());
         sb.append(" insert");
-
-        sb.append(" ")
-          .append(orientation);
 
         sb.append(" ")
           .append(shape);
@@ -227,20 +218,19 @@ public class InsertTask
         glyphs = new LinkedHashSet<Glyph>();
 
         for (PixelPoint location : locations) {
-            Glyph glyph = new VirtualGlyph(
+            Glyph      glyph = new VirtualGlyph(
                 shape,
                 sheet.getScale().interline(),
                 location);
 
-            if (orientation == Orientation.VERTICAL) {
-                SystemInfo system = sheet.getSystemOf(glyph.getAreaCenter());
-                glyph = system.addGlyph(glyph);
-                system.computeGlyphFeatures(glyph);
-            } else {
-                sheet.getHorizontalLag()
-                     .addGlyph(glyph);
-            }
-
+            //            if (orientation == Orientation.VERTICAL) {
+            SystemInfo system = sheet.getSystemOf(glyph.getAreaCenter());
+            glyph = system.addGlyph(glyph);
+            system.computeGlyphFeatures(glyph);
+            //            } else {
+            //                sheet.getScene()
+            //                     .addGlyph(glyph);
+            //            }
             glyph.dump();
 
             glyphs.add(glyph);

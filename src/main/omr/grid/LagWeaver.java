@@ -11,17 +11,16 @@
 // </editor-fold>
 package omr.grid;
 
-import omr.glyph.GlyphLag;
-import omr.glyph.GlyphSection;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
+import omr.lag.Lag;
+import omr.lag.Section;
 import omr.lag.Sections;
 
 import omr.log.Logger;
 
 import omr.run.Run;
-import omr.run.RunsTable;
 
 import omr.sheet.Sheet;
 
@@ -90,17 +89,26 @@ public class LagWeaver
 
     //~ Instance fields --------------------------------------------------------
 
+    /** Related sheet */
+    private final Sheet sheet;
+
     /** Vertical lag */
-    private final GlyphLag vLag;
+    private final Lag vLag;
 
     /** Horizontal lag */
-    private final GlyphLag hLag;
+    private final Lag hLag;
 
     /**
      * Actual points around current vLag section to check to hLag presence
-     * (relevant only during crossRetrieval)
+     * (relevant only during horiWithVert)
      */
-    private final List<Point> points = new ArrayList<Point>();
+    private final List<Point> pointsAside = new ArrayList<Point>();
+
+    /** Points to check for source sections above in hLag */
+    private final List<Point> pointsAbove = new ArrayList<Point>();
+
+    /** Points to check for target sections below in hLag */
+    private final List<Point> pointsBelow = new ArrayList<Point>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -113,6 +121,8 @@ public class LagWeaver
      */
     public LagWeaver (Sheet sheet)
     {
+        this.sheet = sheet;
+
         vLag = sheet.getVerticalLag();
         hLag = sheet.getHorizontalLag();
     }
@@ -126,17 +136,19 @@ public class LagWeaver
     {
         StopWatch watch = new StopWatch("LagWeaver");
 
-        logger.info("vLag: " + vLag);
-        logger.info("hLag: " + hLag);
-
         // Remove staff line stuff from hLag
         watch.start("purge hLag");
-        removeStaffLines(hLag);
-        logger.info("hLag: " + hLag);
 
-        //
-        watch.start("crossRetrieval");
-        crossRetrieval();
+        List<Section> staffLinesSections = removeStaffLines(hLag);
+        logger.info(
+            sheet.getLogPrefix() + "StaffLine sections removed: " +
+            staffLinesSections.size());
+
+        watch.start("Hori <-> Hori");
+        horiWithHori();
+
+        watch.start("Hori <-> Vert");
+        horiWithVert();
 
         // The end
         watch.print();
@@ -154,31 +166,51 @@ public class LagWeaver
         return headings[1 + dy][1 + dx];
     }
 
-    //----------//
-    // addPoint //
-    //----------//
-    private void addPoint (int x,
-                           int y)
+    //---------------//
+    // addPointAbove //
+    //---------------//
+    private void addPointAbove (int x,
+                                int y)
     {
-        //logger.fine("addPoint " + x + "," + y);
-        points.add(new Point(x, y));
+        logger.fine("addPointAbove " + x + "," + y);
+        pointsAbove.add(new Point(x, y));
     }
 
-    //-------------//
-    // checkPoints //
-    //-------------//
-    private void checkPoints (GlyphSection vSect)
+    //---------------//
+    // addPointAside //
+    //---------------//
+    private void addPointAside (int x,
+                                int y)
+    {
+        //logger.fine("addPointAside " + x + "," + y);
+        pointsAside.add(new Point(x, y));
+    }
+
+    //---------------//
+    // addPointBelow //
+    //---------------//
+    private void addPointBelow (int x,
+                                int y)
+    {
+        logger.fine("addPointBelow " + x + "," + y);
+        pointsBelow.add(new Point(x, y));
+    }
+
+    //------------------//
+    // checkPointsAbove //
+    //------------------//
+    private void checkPointsAbove (Section lSect)
     {
         boolean added = false;
 
-        for (Point pt : points) {
+        for (Point pt : pointsAbove) {
             Run run = hLag.getRunAt(pt.x, pt.y);
 
             if (run != null) {
-                GlyphSection hSect = (GlyphSection) run.getSection();
+                Section hSect = run.getSection();
 
                 if (hSect != null) {
-                    vSect.addCrossSection(hSect);
+                    hSect.addTarget(lSect);
                     added = true;
                 }
             }
@@ -186,24 +218,232 @@ public class LagWeaver
 
         if (added && logger.isFineEnabled()) {
             logger.info(
-                "vSect#" + vSect.getId() + " checks:" + points.size() +
-                Sections.toString(" hSects", vSect.getCrossSections()));
+                "lSect#" + lSect.getId() + " checks:" + pointsAbove.size() +
+                Sections.toString(" sources", lSect.getSources()));
         }
     }
 
-    //----------------//
-    // crossRetrieval //
-    //----------------//
-    private void crossRetrieval ()
+    //------------------//
+    // checkPointsAside //
+    //------------------//
+    private void checkPointsAside (Section vSect)
     {
-        // Process each vertical section in turn
-        for (GlyphSection vSect : vLag.getSections()) {
-            //GlyphSection vSect = vLag.getVertexById(1924);
-            if (logger.isFineEnabled()) {
-                logger.fine("vSect: " + vSect);
+        boolean added = false;
+
+        for (Point pt : pointsAside) {
+            Run run = hLag.getRunAt(pt.x, pt.y);
+
+            if (run != null) {
+                Section hSect = run.getSection();
+
+                if (hSect != null) {
+                    vSect.addOppositeSection(hSect);
+                    hSect.addOppositeSection(vSect);
+                    added = true;
+                }
+            }
+        }
+
+        if (added && logger.isFineEnabled()) {
+            logger.info(
+                "vSect#" + vSect.getId() + " checks:" + pointsAside.size() +
+                Sections.toString(" hSects", vSect.getOppositeSections()));
+        }
+    }
+
+    //------------------//
+    // checkPointsBelow //
+    //------------------//
+    private void checkPointsBelow (Section lSect)
+    {
+        boolean added = false;
+
+        for (Point pt : pointsBelow) {
+            Run run = hLag.getRunAt(pt.x, pt.y);
+
+            if (run != null) {
+                Section hSect = run.getSection();
+
+                if (hSect != null) {
+                    lSect.addTarget(hSect);
+                    added = true;
+                }
+            }
+        }
+
+        if (added && logger.isFineEnabled()) {
+            logger.info(
+                "lSect#" + lSect.getId() + " checks:" + pointsBelow.size() +
+                Sections.toString(" targets", lSect.getTargets()));
+        }
+    }
+
+    //--------------//
+    // horiWithHori //
+    //--------------//
+    /**
+     * Connect, when appropriate, the long horizontal sections (built from long
+     * runs) with short horizontal sections (built later from shorter runs).
+     * Without such connections, glyph building would suffer over-segmentation.
+     *
+     * <p>We take each long section in turn and check for connection, above and
+     * below, with short sections. If positive, we cross-connect them.
+     */
+    private void horiWithHori ()
+    {
+        int maxLongId = sheet.getLongSectionMaxId();
+
+        // Process each long section in turn
+        for (Section lSect : hLag.getSections()) {
+            if (lSect.getId() > maxLongId) {
+                continue;
             }
 
-            final int       sectTop = vSect.getStart();
+            final int       sectTop = lSect.getFirstPos();
+            final int       sectLeft = lSect.getStartCoord();
+            final int       sectBottom = lSect.getLastPos();
+            final int       sectRight = lSect.getStopCoord();
+            final double[]  coords = new double[2];
+            final boolean[] occupied = new boolean[lSect.getLength()];
+            Point           prevPt = null;
+            Point           pt = null;
+            Heading         prevHeading = null;
+            Heading         heading = null;
+            pointsAbove.clear();
+            pointsBelow.clear();
+
+            for (PathIterator it = lSect.getPathIterator(); !it.isDone();) {
+                int kind = it.currentSegment(coords);
+                pt = new Point((int) coords[0], (int) coords[1]);
+
+                if (kind == SEG_LINETO) {
+                    heading = getHeading(prevPt, pt);
+
+                    if (logger.isFineEnabled()) {
+                        logger.fine(prevPt + " " + heading + " " + pt);
+                    }
+
+                    switch (heading) {
+                    case NORTH :
+
+                        // No pixel on right
+                        if (prevHeading == Heading.WEST) {
+                            removePointAbove(prevPt.x, prevPt.y - 1);
+                        }
+
+                        break;
+
+                    case WEST : {
+                        int dir = -1;
+
+                        // Check pixels on row above
+                        Arrays.fill(occupied, false);
+
+                        int y = pt.y - 1;
+                        int xStart = prevPt.x - 1;
+
+                        if (prevHeading == Heading.SOUTH) {
+                            xStart += dir;
+                        }
+
+                        // Special case for first run, check adjacent section
+                        if (pt.y == sectTop) {
+                            for (Section adj : lSect.getSources()) {
+                                Run run = adj.getLastRun();
+                                int left = Math.max(run.getStart() - 1, pt.x);
+                                int right = Math.min(run.getStop() + 1, xStart);
+
+                                for (int x = left; x <= right; x++) {
+                                    occupied[x - sectLeft] = true;
+                                }
+                            }
+                        }
+
+                        int xBreak = pt.x - 1;
+
+                        for (int x = xStart; x != xBreak; x += dir) {
+                            if (!occupied[x - sectLeft]) {
+                                addPointAbove(x, y);
+                            }
+                        }
+
+                        break;
+                    }
+
+                    case SOUTH :
+
+                        // No pixel on left
+                        if (prevHeading == Heading.EAST) {
+                            removePointBelow(prevPt.x - 1, prevPt.y);
+                        }
+
+                        break;
+
+                    case EAST : {
+                        int dir = +1;
+
+                        // Check pixels on row below
+                        Arrays.fill(occupied, false);
+
+                        int y = pt.y;
+                        int xStart = prevPt.x;
+
+                        if (prevHeading == Heading.NORTH) {
+                            xStart += dir;
+                        }
+
+                        int xBreak = pt.x;
+
+                        // Special case for last run, check adjacent section
+                        if ((pt.y - 1) == sectBottom) {
+                            for (Section adj : lSect.getTargets()) {
+                                Run run = adj.getFirstRun();
+                                int left = Math.max(run.getStart() - 1, xStart);
+                                int right = Math.min(
+                                    run.getStop() + 1,
+                                    xBreak - 1);
+
+                                for (int x = left; x <= right; x++) {
+                                    occupied[x - sectLeft] = true;
+                                }
+                            }
+                        }
+
+                        for (int x = xStart; x != xBreak; x += dir) {
+                            if (!occupied[x - sectLeft]) {
+                                addPointBelow(x, y);
+                            }
+                        }
+
+                        break;
+                    }
+                    }
+                }
+
+                prevHeading = heading;
+                prevPt = pt;
+                it.next();
+            }
+
+            checkPointsAbove(lSect);
+            checkPointsBelow(lSect);
+        }
+    }
+
+    //--------------//
+    // horiWithVert //
+    //--------------//
+    private void horiWithVert ()
+    {
+        logger.info("horiWithVerts sections: " + vLag);
+
+        // Process each vertical section in turn
+        for (Section vSect : vLag.getSections()) {
+            ///if (logger.isFineEnabled()) {
+            ///logger.info("vSect: " + vSect);
+
+            ///}
+            final int       sectTop = vSect.getStartCoord();
             final int       sectLeft = vSect.getFirstPos();
             final int       sectRight = vSect.getLastPos();
             final double[]  coords = new double[2];
@@ -212,7 +452,7 @@ public class LagWeaver
             Point           pt = null;
             Heading         prevHeading = null;
             Heading         heading = null;
-            points.clear();
+            pointsAside.clear();
 
             for (PathIterator it = vSect.getPathIterator(); !it.isDone();) {
                 int kind = it.currentSegment(coords);
@@ -221,11 +461,11 @@ public class LagWeaver
                 if (kind == SEG_LINETO) {
                     heading = getHeading(prevPt, pt);
 
+                    //logger.info(prevPt + " " + heading + " " + pt);
                     switch (heading) {
                     case NORTH : {
                         int dir = -1;
                         // Check pixels on left column
-                        //logger.info(prevPt + " " + heading + " " + pt);
                         Arrays.fill(occupied, false);
 
                         int x = pt.x - 1;
@@ -237,7 +477,7 @@ public class LagWeaver
 
                         // Special case for section left run
                         if (pt.x == sectLeft) {
-                            for (GlyphSection adj : vSect.getSources()) {
+                            for (Section adj : vSect.getSources()) {
                                 Run run = adj.getLastRun();
                                 int top = Math.max(run.getStart() - 1, pt.y);
                                 int bot = Math.min(run.getStop() + 1, yStart);
@@ -252,7 +492,7 @@ public class LagWeaver
 
                         for (int y = yStart; y != yBreak; y += dir) {
                             if (!occupied[y - sectTop]) {
-                                addPoint(x, y);
+                                addPointAside(x, y);
                             }
                         }
                     }
@@ -262,9 +502,8 @@ public class LagWeaver
                     case WEST :
 
                         // No pixel above
-                        //logger.fine(prevPt + " " + heading + " " + pt);
                         if (prevHeading == Heading.NORTH) {
-                            removePoint(prevPt.x - 1, prevPt.y);
+                            removePointAside(prevPt.x - 1, prevPt.y);
                         }
 
                         break;
@@ -274,7 +513,6 @@ public class LagWeaver
                         // Check pixels on right column
                         Arrays.fill(occupied, false);
 
-                        //logger.info(prevPt + " " + heading + " " + pt);
                         int x = pt.x;
                         int yStart = prevPt.y;
 
@@ -286,7 +524,7 @@ public class LagWeaver
 
                         // Special case for section right run
                         if ((pt.x - 1) == sectRight) {
-                            for (GlyphSection adj : vSect.getTargets()) {
+                            for (Section adj : vSect.getTargets()) {
                                 Run run = adj.getFirstRun();
                                 int top = Math.max(run.getStart() - 1, yStart);
                                 int bot = Math.min(
@@ -301,7 +539,7 @@ public class LagWeaver
 
                         for (int y = yStart; y != yBreak; y += dir) {
                             if (!occupied[y - sectTop]) {
-                                addPoint(x, y);
+                                addPointAside(x, y);
                             }
                         }
                     }
@@ -311,9 +549,8 @@ public class LagWeaver
                     case EAST :
 
                         // No pixel below
-                        //logger.fine(prevPt + " " + heading + " " + pt);
                         if (prevHeading == Heading.SOUTH) {
-                            removePoint(prevPt.x, prevPt.y - 1);
+                            removePointAside(prevPt.x, prevPt.y - 1);
                         }
 
                         break;
@@ -325,17 +562,17 @@ public class LagWeaver
                 it.next();
             }
 
-            checkPoints(vSect);
+            checkPointsAside(vSect);
         }
     }
 
     //-------------//
     // removePoint //
     //-------------//
-    private void removePoint (int x,
-                              int y)
+    private void removePoint (List<Point> points,
+                              int         x,
+                              int         y)
     {
-        //logger.info("Removing corner at x:" + x + " y:" + y);
         if (!points.isEmpty()) {
             ListIterator<Point> iter = points.listIterator(points.size());
             Point               lastCorner = iter.previous();
@@ -347,13 +584,48 @@ public class LagWeaver
     }
 
     //------------------//
+    // removePointAbove //
+    //------------------//
+    private void removePointAbove (int x,
+                                   int y)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("Removing corner above x:" + x + " y:" + y);
+        }
+
+        removePoint(pointsAbove, x, y);
+    }
+
+    //------------------//
+    // removePointAside //
+    //------------------//
+    private void removePointAside (int x,
+                                   int y)
+    {
+        removePoint(pointsAside, x, y);
+    }
+
+    //------------------//
+    // removePointBelow //
+    //------------------//
+    private void removePointBelow (int x,
+                                   int y)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("Removing corner below x:" + x + " y:" + y);
+        }
+
+        removePoint(pointsBelow, x, y);
+    }
+
+    //------------------//
     // removeStaffLines //
     //------------------//
-    private void removeStaffLines (GlyphLag hLag)
+    private List<Section> removeStaffLines (Lag hLag)
     {
-        hLag.purgeSections(
-            new Predicate<GlyphSection>() {
-                    public boolean check (GlyphSection section)
+        return hLag.purgeSections(
+            new Predicate<Section>() {
+                    public boolean check (Section section)
                     {
                         Glyph glyph = section.getGlyph();
 

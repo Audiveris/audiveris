@@ -32,7 +32,7 @@ public interface Step
 
     /** Labels for view in tabbed panel */
     public static final String PICTURE_TAB = "Picture";
-    public static final String GRID_TAB = "Grid"; 
+    public static final String GRID_TAB = "Grid";
     public static final String SKEW_TAB = "Skew";
     public static final String LINES_TAB = "Lines";
     public static final String HORIZONTALS_TAB = "Horizontals";
@@ -72,57 +72,30 @@ public interface Step
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------------//
-    // getDescription //
-    //----------------//
     /** Report a description of the step */
     public String getDescription ();
 
-    //--------//
-    // isDone //
-    //--------//
     /** Check whether this step has been done for the specified sheet */
     public boolean isDone (Sheet sheet);
 
-    //-------------//
-    // isMandatory //
-    //-------------//
     /** Is the step mandatory? */
     public boolean isMandatory ();
 
-    //---------//
-    // getName //
-    //---------//
     /** Name of the step */
     public String getName ();
 
-    //------------//
-    // isRedoable //
-    //------------//
     /** Is the step repeatable at will? */
     public boolean isRedoable ();
 
-    //--------------//
-    // isScoreLevel //
-    //--------------//
     /** Does the step need to be performed at score level only? */
     public boolean isScoreLevel ();
 
-    //--------//
-    // getTab //
-    //--------//
     /** Related short tab */
     public String getTab ();
 
-    //-----------//
-    // displayUI //
-    //-----------//
     /** Make the related user interface visible for this step */
     public void displayUI (Sheet sheet);
 
-    //--------//
-    // doStep //
-    //--------//
     /**
      * Run the step and mark it as started then done
      * @param systems systems to process (null means all systems)
@@ -133,15 +106,9 @@ public interface Step
                         Sheet                  sheet)
         throws StepException;
 
-    //------//
-    // done //
-    //------//
     /** Flag this step as done */
     public void done (Sheet sheet);
 
-    //--------------//
-    // toLongString //
-    //--------------//
     /** A detailed description */
     public String toLongString ();
 }

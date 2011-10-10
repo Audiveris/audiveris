@@ -13,7 +13,6 @@ package omr.score.entity;
 
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
-import omr.glyph.facets.Stick;
 
 import omr.log.Logger;
 
@@ -112,9 +111,8 @@ public class BeamItem
         this.packIndex = packIndex;
 
         // Location of left and right points
-        Stick          stick = (Stick) glyph;
-        PixelRectangle box = stick.getContourBox();
-        Line           absoluteLine = stick.getAbsoluteLine();
+        PixelRectangle box = glyph.getContourBox();
+        Line           absoluteLine = glyph.getLine();
         double         yMidLeft = absoluteLine.yAtX((double) box.x);
         double         yMidRight = absoluteLine.yAtX(
             (double) (box.x + box.width));
@@ -127,7 +125,7 @@ public class BeamItem
             if (logger.isFineEnabled()) {
                 logger.fine(
                     "Strange beam item at glyph#" + glyph.getId() + " slope=" +
-                    stick.getAbsoluteLine().getSlope());
+                    glyph.getLine().getSlope());
             }
 
             // Make a simple horizontal beam item
@@ -286,7 +284,7 @@ public class BeamItem
     public int compareTo (BeamItem other)
     {
         // Delegate to underlying glyph
-        return Glyph.globalComparator.compare(glyph, other.glyph);
+        return Glyph.abscissaComparator.compare(glyph, other.glyph);
     }
 
     //----------//

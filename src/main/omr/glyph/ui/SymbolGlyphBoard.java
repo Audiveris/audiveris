@@ -172,7 +172,7 @@ class SymbolGlyphBoard
                              int              firstSymbolId)
     {
         // For all glyphs
-        super(unitName, glyphsController, null, true);
+        super(unitName, glyphsController, true);
 
         // Cache info
         this.firstSymbolId = firstSymbolId;

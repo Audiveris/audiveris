@@ -28,9 +28,6 @@ interface GlyphRecognition
 {
     //~ Methods ----------------------------------------------------------------
 
-    //-------//
-    // isBar //
-    //-------//
     /**
      * Convenient method which tests if the glyph is a Bar line
      *
@@ -38,9 +35,6 @@ interface GlyphRecognition
      */
     boolean isBar ();
 
-    //--------//
-    // isClef //
-    //--------//
     /**
      * Convenient method which tests if the glyph is a Clef
      *
@@ -48,9 +42,6 @@ interface GlyphRecognition
      */
     boolean isClef ();
 
-    //----------//
-    // getDoubt //
-    //----------//
     /**
      * Report the doubt of the glyph shape
      *
@@ -58,27 +49,18 @@ interface GlyphRecognition
      */
     double getDoubt ();
 
-    //---------------//
-    // setEvaluation //
-    //---------------//
     /**
      * Assign an evaluation
      * @param evaluation the evaluation structure, perhaps null
      */
     void setEvaluation (Evaluation evaluation);
 
-    //---------------//
-    // getEvaluation //
-    //---------------//
     /**
      * Report the evaluation, if any
      * @return the evaluation structure (shape + doubt + failure if any)
      */
     Evaluation getEvaluation ();
 
-    //---------//
-    // isKnown //
-    //---------//
     /**
      * A glyph is considered as known if it has a registered shape other than
      * NOISE (Notice that CLUTTER as well as NO_LEGAL_TIME and GLYPH_PART are
@@ -88,9 +70,6 @@ interface GlyphRecognition
      */
     boolean isKnown ();
 
-    //---------------//
-    // isManualShape //
-    //---------------//
     /**
      * Report whether the shape of this glyph has been manually assigned (and
      * thus can only be modified by explicit user action)
@@ -99,9 +78,6 @@ interface GlyphRecognition
      */
     boolean isManualShape ();
 
-    //----------//
-    // setShape //
-    //----------//
     /**
      * Setter for the glyph shape, assumed to be based on structural data
      *
@@ -109,9 +85,6 @@ interface GlyphRecognition
      */
     void setShape (Shape shape);
 
-    //----------//
-    // setShape //
-    //----------//
     /**
      * Setter for the glyph shape, with related doubt
      *
@@ -121,9 +94,6 @@ interface GlyphRecognition
     void setShape (Shape  shape,
                    double doubt);
 
-    //----------//
-    // getShape //
-    //----------//
     /**
      * Report the registered glyph shape
      *
@@ -131,9 +101,6 @@ interface GlyphRecognition
      */
     Shape getShape ();
 
-    //------------------//
-    // isShapeForbidden //
-    //------------------//
     /**
      * Check whether a shape is forbidden for this glyph
      * @param shape the shape to check
@@ -142,9 +109,6 @@ interface GlyphRecognition
      */
     boolean isShapeForbidden (Shape shape);
 
-    //--------//
-    // isStem //
-    //--------//
     /**
      * Convenient method which tests if the glyph is a Stem
      *
@@ -152,9 +116,6 @@ interface GlyphRecognition
      */
     boolean isStem ();
 
-    //--------//
-    // isText //
-    //--------//
     /**
      * Check whether the glyph shape is a text (or a character)
      *
@@ -162,36 +123,24 @@ interface GlyphRecognition
      */
     boolean isText ();
 
-    //-------------//
-    // getTextInfo //
-    //-------------//
     /**
      * Report the textual information for this glyph
      * @return the glyph textual info, or null if none
      */
     TextInfo getTextInfo ();
 
-    //-----------------//
-    // setTimeRational //
-    //-----------------//
     /**
      * Set the glyph timesig rational value
      * @param timeRational the time rational to set
      */
     void setTimeRational (TimeRational timeRational);
 
-    //-----------------//
-    // getTimeRational //
-    //-----------------//
     /**
      * Report the related timesig rational if any
      * @return the time rational
      */
     TimeRational getTimeRational ();
 
-    //-------------//
-    // isWellKnown //
-    //-------------//
     /**
      * A glyph is considered as well known if it has a registered well known
      * shape
@@ -200,18 +149,12 @@ interface GlyphRecognition
      */
     boolean isWellKnown ();
 
-    //------------//
-    // allowShape //
-    //------------//
     /**
      * Remove the provided shape from the collection of forbidden shaped, if any
      * @param shape the shape to allow
      */
     void allowShape (Shape shape);
 
-    //-------------//
-    // forbidShape //
-    //-------------//
     /**
      * Forbid a specific shape
      * @param shape the shape to forbid

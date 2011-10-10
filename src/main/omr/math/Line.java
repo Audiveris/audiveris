@@ -23,9 +23,6 @@ public interface Line
 {
     //~ Methods ----------------------------------------------------------------
 
-    //--------------//
-    // isHorizontal //
-    //--------------//
     /**
      * Check if line is horizontal ('a' coeff is null)
      *
@@ -33,9 +30,6 @@ public interface Line
      */
     boolean isHorizontal ();
 
-    //------------------//
-    // getInvertedSlope //
-    //------------------//
     /**
      * Return -b/a, from a*x + b*y +c
      *
@@ -43,9 +37,6 @@ public interface Line
      */
     double getInvertedSlope ();
 
-    //-----------------//
-    // getMeanDistance //
-    //-----------------//
     /**
      * Return the mean quadratic distance of the defining population of points
      * to the resulting line. This can be used to measure how well the line fits
@@ -55,9 +46,6 @@ public interface Line
      */
     double getMeanDistance ();
 
-    //-------------------//
-    // getNumberOfPoints //
-    //-------------------//
     /**
      * Return the cardinality of the population of defining points.
      *
@@ -65,9 +53,6 @@ public interface Line
      */
     int getNumberOfPoints ();
 
-    //----------//
-    // getSlope //
-    //----------//
     /**
      * Return -a/b, from a*x + b*y +c
      *
@@ -75,9 +60,6 @@ public interface Line
      */
     double getSlope ();
 
-    //------------//
-    // isVertical //
-    //------------//
     /**
      * Check if line is vertical ('b' coeff is null)
      *
@@ -85,9 +67,6 @@ public interface Line
      */
     boolean isVertical ();
 
-    //------------//
-    // distanceOf //
-    //------------//
     /**
      * Compute the orthogonal distance between the line and the provided
      * point. Note that the distance may be negative.
@@ -100,9 +79,6 @@ public interface Line
     double distanceOf (double x,
                        double y);
 
-    //-------------//
-    // includeLine //
-    //-------------//
     /**
      * Add the whole population of another line, which results in merging this
      * other line with the line at hand.
@@ -113,9 +89,6 @@ public interface Line
      */
     Line includeLine (Line other);
 
-    //--------------//
-    // includePoint //
-    //--------------//
     /**
      * Add the coordinates of a point in the defining population of points.
      *
@@ -125,27 +98,18 @@ public interface Line
     void includePoint (double x,
                        double y);
 
-    //-------//
-    // reset //
-    //-------//
     /**
      * Remove the whole population of points. The line is not immediately
      * usable, it needs now to include defining points.
      */
     void reset ();
 
-    //--------------------//
-    // swappedCoordinates //
-    //--------------------//
     /**
      * Return a new line whose coordinates are swapped with respect to this one
      * @return a new X/Y swapped line
      */
     Line swappedCoordinates ();
 
-    //------//
-    // xAtY //
-    //------//
     /**
      * Retrieve the abscissa where the line crosses the given ordinate y.
      * Beware of horizontal lines !!!
@@ -156,9 +120,6 @@ public interface Line
      */
     double xAtY (double y);
 
-    //------//
-    // xAtY //
-    //------//
     /**
      * Retrieve the abscissa where the line crosses the given ordinate y,
      * rounded to the nearest integer value.  Beware of horizontal lines !!!
@@ -169,9 +130,6 @@ public interface Line
      */
     int xAtY (int y);
 
-    //------//
-    // yAtX //
-    //------//
     /**
      * Retrieve the ordinate where the line crosses the given abscissa x.
      * Beware of vertical lines !!!
@@ -182,9 +140,6 @@ public interface Line
      */
     double yAtX (double x);
 
-    //------//
-    // yAtX //
-    //------//
     /**
      * Retrieve the ordinate where the line crosses the given abscissa x,
      * rounded to the nearest integer value.  Beware of vertical lines !!!
@@ -195,7 +150,6 @@ public interface Line
      */
     int yAtX (int x);
 
-    //~ Inner Classes ----------------------------------------------------------
 
     /**
      * Specific exception raised when trying to invert a non-invertible line
@@ -203,7 +157,6 @@ public interface Line
     static class NonInvertibleLineException
         extends RuntimeException
     {
-        //~ Constructors -------------------------------------------------------
 
         NonInvertibleLineException (String message)
         {
@@ -218,7 +171,6 @@ public interface Line
     static class UndefinedLineException
         extends RuntimeException
     {
-        //~ Constructors -------------------------------------------------------
 
         UndefinedLineException (String message)
         {

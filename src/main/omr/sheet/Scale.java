@@ -208,6 +208,22 @@ public class Scale
         return mainFore;
     }
 
+    //------------------//
+    // pixelsToAreaFrac //
+    //------------------//
+    /**
+     * Compute the interline area fraction that corresponds to the given number
+     * of pixels.
+     *
+     * @param pixels the equivalent in number of pixels
+     * @return the interline area fraction
+     * @see #toPixels
+     */
+    public double pixelsToAreaFrac (double pixels)
+    {
+        return pixels / (interline * interline);
+    }
+
     //--------------//
     // pixelsToFrac //
     //--------------//

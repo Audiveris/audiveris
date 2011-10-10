@@ -23,26 +23,43 @@ import java.awt.geom.Point2D;
 
 /**
  * Class <code>Orientation</code> defines orientation as horizontal or
- * vertical
+ * vertical, and provides convenient methods to convert entities between
+ * absolute and oriented definitions.
  *
  * @author Hervé Bitteur
  */
-public enum Orientation
-    implements Oriented {
+public enum Orientation {
     HORIZONTAL,
     VERTICAL;
 
-    //----------------//
-    // getOrientation //
-    //----------------//
-    public Orientation getOrientation ()
+    //----------//
+    // opposite //
+    //----------//
+    /**
+     * Report the orientation opposite to this one
+     * @return the opposite orientation
+     */
+    public Orientation opposite ()
     {
-        return this;
+        switch (this) {
+        case HORIZONTAL :
+            return VERTICAL;
+
+        default :
+        case VERTICAL :
+            return HORIZONTAL;
+        }
     }
 
     //------------//
     // isVertical //
     //------------//
+    /**
+     * Return true if the entity is vertical, false if horizontal. Not a very
+     * object-oriented approach but who cares?
+     *
+     * @return true if vertical, false otherwise
+     */
     public boolean isVertical ()
     {
         return this == VERTICAL;
@@ -51,14 +68,28 @@ public enum Orientation
     //----------//
     // absolute //
     //----------//
+    /**
+     * Given a point (x, y) in the absolute space, return the corresponding
+     * (coord, pos) oriented point taking the lag orientation into account.
+     *
+     * @param cp the oriented (coord, pos) point
+     * @return the corresponding absolute (x, y) point
+     */
     public Point oriented (PixelPoint xy)
     {
         return new Point(absolute(xy)); // Since involutive
     }
 
     //----------//
-    // absolute //
+    // oriented //
     //----------//
+    /**
+     * Given a point (x, y) in the absolute space, return the corresponding
+     * (coord, pos) oriented point taking the lag orientation into account.
+     *
+     * @param cp the oriented (coord, pos) point
+     * @return the corresponding absolute (x, y) point
+     */
     public Point2D oriented (Point2D xy)
     {
         return absolute(xy); // Since involutive
@@ -67,6 +98,13 @@ public enum Orientation
     //----------//
     // absolute //
     //----------//
+    /**
+     * Given a (coord, pos) oriented point, return the point (x, y) in the
+     * absolute space taking the lag orientation into account.
+     *
+     * @param cp the oriented (coord, pos) point
+     * @return the corresponding absolute (x, y) point
+     */
     public PixelPoint absolute (Point cp)
     {
         if (cp == null) {
@@ -90,6 +128,13 @@ public enum Orientation
     //----------//
     // absolute //
     //----------//
+    /**
+     * Given a (coord, pos) oriented point, return the point (x, y) in the
+     * absolute space taking the lag orientation into account.
+     *
+     * @param cp the oriented (coord, pos) point
+     * @return the corresponding absolute (x, y) point
+     */
     public Point2D.Double absolute (Point2D cp)
     {
         if (cp == null) {
@@ -113,6 +158,13 @@ public enum Orientation
     //----------//
     // absolute //
     //----------//
+    /**
+     * Given a (coord, pos, length, thickness) oriented rectangle, return the
+     * corresponding absolute rectangle.
+     *
+     * @param cplt the oriented rectangle (coord, pos, length, thickness)
+     * @return the corresponding absolute rectangle (x, y, width, height).
+     */
     public PixelRectangle absolute (Rectangle cplt)
     {
         if (cplt == null) {
@@ -136,6 +188,13 @@ public enum Orientation
     //-----------//
     // switchRef //
     //-----------//
+    /**
+     * Given an oriented line, return the corresponding absolute line, or vice
+     * versa.
+     *
+     * @param relLine the oriented line
+     * @return the corresponding absolute line.
+     */
     public Line switchRef (Line relLine)
     {
         if (relLine == null) {
@@ -159,6 +218,13 @@ public enum Orientation
     //----------//
     // oriented //
     //----------//
+    /**
+     * Given an absolute rectangle (x, y, width, height) return the
+     * corresponding oriented rectangle (coord, pos, length, thickness).
+     *
+     * @param xywh absolute rectangle (x, y, width, height).
+     * @return the corresponding oriented rectangle (coord, pos, length, thickness)
+     */
     public Rectangle oriented (PixelRectangle xywh)
     {
         // Use the fact that 'absolute' is involutive

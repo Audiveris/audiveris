@@ -70,8 +70,8 @@ public class SymbolsStep
              .refresh();
 
         // Update glyph board if needed (to see OCR'ed data)
-        SelectionService service = sheet.getVerticalLag()
-                                        .getSelectionService();
+        SelectionService service = sheet.getScene()
+                                        .getSceneService();
         GlyphEvent       glyphEvent = (GlyphEvent) service.getLastEvent(
             GlyphEvent.class);
 

@@ -16,15 +16,21 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.GlyphLag;
-import omr.glyph.GlyphSection;
+import omr.glyph.BasicScene;
 import omr.glyph.Glyphs;
+import omr.glyph.Scene;
 import omr.glyph.Shape;
 import omr.glyph.SymbolsModel;
 import omr.glyph.facets.Glyph;
 import omr.glyph.ui.SymbolsController;
 import omr.glyph.ui.SymbolsEditor;
 
+import omr.grid.StaffManager;
+import omr.grid.SystemManager;
+import omr.grid.TargetBuilder;
+
+import omr.lag.Lag;
+import omr.lag.Section;
 import omr.lag.Sections;
 
 import omr.log.Logger;
@@ -36,17 +42,14 @@ import omr.score.common.PixelPoint;
 import omr.score.entity.Page;
 import omr.score.entity.SystemNode;
 
-import omr.selection.SelectionService;
 import omr.selection.LocationEvent;
+import omr.selection.PixelLevelEvent;
+import omr.selection.SelectionService;
 
-import omr.grid.StaffManager;
-import omr.grid.SystemManager;
-import omr.grid.TargetBuilder;
 import omr.sheet.picture.ImageFormatException;
 import omr.sheet.picture.Picture;
 import omr.sheet.picture.PictureView;
 import omr.sheet.ui.PixelBoard;
-import omr.sheet.ui.ScoreColorizer;
 import omr.sheet.ui.SheetAssembly;
 import omr.sheet.ui.SheetsController;
 
@@ -60,7 +63,6 @@ import omr.ui.ErrorsEditor;
 
 import omr.util.BrokenLine;
 
-import java.awt.Color;
 import java.awt.Point;
 import java.awt.image.RenderedImage;
 import java.util.ArrayList;
@@ -92,6 +94,12 @@ public class Sheet
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Sheet.class);
 
+    /** Events that can be published on a sheet service */
+    public static final Class[] allowedEvents = new Class[] {
+                                                    LocationEvent.class,
+                                                    PixelLevelEvent.class
+                                                };
+
     //~ Instance fields --------------------------------------------------------
 
     /** Containing score */
@@ -110,7 +118,7 @@ public class Sheet
     private ErrorsEditor errorsEditor;
 
     /** Retrieved systems (populated by SYSTEMS/SystemsBuilder) */
-    private final List<SystemInfo> systems = new ArrayList<SystemInfo>();
+    private final List<SystemInfo> systems;
 
     //-- resettable members ----------------------------------------------------
 
@@ -126,17 +134,20 @@ public class Sheet
     /** Horizontal entities */
     private Horizontals horizontals;
 
-    /** Horizontal lag (built by LINES/LinesBuilder) */
-    private GlyphLag hLag;
+    /** Horizontal lag */
+    private Lag hLag;
 
-    /** Vertical lag (built by SYSTEMS/BarsBuilder) */
-    private GlyphLag vLag;
+    /** Vertical lag */
+    private Lag vLag;
+
+    /** Global glyph scene */
+    private final Scene scene;
 
     /**
-     * Non-lag related selections for this sheet
+     * Non-lag & non-glyph related selections for this sheet
      * (SheetLocation and PixelLevel)
      */
-    private final SelectionService selectionService;
+    private final SelectionService locationService;
 
     // Companion processors
 
@@ -145,12 +156,6 @@ public class Sheet
 
     /** Systems */
     private final SystemManager systemManager;
-
-    /** Dedicated skew builder */
-    private volatile SkewBuilder skewBuilder;
-
-    /** A staff line extractor for this sheet */
-    private volatile StavesBuilder stavesBuilder;
 
     /** A ledger line extractor for this sheet */
     private volatile HorizontalsBuilder horizontalsBuilder;
@@ -182,6 +187,9 @@ public class Sheet
     /** All steps already done on this sheet */
     private Set<Step> doneSteps = new HashSet<Step>();
 
+    /** Id of last long horizontal section */
+    private int lastLongHSectionId = -1;
+
     //~ Constructors -----------------------------------------------------------
 
     //-------//
@@ -202,10 +210,20 @@ public class Sheet
         this.page = page;
         this.score = page.getScore();
 
-        selectionService = new SelectionService("sheet " + page.getId());
+        locationService = new SelectionService(
+            "sheet " + page.getId(),
+            allowedEvents);
+
+        // Beware: Scene must subscribe to location before any lag,
+        // to allow cleaning up of glyph data, before publication by a lag
+        scene = new BasicScene("gScene");
+        scene.setServices(locationService);
+
         staffManager = new StaffManager(this);
         systemManager = new SystemManager(this);
         bench = new SheetBench(this);
+
+        systems = systemManager.getSystems();
 
         // Update UI information if so needed
         if (Main.getGui() != null) {
@@ -232,7 +250,7 @@ public class Sheet
      */
     public Collection<Glyph> getActiveGlyphs ()
     {
-        return vLag.getActiveGlyphs();
+        return scene.getActiveGlyphs();
     }
 
     //-------------//
@@ -418,9 +436,10 @@ public class Sheet
      *
      * @param hLag the horizontal lag at hand
      */
-    public void setHorizontalLag (GlyphLag hLag)
+    public void setHorizontalLag (Lag hLag)
     {
         this.hLag = hLag;
+        hLag.setServices(locationService, scene.getSceneService());
     }
 
     //------------------//
@@ -431,7 +450,7 @@ public class Sheet
      *
      * @return the current horizontal lag
      */
-    public GlyphLag getHorizontalLag ()
+    public Lag getHorizontalLag ()
     {
         return hLag;
     }
@@ -506,7 +525,7 @@ public class Sheet
         reset();
 
         try {
-            picture = new Picture(image);
+            picture = new Picture(image, locationService);
 
             if (picture.getImplicitForeground() == null) {
                 picture.setMaxForeground(getMaxForeground());
@@ -545,6 +564,18 @@ public class Sheet
         return scale.interline();
     }
 
+    //--------------------//
+    // getLocationService //
+    //--------------------//
+    /**
+     * Report the sheet selection service (for LocationEvent & PixelLevelEvent)
+     * @return the sheet dedicated event service
+     */
+    public SelectionService getLocationService ()
+    {
+        return locationService;
+    }
+
     //--------------//
     // getLogPrefix //
     //--------------//
@@ -563,6 +594,30 @@ public class Sheet
                 return "";
             }
         }
+    }
+
+    //---------------------//
+    // setLongSectionMaxId //
+    //---------------------//
+    /**
+     * Remember the id of the last long horizontal section
+     * @param id the id of the last long horizontal section
+     */
+    public void setLongSectionMaxId (int id)
+    {
+        lastLongHSectionId = id;
+    }
+
+    //---------------------//
+    // getLongSectionMaxId //
+    //---------------------//
+    /**
+     * Report the id of the last long horizontal section
+     * @return the id of the last long horizontal section
+     */
+    public int getLongSectionMaxId ()
+    {
+        return lastLongHSectionId;
     }
 
     //------------------//
@@ -660,6 +715,18 @@ public class Sheet
     }
 
     //----------//
+    // getScene //
+    //----------//
+    /**
+     * Report the global scene for glyphs of this sheet
+     * @return the scene for glyphs
+     */
+    public Scene getScene ()
+    {
+        return scene;
+    }
+
+    //----------//
     // getScore //
     //----------//
     /**
@@ -671,19 +738,6 @@ public class Sheet
     public Score getScore ()
     {
         return score;
-    }
-
-    //---------------------//
-    // getSelectionService //
-    //---------------------//
-    /**
-     * Report the sheet selection service
-     * (which handles LocationEvent, PixelLevelEvent, ScoreLocationEvent)
-     * @return the sheet dedicated event service
-     */
-    public SelectionService getSelectionService ()
-    {
-        return selectionService;
     }
 
     //-----------------//
@@ -742,27 +796,6 @@ public class Sheet
         return skew;
     }
 
-    //----------------//
-    // setSkewBuilder //
-    //----------------//
-    public void setSkewBuilder (SkewBuilder skewBuilder)
-    {
-        this.skewBuilder = skewBuilder;
-    }
-
-    //----------------//
-    // getSkewBuilder //
-    //----------------//
-    /**
-     * Give access to the builder in charge of skew computation
-     *
-     * @return the builder instance
-     */
-    public SkewBuilder getSkewBuilder ()
-    {
-        return skewBuilder;
-    }
-
     //-----------------//
     // getStaffManager //
     //-----------------//
@@ -772,32 +805,6 @@ public class Sheet
     public StaffManager getStaffManager ()
     {
         return staffManager;
-    }
-
-    //------------------//
-    // setStavesBuilder //
-    //------------------//
-    /**
-     * Set the builder in charge of staff lines
-     *
-     * @param stavesBuilder the builder instance
-     */
-    public void setStavesBuilder (StavesBuilder stavesBuilder)
-    {
-        this.stavesBuilder = stavesBuilder;
-    }
-
-    //------------------//
-    // getStavesBuilder //
-    //------------------//
-    /**
-     * Give access to the builder in charge of staff lines
-     *
-     * @return the builder instance
-     */
-    public StavesBuilder getStavesBuilder ()
-    {
-        return stavesBuilder;
     }
 
     //----------------------//
@@ -904,7 +911,7 @@ public class Sheet
      * @param section the provided section
      * @return the containing system, or null
      */
-    public SystemInfo getSystemOf (GlyphSection section)
+    public SystemInfo getSystemOf (Section section)
     {
         return section.getSystem();
     }
@@ -969,17 +976,17 @@ public class Sheet
      * @return the containing system
      * @exception IllegalArgumentException raised if section collection is not OK
      */
-    public SystemInfo getSystemOfSections (Collection<GlyphSection> sections)
+    public SystemInfo getSystemOfSections (Collection<Section> sections)
     {
         if ((sections == null) || sections.isEmpty()) {
             throw new IllegalArgumentException(
                 "getSystemOfSections. Sections collection is null or empty");
         }
 
-        SystemInfo               system = null;
-        Collection<GlyphSection> toRemove = new ArrayList<GlyphSection>();
+        SystemInfo          system = null;
+        Collection<Section> toRemove = new ArrayList<Section>();
 
-        for (GlyphSection section : sections) {
+        for (Section section : sections) {
             SystemInfo sectionSystem = section.getSystem();
 
             if (sectionSystem == null) {
@@ -1091,14 +1098,14 @@ public class Sheet
     //----------------//
     /**
      * Assign the current vertical lag for the sheet
-     *
      * @param vLag the current vertical lag
      * @return the previous vLag, or null
      */
-    public GlyphLag setVerticalLag (GlyphLag vLag)
+    public Lag setVerticalLag (Lag vLag)
     {
-        GlyphLag old = this.vLag;
+        Lag old = this.vLag;
         this.vLag = vLag;
+        vLag.setServices(locationService, scene.getSceneService());
 
         return old;
     }
@@ -1108,10 +1115,9 @@ public class Sheet
     //----------------//
     /**
      * Report the current vertical lag of the sheet
-     *
      * @return the current vertical lag
      */
-    public GlyphLag getVerticalLag ()
+    public Lag getVerticalLag ()
     {
         return vLag;
     }
@@ -1156,28 +1162,26 @@ public class Sheet
         }
     }
 
-    //----------//
-    // colorize //
-    //----------//
-    /**
-     * Set proper colors for sections of all recognized items so far, using the
-     * provided color
-     *
-     * @param lag       the lag to be colorized
-     * @param viewIndex the provided lag view index
-     * @param color     the color to use
-     */
-    public void colorize (GlyphLag lag,
-                          int      viewIndex,
-                          Color    color)
-    {
-        if (score != null) {
-            // Colorization of all known score items
-            score.accept(new ScoreColorizer(lag, viewIndex, color));
-        } else {
-            // Nothing to colorize ? TODO
-        }
-    }
+    //    //----------//
+    //    // colorize //
+    //    //----------//
+    //    /**
+    //     * Set proper colors for sections of all recognized items so far, using the
+    //     * provided color
+    //     *
+    //     * @param lag       the lag to be colorized
+    //     * @param viewIndex the provided lag view index
+    //     * @param color     the color to use
+    //     */
+    //    public void colorize (Color color)
+    //    {
+    //        if (score != null) {
+    //            // Colorization of all known score items
+    //            score.accept(new ScoreColorizer(color));
+    //        } else {
+    //            // Nothing to colorize ? TODO
+    //        }
+    //    }
 
     //-------------------------//
     // computeSystemBoundaries //
@@ -1229,7 +1233,7 @@ public class Sheet
     //----------------------------------//
     public void createSymbolsControllerAndEditor ()
     {
-        SymbolsModel model = new SymbolsModel(this, getVerticalLag());
+        SymbolsModel model = new SymbolsModel(this);
         symbolsController = new SymbolsController(model);
 
         if (Main.getGui() != null) {
@@ -1380,87 +1384,67 @@ public class Sheet
         return modified;
     }
 
-    //------------------//
-    // splitHorizontals //
-    //------------------//
+    //-------------------------//
+    // splitHorizontalSections //
+    //-------------------------//
     /**
-     * Split the various horizontals among systems
-     *
+     * Split the various horizontal sections among systems
      * @return the set of modified systems
      */
-    public Set<SystemInfo> splitHorizontals ()
+    public Set<SystemInfo> splitHorizontalSections ()
     {
-        Set<SystemInfo>               modified = new LinkedHashSet<SystemInfo>();
-        Map<SystemInfo, List<Ledger>> ledgers = new HashMap<SystemInfo, List<Ledger>>();
-        Map<SystemInfo, List<Ending>> endings = new HashMap<SystemInfo, List<Ending>>();
+        Set<SystemInfo>                      modifiedSystems = new LinkedHashSet<SystemInfo>();
+        Map<SystemInfo, Collection<Section>> sections = new HashMap<SystemInfo, Collection<Section>>();
 
         for (SystemInfo system : systems) {
-            ledgers.put(system, new ArrayList<Ledger>(system.getLedgers()));
-            system.getLedgers()
-                  .clear();
-            endings.put(system, new ArrayList<Ending>(system.getEndings()));
-            system.getEndings()
-                  .clear();
+            Collection<Section> systemSections = system.getMutableHorizontalSections();
+            sections.put(system, new ArrayList<Section>(systemSections));
+            systemSections.clear();
         }
 
-        for (Ledger ledger : getHorizontals()
-                                 .getLedgers()) {
-            GlyphSection section = ledger.getStick()
-                                         .getFirstSection();
-            SystemInfo   system = getSystemOf(section.getCentroid());
+        for (Section section : getHorizontalLag()
+                                   .getSections()) {
+            SystemInfo system = getSystemOf(section.getCentroid());
+            // Link section -> system
+            section.setSystem(system);
 
             if (system != null) {
-                system.getLedgers()
-                      .add(ledger);
-            }
-        }
-
-        for (Ending ending : getHorizontals()
-                                 .getEndings()) {
-            GlyphSection section = ending.getStick()
-                                         .getFirstSection();
-            SystemInfo   system = getSystemOf(section.getCentroid());
-
-            if (system != null) {
-                system.getEndings()
-                      .add(ending);
+                // Link system <>-> section
+                system.getMutableHorizontalSections()
+                      .add(section);
             }
         }
 
         for (SystemInfo system : systems) {
-            if (!(system.getLedgers().equals(ledgers.get(system)))) {
-                modified.add(system);
-            }
-
-            if (!(system.getEndings().equals(endings.get(system)))) {
-                modified.add(system);
+            if (!(system.getMutableHorizontalSections().equals(
+                sections.get(system)))) {
+                modifiedSystems.add(system);
             }
         }
 
-        return modified;
+        return modifiedSystems;
     }
 
     //-----------------------//
     // splitVerticalSections //
     //-----------------------//
     /**
-     * Split the various horizontal sections (Used by Glyphs).
-     *
+     * Split the various vertical sections among systems
      * @return the set of modified systems
      */
     public Set<SystemInfo> splitVerticalSections ()
     {
-        Set<SystemInfo>                           modified = new LinkedHashSet<SystemInfo>();
-        Map<SystemInfo, Collection<GlyphSection>> sections = new HashMap<SystemInfo, Collection<GlyphSection>>();
+        Set<SystemInfo>                      modifiedSystems = new LinkedHashSet<SystemInfo>();
+        Map<SystemInfo, Collection<Section>> sections = new HashMap<SystemInfo, Collection<Section>>();
 
         for (SystemInfo system : systems) {
-            Collection<GlyphSection> systemSections = system.getMutableVerticalSections();
-            sections.put(system, new ArrayList<GlyphSection>(systemSections));
+            Collection<Section> systemSections = system.getMutableVerticalSections();
+            sections.put(system, new ArrayList<Section>(systemSections));
             systemSections.clear();
         }
 
-        for (GlyphSection section : getVerticalLag()
-                                        .getSections()) {
+        for (Section section : getVerticalLag()
+                                   .getSections()) {
             SystemInfo system = getSystemOf(section.getCentroid());
             // Link section -> system
             section.setSystem(system);
@@ -1475,21 +1459,16 @@ public class Sheet
         for (SystemInfo system : systems) {
             if (!(system.getMutableVerticalSections().equals(
                 sections.get(system)))) {
-                modified.add(system);
+                modifiedSystems.add(system);
             }
         }
 
-        return modified;
+        return modifiedSystems;
     }
 
     //----------//
     // toString //
     //----------//
-    /**
-     * Report a simple readable identification of this sheet
-     *
-     * @return a string based on the related image file name
-     */
     @Override
     public String toString ()
     {
@@ -1501,17 +1480,13 @@ public class Sheet
     //------------//
     /**
      * Set the picture of this sheet, that is the image to be processed.
-     *
      * @param picture the related picture
      */
     private void setPicture (Picture picture)
     {
         this.picture = picture;
 
-        // Attach proper Selection objects
-        // (reading from pixel location & writing to gray level)
-        picture.setLevelService(selectionService);
-        selectionService.subscribeStrongly(LocationEvent.class, picture);
+        locationService.subscribeStrongly(LocationEvent.class, picture);
 
         // Display sheet picture if not batch mode
         if (Main.getGui() != null) {
@@ -1538,9 +1513,6 @@ public class Sheet
         horizontals = null;
         hLag = null;
         vLag = null;
-        systems.clear();
-        skewBuilder = null;
-        stavesBuilder = null;
         horizontalsBuilder = null;
         systemsBuilder = null;
         symbolsController = null;
@@ -1550,6 +1522,7 @@ public class Sheet
         histoRatio = null;
         currentStep = null;
         doneSteps = new HashSet<Step>();
+        systemManager.reset();
     }
 
     //~ Inner Classes ----------------------------------------------------------

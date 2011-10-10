@@ -57,10 +57,9 @@ public class SymbolsModel
      * @param sheet the related sheet (can be null)
      * @param lag the related lag (cannot be null)
      */
-    public SymbolsModel (Sheet    sheet,
-                         GlyphLag lag)
+    public SymbolsModel (Sheet sheet)
     {
-        super(sheet, lag, Steps.valueOf(Steps.SYMBOLS));
+        super(sheet, sheet.getScene(), Steps.valueOf(Steps.SYMBOLS));
     }
 
     //~ Methods ----------------------------------------------------------------

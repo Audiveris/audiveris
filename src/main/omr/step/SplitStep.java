@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.step;
 
+import omr.grid.LagWeaver;
+
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
@@ -63,6 +65,11 @@ public class SplitStep
                       Sheet                  sheet)
         throws StepException
     {
+        // Purge sections & runs of staff lines from hLag
+        // Cross-connect vertical & remaining horizontal sections
+        new LagWeaver(sheet).buildInfo();
+
+        // Create systems & parts
         sheet.createSystemsBuilder();
         sheet.getSystemsBuilder()
              .buildSystems();

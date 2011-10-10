@@ -78,7 +78,8 @@ public class VerticalsStep
                   .clearSystem(this, system.getId());
         }
 
-        system.retrieveVerticals();
+        int stemCount = system.retrieveVerticals();
+        ///logger.info("S#" + system.getId() + " Stems found: " + stemCount);
     }
 
     //----------//

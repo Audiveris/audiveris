@@ -21,7 +21,6 @@ import java.util.*;
  * vertices in combination.
  *
  * @author Hervé Bitteur
- * @version $Id$
  */
 public class GraphTest
     extends BaseTestCase
@@ -39,19 +38,19 @@ public class GraphTest
     //~ Methods ----------------------------------------------------------------
 
     //-----------------------//
-    // testAddEdgeNoVertices //
+    // testAddTargetNoTarget //
     //-----------------------//
     //@Test
-    public void testAddEdgeNoVertices ()
+    public void testAddTargetNoTarget ()
     {
-        MyVertex v10 = null;
+        MyVertex v10 = new MyVertex();
         MyVertex v20 = null;
 
         try {
-            MyVertex.addEdge(v10, v20);
+            v10.addTarget(v20);
             fail(
                 "Exception should be raised" +
-                " when edge is allocated between null vertices");
+                " when edge is allocated to a null target");
         } catch (IllegalArgumentException expected) {
             checkException(expected);
         }
@@ -102,7 +101,7 @@ public class GraphTest
         MyVertex  v = g2.createVertex();
 
         try {
-            MyVertex.addEdge(v1, v);
+            v1.addTarget(v);
             fail(
                 "Exception should be raised" +
                 " when edge is allocated across graphs");
@@ -145,7 +144,7 @@ public class GraphTest
         createEdges();
 
         // Remove an edge
-        MyVertex.removeEdge(v2, v3, true);
+        v2.removeTarget(v3, true);
 
         graph.dump("\nDump after removal of edge from v2 to v3:");
         assertEquals(
@@ -229,9 +228,9 @@ public class GraphTest
     public void testMultipleEdge ()
     {
         createVertices();
-        MyVertex.addEdge(v1, v2);
-        MyVertex.addEdge(v1, v2);
-
+        v1.addTarget(v2);
+        v1.addTarget(v2);
+        
         graph.dump("\ntestMultipleEdge. attempt of multiple edges:");
         assertEquals("There should be just one target.", 1, v1.getOutDegree());
         assertEquals("There should be just one source.", 1, v2.getInDegree());
@@ -247,7 +246,7 @@ public class GraphTest
 
         try {
             // Remove a non-existing edge
-            MyVertex.removeEdge(v2, v3, true);
+            v2.removeTarget(v3, true);
             fail(
                 "Exception should be raised" +
                 " when attempting to remove a non-existent edge");
@@ -286,44 +285,6 @@ public class GraphTest
             graph.getVertexCount());
     }
 
-    //---------------------------//
-    // testVertexDoubleSignature //
-    //---------------------------//
-    //@Test
-    public void testVertexDoubleSignature ()
-    {
-        // Allocate some vertices
-        createVertices();
-        v1.setSignature();
-
-        try {
-            v1.setSignature();
-            fail(
-                "Exception should be raised" +
-                " when changing vertex signature");
-        } catch (Exception expected) {
-            checkException(expected);
-        }
-    }
-
-    //-------------------------//
-    // testVertexNullSignature //
-    //-------------------------//
-    //@Test
-    public void testVertexNullSignature ()
-    {
-        // Allocate some vertices
-        createVertices();
-
-        try {
-            s1 = v1.getSignature();
-            fail(
-                "Exception should be raised" +
-                " when getting a null vertex signature");
-        } catch (Exception expected) {
-            checkException(expected);
-        }
-    }
 
     //-------------------//
     // testVertexRemoval //
@@ -348,37 +309,6 @@ public class GraphTest
             graph.getVertexCount());
     }
 
-    //---------------------//
-    // testVertexSignature //
-    //---------------------//
-    //@Test
-    public void testVertexSignature ()
-    {
-        // Allocate some vertices
-        createVertices();
-        v1.setSignature();
-        v2.setSignature();
-        v3.setSignature();
-
-        s1 = v1.getSignature();
-        System.out.println(
-            "v1 " + v1 + " @" + Integer.toHexString(v1.hashCode()));
-        System.out.println("s1 " + s1);
-
-        MyVertex v = graph.getVertexBySignature(s1);
-        System.out.println("v " + v + " @" + Integer.toHexString(v.hashCode()));
-
-        assertEquals("Should retrieve v1 via s1", v1, v);
-        assertEquals(
-            "Should retrieve v2 via s2",
-            v2,
-            graph.getVertexBySignature(v2.getSignature()));
-        assertEquals(
-            "Should retrieve v3 via s3",
-            v3,
-            graph.getVertexBySignature(v3.getSignature()));
-    }
-
     //-------//
     // setUp //
     //-------//
@@ -391,10 +321,10 @@ public class GraphTest
 
     private void createEdges ()
     {
-        MyVertex.addEdge(v1, v2);
-        MyVertex.addEdge(v1, v3);
-        MyVertex.addEdge(v2, v3);
-        MyVertex.addEdge(v3, v1);
+        v1.addTarget(v2);
+        v1.addTarget(v3);
+        v2.addTarget(v3);
+        v3.addTarget(v1);
     }
 
     private void createVertices ()
@@ -407,7 +337,7 @@ public class GraphTest
     //~ Inner Classes ----------------------------------------------------------
 
     static class MyDigraph
-        extends Digraph<MyDigraph, MyVertex, MySignature>
+        extends BasicDigraph<MyDigraph, MyVertex>
     {
         //~ Constructors -------------------------------------------------------
 
@@ -448,7 +378,7 @@ public class GraphTest
     }
 
     static class MyVertex
-        extends Vertex<MyDigraph, MyVertex, MySignature>
+        extends BasicVertex<MyDigraph, MyVertex>
     {
         //~ Methods ------------------------------------------------------------
 
@@ -456,12 +386,6 @@ public class GraphTest
         public String toString ()
         {
             return super.toString() + "}";
-        }
-
-        @Override
-        protected MySignature computeSignature ()
-        {
-            return new MySignature(this);
         }
     }
 }

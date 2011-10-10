@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.glyph.ui;
 
-import omr.glyph.GlyphLag;
+import omr.glyph.Scene;
 import omr.glyph.Shape;
 import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
@@ -77,8 +77,8 @@ public abstract class GlyphMenu
     /** Related sheet */
     protected final Sheet sheet;
 
-    /** Related glyph lag */
-    protected final GlyphLag glyphLag;
+    /** Related scene */
+    protected final Scene scene;
 
     /** Current number of selected glyphs */
     protected int glyphNb;
@@ -110,7 +110,7 @@ public abstract class GlyphMenu
         this.controller = controller;
 
         sheet = controller.sheet;
-        glyphLag = controller.getLag();
+        scene = controller.getScene();
 
         buildMenu();
     }
@@ -139,7 +139,7 @@ public abstract class GlyphMenu
     public void updateMenu ()
     {
         // Analyze the context
-        Set<Glyph> glyphs = glyphLag.getSelectedGlyphSet();
+        Set<Glyph> glyphs = scene.getSelectedGlyphSet();
         glyphNb = glyphs.size();
         knownNb = 0;
         stemNb = 0;
@@ -293,7 +293,7 @@ public abstract class GlyphMenu
         {
             JMenuItem source = (JMenuItem) e.getSource();
             controller.asyncAssignGlyphs(
-                glyphLag.getSelectedGlyphSet(),
+                scene.getSelectedGlyphSet(),
                 Shape.valueOf(source.getText()),
                 compound);
         }
@@ -368,7 +368,7 @@ public abstract class GlyphMenu
 
         public void actionPerformed (ActionEvent e)
         {
-            Glyph glyph = glyphLag.getSelectedGlyph();
+            Glyph glyph = scene.getSelectedGlyph();
 
             if (glyph != null) {
                 Shape shape = glyph.getShape();
@@ -382,7 +382,7 @@ public abstract class GlyphMenu
         @Override
         public void update ()
         {
-            Glyph glyph = glyphLag.getSelectedGlyph();
+            Glyph glyph = scene.getSelectedGlyph();
 
             if (glyph != null) {
                 Shape shape = glyph.getShape();
@@ -516,10 +516,10 @@ public abstract class GlyphMenu
         public void actionPerformed (ActionEvent e)
         {
             // Remember which is the current selected glyph
-            Glyph      glyph = glyphLag.getSelectedGlyph();
+            Glyph      glyph = scene.getSelectedGlyph();
 
             // Actually deassign the whole set
-            Set<Glyph> glyphs = glyphLag.getSelectedGlyphSet();
+            Set<Glyph> glyphs = scene.getSelectedGlyphSet();
 
             if (noVirtuals) {
                 controller.asyncDeassignGlyphs(glyphs);
@@ -530,8 +530,8 @@ public abstract class GlyphMenu
                                           .getGlyph();
 
                     if (glyph != newGlyph) {
-                        glyphLag.getSelectionService()
-                                .publish(
+                        scene.getSceneService()
+                             .publish(
                             new GlyphEvent(
                                 this,
                                 SelectionHint.GLYPH_INIT,
@@ -613,7 +613,7 @@ public abstract class GlyphMenu
 
         public void actionPerformed (ActionEvent e)
         {
-            for (Glyph glyph : glyphLag.getSelectedGlyphSet()) {
+            for (Glyph glyph : scene.getSelectedGlyphSet()) {
                 glyph.dump();
             }
         }
@@ -670,7 +670,7 @@ public abstract class GlyphMenu
             JMenuItem source = (JMenuItem) e.getSource();
             Shape     shape = Shape.valueOf(
                 source.getText().substring(PREFIX.length()));
-            Glyph     glyph = glyphLag.getSelectedGlyph();
+            Glyph     glyph = scene.getSelectedGlyph();
 
             if (glyph != null) {
                 controller.asyncAssignGlyphs(
