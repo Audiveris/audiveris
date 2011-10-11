@@ -1460,18 +1460,14 @@ public class Chord
     //-----------------//
     /**
      * Compute the head location of a chord, given the chord head note
-     *
+     * (TODO: Perhaps we could adjust note ordinate, to align it to pitch while
+     * using the real staff lines ordinates)
      * @param note the head note
      * @return the head location
      */
     private PixelPoint getHeadLocation (Note note)
     {
-        Staff staff = note.getStaff();
-
-        return new PixelPoint(
-            tailLocation.x,
-            staff.getTopLeft().y +
-            staff.pitchToPixels(note.getPitchPosition()));
+        return new PixelPoint(tailLocation.x, note.getReferencePoint().y);
     }
 
     //-----------//
