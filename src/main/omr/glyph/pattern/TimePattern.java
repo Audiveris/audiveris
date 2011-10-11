@@ -20,10 +20,12 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
 
+import omr.grid.StaffInfo;
+
 import omr.log.Logger;
 
+import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
-import omr.score.entity.ScoreSystem;
 
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
@@ -89,14 +91,19 @@ public class TimePattern
             }
 
             // Retrieve environment (staff)
-            final ScoreSystem scoreSystem = system.getScoreSystem();
-            final Scale       scale = scoreSystem.getScale();
-            final int         xOffset = scale.toPixels(constants.xOffset);
-            final int         yOffset = scale.toPixels(constants.yOffset);
+            final int      xOffset = scale.toPixels(constants.xOffset);
+            final int      yOffset = scale.toPixels(constants.yOffset);
 
             // Define the core box to intersect time glyph(s)
+            PixelPoint     center = glyph.getAreaCenter();
+            StaffInfo      staff = system.getStaffAt(center);
+
             PixelRectangle pixCore = glyph.getContourBox();
-            pixCore.grow(-xOffset, -yOffset);
+            pixCore.grow(-xOffset, 0);
+            pixCore.y = staff.getFirstLine()
+                             .yAt(center.x) + yOffset;
+            pixCore.height = staff.getLastLine()
+                                  .yAt(center.x) - yOffset - pixCore.y;
 
             // Draw the time core box, for visual debug
             glyph.addAttachment("time", pixCore);
@@ -171,7 +178,7 @@ public class TimePattern
             0.25d,
             "Core Time vertical offset");
         Evaluation.Doubt timeMaxDoubt = new Evaluation.Doubt(
-            300d,
+            10000d,
             "Maximum doubt for time verification");
     }
 }

@@ -1784,6 +1784,16 @@ public class ScoreExporter
                 logger.fine("Visiting " + slur);
             }
 
+            // Make sure we have notes (or extension) on both sides
+            if ((slur.getLeftNote() == null) &&
+                (slur.getLeftExtension() == null)) {
+                return false;
+            }
+            if ((slur.getRightNote() == null) &&
+                (slur.getRightExtension() == null)) {
+                return false;
+            }
+
             // Note contextual data
             boolean isStart = slur.getLeftNote() == current.note;
             int     noteLeft = current.note.getCenterLeft().x;
