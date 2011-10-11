@@ -140,27 +140,6 @@ public class SheetPainter
                 sheet.getStaffManager()
                      .render(g);
             }
-
-            if (sheet.getSystems() != null) {
-                for (SystemInfo system : sheet.getSystems()) {
-                    visit(system);
-                }
-            }
-
-            // Horizontals
-            if (sheet.getHorizontals() != null) {
-                // Ledgers
-                for (Ledger ledger : sheet.getHorizontals()
-                                          .getLedgers()) {
-                    ledger.render(g);
-                }
-
-                // Endings
-                for (Ending ending : sheet.getHorizontals()
-                                          .getEndings()) {
-                    ending.render(g);
-                }
-            }
         } catch (Exception ex) {
             logger.warning(
                 getClass().getSimpleName() + " Error visiting " + page,
@@ -239,29 +218,12 @@ public class SheetPainter
                     staff.render(g);
                 }
 
-                g.setColor(Colors.ENTITY);
-
                 // Stems
                 for (Glyph glyph : systemInfo.getGlyphs()) {
                     if (glyph.isStem()) {
                         glyph.renderLine(g);
                     }
                 }
-
-//                // Ledgers
-//                for (Glyph ledger : systemInfo.getLedgers()) {
-//                    ledger.renderLine(g);
-//                }
-//
-//                // Tenutos
-//                for (Glyph tenuto : systemInfo.getTenutos()) {
-//                    tenuto.renderLine(g);
-//                }
-//
-//                // Endings
-//                for (Glyph ending : systemInfo.getEndings()) {
-//                    ending.renderLine(g);
-//                }
 
                 // Virtual glyphs
                 paintVirtualGlyphs(systemInfo);

@@ -141,7 +141,7 @@ public class Stepping
         long startTime = System.currentTimeMillis();
 
         if (logger.isFineEnabled()) {
-            logger.fine(sheet.getLogPrefix() + step + " Starting");
+            logger.fine(sheet.getLogPrefix() + step + " starting");
         }
 
         // Standard processing on an existing sheet

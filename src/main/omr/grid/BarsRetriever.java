@@ -30,6 +30,7 @@ import omr.log.Logger;
 import omr.math.Barycenter;
 import omr.math.BasicLine;
 import omr.math.Line;
+import omr.math.LineUtilities;
 import static omr.run.Orientation.*;
 import omr.run.RunsTable;
 
@@ -47,6 +48,7 @@ import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
 
 import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
 import java.awt.geom.Line2D;
@@ -202,6 +204,11 @@ public class BarsRetriever
         logger.info(
             sheet.getLogPrefix() + "parts   top staff ids: " +
             Arrays.toString(partTops));
+
+        // Refine ending points for each bar line
+        for (SystemInfo system : systemManager.getSystems()) {
+            refineBarsEndings(system);
+        }
     }
 
     //--------------------//
@@ -209,7 +216,7 @@ public class BarsRetriever
     //--------------------//
     /**
      * Use the long vertical sections to retrieve the barlines that limit
-     * systems and staves
+     * systems and staves.
      *
      * <pre>
      * retrieveSystemBars()
@@ -397,15 +404,13 @@ public class BarsRetriever
         }
 
         // Draw filaments
-        Stroke oldStroke = g.getStroke();
-        g.setStroke(splineStroke);
-
         for (Filament filament : filaments) {
             filament.renderLine(g);
         }
 
         // Draw tangent at each ending point (using max coord gap)?
         if (showTangents) {
+            Color oldColor = g.getColor();
             g.setColor(Colors.TANGENT);
 
             double dy = sheet.getScale()
@@ -429,9 +434,9 @@ public class BarsRetriever
                         p.getX() + (der * dy),
                         p.getY() + dy));
             }
-        }
 
-        g.setStroke(oldStroke);
+            g.setColor(oldColor);
+        }
     }
 
     //---------------//
@@ -1056,6 +1061,37 @@ public class BarsRetriever
         }
     }
 
+    //---------------------//
+    // preciseIntersection //
+    //---------------------//
+    private Point2D preciseIntersection (Glyph    stick,
+                                         LineInfo line)
+    {
+        Point2D startPoint = stick.getStartPoint();
+        Point2D stopPoint = stick.getStopPoint();
+        Point2D pt = LineUtilities.intersection(
+            line.getEndPoint(LEFT),
+            line.getEndPoint(RIGHT),
+            startPoint,
+            stopPoint);
+
+        double  y = line.yAt(pt.getX());
+        double  x;
+
+        if (y < startPoint.getY()) {
+            double invSlope = stick.getInvertedSlope();
+            x = startPoint.getX() + ((y - startPoint.getY()) * invSlope);
+        } else if (y > stopPoint.getY()) {
+            double invSlope = stick.getInvertedSlope();
+            x = stopPoint.getX() + ((y - stopPoint.getY()) * invSlope);
+        } else {
+            x = stick.getLine()
+                     .xAtY(y);
+        }
+
+        return new Point2D.Double(x, y);
+    }
+
     //----------------------//
     // recheckBarCandidates //
     //----------------------//
@@ -1093,6 +1129,53 @@ public class BarsRetriever
                              .isBar()) {
                     ///logger.info("Purging " + stickPos);
                     it.remove();
+                }
+            }
+        }
+    }
+
+    //-------------------//
+    // refineBarsEndings //
+    //-------------------//
+    /**
+     * Now that we have reliable bar lines, refine their ending points to the
+     * staff lines
+     * @param system  the system to process
+     */
+    private void refineBarsEndings (SystemInfo system)
+    {
+        List<StaffInfo> staves = system.getStaves();
+
+        for (BarAlignment alignment : system.getBarAlignments()) {
+            int iStaff = -1;
+
+            for (StickIntersection inter : alignment.getIntersections()) {
+                iStaff++;
+
+                if (inter != null) {
+                    StaffInfo staff = staves.get(iStaff);
+                    Glyph     stick = inter.getStickAncestor();
+
+                    // Left bar items have already been adjusted
+                    BarInfo leftBar = staff.getBar(LEFT);
+
+                    if ((leftBar != null) &&
+                        leftBar.getSticksAncestors()
+                               .contains(stick)) {
+                        continue;
+                    }
+
+                    // Perform adjustment only when on bottom staff
+                    Point2D   stop = stick.getStopPoint();
+                    StaffInfo botStaff = staffManager.getStaffAt(stop);
+
+                    if (botStaff == staff) {
+                        Point2D   start = stick.getStartPoint();
+                        StaffInfo topStaff = staffManager.getStaffAt(start);
+                        stick.setEndingPoints(
+                            preciseIntersection(stick, topStaff.getFirstLine()),
+                            preciseIntersection(stick, botStaff.getLastLine()));
+                    }
                 }
             }
         }
@@ -1150,8 +1233,6 @@ public class BarsRetriever
      */
     private Integer[] retrievePartTops ()
     {
-        // We already have the official systemTops
-        // Let's now retrieve the partTops
         systemManager.setPartTops(
             partTops = new Integer[staffManager.getStaffCount()]);
 

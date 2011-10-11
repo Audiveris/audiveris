@@ -199,21 +199,21 @@ public class SystemsBuilder
         splitSystemEntities();
     }
 
-    //-------------------//
-    // getSpecificGlyphs //
-    //-------------------//
-    private Collection<Glyph> getSpecificGlyphs ()
-    {
-        List<Glyph> specifics = new ArrayList<Glyph>();
-
-        for (Glyph stick : scene.getAllGlyphs()) {
-            if (!stick.isBar()) {
-                specifics.add(stick);
-            }
-        }
-
-        return specifics;
-    }
+//    //-------------------//
+//    // getSpecificGlyphs //
+//    //-------------------//
+//    private Collection<Glyph> getSpecificGlyphs ()
+//    {
+//        List<Glyph> specifics = new ArrayList<Glyph>();
+//
+//        for (Glyph stick : scene.getAllGlyphs()) {
+//            if (!stick.isBar()) {
+//                specifics.add(stick);
+//            }
+//        }
+//
+//        return specifics;
+//    }
 
     //------------------------//
     // allocateScoreStructure //

@@ -22,7 +22,11 @@ import omr.lag.Lag;
 
 import omr.log.Logger;
 
+import omr.ui.Colors;
+import omr.ui.util.UIUtilities;
+
 import java.awt.Graphics2D;
+import java.awt.Stroke;
 import java.util.Arrays;
 
 /**
@@ -87,14 +91,18 @@ public class GridView
     @Override
     protected void renderItems (Graphics2D g)
     {
-        boolean showTangents = constants.showTangents.getValue();
-        boolean showCombs = constants.showCombs.getValue();
+        final boolean showTangents = constants.showTangents.getValue();
+        final boolean showCombs = constants.showCombs.getValue();
+        final Stroke  oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
+        g.setColor(Colors.ENTITY_MINOR);
 
         // Horizontal items
         linesRetriever.renderItems(g, showTangents, showCombs);
 
         // Vertical items
         barsRetriever.renderItems(g, showTangents);
+
+        g.setStroke(oldStroke);
     }
 
     //~ Inner Classes ----------------------------------------------------------

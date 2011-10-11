@@ -151,7 +151,7 @@ public class LagWeaver
         horiWithVert();
 
         // The end
-        watch.print();
+        ///watch.print();
     }
 
     //------------//
@@ -435,14 +435,8 @@ public class LagWeaver
     //--------------//
     private void horiWithVert ()
     {
-        logger.info("horiWithVerts sections: " + vLag);
-
         // Process each vertical section in turn
         for (Section vSect : vLag.getSections()) {
-            ///if (logger.isFineEnabled()) {
-            ///logger.info("vSect: " + vSect);
-
-            ///}
             final int       sectTop = vSect.getStartCoord();
             final int       sectLeft = vSect.getFirstPos();
             final int       sectRight = vSect.getLastPos();

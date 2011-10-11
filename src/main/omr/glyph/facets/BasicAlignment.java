@@ -101,6 +101,14 @@ public class BasicAlignment
         glyph.invalidateCache();
         this.startPoint = pStart;
         this.stopPoint = pStop;
+
+        computeLine();
+
+        // Enlarge contour box if needed
+        PixelRectangle box = glyph.getContourBox();
+        box.add(pStart);
+        box.add(pStop);
+        glyph.setContourBox(box);
     }
 
     //---------------//

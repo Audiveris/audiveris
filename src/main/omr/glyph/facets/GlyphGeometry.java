@@ -46,6 +46,12 @@ interface GlyphGeometry
     PixelPoint getCentroid ();
 
     /**
+     * Force the glyph contour box (when start and stop points are forced)
+     * @param contourBox the forced contour box
+     */
+    void setContourBox (PixelRectangle contourBox);
+
+    /**
      * Return a copy of the absolute display bounding box.
      * Useful to quickly check if the glyph needs to be repainted.
      * @return a COPY of the bounding contour rectangle box

@@ -114,16 +114,11 @@ public class RunsTableView
     @Override
     public void render (Graphics2D g)
     {
-        ///final Stroke oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
-
         // Render all sections, using the colors they have been assigned
         renderRuns(g);
 
         // Paint additional items, such as recognized items, etc...
         renderItems(g);
-
-        // Restore stroke
-        ///g.setStroke(oldStroke);
     }
 
     //-------------//

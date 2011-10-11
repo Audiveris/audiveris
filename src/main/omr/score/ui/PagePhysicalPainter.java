@@ -53,7 +53,9 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Stroke;
+import java.awt.geom.Rectangle2D;
 import java.util.ConcurrentModificationException;
 
 /**
@@ -188,11 +190,36 @@ public class PagePhysicalPainter
                     float thickness = (float) glyph.getWeight() / glyph.getLength(
                         Orientation.VERTICAL);
                     g.setStroke(new BasicStroke(thickness));
+
+                    // Stroke is now OK for thickness but will draw beyond start
+                    // and stop points of the bar. So use clipping to fix this.
+                    final Rectangle      oldClip = g.getClipBounds();
+
+                    final PixelRectangle box = glyph.getContourBox();
+                    box.y = (int) Math.floor(glyph.getStartPoint().getY());
+                    box.height = (int) Math.ceil(glyph.getStopPoint().getY()) -
+                                 box.y;
+                    g.setClip(oldClip.intersection(box));
+                    //                    final PixelRectangle box = glyph.getContourBox();
+                    //                    double               top = Math.max(
+                    //                        oldClip.y,
+                    //                        glyph.getStartPoint().getY());
+                    //                    double               bot = Math.min(
+                    //                        oldClip.y + oldClip.height,
+                    //                        glyph.getStopPoint().getY());
+                    //                    final Rectangle2D    clip = new Rectangle2D.Double(
+                    //                        box.x,
+                    //                        top,
+                    //                        box.width,
+                    //                        bot - top);
+                    //                    g.setClip(clip);
+
+                    //
                     glyph.renderLine(g);
+
+                    g.setClip(oldClip);
                 } else if ((shape == REPEAT_DOTS) || (shape == DOT)) {
                     paint(DOT, glyph.getCentroid());
-                } else {
-                    // ???
                 }
             }
 

@@ -117,35 +117,35 @@ public class MeasuresBuilder
         checkMeasures();
     }
 
-    //----------------//
-    // isPartEmbraced //
-    //----------------//
-    /**
-     * Check whether the given part is within the vertical range of the given
-     * glyph (bar stick or brace glyph)
-     *
-     * @param part the given part
-     * @param glyph the given glyph
-     * @return true if part is embraced by the bar
-     */
-    private boolean isPartEmbraced (SystemPart part,
-                                    Glyph      glyph)
-    {
-        // Extrema of glyph
-        PixelRectangle box = glyph.getContourBox();
-        int            top = box.y;
-        int            bot = box.y + box.height;
-
-        // Check that part and glyph overlap vertically
-        final int topPart = part.getFirstStaff()
-                                .getTopLeft().y;
-        final int botPart = part.getLastStaff()
-                                .getTopLeft().y +
-                            part.getLastStaff()
-                                .getHeight();
-
-        return Math.max(topPart, top) < Math.min(botPart, bot);
-    }
+//    //----------------//
+//    // isPartEmbraced //
+//    //----------------//
+//    /**
+//     * Check whether the given part is within the vertical range of the given
+//     * glyph (bar stick or brace glyph)
+//     *
+//     * @param part the given part
+//     * @param glyph the given glyph
+//     * @return true if part is embraced by the bar
+//     */
+//    private boolean isPartEmbraced (SystemPart part,
+//                                    Glyph      glyph)
+//    {
+//        // Extrema of glyph
+//        PixelRectangle box = glyph.getContourBox();
+//        int            top = box.y;
+//        int            bot = box.y + box.height;
+//
+//        // Check that part and glyph overlap vertically
+//        final int topPart = part.getFirstStaff()
+//                                .getTopLeft().y;
+//        final int botPart = part.getLastStaff()
+//                                .getTopLeft().y +
+//                            part.getLastStaff()
+//                                .getHeight();
+//
+//        return Math.max(topPart, top) < Math.min(botPart, bot);
+//    }
 
     //------------------//
     // allocateMeasures //

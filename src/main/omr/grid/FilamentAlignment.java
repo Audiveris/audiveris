@@ -88,20 +88,9 @@ public class FilamentAlignment
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------------//
-    // setEndingPoints //
-    //-----------------//
-    @Override
-    public void setEndingPoints (Point2D pStart,
-                                 Point2D pStop)
-    {
-        super.setEndingPoints(pStart, pStop);
-        computeLine();
-    }
-
-    //-----------------//
+    //---------//
     // getLine //
-    //-----------------//
+    //---------//
     @Override
     public NaturalSpline getLine ()
     {
@@ -380,12 +369,6 @@ public class FilamentAlignment
             return;
         }
 
-        // We render filaments differently, according to their orientation
-        Color oldColor = g.getColor();
-        g.setColor(
-            (getRoughOrientation() == Orientation.HORIZONTAL)
-                        ? Colors.LINE_HORIZONTAL : Colors.LINE_VERTICAL);
-
         // The curved line itself
         if (line != null) {
             g.draw((NaturalSpline) line);
@@ -402,8 +385,6 @@ public class FilamentAlignment
                 g.fill(ellipse);
             }
         }
-
-        g.setColor(oldColor);
     }
 
     //---------//

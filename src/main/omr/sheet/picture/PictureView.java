@@ -16,8 +16,6 @@ import omr.log.Logger;
 import omr.score.ui.PagePhysicalPainter;
 import omr.score.ui.PaintingParameters;
 
-import omr.selection.LocationEvent;
-
 import omr.sheet.Sheet;
 
 import omr.ui.Colors;

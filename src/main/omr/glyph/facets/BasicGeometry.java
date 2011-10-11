@@ -124,6 +124,15 @@ class BasicGeometry
         return centroid;
     }
 
+
+    //---------------//
+    // setContourBox //
+    //---------------//
+    public void setContourBox (PixelRectangle contourBox)
+    {
+        this.contourBox = contourBox;
+    }
+    
     //---------------//
     // getContourBox //
     //---------------//

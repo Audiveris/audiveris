@@ -24,7 +24,7 @@ public class Colors
     //~ Static fields/initializers ---------------------------------------------
 
     /** Global alpha transparency (0..255) */
-    private static final int alpha = 150;
+    private static final int alpha = 180;
 
     /** Annotations */
     public static final Color ANNOTATION = Color.lightGray;
@@ -81,7 +81,7 @@ public class Colors
     public static final Color LINE_VERTICAL = new Color(0, 255, 255, alpha);
 
     /** Music symbols */
-    public static final Color MUSIC = new Color(170, 255, 170);
+    public static final Color MUSIC = new Color(170, 255, 170, alpha);
 
     /** Rubber rectangle */
     public static final Color RUBBER_RECT = Color.black;

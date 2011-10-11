@@ -257,8 +257,7 @@ public class ClustersRetriever
      */
     void renderItems (Graphics2D g)
     {
-        Stroke oldStroke = g.getStroke();
-        g.setStroke(combStroke);
+        Color oldColor = g.getColor();
         g.setColor(combColor);
 
         for (Entry<Integer, List<FilamentComb>> entry : colCombs.entrySet()) {
@@ -266,19 +265,16 @@ public class ClustersRetriever
             int x = colX[col];
 
             for (FilamentComb comb : entry.getValue()) {
-                ///if (comb.getCount() == popLength) {
                 g.draw(
                     new Line2D.Double(
                         x,
                         comb.getY(0),
                         x,
                         comb.getY(comb.getCount() - 1)));
-
-                ///}
             }
         }
 
-        g.setStroke(oldStroke);
+        g.setColor(oldColor);
     }
 
     //-----------//
@@ -541,7 +537,7 @@ public class ClustersRetriever
         Rectangle    clusterBox = null;
 
         for (LineFilament fil : fils) {
-            fil =  (LineFilament) fil.getAncestor();
+            fil = (LineFilament) fil.getAncestor();
 
             if (fil.getCluster() != null) {
                 continue;

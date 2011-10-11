@@ -57,7 +57,7 @@ public class PaintingParameters
     //~ Instance fields --------------------------------------------------------
 
     /** Layer painting is chosen to be not persistent */
-    private PaintingLayer paintingLayer = PaintingLayer.INPUT_OUTPUT;
+    private PaintingLayer paintingLayer = PaintingLayer.INPUT;
 
     //~ Methods ----------------------------------------------------------------
 

@@ -226,6 +226,11 @@ public class BasicGlyph
         return display.getColor();
     }
 
+    public void setContourBox (PixelRectangle contourBox)
+    {
+        geometry.setContourBox(contourBox);
+    }
+
     public PixelRectangle getContourBox ()
     {
         return geometry.getContourBox();

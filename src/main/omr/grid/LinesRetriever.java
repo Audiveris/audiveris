@@ -46,16 +46,16 @@ import omr.sheet.ui.PixelBoard;
 
 import omr.ui.BoardsPane;
 import omr.ui.Colors;
+import omr.ui.util.UIUtilities;
 import omr.ui.view.RubberPanel;
 import omr.ui.view.ScrollView;
 import static omr.util.HorizontalSide.*;
 import omr.util.Predicate;
 import omr.util.StopWatch;
 
-import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
-import java.awt.Stroke;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -78,12 +78,6 @@ public class LinesRetriever
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(LinesRetriever.class);
-
-    /** Stroke for drawing filaments curves */
-    private static final Stroke splineStroke = new BasicStroke(
-        (float) constants.splineThickness.getValue(),
-        BasicStroke.CAP_ROUND,
-        BasicStroke.JOIN_ROUND);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -460,17 +454,13 @@ public class LinesRetriever
         }
 
         // Draw filaments
-        g.setColor(Colors.MUSIC);
-
-        Stroke oldStroke = g.getStroke();
-        g.setStroke(splineStroke);
-
         for (Filament filament : allFils) {
             filament.renderLine(g);
         }
 
         // Draw tangent at each ending point?
         if (showTangents) {
+            Color oldColor = g.getColor();
             g.setColor(Colors.TANGENT);
 
             double dx = sheet.getScale()
@@ -494,9 +484,9 @@ public class LinesRetriever
                         p.getX() + dx,
                         p.getY() + (der * dx)));
             }
-        }
 
-        g.setStroke(oldStroke);
+            g.setColor(oldColor);
+        }
     }
 
     //----------------//
@@ -962,6 +952,9 @@ public class LinesRetriever
         Constant.Boolean showHorizontalLines = new Constant.Boolean(
             true,
             "Should we display the horizontal lines?");
+        Constant.Boolean showVerticalLines = new Constant.Boolean(
+            true,
+            "Should we display the vertical lines?");
         Constant.Double  splineThickness = new Constant.Double(
             "thickness",
             0.5,
@@ -1096,7 +1089,15 @@ public class LinesRetriever
         protected void renderItems (Graphics2D g)
         {
             if (constants.showHorizontalLines.getValue()) {
+                g.setColor(Colors.ENTITY_MINOR);
+                UIUtilities.setAbsoluteStroke(g, 1f);
                 LinesRetriever.this.renderItems(g, false, false);
+            }
+
+            if (constants.showVerticalLines.getValue()) {
+                g.setColor(Colors.ENTITY_MINOR);
+                UIUtilities.setAbsoluteStroke(g, 1f);
+                barsRetriever.renderItems(g, false);
             }
         }
     }
