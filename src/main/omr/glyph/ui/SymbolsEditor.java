@@ -371,7 +371,7 @@ public class SymbolsEditor
                 super.onEvent(event);
 
                 if (event instanceof GlyphSetEvent) { // GlyphSet => Compound
-                    handleEvent((GlyphSetEvent) event);
+                    ///handleEvent((GlyphSetEvent) event);
                 } else if (event instanceof SectionSetEvent) { // SectionSet => Compound
                     handleEvent((SectionSetEvent) event);
                 }
@@ -439,48 +439,51 @@ public class SymbolsEditor
                         Colors.SLOT_CURRENT);
                 }
             }
+            
+            // Render selected glyph(s) if any
+            ///super.renderItems(g);
         }
 
-        //-------------//
-        // handleEvent //
-        //-------------//
-        /**
-         * Interest in GlyphSet => Compound
-         * @param glyphSetEvent
-         */
-        private void handleEvent (GlyphSetEvent glyphSetEvent)
-        {
-            if (ViewParameters.getInstance()
-                              .isSectionSelectionEnabled()) {
-                return;
-            }
-
-            MouseMovement movement = glyphSetEvent.movement;
-            Set<Glyph>    glyphs = glyphSetEvent.getData();
-            Glyph         compound = null;
-
-            if ((glyphs != null) && (glyphs.size() > 1)) {
-                try {
-                    SystemInfo system = sheet.getSystemOf(glyphs);
-
-                    if (system != null) {
-                        compound = system.buildTransientCompound(glyphs);
-                        publish(
-                            new GlyphEvent(
-                                this,
-                                SelectionHint.GLYPH_TRANSIENT,
-                                movement,
-                                compound));
-                    }
-                } catch (IllegalArgumentException ex) {
-                    // All glyphs do not belong to the same system
-                    // No compound is allowed and displayed
-                    logger.warning(
-                        "Glyphs from different systems " +
-                        Glyphs.toString(glyphs));
-                }
-            }
-        }
+//        //-------------//
+//        // handleEvent //
+//        //-------------//
+//        /**
+//         * Interest in GlyphSet => Compound
+//         * @param glyphSetEvent
+//         */
+//        private void handleEvent (GlyphSetEvent glyphSetEvent)
+//        {
+//            if (ViewParameters.getInstance()
+//                              .isSectionSelectionEnabled()) {
+//                return;
+//            }
+//
+//            MouseMovement movement = glyphSetEvent.movement;
+//            Set<Glyph>    glyphs = glyphSetEvent.getData();
+//            Glyph         compound = null;
+//
+//            if ((glyphs != null) && (glyphs.size() > 1)) {
+//                try {
+//                    SystemInfo system = sheet.getSystemOf(glyphs);
+//
+//                    if (system != null) {
+//                        compound = system.buildTransientCompound(glyphs);
+//                        publish(
+//                            new GlyphEvent(
+//                                this,
+//                                SelectionHint.GLYPH_TRANSIENT,
+//                                movement,
+//                                compound));
+//                    }
+//                } catch (IllegalArgumentException ex) {
+//                    // All glyphs do not belong to the same system
+//                    // No compound is allowed and displayed
+//                    logger.warning(
+//                        "Glyphs from different systems " +
+//                        Glyphs.toString(glyphs));
+//                }
+//            }
+//        }
 
         //-------------//
         // handleEvent //

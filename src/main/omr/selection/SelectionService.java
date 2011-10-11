@@ -16,7 +16,6 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
-import org.bushe.swing.event.EventService;
 import org.bushe.swing.event.EventSubscriber;
 import org.bushe.swing.event.ThreadSafeEventService;
 

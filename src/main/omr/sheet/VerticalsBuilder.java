@@ -165,7 +165,7 @@ public class VerticalsBuilder
             false);
         verticalsArea.setMaxThickness(constants.maxStemThickness);
 
-        return retrieveVerticals(verticalsArea.retrieveSticks(), true);
+        return retrieveVerticals(verticalsArea.retrieveSticks(), false);
     }
 
     //---------------------//
@@ -343,10 +343,10 @@ public class VerticalsBuilder
             6.67,
             "Low Minimum aspect ratio for a stem stick");
         Scale.Fraction minStemLengthHigh = new Scale.Fraction(
-            2.1, //3.0,
+            3.0,
             "High Minimum length for a stem");
         Scale.Fraction minStemLengthLow = new Scale.Fraction(
-            1.9, //2.4,
+            2.4,
             "Low Minimum length for a stem");
         Scale.Fraction minShortStemLengthHigh = new Scale.Fraction(
             2.5,

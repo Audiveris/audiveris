@@ -216,7 +216,7 @@ public class Sheet
 
         // Beware: Scene must subscribe to location before any lag,
         // to allow cleaning up of glyph data, before publication by a lag
-        scene = new BasicScene("gScene");
+        scene = new BasicScene("gScene", this);
         scene.setServices(locationService);
 
         staffManager = new StaffManager(this);

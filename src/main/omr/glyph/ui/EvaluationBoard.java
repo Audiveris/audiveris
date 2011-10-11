@@ -197,6 +197,7 @@ class EvaluationBoard
     @Implement(EventSubscriber.class)
     public void onEvent (UserEvent event)
     {
+        ///logger.info(getClass().getSimpleName() + " " + event);
         try {
             // Ignore RELEASING
             if (event.movement == MouseMovement.RELEASING) {

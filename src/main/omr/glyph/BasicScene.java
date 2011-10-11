@@ -56,7 +56,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import omr.grid.Filament;
+import omr.sheet.Sheet;
+import omr.sheet.SystemInfo;
 
 /**
  * Class <code>BasicScene</code> implements a {@link Scene}.
@@ -80,13 +81,17 @@ public class BasicScene
     /** Events read on scene (glyph) service */
     public static final Class[] glyEventsRead = new Class[] {
                                                     GlyphIdEvent.class,
-                                                    GlyphEvent.class
+                                                    GlyphEvent.class,
+                                                    GlyphSetEvent.class
                                                 };
 
     //~ Instance fields --------------------------------------------------------
 
     /** (Debug) a unique name for this scene */
     private final String name;
+    
+    /** Related sheet */
+    private final Sheet sheet;
 
     /** Elaborated constants for this scene */
     private final Parameters params;
@@ -143,9 +148,10 @@ public class BasicScene
      * Create a glyph scene
      * @param name the distinguished name for this instance
      */
-    public BasicScene (String name)
+    public BasicScene (String name, Sheet sheet)
     {
         this.name = name;
+        this.sheet = sheet;
 
         params = new Parameters();
         sceneService = new SelectionService(name, Scene.eventsWritten);
@@ -521,6 +527,9 @@ public class BasicScene
             } else if (event instanceof GlyphEvent) {
                 // Glyph => glyph contour & GlyphSet update
                 handleEvent((GlyphEvent) event);
+            } else if (event instanceof GlyphSetEvent) {
+                // GlyphSet => Compound glyph
+                handleEvent((GlyphSetEvent) event);
             } else if (event instanceof GlyphIdEvent) {
                 // Glyph Id => Glyph
                 handleEvent((GlyphIdEvent) event);
@@ -739,6 +748,47 @@ public class BasicScene
             }
         }
     }
+
+        //-------------//
+        // handleEvent //
+        //-------------//
+        /**
+         * Interest in GlyphSet => Compound
+         * @param glyphSetEvent
+         */
+        private void handleEvent (GlyphSetEvent glyphSetEvent)
+        {
+            if (ViewParameters.getInstance()
+                              .isSectionSelectionEnabled()) {
+                return;
+            }
+
+            MouseMovement movement = glyphSetEvent.movement;
+            Set<Glyph>    glyphs = glyphSetEvent.getData();
+            Glyph         compound = null;
+
+            if ((glyphs != null) && (glyphs.size() > 1)) {
+                try {
+                    SystemInfo system = sheet.getSystemOf(glyphs);
+
+                    if (system != null) {
+                        compound = system.buildTransientCompound(glyphs);
+                        publish(
+                            new GlyphEvent(
+                                this,
+                                SelectionHint.GLYPH_TRANSIENT,
+                                movement,
+                                compound));
+                    }
+                } catch (IllegalArgumentException ex) {
+                    // All glyphs do not belong to the same system
+                    // No compound is allowed and displayed
+                    logger.warning(
+                        "Glyphs from different systems " +
+                        Glyphs.toString(glyphs));
+                }
+            }
+        }
 
     //-------------//
     // handleEvent //
