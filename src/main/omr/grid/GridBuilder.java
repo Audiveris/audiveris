@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -223,11 +223,11 @@ public class GridBuilder
         Lag              hLag = sheet.getHorizontalLag();
         Lag              vLag = sheet.getVerticalLag();
         GlyphsController gController = new GlyphsController(
-            new GlyphsModel(sheet, sheet.getScene(), Steps.valueOf(Steps.GRID)));
+            new GlyphsModel(sheet, sheet.getNest(), Steps.valueOf(Steps.GRID)));
 
         // Create a view
         gridView = new GridView(
-            sheet.getScene(),
+            sheet.getNest(),
             linesRetriever,
             hLag,
             barsRetriever,

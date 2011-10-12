@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -495,18 +495,6 @@ public interface Section
      * @param collector the absolute points collector to populate
      */
     public void cumulate (PointsCollector collector);
-
-    /**
-     * Cumulate all points that compose the runs of the section, into the
-     * provided arrays.
-     * @param coord array of abscissae
-     * @param pos   array of ordinates
-     * @param nb    initial index of first free array element
-     * @return final index
-     */
-    public int cumulatePoints (double[] coord,
-                               double[] pos,
-                               int      nb);
 
     /**
      * Draws a basic representation of the section, using ascii characters

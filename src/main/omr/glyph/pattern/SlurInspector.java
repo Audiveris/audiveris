@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -26,6 +26,7 @@ import omr.lag.Sections;
 import omr.log.Logger;
 
 import omr.math.Circle;
+import omr.math.PointsCollector;
 
 import omr.score.common.PixelRectangle;
 
@@ -129,14 +130,23 @@ public class SlurInspector
             weight += section.getWeight();
         }
 
-        double[] xx = new double[weight];
-        double[] yy = new double[weight];
+        double[]        xx = new double[weight];
+        double[]        yy = new double[weight];
 
         // Append recursively all points
-        int nb = 0;
+        PointsCollector collector = new PointsCollector(null, weight);
 
         for (Section section : sections) {
-            nb = section.cumulatePoints(xx, yy, nb);
+            section.cumulate(collector);
+        }
+
+        // Convert arrays of int's to arrays of double's
+        int[] intXX = collector.getXValues();
+        int[] intYY = collector.getYValues();
+
+        for (int i = 0; i < weight; i++) {
+            xx[i] = intXX[i];
+            yy[i] = intYY[i];
         }
 
         // Then compute the circle 

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -144,7 +144,7 @@ class EvaluationBoard
         super(
             name,
             "Neural",
-            glyphController.getScene().getSceneService(),
+            glyphController.getNest().getGlyphService(),
             eventsRead,
             true);
 
@@ -382,7 +382,7 @@ class EvaluationBoard
         {
             // Assign current glyph with selected shape
             if (glyphsController != null) {
-                Glyph glyph = glyphsController.getScene()
+                Glyph glyph = glyphsController.getNest()
                                               .getSelectedGlyph();
 
                 if (glyph != null) {

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -16,7 +16,6 @@ import omr.constant.ConstantSet;
 import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
 
-import omr.lag.Lag;
 import omr.lag.Section;
 
 import omr.log.Logger;
@@ -25,7 +24,6 @@ import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.entity.Staff;
 
-import omr.sheet.Dash;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
@@ -38,7 +36,7 @@ import java.util.List;
 /**
  * Class <code>GlyphsBuilder</code> is, at a system level, in charge of
  * building (and removing) glyphs and of updating accordingly the containing
- * entities (Scene and SystemInfo).
+ * entities (Nest and SystemInfo).
  *
  * <p>It does not handle the shape of a glyph (this higher-level task is handled
  * by {@link GlyphInspector} among others). But it does handle all the physical
@@ -81,8 +79,8 @@ public class GlyphsBuilder
     /** The global sheet scale */
     private final Scale scale;
 
-    /** Global hosting scene for glyphs */
-    private final Scene scene;
+    /** Global hosting nest for glyphs */
+    private final Nest nest;
 
     /** Margins for a stem */
     final int stemWiden;
@@ -104,7 +102,7 @@ public class GlyphsBuilder
 
         Sheet sheet = system.getSheet();
         scale = sheet.getScale();
-        scene = sheet.getScene();
+        nest = sheet.getNest();
 
         // Cache parameters
         stemWiden = scale.toPixels(constants.stemWiden);
@@ -288,8 +286,8 @@ public class GlyphsBuilder
      */
     public Glyph registerGlyph (Glyph glyph)
     {
-        // Insert in scene, which assigns an id to the glyph
-        Glyph oldGlyph = scene.addGlyph(glyph);
+        // Insert in nest, which assigns an id to the glyph
+        Glyph oldGlyph = nest.addGlyph(glyph);
 
         system.addToGlyphsCollection(oldGlyph);
 

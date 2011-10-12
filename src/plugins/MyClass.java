@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -26,7 +26,6 @@ import org.jdesktop.application.Action;
  * Class <code>MyClass</code> is meant as just an example of user plugin
  *
  * @author Hervé Bitteur
- * @version $Id$
  */
 public class MyClass
     extends ScoreDependent

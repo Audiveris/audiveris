@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -53,9 +53,9 @@ import javax.swing.JMenuItem;
 import javax.swing.JToolBar;
 
 /**
- * Class <code>ActionManager</code> handles the instantiation and dressing of
- * actions, their organization in the menus and the tool bar, and their
- * enabling.
+ * Class {@code ActionManager} handles the instantiation and dressing
+ * of actions, their organization in the menus and the tool bar, and 
+ * their enabling.
  *
  * @author Hervé Bitteur
  */
@@ -96,7 +96,7 @@ public class ActionManager
     // ActionManager //
     //---------------//
     /**
-     * Meant to be instantiated at most once
+     * Meant to be instantiated at most once.
      */
     private ActionManager ()
     {
@@ -112,8 +112,7 @@ public class ActionManager
     // getInstance //
     //-------------//
     /**
-     * Report the action manager
-     *
+     * Report the single action manager instance.
      * @return the unique instance of this class
      */
     public static ActionManager getInstance ()
@@ -129,8 +128,7 @@ public class ActionManager
     // getActionInstance //
     //-------------------//
     /**
-     * Retrieve an action knowing its methodName
-     *
+     * Retrieve an action knowing its methodName.
      * @param instance the instance of the hosting class
      * @param methodName the method name
      * @return the action found, or null if none
@@ -149,8 +147,7 @@ public class ActionManager
     // getMenu //
     //---------//
     /**
-     * Report the menu built for a given key
-     *
+     * Report the menu built for a given key.
      * @param key the given menu key
      * @return the related menu
      */
@@ -163,8 +160,7 @@ public class ActionManager
     // getMenuBar //
     //------------//
     /**
-     * Report the bar containing all generated pull-down menus
-     *
+     * Report the bar containing all generated pull-down menus.
      * @return the menu bar
      */
     public JMenuBar getMenuBar ()
@@ -176,7 +172,7 @@ public class ActionManager
     // getName //
     //---------//
     /**
-     * Report a describing name
+     * Report a describing name.
      * @return a describing name
      */
     public String getName ()
@@ -188,8 +184,7 @@ public class ActionManager
     // getToolBar //
     //------------//
     /**
-     * Report the tool bar containing all generated buttons
-     *
+     * Report the tool bar containing all generated buttons.
      * @return the tool bar
      */
     public JToolBar getToolBar ()
@@ -201,8 +196,7 @@ public class ActionManager
     // injectMenu //
     //------------//
     /**
-     * Insert a predefined menu, either partly or fully built
-     *
+     * Insert a predefined menu, either partly or fully built.
      * @param key the menu unique name
      * @param menu the menu to inject
      */
@@ -216,8 +210,9 @@ public class ActionManager
     // loadAllDescriptors //
     //--------------------//
     /**
-     * Load all descriptors as found in system and user configuration files,
-     * either in local config subdirectory or in the resource hierarchy.
+     * Load all descriptors as found in system and user configuration
+     * files, either in local config subdirectory or in the resource 
+     * hierarchy.
      */
     public void loadAllDescriptors ()
     {
@@ -250,8 +245,7 @@ public class ActionManager
     // onEvent //
     //---------//
     /**
-     * Notification of sheet selection, to update frame title
-     *
+     * Notification of sheet selection, to update frame title.
      * @param sheetEvent the event about sheet selection
      */
     @Implement(EventSubscriber.class)
@@ -275,9 +269,9 @@ public class ActionManager
     // registerAllActions //
     //--------------------//
     /**
-     * Register all actions as listed in the descriptor files, and organize them
-     * according to the various domains defined. There is one pull-down menu
-     * generated for each domain found.
+     * Register all actions as listed in the descriptor files, and 
+     * organize them according to the various domains defined. 
+     * There is one pull-down menu generated for each domain found.
      */
     public void registerAllActions ()
     {
@@ -345,10 +339,9 @@ public class ActionManager
     // registerAction //
     //----------------//
     /**
-     * Allocate and dress an instance of the provided class, then register the
-     * action in the UI structure (menus and buttons) according to the action
-     * descriptor parameters.
-     *
+     * Allocate and dress an instance of the provided class, then 
+     * register the action in the UI structure (menus and buttons) 
+     * according to the action descriptor parameters.
      * @param action the provided action class
      * @return the registered and decorated instance of the action class
      */

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -17,11 +17,11 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphsModel;
-import omr.glyph.Scene;
+import omr.glyph.Nest;
 import omr.glyph.facets.Glyph;
 import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphsController;
-import omr.glyph.ui.SceneView;
+import omr.glyph.ui.NestView;
 
 import omr.lag.Lag;
 import omr.lag.ui.SectionBoard;
@@ -45,9 +45,7 @@ import omr.ui.BoardsPane;
 import omr.ui.view.ScrollView;
 
 import java.awt.Graphics2D;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * Class <code>VerticalsController</code> is in charge of handling assignment
@@ -91,7 +89,7 @@ public class VerticalsController
         super(
             new GlyphsModel(
                 sheet,
-                sheet.getScene(),
+                sheet.getNest(),
                 Steps.valueOf(Steps.VERTICALS)));
     }
 
@@ -120,7 +118,7 @@ public class VerticalsController
         Lag vLag = sheet.getVerticalLag();
 
         // Specific rubber display
-        view = new MyView(sheet.getScene());
+        view = new MyView(sheet.getNest());
 
         // Create a hosting frame for the view
         final String unit = sheet.getId() + ":VerticalsBuilder";
@@ -136,7 +134,7 @@ public class VerticalsController
                 new GlyphBoard(unit, this, true),
                 new MyCheckBoard(
                     unit,
-                    sheet.getScene().getSceneService(),
+                    sheet.getNest().getGlyphService(),
                     eventClasses)));
     }
 
@@ -209,14 +207,14 @@ public class VerticalsController
     // MyView //
     //--------//
     private final class MyView
-        extends SceneView
+        extends NestView
     {
         //~ Constructors -------------------------------------------------------
 
-        public MyView (Scene scene)
+        public MyView (Nest nest)
         {
             super(
-                scene,
+                nest,
                 VerticalsController.this,
                 Arrays.asList(sheet.getHorizontalLag(), sheet.getVerticalLag()));
 

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -313,12 +313,12 @@ public class FilamentTest
             assertEquals(expResult, result, delta);
 
             coord = 115;
-            expResult = 2;
+            expResult = 1;
             result = instance.getThicknessAt(coord, orientation);
             assertEquals(expResult, result, delta);
 
             coord = 125;
-            expResult = 8;
+            expResult = 0;
             result = instance.getThicknessAt(coord, orientation);
             assertEquals(expResult, result, delta);
         }
@@ -435,14 +435,14 @@ public class FilamentTest
             Filament instance = createFil();
             instance.drawAscii();
 
-            assertEquals(0.2, instance.slopeAt(100), 0.1);
-            assertEquals(0.2, instance.slopeAt(110), 0.1);
-            assertEquals(0.1, instance.slopeAt(120), 0.1);
-            assertEquals(0.1, instance.slopeAt(125), 0.1);
-            assertEquals(0.1, instance.slopeAt(130), 0.1);
-            assertEquals(0.0, instance.slopeAt(135), 0.1);
-            assertEquals(-0.1, instance.slopeAt(155), 0.1);
-            assertEquals(-0.2, instance.slopeAt(171), 0.1);
+            assertEquals(0.2, instance.slopeAt(100, ori), 0.1);
+            assertEquals(0.2, instance.slopeAt(110, ori), 0.1);
+            assertEquals(0.1, instance.slopeAt(120, ori), 0.1);
+            assertEquals(0.1, instance.slopeAt(125, ori), 0.1);
+            assertEquals(0.1, instance.slopeAt(130, ori), 0.1);
+            assertEquals(0.0, instance.slopeAt(135, ori), 0.1);
+            assertEquals(-0.1, instance.slopeAt(155, ori), 0.1);
+            assertEquals(-0.2, instance.slopeAt(171, ori), 0.1);
         }
     }
 

@@ -4,14 +4,14 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.ui;
 
-import omr.glyph.Scene;
+import omr.glyph.Nest;
 import omr.glyph.Shape;
 import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
@@ -77,8 +77,8 @@ public abstract class GlyphMenu
     /** Related sheet */
     protected final Sheet sheet;
 
-    /** Related scene */
-    protected final Scene scene;
+    /** Related nest */
+    protected final Nest nest;
 
     /** Current number of selected glyphs */
     protected int glyphNb;
@@ -110,7 +110,7 @@ public abstract class GlyphMenu
         this.controller = controller;
 
         sheet = controller.sheet;
-        scene = controller.getScene();
+        nest = controller.getNest();
 
         buildMenu();
     }
@@ -139,7 +139,7 @@ public abstract class GlyphMenu
     public void updateMenu ()
     {
         // Analyze the context
-        Set<Glyph> glyphs = scene.getSelectedGlyphSet();
+        Set<Glyph> glyphs = nest.getSelectedGlyphSet();
         glyphNb = glyphs.size();
         knownNb = 0;
         stemNb = 0;
@@ -293,7 +293,7 @@ public abstract class GlyphMenu
         {
             JMenuItem source = (JMenuItem) e.getSource();
             controller.asyncAssignGlyphs(
-                scene.getSelectedGlyphSet(),
+                nest.getSelectedGlyphSet(),
                 Shape.valueOf(source.getText()),
                 compound);
         }
@@ -368,7 +368,7 @@ public abstract class GlyphMenu
 
         public void actionPerformed (ActionEvent e)
         {
-            Glyph glyph = scene.getSelectedGlyph();
+            Glyph glyph = nest.getSelectedGlyph();
 
             if (glyph != null) {
                 Shape shape = glyph.getShape();
@@ -382,7 +382,7 @@ public abstract class GlyphMenu
         @Override
         public void update ()
         {
-            Glyph glyph = scene.getSelectedGlyph();
+            Glyph glyph = nest.getSelectedGlyph();
 
             if (glyph != null) {
                 Shape shape = glyph.getShape();
@@ -516,10 +516,10 @@ public abstract class GlyphMenu
         public void actionPerformed (ActionEvent e)
         {
             // Remember which is the current selected glyph
-            Glyph      glyph = scene.getSelectedGlyph();
+            Glyph      glyph = nest.getSelectedGlyph();
 
             // Actually deassign the whole set
-            Set<Glyph> glyphs = scene.getSelectedGlyphSet();
+            Set<Glyph> glyphs = nest.getSelectedGlyphSet();
 
             if (noVirtuals) {
                 controller.asyncDeassignGlyphs(glyphs);
@@ -530,8 +530,8 @@ public abstract class GlyphMenu
                                           .getGlyph();
 
                     if (glyph != newGlyph) {
-                        scene.getSceneService()
-                             .publish(
+                        nest.getGlyphService()
+                            .publish(
                             new GlyphEvent(
                                 this,
                                 SelectionHint.GLYPH_INIT,
@@ -613,7 +613,7 @@ public abstract class GlyphMenu
 
         public void actionPerformed (ActionEvent e)
         {
-            for (Glyph glyph : scene.getSelectedGlyphSet()) {
+            for (Glyph glyph : nest.getSelectedGlyphSet()) {
                 glyph.dump();
             }
         }
@@ -670,7 +670,7 @@ public abstract class GlyphMenu
             JMenuItem source = (JMenuItem) e.getSource();
             Shape     shape = Shape.valueOf(
                 source.getText().substring(PREFIX.length()));
-            Glyph     glyph = scene.getSelectedGlyph();
+            Glyph     glyph = nest.getSelectedGlyph();
 
             if (glyph != null) {
                 controller.asyncAssignGlyphs(

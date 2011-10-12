@@ -4,14 +4,14 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.facets;
 
-import omr.glyph.Scene;
+import omr.glyph.Nest;
 
 /**
  * Class {@code BasicAdministration} is a basic implementation of glyph
@@ -25,10 +25,10 @@ class BasicAdministration
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** The containing glyph scene */
-    protected Scene scene;
+    /** The containing glyph nest */
+    protected Nest nest;
 
-    /** Glyph instance identifier (Unique in the containing scene) */
+    /** Glyph instance identifier (Unique in the containing nest) */
     protected int id;
 
     /** VIP flag */
@@ -66,20 +66,20 @@ class BasicAdministration
         return id;
     }
 
-    //----------//
-    // setScene //
-    //----------//
-    public void setScene (Scene scene)
+    //---------//
+    // setNest //
+    //---------//
+    public void setNest (Nest nest)
     {
-        this.scene = scene;
+        this.nest = nest;
     }
 
-    //----------//
-    // getScene //
-    //----------//
-    public Scene getScene ()
+    //---------//
+    // getNest //
+    //---------//
+    public Nest getNest ()
     {
-        return scene;
+        return nest;
     }
 
     //-------------//
@@ -124,6 +124,6 @@ class BasicAdministration
             glyph.getClass().getName() + "@" +
             Integer.toHexString(glyph.hashCode()));
         System.out.println("   id=" + getId());
-        System.out.println("   scene=" + getScene());
+        System.out.println("   nest=" + getNest());
     }
 }

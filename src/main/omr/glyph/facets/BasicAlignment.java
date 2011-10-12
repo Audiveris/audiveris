@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -414,12 +414,14 @@ public class BasicAlignment
             Point2D p4 = new Point2D.Double(line.xAtY(bl.getY()), bl.getY());
             startPoint = LineUtilities.intersection(tl, tr, p3, p4);
             stopPoint = LineUtilities.intersection(bl, br, p3, p4);
+            stopPoint.setLocation(stopPoint.getX(), stopPoint.getY() - 1);
         } else {
             // Use line intersections with left & right box sides
             Point2D p3 = new Point2D.Double(tl.getX(), line.yAtX(tl.getX()));
             Point2D p4 = new Point2D.Double(tr.getX(), line.yAtX(tr.getX()));
             startPoint = LineUtilities.intersection(tl, bl, p3, p4);
             stopPoint = LineUtilities.intersection(tr, br, p3, p4);
+            stopPoint.setLocation(stopPoint.getX() - 1, stopPoint.getY());
         }
     }
 

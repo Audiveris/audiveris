@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -20,12 +20,12 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphsModel;
-import omr.glyph.Scene;
+import omr.glyph.Nest;
 import omr.glyph.facets.Glyph;
 import omr.glyph.ui.BarMenu;
 import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphsController;
-import omr.glyph.ui.SceneView;
+import omr.glyph.ui.NestView;
 
 import omr.grid.StaffInfo;
 import omr.grid.SystemManager;
@@ -65,9 +65,7 @@ import org.jdesktop.application.Task;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
@@ -121,7 +119,7 @@ public class SystemsBuilder
     private final BarsChecker barsChecker;
 
     /** View on bars, if so desired */
-    private SceneView sceneView;
+    private NestView sceneView;
 
     /** Glyphs controller */
     private BarsController barsController;
@@ -141,7 +139,7 @@ public class SystemsBuilder
      */
     public SystemsBuilder (Sheet sheet)
     {
-        super(sheet, sheet.getScene(), Steps.valueOf(Steps.SPLIT));
+        super(sheet, sheet.getNest(), Steps.valueOf(Steps.SPLIT));
 
         systems = sheet.getSystems();
 
@@ -199,21 +197,21 @@ public class SystemsBuilder
         splitSystemEntities();
     }
 
-//    //-------------------//
-//    // getSpecificGlyphs //
-//    //-------------------//
-//    private Collection<Glyph> getSpecificGlyphs ()
-//    {
-//        List<Glyph> specifics = new ArrayList<Glyph>();
-//
-//        for (Glyph stick : scene.getAllGlyphs()) {
-//            if (!stick.isBar()) {
-//                specifics.add(stick);
-//            }
-//        }
-//
-//        return specifics;
-//    }
+    //    //-------------------//
+    //    // getSpecificGlyphs //
+    //    //-------------------//
+    //    private Collection<Glyph> getSpecificGlyphs ()
+    //    {
+    //        List<Glyph> specifics = new ArrayList<Glyph>();
+    //
+    //        for (Glyph stick : nest.getAllGlyphs()) {
+    //            if (!stick.isBar()) {
+    //                specifics.add(stick);
+    //            }
+    //        }
+    //
+    //        return specifics;
+    //    }
 
     //------------------------//
     // allocateScoreStructure //
@@ -293,7 +291,7 @@ public class SystemsBuilder
     private void displayFrame ()
     {
         barsController = new BarsController();
-        sceneView = new MyView(scene, barsController);
+        sceneView = new MyView(nest, barsController);
 
         final String unit = sheet.getId() + ":BarsBuilder";
         BoardsPane   boardsPane = new BoardsPane(
@@ -304,7 +302,7 @@ public class SystemsBuilder
             new MyCheckBoard(
                 unit,
                 barsChecker.getSuite(),
-                scene.getSceneService(),
+                nest.getGlyphService(),
                 eventClasses));
 
         // Create a hosting frame for the view
@@ -396,7 +394,7 @@ public class SystemsBuilder
         ///modifiedSystems.addAll(sheet.splitHorizontals());
         modifiedSystems.addAll(sheet.splitHorizontalSections());
         modifiedSystems.addAll(sheet.splitVerticalSections());
-        modifiedSystems.addAll(sheet.splitBarSticks(scene.getAllGlyphs()));
+        modifiedSystems.addAll(sheet.splitBarSticks(nest.getAllGlyphs()));
 
         if (!modifiedSystems.isEmpty()) {
             StringBuilder sb = new StringBuilder("[");
@@ -550,7 +548,7 @@ public class SystemsBuilder
     // MyView //
     //--------//
     private final class MyView
-        extends SceneView
+        extends NestView
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -569,11 +567,11 @@ public class SystemsBuilder
 
         //~ Constructors -------------------------------------------------------
 
-        private MyView (Scene          scene,
+        private MyView (Nest           nest,
                         BarsController barsController)
         {
             super(
-                scene,
+                nest,
                 barsController,
                 Arrays.asList(sheet.getHorizontalLag(), sheet.getVerticalLag()));
             setName("SystemsBuilder-View");
@@ -593,12 +591,12 @@ public class SystemsBuilder
                                      MouseMovement movement)
         {
             // Retrieve the selected glyphs
-            Set<Glyph> glyphs = scene.getSelectedGlyphSet();
+            Set<Glyph> glyphs = nest.getSelectedGlyphSet();
 
             // To display point information
             if ((glyphs == null) || glyphs.isEmpty()) {
                 pointSelected(pt, movement); // This may change glyph selection
-                glyphs = scene.getSelectedGlyphSet();
+                glyphs = nest.getSelectedGlyphSet();
             }
 
             if ((glyphs != null) && !glyphs.isEmpty()) {

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -41,9 +41,10 @@ public class ActionDescriptor
     public String domain;
 
     /**
-     * Which UI section should host this action. Any value is OK, but items
-     * with the same section value will be gathered together in the menu, while
-     * different sections will be separated by a menu separator
+     * Which UI section should host this action.
+     * Any value is OK, but items with the same section value will be gathered
+     * together in the menu, while different sections will be separated by a 
+     * menu separator
      */
     @XmlAttribute(name = "section")
     public Integer section;

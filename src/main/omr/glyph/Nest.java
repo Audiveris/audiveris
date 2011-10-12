@@ -1,10 +1,10 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                                 S c e n e                                  //
+//                                  N e s t                                   //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -31,9 +31,11 @@ import java.util.Collection;
 import java.util.Set;
 
 /**
- * Class <code>Scene</code> handles a collections of {@link Glyph} instances.
+ * Class <code>Nest</code> handles a collection of {@link Glyph} instances,
+ * with the ability to retrieve a Glyph based on its Id or its location, and the
+ * ability to give birth to new glyphs.
  *
- * <p>A scene has no orientation, nor any of its glyphs since a glyph is a
+ * <p>A nest has no orientation, nor any of its glyphs since a glyph is a
  * collection of sections that can be differently oriented.</p>
  *
  * <p>A glyph is made of member sections and always keeps a collection of its
@@ -43,7 +45,7 @@ import java.util.Set;
  * common sections. It is known as being "active" while the others are inactive
  * </p>
  *
- * <p>A scene hosts a SelectionService that deals with glyph selection
+ * <p>A nest hosts a SelectionService that deals with glyph selection
  * (Events related to Glyph, GlyphId and GlyphSet).
  *
  * <p>Selecting a (foreground) pixel, thus selects its containing section, and
@@ -51,11 +53,11 @@ import java.util.Set;
  *
  * @author Hervé Bitteur
  */
-public interface Scene
+public interface Nest
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Events that can be published on a scene service */
+    /** Events that can be published on a nest service */
     static final Class[] eventsWritten = new Class[] {
                                              GlyphEvent.class,
                                              GlyphIdEvent.class,
@@ -65,13 +67,13 @@ public interface Scene
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * Export the unmodifiable collection of active glyphs of the scene.
+     * Export the unmodifiable collection of active glyphs of the nest.
      * @return the collection of glyphs for which at least a section is assigned
      */
     Collection<Glyph> getActiveGlyphs ();
 
     /**
-     * Export the whole unmodifiable collection of glyphs of the scene.
+     * Export the whole unmodifiable collection of glyphs of the nest.
      * @return the collection of glyphs, both active and inactive
      */
     Collection<Glyph> getAllGlyphs ();
@@ -93,7 +95,7 @@ public interface Scene
                                      Collection<Glyph> glyphs);
 
     /**
-     * Report a name for this scene instance
+     * Report a name for this nest instance
      * @return a (distinguished) name
      */
     String getName ();
@@ -114,10 +116,10 @@ public interface Scene
     Glyph getOriginal (GlyphSignature signature);
 
     /**
-     * Report the scene selection service
-     * @return the scene selection service (Glyph, GlyphSet, GlyphId)
+     * Report the nest selection service
+     * @return the nest selection service (Glyph, GlyphSet, GlyphId)
      */
-    SelectionService getSceneService ();
+    SelectionService getGlyphService ();
 
     /**
      * Report the glyph currently selected, if any
@@ -147,13 +149,13 @@ public interface Scene
     /**
      * Add a glyph in the graph, making sure we do not duplicate any existing
      * glyph (a glyph being really defined by the set of its member sections)
-     * @param glyph the glyph to add to the scene
+     * @param glyph the glyph to add to the nest
      * @return the actual glyph (already existing or brand new)
      */
     Glyph addGlyph (Glyph glyph);
 
     /**
-     * Print out major internal info about this glyph scene.
+     * Print out major internal info about this glyph nest.
      * @param title a specific title to be used for the dump
      */
     void dump (String title);

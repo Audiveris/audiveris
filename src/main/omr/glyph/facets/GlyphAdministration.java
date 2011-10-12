@@ -4,20 +4,20 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.facets;
 
-import omr.glyph.Scene;
+import omr.glyph.Nest;
 
 import omr.util.Vip;
 
 /**
  * Interface {@code GlyphAdministration} defines the administration facet of a
- * glyph, handling the glyph id and its related containing scene.
+ * glyph, handling the glyph id and its related containing nest.
  *
  * @author Hervé Bitteur
  */
@@ -33,25 +33,25 @@ interface GlyphAdministration
     void setId (int id);
 
     /**
-     * Report the unique glyph id within its containing scene
+     * Report the unique glyph id within its containing nest
      * @return the glyph id
      */
     int getId ();
 
     /**
-     * Report the containing scene
-     * @return the containing scene
+     * Report the containing nest
+     * @return the containing nest
      */
-    Scene getScene ();
+    Nest getNest ();
 
     /**
-     * The setter for glyph scene. To be used with care
-     * @param scene the containing scene
+     * The setter for glyph nest. To be used with care
+     * @param nest the containing nest
      */
-    void setScene (Scene scene);
+    void setNest (Nest nest);
 
     /**
-     * Test whether the glyph is transient (not yet inserted into the scene)
+     * Test whether the glyph is transient (not yet inserted into the nest)
      * @return true if transient
      */
     boolean isTransient ();

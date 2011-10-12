@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -369,6 +369,9 @@ public class BasicLine
     @Implement(Line.class)
     public double xAtY (double y)
     {
+        if (n == 1) {
+            return sx;
+        }
         checkLineParameters();
 
         if (a != 0d) {
@@ -393,6 +396,10 @@ public class BasicLine
     @Implement(Line.class)
     public double yAtX (double x)
     {
+        if (n == 1) {
+            return sy;
+        }
+
         checkLineParameters();
 
         if (b != 0d) {

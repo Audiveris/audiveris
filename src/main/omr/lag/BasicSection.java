@@ -4,14 +4,14 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
 package omr.lag;
 
-import omr.glyph.Scene;
+import omr.glyph.Nest;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
@@ -66,7 +66,7 @@ import javax.xml.bind.annotation.XmlElement;
  * Class <code>BasicSection</code> is a basic implementation of {@link
  * Section}.
  *
- * <p>TODO: Check setGlyph implementation WRT containing Scene?
+ * <p>TODO: Check setGlyph implementation WRT containing Nest?
  * <p>TODO: Get rid of StickRelation part ASAP?
  *
  * @author Hervé Bitteur
@@ -369,19 +369,19 @@ public class BasicSection
     //----------//
     public void setGlyph (Glyph glyph)
     {
-        // Keep the activeMap of the containing Scene in sync!
-        Scene scene = null;
+        // Keep the activeMap of the containing Nest in sync!
+        Nest nest = null;
 
-        if ((glyph != null) && (glyph.getScene() != null)) {
-            scene = glyph.getScene();
-        } else if ((this.glyph != null) && (this.glyph.getScene() != null)) {
-            scene = this.glyph.getScene();
+        if ((glyph != null) && (glyph.getNest() != null)) {
+            nest = glyph.getNest();
+        } else if ((this.glyph != null) && (this.glyph.getNest() != null)) {
+            nest = this.glyph.getNest();
         }
 
         this.glyph = glyph;
 
-        if (scene != null) {
-            scene.mapSection(this, glyph);
+        if (nest != null) {
+            nest.mapSection(this, glyph);
         }
     }
 
@@ -1013,15 +1013,20 @@ public class BasicSection
             }
         } else {
             // Take only the pixels contained by the absolute roi
-            int p = firstPos - 1;
-            int pMax = -1 +
-                       Math.min(firstPos + runs.size(), roi.y + roi.height);
-            int cMax = (roi.x + roi.width) - 1;
+            Rectangle oRoi = orientation.oriented(roi);
+            final int pMin = oRoi.y;
+            final int pMax = -1 +
+                             Math.min(
+                firstPos + runs.size(),
+                oRoi.y + oRoi.height);
+            final int cMin = oRoi.x;
+            final int cMax = (oRoi.x + oRoi.width) - 1;
+            int       p = firstPos - 1;
 
             for (Run run : runs) {
                 p++;
 
-                if (p < roi.y) {
+                if (p < pMin) {
                     continue;
                 }
 
@@ -1029,7 +1034,7 @@ public class BasicSection
                     break;
                 }
 
-                final int roiStart = Math.max(run.getStart(), roi.x);
+                final int roiStart = Math.max(run.getStart(), cMin);
                 final int roiStop = Math.min(run.getStop(), cMax);
                 final int length = roiStop - roiStart + 1;
 
@@ -1044,36 +1049,6 @@ public class BasicSection
                 }
             }
         }
-    }
-
-    //----------------//
-    // cumulatePoints //
-    //----------------//
-    public int cumulatePoints (double[] xx,
-                               double[] yy,
-                               int      nb)
-    {
-        int p = firstPos;
-
-        for (Run run : runs) {
-            final int start = run.getStart();
-
-            for (int ic = run.getLength() - 1; ic >= 0; ic--) {
-                if (orientation == Orientation.HORIZONTAL) {
-                    xx[nb] = start + ic;
-                    yy[nb] = p;
-                } else {
-                    xx[nb] = p;
-                    yy[nb] = start + ic;
-                }
-
-                nb++;
-            }
-
-            p++;
-        }
-
-        return nb;
     }
 
     //-----------//

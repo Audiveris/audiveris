@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -70,8 +70,8 @@ public class SymbolsStep
              .refresh();
 
         // Update glyph board if needed (to see OCR'ed data)
-        SelectionService service = sheet.getScene()
-                                        .getSceneService();
+        SelectionService service = sheet.getNest()
+                                        .getGlyphService();
         GlyphEvent       glyphEvent = (GlyphEvent) service.getLastEvent(
             GlyphEvent.class);
 

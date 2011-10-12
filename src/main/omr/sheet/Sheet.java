@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -16,9 +16,9 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.BasicScene;
+import omr.glyph.BasicNest;
 import omr.glyph.Glyphs;
-import omr.glyph.Scene;
+import omr.glyph.Nest;
 import omr.glyph.Shape;
 import omr.glyph.SymbolsModel;
 import omr.glyph.facets.Glyph;
@@ -140,8 +140,8 @@ public class Sheet
     /** Vertical lag */
     private Lag vLag;
 
-    /** Global glyph scene */
-    private final Scene scene;
+    /** Global glyph nest */
+    private final Nest nest;
 
     /**
      * Non-lag & non-glyph related selections for this sheet
@@ -214,10 +214,10 @@ public class Sheet
             "sheet " + page.getId(),
             allowedEvents);
 
-        // Beware: Scene must subscribe to location before any lag,
+        // Beware: Nest must subscribe to location before any lag,
         // to allow cleaning up of glyph data, before publication by a lag
-        scene = new BasicScene("gScene", this);
-        scene.setServices(locationService);
+        nest = new BasicNest("gScene", this);
+        nest.setServices(locationService);
 
         staffManager = new StaffManager(this);
         systemManager = new SystemManager(this);
@@ -250,7 +250,7 @@ public class Sheet
      */
     public Collection<Glyph> getActiveGlyphs ()
     {
-        return scene.getActiveGlyphs();
+        return nest.getActiveGlyphs();
     }
 
     //-------------//
@@ -439,7 +439,7 @@ public class Sheet
     public void setHorizontalLag (Lag hLag)
     {
         this.hLag = hLag;
-        hLag.setServices(locationService, scene.getSceneService());
+        hLag.setServices(locationService, nest.getGlyphService());
     }
 
     //------------------//
@@ -640,6 +640,18 @@ public class Sheet
         return maxForeground;
     }
 
+    //---------//
+    // getNest //
+    //---------//
+    /**
+     * Report the global nest for glyphs of this sheet
+     * @return the nest for glyphs
+     */
+    public Nest getNest ()
+    {
+        return nest;
+    }
+
     //-------------//
     // isOnSymbols //
     //-------------//
@@ -712,18 +724,6 @@ public class Sheet
     public Scale getScale ()
     {
         return scale;
-    }
-
-    //----------//
-    // getScene //
-    //----------//
-    /**
-     * Report the global scene for glyphs of this sheet
-     * @return the scene for glyphs
-     */
-    public Scene getScene ()
-    {
-        return scene;
     }
 
     //----------//
@@ -1105,7 +1105,7 @@ public class Sheet
     {
         Lag old = this.vLag;
         this.vLag = vLag;
-        vLag.setServices(locationService, scene.getSceneService());
+        vLag.setServices(locationService, nest.getGlyphService());
 
         return old;
     }

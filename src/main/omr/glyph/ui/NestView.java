@@ -1,17 +1,17 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                             S c e n e V i e w                              //
+//                              N e s t V i e w                               //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.ui;
 
-import omr.glyph.Scene;
+import omr.glyph.Nest;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 import omr.glyph.pattern.SlurInspector;
@@ -52,24 +52,24 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class {@code SceneView} is a  view that combines the display of several lags
- * to repreesent a scene of glyphs
+ * Class {@code NestView} is a  view that combines the display of several lags
+ * to represent a nest of glyphs
  *
  * @author Hervé Bitteur
  */
-public class SceneView
+public class NestView
     extends RubberPanel
     implements DigraphView, PropertyChangeListener
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(SceneView.class);
+    private static final Logger logger = Logger.getLogger(NestView.class);
 
     //~ Instance fields --------------------------------------------------------
 
-    /** The underlying scene */
-    protected final Scene scene;
+    /** The underlying nest */
+    protected final Nest nest;
 
     /** Related glyphs controller */
     protected final GlyphsController controller;
@@ -83,22 +83,22 @@ public class SceneView
     //~ Constructors -----------------------------------------------------------
 
     //-----------//
-    // SceneView //
+    // NestView //
     //-----------//
     /**
-     * Create a scene view
-     * @param the underlying scene of glyphs
+     * Create a nest view
+     * @param the underlying nest of glyphs
      * @param lags the various lags to be displayed
      */
-    public SceneView (Scene            scene,
-                      GlyphsController controller,
-                      List<Lag>        lags)
+    public NestView (Nest             nest,
+                     GlyphsController controller,
+                     List<Lag>        lags)
     {
-        this.scene = scene;
+        this.nest = nest;
         this.controller = controller;
         this.lags = lags;
 
-        setName(scene.getName() + "-View");
+        setName(nest.getName() + "-View");
 
         setBackground(Color.white);
 
@@ -148,7 +148,7 @@ public class SceneView
     // render //
     //--------//
     /**
-     * Render the scene in the provided Graphics context, which may be already
+     * Render the nest in the provided Graphics context, which may be already
      * scaled
      * @param g the graphics context
      */
@@ -207,7 +207,7 @@ public class SceneView
     protected void renderItems (Graphics2D g)
     {
         // Render the selected glyph(s) if any
-        Set<Glyph> glyphs = scene.getSelectedGlyphSet();
+        Set<Glyph> glyphs = nest.getSelectedGlyphSet();
 
         if ((glyphs == null) || glyphs.isEmpty()) {
             return;

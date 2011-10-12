@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -19,7 +19,7 @@ import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Glyphs;
-import omr.glyph.Scene;
+import omr.glyph.Nest;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
@@ -191,11 +191,11 @@ public class TextArea
             logger.warning("No sheet");
         }
 
-        Scene scene = sheet.getScene();
+        Nest nest = sheet.getNest();
 
         if (orientation.isVertical()) {
             if (verticalHistogram == null) {
-                Set<Glyph> glyphs = scene.lookupIntersectedGlyphs(
+                Set<Glyph> glyphs = nest.lookupIntersectedGlyphs(
                     roi.getAbsoluteContour());
                 verticalHistogram = roi.getGlyphHistogram(orientation, glyphs);
             }
@@ -203,7 +203,7 @@ public class TextArea
             return verticalHistogram;
         } else {
             if (horizontalHistogram == null) {
-                Set<Glyph> glyphs = scene.lookupIntersectedGlyphs(
+                Set<Glyph> glyphs = nest.lookupIntersectedGlyphs(
                     roi.getAbsoluteContour());
                 horizontalHistogram = roi.getGlyphHistogram(
                     orientation,
@@ -425,7 +425,7 @@ public class TextArea
         }
 
         // Retrieve glyphs in the provided rectangular area
-        Set<Glyph> glyphs = sheet.getScene()
+        Set<Glyph> glyphs = sheet.getNest()
                                  .lookupGlyphs(roi.getAbsoluteContour());
 
         // A system is not exactly a rectangular area
@@ -577,7 +577,7 @@ public class TextArea
                                 Evaluation eval)
     {
         // Check that this glyph is not forbidden as text
-        Glyph original = sheet.getScene()
+        Glyph original = sheet.getNest()
                               .getOriginal(glyph);
 
         if ((original != null) && original.isShapeForbidden(Shape.TEXT)) {

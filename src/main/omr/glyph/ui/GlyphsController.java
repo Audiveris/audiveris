@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -14,7 +14,7 @@ package omr.glyph.ui;
 import omr.glyph.Evaluation;
 import omr.glyph.Glyphs;
 import omr.glyph.GlyphsModel;
-import omr.glyph.Scene;
+import omr.glyph.Nest;
 import omr.glyph.Shape;
 import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
@@ -158,17 +158,16 @@ public class GlyphsController
         return model;
     }
 
-    //--------//
-    // getLag //
-    //--------//
+    //---------//
+    // getNest //
+    //---------//
     /**
-     * Report the underlying glyph scene
-     *
-     * @return the related glyph scene
+     * Report the underlying glyph nest
+     * @return the related glyph nest
      */
-    public Scene getScene ()
+    public Nest getNest ()
     {
-        return model.getScene();
+        return model.getNest();
     }
 
     //-------------------//
@@ -302,8 +301,8 @@ public class GlyphsController
     {
         // Update immediately the glyph info as displayed
         if (model.getSheet() != null) {
-            getScene()
-                .getSceneService()
+            getNest()
+                .getGlyphService()
                 .publish(
                 new GlyphEvent(this, SelectionHint.GLYPH_MODIFIED, null, glyph));
         }
@@ -316,8 +315,8 @@ public class GlyphsController
     {
         // Update immediately the glyph info as displayed
         if (model.getSheet() != null) {
-            getScene()
-                .getSceneService()
+            getNest()
+                .getGlyphService()
                 .publish(
                 new GlyphSetEvent(
                     this,

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -13,7 +13,7 @@ package omr.glyph.ui;
 
 import omr.constant.ConstantSet;
 
-import omr.glyph.Scene;
+import omr.glyph.Nest;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
@@ -64,7 +64,7 @@ import javax.swing.event.ChangeListener;
  * {@link Glyph} information, with several spinners : <ol>
  *
  * <li>The universal <b>globalSpinner</b>, to browse through <i>all</i> glyphs
- * currently defined in the scene (note that glyphs can be dynamically created or
+ * currently defined in the nest (note that glyphs can be dynamically created or
  * destroyed). This includes all the various (vertical) sticks (which are
  * special glyphs) built during the previous steps, for example the bar
  * lines. For other instances (such as for HorizontalsBuilder), these would be
@@ -175,14 +175,14 @@ public class GlyphBoard
         this(unitName, controller);
 
         // Model for globalSpinner
-        globalSpinner = makeGlyphSpinner(controller.getScene(), null);
+        globalSpinner = makeGlyphSpinner(controller.getNest(), null);
         globalSpinner.setName("globalSpinner");
         globalSpinner.setToolTipText("General spinner for any glyph id");
 
         // Model for knownSpinner?
         if (useKnownSpinner) {
             knownSpinner = makeGlyphSpinner(
-                controller.getScene(),
+                controller.getNest(),
                 knownPredicate);
             knownSpinner.setName("knownSpinner");
             knownSpinner.setToolTipText("Specific spinner for known glyphs");
@@ -218,7 +218,7 @@ public class GlyphBoard
         super(
             name,
             "Glyph",
-            controller.getScene().getSceneService(),
+            controller.getNest().getGlyphService(),
             eventClasses,
             true);
 
@@ -375,15 +375,15 @@ public class GlyphBoard
     /**
      * Convenient method to allocate a glyph-based spinner
      *
-     * @param scene the underlying glyph scene
+     * @param nest the underlying glyph nest
      * @param predicate a related glyph predicate, if any
      * @return the spinner built
      */
-    protected JSpinner makeGlyphSpinner (Scene            scene,
+    protected JSpinner makeGlyphSpinner (Nest             nest,
                                          Predicate<Glyph> predicate)
     {
         JSpinner spinner = new JSpinner();
-        spinner.setModel(new SpinnerGlyphModel(scene, predicate));
+        spinner.setModel(new SpinnerGlyphModel(nest, predicate));
         spinner.addChangeListener(this);
         SpinnerUtilities.setRightAlignment(spinner);
         SpinnerUtilities.setEditable(spinner, true);

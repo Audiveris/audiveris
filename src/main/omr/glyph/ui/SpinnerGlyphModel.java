@@ -4,14 +4,14 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.ui;
 
-import omr.glyph.Scene;
+import omr.glyph.Nest;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -25,8 +25,8 @@ import javax.swing.SpinnerModel;
 
 /**
  * Class <code>SpinnerGlyphModel</code> is a spinner model backed by a {@link
- * Scene}. Any modification in the scene is thus transparently
- * handled, since the scene <b>is</b> the model. <p>A glyph {@link Predicate} can
+ * Nest}. Any modification in the nest is thus transparently
+ * handled, since the nest <b>is</b> the model. <p>A glyph {@link Predicate} can
  * be assigned to this SpinnerGlyphModel at construction time in order to
  * restrict the population of glyphs in the spinner. This class is used by
  * {@link GlyphBoard} only, but is not coupled with it.
@@ -44,8 +44,8 @@ public class SpinnerGlyphModel
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Underlying glyph scene */
-    private final Scene scene;
+    /** Underlying glyph nest */
+    private final Nest nest;
 
     /** Additional predicate if any */
     private final Predicate<Glyph> predicate;
@@ -59,12 +59,12 @@ public class SpinnerGlyphModel
     // SpinnerGlyphModel //
     //-------------------//
     /**
-     * Creates a new SpinnerGlyphModel object, on all scene glyphs
-     * @param scene the underlying glyph scene
+     * Creates a new SpinnerGlyphModel object, on all nest glyphs
+     * @param nest the underlying glyph nest
      */
-    public SpinnerGlyphModel (Scene scene)
+    public SpinnerGlyphModel (Nest nest)
     {
-        this(scene, null);
+        this(nest, null);
     }
 
     //-------------------//
@@ -72,18 +72,18 @@ public class SpinnerGlyphModel
     //-------------------//
     /**
      * Creates a new SpinnerGlyphModel object, with a related glyph predicate
-     * @param scene the underlying glyph scene
+     * @param nest the underlying glyph nest
      * @param predicate predicate of glyph, or null
      */
-    public SpinnerGlyphModel (Scene            scene,
+    public SpinnerGlyphModel (Nest             nest,
                               Predicate<Glyph> predicate)
     {
-        if (scene == null) {
+        if (nest == null) {
             throw new IllegalArgumentException(
-                "SpinnerGlyphModel expects non-null glyph scene");
+                "SpinnerGlyphModel expects non-null glyph nest");
         }
 
-        this.scene = scene;
+        this.nest = nest;
         this.predicate = predicate;
 
         currentId = NO_VALUE;
@@ -111,8 +111,8 @@ public class SpinnerGlyphModel
         }
 
         if (cur == NO_VALUE) {
-            // Return first suitable glyph in scene
-            for (Glyph glyph : scene.getAllGlyphs()) {
+            // Return first suitable glyph in nest
+            for (Glyph glyph : nest.getAllGlyphs()) {
                 if ((predicate == null) || predicate.check(glyph)) {
                     return glyph.getId();
                 }
@@ -120,10 +120,10 @@ public class SpinnerGlyphModel
 
             return null;
         } else {
-            // Return first suitable glyph after current glyph in scene
+            // Return first suitable glyph after current glyph in nest
             boolean found = false;
 
-            for (Glyph glyph : scene.getAllGlyphs()) {
+            for (Glyph glyph : nest.getAllGlyphs()) {
                 if (!found) {
                     if (glyph.getId() == cur) {
                         found = true;
@@ -161,8 +161,8 @@ public class SpinnerGlyphModel
             return NO_VALUE;
         }
 
-        // Scene
-        for (Glyph glyph : scene.getAllGlyphs()) {
+        // Nest
+        for (Glyph glyph : nest.getAllGlyphs()) {
             if (glyph.getId() == cur) {
                 return (prevGlyph != null) ? prevGlyph.getId() : NO_VALUE;
             }
@@ -199,8 +199,8 @@ public class SpinnerGlyphModel
         if (id == NO_VALUE) {
             ok = true;
         } else {
-            // Scene
-            Glyph glyph = scene.getGlyph(id);
+            // Nest
+            Glyph glyph = nest.getGlyph(id);
 
             if (glyph != null) {
                 if (predicate != null) {

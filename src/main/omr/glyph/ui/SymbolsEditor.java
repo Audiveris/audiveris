@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -16,7 +16,7 @@ import omr.constant.ConstantSet;
 import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Glyphs;
-import omr.glyph.Scene;
+import omr.glyph.Nest;
 import omr.glyph.facets.Glyph;
 
 import omr.lag.Section;
@@ -126,9 +126,9 @@ public class SymbolsEditor
         this.sheet = sheet;
         this.symbolsBuilder = symbolsController;
 
-        Scene scene = symbolsController.getScene();
+        Nest nest = symbolsController.getNest();
 
-        view = new MyView(scene);
+        view = new MyView(nest);
         view.setLocationService(sheet.getLocationService());
 
         focus = new ShapeFocusBoard(
@@ -138,7 +138,7 @@ public class SymbolsEditor
                     @Implement(ActionListener.class)
                     public void actionPerformed (ActionEvent e)
                     {
-                        ////////////////////////////////////////////view.colorizeAllGlyphs();
+                        //TODO //////////////////////////////////////////view.colorizeAllGlyphs();
                     }
                 });
 
@@ -238,7 +238,7 @@ public class SymbolsEditor
     // MyView //
     //--------//
     private final class MyView
-        extends SceneView
+        extends NestView
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -248,10 +248,10 @@ public class SymbolsEditor
 
         //~ Constructors -------------------------------------------------------
 
-        private MyView (Scene scene)
+        private MyView (Nest nest)
         {
             super(
-                scene,
+                nest,
                 symbolsBuilder,
                 Arrays.asList(sheet.getHorizontalLag(), sheet.getVerticalLag()));
             setName("SymbolsEditor-MyView");
@@ -278,7 +278,7 @@ public class SymbolsEditor
                               .isSectionSelectionEnabled()) {
             } else {
                 // Retrieve the selected glyphs
-                Set<Glyph> glyphs = scene.getSelectedGlyphSet();
+                Set<Glyph> glyphs = nest.getSelectedGlyphSet();
 
                 if (movement == MouseMovement.RELEASING) {
                     if ((glyphs != null) && !glyphs.isEmpty()) {
@@ -371,7 +371,7 @@ public class SymbolsEditor
                 super.onEvent(event);
 
                 if (event instanceof GlyphSetEvent) { // GlyphSet => Compound
-                    ///handleEvent((GlyphSetEvent) event);
+                                                      ///handleEvent((GlyphSetEvent) event);
                 } else if (event instanceof SectionSetEvent) { // SectionSet => Compound
                     handleEvent((SectionSetEvent) event);
                 }
@@ -400,8 +400,8 @@ public class SymbolsEditor
         //---------//
         protected void publish (SceneEvent event)
         {
-            scene.getSceneService()
-                 .publish(event);
+            nest.getGlyphService()
+                .publish(event);
         }
 
         //-------------//
@@ -439,51 +439,51 @@ public class SymbolsEditor
                         Colors.SLOT_CURRENT);
                 }
             }
-            
+
             // Render selected glyph(s) if any
             ///super.renderItems(g);
         }
 
-//        //-------------//
-//        // handleEvent //
-//        //-------------//
-//        /**
-//         * Interest in GlyphSet => Compound
-//         * @param glyphSetEvent
-//         */
-//        private void handleEvent (GlyphSetEvent glyphSetEvent)
-//        {
-//            if (ViewParameters.getInstance()
-//                              .isSectionSelectionEnabled()) {
-//                return;
-//            }
-//
-//            MouseMovement movement = glyphSetEvent.movement;
-//            Set<Glyph>    glyphs = glyphSetEvent.getData();
-//            Glyph         compound = null;
-//
-//            if ((glyphs != null) && (glyphs.size() > 1)) {
-//                try {
-//                    SystemInfo system = sheet.getSystemOf(glyphs);
-//
-//                    if (system != null) {
-//                        compound = system.buildTransientCompound(glyphs);
-//                        publish(
-//                            new GlyphEvent(
-//                                this,
-//                                SelectionHint.GLYPH_TRANSIENT,
-//                                movement,
-//                                compound));
-//                    }
-//                } catch (IllegalArgumentException ex) {
-//                    // All glyphs do not belong to the same system
-//                    // No compound is allowed and displayed
-//                    logger.warning(
-//                        "Glyphs from different systems " +
-//                        Glyphs.toString(glyphs));
-//                }
-//            }
-//        }
+        //        //-------------//
+        //        // handleEvent //
+        //        //-------------//
+        //        /**
+        //         * Interest in GlyphSet => Compound
+        //         * @param glyphSetEvent
+        //         */
+        //        private void handleEvent (GlyphSetEvent glyphSetEvent)
+        //        {
+        //            if (ViewParameters.getInstance()
+        //                              .isSectionSelectionEnabled()) {
+        //                return;
+        //            }
+        //
+        //            MouseMovement movement = glyphSetEvent.movement;
+        //            Set<Glyph>    glyphs = glyphSetEvent.getData();
+        //            Glyph         compound = null;
+        //
+        //            if ((glyphs != null) && (glyphs.size() > 1)) {
+        //                try {
+        //                    SystemInfo system = sheet.getSystemOf(glyphs);
+        //
+        //                    if (system != null) {
+        //                        compound = system.buildTransientCompound(glyphs);
+        //                        publish(
+        //                            new GlyphEvent(
+        //                                this,
+        //                                SelectionHint.GLYPH_TRANSIENT,
+        //                                movement,
+        //                                compound));
+        //                    }
+        //                } catch (IllegalArgumentException ex) {
+        //                    // All glyphs do not belong to the same system
+        //                    // No compound is allowed and displayed
+        //                    logger.warning(
+        //                        "Glyphs from different systems " +
+        //                        Glyphs.toString(glyphs));
+        //                }
+        //            }
+        //        }
 
         //-------------//
         // handleEvent //

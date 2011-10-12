@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -20,7 +20,7 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyphs;
-import omr.glyph.Scene;
+import omr.glyph.Nest;
 import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
 
@@ -127,8 +127,8 @@ public class SticksBuilder
     /** The related scale */
     protected final Scale scale;
 
-    /** The containing scene */
-    protected final Scene scene;
+    /** The containing nest */
+    protected final Nest nest;
 
     /** Class parameters */
     protected final Parameters params;
@@ -162,20 +162,20 @@ public class SticksBuilder
      *
      * @param orientation general orientation of desired sticks
      * @param scale the related scale
-     * @param scene the scene which hosts the glyphs
+     * @param nest the nest which hosts the glyphs
      * @param source An adaptor to get access to participating sections
      * @param longAlignment specific flag to indicate long filament retrieval
      */
     public SticksBuilder (Orientation    orientation,
                           Scale          scale,
-                          Scene          scene,
+                          Nest           nest,
                           SectionsSource source,
                           boolean        longAlignment)
     {
         // Cache computing parameters
         this.orientation = orientation;
         this.scale = scale;
-        this.scene = scene;
+        this.nest = nest;
         this.source = source;
         this.longAlignment = longAlignment;
 
@@ -570,7 +570,7 @@ public class SticksBuilder
                             stick.addGlyphSections(
                                 other,
                                 Glyph.Linking.LINK_BACK);
-                            stick = scene.addGlyph(stick);
+                            stick = nest.addGlyph(stick);
 
                             if (logger.isFineEnabled() &&
                                 (stick.getId() != oldId)) {
@@ -730,7 +730,7 @@ public class SticksBuilder
                 Glyph stick = new BasicGlyph(interline);
                 stick.setResult(ASSIGNED); // Needed to flag the stick
                 aggregate(section, stick);
-                stick = scene.addGlyph(stick);
+                stick = nest.addGlyph(stick);
                 stick.setResult(ASSIGNED); // In case we are reusing a glyph
                 sticks.add(stick);
             }

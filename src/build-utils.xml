@@ -58,10 +58,11 @@
     <target name="global-replace"
         description="Modify token of every source file">
         
-        <replace encoding="utf8" dir="${src.dir}">
-            <replacetoken>StringBuffer</replacetoken>
-            <replacevalue>StringBuilder</replacevalue>
+        <replace encoding="utf8" dir="${plugins.dir}">
+            <replacetoken>Herve</replacetoken>
+            <replacevalue>Hervé</replacevalue>
             <include name="**/*.java"/>
+            <include name="**/*.properties"/>
         </replace>
 
     </target>

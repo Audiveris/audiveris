@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -17,7 +17,7 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyphs;
-import omr.glyph.Scene;
+import omr.glyph.Nest;
 import omr.glyph.facets.BasicAlignment;
 import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
@@ -34,8 +34,6 @@ import omr.math.PointsCollector;
 import omr.run.Orientation;
 
 import omr.sheet.Scale;
-
-import omr.stick.SectionsSource;
 
 import omr.util.StopWatch;
 
@@ -79,7 +77,7 @@ public class FilamentsFactory
     private final Scale scale;
 
     /** Where filaments are to be stored */
-    private final Scene scene;
+    private final Nest nest;
 
     /** Factory orientation */
     private final Orientation orientation;
@@ -103,19 +101,19 @@ public class FilamentsFactory
      * Retrieve the frames of all staff lines
      *
      * @param scale the related scale
-     * @param scene the scene to host created filaments
+     * @param nest the nest to host created filaments
      * @param orientation the target orientation
      * @param filamentClass precise Filament class to be use for creation
      * @throws Exception
      */
     public FilamentsFactory (Scale                 scale,
-                             Scene                 scene,
+                             Nest                  nest,
                              Orientation           orientation,
                              Class<?extends Glyph> filamentClass)
         throws Exception
     {
         this.scale = scale;
-        this.scene = scene;
+        this.nest = nest;
         this.orientation = orientation;
 
         scaleArgs = new Object[] { scale };
@@ -269,11 +267,17 @@ public class FilamentsFactory
     {
         if (section.isFat() == null) {
             try {
+                if (section.getMeanThickness() <= 1) {
+                    section.setFat(false);
+
+                    return section.isFat();
+                }
+
                 // Check global slimness
                 if (section.getMeanAspect() < params.minSectionAspect) {
                     section.setFat(true);
 
-                    return true;
+                    return section.isFat();
                 }
 
                 // Measure mean thickness on each half
@@ -429,8 +433,12 @@ public class FilamentsFactory
                                   : params.maxSpace;
 
                 // Measure thickness at various coord values of overlap
-                for (int iq = 1; iq < 4; iq++) {
-                    double midCoord = overlapStart - ((iq * coordGap) / 4);
+                // Provided that the overlap is long enough
+                int valNb = (int) Math.min(3, 1 - (coordGap / 10));
+
+                for (int iq = 1; iq <= valNb; iq++) {
+                    double midCoord = overlapStart -
+                                      ((iq * coordGap) / (valNb + 1));
                     double onePos = one.getPositionAt(midCoord, orientation);
                     double twoPos = two.getPositionAt(midCoord, orientation);
                     double posGap = Math.abs(onePos - twoPos);
@@ -563,7 +571,7 @@ public class FilamentsFactory
         Filament fil = (Filament) filamentConstructor.newInstance(scaleArgs);
         fil.addSection(section);
 
-        return (Filament) scene.addGlyph(fil);
+        return (Filament) nest.addGlyph(fil);
     }
 
     //-----------------//
@@ -600,10 +608,10 @@ public class FilamentsFactory
             Filament fil = createFilament(section);
             filaments.add(fil);
 
-            if (logger.isFineEnabled() || section.isVip() || scene.isVip(fil)) {
+            if (logger.isFineEnabled() || section.isVip() || nest.isVip(fil)) {
                 logger.info("Created " + fil + " with " + section);
 
-                if (section.isVip() || scene.isVip(fil)) {
+                if (section.isVip() || nest.isVip(fil)) {
                     fil.setVip();
                 }
             }
@@ -651,10 +659,10 @@ public class FilamentsFactory
                 glyph.addSection(
                     section,
                     GlyphComposition.Linking.NO_LINK_BACK);
-                glyph = scene.addGlyph(glyph);
+                glyph = nest.addGlyph(glyph);
                 glyphs.add(glyph);
 
-                if (section.isVip() || scene.isVip(glyph)) {
+                if (section.isVip() || nest.isVip(glyph)) {
                     logger.info("VIP created " + glyph + " from " + section);
                     glyph.setVip();
                 }
@@ -704,8 +712,9 @@ public class FilamentsFactory
 
                                 break;
                             }
-                        } else if (glyphBounds.y > maxPos) {
-                            break; // Speedup
+
+                            //                        } else if (glyphBounds.y > maxPos) {
+                            //                            break; // Speedup
                         }
                     }
                 } while (expanding);

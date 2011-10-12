@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -53,8 +53,8 @@ public class Actions
     //~ Enumerations -----------------------------------------------------------
 
     /**
-     * Predefined list of domain names. Through the action list files, the user
-     * will be able to add new domain names.
+     * Predefined list of domain names.
+     * Through the action list files, the user will be able to add new domain names.
      * This classification is mainly used to define the related pull-down menus.
      */
     public static enum Domain {
@@ -143,8 +143,8 @@ public class Actions
     // getSections //
     //-------------//
     /**
-     * Report the whole collection of sections, the predefined ones and the
-     * added ones.
+     * Report the whole collection of sections, the predefined ones 
+     * and the added ones.
      * @return the collection of sections
      */
     public static SortedSet<Integer> getSections ()
@@ -163,7 +163,7 @@ public class Actions
     //-----------------//
     /**
      * Unmarshal the provided XML stream to allocate the corresponding
-     * collection of action descriptors
+     * collection of action descriptors.
      *
      * @param in the input stream that contains the collection of action
      * descriptors in XML format. The stream is not closed by this method

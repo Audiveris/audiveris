@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -635,7 +635,7 @@ public class BarsRetriever
         // Filaments factory
         FilamentsFactory factory = new FilamentsFactory(
             scale,
-            sheet.getScene(),
+            sheet.getNest(),
             VERTICAL,
             Filament.class);
 
@@ -1196,7 +1196,7 @@ public class BarsRetriever
         barsChecker.checkCandidates(filaments);
 
         // Consider only sticks with a barline shape
-        for (Glyph glyph : sheet.getScene()
+        for (Glyph glyph : sheet.getNest()
                                 .getActiveGlyphs()) {
             if (glyph.isBar()) {
                 Filament fil = (Filament) glyph;

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -16,7 +16,7 @@ import omr.check.Result;
 import omr.glyph.Evaluation;
 import omr.glyph.GlyphSignature;
 import omr.glyph.Glyphs;
-import omr.glyph.Scene;
+import omr.glyph.Nest;
 import omr.glyph.Shape;
 import omr.glyph.text.TextInfo;
 
@@ -357,6 +357,16 @@ public class BasicGlyph
         return geometry.getMoments();
     }
 
+    public void setNest (Nest nest)
+    {
+        administration.setNest(nest);
+    }
+
+    public Nest getNest ()
+    {
+        return administration.getNest();
+    }
+
     public double getNormalizedHeight ()
     {
         return geometry.getNormalizedHeight();
@@ -431,16 +441,6 @@ public class BasicGlyph
     public Glyph getRightStem ()
     {
         return environment.getRightStem();
-    }
-
-    public void setScene (Scene scene)
-    {
-        administration.setScene(scene);
-    }
-
-    public Scene getScene ()
-    {
-        return administration.getScene();
     }
 
     public void setShape (Shape  shape,

@@ -1,10 +1,10 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                            B a s i c S c e n e                             //
+//                             B a s i c N e s t                              //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -44,6 +44,9 @@ import static omr.selection.SelectionHint.*;
 import omr.selection.SelectionService;
 import omr.selection.UserEvent;
 
+import omr.sheet.Sheet;
+import omr.sheet.SystemInfo;
+
 import org.bushe.swing.event.EventSubscriber;
 
 import java.util.ArrayList;
@@ -56,16 +59,14 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import omr.sheet.Sheet;
-import omr.sheet.SystemInfo;
 
 /**
- * Class <code>BasicScene</code> implements a {@link Scene}.
+ * Class <code>BasicNest</code> implements a {@link Nest}.
  *
  * @author Hervé Bitteur
  */
-public class BasicScene
-    implements Scene, EventSubscriber<UserEvent>
+public class BasicNest
+    implements Nest, EventSubscriber<UserEvent>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -73,12 +74,12 @@ public class BasicScene
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(BasicScene.class);
+    private static final Logger logger = Logger.getLogger(BasicNest.class);
 
     /** Events read on location service */
     public static final Class[] locEventsRead = new Class[] { LocationEvent.class };
 
-    /** Events read on scene (glyph) service */
+    /** Events read on nest (glyph) service */
     public static final Class[] glyEventsRead = new Class[] {
                                                     GlyphIdEvent.class,
                                                     GlyphEvent.class,
@@ -87,13 +88,13 @@ public class BasicScene
 
     //~ Instance fields --------------------------------------------------------
 
-    /** (Debug) a unique name for this scene */
+    /** (Debug) a unique name for this nest */
     private final String name;
-    
+
     /** Related sheet */
     private final Sheet sheet;
 
-    /** Elaborated constants for this scene */
+    /** Elaborated constants for this nest */
     private final Parameters params;
 
     /**
@@ -104,7 +105,7 @@ public class BasicScene
     private final ConcurrentHashMap<GlyphSignature, Glyph> originals = new ConcurrentHashMap<GlyphSignature, Glyph>();
 
     /**
-     * Collection of all glyphs ever inserted in this Scene, indexed by
+     * Collection of all glyphs ever inserted in this Nest, indexed by
      * glyph id. No non-virtual glyph is ever removed from this map.
      */
     private final ConcurrentHashMap<Integer, Glyph> allGlyphs = new ConcurrentHashMap<Integer, Glyph>();
@@ -137,24 +138,25 @@ public class BasicScene
     private SelectionService locationService;
 
     /** Hosted glyph service (Glyph, GlyphId and GlyphSet) */
-    protected final SelectionService sceneService;
+    protected final SelectionService glyphService;
 
     //~ Constructors -----------------------------------------------------------
 
-    //------------//
-    // BasicScene //
-    //------------//
+    //-----------//
+    // BasicNest //
+    //-----------//
     /**
-     * Create a glyph scene
+     * Create a glyph nest
      * @param name the distinguished name for this instance
      */
-    public BasicScene (String name, Sheet sheet)
+    public BasicNest (String name,
+                      Sheet  sheet)
     {
         this.name = name;
         this.sheet = sheet;
 
         params = new Parameters();
-        sceneService = new SelectionService(name, Scene.eventsWritten);
+        glyphService = new SelectionService(name, Nest.eventsWritten);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -186,6 +188,62 @@ public class BasicScene
     public Glyph getGlyph (Integer id)
     {
         return allGlyphs.get(id);
+    }
+
+    //    //--------------------//
+    //    // transferAlienGlyph //
+    //    //--------------------//
+    //    /**
+    //     * Transfer a glyph (from another lag) to this one
+    //     * @param alien the glyph to be copied from the other lag
+    //     * @return the (reified) glyph in this lag
+    //     */
+    //    private Glyph transferAlienGlyph (Glyph alien)
+    //    {
+    //        if (logger.isFineEnabled()) {
+    //            logger.fine("Transfering " + alien);
+    //        }
+    //
+    //        Set<GlyphSection> newSections = new HashSet<GlyphSection>();
+    //
+    //        for (GlyphSection section : alien.getMembers()) {
+    //            GlyphSection newSection = getVertexBySignature(
+    //                section.getSignature());
+    //
+    //            if (newSection == null) {
+    //                logger.warning("Could not retrieve section " + section);
+    //
+    //                return null;
+    //            }
+    //
+    //            newSections.add(newSection);
+    //        }
+    //
+    //        // Create Glyph from sections
+    //        Glyph glyph = null;
+    //
+    //        if (alien instanceof Stick) {
+    //            glyph = new BasicStick(alien.getInterline());
+    //        } else {
+    //            glyph = new BasicGlyph(alien.getInterline());
+    //        }
+    //
+    //        for (GlyphSection section : newSections) {
+    //            glyph.addSection(section, Glyph.Linking.LINK_BACK);
+    //        }
+    //
+    //        // Add/get original glyph
+    //        Glyph orgGlyph = addGlyph(glyph);
+    //
+    //        return orgGlyph;
+    //    }
+
+    //-----------------//
+    // getGlyphService //
+    //-----------------//
+    public SelectionService getGlyphService ()
+    {
+        return glyphService;
     }
 
     //--------------//
@@ -248,68 +306,12 @@ public class BasicScene
         }
     }
 
-    //    //--------------------//
-    //    // transferAlienGlyph //
-    //    //--------------------//
-    //    /**
-    //     * Transfer a glyph (from another lag) to this one
-    //     * @param alien the glyph to be copied from the other lag
-    //     * @return the (reified) glyph in this lag
-    //     */
-    //    private Glyph transferAlienGlyph (Glyph alien)
-    //    {
-    //        if (logger.isFineEnabled()) {
-    //            logger.fine("Transfering " + alien);
-    //        }
-    //
-    //        Set<GlyphSection> newSections = new HashSet<GlyphSection>();
-    //
-    //        for (GlyphSection section : alien.getMembers()) {
-    //            GlyphSection newSection = getVertexBySignature(
-    //                section.getSignature());
-    //
-    //            if (newSection == null) {
-    //                logger.warning("Could not retrieve section " + section);
-    //
-    //                return null;
-    //            }
-    //
-    //            newSections.add(newSection);
-    //        }
-    //
-    //        // Create Glyph from sections
-    //        Glyph glyph = null;
-    //
-    //        if (alien instanceof Stick) {
-    //            glyph = new BasicStick(alien.getInterline());
-    //        } else {
-    //            glyph = new BasicGlyph(alien.getInterline());
-    //        }
-    //
-    //        for (GlyphSection section : newSections) {
-    //            glyph.addSection(section, Glyph.Linking.LINK_BACK);
-    //        }
-    //
-    //        // Add/get original glyph
-    //        Glyph orgGlyph = addGlyph(glyph);
-    //
-    //        return orgGlyph;
-    //    }
-
-    //-----------------//
-    // getSceneService //
-    //-----------------//
-    public SelectionService getSceneService ()
-    {
-        return sceneService;
-    }
-
     //------------------//
     // getSelectedGlyph //
     //------------------//
     public Glyph getSelectedGlyph ()
     {
-        return (Glyph) getSceneService()
+        return (Glyph) getGlyphService()
                            .getSelection(GlyphEvent.class);
     }
 
@@ -319,7 +321,7 @@ public class BasicScene
     @SuppressWarnings("unchecked")
     public Set<Glyph> getSelectedGlyphSet ()
     {
-        return (Set<Glyph>) getSceneService()
+        return (Set<Glyph>) getGlyphService()
                                 .getSelection(GlyphSetEvent.class);
     }
 
@@ -335,7 +337,7 @@ public class BasicScene
         }
 
         for (Class eventClass : glyEventsRead) {
-            sceneService.subscribeStrongly(eventClass, this);
+            glyphService.subscribeStrongly(eventClass, this);
         }
     }
 
@@ -372,7 +374,7 @@ public class BasicScene
             // Create a brand new glyph
             final int id = generateId();
             glyph.setId(id);
-            glyph.setScene(this);
+            glyph.setNest(this);
             originals.put(glyph.getSignature(), glyph);
             allGlyphs.put(id, glyph);
 
@@ -585,7 +587,7 @@ public class BasicScene
      */
     protected void publish (SceneEvent event)
     {
-        sceneService.publish(event);
+        glyphService.publish(event);
     }
 
     //---------//
@@ -611,7 +613,7 @@ public class BasicScene
      */
     protected int subscribersCount (Class<?extends SceneEvent> classe)
     {
-        return sceneService.subscribersCount(classe);
+        return glyphService.subscribersCount(classe);
     }
 
     //------------//
@@ -685,7 +687,7 @@ public class BasicScene
                 publish(new GlyphEvent(this, hint, movement, null));
 
                 // And let proper lag publish non-null glyph later
-                // Since BasicScene is first subscriber on location
+                // Since BasicNest is first subscriber on location
             }
         }
     }
@@ -749,46 +751,45 @@ public class BasicScene
         }
     }
 
-        //-------------//
-        // handleEvent //
-        //-------------//
-        /**
-         * Interest in GlyphSet => Compound
-         * @param glyphSetEvent
-         */
-        private void handleEvent (GlyphSetEvent glyphSetEvent)
-        {
-            if (ViewParameters.getInstance()
-                              .isSectionSelectionEnabled()) {
-                return;
-            }
+    //-------------//
+    // handleEvent //
+    //-------------//
+    /**
+     * Interest in GlyphSet => Compound
+     * @param glyphSetEvent
+     */
+    private void handleEvent (GlyphSetEvent glyphSetEvent)
+    {
+        if (ViewParameters.getInstance()
+                          .isSectionSelectionEnabled()) {
+            return;
+        }
 
-            MouseMovement movement = glyphSetEvent.movement;
-            Set<Glyph>    glyphs = glyphSetEvent.getData();
-            Glyph         compound = null;
+        MouseMovement movement = glyphSetEvent.movement;
+        Set<Glyph>    glyphs = glyphSetEvent.getData();
+        Glyph         compound = null;
 
-            if ((glyphs != null) && (glyphs.size() > 1)) {
-                try {
-                    SystemInfo system = sheet.getSystemOf(glyphs);
+        if ((glyphs != null) && (glyphs.size() > 1)) {
+            try {
+                SystemInfo system = sheet.getSystemOf(glyphs);
 
-                    if (system != null) {
-                        compound = system.buildTransientCompound(glyphs);
-                        publish(
-                            new GlyphEvent(
-                                this,
-                                SelectionHint.GLYPH_TRANSIENT,
-                                movement,
-                                compound));
-                    }
-                } catch (IllegalArgumentException ex) {
-                    // All glyphs do not belong to the same system
-                    // No compound is allowed and displayed
-                    logger.warning(
-                        "Glyphs from different systems " +
-                        Glyphs.toString(glyphs));
+                if (system != null) {
+                    compound = system.buildTransientCompound(glyphs);
+                    publish(
+                        new GlyphEvent(
+                            this,
+                            SelectionHint.GLYPH_TRANSIENT,
+                            movement,
+                            compound));
                 }
+            } catch (IllegalArgumentException ex) {
+                // All glyphs do not belong to the same system
+                // No compound is allowed and displayed
+                logger.warning(
+                    "Glyphs from different systems " + Glyphs.toString(glyphs));
             }
         }
+    }
 
     //-------------//
     // handleEvent //
@@ -833,7 +834,7 @@ public class BasicScene
     // Parameters //
     //------------//
     /**
-     * Class {@code Parameters} gathers all constants related to scene
+     * Class {@code Parameters} gathers all constants related to nest
      */
     private static class Parameters
     {

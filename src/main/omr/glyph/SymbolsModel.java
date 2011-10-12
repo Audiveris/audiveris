@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -59,7 +59,7 @@ public class SymbolsModel
      */
     public SymbolsModel (Sheet sheet)
     {
-        super(sheet, sheet.getScene(), Steps.valueOf(Steps.SYMBOLS));
+        super(sheet, sheet.getNest(), Steps.valueOf(Steps.SYMBOLS));
     }
 
     //~ Methods ----------------------------------------------------------------

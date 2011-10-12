@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -14,9 +14,9 @@ package omr.grid;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.Scene;
+import omr.glyph.Nest;
 import omr.glyph.ui.GlyphsController;
-import omr.glyph.ui.SceneView;
+import omr.glyph.ui.NestView;
 
 import omr.lag.Lag;
 
@@ -30,14 +30,14 @@ import java.awt.Stroke;
 import java.util.Arrays;
 
 /**
- * Class {@code GridView} is a special {@link SceneView}, meant as a
+ * Class {@code GridView} is a special {@link NestView}, meant as a
  * companion of {@link GridBuilder} with its 2 lags (horizontal & vertical).
  * <p>We paint on the same display the vertical and horizontal sections.
  *
  * @author Hervé Bitteur
  */
 public class GridView
-    extends SceneView
+    extends NestView
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -62,21 +62,21 @@ public class GridView
     //----------//
     /**
      * Creates a new GridView object.
-     *
+     * @param nest the related nest instance
      * @param linesRetriever the related lines retriever
      * @param hLag horizontal lag
      * @param barsRetriever the related bars retriever
      * @param vLag vertical lag
      * @param controller glyphs controller
      */
-    public GridView (Scene            scene,
+    public GridView (Nest             nest,
                      LinesRetriever   linesRetriever,
                      Lag              hLag,
                      BarsRetriever    barsRetriever,
                      Lag              vLag,
                      GlyphsController controller)
     {
-        super(scene, controller, Arrays.asList(hLag, vLag));
+        super(nest, controller, Arrays.asList(hLag, vLag));
 
         setName("Grid-View");
         this.linesRetriever = linesRetriever;

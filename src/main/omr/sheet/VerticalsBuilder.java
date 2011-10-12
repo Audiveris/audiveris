@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -158,7 +158,7 @@ public class VerticalsBuilder
         SticksBuilder verticalsArea = new SticksBuilder(
             Orientation.VERTICAL,
             scale,
-            sheet.getScene(),
+            sheet.getNest(),
             new SectionsSource(
                 system.getVerticalSections(),
                 new MySectionPredicate()),
@@ -192,7 +192,7 @@ public class VerticalsBuilder
             SticksBuilder verticalsArea = new SticksBuilder(
                 Orientation.VERTICAL,
                 scale,
-                sheet.getScene(),
+                sheet.getNest(),
                 new SectionsSource(sections, new MySectionPredicate()),
                 false);
             verticalsArea.setMaxThickness(constants.maxStemThickness);

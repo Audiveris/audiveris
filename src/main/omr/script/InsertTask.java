@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -142,8 +142,8 @@ public class InsertTask
         }
 
         // Take inserted glyph(s) as selected glyph(s)
-        sheet.getScene()
-             .getSceneService()
+        sheet.getNest()
+             .getGlyphService()
              .publish(
             new GlyphSetEvent(
                 this,
@@ -228,7 +228,7 @@ public class InsertTask
             glyph = system.addGlyph(glyph);
             system.computeGlyphFeatures(glyph);
             //            } else {
-            //                sheet.getScene()
+            //                sheet.getNest()
             //                     .addGlyph(glyph);
             //            }
             glyph.dump();

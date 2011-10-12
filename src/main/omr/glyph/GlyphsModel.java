@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2010. All rights reserved.               //
+//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -49,7 +49,7 @@ public class GlyphsModel
     //~ Instance fields --------------------------------------------------------
 
     /** Underlying lag (vertical or horizontal) */
-    protected final Scene scene;
+    protected final Nest nest;
 
     /** Related Sheet */
     protected final Sheet sheet;
@@ -69,21 +69,21 @@ public class GlyphsModel
      * Create an instance of GlyphsModel, with its underlying glyph lag
      *
      * @param sheet the related sheet (can be null)
-     * @param scene the related scene (cannot be null)
+     * @param nest the related nest (cannot be null)
      * @param step the step after which update should be perform (can be null)
      */
     public GlyphsModel (Sheet sheet,
-                        Scene scene,
+                        Nest  nest,
                         Step  step)
     {
         // Null sheet is allowed (for GlyphVerifier use)
         this.sheet = sheet;
 
-        if (scene == null) {
+        if (nest == null) {
             throw new IllegalArgumentException(
-                "Attempt to create a GlyphsModel with null underlying scene");
+                "Attempt to create a GlyphsModel with null underlying nest");
         } else {
-            this.scene = scene;
+            this.nest = nest;
         }
 
         this.step = step;
@@ -102,7 +102,7 @@ public class GlyphsModel
      */
     public Glyph getGlyphById (int id)
     {
-        return scene.getGlyph(id);
+        return nest.getGlyph(id);
     }
 
     //----------------//
@@ -133,6 +133,18 @@ public class GlyphsModel
         return latestShape;
     }
 
+    //---------//
+    // getNest //
+    //---------//
+    /**
+     * Report the underlying glyph nest
+     * @return the related glyph nest
+     */
+    public Nest getNest ()
+    {
+        return nest;
+    }
+
     //----------------//
     // getRelatedStep //
     //----------------//
@@ -145,19 +157,6 @@ public class GlyphsModel
     public Step getRelatedStep ()
     {
         return step;
-    }
-
-    //----------//
-    // getScene //
-    //----------//
-    /**
-     * Report the underlying glyph scene
-     *
-     * @return the related glyph scene
-     */
-    public Scene getScene ()
-    {
-        return scene;
     }
 
     //----------//
@@ -203,8 +202,8 @@ public class GlyphsModel
                 for (Glyph g : glyphs) {
                     glyph.addGlyphSections(g, Glyph.Linking.NO_LINK_BACK);
 
-                    if (glyph.getScene() == null) {
-                        glyph.setScene(g.getScene());
+                    if (glyph.getNest() == null) {
+                        glyph.setNest(g.getNest());
                     }
                 }
 
@@ -296,10 +295,10 @@ public class GlyphsModel
             SystemInfo system = sheet.getSystemOf(glyph);
 
             if (system != null) {
-                glyph = system.addGlyph(glyph); // System then scene
+                glyph = system.addGlyph(glyph); // System then nest
             } else {
-                // Insert in scene directly, which assigns an id to the glyph
-                glyph = scene.addGlyph(glyph);
+                // Insert in nest directly, which assigns an id to the glyph
+                glyph = nest.addGlyph(glyph);
             }
 
             boolean isTransient = glyph.isTransient();
@@ -368,6 +367,6 @@ public class GlyphsModel
             system.removeGlyph(glyph);
         }
 
-        scene.removeVirtualGlyph((VirtualGlyph) glyph);
+        nest.removeVirtualGlyph((VirtualGlyph) glyph);
     }
 }
