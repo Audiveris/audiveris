@@ -150,7 +150,7 @@ public class Glyphs
         }
 
         Rectangle oBox = orientation.oriented(absBox);
-        int       intCoord = (int) Math.rint(coord);
+        int       intCoord = (int) Math.floor(coord);
 
         if ((intCoord < oBox.x) || (intCoord >= (oBox.x + oBox.width))) {
             return 0;

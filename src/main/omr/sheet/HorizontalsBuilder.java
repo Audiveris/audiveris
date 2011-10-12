@@ -516,78 +516,78 @@ public class HorizontalsBuilder
                     .pixelsToFrac(dist);
     }
 
-//    //------------------//
-//    // getAliensAtStart //
-//    //------------------//
-//    /**
-//     * Count alien pixels in the following rectangle...
-//     * <pre>
-//     * +-------+
-//     * |       |
-//     * +=======+==================================+
-//     * |       |
-//     * +-------+
-//     * </pre>
-//     *
-//     * @param glyph the glyph at stake
-//     * @param halfHeight half rectangle size along stick thickness
-//     * @param width rectangle size along stick length
-//     * @return the number of alien pixels found
-//     */
-//    private int getAliensAtStart (Glyph glyph,
-//                                  int   halfHeight,
-//                                  int   width)
-//    {
-//        Point2D        start = glyph.getStartPoint();
-//        PixelRectangle roi = new PixelRectangle(
-//            (int) Math.rint(start.getX()),
-//            (int) Math.rint(start.getY() - halfHeight),
-//            width,
-//            2 * halfHeight);
-//            glyph.addAttachment("ll", roi);
-//        
-//        int            count = 0;
-//        count += glyph.getAlienPixelsFrom(sheet.getHorizontalLag(), roi, null);
-//        count += glyph.getAlienPixelsFrom(sheet.getVerticalLag(), roi, null);
-//
-//        return count;
-//    }
-//
-//    //-----------------//
-//    // getAliensAtStop //
-//    //-----------------//
-//    /**
-//     * Count alien pixels in the following rectangle...
-//     * <pre>
-//     *                                    +-------+
-//     *                                    |       |
-//     * +==================================+=======+
-//     *                                    |       |
-//     *                                    +-------+
-//     * </pre>
-//     *
-//     * @param glyph the glyph at stake
-//     * @param halfHeight half rectangle size along stick thickness
-//     * @param width rectangle size along stick length
-//     * @return the number of alien pixels found
-//     */
-//    private int getAliensAtStop (Glyph glyph,
-//                                 int   halfHeight,
-//                                 int   width)
-//    {
-//        Point2D        stop = glyph.getStopPoint();
-//        PixelRectangle roi = new PixelRectangle(
-//            (int) Math.rint(stop.getX() - width),
-//            (int) Math.rint(stop.getY() - halfHeight),
-//            width,
-//            2 * halfHeight);
-//            glyph.addAttachment("lr", roi);
-//        int            count = 0;
-//        count += glyph.getAlienPixelsFrom(sheet.getHorizontalLag(), roi, null);
-//        count += glyph.getAlienPixelsFrom(sheet.getVerticalLag(), roi, null);
-//
-//        return count;
-//    }
+    //    //------------------//
+    //    // getAliensAtStart //
+    //    //------------------//
+    //    /**
+    //     * Count alien pixels in the following rectangle...
+    //     * <pre>
+    //     * +-------+
+    //     * |       |
+    //     * +=======+==================================+
+    //     * |       |
+    //     * +-------+
+    //     * </pre>
+    //     *
+    //     * @param glyph the glyph at stake
+    //     * @param halfHeight half rectangle size along stick thickness
+    //     * @param width rectangle size along stick length
+    //     * @return the number of alien pixels found
+    //     */
+    //    private int getAliensAtStart (Glyph glyph,
+    //                                  int   halfHeight,
+    //                                  int   width)
+    //    {
+    //        Point2D        start = glyph.getStartPoint();
+    //        PixelRectangle roi = new PixelRectangle(
+    //            (int) Math.rint(start.getX()),
+    //            (int) Math.rint(start.getY() - halfHeight),
+    //            width,
+    //            2 * halfHeight);
+    //            glyph.addAttachment("ll", roi);
+    //        
+    //        int            count = 0;
+    //        count += glyph.getAlienPixelsFrom(sheet.getHorizontalLag(), roi, null);
+    //        count += glyph.getAlienPixelsFrom(sheet.getVerticalLag(), roi, null);
+    //
+    //        return count;
+    //    }
+    //
+    //    //-----------------//
+    //    // getAliensAtStop //
+    //    //-----------------//
+    //    /**
+    //     * Count alien pixels in the following rectangle...
+    //     * <pre>
+    //     *                                    +-------+
+    //     *                                    |       |
+    //     * +==================================+=======+
+    //     *                                    |       |
+    //     *                                    +-------+
+    //     * </pre>
+    //     *
+    //     * @param glyph the glyph at stake
+    //     * @param halfHeight half rectangle size along stick thickness
+    //     * @param width rectangle size along stick length
+    //     * @return the number of alien pixels found
+    //     */
+    //    private int getAliensAtStop (Glyph glyph,
+    //                                 int   halfHeight,
+    //                                 int   width)
+    //    {
+    //        Point2D        stop = glyph.getStopPoint();
+    //        PixelRectangle roi = new PixelRectangle(
+    //            (int) Math.rint(stop.getX() - width),
+    //            (int) Math.rint(stop.getY() - halfHeight),
+    //            width,
+    //            2 * halfHeight);
+    //            glyph.addAttachment("lr", roi);
+    //        int            count = 0;
+    //        count += glyph.getAlienPixelsFrom(sheet.getHorizontalLag(), roi, null);
+    //        count += glyph.getAlienPixelsFrom(sheet.getVerticalLag(), roi, null);
+    //
+    //        return count;
+    //    }
 
     //--------------------//
     // getCandidateGlyphs //
@@ -614,6 +614,7 @@ public class HorizontalsBuilder
         factory.setMaxSpace(constants.maxSpace);
         factory.setMinCoreSectionLength(constants.minCoreSectionLength);
         factory.setMinSectionAspect(constants.minSectionAspect.getValue());
+
         ///factory.dump();
 
         // Reset the "fat" attribute of the sections, since this depends on
@@ -916,67 +917,67 @@ public class HorizontalsBuilder
         }
     }
 
-//    //------------//
-//    // ChunkCheck //
-//    //------------//
-//    /**
-//     * Class <code>ChunkCheck</code> checks for absence of a chunk either at
-//     * start or stop
-//     */
-//    private class ChunkCheck
-//        extends Check<Glyph>
-//    {
-//        //~ Instance fields ----------------------------------------------------
-//
-//        // Half width for chunk window at top and bottom
-//        private final int    nWidth;
-//
-//        // Half height for chunk window at top and bottom
-//        private final int    nHeight;
-//
-//        // Total area for chunk window
-//        private final double area;
-//
-//        //~ Constructors -------------------------------------------------------
-//
-//        protected ChunkCheck ()
-//        {
-//            super(
-//                "Chunk",
-//                "Check no chunk is stuck on either side of the stick",
-//                constants.chunkRatioLow,
-//                constants.chunkRatioHigh,
-//                false,
-//                BI_CHUNK);
-//
-//            // Adjust chunk window according to system scale
-//            nWidth = scale.toPixels(constants.chunkWidth);
-//            nHeight = scale.toPixels(constants.chunkHeight);
-//            area = 2 * nWidth * nHeight;
-//
-//            if (logger.isFineEnabled()) {
-//                logger.fine(
-//                    "MaxPixLow=" + getLow() + ", MaxPixHigh=" + getHigh());
-//            }
-//        }
-//
-//        //~ Methods ------------------------------------------------------------
-//
-//        protected double getValue (Glyph stick)
-//        {
-//            // Retrieve the smallest stick chunk either at top or bottom
-//            double res = Math.min(
-//                getAliensAtStart(stick, nHeight, nWidth),
-//                getAliensAtStop(stick, nHeight, nWidth));
-//            res /= area;
-//
-//            if (logger.isFineEnabled()) {
-//                logger.info("MinAliensRatio= " + res + " for " + stick);
-//            }
-//
-//            return res;
-//        }
-//    }
+    //    //------------//
+    //    // ChunkCheck //
+    //    //------------//
+    //    /**
+    //     * Class <code>ChunkCheck</code> checks for absence of a chunk either at
+    //     * start or stop
+    //     */
+    //    private class ChunkCheck
+    //        extends Check<Glyph>
+    //    {
+    //        //~ Instance fields ----------------------------------------------------
+    //
+    //        // Half width for chunk window at top and bottom
+    //        private final int    nWidth;
+    //
+    //        // Half height for chunk window at top and bottom
+    //        private final int    nHeight;
+    //
+    //        // Total area for chunk window
+    //        private final double area;
+    //
+    //        //~ Constructors -------------------------------------------------------
+    //
+    //        protected ChunkCheck ()
+    //        {
+    //            super(
+    //                "Chunk",
+    //                "Check no chunk is stuck on either side of the stick",
+    //                constants.chunkRatioLow,
+    //                constants.chunkRatioHigh,
+    //                false,
+    //                BI_CHUNK);
+    //
+    //            // Adjust chunk window according to system scale
+    //            nWidth = scale.toPixels(constants.chunkWidth);
+    //            nHeight = scale.toPixels(constants.chunkHeight);
+    //            area = 2 * nWidth * nHeight;
+    //
+    //            if (logger.isFineEnabled()) {
+    //                logger.fine(
+    //                    "MaxPixLow=" + getLow() + ", MaxPixHigh=" + getHigh());
+    //            }
+    //        }
+    //
+    //        //~ Methods ------------------------------------------------------------
+    //
+    //        protected double getValue (Glyph stick)
+    //        {
+    //            // Retrieve the smallest stick chunk either at top or bottom
+    //            double res = Math.min(
+    //                getAliensAtStart(stick, nHeight, nWidth),
+    //                getAliensAtStop(stick, nHeight, nWidth));
+    //            res /= area;
+    //
+    //            if (logger.isFineEnabled()) {
+    //                logger.info("MinAliensRatio= " + res + " for " + stick);
+    //            }
+    //
+    //            return res;
+    //        }
+    //    }
 
     //-----------//
     // Constants //
@@ -1007,7 +1008,7 @@ public class HorizontalsBuilder
             1.75,
             "Maximum filament thickness WRT mean line height");
         Scale.LineFraction maxOverlapDeltaPos = new Scale.LineFraction(
-            0.5,
+            1.0,
             "Maximum delta position between two overlapping filaments");
 
         // Constants specified WRT mean interline
@@ -1060,18 +1061,19 @@ public class HorizontalsBuilder
         Scale.Fraction     minCoreLength = new Scale.Fraction(
             0.2,
             "Minimum length for ledger core");
-//        Scale.Fraction     chunkHeight = new Scale.Fraction(
-//            0.33,
-//            "Height of half area to look for chunks");
-//        Constant.Ratio     chunkRatioHigh = new Constant.Ratio(
-//            0.05,
-//            "HighMaximum ratio of alien pixels to detect chunks");
-//        Constant.Ratio     chunkRatioLow = new Constant.Ratio(
-//            0.02,
-//            "LowMaximum ratio of alien pixels to detect chunks");
-//        Scale.Fraction     chunkWidth = new Scale.Fraction(
-//            0.33,
-//            "Width of half area to look for chunks");
+
+        //        Scale.Fraction     chunkHeight = new Scale.Fraction(
+        //            0.33,
+        //            "Height of half area to look for chunks");
+        //        Constant.Ratio     chunkRatioHigh = new Constant.Ratio(
+        //            0.05,
+        //            "HighMaximum ratio of alien pixels to detect chunks");
+        //        Constant.Ratio     chunkRatioLow = new Constant.Ratio(
+        //            0.02,
+        //            "LowMaximum ratio of alien pixels to detect chunks");
+        //        Scale.Fraction     chunkWidth = new Scale.Fraction(
+        //            0.33,
+        //            "Width of half area to look for chunks");
         Constant.Boolean   displayFrame = new Constant.Boolean(
             true,
             "Should we display a frame on the horizontal sticks");

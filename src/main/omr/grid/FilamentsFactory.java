@@ -715,6 +715,12 @@ public class FilamentsFactory
 
                             //                        } else if (glyphBounds.y > maxPos) {
                             //                            break; // Speedup
+                        } else {
+                            if (fil.isVip() && glyph.isVip()) {
+                                logger.info(
+                                    "No intersection between " + fil + " and " +
+                                    glyph);
+                            }
                         }
                     }
                 } while (expanding);
