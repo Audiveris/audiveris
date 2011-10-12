@@ -1785,12 +1785,19 @@ public class ScoreExporter
             }
 
             // Make sure we have notes (or extension) on both sides
+            // TODO: Make an exception for slurs at beginning of page!
             if ((slur.getLeftNote() == null) &&
                 (slur.getLeftExtension() == null)) {
+                slur.addError("Non left-connected slur is not exported");
+
                 return false;
             }
+
+            // TODO: Make an exception for slurs at end of page!
             if ((slur.getRightNote() == null) &&
                 (slur.getRightExtension() == null)) {
+                slur.addError("Non right-connected slur is not exported");
+
                 return false;
             }
 

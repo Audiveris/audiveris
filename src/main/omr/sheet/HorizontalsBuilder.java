@@ -57,6 +57,8 @@ import java.util.Set;
 /**
  * Class <code>HorizontalsBuilder</code> is in charge of retrieving horizontal
  * dashes (ledgers, legato signs and endings) in a given system.
+ * 
+ * <p>Nota: Endings are currently disabled
  *
  * @author Hervé Bitteur
  */
@@ -313,17 +315,19 @@ public class HorizontalsBuilder
                 //                if (logger.isFineEnabled()) {
                 //                    logger.fine("Ledger candidate " + stick);
                 //                }
-            } else {
-                // Then, if failed, the Ending Checks
-                if (CheckSuite.passCollection(stick, endingList) >= minResult) {
-                    stick.setResult(ENDING);
-                    stick.setShape(Shape.ENDING_HORIZONTAL);
-                    endings.add(stick);
 
-                    if (logger.isFineEnabled()) {
-                        logger.info("Ending " + stick);
-                    }
-                }
+                //TODO Ending are disabled for the time being
+                //            } else {
+                //                // Then, if failed, the Ending Checks
+                //                if (CheckSuite.passCollection(stick, endingList) >= minResult) {
+                //                    stick.setResult(ENDING);
+                //                    stick.setShape(Shape.ENDING_HORIZONTAL);
+                //                    endings.add(stick);
+                //
+                //                    if (logger.isFineEnabled()) {
+                //                        logger.info("Ending " + stick);
+                //                    }
+                //                }
             }
         }
     }

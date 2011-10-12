@@ -382,7 +382,7 @@ public class SlurInspector
      * neighboring glyphs (either another slur, or a clutter), and test the
      * distance to the resulting best approximating circle.
      *
-     * @param slur the spurious slur glyph
+     * @param oldSlur the spurious slur glyph
      * @return the fixed slur glyph, if any
      */
     private Glyph extendSlur (Glyph oldSlur)
@@ -600,17 +600,17 @@ public class SlurInspector
             "Normalized weight threshold between small and large spurious" +
             " slurs");
 
-        /** Minimum weight of a chunk to be part of oldSlur computation */
+        /** Minimum weight of a chunk to be part of slur computation */
         Scale.AreaFraction minChunkWeight = new Scale.AreaFraction(
             0.5,
             "Minimum weight of a chunk to be part of slur" + " computation");
 
-        /** Extension abscissa when looking for oldSlur compound */
+        /** Extension abscissa when looking for slur compound */
         Scale.Fraction slurBoxDx = new Scale.Fraction(
             0.7,
             "Extension abscissa when looking for slur compound");
 
-        /** Extension ordinate when looking for oldSlur compound */
+        /** Extension ordinate when looking for slur compound */
         Scale.Fraction slurBoxDy = new Scale.Fraction(
             0.4,
             "Extension ordinate when looking for slur compound");
@@ -642,16 +642,18 @@ public class SlurInspector
                 return false; // Safer
             }
 
+            Shape shape = glyph.getShape();
+
             if (!glyph.isKnown()) {
                 return true;
             }
 
-            if ((glyph.getShape() == Shape.SLUR) && !glyph.isManualShape()) {
+            if ((shape == Shape.SLUR) && !glyph.isManualShape()) {
                 return true;
             }
 
             return (!glyph.isManualShape() &&
-                   (glyph.getShape() == Shape.CLUTTER)) ||
+                   ((shape == Shape.CLUTTER) || (shape == Shape.STRUCTURE))) ||
                    (glyph.getDoubt() >= GlyphInspector.getMinCompoundPartDoubt());
         }
 

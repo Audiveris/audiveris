@@ -450,10 +450,10 @@ public class TextLine
         Glyph alien;
 
         while (((alien = getFirstAlien()) != null) && (--aliensCount >= -1)) {
-            if (aliensCount < 0) {
-                logger.severe("includeAliens: endless loop for " + this);
-            }
-
+            // TODO
+            //            if (aliensCount < 0) {
+            //                logger.severe("includeAliens: endless loop for " + this);
+            //            }
             if (!resolveAlien(alien)) {
                 removeItem(alien);
             }
