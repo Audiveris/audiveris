@@ -474,9 +474,10 @@ public class UnitModel
                 Constant constant = (Constant) node;
 
                 if (constant instanceof Scale.Fraction ||
+                    constant instanceof Scale.LineFraction ||
                     constant instanceof Scale.AreaFraction) {
                     // Compute the equivalent in pixels of this interline-based
-                    // fraction or area fraction, provided that we have a
+                    // fraction, line or area fraction, provided that we have a
                     // current sheet and its scale is available.
                     Sheet sheet = SheetsController.getCurrentSheet();
 
@@ -487,6 +488,10 @@ public class UnitModel
                             if (constant instanceof Scale.Fraction) {
                                 return Integer.valueOf(
                                     scale.toPixels((Scale.Fraction) constant));
+                            } else if (constant instanceof Scale.LineFraction) {
+                                return Integer.valueOf(
+                                    scale.toPixels(
+                                        (Scale.LineFraction) constant));
                             } else if (constant instanceof Scale.AreaFraction) {
                                 return Integer.valueOf(
                                     scale.toPixels(

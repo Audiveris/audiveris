@@ -33,6 +33,7 @@ import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
@@ -162,6 +163,8 @@ public class Options
 
         // Some space
         toolBar.add(Box.createHorizontalStrut(100));
+
+        toolBar.add(new JLabel("Search:"));
 
         // Back button
         JButton backButton = new JButton(backSearch);
