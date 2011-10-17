@@ -130,7 +130,7 @@ public class PictureView
             if (painting.isOutputPainting()) {
                 sheet.getPage()
                      .accept(
-                    new PagePhysicalPainter(g, Colors.LINE_HORIZONTAL, false));
+                    new PagePhysicalPainter(g, Colors.MUSIC_PICTURE, false));
 
                 if (sheet.getTargetBuilder() != null) {
                     sheet.getTargetBuilder()

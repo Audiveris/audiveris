@@ -274,7 +274,7 @@ public class CLI
                     break;
 
                 case FILE :
-                    addItem(token, params.sheetNames);
+                    addItem(token, params.scoreNames);
                     paramNeeded = false;
 
                     break;
@@ -414,8 +414,8 @@ public class CLI
         /** The map of constants */
         Properties constants = null;
 
-        /** The list of sheet file names to load */
-        final List<String> sheetNames = new ArrayList<String>();
+        /** The list of score file names to load */
+        final List<String> scoreNames = new ArrayList<String>();
 
         /** The list of script file names to execute */
         final List<String> scriptNames = new ArrayList<String>();
@@ -440,8 +440,8 @@ public class CLI
               .append(desiredSteps);
             sb.append("\noptions=")
               .append(constants);
-            sb.append("\nsheetNames=")
-              .append(sheetNames);
+            sb.append("\nscoreNames=")
+              .append(scoreNames);
             sb.append("\nscriptNames=")
               .append(scriptNames);
 

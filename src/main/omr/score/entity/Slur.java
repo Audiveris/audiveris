@@ -79,9 +79,6 @@ public class Slur
 
                 if (measure == slur.getPart()
                                    .getLastMeasure()) {
-                    // Nullify a potential link to zombie slurs
-                    slur.rightExtension = null;
-
                     return true;
                 }
             }
@@ -104,9 +101,6 @@ public class Slur
 
                 if (measure == slur.getPart()
                                    .getFirstMeasure()) {
-                    // Nullify a potential link to zombie slurs
-                    slur.leftExtension = null;
-
                     return true;
                 }
             }
@@ -487,6 +481,28 @@ public class Slur
         }
     }
 
+    //--------------------//
+    // resetLeftExtension //
+    //--------------------//
+    /**
+     * Reset to null the left extension of this slur
+     */
+    public void resetLeftExtension ()
+    {
+        leftExtension = null;
+    }
+
+    //---------------------//
+    // resetRightExtension //
+    //---------------------//
+    /**
+     * Reset to null the right extension of this slur
+     */
+    public void resetRightExtension ()
+    {
+        rightExtension = null;
+    }
+
     //----------//
     // toString //
     //----------//
@@ -824,7 +840,7 @@ public class Slur
 
         /** Abscissa extension when looking for embraced notes */
         Scale.Fraction areaDx = new Scale.Fraction(
-            1.5,
+            1.7,
             "Abscissa extension when looking for embraced notes");
 
         /** Abscissa margin when looking for embraced notes */

@@ -878,7 +878,7 @@ public class BarsRetriever
 
             if (ratio < constants.minAlignmentRatio.getValue()) {
                 // We remove this alignment and deassign its sticks
-                logger.info("Removing " + align);
+                logger.info(sheet.getLogPrefix() + "Removing " + align);
                 it.remove();
 
                 for (StickIntersection inter : align.getIntersections()) {
@@ -889,7 +889,7 @@ public class BarsRetriever
                 }
             } else if (filled != staffCount) {
                 // TODO: Should implement driven recognition here...
-                logger.info("Should fill " + align);
+                logger.info(sheet.getLogPrefix() + "Should fill " + align);
             }
         }
     }

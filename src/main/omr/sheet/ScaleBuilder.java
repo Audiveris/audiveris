@@ -24,6 +24,7 @@ import omr.run.Orientation;
 import omr.run.RunsRetriever;
 
 import omr.score.Score;
+import omr.score.common.PixelRectangle;
 
 import omr.sheet.picture.Picture;
 import omr.sheet.ui.SheetsController;
@@ -46,7 +47,6 @@ import java.util.Map.Entry;
 
 import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
-import omr.score.common.PixelRectangle;
 
 /**
  * Class <code>ScaleBuilder</code> encapsulates the computation of a sheet
@@ -63,9 +63,6 @@ import omr.score.common.PixelRectangle;
  * case and if the sheet at hand is part of a multi-page score, we propose to
  * simply discard this sheet.</p>
  *
- * <p>This class is a companion of {@link Scale} class. It is kept separate
- * to save the loading of this class when computation is not required.</p>
- *
  * @see omr.sheet.Scale
  *
  * @author Hervé Bitteur
@@ -80,6 +77,9 @@ public class ScaleBuilder
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScaleBuilder.class);
 
+    /** Line separator */
+    private static String lineSeparator = System.getProperty("line.separator");
+
     //~ Instance fields --------------------------------------------------------
 
     /** Adapter for reading runs */
@@ -88,14 +88,23 @@ public class ScaleBuilder
     /** Related sheet */
     private Sheet sheet;
 
-    /** Most frequent length of background runs found in the sheet picture */
-    private Integer mainBack;
+    /** Histogram on foreground runs */
+    private Histogram<Integer> foreHisto;
 
-    /** Second frequent length of background runs found in the sheet picture */
-    private Integer secondBack;
+    /** Histogram on background runs */
+    private Histogram<Integer> backHisto;
 
-    /** Most frequent length of foreground runs found in the sheet picture */
-    private Integer mainFore;
+    /** Minimum population percentage for validating an extremum */
+    private final double quorumRatio = constants.minExtremaRatio.getValue();
+
+    /** Most frequent length of foreground runs found in the picture */
+    private Peak forePeak;
+
+    /** Most frequent length of background runs found in the picture */
+    private Peak backPeak;
+
+    /** Second frequent length of background runs found in the picture */
+    private Peak secondBackPeak;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -119,7 +128,7 @@ public class ScaleBuilder
     // displayChart //
     //--------------//
     /**
-     * Build and display the scale histogram
+     * Display the scale histograms
      */
     public void displayChart ()
     {
@@ -130,201 +139,199 @@ public class ScaleBuilder
         }
     }
 
-    //-------------//
-    // getMainBack //
-    //-------------//
-    /**
-     * A (package private) lazy method to retrieve the main length of background
-     * runs of pixels
-     *
-     * @return the main back length
-     * @throws StepException thrown if background runs could not be measured
-     */
-    int getMainBack ()
-        throws StepException
-    {
-        if (mainBack == null) {
-            retrieveScale();
-        }
-
-        if (mainBack == null) {
-            logger.warning(
-                "Unable to retrieve white runs, check your image format");
-            throw new StepException("Illegal background values");
-        }
-
-        return mainBack;
-    }
-
-    //-------------//
-    // getMainFore //
-    //-------------//
-    /**
-     * A (package private) lazy method to retrieve the main length of foreground
-     * runs of pixels
-     *
-     * @return the main fore length
-     * @throws StepException thrown if foreground runs could not be measured
-     */
-    int getMainFore ()
-        throws StepException
-    {
-        if (mainFore == null) {
-            retrieveScale();
-        }
-
-        if (mainFore == null) {
-            logger.warning(
-                "Unable to retrieve black runs, check your image format");
-            throw new StepException("Illegal foreground values");
-        }
-
-        return mainFore;
-    }
-
-    //---------------//
-    // getSecondBack //
-    //---------------//
-    /**
-     * A (package private) lazy method to retrieve the second length of
-     * background runs of pixels
-     *
-     * @return the second back length (perhaps null)
-     * @throws StepException thrown if background runs could not be measured
-     */
-    Integer getSecondBack ()
-        throws StepException
-    {
-        if (mainBack == null) {
-            retrieveScale();
-        }
-
-        return secondBack;
-    }
-
-    //----------------//
-    // checkInterline //
-    //----------------//
-    /**
-     * Check global interline value, to detect pictures with too low
-     * resolution or pictures which do not represent music staves
-     * @param interline the retrieved interline value
-     */
-    void checkInterline (int interline)
-        throws StepException
-    {
-        if (interline < constants.minInterline.getValue()) {
-            Score score = sheet.getScore();
-
-            if (score.isMultiPage()) {
-                String msg = sheet.getId() + "\nMain interline value is " +
-                             interline + " pixels" +
-                             "\nThis sheet does not seem to contain staff lines";
-                logger.warning(msg);
-
-                if (Main.getGui() != null) {
-                    // Ask user for confirmation
-                    SheetsController.getInstance()
-                                    .showAssembly(sheet);
-
-                    if (Main.getGui()
-                            .displayModelessConfirm(
-                        msg + "\nOK for discarding this sheet?") == JOptionPane.OK_OPTION) {
-                        sheet.remove();
-                        logger.info("Removed sheet " + sheet.getId());
-                        throw new StepException("Sheet removed");
-                    }
-                } else {
-                    // No user available, let's remove this page
-                    sheet.remove();
-                    logger.info("Removed sheet " + sheet.getId());
-                    throw new StepException("Sheet removed");
-                }
-            } else {
-                String msg = sheet.getId() + "\nWith only " + interline +
-                             " pixels between two staff lines," +
-                             " your picture resolution is too low!" +
-                             "\nPlease rescan at higher resolution (300dpi should be OK)";
-                logger.warning(msg);
-
-                if (Main.getGui() != null) {
-                    Main.getGui()
-                        .displayWarning(msg);
-                }
-            }
-        }
-    }
-
     //---------------//
     // retrieveScale //
     //---------------//
     /**
-     * Retrieve the global scale values by processing the provided picture runs
+     * Retrieve the global scale values by processing the provided picture runs,
+     * make decisions about the validity of current picture as a music page and
+     * store the results as a {@link Scale} instance in the related sheet.
+     * @throws StepException if processing must stop for this sheet.
      */
-    private void retrieveScale ()
+    public void retrieveScale ()
         throws StepException
     {
         Picture picture = sheet.getPicture();
-        adapter = new Adapter(sheet, picture.getHeight() - 1);
+        adapter = new Adapter(picture.getHeight() - 1);
 
-        // Read the picture runs
+        // Read the picture runs and retrieve the key run peaks
         RunsRetriever runsBuilder = new RunsRetriever(
             Orientation.VERTICAL,
             adapter);
         runsBuilder.retrieveRuns(
             new PixelRectangle(0, 0, picture.getWidth(), picture.getHeight()));
 
+        // Check this page looks like music staves
+        // If not, StepException is raised
+        checkStaves();
+
+        // Check we have acceptable resolution
+        // If not, StepException is raised
+        checkResolution();
+
+        // Here, we keep going. Let's compute derived data
+        int           interline = forePeak.value + backPeak.value;
+
         // Report results to the user
         StringBuilder sb = new StringBuilder(sheet.getLogPrefix());
         sb.append("Scale main black is ")
-          .append(mainFore);
+          .append(forePeak.value);
 
         sb.append(", white is ")
-          .append(mainBack);
+          .append(backPeak.value);
 
-        if (secondBack != null) {
+        if (secondBackPeak != null) {
             sb.append(", second white is ")
-              .append(secondBack);
+              .append(secondBackPeak.value);
         }
 
-        if ((mainFore != null) && (mainBack != null)) {
-            sb.append(", main interline is ")
-              .append(mainFore + mainBack);
+        sb.append(", main interline is ")
+          .append(interline);
 
-            if (secondBack != null) {
-                sb.append(", second interline is ")
-                  .append(mainFore + secondBack);
-            }
+        Integer secondInterline = null;
+
+        if (secondBackPeak != null) {
+            secondInterline = forePeak.value + secondBackPeak.value;
+            sb.append(", second interline is ")
+              .append(secondInterline);
         }
 
         logger.info(sb.toString());
+
+        // Register computation results
+        Scale scale = new Scale(interline, forePeak.value, secondInterline);
+        sheet.getBench()
+             .recordScale(scale);
+        sheet.setScale(scale);
+    }
+
+    //-----------------//
+    // checkResolution //
+    //-----------------//
+    /**
+     * Check global interline value, to detect pictures with too low
+     * resolution or pictures which do not represent music staves
+     * @param interline the retrieved interline value
+     * @throws StepException if processing must stop on this sheet
+     */
+    void checkResolution ()
+        throws StepException
+    {
+        int interline = forePeak.value + backPeak.value;
+
+        if (interline < constants.minInterline.getValue()) {
+            makeDecision(
+                sheet.getId() + lineSeparator + "With an interline value of " +
+                interline + " pixels," + lineSeparator +
+                "either this page contains no staves," + lineSeparator +
+                "or the picture resolution is too low.");
+        }
+    }
+
+    //-------------//
+    // checkStaves //
+    //-------------//
+    /**
+     * Check we have foreground and background run peaks, with significant
+     * percentage of runs population, otherwise we are not looking at staves
+     * and the picture represents something else.
+     * @throws StepException if processing must stop on this sheet
+     */
+    private void checkStaves ()
+        throws StepException
+    {
+        String error = null;
+
+        if (forePeak == null) {
+            error = "No foreground runs found.";
+        } else if (forePeak.ratio < quorumRatio) {
+            error = "No regular foreground lines found.";
+        } else if (backPeak == null) {
+            error = "No background runs found.";
+        } else if (backPeak.ratio < quorumRatio) {
+            error = "No regularly spaced lines found.";
+        }
+
+        if (error != null) {
+            makeDecision(
+                sheet.getId() + lineSeparator + error + lineSeparator +
+                "This sheet does not seem to contain staff lines.");
+        }
+    }
+
+    //--------------//
+    // makeDecision //
+    //--------------//
+    /**
+     * An abnormal situation has been  found, as detailed in provided msg,
+     * now how should we proceed, depending on batch mode or user answer.
+     * @param msg the problem description
+     * @throws StepException always thrown since processing must stop
+     */
+    private void makeDecision (String msg)
+        throws StepException
+    {
+        logger.warning(msg.replaceAll(lineSeparator, " "));
+
+        Score score = sheet.getScore();
+
+        if (score.isMultiPage()) {
+            if (Main.getGui() != null) {
+                // Ask user for confirmation
+                SheetsController.getInstance()
+                                .showAssembly(sheet);
+
+                if (Main.getGui()
+                        .displayModelessConfirm(
+                    msg + lineSeparator + "OK for discarding this sheet?") == JOptionPane.OK_OPTION) {
+                    sheet.remove();
+                    logger.info("Removed sheet " + sheet.getId());
+                    throw new StepException("Sheet removed");
+                }
+            } else {
+                // No user available, let's remove this page
+                sheet.remove();
+                logger.info("Removed sheet " + sheet.getId());
+                throw new StepException("Sheet removed");
+            }
+        } else {
+            if (Main.getGui() != null) {
+                Main.getGui()
+                    .displayWarning(msg);
+            }
+
+            throw new StepException("Sheet ignored");
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------
 
     //---------//
-    // Adapter //          Needed for retrieveRuns
+    // Adapter //          
     //---------//
+    /**
+     * This adapter customizes RunsRetriever for our scaling purpose.
+     * It handles the precise foreground and background run lengths retrieves
+     * the various peaks and is able to display a chart on the related
+     * populations if so asked by the user.
+     */
     private class Adapter
         implements RunsRetriever.Adapter
     {
         //~ Instance fields ----------------------------------------------------
 
-        private Picture picture;
-        private Sheet   sheet;
-        private int[]   back;
-        private int[]   fore;
-        private int     maxForeground;
+        private final Picture picture;
+        private final int[]   fore; // (black) foreground runs
+        private final int[]   back; // (white) background runs
+        private int           maxForeground; // Threshold black / white
 
         //~ Constructors -------------------------------------------------------
 
         //---------//
         // Adapter //
         //---------//
-        public Adapter (Sheet sheet,
-                        int   hMax)
+        public Adapter (int hMax)
         {
-            this.sheet = sheet;
             picture = sheet.getPicture();
 
             if (picture.getMaxForeground() != -1) {
@@ -361,7 +368,8 @@ public class ScaleBuilder
         public int getLevel (int coord,
                              int pos)
         {
-            return picture.getPixel(pos, coord); // swap pos & coord
+            // Swap pos & coord since we work on vertical runs
+            return picture.getPixel(pos, coord);
         }
 
         //---------//
@@ -390,6 +398,9 @@ public class ScaleBuilder
         //-----------//
         // terminate //
         //-----------//
+        /**
+         * Just compute scaling data from histograms, no decision yet.
+         */
         @Implement(RunsRetriever.Adapter.class)
         public void terminate ()
         {
@@ -398,38 +409,34 @@ public class ScaleBuilder
                 logger.info("back: " + Arrays.toString(back));
             }
 
-            final double                  quorum = constants.minExtremaRatio.getValue();
-            Histogram<Integer>            foreHisto = createHistogram(fore);
-            List<Entry<Integer, Integer>> foreList = foreHisto.getMaxima(
-                quorum);
+            StringBuilder sb = new StringBuilder(sheet.getLogPrefix());
 
-            if (logger.isFineEnabled()) {
-                logger.fine("Foreground peaks: " + foreList);
+            // Foreground peak
+            foreHisto = createHistogram(fore);
+            forePeak = Peak.createPeak(foreHisto);
+            sb.append("fore: ")
+              .append(forePeak);
+
+            // Background peak
+            backHisto = createHistogram(back);
+            backPeak = Peak.createPeak(backHisto);
+            sb.append(" back: ")
+              .append(backPeak);
+
+            // Second background peak?
+            List<Entry<Integer, Integer>> backMaxima = backHisto.getMaxima(
+                quorumRatio);
+
+            if (backMaxima.size() > 1) {
+                Entry<Integer, Integer> entry = backMaxima.get(1);
+                secondBackPeak = new Peak(
+                    entry.getKey(),
+                    entry.getValue() / (double) backHisto.getTotalCount());
+                sb.append(" secondBack: ")
+                  .append(secondBackPeak);
             }
 
-            Histogram<Integer>            backHisto = createHistogram(back);
-            List<Entry<Integer, Integer>> backList = backHisto.getMaxima(
-                quorum);
-
-            if (logger.isFineEnabled()) {
-                logger.fine("Background peaks: " + backList);
-            }
-
-            // Remember the biggest buckets
-            mainFore = foreList.get(0)
-                               .getKey();
-            mainBack = backList.get(0)
-                               .getKey();
-
-            if (backList.size() > 1) {
-                secondBack = backList.get(1)
-                                     .getKey();
-            }
-
-            // Print plot if needed
-            if (constants.plotting.getValue()) {
-                writePlot();
-            }
+            logger.info(sb.toString());
         }
 
         //-----------//
@@ -440,34 +447,49 @@ public class ScaleBuilder
             XYSeriesCollection dataset = new XYSeriesCollection();
             int                upper = Math.min(
                 fore.length,
-                mainBack + (mainBack / 2));
+                ((backPeak != null) ? ((backPeak.value * 3) / 2) : 20));
 
             // Foreground
-            XYSeries foreSeries = new XYSeries(
-                "Foreground" + " [" + mainFore + "]");
+            int      foreThreshold = foreHisto.getQuorumValue(quorumRatio);
+            XYSeries foreSeries = new XYSeries("Foreground: " + forePeak.value);
 
-            for (int i = 0; i < upper; i++) {
+            for (int i = 0; i <= upper; i++) {
                 foreSeries.add(i, fore[i]);
             }
 
             dataset.addSeries(foreSeries);
 
             // Background
+            int      backThreshold = backHisto.getQuorumValue(quorumRatio);
             XYSeries backSeries = new XYSeries(
-                "Background" + " [" + mainBack +
-                ((secondBack != null) ? (" & " + secondBack) : "") + "]");
+                "Background: " + backPeak.value +
+                ((secondBackPeak != null) ? (" & " + secondBackPeak.value) : ""));
 
-            for (int i = 0; i < upper; i++) {
+            for (int i = 0; i <= upper; i++) {
                 backSeries.add(i, back[i]);
             }
 
             dataset.addSeries(backSeries);
 
+            // Fore threshold line
+            XYSeries foreThresholdSeries = new XYSeries(
+                "Fore threshold: " + foreThreshold);
+            foreThresholdSeries.add(0, foreThreshold);
+            foreThresholdSeries.add(upper, foreThreshold);
+            dataset.addSeries(foreThresholdSeries);
+
+            // Back threshold line
+            XYSeries backThresholdSeries = new XYSeries(
+                "Back threshold: " + backThreshold);
+            backThresholdSeries.add(0, backThreshold);
+            backThresholdSeries.add(upper, backThreshold);
+            dataset.addSeries(backThresholdSeries);
+
             // Chart
             JFreeChart chart = ChartFactory.createXYLineChart(
-                sheet.getId() + " (Run Lengths)", // Title
+                sheet.getId() + " (Runs)", // Title
                 "Lengths", // X-Axis label
-                "Numbers", // Y-Axis label
+                "Counts", // Y-Axis label
                 dataset, // Dataset
                 PlotOrientation.VERTICAL, // orientation,
                 true, // Show legend
@@ -524,5 +546,45 @@ public class ScaleBuilder
         final Constant.Ratio minExtremaRatio = new Constant.Ratio(
             0.1,
             "Minimum ratio of pixels for extrema acceptance ");
+    }
+
+    //------//
+    // Peak //
+    //------//
+    /**
+     * Record a specific run length, together with its representative ratio.
+     */
+    private static final class Peak
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final int    value; // Related run length
+        final double ratio; // Ratio of this run length WRT all run lengths
+
+        //~ Constructors -------------------------------------------------------
+
+        public Peak (int    value,
+                     double ratio)
+        {
+            this.value = value;
+            this.ratio = ratio;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        public static Peak createPeak (Histogram histo)
+        {
+            Entry<Integer, Integer> entry = histo.getMaximum();
+
+            return new Peak(
+                entry.getKey(),
+                entry.getValue() / (double) histo.getTotalCount());
+        }
+
+        @Override
+        public String toString ()
+        {
+            return value + "(" + (int) (100 * ratio) + "%)";
+        }
     }
 }

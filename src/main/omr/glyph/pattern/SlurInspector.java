@@ -44,8 +44,8 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class <code>SlurInspector</code> encapsulates physical processing dedicated
- * to inspection of glyphs with SLUR shape at a dedicated system level.
+ * Class {@code SlurInspector} encapsulates physical processing dedicated
+ * to inspection at system level of glyphs with SLUR shape.
  *
  * @author Hervé Bitteur
  */
@@ -79,7 +79,6 @@ public class SlurInspector
     //---------------//
     /**
      * Creates a new SlurInspector object.
-     *
      * @param system The dedicated system
      */
     public SlurInspector (SystemInfo system)
@@ -101,8 +100,7 @@ public class SlurInspector
     // computeCircle //
     //---------------//
     /**
-     * Compute the Circle which best approximates the pixels of a given glyph
-     *
+     * Compute the Circle which best approximates the pixels of a given glyph.
      * @param glyph The glyph to fit the circle on
      * @return The best circle possible
      */
@@ -116,8 +114,7 @@ public class SlurInspector
     //---------------//
     /**
      * Compute the Circle which best approximates the pixels of a given
-     * collection of sections
-     *
+     * collection of sections.
      * @param sections The collection of sections to fit the circle on
      * @return The best circle possible
      */
@@ -157,15 +154,8 @@ public class SlurInspector
     // fixLargeSlur //
     //--------------//
     /**
-     * For large glyphs, we suspect a slur with a stuck object. So the strategy
-     * is to rebuild the true Slur portions from the underlying sections. These
-     * "good" sections are put into the "kept" collection. Sections left over
-     * are put into the "left" collection in order to be used to rebuild the
-     * stuck object(s).
-     *
-     * <p>The method by itself does not build the new oldSlur glyph, this task must
-     * be done by the caller.
-     *
+     * For large glyphs, we suspect a slur with a stuck object, so the strategy
+     * is to rebuild the true Slur portions from the underlying sections.
      * @param oldSlur the spurious slur
      * @return the extracted oldSlur glyph, if any
      */
@@ -176,6 +166,10 @@ public class SlurInspector
          * tested via the distance to the best approximating circle.  Sections
          * whose weight is under a given threshold are appended to the slur only
          * if the resulting circle distance gets lower.
+         *
+         * The "good" sections are put into the "kept" collection.
+         * Sections left over are put into the "left" collection in order to be
+         * used to rebuild the stuck object(s).
          */
         if (logger.isFineEnabled()) {
             logger.fine("fixing Large Slur for glyph #" + oldSlur.getId());
@@ -233,10 +227,9 @@ public class SlurInspector
     // fixSpuriousSlur //
     //-----------------//
     /**
-     * Try to correct the oldSlur glyphs (which have a too high circle distance) by
+     * Try to correct the slur glyphs (which have a too high circle distance) by
      * either adding a neigboring glyph (for small slurs) or removing stuck
-     * glyph sections (for large slurs)
-     *
+     * glyph sections (for large slurs).
      * @param glyph the spurious glyph at hand
      * @return the fixed slur glyph, if any, otherwise null
      */
@@ -381,7 +374,6 @@ public class SlurInspector
      * example. The strategy is then to try to build a compound glyph with
      * neighboring glyphs (either another slur, or a clutter), and test the
      * distance to the resulting best approximating circle.
-     *
      * @param oldSlur the spurious slur glyph
      * @return the fixed slur glyph, if any
      */
@@ -589,30 +581,30 @@ public class SlurInspector
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** Maximum distance to approximating circle for a slur */
-        Scale.Fraction maxCircleDistance = new Scale.Fraction(
+        //
+        Scale.Fraction     maxCircleDistance = new Scale.Fraction(
             0.1,
             "Maximum distance to approximating circle" + " for a slur");
 
-        /** Normalized weight threshold between small and large spurious slurs */
+        //
         Scale.AreaFraction spuriousWeightThreshold = new Scale.AreaFraction(
             1.5,
             "Normalized weight threshold between small and large spurious" +
             " slurs");
 
-        /** Minimum weight of a chunk to be part of slur computation */
+        //
         Scale.AreaFraction minChunkWeight = new Scale.AreaFraction(
             0.5,
             "Minimum weight of a chunk to be part of slur" + " computation");
 
-        /** Extension abscissa when looking for slur compound */
+        //
         Scale.Fraction slurBoxDx = new Scale.Fraction(
-            0.7,
+            1.2, //0.7,
             "Extension abscissa when looking for slur compound");
 
-        /** Extension ordinate when looking for slur compound */
+        //
         Scale.Fraction slurBoxDy = new Scale.Fraction(
-            0.4,
+            0.5, //0.4,
             "Extension ordinate when looking for slur compound");
     }
 

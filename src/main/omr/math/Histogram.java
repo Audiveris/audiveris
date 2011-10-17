@@ -148,16 +148,16 @@ public class Histogram<K>
     //-----------//
     /**
      * Report the list of detected maxima in this histogram
-     * @param quorum minimum value for significant maxima and minima,
+     * @param quorumRatio minimum value for significant maxima and minima,
      * defined as ratio of total sum of values
      * @return the sequence of maxima (key & value), sorted by decreasing value
      */
-    public List<Entry<K, Integer>> getMaxima (double quorum)
+    public List<Entry<K, Integer>> getMaxima (double quorumRatio)
     {
         final List<Entry<K, Integer>> maxima = new ArrayList<Entry<K, Integer>>();
 
         // Compute min count
-        final int         minCount = (int) Math.rint(quorum * getTotalCount());
+        final int         minCount = getQuorumValue(quorumRatio);
 
         ///System.out.println("minCount: " + minCount);
 
@@ -203,6 +203,28 @@ public class Histogram<K>
         return maxima;
     }
 
+    //------------//
+    // getMaximum //
+    //------------//
+    /**
+     * Report the maximum entry in this histogram
+     * @return the maximum entry (key & value)
+     */
+    public Entry<K, Integer> getMaximum ()
+    {
+        Entry<K, Integer> maximum = null;
+
+        for (Entry<K, Integer> entry : map.entrySet()) {
+            int value = entry.getValue();
+
+            if ((maximum == null) || (value > maximum.getValue())) {
+                maximum = entry;
+            }
+        }
+
+        return maximum;
+    }
+
     //----------//
     // getPeaks //
     //----------//
@@ -242,6 +264,20 @@ public class Histogram<K>
         }
 
         return peaks;
+    }
+
+    //----------------//
+    // getQuorumValue //
+    //----------------//
+    /**
+     * Based on the current population, report the quorum value coresponding
+     * to the provided quorum ratio
+     * @param quorumRatio quorum specified as a percentage of total count
+     * @return the quorum value
+     */
+    public int getQuorumValue (double quorumRatio)
+    {
+        return (int) Math.rint(quorumRatio * getTotalCount());
     }
 
     //---------------//

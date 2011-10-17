@@ -74,14 +74,14 @@ public class Colors
     /** Hidden entity */
     public static final Color HIDDEN = Color.white;
 
-    /** Horizontal filament lines & points */
-    public static final Color LINE_HORIZONTAL = new Color(170, 255, 170, alpha);
-
     /** Vertical filament lines & points */
     public static final Color LINE_VERTICAL = new Color(0, 255, 255, alpha);
 
-    /** Music symbols */
-    public static final Color MUSIC = new Color(170, 255, 170, alpha);
+    /** Music for picture view */
+    public static final Color MUSIC_PICTURE = new Color(80, 255, 80, alpha);
+
+    /** Music for symbols view */
+    public static final Color MUSIC_SYMBOLS = new Color(170, 255, 170, alpha);
 
     /** Rubber rectangle */
     public static final Color RUBBER_RECT = Color.black;

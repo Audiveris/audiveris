@@ -173,8 +173,7 @@ public class RunsRetriever
         if (!OmrExecutors.useParallelism()) {
             // Sequential
             for (int p = pMin; p <= pMax; p++) {
-                final int pp = p;
-                processPosition(pp, cMin, cMax);
+                processPosition(p, cMin, cMax);
             }
         } else {
             // Parallel (TODO: should use Java 7 fork/join someday...)

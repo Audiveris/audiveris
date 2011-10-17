@@ -580,9 +580,19 @@ public class SystemPart
             List<Slur> orphans = getSlurs(Slur.isBeginningOrphan);
             Collections.sort(orphans, Slur.verticalComparator);
 
+            for (Slur slur : orphans) {
+                // Nullify a potential link to zombie slurs
+                slur.resetLeftExtension();
+            }
+
             List<Slur> precedingOrphans = precedingPart.getSlurs(
                 Slur.isEndingOrphan);
             Collections.sort(precedingOrphans, Slur.verticalComparator);
+
+            for (Slur slur : precedingOrphans) {
+                // Nullify a potential link to zombie slurs
+                slur.resetRightExtension();
+            }
 
             // Connect the orphans as much as possible
             SlurLoop: 

@@ -151,6 +151,9 @@ public class Sheet
 
     // Companion processors
 
+    /** Scale */
+    private final ScaleBuilder scaleBuilder;
+
     /** Staves */
     private final StaffManager staffManager;
 
@@ -219,6 +222,7 @@ public class Sheet
         nest = new BasicNest("gScene", this);
         nest.setServices(locationService);
 
+        scaleBuilder = new ScaleBuilder(this);
         staffManager = new StaffManager(this);
         systemManager = new SystemManager(this);
         bench = new SheetBench(this);
@@ -703,13 +707,6 @@ public class Sheet
     {
         this.scale = scale;
         page.setScale(scale);
-
-        // Check we've got something usable
-        if (scale.mainFore() == 0) {
-            logger.warning(
-                "Invalid scale mainFore value : " + scale.mainFore());
-            throw new StepException();
-        }
     }
 
     //----------//
@@ -724,6 +721,17 @@ public class Sheet
     public Scale getScale ()
     {
         return scale;
+    }
+
+    //-----------------//
+    // getScaleBuilder //
+    //-----------------//
+    /**
+     * @return the scaleBuilder
+     */
+    public ScaleBuilder getScaleBuilder ()
+    {
+        return scaleBuilder;
     }
 
     //----------//

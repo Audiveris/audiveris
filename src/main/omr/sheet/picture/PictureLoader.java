@@ -58,7 +58,7 @@ public class PictureLoader
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Picture.class);
+    private static final Logger logger = Logger.getLogger(PictureLoader.class);
 
     /** Specific application parameters */
     private static final Constants constants = new Constants();
@@ -101,23 +101,33 @@ public class PictureLoader
 
         logger.info("Loading " + imgFile + " ...");
 
+        if (logger.isFineEnabled()) {
+            logger.fine("Using ImageIO");
+        }
+
         SortedMap<Integer, RenderedImage> images = loadImageIO(imgFile, index);
 
         if (images == null) {
             String extension = FileUtil.getExtension(imgFile);
 
             if (extension.equalsIgnoreCase(".pdf")) {
-                logger.fine("Using PDF renderer");
+                if (logger.isFineEnabled()) {
+                    logger.fine("Using PDF renderer");
+                }
+
                 images = loadPDF(imgFile, index);
             } else {
-                logger.fine("Using JAI");
-                images = new TreeMap<Integer, RenderedImage>();
-                images.put(1, JAI.create("fileload", imgFile.getPath()));
+                if (logger.isFineEnabled()) {
+                    logger.fine("Using JAI");
+                }
+
+                images = loadJAI(imgFile);
             }
         }
 
         if (images == null) {
-            throw new RuntimeException("Unable to load image");
+            throw new RuntimeException(
+                "Unable to load any image from " + imgFile);
         }
 
         return images;
@@ -205,6 +215,34 @@ public class PictureLoader
     }
 
     //---------//
+    // loadJAI //
+    //---------//
+    /**
+     * Load an image, using JAI
+     * @param imgFile the input file
+     * @return a map of one image, or null if failed to load
+     */
+    private static SortedMap<Integer, RenderedImage> loadJAI (File imgFile)
+    {
+        RenderedImage image = JAI.create("fileload", imgFile.getPath());
+
+        try {
+            if ((image.getWidth() > 0) && (image.getHeight() > 0)) {
+                SortedMap<Integer, RenderedImage> images = new TreeMap<Integer, RenderedImage>();
+                images.put(1, image);
+
+                return images;
+            }
+        } catch (Exception ex) {
+            if (logger.isFineEnabled()) {
+                logger.fine(ex.getMessage());
+            }
+        }
+
+        return null;
+    }
+
+    //---------//
     // loadPDF //
     //---------//
     /**
@@ -213,9 +251,6 @@ public class PictureLoader
      * @param index if not null, specifies (counted from 1) which single image
      * is desired
      * @return a map of images, or null if failed to load
-     *
-     * TODO: Remove the use of reflection
-     * TODO: Really implement the handling of several pages in PDF file
      */
     private static SortedMap<Integer, RenderedImage> loadPDF (File    imgFile,
                                                               Integer index)
@@ -288,7 +323,7 @@ public class PictureLoader
                 }
 
                 return images;
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 logger.warning("Unable to render PDF", e);
 
                 return null;

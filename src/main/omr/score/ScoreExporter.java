@@ -296,7 +296,7 @@ public class ScoreExporter
     {
         export(new FileOutputStream(xmlFile), injectSignature);
     }
-
+  
     //--------//
     // export //
     //--------//

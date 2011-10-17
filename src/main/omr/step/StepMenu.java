@@ -154,7 +154,7 @@ public class StepMenu
                     protected void finished ()
                     {
                         // Select the assembly tab related to the target step
-                        if (sheet != null) {
+                        if ((sheet != null) && sheet.isDone(step)) {
                             Stepping.notifyFinalStep(sheet, step);
                         }
                     }

@@ -26,6 +26,7 @@ import omr.score.ui.ScoreController;
 
 import omr.script.RemoveTask;
 
+import omr.sheet.ScaleBuilder;
 import omr.sheet.Sheet;
 
 import omr.ui.util.OmrFileFilter;
@@ -154,8 +155,14 @@ public class SheetActions
         Sheet sheet = SheetsController.getCurrentSheet();
 
         if (sheet != null) {
-            sheet.getScale()
-                 .displayChart();
+            ScaleBuilder scaleBuilder = sheet.getScaleBuilder();
+
+            if (scaleBuilder != null) {
+                scaleBuilder.displayChart();
+            } else {
+                logger.warning(
+                    "Cannot display scale plot, for lack of scale data");
+            }
         }
     }
 

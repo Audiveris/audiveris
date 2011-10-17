@@ -425,7 +425,7 @@ public class SymbolsEditor
                 // Render the recognized score entities
                 PagePhysicalPainter painter = new PagePhysicalPainter(
                     g,
-                    Colors.MUSIC,
+                    Colors.MUSIC_SYMBOLS,
                     painting.isAnnotationPainting());
                 sheet.getPage()
                      .accept(painter);

@@ -166,8 +166,8 @@ public class Main
     {
         List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
 
-        // Launch desired step on each sheet in parallel
-        for (final String name : parameters.sheetNames) {
+        // Launch desired step on each score in parallel
+        for (final String name : parameters.scoreNames) {
             final File file = new File(name);
 
             tasks.add(
@@ -202,7 +202,7 @@ public class Main
                                 return null;
                             } else {
                                 logger.warning(
-                                    "Could not find sheet " +
+                                    "Could not find file " +
                                     file.getCanonicalPath());
                             }
 

@@ -15,8 +15,6 @@ import omr.constant.Constant;
 
 import omr.log.Logger;
 
-import omr.step.StepException;
-
 import omr.util.DoubleValue;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -58,9 +56,6 @@ public class Scale
 
     //~ Instance fields --------------------------------------------------------
 
-    /** The utility to compute the scale */
-    private ScaleBuilder builder;
-
     /** Most frequent vertical distance in pixels from one line to the other*/
     @XmlElement
     private int interline;
@@ -68,14 +63,6 @@ public class Scale
     /** Second most frequent vertical distance in pixels from one line to the other*/
     @XmlElement
     private Integer secondInterline;
-
-    /** Most frequent background height */
-    @XmlElement
-    private int mainBack;
-
-    /** Second frequent background height, if any */
-    @XmlElement
-    private Integer secondBack;
 
     /** Most frequent foreground height */
     @XmlElement
@@ -101,73 +88,45 @@ public class Scale
     // Scale //
     //-------//
     /**
-     * Create a scale entity, this is meant for a specific staff.
+     * Create a scale entity, meant for a whole sheet.
      *
-     * @param interline the interline value (for this staff)
-     * @param mainFore  the line thickness (for this staff)
+     * @param interline the interline value
+     * @param mainFore  the line thickness
+     * @param secondInterline the second interline value, or null
      */
-    public Scale (int interline,
-                  int mainFore)
+    public Scale (int     interline,
+                  int     mainFore,
+                  Integer secondInterline)
     {
         this.mainFore = mainFore;
         this.interline = interline;
-        mainBack = interline - mainFore;
+        this.secondInterline = secondInterline;
     }
 
     //-------//
     // Scale //
     //-------//
     /**
-     * Create a scale entity, by analyzing the provided sheet picture.
+     * Create a scale entity, meant for a staff.
      *
-     * @param sheet the sheet to process
-     * @throws StepException thrown if either background or foreground runs
-     * could not be measured
+     * @param interline the interline value
+     * @param mainFore  the line thickness
      */
-    public Scale (Sheet sheet)
-        throws StepException
+    public Scale (int interline,
+                  int mainFore)
     {
-        builder = new ScaleBuilder(sheet);
-        mainBack = builder.getMainBack();
-        mainFore = builder.getMainFore();
-        secondBack = builder.getSecondBack();
-
-        interline = mainFore + mainBack;
-
-        if (secondBack != null) {
-            secondInterline = mainFore + secondBack;
-        }
-
-        sheet.getBench()
-             .recordScale(this);
-
-        builder.checkInterline(interline);
+        this(interline, mainFore, null);
     }
 
     //-------//
     // Scale //
     //-------//
     /** Needed by JAXB */
-    private Scale ()
+    public Scale ()
     {
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //--------------//
-    // displayChart //
-    //--------------//
-    /**
-     * Build and display the histogram of run lengths
-     */
-    public void displayChart ()
-    {
-        if (builder != null) {
-            builder.displayChart();
-        } else {
-            logger.warning("Data from scale builder is not available");
-        }
-    }
 
     //-----------//
     // interline //
@@ -180,19 +139,6 @@ public class Scale
     public int interline ()
     {
         return interline;
-    }
-
-    //----------//
-    // mainBack //
-    //----------//
-    /**
-     * Report the most frequent white space between two lines
-     *
-     * @return the number of white pixels between two staff lines
-     */
-    public int mainBack ()
-    {
-        return mainBack;
     }
 
     //----------//
@@ -238,19 +184,6 @@ public class Scale
     public double pixelsToFrac (double pixels)
     {
         return pixels / interline;
-    }
-
-    //------------//
-    // secondBack //
-    //------------//
-    /**
-     * Report the second frequent white space between two lines, if any
-     *
-     * @return the number of white pixels between two staff lines (second one)
-     */
-    public Integer secondBack ()
-    {
-        return secondBack;
     }
 
     //-----------------//
@@ -299,22 +232,6 @@ public class Scale
         return (int) Math.rint(toPixelsDouble(lFrac));
     }
 
-    //    //----------//
-    //    // toPixels //
-    //    //----------//
-    //    /**
-    //     * Compute the number of pixels that corresponds to the fraction of
-    //     * interline provided, according to the scale.
-    //     *
-    //     * @param frac a measure based on interline (1 = one interline)
-    //     *
-    //     * @return the actual number of pixels with the current scale
-    //     */
-    //    public int toPixels (InterlineFraction frac)
-    //    {
-    //        return (int) Math.rint(toPixelsDouble(frac));
-    //    }
-
     //----------//
     // toPixels //
     //----------//
@@ -329,21 +246,6 @@ public class Scale
     {
         return (int) Math.rint(interline * interline * areaFrac.getValue());
     }
-
-    //    //----------------//
-    //    // toPixelsDouble //
-    //    //----------------//
-    //    /**
-    //     * Same as toPixels, but the result is a double instead of a rounded int.
-    //     *
-    //     * @param frac the interline fraction
-    //     * @return the equivalent in number of pixels
-    //     * @see #toPixels
-    //     */
-    //    public double toPixelsDouble (InterlineFraction frac)
-    //    {
-    //        return (double) interline * frac.doubleValue();
-    //    }
 
     //----------------//
     // toPixelsDouble //
@@ -389,14 +291,10 @@ public class Scale
         sb.append("{Scale");
         sb.append(" mainFore=")
           .append(mainFore);
-        sb.append(" mainBack=")
-          .append(mainBack);
         sb.append(" interline=")
           .append(interline);
 
-        if (secondBack != null) {
-            sb.append(" secondBack=")
-              .append(secondBack);
+        if (secondInterline != null) {
             sb.append(" secondInterline=")
               .append(secondInterline);
         }
@@ -485,55 +383,6 @@ public class Scale
             return new DoubleValue(java.lang.Double.valueOf(str));
         }
     }
-
-    //    //-------------------//
-    //    // InterlineFraction //
-    //    //-------------------//
-    //    /**
-    //     * Class meant to host a double value, specified in fraction of interline.
-    //     */
-    //    public static class InterlineFraction
-    //        extends DoubleValue
-    //    {
-    //        //~ Constructors -------------------------------------------------------
-    //
-    //        public InterlineFraction (double val)
-    //        {
-    //            super(val);
-    //        }
-    //
-    //        // Meant for JAXB
-    //        private InterlineFraction ()
-    //        {
-    //            super(0d);
-    //        }
-    //
-    //        //~ Methods ------------------------------------------------------------
-    //
-    //        //--------//
-    //        // equals //
-    //        //--------//
-    //        @Override
-    //        public boolean equals (Object obj)
-    //        {
-    //            if (obj instanceof InterlineFraction) {
-    //                return ((InterlineFraction) obj).value == value;
-    //            } else {
-    //                return false;
-    //            }
-    //        }
-    //
-    //        //----------//
-    //        // hashCode //
-    //        //----------//
-    //        @Override
-    //        public int hashCode ()
-    //        {
-    //            int hash = 7;
-    //
-    //            return hash;
-    //        }
-    //    }
 
     //--------------//
     // LineFraction //

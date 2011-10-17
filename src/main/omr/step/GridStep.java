@@ -57,6 +57,5 @@ public class GridStep
         throws StepException
     {
         new GridBuilder(sheet).buildInfo();
-        ///SheetsController.getInstance().dumpCurrentSheetServices();
     }
 }

@@ -148,7 +148,9 @@ public class Stepping
         step.doStep(systems, sheet);
 
         // Update user interface if any
-        notifyFinalStep(sheet, step);
+        if (sheet.isDone(step)) {
+            notifyFinalStep(sheet, step);
+        }
 
         final long stopTime = System.currentTimeMillis();
         final long duration = stopTime - startTime;
@@ -411,7 +413,9 @@ public class Stepping
         step.doStep(null, sheet);
 
         // Update user interface if any
-        notifyFinalStep(sheet, step);
+        if (sheet.isDone(step)) {
+            notifyFinalStep(sheet, step);
+        }
 
         final long stopTime = System.currentTimeMillis();
         final long duration = stopTime - startTime;
@@ -437,6 +441,7 @@ public class Stepping
      *
      * @param stepSet the set of steps
      * @param score the score to be processed
+     * @throws StepException
      */
     private static void doScoreStepSet (final SortedSet<Step> stepSet,
                                         final Score           score)
@@ -452,7 +457,7 @@ public class Stepping
                     tasks.add(
                         new Callable<Void>() {
                                 public Void call ()
-                                    throws Exception
+                                    throws StepException
                                 {
                                     doSheetStepSet(
                                         stepSet,
@@ -474,6 +479,7 @@ public class Stepping
                 // Process one sheet after the other
                 for (TreeNode pn : new ArrayList<TreeNode>(score.getPages())) {
                     Page page = (Page) pn;
+
                     doSheetStepSet(stepSet, page.getSheet(), null);
                 }
             }
@@ -487,10 +493,13 @@ public class Stepping
     // doSheetStepSet //
     //----------------//
     /**
-     * At sheet level, perform a set of steps, with online progress monitor
+     * At sheet level, perform a set of steps, with online progress monitor.
+     * If any step in the step set throws {@link StepException} the processing
+     * is stopped.
      * @param stepSet the set of steps
      * @param sheet the sheet to be processed
      * @params systems the impacted systems (null for all of them)
+     * @throws StepException if processing must stop
      */
     private static void doSheetStepSet (SortedSet<Step>        stepSet,
                                         Sheet                  sheet,
@@ -501,8 +510,10 @@ public class Stepping
                 notifyMsg(sheet.getLogPrefix() + step);
                 doOneSheetStep(step, sheet, systems);
             }
-        } catch (StepException ex) {
-            logger.info(sheet.getLogPrefix() + "Processing stopped");
+        } catch (StepException se) {
+            logger.info(
+                sheet.getLogPrefix() + "Processing stopped. " +
+                se.getMessage());
         }
     }
 
@@ -558,10 +569,10 @@ public class Stepping
     //----------------------//
     /**
      * Organize the scheduling of steps at score level among the sheets, since
-     * some steps have certain requirements
+     * some steps have specific requirements
      *
      * @param orderedSet the sequence of steps
-     * @param score the score to be processed
+     * @param score the score to process
      */
     private static void scheduleScoreStepSet (SortedSet<Step> orderedSet,
                                               Score           score)
@@ -587,10 +598,19 @@ public class Stepping
                 SortedSet<Step> single = new TreeSet<Step>(comparator);
                 single.add(scaleStep);
                 stepSet.remove(scaleStep);
+
                 doScoreStepSet(single, score);
             }
 
-            // Perform the remaining steps at sheet level
+            // Can we continue?
+            if (!score.isMultiPage() &&
+                (score.getFirstPage()
+                      .getSheet()
+                      .getScale() == null)) {
+                throw new StepException("No scale available");
+            }
+
+            // Perform the remaining steps at sheet level, if any
             SortedSet<Step> sheetSet = new TreeSet<Step>(comparator);
 
             for (Step step : stepSet) {
@@ -602,14 +622,25 @@ public class Stepping
             stepSet.removeAll(sheetSet);
             doScoreStepSet(sheetSet, score);
 
-            // Finally, perform steps at score level if any
+            // Finally, perform steps that must be done at score level
+            // MERGE step if present, must be done first, and in case of failure
+            // must prevent the following score-level steps to run.
+            Step mergeStep = Steps.valueOf(Steps.MERGE);
+
+            if (stepSet.contains(mergeStep)) {
+                stepSet.remove(mergeStep);
+                doOneScoreStep(mergeStep, score);
+            }
+
+            // Perform the other score-level steps, if any
             for (Step step : stepSet) {
                 try {
                     doOneScoreStep(step, score);
-                } catch (Exception ex) {
-                    logger.warning("Error on step " + step, ex);
+                } catch (StepException ignored) {
                 }
             }
+        } catch (StepException se) {
+            logger.info("Processing stopped. " + se.getMessage());
         } finally {
             notifyStop();
         }

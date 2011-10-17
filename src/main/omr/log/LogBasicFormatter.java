@@ -31,7 +31,7 @@ public class LogBasicFormatter
     //~ Static fields/initializers ---------------------------------------------
 
     /** Line separator string.  This is the value of the line.separator */
-    private static String lineSeparator = "\n";
+    private static String lineSeparator = System.getProperty("line.separator");
 
     /** Standard format */
     private static final String format = "{0,time}";

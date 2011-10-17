@@ -11,7 +11,8 @@
 // </editor-fold>
 package omr.step;
 
-import omr.sheet.Scale;
+import omr.log.Logger;
+
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
@@ -26,6 +27,11 @@ import java.util.Collection;
 public class ScaleStep
     extends AbstractStep
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(ScaleStep.class);
+
     //~ Constructors -----------------------------------------------------------
 
     //-----------//
@@ -55,7 +61,7 @@ public class ScaleStep
                       Sheet                  sheet)
         throws StepException
     {
-        Scale scale = new Scale(sheet);
-        sheet.setScale(scale);
+        sheet.getScaleBuilder()
+             .retrieveScale();
     }
 }
