@@ -1661,7 +1661,7 @@ public class BarsRetriever
             0.5,
             "Max horizontal shift between aligned bars");
         Constant.Ratio   minAlignmentRatio = new Constant.Ratio(
-            0.66,
+            0.5,
             "Minimum percentage of mapped staves in a bar alignment ");
 
         // Constants for display

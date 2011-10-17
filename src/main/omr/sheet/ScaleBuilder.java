@@ -266,7 +266,7 @@ public class ScaleBuilder
      * An abnormal situation has been  found, as detailed in provided msg,
      * now how should we proceed, depending on batch mode or user answer.
      * @param msg the problem description
-     * @throws StepException always thrown since processing must stop
+     * @throws StepException thrown when processing must stop
      */
     private void makeDecision (String msg)
         throws StepException
@@ -275,32 +275,22 @@ public class ScaleBuilder
 
         Score score = sheet.getScore();
 
-        if (score.isMultiPage()) {
-            if (Main.getGui() != null) {
-                // Ask user for confirmation
-                SheetsController.getInstance()
-                                .showAssembly(sheet);
+        if (Main.getGui() != null) {
+            // Make sheet visible to the user
+            SheetsController.getInstance()
+                            .showAssembly(sheet);
+        }
 
-                if (Main.getGui()
-                        .displayModelessConfirm(
-                    msg + lineSeparator + "OK for discarding this sheet?") == JOptionPane.OK_OPTION) {
-                    sheet.remove();
-                    logger.info("Removed sheet " + sheet.getId());
-                    throw new StepException("Sheet removed");
-                }
-            } else {
-                // No user available, let's remove this page
+        if ((Main.getGui() == null) ||
+            (Main.getGui()
+                 .displayModelessConfirm(
+            msg + lineSeparator + "OK for discarding this sheet?") == JOptionPane.OK_OPTION)) {
+            if (score.isMultiPage()) {
                 sheet.remove();
-                logger.info("Removed sheet " + sheet.getId());
                 throw new StepException("Sheet removed");
+            } else {
+                throw new StepException("Sheet ignored");
             }
-        } else {
-            if (Main.getGui() != null) {
-                Main.getGui()
-                    .displayWarning(msg);
-            }
-
-            throw new StepException("Sheet ignored");
         }
     }
 
