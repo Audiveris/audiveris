@@ -114,7 +114,7 @@ public class Score
     private File midiFile;
 
     /** Where the sheet PDF data is to be stored */
-    private File sheetPdfFile;
+    private File printFile;
 
     /** The script of user actions on this score */
     private Script script;
@@ -541,6 +541,30 @@ public class Score
         return partList;
     }
 
+    //--------------//
+    // setPrintFile //
+    //--------------//
+    /**
+     * Remember to which file the sheet PDF data is to be exported
+     * @param sheetPdfFile the sheet PDF file
+     */
+    public void setPrintFile (File sheetPdfFile)
+    {
+        this.printFile = sheetPdfFile;
+    }
+
+    //--------------//
+    // getPrintFile //
+    //--------------//
+    /**
+     * Report to which file, if any, the sheet PDF data is to be written
+     * @return the sheet PDF file, or null
+     */
+    public File getPrintFile ()
+    {
+        return printFile;
+    }
+
     //----------//
     // getRadix //
     //----------//
@@ -589,30 +613,6 @@ public class Score
     public File getScriptFile ()
     {
         return scriptFile;
-    }
-
-    //-----------------//
-    // setSheetPdfFile //
-    //-----------------//
-    /**
-     * Remember to which file the sheet PDF data is to be exported
-     * @param sheetPdfFile the sheet PDF file
-     */
-    public void setSheetPdfFile (File sheetPdfFile)
-    {
-        this.sheetPdfFile = sheetPdfFile;
-    }
-
-    //-----------------//
-    // getSheetPdfFile //
-    //-----------------//
-    /**
-     * Report to which file, if any, the shaat PDF data is to be written
-     * @return the sheet PDF file, or null
-     */
-    public File getSheetPdfFile ()
-    {
-        return sheetPdfFile;
     }
 
     //----------//
@@ -768,7 +768,7 @@ public class Score
 
             // Remember (even across runs) the parent directory
             ScoresManager.getInstance()
-                         .setDefaultImageDirectory(getImageFile().getParent());
+                         .setDefaultInputDirectory(getImageFile().getParent());
 
             // Insert in sheet history
             ScoresManager.getInstance()

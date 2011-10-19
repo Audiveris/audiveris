@@ -38,7 +38,7 @@ import omr.selection.GlyphIdEvent;
 import omr.selection.GlyphSetEvent;
 import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
-import omr.selection.SceneEvent;
+import omr.selection.NestEvent;
 import omr.selection.SelectionHint;
 import static omr.selection.SelectionHint.*;
 import omr.selection.SelectionService;
@@ -585,7 +585,7 @@ public class BasicNest
      * Publish on glyph service
      * @param event the event to publish
      */
-    protected void publish (SceneEvent event)
+    protected void publish (NestEvent event)
     {
         glyphService.publish(event);
     }
@@ -611,7 +611,7 @@ public class BasicNest
      * @param classe the specific classe
      * @return the number of subscribers interested in the specific class
      */
-    protected int subscribersCount (Class<?extends SceneEvent> classe)
+    protected int subscribersCount (Class<?extends NestEvent> classe)
     {
         return glyphService.subscribersCount(classe);
     }

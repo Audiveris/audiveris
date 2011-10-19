@@ -30,9 +30,9 @@ import omr.log.Logger;
  * SectionEvent} and {@link SectionIdEvent} (all are subclasses of {@link
  * LagEvent})
  *
- * <li>GlyphLag: each GlyphLag instance adds to its Lag event service the
- * handling of {@link GlyphEvent}, {@link GlyphIdEvent} and {@link
- * GlyphSetEvent} (all are subclasses of {@link GlyphLagEvent})
+ * <li>Nest event service: each glyph Nest instance handles
+ *  {@link GlyphEvent}, {@link GlyphIdEvent} and {@link
+ * GlyphSetEvent} (all are subclasses of {@link NestEvent})
  *
  * </ul>
  *

@@ -226,7 +226,7 @@ public class MidiActions
         File midiFile = UIUtilities.fileChooser(
             true,
             null,
-            ScoresManager.getInstance().getDefaultMidiFile(score),
+            ScoresManager.getInstance().getDefaultMidiFile(null, score),
             new OmrFileFilter(
                 "MIDI files",
                 new String[] { MidiAbstractions.MIDI_EXTENSION }));

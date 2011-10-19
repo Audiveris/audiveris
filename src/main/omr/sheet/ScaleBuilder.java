@@ -211,7 +211,6 @@ public class ScaleBuilder
     /**
      * Check global interline value, to detect pictures with too low
      * resolution or pictures which do not represent music staves
-     * @param interline the retrieved interline value
      * @throws StepException if processing must stop on this sheet
      */
     void checkResolution ()

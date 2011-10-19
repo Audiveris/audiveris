@@ -98,7 +98,7 @@ public abstract class Board
      * @param name a name assigned to the board, for debug reason
      * @param title the string to appear as the board title
      * @param selectionService the related selection service (for input & output)
-     * @param eventsRead the collection of event classes to observe
+     * @param eventList the collection of event classes to observe
      * @param expanded true to pre-expand the board, false to pre-collapse
      */
     public Board (String           name,

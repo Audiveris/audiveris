@@ -24,7 +24,7 @@ package omr.selection;
  * @author Hervé Bitteur
  */
 public class GlyphIdEvent
-    extends SceneEvent
+    extends NestEvent
 {
     //~ Instance fields --------------------------------------------------------
 

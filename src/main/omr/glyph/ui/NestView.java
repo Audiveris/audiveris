@@ -87,7 +87,8 @@ public class NestView
     //-----------//
     /**
      * Create a nest view
-     * @param the underlying nest of glyphs
+     * @param nest the underlying nest of glyphs
+     * @param controller the related glyphs controller
      * @param lags the various lags to be displayed
      */
     public NestView (Nest             nest,
@@ -183,7 +184,6 @@ public class NestView
      * Render the box area of a glyph, using inverted color
      * @param glyph the glyph whose area is to be rendered
      * @param g the graphic context
-     * @return true if the glyph area has actually been rendered
      */
     protected void renderGlyphArea (Glyph      glyph,
                                     Graphics2D g)

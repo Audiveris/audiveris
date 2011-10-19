@@ -40,7 +40,7 @@ import omr.score.ui.PaintingParameters;
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphSetEvent;
 import omr.selection.MouseMovement;
-import omr.selection.SceneEvent;
+import omr.selection.NestEvent;
 import omr.selection.SectionSetEvent;
 import omr.selection.SelectionHint;
 import omr.selection.UserEvent;
@@ -398,7 +398,7 @@ public class SymbolsEditor
         //---------//
         // publish //
         //---------//
-        protected void publish (SceneEvent event)
+        protected void publish (NestEvent event)
         {
             nest.getGlyphService()
                 .publish(event);

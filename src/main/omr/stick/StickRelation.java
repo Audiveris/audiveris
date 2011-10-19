@@ -14,8 +14,8 @@ package omr.stick;
 import java.awt.Color;
 
 /**
- * Class <code>StickRelation</code> implements a specific class of {@link
- * GlyphSection}, meant for easy stick elaboration.
+ * Class <code>StickRelation</code> complements {@link omr.lag.Section}
+ * for easy stick elaboration.
  *
  * @author Hervé Bitteur
  */

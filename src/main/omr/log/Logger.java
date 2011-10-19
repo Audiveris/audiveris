@@ -17,9 +17,13 @@ import omr.constant.UnitManager;
 
 import omr.step.LogStepMonitorHandler;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.logging.ConsoleHandler;
+import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -311,25 +315,67 @@ public class Logger
         java.util.logging.Logger topLogger;
         topLogger = java.util.logging.Logger.getLogger("");
 
-        // Handler for console (reuse it if it already exists)
-        Handler consoleHandler = null;
+        /** Redirecting stdout and stderr to logging */
+        String redirection = System.getProperty("stdouterr");
 
-        for (Handler handler : topLogger.getHandlers()) {
-            if (handler instanceof ConsoleHandler) {
-                consoleHandler = handler;
+        if (redirection != null) {
+            // initialize logging to go to rolling log file
+            manager.reset();
 
-                break;
+            try {
+                // log file max size 10K, 3 rolling files, append-on-open
+                Handler fileHandler = new FileHandler(
+                    redirection,
+                    10000,
+                    1,
+                    false);
+                fileHandler.setFormatter(new LogBasicFormatter()); //(new SimpleFormatter());
+                topLogger.addHandler(fileHandler);
+
+                // Tell user we are redirecting log
+                try {
+                    String path = new File(redirection).getCanonicalPath();
+                    topLogger.log(Level.INFO, "Log is redirected to " + path);
+                    System.out.println("Log is redirected to " + path);
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+
+                // now rebind stdout/stderr to logger
+                Logger              logger;
+                LoggingOutputStream los;
+
+                logger = Logger.getLogger("stdout");
+                los = new LoggingOutputStream(logger, StdOutErrLevel.STDOUT);
+                System.setOut(new PrintStream(los, true));
+
+                logger = Logger.getLogger("stderr");
+                los = new LoggingOutputStream(logger, StdOutErrLevel.STDERR);
+                System.setErr(new PrintStream(los, true));
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
-        }
+        } else {
+            // Handler for console (reuse it if it already exists)
+            Handler consoleHandler = null;
 
-        if (consoleHandler == null) {
-            consoleHandler = new ConsoleHandler();
-            topLogger.addHandler(consoleHandler);
-        }
+            for (Handler handler : topLogger.getHandlers()) {
+                if (handler instanceof ConsoleHandler) {
+                    consoleHandler = handler;
 
-        consoleHandler.setFormatter(new LogBasicFormatter()); // Comment out?
-        consoleHandler.setLevel(java.util.logging.Level.FINE);
-        consoleHandler.setFilter(new LogEmptyMessageFilter());
+                    break;
+                }
+            }
+
+            if (consoleHandler == null) {
+                consoleHandler = new ConsoleHandler();
+                topLogger.addHandler(consoleHandler);
+            }
+
+            consoleHandler.setFormatter(new LogBasicFormatter()); // Comment out?
+            consoleHandler.setLevel(java.util.logging.Level.FINE);
+            consoleHandler.setFilter(new LogEmptyMessageFilter());
+        }
 
         // Handler for GUI log pane
         topLogger.addHandler(new LogGuiHandler());

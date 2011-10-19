@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr;
 
+import omr.log.Logger;
+
 import java.io.File;
 import java.net.URISyntaxException;
 
@@ -120,6 +122,9 @@ public class WellKnowns
                 LOGGING_KEY,
                 new File(CONFIG_FOLDER, LOGGING_CONFIG_NAME).toString());
         }
+
+        /** Set up logger mechanism */
+        Logger.getLogger(WellKnowns.class);
     }
 
     //~ Methods ----------------------------------------------------------------

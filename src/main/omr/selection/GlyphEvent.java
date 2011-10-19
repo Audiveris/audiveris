@@ -28,7 +28,7 @@ import omr.glyph.facets.Glyph;
  * @author Hervé Bitteur
  */
 public class GlyphEvent
-    extends SceneEvent
+    extends NestEvent
 {
     //~ Instance fields --------------------------------------------------------
 

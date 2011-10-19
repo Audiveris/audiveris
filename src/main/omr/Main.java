@@ -56,16 +56,14 @@ import javax.swing.JFrame;
  * the main routine and its command line parameters.  It launches the User
  * Interface, unless a batch mode is selected.
  *
- * <p> The command line parameters can be (order not relevant) : <dl>
+ * <p> The command line parameters can be (order and case are not relevant):
+ * <dl>
  *
  * <dt> <b>-help</b> </dt> <dd> to print a quick usage help and leave the
  * application. </dd>
  *
  * <dt> <b>-batch</b> </dt> <dd> to run in batch mode, with no user
  * interface. </dd>
- *
- * <dt> <b>-bench</b> </dt> <dd> to record bench data and save it to disk.
- * </dd>
  *
  * <dt> <b>-step (STEPNAME | &#64;STEPLIST)+</b> </dt> <dd> to run all the
  * specified steps (including the steps which are mandatory to get to the
@@ -77,19 +75,37 @@ import javax.swing.JFrame;
  * the value of some application parameters (that can also be set via the
  * pull-down menu "Tools|Options"), either by stating the key=value pair or by
  * referencing (flagged by a &#64; sign) a file that lists key=value pairs (or
- * even other files list recursively). A list file is a simple text file, with
- * one key=value pair per line. <b>Nota</b>: The syntax used in the Properties
- * syntax, so for example back-slashes must be escaped.</dd>
- *
- * <dt> <b>-sheet (FILENAME | &#64;FILELIST)+</b> </dt> <dd> to specify some
- * image files to be read, either by naming the image file or by referencing
- * (flagged by a &#64; sign) a file that lists image files (or even other files
- * list recursively). A list file is a simple text file, with one image file
- * name per line.</dd>
+ * even other files list recursively). 
+ * A list file is a simple text file, with one key=value pair per line.
+ * <b>Nota</b>: The syntax used is the Properties syntax, so for example 
+ * back-slashes must be escaped.</dd>
  *
  * <dt> <b>-script (SCRIPTNAME | &#64;SCRIPTLIST)+</b> </dt> <dd> to specify
- * some scripts to be read, using the same mechanism than sheets. These script
- * files contain actions recorded during a previous run.</dd>
+ * some scripts to be read, using the same mechanism than input command belows.
+ * These script files contain actions generally recorded during a previous run.
+ * </dd>
+ *
+ * <dt> <b>-input (FILENAME | &#64;FILELIST)+</b> </dt> <dd> to specify some
+ * image files to be read, either by naming the image file or by referencing
+ * (flagged by a &#64; sign) a file that lists image files (or even other files
+ * list recursively).
+ * A list file is a simple text file, with one image file name per line.</dd>
+ *
+ * <dt> <b>-bench (DIRNAME | FILENAME)</b> </dt> <dd> to define an output
+ * path to bench data file (or directory).
+ * <b>Nota</b>: If the path refers to an existing directory, each processed 
+ * score will output its bench data to a score-specific file created in the 
+ * provided directory. Otherwise, all bench data, whatever its related score, 
+ * will be written to the provided single file.</dd>
+ *
+ * <dt> <b>-export (DIRNAME | FILENAME)</b> </dt> <dd> to define an output 
+ * path to MusicXML file (or directory). Same note as for -bench.</dd>
+ *
+ * <dt> <b>-midi (DIRNAME | FILENAME)</b> </dt> <dd> to define an output
+ * path to MIDI file (or directory). Same note as for -bench.</dd>
+ *
+ * <dt> <b>-print (DIRNAME | FILENAME)</b> </dt> <dd> to define an output
+ * path to PDF file (or directory). Same note as for -bench.</dd>
  *
  * </dd> </dl>
  *
@@ -139,6 +155,18 @@ public class Main
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------------//
+    // getBenchPath //
+    //--------------//
+    /**
+     * Report the bench path if present on the CLI
+     * @return the CLI bench path, or null
+     */
+    public static String getBenchPath ()
+    {
+        return parameters.benchPath;
+    }
+
     //-----------------//
     // getCliConstants //
     //-----------------//
@@ -151,8 +179,20 @@ public class Main
         if (parameters == null) {
             return null;
         } else {
-            return parameters.constants;
+            return parameters.options;
         }
+    }
+
+    //---------------//
+    // getExportPath //
+    //---------------//
+    /**
+     * Report the export path if present on the CLI
+     * @return the CLI export path, or null
+     */
+    public static String getExportPath ()
+    {
+        return parameters.exportPath;
     }
 
     //---------------//
@@ -167,7 +207,7 @@ public class Main
         List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
 
         // Launch desired step on each score in parallel
-        for (final String name : parameters.scoreNames) {
+        for (final String name : parameters.inputNames) {
             final File file = new File(name);
 
             tasks.add(
@@ -237,6 +277,30 @@ public class Main
     public static MainGui getGui ()
     {
         return gui;
+    }
+
+    //-------------//
+    // getMidiPath //
+    //-------------//
+    /**
+     * Report the midi path if present on the CLI
+     * @return the CLI midi path, or null
+     */
+    public static String getMidiPath ()
+    {
+        return parameters.midiPath;
+    }
+
+    //--------------//
+    // getPrintPath //
+    //--------------//
+    /**
+     * Report the print path if present on the CLI
+     * @return the CLI print path, or null
+     */
+    public static String getPrintPath ()
+    {
+        return parameters.printPath;
     }
 
     //-----------------//
@@ -452,18 +516,6 @@ public class Main
         }
     }
 
-    //--------------//
-    // hasBenchFlag //
-    //--------------//
-    /**
-     * Report whether the bench flag is present on the CLI
-     * @return true if the bench flag appears on CLI
-     */
-    public static boolean hasBenchFlag ()
-    {
-        return parameters.benchFlag;
-    }
-
     //-------------//
     // checkLocale //
     //-------------//
@@ -563,7 +615,7 @@ public class Main
             "",
             "Locale country to be used in the whole application (US, FR, ...)");
 
-        /** "Should we persist CLI-defined constants when running in batch? */
+        /** "Should we persist CLI-defined options when running in batch? */
         private final Constant.Boolean persistBatchCliConstants = new Constant.Boolean(
             false,
             "Should we persist CLI-defined constants when running in batch?");

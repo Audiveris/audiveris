@@ -29,7 +29,8 @@ import java.util.Properties;
 import java.util.Set;
 
 /**
- * Class <code>CLI</code> handles the parameters of the command line interface
+ * Class {@code CLI} parses and holds the parameters of the command
+ * line interface.
  *
  * @author Hervé Bitteur
  */
@@ -42,12 +43,91 @@ public class CLI
 
     //~ Enumerations -----------------------------------------------------------
 
-    /** For parameters analysis */
-    private static enum Status {
+    /** For handling cardinality of command parameters */
+    private static enum Card {
         //~ Enumeration constant initializers ----------------------------------
 
-        STEP,OPTION, FILE,
-        SCRIPT;
+
+        /** No parameter expected */
+        NONE,
+        /** Just a single parameter is expected */
+        SINGLE, 
+        /** One or several parameters are expected */
+        MULTIPLE;
+    }
+
+    /** For command analysis */
+    private static enum Command {
+        //~ Enumeration constant initializers ----------------------------------
+
+        HELP(
+            "Prints help about command line interface and stops",
+            Card.NONE,
+            null),
+        BATCH(
+            "Specifies to run with no graphic user interface",
+            Card.NONE,
+            null), 
+        STEP(
+            "Defines a series of target steps",
+            Card.MULTIPLE,
+            "(STEPNAME|@STEPLIST)+"), 
+        OPTION(
+            "Defines a series of key=value constant pairs",
+            Card.MULTIPLE,
+            "(KEY=VALUE|@OPTIONLIST)+"), 
+        SCRIPT(
+            "Defines a series of script files to run",
+            Card.MULTIPLE,
+            "(SCRIPTNAME|@SCRIPTLIST)+"), 
+        INPUT(
+            "Defines a series of input image files to process",
+            Card.MULTIPLE,
+            "(FILENAME|@FILELIST)+"), 
+
+        ///LOG("Defines an output path to log file", Card.SINGLE, "FILENAME"), 
+        BENCH(
+            "Defines an output path to bench data file (or directory)",
+            Card.SINGLE,
+            "(DIRNAME|FILENAME)"), 
+        EXPORT(
+            "Defines an output path to MusicXML file (or directory)",
+            Card.SINGLE,
+            "(DIRNAME|FILENAME)"), 
+        MIDI(
+            "Defines an output path to MIDI file (or directory)",
+            Card.SINGLE,
+            "(DIRNAME|FILENAME)"), 
+        PRINT(
+            "Defines an output path to PDF file (or directory)",
+            Card.SINGLE,
+            "(DIRNAME|FILENAME)");
+        //~ Instance fields ----------------------------------------------------
+
+        /** Info about command itself */
+        public final String description;
+
+        /** Cardinality of the expected parameters */
+        public final Card card;
+
+        /** Info about expected command parameters */
+        public final String params;
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a Command object.
+         * @param description description of the command
+         * @param params description of command expected parameters, or null
+         */
+        Command (String description,
+                 Card   card,
+                 String params)
+        {
+            this.description = description;
+            this.card = card;
+            this.params = params;
+        }
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -68,7 +148,6 @@ public class CLI
     //-----//
     /**
      * Creates a new CLI object.
-     *
      * @param toolName the program name
      * @param args the CLI arguments
      */
@@ -83,6 +162,10 @@ public class CLI
         }
 
         parameters = parse();
+
+        if (parameters != null) {
+            parameters.setImpliedSteps();
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -91,8 +174,8 @@ public class CLI
     // getParameters //
     //---------------//
     /**
-     * Parse the CLI arguments and return the populated parameters structure
-     *
+     * Parse the CLI arguments and return the populated parameters
+     * structure.
      * @return the parsed parameters, or null if failed
      */
     public Parameters getParameters ()
@@ -120,7 +203,8 @@ public class CLI
     // addItem //
     //---------//
     /**
-     * Add an item to a provided list, while handling indirections if needed
+     * Add an item to a provided list, while handling indirections if
+     * needed.
      * @param item the item to add, which can be a plain string (which is
      * simply added to the list) or an indirection (a string starting by the '@'
      * character) which denotes a file of items to be recursively added
@@ -171,7 +255,8 @@ public class CLI
     // decodeConstants //
     //-----------------//
     /**
-     * Retrieve properties out of the flat sequence of "key = value" pairs
+     * Retrieve properties out of the flat sequence of "key = value"
+     * pairs.
      * @param constantPairs the flat sequence of key = value pairs
      * @return the resulting constant properties
      */
@@ -197,16 +282,15 @@ public class CLI
     // parse //
     //-------//
     /**
-     * Parse the CLI arguments and populate the parameters structure
-     *
+     * Parse the CLI arguments and populate the parameters structure.
      * @return the populated parameters structure, or null if failed
      */
     private Parameters parse ()
     {
         // Status of the finite state machine
         boolean      paramNeeded = false; // Are we expecting a param?
-        Status       status = Status.FILE; // By default
-        String       currentCommand = null;
+        boolean      paramForbidden = false; // Are we not expecting a param?
+        Command      command = Command.INPUT; // By default
         Parameters   params = new Parameters();
         List<String> optionPairs = new ArrayList<String>();
         List<String> stepStrings = new ArrayList<String>();
@@ -216,90 +300,146 @@ public class CLI
             String token = args[i];
 
             if (token.startsWith("-")) {
-                // This is a command
+                // This is a new command
                 // Check that we were not expecting param(s)
                 if (paramNeeded) {
                     printCommandLine();
                     stopUsage(
-                        "Found no parameter after command '" + currentCommand +
-                        "'");
+                        "Found no parameter after command '" + command + "'");
 
                     return null;
                 }
 
-                if (token.equalsIgnoreCase("-help")) {
+                // Remove leading minus sign and switch to uppercase
+                // To recognize command
+                token = token.substring(1)
+                             .toUpperCase();
+
+                boolean found = false;
+
+                for (Command cmd : Command.values()) {
+                    if (token.equals(cmd.name())) {
+                        command = cmd;
+                        paramNeeded = command.card != Card.NONE;
+                        paramForbidden = !paramNeeded;
+                        found = true;
+
+                        break;
+                    }
+                }
+
+                // No command recognized
+                if (!found) {
+                    printCommandLine();
+                    stopUsage("Unknown command '-" + token + "'");
+
+                    return null;
+                }
+
+                // Commands with no parameters
+                switch (command) {
+                case HELP : {
                     stopUsage(null);
 
                     return null;
-                } else if (token.equalsIgnoreCase("-batch")) {
+                }
+
+                case BATCH :
                     params.batchMode = true;
-                    paramNeeded = false;
-                } else if (token.equalsIgnoreCase("-bench")) {
-                    params.benchFlag = true;
-                    paramNeeded = false;
-                } else if (token.equalsIgnoreCase("-step")) {
-                    status = Status.STEP;
-                    paramNeeded = true;
-                } else if (token.equalsIgnoreCase("-option")) {
-                    status = Status.OPTION;
-                    paramNeeded = true;
-                } else if (token.equalsIgnoreCase("-file")) {
-                    status = Status.FILE;
-                    paramNeeded = true;
-                } else if (token.equalsIgnoreCase("-script")) {
-                    status = Status.SCRIPT;
-                    paramNeeded = true;
-                } else {
+
+                    break;
+                }
+            } else {
+                // This is a parameter for the current command
+                // Check we can accept a parameter
+                if (paramForbidden) {
                     printCommandLine();
-                    stopUsage("Unknown command '" + token + "'");
+                    stopUsage(
+                        "Extra parameter '" + token +
+                        "' found after command '" + command + "'");
 
                     return null;
                 }
 
-                // Remember the current command
-                currentCommand = token;
-            } else {
-                // This is a parameter
-                switch (status) {
+                switch (command) {
                 case STEP :
                     addItem(token, stepStrings);
-                    paramNeeded = false;
 
                     break;
 
                 case OPTION :
                     addItem(token, optionPairs);
-                    paramNeeded = false;
-
-                    break;
-
-                case FILE :
-                    addItem(token, params.scoreNames);
-                    paramNeeded = false;
 
                     break;
 
                 case SCRIPT :
                     addItem(token, params.scriptNames);
-                    paramNeeded = false;
 
                     break;
+
+                case INPUT :
+                    addItem(token, params.inputNames);
+
+                    break;
+
+                //                case LOG :
+                //                    params.logPath = token;
+                //
+                //                    try {
+                //                        File         file = new File(token).getCanonicalFile();
+                //                        OutputStream output = new FileOutputStream(file);
+                //                        PrintStream  printOut = new PrintStream(output);
+                //                        System.setOut(printOut);
+                //                        System.setErr(printOut);
+                //                    } catch (FileNotFoundException ex) {
+                //                        logger.warning("Cannot find " + token, ex);
+                //                    } catch (IOException ex) {
+                //                        logger.warning(
+                //                            "Cannot get canonical path of " + token,
+                //                            ex);
+                //                    }
+                //
+                //                    break;
+                //
+                case BENCH :
+                    params.benchPath = token;
+
+                    break;
+
+                case EXPORT :
+                    params.exportPath = token;
+
+                    break;
+
+                case MIDI :
+                    params.midiPath = token;
+
+                    break;
+
+                case PRINT :
+                    params.printPath = token;
+
+                    break;
+
+                default :
                 }
+
+                paramNeeded = false;
+                paramForbidden = command.card == Card.SINGLE;
             }
         }
 
         // Additional error checking
         if (paramNeeded) {
             printCommandLine();
-            stopUsage(
-                "Expecting a parameter after command '" + currentCommand + "'");
+            stopUsage("Expecting a token after command '" + command + "'");
 
             return null;
         }
 
         // Decode option pairs
         try {
-            params.constants = decodeConstants(optionPairs);
+            params.options = decodeConstants(optionPairs);
         } catch (Exception ex) {
             logger.warning("Error decoding -option ", ex);
         }
@@ -319,14 +459,9 @@ public class CLI
             }
         }
 
-        // At least first step
-        if (params.desiredSteps.isEmpty()) {
-            params.desiredSteps.add(Steps.first);
-        }
-
         // Results
         if (logger.isFineEnabled()) {
-            logger.fine("CLI parameters:" + params);
+            logger.fine(Main.dumping.dumpOf(params));
         }
 
         return params;
@@ -336,23 +471,27 @@ public class CLI
     // printCommandLine //
     //------------------//
     /**
-     * Printout the command line with its actual parameters
+     * Printout the command line with its actual parameters.
      */
     private void printCommandLine ()
     {
+        StringBuilder sb = new StringBuilder("Command line parameters: ");
+
         if (toolName != null) {
-            System.err.println(toolName);
+            sb.append(toolName)
+              .append(" ");
         }
 
-        System.err.println(this);
+        sb.append(this);
+        logger.info(sb.toString());
     }
 
     //-----------//
     // stopUsage //
     //-----------//
     /**
-     * Printout a message if any, followed by the general syntax for the
-     * command line
+     * Printout a message if any, followed by the general syntax for
+     * the command line.
      * @param msg the message to print if non null
      */
     private void stopUsage (String msg)
@@ -365,14 +504,20 @@ public class CLI
         StringBuilder buf = new StringBuilder();
 
         // Print standard command line syntax
-        buf.append("\n options syntax:")
-           .append("\n [-help]")
-           .append("\n [-batch]")
-           .append("\n [-bench]")
-           .append("\n [-step (STEPNAME|@STEPLIST)+]")
-           .append("\n [-option (KEY=VALUE|@OPTIONLIST)+]")
-           .append("\n [-file (FILENAME|@FILELIST)+]")
-           .append("\n [-script (SCRIPTNAME|@SCRIPTLIST)+]");
+        buf.append("\nCommand line syntax:");
+        buf.append("\n   java -jar <audiveris.jar> [parameters*]");
+        buf.append("\nParameters syntax:");
+
+        for (Command command : Command.values()) {
+            buf.append(
+                String.format(
+                    "%n  %-36s %s",
+                    String.format(
+                        " [-%s%s]",
+                        command.toString().toLowerCase(),
+                        ((command.params != null) ? (" " + command.params) : "")),
+                    command.description));
+        }
 
         // Print all allowed step names
         buf.append("\n\nKnown step names are in order")
@@ -381,7 +526,7 @@ public class CLI
         for (Step step : Steps.values()) {
             buf.append(
                 String.format(
-                    "%n%-11s : %s",
+                    "%n   %-11s : %s",
                     step.toString().toUpperCase(),
                     step.getDescription()));
         }
@@ -395,8 +540,8 @@ public class CLI
     // Parameters //
     //------------//
     /**
-     * A structure that collects the various parameters parsed out of the
-     * command line
+     * A structure that collects the various parameters parsed out of
+     * the command line.
      */
     public static class Parameters
     {
@@ -405,20 +550,32 @@ public class CLI
         /** Flag that indicates a batch mode */
         boolean batchMode = false;
 
-        /** Flag that indicates bench data is to be saved */
-        boolean benchFlag = false;
-
-        /** The set of desired steps (option: -step stepName) */
+        /** The set of desired steps */
         final Set<Step> desiredSteps = new LinkedHashSet<Step>();
 
-        /** The map of constants */
-        Properties constants = null;
-
-        /** The list of score file names to load */
-        final List<String> scoreNames = new ArrayList<String>();
+        /** The map of options */
+        Properties options = null;
 
         /** The list of script file names to execute */
         final List<String> scriptNames = new ArrayList<String>();
+
+        /** The list of input image file names to load */
+        final List<String> inputNames = new ArrayList<String>();
+
+        /** Where log data is to be saved */
+        ///String logPath = null;
+
+        /** Where bench data is to be saved */
+        String benchPath = null;
+
+        /** Where exported score data (MusicXML) is to be saved */
+        String exportPath = null;
+
+        /** Where MIDI data is to be saved */
+        String midiPath = null;
+
+        /** Where printed score (PDF) is to be saved */
+        String printPath = null;
 
         //~ Constructors -------------------------------------------------------
 
@@ -428,24 +585,25 @@ public class CLI
 
         //~ Methods ------------------------------------------------------------
 
-        @Override
-        public String toString ()
+        //-----------------//
+        // setImpliedSteps //
+        //-----------------//
+        /**
+         * Some output parameters require their related step to be set.
+         */
+        private void setImpliedSteps ()
         {
-            StringBuilder sb = new StringBuilder();
-            sb.append("\nbatchMode=")
-              .append(batchMode);
-            sb.append("\nbenchFlag=")
-              .append(benchFlag);
-            sb.append("\ndesiredSteps=")
-              .append(desiredSteps);
-            sb.append("\noptions=")
-              .append(constants);
-            sb.append("\nscoreNames=")
-              .append(scoreNames);
-            sb.append("\nscriptNames=")
-              .append(scriptNames);
+            if (exportPath != null) {
+                desiredSteps.add(Steps.valueOf(Steps.EXPORT));
+            }
 
-            return sb.toString();
+            if (midiPath != null) {
+                desiredSteps.add(Steps.valueOf(Steps.MIDI));
+            }
+
+            if (printPath != null) {
+                desiredSteps.add(Steps.valueOf(Steps.PRINT));
+            }
         }
     }
 }

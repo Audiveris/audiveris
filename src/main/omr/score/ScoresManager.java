@@ -116,39 +116,48 @@ public class ScoresManager
     //----------------------//
     /**
      * Report the file to which the score would be written by default
+     * @param folder the target folder if any
      * @param score the score to export
      * @return the default file
      */
-    public File getDefaultExportFile (Score score)
+    public File getDefaultExportFile (File  folder,
+                                      Score score)
     {
-        return (score.getExportFile() != null) ? score.getExportFile()
-               : new File(
-            constants.defaultScoreDirectory.getValue(),
-            score.getRadix() + SCORE_EXTENSION);
+        if (score.getExportFile() != null) {
+            return score.getExportFile();
+        }
+
+        String child = score.getRadix() + SCORE_EXTENSION;
+
+        if (folder != null) {
+            return new File(folder, child);
+        } else {
+            return new File(constants.defaultExportDirectory.getValue(), child);
+        }
     }
 
     //--------------------------//
-    // setDefaultImageDirectory //
+    // setDefaultInputDirectory //
     //--------------------------//
     /**
      * Remember the directory where images should be found
      * @param directory the latest image directory
      */
-    public void setDefaultImageDirectory (String directory)
+    public void setDefaultInputDirectory (String directory)
     {
-        constants.defaultImageDirectory.setValue(directory);
+        constants.defaultInputDirectory.setValue(directory);
     }
 
     //--------------------------//
-    // getDefaultImageDirectory //
+    // getDefaultInputDirectory //
     //--------------------------//
     /**
      * Report the directory where images should be found
      * @return the latest image directory
      */
-    public String getDefaultImageDirectory ()
+    public String getDefaultInputDirectory ()
     {
-        return constants.defaultImageDirectory.getValue();
+        return constants.defaultInputDirectory.getValue();
     }
 
     //--------------------//
@@ -156,31 +165,49 @@ public class ScoresManager
     //--------------------//
     /**
      * Report the file to which the MIDI data would be written by default
+     * @param folder the target folder if any
      * @param score the score to export
      * @return the default file
      */
-    public File getDefaultMidiFile (Score score)
+    public File getDefaultMidiFile (File  folder,
+                                    Score score)
     {
-        return (score.getMidiFile() != null) ? score.getMidiFile()
-               : new File(
-            constants.defaultMidiDirectory.getValue(),
-            score.getRadix() + MidiAbstractions.MIDI_EXTENSION);
+        if (score.getMidiFile() != null) {
+            return score.getMidiFile();
+        }
+
+        String child = score.getRadix() + MidiAbstractions.MIDI_EXTENSION;
+
+        if (folder != null) {
+            return new File(folder, child);
+        } else {
+            return new File(constants.defaultMidiDirectory.getValue(), child);
+        }
     }
 
-    //------------------------//
-    // getDefaultSheetPdfFile //
-    //------------------------//
+    //---------------------//
+    // getDefaultPrintFile //
+    //---------------------//
     /**
      * Report the file to which the sheet PDF data would be written by default
+     * @param folder the target folder if any
      * @param score the score to export
      * @return the default file
      */
-    public File getDefaultSheetPdfFile (Score score)
+    public File getDefaultPrintFile (File  folder,
+                                     Score score)
     {
-        return (score.getSheetPdfFile() != null) ? score.getSheetPdfFile()
-               : new File(
-            constants.defaultSheetPdfDirectory.getValue(),
-            score.getRadix() + ".sheet.pdf");
+        if (score.getPrintFile() != null) {
+            return score.getPrintFile();
+        }
+
+        String child = score.getRadix() + ".sheet.pdf";
+
+        if (folder != null) {
+            return new File(folder, child);
+        } else {
+            return new File(constants.defaultPrintDirectory.getValue(), child);
+        }
     }
 
     //------------//
@@ -225,14 +252,20 @@ public class ScoresManager
     //---------------------//
     /**
      * Report the file to which the bench data would be written by default
+     * @param folder the target folder if any
      * @param score the score to export
      * @return the default file
      */
-    public File getDefaultBenchFile (Score score)
+    public File getDefaultBenchFile (File  folder,
+                                     Score score)
     {
-        return new File(
-            constants.defaultBenchDirectory.getValue(),
-            score.getRadix() + BENCH_EXTENSION);
+        String child = score.getRadix() + BENCH_EXTENSION;
+
+        if (folder != null) {
+            return new File(folder, child);
+        } else {
+            return new File(constants.defaultBenchDirectory.getValue(), child);
+        }
     }
 
     //---------------------------//
@@ -316,36 +349,46 @@ public class ScoresManager
      * file
      *
      * @param score the score to export
-     * @param exportFile the xml file to write, or null
+     * @param file the xml file to write, or null
      * @param injectSignature should we inject our signature?
      */
     public void export (Score   score,
-                        File    exportFile,
+                        File    file,
                         Boolean injectSignature)
     {
-        exportFile = getActualFile(exportFile, getDefaultExportFile(score));
+        if (Main.getExportPath() != null) {
+            File path = new File(Main.getExportPath());
+
+            if (path.isDirectory()) {
+                file = getActualFile(file, getDefaultExportFile(path, score));
+            } else {
+                file = getActualFile(file, path);
+            }
+        } else {
+            file = getActualFile(file, getDefaultExportFile(null, score));
+        }
 
         // Actually export the score material
         try {
             ScoreExporter exporter = new ScoreExporter(score);
 
             if (injectSignature != null) {
-                exporter.export(exportFile, injectSignature);
+                exporter.export(file, injectSignature);
             } else {
                 exporter.export(
-                    exportFile,
+                    file,
                     constants.defaultInjectSignature.getValue());
             }
 
-            logger.info("Score exported to " + exportFile);
+            logger.info("Score exported to " + file);
 
             // Remember (even across runs) the selected directory
-            constants.defaultScoreDirectory.setValue(exportFile.getParent());
+            constants.defaultExportDirectory.setValue(file.getParent());
 
             // Remember the file in the score itself
-            score.setExportFile(exportFile);
+            score.setExportFile(file);
         } catch (Exception ex) {
-            logger.warning("Error storing score to " + exportFile, ex);
+            logger.warning("Error storing score to " + file, ex);
         }
     }
 
@@ -378,18 +421,28 @@ public class ScoresManager
      * Write the Midi sequence of the score into the provided midi file.
      *
      * @param score the provided score
-     * @param midiFile the Midi file to write
+     * @param file the Midi file to write
      * @throws Exception if the writing goes wrong
      */
     public void midiWrite (Score score,
-                           File  midiFile)
+                           File  file)
         throws Exception
     {
         if (!ScoreActions.checkParameters(score)) {
             return;
         }
 
-        midiFile = getActualFile(midiFile, getDefaultMidiFile(score));
+        if (Main.getMidiPath() != null) {
+            File path = new File(Main.getMidiPath());
+
+            if (path.isDirectory()) {
+                file = getActualFile(file, getDefaultMidiFile(path, score));
+            } else {
+                file = getActualFile(file, path);
+            }
+        } else {
+            file = getActualFile(file, getDefaultMidiFile(null, score));
+        }
 
         // Actually write the Midi file
         try {
@@ -399,14 +452,14 @@ public class ScoresManager
                 agent.setScore(score);
             }
 
-            agent.write(midiFile);
-            score.setMidiFile(midiFile);
-            logger.info("Midi written to " + midiFile);
+            agent.write(file);
+            score.setMidiFile(file);
+            logger.info("Midi written to " + file);
 
             // Remember (even across runs) the selected directory
-            constants.defaultMidiDirectory.setValue(midiFile.getParent());
+            constants.defaultMidiDirectory.setValue(file.getParent());
         } catch (Exception ex) {
-            logger.warning("Cannot write Midi to " + midiFile, ex);
+            logger.warning("Cannot write Midi to " + file, ex);
             throw ex;
         }
     }
@@ -441,11 +494,26 @@ public class ScoresManager
                             boolean    complete)
     {
         // Check if we do save bench data
-        if (!Main.hasBenchFlag() && !constants.saveBenchToDisk.getValue()) {
+        if ((Main.getBenchPath() == null) &&
+            !constants.saveBenchToDisk.getValue()) {
             return;
         }
 
-        file = getActualFile(file, getDefaultBenchFile(bench.getScore()));
+        if (Main.getBenchPath() != null) {
+            File path = new File(Main.getBenchPath());
+
+            if (path.isDirectory()) {
+                file = getActualFile(
+                    file,
+                    getDefaultBenchFile(path, bench.getScore()));
+            } else {
+                file = getActualFile(file, path);
+            }
+        } else {
+            file = getActualFile(
+                file,
+                getDefaultBenchFile(null, bench.getScore()));
+        }
 
         // Actually store the score bench
         FileOutputStream fos = null;
@@ -479,23 +547,33 @@ public class ScoresManager
      * Print the score physical appearance into the provided PDF file.
      *
      * @param score the provided score
-     * @param pdfFile the PDF file to write
+     * @param file the PDF file to write
      */
     public void writePhysicalPdf (Score score,
-                                  File  pdfFile)
+                                  File  file)
     {
-        pdfFile = getActualFile(pdfFile, getDefaultSheetPdfFile(score));
+        if (Main.getPrintPath() != null) {
+            File path = new File(Main.getPrintPath());
+
+            if (path.isDirectory()) {
+                file = getActualFile(file, getDefaultPrintFile(path, score));
+            } else {
+                file = getActualFile(file, path);
+            }
+        } else {
+            file = getActualFile(file, getDefaultPrintFile(null, score));
+        }
 
         // Actually write the PDF file
         try {
-            new SheetPdfOutput(score, pdfFile).write();
-            score.setSheetPdfFile(pdfFile);
-            logger.info("Score printed to " + pdfFile);
+            new SheetPdfOutput(score, file).write();
+            score.setPrintFile(file);
+            logger.info("Score printed to " + file);
 
             // Remember (even across runs) the selected directory
-            constants.defaultSheetPdfDirectory.setValue(pdfFile.getParent());
+            constants.defaultPrintDirectory.setValue(file.getParent());
         } catch (Exception ex) {
-            logger.warning("Cannot write PDF to " + pdfFile, ex);
+            logger.warning("Cannot write PDF to " + file, ex);
         }
     }
 
@@ -504,7 +582,7 @@ public class ScoresManager
     //---------------//
     /**
      * Report the actual file to be used as target, using the provided target
-     * file if any otherwise the score default, and making sure the file parent
+     * file if any, otherwise the score default, and making sure the file parent
      * folder really exists
      * @param targetFile the provided target candidate, or null
      * @param defaultFile the default target
@@ -513,18 +591,26 @@ public class ScoresManager
     private File getActualFile (File targetFile,
                                 File defaultFile)
     {
-        if (targetFile == null) {
-            targetFile = defaultFile;
+        try {
+            if (targetFile == null) {
+                targetFile = defaultFile;
+            }
+
+            File canon = new File(targetFile.getCanonicalPath());
+
+            // Make sure the folder exists
+            File folder = new File(canon.getParent());
+
+            if (folder.mkdirs()) {
+                logger.info("Creating folder " + folder);
+            }
+
+            return canon;
+        } catch (IOException ex) {
+            logger.warning("Cannot getCanonicalPath", ex);
+
+            return null;
         }
-
-        // Make sure the folder exists
-        File folder = new File(targetFile.getParent());
-
-        if (folder.mkdirs()) {
-            logger.info("Creating folder " + folder);
-        }
-
-        return targetFile;
     }
 
     //----------------//
@@ -559,7 +645,7 @@ public class ScoresManager
         //~ Instance fields ----------------------------------------------------
 
         /** Default directory for saved scores */
-        Constant.String defaultScoreDirectory = new Constant.String(
+        Constant.String defaultExportDirectory = new Constant.String(
             System.getProperty("user.home"),
             "Default directory for saved scores");
 
@@ -579,7 +665,7 @@ public class ScoresManager
             "Default directory for writing Midi files");
 
         /** Default directory for writing sheet PDF files */
-        Constant.String defaultSheetPdfDirectory = new Constant.String(
+        Constant.String defaultPrintDirectory = new Constant.String(
             System.getProperty("user.home"),
             "Default directory for writing sheet PDF files");
 
@@ -594,7 +680,7 @@ public class ScoresManager
             "History of loaded images");
 
         /** Default directory for selection of image files */
-        Constant.String defaultImageDirectory = new Constant.String(
+        Constant.String defaultInputDirectory = new Constant.String(
             System.getProperty("user.home"),
             "Default directory for selection of image files");
 

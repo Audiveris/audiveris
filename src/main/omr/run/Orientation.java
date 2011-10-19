@@ -66,14 +66,14 @@ public enum Orientation {
     }
 
     //----------//
-    // absolute //
+    // oriented //
     //----------//
     /**
      * Given a point (x, y) in the absolute space, return the corresponding
      * (coord, pos) oriented point taking the lag orientation into account.
      *
-     * @param cp the oriented (coord, pos) point
-     * @return the corresponding absolute (x, y) point
+     * @param xy the absolute (x, y) point
+     * @return the corresponding oriented (coord, pos) point
      */
     public Point oriented (PixelPoint xy)
     {
@@ -87,8 +87,8 @@ public enum Orientation {
      * Given a point (x, y) in the absolute space, return the corresponding
      * (coord, pos) oriented point taking the lag orientation into account.
      *
-     * @param cp the oriented (coord, pos) point
-     * @return the corresponding absolute (x, y) point
+     * @param xy the absolute (x, y) point
+     * @return the corresponding oriented (coord, pos) point
      */
     public Point2D oriented (Point2D xy)
     {

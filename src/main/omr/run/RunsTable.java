@@ -555,7 +555,7 @@ public class RunsTable
     //---------//
     /**
      * Interest on Location => Run
-     * @param locationEVent
+     * @param locationEvent the interesting event
      */
     public void onEvent (LocationEvent locationEvent)
     {

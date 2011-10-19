@@ -157,7 +157,7 @@ public class HorizontalsBuilder
     // HorizontalsBuilder //
     //--------------------//
     /**
-     * @param sheet the related sheet
+     * @param system the related system to process
      */
     public HorizontalsBuilder (SystemInfo system)
     {
@@ -214,8 +214,7 @@ public class HorizontalsBuilder
      * Run the Horizontals step, searching all horizontal sticks for typical
      * things like ledgers, endings and legato signs.
      *
-     * @return the built Horizontals info
-     * @throws StepException raised is process gets stopped
+     * @throws StepException raised if process gets stopped
      */
     public void buildInfo ()
         throws Exception

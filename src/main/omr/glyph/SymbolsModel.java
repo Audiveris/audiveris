@@ -53,9 +53,7 @@ public class SymbolsModel
     //--------------//
     /**
      * Creates a new SymbolsModel object.
-     *
-     * @param sheet the related sheet (can be null)
-     * @param lag the related lag (cannot be null)
+     * @param sheet the related sheet
      */
     public SymbolsModel (Sheet sheet)
     {

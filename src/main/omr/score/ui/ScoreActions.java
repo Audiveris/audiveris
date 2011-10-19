@@ -283,7 +283,7 @@ public class ScoreActions
         File exportFile = UIUtilities.fileChooser(
             true,
             null,
-            ScoresManager.getInstance().getDefaultExportFile(score),
+            ScoresManager.getInstance().getDefaultExportFile(null, score),
             new OmrFileFilter(
                 "XML files",
                 new String[] { ScoresManager.SCORE_EXTENSION }));
@@ -338,7 +338,7 @@ public class ScoreActions
             return null;
         }
 
-        final File pdfFile = score.getSheetPdfFile();
+        final File pdfFile = score.getPrintFile();
 
         if (pdfFile != null) {
             return new WriteSheetPdfTask(score, pdfFile);
@@ -369,7 +369,7 @@ public class ScoreActions
         File pdfFile = UIUtilities.fileChooser(
             true,
             null,
-            ScoresManager.getInstance().getDefaultSheetPdfFile(score),
+            ScoresManager.getInstance().getDefaultPrintFile(null, score),
             new OmrFileFilter("PDF files", new String[] { ".pdf" }));
 
         if (pdfFile != null) {

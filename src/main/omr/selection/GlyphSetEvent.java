@@ -29,7 +29,7 @@ import java.util.Set;
  * @author Hervé Bitteur
  */
 public class GlyphSetEvent
-    extends SceneEvent
+    extends NestEvent
 {
     //~ Instance fields --------------------------------------------------------
 

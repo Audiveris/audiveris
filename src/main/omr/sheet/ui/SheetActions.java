@@ -126,7 +126,7 @@ public class SheetActions
         File   file = UIUtilities.fileChooser(
             false,
             Main.getGui().getFrame(),
-            new File(ScoresManager.getInstance().getDefaultImageDirectory()),
+            new File(ScoresManager.getInstance().getDefaultInputDirectory()),
             new OmrFileFilter(
                 "Major image files" + " (" + suffixes + ")",
                 allSuffixes.split("\\s")));
