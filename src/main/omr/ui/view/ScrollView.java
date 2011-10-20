@@ -11,12 +11,16 @@
 // </editor-fold>
 package omr.ui.view;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.log.Logger;
 
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 
 /**
@@ -36,6 +40,9 @@ import javax.swing.JScrollPane;
 public class ScrollView
 {
     //~ Static fields/initializers ---------------------------------------------
+
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScrollView.class);
@@ -57,9 +64,13 @@ public class ScrollView
      * Create a bare view pane. Other related entities, such as view, pixel
      * monitor or zoom, can be added later programmatically via setXXX()
      * methods).
+     * <p>The increment related to mouse wheel movement can be adapted via the
+     * unitIncrement class constant.
      */
     public ScrollView ()
     {
+        JScrollBar vertical = component.getVerticalScrollBar();
+        vertical.setUnitIncrement(constants.unitIncrement.getValue());
     }
 
     //------------//
@@ -72,6 +83,7 @@ public class ScrollView
      */
     public ScrollView (RubberPanel view)
     {
+        this();
         setView(view);
     }
 
@@ -274,5 +286,21 @@ public class ScrollView
         } else {
             return false;
         }
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        Constant.Integer unitIncrement = new Constant.Integer(
+            "pixels",
+            20,
+            "Size of mouse wheel increment for ScrollView");
     }
 }
