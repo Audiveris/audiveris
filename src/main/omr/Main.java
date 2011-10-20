@@ -52,62 +52,11 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.JFrame;
 
 /**
- * Class <code>Main</code> is the main class for OMR application. It deals with
- * the main routine and its command line parameters.  It launches the User
- * Interface, unless a batch mode is selected.
+ * Class <code>Main</code> is the main class for OMR application.
+ * It deals with the main routine and its command line parameters.
+ * It launches the User Interface, unless a batch mode is selected.
  *
- * <p> The command line parameters can be (order and case are not relevant):
- * <dl>
- *
- * <dt> <b>-help</b> </dt> <dd> to print a quick usage help and leave the
- * application. </dd>
- *
- * <dt> <b>-batch</b> </dt> <dd> to run in batch mode, with no user
- * interface. </dd>
- *
- * <dt> <b>-step (STEPNAME | &#64;STEPLIST)+</b> </dt> <dd> to run all the
- * specified steps (including the steps which are mandatory to get to the
- * specified ones). 'STEPNAME' can be any one of the step names (the case is
- * irrelevant) as defined in the {@link omr.step.Step} class. These steps will
- * be performed on each sheet referenced from the command line.</dd>
- *
- * <dt> <b>-option (KEY=VALUE | &#64;OPTIONLIST)+</b> </dt> <dd> to specify
- * the value of some application parameters (that can also be set via the
- * pull-down menu "Tools|Options"), either by stating the key=value pair or by
- * referencing (flagged by a &#64; sign) a file that lists key=value pairs (or
- * even other files list recursively). 
- * A list file is a simple text file, with one key=value pair per line.
- * <b>Nota</b>: The syntax used is the Properties syntax, so for example 
- * back-slashes must be escaped.</dd>
- *
- * <dt> <b>-script (SCRIPTNAME | &#64;SCRIPTLIST)+</b> </dt> <dd> to specify
- * some scripts to be read, using the same mechanism than input command belows.
- * These script files contain actions generally recorded during a previous run.
- * </dd>
- *
- * <dt> <b>-input (FILENAME | &#64;FILELIST)+</b> </dt> <dd> to specify some
- * image files to be read, either by naming the image file or by referencing
- * (flagged by a &#64; sign) a file that lists image files (or even other files
- * list recursively).
- * A list file is a simple text file, with one image file name per line.</dd>
- *
- * <dt> <b>-bench (DIRNAME | FILENAME)</b> </dt> <dd> to define an output
- * path to bench data file (or directory).
- * <b>Nota</b>: If the path refers to an existing directory, each processed 
- * score will output its bench data to a score-specific file created in the 
- * provided directory. Otherwise, all bench data, whatever its related score, 
- * will be written to the provided single file.</dd>
- *
- * <dt> <b>-export (DIRNAME | FILENAME)</b> </dt> <dd> to define an output 
- * path to MusicXML file (or directory). Same note as for -bench.</dd>
- *
- * <dt> <b>-midi (DIRNAME | FILENAME)</b> </dt> <dd> to define an output
- * path to MIDI file (or directory). Same note as for -bench.</dd>
- *
- * <dt> <b>-print (DIRNAME | FILENAME)</b> </dt> <dd> to define an output
- * path to PDF file (or directory). Same note as for -bench.</dd>
- *
- * </dd> </dl>
+ * @see CLI
  *
  * @author Hervé Bitteur
  */
@@ -230,23 +179,24 @@ public class Main
                                     logger.warning("Cancelled " + score, pce);
                                     score.getBench()
                                          .recordCancellation();
+                                    throw pce;
                                 } catch (Exception ex) {
                                     logger.warning("Exception occurred", ex);
+                                    throw ex;
                                 } finally {
                                     // Close (when in batch mode only)
                                     if (gui == null) {
                                         score.close();
                                     }
+
+                                    return null;
                                 }
-
-                                return null;
                             } else {
-                                logger.warning(
-                                    "Could not find file " +
-                                    file.getCanonicalPath());
+                                String msg = "Could not find file " +
+                                             file.getCanonicalPath();
+                                logger.warning(msg);
+                                throw new RuntimeException(msg);
                             }
-
-                            return null;
                         }
                     });
         }
@@ -463,6 +413,9 @@ public class Main
         } else {
             // For batch mode
 
+            // Remember if at least one task has failed
+            boolean failure = false;
+
             // Check MusicFont is loaded
             MusicFont.checkMusicFont();
 
@@ -488,14 +441,12 @@ public class Main
                             future.get();
                         } catch (Exception ex) {
                             logger.warning("Future exception", ex);
-                        }
-
-                        if (future.isCancelled()) {
-                            logger.warning("*** Cancelled future: " + future);
+                            failure = true;
                         }
                     }
                 } catch (Exception ex) {
                     logger.warning("Error in processing tasks", ex);
+                    failure = true;
                 }
             }
 
@@ -504,14 +455,16 @@ public class Main
             logger.info("SHUTTING DOWN ...");
             OmrExecutors.shutdown(true);
 
-            // Store latest constant values on disk ?
+            // Store latest constant values on disk?
             if (constants.persistBatchCliConstants.getValue()) {
                 ConstantManager.getInstance()
                                .storeResource();
             }
 
-            if (logger.isFineEnabled()) {
-                logger.fine("End of main");
+            // Stop the JVM with failure status?
+            if (failure) {
+                logger.warning("Exit with failure status");
+                System.exit(-1);
             }
         }
     }
@@ -571,7 +524,7 @@ public class Main
         if (parameters == null) {
             logger.warning("Exiting ...");
 
-            // Stop the JVM ????
+            // Stop the JVM, with failure status (1)
             Runtime.getRuntime()
                    .exit(1);
         }
