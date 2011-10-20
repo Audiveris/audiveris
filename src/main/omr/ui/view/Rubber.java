@@ -22,6 +22,7 @@ import static omr.selection.MouseMovement.*;
 import omr.ui.Colors;
 
 import java.awt.BasicStroke;
+import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -30,6 +31,8 @@ import java.awt.Rectangle;
 import java.awt.Stroke;
 import static java.awt.event.InputEvent.*;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.JComponent;
@@ -98,6 +101,11 @@ public class Rubber
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Rubber.class);
     private static AtomicInteger globalId = new AtomicInteger(0);
+
+    /** To handle zoom through mouse wheel */
+    private static final double base = 2;
+    private static final double  intervals = 5;
+    private static final double  factor = Math.pow(base, 1d / intervals);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -261,6 +269,10 @@ public class Rubber
         // To be notified of mouse mouvements
         component.removeMouseMotionListener(this); // No multiple notifs
         component.addMouseMotionListener(this);
+
+        // To be notified of mouse  wheel mouvements
+        component.removeMouseWheelListener(this); // No multiple notifs
+        component.addMouseWheelListener(this);
     }
 
     //---------------------//
@@ -275,6 +287,7 @@ public class Rubber
         if (component != null) {
             component.removeMouseListener(this);
             component.removeMouseMotionListener(this);
+            component.removeMouseWheelListener(this);
         }
     }
 
@@ -417,6 +430,52 @@ public class Rubber
          .setCursor(Cursor.getDefaultCursor());
     }
 
+    //-----------------//
+    // mouseWheelMoved //
+    //-----------------//
+    /**
+     * Called when the mouse wheel is moved.
+     * If CTRL key is down, modify current zoom ratio accordingly, otherwise
+     * forward the wheel event to proper container (JScrollPane usually).
+     * @param e the mouse wheel event
+     */
+    @Override
+    public void mouseWheelMoved (MouseWheelEvent e)
+    {
+        // CTRL is down?
+        if (e.isControlDown()) {
+            double ratio = zoom.getRatio();
+
+            if (e.getWheelRotation() > 0) {
+                ratio /= factor;
+            } else {
+                ratio *= factor;
+            }
+
+            zoom.setRatio(ratio);
+        } else {
+            // Forward event to some container of the component?
+            Container container = component.getParent();
+
+            while (container != null) {
+                if (container instanceof JComponent) {
+                    JComponent           comp = (JComponent) container;
+                    MouseWheelListener[] listeners = comp.getMouseWheelListeners();
+
+                    if (listeners.length > 0) {
+                        for (MouseWheelListener listener : listeners) {
+                            listener.mouseWheelMoved(e);
+                        }
+
+                        return;
+                    }
+                }
+
+                container = container.getParent();
+            }
+        }
+    }
+
     //--------//
     // render //
     //--------//
@@ -433,7 +492,7 @@ public class Rubber
         if (rect != null) {
             Graphics2D g = (Graphics2D) unscaledGraphics.create();
 
-            Rectangle r = new Rectangle(rect);
+            Rectangle  r = new Rectangle(rect);
 
             if (zoom != null) {
                 zoom.scale(r);
