@@ -48,13 +48,16 @@ public class PaintingParameters
     /** Should the slots be painted */
     public static final String SLOT_PAINTING = "slotPainting";
 
-    /** Should the voices be painted */
-    public static final String VOICE_PAINTING = "voicePainting";
-
     /** A global property name for layers */
     public static final String LAYER_PAINTING = "layerPainting";
 
+    /** Should the voices be painted */
+    public static final String VOICE_PAINTING = "voicePainting";
+
     //~ Instance fields --------------------------------------------------------
+
+    /** Voice painting is chosen to be not persistent */
+    private boolean voicePainting = false;
 
     /** Layer painting is chosen to be not persistent */
     private PaintingLayer paintingLayer = PaintingLayer.INPUT;
@@ -135,7 +138,7 @@ public class PaintingParameters
     public void setPaintingLayer (PaintingLayer value)
     {
         PaintingLayer oldValue = getPaintingLayer();
-        /// constants.paintingLayer.setValue(value);
+        /// constants.paintingLayer.setValue(value); // For persistency
         paintingLayer = value;
         firePropertyChange(LAYER_PAINTING, oldValue, getPaintingLayer());
     }
@@ -145,7 +148,6 @@ public class PaintingParameters
     //------------------//
     public PaintingLayer getPaintingLayer ()
     {
-        /// return constants.paintingLayer.getValue();
         return paintingLayer;
     }
 
@@ -175,12 +177,15 @@ public class PaintingParameters
     //------------------//
     public void setVoicePainting (boolean value)
     {
-        boolean oldValue = constants.voicePainting.getValue();
-        constants.voicePainting.setValue(value);
-        firePropertyChange(
-            VOICE_PAINTING,
-            oldValue,
-            constants.voicePainting.getValue());
+        //        boolean oldValue = constants.voicePainting.getValue();
+        //        constants.voicePainting.setValue(value);
+        //        firePropertyChange(
+        //            VOICE_PAINTING,
+        //            oldValue,
+        //            constants.voicePainting.getValue());
+        boolean oldValue = voicePainting;
+        voicePainting = value;
+        firePropertyChange(VOICE_PAINTING, oldValue, voicePainting);
     }
 
     //-----------------//
@@ -188,7 +193,8 @@ public class PaintingParameters
     //-----------------//
     public boolean isVoicePainting ()
     {
-        return constants.voicePainting.getValue();
+        // return constants.voicePainting.getValue();
+        return voicePainting;
     }
 
     //--------------//
@@ -275,11 +281,6 @@ public class PaintingParameters
             true,
             "Should the slots be painted");
 
-        /** Should the voices be painted */
-        final Constant.Boolean voicePainting = new Constant.Boolean(
-            false,
-            "Should the voices be painted");
-
         /** Should the marks be painted */
         final Constant.Boolean markPainting = new Constant.Boolean(
             true,
@@ -294,6 +295,11 @@ public class PaintingParameters
         //        final PaintingLayer.Constant paintingLayer = new PaintingLayer.Constant(
         //            PaintingLayer.INPUT_OUTPUT,
         //            "Which layers should be painted");
+
+        //        /** Should the voices be painted */
+        //        final Constant.Boolean voicePainting = new Constant.Boolean(
+        //            false,
+        //            "Should the voices be painted");
     }
 
     //--------//

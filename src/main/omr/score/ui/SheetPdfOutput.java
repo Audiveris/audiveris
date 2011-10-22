@@ -100,6 +100,8 @@ public class SheetPdfOutput
                 PagePhysicalPainter painter = new PagePhysicalPainter(
                     g2,
                     Color.BLACK, // Foreground color
+                    false, // No voice painting
+                    true, // Paint staff lines
                     false); // No annotations
                 page.accept(painter);
 

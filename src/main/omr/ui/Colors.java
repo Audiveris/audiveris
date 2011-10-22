@@ -78,9 +78,12 @@ public class Colors
     public static final Color LINE_VERTICAL = new Color(0, 255, 255, alpha);
 
     /** Music for picture view */
+    public static final Color MUSIC_ALONE = Color.black;
+
+    /** Music for mixed picture view */
     public static final Color MUSIC_PICTURE = new Color(80, 255, 80, alpha);
 
-    /** Music for symbols view */
+    /** Music for mixed symbols view */
     public static final Color MUSIC_SYMBOLS = new Color(170, 255, 170, alpha);
 
     /** Rubber rectangle */

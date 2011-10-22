@@ -207,7 +207,6 @@ public abstract class Dash
     public void render (Graphics g)
     {
         if (box.intersects(g.getClipBounds())) {
-            ///Stroke oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
             line = getLine();
 
             Point start = new Point(
@@ -218,8 +217,6 @@ public abstract class Dash
                 (int) Math.rint(line.yAtX((double) box.x + box.width + 1)));
 
             g.drawLine(start.x, start.y, stop.x, stop.y);
-
-            ///((Graphics2D) g).setStroke(oldStroke);
         }
     }
 

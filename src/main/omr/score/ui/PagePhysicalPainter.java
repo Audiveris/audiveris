@@ -55,7 +55,6 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Stroke;
-import java.awt.geom.Rectangle2D;
 import java.util.ConcurrentModificationException;
 
 /**
@@ -90,16 +89,17 @@ public class PagePhysicalPainter
      *
      * @param graphics Graphic context
      * @param color the color to be used for foreground
+     * @param coloredVoices true for voices with different colors
+     * @param linePainting true for painting staff lines
      * @param annotated true if annotations are to be drawn
      */
     public PagePhysicalPainter (Graphics graphics,
                                 Color    color,
+                                boolean  coloredVoices,
+                                boolean  linePainting,
                                 boolean  annotated)
     {
-        super(graphics, annotated);
-
-        // Use a specific color for all score entities
-        g.setColor(color);
+        super(graphics, color, coloredVoices, linePainting, annotated);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -179,6 +179,8 @@ public class PagePhysicalPainter
     @Override
     public boolean visit (Barline barline)
     {
+        g.setColor(defaultColor);
+
         try {
             //barline.render(g);
             Stroke oldStroke = g.getStroke();
@@ -200,21 +202,7 @@ public class PagePhysicalPainter
                     box.height = (int) Math.ceil(glyph.getStopPoint().getY()) -
                                  box.y;
                     g.setClip(oldClip.intersection(box));
-                    //                    final PixelRectangle box = glyph.getContourBox();
-                    //                    double               top = Math.max(
-                    //                        oldClip.y,
-                    //                        glyph.getStartPoint().getY());
-                    //                    double               bot = Math.min(
-                    //                        oldClip.y + oldClip.height,
-                    //                        glyph.getStopPoint().getY());
-                    //                    final Rectangle2D    clip = new Rectangle2D.Double(
-                    //                        box.x,
-                    //                        top,
-                    //                        box.width,
-                    //                        bot - top);
-                    //                    g.setClip(clip);
 
-                    //
                     glyph.renderLine(g);
 
                     g.setClip(oldClip);
@@ -241,16 +229,13 @@ public class PagePhysicalPainter
     public boolean visit (Chord chord)
     {
         try {
-            // Super: check, flags
+            // Super: check, voice color, flags
             if (!super.visit(chord)) {
                 return false;
             }
 
             // Draw the stem (physical)
             if (chord.getStem() != null) {
-                Stroke oldStroke = g.getStroke();
-                g.setStroke(stemStroke);
-
                 final PixelPoint tail = chord.getTailLocation();
                 final PixelPoint head = new PixelPoint(chord.getHeadLocation());
 
@@ -266,7 +251,6 @@ public class PagePhysicalPainter
                 }
 
                 g.drawLine(head.x, head.y, tail.x, tail.y);
-                g.setStroke(oldStroke);
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
@@ -303,8 +287,7 @@ public class PagePhysicalPainter
                 }
 
                 // Draw slot vertical lines ?
-                if (PaintingParameters.getInstance()
-                                      .isSlotPainting() &&
+                if (parameters.isSlotPainting() &&
                     (measure.getSlots() != null)) {
                     for (Slot slot : measure.getSlots()) {
                         drawSlot(false, measure, slot, Colors.SLOT);
@@ -386,7 +369,7 @@ public class PagePhysicalPainter
                 page.acceptChildren(this);
             } else {
                 // Render only what we have got so far...
-                g.setStroke(lineStroke);
+                g.setColor(defaultColor);
 
                 // Staff lines
                 sheet.getStaffManager()
@@ -394,7 +377,6 @@ public class PagePhysicalPainter
 
                 if (sheet.getHorizontals() != null) {
                     // Horizontals
-                    g.setStroke(lineStroke);
 
                     // Ledgers
                     for (Ledger ledger : sheet.getHorizontals()
@@ -495,7 +477,7 @@ public class PagePhysicalPainter
             // Determine proper font size for the system
             musicFont = MusicFont.getFont(scale.interline());
 
-            g.setStroke(lineStroke);
+            g.setColor(defaultColor);
 
             // Ledgers
             for (Glyph ledger : systemInfo.getLedgers()) {

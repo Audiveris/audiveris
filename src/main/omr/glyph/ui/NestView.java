@@ -28,6 +28,8 @@ import omr.log.Logger;
 
 import omr.math.Circle;
 
+import omr.score.ui.PaintingParameters;
+
 import omr.selection.UserEvent;
 
 import omr.ui.util.UIUtilities;
@@ -103,10 +105,12 @@ public class NestView
 
         setBackground(Color.white);
 
-        // (Weakly) listening on ViewParameters properties
+        // (Weakly) listening on ViewParameters and PaintingParameters
+        PropertyChangeListener listener = new WeakPropertyChangeListener(this);
         ViewParameters.getInstance()
-                      .addPropertyChangeListener(
-            new WeakPropertyChangeListener(this));
+                      .addPropertyChangeListener(listener);
+        PaintingParameters.getInstance()
+                          .addPropertyChangeListener(listener);
     }
 
     //~ Methods ----------------------------------------------------------------

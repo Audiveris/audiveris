@@ -72,10 +72,9 @@ public class PictureView
         // Inject dependency of pixel location
         view.setLocationService(sheet.getLocationService());
 
-        // Listen to painting parameters
+        // Listen to all painting parameters
         PaintingParameters.getInstance()
                           .addPropertyChangeListener(
-            PaintingParameters.LAYER_PAINTING,
             new WeakPropertyChangeListener(this));
 
         // Insert view
@@ -128,9 +127,15 @@ public class PictureView
 
             // Render the recognized score entities?
             if (painting.isOutputPainting()) {
+                boolean mixed = painting.isInputPainting();
                 sheet.getPage()
                      .accept(
-                    new PagePhysicalPainter(g, Colors.MUSIC_PICTURE, false));
+                    new PagePhysicalPainter(
+                        g,
+                        mixed ? Colors.MUSIC_PICTURE : Colors.MUSIC_ALONE,
+                        mixed ? false : painting.isVoicePainting(),
+                        true,
+                        false));
 
                 if (sheet.getTargetBuilder() != null) {
                     sheet.getTargetBuilder()

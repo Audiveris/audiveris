@@ -1583,7 +1583,7 @@ public class Chord
                 tailLocation = headLocation;
             }
         } else {
-            logger.warning("No notes in chord " + this);
+            logger.warning("No notes in chord " + this, new Throwable("Stack"));
         }
     }
 

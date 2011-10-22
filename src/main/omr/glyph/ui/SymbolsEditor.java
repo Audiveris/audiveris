@@ -58,8 +58,8 @@ import omr.ui.PixelCount;
 import omr.ui.view.ScrollView;
 
 import omr.util.Implement;
-import omr.util.WeakPropertyChangeListener;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -167,12 +167,6 @@ public class SymbolsEditor
         ScrollView slv = new ScrollView(view);
         sheet.getAssembly()
              .addViewTab(Step.SYMBOLS_TAB, slv, boardsPane);
-
-        // Listen to painting parameters
-        PaintingParameters.getInstance()
-                          .addPropertyChangeListener(
-            PaintingParameters.ANNOTATION_PAINTING,
-            new WeakPropertyChangeListener(this));
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -255,12 +249,6 @@ public class SymbolsEditor
                 symbolsBuilder,
                 Arrays.asList(sheet.getHorizontalLag(), sheet.getVerticalLag()));
             setName("SymbolsEditor-MyView");
-
-            // Listen to painting parameters
-            PaintingParameters.getInstance()
-                              .addPropertyChangeListener(
-                PaintingParameters.LAYER_PAINTING,
-                new WeakPropertyChangeListener(this));
         }
 
         //~ Methods ------------------------------------------------------------
@@ -422,10 +410,14 @@ public class SymbolsEditor
             }
 
             if (painting.isOutputPainting()) {
+                boolean             mixed = painting.isInputPainting();
+
                 // Render the recognized score entities
                 PagePhysicalPainter painter = new PagePhysicalPainter(
                     g,
-                    Colors.MUSIC_SYMBOLS,
+                    mixed ? Colors.MUSIC_SYMBOLS : Colors.MUSIC_ALONE,
+                    mixed ? false : painting.isVoicePainting(),
+                    false,
                     painting.isAnnotationPainting());
                 sheet.getPage()
                      .accept(painter);

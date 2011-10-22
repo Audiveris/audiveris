@@ -48,7 +48,7 @@
     <action domain="VIEW" section="10"  class="omr.score.ui.PaintingParameters"               method="switchLayers"  button="javax.swing.JButton"/>
     <action domain="VIEW" section="10"  class="omr.score.ui.PaintingParameters"               method="toggleAnnotations" item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="20"  class="omr.score.ui.PaintingParameters"               method="toggleSlots"    item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="20"  class="omr.score.ui.PaintingParameters"               method="toggleVoices"   item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="20"  class="omr.score.ui.PaintingParameters"               method="toggleVoices"   item="javax.swing.JCheckBoxMenuItem" button="javax.swing.JToggleButton" />
     <action domain="VIEW" section="20"  class="omr.score.ui.PaintingParameters"               method="toggleMarks"    item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="30"  class="omr.glyph.ui.ViewParameters"                   method="toggleLines"    item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="30"  class="omr.glyph.ui.ViewParameters"                   method="toggleCircles"  item="javax.swing.JCheckBoxMenuItem"/>

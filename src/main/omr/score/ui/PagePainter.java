@@ -26,6 +26,7 @@ import omr.score.Score;
 import omr.score.common.PixelDimension;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
+import omr.score.entity.AbstractNotation;
 import omr.score.entity.Arpeggiate;
 import omr.score.entity.Articulation;
 import omr.score.entity.Beam;
@@ -48,6 +49,7 @@ import omr.score.entity.Text;
 import omr.score.entity.TimeSignature;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
 import omr.score.entity.Tuplet;
+import omr.score.entity.Voice;
 import omr.score.entity.Wedge;
 import omr.score.visitor.AbstractScoreVisitor;
 
@@ -63,8 +65,10 @@ import omr.ui.symbol.OmrFont;
 import omr.ui.symbol.ShapeSymbol;
 import omr.ui.symbol.Symbols;
 import static omr.ui.symbol.Symbols.*;
+import omr.ui.util.UIUtilities;
 
 import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -77,6 +81,8 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.util.ConcurrentModificationException;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * Class <code>PagePainter</code> is an abstract class that defines common
@@ -114,15 +120,47 @@ public abstract class PagePainter
         constants.basicFontSize.getValue());
 
     /** Abscissa offset, in pixels, for annotation near system */
-    protected static int annotationDx = 15;
+    protected static final int annotationDx = 15;
 
     /** Ordinate offset, in pixels, for annotation near staff or system */
-    protected static int annotationDy = 15;
+    protected static final int annotationDy = 15;
+
+    // Painting parameters
+    protected static final PaintingParameters parameters = PaintingParameters.getInstance();
+
+    /** Sequence of colors for voices. TODO: Choose better colors, with alpha! */
+    private static final int alpha = 150;
+    private static final Color[]              voiceColors = new Color[] {
+                                                                
+    /** Cyan */
+    new Color(0, 255, 255, alpha), 
+    /** Orange */
+    new Color(255, 200, 0, alpha), 
+    /** Pink */
+    new Color(255, 175, 175, alpha), 
+    /** Green */
+    new Color(0, 255, 0, alpha), 
+    /** Magenta */
+    new Color(255, 0, 255, alpha), 
+    /** Blue */
+    new Color(0, 0, 255, alpha), 
+    /** Yellow */
+    new Color(255, 255, 0, alpha)
+                                                            };
 
     //~ Instance fields --------------------------------------------------------
 
+    /** Flag for painting staff lines */
+    protected final boolean linePainting;
+
     // Graphic context
     protected final Graphics2D g;
+
+    // Global color
+    protected final Color   defaultColor;
+
+    // Painting voices with different colors?
+    protected final boolean coloredVoices;
 
     // Should we draw annotations?
     protected final boolean annotated;
@@ -162,13 +200,25 @@ public abstract class PagePainter
      * Creates a new PagePainter object.
      *
      * @param graphics Graphic context
+     * @param color the default color
+     * @param coloredVoices true for voices with different colors
+     * @param linePainting true for painting staff lines
      * @param annotated true if annotations are to be drawn
      */
     public PagePainter (Graphics graphics,
+                        Color    color,
+                        boolean  coloredVoices,
+                        boolean  linePainting,
                         boolean  annotated)
     {
         g = (Graphics2D) graphics.create();
+        this.defaultColor = color;
+        this.coloredVoices = coloredVoices;
+        this.linePainting = linePainting;
         this.annotated = annotated;
+
+        // Use a specific color for all score entities
+        g.setColor(color);
 
         // Anti-aliasing
         g.setRenderingHint(
@@ -288,7 +338,24 @@ public abstract class PagePainter
             polygon.addPoint(left.x, left.y + dy);
             polygon.addPoint(right.x, right.y + dy);
             polygon.addPoint(right.x, right.y - dy);
-            g.fill(polygon);
+
+            // Related voices
+            Set<Voice> voices = new LinkedHashSet<Voice>();
+
+            for (Chord chord : beam.getChords()) {
+                Voice voice = chord.getVoice();
+
+                if (voice != null) {
+                    voices.add(voice);
+                } else {
+                    ///chord.addError("No voice for chord");
+                }
+            }
+
+            for (Voice voice : voices) {
+                g.setColor(colorOf(voice));
+                g.fill(polygon);
+            }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warning(
@@ -306,17 +373,26 @@ public abstract class PagePainter
     public boolean visit (Chord chord)
     {
         try {
-            if (chord.getStem() == null) {
-                return true;
-            }
-
             final PixelPoint tail = chord.getTailLocation();
             final PixelPoint head = chord.getHeadLocation();
 
             if ((tail == null) || (head == null)) {
-                chord.addError("No head - tail defined for chord");
+                ///chord.addError("No head - tail defined for chord");
 
                 return false;
+            }
+
+            // Voice indication ?
+            if (coloredVoices) {
+                g.setColor(defaultColor);
+
+                Voice voice = chord.getVoice();
+
+                if (voice != null) {
+                    g.setColor(colorOf(chord.getVoice()));
+                } else {
+                    ///chord.addError("No voice for chord " + chord);
+                }
             }
 
             // Flags ?
@@ -324,8 +400,7 @@ public abstract class PagePainter
 
             if (fn > 0) {
                 // We draw from tail
-                boolean    goesUp = head.y < tail.y;
-                PixelPoint loc = location(tail, chord);
+                boolean goesUp = head.y < tail.y;
                 paint(
                     Chord.getFlagShape(fn, goesUp),
                     location(tail, chord),
@@ -404,7 +479,7 @@ public abstract class PagePainter
 
             if (box == null) {
                 ///logger.warning("Null box for " + keySignature);
-                keySignature.addError("Null box for " + keySignature);
+                ///keySignature.addError("Null box for " + keySignature);
 
                 return false;
             }
@@ -445,6 +520,22 @@ public abstract class PagePainter
     @Override
     public boolean visit (MeasureElement measureElement)
     {
+        if (coloredVoices) {
+            g.setColor(defaultColor);
+
+            if (measureElement instanceof AbstractNotation) {
+                Chord chord = measureElement.getChord();
+
+                if (chord != null) {
+                    Voice voice = chord.getVoice();
+
+                    if (voice != null) {
+                        g.setColor(colorOf(voice));
+                    }
+                }
+            }
+        }
+
         try {
             if (measureElement.getShape() != null) {
                 try {
@@ -547,8 +638,48 @@ public abstract class PagePainter
     @Override
     public boolean visit (Slur slur)
     {
+        if (coloredVoices) {
+            g.setColor(defaultColor);
+
+            Voice voice = null;
+
+            if (slur.isTie()) {
+                Note note = slur.getLeftNote();
+
+                if (note != null) {
+                    Chord chord = note.getChord();
+
+                    if (voice == null) {
+                        voice = chord.getVoice();
+                    }
+                }
+
+                note = slur.getRightNote();
+
+                if (note != null) {
+                    Chord chord = note.getChord();
+
+                    if (voice == null) {
+                        voice = chord.getVoice();
+                    } else if ((chord.getVoice() != null) &&
+                               (chord.getVoice() != voice)) {
+                        ///slur.addError("Tie with different voices");
+                    }
+                }
+
+                if (voice != null) {
+                    g.setColor(colorOf(voice));
+                } else {
+                    ///slur.addError("No voice for tie");
+                }
+            }
+        }
+
         try {
+            Stroke oldStroke = g.getStroke();
+            g.setStroke(lineStroke);
             g.draw(slur.getCurve());
+            g.setStroke(oldStroke);
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warning(
@@ -565,6 +696,8 @@ public abstract class PagePainter
     @Override
     public boolean visit (SystemPart part)
     {
+        g.setColor(defaultColor);
+
         try {
             // We don't draw dummy parts?
             if (part.isDummy()) {
@@ -619,6 +752,8 @@ public abstract class PagePainter
     @Override
     public boolean visit (Text text)
     {
+        g.setColor(defaultColor);
+
         try {
             // Force y alignment for items of the same sentence
             final Sentence   sentence = text.getSentence();
@@ -652,6 +787,8 @@ public abstract class PagePainter
     @Override
     public boolean visit (TimeSignature timeSignature)
     {
+        g.setColor(defaultColor);
+
         try {
             final Shape      shape = timeSignature.getShape();
             final PixelPoint center = timeSignature.getCenter();
@@ -682,9 +819,9 @@ public abstract class PagePainter
             logger.warning("Invalid time signature", ex);
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            timeSignature.addError(
-                timeSignature.getGlyphs().iterator().next(),
-                "Error painting timeSignature " + ex);
+//            timeSignature.addError(
+//                timeSignature.getGlyphs().iterator().next(),
+//                "Error painting timeSignature " + ex);
         }
 
         return true;
@@ -696,6 +833,8 @@ public abstract class PagePainter
     @Override
     public boolean visit (Wedge wedge)
     {
+        g.setColor(defaultColor);
+
         try {
             if (wedge.isStart()) {
                 final PixelRectangle box = wedge.getGlyph()
@@ -821,7 +960,11 @@ public abstract class PagePainter
             BasicStroke.JOIN_ROUND);
 
         // Set stroke for lines
-        g.setStroke(lineStroke);
+        if (linePainting) {
+            g.setStroke(lineStroke);
+        } else {
+            UIUtilities.setAbsoluteStroke(g, 1f);
+        }
     }
 
     //----------//
@@ -1008,6 +1151,27 @@ public abstract class PagePainter
         } else {
             // Symbol is on right side of stem
             return (int) (stemX + dx);
+        }
+    }
+
+    //---------//
+    // colorOf //
+    //---------//
+    /**
+     * Report the color to use when painting elements related to the provided
+     * voice
+     * @param voice the provided voice
+     * @return the color to use
+     */
+    private Color colorOf (Voice voice)
+    {
+        if (coloredVoices) {
+            // Use table of colors, circularly.
+            int index = (voice.getId() - 1) % voiceColors.length;
+
+            return voiceColors[index];
+        } else {
+            return defaultColor;
         }
     }
 
