@@ -236,7 +236,16 @@ public class UIUtilities
                 logger.warning("no ancestor is Frame");
             }
         } else {
-            final JFileChooser fc = new JFileChooser();
+            ///final JFileChooser fc = new JFileChooser();
+            // see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6317789
+            final JFileChooser fc = new JFileChooser() {
+                @Override
+                public void updateUI ()
+                {
+                    putClientProperty("FileChooser.useShellFolder", false);
+                    super.updateUI();
+                }
+            };
 
             // Pre-select the directory, and potentially the file to save to
             if (startFile != null) {
