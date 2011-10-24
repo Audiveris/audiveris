@@ -191,9 +191,6 @@ public class SystemInfo
     /** Abscissa of beginning of system. */
     private int left;
 
-    /** Width of widest Ledger in this system */
-    private int maxLedgerWidth = -1;
-
     /** Ordinate of top of first staff of the system. */
     private int top;
 

@@ -428,13 +428,19 @@ public abstract class AbstractBlobPattern
                 int      blobWeight = blob.getWeight();
 
                 if (blobWeight < minBlobWeight) {
-                    logger.info(
-                        "Purged " + blob + " weight:" +
-                        (float) scale.pixelsToAreaFrac(blobWeight));
+                    if (logger.isFineEnabled()) {
+                        logger.info(
+                            "Purged " + blob + " weight:" +
+                            (float) scale.pixelsToAreaFrac(blobWeight));
+                    }
+
                     it.remove();
                 } else if (blob.getAverageLine()
                                .isVertical()) {
-                    logger.info("Purged vertical " + blob);
+                    if (logger.isFineEnabled()) {
+                        logger.info("Purged vertical " + blob);
+                    }
+
                     it.remove();
                 }
             }

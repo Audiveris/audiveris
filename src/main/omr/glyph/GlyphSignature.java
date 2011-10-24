@@ -74,6 +74,14 @@ public class GlyphSignature
     //~ Methods ----------------------------------------------------------------
 
     //-----------//
+    // getWeight //
+    //-----------//
+    public int getWeight ()
+    {
+        return weight;
+    }
+
+    //-----------//
     // compareTo //
     //-----------//
     @Implement(Comparable.class)

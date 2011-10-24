@@ -1573,7 +1573,7 @@ public class BasicSection
         StringBuilder sb = new StringBuilder(super.internalsString());
 
         if (oppositeSections != null) {
-            sb.append(" oppos:")
+            sb.append("/")
               .append(oppositeSections.size());
         }
 

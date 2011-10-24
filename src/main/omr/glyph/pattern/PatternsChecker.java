@@ -62,6 +62,8 @@ public class PatternsChecker
         new TextAreaPattern(system), //   Glyphs -> Text
         new SentencePattern(system), // Text -> sentences
                                      //
+        new SplitPattern(system),
+                       
         new HiddenSlurPattern(system),
                        
         system.getSlurInspector(),
