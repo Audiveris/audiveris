@@ -34,7 +34,6 @@ import omr.score.entity.ScoreSystem;
 import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
 
-import omr.sheet.Ledger;
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
@@ -733,9 +732,7 @@ public class GlyphChecker
                         return true;
                     }
 
-                    Set<Glyph> ledgers = staff.getLedgersToStaff(
-                        point,
-                        system);
+                    Set<Glyph> ledgers = staff.getLedgersToStaff(point, system);
 
                     return !ledgers.isEmpty();
                 }

@@ -107,12 +107,6 @@ public class SplitPattern
                 continue;
             }
 
-            if (logger.isFineEnabled()) {
-                logger.info(
-                    "S#" + system.getId() + " splitPattern on G#" +
-                    glyph.getId());
-            }
-
             if (splitGlyph(glyph)) {
                 nb++;
             }

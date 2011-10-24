@@ -144,6 +144,11 @@ public class Tuplet
             for (Chord chord : chords) {
                 chord.setTupletFactor(factor);
             }
+        } else {
+            // Nullify shape unless manual
+            if (!glyph.isManualShape()) {
+                glyph.setShape(null);
+            }
         }
     }
 
@@ -165,7 +170,7 @@ public class Tuplet
      * @param glyph underlying glyph
      * @param measure measure where the sign is located
      * @param point location for the sign
-     * @param candidates the chords candidates, ordered wrt the sign
+     * @param candidates the chords candidates, ordered wrt distance to sign
      * @param requiredStaff the required containing staff if known, or null
      * @return the set of embraced chords, ordered from left to right, or null
      * when the retrieval has failed
@@ -235,6 +240,10 @@ public class Tuplet
 
             // Check we have collected the exact amount of time
             if (collector.isTooLong()) {
+                measure.addError(glyph, collector.getStatusMessage());
+
+                return null;
+            } else if (collector.isOutside()) {
                 measure.addError(glyph, collector.getStatusMessage());
 
                 return null;
@@ -385,7 +394,8 @@ public class Tuplet
         public enum Status {
             //~ Enumeration constant initializers ------------------------------
 
-            TOO_SHORT("Too short"),OK("Correct"), TOO_LONG("Too long");
+            TOO_SHORT("Too short"),OK("Correct"), TOO_LONG("Too long"),
+            OUTSIDE("Outside chords");
 
             //~ Instance fields ------------------------------------------------
 
@@ -442,6 +452,11 @@ public class Tuplet
         public boolean isOk ()
         {
             return status == Status.OK;
+        }
+
+        public boolean isOutside ()
+        {
+            return status == Status.OUTSIDE;
         }
 
         public String getStatusMessage ()
@@ -508,7 +523,12 @@ public class Tuplet
 
                 // Update status
                 if (total.equals(expectedTotal)) {
-                    status = Status.OK;
+                    // Check tuplet sign is within chords abscissae
+                    if (isWithinChords()) {
+                        status = Status.OK;
+                    } else {
+                        status = Status.OUTSIDE;
+                    }
                 } else if (total.compareTo(expectedTotal) > 0) {
                     status = Status.TOO_LONG;
                 }
@@ -521,6 +541,15 @@ public class Tuplet
             for (Chord chord : newChords) {
                 include(chord);
             }
+        }
+
+        /** Check whether the tuplet sign lies between the chords abscissae */
+        private boolean isWithinChords ()
+        {
+            int signX = glyph.getAreaCenter().x;
+
+            return (signX >= chords.first().getTailLocation().x) &&
+                   (signX <= chords.last().getTailLocation().x);
         }
     }
 }
