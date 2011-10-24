@@ -160,4 +160,10 @@ interface GlyphRecognition
      * @param shape the shape to forbid
      */
     void forbidShape (Shape shape);
+
+    /**
+     * Nullify the current evaluation, without impact on forbidden shapes, to
+     * allow a new evaluation computation.
+     */
+    void resetEvaluation ();
 }

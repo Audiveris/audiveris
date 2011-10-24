@@ -57,7 +57,7 @@ import java.util.Set;
 /**
  * Class <code>HorizontalsBuilder</code> is in charge of retrieving horizontal
  * dashes (ledgers, legato signs and endings) in a given system.
- * 
+ *
  * <p>Nota: Endings are currently disabled
  *
  * @author Hervé Bitteur
@@ -763,7 +763,7 @@ public class HorizontalsBuilder
             constants.minFullLedgerLength);
         int       maxStemDx = scale.toPixels(constants.maxStemDx);
         int       maxStemDy = scale.toPixels(constants.maxStemDy);
-        int       found = 0;
+        int       found = 0; // Number of ledgers found on this line
 
         // Define a bounding rectangle for the virtual line
         // Properly shifted and enlarged
@@ -839,10 +839,11 @@ public class HorizontalsBuilder
             }
 
             // OK!
-            Ledger ledger = new Ledger(context.stick, context.staff, index);
+            Glyph glyph = system.addGlyph(context.stick);
+            Ledger ledger = new Ledger(glyph, context.staff, index);
             context.staff.addLedger(ledger);
-            ledgers.add(context.stick);
-            context.stick.setShape(Shape.LEDGER);
+            ledgers.add(glyph);
+            glyph.setShape(Shape.LEDGER);
             found++;
 
             if (logger.isFineEnabled()) {

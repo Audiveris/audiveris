@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.grid;
 
+import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -37,8 +38,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -503,6 +506,37 @@ public class StaffInfo
         }
 
         ledgerSet.add(ledger);
+    }
+
+    //--------------//
+    // checkLedgers //
+    //--------------//
+    public void checkLedgers ()
+    {
+        if (ledgers == null) {
+            return;
+        }
+
+        for (Iterator<Entry<Integer, SortedSet<Ledger>>> iter = ledgers.entrySet()
+                                                                       .iterator();
+             iter.hasNext();) {
+            Entry<Integer, SortedSet<Ledger>> entry = iter.next();
+            int                               pitch = entry.getKey();
+            SortedSet<Ledger>                 ledgerSet = entry.getValue();
+
+            for (Iterator<Ledger> it = ledgerSet.iterator(); it.hasNext();) {
+                Ledger ledger = it.next();
+
+                if (ledger.getStick()
+                          .getShape() != Shape.LEDGER) {
+                    it.remove();
+                }
+            }
+
+            if (ledgerSet.isEmpty()) {
+                iter.remove();
+            }
+        }
     }
 
     //---------//

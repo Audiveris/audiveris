@@ -123,7 +123,7 @@ public class BoundaryTask
     public void epilog (Sheet sheet)
     {
         Stepping.reprocessSheet(
-            Steps.valueOf(Steps.SYMBOLS),
+            Steps.valueOf(Steps.SPLIT),
             sheet,
             sheet.getSystems(),
             false);

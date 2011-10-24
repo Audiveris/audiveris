@@ -26,7 +26,6 @@ import omr.sheet.SystemInfo;
 
 import omr.util.TreeNode;
 
-import java.util.Collection;
 import java.util.Iterator;
 
 /**
@@ -118,31 +117,6 @@ public class PatternsStep
 
             if (!system.runPatterns()) {
                 return; // No more progress made
-            }
-        }
-    }
-
-    //----------//
-    // doEpilog //
-    //----------//
-    @Override
-    protected void doEpilog (Collection<SystemInfo> systems,
-                             Sheet                  sheet)
-        throws StepException
-    {
-        // For the very first time, we reperform the VERTICALS step
-        if (!sheet.isDone(this)) {
-            sheet.done(this);
-
-            // Reperform verticals once
-            try {
-                Stepping.reprocessSheet(
-                    Steps.valueOf("VERTICALS"),
-                    sheet,
-                    systems,
-                    true);
-            } catch (Exception ex) {
-                logger.warning("Error in re-processing from " + this, ex);
             }
         }
     }

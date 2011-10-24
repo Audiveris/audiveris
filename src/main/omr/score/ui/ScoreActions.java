@@ -549,7 +549,7 @@ public class ScoreActions
             try {
                 Sheet sheet = SheetsController.getCurrentSheet();
                 Stepping.reprocessSheet(
-                    Steps.valueOf(Steps.VERTICALS),
+                    Steps.valueOf(Steps.SYMBOLS),
                     sheet,
                     null,
                     true);

@@ -64,6 +64,8 @@ public class PatternsChecker
                                      //
         new SplitPattern(system),
                        
+        new LedgerPattern(system),
+                       
         new HiddenSlurPattern(system),
                        
         system.getSlurInspector(),
@@ -77,8 +79,7 @@ public class PatternsChecker
         new AlterPattern(system),
                        
         new LeftOverPattern(system)
-                   //,new StemPattern(system) // TO BE REMOVED???
-        };
+                   };
     }
 
     //~ Methods ----------------------------------------------------------------

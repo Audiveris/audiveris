@@ -287,4 +287,12 @@ class BasicRecognition
 
         forbiddenShapes.add(shape);
     }
+
+    //-----------------//
+    // resetEvaluation //
+    //-----------------//
+    public void resetEvaluation ()
+    {
+        evaluation = null;
+    }
 }

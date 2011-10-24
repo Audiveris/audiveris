@@ -226,7 +226,7 @@ public class GlyphInspector
         Collections.sort(glyphs, Glyph.reverseWeightComparator);
 
         for (int index = 0; index < glyphs.size(); index++) {
-            Glyph        seed = glyphs.get(index);
+            Glyph seed = glyphs.get(index);
 
             // Now process this seed, by looking at smaller ones
             // Do not cross a stem if any is found
@@ -299,6 +299,7 @@ public class GlyphInspector
                          (shape == Shape.VOID_NOTEHEAD) ||
                          (shape == Shape.VOID_NOTEHEAD_2) ||
                          (shape == Shape.VOID_NOTEHEAD_3) ||
+                         (shape == Shape.STACCATISSIMO) ||
                          (glyph.getDoubt() >= GlyphInspector.getMinCompoundPartDoubt()))));
 
             if (!ok) {
@@ -374,7 +375,7 @@ public class GlyphInspector
             10000.0,
             "Maximum doubt for a text symbol");
         Evaluation.Doubt minCompoundPartDoubt = new Evaluation.Doubt(
-            1.5,
+            1.1, // was 1.5,
             "Minimum doubt for a suitable compound part");
         Evaluation.Doubt hookMaxDoubt = new Evaluation.Doubt(
             5d,

@@ -156,23 +156,11 @@ public class AssignTask
     @Override
     public void epilog (Sheet sheet)
     {
-        //        switch (orientation) {
-        //        case HORIZONTAL :
-        //            Stepping.reprocessSheet(
-        //                Steps.valueOf(Steps.SPLIT),
-        //                sheet,
-        //                null,
-        //                false);
-        //
-        //            break;
-        //
-        //        case VERTICAL :
-
-        // We rebuild from VERTICALS is case of deassignment
+        // We rebuild from SYMBOLS is case of deassignment
         // And just from PATTERNS in case of assignment
         if (shape == null) {
             Stepping.reprocessSheet(
-                Steps.valueOf(Steps.VERTICALS),
+                Steps.valueOf(Steps.SYMBOLS),
                 sheet,
                 getImpactedSystems(sheet),
                 false);
@@ -183,8 +171,6 @@ public class AssignTask
                 getImpactedSystems(sheet),
                 false);
         }
-
-        //        }
     }
 
     //-----------------//

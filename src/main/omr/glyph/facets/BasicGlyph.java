@@ -721,6 +721,11 @@ public class BasicGlyph
         alignment.renderLine(g);
     }
 
+    public void resetEvaluation ()
+    {
+        recognition.resetEvaluation();
+    }
+
     //----------//
     // toString //
     //----------//

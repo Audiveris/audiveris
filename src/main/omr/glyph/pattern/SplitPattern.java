@@ -232,7 +232,9 @@ public class SplitPattern
         }
 
         // Now actually perform the split!
-        logger.info(system.getLogPrefix() + "Performing " + bestSplit);
+        if (logger.isFineEnabled()) {
+            logger.info(system.getLogPrefix() + "Performing " + bestSplit);
+        }
 
         for (Glyph glyph : bestSplit.sigs.values()) {
             system.addGlyph(glyph);
