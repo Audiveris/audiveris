@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<stick shape="FLAT" interline="18" id="685">
+<glyph shape="FLAT" interline="18" id="685">
     <stem-number>0</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>-3.6619718309859155</pitch-position>
-    <section first-pos="254" id="502">
+    <section orientation="VERTICAL" first-pos="254" id="502">
         <run start="985" level="60" length="42"/>
         <run start="985" level="33" length="42"/>
     </section>
-    <section first-pos="256" id="512">
+    <section orientation="VERTICAL" first-pos="256" id="512">
         <run start="1008" level="130" length="6"/>
         <run start="1008" level="188" length="3"/>
     </section>
-    <section first-pos="256" id="513">
+    <section orientation="VERTICAL" first-pos="256" id="513">
         <run start="1024" level="200" length="2"/>
         <run start="1023" level="177" length="3"/>
         <run start="1022" level="103" length="3"/>
@@ -20,10 +20,10 @@
         <run start="1019" level="41" length="4"/>
         <run start="1017" level="35" length="5"/>
     </section>
-    <section first-pos="262" id="532">
+    <section orientation="VERTICAL" first-pos="262" id="532">
         <run start="1010" level="88" length="2"/>
     </section>
-    <section first-pos="263" id="543">
+    <section orientation="VERTICAL" first-pos="263" id="543">
         <run start="1008" level="46" length="14"/>
         <run start="1008" level="39" length="13"/>
         <run start="1008" level="39" length="12"/>
@@ -31,10 +31,10 @@
         <run start="1008" level="47" length="10"/>
         <run start="1008" level="78" length="9"/>
     </section>
-    <section first-pos="269" id="555">
+    <section orientation="VERTICAL" first-pos="269" id="555">
         <run start="1008" level="200" length="2"/>
     </section>
-    <section first-pos="269" id="556">
+    <section orientation="VERTICAL" first-pos="269" id="556">
         <run start="1011" level="195" length="2"/>
     </section>
-</stick>
+</glyph>

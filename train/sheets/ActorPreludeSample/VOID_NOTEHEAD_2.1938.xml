@@ -3,7 +3,7 @@
     <stem-number>1</stem-number>
     <with-ledger>true</with-ledger>
     <pitch-position>-8.166666666666666</pitch-position>
-    <section first-pos="2854" id="9333">
+    <section orientation="VERTICAL" first-pos="2854" id="9333">
         <run start="596" level="192" length="1"/>
         <run start="594" level="192" length="3"/>
         <run start="592" level="115" length="5"/>
@@ -22,13 +22,13 @@
         <run start="584" level="52" length="2"/>
         <run start="584" level="74" length="2"/>
     </section>
-    <section first-pos="2858" id="9403">
+    <section orientation="VERTICAL" first-pos="2858" id="9403">
         <run start="597" level="121" length="12"/>
     </section>
-    <section first-pos="2858" id="9404">
+    <section orientation="VERTICAL" first-pos="2858" id="9404">
         <run start="610" level="167" length="1"/>
     </section>
-    <section first-pos="2859" id="9418">
+    <section orientation="VERTICAL" first-pos="2859" id="9418">
         <run start="596" level="90" length="7"/>
         <run start="596" level="96" length="6"/>
         <run start="596" level="113" length="6"/>
@@ -42,7 +42,7 @@
         <run start="590" level="105" length="7"/>
         <run start="589" level="74" length="6"/>
     </section>
-    <section first-pos="2859" id="9419">
+    <section orientation="VERTICAL" first-pos="2859" id="9419">
         <run start="608" level="192" length="1"/>
         <run start="608" level="192" length="1"/>
         <run start="607" level="192" length="2"/>
@@ -56,14 +56,14 @@
         <run start="602" level="48" length="5"/>
         <run start="601" level="50" length="5"/>
     </section>
-    <section first-pos="2871" id="9455">
+    <section orientation="VERTICAL" first-pos="2871" id="9455">
         <run start="585" level="56" length="8"/>
     </section>
-    <section first-pos="2871" id="9456">
+    <section orientation="VERTICAL" first-pos="2871" id="9456">
         <run start="596" level="87" length="9"/>
         <run start="596" level="127" length="6"/>
     </section>
-    <section first-pos="2872" id="9469">
+    <section orientation="VERTICAL" first-pos="2872" id="9469">
         <run start="586" level="95" length="4"/>
     </section>
 </glyph>

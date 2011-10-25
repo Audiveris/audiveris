@@ -3,10 +3,10 @@
     <stem-number>0</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>-1.5</pitch-position>
-    <section first-pos="1316" id="3953">
+    <section orientation="VERTICAL" first-pos="1316" id="3953">
         <run start="2428" level="192" length="2"/>
     </section>
-    <section first-pos="1317" id="3974">
+    <section orientation="VERTICAL" first-pos="1317" id="3974">
         <run start="2428" level="168" length="7"/>
         <run start="2428" level="68" length="8"/>
         <run start="2428" level="68" length="8"/>

@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<stick id="327" interline="22" shape="STRUCTURE">
+<glyph id="327" interline="22" shape="STRUCTURE">
     <stem-number>0</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>6.022988505747127</pitch-position>
-        <section id="3528" first-pos="1833">
+        <section orientation="VERTICAL" id="3528" first-pos="1833">
             <run start="742" length="11" level="165"/>
         </section>
-        <section id="3531" first-pos="1834">
+        <section orientation="VERTICAL" id="3531" first-pos="1834">
             <run start="714" length="59" level="116"/>
         </section>
-        <section id="3535" first-pos="1835">
+        <section orientation="VERTICAL" id="3535" first-pos="1835">
             <run start="712" length="68" level="6"/>
             <run start="711" length="69" level="70"/>
         </section>
-        <section id="3539" first-pos="1837">
+        <section orientation="VERTICAL" id="3539" first-pos="1837">
             <run start="709" length="14" level="34"/>
             <run start="708" length="14" level="22"/>
             <run start="707" length="16" level="24"/>
@@ -37,17 +37,17 @@
             <run start="700" length="17" level="48"/>
             <run start="701" length="15" level="69"/>
         </section>
-        <section id="3555" first-pos="1859">
+        <section orientation="VERTICAL" id="3555" first-pos="1859">
             <run start="704" length="10" level="66"/>
             <run start="706" length="7" level="182"/>
         </section>
-        <section id="3564" first-pos="1861">
+        <section orientation="VERTICAL" id="3564" first-pos="1861">
             <run start="708" length="1" level="218"/>
         </section>
-        <section id="3540" first-pos="1837">
+        <section orientation="VERTICAL" id="3540" first-pos="1837">
             <run start="725" length="3" level="170"/>
         </section>
-        <section id="3541" first-pos="1837">
+        <section orientation="VERTICAL" id="3541" first-pos="1837">
             <run start="731" length="1" level="172"/>
         </section>
-</stick>
+</glyph>

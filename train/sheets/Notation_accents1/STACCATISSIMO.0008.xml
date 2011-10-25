@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<stick shape="STACCATISSIMO" interline="15" id="8">
+<glyph shape="STACCATISSIMO" interline="15" id="8">
     <stem-number>0</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>-6.754098360655738</pitch-position>
-    <section first-pos="136" id="10">
+    <section orientation="VERTICAL" first-pos="136" id="10">
         <run start="8" level="105" length="8"/>
     </section>
-    <section first-pos="137" id="11">
+    <section orientation="VERTICAL" first-pos="137" id="11">
         <run start="8" level="47" length="13"/>
     </section>
-    <section first-pos="138" id="12">
+    <section orientation="VERTICAL" first-pos="138" id="12">
         <run start="7" level="28" length="17"/>
         <run start="7" level="28" length="17"/>
     </section>
-    <section first-pos="140" id="13">
+    <section orientation="VERTICAL" first-pos="140" id="13">
         <run start="8" level="47" length="13"/>
     </section>
-    <section first-pos="141" id="14">
+    <section orientation="VERTICAL" first-pos="141" id="14">
         <run start="8" level="104" length="8"/>
     </section>
-</stick>
+</glyph>

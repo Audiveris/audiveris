@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<stick id="1858" interline="22" shape="COMBINING_FLAG_1">
+<glyph id="1858" interline="22" shape="COMBINING_FLAG_1">
     <stem-number>1</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>-10.19047619047619</pitch-position>
-        <section id="2201" first-pos="615">
+        <section orientation="VERTICAL" id="2201" first-pos="615">
             <run start="2295" length="15" level="39"/>
             <run start="2297" length="13" level="23"/>
             <run start="2298" length="12" level="34"/>
@@ -20,23 +20,23 @@
             <run start="2311" length="12" level="34"/>
             <run start="2312" length="14" level="49"/>
         </section>
-        <section id="2227" first-pos="630">
+        <section orientation="VERTICAL" id="2227" first-pos="630">
             <run start="2313" length="20" level="68"/>
         </section>
-        <section id="2236" first-pos="631">
+        <section orientation="VERTICAL" id="2236" first-pos="631">
             <run start="2315" length="28" level="30"/>
             <run start="2317" length="26" level="39"/>
         </section>
-        <section id="2228" first-pos="630">
+        <section orientation="VERTICAL" id="2228" first-pos="630">
             <run start="2334" length="9" level="123"/>
         </section>
-        <section id="2223" first-pos="629">
+        <section orientation="VERTICAL" id="2223" first-pos="629">
             <run start="2340" length="2" level="190"/>
         </section>
-        <section id="2245" first-pos="633">
+        <section orientation="VERTICAL" id="2245" first-pos="633">
             <run start="2320" length="21" level="82"/>
         </section>
-        <section id="2248" first-pos="634">
+        <section orientation="VERTICAL" id="2248" first-pos="634">
             <run start="2326" length="11" level="154"/>
         </section>
-</stick>
+</glyph>

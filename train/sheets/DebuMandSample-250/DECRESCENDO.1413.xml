@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<stick shape="DECRESCENDO" interline="18" id="1413">
+<glyph shape="DECRESCENDO" interline="18" id="1413">
     <stem-number>0</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>-12.106666666666667</pitch-position>
-    <section first-pos="1352" id="2506">
+    <section orientation="VERTICAL" first-pos="1352" id="2506">
         <run start="1984" level="222" length="2"/>
         <run start="1984" level="58" length="3"/>
         <run start="1984" level="58" length="3"/>
@@ -37,7 +37,7 @@
         <run start="1983" level="58" length="3"/>
         <run start="1983" level="72" length="3"/>
     </section>
-    <section first-pos="1353" id="2507">
+    <section orientation="VERTICAL" first-pos="1353" id="2507">
         <run start="1963" level="114" length="4"/>
         <run start="1963" level="109" length="4"/>
         <run start="1963" level="109" length="4"/>
@@ -70,7 +70,7 @@
         <run start="1964" level="78" length="3"/>
         <run start="1964" level="72" length="3"/>
     </section>
-    <section first-pos="1389" id="2543">
+    <section orientation="VERTICAL" first-pos="1389" id="2543">
         <run start="1964" level="58" length="3"/>
         <run start="1964" level="58" length="3"/>
         <run start="1964" level="58" length="3"/>
@@ -422,7 +422,7 @@
         <run start="1971" level="109" length="4"/>
         <run start="1971" level="109" length="4"/>
     </section>
-    <section first-pos="1389" id="2544">
+    <section orientation="VERTICAL" first-pos="1389" id="2544">
         <run start="1983" level="78" length="3"/>
         <run start="1983" level="78" length="3"/>
         <run start="1983" level="78" length="3"/>
@@ -774,7 +774,7 @@
         <run start="1976" level="58" length="3"/>
         <run start="1976" level="58" length="3"/>
     </section>
-    <section first-pos="1739" id="3202">
+    <section orientation="VERTICAL" first-pos="1739" id="3202">
         <run start="1971" level="107" length="8"/>
         <run start="1971" level="109" length="8"/>
         <run start="1971" level="109" length="8"/>
@@ -878,4 +878,4 @@
         <run start="1973" level="109" length="4"/>
         <run start="1974" level="117" length="2"/>
     </section>
-</stick>
+</glyph>

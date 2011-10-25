@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<stick id="786" interline="22" shape="DOT">
+<glyph id="786" interline="22" shape="DOT">
     <stem-number>0</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>5.011494252873563</pitch-position>
-        <section id="4646" first-pos="1600">
+        <section orientation="VERTICAL" id="4646" first-pos="1600">
             <run start="1869" length="2" level="127"/>
         </section>
-        <section id="4647" first-pos="1601">
+        <section orientation="VERTICAL" id="4647" first-pos="1601">
             <run start="1867" length="7" level="37"/>
             <run start="1866" length="9" level="29"/>
             <run start="1865" length="10" level="27"/>
@@ -18,4 +18,4 @@
             <run start="1865" length="9" level="30"/>
             <run start="1866" length="7" level="39"/>
         </section>
-</stick>
+</glyph>

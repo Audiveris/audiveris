@@ -1,31 +1,31 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<stick shape="NOTEHEAD_BLACK_3" interline="18" id="1241">
+<glyph shape="NOTEHEAD_BLACK_3" interline="18" id="1241">
     <stem-number>1</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>-5.052631578947368</pitch-position>
-    <section first-pos="1701" id="3139">
+    <section orientation="VERTICAL" first-pos="1701" id="3139">
         <run start="2019" level="55" length="16"/>
         <run start="2019" level="43" length="16"/>
         <run start="2018" level="42" length="17"/>
         <run start="2017" level="44" length="18"/>
     </section>
-    <section first-pos="1701" id="3140">
+    <section orientation="VERTICAL" first-pos="1701" id="3140">
         <run start="2037" level="49" length="16"/>
         <run start="2037" level="30" length="16"/>
         <run start="2036" level="35" length="17"/>
         <run start="2036" level="35" length="17"/>
     </section>
-    <section first-pos="1701" id="3141">
+    <section orientation="VERTICAL" first-pos="1701" id="3141">
         <run start="2056" level="45" length="15"/>
         <run start="2056" level="32" length="15"/>
         <run start="2055" level="33" length="16"/>
         <run start="2054" level="35" length="17"/>
         <run start="2054" level="27" length="17"/>
     </section>
-    <section first-pos="1705" id="3148">
+    <section orientation="VERTICAL" first-pos="1705" id="3148">
         <run start="2017" level="40" length="36"/>
     </section>
-    <section first-pos="1706" id="3150">
+    <section orientation="VERTICAL" first-pos="1706" id="3150">
         <run start="2016" level="39" length="55"/>
         <run start="2016" level="35" length="55"/>
         <run start="2015" level="36" length="56"/>
@@ -35,7 +35,7 @@
         <run start="2015" level="34" length="56"/>
         <run start="2015" level="36" length="56"/>
     </section>
-    <section first-pos="1714" id="3159">
+    <section orientation="VERTICAL" first-pos="1714" id="3159">
         <run start="2015" level="16" length="18"/>
         <run start="2015" level="13" length="17"/>
         <run start="2015" level="19" length="16"/>
@@ -45,7 +45,7 @@
         <run start="2017" level="51" length="10"/>
         <run start="2019" level="99" length="6"/>
     </section>
-    <section first-pos="1714" id="3160">
+    <section orientation="VERTICAL" first-pos="1714" id="3160">
         <run start="2034" level="43" length="16"/>
         <run start="2034" level="51" length="16"/>
         <run start="2034" level="49" length="15"/>
@@ -54,7 +54,7 @@
         <run start="2034" level="59" length="12"/>
         <run start="2034" level="76" length="11"/>
     </section>
-    <section first-pos="1714" id="3161">
+    <section orientation="VERTICAL" first-pos="1714" id="3161">
         <run start="2052" level="27" length="18"/>
         <run start="2052" level="24" length="17"/>
         <run start="2052" level="21" length="16"/>
@@ -64,7 +64,7 @@
         <run start="2054" level="51" length="10"/>
         <run start="2056" level="99" length="6"/>
     </section>
-    <section first-pos="1721" id="3168">
+    <section orientation="VERTICAL" first-pos="1721" id="3168">
         <run start="2037" level="99" length="6"/>
     </section>
-</stick>
+</glyph>

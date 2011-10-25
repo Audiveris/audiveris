@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<stick shape="STRUCTURE" interline="19" id="737">
+<glyph shape="STRUCTURE" interline="19" id="737">
     <stem-number>0</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>1.2602739726027397</pitch-position>
-    <section first-pos="1338" id="2198">
+    <section orientation="VERTICAL" first-pos="1338" id="2198">
         <run start="2317" level="44" length="62"/>
         <run start="2314" level="42" length="65"/>
         <run start="2312" level="39" length="67"/>
     </section>
-    <section first-pos="1341" id="2207">
+    <section orientation="VERTICAL" first-pos="1341" id="2207">
         <run start="2311" level="39" length="13"/>
         <run start="2309" level="45" length="15"/>
         <run start="2309" level="32" length="15"/>
@@ -32,7 +32,7 @@
         <run start="2307" level="51" length="10"/>
         <run start="2309" level="99" length="6"/>
     </section>
-    <section first-pos="1341" id="2208">
+    <section orientation="VERTICAL" first-pos="1341" id="2208">
         <run start="2368" level="70" length="11"/>
         <run start="2368" level="74" length="11"/>
         <run start="2368" level="74" length="11"/>
@@ -145,12 +145,12 @@
         <run start="2372" level="110" length="11"/>
         <run start="2372" level="117" length="11"/>
     </section>
-    <section first-pos="1452" id="2386">
+    <section orientation="VERTICAL" first-pos="1452" id="2386">
         <run start="2325" level="45" length="58"/>
         <run start="2323" level="47" length="60"/>
         <run start="2321" level="192" length="62"/>
     </section>
-    <section first-pos="1455" id="2391">
+    <section orientation="VERTICAL" first-pos="1455" id="2391">
         <run start="2318" level="69" length="14"/>
         <run start="2318" level="49" length="14"/>
         <run start="2317" level="48" length="15"/>
@@ -173,4 +173,4 @@
         <run start="2316" level="105" length="10"/>
         <run start="2318" level="130" length="7"/>
     </section>
-</stick>
+</glyph>

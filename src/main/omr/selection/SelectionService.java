@@ -94,7 +94,7 @@ public class SelectionService
     //-----------------//
     public void dumpSubscribers ()
     {
-        logger.info(toString());
+        logger.info(toString() + " subscriber:");
 
         for (Class eventClass : allowedEvents) {
             List subscribers = getSubscribers(eventClass);
@@ -125,6 +125,7 @@ public class SelectionService
     {
         if (logger.isFineEnabled()) {
             logger.fine(this + " published: " + event);
+            ///dumpSubscribers();
         }
 
         // Check whether the event may be published on this service

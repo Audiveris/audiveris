@@ -61,10 +61,11 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
- * Class <code>BasicSection</code> is a basic implementation of {@link
- * Section}.
+ * Class {@code BasicSection} is a basic implementation of {@link Section}.
  *
  * <p>TODO: Check setGlyph implementation WRT containing Nest?
  * <p>TODO: Get rid of StickRelation part ASAP?
@@ -72,6 +73,7 @@ import javax.xml.bind.annotation.XmlElement;
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "section")
 public class BasicSection
     extends BasicVertex<Lag, Section>
     implements Section
@@ -83,12 +85,13 @@ public class BasicSection
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Section orientation */
-    private Orientation orientation;
-
     /** Position of first run */
     @XmlAttribute(name = "first-pos")
     private int firstPos;
+
+    /** Section orientation */
+    @XmlAttribute(name = "orientation")
+    private Orientation orientation;
 
     /** The collection of runs that make up the section */
     @XmlElement(name = "run")
@@ -1487,7 +1490,12 @@ public class BasicSection
 
         sb.append("{Section");
 
-        sb.append(isVertical() ? "V" : "H");
+        if (orientation != null) {
+            sb.append(isVertical() ? "V" : "H");
+        } else {
+            sb.append("?");
+        }
+
         sb.append("#")
           .append(getId());
 
@@ -1772,5 +1780,29 @@ public class BasicSection
         }
 
         return index;
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //---------//
+    // Adapter //
+    //---------//
+    /**
+     * Meant for JAXB handling of Section interface
+     */
+    public static class Adapter
+        extends XmlAdapter<BasicSection, Section>
+    {
+        //~ Methods ------------------------------------------------------------
+
+        public BasicSection marshal (Section s)
+        {
+            return (BasicSection) s;
+        }
+
+        public Section unmarshal (BasicSection s)
+        {
+            return s;
+        }
     }
 }

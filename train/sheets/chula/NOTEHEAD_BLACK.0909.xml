@@ -3,7 +3,7 @@
     <stem-number>1</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>-2.023529411764706</pitch-position>
-    <section first-pos="1953" id="3619">
+    <section orientation="VERTICAL" first-pos="1953" id="3619">
         <run start="1218" level="84" length="12"/>
         <run start="1217" level="80" length="13"/>
         <run start="1216" level="74" length="14"/>
@@ -27,7 +27,7 @@
         <run start="1211" level="67" length="15"/>
         <run start="1211" level="72" length="14"/>
     </section>
-    <section first-pos="1975" id="3692">
+    <section orientation="VERTICAL" first-pos="1975" id="3692">
         <run start="1213" level="71" length="9"/>
         <run start="1214" level="63" length="7"/>
         <run start="1217" level="82" length="3"/>

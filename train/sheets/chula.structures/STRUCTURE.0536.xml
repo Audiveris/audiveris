@@ -3,24 +3,24 @@
     <stem-number>0</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>-3.3488372093023258</pitch-position>
-    <section first-pos="817" id="1689">
+    <section orientation="VERTICAL" first-pos="817" id="1689">
         <run start="1783" level="155" length="3"/>
         <run start="1783" level="135" length="3"/>
     </section>
-    <section first-pos="818" id="1691">
+    <section orientation="VERTICAL" first-pos="818" id="1691">
         <run start="1803" level="159" length="3"/>
     </section>
-    <section first-pos="818" id="1692">
+    <section orientation="VERTICAL" first-pos="818" id="1692">
         <run start="1826" level="180" length="3"/>
     </section>
-    <section first-pos="819" id="1695">
+    <section orientation="VERTICAL" first-pos="819" id="1695">
         <run start="1777" level="127" length="74"/>
     </section>
-    <section first-pos="820" id="1699">
+    <section orientation="VERTICAL" first-pos="820" id="1699">
         <run start="1775" level="32" length="83"/>
         <run start="1773" level="118" length="84"/>
     </section>
-    <section first-pos="822" id="1701">
+    <section orientation="VERTICAL" first-pos="822" id="1701">
         <run start="1772" level="46" length="14"/>
         <run start="1770" level="43" length="15"/>
         <run start="1769" level="38" length="16"/>
@@ -45,7 +45,7 @@
         <run start="1766" level="22" length="10"/>
         <run start="1767" level="31" length="7"/>
     </section>
-    <section first-pos="822" id="1702">
+    <section orientation="VERTICAL" first-pos="822" id="1702">
         <run start="1826" level="169" length="3"/>
     </section>
 </glyph>

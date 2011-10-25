@@ -44,6 +44,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
 /**
  * Interface {@code Section} handles a section of contiguous and compatible
  * {@link Run} instances.
@@ -63,6 +65,7 @@ import java.util.Set;
  *
  * @author Hervé Bitteur
  */
+@XmlJavaTypeAdapter(BasicSection.Adapter.class)
 public interface Section
     extends Vertex<Lag, Section>, Comparable<Section>, Oriented, SectionView, Vip
 {

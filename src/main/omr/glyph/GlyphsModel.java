@@ -48,7 +48,7 @@ public class GlyphsModel
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Underlying lag (vertical or horizontal) */
+    /** Underlying glyph nest */
     protected final Nest nest;
 
     /** Related Sheet */

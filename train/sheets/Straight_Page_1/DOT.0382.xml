@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<stick shape="DOT" interline="15" id="382">
+<glyph shape="DOT" interline="15" id="382">
     <stem-number>0</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>0.6666666666666666</pitch-position>
-    <section first-pos="1510" id="2028">
+    <section orientation="VERTICAL" first-pos="1510" id="2028">
         <run start="621" level="0" length="3"/>
         <run start="620" level="0" length="5"/>
         <run start="620" level="0" length="5"/>
         <run start="620" level="0" length="5"/>
         <run start="621" level="0" length="3"/>
     </section>
-</stick>
+</glyph>

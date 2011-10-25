@@ -24,7 +24,7 @@
         <k>2097.3625</k>
         <k>1235.175</k>
     </moments>
-        <section id="5791" first-pos="2085">
+        <section orientation="VERTICAL" id="5791" first-pos="2085">
             <run start="1230" length="8" level="33"/>
             <run start="1228" length="9" level="51"/>
             <run start="1227" length="9" level="59"/>
@@ -43,7 +43,7 @@
             <run start="1226" length="1" level="200"/>
             <run start="1226" length="1" level="200"/>
         </section>
-        <section id="5828" first-pos="2089">
+        <section orientation="VERTICAL" id="5828" first-pos="2089">
             <run start="1246" length="1" level="200"/>
             <run start="1245" length="2" level="200"/>
             <run start="1244" length="3" level="207"/>
@@ -61,21 +61,21 @@
             <run start="1237" length="9" level="48"/>
             <run start="1237" length="8" level="34"/>
         </section>
-        <section id="5916" first-pos="2105">
+        <section orientation="VERTICAL" id="5916" first-pos="2105">
             <run start="1226" length="18" level="98"/>
             <run start="1226" length="16" level="58"/>
             <run start="1228" length="12" level="72"/>
         </section>
-        <section id="5909" first-pos="2104">
+        <section orientation="VERTICAL" id="5909" first-pos="2104">
             <run start="1226" length="5" level="161"/>
         </section>
-        <section id="5899" first-pos="2103">
+        <section orientation="VERTICAL" id="5899" first-pos="2103">
             <run start="1226" length="2" level="200"/>
         </section>
-        <section id="5900" first-pos="2103">
+        <section orientation="VERTICAL" id="5900" first-pos="2103">
             <run start="1229" length="1" level="170"/>
         </section>
-        <section id="5924" first-pos="2108">
+        <section orientation="VERTICAL" id="5924" first-pos="2108">
             <run start="1231" length="7" level="122"/>
         </section>
 </glyph>

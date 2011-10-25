@@ -3,12 +3,12 @@
     <stem-number>0</stem-number>
     <with-ledger>true</with-ledger>
     <pitch-position>-3.5</pitch-position>
-    <section first-pos="2548" id="8311">
+    <section orientation="VERTICAL" first-pos="2548" id="8311">
         <run start="461" level="124" length="1"/>
         <run start="461" level="92" length="1"/>
         <run start="461" level="135" length="1"/>
     </section>
-    <section first-pos="2551" id="8339">
+    <section orientation="VERTICAL" first-pos="2551" id="8339">
         <run start="462" level="116" length="1"/>
         <run start="462" level="96" length="1"/>
         <run start="462" level="153" length="2"/>
@@ -48,7 +48,7 @@
         <run start="470" level="192" length="1"/>
         <run start="470" level="192" length="1"/>
     </section>
-    <section first-pos="2608" id="8434">
+    <section orientation="VERTICAL" first-pos="2608" id="8434">
         <run start="471" level="192" length="4"/>
         <run start="471" level="183" length="4"/>
         <run start="471" level="171" length="4"/>
@@ -80,7 +80,7 @@
         <run start="471" level="133" length="6"/>
         <run start="471" level="133" length="6"/>
     </section>
-    <section first-pos="2638" id="8480">
+    <section orientation="VERTICAL" first-pos="2638" id="8480">
         <run start="475" level="2" length="2"/>
         <run start="475" level="0" length="2"/>
         <run start="475" level="4" length="2"/>
@@ -204,7 +204,7 @@
         <run start="475" level="0" length="2"/>
         <run start="475" level="10" length="2"/>
     </section>
-    <section first-pos="2760" id="8606">
+    <section orientation="VERTICAL" first-pos="2760" id="8606">
         <run start="471" level="133" length="6"/>
         <run start="471" level="133" length="6"/>
         <run start="471" level="133" length="6"/>
@@ -235,7 +235,7 @@
         <run start="471" level="176" length="4"/>
         <run start="471" level="190" length="4"/>
     </section>
-    <section first-pos="2841" id="9320">
+    <section orientation="VERTICAL" first-pos="2841" id="9320">
         <run start="463" level="64" length="1"/>
         <run start="463" level="56" length="1"/>
         <run start="462" level="140" length="2"/>

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<stick shape="COMBINING_FLAG_1_UP" interline="18" id="1192">
+<glyph shape="COMBINING_FLAG_1_UP" interline="18" id="1192">
     <stem-number>1</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>1.3333333333333333</pitch-position>
-    <section first-pos="2018" id="3645">
+    <section orientation="VERTICAL" first-pos="2018" id="3645">
         <run start="1746" level="29" length="16"/>
         <run start="1746" level="31" length="14"/>
         <run start="1746" level="26" length="12"/>
@@ -22,17 +22,17 @@
         <run start="1731" level="86" length="7"/>
         <run start="1728" level="74" length="7"/>
     </section>
-    <section first-pos="2033" id="3663">
+    <section orientation="VERTICAL" first-pos="2033" id="3663">
         <run start="1710" level="148" length="3"/>
         <run start="1710" level="103" length="7"/>
     </section>
-    <section first-pos="2034" id="3664">
+    <section orientation="VERTICAL" first-pos="2034" id="3664">
         <run start="1726" level="195" length="1"/>
     </section>
-    <section first-pos="2035" id="3668">
+    <section orientation="VERTICAL" first-pos="2035" id="3668">
         <run start="1713" level="66" length="19"/>
     </section>
-    <section first-pos="2036" id="3670">
+    <section orientation="VERTICAL" first-pos="2036" id="3670">
         <run start="1718" level="157" length="11"/>
     </section>
-</stick>
+</glyph>

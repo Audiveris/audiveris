@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<stick shape="NOTEHEAD_BLACK_2" interline="18" id="1304">
+<glyph shape="NOTEHEAD_BLACK_2" interline="18" id="1304">
     <stem-number>1</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>-9.12</pitch-position>
-    <section first-pos="1987" id="3565">
+    <section orientation="VERTICAL" first-pos="1987" id="3565">
         <run start="2655" level="70" length="14"/>
         <run start="2655" level="59" length="15"/>
         <run start="2654" level="56" length="16"/>
@@ -12,7 +12,7 @@
         <run start="2652" level="43" length="18"/>
         <run start="2652" level="37" length="18"/>
     </section>
-    <section first-pos="1987" id="3566">
+    <section orientation="VERTICAL" first-pos="1987" id="3566">
         <run start="2674" level="70" length="14"/>
         <run start="2674" level="59" length="15"/>
         <run start="2673" level="56" length="16"/>
@@ -21,12 +21,12 @@
         <run start="2671" level="43" length="18"/>
         <run start="2671" level="37" length="18"/>
     </section>
-    <section first-pos="1994" id="3573">
+    <section orientation="VERTICAL" first-pos="1994" id="3573">
         <run start="2651" level="43" length="38"/>
         <run start="2651" level="49" length="38"/>
         <run start="2651" level="47" length="38"/>
     </section>
-    <section first-pos="1997" id="3575">
+    <section orientation="VERTICAL" first-pos="1997" id="3575">
         <run start="2651" level="33" length="18"/>
         <run start="2651" level="39" length="18"/>
         <run start="2651" level="44" length="18"/>
@@ -39,7 +39,7 @@
         <run start="2653" level="105" length="10"/>
         <run start="2655" level="118" length="6"/>
     </section>
-    <section first-pos="1997" id="3576">
+    <section orientation="VERTICAL" first-pos="1997" id="3576">
         <run start="2670" level="33" length="18"/>
         <run start="2670" level="39" length="18"/>
         <run start="2670" level="44" length="18"/>
@@ -52,4 +52,4 @@
         <run start="2672" level="105" length="10"/>
         <run start="2674" level="130" length="7"/>
     </section>
-</stick>
+</glyph>

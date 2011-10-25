@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<stick id="548" interline="22" shape="INVERTED_MORDENT">
+<glyph id="548" interline="22" shape="INVERTED_MORDENT">
     <stem-number>0</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>11.627906976744185</pitch-position>
-        <section id="5936" first-pos="2111">
+        <section orientation="VERTICAL" id="5936" first-pos="2111">
             <run start="459" length="3" level="169"/>
             <run start="457" length="5" level="100"/>
             <run start="456" length="6" level="85"/>
@@ -31,19 +31,19 @@
             <run start="456" length="7" level="90"/>
             <run start="454" length="8" level="78"/>
         </section>
-        <section id="6041" first-pos="2137">
+        <section orientation="VERTICAL" id="6041" first-pos="2137">
             <run start="430" length="39" level="95"/>
             <run start="430" length="40" level="11"/>
             <run start="430" length="40" level="7"/>
             <run start="430" length="40" level="64"/>
         </section>
-        <section id="6051" first-pos="2141">
+        <section orientation="VERTICAL" id="6051" first-pos="2141">
             <run start="434" length="2" level="211"/>
         </section>
-        <section id="6052" first-pos="2141">
+        <section orientation="VERTICAL" id="6052" first-pos="2141">
             <run start="445" length="25" level="112"/>
         </section>
-        <section id="6054" first-pos="2142">
+        <section orientation="VERTICAL" id="6054" first-pos="2142">
             <run start="445" length="7" level="73"/>
             <run start="443" length="8" level="76"/>
             <run start="441" length="10" level="57"/>
@@ -68,4 +68,4 @@
             <run start="449" length="4" level="100"/>
             <run start="449" length="3" level="182"/>
         </section>
-</stick>
+</glyph>

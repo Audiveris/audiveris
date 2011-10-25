@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<stick shape="TURN" interline="18" id="411">
+<glyph shape="TURN" interline="18" id="411">
     <stem-number>0</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>-10.555555555555555</pitch-position>
-    <section first-pos="1431" id="2755">
+    <section orientation="VERTICAL" first-pos="1431" id="2755">
         <run start="498" level="171" length="3"/>
     </section>
-    <section first-pos="1432" id="2757">
+    <section orientation="VERTICAL" first-pos="1432" id="2757">
         <run start="495" level="38" length="8"/>
     </section>
-    <section first-pos="1433" id="2760">
+    <section orientation="VERTICAL" first-pos="1433" id="2760">
         <run start="494" level="44" length="4"/>
         <run start="493" level="57" length="4"/>
         <run start="492" level="36" length="4"/>
@@ -42,7 +42,7 @@
         <run start="502" level="50" length="4"/>
         <run start="501" level="56" length="4"/>
     </section>
-    <section first-pos="1433" id="2761">
+    <section orientation="VERTICAL" first-pos="1433" id="2761">
         <run start="501" level="83" length="4"/>
         <run start="502" level="70" length="4"/>
         <run start="503" level="7" length="3"/>
@@ -52,7 +52,7 @@
         <run start="502" level="41" length="5"/>
         <run start="503" level="66" length="4"/>
     </section>
-    <section first-pos="1456" id="2816">
+    <section orientation="VERTICAL" first-pos="1456" id="2816">
         <run start="492" level="104" length="3"/>
         <run start="491" level="61" length="5"/>
         <run start="491" level="21" length="5"/>
@@ -62,8 +62,8 @@
         <run start="492" level="63" length="4"/>
         <run start="493" level="41" length="3"/>
     </section>
-    <section first-pos="1464" id="2833">
+    <section orientation="VERTICAL" first-pos="1464" id="2833">
         <run start="494" level="66" length="10"/>
         <run start="496" level="111" length="6"/>
     </section>
-</stick>
+</glyph>

@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<stick shape="FLAT" interline="18" id="512">
+<glyph shape="FLAT" interline="18" id="512">
     <stem-number>0</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>2.3333333333333335</pitch-position>
-    <section first-pos="488" id="996">
+    <section orientation="VERTICAL" first-pos="488" id="996">
         <run start="769" level="68" length="42"/>
         <run start="769" level="43" length="42"/>
     </section>
-    <section first-pos="490" id="1000">
+    <section orientation="VERTICAL" first-pos="490" id="1000">
         <run start="792" level="130" length="6"/>
         <run start="792" level="188" length="3"/>
     </section>
-    <section first-pos="490" id="1001">
+    <section orientation="VERTICAL" first-pos="490" id="1001">
         <run start="808" level="200" length="2"/>
         <run start="807" level="177" length="3"/>
         <run start="806" level="103" length="3"/>
@@ -20,10 +20,10 @@
         <run start="803" level="41" length="4"/>
         <run start="801" level="35" length="5"/>
     </section>
-    <section first-pos="496" id="1007">
+    <section orientation="VERTICAL" first-pos="496" id="1007">
         <run start="794" level="88" length="2"/>
     </section>
-    <section first-pos="497" id="1012">
+    <section orientation="VERTICAL" first-pos="497" id="1012">
         <run start="792" level="46" length="14"/>
         <run start="792" level="39" length="13"/>
         <run start="792" level="39" length="12"/>
@@ -31,10 +31,10 @@
         <run start="792" level="47" length="10"/>
         <run start="792" level="78" length="9"/>
     </section>
-    <section first-pos="503" id="1020">
+    <section orientation="VERTICAL" first-pos="503" id="1020">
         <run start="792" level="200" length="2"/>
     </section>
-    <section first-pos="503" id="1021">
+    <section orientation="VERTICAL" first-pos="503" id="1021">
         <run start="795" level="195" length="2"/>
     </section>
-</stick>
+</glyph>

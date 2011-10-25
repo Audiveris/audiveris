@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<stick id="280" interline="22" shape="WHOLE_OR_HALF_REST">
+<glyph id="280" interline="22" shape="WHOLE_OR_HALF_REST">
     <stem-number>0</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>-1.3953488372093024</pitch-position>
-        <section id="2130" first-pos="1207">
+        <section orientation="VERTICAL" id="2130" first-pos="1207">
             <run start="439" length="13" level="87"/>
             <run start="439" length="13" level="60"/>
             <run start="439" length="13" level="60"/>
@@ -32,4 +32,4 @@
             <run start="439" length="12" level="64"/>
             <run start="439" length="11" level="212"/>
         </section>
-</stick>
+</glyph>

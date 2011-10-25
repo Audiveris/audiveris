@@ -822,7 +822,6 @@ public class GlyphRepository
         Marshaller m = getJaxbContext()
                            .createMarshaller();
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-        ///m.marshal(glyph, os);
         m.marshal(new GlyphValue(glyph), os);
     }
 
@@ -834,9 +833,9 @@ public class GlyphRepository
     {
         Unmarshaller um = getJaxbContext()
                               .createUnmarshaller();
+        GlyphValue   value = (GlyphValue) um.unmarshal(is);
 
-        ///return (Glyph) um.unmarshal(is);
-        return new BasicGlyph((GlyphValue) um.unmarshal(is));
+        return new BasicGlyph(value);
     }
 
     //----------------//

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<stick shape="SIXTEENTH_REST" interline="19" id="674">
+<glyph shape="SIXTEENTH_REST" interline="19" id="674">
     <stem-number>0</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>0.6027397260273972</pitch-position>
-    <section first-pos="646" id="1164">
+    <section orientation="VERTICAL" first-pos="646" id="1164">
         <run start="2347" level="92" length="8"/>
         <run start="2346" level="33" length="10"/>
         <run start="2345" level="32" length="12"/>
@@ -21,7 +21,7 @@
         <run start="2351" level="99" length="4"/>
         <run start="2350" level="91" length="4"/>
     </section>
-    <section first-pos="651" id="1178">
+    <section orientation="VERTICAL" first-pos="651" id="1178">
         <run start="2329" level="75" length="6"/>
         <run start="2328" level="42" length="9"/>
         <run start="2327" level="32" length="11"/>
@@ -39,7 +39,7 @@
         <run start="2332" level="47" length="3"/>
         <run start="2331" level="89" length="4"/>
     </section>
-    <section first-pos="653" id="1188">
+    <section orientation="VERTICAL" first-pos="653" id="1188">
         <run start="2377" level="200" length="1"/>
         <run start="2376" level="200" length="2"/>
         <run start="2374" level="183" length="4"/>
@@ -50,17 +50,17 @@
         <run start="2360" level="85" length="8"/>
         <run start="2355" level="175" length="10"/>
     </section>
-    <section first-pos="662" id="1205">
+    <section orientation="VERTICAL" first-pos="662" id="1205">
         <run start="2349" level="86" length="12"/>
         <run start="2347" level="79" length="10"/>
         <run start="2344" level="107" length="9"/>
         <run start="2340" level="115" length="9"/>
         <run start="2336" level="162" length="10"/>
     </section>
-    <section first-pos="667" id="1214">
+    <section orientation="VERTICAL" first-pos="667" id="1214">
         <run start="2331" level="74" length="12"/>
         <run start="2330" level="77" length="8"/>
         <run start="2329" level="86" length="5"/>
         <run start="2329" level="173" length="2"/>
     </section>
-</stick>
+</glyph>

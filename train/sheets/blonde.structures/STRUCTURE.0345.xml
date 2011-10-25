@@ -1,33 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<stick id="345" interline="22" shape="STRUCTURE">
+<glyph id="345" interline="22" shape="STRUCTURE">
     <stem-number>0</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>1.4883720930232558</pitch-position>
-        <section id="3980" first-pos="2044">
+        <section orientation="VERTICAL" id="3980" first-pos="2044">
             <run start="431" length="2" level="200"/>
         </section>
-        <section id="3983" first-pos="2045">
+        <section orientation="VERTICAL" id="3983" first-pos="2045">
             <run start="428" length="16" level="98"/>
         </section>
-        <section id="3986" first-pos="2046">
+        <section orientation="VERTICAL" id="3986" first-pos="2046">
             <run start="411" length="76" level="78"/>
         </section>
-        <section id="3982" first-pos="2045">
+        <section orientation="VERTICAL" id="3982" first-pos="2045">
             <run start="416" length="3" level="223"/>
         </section>
-        <section id="3984" first-pos="2045">
+        <section orientation="VERTICAL" id="3984" first-pos="2045">
             <run start="445" length="14" level="132"/>
         </section>
-        <section id="3981" first-pos="2044">
+        <section orientation="VERTICAL" id="3981" first-pos="2044">
             <run start="454" length="2" level="200"/>
         </section>
-        <section id="3985" first-pos="2045">
+        <section orientation="VERTICAL" id="3985" first-pos="2045">
             <run start="469" length="4" level="128"/>
         </section>
-        <section id="3987" first-pos="2047">
+        <section orientation="VERTICAL" id="3987" first-pos="2047">
             <run start="410" length="23" level="58"/>
         </section>
-        <section id="3995" first-pos="2048">
+        <section orientation="VERTICAL" id="3995" first-pos="2048">
             <run start="409" length="11" level="92"/>
             <run start="408" length="12" level="88"/>
             <run start="407" length="14" level="86"/>
@@ -51,24 +51,24 @@
             <run start="402" length="14" level="84"/>
             <run start="403" length="12" level="97"/>
         </section>
-        <section id="4034" first-pos="2070">
+        <section orientation="VERTICAL" id="4034" first-pos="2070">
             <run start="404" length="7" level="59"/>
             <run start="405" length="5" level="83"/>
         </section>
-        <section id="4035" first-pos="2070">
+        <section orientation="VERTICAL" id="4035" first-pos="2070">
             <run start="412" length="1" level="200"/>
         </section>
-        <section id="3988" first-pos="2047">
+        <section orientation="VERTICAL" id="3988" first-pos="2047">
             <run start="435" length="52" level="17"/>
             <run start="439" length="48" level="73"/>
         </section>
-        <section id="4001" first-pos="2049">
+        <section orientation="VERTICAL" id="4001" first-pos="2049">
             <run start="444" length="18" level="192"/>
         </section>
-        <section id="4002" first-pos="2049">
+        <section orientation="VERTICAL" id="4002" first-pos="2049">
             <run start="463" length="10" level="146"/>
         </section>
-        <section id="4003" first-pos="2049">
+        <section orientation="VERTICAL" id="4003" first-pos="2049">
             <run start="478" length="2" level="184"/>
         </section>
-</stick>
+</glyph>

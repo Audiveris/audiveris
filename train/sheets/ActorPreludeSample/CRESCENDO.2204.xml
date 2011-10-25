@@ -3,7 +3,7 @@
     <stem-number>0</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>7.26530612244898</pitch-position>
-    <section first-pos="2567" id="8398">
+    <section orientation="VERTICAL" first-pos="2567" id="8398">
         <run start="1009" level="80" length="4"/>
         <run start="1009" level="0" length="4"/>
         <run start="1009" level="0" length="4"/>
@@ -121,7 +121,7 @@
         <run start="1007" level="32" length="8"/>
         <run start="1007" level="32" length="8"/>
     </section>
-    <section first-pos="2683" id="8541">
+    <section orientation="VERTICAL" first-pos="2683" id="8541">
         <run start="1007" level="0" length="3"/>
         <run start="1007" level="0" length="3"/>
         <run start="1007" level="0" length="3"/>
@@ -240,7 +240,7 @@
         <run start="1004" level="28" length="4"/>
         <run start="1004" level="14" length="4"/>
     </section>
-    <section first-pos="2683" id="8542">
+    <section orientation="VERTICAL" first-pos="2683" id="8542">
         <run start="1011" level="28" length="4"/>
         <run start="1011" level="32" length="4"/>
         <run start="1011" level="32" length="4"/>
@@ -359,7 +359,7 @@
         <run start="1014" level="0" length="3"/>
         <run start="1014" level="9" length="3"/>
     </section>
-    <section first-pos="2803" id="8735">
+    <section orientation="VERTICAL" first-pos="2803" id="8735">
         <run start="1004" level="16" length="4"/>
         <run start="1004" level="16" length="4"/>
         <run start="1004" level="0" length="4"/>
@@ -583,7 +583,7 @@
         <run start="1000" level="0" length="3"/>
         <run start="1000" level="0" length="3"/>
     </section>
-    <section first-pos="2803" id="8736">
+    <section orientation="VERTICAL" first-pos="2803" id="8736">
         <run start="1014" level="0" length="3"/>
         <run start="1014" level="0" length="3"/>
         <run start="1014" level="0" length="3"/>

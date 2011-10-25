@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<stick shape="VOID_NOTEHEAD" interline="18" id="1591">
+<glyph shape="VOID_NOTEHEAD" interline="18" id="1591">
     <stem-number>1</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>2.084507042253521</pitch-position>
-    <section first-pos="836" id="1585">
+    <section orientation="VERTICAL" first-pos="836" id="1585">
         <run start="2826" level="200" length="1"/>
         <run start="2825" level="200" length="2"/>
     </section>
-    <section first-pos="838" id="1590">
+    <section orientation="VERTICAL" first-pos="838" id="1590">
         <run start="2825" level="86" length="8"/>
         <run start="2823" level="77" length="11"/>
     </section>
-    <section first-pos="840" id="1593">
+    <section orientation="VERTICAL" first-pos="840" id="1593">
         <run start="2822" level="96" length="7"/>
         <run start="2821" level="93" length="7"/>
         <run start="2820" level="45" length="6"/>
@@ -32,7 +32,7 @@
         <run start="2817" level="57" length="3"/>
         <run start="2817" level="54" length="3"/>
     </section>
-    <section first-pos="840" id="1594">
+    <section orientation="VERTICAL" first-pos="840" id="1594">
         <run start="2832" level="14" length="2"/>
         <run start="2832" level="78" length="3"/>
         <run start="2833" level="2" length="2"/>
@@ -53,4 +53,4 @@
         <run start="2826" level="49" length="6"/>
         <run start="2826" level="67" length="5"/>
     </section>
-</stick>
+</glyph>

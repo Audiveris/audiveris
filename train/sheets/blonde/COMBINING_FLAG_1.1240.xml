@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<stick id="1240" interline="22" shape="COMBINING_FLAG_1">
+<glyph id="1240" interline="22" shape="COMBINING_FLAG_1">
     <stem-number>1</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>-6.2727272727272725</pitch-position>
-        <section id="4438" first-pos="2331">
+        <section orientation="VERTICAL" id="4438" first-pos="2331">
             <run start="1740" length="16" level="20"/>
             <run start="1742" length="14" level="22"/>
             <run start="1744" length="12" level="23"/>
@@ -22,25 +22,25 @@
             <run start="1760" length="11" level="33"/>
             <run start="1761" length="15" level="53"/>
         </section>
-        <section id="4458" first-pos="2348">
+        <section orientation="VERTICAL" id="4458" first-pos="2348">
             <run start="1763" length="26" level="62"/>
             <run start="1765" length="24" level="47"/>
             <run start="1768" length="21" level="127"/>
         </section>
-        <section id="4457" first-pos="2347">
+        <section orientation="VERTICAL" id="4457" first-pos="2347">
             <run start="1785" length="4" level="158"/>
         </section>
-        <section id="4454" first-pos="2345">
+        <section orientation="VERTICAL" id="4454" first-pos="2345">
             <run start="1786" length="1" level="184"/>
             <run start="1786" length="1" level="131"/>
         </section>
-        <section id="4456" first-pos="2346">
+        <section orientation="VERTICAL" id="4456" first-pos="2346">
             <run start="1788" length="1" level="200"/>
         </section>
-        <section id="4465" first-pos="2351">
+        <section orientation="VERTICAL" id="4465" first-pos="2351">
             <run start="1775" length="7" level="185"/>
         </section>
-        <section id="4466" first-pos="2351">
+        <section orientation="VERTICAL" id="4466" first-pos="2351">
             <run start="1786" length="1" level="198"/>
         </section>
-</stick>
+</glyph>

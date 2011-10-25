@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<stick shape="ACCENT" interline="18" id="587">
+<glyph shape="ACCENT" interline="18" id="587">
     <stem-number>0</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>-8.054794520547945</pitch-position>
-    <section first-pos="2006" id="5576">
+    <section orientation="VERTICAL" first-pos="2006" id="5576">
         <run start="549" level="32" length="2"/>
         <run start="549" level="60" length="3"/>
         <run start="549" level="57" length="3"/>
@@ -22,7 +22,7 @@
         <run start="554" level="65" length="3"/>
         <run start="555" level="0" length="2"/>
     </section>
-    <section first-pos="2006" id="5577">
+    <section orientation="VERTICAL" first-pos="2006" id="5577">
         <run start="564" level="77" length="3"/>
         <run start="564" level="62" length="3"/>
         <run start="563" level="60" length="3"/>
@@ -41,7 +41,7 @@
         <run start="558" level="68" length="3"/>
         <run start="558" level="61" length="3"/>
     </section>
-    <section first-pos="2023" id="5625">
+    <section orientation="VERTICAL" first-pos="2023" id="5625">
         <run start="555" level="65" length="6"/>
         <run start="555" level="46" length="5"/>
         <run start="556" level="42" length="4"/>
@@ -50,4 +50,4 @@
         <run start="557" level="112" length="2"/>
         <run start="557" level="187" length="1"/>
     </section>
-</stick>
+</glyph>

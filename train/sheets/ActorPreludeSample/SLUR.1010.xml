@@ -3,7 +3,7 @@
     <stem-number>0</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>-10.36734693877551</pitch-position>
-    <section first-pos="2113" id="7078">
+    <section orientation="VERTICAL" first-pos="2113" id="7078">
         <run start="3474" level="118" length="2"/>
         <run start="3472" level="12" length="4"/>
         <run start="3470" level="48" length="4"/>

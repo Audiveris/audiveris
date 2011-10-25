@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<stick shape="NOTEHEAD_BLACK" interline="21" id="1002">
+<glyph shape="NOTEHEAD_BLACK" interline="21" id="1002">
     <stem-number>1</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>-2.046511627906977</pitch-position>
-    <section first-pos="2228" id="3950">
+    <section orientation="VERTICAL" first-pos="2228" id="3950">
         <run start="584" level="105" length="18"/>
         <run start="583" level="99" length="16"/>
         <run start="582" level="83" length="17"/>
@@ -29,4 +29,4 @@
         <run start="581" level="102" length="9"/>
         <run start="583" level="154" length="7"/>
     </section>
-</stick>
+</glyph>

@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.run;
 
+import omr.log.Logger;
+
 import omr.math.BasicLine;
 import omr.math.Line;
 

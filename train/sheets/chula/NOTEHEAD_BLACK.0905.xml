@@ -3,13 +3,13 @@
     <stem-number>1</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>0.9882352941176471</pitch-position>
-    <section first-pos="1645" id="3024">
+    <section orientation="VERTICAL" first-pos="1645" id="3024">
         <run start="1007" level="128" length="6"/>
     </section>
-    <section first-pos="1645" id="3025">
+    <section orientation="VERTICAL" first-pos="1645" id="3025">
         <run start="1014" level="192" length="3"/>
     </section>
-    <section first-pos="1646" id="3030">
+    <section orientation="VERTICAL" first-pos="1646" id="3030">
         <run start="1005" level="78" length="12"/>
         <run start="1003" level="54" length="14"/>
         <run start="1002" level="43" length="15"/>

@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<stick shape="STRUCTURE" interline="19" id="593">
+<glyph shape="STRUCTURE" interline="19" id="593">
     <stem-number>0</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>4.876712328767123</pitch-position>
-    <section first-pos="1634" id="2574">
+    <section orientation="VERTICAL" first-pos="1634" id="2574">
         <run start="1730" level="174" length="44"/>
         <run start="1727" level="16" length="48"/>
         <run start="1727" level="106" length="47"/>
     </section>
-    <section first-pos="1637" id="2579">
+    <section orientation="VERTICAL" first-pos="1637" id="2579">
         <run start="1725" level="77" length="12"/>
         <run start="1723" level="70" length="14"/>
         <run start="1723" level="59" length="15"/>
@@ -30,7 +30,7 @@
         <run start="1720" level="77" length="12"/>
         <run start="1721" level="111" length="10"/>
     </section>
-    <section first-pos="1657" id="2608">
+    <section orientation="VERTICAL" first-pos="1657" id="2608">
         <run start="1723" level="130" length="5"/>
     </section>
-</stick>
+</glyph>

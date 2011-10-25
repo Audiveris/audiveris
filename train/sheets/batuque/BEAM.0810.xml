@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<stick shape="BEAM" interline="21" id="810">
+<glyph shape="BEAM" interline="21" id="810">
     <stem-number>2</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>6.541176470588235</pitch-position>
-    <section first-pos="572" id="1399">
+    <section orientation="VERTICAL" first-pos="572" id="1399">
         <run start="428" level="25" length="15"/>
         <run start="429" level="19" length="14"/>
         <run start="429" level="19" length="14"/>
@@ -174,4 +174,4 @@
         <run start="428" level="19" length="14"/>
         <run start="428" level="19" length="14"/>
     </section>
-</stick>
+</glyph>

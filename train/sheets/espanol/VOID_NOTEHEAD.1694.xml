@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<stick id="1694" interline="22" shape="VOID_NOTEHEAD">
+<glyph id="1694" interline="22" shape="VOID_NOTEHEAD">
     <stem-number>1</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>2.896551724137931</pitch-position>
-        <section id="1021" first-pos="214">
+        <section orientation="VERTICAL" id="1021" first-pos="214">
             <run start="1838" length="10" level="50"/>
             <run start="1837" length="9" level="31"/>
             <run start="1836" length="9" level="53"/>
@@ -22,19 +22,19 @@
             <run start="1835" length="3" level="200"/>
             <run start="1835" length="2" level="200"/>
         </section>
-        <section id="1091" first-pos="231">
+        <section orientation="VERTICAL" id="1091" first-pos="231">
             <run start="1835" length="4" level="163"/>
             <run start="1835" length="5" level="172"/>
             <run start="1835" length="7" level="153"/>
         </section>
-        <section id="1087" first-pos="230">
+        <section orientation="VERTICAL" id="1087" first-pos="230">
             <run start="1838" length="1" level="215"/>
         </section>
-        <section id="1109" first-pos="234">
+        <section orientation="VERTICAL" id="1109" first-pos="234">
             <run start="1835" length="18" level="76"/>
             <run start="1837" length="14" level="34"/>
         </section>
-        <section id="1022" first-pos="214">
+        <section orientation="VERTICAL" id="1022" first-pos="214">
             <run start="1853" length="5" level="126"/>
             <run start="1854" length="4" level="156"/>
             <run start="1854" length="4" level="206"/>
@@ -56,7 +56,7 @@
             <run start="1847" length="11" level="74"/>
             <run start="1845" length="9" level="53"/>
         </section>
-        <section id="1123" first-pos="236">
+        <section orientation="VERTICAL" id="1123" first-pos="236">
             <run start="1840" length="9" level="66"/>
         </section>
-</stick>
+</glyph>

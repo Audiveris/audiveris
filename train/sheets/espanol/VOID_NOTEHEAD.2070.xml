@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<stick id="2070" interline="22" shape="VOID_NOTEHEAD">
+<glyph id="2070" interline="22" shape="VOID_NOTEHEAD">
     <stem-number>1</stem-number>
     <with-ledger>true</with-ledger>
     <pitch-position>8.141176470588235</pitch-position>
-        <section id="3350" first-pos="1055">
+        <section orientation="VERTICAL" id="3350" first-pos="1055">
             <run start="3116" length="5" level="166"/>
             <run start="3115" length="6" level="111"/>
             <run start="3114" length="6" level="78"/>
@@ -27,18 +27,18 @@
             <run start="3110" length="5" level="103"/>
             <run start="3111" length="5" level="103"/>
         </section>
-        <section id="3401" first-pos="1077">
+        <section orientation="VERTICAL" id="3401" first-pos="1077">
             <run start="3112" length="7" level="80"/>
             <run start="3112" length="7" level="40"/>
         </section>
-        <section id="3391" first-pos="1076">
+        <section orientation="VERTICAL" id="3391" first-pos="1076">
             <run start="3118" length="1" level="192"/>
         </section>
-        <section id="3408" first-pos="1079">
+        <section orientation="VERTICAL" id="3408" first-pos="1079">
             <run start="3114" length="11" level="143"/>
             <run start="3117" length="7" level="176"/>
         </section>
-        <section id="3355" first-pos="1057">
+        <section orientation="VERTICAL" id="3355" first-pos="1057">
             <run start="3126" length="6" level="100"/>
             <run start="3128" length="4" level="84"/>
             <run start="3129" length="3" level="86"/>
@@ -62,7 +62,7 @@
             <run start="3121" length="7" level="123"/>
             <run start="3121" length="6" level="158"/>
         </section>
-        <section id="3413" first-pos="1081">
+        <section orientation="VERTICAL" id="3413" first-pos="1081">
             <run start="3120" length="2" level="200"/>
         </section>
-</stick>
+</glyph>

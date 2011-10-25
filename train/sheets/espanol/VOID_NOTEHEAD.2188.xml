@@ -24,7 +24,7 @@
         <k>493.1397058823529</k>
         <k>2455.5588235294117</k>
     </moments>
-        <section id="1856" first-pos="482">
+        <section orientation="VERTICAL" id="1856" first-pos="482">
             <run start="2449" length="8" level="35"/>
             <run start="2447" length="9" level="39"/>
             <run start="2446" length="9" level="59"/>
@@ -43,15 +43,15 @@
             <run start="2445" length="2" level="200"/>
             <run start="2445" length="1" level="200"/>
         </section>
-        <section id="1857" first-pos="482">
+        <section orientation="VERTICAL" id="1857" first-pos="482">
             <run start="2458" length="9" level="153"/>
             <run start="2462" length="5" level="141"/>
         </section>
-        <section id="1860" first-pos="484">
+        <section orientation="VERTICAL" id="1860" first-pos="484">
             <run start="2463" length="1" level="101"/>
             <run start="2463" length="1" level="116"/>
         </section>
-        <section id="1861" first-pos="484">
+        <section orientation="VERTICAL" id="1861" first-pos="484">
             <run start="2465" length="2" level="200"/>
             <run start="2466" length="1" level="200"/>
             <run start="2465" length="2" level="200"/>
@@ -72,23 +72,23 @@
             <run start="2456" length="8" level="30"/>
             <run start="2455" length="8" level="33"/>
         </section>
-        <section id="1917" first-pos="503">
+        <section orientation="VERTICAL" id="1917" first-pos="503">
             <run start="2446" length="16" level="42"/>
             <run start="2447" length="14" level="42"/>
         </section>
-        <section id="1911" first-pos="502">
+        <section orientation="VERTICAL" id="1911" first-pos="502">
             <run start="2446" length="4" level="145"/>
         </section>
-        <section id="1904" first-pos="501">
+        <section orientation="VERTICAL" id="1904" first-pos="501">
             <run start="2446" length="1" level="200"/>
         </section>
-        <section id="1905" first-pos="501">
+        <section orientation="VERTICAL" id="1905" first-pos="501">
             <run start="2448" length="1" level="168"/>
         </section>
-        <section id="1919" first-pos="505">
+        <section orientation="VERTICAL" id="1919" first-pos="505">
             <run start="2450" length="7" level="34"/>
         </section>
-        <section id="1920" first-pos="505">
+        <section orientation="VERTICAL" id="1920" first-pos="505">
             <run start="2458" length="1" level="226"/>
         </section>
 </glyph>

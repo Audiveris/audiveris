@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<stick id="365" interline="21" shape="STRUCTURE">
+<glyph id="365" interline="21" shape="STRUCTURE">
     <stem-number>0</stem-number>
     <with-ledger>true</with-ledger>
     <pitch-position>6.258823529411765</pitch-position>
-        <section id="1771" first-pos="1356">
+        <section orientation="VERTICAL" id="1771" first-pos="1356">
             <run start="1272" length="1" level="200"/>
             <run start="1271" length="4" level="203"/>
             <run start="1270" length="6" level="181"/>
@@ -31,59 +31,59 @@
             <run start="1261" length="17" level="74"/>
             <run start="1262" length="15" level="81"/>
         </section>
-        <section id="1817" first-pos="1382">
+        <section orientation="VERTICAL" id="1817" first-pos="1382">
             <run start="1241" length="34" level="116"/>
         </section>
-        <section id="1819" first-pos="1383">
+        <section orientation="VERTICAL" id="1819" first-pos="1383">
             <run start="1181" length="94" level="56"/>
             <run start="1181" length="91" level="44"/>
             <run start="1182" length="89" level="81"/>
         </section>
-        <section id="1811" first-pos="1382">
+        <section orientation="VERTICAL" id="1811" first-pos="1382">
             <run start="1181" length="18" level="202"/>
         </section>
-        <section id="1812" first-pos="1382">
+        <section orientation="VERTICAL" id="1812" first-pos="1382">
             <run start="1201" length="2" level="118"/>
         </section>
-        <section id="1808" first-pos="1381">
+        <section orientation="VERTICAL" id="1808" first-pos="1381">
             <run start="1204" length="1" level="82"/>
             <run start="1204" length="3" level="158"/>
         </section>
-        <section id="1813" first-pos="1382">
+        <section orientation="VERTICAL" id="1813" first-pos="1382">
             <run start="1214" length="9" level="50"/>
         </section>
-        <section id="1814" first-pos="1382">
+        <section orientation="VERTICAL" id="1814" first-pos="1382">
             <run start="1224" length="2" level="76"/>
         </section>
-        <section id="1815" first-pos="1382">
+        <section orientation="VERTICAL" id="1815" first-pos="1382">
             <run start="1230" length="1" level="194"/>
         </section>
-        <section id="1816" first-pos="1382">
+        <section orientation="VERTICAL" id="1816" first-pos="1382">
             <run start="1237" length="3" level="138"/>
         </section>
-        <section id="1825" first-pos="1386">
+        <section orientation="VERTICAL" id="1825" first-pos="1386">
             <run start="1188" length="1" level="204"/>
         </section>
-        <section id="1826" first-pos="1386">
+        <section orientation="VERTICAL" id="1826" first-pos="1386">
             <run start="1204" length="1" level="79"/>
         </section>
-        <section id="1827" first-pos="1386">
+        <section orientation="VERTICAL" id="1827" first-pos="1386">
             <run start="1220" length="16" level="204"/>
         </section>
-        <section id="1832" first-pos="1387">
+        <section orientation="VERTICAL" id="1832" first-pos="1387">
             <run start="1225" length="1" level="98"/>
             <run start="1225" length="1" level="223"/>
         </section>
-        <section id="1828" first-pos="1386">
+        <section orientation="VERTICAL" id="1828" first-pos="1386">
             <run start="1237" length="5" level="178"/>
         </section>
-        <section id="1829" first-pos="1386">
+        <section orientation="VERTICAL" id="1829" first-pos="1386">
             <run start="1247" length="1" level="180"/>
         </section>
-        <section id="1830" first-pos="1386">
+        <section orientation="VERTICAL" id="1830" first-pos="1386">
             <run start="1253" length="1" level="224"/>
         </section>
-        <section id="1831" first-pos="1386">
+        <section orientation="VERTICAL" id="1831" first-pos="1386">
             <run start="1269" length="1" level="137"/>
         </section>
-</stick>
+</glyph>

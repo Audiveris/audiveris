@@ -325,15 +325,4 @@ public class GlyphsController
                     glyphs));
         }
     }
-
-    //    //--------------//
-    //    // refreshViews //
-    //    //--------------//
-    //    protected void refreshViews ()
-    //    {
-    //        for (LagView view : views) {
-    //            view.colorizeAllGlyphs();
-    //            view.repaint();
-    //        }
-    //    }
 }

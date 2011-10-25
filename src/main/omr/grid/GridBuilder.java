@@ -235,8 +235,6 @@ public class GridBuilder
             gController);
         gridView.setLocationService(sheet.getLocationService());
 
-        ///gridView.colorizeAllSections();
-
         // Boards
         final String unit = sheet.getId() + ":GridBuilder";
 

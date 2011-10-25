@@ -558,7 +558,7 @@ public class BasicNest
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{Scene");
+        StringBuilder sb = new StringBuilder("{Nest");
 
         sb.append(" ")
           .append(name);

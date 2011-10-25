@@ -24,7 +24,7 @@
         <k>1559.8781362007169</k>
         <k>1281.1254480286739</k>
     </moments>
-        <section id="4449" first-pos="1548">
+        <section orientation="VERTICAL" id="4449" first-pos="1548">
             <run start="1276" length="8" level="59"/>
             <run start="1275" length="8" level="38"/>
             <run start="1273" length="8" level="58"/>
@@ -44,7 +44,7 @@
             <run start="1270" length="2" level="200"/>
             <run start="1270" length="1" level="200"/>
         </section>
-        <section id="4450" first-pos="1548">
+        <section orientation="VERTICAL" id="4450" first-pos="1548">
             <run start="1285" length="5" level="68"/>
             <run start="1288" length="3" level="93"/>
             <run start="1289" length="3" level="94"/>
@@ -67,23 +67,23 @@
             <run start="1283" length="8" level="33"/>
             <run start="1282" length="8" level="37"/>
         </section>
-        <section id="4563" first-pos="1569">
+        <section orientation="VERTICAL" id="4563" first-pos="1569">
             <run start="1270" length="18" level="123"/>
             <run start="1271" length="16" level="52"/>
         </section>
-        <section id="4556" first-pos="1568">
+        <section orientation="VERTICAL" id="4556" first-pos="1568">
             <run start="1270" length="6" level="183"/>
         </section>
-        <section id="4550" first-pos="1567">
+        <section orientation="VERTICAL" id="4550" first-pos="1567">
             <run start="1270" length="3" level="200"/>
         </section>
-        <section id="4551" first-pos="1567">
+        <section orientation="VERTICAL" id="4551" first-pos="1567">
             <run start="1274" length="1" level="225"/>
         </section>
-        <section id="4569" first-pos="1571">
+        <section orientation="VERTICAL" id="4569" first-pos="1571">
             <run start="1275" length="10" level="57"/>
         </section>
-        <section id="4573" first-pos="1572">
+        <section orientation="VERTICAL" id="4573" first-pos="1572">
             <run start="1278" length="2" level="148"/>
         </section>
 </glyph>

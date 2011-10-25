@@ -244,6 +244,7 @@ public class RubberPanel
     {
         if (locationService == null) {
             logger.severe("No locationService for " + this);
+
             return null;
         }
 
@@ -423,6 +424,10 @@ public class RubberPanel
     {
         if (zoom == null) {
             return; // For degenerated cases (no real view)
+        }
+
+        if (getModelSize() == null) {
+            return;
         }
 
         setPreferredSize(zoom.scaled(getModelSize()));

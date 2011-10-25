@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<stick id="519" interline="22" shape="MORDENT">
+<glyph id="519" interline="22" shape="MORDENT">
     <stem-number>0</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>12.093023255813954</pitch-position>
-        <section id="5272" first-pos="1853">
+        <section orientation="VERTICAL" id="5272" first-pos="1853">
             <run start="464" length="2" level="138"/>
             <run start="462" length="5" level="102"/>
             <run start="461" length="5" level="54"/>
@@ -58,4 +58,4 @@
             <run start="453" length="5" level="106"/>
             <run start="454" length="2" level="149"/>
         </section>
-</stick>
+</glyph>

@@ -24,7 +24,7 @@
         <k>1287.1048387096773</k>
         <k>1141.7620967741937</k>
     </moments>
-        <section id="3786" first-pos="1275">
+        <section orientation="VERTICAL" id="3786" first-pos="1275">
             <run start="1141" length="2" level="200"/>
             <run start="1140" length="3" level="200"/>
             <run start="1138" length="5" level="139"/>
@@ -50,7 +50,7 @@
             <run start="1131" length="3" level="14"/>
             <run start="1132" length="2" level="13"/>
         </section>
-        <section id="3792" first-pos="1276">
+        <section orientation="VERTICAL" id="3792" first-pos="1276">
             <run start="1144" length="2" level="204"/>
             <run start="1145" length="4" level="76"/>
             <run start="1145" length="5" level="102"/>

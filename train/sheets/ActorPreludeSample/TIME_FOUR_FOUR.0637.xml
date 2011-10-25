@@ -3,17 +3,17 @@
     <stem-number>0</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>-0.24489795918367346</pitch-position>
-    <section first-pos="2069" id="6616">
+    <section orientation="VERTICAL" first-pos="2069" id="6616">
         <run start="3508" level="66" length="2"/>
         <run start="3507" level="60" length="4"/>
         <run start="3504" level="101" length="7"/>
     </section>
-    <section first-pos="2069" id="6617">
+    <section orientation="VERTICAL" first-pos="2069" id="6617">
         <run start="3532" level="110" length="3"/>
         <run start="3531" level="53" length="4"/>
         <run start="3528" level="94" length="7"/>
     </section>
-    <section first-pos="2072" id="6729">
+    <section orientation="VERTICAL" first-pos="2072" id="6729">
         <run start="3503" level="147" length="5"/>
         <run start="3502" level="131" length="5"/>
         <run start="3499" level="66" length="6"/>
@@ -27,7 +27,7 @@
         <run start="3492" level="119" length="4"/>
         <run start="3492" level="185" length="3"/>
     </section>
-    <section first-pos="2072" id="6730">
+    <section orientation="VERTICAL" first-pos="2072" id="6730">
         <run start="3509" level="96" length="2"/>
         <run start="3509" level="96" length="2"/>
         <run start="3509" level="96" length="2"/>
@@ -35,12 +35,12 @@
         <run start="3509" level="96" length="2"/>
         <run start="3509" level="96" length="2"/>
     </section>
-    <section first-pos="2072" id="6731">
+    <section orientation="VERTICAL" first-pos="2072" id="6731">
         <run start="3528" level="128" length="4"/>
         <run start="3526" level="127" length="5"/>
         <run start="3523" level="73" length="6"/>
     </section>
-    <section first-pos="2072" id="6732">
+    <section orientation="VERTICAL" first-pos="2072" id="6732">
         <run start="3533" level="80" length="2"/>
         <run start="3533" level="80" length="2"/>
         <run start="3533" level="80" length="2"/>
@@ -48,18 +48,18 @@
         <run start="3533" level="80" length="2"/>
         <run start="3533" level="80" length="2"/>
     </section>
-    <section first-pos="2075" id="6771">
+    <section orientation="VERTICAL" first-pos="2075" id="6771">
         <run start="3518" level="49" length="10"/>
         <run start="3516" level="37" length="11"/>
         <run start="3516" level="45" length="10"/>
     </section>
-    <section first-pos="2077" id="6834">
+    <section orientation="VERTICAL" first-pos="2077" id="6834">
         <run start="3504" level="192" length="1"/>
     </section>
-    <section first-pos="2077" id="6835">
+    <section orientation="VERTICAL" first-pos="2077" id="6835">
         <run start="3528" level="192" length="1"/>
     </section>
-    <section first-pos="2078" id="6880">
+    <section orientation="VERTICAL" first-pos="2078" id="6880">
         <run start="3503" level="109" length="22"/>
         <run start="3502" level="51" length="22"/>
         <run start="3501" level="53" length="22"/>
@@ -68,7 +68,7 @@
         <run start="3497" level="55" length="22"/>
         <run start="3497" level="132" length="21"/>
     </section>
-    <section first-pos="2078" id="6881">
+    <section orientation="VERTICAL" first-pos="2078" id="6881">
         <run start="3527" level="150" length="14"/>
         <run start="3526" level="56" length="15"/>
         <run start="3525" level="52" length="16"/>
@@ -77,12 +77,12 @@
         <run start="3521" level="48" length="20"/>
         <run start="3521" level="129" length="20"/>
     </section>
-    <section first-pos="2085" id="7035">
+    <section orientation="VERTICAL" first-pos="2085" id="7035">
         <run start="3509" level="96" length="2"/>
         <run start="3509" level="96" length="2"/>
         <run start="3509" level="96" length="2"/>
     </section>
-    <section first-pos="2085" id="7036">
+    <section orientation="VERTICAL" first-pos="2085" id="7036">
         <run start="3533" level="80" length="2"/>
         <run start="3533" level="80" length="2"/>
         <run start="3533" level="80" length="2"/>

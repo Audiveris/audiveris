@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<stick shape="COMMON_TIME" interline="15" id="287">
+<glyph shape="COMMON_TIME" interline="15" id="287">
     <stem-number>0</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>-0.06779661016949153</pitch-position>
-    <section first-pos="268" id="382">
+    <section orientation="VERTICAL" first-pos="268" id="382">
         <run start="485" level="36" length="11"/>
     </section>
-    <section first-pos="269" id="383">
+    <section orientation="VERTICAL" first-pos="269" id="383">
         <run start="481" level="22" length="18"/>
     </section>
-    <section first-pos="270" id="384">
+    <section orientation="VERTICAL" first-pos="270" id="384">
         <run start="477" level="32" length="25"/>
     </section>
-    <section first-pos="271" id="385">
+    <section orientation="VERTICAL" first-pos="271" id="385">
         <run start="474" level="0" length="11"/>
         <run start="470" level="33" length="12"/>
         <run start="470" level="44" length="9"/>
@@ -24,10 +24,10 @@
         <run start="465" level="44" length="9"/>
         <run start="465" level="40" length="10"/>
     </section>
-    <section first-pos="271" id="386">
+    <section orientation="VERTICAL" first-pos="271" id="386">
         <run start="487" level="27" length="15"/>
     </section>
-    <section first-pos="272" id="387">
+    <section orientation="VERTICAL" first-pos="272" id="387">
         <run start="491" level="36" length="11"/>
         <run start="492" level="40" length="10"/>
         <run start="493" level="44" length="9"/>
@@ -49,10 +49,10 @@
         <run start="486" level="22" length="9"/>
         <run start="486" level="29" length="7"/>
     </section>
-    <section first-pos="281" id="401">
+    <section orientation="VERTICAL" first-pos="281" id="401">
         <run start="465" level="27" length="15"/>
         <run start="466" level="25" length="16"/>
         <run start="467" level="29" length="14"/>
         <run start="469" level="36" length="11"/>
     </section>
-</stick>
+</glyph>

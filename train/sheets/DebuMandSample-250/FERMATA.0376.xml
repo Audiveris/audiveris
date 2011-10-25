@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<stick shape="FERMATA" interline="18" id="376">
+<glyph shape="FERMATA" interline="18" id="376">
     <stem-number>0</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>-6.918918918918919</pitch-position>
-    <section first-pos="612" id="1171">
+    <section orientation="VERTICAL" first-pos="612" id="1171">
         <run start="634" level="141" length="6"/>
         <run start="631" level="69" length="9"/>
         <run start="628" level="74" length="9"/>
@@ -55,4 +55,4 @@
         <run start="631" level="72" length="9"/>
         <run start="634" level="164" length="6"/>
     </section>
-</stick>
+</glyph>

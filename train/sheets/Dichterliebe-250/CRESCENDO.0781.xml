@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<stick shape="CRESCENDO" interline="19" id="781">
+<glyph shape="CRESCENDO" interline="19" id="781">
     <stem-number>0</stem-number>
     <with-ledger>true</with-ledger>
     <pitch-position>-6.63013698630137</pitch-position>
-    <section first-pos="1984" id="2917">
+    <section orientation="VERTICAL" first-pos="1984" id="2917">
         <run start="2280" level="200" length="1"/>
         <run start="2280" level="200" length="1"/>
         <run start="2280" level="200" length="1"/>
@@ -63,7 +63,7 @@
         <run start="2277" level="119" length="7"/>
         <run start="2277" level="119" length="7"/>
     </section>
-    <section first-pos="2042" id="2963">
+    <section orientation="VERTICAL" first-pos="2042" id="2963">
         <run start="2277" level="84" length="3"/>
         <run start="2277" level="67" length="3"/>
         <run start="2277" level="67" length="3"/>
@@ -310,7 +310,7 @@
         <run start="2265" level="0" length="3"/>
         <run start="2265" level="224" length="3"/>
     </section>
-    <section first-pos="2042" id="2964">
+    <section orientation="VERTICAL" first-pos="2042" id="2964">
         <run start="2281" level="93" length="3"/>
         <run start="2281" level="67" length="3"/>
         <run start="2281" level="67" length="3"/>
@@ -557,4 +557,4 @@
         <run start="2292" level="0" length="3"/>
         <run start="2292" level="181" length="3"/>
     </section>
-</stick>
+</glyph>

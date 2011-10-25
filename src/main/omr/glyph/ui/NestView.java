@@ -167,10 +167,12 @@ public class NestView
         // Stroke for borders
         final Stroke oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
 
-        for (Lag lag : lags) {
-            // Render all sections, using the colors they have been assigned
-            for (Section section : lag.getVertices()) {
-                section.render(g, drawBorders);
+        if (lags != null) {
+            for (Lag lag : lags) {
+                // Render all sections, using the colors they have been assigned
+                for (Section section : lag.getVertices()) {
+                    section.render(g, drawBorders);
+                }
             }
         }
 

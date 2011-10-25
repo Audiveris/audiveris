@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<stick shape="SLUR" interline="18" id="738">
+<glyph shape="SLUR" interline="18" id="738">
     <stem-number>0</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>-9.12</pitch-position>
-    <section first-pos="2270" id="4111">
+    <section orientation="VERTICAL" first-pos="2270" id="4111">
         <run start="2658" level="200" length="1"/>
         <run start="2658" level="200" length="1"/>
         <run start="2658" level="200" length="1"/>
@@ -71,4 +71,4 @@
         <run start="2685" level="37" length="4"/>
         <run start="2686" level="129" length="3"/>
     </section>
-</stick>
+</glyph>
