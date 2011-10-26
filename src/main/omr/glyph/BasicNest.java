@@ -633,14 +633,6 @@ public class BasicNest
      */
     private void handleEvent (LocationEvent locationEvent)
     {
-        //TODO: Not sure of this. Check w/ GridView
-
-        //        if (ViewParameters.getInstance()
-        //                          .isSectionSelectionEnabled()) {
-        //            return;
-        //        }
-
-        //
         SelectionHint  hint = locationEvent.hint;
         MouseMovement  movement = locationEvent.movement;
         PixelRectangle rect = locationEvent.rectangle;
@@ -673,7 +665,7 @@ public class BasicNest
                 }
             }
         } else {
-            // This is just a point, lookup only for a VIRTUAL glyph
+            // This is just a point
             Glyph glyph = lookupVirtualGlyph(
                 new PixelPoint(rect.getLocation()));
 

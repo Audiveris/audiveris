@@ -583,7 +583,7 @@ public class SlurInspector
 
         //
         Scale.Fraction     maxCircleDistance = new Scale.Fraction(
-            0.1,
+            0.15,
             "Maximum distance to approximating circle" + " for a slur");
 
         //

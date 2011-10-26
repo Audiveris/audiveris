@@ -918,19 +918,10 @@ public class BasicSection
     //----------//
     // contains //
     //----------//
-    public boolean contains (int coord,
-                             int pos)
+    public boolean contains (int x,
+                             int y)
     {
-        // First check with the bounding rectangle
-        if (!getOrientedBounds()
-                 .contains(coord, pos)) {
-            return false;
-        }
-
-        // Then a closer look
-        Run run = getRunAtPos(pos);
-
-        return (run.getStart() <= coord) && (run.getStop() >= coord);
+        return polygon.contains(x, y);
     }
 
     //----------//

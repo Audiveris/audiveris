@@ -156,7 +156,7 @@ public class BlackList
                 }
             }
         } else {
-            logger.warning("Could not retrieve slots out of dir " + dir);
+            logger.info("Could not retrieve files out of dir " + dir);
         }
 
         // Return legals as an array

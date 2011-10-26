@@ -130,38 +130,54 @@ public class PagesStep
                              Sheet                  sheet)
         throws StepException
     {
-        // Final cross-system translation tasks
-        if (systems == null) {
-            systems = sheet.getSystems();
-        }
+        // For the very first time, we reperform from the SYMBOLS step
+        if (!sheet.isDone(this)) {
+            sheet.done(this);
 
-        if (!systems.isEmpty()) {
-            systems.iterator()
-                   .next()
-                   .translateFinal();
+            // Reperform verticals once
+            try {
+                Stepping.reprocessSheet(
+                    Steps.valueOf("SYMBOLS"),
+                    sheet,
+                    systems,
+                    true);
+            } catch (Exception ex) {
+                logger.warning("Error in re-processing from " + this, ex);
+            }
+        } else {
+            // Final cross-system translation tasks
+            if (systems == null) {
+                systems = sheet.getSystems();
+            }
 
-            // Finally, all actions for completed page (in proper order)
-            Page page = sheet.getPage();
+            if (!systems.isEmpty()) {
+                systems.iterator()
+                       .next()
+                       .translateFinal();
 
-            // Compute mean beam thickness at page level
-            page.accept(new BeamReader());
+                // Finally, all actions for completed page (in proper order)
+                Page page = sheet.getPage();
 
-            // 1/ Look carefully for time signatures
-            page.accept(new TimeSignatureRetriever());
+                // Compute mean beam thickness at page level
+                page.accept(new BeamReader());
 
-            // 2/ Adapt time sigs to intrinsic measure & chord durations
-            page.accept(new TimeSignatureFixer());
+                // 1/ Look carefully for time signatures
+                page.accept(new TimeSignatureRetriever());
 
-            if (Main.getGui() != null) {
-                try {
-                    // Invalidate score data within MidiAgent, if so needed
-                    MidiAgent agent = MidiAgent.getInstance();
+                // 2/ Adapt time sigs to intrinsic measure & chord durations
+                page.accept(new TimeSignatureFixer());
 
-                    if (agent.getScore() == sheet.getScore()) {
-                        agent.reset();
+                if (Main.getGui() != null) {
+                    try {
+                        // Invalidate score data within MidiAgent, if so needed
+                        MidiAgent agent = MidiAgent.getInstance();
+
+                        if (agent.getScore() == sheet.getScore()) {
+                            agent.reset();
+                        }
+                    } catch (Exception ex) {
+                        logger.warning("Cannot access Midi agent", ex);
                     }
-                } catch (Exception ex) {
-                    logger.warning("Cannot access Midi agent", ex);
                 }
             }
         }

@@ -472,15 +472,14 @@ public interface Section
     public void computeParameters ();
 
     /**
-     * Predicate to check whether the given point falls within one of the
-     * section runs.
+     * Predicate to check whether the given point falls inside the section.
      *
-     * @param coord coordinate along section length
-     * @param pos   run position
-     * @return true if point(coord,pos) is contained in the section
+     * @param x absolute abscissa
+     * @param y absolute ordinate
+     * @return true if absolute point(x,y) is contained in the section
      */
-    public boolean contains (int coord,
-                             int pos);
+    public boolean contains (int x,
+                             int y);
 
     /**
      * Cumulate in the provided Barycenter the section pixels that are contained

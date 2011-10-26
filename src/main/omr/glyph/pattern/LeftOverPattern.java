@@ -109,7 +109,7 @@ public class LeftOverPattern
             0.5,
             "Minimum normalized weight to be a left over glyph");
         Evaluation.Doubt   maxDoubt = new Evaluation.Doubt(
-            100d,
+            10d,
             "Maximum doubt for left over glyphs");
     }
 }

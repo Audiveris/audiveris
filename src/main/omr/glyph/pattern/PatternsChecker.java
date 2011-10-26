@@ -56,12 +56,9 @@ public class PatternsChecker
         this.system = system;
         patterns = new GlyphPattern[] {
                        
-        // Text patterns
-        new TextBorderPattern(system), // Glyphs -> Text
-        new TextGreedyPattern(system), // Glyphs -> Text
-        new TextAreaPattern(system), //   Glyphs -> Text
-        new SentencePattern(system), // Text -> sentences
-                                     //
+        //
+        new FortePattern(system),
+                       
         new SplitPattern(system),
                        
         new LedgerPattern(system),
@@ -76,8 +73,14 @@ public class PatternsChecker
                        
         new TimePattern(system),
                        
-        new AlterPattern(system),
-                       
+        new AlterPattern(system), 
+        //
+        // Text patterns
+        new TextBorderPattern(system), // Glyphs -> Text
+        new TextGreedyPattern(system), // Glyphs -> Text
+        new TextAreaPattern(system), //   Glyphs -> Text
+        new SentencePattern(system), // Text -> sentences
+                                     //
         new LeftOverPattern(system)
                    };
     }

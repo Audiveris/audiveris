@@ -246,7 +246,7 @@ public enum TextRole {
             30,
             "Maximum horizontal distance around center of page");
         Scale.Fraction maxShortLength = new Scale.Fraction(
-            30,
+            35,
             "Maximum length for a short sentence (no lyrics)");
         Scale.Fraction maxTinyLength = new Scale.Fraction(
             2,
