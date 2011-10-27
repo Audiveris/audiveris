@@ -378,7 +378,6 @@ public abstract class PagePainter
 
             if ((tail == null) || (head == null)) {
                 ///chord.addError("No head - tail defined for chord");
-
                 return false;
             }
 
@@ -480,7 +479,6 @@ public abstract class PagePainter
             if (box == null) {
                 ///logger.warning("Null box for " + keySignature);
                 ///keySignature.addError("Null box for " + keySignature);
-
                 return false;
             }
 
@@ -576,8 +574,7 @@ public abstract class PagePainter
             if (stem != null) {
                 // Note is attached to a stem, link note display to the stem
                 paint(
-                    ShapeRange.HeadAndFlags.contains(shape) ? NOTEHEAD_BLACK
-                                        : shape,
+                    shape,
                     noteLocation(note),
                     (center.x < chord.getTailLocation().x) ? MIDDLE_RIGHT
                                         : MIDDLE_LEFT);
@@ -819,9 +816,9 @@ public abstract class PagePainter
             logger.warning("Invalid time signature", ex);
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-//            timeSignature.addError(
-//                timeSignature.getGlyphs().iterator().next(),
-//                "Error painting timeSignature " + ex);
+            //            timeSignature.addError(
+            //                timeSignature.getGlyphs().iterator().next(),
+            //                "Error painting timeSignature " + ex);
         }
 
         return true;

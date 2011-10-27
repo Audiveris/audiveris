@@ -1421,32 +1421,22 @@ public class Chord
         switch (shape) {
         case COMBINING_FLAG_1 :
         case COMBINING_FLAG_1_UP :
-        case HEAD_AND_FLAG_1 :
-        case HEAD_AND_FLAG_1_UP :
             return 1;
 
         case COMBINING_FLAG_2 :
         case COMBINING_FLAG_2_UP :
-        case HEAD_AND_FLAG_2 :
-        case HEAD_AND_FLAG_2_UP :
             return 2;
 
         case COMBINING_FLAG_3 :
         case COMBINING_FLAG_3_UP :
-        case HEAD_AND_FLAG_3 :
-        case HEAD_AND_FLAG_3_UP :
             return 3;
 
         case COMBINING_FLAG_4 :
         case COMBINING_FLAG_4_UP :
-        case HEAD_AND_FLAG_4 :
-        case HEAD_AND_FLAG_4_UP :
             return 4;
 
         case COMBINING_FLAG_5 :
         case COMBINING_FLAG_5_UP :
-        case HEAD_AND_FLAG_5 :
-        case HEAD_AND_FLAG_5_UP :
             return 5;
         }
 
@@ -1605,8 +1595,7 @@ public class Chord
                                .getGlyphs()) {
             Shape shape = glyph.getShape();
 
-            if ((ShapeRange.Flags.contains(shape) ||
-                ShapeRange.HeadAndFlags.contains(shape))) {
+            if (ShapeRange.Flags.contains(shape)) {
                 if (glyph.getTranslations()
                          .contains(this)) {
                     foundFlags.add(glyph);

@@ -21,6 +21,7 @@ import omr.ui.symbol.Symbols;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -324,41 +325,6 @@ public enum Shape {
 
     /** Quintuple flag up */
     COMBINING_FLAG_5_UP("Quintuple flag up"), 
-
-    //
-    // Connected head and flags ------------------------------------------------
-    //
-
-    /** Black notehead with single flag down */
-    HEAD_AND_FLAG_1("Black notehead with single flag down"), 
-
-    /** Black notehead with double flag down */
-    HEAD_AND_FLAG_2("Black notehead with double flag down"), 
-
-    /** Black notehead with triple flag down */
-    HEAD_AND_FLAG_3("Black notehead with triple flag down"), 
-
-    /** Black notehead with quadruple flag down */
-    HEAD_AND_FLAG_4("Black notehead with quadruple flag down"), 
-
-    /** Black notehead with quintuple flag down */
-    HEAD_AND_FLAG_5("Black notehead with quintuple flag down"), 
-
-    /** Black notehead with single flag up */
-    HEAD_AND_FLAG_1_UP("Black notehead with single flag up"), 
-
-    /** Black notehead with double flag up */
-    HEAD_AND_FLAG_2_UP("Black notehead with double flag up"), 
-
-    /** Black notehead with triple flag up */
-    HEAD_AND_FLAG_3_UP("Black notehead with triple flag up"), 
-
-    /** Black notehead with quadruple flag up */
-    HEAD_AND_FLAG_4_UP("Black notehead with quadruple flag up"), 
-
-    /** Black notehead with quintuple flag up */
-    HEAD_AND_FLAG_5_UP("Black notehead with quintuple flag up"), 
-
     //
     // Beams and slurs ---------------------------------------------------------
     //
@@ -596,6 +562,16 @@ public enum Shape {
         // Debug
         ///dumpShapeColors();
     }
+
+    /** A comparator based on shape name */
+    public static Comparator<Shape> alphaComparator = new Comparator<Shape>() {
+        public int compare (Shape o1,
+                            Shape o2)
+        {
+            return o1.name()
+                     .compareTo(o2.name());
+        }
+    };
 
     //--------------------------------------------------------------------------
 

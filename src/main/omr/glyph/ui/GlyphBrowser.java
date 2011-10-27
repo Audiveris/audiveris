@@ -58,8 +58,8 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -119,7 +119,7 @@ class GlyphBrowser
     private Rectangle modelRectangle;
 
     /** Population of glyphs file names */
-    private List<String> names;
+    private List<String> names = Collections.emptyList();
 
     /** Navigator instance to navigate through all glyphs names */
     private Navigator navigator;
@@ -205,7 +205,7 @@ class GlyphBrowser
     @Implement(ChangeListener.class)
     public void stateChanged (ChangeEvent e)
     {
-        int selNb = verifier.getGlyphNames().length;
+        int selNb = verifier.getGlyphCount();
         navigator.loadAction.setEnabled(selNb > 0);
     }
 
@@ -861,8 +861,7 @@ class GlyphBrowser
         public void actionPerformed (ActionEvent e)
         {
             // Get a (shrinkable, to allow deletions) list of glyph names
-            names = new ArrayList<String>(
-                Arrays.asList(verifier.getGlyphNames()));
+            names = verifier.getGlyphNames();
 
             // Reset lag & display
             resetBrowser();

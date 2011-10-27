@@ -400,7 +400,7 @@ public class GlyphChecker
             };
 
         // Shapes that require a stem on the left side
-        new Checker("noLeftStem", HeadAndFlags) {
+        new Checker("noLeftStem", Flags) {
                 public boolean check (SystemInfo system,
                                       Evaluation eval,
                                       Glyph      glyph,
@@ -548,7 +548,6 @@ public class GlyphChecker
             Notes,
             NoteHeads,
             Rests,
-            HeadAndFlags,
             Dynamics) {
                 public boolean check (SystemInfo system,
                                       Evaluation eval,

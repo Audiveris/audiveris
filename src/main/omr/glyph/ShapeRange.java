@@ -70,9 +70,6 @@ public class ShapeRange
     public static final ShapeRange     Flags = new ShapeRange(
         COMBINING_FLAG_1,
         EnumSet.range(COMBINING_FLAG_1, COMBINING_FLAG_5_UP));
-    public static final ShapeRange     HeadAndFlags = new ShapeRange(
-        HEAD_AND_FLAG_1,
-        EnumSet.range(HEAD_AND_FLAG_1, HEAD_AND_FLAG_5_UP));
     public static final ShapeRange     Keys = new ShapeRange(
         KEY_SHARP_3,
         shapesOf(
@@ -162,7 +159,6 @@ public class ShapeRange
 
         StemSymbols.addAll(NoteHeads.getShapes());
         StemSymbols.addAll(Flags.getShapes());
-        StemSymbols.addAll(HeadAndFlags.getShapes());
     }
 
     /** Pedals */
@@ -234,22 +230,6 @@ public class ShapeRange
         G_CLEF_OTTAVA_BASSA,
         F_CLEF_OTTAVA_ALTA,
         F_CLEF_OTTAVA_BASSA);
-
-    /** Head/Flag combinations with flags down */
-    public static final EnumSet<Shape> HeadAndFlagsDown = EnumSet.of(
-        HEAD_AND_FLAG_1,
-        HEAD_AND_FLAG_2,
-        HEAD_AND_FLAG_3,
-        HEAD_AND_FLAG_4,
-        HEAD_AND_FLAG_5);
-
-    /** Head/Flag combinations with flags up */
-    public static final EnumSet<Shape> HeadAndFlagsUp = EnumSet.of(
-        HEAD_AND_FLAG_1_UP,
-        HEAD_AND_FLAG_2_UP,
-        HEAD_AND_FLAG_3_UP,
-        HEAD_AND_FLAG_4_UP,
-        HEAD_AND_FLAG_5_UP);
 
     //~ Instance fields --------------------------------------------------------
 

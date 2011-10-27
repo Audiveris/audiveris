@@ -335,7 +335,7 @@ public class SystemTranslator
 
                 if (glyph.isWellKnown() &&
                     (shape != Shape.CLUTTER) &&
-                    (!glyph.isTranslated() || HeadAndFlags.contains(shape))) {
+                    !glyph.isTranslated()) {
                     // Check for glyph relevance
                     if (isRelevant(glyph)) {
                         // Determine part/staff/measure containment
@@ -538,7 +538,7 @@ public class SystemTranslator
             Shape shape = glyph.getShape();
 
             return Rests.contains(shape) || NoteHeads.contains(shape) ||
-                   Notes.contains(shape) || HeadAndFlags.contains(shape);
+                   Notes.contains(shape);
         }
 
         @Override
@@ -766,7 +766,7 @@ public class SystemTranslator
         {
             Shape shape = glyph.getShape();
 
-            return Flags.contains(shape) || HeadAndFlags.contains(shape);
+            return Flags.contains(shape);
         }
 
         @Override

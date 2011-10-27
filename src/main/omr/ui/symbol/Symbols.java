@@ -268,16 +268,6 @@ public class Symbols
         ottava(true, G_CLEF_OTTAVA_ALTA, 38);
         ottava(false, G_CLEF_OTTAVA_BASSA, 38);
         sym.put(HALF_REST, new RestSymbol(HALF_REST, false, 238));
-        headFlagsDown(1, HEAD_AND_FLAG_1);
-        headFlagsUp(1, HEAD_AND_FLAG_1_UP);
-        headFlagsDown(2, HEAD_AND_FLAG_2);
-        headFlagsUp(2, HEAD_AND_FLAG_2_UP);
-        headFlagsDown(3, HEAD_AND_FLAG_3);
-        headFlagsUp(3, HEAD_AND_FLAG_3_UP);
-        headFlagsDown(4, HEAD_AND_FLAG_4);
-        headFlagsUp(4, HEAD_AND_FLAG_4_UP);
-        headFlagsDown(5, HEAD_AND_FLAG_5);
-        headFlagsUp(5, HEAD_AND_FLAG_5_UP);
         map(INVERTED_MORDENT, 77);
         sym.put(
             INVERTED_TURN,
@@ -399,24 +389,6 @@ public class Symbols
                                  Shape shape)
     {
         sym.put(shape, new KeyFlatSymbol(key, false, shape));
-    }
-
-    //---------------//
-    // headFlagsDown //
-    //---------------//
-    private static void headFlagsDown (int   count,
-                                       Shape shape)
-    {
-        sym.put(shape, new HeadFlagsDownSymbol(count, false, shape));
-    }
-
-    //---------------//
-    // headFlagsUp //
-    //---------------//
-    private static void headFlagsUp (int   count,
-                                     Shape shape)
-    {
-        sym.put(shape, new HeadFlagsUpSymbol(count, false, shape));
     }
 
     //-------//

@@ -1076,23 +1076,8 @@ public class Note
         final PixelRectangle box = glyph.getContourBox();
 
         // For true notes use centroid y, for rests use area center y
-        // For head/flag combination use head side
         if (ShapeRange.Rests.contains(shape)) {
             return glyph.getContourBox();
-        } else if (ShapeRange.HeadAndFlagsDown.contains(shape)) {
-            // Head is at bottom side of glyph
-            return new PixelRectangle(
-                box.x,
-                (box.y + box.height) - ((card - index) * interline),
-                box.width,
-                interline);
-        } else if (ShapeRange.HeadAndFlagsUp.contains(shape)) {
-            // Head is at top side of glyph
-            return new PixelRectangle(
-                box.x,
-                box.y + (index * interline),
-                box.width,
-                interline);
         } else {
             final PixelPoint centroid = glyph.getCentroid();
             final int        top = centroid.y - ((card * interline) / 2);
@@ -1132,16 +1117,6 @@ public class Note
         case NOTEHEAD_BLACK :
         case NOTEHEAD_BLACK_2 :
         case NOTEHEAD_BLACK_3 :
-        case HEAD_AND_FLAG_1 :
-        case HEAD_AND_FLAG_1_UP :
-        case HEAD_AND_FLAG_2 :
-        case HEAD_AND_FLAG_2_UP :
-        case HEAD_AND_FLAG_3 :
-        case HEAD_AND_FLAG_3_UP :
-        case HEAD_AND_FLAG_4 :
-        case HEAD_AND_FLAG_4_UP :
-        case HEAD_AND_FLAG_5 :
-        case HEAD_AND_FLAG_5_UP :
             return Shape.NOTEHEAD_BLACK;
 
         case VOID_NOTEHEAD :
