@@ -286,11 +286,6 @@ public class PaintingParameters
             true,
             "Should the marks be painted");
 
-        /** Should the dummy parts be painted */
-        final Constant.Boolean dummyPainting = new Constant.Boolean(
-            true,
-            "Should the dummy parts be painted");
-
         //        /** Which layers should be painted */
         //        final PaintingLayer.Constant paintingLayer = new PaintingLayer.Constant(
         //            PaintingLayer.INPUT_OUTPUT,

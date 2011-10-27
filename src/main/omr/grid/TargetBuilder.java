@@ -447,7 +447,7 @@ public class TargetBuilder
         //~ Instance fields ----------------------------------------------------
 
         Constant.Boolean   displayGrid = new Constant.Boolean(
-            true,
+            false,
             "Should we display the dewarp grid?");
 
         //

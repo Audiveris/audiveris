@@ -116,10 +116,10 @@ public class GridView
         //~ Instance fields ----------------------------------------------------
 
         Constant.Boolean showTangents = new Constant.Boolean(
-            true,
+            false,
             "Should we show filament ending tangents?");
         Constant.Boolean showCombs = new Constant.Boolean(
-            true,
+            false,
             "Should we show staff lines combs?");
     }
 }

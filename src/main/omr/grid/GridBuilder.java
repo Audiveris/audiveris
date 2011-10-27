@@ -273,12 +273,12 @@ public class GridBuilder
 
         //
         Constant.Boolean printWatch = new Constant.Boolean(
-            true,
+            false,
             "Should we print out the stop watch?");
 
         //
         Constant.Boolean buildDewarpedTarget = new Constant.Boolean(
-            true,
+            false,
             "Should we build a dewarped target?");
     }
 }

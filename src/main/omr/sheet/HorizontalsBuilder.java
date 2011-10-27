@@ -1079,7 +1079,7 @@ public class HorizontalsBuilder
         //            0.33,
         //            "Width of half area to look for chunks");
         Constant.Boolean   displayFrame = new Constant.Boolean(
-            true,
+            false,
             "Should we display a frame on the horizontal sticks");
         Scale.Fraction     extensionMinPointNb = new Scale.Fraction(
             0.2,
