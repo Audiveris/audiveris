@@ -61,4 +61,41 @@ public class Ledger
     {
         return lineIndex;
     }
+
+    //------------------//
+    // getPitchPosition //
+    //------------------//
+    /**
+     * Report the pitch position of this ledger WRT the related staff
+     * @return the pitch position
+     */
+    public int getPitchPosition ()
+    {
+        //        // Safer, for the time being...
+        //        if (getStaff()
+        //                .getLines()
+        //                .size() != 5) {
+        //            throw new RuntimeException("Only 5-line staves are supported");
+        //        }
+        if (lineIndex > 0) {
+            return 4 + (2 * lineIndex);
+        } else {
+            return -4 + (2 * lineIndex);
+        }
+    }
+
+    //-----------------//
+    // internalsString //
+    //-----------------//
+    @Override
+    protected String internalsString ()
+    {
+        StringBuilder sb = new StringBuilder(super.internalsString());
+        sb.append(" index:")
+          .append(lineIndex);
+        sb.append(" pitch:")
+          .append(getPitchPosition());
+
+        return sb.toString();
+    }
 }

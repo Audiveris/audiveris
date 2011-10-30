@@ -67,7 +67,6 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 /**
  * Class {@code BasicSection} is a basic implementation of {@link Section}.
  *
- * <p>TODO: Check setGlyph implementation WRT containing Nest?
  * <p>TODO: Get rid of StickRelation part ASAP?
  *
  * @author Hervé Bitteur
@@ -206,9 +205,10 @@ public class BasicSection
     //-----------//
     // getAspect //
     //-----------//
-    public double getAspect ()
+    public double getAspect (Orientation orientation)
     {
-        return (double) getLength() / (double) getThickness();
+        return (double) getLength(orientation) / (double) getThickness(
+            orientation);
     }
 
     //-------------//
@@ -246,18 +246,6 @@ public class BasicSection
     public void setColor (Color color)
     {
         this.color = color;
-    }
-
-    //----------//
-    // getColor //
-    //----------//
-    public Color getColor ()
-    {
-        if (relation != null) {
-            return relation.getColor();
-        } else {
-            return null;
-        }
     }
 
     //-------------//
@@ -484,9 +472,13 @@ public class BasicSection
     //-----------//
     // getLength //
     //-----------//
-    public int getLength ()
+    public int getLength (Orientation orientation)
     {
-        return getOrientedBounds().width;
+        if (orientation == Orientation.HORIZONTAL) {
+            return getContourBox().width;
+        } else {
+            return getContourBox().height;
+        }
     }
 
     //----------//
@@ -508,9 +500,9 @@ public class BasicSection
     //---------------//
     // getMeanAspect //
     //---------------//
-    public double getMeanAspect ()
+    public double getMeanAspect (Orientation orientation)
     {
-        return getLength() / getMeanThickness();
+        return getLength(orientation) / getMeanThickness(orientation);
     }
 
     //------------------//
@@ -524,9 +516,9 @@ public class BasicSection
     //------------------//
     // getMeanThickness //
     //------------------//
-    public double getMeanThickness ()
+    public double getMeanThickness (Orientation orientation)
     {
-        return (double) getWeight() / getLength();
+        return (double) getWeight() / getLength(orientation);
     }
 
     //---------------------//
@@ -586,16 +578,6 @@ public class BasicSection
     {
         return getPolygon()
                    .getPathIterator(null);
-    }
-
-    //----------//
-    // setPixel //
-    //----------//
-    public void setPixel (Picture picture,
-                          Point   cp,
-                          int     val)
-    {
-        picture.setPixel(orientation.absolute(cp), val);
     }
 
     //------------//
@@ -704,51 +686,12 @@ public class BasicSection
     //--------------//
     // getThickness //
     //--------------//
-    public int getThickness ()
+    public int getThickness (Orientation orientation)
     {
-        return getOrientedBounds().height;
-    }
-
-    //----------------//
-    // getThicknessAt //
-    //----------------//
-    public int getThicknessAt (int coord,
-                               int probeWidth)
-    {
-        getOrientedBounds();
-
-        Rectangle roi = new Rectangle(
-            coord,
-            orientedBounds.y,
-            0,
-            orientedBounds.height);
-        roi.grow(probeWidth / 2, 0);
-
-        // Use a large-enough collector
-        PointsCollector collector = new PointsCollector(
-            orientation.absolute(roi));
-        cumulate(collector);
-
-        int count = collector.getCount();
-
-        if (count == 0) {
-            return 0;
+        if (orientation == Orientation.HORIZONTAL) {
+            return getContourBox().height;
         } else {
-            // Find out min and max ordinates
-            int[] yy = new int[count];
-            System.arraycopy(
-                (orientation == Orientation.HORIZONTAL)
-                                ? collector.getYValues() : collector.getXValues(),
-                0,
-                yy,
-                0,
-                count);
-            Arrays.sort(yy);
-
-            int yMin = yy[0];
-            int yMax = yy[count - 1];
-
-            return yMax - yMin + 1;
+            return getContourBox().width;
         }
     }
 
@@ -1529,7 +1472,7 @@ public class BasicSection
 
         for (Run run : runs) {
             for (pt.x = run.getStart(); pt.x <= run.getStop(); pt.x++) {
-                setPixel(picture, pt, pixel);
+                picture.setPixel(orientation.absolute(pt), pixel);
             }
 
             pt.y++;

@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <linear-evaluator>
     <defaults>
-        <parameter name="weight" weight="0.1435606902618289"/>
-        <parameter name="width" weight="0.09508953402246365"/>
-        <parameter name="height" weight="0.14527133333915504"/>
-        <parameter name="n20" weight="0.8540633968268746"/>
-        <parameter name="n11" weight="83.72225885509725"/>
-        <parameter name="n02" weight="3.6968468163781023"/>
-        <parameter name="n30" weight="6.3255544865704945"/>
-        <parameter name="n21" weight="39.6863850408548"/>
-        <parameter name="n12" weight="292.38001367931327"/>
-        <parameter name="n03" weight="15.338554738335015"/>
-        <parameter name="ledger" weight="12.32052129843198"/>
-        <parameter name="stemNb" weight="1.759395681746671"/>
+        <parameter name="weight" weight="0.14388952332861302"/>
+        <parameter name="width" weight="0.0953212045191052"/>
+        <parameter name="height" weight="0.14557946069751407"/>
+        <parameter name="n20" weight="0.8561566705271327"/>
+        <parameter name="n11" weight="83.97251794432495"/>
+        <parameter name="n02" weight="3.704857616612327"/>
+        <parameter name="n30" weight="6.341100866451637"/>
+        <parameter name="n21" weight="39.78395161363693"/>
+        <parameter name="n12" weight="293.10424953285786"/>
+        <parameter name="n03" weight="15.376326530138911"/>
+        <parameter name="ledger" weight="12.347859425032503"/>
+        <parameter name="stemNb" weight="1.759560243700914"/>
     </defaults>
     <categories>
         <item id="ACCENT">
@@ -434,41 +434,41 @@
             </parameter>
         </item>
         <item id="CAESURA">
-            <parameter name="weight" training="NOMINAL" weight="22.71908503530475" min="0.9921875" mean="1.1405381944444444" max="1.288888888888889">
-                <population count="2" squares-sum="2.645670603057485" sum="2.2810763888888888"/>
+            <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="0.9921875" mean="0.9921875" max="0.9921875">
+                <population count="1" squares-sum="0.98443603515625" sum="0.9921875"/>
             </parameter>
-            <parameter name="width" training="NOMINAL" weight="27.2662721893497" min="2.0625" mean="2.197916666666667" max="2.3333333333333335">
-                <population count="2" squares-sum="9.698350694444446" sum="4.395833333333334"/>
+            <parameter name="width" training="SINGLE_DATA" weight="0.0" min="2.0625" mean="2.0625" max="2.0625">
+                <population count="1" squares-sum="4.25390625" sum="2.0625"/>
             </parameter>
-            <parameter name="height" training="NOMINAL" weight="3.677104280379183" min="2.0625" mean="2.43125" max="2.8">
-                <population count="2" squares-sum="12.09390625" sum="4.8625"/>
+            <parameter name="height" training="SINGLE_DATA" weight="0.0" min="2.0625" mean="2.0625" max="2.0625">
+                <population count="1" squares-sum="4.25390625" sum="2.0625"/>
             </parameter>
-            <parameter name="n20" training="NOMINAL" weight="1704.1521488235162" min="0.24257328829618258" mean="0.25970224134354897" max="0.27683119439091536">
-                <population count="2" squares-sum="0.13547731038272368" sum="0.5194044826870979"/>
+            <parameter name="n20" training="SINGLE_DATA" weight="0.0" min="0.24257328829618258" mean="0.24257328829618258" max="0.24257328829618258">
+                <population count="1" squares-sum="0.05884180019482291" sum="0.24257328829618258"/>
             </parameter>
-            <parameter name="n11" training="NOMINAL" weight="2304.56265877204" min="-0.22910886055188825" mean="-0.2143792677208946" max="-0.19964967488990093">
-                <population count="2" squares-sum="0.09235086266702772" sum="-0.4287585354417892"/>
+            <parameter name="n11" training="SINGLE_DATA" weight="0.0" min="-0.19964967488990093" mean="-0.19964967488990093" max="-0.19964967488990093">
+                <population count="1" squares-sum="0.03985999268364314" sum="-0.19964967488990093"/>
             </parameter>
-            <parameter name="n02" training="NOMINAL" weight="30042.81395655193" min="0.3476264299479272" mean="0.3517060028461535" max="0.35578557574437986">
-                <population count="2" squares-sum="0.247427510706101" sum="0.703412005692307"/>
+            <parameter name="n02" training="SINGLE_DATA" weight="0.0" min="0.35578557574437986" mean="0.35578557574437986" max="0.35578557574437986">
+                <population count="1" squares-sum="0.12658337590775987" sum="0.35578557574437986"/>
             </parameter>
-            <parameter name="n30" training="NOMINAL" weight="946480.6669754005" min="-0.003000940951253098" mean="-0.0022741171704379875" max="-0.0015472933896228764">
-                <population count="2" squares-sum="1.1399763426478501E-5" sum="-0.004548234340875975"/>
+            <parameter name="n30" training="SINGLE_DATA" weight="0.0" min="-0.0015472933896228764" mean="-0.0015472933896228764" max="-0.0015472933896228764">
+                <population count="1" squares-sum="2.3941168335706504E-6" sum="-0.0015472933896228764"/>
             </parameter>
-            <parameter name="n21" training="NOMINAL" weight="52492.52890120247" min="-0.005580259012006084" mean="-0.0024939724054067343" max="5.923142011926156E-4">
-                <population count="2" squares-sum="3.149012675400956E-5" sum="-0.004987944810813469"/>
+            <parameter name="n21" training="SINGLE_DATA" weight="0.0" min="5.923142011926156E-4" mean="5.923142011926156E-4" max="5.923142011926156E-4">
+                <population count="1" squares-sum="3.5083611293444623E-7" sum="5.923142011926156E-4"/>
             </parameter>
-            <parameter name="n12" training="NOMINAL" weight="5664.050492394817" min="-9.750689209916985E-4" mean="0.008420464550342366" max="0.01781599802167643">
-                <population count="2" squares-sum="3.1836054490906243E-4" sum="0.016840929100684732"/>
+            <parameter name="n12" training="SINGLE_DATA" weight="0.0" min="-9.750689209916985E-4" mean="-9.750689209916985E-4" max="-9.750689209916985E-4">
+                <population count="1" squares-sum="9.507594006839152E-7" sum="-9.750689209916985E-4"/>
             </parameter>
-            <parameter name="n03" training="NOMINAL" weight="1095.2821409611508" min="-0.041502490214497534" mean="-0.020136550484506455" max="0.0012293892454846244">
-                <population count="2" squares-sum="0.0017239680919213767" sum="-0.04027310096901291"/>
+            <parameter name="n03" training="SINGLE_DATA" weight="0.0" min="0.0012293892454846244" mean="0.0012293892454846244" max="0.0012293892454846244">
+                <population count="1" squares-sum="1.511397916913254E-6" sum="0.0012293892454846244"/>
             </parameter>
-            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
-                <population count="2" squares-sum="0.0" sum="0.0"/>
+            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
+                <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
-            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
-                <population count="2" squares-sum="0.0" sum="0.0"/>
+            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
+                <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
         </item>
         <item id="CHARACTER">
@@ -5678,79 +5678,79 @@
             </parameter>
         </item>
         <item id="WHOLE_NOTE">
-            <parameter name="weight" training="NOMINAL" weight="157.73807761813757" min="0.8088888888888889" mean="0.9475534804404997" max="1.01171875">
-                <population count="5" squares-sum="4.514646484873203" sum="4.737767402202499"/>
+            <parameter name="weight" training="NOMINAL" weight="61.32307912366889" min="0.8088888888888889" mean="1.1125148556779163" max="1.31">
+                <population count="18" squares-sum="22.5556277348732" sum="20.025267402202495"/>
             </parameter>
-            <parameter name="width" training="NOMINAL" weight="84.34171286180275" min="1.6153846153846154" mean="1.6800641025641028" max="1.8666666666666667">
-                <population count="5" squares-sum="14.16050306130835" sum="8.400320512820514"/>
+            <parameter name="width" training="NOMINAL" weight="50.74747815617114" min="1.6153846153846154" mean="1.8805733618233613" max="2.0">
+                <population count="18" squares-sum="63.99300306130836" sum="33.8503205128205"/>
             </parameter>
-            <parameter name="height" training="NOMINAL" weight="56.26664693696283" min="1.0" mean="1.0748717948717947" max="1.3076923076923077">
-                <population count="5" squares-sum="5.847836949375411" sum="5.374358974358974"/>
+            <parameter name="height" training="NOMINAL" weight="183.66810572755665" min="1.0" mean="1.1096866096866096" max="1.3076923076923077">
+                <population count="18" squares-sum="22.257836949375417" sum="19.974358974358974"/>
             </parameter>
-            <parameter name="n20" training="NOMINAL" weight="933.4629298267056" min="0.2391798677781296" mean="0.2667356443876271" max="0.32361134518180745">
-                <population count="5" squares-sum="0.3600246392168068" sum="1.3336782219381353"/>
+            <parameter name="n20" training="NOMINAL" weight="1006.159172199417" min="0.2391798677781296" mean="0.28740695734019095" max="0.34968464021935197">
+                <population count="18" squares-sum="1.5037455993225346" sum="5.173325232123437"/>
             </parameter>
-            <parameter name="n11" training="NOMINAL" weight="47148.309541442155" min="-0.010841216755415627" mean="-0.002939400740440503" max="3.7339079062658295E-4">
-                <population count="5" squares-sum="1.2803905623174835E-4" sum="-0.014697003702202515"/>
+            <parameter name="n11" training="NOMINAL" weight="87831.14885951567" min="-0.01167920723149409" mean="-0.005500757983051846" max="3.7339079062658295E-4">
+                <population count="18" squares-sum="7.382032918804485E-4" sum="-0.09901364369493322"/>
             </parameter>
-            <parameter name="n02" training="NOMINAL" weight="23666.741381165477" min="0.0770006686436078" mean="0.0845450518077503" max="0.0924953932763599">
-                <population count="5" squares-sum="0.03590834247681551" sum="0.42272525903875147"/>
+            <parameter name="n02" training="NOMINAL" weight="45997.68119064001" min="0.0770006686436078" mean="0.08133612023129247" max="0.0924953932763599">
+                <population count="18" squares-sum="0.11944974402473296" sum="1.4640501641632644"/>
             </parameter>
-            <parameter name="n30" training="NOMINAL" weight="41032.63142555239" min="-0.002047689738049069" mean="0.0024512559995464862" max="0.0100663754779318">
-                <population count="5" squares-sum="1.275266695845181E-4" sum="0.012256279997732432"/>
+            <parameter name="n30" training="NOMINAL" weight="56683.25743837819" min="-0.00917135700248727" mean="4.977140298145383E-4" max="0.0100663754779318">
+                <population count="18" squares-sum="3.043711388094571E-4" sum="0.00895885253666169"/>
             </parameter>
-            <parameter name="n21" training="NOMINAL" weight="195175.17519794314" min="-0.001719143494223777" mean="8.424233930665693E-4" max="0.004474244107093387">
-                <population count="5" squares-sum="2.4042795546582618E-5" sum="0.004212116965332847"/>
+            <parameter name="n21" training="NOMINAL" weight="98981.54767947881" min="-0.008404661729080689" mean="1.3717278890528026E-4" max="0.005083419656394989">
+                <population count="18" squares-sum="1.720878782775822E-4" sum="0.0024691102002950445"/>
             </parameter>
-            <parameter name="n12" training="NOMINAL" weight="304952.3161585227" min="-0.0036968533040457156" mean="-0.0012843949369853401" max="9.043552169891426E-4">
-                <population count="5" squares-sum="2.1365156556473094E-5" sum="-0.006421974684926701"/>
+            <parameter name="n12" training="NOMINAL" weight="679478.4353390731" min="-0.0036968533040457156" mean="-2.1914282758575424E-4" max="0.0016499691283832303">
+                <population count="18" squares-sum="2.5883614310015908E-5" sum="-0.003944570896543576"/>
             </parameter>
-            <parameter name="n03" training="NOMINAL" weight="268571.1850316554" min="-4.2323576718010443E-4" mean="0.0011718932778771959" max="0.004484230318454179">
-                <population count="5" squares-sum="2.176029980044528E-5" sum="0.005859466389385979"/>
+            <parameter name="n03" training="NOMINAL" weight="643605.3864131189" min="-8.235436208447708E-4" mean="4.809894221428731E-4" max="0.004484230318454179">
+                <population count="18" squares-sum="3.0578015464951915E-5" sum="0.008657809598571715"/>
             </parameter>
             <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
-                <population count="5" squares-sum="0.0" sum="0.0"/>
+                <population count="18" squares-sum="0.0" sum="0.0"/>
             </parameter>
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
-                <population count="5" squares-sum="0.0" sum="0.0"/>
+                <population count="18" squares-sum="0.0" sum="0.0"/>
             </parameter>
         </item>
         <item id="WHOLE_NOTE_2">
-            <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="2.0234375" mean="2.0234375" max="2.0234375">
-                <population count="1" squares-sum="4.09429931640625" sum="2.0234375"/>
+            <parameter name="weight" training="NOMINAL" weight="43.6464382758799" min="2.0234375" mean="2.13046875" max="2.2375">
+                <population count="2" squares-sum="9.10070556640625" sum="4.2609375"/>
             </parameter>
-            <parameter name="width" training="SINGLE_DATA" weight="0.0" min="1.6875" mean="1.6875" max="1.6875">
-                <population count="1" squares-sum="2.84765625" sum="1.6875"/>
+            <parameter name="width" training="NOMINAL" weight="29.024943310657807" min="1.6875" mean="1.81875" max="1.95">
+                <population count="2" squares-sum="6.65015625" sum="3.6375"/>
             </parameter>
-            <parameter name="height" training="SINGLE_DATA" weight="0.0" min="2.0" mean="2.0" max="2.0">
-                <population count="1" squares-sum="4.0" sum="2.0"/>
+            <parameter name="height" training="NOMINAL" weight="199.99999999996874" min="2.0" mean="2.05" max="2.1">
+                <population count="2" squares-sum="8.41" sum="4.1"/>
             </parameter>
-            <parameter name="n20" training="SINGLE_DATA" weight="0.0" min="0.11958993388906472" mean="0.11958993388906472" max="0.11958993388906472">
-                <population count="1" squares-sum="0.01430175228759087" sum="0.11958993388906472"/>
+            <parameter name="n20" training="NOMINAL" weight="1697.7140648077768" min="0.11958993388906472" mean="0.13675133447572782" max="0.15391273506239092">
+                <population count="2" squares-sum="0.03799088230197661" sum="0.27350266895145564"/>
             </parameter>
-            <parameter name="n11" training="SINGLE_DATA" weight="0.0" min="-6.569594679491617E-4" mean="-6.569594679491617E-4" max="-6.569594679491617E-4">
-                <population count="1" squares-sum="4.3159574252804557E-7" sum="-6.569594679491617E-4"/>
+            <parameter name="n11" training="NOMINAL" weight="372730.6197871922" min="-0.002973380300623906" mean="-0.0018151698842865337" max="-6.569594679491617E-4">
+                <population count="2" squares-sum="9.272586154666354E-6" sum="-0.0036303397685730674"/>
             </parameter>
-            <parameter name="n02" training="SINGLE_DATA" weight="0.0" min="0.1620524578739274" mean="0.1620524578739274" max="0.1620524578739274">
-                <population count="1" squares-sum="0.02626099910298102" sum="0.1620524578739274"/>
+            <parameter name="n02" training="NOMINAL" weight="49885.004618241524" min="0.15572061703763304" mean="0.15888653745578024" max="0.1620524578739274">
+                <population count="2" squares-sum="0.05050990967356219" sum="0.3177730749115605"/>
             </parameter>
-            <parameter name="n30" training="SINGLE_DATA" weight="0.0" min="-4.857276080483903E-4" mean="-4.857276080483903E-4" max="-4.857276080483903E-4">
-                <population count="1" squares-sum="2.3593130922041068E-7" sum="-4.857276080483903E-4"/>
+            <parameter name="n30" training="NOMINAL" weight="1.6927188544807892E7" min="-4.857276080483903E-4" mean="-3.13860572403908E-4" max="-1.4199353675942568E-4">
+                <population count="2" squares-sum="2.5609347370186104E-7" sum="-6.27721144807816E-4"/>
             </parameter>
-            <parameter name="n21" training="SINGLE_DATA" weight="0.0" min="7.44696925002223E-6" mean="7.44696925002223E-6" max="7.44696925002223E-6">
-                <population count="1" squares-sum="5.545735101077665E-11" sum="7.44696925002223E-6"/>
+            <parameter name="n21" training="NOMINAL" weight="2304567.492310352" min="7.44696925002223E-6" mean="4.732371043096279E-4" max="9.390272393692336E-4">
+                <population count="2" squares-sum="8.818276136284147E-7" sum="9.464742086192558E-4"/>
             </parameter>
-            <parameter name="n12" training="SINGLE_DATA" weight="0.0" min="-1.6380421646063227E-4" mean="-1.6380421646063227E-4" max="-1.6380421646063227E-4">
-                <population count="1" squares-sum="2.6831821330281672E-8" sum="-1.6380421646063227E-4"/>
+            <parameter name="n12" training="NOMINAL" weight="2.6059827791748142E8" min="-2.514092836590346E-4" mean="-2.0760675005983343E-4" max="-1.6380421646063227E-4">
+                <population count="2" squares-sum="9.003844924023059E-8" sum="-4.1521350011966687E-4"/>
             </parameter>
-            <parameter name="n03" training="SINGLE_DATA" weight="0.0" min="-1.4963644050688005E-4" mean="-1.4963644050688005E-4" max="-1.4963644050688005E-4">
-                <population count="1" squares-sum="2.2391064327569054E-8" sum="-1.4963644050688005E-4"/>
+            <parameter name="n03" training="NOMINAL" weight="3.9949987053383864E7" min="-3.733831599165466E-4" mean="-2.6150980021171335E-4" max="-1.4963644050688005E-4">
+                <population count="2" squares-sum="1.6180604843683448E-7" sum="-5.230196004234267E-4"/>
             </parameter>
-            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
-                <population count="1" squares-sum="0.0" sum="0.0"/>
+            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
+                <population count="2" squares-sum="0.0" sum="0.0"/>
             </parameter>
-            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
-                <population count="1" squares-sum="0.0" sum="0.0"/>
+            <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
+                <population count="2" squares-sum="0.0" sum="0.0"/>
             </parameter>
         </item>
         <item id="WHOLE_NOTE_3">

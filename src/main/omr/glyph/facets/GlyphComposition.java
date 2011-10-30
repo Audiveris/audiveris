@@ -49,107 +49,90 @@ public interface GlyphComposition
 
     /**
      * Report the top ancestor of this glyph (which is this glyph itself,
-     * when it has no parent (i.e. not been included into another one))
+     * when it has no parent (i.e. not been included into another one)).
      * @return the glyph ancestor
      */
     public Glyph getAncestor ();
 
     /**
-     * Record the link from this glyph as part of a larger compound
-     *
+     * Record the link from this glyph as part of a larger compound.
      * @param compound the containing compound
      */
     public void setPartOf (Glyph compound);
 
     /**
-     * Report the containing compound, if any
-     *
+     * Report the containing compound, if any.
      * @return compound the containing compound if any
      */
     public Glyph getPartOf ();
 
     /**
-     * Record the parts that compose this compound gmyph
-     *
+     * Record the parts that compose this compound glyph.
      * @param parts the contained parts
      */
     public void setParts (Collection<?extends Glyph> parts);
 
     /**
-     * Report the parts, if any, that compose this compound
+     * Report the parts, if any, that compose this compound.
      * @return the set of glyphs, perhaps empty, but never null
      */
     public Set<Glyph> getParts ();
 
     /**
-     * Tests whether this glyph is active (all its member sections point to it)
+     * Tests whether this glyph is active (all its member sections point to it).
      * @return true if glyph is active, false otherwise
      */
     boolean isActive ();
 
     /**
-     * Check whether all the glyph sections belong to the same system
+     * Check whether all the glyph sections belong to the same system.
      * @param system the supposed containing system
      * @return the alien system found, or null if OK
      */
     SystemInfo getAlienSystem (SystemInfo system);
 
     /**
-     * Report the first section in the ordered collection of glyph members
-     *
+     * Report the first section in the ordered collection of glyph members.
      * @return the first section of the glyph
      */
     Section getFirstSection ();
 
     /**
      * Report the set of member sections.
-     *
      * @return member sections
      */
     SortedSet<Section> getMembers ();
 
     /**
-     * Record the analysis result in the glyph itself
-     *
+     * Record the analysis result in the glyph itself.
      * @param result the assigned result
      */
     void setResult (Result result);
 
     /**
-     * Report the result found during analysis of this glyph
-     *
+     * Report the result found during analysis of this glyph.
      * @return the analysis result
      */
     Result getResult ();
 
     /**
-     * Convenient method to check whether the glyph is successfully recognized
+     * Convenient method to check whether the glyph is successfully recognized.
      * @return true if the glyph is successfully recognized
      */
     boolean isSuccessful ();
 
     /**
-     * Add another glyph (with its sections of points) to this one
-     *
-     * @param other The merged glyph
-     * @param linkSections Should we set the link from sections to glyph ?
-     */
-    void addGlyphSections (Glyph   other,
-                           Linking linkSections);
-
-    /**
      * Add a section as a member of this glyph.
-     *
      * @param section The section to be included
      * @param link While adding a section to this glyph members, should we also
-     *             set the link from section back to the glyph?
+     * set the link from section back to the glyph?
      */
     void addSection (Section section,
                      Linking link);
 
     /**
      * Debug function that returns true if this glyph contains the section
-     * whose ID is provided
+     * whose ID is provided.
      * @param id the ID of interesting section
      * @return true if such section exists among glyph sections
      */
@@ -157,9 +140,16 @@ public interface GlyphComposition
 
     /**
      * Cut the link to this glyph from its member sections, only if the sections
-     * actually point to this glyph
+     * actually point to this glyph.
      */
     void cutSections ();
+
+    /**
+     * Include a whole other glyph into this one, and make its sections point
+     * into this one.
+     * @param that the filament or basic glyph to swallow
+     */
+    void include (Glyph that);
 
     /**
      * Make all the glyph's sections point back to this glyph

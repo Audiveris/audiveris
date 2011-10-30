@@ -210,9 +210,9 @@ public class BasicAlignment
     //-----------//
     // getMidPos //
     //-----------//
-    public int getMidPos ()
+    public int getMidPos (Orientation orientation)
     {
-        if (isRatherVertical()) {
+        if (orientation == VERTICAL) {
             return (int) Math.rint(
                 (getStartPoint()
                      .getX() + getStopPoint()
@@ -250,18 +250,6 @@ public class BasicAlignment
     public static Scale.Fraction getProbeWidth ()
     {
         return constants.probeWidth;
-    }
-
-    //------------------//
-    // isRatherVertical //
-    //------------------//
-    public boolean isRatherVertical ()
-    {
-        if (slope == null) {
-            computeLine();
-        }
-
-        return Math.abs(slope) > (Math.PI / 4);
     }
 
     //------------------//
@@ -423,6 +411,23 @@ public class BasicAlignment
             stopPoint = LineUtilities.intersection(tr, br, p3, p4);
             stopPoint.setLocation(stopPoint.getX() - 1, stopPoint.getY());
         }
+    }
+
+    //------------------//
+    // isRatherVertical //
+    //------------------//
+    /**
+     * Report whether the angle of the approximating line is outside
+     * the range [-PI/4 - +PI/4].
+     * @return true if rather vertical, false for rather horizontal
+     */
+    private boolean isRatherVertical ()
+    {
+        if (slope == null) {
+            computeLine();
+        }
+
+        return Math.abs(slope) > (Math.PI / 4);
     }
 
     //~ Inner Classes ----------------------------------------------------------

@@ -150,6 +150,7 @@ public interface Line
      */
     int yAtX (int x);
 
+    //~ Inner Classes ----------------------------------------------------------
 
     /**
      * Specific exception raised when trying to invert a non-invertible line
@@ -157,11 +158,6 @@ public interface Line
     static class NonInvertibleLineException
         extends RuntimeException
     {
-
-        NonInvertibleLineException (String message)
-        {
-            super(message);
-        }
     }
 
     /**
@@ -171,6 +167,7 @@ public interface Line
     static class UndefinedLineException
         extends RuntimeException
     {
+        //~ Constructors -------------------------------------------------------
 
         UndefinedLineException (String message)
         {

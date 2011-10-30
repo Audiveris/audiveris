@@ -13,10 +13,13 @@ package omr.lag;
 
 import omr.log.Logger;
 
+import omr.run.Orientation;
+
 import omr.score.common.PixelRectangle;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 
 /**
  * Class <code>Sections</code> handles features related to a collection of
@@ -55,6 +58,26 @@ public class Sections
         }
 
         return box;
+    }
+
+    //----------------------------//
+    // getReverseLengthComparator //
+    //----------------------------//
+    /**
+     * Return a comparator for comparing Section instances on their
+     * decreasing length, using the provided orientation
+     * @param orientation the provided orientation
+     */
+    public static Comparator<Section> getReverseLengthComparator (final Orientation orientation)
+    {
+        return new Comparator<Section>() {
+                public int compare (Section s1,
+                                    Section s2)
+                {
+                    return Integer.signum(
+                        s2.getLength(orientation) - s1.getLength(orientation));
+                }
+            };
     }
 
     //----------//

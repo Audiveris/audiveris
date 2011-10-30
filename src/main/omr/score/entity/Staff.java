@@ -81,6 +81,7 @@ public class Staff
 
         this.info = info;
         this.topLeft = topLeft;
+        info.setScoreStaff(this);
 
         if (topLeft != null) {
             setBox(new PixelRectangle(topLeft.x, topLeft.y, width, height));

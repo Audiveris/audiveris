@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.grid;
 
-import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -20,8 +19,11 @@ import omr.math.GeoPath;
 import omr.math.LineUtilities;
 import omr.math.ReversePathIterator;
 
+import omr.score.entity.Staff;
+
 import omr.sheet.Dash;
 import omr.sheet.Ledger;
+import omr.sheet.NotePosition;
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
@@ -38,10 +40,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -77,7 +77,7 @@ public class StaffInfo
     /** Bottom limit of staff related area (left to right) */
     private GeoPath bottomLimit = null;
 
-    /** For debug only */
+    /** Staff id, counted from 1 within the sheet */
     private final int id;
 
     /** Information about left bar line */
@@ -95,8 +95,11 @@ public class StaffInfo
     /** The staff area */
     private GeoPath area;
 
-    /** Ledgers nearby */
-    private Map<Integer, SortedSet<Ledger>> ledgers;
+    /** Map of ledgers nearby */
+    private final Map<Integer, SortedSet<Ledger>> ledgerMap = new TreeMap<Integer, SortedSet<Ledger>>();
+
+    /** Corresponding staff entity in the score hierarchy */
+    private Staff scoreStaff;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -218,6 +221,83 @@ public class StaffInfo
         }
     }
 
+    //------------------//
+    // getClosestLedger //
+    //------------------//
+    /**
+     * Report the closest ledger, if any, between provided point and staff
+     * @param point the provided point
+     * @return the closest ledger found, or null
+     */
+    public Ledger getClosestLedger (Point2D point)
+    {
+        Ledger bestLedger = null;
+        double top = getFirstLine()
+                         .yAt(point.getX());
+        double bottom = getLastLine()
+                            .yAt(point.getX());
+        double rawPitch = (4.0d * ((2 * point.getY()) - bottom - top)) / (bottom -
+                                                                         top);
+
+        if (Math.abs(rawPitch) <= 5) {
+            return null;
+        }
+
+        int         interline = specificScale.interline();
+        Rectangle2D searchBox;
+
+        if (rawPitch < 0) {
+            searchBox = new Rectangle2D.Double(
+                point.getX(),
+                point.getY(),
+                0,
+                top - point.getY() + 1);
+        } else {
+            searchBox = new Rectangle2D.Double(
+                point.getX(),
+                bottom,
+                0,
+                point.getY() - bottom + 1);
+        }
+
+        //searchBox.grow(interline, interline);
+        searchBox.setRect(
+            searchBox.getX() - interline,
+            searchBox.getY() - interline,
+            searchBox.getWidth() + (2 * interline),
+            searchBox.getHeight() + (2 * interline));
+
+        // Browse all staff ledgers
+        Set<Ledger> foundLedgers = new HashSet<Ledger>();
+
+        for (Set<Ledger> set : ledgerMap.values()) {
+            for (Ledger ledger : set) {
+                if (ledger.getContourBox()
+                          .intersects(searchBox)) {
+                    foundLedgers.add(ledger);
+                }
+            }
+        }
+
+        if (!foundLedgers.isEmpty()) {
+            // Use the closest ledger
+            double bestDist = Double.MAX_VALUE;
+
+            for (Ledger ledger : foundLedgers) {
+                Point2D center = ledger.getStick()
+                                       .getAreaCenter();
+                double  dist = Math.abs(center.getY() - point.getY());
+
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    bestLedger = ledger;
+                }
+            }
+        }
+
+        return bestLedger;
+    }
+
     //----------------//
     // getEndingSlope //
     //----------------//
@@ -306,6 +386,14 @@ public class StaffInfo
         return lines.get(lines.size() - 1);
     }
 
+    //--------------//
+    // getLedgerMap //
+    //--------------//
+    public Map<Integer, SortedSet<Ledger>> getLedgerMap ()
+    {
+        return ledgerMap;
+    }
+
     //------------//
     // getLedgers //
     //------------//
@@ -317,70 +405,7 @@ public class StaffInfo
      */
     public SortedSet<Ledger> getLedgers (int lineIndex)
     {
-        if (ledgers != null) {
-            return ledgers.get(lineIndex);
-        } else {
-            return null;
-        }
-    }
-
-    //-------------------//
-    // getLedgersToStaff //
-    //-------------------//
-    /**
-     * Report the set of ledgers between the provided point and this staff.
-     * TODO: Reimplement this.
-     * @param pt the provided point
-     * @param system the containing system
-     * @return the set (perhaps empty) of ledgers found
-     */
-    public Set<Glyph> getLedgersToStaff (Point2D    pt,
-                                         SystemInfo system)
-    {
-        Set<Glyph> ledgers = new HashSet<Glyph>();
-        double     top = getFirstLine()
-                             .yAt(pt.getX());
-        double     bottom = getLastLine()
-                                .yAt(pt.getX());
-        double     rawPitch = (4.0d * ((2 * pt.getY()) - bottom - top)) / (bottom -
-                                                                          top);
-
-        if (Math.abs(rawPitch) <= 6) {
-            return ledgers; // Empty so far
-        }
-
-        int         interline = specificScale.interline();
-        Rectangle2D searchBox;
-
-        if (rawPitch < 0) {
-            searchBox = new Rectangle2D.Double(
-                pt.getX(),
-                pt.getY(),
-                0,
-                top - pt.getY() + 1);
-        } else {
-            searchBox = new Rectangle2D.Double(
-                pt.getX(),
-                bottom,
-                0,
-                pt.getY() - bottom + 1);
-        }
-
-        //searchBox.grow(interline / 2, interline / 2);
-        searchBox.setRect(
-            searchBox.getX() - (interline / 2),
-            searchBox.getY() - (interline / 2),
-            searchBox.getWidth() + interline,
-            searchBox.getHeight() + interline);
-
-        for (Glyph ledger : system.getLedgers()) {
-            if (ledger.getContourBox()
-                      .intersects(searchBox)) {
-                ledgers.add(ledger);
-            }
-        }
-
-        return ledgers;
+        return ledgerMap.get(lineIndex);
     }
 
     //----------//
@@ -458,6 +483,63 @@ public class StaffInfo
                                   .getY()) / 2;
     }
 
+    //-----------------//
+    // getNotePosition //
+    //-----------------//
+    /**
+     * Report the precise position for a note-like entity with respect to this
+     * staff.
+     * @param point the absolute location of the provided note
+     * @return the detailed note position
+     */
+    public NotePosition getNotePosition (Point2D point)
+    {
+        double top = getFirstLine()
+                         .yAt(point.getX());
+        double bottom = getLastLine()
+                            .yAt(point.getX());
+        double pitch = (4.0d * ((2 * point.getY()) - bottom - top)) / (bottom -
+                                                                      top);
+        Ledger bestLedger = null;
+
+        // If we are rather far from the staff, try help from ledgers
+        if (Math.abs(pitch) > 5) {
+            bestLedger = getClosestLedger(point);
+
+            if (bestLedger != null) {
+                Point2D center = bestLedger.getStick()
+                                           .getAreaCenter();
+                int     ledgerPitch = bestLedger.getPitchPosition();
+                double  deltaPitch = (2d * (point.getY() - center.getY())) / specificScale.interline();
+                pitch = ledgerPitch + deltaPitch;
+            }
+        }
+
+        return new NotePosition(this, pitch, bestLedger);
+    }
+
+    //---------------//
+    // setScoreStaff //
+    //---------------//
+    /**
+     * @param scoreStaff the corresponding scoreStaff to set
+     */
+    public void setScoreStaff (Staff scoreStaff)
+    {
+        this.scoreStaff = scoreStaff;
+    }
+
+    //---------------//
+    // getScoreStaff //
+    //---------------//
+    /**
+     * @return the corresponding scoreStaff
+     */
+    public Staff getScoreStaff ()
+    {
+        return scoreStaff;
+    }
+
     //------------------//
     // getSpecificScale //
     //------------------//
@@ -493,50 +575,15 @@ public class StaffInfo
             throw new IllegalArgumentException("Cannot register a null ledger");
         }
 
-        if (ledgers == null) {
-            ledgers = new TreeMap<Integer, SortedSet<Ledger>>();
-        }
-
         int               pitch = ledger.getLineIndex();
-        SortedSet<Ledger> ledgerSet = ledgers.get(pitch);
+        SortedSet<Ledger> ledgerSet = ledgerMap.get(pitch);
 
         if (ledgerSet == null) {
             ledgerSet = new TreeSet(Dash.abscissaComparator);
-            ledgers.put(pitch, ledgerSet);
+            ledgerMap.put(pitch, ledgerSet);
         }
 
         ledgerSet.add(ledger);
-    }
-
-    //--------------//
-    // checkLedgers //
-    //--------------//
-    public void checkLedgers ()
-    {
-        if (ledgers == null) {
-            return;
-        }
-
-        for (Iterator<Entry<Integer, SortedSet<Ledger>>> iter = ledgers.entrySet()
-                                                                       .iterator();
-             iter.hasNext();) {
-            Entry<Integer, SortedSet<Ledger>> entry = iter.next();
-            int                               pitch = entry.getKey();
-            SortedSet<Ledger>                 ledgerSet = entry.getValue();
-
-            for (Iterator<Ledger> it = ledgerSet.iterator(); it.hasNext();) {
-                Ledger ledger = it.next();
-
-                if (ledger.getStick()
-                          .getShape() != Shape.LEDGER) {
-                    it.remove();
-                }
-            }
-
-            if (ledgerSet.isEmpty()) {
-                iter.remove();
-            }
-        }
     }
 
     //---------//
@@ -610,75 +657,11 @@ public class StaffInfo
         return (4.0d * ((2 * pt.getY()) - bottom - top)) / (bottom - top);
     }
 
-    //------------------------//
-    // precisePitchPositionOf //
-    //------------------------//
-    /**
-     * Compute the precise integral pitch position of a pixel point, taking
-     * ledgers into account for positions far from staff lines
-     * TODO: Reimplement this feature, using the ledger map.
-     *
-     * @param pt the pixel point
-     * @param system the containing system
-     * @return the pitch position
-     */
-    public double precisePitchPositionOf (Point2D    pt,
-                                          SystemInfo system)
-    {
-        double top = getFirstLine()
-                         .yAt(pt.getX());
-        double bottom = getLastLine()
-                            .yAt(pt.getX());
-
-        double raw = (4.0d * ((2 * pt.getY()) - bottom - top)) / (bottom - top);
-
-        if (Math.abs(raw) <= 6) {
-            return raw;
-        }
-
-        // Fallback to use of ledgers & interline value
-        // Retrieve the closest ledger
-        Set<Glyph> ledgers = getLedgersToStaff(pt, system);
-
-        double     bestDist = Double.MAX_VALUE;
-        Glyph      bestLedger = null;
-
-        for (Glyph ledger : system.getLedgers()) {
-            Point2D center = ledger.getAreaCenter();
-            double  dist = Math.abs(center.getY() - pt.getY());
-
-            if (dist < bestDist) {
-                bestDist = dist;
-                bestLedger = ledger;
-            }
-        }
-
-        if (bestLedger == null) {
-            return raw;
-        }
-
-        // Force an even position for the ledger
-        Point2D center = bestLedger.getAreaCenter();
-        int     ledgerPitch = 2 * (int) Math.rint(pitchPositionOf(center) / 2);
-        int     deltaPitch = (int) Math.rint(
-            (2d * (pt.getY() - center.getY())) / specificScale.interline());
-        int     pitch = ledgerPitch + deltaPitch;
-
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "Ledger#" + bestLedger.getId() + " deltaPitch:" + deltaPitch +
-                " Precise pitch: " + pitch);
-        }
-
-        return pitch;
-    }
-
     //--------//
     // render //
     //--------//
     /**
      * Paint the staff lines.
-     *
      * @param g the graphics context
      * @return true if something has been drawn
      */
@@ -714,7 +697,6 @@ public class StaffInfo
     //----------//
     /**
      * Report a readable description
-     *
      * @return a string based on main parameters
      */
     @Override

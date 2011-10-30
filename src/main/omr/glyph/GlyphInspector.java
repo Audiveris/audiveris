@@ -226,7 +226,7 @@ public class GlyphInspector
         Collections.sort(glyphs, Glyph.reverseWeightComparator);
 
         for (int index = 0; index < glyphs.size(); index++) {
-            Glyph seed = glyphs.get(index);
+            Glyph        seed = glyphs.get(index);
 
             // Now process this seed, by looking at smaller ones
             // Do not cross a stem if any is found
@@ -292,10 +292,12 @@ public class GlyphInspector
         public boolean isCandidateSuitable (Glyph glyph)
         {
             Shape   shape = glyph.getShape();
-            boolean ok = glyph.isActive() &&
+            boolean ok = glyph.isActive() && (shape != Shape.LEDGER) &&
                          (!glyph.isKnown() ||
                          (!glyph.isManualShape() &&
-                         ((shape == Shape.DOT) || (shape == Shape.CLUTTER) ||
+                         ((shape == Shape.DOT) || (shape == Shape.NOISE) ||
+                         (shape == Shape.CLUTTER) ||
+                         (shape == Shape.STRUCTURE) ||
                          (shape == Shape.VOID_NOTEHEAD) ||
                          (shape == Shape.VOID_NOTEHEAD_2) ||
                          (shape == Shape.VOID_NOTEHEAD_3) ||

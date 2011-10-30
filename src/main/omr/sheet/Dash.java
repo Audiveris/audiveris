@@ -252,12 +252,23 @@ public abstract class Dash
         StringBuilder sb = new StringBuilder("{");
 
         sb.append(getClass().getSimpleName());
+        sb.append(internalsString());
 
+        sb.append("}");
+
+        return sb.toString();
+    }
+
+    //-----------------//
+    // internalsString //
+    //-----------------//
+    protected String internalsString ()
+    {
+        StringBuilder sb = new StringBuilder();
         sb.append(" staff#")
           .append(staff.getId());
-        sb.append(" stick#")
+        sb.append(" glyph#")
           .append(stick.getId());
-        sb.append("}");
 
         return sb.toString();
     }

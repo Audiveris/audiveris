@@ -200,7 +200,7 @@ public class GlyphsModel
                 glyph = new BasicGlyph(sheet.getScale().interline());
 
                 for (Glyph g : glyphs) {
-                    glyph.addGlyphSections(g, Glyph.Linking.NO_LINK_BACK);
+                    glyph.include(g);
 
                     if (glyph.getNest() == null) {
                         glyph.setNest(g.getNest());

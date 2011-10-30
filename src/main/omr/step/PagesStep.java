@@ -196,6 +196,6 @@ public class PagesStep
         private final Constant.Integer maxPageIterations = new Constant.Integer(
             "count",
             2,
-            "Maximum number of iterations for SCORE task");
+            "Maximum number of iterations for PAGES task");
     }
 }

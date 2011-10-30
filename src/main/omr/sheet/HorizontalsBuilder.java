@@ -22,6 +22,7 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Shape;
+import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
 import omr.glyph.ui.GlyphsController;
 
@@ -34,8 +35,6 @@ import omr.lag.Section;
 
 import omr.log.Logger;
 import static omr.run.Orientation.*;
-
-import omr.score.common.PixelRectangle;
 
 import omr.selection.GlyphEvent;
 import omr.selection.UserEvent;
@@ -58,7 +57,7 @@ import java.util.Set;
  * Class <code>HorizontalsBuilder</code> is in charge of retrieving horizontal
  * dashes (ledgers, legato signs and endings) in a given system.
  *
- * <p>Nota: Endings are currently disabled
+ * <p>Nota: Endings and legato signs are currently disabled.
  *
  * @author Hervé Bitteur
  */
@@ -151,6 +150,9 @@ public class HorizontalsBuilder
     /** Glyphs controller, if any */
     private GlyphsController controller;
 
+    /** Minimum length for a full ledger */
+    private final int minFullLedgerLength;
+
     //~ Constructors -----------------------------------------------------------
 
     //--------------------//
@@ -162,14 +164,16 @@ public class HorizontalsBuilder
     public HorizontalsBuilder (SystemInfo system)
     {
         this.system = system;
-        this.sheet = system.getSheet();
 
+        sheet = system.getSheet();
         scale = system.getSheet()
                       .getScale();
 
         ledgers = system.getLedgers();
         tenutos = system.getTenutos();
         endings = system.getEndings();
+
+        minFullLedgerLength = scale.toPixels(constants.minFullLedgerLength);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -183,6 +187,26 @@ public class HorizontalsBuilder
     public GlyphsController getController ()
     {
         return controller;
+    }
+
+    //--------------//
+    // isFullLedger //
+    //--------------//
+    public boolean isFullLedger (Glyph glyph)
+    {
+        return glyph.getLength(HORIZONTAL) >= minFullLedgerLength;
+    }
+
+    //-----------------------//
+    // isLedgerNeighborShape //
+    //-----------------------//
+    public static boolean isLedgerNeighborShape (Shape shape)
+    {
+        return (shape == Shape.COMBINING_STEM) ||
+               ShapeRange.NoteHeads.contains(shape) ||
+               ShapeRange.Notes.contains(shape) ||
+               (shape == Shape.GRACE_NOTE_SLASH) ||
+               (shape == Shape.GRACE_NOTE_NO_SLASH);
     }
 
     //    //--------------//
@@ -223,9 +247,10 @@ public class HorizontalsBuilder
             // Filter which sections to provide to factory
             List<Section> sections = getCandidateSections(
                 system.getHorizontalSections());
+            /// NO: sections.addAll(system.getVerticalSections());
 
             // Retrieve candidate glyphs out of candidate sections
-            List<Glyph>   sticks = getCandidateGlyphs(sections);
+            List<Glyph> sticks = getCandidateGlyphs(sections);
 
             // Apply basic checks for ledgers candidates, tenutos, endings
             checkHorizontals(sticks);
@@ -243,6 +268,24 @@ public class HorizontalsBuilder
             // User feedback
             feedback();
         }
+    }
+
+    //----------------------//
+    // getCandidateSections //
+    //----------------------//
+    private List<Section> getCandidateSections (Collection<Section> allSections)
+    {
+        List<Section> keptSections = new ArrayList<Section>();
+
+        for (Section section : allSections) {
+            if ((section.getGlyph() == null) ||
+                !section.getGlyph()
+                        .isWellKnown()) {
+                keptSections.add(section);
+            }
+        }
+
+        return keptSections;
     }
 
     //    //--------------//
@@ -626,33 +669,7 @@ public class HorizontalsBuilder
             section.resetFat();
         }
 
-        // "Convert" to list of glyphs (TODO: remove this)
-        List<Filament> fils = factory.retrieveFilaments(sections, true);
-        List<Glyph>    sticks = new ArrayList<Glyph>(fils.size());
-
-        for (Glyph glyph : fils) {
-            sticks.add(glyph);
-        }
-
-        return sticks;
-    }
-
-    //----------------------//
-    // getCandidateSections //
-    //----------------------//
-    private List<Section> getCandidateSections (Collection<Section> allSections)
-    {
-        List<Section> keptSections = new ArrayList<Section>();
-
-        for (Section section : allSections) {
-            if ((section.getGlyph() == null) ||
-                !section.getGlyph()
-                        .isWellKnown()) {
-                keptSections.add(section);
-            }
-        }
-
-        return keptSections;
+        return factory.retrieveFilaments(sections, true);
     }
 
     //----------//
@@ -746,7 +763,8 @@ public class HorizontalsBuilder
     // lookupLine //
     //------------//
     /**
-     * Look up for ledgers on a specific line above or below the provided staff line.
+     * Look up for ledgers on a specific line above or below the provided
+     * staff line.
      * @param index index of line, above if positive, below if negative
      * @param staffLine the staff line used as reference
      * @return the number of ledgers found on this "virtual line"
@@ -817,30 +835,33 @@ public class HorizontalsBuilder
                 if (!foundPrevious) {
                     continue;
                 }
-            } else if (context.stick.getLength(HORIZONTAL) < minFullLedgerLength) {
-                // If ledger is short, check for presence of stem
-                PixelRectangle stickBox = context.stick.getContourBox();
-                stickBox.grow(maxStemDx, maxStemDy);
 
-                List<Glyph> others = system.lookupIntersectedGlyphs(stickBox);
-                boolean     foundStem = false;
-
-                for (Glyph glyph : others) {
-                    if (glyph.isStem()) {
-                        foundStem = true;
-
-                        break;
-                    }
-                }
-
-                if (!foundStem) {
-                    continue;
-                }
+                //            } else if (context.stick.getLength(HORIZONTAL) < minFullLedgerLength) {
+                //                // If ledger is short, check for presence of stem
+                //                // This test discards ledgers of whole notes!
+                //                PixelRectangle stickBox = context.stick.getContourBox();
+                //                stickBox.grow(maxStemDx, maxStemDy);
+                //
+                //                List<Glyph> others = system.lookupIntersectedGlyphs(stickBox);
+                //                boolean     foundStem = false;
+                //
+                //                for (Glyph glyph : others) {
+                //                    if (glyph.isStem()) {
+                //                        foundStem = true;
+                //
+                //                        break;
+                //                    }
+                //                }
+                //
+                //                if (!foundStem) {
+                //                    continue;
+                //                }
             }
 
             // OK!
-            Glyph glyph = system.addGlyph(context.stick);
+            Glyph  glyph = system.addGlyph(context.stick);
             Ledger ledger = new Ledger(glyph, context.staff, index);
+            glyph.setTranslation(ledger);
             context.staff.addLedger(ledger);
             ledgers.add(glyph);
             glyph.setShape(Shape.LEDGER);

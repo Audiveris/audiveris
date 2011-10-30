@@ -27,7 +27,9 @@ import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.visitor.ScoreVisitor;
 
+import omr.sheet.NotePosition;
 import omr.sheet.Scale;
+import omr.sheet.SystemInfo;
 
 import omr.util.TreeNode;
 
@@ -266,40 +268,12 @@ public class Note
         // Shape of this note
         shape = baseShapeOf(glyph.getShape());
 
-        // Staff
-        Staff  noteStaff = getSystem()
-                               .getStaffAt(getCenter());
-
-        // Pitch Position wrt staff
-        double pp = noteStaff.getInfo()
-                             .precisePitchPositionOf(
-            getCenter(),
-            system.getInfo());
-
-        // Beware, when note is far from staff, use staff of related stem
-        if (Math.abs(pp) >= 8) {
-            Glyph stem = chord.getStem();
-
-            if (stem != null) {
-                PixelPoint stemCenter = stem.getAreaCenter();
-                Staff      stemStaff = getSystem()
-                                           .getStaffAt(stemCenter);
-
-                if (logger.isFineEnabled() && (stemStaff != noteStaff)) {
-                    logger.fine("Changed staff for glyph#" + glyph.getId());
-                }
-
-                noteStaff = stemStaff;
-                pp = noteStaff.getInfo()
-                              .precisePitchPositionOf(
-                    getCenter(),
-                    system.getInfo());
-            }
-        }
-
-        // OK, register proper staff and pitchPosition
-        setStaff(noteStaff);
-        pitchPosition = pp;
+        // Determine proper staff and pitch position, using ledgers if any.
+        NotePosition pos = getSystem()
+                               .getInfo()
+                               .getNoteStaffAt(getCenter());
+        setStaff(pos.getStaff().getScoreStaff());
+        pitchPosition = pos.getPitchPosition();
     }
 
     //~ Methods ----------------------------------------------------------------

@@ -272,7 +272,7 @@ public abstract class Slot
         for (Glyph glyph : glyphs) {
             if (glyph.getStemNumber() > 0) {
                 // Beware of noteheads with 2 stems, we need to duplicate them
-                // in order to actually have two chords.
+                // in order to actually have two logical chords.
                 if (glyph.getLeftStem() != null) {
                     Chord chord = getStemChord(glyph.getLeftStem());
                     Note.createPack(chord, glyph);
@@ -445,7 +445,7 @@ public abstract class Slot
         //            logger.fine("Populating slot with " + glyph);
         //        }
 
-        // Special case for whole rests: they don't belong to any time slot,
+        // Special case for measure rests: they don't belong to any time slot,
         // and their duration is the measure duration
         if (glyph.getShape()
                  .isMeasureRest()) {

@@ -26,6 +26,7 @@ import omr.grid.BarAlignment;
 import omr.grid.BarInfo;
 import omr.grid.LineInfo;
 import omr.grid.StaffInfo;
+import omr.grid.StaffManager;
 
 import omr.lag.Section;
 
@@ -413,6 +414,14 @@ public class SystemInfo
         return hSectionsView;
     }
 
+    //-----------------------//
+    // getHorizontalsBuilder //
+    //-----------------------//
+    public HorizontalsBuilder getHorizontalsBuilder ()
+    {
+        return horizontalsBuilder;
+    }
+
     //-------//
     // getId //
     //-------//
@@ -555,6 +564,65 @@ public class SystemInfo
     public int getNewSentenceId ()
     {
         return ++sentenceCount;
+    }
+
+    //----------------//
+    // getNoteStaffAt //
+    //----------------//
+    /**
+     * Given a note, retrieve the proper related staff within the system, using
+     * ledgers if any
+     *
+     * @param point the center of the provided note entity
+     * @return the proper note position (staff & pitch)
+     */
+    public NotePosition getNoteStaffAt (PixelPoint point)
+    {
+        StaffManager manager = sheet.getStaffManager();
+        StaffInfo    staff = manager.getStaffAt(point);
+        NotePosition pos = staff.getNotePosition(point);
+
+        if (logger.isFineEnabled()) {
+            logger.fine(point + " -> " + pos);
+        }
+
+        double pitch = pos.getPitchPosition();
+
+        if ((Math.abs(pitch) > 5) && (pos.getLedger() == null)) {
+            // Delta pitch from reference line
+            double    dp = Math.abs(pitch) - 4;
+
+            // Check with the other staff, if any
+            int       index = staves.indexOf(staff);
+            StaffInfo otherStaff = null;
+
+            if ((pitch < 0) && (index > 0)) {
+                otherStaff = staves.get(index - 1);
+            } else if ((pitch > 0) && (index < (staves.size() - 1))) {
+                otherStaff = staves.get(index + 1);
+            }
+
+            if (otherStaff != null) {
+                NotePosition otherPos = otherStaff.getNotePosition(point);
+
+                if (otherPos.getLedger() != null) {
+                    // Delta pitch from closest reference ledger
+                    double otherDp = Math.abs(
+                        otherPos.getPitchPosition() -
+                        otherPos.getLedger().getPitchPosition());
+
+                    if (otherDp < dp) {
+                        if (logger.isFineEnabled()) {
+                            logger.info("   otherPos: " + pos);
+                        }
+
+                        pos = otherPos;
+                    }
+                }
+            }
+        }
+
+        return pos;
     }
 
     //----------//

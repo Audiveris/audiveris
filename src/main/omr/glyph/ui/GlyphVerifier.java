@@ -61,8 +61,8 @@ import javax.swing.event.ListSelectionListener;
 
 /**
  * Class {@code GlyphVerifier} provides a user interface to browse
- * through all glyphs samples recorded for evaluator training, 
- * to visually check the correctness of their assigned shape, 
+ * through all glyphs samples recorded for evaluator training,
+ * to visually check the correctness of their assigned shape,
  * and to remove spurious sample when necessary.
  *
  * <p>One, several or all recorded sheets can be selected.
@@ -173,7 +173,7 @@ public class GlyphVerifier
     //--------//
     /**
      * Focus the verifier on a provided collection of glyphs
-     * (typically the glyphs that are not recognized, or mistaken, by 
+     * (typically the glyphs that are not recognized, or mistaken, by
      * the evaluator).
      * @param glyphNames the names of the specific glyphs to inspect
      */
@@ -184,11 +184,11 @@ public class GlyphVerifier
         glyphSelector.selectAll();
 
         // Shapes
-        SortedSet<String> shapeSet = new TreeSet<String>();
+        EnumSet<Shape> shapeSet = EnumSet.noneOf(Shape.class);
 
         for (String gName : glyphNames) {
             File file = new File(gName);
-            shapeSet.add(radixOf(file.getName()));
+            shapeSet.add(Shape.valueOf(radixOf(file.getName())));
         }
 
         shapeSelector.populateWith(shapeSet);
@@ -257,7 +257,7 @@ public class GlyphVerifier
     // getActualDir //
     //--------------//
     /**
-     * Report the real directory (either the sheets directory or the 
+     * Report the real directory (either the sheets directory or the
      * icons directory) that corresponds to a given folder name.
      * @param folder the folder name, such as 'batuque' or 'icons'
      * @return the concrete directory
@@ -314,8 +314,8 @@ public class GlyphVerifier
     //----------//
     /**
      * Class {@code Selector} defines the common properties of sheet,
-     * shape and glyph selectors. 
-     * Each selector is made of a list of names, which can be selected and 
+     * shape and glyph selectors.
+     * Each selector is made of a list of names, which can be selected and
      * deselected at will.
      */
     private abstract static class Selector

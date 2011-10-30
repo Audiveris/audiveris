@@ -315,7 +315,7 @@ public class LinesRetriever
             // Retrieve filaments out of merged long sections
             watch.start("retrieveFilaments");
 
-            for (Filament fil : factory.retrieveFilaments(
+            for (Glyph fil : factory.retrieveFilaments(
                 hLag.getSections(),
                 true)) {
                 filaments.add((LineFilament) fil);

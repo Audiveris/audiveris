@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.score;
 
+import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -62,7 +63,9 @@ public class ScoreCleaner
             // Remove recorded translations for all system glyphs
             for (Glyph glyph : system.getInfo()
                                      .getGlyphs()) {
-                glyph.clearTranslations();
+                if (glyph.getShape() != Shape.LEDGER) {
+                    glyph.clearTranslations();
+                }
             }
 
             system.acceptChildren(this);

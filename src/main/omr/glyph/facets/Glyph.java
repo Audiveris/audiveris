@@ -72,7 +72,8 @@ public interface Glyph
         }
     };
 
-    /** For comparing glyphs according to their abscissa, then ordinate, then id */
+    /** For comparing glyphs according to their absolute abscissa, 
+     * then ordinate, then id */
     public static final Comparator<Glyph> abscissaComparator = new Comparator<Glyph>() {
         public int compare (Glyph o1,
                             Glyph o2)
@@ -105,7 +106,8 @@ public interface Glyph
         }
     };
 
-    /** For comparing glyphs according to their ordinate, then abscissa, then id */
+    /** For comparing glyphs according to their absolute ordinate, 
+     * then abscissa, then id */
     public static final Comparator<Glyph> ordinateComparator = new Comparator<Glyph>() {
         public int compare (Glyph o1,
                             Glyph o2)
@@ -135,17 +137,6 @@ public interface Glyph
 
             // Finally, use id ...
             return o1.getId() - o2.getId();
-        }
-    };
-
-    /**
-     * For comparing glyph instances according to their mid position
-     */
-    public static Comparator<Glyph> midPosComparator = new Comparator<Glyph>() {
-        public int compare (Glyph s1,
-                            Glyph s2)
-        {
-            return s1.getMidPos() - s2.getMidPos();
         }
     };
 }

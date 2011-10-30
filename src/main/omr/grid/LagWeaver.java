@@ -20,6 +20,7 @@ import omr.lag.Sections;
 
 import omr.log.Logger;
 
+import omr.run.Orientation;
 import omr.run.Run;
 
 import omr.sheet.Sheet;
@@ -302,9 +303,9 @@ public class LagWeaver
             final int       sectTop = lSect.getFirstPos();
             final int       sectLeft = lSect.getStartCoord();
             final int       sectBottom = lSect.getLastPos();
-            final int       sectRight = lSect.getStopCoord();
             final double[]  coords = new double[2];
-            final boolean[] occupied = new boolean[lSect.getLength()];
+            final boolean[] occupied = new boolean[lSect.getLength(
+                Orientation.HORIZONTAL)];
             Point           prevPt = null;
             Point           pt = null;
             Heading         prevHeading = null;
@@ -441,7 +442,8 @@ public class LagWeaver
             final int       sectLeft = vSect.getFirstPos();
             final int       sectRight = vSect.getLastPos();
             final double[]  coords = new double[2];
-            final boolean[] occupied = new boolean[vSect.getLength()];
+            final boolean[] occupied = new boolean[vSect.getLength(
+                Orientation.VERTICAL)];
             Point           prevPt = null;
             Point           pt = null;
             Heading         prevHeading = null;

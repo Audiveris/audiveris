@@ -528,7 +528,16 @@ public class SticksBuilder
         final long startTime = System.currentTimeMillis();
 
         // Sort on stick mid position first
-        Collections.sort(sticks, Glyph.midPosComparator);
+        Collections.sort(
+            sticks,
+            new Comparator<Glyph>() {
+                    public int compare (Glyph s1,
+                                        Glyph s2)
+                    {
+                        return s1.getMidPos(orientation) -
+                               s2.getMidPos(orientation);
+                    }
+                });
 
         // Then use position to narrow the tests
         List<Glyph> removals = new ArrayList<Glyph>();
@@ -567,9 +576,7 @@ public class SticksBuilder
                             params.maxDeltaPos)) {
                             int oldId = stick.getId();
 
-                            stick.addGlyphSections(
-                                other,
-                                Glyph.Linking.LINK_BACK);
+                            stick.include(other);
                             stick = nest.addGlyph(stick);
 
                             if (logger.isFineEnabled() &&
@@ -809,7 +816,7 @@ public class SticksBuilder
 
         // Include only sections that are slim enough
         if ((section.getRunCount() > 1) &&
-            (section.getAspect() < params.minSectionAspect)) {
+            (section.getAspect(orientation) < params.minSectionAspect)) {
             mark(section, null, TOO_FAT, layer, direction);
 
             return;

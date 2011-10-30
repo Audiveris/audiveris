@@ -482,7 +482,7 @@ public class VerticalsBuilder
         @Implement(Check.class)
         protected double getValue (Glyph stick)
         {
-            int x = stick.getMidPos();
+            int x = stick.getMidPos(Orientation.VERTICAL);
 
             return scale.pixelsToFrac(x - system.getLeft());
         }
@@ -602,7 +602,8 @@ public class VerticalsBuilder
         protected double getValue (Glyph stick)
         {
             return scale.pixelsToFrac(
-                (system.getLeft() + system.getWidth()) - stick.getMidPos());
+                (system.getLeft() + system.getWidth()) -
+                stick.getMidPos(Orientation.VERTICAL));
         }
     }
 }

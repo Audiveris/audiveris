@@ -347,9 +347,9 @@ public class BasicGlyph
         return composition.getMembers();
     }
 
-    public int getMidPos ()
+    public int getMidPos (Orientation orientation)
     {
-        return alignment.getMidPos();
+        return alignment.getMidPos(orientation);
     }
 
     public Moments getMoments ()
@@ -416,11 +416,6 @@ public class BasicGlyph
                                  Orientation orientation)
     {
         return alignment.getPositionAt(coord, orientation);
-    }
-
-    public boolean isRatherVertical ()
-    {
-        return alignment.isRatherVertical();
     }
 
     public void setResult (Result result)
@@ -610,15 +605,6 @@ public class BasicGlyph
         display.addAttachment(id, attachment);
     }
 
-    public void addGlyphSections (Glyph   other,
-                                  Linking linkSections)
-    {
-        composition.addGlyphSections(other, linkSections);
-    }
-
-    //------------//
-    // addSection //
-    //------------//
     public void addSection (Section section,
                             Linking link)
     {
@@ -689,6 +675,11 @@ public class BasicGlyph
     public void forbidShape (Shape shape)
     {
         recognition.forbidShape(shape);
+    }
+
+    public void include (Glyph that)
+    {
+        composition.include(that);
     }
 
     public boolean intersects (PixelRectangle rectangle)

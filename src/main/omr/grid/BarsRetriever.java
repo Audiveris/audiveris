@@ -105,7 +105,7 @@ public class BarsRetriever
     private Lag vLag;
 
     /** Long filaments found, non sorted */
-    private final List<Filament> filaments = new ArrayList<Filament>();
+    private final List<Glyph> filaments = new ArrayList<Glyph>();
 
     /** Related staff manager */
     private final StaffManager staffManager;
@@ -404,7 +404,7 @@ public class BarsRetriever
         }
 
         // Draw filaments
-        for (Filament filament : filaments) {
+        for (Glyph filament : filaments) {
             filament.renderLine(g);
         }
 
@@ -416,17 +416,21 @@ public class BarsRetriever
             double dy = sheet.getScale()
                              .toPixels(constants.maxCoordGap);
 
-            for (Filament filament : filaments) {
-                Point2D p = filament.getStartPoint();
-                double  der = filament.slopeAt(p.getY(), VERTICAL);
+            for (Glyph glyph : filaments) {
+                Point2D p = glyph.getStartPoint();
+                double  der = (glyph instanceof Filament)
+                              ? ((Filament) glyph).slopeAt(p.getY(), VERTICAL)
+                              : glyph.getInvertedSlope();
                 g.draw(
                     new Line2D.Double(
                         p.getX(),
                         p.getY(),
                         p.getX() - (der * dy),
                         p.getY() - dy));
-                p = filament.getStopPoint();
-                der = filament.slopeAt(p.getY(), VERTICAL);
+                p = glyph.getStopPoint();
+                der = (glyph instanceof Filament)
+                      ? ((Filament) glyph).slopeAt(p.getY(), VERTICAL)
+                      : glyph.getInvertedSlope();
                 g.draw(
                     new Line2D.Double(
                         p.getX(),

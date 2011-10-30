@@ -44,16 +44,17 @@ public interface GlyphAlignment
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * Report the ratio of length over thickness
+     * Report the ratio of length over thickness, using provided 
+     * orientation.
      * @param orientation the general orientation reference
-     * @return the "slimness" of the stick
+     * @return the "slimness" of the glyph
      * @see #getLength
      * @see #getThickness
      */
     double getAspect (Orientation orientation);
 
     /**
-     * Force the locations of start point and stop points
+     * Force the locations of start point and stop points.
      * @param pStart new start point
      * @param pStop new stop point
      */
@@ -61,7 +62,7 @@ public interface GlyphAlignment
                           Point2D pStop);
 
     /**
-     * Compute the number of pixels stuck on first side of the stick
+     * Compute the number of pixels stuck on first side of the glyph.
      * @return the number of pixels
      */
     int getFirstStuck ();
@@ -73,43 +74,44 @@ public interface GlyphAlignment
     double getInvertedSlope ();
 
     /**
-     * Compute the nb of pixels stuck on last side of the stick
+     * Compute the nb of pixels stuck on last side of the glyph.
      * @return the number of pixels
      */
     int getLastStuck ();
 
     /**
-     * Report the length of the stick, along the provided orientation
+     * Report the length of the glyph, along the provided orientation.
      * @param orientation the general orientation reference
-     * @return the stick length in pixels
+     * @return the glyph length in pixels
      */
     int getLength (Orientation orientation);
 
     /**
-     * Return the approximating line computed on the stick, as an
-     * <b>absolute</b> line, with x for horizontal axis and y for vertical axis
+     * Return the approximating line computed on the glyph, as an
+     * <b>absolute</b> line, with x for horizontal axis and y for 
+     * vertical axis.
      * @return The absolute line
      */
     Line getLine ();
 
     /**
-     * Return the mean quadratic distance of the defining population of points
-     * to the resulting line. This can be used to measure how well the line fits
-     * the points.
+     * Return the mean quadratic distance of the defining population 
+     * of points to the resulting line. 
+     * This can be used to measure how well the line fits the points.
      *
      * @return the absolute value of the mean distance
      */
     double getMeanDistance ();
 
     /**
-     * Return the position (ordinate for horizontal stick, abscissa for vertical
-     * stick) at the middle of the stick
-     * @return the position of the middle of the stick
+     * Return the position at the middle of the glyph, 
+     * using the provided orientation.
+     * @return the position of the middle of the glyph
      */
-    int getMidPos ();
+    int getMidPos (Orientation orientation);
 
     /**
-     * Report the precise stick position for the provided coordinate .
+     * Report the precise glyph position for the provided coordinate.
      * @param coord the coord value (x for horizontal, y for vertical)
      * @param orientation the general orientation reference
      * @return the pos value (y for horizontal, x for vertical)
@@ -118,40 +120,34 @@ public interface GlyphAlignment
                           Orientation orientation);
 
     /**
-     * Report whether the angle of the approximating line is outside the range
-     * [-PI/4 .. +PI/4]
-     * @return true if rather vertical, false for rather horizontal
-     */
-    boolean isRatherVertical ();
-
-    /**
      * Report the tangent of glyph line angle with abscissa axis
      * @return tangent of heading angle (dy/dx).
      */
     double getSlope ();
 
     /**
-     * Report the absolute point at the beginning of the approximating line
-     * @return the starting point of the stick line
+     * Report the absolute point at the beginning of the approximating
+     * line.
+     * @return the starting point of the glyph line
      */
     Point2D getStartPoint ();
 
     /**
-     * Report the absolute point at the end of the approximating line
+     * Report the absolute point at the end of the approximating line.
      * @return the ending point of the line
      */
     Point2D getStopPoint ();
 
     /**
-     * Report the stick thickness across the desired orientation
+     * Report the glyph thickness across the desired orientation.
      * @param orientation the general orientation reference
      * @return the thickness in pixels
      */
     int getThickness (Orientation orientation);
 
     /**
-     * Report the resulting thickness of this stick at the provided coordinate,
-     * using a predefined probe width
+     * Report the resulting thickness of this glyph at the provided
+     * coordinate, using a predefined probe width.
      * @param coord the desired abscissa
      * @param orientation the general orientation reference
      * @return the thickness measured, expressed in number of pixels.
@@ -160,8 +156,8 @@ public interface GlyphAlignment
                            Orientation orientation);
 
     /**
-     * Render the main guiding line of the stick, using the current foreground
-     * color.
+     * Render the main guiding line of the glyph, using the current
+     * foreground color.
      * @param g the graphic context
      */
     void renderLine (Graphics2D g);

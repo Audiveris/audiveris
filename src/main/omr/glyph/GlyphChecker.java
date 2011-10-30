@@ -44,6 +44,7 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import omr.sheet.Ledger;
 
 /**
  * Class <code>GlyphChecker</code> gathers additional specific glyph checks,
@@ -731,9 +732,9 @@ public class GlyphChecker
                         return true;
                     }
 
-                    Set<Glyph> ledgers = staff.getLedgersToStaff(point, system);
+                    Ledger ledger = staff.getClosestLedger(point);
 
-                    return !ledgers.isEmpty();
+                    return ledger != null;
                 }
             };
     }

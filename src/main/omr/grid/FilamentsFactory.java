@@ -84,13 +84,13 @@ public class FilamentsFactory
 
     /** Precise constructor for filaments */
     private final Constructor filamentConstructor;
-    private final Object[]       scaleArgs;
+    private final Object[]    scaleArgs;
 
     /** Scale-dependent constants for horizontal stuff */
     private final Parameters params;
 
     /** Long filaments found, non sorted */
-    private final List<Filament> filaments = new ArrayList<Filament>();
+    private final List<Glyph> filaments = new ArrayList<Glyph>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -267,53 +267,62 @@ public class FilamentsFactory
     {
         if (section.isFat() == null) {
             try {
-                if (section.getMeanThickness() <= 1) {
+                if (section.getMeanThickness(orientation) <= 1) {
                     section.setFat(false);
 
                     return section.isFat();
                 }
 
                 // Check global slimness
-                if (section.getMeanAspect() < params.minSectionAspect) {
+                if (section.getMeanAspect(orientation) < params.minSectionAspect) {
                     section.setFat(true);
 
                     return section.isFat();
                 }
 
-                // Measure mean thickness on each half
-                Rectangle bounds = section.getOrientedBounds();
-                Line      line = section.getOrientedLine();
-                int       startCoord = bounds.x + (bounds.width / 4);
-                int       startPos = line.yAtX(startCoord);
-                int       stopCoord = bounds.x + ((3 * bounds.width) / 4);
-                int       stopPos = line.yAtX(stopCoord);
+                // Check thickness
+                Rectangle bounds = orientation.oriented(
+                    section.getContourBox());
+                Line      line = orientation.switchRef(
+                    section.getAbsoluteLine());
 
-                // Start side
-                Rectangle oRoi = new Rectangle(startCoord, startPos, 0, 0);
-                final int halfWidth = Math.min(
-                    params.probeWidth / 2,
-                    bounds.width / 4);
-                oRoi.grow(halfWidth, params.maxSectionThickness);
+                if (Math.abs(line.getSlope()) < (Math.PI / 4)) {
+                    // Measure mean thickness on each half
+                    int       startCoord = bounds.x + (bounds.width / 4);
+                    int       startPos = line.yAtX(startCoord);
+                    int       stopCoord = bounds.x + ((3 * bounds.width) / 4);
+                    int       stopPos = line.yAtX(stopCoord);
 
-                PointsCollector collector = new PointsCollector(
-                    orientation.absolute(oRoi));
-                section.cumulate(collector);
+                    // Start side
+                    Rectangle oRoi = new Rectangle(startCoord, startPos, 0, 0);
+                    final int halfWidth = Math.min(
+                        params.probeWidth / 2,
+                        bounds.width / 4);
+                    oRoi.grow(halfWidth, params.maxSectionThickness);
 
-                int startThickness = (int) Math.rint(
-                    (double) collector.getCount() / oRoi.width);
+                    PointsCollector collector = new PointsCollector(
+                        orientation.absolute(oRoi));
+                    section.cumulate(collector);
 
-                // Stop side
-                oRoi.translate(stopCoord - startCoord, stopPos - startPos);
-                collector = new PointsCollector(orientation.absolute(oRoi));
-                section.cumulate(collector);
+                    int startThickness = (int) Math.rint(
+                        (double) collector.getCount() / oRoi.width);
 
-                int stopThickness = (int) Math.rint(
-                    (double) collector.getCount() / oRoi.width);
+                    // Stop side
+                    oRoi.translate(stopCoord - startCoord, stopPos - startPos);
+                    collector = new PointsCollector(orientation.absolute(oRoi));
+                    section.cumulate(collector);
 
-                section.setFat(
-                    (startThickness > params.maxSectionThickness) ||
-                    (stopThickness > params.maxSectionThickness));
-            } catch (Exception ignored) {
+                    int stopThickness = (int) Math.rint(
+                        (double) collector.getCount() / oRoi.width);
+
+                    section.setFat(
+                        (startThickness > params.maxSectionThickness) ||
+                        (stopThickness > params.maxSectionThickness));
+                } else {
+                    section.setFat(bounds.height > params.maxSectionThickness);
+                }
+            } catch (Exception ex) {
+                logger.warning("Error in checking fatness of " + section, ex);
                 section.setFat(true);
             }
         }
@@ -340,8 +349,8 @@ public class FilamentsFactory
      * over
      * @return the collection of retrieved filaments
      */
-    public List<Filament> retrieveFilaments (Collection<Section> source,
-                                             boolean             useExpansion)
+    public List<Glyph> retrieveFilaments (Collection<Section> source,
+                                          boolean             useExpansion)
     {
         StopWatch watch = new StopWatch("FilamentsFactory");
 
@@ -565,13 +574,13 @@ public class FilamentsFactory
     //----------------//
     // createFilament //
     //----------------//
-    private Filament createFilament (Section section)
+    private Glyph createFilament (Section section)
         throws Exception
     {
         Filament fil = (Filament) filamentConstructor.newInstance(scaleArgs);
         fil.addSection(section);
 
-        return (Filament) nest.addGlyph(fil);
+        return nest.addGlyph(fil);
     }
 
     //-----------------//
@@ -583,13 +592,15 @@ public class FilamentsFactory
     private void createFilaments (Collection<Section> source)
         throws Exception
     {
-        // Sort sections by decreasing length
+        // Sort sections by decreasing length in the desired orientation
         List<Section> sections = new ArrayList<Section>(source);
-        Collections.sort(sections, Section.reverseLengthComparator);
+        Collections.sort(
+            sections,
+            Sections.getReverseLengthComparator(orientation));
 
         for (Section section : sections) {
             // Limit to main sections
-            if (section.getLength() < params.minCoreSectionLength) {
+            if (section.getLength(orientation) < params.minCoreSectionLength) {
                 if (section.isVip()) {
                     logger.info("Too short " + section);
                 }
@@ -605,7 +616,7 @@ public class FilamentsFactory
                 continue;
             }
 
-            Filament fil = createFilament(section);
+            Glyph fil = createFilament(section);
             filaments.add(fil);
 
             if (logger.isFineEnabled() || section.isVip() || nest.isVip(fil)) {
@@ -632,7 +643,7 @@ public class FilamentsFactory
      * @param source the source of available sections
      * @return the collection of expanded filaments
      */
-    private List<Filament> expandFilaments (Collection<Section> source)
+    private List<Glyph> expandFilaments (Collection<Section> source)
     {
         try {
             // Sort sections by first position 
@@ -674,7 +685,7 @@ public class FilamentsFactory
                 Glyphs.getReverseLengthComparator(orientation));
 
             // Process each filament on turn
-            for (Filament fil : filaments) {
+            for (Glyph fil : filaments) {
                 // Build filament fat box
                 final Rectangle filBounds = orientation.oriented(
                     fil.getContourBox());
@@ -760,8 +771,8 @@ public class FilamentsFactory
             Glyphs.getReverseLengthComparator(orientation));
 
         // Browse by decreasing filament length
-        for (Filament current : filaments) {
-            Filament candidate = current;
+        for (Glyph current : filaments) {
+            Glyph candidate = current;
 
             // Keep on working while we do have a candidate to check for merge
             CandidateLoop: 
@@ -772,7 +783,7 @@ public class FilamentsFactory
 
                 // Check the candidate vs all filaments until current excluded
                 HeadsLoop: 
-                for (Filament head : filaments) {
+                for (Glyph head : filaments) {
                     if (head == current) {
                         break CandidateLoop; // Actual end of sub-list
                     }
@@ -828,8 +839,8 @@ public class FilamentsFactory
     //-----------------------//
     private void removeMergedFilaments ()
     {
-        for (Iterator<Filament> it = filaments.iterator(); it.hasNext();) {
-            Filament fil = it.next();
+        for (Iterator<Glyph> it = filaments.iterator(); it.hasNext();) {
+            Glyph fil = it.next();
 
             if (fil.getPartOf() != null) {
                 it.remove();

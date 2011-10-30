@@ -62,8 +62,7 @@ class BasicComposition
     // BasicComposition //
     //------------------//
     /**
-     * Create a new BasicComposition object
-     *
+     * Create a new BasicComposition object.
      * @param glyph our glyph
      */
     public BasicComposition (Glyph glyph)
@@ -205,16 +204,16 @@ class BasicComposition
         return result instanceof SuccessResult;
     }
 
-    //------------------//
-    // addGlyphSections //
-    //------------------//
-    public void addGlyphSections (Glyph   other,
-                                  Linking linkSections)
+    //---------//
+    // include //
+    //---------//
+    public void include (Glyph that)
     {
-        // Update glyph info in other sections
-        for (Section section : other.getMembers()) {
-            addSection(section, linkSections);
+        for (Section section : that.getMembers()) {
+            addSection(section, Linking.LINK_BACK);
         }
+
+        that.setPartOf(glyph);
     }
 
     //------------//
@@ -308,7 +307,7 @@ class BasicComposition
     // translate //
     //-----------//
     /**
-     * Apply the provided translation vector to all composing sections
+     * Apply the provided translation vector to all composing sections.
      * @param vector the provided translation vector
      */
     public void translate (PixelPoint vector)

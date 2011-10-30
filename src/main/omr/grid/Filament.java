@@ -194,22 +194,6 @@ public class Filament
         Main.dumping.dump(getAlignment());
     }
 
-    //---------//
-    // include //
-    //---------//
-    /**
-     * Include a whole other glyph into this one
-     * @param that the filament or basic glyph to swallow
-     */
-    public void include (Glyph that)
-    {
-        for (Section section : that.getMembers()) {
-            addSection(section);
-        }
-
-        that.setPartOf(this);
-    }
-
     //-----------------//
     // invalidateCache //
     //-----------------//
