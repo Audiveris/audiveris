@@ -64,7 +64,6 @@ public class LedgerPattern
         Shape.class);
 
     static {
-        ledgerNeighbors.add(Shape.COMBINING_STEM);
         //        ledgerNeighbors.add(Shape.GRACE_NOTE_SLASH);
         //        ledgerNeighbors.add(Shape.GRACE_NOTE_NO_SLASH);
         ledgerNeighbors.addAll(ShapeRange.Notes.getShapes());
@@ -105,7 +104,7 @@ public class LedgerPattern
     @Override
     public int runPattern ()
     {
-        int nb = 0;
+        int   nb = 0;
 
         for (StaffInfo staff : system.getStaves()) {
             Map<Integer, SortedSet<Ledger>> ledgerMap = staff.getLedgerMap();
@@ -125,11 +124,6 @@ public class LedgerPattern
                 for (Iterator<Ledger> it = ledgerSet.iterator(); it.hasNext();) {
                     Ledger ledger = it.next();
                     Glyph  glyph = ledger.getStick();
-
-                    if (glyph.getId() == 3157) {
-                        logger.warning("BINGO");
-                    }
-
                     Set<Glyph> neighbors = new HashSet<Glyph>();
 
                     if (isInvalid(glyph, neighbors)) {
@@ -157,12 +151,11 @@ public class LedgerPattern
 
                             // Nullify neighbors evaluations, since they may have
                             // been biased by ledger presence
-                            for (Glyph g : neighbors) {
-                                if (!g.isManualShape()) {
-                                    g.resetEvaluation();
-                                }
-                            }
-
+                            //                            for (Glyph g : neighbors) {
+                            //                                if (!g.isManualShape()) {
+                            //                                    g.resetEvaluation();
+                            //                                }
+                            //                            }
                             it.remove();
                             nb++;
                         }
@@ -203,7 +196,10 @@ public class LedgerPattern
         }
 
         for (Glyph glyph : neighborGlyphs) {
-            if (ledgerNeighbors.contains(glyph.getShape())) {
+            Shape shape = glyph.getShape();
+
+            if ((shape == Shape.COMBINING_STEM) ||
+                ledgerNeighbors.contains(shape)) {
                 return false;
             }
         }

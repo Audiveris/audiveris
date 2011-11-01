@@ -432,6 +432,45 @@ public class TimeSignature
         }
     }
 
+    //------------------//
+    // populateFullTime //
+    //------------------//
+    /**
+     * We create a full time signature with just the provided glyph (assumed to
+     * be the whole signature, perhaps composed of several digits, for example
+     * one digit for the numerator and one digit for the denominator)
+     * @param glyph the provided (multi-digit) glyph
+     * @param measure the containing measure
+     * @param staff the related satff
+     * @return true if successful
+     */
+    public static boolean populateFullTime (Glyph   glyph,
+                                            Measure measure,
+                                            Staff   staff)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("populateFullTime with " + glyph);
+        }
+
+        TimeSignature ts = measure.getTimeSignature(staff);
+
+        if (ts == null) {
+            ts = new TimeSignature(measure, staff);
+            ts.addGlyph(glyph);
+            glyph.setTranslation(ts);
+
+            return true;
+        } else {
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "Second whole time signature" + " (glyph#" + glyph.getId() +
+                    ")" + " in the same measure");
+            }
+
+            return false;
+        }
+    }
+
     //------------//
     // rationalOf //
     //------------//
@@ -776,45 +815,6 @@ public class TimeSignature
             if (logger.isFineEnabled()) {
                 logger.fine("time rational: " + timeRational);
             }
-        }
-    }
-
-    //------------------//
-    // populateFullTime //
-    //------------------//
-    /**
-     * We create a full time signature with just the provided glyph (assumed to
-     * be the whole signature, perhaps composed of several digits, for example
-     * one digit for the numerator and one digit for the denominator)
-     * @param glyph the provided (multi-digit) glyph
-     * @param measure the containing measure
-     * @param staff the related satff
-     * @return true if successful
-     */
-    private static boolean populateFullTime (Glyph   glyph,
-                                             Measure measure,
-                                             Staff   staff)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("populateFullTime with " + glyph);
-        }
-
-        TimeSignature ts = measure.getTimeSignature(staff);
-
-        if (ts == null) {
-            ts = new TimeSignature(measure, staff);
-            ts.addGlyph(glyph);
-            glyph.setTranslation(ts);
-
-            return true;
-        } else {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "Second whole time signature" + " (glyph#" + glyph.getId() +
-                    ")" + " in the same measure");
-            }
-
-            return false;
         }
     }
 

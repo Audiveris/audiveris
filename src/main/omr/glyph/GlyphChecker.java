@@ -34,8 +34,11 @@ import omr.score.entity.ScoreSystem;
 import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
 
+import omr.sheet.Ledger;
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
+
+import omr.util.Predicate;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,8 +46,6 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
-import omr.sheet.Ledger;
 
 /**
  * Class <code>GlyphChecker</code> gathers additional specific glyph checks,
@@ -355,6 +356,36 @@ public class GlyphChecker
                 }
             };
 
+        new Checker("CommonCutTime", COMMON_TIME) {
+                private Predicate<Glyph> stemPredicate = new Predicate<Glyph>() {
+                    public boolean check (Glyph entity)
+                    {
+                        return entity.getShape() == Shape.COMBINING_STEM;
+                    }
+                };
+
+                public boolean check (SystemInfo system,
+                                      Evaluation eval,
+                                      Glyph      glyph,
+                                      double[]   features)
+                {
+                    // COMMON_TIME shape is easily confused with CUT_TIME
+                    // Check presence of a "pseudo-stem"
+                    PixelRectangle box = glyph.getContourBox();
+                    box.grow(-box.width / 4, 0);
+
+                    List<Glyph> neighbors = system.lookupIntersectedGlyphs(
+                        box,
+                        glyph);
+
+                    if (Glyphs.contains(neighbors, stemPredicate)) {
+                        eval.shape = Shape.CUT_TIME;
+                    }
+
+                    return true;
+                }
+            };
+
         new Checker("Hook", BEAM_HOOK) {
                 public boolean check (SystemInfo system,
                                       Evaluation eval,
@@ -544,12 +575,7 @@ public class GlyphChecker
                 }
             };
 
-        new Checker(
-            "StaffDist",
-            Notes,
-            NoteHeads,
-            Rests,
-            Dynamics) {
+        new Checker("StaffDist", Notes, NoteHeads, Rests, Dynamics) {
                 public boolean check (SystemInfo system,
                                       Evaluation eval,
                                       Glyph      glyph,

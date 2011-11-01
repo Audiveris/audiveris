@@ -20,6 +20,8 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
 
+import omr.grid.StaffInfo;
+
 import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
@@ -34,10 +36,10 @@ import omr.score.entity.Page;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
+import omr.score.entity.TimeSignature;
 import omr.score.visitor.AbstractScoreVisitor;
 
 import omr.sheet.Scale;
-import omr.grid.StaffInfo;
 import omr.sheet.SystemInfo;
 
 import omr.util.Predicate;
@@ -168,7 +170,15 @@ public class TimeSignatureRetriever
                                                  .lookupIntersectedGlyphs(
                     inner);
 
-                checkTimeSig(glyphs, system);
+                Glyph             compound = checkTimeSig(glyphs, system);
+
+                if (compound != null) {
+                    // Insert time sig in proper measure
+                    TimeSignature.populateFullTime(
+                        compound,
+                        firstMeasure,
+                        staff);
+                }
             }
         } catch (Exception ex) {
             logger.warning(
@@ -186,7 +196,7 @@ public class TimeSignatureRetriever
      * Retrieve the free space where a time signature could be within the first
      * measure
      * @param firstMeasure the containing measure (whatever the part)
-     * @return a rectangle to provide left and right bounds
+     * @return a degenerated rectangle, just to provide left and right bounds
      */
     private PixelRectangle getRoi (Measure firstMeasure)
     {
@@ -254,16 +264,16 @@ public class TimeSignatureRetriever
      * glyphs
      * @param glyphs the glyphs to build up the time sig
      * @param scoreSystem the containing system
-     * @return true if the time sig has been recognized and inserted
+     * @return the compound (full) time signature if successful, or null
      */
-    private boolean checkTimeSig (Collection<Glyph> glyphs,
-                                  ScoreSystem       scoreSystem)
+    private Glyph checkTimeSig (Collection<Glyph> glyphs,
+                                ScoreSystem       scoreSystem)
     {
         SystemInfo system = scoreSystem.getInfo();
         Glyphs.purgeManuals(glyphs);
 
         if (glyphs.isEmpty()) {
-            return false;
+            return null;
         }
 
         Glyph compound = system.buildTransientCompound(glyphs);
@@ -287,9 +297,9 @@ public class TimeSignatureRetriever
             compound = system.addGlyph(compound);
             compound.setShape(vote.shape, Evaluation.ALGORITHM);
 
-            return true;
+            return compound;
         } else {
-            return false;
+            return null;
         }
     }
 
