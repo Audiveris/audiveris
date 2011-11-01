@@ -236,6 +236,7 @@ public class GlyphInspector
                 system.getCompoundBuilder()
                       .buildCompound(
                     seed,
+                    true,
                     glyphs.subList(index + 1, glyphs.size()),
                     adapter);
             }
@@ -335,7 +336,7 @@ public class GlyphInspector
         }
 
         @Implement(CompoundAdapter.class)
-        public PixelRectangle getIntersectionBox ()
+        public PixelRectangle getReferenceBox ()
         {
             if (seed == null) {
                 throw new NullPointerException(

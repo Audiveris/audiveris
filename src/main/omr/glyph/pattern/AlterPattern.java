@@ -33,8 +33,10 @@ import java.util.SortedSet;
 
 /**
  * Class {@code AlterPattern} implements a pattern for alteration glyphs which
- * have been over-segmented into stems + other stuff. We use the fact that the
- * two stems are very close to each other.
+ * have been over-segmented into stem(s) + other stuff.
+ * <p>This applies for sharp, natural and flat signs.
+ * We use the fact that the stem(s) are rather short and, for the case of sharp
+ * and natural, very close to each other.
  *
  * @author Hervé Bitteur
  */
@@ -49,6 +51,19 @@ public class AlterPattern
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(AlterPattern.class);
 
+    //~ Instance fields --------------------------------------------------------
+
+    // Scale-dependent constants for alter verification
+    final int             maxCloseStemDx;
+    final int             minCloseStemOverlap;
+    final int             maxAlterStemLength;
+    final int             maxNaturalOverlap;
+
+    // Adapters
+    final CompoundBuilder compoundBuilder;
+    final AlterAdapter    sharpAdapter;
+    final AlterAdapter    naturalAdapter;
+
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -57,6 +72,15 @@ public class AlterPattern
     public AlterPattern (SystemInfo system)
     {
         super("Alter", system);
+
+        maxCloseStemDx = scale.toPixels(constants.maxCloseStemDx);
+        minCloseStemOverlap = scale.toPixels(constants.minCloseStemOverlap);
+        maxAlterStemLength = scale.toPixels(constants.maxAlterStemLength);
+        maxNaturalOverlap = scale.toPixels(constants.maxNaturalOverlap);
+
+        compoundBuilder = system.getCompoundBuilder();
+        sharpAdapter = new SharpAdapter(system);
+        naturalAdapter = new NaturalAdapter(system);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -72,46 +96,17 @@ public class AlterPattern
     @Implement(GlyphPattern.class)
     public int runPattern ()
     {
-        CompoundBuilder        compoundBuilder = system.getCompoundBuilder();
+        int              successNb = 0; // Success counter
+        SortedSet<Glyph> stems = retrieveShortStems(); // Ordered short stems
 
-        // Constants for alter verification
-        final int              maxCloseStemDx = scale.toPixels(
-            constants.maxCloseStemDx);
-        final int              minCloseStemOverlap = scale.toPixels(
-            constants.minCloseStemOverlap);
-        final int              maxCloseStemLength = scale.toPixels(
-            constants.maxCloseStemLength);
-        final int              maxNaturalOverlap = scale.toPixels(
-            constants.maxNaturalOverlap);
-
-        final AlterAdapter     sharpAdapter = new SharpAdapter(system);
-        final AlterAdapter     naturalAdapter = new NaturalAdapter(system);
-
-        // First retrieve the collection of all stems in the system
-        // Ordered naturally by their abscissa
-        final SortedSet<Glyph> stems = Glyphs.sortedSet();
-
-        for (Glyph glyph : system.getGlyphs()) {
-            if (glyph.isStem() && glyph.isActive()) {
-                PixelRectangle box = glyph.getContourBox();
-
-                // Check stem length
-                if (box.height <= maxCloseStemLength) {
-                    stems.add(glyph);
-                }
-            }
-        }
-
-        int successNb = 0; // Success counter
-
-        // Then, look for close stems
+        // Look for close stems
         for (Glyph glyph : stems) {
             if (!glyph.isStem()) {
                 continue;
             }
 
-            final PixelRectangle lBox = glyph.getContourBox();
-            final int            lX = lBox.x + (lBox.width / 2);
+            final PixelRectangle leftBox = glyph.getContourBox();
+            final int            leftX = leftBox.x + (leftBox.width / 2);
 
             //logger.info("Checking stems close to glyph #" + glyph.getId());
             for (Glyph other : stems.tailSet(glyph)) {
@@ -120,19 +115,20 @@ public class AlterPattern
                 }
 
                 // Check horizontal distance
-                final PixelRectangle rBox = other.getContourBox();
-                final int            rX = rBox.x + (rBox.width / 2);
-                final int            dx = rX - lX;
+                final PixelRectangle rightBox = other.getContourBox();
+                final int            rightX = rightBox.x +
+                                              (rightBox.width / 2);
+                final int            dx = rightX - leftX;
 
                 if (dx > maxCloseStemDx) {
                     break; // Since the set is ordered, no candidate is left
                 }
 
                 // Check vertical overlap
-                final int commonTop = Math.max(lBox.y, rBox.y);
+                final int commonTop = Math.max(leftBox.y, rightBox.y);
                 final int commonBot = Math.min(
-                    lBox.y + lBox.height,
-                    rBox.y + rBox.height);
+                    leftBox.y + leftBox.height,
+                    rightBox.y + rightBox.height);
                 final int overlap = commonBot - commonTop;
 
                 if (overlap < minCloseStemOverlap) {
@@ -165,10 +161,11 @@ public class AlterPattern
                 }
 
                 // Prepare the adapter with proper stem boxes
-                adapter.setStemBoxes(lBox, rBox);
+                adapter.setStemBoxes(leftBox, rightBox);
 
                 Glyph compound = compoundBuilder.buildCompound(
                     glyph,
+                    true,
                     system.getGlyphs(),
                     adapter);
 
@@ -192,6 +189,32 @@ public class AlterPattern
         return successNb;
     }
 
+    //--------------------//
+    // retrieveShortStems //
+    //--------------------//
+    /**
+     * Retrieve the collection of all stems in the system,
+     * ordered naturally by their abscissa.
+     * @return the set of short stems
+     */
+    private SortedSet<Glyph> retrieveShortStems ()
+    {
+        final SortedSet<Glyph> stems = Glyphs.sortedSet();
+
+        for (Glyph glyph : system.getGlyphs()) {
+            if (glyph.isStem() && glyph.isActive()) {
+                PixelRectangle box = glyph.getContourBox();
+
+                // Check stem length
+                if (box.height <= maxAlterStemLength) {
+                    stems.add(glyph);
+                }
+            }
+        }
+
+        return stems;
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
     //--------------//
@@ -205,10 +228,8 @@ public class AlterPattern
     {
         //~ Instance fields ----------------------------------------------------
 
-        protected final int      maxCloseStemDx;
-        protected final int      minCloseStemOverlap;
-        protected PixelRectangle lBox;
-        protected PixelRectangle rBox;
+        protected PixelRectangle leftBox;
+        protected PixelRectangle rightBox;
 
         //~ Constructors -------------------------------------------------------
 
@@ -216,11 +237,6 @@ public class AlterPattern
                              EnumSet<Shape> shapes)
         {
             super(system, constants.alterMaxDoubt.getValue(), shapes);
-
-            Scale scale = system.getScoreSystem()
-                                .getScale();
-            maxCloseStemDx = scale.toPixels(constants.maxCloseStemDx);
-            minCloseStemOverlap = scale.toPixels(constants.minCloseStemOverlap);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -238,21 +254,21 @@ public class AlterPattern
             return box.contains(glyph.getContourBox());
         }
 
-        public void setStemBoxes (PixelRectangle lBox,
-                                  PixelRectangle rBox)
+        public void setStemBoxes (PixelRectangle leftBox,
+                                  PixelRectangle rightBox)
         {
-            this.lBox = lBox;
-            this.rBox = rBox;
+            this.leftBox = leftBox;
+            this.rightBox = rightBox;
         }
 
         protected PixelRectangle getStemsBox ()
         {
-            if ((lBox == null) || (rBox == null)) {
+            if ((leftBox == null) || (rightBox == null)) {
                 throw new NullPointerException("Stem boxes have not been set");
             }
 
-            PixelRectangle box = new PixelRectangle(lBox);
-            box.add(rBox);
+            PixelRectangle box = new PixelRectangle(leftBox);
+            box.add(rightBox);
 
             return box;
         }
@@ -272,9 +288,9 @@ public class AlterPattern
         Scale.Fraction   maxCloseStemDx = new Scale.Fraction(
             0.7d,
             "Maximum horizontal distance for close stems");
-        Scale.Fraction   maxCloseStemLength = new Scale.Fraction(
+        Scale.Fraction   maxAlterStemLength = new Scale.Fraction(
             3d,
-            "Maximum length for close stems");
+            "Maximum length for pseudo-stem(s) in alteration sign");
         Scale.Fraction   maxNaturalOverlap = new Scale.Fraction(
             2.0d,
             "Maximum vertical overlap for natural stems");
@@ -302,7 +318,7 @@ public class AlterPattern
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public PixelRectangle getIntersectionBox ()
+        public PixelRectangle getReferenceBox ()
         {
             PixelRectangle box = getStemsBox();
             box.grow(maxCloseStemDx / 4, minCloseStemOverlap / 2);
@@ -330,7 +346,7 @@ public class AlterPattern
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public PixelRectangle getIntersectionBox ()
+        public PixelRectangle getReferenceBox ()
         {
             PixelRectangle box = getStemsBox();
             box.grow(maxCloseStemDx / 2, minCloseStemOverlap / 2);

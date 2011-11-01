@@ -13,9 +13,10 @@ package omr.glyph.pattern;
 
 import omr.constant.ConstantSet;
 
+import omr.glyph.CompoundBuilder;
 import omr.glyph.Evaluation;
-import omr.glyph.GlyphNetwork;
 import omr.glyph.Shape;
+import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
@@ -31,10 +32,9 @@ import omr.sheet.Ledger;
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
-import omr.util.Predicate;
-
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -59,19 +59,26 @@ public class LedgerPattern
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(LedgerPattern.class);
 
-    /** Specific predicate to filter note shapes */
-    private static final Predicate<Shape> notePredicate = new Predicate<Shape>() {
-        public boolean check (Shape shape)
-        {
-            return HorizontalsBuilder.isLedgerNeighborShape(shape);
-        }
-    };
+    /** Shapes acceptable for a ledger neighbor */
+    public static final EnumSet<Shape> ledgerNeighbors = EnumSet.noneOf(
+        Shape.class);
 
+    static {
+        ledgerNeighbors.add(Shape.COMBINING_STEM);
+        ledgerNeighbors.add(Shape.GRACE_NOTE_SLASH);
+        ledgerNeighbors.add(Shape.GRACE_NOTE_NO_SLASH);
+        ledgerNeighbors.addAll(ShapeRange.Notes.getShapes());
+        ledgerNeighbors.addAll(ShapeRange.NoteHeads.getShapes());
+    }
 
     //~ Instance fields --------------------------------------------------------
 
     /** Companion in charge of building ledgers */
     private final HorizontalsBuilder builder;
+
+    /** Scale-dependent parameters */
+    final int interChunkDx;
+    final int interChunkDy;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -86,6 +93,8 @@ public class LedgerPattern
     {
         super("Ledger", system);
         builder = system.getHorizontalsBuilder();
+        interChunkDx = scale.toPixels(constants.interChunkDx);
+        interChunkDy = scale.toPixels(constants.interChunkDy);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -96,9 +105,7 @@ public class LedgerPattern
     @Override
     public int runPattern ()
     {
-        final int interChunkDx = scale.toPixels(constants.interChunkDx);
-        final int interChunkDy = scale.toPixels(constants.interChunkDy);
-        int       nb = 0;
+        int nb = 0;
 
         for (StaffInfo staff : system.getStaves()) {
             Map<Integer, SortedSet<Ledger>> ledgerMap = staff.getLedgerMap();
@@ -107,7 +114,6 @@ public class LedgerPattern
                                                                              .iterator();
                  iter.hasNext();) {
                 Entry<Integer, SortedSet<Ledger>> entry = iter.next();
-                int                               pitch = entry.getKey();
                 SortedSet<Ledger>                 ledgerSet = entry.getValue();
                 List<Glyph>                       ledgerGlyphs = new ArrayList<Glyph>();
 
@@ -122,67 +128,39 @@ public class LedgerPattern
                     Set<Glyph> neighbors = new HashSet<Glyph>();
 
                     if (isInvalid(glyph, neighbors)) {
-                        // Check if we have other ledgers nearby surrounding
-                        // a note
-                        Point2D        stop = glyph.getStopPoint();
-                        PixelRectangle box = new PixelRectangle(
-                            (int) Math.rint(stop.getX()),
-                            (int) Math.rint(stop.getY()),
-                            interChunkDx,
-                            0);
-                        box.grow(0, interChunkDy);
-                        glyph.addAttachment("-", box);
-
-                        List<Glyph> glyphs = system.lookupIntersectedGlyphs(
-                            box);
-                        glyphs.removeAll(ledgerGlyphs);
-
-                        if (!glyphs.isEmpty()) {
-                            Glyph compound = system.buildTransientCompound(
-                                glyphs);
-                            system.computeGlyphFeatures(compound);
-
-                            // Check if a note appears in the top evaluations
-                            Evaluation vote = GlyphNetwork.getInstance()
-                                                          .topVote(
-                                compound,
-                                constants.maxDoubt.getValue(),
+                        // Check if we can forge a ledger-compatible neighbor
+                        Glyph compound = system.getCompoundBuilder()
+                                               .buildCompound(
+                            glyph,
+                            false,
+                            system.getGlyphs(),
+                            new LedgerAdapter(
                                 system,
-                                notePredicate);
+                                constants.maxDoubt.getValue(),
+                                ledgerNeighbors,
+                                ledgerGlyphs));
 
-                            if (vote != null) {
-                                compound = system.addGlyph(compound);
-                                compound.setShape(
-                                    vote.shape,
-                                    Evaluation.ALGORITHM);
+                        if (compound == null) {
+                            // Here, we have not found any convincing neighbor
+                            // Let's invalid this pseudo ledger
+                            if (logger.isFineEnabled()) {
+                                logger.info("Invalid ledger " + glyph);
+                            }
 
-                                if (logger.isFineEnabled()) {
-                                    logger.fine("Ledger note " + compound);
+                            glyph.setShape(null);
+                            glyph.clearTranslations();
+
+                            // Nullify neighbors evaluations, since they may have
+                            // been biased by ledger presence
+                            for (Glyph g : neighbors) {
+                                if (!g.isManualShape()) {
+                                    g.resetEvaluation();
                                 }
-
-                                continue;
                             }
+
+                            it.remove();
+                            nb++;
                         }
-
-                        // Here, we have not found any convincing neighbor
-                        // Let's invalid this pseudo ledger
-                        if (logger.isFineEnabled()) {
-                            logger.info("Invalid ledger " + glyph);
-                        }
-
-                        glyph.setShape(null);
-                        glyph.clearTranslations();
-
-                        // Nullify neighbors evaluations, since they may have
-                        // been biased by ledger presence
-                        for (Glyph g : neighbors) {
-                            if (!g.isManualShape()) {
-                                g.resetEvaluation();
-                            }
-                        }
-
-                        it.remove();
-                        nb++;
                     }
                 }
 
@@ -220,7 +198,7 @@ public class LedgerPattern
         }
 
         for (Glyph glyph : neighborGlyphs) {
-            if (HorizontalsBuilder.isLedgerNeighborShape(glyph.getShape())) {
+            if (ledgerNeighbors.contains(glyph.getShape())) {
                 return false;
             }
         }
@@ -257,5 +235,58 @@ public class LedgerPattern
         Evaluation.Doubt maxDoubt = new Evaluation.Doubt(
             10d,
             "Maximum doubt for note glyph");
+    }
+
+    //---------------//
+    // LedgerAdapter //
+    //---------------//
+    /**
+     * Adapter to actively search a ledger-compatible entity near the ledger
+     * chunk.
+     */
+    private final class LedgerAdapter
+        extends CompoundBuilder.TopShapeAdapter
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        private final List<Glyph> ledgerGlyphs;
+
+        //~ Constructors -------------------------------------------------------
+
+        public LedgerAdapter (SystemInfo     system,
+                              double         maxDoubt,
+                              EnumSet<Shape> desiredShapes,
+                              List<Glyph>    ledgerGlyphs)
+        {
+            super(system, maxDoubt, desiredShapes);
+            this.ledgerGlyphs = ledgerGlyphs;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        public boolean isCandidateSuitable (Glyph glyph)
+        {
+            return !ledgerGlyphs.contains(glyph);
+        }
+
+        @Override
+        public Evaluation getChosenEvaluation ()
+        {
+            return new Evaluation(chosenEvaluation.shape, Evaluation.ALGORITHM);
+        }
+
+        public PixelRectangle getReferenceBox ()
+        {
+            Point2D        stop = seed.getStopPoint();
+            PixelRectangle box = new PixelRectangle(
+                (int) Math.rint(stop.getX()),
+                (int) Math.rint(stop.getY()),
+                interChunkDx,
+                0);
+            box.grow(0, interChunkDy);
+            seed.addAttachment("-", box);
+
+            return box;
+        }
     }
 }

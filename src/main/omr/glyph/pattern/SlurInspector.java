@@ -401,6 +401,7 @@ public class SlurInspector
         // Process that slur, looking at neighbors
         Glyph compound = compoundBuilder.buildCompound(
             oldSlur,
+            true,
             suitables,
             adapter);
 
@@ -667,7 +668,7 @@ public class SlurInspector
         }
 
         @Implement(CompoundBuilder.CompoundAdapter.class)
-        public PixelRectangle getIntersectionBox ()
+        public PixelRectangle getReferenceBox ()
         {
             PixelRectangle box = new PixelRectangle(seed.getContourBox());
             box.grow(slurBoxDx, slurBoxDy);

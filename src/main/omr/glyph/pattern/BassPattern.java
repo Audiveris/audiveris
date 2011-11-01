@@ -116,6 +116,7 @@ public class BassPattern
                 Glyph compound = system.getCompoundBuilder()
                                        .buildCompound(
                     top,
+                    true,
                     system.getGlyphs(),
                     bassAdapter);
 
@@ -157,7 +158,7 @@ public class BassPattern
         }
 
         @Override
-        public PixelRectangle getIntersectionBox ()
+        public PixelRectangle getReferenceBox ()
         {
             if (seed == null) {
                 throw new NullPointerException(

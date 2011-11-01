@@ -52,7 +52,6 @@ public class CompoundBuilder
     //-----------------//
     /**
      * Creates a new CompoundBuilder object.
-     *
      * @param system the containing system
      */
     public CompoundBuilder (SystemInfo system)
@@ -69,28 +68,32 @@ public class CompoundBuilder
      * Try to build a compound, starting from given seed and looking into the
      * collection of suitable glyphs.
      *
-     * <p>If successful, this method assign the proper shape to the compound,
-     * and insert it in the system/lag environment.
+     * <p>If successful, this method assigns the proper shape to the compound,
+     * and inserts it in the system environment.
      *
      * @param seed the initial glyph around which the compound is built
+     * @param includeSeed true if seed must be included in compound
      * @param suitables collection of potential glyphs
      * @param adapter the specific behavior of the compound tests
      * @return the compound built if successful, null otherwise
      */
     public Glyph buildCompound (Glyph             seed,
+                                boolean           includeSeed,
                                 Collection<Glyph> suitables,
                                 CompoundAdapter   adapter)
     {
         adapter.setSeed(seed);
 
         // Build a (perhaps specific) box around the seed
-        PixelRectangle box = adapter.getIntersectionBox();
+        PixelRectangle box = adapter.getReferenceBox();
 
         // Retrieve good neighbors among the suitable glyphs
         Set<Glyph>     neighbors = new HashSet<Glyph>();
 
-        // Include the seed in the compound glyphs
-        neighbors.add(seed);
+        // Include the seed in the compound glyphs?
+        if (includeSeed) {
+            neighbors.add(seed);
+        }
 
         for (Glyph g : suitables) {
             if (adapter.isCandidateSuitable(g) && adapter.isGlyphClose(box, g)) {
@@ -151,7 +154,7 @@ public class CompoundBuilder
         //---------------------//
         /**
          * Predicate for a glyph to be a potential part of the building (the
-         * location criteria is handled separately)
+         * location criteria is handled separately).
          * @param glyph the glyph to check
          * @return true if the glyph is suitable for inclusion
          */
@@ -161,7 +164,7 @@ public class CompoundBuilder
         // getChosenEvaluation //
         //---------------------//
         /**
-         * Report the evaluation chosen for the compound, not always the 1st one
+         * Report the evaluation chosen for the compound, not always the 1st one.
          * @return the evaluation (shape + doubt) chosen
          */
         Evaluation getChosenEvaluation ();
@@ -181,7 +184,7 @@ public class CompoundBuilder
 
         /**
          * Predicate to check whether a given glyph is close enough to the
-         * provided compound box
+         * provided compound box.
          * @param box the provided compound box
          * @param glyph the glyph to check for proximity
          * @return true if glyph is close enough
@@ -189,22 +192,22 @@ public class CompoundBuilder
         boolean isGlyphClose (PixelRectangle box,
                               Glyph          glyph);
 
-        //--------------------//
-        // getIntersectionBox //
-        //--------------------//
+        //-----------------//
+        // getReferenceBox //
+        //-----------------//
         /**
-         * The box to use when looking for intersecting candidates (this
-         * typically requires that a seed has been defined beforehand via the
-         * setSeed() method, otherwise a NullPointerException is thrown)
+         * The box to use as reference when looking for close candidates.
+         * (this typically requires that a seed has been defined beforehand
+         * via the setSeed() method, otherwise a NullPointerException is thrown)
          * @return the common box, in pixels
          */
-        PixelRectangle getIntersectionBox ();
+        PixelRectangle getReferenceBox ();
 
         //---------//
         // setSeed //
         //---------//
         /**
-         * Define the seed glyph around which the compound will be built
+         * Define the seed glyph around which the compound will be built.
          * @param seed the seed glyph
          */
         void setSeed (Glyph seed);
@@ -215,6 +218,10 @@ public class CompoundBuilder
     //-----------------//
     // AbstractAdapter //
     //-----------------//
+    /**
+     * Just a basic abstract class to implement the
+     * {@link CompoundAdapter} interface.
+     */
     public abstract static class AbstractAdapter
         implements CompoundAdapter
     {
@@ -235,7 +242,7 @@ public class CompoundBuilder
         //~ Constructors -------------------------------------------------------
 
         /**
-         * Construct a AbstractCompoundAdapter
+         * Construct a AbstractAdapter.
          * @param system the containing system
          * @param maxDoubt maximum acceptable doubt for the compound shape
          */
@@ -271,7 +278,7 @@ public class CompoundBuilder
     //-----------------//
     /**
      * This compound adapter tries to find some specific shapes among the top
-     * evaluations found for the compound
+     * evaluations found for the compound.
      */
     public abstract static class TopShapeAdapter
         extends AbstractAdapter
@@ -293,7 +300,7 @@ public class CompoundBuilder
         //~ Constructors -------------------------------------------------------
 
         /**
-         * Create a TopShapeAdapter instance
+         * Create a TopShapeAdapter instance.
          * @param system the containing system
          * @param maxDoubt maximum acceptable doubt on compound shape
          * @param desiredShapes the valid shapes for the compound

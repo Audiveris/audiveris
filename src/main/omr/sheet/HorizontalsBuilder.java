@@ -22,7 +22,6 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Shape;
-import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
 import omr.glyph.ui.GlyphsController;
 
@@ -197,18 +196,6 @@ public class HorizontalsBuilder
         return glyph.getLength(HORIZONTAL) >= minFullLedgerLength;
     }
 
-    //-----------------------//
-    // isLedgerNeighborShape //
-    //-----------------------//
-    public static boolean isLedgerNeighborShape (Shape shape)
-    {
-        return (shape == Shape.COMBINING_STEM) ||
-               ShapeRange.NoteHeads.contains(shape) ||
-               ShapeRange.Notes.contains(shape) ||
-               (shape == Shape.GRACE_NOTE_SLASH) ||
-               (shape == Shape.GRACE_NOTE_NO_SLASH);
-    }
-
     //    //--------------//
     //    // assignGlyphs //
     //    //--------------//
@@ -247,10 +234,11 @@ public class HorizontalsBuilder
             // Filter which sections to provide to factory
             List<Section> sections = getCandidateSections(
                 system.getHorizontalSections());
+
             /// NO: sections.addAll(system.getVerticalSections());
 
             // Retrieve candidate glyphs out of candidate sections
-            List<Glyph> sticks = getCandidateGlyphs(sections);
+            List<Glyph>   sticks = getCandidateGlyphs(sections);
 
             // Apply basic checks for ledgers candidates, tenutos, endings
             checkHorizontals(sticks);
@@ -1106,10 +1094,10 @@ public class HorizontalsBuilder
             0.2,
             "Minimum number of points to compute extension of crossing objects");
         Constant.Ratio     maxAdjacencyHigh = new Constant.Ratio(
-            0.2,
+            0.3,
             "High Maximum adjacency ratio for an ending");
         Constant.Ratio     maxAdjacencyLow = new Constant.Ratio(
-            0.1,
+            0.2,
             "Low Maximum adjacency ratio for an ending");
         Scale.Fraction     maxLengthHigh = new Scale.Fraction(
             3.1,
