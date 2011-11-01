@@ -343,10 +343,10 @@ public class VerticalsBuilder
             6.67,
             "Low Minimum aspect ratio for a stem stick");
         Scale.Fraction minStemLengthHigh = new Scale.Fraction(
-            3.0,
+            2.5,
             "High Minimum length for a stem");
         Scale.Fraction minStemLengthLow = new Scale.Fraction(
-            2.4,
+            2.0,
             "Low Minimum length for a stem");
         Scale.Fraction minShortStemLengthHigh = new Scale.Fraction(
             2.5,

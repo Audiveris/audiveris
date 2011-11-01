@@ -1006,7 +1006,7 @@ public class HorizontalsBuilder
             0.5,
             "Maximum absolute slope for a gap");
         Constant.Ratio     minSectionAspect = new Constant.Ratio(
-            1.2,
+            1.0,
             "Minimum section aspect (length / thickness)");
         Constant.Ratio     maxConsistentRatio = new Constant.Ratio(
             1.7,
