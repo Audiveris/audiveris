@@ -65,8 +65,8 @@ public class LedgerPattern
 
     static {
         ledgerNeighbors.add(Shape.COMBINING_STEM);
-        ledgerNeighbors.add(Shape.GRACE_NOTE_SLASH);
-        ledgerNeighbors.add(Shape.GRACE_NOTE_NO_SLASH);
+        //        ledgerNeighbors.add(Shape.GRACE_NOTE_SLASH);
+        //        ledgerNeighbors.add(Shape.GRACE_NOTE_NO_SLASH);
         ledgerNeighbors.addAll(ShapeRange.Notes.getShapes());
         ledgerNeighbors.addAll(ShapeRange.NoteHeads.getShapes());
     }

@@ -13,9 +13,8 @@ package omr.glyph.pattern;
 
 import omr.constant.ConstantSet;
 
+import omr.glyph.CompoundBuilder;
 import omr.glyph.Evaluation;
-import omr.glyph.GlyphNetwork;
-import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
@@ -25,9 +24,7 @@ import omr.score.common.PixelRectangle;
 
 import omr.sheet.SystemInfo;
 
-import omr.util.Predicate;
-
-import java.util.List;
+import java.util.EnumSet;
 
 /**
  * Class {@code FortePattern} uses easily recognized Forte signs ("f") to
@@ -47,16 +44,11 @@ public class FortePattern
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(FortePattern.class);
 
-    /** Specific predicate to filter pre-forte shapes */
-    private static final Predicate<Shape> fortePredicate = new Predicate<Shape>() {
-        public boolean check (Shape shape)
-        {
-            return (shape == Shape.DYNAMICS_CHAR_M) ||
-                   (shape == Shape.DYNAMICS_CHAR_R) ||
-                   (shape == Shape.DYNAMICS_CHAR_S);
-        }
-    };
-
+    /** Pre-forte shapes */
+    public static final EnumSet<Shape> forteNeighbors = EnumSet.of(
+        Shape.DYNAMICS_CHAR_M,
+        Shape.DYNAMICS_CHAR_R,
+        Shape.DYNAMICS_CHAR_S);
 
     //~ Constructors -----------------------------------------------------------
 
@@ -84,46 +76,19 @@ public class FortePattern
 
         for (Glyph forte : system.getGlyphs()) {
             // Focus on forte shaped glyphs
-            if (forte.getShape() != Shape.DYNAMICS_F) {
-                continue;
-            }
+            if (forte.getShape() == Shape.DYNAMICS_F) {
+                Glyph compound = system.getCompoundBuilder()
+                                       .buildCompound(
+                    forte,
+                    false,
+                    system.getGlyphs(),
+                    new ForteAdapter(
+                        system,
+                        constants.maxDoubt.getValue(),
+                        forteNeighbors));
 
-            PixelRectangle box = forte.getContourBox();
-            PixelRectangle leftBox = new PixelRectangle(
-                box.x,
-                box.y + (box.height / 3),
-                box.width / 3,
-                box.height / 3);
-            forte.addAttachment("fl", leftBox);
-
-            // Look for intersected glyph
-            List<Glyph> glyphs = system.lookupIntersectedGlyphs(leftBox, forte);
-
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    system.getLogPrefix() + " Forte#" + forte.getId() + " " +
-                    Glyphs.toString(glyphs));
-            }
-
-            if (!glyphs.isEmpty()) {
-                Glyph compound = system.buildTransientCompound(glyphs);
-                system.computeGlyphFeatures(compound);
-
-                // Check if a clef appears in the top evaluations
-                Evaluation vote = GlyphNetwork.getInstance()
-                                              .topVote(
-                    compound,
-                    constants.maxDoubt.getValue(),
-                    system,
-                    fortePredicate);
-
-                if (vote != null) {
-                    compound = system.addGlyph(compound);
-                    compound.setShape(vote.shape, Evaluation.ALGORITHM);
-
-                    if (logger.isFineEnabled()) {
-                        logger.info("PreForte " + compound);
-                    }
+                if (compound != null) {
+                    nb++;
                 }
             }
         }
@@ -144,5 +109,50 @@ public class FortePattern
         Evaluation.Doubt maxDoubt = new Evaluation.Doubt(
             300d,
             "Maximum doubt for glyph on left of forte");
+    }
+
+    //---------------//
+    // ForteAdapter //
+    //---------------//
+    /**
+     * Adapter to actively search a Forte-compatible entity near the Forte glyph
+     */
+    private final class ForteAdapter
+        extends CompoundBuilder.TopShapeAdapter
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public ForteAdapter (SystemInfo     system,
+                             double         maxDoubt,
+                             EnumSet<Shape> desiredShapes)
+        {
+            super(system, maxDoubt, desiredShapes);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        public boolean isCandidateSuitable (Glyph glyph)
+        {
+            return true;
+        }
+
+        @Override
+        public Evaluation getChosenEvaluation ()
+        {
+            return new Evaluation(chosenEvaluation.shape, Evaluation.ALGORITHM);
+        }
+
+        public PixelRectangle getReferenceBox ()
+        {
+            PixelRectangle box = seed.getContourBox();
+            PixelRectangle leftBox = new PixelRectangle(
+                box.x,
+                box.y + (box.height / 3),
+                box.width / 3,
+                box.height / 3);
+            seed.addAttachment("fl", leftBox);
+
+            return box;
+        }
     }
 }
