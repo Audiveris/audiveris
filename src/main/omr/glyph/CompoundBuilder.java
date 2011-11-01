@@ -91,8 +91,11 @@ public class CompoundBuilder
         Set<Glyph>     neighbors = new HashSet<Glyph>();
 
         // Include the seed in the compound glyphs?
+        int minCount = 1;
+
         if (includeSeed) {
             neighbors.add(seed);
+            minCount++;
         }
 
         for (Glyph g : suitables) {
@@ -101,7 +104,7 @@ public class CompoundBuilder
             }
         }
 
-        if (neighbors.size() > 1) {
+        if (neighbors.size() >= minCount) {
             if (logger.isFineEnabled()) {
                 logger.finest(
                     "neighbors=" + Glyphs.toString(neighbors) + " seed=" +

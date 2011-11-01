@@ -33,7 +33,7 @@ import java.util.SortedSet;
 
 /**
  * Class {@code AlterPattern} implements a pattern for alteration glyphs which
- * have been over-segmented into stem(s) + other stuff.
+ * have been "over-segmented" into stem(s) + other stuff.
  * <p>This applies for sharp, natural and flat signs.
  * We use the fact that the stem(s) are rather short and, for the case of sharp
  * and natural, very close to each other.
@@ -54,15 +54,20 @@ public class AlterPattern
     //~ Instance fields --------------------------------------------------------
 
     // Scale-dependent constants for alter verification
-    final int             maxCloseStemDx;
-    final int             minCloseStemOverlap;
-    final int             maxAlterStemLength;
-    final int             maxNaturalOverlap;
+    final int                maxCloseStemDx;
+    final int                minCloseStemOverlap;
+    final int                maxAlterStemLength;
+    final int                maxNaturalOverlap;
+    final int                flatHeadWidth;
+    final int                flatHeadHeight;
 
     // Adapters
-    final CompoundBuilder compoundBuilder;
-    final AlterAdapter    sharpAdapter;
-    final AlterAdapter    naturalAdapter;
+    final CompoundBuilder    compoundBuilder;
+    final PairAdapter        sharpAdapter;
+    final PairAdapter        naturalAdapter;
+
+    /** Collection of (short) stems */
+    private SortedSet<Glyph> stems;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -78,6 +83,9 @@ public class AlterPattern
         maxAlterStemLength = scale.toPixels(constants.maxAlterStemLength);
         maxNaturalOverlap = scale.toPixels(constants.maxNaturalOverlap);
 
+        flatHeadWidth = scale.toPixels(constants.flatHeadWidth);
+        flatHeadHeight = scale.toPixels(constants.flatHeadHeight);
+
         compoundBuilder = system.getCompoundBuilder();
         sharpAdapter = new SharpAdapter(system);
         naturalAdapter = new NaturalAdapter(system);
@@ -89,15 +97,35 @@ public class AlterPattern
     // runPattern //
     //------------//
     /**
-     * Verify the case of stems very close to each other since they may result
-     * from wrong segmentation of sharp or natural signs
+     * Check the neighborhood of all short stems
      * @return the number of cases fixed
      */
     @Implement(GlyphPattern.class)
     public int runPattern ()
     {
-        int              successNb = 0; // Success counter
-        SortedSet<Glyph> stems = retrieveShortStems(); // Ordered short stems
+        int successNb = 0; // Success counter
+        stems = retrieveShortStems(); // Ordered short stems
+
+        // Look for close stems
+        successNb += checkCloseStems();
+
+        // Look for isolated stems
+        successNb += checkSingleStems();
+
+        return successNb;
+    }
+
+    //-----------------//
+    // checkCloseStems //
+    //-----------------//
+    /**
+     * Verify the case of stems very close to each other since they may result
+     * from over-segmentation of sharp or natural signs
+     * @return the number of cases fixed
+     */
+    private int checkCloseStems ()
+    {
+        int nb = 0;
 
         // Look for close stems
         for (Glyph glyph : stems) {
@@ -144,7 +172,7 @@ public class AlterPattern
                 glyph.setShape(null);
                 other.setShape(null);
 
-                AlterAdapter adapter = null;
+                PairAdapter adapter = null;
 
                 if (overlap <= maxNaturalOverlap) {
                     if (logger.isFineEnabled()) {
@@ -170,7 +198,7 @@ public class AlterPattern
                     adapter);
 
                 if (compound != null) {
-                    successNb++;
+                    nb++;
 
                     if (logger.isFineEnabled()) {
                         logger.info(
@@ -186,7 +214,53 @@ public class AlterPattern
             }
         }
 
-        return successNb;
+        return nb;
+    }
+
+    //------------------//
+    // checkSingleStems //
+    //------------------//
+    /**
+     * Verify the case of isolated short stems since they may result
+     * from over-segmentation of flay signs
+     * @return the number of cases fixed
+     */
+    private int checkSingleStems ()
+    {
+        int         nb = 0;
+        FlatAdapter flatAdapter = new FlatAdapter(system);
+
+        // Look for close stems
+        for (Glyph glyph : stems) {
+            if (!glyph.isStem()) {
+                continue;
+            }
+
+            // "hide" the stems to not perturb evaluation
+            glyph.setShape(null);
+
+            Glyph compound = compoundBuilder.buildCompound(
+                glyph,
+                true,
+                system.getGlyphs(),
+                flatAdapter);
+
+            if (compound != null) {
+                nb++;
+
+                //if (logger.isFineEnabled()) {
+                logger.info(
+                    system.getLogPrefix() + "Compound #" + compound.getId() +
+                    " rebuilt as " + compound.getShape());
+
+                //}
+            } else {
+                // Restore stem shapes
+                glyph.setShape(Shape.COMBINING_STEM);
+            }
+        }
+
+        return nb;
     }
 
     //--------------------//
@@ -217,13 +291,14 @@ public class AlterPattern
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //--------------//
-    // AlterAdapter //
-    //--------------//
+    //-------------//
+    // PairAdapter //
+    //-------------//
     /**
-     * Abstract compound adapter meant to build sharps or naturals
+     * Abstract compound adapter meant to build sharps or naturals from a pair
+     * of close stems
      */
-    private abstract class AlterAdapter
+    private abstract class PairAdapter
         extends CompoundBuilder.TopShapeAdapter
     {
         //~ Instance fields ----------------------------------------------------
@@ -233,8 +308,8 @@ public class AlterPattern
 
         //~ Constructors -------------------------------------------------------
 
-        public AlterAdapter (SystemInfo     system,
-                             EnumSet<Shape> shapes)
+        public PairAdapter (SystemInfo     system,
+                            EnumSet<Shape> shapes)
         {
             super(system, constants.alterMaxDoubt.getValue(), shapes);
         }
@@ -283,20 +358,83 @@ public class AlterPattern
         //~ Instance fields ----------------------------------------------------
 
         Evaluation.Doubt alterMaxDoubt = new Evaluation.Doubt(
-            Double.MAX_VALUE,
-            "Maximum doubt for alteration sign verification");
-        Scale.Fraction   maxCloseStemDx = new Scale.Fraction(
+            50d,
+            "Maximum doubt for sharp/natural sign verification");
+
+        //
+        Evaluation.Doubt flatMaxDoubt = new Evaluation.Doubt(
+            5d,
+            "Maximum doubt for flat sign verification");
+
+        //
+        Scale.Fraction maxCloseStemDx = new Scale.Fraction(
             0.7d,
             "Maximum horizontal distance for close stems");
-        Scale.Fraction   maxAlterStemLength = new Scale.Fraction(
+
+        //
+        Scale.Fraction maxAlterStemLength = new Scale.Fraction(
             3d,
             "Maximum length for pseudo-stem(s) in alteration sign");
-        Scale.Fraction   maxNaturalOverlap = new Scale.Fraction(
+
+        //
+        Scale.Fraction maxNaturalOverlap = new Scale.Fraction(
             2.0d,
             "Maximum vertical overlap for natural stems");
-        Scale.Fraction   minCloseStemOverlap = new Scale.Fraction(
+
+        //
+        Scale.Fraction minCloseStemOverlap = new Scale.Fraction(
             0.5d,
             "Minimum vertical overlap for close stems");
+
+        //
+        Scale.Fraction flatHeadHeight = new Scale.Fraction(
+            1d,
+            "Typical height of flat head");
+
+        //
+        Scale.Fraction flatHeadWidth = new Scale.Fraction(
+            0.5d,
+            "Typical width of flat head");
+    }
+
+    //-------------//
+    // FlatAdapter //
+    //-------------//
+    /**
+     * Compound adapter meant to build flats
+     */
+    private class FlatAdapter
+        extends CompoundBuilder.TopShapeAdapter
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public FlatAdapter (SystemInfo system)
+        {
+            super(
+                system,
+                constants.flatMaxDoubt.getValue(),
+                EnumSet.of(Shape.FLAT));
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public boolean isCandidateSuitable (Glyph glyph)
+        {
+            return !glyph.isManualShape();
+        }
+
+        @Override
+        public PixelRectangle getReferenceBox ()
+        {
+            final PixelRectangle stemBox = seed.getContourBox();
+
+            return new PixelRectangle(
+                stemBox.x,
+                (stemBox.y + stemBox.height) - flatHeadHeight,
+                flatHeadWidth,
+                flatHeadHeight);
+        }
     }
 
     //----------------//
@@ -306,7 +444,7 @@ public class AlterPattern
      * Compound adapter meant to build naturals
      */
     private class NaturalAdapter
-        extends AlterAdapter
+        extends PairAdapter
     {
         //~ Constructors -------------------------------------------------------
 
@@ -334,7 +472,7 @@ public class AlterPattern
      * Compound adapter meant to build sharps
      */
     private class SharpAdapter
-        extends AlterAdapter
+        extends PairAdapter
     {
         //~ Constructors -------------------------------------------------------
 

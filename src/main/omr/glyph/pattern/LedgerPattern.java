@@ -123,8 +123,13 @@ public class LedgerPattern
 
                 // Process 
                 for (Iterator<Ledger> it = ledgerSet.iterator(); it.hasNext();) {
-                    Ledger     ledger = it.next();
-                    Glyph      glyph = ledger.getStick();
+                    Ledger ledger = it.next();
+                    Glyph  glyph = ledger.getStick();
+
+                    if (glyph.getId() == 3157) {
+                        logger.warning("BINGO");
+                    }
+
                     Set<Glyph> neighbors = new HashSet<Glyph>();
 
                     if (isInvalid(glyph, neighbors)) {
