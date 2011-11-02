@@ -71,13 +71,13 @@ public class SymbolsModel
      * @param textType Creator type if relevant
      * @param textRole the text role
      * @param textContent the ascii content
-     * @param doubt the doubt wrt this assignment
+     * @param grade the grade wrt this assignment
      */
     public void assignText (Collection<Glyph> glyphs,
                             CreatorType       textType,
                             TextRole          textRole,
                             String            textContent,
-                            double            doubt)
+                            double            grade)
     {
         // Do the job
         for (Glyph glyph : glyphs) {
@@ -105,11 +105,11 @@ public class SymbolsModel
      * Assign a time rational value to collection of glyphs
      * @param glyphs the collection of glyphs
      * @param timeRational the time rational value
-     * @param doubt the doubt wrt this assignment
+     * @param grade the grade wrt this assignment
      */
     public void assignTimeRational (Collection<Glyph> glyphs,
                                     TimeRational      timeRational,
-                                    double            doubt)
+                                    double            grade)
     {
         // Do the job
         for (Glyph glyph : glyphs) {
@@ -241,12 +241,12 @@ public class SymbolsModel
      *
      * @param glyph the glyph to be assigned
      * @param shape the assigned shape, which may be null
-     * @param doubt the doubt about shape
+     * @param grade the grade about shape
      */
     @Override
     protected Glyph assignGlyph (Glyph  glyph,
                                  Shape  shape,
-                                 double doubt)
+                                 double grade)
     {
         if (glyph == null) {
             return null;
@@ -263,7 +263,7 @@ public class SymbolsModel
             if (system != null) {
                 system.computeGlyphFeatures(glyph);
 
-                return super.assignGlyph(glyph, shape, doubt);
+                return super.assignGlyph(glyph, shape, grade);
             }
         }
 

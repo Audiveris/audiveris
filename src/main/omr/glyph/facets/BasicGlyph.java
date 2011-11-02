@@ -241,11 +241,6 @@ public class BasicGlyph
         return geometry.getDensity();
     }
 
-    public double getDoubt ()
-    {
-        return recognition.getDoubt();
-    }
-
     public void setEndingPoints (Point2D pStart,
                                  Point2D pStop)
     {
@@ -270,6 +265,11 @@ public class BasicGlyph
     public int getFirstStuck ()
     {
         return alignment.getFirstStuck();
+    }
+
+    public double getGrade ()
+    {
+        return recognition.getGrade();
     }
 
     public void setId (int id)
@@ -439,9 +439,9 @@ public class BasicGlyph
     }
 
     public void setShape (Shape  shape,
-                          double doubt)
+                          double grade)
     {
-        recognition.setShape(shape, doubt);
+        recognition.setShape(shape, grade);
     }
 
     public void setShape (Shape shape)

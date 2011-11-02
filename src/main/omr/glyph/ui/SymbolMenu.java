@@ -13,7 +13,7 @@ package omr.glyph.ui;
 
 import omr.glyph.Evaluation;
 import omr.glyph.GlyphEvaluator;
-import omr.glyph.GlyphInspector;
+import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
@@ -246,7 +246,7 @@ public class SymbolMenu
                 SystemInfo system = sheet.getSystemOf(glyph);
                 Evaluation vote = evaluator.vote(
                     glyph,
-                    GlyphInspector.getSymbolMaxDoubt(),
+                    Grades.symbolMinGrade,
                     system);
 
                 if (vote != null) {

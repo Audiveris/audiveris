@@ -11,10 +11,9 @@
 // </editor-fold>
 package omr.glyph.pattern;
 
-import omr.constant.ConstantSet;
-
 import omr.glyph.CompoundBuilder;
 import omr.glyph.Evaluation;
+import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
@@ -37,9 +36,6 @@ public class FortePattern
     extends GlyphPattern
 {
     //~ Static fields/initializers ---------------------------------------------
-
-    /** Specific application parameters */
-    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(FortePattern.class);
@@ -83,7 +79,7 @@ public class FortePattern
                     system.getGlyphs(),
                     new ForteAdapter(
                         system,
-                        constants.maxDoubt.getValue(),
+                        Grades.forteMinGrade,
                         forteNeighbors));
 
                 if (compound != null) {
@@ -97,19 +93,6 @@ public class FortePattern
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        Evaluation.Doubt maxDoubt = new Evaluation.Doubt(
-            300d,
-            "Maximum doubt for glyph on left of forte");
-    }
-
     //---------------//
     // ForteAdapter //
     //---------------//
@@ -122,10 +105,10 @@ public class FortePattern
         //~ Constructors -------------------------------------------------------
 
         public ForteAdapter (SystemInfo     system,
-                             double         maxDoubt,
+                             double         minGrade,
                              EnumSet<Shape> desiredShapes)
         {
-            super(system, maxDoubt, desiredShapes);
+            super(system, minGrade, desiredShapes);
         }
 
         //~ Methods ------------------------------------------------------------

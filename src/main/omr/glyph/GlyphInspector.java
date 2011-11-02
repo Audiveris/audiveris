@@ -16,8 +16,6 @@ import omr.constant.ConstantSet;
 import omr.glyph.CompoundBuilder.CompoundAdapter;
 import omr.glyph.facets.Glyph;
 
-import omr.lag.Lag;
-
 import omr.log.Logger;
 
 import omr.score.common.PixelRectangle;
@@ -53,12 +51,6 @@ public class GlyphInspector
     /** Dedicated system */
     private final SystemInfo system;
 
-    /** Related scale */
-    private final Scale scale;
-
-    /** Related lag */
-    private final Lag lag;
-
     //~ Constructors -----------------------------------------------------------
 
     //----------------//
@@ -66,99 +58,14 @@ public class GlyphInspector
     //----------------//
     /**
      * Create an GlyphInspector instance.
-     *
      * @param system the dedicated system
      */
     public GlyphInspector (SystemInfo system)
     {
         this.system = system;
-        scale = system.getSheet()
-                      .getScale();
-        lag = system.getSheet()
-                    .getVerticalLag();
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //-----------------//
-    // getHookMaxDoubt //
-    //-----------------//
-    /**
-     * Report the maximum doubt for a beam hook
-     *
-     *
-     * @return maximum acceptable doubt value
-     */
-    public static double getHookMaxDoubt ()
-    {
-        return constants.hookMaxDoubt.getValue();
-    }
-
-    //-----------------//
-    // getLeafMaxDoubt //
-    //-----------------//
-    /**
-     * Report the maximum doubt for a leaf
-     *
-     *
-     * @return maximum acceptable doubt value
-     */
-    public static double getLeafMaxDoubt ()
-    {
-        return constants.leafMaxDoubt.getValue();
-    }
-
-    //-------------------------//
-    // getMinCompoundPartDoubt //
-    //-------------------------//
-    /**
-     * Report the minimum doubt value to be considered as part of a compound
-     * @return the doubt threshold for a compound part
-     */
-    public static double getMinCompoundPartDoubt ()
-    {
-        return constants.minCompoundPartDoubt.getValue();
-    }
-
-    //--------------------//
-    // getPatternsMaxDoubt //
-    //--------------------//
-    /**
-     * Report the maximum doubt for a cleanup
-     *
-     *
-     * @return maximum acceptable doubt value
-     */
-    public static double getPatternsMaxDoubt ()
-    {
-        return constants.patternsMaxDoubt.getValue();
-    }
-
-    //-------------------//
-    // getSymbolMaxDoubt //
-    //-------------------//
-    /**
-     * Report the maximum doubt for a symbol
-     *
-     * @return maximum acceptable doubt value
-     */
-    public static double getSymbolMaxDoubt ()
-    {
-        return constants.symbolMaxDoubt.getValue();
-    }
-
-    //-----------------//
-    // getTextMaxDoubt //
-    //-----------------//
-    /**
-     * Report the maximum doubt for a text symbol
-     *
-     * @return maximum acceptable doubt value
-     */
-    public static double getTextMaxDoubt ()
-    {
-        return constants.textMaxDoubt.getValue();
-    }
 
     //----------------//
     // evaluateGlyphs //
@@ -166,19 +73,19 @@ public class GlyphInspector
     /**
      * All unassigned symbol glyphs of a given system, for which we can get
      * a positive vote from the evaluator, are assigned the voted shape.
-     * @param maxDoubt the upper limit on doubt to accept an evaluation
+     * @param minGrade the lower limit on grade to accept an evaluation
      */
-    public void evaluateGlyphs (double maxDoubt)
+    public void evaluateGlyphs (double minGrade)
     {
         GlyphEvaluator evaluator = GlyphNetwork.getInstance();
 
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.getShape() == null) {
                 // Get vote
-                Evaluation vote = evaluator.vote(glyph, maxDoubt, system);
+                Evaluation vote = evaluator.vote(glyph, minGrade, system);
 
                 if ((vote != null) && !glyph.isShapeForbidden(vote.shape)) {
-                    glyph.setShape(vote.shape, vote.doubt);
+                    glyph.setShape(vote.shape, vote.grade);
                 }
             }
         }
@@ -190,10 +97,9 @@ public class GlyphInspector
     /**
      * Process the given system, by retrieving unassigned glyphs, evaluating
      * and assigning them if OK, or trying compounds otherwise.
-     *
-     * @param maxDoubt the maximum acceptable doubt for this processing
+     * @param minGrade the minimum acceptable grade for this processing
      */
-    public void inspectGlyphs (double maxDoubt)
+    public void inspectGlyphs (double minGrade)
     {
         if (logger.isFineEnabled()) {
             logger.info("S#" + system.getId() + " inspectGlyphs start");
@@ -202,13 +108,13 @@ public class GlyphInspector
         // For Symbols & Leaves
         system.retrieveGlyphs();
         system.removeInactiveGlyphs();
-        evaluateGlyphs(maxDoubt);
+        evaluateGlyphs(minGrade);
         system.removeInactiveGlyphs();
 
         // For Compounds
-        retrieveCompounds(maxDoubt);
+        retrieveCompounds(minGrade);
         system.removeInactiveGlyphs();
-        evaluateGlyphs(maxDoubt);
+        evaluateGlyphs(minGrade);
         system.removeInactiveGlyphs();
     }
 
@@ -217,9 +123,10 @@ public class GlyphInspector
     //-------------------//
     /**
      * In the specified system, look for glyphs portions that should be
-     * considered as parts of compound glyphs
+     * considered as parts of compound glyphs.
+     * @param minGrade minimum acceptable grade
      */
-    private void retrieveCompounds (double maxDoubt)
+    private void retrieveCompounds (double minGrade)
     {
         // Sort suitable glyphs by decreasing weight
         List<Glyph> glyphs = new ArrayList<Glyph>(system.getGlyphs());
@@ -230,7 +137,7 @@ public class GlyphInspector
 
             // Now process this seed, by looking at smaller ones
             // Do not cross a stem if any is found
-            BasicAdapter adapter = new BasicAdapter(system, maxDoubt, seed);
+            BasicAdapter adapter = new BasicAdapter(system, minGrade, seed);
 
             if (adapter.isCandidateSuitable(seed)) {
                 system.buildCompound(
@@ -265,13 +172,13 @@ public class GlyphInspector
         /**
          * Construct a BasicAdapter around a given seed
          * @param system the containing system
-         * @param maxDoubt maximum acceptable doubt
+         * @param minGrade minimum acceptable grade
          */
         public BasicAdapter (SystemInfo system,
-                             double     maxDoubt,
+                             double     minGrade,
                              Glyph      seed)
         {
-            super(system, maxDoubt);
+            super(system, minGrade);
 
             if (seed.getStemNumber() > 0) {
                 // Remember this stem as a border
@@ -302,7 +209,7 @@ public class GlyphInspector
                          (shape == Shape.VOID_NOTEHEAD_2) ||
                          (shape == Shape.VOID_NOTEHEAD_3) ||
                          (shape == Shape.STACCATISSIMO) ||
-                         (glyph.getDoubt() >= GlyphInspector.getMinCompoundPartDoubt()))));
+                         (glyph.getGrade() <= Grades.compoundPartMaxGrade))));
 
             if (!ok) {
                 return false;
@@ -320,12 +227,12 @@ public class GlyphInspector
         public boolean isCompoundValid (Glyph compound)
         {
             Evaluation eval = GlyphNetwork.getInstance()
-                                          .vote(compound, maxDoubt, system);
+                                          .vote(compound, minGrade, system);
 
             if ((eval != null) &&
                 eval.shape.isWellKnown() &&
                 (eval.shape != Shape.CLUTTER) &&
-                (!seed.isKnown() || (eval.doubt < seed.getDoubt()))) {
+                (!seed.isKnown() || (eval.grade > seed.getGrade()))) {
                 chosenEvaluation = eval;
 
                 return true;
@@ -361,26 +268,8 @@ public class GlyphInspector
     {
         //~ Instance fields ----------------------------------------------------
 
-        Scale.Fraction   boxWiden = new Scale.Fraction(
+        Scale.Fraction boxWiden = new Scale.Fraction(
             0.25,
             "Box widening to check intersection with compound");
-        Evaluation.Doubt patternsMaxDoubt = new Evaluation.Doubt(
-            1.5,
-            "Maximum doubt for pattern phase");
-        Evaluation.Doubt leafMaxDoubt = new Evaluation.Doubt(
-            1.3,
-            "Maximum acceptance doubt for a leaf");
-        Evaluation.Doubt symbolMaxDoubt = new Evaluation.Doubt(
-            1.2,
-            "Maximum doubt for a symbol");
-        Evaluation.Doubt textMaxDoubt = new Evaluation.Doubt(
-            10000.0,
-            "Maximum doubt for a text symbol");
-        Evaluation.Doubt minCompoundPartDoubt = new Evaluation.Doubt(
-            1.1, // was 1.5,
-            "Minimum doubt for a suitable compound part");
-        Evaluation.Doubt hookMaxDoubt = new Evaluation.Doubt(
-            5d,
-            "Maximum doubt for beam hook verification");
     }
 }

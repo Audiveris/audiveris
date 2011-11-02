@@ -16,9 +16,9 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
 import omr.glyph.GlyphEvaluator;
-import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Glyphs;
+import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
@@ -987,7 +987,7 @@ public class TextLine
                         Glyph glyph = merge.compound;
                         system.computeGlyphFeatures(glyph);
                         glyph = system.addGlyph(glyph);
-                        glyph.setShape(merge.vote.shape, merge.vote.doubt);
+                        glyph.setShape(merge.vote.shape, merge.vote.grade);
 
                         if (logger.isFineEnabled()) {
                             logger.fine(
@@ -1109,10 +1109,7 @@ public class TextLine
 
             GlyphEvaluator evaluator = GlyphNetwork.getInstance();
 
-            vote = evaluator.vote(
-                compound,
-                GlyphInspector.getTextMaxDoubt(),
-                system);
+            vote = evaluator.vote(compound, Grades.textMinGrade, system);
 
             return (vote != null) && vote.shape.isText();
         }

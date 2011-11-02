@@ -13,7 +13,7 @@ package omr.step;
 
 import omr.Main;
 
-import omr.glyph.GlyphInspector;
+import omr.glyph.Grades;
 
 import omr.log.Logger;
 
@@ -93,7 +93,7 @@ public class SymbolsStep
                   .clearSystem(this, system.getId());
         }
 
-        system.inspectGlyphs(GlyphInspector.getSymbolMaxDoubt());
+        system.inspectGlyphs(Grades.symbolMinGrade);
     }
 
     //----------//

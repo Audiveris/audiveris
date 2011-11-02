@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.glyph.pattern;
 
-import omr.glyph.GlyphInspector;
+import omr.glyph.Grades;
 import omr.glyph.text.SentencePattern;
 
 import omr.log.Logger;
@@ -81,6 +81,8 @@ public class PatternsChecker
         new TextAreaPattern(system), //   Glyphs -> Text
         new SentencePattern(system), // Text -> sentences
                                      //
+        new ArticulationPattern(system),
+                       
         new LeftOverPattern(system)
                    };
     }
@@ -104,7 +106,7 @@ public class PatternsChecker
                 logger.finest("Starting " + pattern);
             }
 
-            system.inspectGlyphs(GlyphInspector.getLeafMaxDoubt());
+            system.inspectGlyphs(Grades.leafMinGrade);
 
             try {
                 int modifs = pattern.runPattern();
@@ -125,7 +127,7 @@ public class PatternsChecker
             }
         }
 
-        system.inspectGlyphs(GlyphInspector.getLeafMaxDoubt());
+        system.inspectGlyphs(Grades.leafMinGrade);
 
         if ((totalModifs > 0) && logger.isFineEnabled()) {
             logger.fine("S#" + system.getId() + " Patterns" + sb);

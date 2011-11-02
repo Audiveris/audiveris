@@ -15,8 +15,8 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.CompoundBuilder;
 import omr.glyph.Evaluation;
-import omr.glyph.GlyphNetwork;
 import omr.glyph.Glyphs;
+import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
@@ -43,10 +43,8 @@ import omr.score.visitor.AbstractScoreVisitor;
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
-import omr.util.Predicate;
 import omr.util.TreeNode;
 
-import java.util.Collection;
 import java.util.EnumSet;
 
 /**
@@ -140,7 +138,7 @@ public class TimeSignatureRetriever
                     system.getInfo().getGlyphs(),
                     new TimeSigAdapter(
                         system.getInfo(),
-                        constants.timeSigMaxDoubt.getValue(),
+                        Grades.timeMinGrade,
                         ShapeRange.FullTimes,
                         staff,
                         center));
@@ -265,15 +263,12 @@ public class TimeSignatureRetriever
     {
         //~ Instance fields ----------------------------------------------------
 
-        Scale.Fraction   timeSigWidth = new Scale.Fraction(
+        Scale.Fraction timeSigWidth = new Scale.Fraction(
             2d,
             "Width of a time signature");
-        Scale.Fraction   yOffset = new Scale.Fraction(
+        Scale.Fraction yOffset = new Scale.Fraction(
             0.5d,
             "Time signature vertical offset since staff line");
-        Evaluation.Doubt timeSigMaxDoubt = new Evaluation.Doubt(
-            300d,
-            "Maximum doubt for time sig verification");
     }
 
     //----------------//
@@ -293,12 +288,12 @@ public class TimeSignatureRetriever
         //~ Constructors -------------------------------------------------------
 
         public TimeSigAdapter (SystemInfo     system,
-                               double         maxDoubt,
+                               double         minGrade,
                                EnumSet<Shape> desiredShapes,
                                Staff          staff,
                                int            center)
         {
-            super(system, maxDoubt, desiredShapes);
+            super(system, minGrade, desiredShapes);
             this.staff = staff;
             this.center = center;
         }

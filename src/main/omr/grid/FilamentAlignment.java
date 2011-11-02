@@ -32,9 +32,6 @@ import omr.score.common.PixelRectangle;
 
 import omr.sheet.Scale;
 
-import omr.ui.Colors;
-
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Ellipse2D;

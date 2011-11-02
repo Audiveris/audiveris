@@ -35,10 +35,10 @@ import javax.swing.JOptionPane;
 import javax.xml.bind.JAXBException;
 
 /**
- * Class <code>GlyphNetwork</code> encapsulates a neural network dedicated to
- * glyph recognition. It wraps the generic {@link omr.math.NeuralNetwork} with
- * application information, for training, storing, loading and using the neural
- * network.
+ * Class {@code GlyphNetwork} encapsulates a neural network dedicated
+ * to glyph recognition.
+ * It wraps the generic {@link omr.math.NeuralNetwork} with application
+ * information, for training, storing, loading and using the neural network.
  *
  * <p>The application neural network data is loaded as follows: <ol>
  * <li>It first tries to find a file in the /config sub-folder of the
@@ -50,7 +50,7 @@ import javax.xml.bind.JAXBException;
  *
  * <p>Similarly, after a training of the neural network, the data is stored as
  * the custom definition in the local file 'config/neural-network.xml', which
- * will be picked first when the application is run again.</p>
+ * will be picked up first when the application is run again.</p>
  *
  * @author Hervé Bitteur
  */
@@ -65,10 +65,10 @@ public class GlyphNetwork
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(GlyphNetwork.class);
 
-    /** The singleton */
+    /** The singleton. */
     private static volatile GlyphNetwork INSTANCE;
 
-    /** Neural network backup file name */
+    /** Neural network backup file name. */
     private static final String BACKUP_FILE_NAME = "neural-network.xml";
 
     //~ Instance fields --------------------------------------------------------
@@ -82,7 +82,7 @@ public class GlyphNetwork
     // GlyphNetwork //
     //--------------//
     /**
-     * Create an instance of glyph neural network
+     * Create an instance of glyph neural network.
      */
     private GlyphNetwork ()
     {
@@ -114,8 +114,7 @@ public class GlyphNetwork
     // getInstance //
     //-------------//
     /**
-     * Report the single instance of GlyphNetwork in the Audiveris application
-     *
+     * Report the single instance of GlyphNetwork in the application.
      * @return the instance
      */
     public static GlyphNetwork getInstance ()
@@ -131,8 +130,7 @@ public class GlyphNetwork
     // setAmplitude //
     //--------------//
     /**
-     * Set the amplitude value for initial random values (UNUSED)
-     *
+     * Set the amplitude value for initial random values (UNUSED).
      * @param amplitude
      */
     public void setAmplitude (double amplitude)
@@ -144,8 +142,7 @@ public class GlyphNetwork
     // getAmplitude //
     //--------------//
     /**
-     * Selector for the amplitude value (used in initial random values)
-     *
+     * Selector for the amplitude value (used in initial random values).
      * @return the amplitude value
      */
     public double getAmplitude ()
@@ -157,9 +154,8 @@ public class GlyphNetwork
     // setLearningRate //
     //-----------------//
     /**
-     * Dynamically modify the learning rate of the neural network for its
-     * training task
-     *
+     * Dynamically modify the learning rate of the neural network for
+     * its training task.
      * @param learningRate new learning rate to use
      */
     public void setLearningRate (double learningRate)
@@ -172,8 +168,7 @@ public class GlyphNetwork
     // getLearningRate //
     //-----------------//
     /**
-     * Selector of the current value for network learning rate
-     *
+     * Selector of the current value for network learning rate.
      * @return the current learning rate
      */
     public double getLearningRate ()
@@ -185,9 +180,8 @@ public class GlyphNetwork
     // setListEpochs //
     //---------------//
     /**
-     * Modify the upper limit on the number of epochs (training iterations) for
-     * the training process
-     *
+     * Modify the upper limit on the number of epochs (training
+     * iterations) for the training process.
      * @param listEpochs new value for iteration limit
      */
     public void setListEpochs (int listEpochs)
@@ -200,8 +194,7 @@ public class GlyphNetwork
     // getListEpochs //
     //---------------//
     /**
-     * Selector on the maximum numner of training iterations
-     *
+     * Selector on the maximum numner of training iterations.
      * @return the upper limit on iteration counter
      */
     public int getListEpochs ()
@@ -213,8 +206,8 @@ public class GlyphNetwork
     // setMaxError //
     //-------------//
     /**
-     * Modify the error threshold to potentially stop the training process
-     *
+     * Modify the error threshold to potentially stop the training
+     * process.
      * @param maxError the new threshold value to use
      */
     public void setMaxError (double maxError)
@@ -227,8 +220,8 @@ public class GlyphNetwork
     // getMaxError //
     //-------------//
     /**
-     * Report the error threshold to potentially stop the training process
-     *
+     * Report the error threshold to potentially stop the training
+     * process.
      * @return the threshold currently in use
      */
     public double getMaxError ()
@@ -240,8 +233,8 @@ public class GlyphNetwork
     // setMomentum //
     //-------------//
     /**
-     * Modify the value for momentum used from learning epoch to the other
-     *
+     * Modify the value for momentum used from learning epoch to the
+     * other.
      * @param momentum the new momentum value to be used
      */
     public void setMomentum (double momentum)
@@ -254,8 +247,7 @@ public class GlyphNetwork
     // getMomentum //
     //-------------//
     /**
-     * Report the momentum training value currently in use
-     *
+     * Report the momentum training value currently in use.
      * @return the momentum in use
      */
     public double getMomentum ()
@@ -267,8 +259,7 @@ public class GlyphNetwork
     // getName //
     //---------//
     /**
-     * Report a name for this network
-     *
+     * Report a name for this network.
      * @return a simple name
      */
     @Override
@@ -281,8 +272,7 @@ public class GlyphNetwork
     // getNetwork //
     //------------//
     /**
-     * Selector to the encapsulated Neural Network
-     *
+     * Selector to the encapsulated Neural Network.
      * @return the neural network
      */
     public NeuralNetwork getNetwork ()
@@ -309,11 +299,12 @@ public class GlyphNetwork
 
             for (int s = 0; s < shapeCount; s++) {
                 Shape shape = values[s];
-                evals[s] = new Evaluation(shape, 1d / outs[s]);
+                // Use a grade in 0 .. 100 range
+                evals[s] = new Evaluation(shape, 100 * outs[s]);
             }
 
             // Order the evals from best to worst
-            Arrays.sort(evals, comparator);
+            Arrays.sort(evals);
 
             return evals;
         }
@@ -323,7 +314,7 @@ public class GlyphNetwork
     // dump //
     //------//
     /**
-     * Dump the internals of the neural network to the standard output
+     * Dump the internals of the neural network to the standard output.
      */
     @Override
     public void dump ()
@@ -335,7 +326,7 @@ public class GlyphNetwork
     // stop //
     //------//
     /**
-     * Forward "Stop" order to the network being trained
+     * Forward "Stop" order to the network being trained.
      */
     @Override
     public void stop ()
@@ -347,12 +338,10 @@ public class GlyphNetwork
     // train //
     //-------//
     /**
-     * Train the network using the provided collection of glyphs
-     *
+     * Train the network using the provided collection of glyphs.
      * @param glyphs  the provided collection of glyphs
      * @param monitor the monitoring entity if any
-     * @param mode the starting mode of the trainer (scratch, replay or
-     * incremental)
+     * @param mode the starting mode of the trainer (scratch or incremental)
      */
     @SuppressWarnings("unchecked")
     public void train (Collection<Glyph> glyphs,
@@ -492,22 +481,30 @@ public class GlyphNetwork
         Constant.Ratio   amplitude = new Constant.Ratio(
             0.5,
             "Initial weight amplitude");
+
+        //
         Constant.Ratio   learningRate = new Constant.Ratio(
             0.2,
             "Learning Rate");
+
+        //
         Constant.Integer listEpochs = new Constant.Integer(
             "Epochs",
             4000,
             "Number of epochs for training on list of glyphs");
+
+        //
         Constant.Integer quorum = new Constant.Integer(
             "Glyphs",
             10,
             "Minimum number of glyphs for each shape");
-        Evaluation.Doubt maxError = new Evaluation.Doubt(
+
+        //
+        Evaluation.Grade maxError = new Evaluation.Grade(
             1E-3,
             "Threshold to stop training");
-        Constant.Ratio   momentum = new Constant.Ratio(
-            0.2,
-            "Training momentum");
+
+        //
+        Constant.Ratio momentum = new Constant.Ratio(0.2, "Training momentum");
     }
 }

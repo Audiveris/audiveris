@@ -168,7 +168,7 @@ public class CompoundBuilder
         //---------------------//
         /**
          * Report the evaluation chosen for the compound, not always the 1st one.
-         * @return the evaluation (shape + doubt) chosen
+         * @return the evaluation (shape + grade) chosen
          */
         Evaluation getChosenEvaluation ();
 
@@ -233,8 +233,8 @@ public class CompoundBuilder
         /** Dedicated system */
         protected final SystemInfo system;
 
-        /** Maximum doubt for a compound */
-        protected final double maxDoubt;
+        /** Maximum grade for a compound */
+        protected final double minGrade;
 
         /** Originating seed */
         protected Glyph seed;
@@ -247,13 +247,13 @@ public class CompoundBuilder
         /**
          * Construct a AbstractAdapter.
          * @param system the containing system
-         * @param maxDoubt maximum acceptable doubt for the compound shape
+         * @param minGrade maximum acceptable grade for the compound shape
          */
         public AbstractAdapter (SystemInfo system,
-                                double     maxDoubt)
+                                double     minGrade)
         {
             this.system = system;
-            this.maxDoubt = maxDoubt;
+            this.minGrade = minGrade;
         }
 
         //~ Methods ------------------------------------------------------------
@@ -305,14 +305,14 @@ public class CompoundBuilder
         /**
          * Create a TopShapeAdapter instance.
          * @param system the containing system
-         * @param maxDoubt maximum acceptable doubt on compound shape
+         * @param minGrade maximum acceptable grade on compound shape
          * @param desiredShapes the valid shapes for the compound
          */
         public TopShapeAdapter (SystemInfo     system,
-                                double         maxDoubt,
+                                double         minGrade,
                                 EnumSet<Shape> desiredShapes)
         {
-            super(system, maxDoubt);
+            super(system, minGrade);
             this.desiredShapes = desiredShapes;
         }
 
@@ -325,7 +325,7 @@ public class CompoundBuilder
             final Evaluation vote = GlyphNetwork.getInstance()
                                                 .topVote(
                 compound,
-                maxDoubt,
+                minGrade,
                 system,
                 predicate);
 

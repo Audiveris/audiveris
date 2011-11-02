@@ -23,7 +23,6 @@ import omr.glyph.text.TextBlob;
 
 import omr.log.Logger;
 
-import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
 import java.awt.Polygon;
@@ -89,9 +88,9 @@ public class TextGreedyPattern
     {
         //~ Instance fields ----------------------------------------------------
 
-        Evaluation.Doubt maxDoubt = new Evaluation.Doubt(
-            100d,
-            "Maximum doubt for greedy text glyphs");
+        Evaluation.Grade minGrade = new Evaluation.Grade(
+            1d,
+            "Minimum grade for greedy text glyphs");
     }
 
     //----------//
@@ -103,7 +102,7 @@ public class TextGreedyPattern
         //~ Instance fields ----------------------------------------------------
 
         final GlyphEvaluator evaluator = GlyphNetwork.getInstance();
-        final double         maxDoubt = constants.maxDoubt.getValue();
+        final double         minGrade = constants.minGrade.getValue();
 
         //~ Constructors -------------------------------------------------------
 
@@ -125,13 +124,13 @@ public class TextGreedyPattern
             // Check whether this series could be a text
             Collection<Glyph> neighbors = blob.getGlyphs();
 
-            Evaluation        vote = evaluator.vote(compound, maxDoubt, system);
+            Evaluation        vote = evaluator.vote(compound, minGrade, system);
             logger.fine(
                 "Checking" + Glyphs.toString(" ", neighbors) + ":" + vote);
 
             if ((vote != null) && (vote.shape == Shape.TEXT)) {
                 compound = system.addGlyph(compound);
-                compound.setShape(vote.shape, vote.doubt);
+                compound.setShape(vote.shape, vote.grade);
 
                 if (logger.isFineEnabled()) {
                     logger.info(

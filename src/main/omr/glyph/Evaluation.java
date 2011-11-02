@@ -14,35 +14,34 @@ package omr.glyph;
 import omr.constant.Constant;
 
 /**
- * Class <code>Evaluation</code> gathers a glyph shape, its doubt and, if any,
- * details about its failure (name of the check that failed)
+ * Class {@code Evaluation} gathers a glyph shape, its grade and,
+ * if any, details about its failure (name of the check that failed).
  *
  * @author Hervé Bitteur
  */
 public class Evaluation
+implements Comparable<Evaluation>
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Absolutely no doubt for shape manually assigned by the user */
-    public static final double MANUAL = -1;
+    /** Absolute confidence in shape manually assigned by the user. */
+    public static final double MANUAL = 300;
 
-    /** No doubt for shape structurally assigned */
-    public static final double ALGORITHM = 0;
+    /** Confidence for in structurally assigned. */
+    public static final double ALGORITHM = 200;
 
     //~ Instance fields --------------------------------------------------------
 
-    /** The evaluated shape */
+    /** The evaluated shape. */
     public Shape shape;
 
     /**
-     * The evaluation doubt (smaller is better), generally provided by the
-     * neural network evaluator
+     * The evaluation grade (larger is better), generally provided by
+     * the neural network evaluator in the range 0 - 100.
      */
-    public double doubt;
+    public double grade;
 
-    /**
-     * The specific check that failed, if any.
-     */
+    /** The specific check that failed, if any. */
     public Failure failure;
 
     //~ Constructors -----------------------------------------------------------
@@ -51,26 +50,22 @@ public class Evaluation
     // Evaluation //
     //------------//
     /**
-     * Create an initialized evaluation
-     *
-     *
+     * Create an initialized evaluation instance.
      * @param shape the shape this evaluation measures
-     * @param doubt the measurement result (smaller is better)
+     * @param grade the measurement result (larger is better)
      */
     public Evaluation (Shape  shape,
-                       double doubt)
+                       double grade)
     {
         this.shape = shape;
-        this.doubt = doubt;
+        this.grade = grade;
     }
 
     //~ Methods ----------------------------------------------------------------
 
-    /**
-     * Just a readable output
-     *
-     * @return an ascii description of the evaluation
-     */
+    //----------//
+    // toString //
+    //----------//
     @Override
     public String toString ()
     {
@@ -78,12 +73,12 @@ public class Evaluation
         sb.append(shape);
         sb.append("(");
 
-        if (doubt == MANUAL) {
+        if (grade == MANUAL) {
             sb.append("MANUAL");
-        } else if (doubt == ALGORITHM) {
+        } else if (grade == ALGORITHM) {
             sb.append("ALGORITHM");
         } else {
-            sb.append((float) doubt);
+            sb.append((float) grade);
         }
 
         if (failure != null) {
@@ -96,43 +91,40 @@ public class Evaluation
         return sb.toString();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
-
-    //-------//
-    // Doubt //
-    //-------//
+    //-----------//
+    // compareTo //
+    //-----------//
     /**
-     * A subclass of Constant.Double, meant to store a doubt constant.
+     * To sort from best to worst.
+     * @param that the other evaluation instance
+     * @return -1,0 or +1
      */
-    public static class Doubt
-        extends Constant.Double
-    {
-        //~ Constructors -------------------------------------------------------
+    public int compareTo(Evaluation that) {
+        if (this.grade > that.grade) {
+                return -1;
+            }
 
-        /**
-         * Specific constructor, where 'unit' and 'name' are assigned later
-         *
-         * @param defaultValue the (double) default value
-         * @param description  the semantic of the constant
-         */
-        public Doubt (double           defaultValue,
-                      java.lang.String description)
-        {
-            super("Doubt", defaultValue, description);
-        }
+            if (this.grade < that.grade) {
+                return +1;
+            }
+
+            return 0;
     }
+
+    //~ Inner Classes ----------------------------------------------------------
 
     //---------//
     // Failure //
     //---------//
     /**
-     * A class to handle which specific check has failed in the evaluation
+     * A class to handle which specific check has failed in the
+     * evaluation.
      */
     public static class Failure
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** The name of the test that failed */
+        /** The name of the test that failed. */
         public final String test;
 
         //~ Constructors -------------------------------------------------------
@@ -148,6 +140,29 @@ public class Evaluation
         public String toString ()
         {
             return test;
+        }
+    }
+
+    //-------//
+    // Grade //
+    //-------//
+    /**
+     * A subclass of Constant.Double, meant to store a grade constant.
+     */
+    public static class Grade
+        extends Constant.Double
+    {
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Specific constructor, where unit & name are assigned later.
+         * @param defaultValue the (double) default value
+         * @param description  the semantic of the constant
+         */
+        public Grade (double           defaultValue,
+                      java.lang.String description)
+        {
+            super("Grade", defaultValue, description);
         }
     }
 }

@@ -16,6 +16,7 @@ import omr.constant.ConstantSet;
 import omr.glyph.Evaluation;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.GlyphSignature;
+import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
@@ -65,7 +66,6 @@ public class SplitPattern
     //~ Instance fields --------------------------------------------------------
 
     private final double       minGlyphWeight;
-    private final double       partMaxDoubt;
     private final GlyphNetwork evaluator = GlyphNetwork.getInstance();
 
     //~ Constructors -----------------------------------------------------------
@@ -82,7 +82,6 @@ public class SplitPattern
         super("Split", system);
 
         minGlyphWeight = scale.toPixels(constants.minGlyphWeight);
-        partMaxDoubt = constants.partMaxDoubt.getValue();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -214,7 +213,10 @@ public class SplitPattern
         for (Glyph chunk : bestSplit.sigs.values()) {
             system.computeGlyphFeatures(chunk);
 
-            Evaluation vote = evaluator.vote(chunk, partMaxDoubt, system);
+            Evaluation vote = evaluator.vote(
+                chunk,
+                Grades.partMinGrade,
+                system);
 
             if ((vote == null) || invalidShapes.contains(vote.shape)) {
                 if (logger.isFineEnabled()) {
@@ -256,11 +258,6 @@ public class SplitPattern
         Scale.AreaFraction minGlyphWeight = new Scale.AreaFraction(
             1.3,
             "Minimum normalized glyph weight to look for split");
-
-        //
-        Evaluation.Doubt partMaxDoubt = new Evaluation.Doubt(
-            1.5,
-            "Maximum doubt for each glyph part");
     }
 
     //-------//

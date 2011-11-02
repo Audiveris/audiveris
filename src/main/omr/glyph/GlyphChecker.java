@@ -809,7 +809,7 @@ public class GlyphChecker
         /**
          * Run the specific test
          * @param eval the partially-filled evaluation (eval.shape is an input,
-         * eval.doubt and eval.failure are outputs)
+         * eval.grade and eval.failure are outputs)
          * @param glyph the glyph at hand
          * @param features the glyph features
          * @return true if OK, false otherwise

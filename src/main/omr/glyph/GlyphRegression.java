@@ -268,11 +268,13 @@ public class GlyphRegression
 
             for (int s = 0; s < shapeCount; s++) {
                 Shape shape = values[s];
-                evals[s] = new Evaluation(shape, measureDistance(ins, shape));
+                evals[s] = new Evaluation(
+                    shape,
+                    1d / measureDistance(ins, shape));
             }
 
             // Order the evals from best to worst
-            Arrays.sort(evals, comparator);
+            Arrays.sort(evals);
 
             return evals;
         }

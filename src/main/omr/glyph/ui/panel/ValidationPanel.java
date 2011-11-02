@@ -11,10 +11,9 @@
 // </editor-fold>
 package omr.glyph.ui.panel;
 
-import omr.constant.ConstantSet;
-
 import omr.glyph.Evaluation;
 import omr.glyph.GlyphEvaluator;
+import omr.glyph.Grades;
 import omr.glyph.facets.Glyph;
 import omr.glyph.ui.GlyphRepository;
 import omr.glyph.ui.GlyphVerifier;
@@ -57,9 +56,6 @@ class ValidationPanel
     implements Observer
 {
     //~ Static fields/initializers ---------------------------------------------
-
-    /** Specific application parameters */
-    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
@@ -263,7 +259,6 @@ class ValidationPanel
         falsePositives.clear();
 
         int                positives = 0;
-        final double       maxDoubt = constants.maxDoubt.getValue();
         Collection<String> gNames = selectionPanel.getBase(
             trainingPanel.useWhole());
 
@@ -278,7 +273,10 @@ class ValidationPanel
             Glyph glyph = repository.getGlyph(gName, selectionPanel);
 
             if (glyph != null) {
-                Evaluation vote = evaluator.topRawVote(glyph, maxDoubt, null);
+                Evaluation vote = evaluator.topRawVote(
+                    glyph,
+                    Grades.validationMinGrade,
+                    null);
 
                 if (vote == null) {
                     negatives.add(gName);
@@ -311,19 +309,6 @@ class ValidationPanel
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        Evaluation.Doubt maxDoubt = new Evaluation.Doubt(
-            1.2,
-            "Maximum acceptance doubt");
-    }
 
     //---------------------//
     // FalsePositiveAction //

@@ -16,7 +16,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.CompoundBuilder;
 import omr.glyph.CompoundBuilder.CompoundAdapter;
-import omr.glyph.Evaluation;
+import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
@@ -75,12 +75,13 @@ public class BassPattern
         int             successNb = 0;
 
         // Constants for clef verification
-        final double    clefMaxDoubt = constants.clefMaxDoubt.getValue();
         final double    maxBassDotPitchDy = constants.maxBassDotPitchDy.getValue();
         final double    maxBassDotDx = scale.toPixels(constants.maxBassDotDx);
 
         // Specific adapter definition for bass clefs
-        CompoundAdapter bassAdapter = new BassAdapter(system, clefMaxDoubt);
+        CompoundAdapter bassAdapter = new BassAdapter(
+            system,
+            Grades.clefMinGrade);
 
         for (Glyph top : system.getGlyphs()) {
             // Look for top dot
@@ -142,9 +143,9 @@ public class BassPattern
         //~ Constructors -------------------------------------------------------
 
         public BassAdapter (SystemInfo system,
-                            double     maxDoubt)
+                            double     minGrade)
         {
-            super(system, maxDoubt, ShapeRange.BassClefs);
+            super(system, minGrade, ShapeRange.BassClefs);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -182,15 +183,12 @@ public class BassPattern
     {
         //~ Instance fields ----------------------------------------------------
 
-        Scale.Fraction   maxBassDotDx = new Scale.Fraction(
+        Scale.Fraction  maxBassDotDx = new Scale.Fraction(
             0.25,
             "Tolerance on Bass dot abscissae");
-        Constant.Double  maxBassDotPitchDy = new Constant.Double(
+        Constant.Double maxBassDotPitchDy = new Constant.Double(
             "pitch",
             0.5,
             "Ordinate tolerance on a Bass dot pitch position");
-        Evaluation.Doubt clefMaxDoubt = new Evaluation.Doubt(
-            3d,
-            "Maximum doubt for clef verification");
     }
 }

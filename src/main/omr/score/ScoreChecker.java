@@ -16,8 +16,8 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
 import omr.glyph.GlyphEvaluator;
-import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphNetwork;
+import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
@@ -434,8 +434,8 @@ public class ScoreChecker
 
                 for (Note note : notes) {
                     for (Glyph glyph : note.getGlyphs()) {
-                        if (glyph.getDoubt() < bestEval) {
-                            bestEval = glyph.getDoubt();
+                        if (glyph.getGrade() < bestEval) {
+                            bestEval = glyph.getGrade();
                             bestShape = shape;
                         }
                     }
@@ -445,8 +445,6 @@ public class ScoreChecker
             logger.info(chord + " aligned on shape " + bestShape);
 
             final Shape      baseShape = bestShape; // Must be final
-            final double     maxDoubt = constants.maxConsistentNoteDoubt.getValue();
-
             Predicate<Shape> predicate = new Predicate<Shape>() {
                 final Collection<Shape> desiredShapes = Arrays.asList(
                     Note.getActualShape(baseShape, 1),
@@ -472,7 +470,7 @@ public class ScoreChecker
                     for (Glyph glyph : note.getGlyphs()) {
                         Evaluation vote = evaluator.topVote(
                             glyph,
-                            maxDoubt,
+                            Grades.consistentNoteMinGrade,
                             system.getInfo(),
                             predicate);
 
@@ -726,7 +724,7 @@ public class ScoreChecker
             Evaluation vote = GlyphNetwork.getInstance()
                                           .vote(
                 compound,
-                constants.maxNoteDoubt.getValue(),
+                Grades.mergedNoteMinGrade,
                 first.getSystem().getInfo());
 
             if (vote != null) {
@@ -753,7 +751,6 @@ public class ScoreChecker
         final int          stemDir = chord.getStemDir();
         final PixelPoint   chordCenter = chord.getCenter();
         final ScoreSystem  system = chord.getSystem();
-        final double       hookMaxDoubt = GlyphInspector.getHookMaxDoubt();
         final GlyphNetwork network = GlyphNetwork.getInstance();
 
         for (Glyph glyph : glyphs) {
@@ -780,7 +777,7 @@ public class ScoreChecker
             // Check if a beam appears in the top evaluations
             Evaluation vote = network.topVote(
                 glyph,
-                hookMaxDoubt,
+                Grades.hookMinGrade,
                 system.getInfo(),
                 hookPredicate);
 
@@ -835,11 +832,5 @@ public class ScoreChecker
             "PitchPosition",
             1.5,
             "Minimum pitch difference between note heads on same stem side");
-        Evaluation.Doubt             maxNoteDoubt = new Evaluation.Doubt(
-            5d,
-            "Maximum doubt for merged void heads");
-        Evaluation.Doubt             maxConsistentNoteDoubt = new Evaluation.Doubt(
-            1000d,
-            "Maximum doubt for consistent note heads");
     }
 }

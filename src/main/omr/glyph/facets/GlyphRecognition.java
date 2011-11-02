@@ -43,13 +43,6 @@ interface GlyphRecognition
     boolean isClef ();
 
     /**
-     * Report the doubt of the glyph shape
-     *
-     * @return the doubt related to glyph shape
-     */
-    double getDoubt ();
-
-    /**
      * Assign an evaluation
      * @param evaluation the evaluation structure, perhaps null
      */
@@ -57,9 +50,15 @@ interface GlyphRecognition
 
     /**
      * Report the evaluation, if any
-     * @return the evaluation structure (shape + doubt + failure if any)
+     * @return the evaluation structure (shape + grade + failure if any)
      */
     Evaluation getEvaluation ();
+
+    /**
+     * Report the grade of the glyph shape.
+     * @return the grade related to glyph shape
+     */
+    double getGrade ();
 
     /**
      * A glyph is considered as known if it has a registered shape other than
@@ -86,13 +85,13 @@ interface GlyphRecognition
     void setShape (Shape shape);
 
     /**
-     * Setter for the glyph shape, with related doubt
+     * Setter for the glyph shape, with related grade
      *
      * @param shape the assigned shape
-     * @param doubt the related doubt
+     * @param grade the related grade
      */
     void setShape (Shape  shape,
-                   double doubt);
+                   double grade);
 
     /**
      * Report the registered glyph shape

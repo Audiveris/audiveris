@@ -13,8 +13,8 @@ package omr.glyph.pattern;
 
 import omr.glyph.Evaluation;
 import omr.glyph.GlyphEvaluator;
-import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphNetwork;
+import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
@@ -137,14 +137,16 @@ public class StemPattern
         // Try to recognize each glyph in turn
         List<Glyph>          symbols = new ArrayList<Glyph>();
         final GlyphEvaluator evaluator = GlyphNetwork.getInstance();
-        final double         maxDoubt = GlyphInspector.getPatternsMaxDoubt();
 
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.getShape() == null) {
-                Evaluation vote = evaluator.vote(glyph, maxDoubt, system);
+                Evaluation vote = evaluator.vote(
+                    glyph,
+                    Grades.patternsMinGrade,
+                    system);
 
                 if (vote != null) {
-                    glyph.setShape(vote.shape, vote.doubt);
+                    glyph.setShape(vote.shape, vote.grade);
 
                     if (glyph.isWellKnown()) {
                         if (logger.isFineEnabled()) {

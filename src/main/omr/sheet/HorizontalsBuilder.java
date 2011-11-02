@@ -205,15 +205,15 @@ public class HorizontalsBuilder
     //     * @param shape the shape to be assigned
     //     * @param compound flag to build one compound, rather than assign each
     //     *                 individual glyph
-    //     * @param doubt the doubt we have wrt the assigned shape
+    //     * @param grade the grade we have wrt the assigned shape
     //     */
     //    @Override
     //    public void assignGlyphs (Collection<Glyph> glyphs,
     //                              Shape             shape,
     //                              boolean           compound,
-    //                              double            doubt)
+    //                              double            grade)
     //    {
-    //        super.assignGlyphs(glyphs, shape, compound, doubt);
+    //        super.assignGlyphs(glyphs, shape, compound, grade);
     //
     //        lagView.colorizeAllSections();
     //    }
@@ -384,7 +384,7 @@ public class HorizontalsBuilder
     //    @Override
     //    protected Glyph assignGlyph (Glyph  glyph,
     //                                 Shape  shape,
-    //                                 double doubt)
+    //                                 double grade)
     //    {
     //        //        if (shape != null) {
     //        //            // Assign
@@ -451,7 +451,7 @@ public class HorizontalsBuilder
     //        //            dashSections.removeAll(glyph.getMembers());
     //        //        }
     //        //
-    //        //        return super.assignGlyph(glyph, shape, doubt);
+    //        //        return super.assignGlyph(glyph, shape, grade);
     //        return null;
     //    }
 

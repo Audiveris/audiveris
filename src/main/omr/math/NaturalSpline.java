@@ -14,7 +14,6 @@ package omr.math;
 import java.awt.Shape;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
-import java.awt.geom.PathIterator;
 import static java.awt.geom.PathIterator.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.QuadCurve2D;
@@ -255,47 +254,6 @@ public class NaturalSpline
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    //------//
-    // xAtY //
-    //------//
-    /**
-     * Report the abscissa value of the spline at provided ordinate
-     * (assuming true function)
-     * @param y the provided ordinate
-     * @return the abscissa value at this ordinate
-     */
-    public double xAtY (double y)
-    {
-        final double[]       buffer = new double[6];
-        final Point2D.Double p1 = new Point2D.Double();
-        final Point2D.Double p2 = new Point2D.Double();
-        final int            segmentKind = getYSegment(y, buffer, p1, p2);
-        final double         t = (y - p1.y) / (p2.y - p1.y);
-        final double         u = 1 - t;
-
-        switch (segmentKind) {
-        case SEG_LINETO :
-            return p1.x + (t * (p2.x - p1.x));
-
-        case SEG_QUADTO : {
-            double cpx = buffer[0];
-
-            return (p1.x * u * u) + (2 * cpx * t * u) + (p2.x * t * t);
-        }
-
-        case SEG_CUBICTO : {
-            double cpx1 = buffer[0];
-            double cpx2 = buffer[2];
-
-            return (p1.x * u * u * u) + (3 * cpx1 * t * u * u) +
-                   (3 * cpx2 * t * t * u) + (p2.x * t * t * t);
-        }
-
-        default :
-            throw new RuntimeException("Illegal segmentKind " + segmentKind);
-        }
-    }
-
     public int xAtY (int y)
     {
         return (int) Math.rint(xAtY((double) y));
@@ -343,47 +301,6 @@ public class NaturalSpline
 
         default :
             throw new RuntimeException("Illegal currentSegment " + segmentKind);
-        }
-    }
-
-    //------//
-    // yAtX //
-    //------//
-    /**
-     * Report the ordinate value of the spline at provided abscissa
-     * (assuming true function)
-     * @param x the provided abscissa
-     * @return the ordinate value at this abscissa
-     */
-    public double yAtX (double x)
-    {
-        final double[]       buffer = new double[6];
-        final Point2D.Double p1 = new Point2D.Double();
-        final Point2D.Double p2 = new Point2D.Double();
-        final int            segmentKind = getXSegment(x, buffer, p1, p2);
-        final double         t = (x - p1.x) / (p2.x - p1.x);
-        final double         u = 1 - t;
-
-        switch (segmentKind) {
-        case SEG_LINETO :
-            return p1.y + (t * (p2.y - p1.y));
-
-        case SEG_QUADTO : {
-            double cpy = buffer[1];
-
-            return (p1.y * u * u) + (2 * cpy * t * u) + (p2.y * t * t);
-        }
-
-        case SEG_CUBICTO : {
-            double cpy1 = buffer[1];
-            double cpy2 = buffer[3];
-
-            return (p1.y * u * u * u) + (3 * cpy1 * t * u * u) +
-                   (3 * cpy2 * t * t * u) + (p2.y * t * t * t);
-        }
-
-        default :
-            throw new RuntimeException("Illegal segmentKind " + segmentKind);
         }
     }
 
@@ -489,101 +406,5 @@ public class NaturalSpline
         }
 
         return D;
-    }
-
-    //-------------//
-    // getXSegment //
-    //-------------//
-    /**
-     * Retrieve the first segment of the curve that contains the provided
-     * abscissa
-     * @param x the provided abscissa
-     * @param buffer output
-     * @param p1 output: start of segment
-     * @param p2 output: end of segment
-     * @return the segment kind
-     */
-    private int getXSegment (double         x,
-                             double[]       buffer,
-                             Point2D.Double p1,
-                             Point2D.Double p2)
-    {
-        PathIterator it = getPathIterator(null);
-        double       x1 = 0;
-        double       y1 = 0;
-
-        while (!it.isDone()) {
-            final int    segmentKind = it.currentSegment(buffer);
-            final int    count = countOf(segmentKind);
-            final double x2 = buffer[count - 2];
-            final double y2 = buffer[count - 1];
-
-            if ((segmentKind == SEG_MOVETO) ||
-                (segmentKind == SEG_CLOSE) ||
-                (x > x2)) {
-                // Move to next segment
-                x1 = x2;
-                y1 = y2;
-                it.next();
-            } else {
-                p1.x = x1;
-                p1.y = y1;
-                p2.x = x2;
-                p2.y = y2;
-
-                return segmentKind;
-            }
-        }
-
-        // Not found
-        throw new RuntimeException("Abscissa not in spline range: " + x);
-    }
-
-    //-------------//
-    // getYSegment //
-    //-------------//
-    /**
-     * Retrieve the first segment of the curve that contains the provided
-     * ordinate
-     * @param y the provided ordinate
-     * @param buffer output
-     * @param p1 output: start of segment
-     * @param p2 output: end of segment
-     * @return the segment kind
-     */
-    private int getYSegment (double         y,
-                             double[]       buffer,
-                             Point2D.Double p1,
-                             Point2D.Double p2)
-    {
-        PathIterator it = getPathIterator(null);
-        double       x1 = 0;
-        double       y1 = 0;
-
-        while (!it.isDone()) {
-            final int    segmentKind = it.currentSegment(buffer);
-            final int    count = countOf(segmentKind);
-            final double x2 = buffer[count - 2];
-            final double y2 = buffer[count - 1];
-
-            if ((segmentKind == SEG_MOVETO) ||
-                (segmentKind == SEG_CLOSE) ||
-                (y > y2)) {
-                // Move to next segment
-                x1 = x2;
-                y1 = y2;
-                it.next();
-            } else {
-                p1.x = x1;
-                p1.y = y1;
-                p2.x = x2;
-                p2.y = y2;
-
-                return segmentKind;
-            }
-        }
-
-        // Not found
-        throw new RuntimeException("Ordinate not in spline range: " + y);
     }
 }

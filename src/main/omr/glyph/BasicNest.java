@@ -477,7 +477,7 @@ public class BasicNest
     //                Glyph glyph = transferAlienGlyph(alien);
     //
     //                // Transfer shape info (what else?)
-    //                glyph.setShape(alien.getShape(), alien.getDoubt());
+    //                glyph.setShape(alien.getShape(), alien.getGrade());
     //
     //                transfered.add(glyph);
     //            }

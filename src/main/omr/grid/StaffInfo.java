@@ -25,7 +25,6 @@ import omr.sheet.Dash;
 import omr.sheet.Ledger;
 import omr.sheet.NotePosition;
 import omr.sheet.Scale;
-import omr.sheet.SystemInfo;
 
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
@@ -398,7 +397,7 @@ public class StaffInfo
     // getLedgers //
     //------------//
     /**
-     * Report the ordered set of ledgers, if any, for a given pitch value
+     * Report the ordered set of ledgers, if any, for a given pitch value.
      * @param lineIndex the precise line index that specifies algebraic
      * distance from staff
      * @return the proper set of ledgers, or null
@@ -412,8 +411,7 @@ public class StaffInfo
     // setLimit //
     //----------//
     /**
-     * Define the limit at the bottom of the staff area
-     *
+     * Define the limit at the bottom of the staff area.
      * @param side proper vertical side
      * @param limit assigned limit
      */
@@ -425,6 +423,17 @@ public class StaffInfo
         } else {
             bottomLimit = limit;
         }
+    }
+
+    //-------------//
+    // getLimitAtX //
+    //-------------//
+    public double getLimitAtX (VerticalSide side,
+                               double       x)
+    {
+        GeoPath limit = (side == TOP) ? topLimit : bottomLimit;
+
+        return limit.yAtX(x);
     }
 
     //----------//

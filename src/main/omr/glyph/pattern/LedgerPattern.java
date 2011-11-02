@@ -15,6 +15,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.CompoundBuilder;
 import omr.glyph.Evaluation;
+import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
@@ -134,7 +135,7 @@ public class LedgerPattern
                             system.getGlyphs(),
                             new LedgerAdapter(
                                 system,
-                                constants.maxDoubt.getValue(),
+                                Grades.ledgerNoteMinGrade,
                                 ledgerNeighbors,
                                 ledgerGlyphs));
 
@@ -222,19 +223,14 @@ public class LedgerPattern
     {
         //~ Instance fields ----------------------------------------------------
 
-        Scale.Fraction   interChunkDx = new Scale.Fraction(
+        Scale.Fraction interChunkDx = new Scale.Fraction(
             1.5,
             "Max horizontal distance between ledger chunks");
 
         //
-        Scale.Fraction   interChunkDy = new Scale.Fraction(
+        Scale.Fraction interChunkDy = new Scale.Fraction(
             0.2,
             "Max vertical distance between ledger chunks");
-
-        //
-        Evaluation.Doubt maxDoubt = new Evaluation.Doubt(
-            10d,
-            "Maximum doubt for note glyph");
     }
 
     //---------------//
@@ -254,11 +250,11 @@ public class LedgerPattern
         //~ Constructors -------------------------------------------------------
 
         public LedgerAdapter (SystemInfo     system,
-                              double         maxDoubt,
+                              double         minGrade,
                               EnumSet<Shape> desiredShapes,
                               List<Glyph>    ledgerGlyphs)
         {
-            super(system, maxDoubt, desiredShapes);
+            super(system, minGrade, desiredShapes);
             this.ledgerGlyphs = ledgerGlyphs;
         }
 

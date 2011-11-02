@@ -16,8 +16,11 @@ import omr.constant.ConstantSet;
 import omr.glyph.Evaluation;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Glyphs;
+import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
+
+import omr.grid.StaffInfo;
 
 import omr.log.Logger;
 
@@ -30,7 +33,6 @@ import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
 
 import omr.sheet.Scale;
-import omr.grid.StaffInfo;
 import omr.sheet.SystemInfo;
 
 import omr.util.Predicate;
@@ -178,7 +180,7 @@ public class KeySignatureVerifier
         Evaluation vote = GlyphNetwork.getInstance()
                                       .topRawVote(
             compound,
-            constants.keySigMaxDoubt.getValue(),
+            Grades.keySigMinGrade,
             new Predicate<Shape>() {
                     public boolean check (Shape shape)
                     {
@@ -403,11 +405,8 @@ public class KeySignatureVerifier
     {
         //~ Instance fields ----------------------------------------------------
 
-        Scale.Fraction   yOffset = new Scale.Fraction(
+        Scale.Fraction yOffset = new Scale.Fraction(
             0.5d,
             "Key signature vertical offset since staff line");
-        Evaluation.Doubt keySigMaxDoubt = new Evaluation.Doubt(
-            10000d,
-            "Maximum doubt for key sig verification");
     }
 }

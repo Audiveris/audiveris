@@ -1100,12 +1100,11 @@ public class SystemInfo
     /**
      * Process the given system, by retrieving unassigned glyphs, evaluating
      * and assigning them if OK, or trying compounds otherwise.
-     *
-     * @param maxDoubt the maximum acceptable doubt for this processing
+     * @param minGrade the minimum acceptable grade for this processing
      */
-    public void inspectGlyphs (double maxDoubt)
+    public void inspectGlyphs (double minGrade)
     {
-        glyphInspector.inspectGlyphs(maxDoubt);
+        glyphInspector.inspectGlyphs(minGrade);
     }
 
     //-----------------------//

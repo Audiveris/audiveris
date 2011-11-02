@@ -16,6 +16,7 @@ import omr.constant.ConstantSet;
 import omr.glyph.Evaluation;
 import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphNetwork;
+import omr.glyph.Grades;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -69,7 +70,6 @@ public class LeftOverPattern
     {
         int                  successNb = 0;
         final double         minWeight = constants.minWeight.getValue();
-        final double         maxDoubt = constants.maxDoubt.getValue();
         final GlyphEvaluator evaluator = GlyphNetwork.getInstance();
 
         for (Glyph glyph : system.getGlyphs()) {
@@ -79,7 +79,10 @@ public class LeftOverPattern
                 continue;
             }
 
-            Evaluation vote = evaluator.vote(glyph, maxDoubt, system);
+            Evaluation vote = evaluator.vote(
+                glyph,
+                Grades.leftOverMinGrade,
+                system);
 
             if (vote != null) {
                 if (logger.isFineEnabled()) {
@@ -87,7 +90,7 @@ public class LeftOverPattern
                         "LeftOver glyph#" + glyph.getId() + " Vote: " + vote);
                 }
 
-                glyph.setShape(vote.shape, vote.doubt);
+                glyph.setShape(vote.shape, vote.grade);
                 successNb++;
             }
         }
@@ -108,8 +111,5 @@ public class LeftOverPattern
         Scale.AreaFraction minWeight = new Scale.AreaFraction(
             0.5,
             "Minimum normalized weight to be a left over glyph");
-        Evaluation.Doubt   maxDoubt = new Evaluation.Doubt(
-            10d,
-            "Maximum doubt for left over glyphs");
     }
 }

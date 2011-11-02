@@ -16,9 +16,9 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
 import omr.glyph.GlyphEvaluator;
-import omr.glyph.GlyphInspector;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Glyphs;
+import omr.glyph.Grades;
 import omr.glyph.Nest;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
@@ -471,7 +471,7 @@ public class TextArea
         GlyphEvaluator evaluator = GlyphNetwork.getInstance();
         Evaluation     vote = evaluator.vote(
             glyph,
-            GlyphInspector.getTextMaxDoubt(),
+            Grades.textMinGrade,
             system);
 
         if (vote != null) {
@@ -587,7 +587,7 @@ public class TextArea
             glyph = system.addGlyph(glyph);
 
             // No! glyph.setTextArea(this);
-            glyph.setShape(eval.shape, eval.doubt);
+            glyph.setShape(eval.shape, eval.grade);
 
             if (logger.isFineEnabled()) {
                 logger.fine("Glyph#" + glyph.getId() + " TEXT recognized");

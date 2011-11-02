@@ -57,9 +57,10 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 /**
- * Class <code>EvaluationBoard</code> is a board dedicated to the display of
- * evaluation results performed by an evaluator. It also provides through
- * buttons the ability to assign a shape to the glyph at hand.
+ * Class {@code EvaluationBoard} is a board dedicated to the display of
+ * evaluation results performed by an evaluator.
+ * It also provides through buttons the ability to manually assign a shape to
+ * the glyph at hand.
  *
  * @author Hervé Bitteur
  * @author Brenton Partridge
@@ -114,9 +115,8 @@ class EvaluationBoard
     // EvaluationBoard //
     //-----------------//
     /**
-     * Create a simplified passive evaluation board with one neural network
-     * evaluator
-     *
+     * Create a simplified passive evaluation board with one neural
+     * network evaluator.
      * @param glyphModel the related glyph model
      */
     public EvaluationBoard (String           name,
@@ -130,9 +130,8 @@ class EvaluationBoard
     // EvaluationBoard //
     //-----------------//
     /**
-     * Create an evaluation board with one neural network evaluator, ability to
-     * force glyph shape, and test buttons
-     *
+     * Create an evaluation board with one neural network evaluator
+     * and the ability to force glyph shape.
      * @param name a rather unique name for this board
      * @param glyphController the related glyph controller
      * @param sheet the related sheet, or null
@@ -162,9 +161,8 @@ class EvaluationBoard
     // evaluate //
     //----------//
     /**
-     * Evaluate the glyph at hand, and display the result in the evaluator
-     * dedicated area
-     *
+     * Evaluate the glyph at hand, and display the result in the 
+     * evaluator dedicated area.
      * @param glyph the glyph at hand
      */
     public void evaluate (Glyph glyph)
@@ -190,14 +188,12 @@ class EvaluationBoard
     // onEvent //
     //---------//
     /**
-     * Call-back triggered when Glyph Selection has been modified
-     *
+     * Call-back triggered when Glyph Selection has been modified.
      * @param event the (Glyph) Selection
      */
     @Implement(EventSubscriber.class)
     public void onEvent (UserEvent event)
     {
-        ///logger.info(getClass().getSimpleName() + " " + event);
         try {
             // Ignore RELEASING
             if (event.movement == MouseMovement.RELEASING) {
@@ -271,9 +267,9 @@ class EvaluationBoard
     {
         //~ Instance fields ----------------------------------------------------
 
-        Evaluation.Doubt maxDoubt = new Evaluation.Doubt(
-            500000.0,
-            "Threshold on displayable doubt");
+        Evaluation.Grade minGrade = new Evaluation.Grade(
+            0.0,
+            "Threshold on displayable grade");
         Constant.Integer visibleButtons = new Constant.Integer(
             "buttons",
             5,
@@ -292,14 +288,14 @@ class EvaluationBoard
         final JButton button;
         final JLabel  field;
 
-        // The related doubt
+        // The related grade
         JLabel grade = new JLabel("", SwingConstants.RIGHT);
 
         //~ Constructors -------------------------------------------------------
 
         public EvalButton ()
         {
-            grade.setToolTipText("Doubt of the evaluation");
+            grade.setToolTipText("Grade of the evaluation");
 
             if (sheet != null) {
                 button = new JButton();
@@ -369,7 +365,7 @@ class EvaluationBoard
                 }
 
                 grade.setVisible(true);
-                grade.setText(String.format("%.3f", eval.doubt));
+                grade.setText(String.format("%.3f", eval.grade));
             } else {
                 grade.setVisible(false);
                 comp.setVisible(false);
@@ -428,9 +424,8 @@ class EvaluationBoard
         // setEvals //
         //----------//
         /**
-         * Display the evaluations with some text highlighting. Only relevant
-         * evaluations are displayed (distance less than a given threshold)
-         *
+         * Display the evaluations with some text highlighting.
+         * Only relevant evaluations are displayed.
          * @param evals the ordered list of <b>all</b>evaluations from best to
          *              worst
          * @param glyph evaluated glyph, to check forbidden shapes if any
@@ -448,7 +443,7 @@ class EvaluationBoard
             }
 
             boolean enabled = !glyph.isVirtual();
-            double  maxDoubt = constants.maxDoubt.getValue();
+            double  minGrade = constants.minGrade.getValue();
             int     iBound = Math.min(buttons.size(), evals.length);
             int     i;
 
@@ -456,7 +451,7 @@ class EvaluationBoard
                 Evaluation eval = evals[i];
 
                 // Limitation on shape relevance
-                if (eval.doubt > maxDoubt) {
+                if (eval.grade < minGrade) {
                     break;
                 }
 
@@ -475,67 +470,4 @@ class EvaluationBoard
             }
         }
     }
-
-    //    //------------//
-    //    // TestAction //
-    //    //------------//
-    //    /**
-    //     * Class <code>TestAction</code> uses the evaluator on all known glyphs
-    //     * within the sheet, to check if they can be correctly recognized. This does
-    //     * not modify the current glyph assignments.
-    //     */
-    //    private class TestAction
-    //        extends AbstractAction
-    //    {
-    //        //~ Constructors -------------------------------------------------------
-    //
-    //        public TestAction ()
-    //        {
-    //            super("Global");
-    //        }
-    //
-    //        //~ Methods ------------------------------------------------------------
-    //
-    //        @Implement(ActionListener.class)
-    //        public void actionPerformed (ActionEvent e)
-    //        {
-    //            int          ok = 0;
-    //            int          total = 0;
-    //            final double maxDoubt = GlyphInspector.getSymbolMaxDoubt();
-    //            final int    viewIndex = glyphsController.getLag()
-    //                                                     .viewIndexOf(view);
-    //
-    //            for (Glyph glyph : sheet.getActiveGlyphs()) {
-    //                if (glyph.isKnown() &&
-    //                    (glyph.getShape() != Shape.COMBINING_STEM)) {
-    //                    total++;
-    //
-    //                    SystemInfo system = sheet.getSystemOf(glyph);
-    //                    Evaluation guess = evaluator.vote(glyph, maxDoubt, system);
-    //
-    //                    if ((guess != null) && (glyph.getShape() == guess.shape)) {
-    //                        ok++;
-    //                        view.colorizeGlyph(
-    //                            viewIndex,
-    //                            glyph,
-    //                            Colors.SHAPE_KNOWN);
-    //                    } else {
-    //                        view.colorizeGlyph(
-    //                            viewIndex,
-    //                            glyph,
-    //                            Colors.SHAPE_UNKNOWN);
-    //                    }
-    //                }
-    //            }
-    //
-    //            String pc = String.format(
-    //                " %5.2f%%",
-    //                ((double) ok * 100) / (double) total);
-    //            testPercent.setText(pc);
-    //            testResult.setText(ok + "/" + total);
-    //
-    //            // Almost all glyphs may have been modified, so...
-    //            view.repaint();
-    //        }
-    //    }
 }

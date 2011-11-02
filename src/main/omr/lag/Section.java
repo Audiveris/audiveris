@@ -64,9 +64,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <p><b>Beware</b>, the section orientation only governs the runs orientation.
  * It by no means implies that the section dimension is longer in the direction
  * along the runs than in the direction across.
- * To enforce this, the {@link #getLength()} method is augmented with
- * {@link #getLength(Orientation)} for which an explicit orientation must be
- * provided, just like for {@Glyph} instances.
+ * To enforce this, the {@link #getLength(Orientation)} requires that an 
+ * explicit orientation be provided, just like for {@link Glyph} instances.
  *
  * @author Hervé Bitteur
  */

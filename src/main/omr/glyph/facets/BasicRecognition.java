@@ -41,7 +41,7 @@ class BasicRecognition
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Current evaluation (shape + doubt), if any */
+    /** Current evaluation (shape + grade), if any */
     private Evaluation evaluation;
 
     /** Set of forbidden shapes, if any */
@@ -86,25 +86,12 @@ class BasicRecognition
         return ShapeRange.Clefs.contains(getShape());
     }
 
-    //----------//
-    // getDoubt //
-    //----------//
-    public double getDoubt ()
-    {
-        if (evaluation != null) {
-            return evaluation.doubt;
-        } else {
-            // No real interest
-            return Evaluation.ALGORITHM;
-        }
-    }
-
     //---------------//
     // setEvaluation //
     //---------------//
     public void setEvaluation (Evaluation evaluation)
     {
-        setShape(evaluation.shape, evaluation.doubt);
+        setShape(evaluation.shape, evaluation.grade);
     }
 
     //---------------//
@@ -113,6 +100,19 @@ class BasicRecognition
     public Evaluation getEvaluation ()
     {
         return evaluation;
+    }
+
+    //----------//
+    // getGrade //
+    //----------//
+    public double getGrade ()
+    {
+        if (evaluation != null) {
+            return evaluation.grade;
+        } else {
+            // No real interest
+            return Evaluation.ALGORITHM;
+        }
     }
 
     //---------//
@@ -130,7 +130,7 @@ class BasicRecognition
     //---------------//
     public boolean isManualShape ()
     {
-        return getDoubt() == Evaluation.MANUAL;
+        return getGrade() == Evaluation.MANUAL;
     }
 
     //----------//
@@ -145,7 +145,7 @@ class BasicRecognition
     // setShape //
     //----------//
     public void setShape (Shape  shape,
-                          double doubt)
+                          double grade)
     {
         // Blacklist the old shape if any
         Shape oldShape = getShape();
@@ -159,7 +159,7 @@ class BasicRecognition
             for (Glyph part : glyph.getParts()) {
                 if ((part.getPartOf() == glyph) &&
                     (part.getShape() == Shape.GLYPH_PART)) {
-                    part.setShape(null, doubt);
+                    part.setShape(null, grade);
                 }
             }
         } else {
@@ -168,7 +168,7 @@ class BasicRecognition
         }
 
         // Remember the new shape
-        evaluation = new Evaluation(shape, doubt);
+        evaluation = new Evaluation(shape, grade);
     }
 
     //----------//

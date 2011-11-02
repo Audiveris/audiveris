@@ -16,9 +16,12 @@ import omr.constant.ConstantSet;
 import omr.glyph.Evaluation;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Glyphs;
+import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
+
+import omr.grid.StaffInfo;
 
 import omr.log.Logger;
 
@@ -29,7 +32,6 @@ import omr.score.entity.SystemPart;
 
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
-import omr.grid.StaffInfo;
 
 import omr.util.HorizontalSide;
 import omr.util.Implement;
@@ -179,7 +181,7 @@ public class ClefPattern
         Evaluation vote = GlyphNetwork.getInstance()
                                       .topVote(
             compound,
-            constants.clefMaxDoubt.getValue(),
+            Grades.clefMinGrade,
             system,
             clefPredicate);
 
@@ -221,11 +223,11 @@ public class ClefPattern
                 final Evaluation newVote = GlyphNetwork.getInstance()
                                                        .topVote(
                     newCompound,
-                    constants.clefMaxDoubt.getValue(),
+                    Grades.clefMinGrade,
                     system,
                     clefPredicate);
 
-                if ((newVote != null) && (newVote.doubt < vote.doubt)) {
+                if ((newVote != null) && (newVote.grade < vote.grade)) {
                     if (logger.isFineEnabled()) {
                         logger.fine(
                             vote + " better built with glyph#" + g.getId());
@@ -279,8 +281,5 @@ public class ClefPattern
         Scale.AreaFraction minWeight = new Scale.AreaFraction(
             0.1,
             "Minimum normalized weight to be added to a clef");
-        Evaluation.Doubt   clefMaxDoubt = new Evaluation.Doubt(
-            300d,
-            "Maximum doubt for clef verification");
     }
 }

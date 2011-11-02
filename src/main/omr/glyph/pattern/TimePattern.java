@@ -15,8 +15,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.CompoundBuilder;
 import omr.glyph.Evaluation;
-import omr.glyph.GlyphNetwork;
-import omr.glyph.Glyphs;
+import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
@@ -33,7 +32,6 @@ import omr.sheet.SystemInfo;
 
 import omr.util.Implement;
 
-import java.util.Collection;
 import java.util.EnumSet;
 
 /**
@@ -89,7 +87,7 @@ public class TimePattern
                 system.getGlyphs(),
                 new TimeSigAdapter(
                     system,
-                    constants.timeMaxDoubt.getValue(),
+                    Grades.timeMinGrade,
                     ShapeRange.FullTimes));
 
             if (compound != null) {
@@ -110,15 +108,12 @@ public class TimePattern
     {
         //~ Instance fields ----------------------------------------------------
 
-        Scale.Fraction   xOffset = new Scale.Fraction(
+        Scale.Fraction xOffset = new Scale.Fraction(
             0.25d,
             "Core Time horizontal offset");
-        Scale.Fraction   yOffset = new Scale.Fraction(
+        Scale.Fraction yOffset = new Scale.Fraction(
             0.25d,
             "Core Time vertical offset");
-        Evaluation.Doubt timeMaxDoubt = new Evaluation.Doubt(
-            10000d,
-            "Maximum doubt for time verification");
     }
 
     //----------------//
@@ -133,10 +128,10 @@ public class TimePattern
         //~ Constructors -------------------------------------------------------
 
         public TimeSigAdapter (SystemInfo     system,
-                               double         maxDoubt,
+                               double         minGrade,
                                EnumSet<Shape> desiredShapes)
         {
-            super(system, maxDoubt, desiredShapes);
+            super(system, minGrade, desiredShapes);
         }
 
         //~ Methods ------------------------------------------------------------

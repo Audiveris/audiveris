@@ -181,12 +181,12 @@ public class GlyphsModel
      * @param shape the shape to be assigned
      * @param compound flag to build one compound, rather than assign each
      *                 individual glyph
-     * @param doubt the doubt we have wrt the assigned shape
+     * @param grade the grade we have wrt the assigned shape
      */
     public void assignGlyphs (Collection<Glyph> glyphs,
                               Shape             shape,
                               boolean           compound,
-                              double            doubt)
+                              double            grade)
     {
         if (compound) {
             // Build & insert one compound
@@ -211,12 +211,12 @@ public class GlyphsModel
                 glyph.setParts(glyphs);
             }
 
-            assignGlyph(glyph, shape, doubt);
+            assignGlyph(glyph, shape, grade);
         } else {
             // Assign each glyph individually
             for (Glyph glyph : new ArrayList<Glyph>(glyphs)) {
                 if (glyph.getShape() != Shape.NOISE) {
-                    assignGlyph(glyph, shape, doubt);
+                    assignGlyph(glyph, shape, grade);
                 }
             }
         }
@@ -230,12 +230,12 @@ public class GlyphsModel
      *
      * @param sections the collection of sections to be aggregated as a glyph
      * @param shape the shape to be assigned
-     * @param doubt the doubt we have wrt the assigned shape
+     * @param grade the grade we have wrt the assigned shape
      * @return the newly built glyph
      */
     public Glyph assignSections (Collection<Section> sections,
                                  Shape               shape,
-                                 double              doubt)
+                                 double              grade)
     {
         // Build & insert one glyph out of the sections
         SystemInfo system = sections.iterator()
@@ -243,7 +243,7 @@ public class GlyphsModel
                                     .getSystem();
         Glyph      glyph = system.buildGlyph(sections);
 
-        return assignGlyph(glyph, shape, doubt);
+        return assignGlyph(glyph, shape, grade);
     }
 
     //----------------//
@@ -280,12 +280,12 @@ public class GlyphsModel
      *
      * @param glyph the glyph to be assigned
      * @param shape the assigned shape, which may be null
-     * @param doubt the doubt about shape
+     * @param grade the grade about shape
      * @return the assigned glyph (perhaps an original glyph)
      */
     protected Glyph assignGlyph (Glyph  glyph,
                                  Shape  shape,
-                                 double doubt)
+                                 double grade)
     {
         if (glyph == null) {
             return null;
@@ -314,11 +314,11 @@ public class GlyphsModel
         }
 
         // Do the assignment of the shape to the glyph
-        glyph.setShape(shape, doubt);
+        glyph.setShape(shape, grade);
 
         // Should we persist the assigned glyph?
         if ((shape != null) &&
-            (doubt == Evaluation.MANUAL) &&
+            (grade == Evaluation.MANUAL) &&
             (Main.getGui() != null) &&
             ScoreActions.getInstance()
                         .isManualPersisted()) {

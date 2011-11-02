@@ -16,6 +16,7 @@ import omr.constant.ConstantSet;
 import omr.glyph.Evaluation;
 import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphNetwork;
+import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
@@ -77,7 +78,6 @@ public class HiddenSlurPattern
         final double         minGlyphWeight = constants.minGlyphWeight.getValue();
         final int            minSectionWeight = scale.toPixels(
             constants.minSectionWeight);
-        final double         maxDoubt = constants.maxDoubt.getValue();
         final GlyphEvaluator evaluator = GlyphNetwork.getInstance();
 
         for (Glyph glyph : system.getGlyphs()) {
@@ -97,10 +97,13 @@ public class HiddenSlurPattern
 
                 Glyph      compound = system.buildTransientGlyph(
                     Collections.singleton(section));
-                Evaluation vote = evaluator.vote(compound, maxDoubt, system);
+                Evaluation vote = evaluator.vote(
+                    compound,
+                    Grades.slurMinGrade,
+                    system);
 
                 if ((vote != null) && (vote.shape == Shape.SLUR)) {
-                    compound.setShape(vote.shape, vote.doubt);
+                    compound.setShape(vote.shape, vote.grade);
                     compound = system.addGlyph(compound);
 
                     if (logger.isFineEnabled()) {
@@ -134,8 +137,5 @@ public class HiddenSlurPattern
         Scale.AreaFraction minSectionWeight = new Scale.AreaFraction(
             0.4,
             "Minimum normalized section weight to check for a slur shape");
-        Evaluation.Doubt   maxDoubt = new Evaluation.Doubt(
-            4d,
-            "Maximum doubt for slur section");
     }
 }

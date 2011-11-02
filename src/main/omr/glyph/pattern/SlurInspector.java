@@ -15,7 +15,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.CompoundBuilder;
 import omr.glyph.Evaluation;
-import omr.glyph.GlyphInspector;
+import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
@@ -647,7 +647,7 @@ public class SlurInspector
 
             return (!glyph.isManualShape() &&
                    ((shape == Shape.CLUTTER) || (shape == Shape.STRUCTURE))) ||
-                   (glyph.getDoubt() >= GlyphInspector.getMinCompoundPartDoubt());
+                   (glyph.getGrade() <= Grades.compoundPartMaxGrade);
         }
 
         @Implement(CompoundBuilder.CompoundAdapter.class)

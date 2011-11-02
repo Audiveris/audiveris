@@ -309,7 +309,7 @@ public class AlterPattern
         public PairAdapter (SystemInfo     system,
                             EnumSet<Shape> shapes)
         {
-            super(system, constants.alterMaxDoubt.getValue(), shapes);
+            super(system, constants.alterMinGrade.getValue(), shapes);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -355,14 +355,14 @@ public class AlterPattern
     {
         //~ Instance fields ----------------------------------------------------
 
-        Evaluation.Doubt alterMaxDoubt = new Evaluation.Doubt(
-            300d,
-            "Maximum doubt for sharp/natural sign verification");
+        Evaluation.Grade alterMinGrade = new Evaluation.Grade(
+            0.3,
+            "Minimum grade for sharp/natural sign verification");
 
         //
-        Evaluation.Doubt flatMaxDoubt = new Evaluation.Doubt(
-            5d,
-            "Maximum doubt for flat sign verification");
+        Evaluation.Grade flatMinGrade = new Evaluation.Grade(
+            20d,
+            "Minimum grade for flat sign verification");
 
         //
         Scale.Fraction maxCloseStemDx = new Scale.Fraction(
@@ -410,7 +410,7 @@ public class AlterPattern
         {
             super(
                 system,
-                constants.flatMaxDoubt.getValue(),
+                constants.flatMinGrade.getValue(),
                 EnumSet.of(Shape.FLAT));
         }
 
