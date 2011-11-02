@@ -233,8 +233,7 @@ public class GlyphInspector
             BasicAdapter adapter = new BasicAdapter(system, maxDoubt, seed);
 
             if (adapter.isCandidateSuitable(seed)) {
-                system.getCompoundBuilder()
-                      .buildCompound(
+                system.buildCompound(
                     seed,
                     true,
                     glyphs.subList(index + 1, glyphs.size()),

@@ -13,6 +13,7 @@ package omr.glyph.pattern;
 
 import omr.constant.ConstantSet;
 
+import omr.glyph.CompoundBuilder;
 import omr.glyph.Evaluation;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Glyphs;
@@ -31,9 +32,9 @@ import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
 import omr.util.Implement;
-import omr.util.Predicate;
 
 import java.util.Collection;
+import java.util.EnumSet;
 
 /**
  * Class {@code TimePattern} verifies the time signature glyphs
@@ -50,15 +51,6 @@ public class TimePattern
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(TimePattern.class);
-
-    /** Specific predicate to filter time shapes */
-    private static final Predicate<Shape> timePredicate = new Predicate<Shape>() {
-        public boolean check (Shape shape)
-        {
-            return ShapeRange.Times.contains(shape);
-        }
-    };
-
 
     //~ Constructors -----------------------------------------------------------
 
@@ -90,75 +82,22 @@ public class TimePattern
                 continue;
             }
 
-            // Retrieve environment (staff)
-            final int      xOffset = scale.toPixels(constants.xOffset);
-            final int      yOffset = scale.toPixels(constants.yOffset);
-
-            // Define the core box to intersect time glyph(s)
-            PixelPoint     center = glyph.getAreaCenter();
-            StaffInfo      staff = system.getStaffAt(center);
-
-            PixelRectangle pixCore = glyph.getContourBox();
-            pixCore.grow(-xOffset, 0);
-            pixCore.y = staff.getFirstLine()
-                             .yAt(center.x) + yOffset;
-            pixCore.height = staff.getLastLine()
-                                  .yAt(center.x) - yOffset - pixCore.y;
-
-            // Draw the time core box, for visual debug
-            glyph.addAttachment("time", pixCore);
-
             // We must find a time out of these glyphs
-            Collection<Glyph> glyphs = system.lookupIntersectedGlyphs(pixCore);
+            Glyph compound = system.buildCompound(
+                glyph,
+                false,
+                system.getGlyphs(),
+                new TimeSigAdapter(
+                    system,
+                    constants.timeMaxDoubt.getValue(),
+                    ShapeRange.FullTimes));
 
-            if (checkTime(glyphs)) {
+            if (compound != null) {
                 successNb++;
             }
         }
 
         return successNb;
-    }
-
-    //-----------//
-    // checkTime //
-    //-----------//
-    /**
-     * Try to recognize a time glyph in the compound of the provided glyphs
-     * @param glyphs the parts of a time candidate
-     * @return true if successful
-     */
-    private boolean checkTime (Collection<Glyph> glyphs)
-    {
-        Glyphs.purgeManuals(glyphs);
-
-        if (glyphs.isEmpty()) {
-            return false;
-        }
-
-        Glyph compound = system.buildTransientCompound(glyphs);
-        system.computeGlyphFeatures(compound);
-
-        // Check if a time appears in the top evaluations
-        final Evaluation vote = GlyphNetwork.getInstance()
-                                            .topVote(
-            compound,
-            constants.timeMaxDoubt.getValue(),
-            system,
-            timePredicate);
-
-        if (vote != null) {
-            compound = system.addGlyph(compound);
-            compound.setShape(vote.shape, Evaluation.ALGORITHM);
-
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    vote.shape + " rebuilt as glyph#" + compound.getId());
-            }
-
-            return true;
-        } else {
-            return false;
-        }
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -180,5 +119,60 @@ public class TimePattern
         Evaluation.Doubt timeMaxDoubt = new Evaluation.Doubt(
             10000d,
             "Maximum doubt for time verification");
+    }
+
+    //----------------//
+    // TimeSigAdapter //
+    //----------------//
+    /**
+     * Compound adapter to search for a time sig shape
+     */
+    private class TimeSigAdapter
+        extends CompoundBuilder.TopShapeAdapter
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public TimeSigAdapter (SystemInfo     system,
+                               double         maxDoubt,
+                               EnumSet<Shape> desiredShapes)
+        {
+            super(system, maxDoubt, desiredShapes);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        public boolean isCandidateSuitable (Glyph glyph)
+        {
+            return !glyph.isManualShape();
+        }
+
+        @Override
+        public Evaluation getChosenEvaluation ()
+        {
+            return new Evaluation(chosenEvaluation.shape, Evaluation.ALGORITHM);
+        }
+
+        public PixelRectangle getReferenceBox ()
+        {
+            // Retrieve environment (staff)
+            final int      xOffset = scale.toPixels(constants.xOffset);
+            final int      yOffset = scale.toPixels(constants.yOffset);
+
+            // Define the core box to intersect time glyph(s)
+            PixelPoint     center = seed.getAreaCenter();
+            StaffInfo      staff = system.getStaffAt(center);
+
+            PixelRectangle box = seed.getContourBox();
+            box.grow(-xOffset, 0);
+            box.y = staff.getFirstLine()
+                         .yAt(center.x) + yOffset;
+            box.height = staff.getLastLine()
+                              .yAt(center.x) - yOffset - box.y;
+
+            // Draw the time core box, for visual debug
+            seed.addAttachment("time", box);
+
+            return box;
+        }
     }
 }

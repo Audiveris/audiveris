@@ -104,7 +104,7 @@ public class LedgerPattern
     @Override
     public int runPattern ()
     {
-        int   nb = 0;
+        int nb = 0;
 
         for (StaffInfo staff : system.getStaves()) {
             Map<Integer, SortedSet<Ledger>> ledgerMap = staff.getLedgerMap();
@@ -122,14 +122,13 @@ public class LedgerPattern
 
                 // Process 
                 for (Iterator<Ledger> it = ledgerSet.iterator(); it.hasNext();) {
-                    Ledger ledger = it.next();
-                    Glyph  glyph = ledger.getStick();
+                    Ledger     ledger = it.next();
+                    Glyph      glyph = ledger.getStick();
                     Set<Glyph> neighbors = new HashSet<Glyph>();
 
                     if (isInvalid(glyph, neighbors)) {
                         // Check if we can forge a ledger-compatible neighbor
-                        Glyph compound = system.getCompoundBuilder()
-                                               .buildCompound(
+                        Glyph compound = system.buildCompound(
                             glyph,
                             false,
                             system.getGlyphs(),

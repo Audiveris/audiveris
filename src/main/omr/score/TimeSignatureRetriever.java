@@ -13,6 +13,7 @@ package omr.score;
 
 import omr.constant.ConstantSet;
 
+import omr.glyph.CompoundBuilder;
 import omr.glyph.Evaluation;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Glyphs;
@@ -46,6 +47,7 @@ import omr.util.Predicate;
 import omr.util.TreeNode;
 
 import java.util.Collection;
+import java.util.EnumSet;
 
 /**
  * Class <code>TimeSignatureRetriever</code> checks carefully the first
@@ -65,14 +67,11 @@ public class TimeSignatureRetriever
     private static final Logger logger = Logger.getLogger(
         TimeSignatureRetriever.class);
 
-    /** Specific predicate to filter time sig shapes */
-    private static final Predicate<Shape> timePredicate = new Predicate<Shape>() {
-        public boolean check (Shape shape)
-        {
-            return ShapeRange.Times.contains(shape);
-        }
-    };
+    //~ Instance fields --------------------------------------------------------
 
+    // Scale-dependent constants
+    private int timeSigWidth;
+    private int yOffset;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -92,14 +91,17 @@ public class TimeSignatureRetriever
     // visit Page //
     //------------//
     /**
-     * Page hierarchy (sole) entry point
-     *
+     * Page hierarchy (sole) entry point.
      * @param page the page to check
      * @return false
      */
     @Override
     public boolean visit (Page page)
     {
+        Scale scale = page.getScale();
+        timeSigWidth = scale.toPixels(constants.timeSigWidth);
+        yOffset = scale.toPixels(constants.yOffset);
+
         try {
             // We simply consider the very first measure of every staff
             ScoreSystem system = page.getFirstSystem();
@@ -111,11 +113,8 @@ public class TimeSignatureRetriever
                 return false;
             }
 
-            // No TS found. Let's look where it would be, if there was one
+            // No TS found. Let's look where it should be, if there was one
             PixelRectangle roi = getRoi(firstMeasure);
-            Scale          scale = system.getScale();
-            int            timeSigWidth = scale.toPixels(
-                constants.timeSigWidth);
 
             if (roi.width < timeSigWidth) {
                 if (logger.isFineEnabled()) {
@@ -125,8 +124,6 @@ public class TimeSignatureRetriever
                 return false;
             }
 
-            int yOffset = scale.toPixels(constants.yOffset);
-
             for (Staff.SystemIterator sit = new Staff.SystemIterator(
                 firstMeasure); sit.hasNext();) {
                 Staff staff = sit.next();
@@ -135,42 +132,18 @@ public class TimeSignatureRetriever
                     continue;
                 }
 
-                // Define the inner box to intersect time glyph(s)
-                int            center = roi.x + (roi.width / 2);
-                StaffInfo      staffInfo = staff.getInfo();
-                PixelRectangle inner = new PixelRectangle(
-                    center,
-                    staffInfo.getFirstLine().yAt(center) +
-                    (staffInfo.getHeight() / 2),
-                    0,
-                    0);
-                inner.grow(
-                    (timeSigWidth / 2),
-                    (staffInfo.getHeight() / 2) - yOffset);
-
-                // Draw the box, for visual debug
-                SystemPart part = system.getPartAt(inner.getCenter());
-                Barline    barline = part.getStartingBarline();
-                Glyph      line = null;
-
-                if (barline != null) {
-                    line = Glyphs.firstOf(
-                        barline.getGlyphs(),
-                        Barline.linePredicate);
-
-                    if (line != null) {
-                        line.addAttachment(
-                            "TimeSigInner#" + staff.getId(),
-                            inner);
-                    }
-                }
-
-                // We now must find a time sig out of these glyphs
-                Collection<Glyph> glyphs = system.getInfo()
-                                                 .lookupIntersectedGlyphs(
-                    inner);
-
-                Glyph             compound = checkTimeSig(glyphs, system);
+                int   center = roi.x + (roi.width / 2);
+                Glyph compound = system.getInfo()
+                                       .buildCompound(
+                    null,
+                    false,
+                    system.getInfo().getGlyphs(),
+                    new TimeSigAdapter(
+                        system.getInfo(),
+                        constants.timeSigMaxDoubt.getValue(),
+                        ShapeRange.FullTimes,
+                        staff,
+                        center));
 
                 if (compound != null) {
                     // Insert time sig in proper measure
@@ -256,53 +229,6 @@ public class TimeSignatureRetriever
         return new PixelRectangle(left, 0, right - left, 0);
     }
 
-    //--------------//
-    // checkTimeSig //
-    //--------------//
-    /**
-     * Check that we are able to recognize a time signature from the provided
-     * glyphs
-     * @param glyphs the glyphs to build up the time sig
-     * @param scoreSystem the containing system
-     * @return the compound (full) time signature if successful, or null
-     */
-    private Glyph checkTimeSig (Collection<Glyph> glyphs,
-                                ScoreSystem       scoreSystem)
-    {
-        SystemInfo system = scoreSystem.getInfo();
-        Glyphs.purgeManuals(glyphs);
-
-        if (glyphs.isEmpty()) {
-            return null;
-        }
-
-        Glyph compound = system.buildTransientCompound(glyphs);
-        system.computeGlyphFeatures(compound);
-
-        // Check if a time sig appears in the top evaluations
-        Evaluation vote = GlyphNetwork.getInstance()
-                                      .topVote(
-            compound,
-            constants.timeSigMaxDoubt.getValue(),
-            system,
-            timePredicate);
-
-        if (vote != null) {
-            // We now have a time sig!
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    vote.shape + " built from " + Glyphs.toString(glyphs));
-            }
-
-            compound = system.addGlyph(compound);
-            compound.setShape(vote.shape, Evaluation.ALGORITHM);
-
-            return compound;
-        } else {
-            return null;
-        }
-    }
-
     //------------//
     // hasTimeSig //
     //------------//
@@ -348,5 +274,76 @@ public class TimeSignatureRetriever
         Evaluation.Doubt timeSigMaxDoubt = new Evaluation.Doubt(
             300d,
             "Maximum doubt for time sig verification");
+    }
+
+    //----------------//
+    // TimeSigAdapter //
+    //----------------//
+    /**
+     * Compound adapter to search for a time sig shape
+     */
+    private class TimeSigAdapter
+        extends CompoundBuilder.TopShapeAdapter
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final Staff staff;
+        final int   center;
+
+        //~ Constructors -------------------------------------------------------
+
+        public TimeSigAdapter (SystemInfo     system,
+                               double         maxDoubt,
+                               EnumSet<Shape> desiredShapes,
+                               Staff          staff,
+                               int            center)
+        {
+            super(system, maxDoubt, desiredShapes);
+            this.staff = staff;
+            this.center = center;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        public boolean isCandidateSuitable (Glyph glyph)
+        {
+            return !glyph.isManualShape();
+        }
+
+        @Override
+        public Evaluation getChosenEvaluation ()
+        {
+            return new Evaluation(chosenEvaluation.shape, Evaluation.ALGORITHM);
+        }
+
+        public PixelRectangle getReferenceBox ()
+        {
+            StaffInfo      staffInfo = staff.getInfo();
+            PixelRectangle box = new PixelRectangle(
+                center,
+                staffInfo.getFirstLine().yAt(center) +
+                (staffInfo.getHeight() / 2),
+                0,
+                0);
+            box.grow((timeSigWidth / 2), (staffInfo.getHeight() / 2) - yOffset);
+
+            // Draw the box, for visual debug
+            SystemPart part = system.getScoreSystem()
+                                    .getPartAt(box.getCenter());
+            Barline    barline = part.getStartingBarline();
+            Glyph      line = null;
+
+            if (barline != null) {
+                line = Glyphs.firstOf(
+                    barline.getGlyphs(),
+                    Barline.linePredicate);
+
+                if (line != null) {
+                    line.addAttachment("timeInner#" + staff.getId(), box);
+                }
+            }
+
+            return box;
+        }
     }
 }

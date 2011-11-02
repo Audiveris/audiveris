@@ -14,6 +14,7 @@ package omr.sheet;
 import omr.check.CheckSuite;
 
 import omr.glyph.CompoundBuilder;
+import omr.glyph.CompoundBuilder.CompoundAdapter;
 import omr.glyph.GlyphInspector;
 import omr.glyph.Glyphs;
 import omr.glyph.GlyphsBuilder;
@@ -339,14 +340,6 @@ public class SystemInfo
         } else {
             return null;
         }
-    }
-
-    //--------------------//
-    // getCompoundBuilder //
-    //--------------------//
-    public CompoundBuilder getCompoundBuilder ()
-    {
-        return compoundBuilder;
     }
 
     //-----------//
@@ -846,6 +839,21 @@ public class SystemInfo
                     lastLine.yAt(left) - firstLine.yAt(left));
             }
         }
+    }
+
+    //---------------//
+    // buildCompound //
+    //---------------//
+    public Glyph buildCompound (Glyph             seed,
+                                boolean           includeSeed,
+                                Collection<Glyph> suitables,
+                                CompoundAdapter   adapter)
+    {
+        return compoundBuilder.buildCompound(
+            seed,
+            includeSeed,
+            suitables,
+            adapter);
     }
 
     //------------//

@@ -113,8 +113,7 @@ public class BassPattern
                         "Got bass dots #" + top.getId() + " & #" + bot.getId());
                 }
 
-                Glyph compound = system.getCompoundBuilder()
-                                       .buildCompound(
+                Glyph compound = system.buildCompound(
                     top,
                     true,
                     system.getGlyphs(),

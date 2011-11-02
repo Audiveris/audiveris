@@ -62,7 +62,6 @@ public class AlterPattern
     final int                flatHeadHeight;
 
     // Adapters
-    final CompoundBuilder    compoundBuilder;
     final PairAdapter        sharpAdapter;
     final PairAdapter        naturalAdapter;
 
@@ -86,7 +85,6 @@ public class AlterPattern
         flatHeadWidth = scale.toPixels(constants.flatHeadWidth);
         flatHeadHeight = scale.toPixels(constants.flatHeadHeight);
 
-        compoundBuilder = system.getCompoundBuilder();
         sharpAdapter = new SharpAdapter(system);
         naturalAdapter = new NaturalAdapter(system);
     }
@@ -191,7 +189,7 @@ public class AlterPattern
                 // Prepare the adapter with proper stem boxes
                 adapter.setStemBoxes(leftBox, rightBox);
 
-                Glyph compound = compoundBuilder.buildCompound(
+                Glyph compound = system.buildCompound(
                     glyph,
                     true,
                     system.getGlyphs(),
@@ -239,7 +237,7 @@ public class AlterPattern
             // "hide" the stems to not perturb evaluation
             glyph.setShape(null);
 
-            Glyph compound = compoundBuilder.buildCompound(
+            Glyph compound = system.buildCompound(
                 glyph,
                 true,
                 system.getGlyphs(),
@@ -358,7 +356,7 @@ public class AlterPattern
         //~ Instance fields ----------------------------------------------------
 
         Evaluation.Doubt alterMaxDoubt = new Evaluation.Doubt(
-            50d,
+            300d,
             "Maximum doubt for sharp/natural sign verification");
 
         //

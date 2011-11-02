@@ -77,8 +77,7 @@ public class FortePattern
         for (Glyph forte : system.getGlyphs()) {
             // Focus on forte shaped glyphs
             if (forte.getShape() == Shape.DYNAMICS_F) {
-                Glyph compound = system.getCompoundBuilder()
-                                       .buildCompound(
+                Glyph compound = system.buildCompound(
                     forte,
                     false,
                     system.getGlyphs(),
