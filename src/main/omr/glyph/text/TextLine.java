@@ -293,11 +293,7 @@ public class TextLine
             Glyph compound = system.buildTransientCompound(glyphs);
 
             // Check that this glyph is not forbidden as text
-            Glyph original = system.getSheet()
-                                   .getNest()
-                                   .getOriginal(compound);
-
-            if ((original != null) && original.isShapeForbidden(Shape.TEXT)) {
+            if (compound.isShapeForbidden(Shape.TEXT)) {
                 return sentences;
             }
 
@@ -488,7 +484,6 @@ public class TextLine
                         Glyph compound = system.buildTransientCompound(
                             Arrays.asList(outer, inner));
                         compound = system.addGlyph(compound);
-                        system.computeGlyphFeatures(compound);
                         compound.setShape(Shape.TEXT);
 
                         addGlyph(compound);
@@ -856,14 +851,7 @@ public class TextLine
                 if (!sections.isEmpty()) {
                     allSections.removeAll(sections);
 
-                    Glyph lineGlyph = system.buildGlyph(sections);
-                    Glyph original = system.getSheet()
-                                           .getNest()
-                                           .getOriginal(glyph);
-
-                    if (original != null) {
-                        lineGlyph = original;
-                    }
+                    Glyph lineGlyph = system.buildTransientGlyph(sections);
 
                     // Validate ocr content
                     if (OcrTextVerifier.isValid(lineGlyph, ocrLine)) {
@@ -1098,17 +1086,7 @@ public class TextLine
                 return false;
             }
 
-            // Text allowed?
-            Glyph original = system.getSheet()
-                                   .getNest()
-                                   .getOriginal(compound);
-
-            if ((original != null) && original.isShapeForbidden(Shape.TEXT)) {
-                return false;
-            }
-
             GlyphEvaluator evaluator = GlyphNetwork.getInstance();
-
             vote = evaluator.vote(compound, Grades.textMinGrade, system);
 
             return (vote != null) && vote.shape.isText();

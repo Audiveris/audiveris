@@ -25,7 +25,6 @@ import omr.score.TimeSignatureFixer;
 import omr.score.TimeSignatureRetriever;
 import omr.score.entity.Page;
 import omr.score.entity.ScoreSystem;
-import omr.score.midi.MidiAgent;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
@@ -167,18 +166,18 @@ public class PagesStep
                 // 2/ Adapt time sigs to intrinsic measure & chord durations
                 page.accept(new TimeSignatureFixer());
 
-//                if (Main.getGui() != null) {
-//                    try {
-//                        // Invalidate score data within MidiAgent, if so needed
-//                        MidiAgent agent = MidiAgent.getInstance();
-//
-//                        if (agent.getScore() == sheet.getScore()) {
-//                            agent.reset();
-//                        }
-//                    } catch (Exception ex) {
-//                        logger.warning("Cannot access Midi agent", ex);
-//                    }
-//                }
+                //                if (Main.getGui() != null) {
+                //                    try {
+                //                        // Invalidate score data within MidiAgent, if so needed
+                //                        MidiAgent agent = MidiAgent.getInstance();
+                //
+                //                        if (agent.getScore() == sheet.getScore()) {
+                //                            agent.reset();
+                //                        }
+                //                    } catch (Exception ex) {
+                //                        logger.warning("Cannot access Midi agent", ex);
+                //                    }
+                //                }
             }
         }
     }

@@ -272,14 +272,6 @@ public class TextBlob
                                  .next();
 
         // Check that this glyph is not forbidden as text
-        Glyph original = system.getSheet()
-                               .getNest()
-                               .getOriginal(compound);
-
-        if (original != null) {
-            compound = original;
-        }
-
         if (compound.isShapeForbidden(Shape.TEXT)) {
             if (logger.isFineEnabled()) {
                 logger.fine("Shape TEXT blacklisted");

@@ -482,7 +482,9 @@ public class TextArea
             }
 
             if (vote.shape.isText()) {
-                return createText(glyph, vote);
+                createText(glyph, vote);
+
+                return true;
             }
         }
 
@@ -573,27 +575,17 @@ public class TextArea
     //------------//
     // createText //
     //------------//
-    private boolean createText (Glyph      glyph,
-                                Evaluation eval)
+    private void createText (Glyph      glyph,
+                             Evaluation eval)
     {
-        // Check that this glyph is not forbidden as text
-        Glyph original = sheet.getNest()
-                              .getOriginal(glyph);
+        system.computeGlyphFeatures(glyph);
+        glyph = system.addGlyph(glyph);
 
-        if ((original != null) && original.isShapeForbidden(Shape.TEXT)) {
-            return false;
-        } else {
-            system.computeGlyphFeatures(glyph);
-            glyph = system.addGlyph(glyph);
+        // No! glyph.setTextArea(this);
+        glyph.setShape(eval.shape, eval.grade);
 
-            // No! glyph.setTextArea(this);
-            glyph.setShape(eval.shape, eval.grade);
-
-            if (logger.isFineEnabled()) {
-                logger.fine("Glyph#" + glyph.getId() + " TEXT recognized");
-            }
-
-            return true;
+        if (logger.isFineEnabled()) {
+            logger.fine("Glyph#" + glyph.getId() + " TEXT recognized");
         }
     }
 

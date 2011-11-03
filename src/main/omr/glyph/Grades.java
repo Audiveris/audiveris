@@ -98,7 +98,7 @@ public class Grades
 
         Evaluation.Grade compoundPartMaxGrade = new Evaluation.Grade(
             90,
-            "Maximum grade for a suitable compound part");
+            "*MAXIMUM* grade for a suitable compound part");
 
         //
         Evaluation.Grade bassMinGrade = new Evaluation.Grade(

@@ -175,13 +175,8 @@ public class SentencePattern
                     if (one.isCloseTo(two)) {
                         // Check the resulting text is not black-listed
                         Glyph compound = one.mergeOf(two);
-                        Glyph original = system.getSheet()
-                                               .getNest()
-                                               .getOriginal(compound);
 
-                        if ((original == null) ||
-                            !original.isShapeForbidden(Shape.TEXT)) {
-                            compound = system.addGlyph(compound);
+                        if (!compound.isShapeForbidden(Shape.TEXT)) {
                             compound.setShape(Shape.TEXT, Evaluation.ALGORITHM);
 
                             TextLine s = new TextLine(system, compound);

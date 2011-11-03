@@ -83,8 +83,8 @@ public class GlyphsBuilder
     private final Nest nest;
 
     /** Margins for a stem */
-    final int stemWiden;
-    final int stemHeighten;
+    private final int stemWiden;
+    private final int stemHeighten;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -121,7 +121,7 @@ public class GlyphsBuilder
      * are made no longer active glyphs.
      *
      * @param glyph the brand new glyph
-     * @return the original glyph as inserted in the glyph lag
+     * @return the original glyph as inserted in the glyph nest
      */
     public Glyph addGlyph (Glyph glyph)
     {
@@ -176,10 +176,6 @@ public class GlyphsBuilder
     //------------------------//
     /**
      * Make a new glyph out of a collection of (sub) glyphs, by merging all
-     * their member sections. This compound is transient, since until it is
-     * properly inserted by use of {@link #addGlyph}, this building has no
-     * impact on either the containing lag, the containing system, nor the
-     * contained parts or the contained sections themselves.
      *
      * @param parts the collection of (sub) glyphs
      * @return the brand new (compound) glyph
@@ -205,10 +201,7 @@ public class GlyphsBuilder
     // buildTransientGlyph //
     //---------------------//
     /**
-     * Make a new glyph out of a collection of sections.
-     * This glyph is transient, since until it is properly inserted by use of
-     * {@link #addGlyph}, this building has no impact on either the containing
-     * lag, the containing system, nor the contained sections themselves.
+     * Make a new transient glyph out of a collection of sections.
      *
      * @param sections the collection of sections
      * @return the brand new transientglyph
@@ -220,6 +213,13 @@ public class GlyphsBuilder
 
         for (Section section : sections) {
             compound.addSection(section, Glyph.Linking.NO_LINK_BACK);
+        }
+
+        // Make sure we get access to original forbidden shapes if any
+        Glyph original = nest.getOriginal(compound);
+
+        if (original != null) {
+            compound = original;
         }
 
         // Compute glyph parameters
@@ -349,7 +349,7 @@ public class GlyphsBuilder
                 Glyph glyph = new BasicGlyph(scale.interline());
                 considerConnection(glyph, section);
 
-                // Insert this newly built glyph in system collection
+                // Insert this newly built glyph into system collection
                 glyph = addGlyph(glyph);
 
                 if (logger.isFineEnabled()) {

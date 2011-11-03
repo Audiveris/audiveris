@@ -15,8 +15,6 @@ import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.run.Orientation;
-
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 

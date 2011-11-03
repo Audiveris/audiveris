@@ -68,8 +68,6 @@ import java.util.concurrent.ConcurrentSkipListSet;
  * SystemInfo is the interface of choice, with delegation to the proper
  * companion.
  *
- * <p>Nota: All measurements are assumed to be in pixels.
- *
  * @author Hervé Bitteur
  */
 public class SystemInfo
@@ -760,7 +758,7 @@ public class SystemInfo
     // addGlyph //
     //----------//
     /**
-     * Add a brand new glyph as an active glyph in proper system and lag.
+     * Add a brand new glyph as an active glyph in proper system and nest.
      * If the glyph is a compound, its parts are made pointing back to it and
      * are made no longer active glyphs. To just register a glyph (without
      * impacting its sections), use {@link #registerGlyph} instead.
@@ -770,7 +768,7 @@ public class SystemInfo
      * with same signature existed before this one)
      *
      * @param glyph the brand new glyph
-     * @return the original glyph as inserted in the glyph lag. Use this entity
+     * @return the original glyph as inserted in the glyph nest. Use this entity
      * instead of the provided one.
      * @see #registerGlyph
      */
@@ -888,8 +886,12 @@ public class SystemInfo
      * Make a new glyph out of a collection of (sub) glyphs, by merging all
      * their member sections. This compound is transient, since until it is
      * properly inserted by use of {@link #addGlyph}, this building has no
-     * impact on either the containing lag, the containing system, nor the
+     * impact on either the containing nest, the containing system, nor the
      * contained sections themselves.
+     *
+     * <p>If the newly built compound duplicates an original glyph, the original
+     * glyph is used in place of the compound. Finally, the glyph features are
+     * computed before the compound is returned.</p>
      *
      * @param parts the collection of (sub) glyphs
      * @return the brand new (compound) glyph
@@ -906,7 +908,11 @@ public class SystemInfo
      * Make a new glyph out of a collection of sections.
      * This glyph is transient, since until it is properly inserted by use of
      * {@link #addGlyph}, this building has no impact on either the containing
-     * lag, the containing system, nor the contained sections themselves.
+     * nest, the containing system, nor the contained sections themselves.
+     *
+     * <p>If the newly built compound duplicates an original glyph, the original
+     * glyph is used in place of the compound. Finally, the glyph features are
+     * computed before the compound is returned.</p>
      *
      * @param sections the collection of sections
      * @return the brand new transient glyph
@@ -1479,7 +1485,7 @@ public class SystemInfo
     //-------------------//
     // updateCoordinates //
     //-------------------//
-    public void updateCoordinates ()
+    public final void updateCoordinates ()
     {
         StaffInfo firstStaff = getFirstStaff();
         LineInfo  firstLine = firstStaff.getFirstLine();

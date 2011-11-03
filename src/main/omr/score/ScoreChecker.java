@@ -719,8 +719,6 @@ public class ScoreChecker
             SystemInfo system = first.getSystem()
                                      .getInfo();
             Glyph      compound = system.buildTransientCompound(glyphs);
-            system.computeGlyphFeatures(compound);
-
             Evaluation vote = GlyphNetwork.getInstance()
                                           .vote(
                 compound,

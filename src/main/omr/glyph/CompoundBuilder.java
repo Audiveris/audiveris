@@ -114,28 +114,17 @@ public class CompoundBuilder
             Glyph compound = system.buildTransientCompound(neighbors);
 
             if (adapter.isCompoundValid(compound)) {
-                // If this compound duplicates an original glyph,
-                // make sure the shape was not forbidden in the original
-                Glyph original = system.getSheet()
-                                       .getNest()
-                                       .getOriginal(compound);
+                // Assign and insert into system & lag environments
+                compound = system.addGlyph(compound);
+                compound.setEvaluation(adapter.getChosenEvaluation());
 
-                if ((original == null) ||
-                    !original.isShapeForbidden(
-                    adapter.getChosenEvaluation().shape)) {
-                    // Assign and insert into system & lag environments
-                    compound = system.addGlyph(compound);
-                    system.computeGlyphFeatures(compound);
-                    compound.setEvaluation(adapter.getChosenEvaluation());
-
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            "Compound #" + compound.getId() + " built as " +
-                            compound.getShape());
-                    }
-
-                    return compound;
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "Compound #" + compound.getId() + " built as " +
+                        compound.getShape());
                 }
+
+                return compound;
             }
         }
 

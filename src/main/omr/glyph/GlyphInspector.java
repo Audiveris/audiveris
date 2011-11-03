@@ -85,7 +85,7 @@ public class GlyphInspector
                 Evaluation vote = evaluator.vote(glyph, minGrade, system);
 
                 if ((vote != null) && !glyph.isShapeForbidden(vote.shape)) {
-                    glyph.setShape(vote.shape, vote.grade);
+                    glyph.setEvaluation(vote);
                 }
             }
         }
@@ -205,9 +205,6 @@ public class GlyphInspector
                          ((shape == Shape.DOT) || (shape == Shape.NOISE) ||
                          (shape == Shape.CLUTTER) ||
                          (shape == Shape.STRUCTURE) ||
-                         (shape == Shape.VOID_NOTEHEAD) ||
-                         (shape == Shape.VOID_NOTEHEAD_2) ||
-                         (shape == Shape.VOID_NOTEHEAD_3) ||
                          (shape == Shape.STACCATISSIMO) ||
                          (glyph.getGrade() <= Grades.compoundPartMaxGrade))));
 

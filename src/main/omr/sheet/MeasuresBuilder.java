@@ -23,13 +23,13 @@ import omr.grid.StickIntersection;
 
 import omr.log.Logger;
 
-import omr.score.common.PixelRectangle;
 import omr.score.entity.Barline;
 import omr.score.entity.Measure;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
 
+import omr.util.Navigable;
 import omr.util.TreeNode;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -63,23 +63,27 @@ public class MeasuresBuilder
     /** Failure, since bar goes higher or lower than the system area */
     private static final FailureResult NOT_WITHIN_SYSTEM = new FailureResult(
         "Bar-NotWithinSystem");
-    private static final FailureResult NOT_STAFF_ALIGNED = new FailureResult(
+    private static final FailureResult        NOT_STAFF_ALIGNED = new FailureResult(
         "Bar-NotStaffAligned");
-    private static final FailureResult NOT_SYSTEM_ALIGNED = new FailureResult(
+    private static final FailureResult        NOT_SYSTEM_ALIGNED = new FailureResult(
         "Bar-NotSystemAligned");
 
     //~ Instance fields --------------------------------------------------------
 
     /** The dedicated system */
+    @Navigable(false)
     private final SystemInfo system;
 
     /** Its counterpart within Score hierarchy */
+    @Navigable(false)
     private ScoreSystem scoreSystem;
 
     /** The related sheet */
+    @Navigable(false)
     private final Sheet sheet;
 
     /** Sheet scale */
+    @Navigable(false)
     private final Scale scale;
 
     //~ Constructors -----------------------------------------------------------
@@ -117,35 +121,35 @@ public class MeasuresBuilder
         checkMeasures();
     }
 
-//    //----------------//
-//    // isPartEmbraced //
-//    //----------------//
-//    /**
-//     * Check whether the given part is within the vertical range of the given
-//     * glyph (bar stick or brace glyph)
-//     *
-//     * @param part the given part
-//     * @param glyph the given glyph
-//     * @return true if part is embraced by the bar
-//     */
-//    private boolean isPartEmbraced (SystemPart part,
-//                                    Glyph      glyph)
-//    {
-//        // Extrema of glyph
-//        PixelRectangle box = glyph.getContourBox();
-//        int            top = box.y;
-//        int            bot = box.y + box.height;
-//
-//        // Check that part and glyph overlap vertically
-//        final int topPart = part.getFirstStaff()
-//                                .getTopLeft().y;
-//        final int botPart = part.getLastStaff()
-//                                .getTopLeft().y +
-//                            part.getLastStaff()
-//                                .getHeight();
-//
-//        return Math.max(topPart, top) < Math.min(botPart, bot);
-//    }
+    //    //----------------//
+    //    // isPartEmbraced //
+    //    //----------------//
+    //    /**
+    //     * Check whether the given part is within the vertical range of the given
+    //     * glyph (bar stick or brace glyph)
+    //     *
+    //     * @param part the given part
+    //     * @param glyph the given glyph
+    //     * @return true if part is embraced by the bar
+    //     */
+    //    private boolean isPartEmbraced (SystemPart part,
+    //                                    Glyph      glyph)
+    //    {
+    //        // Extrema of glyph
+    //        PixelRectangle box = glyph.getContourBox();
+    //        int            top = box.y;
+    //        int            bot = box.y + box.height;
+    //
+    //        // Check that part and glyph overlap vertically
+    //        final int topPart = part.getFirstStaff()
+    //                                .getTopLeft().y;
+    //        final int botPart = part.getLastStaff()
+    //                                .getTopLeft().y +
+    //                            part.getLastStaff()
+    //                                .getHeight();
+    //
+    //        return Math.max(topPart, top) < Math.min(botPart, bot);
+    //    }
 
     //------------------//
     // allocateMeasures //

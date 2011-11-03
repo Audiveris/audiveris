@@ -46,7 +46,7 @@ public class HorizontalsStep
             Steps.HORIZONTALS,
             Level.SHEET_LEVEL,
             Mandatory.MANDATORY,
-            Redoable.NON_REDOABLE,
+            Redoable.REDOABLE,
             HORIZONTALS_TAB,
             "Extract ledgers, tenutos & endings");
     }

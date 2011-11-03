@@ -81,7 +81,7 @@ public class PatternsChecker
         new TextAreaPattern(system), //   Glyphs -> Text
         new SentencePattern(system), // Text -> sentences
                                      //
-        new ArticulationPattern(system),
+        ///new ArticulationPattern(system),
                        
         new LeftOverPattern(system)
                    };

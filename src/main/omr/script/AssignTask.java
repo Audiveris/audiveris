@@ -132,19 +132,8 @@ public class AssignTask
     public void core (Sheet sheet)
         throws Exception
     {
-        //        switch (orientation) {
-        //        case HORIZONTAL :
-        //            sheet.getHorizontalsBuilder()
-        //                 .getController()
-        //                 .syncAssign(this);
-        //
-        //            break;
-        //
-        //        case VERTICAL :
         sheet.getSymbolsController()
              .syncAssign(this);
-
-        //        }
     }
 
     //--------//

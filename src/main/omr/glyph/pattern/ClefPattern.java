@@ -17,6 +17,7 @@ import omr.glyph.Evaluation;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Glyphs;
 import omr.glyph.Grades;
+import omr.glyph.Nest;
 import omr.glyph.Shape;
 import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
@@ -71,11 +72,15 @@ public class ClefPattern
 
     //~ Instance fields --------------------------------------------------------
 
-    private int clefWidth;
-    private int xOffset;
-    private int yOffset;
-    private int xMargin;
-    private int yMargin;
+    /** Glyphs nest */
+    private final Nest nest;
+
+    // Scale-dependent parameters
+    private final int clefWidth;
+    private final int xOffset;
+    private final int yOffset;
+    private final int xMargin;
+    private final int yMargin;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -86,6 +91,15 @@ public class ClefPattern
     public ClefPattern (SystemInfo system)
     {
         super("Clef", system);
+
+        nest = system.getSheet()
+                     .getNest();
+
+        clefWidth = scale.toPixels(constants.clefWidth);
+        xOffset = scale.toPixels(constants.xOffset);
+        yOffset = scale.toPixels(constants.yOffset);
+        xMargin = scale.toPixels(constants.xMargin);
+        yMargin = scale.toPixels(constants.yMargin);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -103,13 +117,8 @@ public class ClefPattern
         int         successNb = 0;
 
         ScoreSystem scoreSystem = system.getScoreSystem();
-        clefWidth = scale.toPixels(constants.clefWidth);
-        xOffset = scale.toPixels(constants.xOffset);
-        yOffset = scale.toPixels(constants.yOffset);
-        xMargin = scale.toPixels(constants.xMargin);
-        yMargin = scale.toPixels(constants.yMargin);
 
-        int staffId = 0;
+        int         staffId = 0;
 
         for (StaffInfo staff : system.getStaves()) {
             staffId++;
@@ -174,8 +183,7 @@ public class ClefPattern
             return false;
         }
 
-        Glyph compound = system.buildTransientCompound(glyphs);
-        system.computeGlyphFeatures(compound);
+        Glyph      compound = system.buildTransientCompound(glyphs);
 
         // Check if a clef appears in the top evaluations
         Evaluation vote = GlyphNetwork.getInstance()
@@ -216,10 +224,8 @@ public class ClefPattern
                     logger.fine("Considering " + g);
                 }
 
-                Glyph newCompound = system.buildTransientCompound(
+                Glyph            newCompound = system.buildTransientCompound(
                     Arrays.asList(compound, g));
-                system.computeGlyphFeatures(newCompound);
-
                 final Evaluation newVote = GlyphNetwork.getInstance()
                                                        .topVote(
                     newCompound,

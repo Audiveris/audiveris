@@ -29,8 +29,8 @@ import omr.util.TreeNode;
 import java.util.Iterator;
 
 /**
- * Class {@code PatternsStep} Process specific patterns at sheet glyph level
- * (true,clefs, sharps, naturals, stems, slurs, ...)
+ * Class {@code PatternsStep} prtforms specific patterns at sheet glyph level
+ * (clefs, sharps, naturals, stems, slurs, ...)
  *
  * @author Hervé Bitteur
  */
@@ -72,8 +72,6 @@ public class PatternsStep
     @Override
     public void displayUI (Sheet sheet)
     {
-        Steps.valueOf(Steps.VERTICALS)
-             .displayUI(sheet);
         Steps.valueOf(Steps.SYMBOLS)
              .displayUI(sheet);
     }

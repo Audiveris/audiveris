@@ -95,7 +95,31 @@ public class GuiActions
     /** Should the errors window be displayed */
     public static final String ERRORS_DISPLAYED = "errorsDisplayed";
 
+    /** Should the log window be displayed */
+    public static final String LOG_DISPLAYED = "logDisplayed";
+
+    /** Should the boards window be displayed */
+    public static final String BOARDS_DISPLAYED = "boardsDisplayed";
+
     //~ Methods ----------------------------------------------------------------
+
+    //--------------------//
+    // setBoardsDisplayed //
+    //--------------------//
+    public void setBoardsDisplayed (boolean value)
+    {
+        boolean oldValue = constants.boardsDisplayed.getValue();
+        constants.boardsDisplayed.setValue(value);
+        firePropertyChange(BOARDS_DISPLAYED, oldValue, value);
+    }
+
+    //-------------------//
+    // isBoardsDisplayed //
+    //-------------------//
+    public boolean isBoardsDisplayed ()
+    {
+        return constants.boardsDisplayed.getValue();
+    }
 
     //--------------------//
     // isBrowserSupported //
@@ -117,10 +141,7 @@ public class GuiActions
     {
         boolean oldValue = constants.errorsDisplayed.getValue();
         constants.errorsDisplayed.setValue(value);
-        firePropertyChange(
-            ERRORS_DISPLAYED,
-            oldValue,
-            constants.errorsDisplayed.getValue());
+        firePropertyChange(ERRORS_DISPLAYED, oldValue, value);
     }
 
     //-------------------//
@@ -146,6 +167,25 @@ public class GuiActions
         }
 
         return INSTANCE;
+    }
+
+    //-----------------//
+    // setLogDisplayed //
+    //-----------------//
+    public void setLogDisplayed (boolean value)
+    {
+        boolean oldValue = constants.logDisplayed.getValue();
+        constants.logDisplayed.setValue(value);
+        firePropertyChange(LOG_DISPLAYED, oldValue, value);
+    }
+
+    //----------------//
+    // isLogDisplayed //
+    //----------------//
+    public boolean isLogDisplayed ()
+    {
+        return constants.logDisplayed.getValue();
+        
     }
 
     //----------//
@@ -290,6 +330,18 @@ public class GuiActions
     }
 
     //--------------//
+    // toggleBoards //
+    //--------------//
+    /**
+     * Action that toggles the display of baords window
+     * @param e the event that triggered this action
+     */
+    @Action(selectedProperty = BOARDS_DISPLAYED)
+    public void toggleBoards (ActionEvent e)
+    {
+    }
+
+    //--------------//
     // toggleErrors //
     //--------------//
     /**
@@ -298,6 +350,18 @@ public class GuiActions
      */
     @Action(selectedProperty = ERRORS_DISPLAYED)
     public void toggleErrors (ActionEvent e)
+    {
+    }
+
+    //-----------//
+    // toggleLog //
+    //-----------//
+    /**
+     * Action that toggles the display of log window
+     * @param e the event that triggered this action
+     */
+    @Action(selectedProperty = LOG_DISPLAYED)
+    public void toggleLog (ActionEvent e)
     {
     }
 
@@ -528,17 +592,26 @@ public class GuiActions
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** URL of Audiveris home page */
-        Constant.String webSiteUrl = new Constant.String(
+        Constant.String        webSiteUrl = new Constant.String(
             "http://kenai.com/projects/audiveris",
             "URL of Audiveris home page");
 
-        /** URL of local Audiveris manual */
-        Constant.String manualUrl = new Constant.String(
+        //
+        Constant.String        manualUrl = new Constant.String(
             "/docs/manual/index.html",
             "URL of local Audiveris manual");
 
-        /** Should the errors window be displayed */
+        //
+        final Constant.Boolean boardsDisplayed = new Constant.Boolean(
+            true,
+            "Should the boards window be displayed");
+
+        //
+        final Constant.Boolean logDisplayed = new Constant.Boolean(
+            true,
+            "Should the log window be displayed");
+
+        //
         final Constant.Boolean errorsDisplayed = new Constant.Boolean(
             true,
             "Should the errors window be displayed");

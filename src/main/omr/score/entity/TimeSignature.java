@@ -530,9 +530,7 @@ public class TimeSignature
                                         .getInfo();
             Glyph      compound = systemInfo.buildTransientCompound(
                 getGlyphs());
-            systemInfo.computeGlyphFeatures(compound);
             compound = systemInfo.addGlyph(compound);
-
             compound.setShape(shape, Evaluation.ALGORITHM);
 
             if (shape == Shape.CUSTOM_TIME_SIGNATURE) {

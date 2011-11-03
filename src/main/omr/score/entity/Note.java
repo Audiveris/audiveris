@@ -13,6 +13,7 @@ package omr.score.entity;
 
 import omr.constant.ConstantSet;
 
+import omr.glyph.Evaluation;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
@@ -29,7 +30,6 @@ import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.NotePosition;
 import omr.sheet.Scale;
-import omr.sheet.SystemInfo;
 
 import omr.util.TreeNode;
 
@@ -982,6 +982,9 @@ public class Note
                         " (mirrored)");
                 }
             }
+        } else {
+            // Deassign the glyph
+            glyph.setShape(null, Evaluation.ALGORITHM);
         }
     }
 

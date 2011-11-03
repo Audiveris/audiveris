@@ -34,18 +34,20 @@ public class Steps
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Steps.class);
 
-    // Predefined step names
+    // Mandatory step names
     public static final String             LOAD = "LOAD";
     public static final String             SCALE = "SCALE";
     public static final String             GRID = "GRID";
-    public static final String             HORIZONTALS = "HORIZONTALS";
     public static final String             SPLIT = "SPLIT";
     public static final String             MEASURES = "MEASURES";
     public static final String             VERTICALS = "VERTICALS";
+    public static final String             HORIZONTALS = "HORIZONTALS";
     public static final String             SYMBOLS = "SYMBOLS";
     public static final String             PATTERNS = "PATTERNS";
     public static final String             PAGES = "PAGES";
     public static final String             MERGE = "MERGE";
+
+    // Optional step names
     public static final String             PRINT = "PRINT";
     public static final String             PLAY = "PLAY";
     public static final String             MIDI = "MIDI";

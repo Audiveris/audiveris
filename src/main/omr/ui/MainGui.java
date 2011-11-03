@@ -41,13 +41,13 @@ import omr.step.Stepping;
 import omr.ui.dnd.GhostGlassPane;
 import omr.ui.symbol.MusicFont;
 import omr.ui.util.ModelessOptionPane;
-import omr.ui.util.Panel;
 import omr.ui.util.SeparableMenu;
 import omr.ui.util.UIUtilities;
 
 import omr.util.Implement;
 import omr.util.JaiLoader;
 import omr.util.OmrExecutors;
+import omr.util.WeakPropertyChangeListener;
 
 import org.bushe.swing.event.EventSubscriber;
 
@@ -60,6 +60,8 @@ import java.awt.Component;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.EventObject;
 import java.util.concurrent.Callable;
@@ -87,7 +89,7 @@ import javax.swing.SwingUtilities;
  */
 public class MainGui
     extends SingleFrameApplication
-    implements EventSubscriber<SheetEvent>
+    implements EventSubscriber<SheetEvent>, PropertyChangeListener
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -379,6 +381,36 @@ public class MainGui
         }
     }
 
+    //----------------//
+    // propertyChange //
+    //----------------//
+    /**
+     * Called when notified from GuiActions
+     * @param evt the event details
+     */
+    public void propertyChange (PropertyChangeEvent evt)
+    {
+        String  propertyName = evt.getPropertyName();
+        Boolean display = (Boolean) evt.getNewValue();
+
+        if (propertyName.equals(GuiActions.BOARDS_DISPLAYED)) {
+            // Toggle display of boards
+            if (display) {
+                horiSplitPane.setRightComponent(boardsPane);
+                boardsPane.adjustRoom();
+            } else {
+                horiSplitPane.setRightComponent(null);
+            }
+        } else if (propertyName.equals(GuiActions.LOG_DISPLAYED)) {
+            // Toggle display of log
+            if (display) {
+                vertSplitPane.setRightComponent(bottomPane);
+            } else {
+                vertSplitPane.setRightComponent(null);
+            }
+        }
+    }
+
     //------------------//
     // removeBoardsPane //
     //------------------//
@@ -452,6 +484,13 @@ public class MainGui
         if (logger.isFineEnabled()) {
             logger.fine("MainGui. ready");
         }
+
+        // Weakly listen to some GUI Actions parameters
+        PropertyChangeListener weak = new WeakPropertyChangeListener(this);
+        GuiActions.getInstance()
+                  .addPropertyChangeListener(GuiActions.BOARDS_DISPLAYED, weak);
+        GuiActions.getInstance()
+                  .addPropertyChangeListener(GuiActions.LOG_DISPLAYED, weak);
 
         // Kludge! Workaround to persist correctly when maximized
         if ((frame.getExtendedState() & Frame.MAXIMIZED_BOTH) == Frame.MAXIMIZED_BOTH) {
@@ -594,11 +633,10 @@ public class MainGui
         toolKeyPanel.add(memoryPanel, BorderLayout.EAST);
 
         // horiSplitPane = splitPane | boards
-        JScrollPane boardsScrollPane = new JScrollPane(boardsPane);
         horiSplitPane = new JSplitPane(
             JSplitPane.HORIZONTAL_SPLIT,
             vertSplitPane,
-            boardsScrollPane);
+            boardsPane);
         horiSplitPane.setName("horiSplitPane");
         horiSplitPane.setDividerSize(1);
         horiSplitPane.setResizeWeight(1d); // Give extra space to left part
@@ -666,36 +704,47 @@ public class MainGui
     //------------//
     // BoardsPane //
     //------------//
-    private static class BoardsPane
-        extends Panel
+    private class BoardsPane
+        extends JScrollPane
     {
-        //~ Constructors -------------------------------------------------------
-
-        public BoardsPane ()
-        {
-            setNoInsets();
-        }
-
         //~ Methods ------------------------------------------------------------
 
         public void addBoards (JComponent boards)
         {
-            removeBoards();
-
-            if (boards != null) {
-                add(boards);
-            }
-
+            setViewportView(boards);
             revalidate();
-            repaint();
+
+            if ((boards != null) &&
+                GuiActions.getInstance()
+                          .isBoardsDisplayed()) {
+                // Make sure we have enough room
+                SwingUtilities.invokeLater(
+                    new Runnable() {
+                            public void run ()
+                            {
+                                adjustRoom();
+                            }
+                        });
+            }
+        }
+
+        public void adjustRoom ()
+        {
+            Component view = getViewport()
+                                 .getView();
+
+            if (view != null) {
+                int boardsWidth = view.getBounds().width;
+                int horiWidth = horiSplitPane.getBounds().width;
+                horiSplitPane.setDividerLocation(
+                    horiWidth - boardsWidth - horiSplitPane.getDividerSize());
+                repaint();
+            }
         }
 
         public void removeBoards ()
         {
-            for (Component component : getComponents()) {
-                remove(component);
-            }
-
+            setViewportView(null);
             repaint();
         }
     }

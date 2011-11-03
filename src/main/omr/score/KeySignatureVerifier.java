@@ -173,8 +173,7 @@ public class KeySignatureVerifier
             return null;
         }
 
-        Glyph compound = systemInfo.buildTransientCompound(glyphs);
-        systemInfo.computeGlyphFeatures(compound);
+        Glyph      compound = systemInfo.buildTransientCompound(glyphs);
 
         // Check if a proper key sig appears in the top evaluations
         Evaluation vote = GlyphNetwork.getInstance()
