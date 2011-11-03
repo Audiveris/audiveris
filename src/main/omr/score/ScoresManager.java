@@ -20,6 +20,7 @@ import omr.log.Logger;
 
 import omr.score.midi.MidiAbstractions;
 import omr.score.midi.MidiAgent;
+import omr.score.midi.MidiAgentFactory;
 import omr.score.ui.ScoreActions;
 import omr.score.ui.SheetPdfOutput;
 
@@ -404,10 +405,12 @@ public class ScoresManager
     public void midiClose (Score score)
     {
         try {
-            MidiAgent agent = MidiAgent.getInstance();
+            if (MidiAgentFactory.hasAgent()) {
+                MidiAgent agent = MidiAgentFactory.getAgent();
 
-            if (agent.getScore() == score) {
-                agent.setScore(null);
+                if (agent.getScore() == score) {
+                    agent.setScore(null);
+                }
             }
         } catch (Exception ex) {
             logger.warning("Error closing Midi interface ", ex);
@@ -446,7 +449,7 @@ public class ScoresManager
 
         // Actually write the Midi file
         try {
-            MidiAgent agent = MidiAgent.getInstance();
+            MidiAgent agent = MidiAgentFactory.getAgent();
 
             if (agent.getScore() != score) {
                 agent.setScore(score);

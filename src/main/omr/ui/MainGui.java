@@ -26,7 +26,7 @@ import omr.log.Logger;
 import omr.score.Score;
 import omr.score.ScoreExporter;
 import omr.score.ScoresManager;
-import omr.score.midi.MidiAgent;
+import omr.score.midi.MidiAgentFactory;
 
 import omr.selection.MouseMovement;
 import omr.selection.SheetEvent;
@@ -470,7 +470,7 @@ public class MainGui
         if (constants.preloadCostlyPackages.getValue()) {
             JaiLoader.preload();
             ScoreExporter.preload();
-            MidiAgent.preload();
+            MidiAgentFactory.preload();
         }
     }
 

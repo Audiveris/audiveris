@@ -24,7 +24,7 @@ import omr.score.entity.ScoreSystem;
 import omr.score.entity.Slot;
 import omr.score.entity.SystemPart;
 import omr.score.midi.MidiActions;
-import omr.score.midi.MidiAgent;
+import omr.score.midi.MidiAgentFactory;
 
 import omr.sheet.SystemInfo;
 
@@ -423,8 +423,8 @@ public class PageMenu
                     }
 
                     Score score = page.getScore();
-                    MidiAgent.getInstance()
-                             .reset();
+                    MidiAgentFactory.getAgent()
+                                    .reset();
                     new MidiActions.PlayTask(
                         score,
                         new MeasureId.MeasureRange(

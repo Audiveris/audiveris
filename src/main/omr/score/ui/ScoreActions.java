@@ -22,6 +22,7 @@ import omr.score.Score;
 import omr.score.ScoresManager;
 import omr.score.entity.ScorePart;
 import omr.score.midi.MidiAgent;
+import omr.score.midi.MidiAgentFactory;
 
 import omr.sheet.Sheet;
 import omr.sheet.ui.SheetsController;
@@ -196,7 +197,7 @@ public class ScoreActions
         if (parametersAreConfirmed(score)) {
             // Invalidate the midi sequence
             try {
-                MidiAgent agent = MidiAgent.getInstance();
+                MidiAgent agent = MidiAgentFactory.getAgent();
 
                 if ((agent.getScore() == score) && (score != null)) {
                     agent.reset();

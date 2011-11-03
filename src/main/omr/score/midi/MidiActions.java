@@ -299,7 +299,7 @@ public class MidiActions
                         measureRange = score.getMeasureRange();
                     }
 
-                    MidiAgent agent = MidiAgent.getInstance();
+                    MidiAgent agent = MidiAgentFactory.getAgent();
                     agent.setScore(score);
                     agent.play(measureRange);
                 } catch (Exception ex) {

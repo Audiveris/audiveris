@@ -20,8 +20,6 @@ import omr.score.ScoreExporter;
 import omr.score.entity.MeasureId.MeasureRange;
 import omr.score.ui.ScoreActions;
 
-import omr.util.OmrExecutors;
-
 import com.xenoage.util.io.IO;
 import com.xenoage.util.language.Lang;
 import com.xenoage.util.language.LanguageInfo;
@@ -37,8 +35,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Sequence;
@@ -58,6 +54,9 @@ import javax.xml.parsers.DocumentBuilderFactory;
  * <p>This class now delegates to the Zong! player the actual play / pause /
  * stop actions with a few other Midi-related actions. The purpose of the
  * {@link #play} method is just to launch the player on the current score.
+ * 
+ * <p>There is no public constructor for this class. The (single) instance
+ * must be obtained through the {@link MidiAgentFactory} class.
  *
  * @author Hervé Bitteur
  */
@@ -70,25 +69,6 @@ public class MidiAgent
 
     /** Type used when writing Midi files */
     public static final int MIDI_FILE_TYPE = 1;
-
-    /** A future which reflects whether Midi Agent has been initialized **/
-    private static final Future<Void> loading = OmrExecutors.getCachedLowExecutor()
-                                                            .submit(
-        new Callable<Void>() {
-                public Void call ()
-                    throws Exception
-                {
-                    try {
-                        Object obj = Holder.INSTANCE;
-                    } catch (Exception ex) {
-                        logger.warning("Could not preload the Midi Agent", ex);
-                        throw ex;
-                    }
-
-                    return null;
-                }
-            });
-
 
     //~ Instance fields --------------------------------------------------------
 
@@ -116,7 +96,7 @@ public class MidiAgent
     /**
      * Create the Midi Agent singleton
      */
-    private MidiAgent ()
+    MidiAgent ()
     {
         //== Stolen from Zong Player init sequence
         ///System.out.println("Initializing Log");
@@ -183,26 +163,6 @@ public class MidiAgent
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single instance of this singleton class (after creating it if
-     * necessary)
-     * @return the single instance of MidiAgent (or null if failed)
-     */
-    public static MidiAgent getInstance ()
-    {
-        try {
-            loading.get();
-        } catch (Throwable ex) {
-            logger.severe("Cannot load Midi", ex);
-            throw new RuntimeException(ex);
-        }
-
-        return Holder.INSTANCE;
-    }
-
     //-----------------//
     // getMeasureRange //
     //-----------------//
@@ -213,17 +173,6 @@ public class MidiAgent
     public MeasureRange getMeasureRange ()
     {
         return measureRange;
-    }
-
-    //---------//
-    // preload //
-    //---------//
-    /**
-     * Purpose if to make this class be loaded, and thus the 'loading' task be
-     * launched
-     */
-    public static void preload ()
-    {
     }
 
     //----------//
@@ -378,9 +327,9 @@ public class MidiAgent
         /*
          *
          * So here are the functions you need for Audiveris:
-                                                     1) call com.xenoage.zong.musicxml.MusicXMLDocument.read(org.w3c.dom.Document doc)
+                                                           1) call com.xenoage.zong.musicxml.MusicXMLDocument.read(org.w3c.dom.Document doc)
          * to get an instance of a MusicXMLDocument out of your DOM document
-                                                     2) handle this document to
+                                                           2) handle this document to
          * com.xenoage.zong.player.gui.Controller.loadScore(MxlScorePartwise doc, boolean ignoreErrors)
          * (set ignoreErrors to true, of course)
          */
@@ -402,17 +351,5 @@ public class MidiAgent
             document = null; // Safer
             throw new RuntimeException(ex);
         }
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
-
-    //--------//
-    // Holder //
-    //--------//
-    private static class Holder
-    {
-        //~ Static fields/initializers -----------------------------------------
-
-        public static final MidiAgent INSTANCE = new MidiAgent();
     }
 }

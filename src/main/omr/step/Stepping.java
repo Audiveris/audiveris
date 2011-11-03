@@ -600,14 +600,13 @@ public class Stepping
                 stepSet.remove(scaleStep);
 
                 doScoreStepSet(single, score);
-            }
 
-            // Can we continue?
-            if (!score.isMultiPage() &&
-                (score.getFirstPage()
-                      .getSheet()
-                      .getScale() == null)) {
-                throw new StepException("No scale available");
+                if (!score.isMultiPage() &&
+                    (score.getFirstPage()
+                          .getSheet()
+                          .getScale() == null)) {
+                    throw new StepException("No scale available");
+                }
             }
 
             // Perform the remaining steps at sheet level, if any

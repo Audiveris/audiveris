@@ -38,6 +38,7 @@ import omr.sheet.ui.SheetsController;
 import omr.step.StepException;
 
 import omr.util.FileUtil;
+import omr.util.StopWatch;
 import omr.util.TreeNode;
 
 import java.awt.image.RenderedImage;
@@ -693,7 +694,7 @@ public class Score
     public void close ()
     {
         if (logger.isFineEnabled()) {
-            logger.fine("Closing " + this);
+            logger.info("Score. Closing " + this);
         }
 
         // Close contained sheets (and pages)
