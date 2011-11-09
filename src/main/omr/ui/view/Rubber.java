@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.ui.view;
 
-import omr.WellKnowns;
-
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -20,6 +18,7 @@ import omr.log.Logger;
 import static omr.selection.MouseMovement.*;
 
 import omr.ui.Colors;
+import static omr.ui.util.UIPredicates.*;
 
 import java.awt.BasicStroke;
 import java.awt.Container;
@@ -29,7 +28,6 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Stroke;
-import static java.awt.event.InputEvent.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
@@ -595,144 +593,6 @@ public class Rubber
         return "{Rubber #" + id + " " + rect + "}";
     }
 
-    //------------------//
-    // isAdditionWanted //
-    //------------------//
-    /**
-     * Predicate to check if an additional selection is wanted. Default is
-     * the typical selection (left button), while control key is pressed.
-     *
-     * @param e the mouse context
-     *
-     * @return the predicate result
-     */
-    protected boolean isAdditionWanted (MouseEvent e)
-    {
-        if (WellKnowns.MAC_OS_X) {
-            boolean command = e.isMetaDown();
-            boolean left = SwingUtilities.isLeftMouseButton(e);
-
-            return left && command && !e.isPopupTrigger();
-        } else {
-            //            return !SwingUtilities.isRightMouseButton(e) &&
-            //                   SwingUtilities.isLeftMouseButton(e) && e.isControlDown();
-            return (SwingUtilities.isRightMouseButton(e) != SwingUtilities.isLeftMouseButton(
-                e)) && e.isControlDown();
-        }
-    }
-
-    //-----------------//
-    // isContextWanted //
-    //-----------------//
-    /**
-     * Predicate to check if a context selection is wanted. Default is the
-     * typical pressing with Right button only.
-     *
-     * @param e the mouse context
-     *
-     * @return the predicate result
-     */
-    protected boolean isContextWanted (MouseEvent e)
-    {
-        if (WellKnowns.MAC_OS_X) {
-            return e.isPopupTrigger();
-        } else {
-            return SwingUtilities.isRightMouseButton(e) &&
-                   !SwingUtilities.isLeftMouseButton(e);
-        }
-    }
-
-    //--------------//
-    // isDragWanted //
-    //--------------//
-    /**
-     * Predicate to check whether the zoomed display must be dragged.  This
-     * method can simply be overridden to adapt to another policy.  Default
-     * is to have both left and right buttons pressed when moving.
-     *
-     * @param e the mouse event to check
-     *
-     * @return true if drag is desired
-     */
-    protected boolean isDragWanted (MouseEvent e)
-    {
-        if (WellKnowns.MAC_OS_X) {
-            return e.isAltDown();
-        } else {
-            int onmask = BUTTON1_DOWN_MASK | BUTTON3_DOWN_MASK;
-            int offmask = 0;
-
-            return (e.getModifiersEx() & (onmask | offmask)) == onmask;
-        }
-    }
-
-    //----------------//
-    // isRezoomWanted //
-    //----------------//
-    /**
-     * Predicate to check if the display should be rezoomed to fit as close
-     * as possible to the rubber definition. Default is to have both Shift
-     * and Control keys pressed when the mouse is released.
-     *
-     * @param e the mouse context
-     *
-     * @return the predicate result
-     */
-    protected boolean isRezoomWanted (MouseEvent e)
-    {
-        if (WellKnowns.MAC_OS_X) {
-            return e.isMetaDown() && e.isShiftDown();
-        } else {
-            return e.isControlDown() && e.isShiftDown();
-        }
-    }
-
-    //----------------//
-    // isRubberWanted //
-    //----------------//
-    /**
-     * Predicate to check if the rubber must be extended while the mouse is
-     * being moved. Default is the typical pressing of Shift key while
-     * moving the mouse.
-     *
-     * @param e the mouse context
-     *
-     * @return the predicate result
-     */
-    protected boolean isRubberWanted (MouseEvent e)
-    {
-        int onmask = BUTTON1_DOWN_MASK | SHIFT_DOWN_MASK;
-        int offmask = BUTTON2_DOWN_MASK | BUTTON3_DOWN_MASK;
-
-        return (e.getModifiersEx() & (onmask | offmask)) == onmask;
-    }
-
-    //-----------//
-    // setCursor //
-    //-----------//
-    private void setCursor (MouseEvent e)
-    {
-        if (isDragWanted(e)) {
-            e.getComponent()
-             .setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
-        } else if (isAdditionWanted(e)) {
-            e.getComponent()
-             .setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
-        } else if (isContextWanted(e)) {
-            e.getComponent()
-             .setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        } else if (isRubberWanted(e)) {
-            e.getComponent()
-             .setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
-        } else if (isRezoomWanted(e)) {
-            e.getComponent()
-             .setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
-        } else {
-            e.getComponent()
-             .setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        }
-    }
-
     //-- private access ---------------------------------------------------
 
     //-----------//
@@ -816,6 +676,32 @@ public class Rubber
 
         normalize();
         resetOrigin(rect.x, rect.y);
+    }
+
+    //-----------//
+    // setCursor //
+    //-----------//
+    private void setCursor (MouseEvent e)
+    {
+        if (isDragWanted(e)) {
+            e.getComponent()
+             .setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+        } else if (isAdditionWanted(e)) {
+            e.getComponent()
+             .setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+        } else if (isContextWanted(e)) {
+            e.getComponent()
+             .setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        } else if (isRubberWanted(e)) {
+            e.getComponent()
+             .setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
+        } else if (isRezoomWanted(e)) {
+            e.getComponent()
+             .setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
+        } else {
+            e.getComponent()
+             .setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
     }
 
     //--------//

@@ -130,7 +130,8 @@ public class ShapeBoard
         public void actionPerformed (ActionEvent e)
         {
             // Remove panel of ranges
-            body.remove(rangesPanel);
+            getBody()
+                .remove(rangesPanel);
 
             // Replace by proper panel of range shapes
             String     rangeName = ((JButton) e.getSource()).getName();
@@ -142,7 +143,8 @@ public class ShapeBoard
                 shapesPanels.put(range, shapesPanel = defineShapesPanel(range));
             }
 
-            body.add(shapesPanel);
+            getBody()
+                .add(shapesPanel);
 
             // Perhaps this is too much ... TODO
             JFrame frame = Main.getGui()
@@ -161,10 +163,12 @@ public class ShapeBoard
         public void actionPerformed (ActionEvent e)
         {
             // Remove current panel of shapes
-            body.remove(shapesPanel);
+            getBody()
+                .remove(shapesPanel);
 
             // Replace by panel of ranges
-            body.add(rangesPanel);
+            getBody()
+                .add(rangesPanel);
 
             // Perhaps this is too much ... TODO
             JFrame frame = Main.getGui()
@@ -230,20 +234,23 @@ public class ShapeBoard
     // ShapeBoard //
     //------------//
     /**
-     * Create a new ShapeBoard object
-     * @param symbolsController the UI controller for symbols
+     * Create a new ShapeBoard object.
      * @param sheet the related sheet
+     * @param symbolsController the UI controller for symbols
+     * @param expanded true if initially expanded
      */
-    public ShapeBoard (SymbolsController symbolsController,
-                       Sheet             sheet)
+    public ShapeBoard (Sheet             sheet,
+                       SymbolsController symbolsController,
+                       boolean           expanded)
     {
-        super("Palette", "Shapes", null, null, false);
+        super(Board.SHAPE, null, null, false, expanded);
         this.symbolsController = symbolsController;
         this.sheet = sheet;
 
         dropAdapter.addDropListener(dropListener);
 
-        body.add(rangesPanel = defineRangesPanel());
+        getBody()
+            .add(rangesPanel = defineRangesPanel());
     }
 
     //~ Methods ----------------------------------------------------------------

@@ -23,9 +23,9 @@ import omr.glyph.GlyphsModel;
 import omr.glyph.Nest;
 import omr.glyph.facets.Glyph;
 import omr.glyph.ui.BarMenu;
-import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphsController;
 import omr.glyph.ui.NestView;
+import omr.glyph.ui.SymbolGlyphBoard;
 
 import omr.grid.StaffInfo;
 import omr.grid.SystemManager;
@@ -54,6 +54,7 @@ import omr.step.Step;
 import omr.step.StepException;
 import omr.step.Steps;
 
+import omr.ui.Board;
 import omr.ui.BoardsPane;
 import omr.ui.view.ScrollView;
 
@@ -291,24 +292,32 @@ public class SystemsBuilder
     private void displayFrame ()
     {
         barsController = new BarsController();
-        sceneView = new MyView(nest, barsController);
 
-        final String unit = sheet.getId() + ":BarsBuilder";
-        BoardsPane   boardsPane = new BoardsPane(
-            new PixelBoard(unit, sheet),
-            new RunBoard(unit, sheet.getVerticalLag()),
-            new SectionBoard(unit, sheet.getVerticalLag()),
-            new GlyphBoard(unit, sceneView.getController(), true),
+        sheet.getAssembly()
+             .addBoard(
             new MyCheckBoard(
-                unit,
                 barsChecker.getSuite(),
                 nest.getGlyphService(),
-                eventClasses));
+                eventClasses),
+            Step.DATA_TAB);
 
-        // Create a hosting frame for the view
-        ScrollView sv = new ScrollView(sceneView);
-        sheet.getAssembly()
-             .addViewTab(Step.SYSTEMS_TAB, sv, boardsPane);
+        //        sceneView = new MyView(nest, barsController);
+        //
+        //        BoardsPane boardsPane = new BoardsPane(
+        //            sheet.getAssembly(),
+        //            new PixelBoard(sheet),
+        //            new RunBoard(sheet.getVerticalLag(), false),
+        //            new SectionBoard(sheet.getVerticalLag(), false),
+        //            new SymbolGlyphBoard(sceneView.getController(), true),
+        //            new MyCheckBoard(
+        //                barsChecker.getSuite(),
+        //                nest.getGlyphService(),
+        //                eventClasses));
+        //
+        //        // Create a hosting frame for the view
+        //        ScrollView sv = new ScrollView(sceneView);
+        //        sheet.getAssembly()
+        //             .addViewTab(Step.SYSTEMS_TAB, sv, boardsPane);
     }
 
     //----------------//
@@ -503,12 +512,11 @@ public class SystemsBuilder
     {
         //~ Constructors -------------------------------------------------------
 
-        public MyCheckBoard (String                               unit,
-                             CheckSuite<BarsChecker.GlyphContext> suite,
+        public MyCheckBoard (CheckSuite<BarsChecker.GlyphContext> suite,
                              SelectionService                     eventService,
                              Class[]                              eventList)
         {
-            super(unit, suite, eventService, eventList);
+            super("Barline", suite, eventService, eventList);
         }
 
         //~ Methods ------------------------------------------------------------

@@ -209,6 +209,14 @@ public class BasicLag
         }
     }
 
+    //---------//
+    // getRuns //
+    //---------//
+    public RunsTable getRuns ()
+    {
+        return runsTable;
+    }
+
     //-------------------//
     // getSectionService //
     //-------------------//

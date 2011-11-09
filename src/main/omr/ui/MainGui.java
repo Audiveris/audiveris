@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.ui;
 
+import java.awt.Graphics;
 import omr.Main;
 import omr.WellKnowns;
 
@@ -120,7 +121,7 @@ public class MainGui
     private JToolBar toolBar;
 
     /** Boards pane, which displays a specific set of boards per sheet */
-    private BoardsPane boardsPane;
+    private BoardsScrollPane boardsScrollPane;
 
     /** GlassPane needed to handle drag and drop from shape palette */
     private GhostGlassPane glassPane = new GhostGlassPane();
@@ -179,7 +180,7 @@ public class MainGui
      */
     public void setBoardsPane (JComponent boards)
     {
-        boardsPane.addBoards(boards);
+        boardsScrollPane.setBoards(boards);
     }
 
     //----------//
@@ -396,8 +397,8 @@ public class MainGui
         if (propertyName.equals(GuiActions.BOARDS_DISPLAYED)) {
             // Toggle display of boards
             if (display) {
-                horiSplitPane.setRightComponent(boardsPane);
-                boardsPane.adjustRoom();
+                horiSplitPane.setRightComponent(boardsScrollPane);
+                boardsScrollPane.adjustRoom();
             } else {
                 horiSplitPane.setRightComponent(null);
             }
@@ -415,11 +416,11 @@ public class MainGui
     // removeBoardsPane //
     //------------------//
     /**
-     * Remove the current boardsPane, if any
+     * Remove the current boardsScrollPane, if any
      */
     public void removeBoardsPane ()
     {
-        boardsPane.removeBoards();
+        boardsScrollPane.setBoards(null);
     }
 
     //----------------//
@@ -577,37 +578,39 @@ public class MainGui
     private void defineLayout ()
     {
         /*
-           +============================================================+
-           |toolKeyPanel                                                |
-           |+================+=============================+===========+|
-           || toolBar        | progressBar                 |   Memory  ||
-           |+================+=============================+===========+|
-           +============================================================+
-           |vertSplitPane                                               |
-           |+===========================================+==============+|
-           || sheetController                           | boardsPane   ||
-           ||                                           |              ||
-           ||                                           |              ||
-           ||                                           |              ||
-           ||                                           |              ||
-           ||                                           |              ||
-           ||                                           |              ||
-           ||                                           |              ||
-           ||                                           |              ||
-           ||                                           |              ||
-           ||                                           |              ||
-           ||                                           |              ||
-           |+=====================+=====================+              ||
-           || logPane             | errorsHolder        |              ||
-           ||                     |                     |              ||
-           ||                     |                     |              ||
-           |+=====================+=====================+==============+|
-           +================================================+===========+
+           +=============================================================+
+           |toolKeyPanel                                                 |
+           |+=================+=============================+===========+|
+           || toolBar         | progressBar                 |   Memory  ||
+           |+=================+=============================+===========+|
+           +=============================================================+
+           |                                   horiSplitPane             |
+           |+=========================================+=================+|
+           |                                          |boardsScrollPane ||
+           | +========================================+                 ||
+           | | sheetController                        |                 ||
+           | |                                        |                 ||
+           | |                                        |                 ||
+           |v|                                        |                 ||
+           |e|                                        |                 ||
+           |r|                                        |                 ||
+           |t|                                        |                 ||
+           |S|                                        |                 ||
+           |p|                                        |                 ||
+           |l|                                        |                 ||
+           |i|                                        |                 ||
+           |t|                                        |                 ||
+           |P+=====================+==================+                 ||
+           |a| logPane             | errors           |                 ||
+           |n|                     |                  |                 ||
+           |e|                     |                  |                 ||
+           | +=====================+==================+=================+|
+           +=============================================================+
          */
 
         // Individual panes
         logPane = new LogPane();
-        boardsPane = new BoardsPane();
+        boardsScrollPane = new BoardsScrollPane();
 
         // Bottom = Log & Errors
         bottomPane = new BottomPane(logPane.getComponent());
@@ -636,7 +639,7 @@ public class MainGui
         horiSplitPane = new JSplitPane(
             JSplitPane.HORIZONTAL_SPLIT,
             vertSplitPane,
-            boardsPane);
+            boardsScrollPane);
         horiSplitPane.setName("horiSplitPane");
         horiSplitPane.setDividerSize(1);
         horiSplitPane.setResizeWeight(1d); // Give extra space to left part
@@ -701,15 +704,19 @@ public class MainGui
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //------------//
-    // BoardsPane //
-    //------------//
-    private class BoardsPane
+    //------------------//
+    // BoardsScrollPane //
+    //------------------//
+    /**
+     * Just a scrollPane to host the pane of user boards, trying to offer
+     * enough room for the boards.
+     */
+    private class BoardsScrollPane
         extends JScrollPane
     {
         //~ Methods ------------------------------------------------------------
 
-        public void addBoards (JComponent boards)
+        public void setBoards (JComponent boards)
         {
             setViewportView(boards);
             revalidate();
@@ -735,17 +742,15 @@ public class MainGui
 
             if (view != null) {
                 int boardsWidth = view.getBounds().width;
-                int horiWidth = horiSplitPane.getBounds().width;
-                horiSplitPane.setDividerLocation(
-                    horiWidth - boardsWidth - horiSplitPane.getDividerSize());
-                repaint();
-            }
-        }
 
-        public void removeBoards ()
-        {
-            setViewportView(null);
-            repaint();
+                if (boardsWidth != 0) {
+                    int horiWidth = horiSplitPane.getBounds().width;
+                    horiSplitPane.setDividerLocation(
+                        horiWidth - boardsWidth -
+                        horiSplitPane.getDividerSize());
+                    repaint();
+                }
+            }
         }
     }
 
@@ -753,7 +758,7 @@ public class MainGui
     // BottomPane //
     //------------//
     /**
-     * A split pane which handles the bottom pane which contains the log pane
+     * A split pane to host the bottom pane which contains the log pane
      * and potentially an errors pane on the right. We try to remember the last
      * divider location
      */

@@ -41,7 +41,7 @@ public class SelectionService
 
     //~ Instance fields --------------------------------------------------------
 
-    /** (Debug) name of this service */
+    /** Name of this service */
     private final String name;
 
     /** Allowed events */
@@ -69,6 +69,14 @@ public class SelectionService
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //---------//
+    // getName //
+    //---------//
+    public String getName ()
+    {
+        return name;
+    }
 
     //--------------//
     // getSelection //
@@ -125,6 +133,7 @@ public class SelectionService
     {
         if (logger.isFineEnabled()) {
             logger.fine(this + " published: " + event);
+
             ///dumpSubscribers();
         }
 

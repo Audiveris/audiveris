@@ -59,7 +59,6 @@ import omr.ui.view.ScrollView;
 
 import omr.util.Implement;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -138,30 +137,25 @@ public class SymbolsEditor
                     @Implement(ActionListener.class)
                     public void actionPerformed (ActionEvent e)
                     {
-                        //TODO //////////////////////////////////////////view.colorizeAllGlyphs();
+                        //TODO /////////////////view.colorizeAllGlyphs();
                     }
-                });
+                },
+            false);
 
         pageMenu = new PageMenu(
             sheet.getPage(),
             new SymbolMenu(symbolsController, evaluator, focus));
 
-        final String unit = sheet.getId() + ":SymbolsEditor";
-
         BoardsPane   boardsPane = new BoardsPane(
-            new PixelBoard(unit, sheet),
-            new RunBoard(unit, sheet.getVerticalLag()),
-            new SectionBoard(unit, sheet.getVerticalLag()),
-            new SymbolGlyphBoard(
-                unit + "-SymbolGlyphBoard",
-                symbolsController,
-                0),
+            new PixelBoard(sheet),
+            new RunBoard(sheet.getHorizontalLag(), false),
+            new SectionBoard(sheet.getHorizontalLag(), false),
+            new RunBoard(sheet.getVerticalLag(), false),
+            new SectionBoard(sheet.getVerticalLag(), false),
+            new SymbolGlyphBoard(symbolsController, true),
             focus,
-            new EvaluationBoard(
-                unit + "-Evaluation-ActiveBoard",
-                symbolsController,
-                sheet),
-            new ShapeBoard(symbolsController, sheet));
+            new EvaluationBoard(sheet, symbolsController, true),
+            new ShapeBoard(sheet, symbolsController, false));
 
         // Create a hosting pane for the view
         ScrollView slv = new ScrollView(view);

@@ -48,7 +48,7 @@ public class VerticalsStep
             Level.SHEET_LEVEL,
             Mandatory.MANDATORY,
             Redoable.REDOABLE,
-            VERTICALS_TAB,
+            DATA_TAB,
             "Extract verticals");
     }
 

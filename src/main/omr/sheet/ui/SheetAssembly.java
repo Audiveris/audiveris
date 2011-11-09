@@ -23,6 +23,7 @@ import omr.sheet.Sheet;
 
 import omr.step.Step;
 
+import omr.ui.Board;
 import omr.ui.BoardsPane;
 import omr.ui.GuiActions;
 import omr.ui.MainGui;
@@ -235,6 +236,23 @@ public class SheetAssembly
         zoom.setRatio(ratio);
     }
 
+    //----------//
+    // addBoard //
+    //----------//
+    public void addBoard (Board  board,
+                          String title)
+    {
+        JScrollPane pane = getPane(title);
+
+        if (pane == null) {
+            logger.warning("Unknown tab " + title);
+        } else {
+            ViewTab viewTab = tabs.get(pane);
+            ///logger.warning("Adding " + board + " to " + title);
+            viewTab.boardsPane.addBoard(board);
+        }
+    }
+
     //------------//
     // addViewTab //
     //------------//
@@ -252,7 +270,7 @@ public class SheetAssembly
         UIUtilities.suppressBorders(scroll);
 
         if (boardsPane != null) {
-            boardsPane.setName(sheet.getId() + ":" + label);
+            boardsPane.setName(label);
         }
 
         if (logger.isFineEnabled()) {
@@ -450,6 +468,21 @@ public class SheetAssembly
     {
         return sheet.getErrorsEditor()
                     .getComponent();
+    }
+
+    //---------//
+    // getPane //
+    //---------//
+    private JScrollPane getPane (String title)
+    {
+        for (int i = 0, count = viewsPane.getTabCount(); i < count; i++) {
+            if (viewsPane.getTitleAt(i)
+                         .equals(title)) {
+                return (JScrollPane) viewsPane.getComponentAt(i);
+            }
+        }
+
+        return null;
     }
 
     //--------------//

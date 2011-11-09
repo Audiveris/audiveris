@@ -62,7 +62,13 @@ public class CheckBoard<C extends Checkable>
                        SelectionService selectionService,
                        Class[]          eventList)
     {
-        super(name + "-CheckBoard", "Check", selectionService, eventList, true);
+        super(
+            name,
+            Board.CHECK.position,
+            selectionService,
+            eventList,
+            false, // Dump
+            false); // Selected
         checkPanel = new CheckPanel<C>(suite);
 
         if (suite != null) {
@@ -79,8 +85,7 @@ public class CheckBoard<C extends Checkable>
     // setSuite //
     //----------//
     /**
-     * Assign a (new) suite to the check board
-     *
+     * Assign a (new) suite to the check board.
      * @param suite the (new) check suite to be used
      */
     public synchronized void setSuite (CheckSuite<C> suite)
@@ -98,7 +103,6 @@ public class CheckBoard<C extends Checkable>
     //--------//
     /**
      * Call-back triggered when C Selection has been modified.
-     *
      * @param event the Event to perform check upon its data
      */
     @Override
@@ -121,18 +125,15 @@ public class CheckBoard<C extends Checkable>
     // tellObject //
     //------------//
     /**
-     * Render the result of checking the given object
-     *
+     * Render the result of checking the given object.
      * @param object the object whose check result is to be displayed
      */
     protected void tellObject (C object)
     {
         if (object == null) {
-            getComponent()
-                .setVisible(false);
+            setVisible(false);
         } else {
-            getComponent()
-                .setVisible(true);
+            setVisible(true);
             checkPanel.passForm(object);
         }
     }
@@ -142,16 +143,13 @@ public class CheckBoard<C extends Checkable>
     //--------------//
     private void defineLayout (String name)
     {
-        FormLayout   layout = new FormLayout("pref", "pref,pref,pref");
+        FormLayout   layout = new FormLayout("pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout, getBody());
         builder.setDefaultDialogBorder();
 
         CellConstraints cst = new CellConstraints();
 
         int             r = 1; // --------------------------------
-        builder.addSeparator(name + " check", cst.xy(1, r));
-
-        r += 2; // --------------------------------
         builder.add(checkPanel.getComponent(), cst.xy(1, r));
     }
 }

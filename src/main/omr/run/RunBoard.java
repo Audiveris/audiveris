@@ -17,7 +17,6 @@ import omr.log.Logger;
 
 import omr.selection.MouseMovement;
 import omr.selection.RunEvent;
-import omr.selection.SelectionService;
 import omr.selection.UserEvent;
 
 import omr.ui.Board;
@@ -74,50 +73,67 @@ public class RunBoard
     // RunBoard //
     //----------//
     /**
-     * Create a Run Board on a lag, initially collapsed
-     * @param unitName name of the owning unit
-     * @param lag the related lag
+     * Create a Run Board.
+     * @param lag the lag that encapsulates the runs table
+     * @param expanded true for expanded, false for collapsed
      */
-    public RunBoard (String unitName,
-                     Lag    lag)
+    public RunBoard (Lag     lag,
+                     boolean expanded)
     {
-        this(unitName, lag, false);
+        this(lag.getRuns(), expanded);
     }
 
     //----------//
     // RunBoard //
     //----------//
     /**
-     * Create a Run Board on a lag
-     * @param unitName name of the owning unit
-     * @param lag the related lag
+     * Create a Run Board.
+     * @param suffix suffix for this board
+     * @param lag the lag that encapsulates the runs table
      * @param expanded true for expanded, false for collapsed
      */
-    public RunBoard (String  unitName,
+    public RunBoard (String  suffix,
                      Lag     lag,
                      boolean expanded)
     {
-        this(unitName, lag.getRunService(), expanded);
+        this(suffix, lag.getRuns(), expanded);
     }
 
     //----------//
     // RunBoard //
     //----------//
     /**
-     * Create a Run Board
-     * @param unitName name of the owning unit
-     * @param selectionService the service handling run selections
+     * Create a Run Board.
+     * @param runsTable the table of runs
      * @param expanded true for expanded, false for collapsed
      */
-    public RunBoard (String           unitName,
-                     SelectionService selectionService,
-                     boolean          expanded)
+    public RunBoard (RunsTable runsTable,
+                     boolean   expanded)
+    {
+        this("", runsTable, expanded);
+    }
+
+    //----------//
+    // RunBoard //
+    //----------//
+    /**
+     * Create a Run Board.
+     * @param runsTable the table of runs
+     * @param expanded true for expanded, false for collapsed
+     */
+    public RunBoard (String    suffix,
+                     RunsTable runsTable,
+                     boolean   expanded)
     {
         super(
-            unitName + "-RunBoard",
-            "Run",
-            selectionService,
+            Board.RUN.name +
+            ((runsTable.getOrientation() == Orientation.VERTICAL) ? "-vert"
+             : "-hori"),
+            Board.RUN.position +
+            ((runsTable.getOrientation() == Orientation.VERTICAL) ? 100 : 0),
+            runsTable.getRunService(),
             eventClasses,
+            false,
             expanded);
         defineLayout();
     }

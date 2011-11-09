@@ -229,9 +229,7 @@ class GlyphBrowser
                   .setEnabled(false);
 
         // Passive evaluation board
-        EvaluationBoard evalBoard = new EvaluationBoard(
-            "Evaluation-PassiveBoard",
-            controller);
+        EvaluationBoard evalBoard = new EvaluationBoard(controller, true);
         evalBoard.connect();
 
         // Layout
@@ -485,7 +483,7 @@ class GlyphBrowser
 
         public MyGlyphBoard (GlyphsController controller)
         {
-            super("Browser-SymbolGlyphBoard", controller);
+            super(controller, true);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -659,7 +657,7 @@ class GlyphBrowser
         //-----------//
         Navigator ()
         {
-            super("Glyph-Navigator", "Navigator", null, null, true);
+            super(Board.SAMPLE, null, null, false, true);
 
             defineLayout();
 

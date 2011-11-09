@@ -15,6 +15,7 @@ import omr.Main;
 
 import omr.log.Logger;
 
+import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 /**
@@ -52,6 +53,19 @@ public class HorizontalsStep
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-----------//
+    // displayUI //
+    //-----------//
+    @Override
+    public void displayUI (Sheet sheet)
+    {
+        // Add ledger checkboard
+        sheet.getSystems()
+             .get(0)
+             .getHorizontalsBuilder()
+             .displayFrame();
+    }
 
     //----------//
     // doSystem //

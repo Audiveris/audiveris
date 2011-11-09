@@ -169,7 +169,7 @@ public class LinesRetriever
 
         // To record the purged runs
         RunsTable purgedVertTable = new RunsTable(
-            "purged-vert",
+            "vert",
             VERTICAL,
             new Dimension(sheet.getWidth(), sheet.getHeight()));
 
@@ -205,7 +205,7 @@ public class LinesRetriever
             HORIZONTAL,
             new Dimension(sheet.getWidth(), sheet.getHeight()));
 
-        RunsTable longHoriTable = wholeHoriTable.clone("long-hori")
+        RunsTable longHoriTable = wholeHoriTable.clone("hori")
                                                 .purge(
             new Predicate<Run>() {
                     public final boolean check (Run run)
@@ -408,11 +408,9 @@ public class LinesRetriever
         view.setName(table.getName());
         view.setPreferredSize(table.getDimension());
 
-        final String unit = sheet.getId() + ":" + table.getName();
-
-        BoardsPane   boards = new BoardsPane(
-            new PixelBoard(unit, sheet),
-            new RunBoard(unit, table.getRunService(), true));
+        BoardsPane boards = new BoardsPane(
+            new PixelBoard(sheet),
+            new RunBoard(table, true));
 
         sheet.getAssembly()
              .addViewTab(table.getName(), new ScrollView(view), boards);

@@ -46,7 +46,6 @@ import org.bushe.swing.event.EventSubscriber;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -134,14 +133,15 @@ public class ShapeFocusBoard
      */
     public ShapeFocusBoard (Sheet            sheet,
                             GlyphsController controller,
-                            ActionListener   filterListener)
+                            ActionListener   filterListener,
+                            boolean          expanded)
     {
         super(
-            sheet.getId() + "-ShapeFocusBoard",
-            "Focus",
+            Board.FOCUS,
             controller.getNest().getGlyphService(),
             eventsRead,
-            false);
+            false,
+            expanded);
 
         this.sheet = sheet;
 
@@ -217,7 +217,7 @@ public class ShapeFocusBoard
                 }
             }
 
-            expand(); // Expand this board if so needed
+            setVisible(true);
         } else {
             // Void the shape button
             selectButton.setText("- No Focus -");
@@ -313,8 +313,7 @@ public class ShapeFocusBoard
             selectButton.setText("Glyphs similar to #" + example.getId());
             selectButton.setIcon(null);
 
-            // Expand this board if so needed
-            expand();
+            setVisible(true);
         } else {
             // Void the shape button
             selectButton.setText("- No Focus -");
@@ -490,7 +489,8 @@ public class ShapeFocusBoard
             count.setText(index + "/" + (ids.size() - 1));
 
             if (id != NO_VALUE) {
-                selectionService.publish(
+                getSelectionService()
+                    .publish(
                     new GlyphIdEvent(this, SelectionHint.GLYPH_INIT, null, id));
             }
         }

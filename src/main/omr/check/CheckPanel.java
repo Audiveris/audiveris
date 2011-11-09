@@ -279,20 +279,14 @@ public class CheckPanel<C extends Checkable>
             JLabel covariantLabel;
 
             if (check.isCovariant()) {
-                covariantLabel = new JLabel("T");
-                covariantLabel.setToolTipText("Check is covariant");
+                covariantLabel = new JLabel(">");
+                covariantLabel.setToolTipText("Higher is better");
             } else {
-                covariantLabel = new JLabel("F");
-                covariantLabel.setToolTipText("Check is contravariant");
+                covariantLabel = new JLabel("<");
+                covariantLabel.setToolTipText("Lower is better");
             }
 
             b.add(covariantLabel, c.xy(1, r));
-
-            // Weight label
-            JLabel weightLabel = new JLabel(
-                String.format("%s", suite.getWeights().get(ic).intValue()));
-            weightLabel.setToolTipText("Relative weight for this check");
-            b.add(weightLabel, c.xy(3, r));
 
             // Name label with proper tooltip
             JLabel nameLabel = new JLabel(check.getName());
@@ -321,14 +315,14 @@ public class CheckPanel<C extends Checkable>
                 nameLabel.setToolTipText(sb.toString());
             }
 
-            b.add(nameLabel, c.xy(5, r));
+            b.add(nameLabel, c.xy(3, r));
 
             // Value & bound fields
-            b.add(values[ic][0], c.xy(7, r));
-            b.add(bounds[ic][0], c.xy(9, r));
-            b.add(values[ic][1], c.xy(11, r));
-            b.add(bounds[ic][1], c.xy(13, r));
-            b.add(values[ic][2], c.xy(15, r));
+            b.add(values[ic][0], c.xy(5, r));
+            b.add(bounds[ic][0], c.xy(7, r));
+            b.add(values[ic][1], c.xy(9, r));
+            b.add(bounds[ic][1], c.xy(11, r));
+            b.add(values[ic][2], c.xy(13, r));
         }
 
         // Last row for global result
@@ -336,8 +330,8 @@ public class CheckPanel<C extends Checkable>
 
         JLabel globalLabel = new JLabel("Result");
         globalLabel.setToolTipText("Global check result");
-        b.add(globalLabel, c.xy(7, r));
-        b.add(globalField, c.xy(11, r));
+        b.add(globalLabel, c.xy(5, r));
+        b.add(globalField, c.xy(9, r));
     }
 
     //-------------------//
@@ -382,11 +376,7 @@ public class CheckPanel<C extends Checkable>
            .append(", ")
            .append(COLUMN_GAP)
            .append(", "); // Covariance
-        sbc.append("center:pref")
-           .append(", ")
-           .append(COLUMN_GAP)
-           .append(", "); // Weight
-        sbc.append(" right:46dlu")
+        sbc.append(" right:40dlu")
            .append(", ")
            .append(COLUMN_GAP)
            .append(", "); // Name

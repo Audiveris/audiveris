@@ -26,12 +26,8 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import org.bushe.swing.event.EventSubscriber;
 
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.event.ActionEvent;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -41,51 +37,75 @@ import javax.swing.JTextField;
  * Class <code>Board</code> defines the common properties of any user board
  * such as PixelBoard, SectionBoard, and the like.
  *
- * <p>Each board has a standard header composed of a "groom" button to expand
- * and collapse the board, a title, and a horizontal separator. The board body
- * is handled by the subclass.
+ * <p>Each board has a standard header composed of a title, a horizontal
+ * separator and perhaps a dump button.
+ * The board body is handled by the subclass.</p>
+ *
+ * <p>Any board can be (de)selected in its containing {@link BoardsPane}.
+ * This can be done programmatically using {@link #setSelected(boolean)}
+ * and manually (via a right-click in the BoardsPane).</p>
+ *
+ * <p>Only selected boards can be seen in the BoardsPane display. A selected
+ * board can be made currently (in)visible, programmatically using
+ * {@link #setVisible(boolean)}.
+ * Typically, {@link omr.check.CheckBoard}'s are visible only when they carry
+ * glyph information.</p>
  *
  * <p>By default, any board can have a related SelectionService, used for
  * subscribe (input) and publish (output). When {@link #connect} is called, the
  * board instance is subscribed to its SelectionService for a specific
  * collection of event classes. Similarly, {@link #disconnect} unsubscribes the
- * Board instance from the same event classes.
+ * Board instance from the same event classes.</p>
  *
  * <p>This is still an abstract class, since the onEvent() method must be
- * provided by every subclass.
+ * provided by every subclass.</p>
  *
  * @author Hervé Bitteur
  */
 public abstract class Board
-    implements EventSubscriber<UserEvent>
+    implements EventSubscriber<UserEvent>, Comparable<Board>
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Board.class);
 
-    /** Color for groom buttom */
-    private static final Color groomColor = new Color(240, 240, 240);
+    // Predefined boards names with preferred display positions
+    public static final Desc       PIXEL = new Desc("Pixel", 100);
+    public static final Desc       RUN = new Desc("Run", 200);
+    public static final Desc       SECTION = new Desc("Section", 250);
+    public static final Desc       SAMPLE = new Desc("Sample", 400);
+    public static final Desc       GLYPH = new Desc("Glyph", 500);
+    public static final Desc       FOCUS = new Desc("Focus", 600);
+    public static final Desc       EVAL = new Desc("Eval", 700);
+    public static final Desc       SHAPE = new Desc("Shape", 800);
+    public static final Desc       CHECK = new Desc("Check", 900);
 
     //~ Instance fields --------------------------------------------------------
 
-    /** The swing component of the Board instance */
-    protected final Panel component = new Panel();
+    /** The board instance name */
+    private final String name;
+
+    /** The board header */
+    private final Header header;
 
     /** The body part of the component */
-    protected final Panel body = new Panel();
+    private final Panel body = new Panel();
+
+    /** The swing component of the board instance */
+    private final Panel component = new Panel();
 
     /** The event service this board interacts with */
-    protected final SelectionService selectionService;
+    private final SelectionService selectionService;
 
     /** The collection of event classes to be observed */
-    protected final Class[] eventsRead;
+    private final Class[] eventsRead;
 
-    /** The Board instance name */
-    protected String name;
+    /** The preferred position in BoardsPane sequence */
+    private final int position;
 
-    /** The groom for expand/collapse actions */
-    private final Groom groom;
+    /** Board is selected? */
+    private boolean selected;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -93,38 +113,114 @@ public abstract class Board
     // Board //
     //-------//
     /**
-     * Create a board
-     *
-     * @param name a name assigned to the board, for debug reason
-     * @param title the string to appear as the board title
-     * @param selectionService the related selection service (for input & output)
+     * Create a board.
+     * @param desc the board descriptor
+     * @param selectionService the related selection service for input & output
      * @param eventList the collection of event classes to observe
-     * @param expanded true to pre-expand the board, false to pre-collapse
+     * @param withDump true for a dump button
+     * @param selected true to make the board initially selected
      */
-    public Board (String           name,
-                  String           title,
+    public Board (Desc             desc,
                   SelectionService selectionService,
                   Class[]          eventList,
-                  boolean          expanded)
+                  boolean          withDump,
+                  boolean          selected)
+    {
+        this(
+            desc.name,
+            desc.position,
+            selectionService,
+            eventList,
+            withDump,
+            selected);
+    }
+
+    //-------//
+    // Board //
+    //-------//
+    /**
+     * Create a board.
+     * @param name a name assigned to the board
+     * @param position the preferred position within BoardsPane display
+     * @param selectionService the related selection service for input & output
+     * @param eventList the collection of event classes to observe
+     * @param withDump true for a dump button
+     * @param selected true to make the board initially selected
+     */
+    public Board (String           name,
+                  int              position,
+                  SelectionService selectionService,
+                  Class[]          eventList,
+                  boolean          withDump,
+                  boolean          selected)
     {
         this.name = name;
+        this.position = position;
         this.selectionService = selectionService;
         this.eventsRead = eventList;
-
-        groom = new Groom(expanded);
+        this.selected = selected;
 
         // Layout header and body parts
-        defineBoardLayout(title);
+        header = new Header(name, withDump);
+        defineBoardLayout();
     }
 
     //~ Methods ----------------------------------------------------------------
 
     //-------------//
+    // setSelected //
+    //-------------//
+    /**
+     * Select or not this board in its containing BoardsPane.
+     * @param bool true for selected
+     */
+    public void setSelected (boolean bool)
+    {
+        selected = bool;
+    }
+
+    //------------//
+    // isSelected //
+    //------------//
+    /**
+     * Report whether this board is currently selected.
+     * @return true if selected
+     */
+    public boolean isSelected ()
+    {
+        return selected;
+    }
+
+    //------------//
+    // setVisible //
+    //------------//
+    /**
+     * Make this board visible or not.
+     * @param bool true for visible
+     */
+    public void setVisible (boolean bool)
+    {
+        component.setVisible(bool);
+    }
+
+    //-----------//
+    // compareTo //
+    //-----------//
+    /**
+     * Allow to sort boards according to their preferred display position.
+     * @param that the other board to compare to
+     * @return comparison result
+     */
+    public int compareTo (Board that)
+    {
+        return Integer.signum(this.position - that.position);
+    }
+
+    //-------------//
     // emptyFields //
     //-------------//
     /**
-     * Empty all the text fields of a given JComponent
-     *
+     * Convenient method to empty all the text fields of a given JComponent.
      * @param component the component to "blank".
      */
     public static void emptyFields (JComponent component)
@@ -140,8 +236,7 @@ public abstract class Board
     // getComponent //
     //--------------//
     /**
-     * Report the UI component
-     *
+     * Report the UI component.
      * @return the concrete component
      */
     public JPanel getComponent ()
@@ -153,8 +248,7 @@ public abstract class Board
     // getName //
     //---------//
     /**
-     * Report a distinct name for this board instance
-     *
+     * Report the name for this board instance.
      * @return an instance name
      */
     public String getName ()
@@ -166,13 +260,11 @@ public abstract class Board
     // connect //
     //---------//
     /**
-     * Invoked when the board has been made visible, to connect to input
-     * selections.
+     * Connect to input selections.
      */
     public void connect ()
     {
-        if ((eventsRead != null) && groom.expanded) {
-            ///logger.warning("connect " + this + " on " + selectionService);
+        if (eventsRead != null) {
             for (Class eventClass : eventsRead) {
                 selectionService.subscribeStrongly(eventClass, this);
 
@@ -192,29 +284,14 @@ public abstract class Board
     // disconnect //
     //------------//
     /**
-     * Invoked when the board has been made invisible, to disconnect from input
-     * selections.
+     * Disconnect from input selections.
      */
     public void disconnect ()
     {
-        if ((eventsRead != null) && groom.expanded) {
-            ///logger.warning("disconnect " + this + " from " + selectionService);
+        if (eventsRead != null) {
             for (Class eventClass : eventsRead) {
                 selectionService.unsubscribe(eventClass, this);
             }
-        }
-    }
-
-    //--------//
-    // expand //
-    //--------//
-    /**
-     * Programmatically expand this board
-     */
-    public void expand ()
-    {
-        if (!groom.expanded) {
-            groom.actionPerformed(null);
         }
     }
 
@@ -224,21 +301,49 @@ public abstract class Board
     @Override
     public String toString ()
     {
-        return ClassUtil.nameOf(this);
+        return "{" + ClassUtil.nameOf(this) + " " + name + "}";
     }
 
     //---------//
     // getBody //
     //---------//
+    /**
+     * Report the body part of the board.
+     * @return the body
+     */
     protected JPanel getBody ()
     {
         return body;
     }
 
+    //---------------//
+    // getDumpButton //
+    //---------------//
+    /**
+     * Report the Dump button of the board, if any.
+     * @return the dump button, or null
+     */
+    protected JButton getDumpButton ()
+    {
+        return header.dumpButton;
+    }
+
+    //---------------------//
+    // getSelectionService //
+    //---------------------//
+    /**
+     * Report the selection service this board is linked to.
+     * @return the selectionService
+     */
+    protected SelectionService getSelectionService ()
+    {
+        return selectionService;
+    }
+
     //-------------------//
     // defineBoardLayout //
     //-------------------//
-    private void defineBoardLayout (String title)
+    private void defineBoardLayout ()
     {
         component.setNoInsets();
         body.setNoInsets();
@@ -249,75 +354,35 @@ public abstract class Board
             "pref," + Panel.getFieldInterline() + ",pref");
         PanelBuilder    builder = new PanelBuilder(layout, component);
 
-        builder.add(new Header(title), cst.xy(1, 1));
+        builder.add(header, cst.xy(1, 1));
         builder.add(body, cst.xy(1, 3));
     }
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //-------//
-    // Groom //
-    //-------//
+    //------//
+    // Desc //
+    //------//
     /**
-     * The groom is in charge of expanding / collapsing the board body panel
-     *
-     * TODO: For the time being, we can't (de)connect at close/open events,
-     * because some boards (indirectly) take their input from other boards
-     * (example: glyph needs run or section)
+     * A way to describe a board kind.
      */
-    private class Groom
-        extends AbstractAction
+    public static class Desc
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** Is the body panel expanded (or collapsed)? */
-        private boolean expanded;
+        /** Default name for this board */
+        public final String name;
+
+        /** Preferred position within its containing BoardsPane */
+        public final int position;
 
         //~ Constructors -------------------------------------------------------
 
-        public Groom (boolean expanded)
+        public Desc (String name,
+                     int    position)
         {
-            this.expanded = expanded;
-
-            // Initialize the board
-            display();
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        public final void actionPerformed (ActionEvent e)
-        {
-            expanded = !expanded;
-            display();
-            handleConnection();
-        }
-
-        private void display ()
-        {
-            if (expanded) {
-                putValue(Action.NAME, "X");
-                putValue(Action.SHORT_DESCRIPTION, "Collapse");
-            } else {
-                putValue(Action.NAME, "+");
-                putValue(Action.SHORT_DESCRIPTION, "Expand");
-            }
-
-            body.setVisible(expanded);
-            component.invalidate();
-        }
-
-        private void handleConnection ()
-        {
-            if (expanded) {
-                // Connect the input
-                connect();
-            } else {
-                // Disconnect the input
-                // Trick: disconnect() method is a no-op if not expanded, so...
-                expanded = true;
-                disconnect();
-                expanded = false;
-            }
+            this.name = name;
+            this.position = position;
         }
     }
 
@@ -325,9 +390,10 @@ public abstract class Board
     // Header //
     //--------//
     /**
-     * The board header is a horizontal line with the groom and the board title
+     * The board header is a horizontal line with the board title,
+     * and perhaps a dump button.
      */
-    private class Header
+    private static class Header
         extends Panel
     {
         //~ Instance fields ----------------------------------------------------
@@ -335,11 +401,17 @@ public abstract class Board
         /** The board title */
         private final String title;
 
+        /** Dump button */
+        public final JButton dumpButton;
+
         //~ Constructors -------------------------------------------------------
 
-        public Header (String title)
+        public Header (String  title,
+                       boolean withDump)
         {
             this.title = title;
+
+            dumpButton = withDump ? new JButton("Dump") : null;
             setNoInsets();
             defineLayout();
         }
@@ -348,19 +420,18 @@ public abstract class Board
 
         private void defineLayout ()
         {
-            /** Groom of the board */
-            JButton button = new JButton(groom);
-            button.setBorderPainted(false);
-            button.setBackground(groomColor);
-
             CellConstraints cst = new CellConstraints();
             FormLayout      layout = new FormLayout(
-                "175dlu," + Panel.getFieldInterval() + ",pref",
+                ((dumpButton != null)
+                 ? ("154dlu," + Panel.getFieldInterval() + ",35dlu") : "192dlu"),
                 "pref");
             PanelBuilder    builder = new PanelBuilder(layout, this);
 
             builder.addSeparator(title, cst.xy(1, 1));
-            builder.add(button, cst.xy(3, 1));
+
+            if (dumpButton != null) {
+                builder.add(dumpButton, cst.xy(3, 1));
+            }
         }
     }
 }

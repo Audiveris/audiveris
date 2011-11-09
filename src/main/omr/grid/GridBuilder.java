@@ -17,8 +17,8 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphsModel;
-import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphsController;
+import omr.glyph.ui.SymbolGlyphBoard;
 
 import omr.lag.Lag;
 import omr.lag.Section;
@@ -236,20 +236,18 @@ public class GridBuilder
         gridView.setLocationService(sheet.getLocationService());
 
         // Boards
-        final String unit = sheet.getId() + ":GridBuilder";
-
-        BoardsPane   boardsPane = new BoardsPane(
-            new PixelBoard(unit, sheet),
-            new RunBoard(unit, hLag, true),
-            new SectionBoard(unit, hLag, true),
-            new RunBoard(unit, vLag, true),
-            new SectionBoard(unit, vLag, true),
-            new GlyphBoard(unit, gController, false));
+        BoardsPane boardsPane = new BoardsPane(
+            new PixelBoard(sheet),
+            new RunBoard(hLag, true),
+            new SectionBoard(hLag, true),
+            new RunBoard(vLag, true),
+            new SectionBoard(vLag, true),
+            new SymbolGlyphBoard(gController, true));
 
         // Create a hosting frame for the view
         ScrollView sv = new ScrollView(gridView);
         sheet.getAssembly()
-             .addViewTab(Step.GRID_TAB, sv, boardsPane);
+             .addViewTab(Step.DATA_TAB, sv, boardsPane);
     }
 
     //~ Inner Classes ----------------------------------------------------------

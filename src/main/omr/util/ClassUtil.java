@@ -56,6 +56,7 @@ public class ClassUtil
         }
 
         // More complex case, return the caller, just before the skipped classes
+
         // First, search back to a method in the skipped classes, if any
         int ix;
         searchingForSkipped: 
@@ -88,6 +89,43 @@ public class ClassUtil
 
         // We haven't found a suitable frame
         return null;
+    }
+
+    //-----------------//
+    // getCallingFrame //
+    //-----------------//
+    /**
+     * Infer the calling frame, skipping the given classes if so provided.
+     * Code was derived from a private method found in the JDK Logger class
+     *
+     * @param skipped predicate to skip class(es)
+     * @return the frame found, just before the skipped classes (or just before
+     * the caller of this method)
+     */
+    public static StackTraceElement getCallingFrame (Predicate<String> skipped)
+    {
+        // Get the current stack trace.
+        StackTraceElement[] stack = (new Throwable()).getStackTrace();
+
+        // Simple case, no classes to skip, just return the caller of the caller
+        if (skipped == null) {
+            return stack[2];
+        } else {
+            // More complex case, skip the unwanted classes
+            int ix;
+            searchingForSkipped: 
+            for (ix = 2; ix < stack.length; ix++) {
+                StackTraceElement frame = stack[ix];
+                String            cname = frame.getClassName();
+
+                if (!skipped.check(cname)) {
+                    return frame;
+                }
+            }
+
+            // We haven't found a suitable frame
+            return null;
+        }
     }
 
     //-----------------//

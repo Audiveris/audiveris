@@ -107,6 +107,12 @@ public interface Lag
     void setRuns (RunsTable runsTable);
 
     /**
+     * Report the provided runs table
+     * @return the table of runs
+     */
+    RunsTable getRuns ();
+
+    /**
      * Report the section selection service
      * @return the section selection service
      */

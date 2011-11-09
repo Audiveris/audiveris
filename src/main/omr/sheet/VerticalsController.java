@@ -19,30 +19,20 @@ import omr.constant.ConstantSet;
 import omr.glyph.GlyphsModel;
 import omr.glyph.Nest;
 import omr.glyph.facets.Glyph;
-import omr.glyph.ui.GlyphBoard;
 import omr.glyph.ui.GlyphsController;
 import omr.glyph.ui.NestView;
 
-import omr.lag.Lag;
-import omr.lag.ui.SectionBoard;
-
 import omr.log.Logger;
-
-import omr.run.RunBoard;
 
 import omr.selection.GlyphEvent;
 import omr.selection.MouseMovement;
 import omr.selection.SelectionService;
 import omr.selection.UserEvent;
 
-import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.SheetPainter;
 
 import omr.step.Step;
 import omr.step.Steps;
-
-import omr.ui.BoardsPane;
-import omr.ui.view.ScrollView;
 
 import java.awt.Graphics2D;
 import java.util.Arrays;
@@ -115,27 +105,29 @@ public class VerticalsController
     //--------------//
     private void displayFrame ()
     {
-        Lag vLag = sheet.getVerticalLag();
+        //                Lag vLag = sheet.getVerticalLag();
 
         // Specific rubber display
         view = new MyView(sheet.getNest());
 
-        // Create a hosting frame for the view
-        final String unit = sheet.getId() + ":VerticalsBuilder";
-
+        //                // Create a hosting frame for the view
+        //                sheet.getAssembly()
+        //                     .addViewTab(
+        //                    Step.VERTICALS_TAB,
+        //                    new ScrollView(view),
+        //                    new BoardsPane(
+        //                        sheet.getAssembly(),
+        //                        new PixelBoard(sheet),
+        //                        new RunBoard(vLag, false),
+        //                        new SectionBoard(vLag, false),
+        //                        new SymbolGlyphBoard(this, true),
+        //                        new MyCheckBoard(
+        //                            sheet.getNest().getGlyphService(),
+        //                            eventClasses)));
         sheet.getAssembly()
-             .addViewTab(
-            Step.VERTICALS_TAB,
-            new ScrollView(view),
-            new BoardsPane(
-                new PixelBoard(unit, sheet),
-                new RunBoard(unit, vLag),
-                new SectionBoard(unit, vLag),
-                new GlyphBoard(unit, this, true),
-                new MyCheckBoard(
-                    unit,
-                    sheet.getNest().getGlyphService(),
-                    eventClasses)));
+             .addBoard(
+            new MyCheckBoard(sheet.getNest().getGlyphService(), eventClasses),
+            Step.DATA_TAB);
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -161,11 +153,10 @@ public class VerticalsController
     {
         //~ Constructors -------------------------------------------------------
 
-        public MyCheckBoard (String           unit,
-                             SelectionService eventService,
+        public MyCheckBoard (SelectionService eventService,
                              Class[]          eventList)
         {
-            super(unit, null, eventService, eventList);
+            super("Stem", null, eventService, eventList);
         }
 
         //~ Methods ------------------------------------------------------------

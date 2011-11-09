@@ -12,6 +12,7 @@
 package omr.sheet;
 
 import omr.check.Check;
+import omr.check.CheckBoard;
 import omr.check.CheckSuite;
 import omr.check.Checkable;
 import omr.check.FailureResult;
@@ -36,8 +37,8 @@ import omr.log.Logger;
 import static omr.run.Orientation.*;
 
 import omr.selection.GlyphEvent;
-import omr.selection.UserEvent;
 
+import omr.step.Step;
 import omr.step.StepException;
 
 import org.jdesktop.application.AbstractBean;
@@ -72,11 +73,7 @@ public class HorizontalsBuilder
         HorizontalsBuilder.class);
 
     /** Events this entity is interested in */
-    private static final Collection<Class<?extends UserEvent>> eventClasses = new ArrayList<Class<?extends UserEvent>>();
-
-    static {
-        eventClasses.add(GlyphEvent.class);
-    }
+    private static final Class[] eventClasses = new Class[] { GlyphEvent.class };
 
     /** Success codes */
     private static final SuccessResult LEDGER = new SuccessResult("Ledger");
@@ -246,16 +243,67 @@ public class HorizontalsBuilder
             // Filter ledgers more accurately
             filterLedgers();
 
-            //        // Display the results if so asked for
-            //        if (constants.displayFrame.getValue() && (Main.getGui() != null)) {
-            //            displayFrame();
-            //        }
+            //            // Display the results if so asked for
+            //            if (constants.displayFrame.getValue() && (Main.getGui() != null)) {
+            //                displayFrame();
+            //            }
         } catch (Throwable ex) {
             logger.warning("Error retrieving horizontals", ex);
         } finally {
             // User feedback
             feedback();
         }
+    }
+
+    //--------------//
+    // displayFrame //
+    //--------------//
+    public void displayFrame ()
+    {
+        ///controller = new GlyphsController(this);
+        sheet.getAssembly()
+             .addBoard(
+            new CheckBoard<Glyph>(
+                "Ledger",
+                ledgerSuite,
+                sheet.getNest().getGlyphService(),
+                eventClasses),
+            Step.DATA_TAB);
+
+        //
+        //        for (Dash dash : allDashes) {
+        //            dashSections.addAll(dash.getStick().getMembers());
+        //        }
+        //
+        //        // Specific rubber display
+        //        lagView = new MyView(scene, dashSections, getController());
+        //
+        //        final String  unit = sheet.getId() + ":HorizontalsBuilder";
+        //        BoardsPane    boardsPane = new BoardsPane(
+        //            new PixelBoard(unit, sheet),
+        //            new RunBoard(unit, scene),
+        //            new SectionBoard(unit, scene),
+        //            new GlyphBoard(unit, getController(), null, true),
+        //            new CheckBoard<Glyph>(
+        //                unit + "-Common",
+        //                commonSuite,
+        //                scene.getSelectionService(),
+        //                eventClasses),
+        //            new CheckBoard<Glyph>(
+        //                unit + "-Ledger",
+        //                ledgerSuite,
+        //                scene.getSelectionService(),
+        //                eventClasses),
+        //            new CheckBoard<Glyph>(
+        //                unit + "-Ending",
+        //                endingSuite,
+        //                scene.getSelectionService(),
+        //                eventClasses));
+        //
+        //        // Create a hosting frame for the view
+        //        ScrollView slv = new ScrollView(lagView);
+        //        sheet.getAssembly()
+        //             .addViewTab(Step.HORIZONTALS_TAB, slv, boardsPane);
     }
 
     //----------------------//
@@ -275,48 +323,6 @@ public class HorizontalsBuilder
 
         return keptSections;
     }
-
-    //    //--------------//
-    //    // displayFrame //
-    //    //--------------//
-    //    private void displayFrame ()
-    //    {
-    //        controller = new GlyphsController(this);
-    //
-    //        for (Dash dash : allDashes) {
-    //            dashSections.addAll(dash.getStick().getMembers());
-    //        }
-    //
-    //        // Specific rubber display
-    //        lagView = new MyView(scene, dashSections, getController());
-    //
-    //        final String  unit = sheet.getId() + ":HorizontalsBuilder";
-    //        BoardsPane    boardsPane = new BoardsPane(
-    //            new PixelBoard(unit, sheet),
-    //            new RunBoard(unit, scene),
-    //            new SectionBoard(unit, scene),
-    //            new GlyphBoard(unit, getController(), null, true),
-    //            new CheckBoard<Glyph>(
-    //                unit + "-Common",
-    //                commonSuite,
-    //                scene.getSelectionService(),
-    //                eventClasses),
-    //            new CheckBoard<Glyph>(
-    //                unit + "-Ledger",
-    //                ledgerSuite,
-    //                scene.getSelectionService(),
-    //                eventClasses),
-    //            new CheckBoard<Glyph>(
-    //                unit + "-Ending",
-    //                endingSuite,
-    //                scene.getSelectionService(),
-    //                eventClasses));
-    //
-    //        // Create a hosting frame for the view
-    //        ScrollView slv = new ScrollView(lagView);
-    //        sheet.getAssembly()
-    //             .addViewTab(Step.HORIZONTALS_TAB, slv, boardsPane);
-    //    }
 
     //------------------//
     // checkHorizontals //

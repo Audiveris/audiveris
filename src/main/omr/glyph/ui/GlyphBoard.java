@@ -45,6 +45,7 @@ import org.jdesktop.application.Task;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -117,8 +118,8 @@ public class GlyphBoard
     /** An active label */
     protected final JLabel active = new JLabel("", SwingConstants.CENTER);
 
-    /** Input: Dump action */
-    protected final Action dumpAction = new DumpAction();
+    /** Input: Dump  */
+    protected final JButton dump;
 
     /** Counter of glyph selection */
     protected final JLabel count = new JLabel("");
@@ -144,7 +145,7 @@ public class GlyphBoard
     protected final CellConstraints cst = new CellConstraints();
 
     /** The JGoodies/Form layout to be used by all subclasses  */
-    protected final FormLayout layout = Panel.makeFormLayout(7, 3);
+    protected final FormLayout layout = Panel.makeFormLayout(6, 3);
 
     /** The JGoodies/Form builder to be used by all subclasses  */
     protected final PanelBuilder builder;
@@ -162,70 +163,42 @@ public class GlyphBoard
     // GlyphBoard //
     //------------//
     /**
-     * Create a Glyph Board
-     *
-     * @param unitName name of the owning unit
-     * @param controller the underlying GlyphsController
-     * @param useKnownSpinner true if a spinner is to be used for known glyphs
-     */
-    public GlyphBoard (String           unitName,
-                       GlyphsController controller,
-                       boolean          useKnownSpinner)
-    {
-        this(unitName, controller);
-
-        // Model for globalSpinner
-        globalSpinner = makeGlyphSpinner(controller.getNest(), null);
-        globalSpinner.setName("globalSpinner");
-        globalSpinner.setToolTipText("General spinner for any glyph id");
-
-        // Model for knownSpinner?
-        if (useKnownSpinner) {
-            knownSpinner = makeGlyphSpinner(
-                controller.getNest(),
-                knownPredicate);
-            knownSpinner.setName("knownSpinner");
-            knownSpinner.setToolTipText("Specific spinner for known glyphs");
-        }
-
-        // Layout
-        int r = 3; // --------------------------------
-
-        if (globalSpinner != null) {
-            builder.addLabel("Id", cst.xy(1, r));
-        }
-
-        builder.add(globalSpinner, cst.xy(3, r));
-
-        if (knownSpinner != null) {
-            builder.addLabel("Known", cst.xy(5, r));
-            builder.add(knownSpinner, cst.xy(7, r));
-        }
-    }
-
-    //------------//
-    // GlyphBoard //
-    //------------//
-    /**
-     * Basic constructor, to set common characteristics
-     *
-     * @param name the name assigned to this board instance
+     * Basic constructor, to set common characteristics.
      * @param controller the related glyphs controller, if any
+     * @param expanded true if board must be initially expanded
      */
-    protected GlyphBoard (String           name,
-                          GlyphsController controller)
+    public GlyphBoard (GlyphsController controller,
+                       boolean          expanded)
     {
         super(
-            name,
-            "Glyph",
+            Board.GLYPH,
             controller.getNest().getGlyphService(),
             eventClasses,
-            true);
+            true, // Dump
+            expanded);
 
         this.controller = controller;
 
+        // Dump
+        dump = getDumpButton();
+        dump.setToolTipText("Dump this glyph");
+        dump.addActionListener(
+            new ActionListener() {
+                    public void actionPerformed (ActionEvent e)
+                    {
+                        // Retrieve current glyph selection
+                        GlyphEvent glyphEvent = (GlyphEvent) getSelectionService()
+                                                                 .getLastEvent(
+                            GlyphEvent.class);
+                        Glyph      glyph = glyphEvent.getData();
+
+                        if (glyph != null) {
+                            glyph.dump();
+                        }
+                    }
+                });
         // Until a glyph selection is made
-        dumpAction.setEnabled(false);
+        dump.setEnabled(false);
         getDeassignAction()
             .setEnabled(false);
 
@@ -238,17 +211,29 @@ public class GlyphBoard
         shapeIcon.setMaximumSize(dim);
         shapeIcon.setMinimumSize(dim);
 
-        // Precise layout
-        layout.setColumnGroups(
-            new int[][] {
-                { 1, 5, 9 },
-                { 3, 7, 11 }
-            });
-
+        //         Precise layout
+        //        layout.setColumnGroups(
+        //            new int[][] {
+        //                { 1, 5, 9 },
+        //                { 3, 7, 11 }
+        //            });
         builder = new PanelBuilder(layout, getBody());
         builder.setDefaultDialogBorder();
 
         defineLayout();
+
+        // Model for globalSpinner
+        globalSpinner = makeGlyphSpinner(controller.getNest(), null);
+        globalSpinner.setName("globalSpinner");
+        globalSpinner.setToolTipText("General spinner for any glyph id");
+
+        // Layout
+        int r = 1; // --------------------------------
+
+        if (globalSpinner != null) {
+            builder.addLabel("Id", cst.xy(1, r));
+            builder.add(globalSpinner, cst.xy(3, r));
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -329,7 +314,8 @@ public class GlyphBoard
         //  received leading to such selfUpdating. So the check.
         if (!selfUpdating) {
             // Notify the new glyph id
-            selectionService.publish(
+            getSelectionService()
+                .publish(
                 new GlyphIdEvent(
                     this,
                     SelectionHint.GLYPH_INIT,
@@ -347,16 +333,13 @@ public class GlyphBoard
     protected void defineLayout ()
     {
         int r = 1; // --------------------------------
-                   // Active Count Dump
-
-        builder.add(active, cst.xy(7, r));
-        builder.add(count, cst.xy(9, r));
-        builder.add(new JButton(dumpAction), cst.xy(11, r));
-
-        r += 2; // --------------------------------
-                // Shape Icon (start, spans several rows) + Deassign button
+                   // Shape Icon (start, spans several rows) + count + active + Deassign button
 
         builder.add(shapeIcon, cst.xywh(1, r, 1, 5));
+
+        builder.add(count, cst.xy(5, r));
+
+        builder.add(active, cst.xy(7, r));
 
         JButton deassignButton = new JButton(getDeassignAction());
         deassignButton.setHorizontalTextPosition(SwingConstants.LEFT);
@@ -419,7 +402,7 @@ public class GlyphBoard
         }
 
         // Dump button and deassign button
-        dumpAction.setEnabled(glyph != null);
+        dump.setEnabled(glyph != null);
         getDeassignAction()
             .setEnabled((glyph != null) && glyph.isKnown());
 
@@ -524,11 +507,13 @@ public class GlyphBoard
             if ((controller != null) && !classes.isEmpty()) {
                 // Do we have selections for glyph set, or just for glyph?
                 if (classes.contains(GlyphEvent.class)) {
-                    final Glyph glyph = (Glyph) selectionService.getSelection(
+                    final Glyph glyph = (Glyph) getSelectionService()
+                                                    .getSelection(
                         GlyphEvent.class);
 
                     if (classes.contains(GlyphSetEvent.class)) {
-                        final Set<Glyph> glyphs = (Set<Glyph>) selectionService.getSelection(
+                        final Set<Glyph> glyphs = (Set<Glyph>) getSelectionService()
+                                                                   .getSelection(
                             GlyphSetEvent.class);
 
                         boolean          noVirtuals = true;
@@ -558,7 +543,8 @@ public class GlyphBoard
                                             // even if reused in a compound
                                             Glyph newGlyph = glyph.getFirstSection()
                                                                   .getGlyph();
-                                            selectionService.publish(
+                                            getSelectionService()
+                                                .publish(
                                                 new GlyphEvent(
                                                     this,
                                                     SelectionHint.GLYPH_INIT,
@@ -583,7 +569,8 @@ public class GlyphBoard
                                             task.get();
 
                                             // Null publication
-                                            selectionService.publish(
+                                            getSelectionService()
+                                                .publish(
                                                 new GlyphEvent(
                                                     this,
                                                     SelectionHint.GLYPH_INIT,
@@ -606,36 +593,6 @@ public class GlyphBoard
                         }
                     }
                 }
-            }
-        }
-    }
-
-    //------------//
-    // DumpAction //
-    //------------//
-    private class DumpAction
-        extends AbstractAction
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public DumpAction ()
-        {
-            super("Dump");
-            this.putValue(Action.SHORT_DESCRIPTION, "Dump this glyph");
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ChangeListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            // Retrieve current glyph selection
-            GlyphEvent glyphEvent = (GlyphEvent) selectionService.getLastEvent(
-                GlyphEvent.class);
-            Glyph      glyph = glyphEvent.getData();
-
-            if (glyph != null) {
-                glyph.dump();
             }
         }
     }

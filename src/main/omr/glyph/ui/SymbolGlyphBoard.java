@@ -32,13 +32,13 @@ import omr.selection.UserEvent;
 
 import omr.sheet.ui.SheetsController;
 
+import omr.ui.Board;
 import omr.ui.field.LComboBox;
 import omr.ui.field.LDoubleField;
 import omr.ui.field.LIntegerField;
 import omr.ui.field.LTextField;
 
 import omr.util.Implement;
-import omr.util.Predicate;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -59,8 +59,7 @@ import javax.swing.KeyStroke;
  * as symbols, that is built from aggregation of contiguous sections, or by
  * combination of other symbols. Glyphs whose shape is set to {@link
  * omr.glyph.Shape#NOISE}, that is too small glyphs, are not included in this
- * spinner. The symbolSpinner is thus a subset of the knownSpinner (which is
- * itself a subset of the globalSpinner). </ul>
+ * spinner.</ul>
  *
  * <h4>Layout of an instance of SymbolGlyphBoard:<br/>
  *    <img src="doc-files/SymbolGlyphBoard.png"/>
@@ -68,7 +67,7 @@ import javax.swing.KeyStroke;
  *
  * @author Hervé Bitteur
  */
-class SymbolGlyphBoard
+public class SymbolGlyphBoard
     extends GlyphBoard
 {
     //~ Static fields/initializers ---------------------------------------------
@@ -134,19 +133,6 @@ class SymbolGlyphBoard
         "Normalized height",
         "%.3f");
 
-    /** Glyph id for the very first symbol */
-    private int firstSymbolId;
-
-    /** Predicate for symbol glyphs */
-    private Predicate<Glyph> symbolPredicate = new Predicate<Glyph>() {
-        @Implement(Predicate.class)
-        public boolean check (Glyph glyph)
-        {
-            return (glyph != null) && (glyph.getId() >= firstSymbolId) &&
-                   (glyph.getShape() != Shape.NOISE);
-        }
-    };
-
     /** Handling of entered / selected values */
     private final Action paramAction;
 
@@ -159,23 +145,15 @@ class SymbolGlyphBoard
     // SymbolGlyphBoard //
     //------------------//
     /**
-     * Create the symbol glyph board
-     *
-     *
-     * @param unitName name of the owning unit
+     * Create the symbol glyph board.
      * @param glyphsController the companion which handles glyph (de)assignments
-     * @param firstSymbolId id of the first glyph made as a symbol (as opposed
-     *                      to sticks/glyphs elaborated during previous steps)
+     * @param expanded true to initially expand this board
      */
-    public SymbolGlyphBoard (String           unitName,
-                             GlyphsController glyphsController,
-                             int              firstSymbolId)
+    public SymbolGlyphBoard (GlyphsController glyphsController,
+                             boolean          expanded)
     {
         // For all glyphs
-        super(unitName, glyphsController, true);
-
-        // Cache info
-        this.firstSymbolId = firstSymbolId;
+        super(glyphsController, true);
 
         // Additional combo for text role
         paramAction = new ParamAction();
@@ -212,31 +190,13 @@ class SymbolGlyphBoard
             .put("TextAction", paramAction);
     }
 
-    //------------------//
-    // SymbolGlyphBoard //
-    //------------------//
-    /**
-     * Create a simplified symbol glyph board.
-     * @param unitName name of the owning unit
-     * @param glyphsController the companion which handles glyph (de)assignments
-     */
-    public SymbolGlyphBoard (String           unitName,
-                             GlyphsController glyphsController)
-    {
-        super(unitName, glyphsController);
-        paramAction = null;
-
-        defineSpecificLayout(false); // no use of spinners
-    }
-
     //~ Methods ----------------------------------------------------------------
 
     //---------//
     // onEvent //
     //---------//
     /**
-     * Call-back triggered when Glyph Selection has been modified
-     *
+     * Call-back triggered when Glyph Selection has been modified.
      * @param event the (Glyph or glyph set) Selection
      */
     @Override
@@ -365,17 +325,17 @@ class SymbolGlyphBoard
         int r = 1; // --------------------------------
                    // Glyph ---
 
-        r += 2; // --------------------------------
-                // Spinners
-
-        if (useSpinners) {
-            builder.addLabel("Id", cst.xy(1, r));
-            builder.add(globalSpinner, cst.xy(3, r));
-
-            builder.addLabel("Known", cst.xy(5, r));
-            builder.add(knownSpinner, cst.xy(7, r));
-        }
-
+        //        r += 2; // --------------------------------
+        //                // Spinners
+        //
+        //        if (useSpinners) {
+        //            builder.addLabel("Id", cst.xy(1, r));
+        //            builder.add(globalSpinner, cst.xy(3, r));
+        //
+        //            //
+        //            //            builder.addLabel("Known", cst.xy(5, r));
+        //            //            builder.add(knownSpinner, cst.xy(7, r));
+        //        }
         r += 2; // --------------------------------
                 // shape
 
@@ -458,7 +418,8 @@ class SymbolGlyphBoard
             }
 
             // Get current glyph set
-            GlyphSetEvent glyphsEvent = (GlyphSetEvent) selectionService.getLastEvent(
+            GlyphSetEvent glyphsEvent = (GlyphSetEvent) getSelectionService()
+                                                            .getLastEvent(
                 GlyphSetEvent.class);
             Set<Glyph>    glyphs = (glyphsEvent != null)
                                    ? glyphsEvent.getData() : null;

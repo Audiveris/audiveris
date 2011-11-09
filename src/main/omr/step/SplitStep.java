@@ -42,7 +42,7 @@ public class SplitStep
             Level.SHEET_LEVEL,
             Mandatory.MANDATORY,
             Redoable.REDOABLE,
-            SYSTEMS_TAB,
+            DATA_TAB,
             "Retrieve Systems from Bar sticks");
     }
 

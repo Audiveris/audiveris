@@ -19,6 +19,8 @@ import omr.lag.Section;
 
 import omr.log.Logger;
 
+import omr.run.Orientation;
+
 import omr.selection.MouseMovement;
 import omr.selection.SectionEvent;
 import omr.selection.SectionIdEvent;
@@ -50,7 +52,6 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -74,9 +75,9 @@ public class SectionBoard
 
     /** Events this board is interested in */
     private static final Class[] eventsRead = new Class[] {
-                                                    SectionEvent.class,
-                                                    SectionSetEvent.class
-                                                };
+                                                  SectionEvent.class,
+                                                  SectionSetEvent.class
+                                              };
 
     //~ Instance fields --------------------------------------------------------
 
@@ -89,15 +90,13 @@ public class SectionBoard
     // Section input devices
     //
     /** Button for section dump */
-    private final JButton dump = new JButton("Dump");
+    private final JButton dump;
 
     /** Spinner for section id */
     private final JSpinner id = new JSpinner();
 
     // Output for plain Section
     //
-    /** Label for lag name */
-    private final JLabel lagName = new JLabel("", SwingConstants.CENTER);
 
     /** Field for left abscissa */
     private final LIntegerField x = new LIntegerField(
@@ -129,7 +128,7 @@ public class SectionBoard
         "Weight",
         "Number of pixels in this section");
 
-    // Additional output for StickSection
+    // Additional output for StickSection (TODO: remove these fields)
     //
     /** Field for role in stick building */
     private final JTextField role = new JTextField();
@@ -156,41 +155,27 @@ public class SectionBoard
     // SectionBoard //
     //--------------//
     /**
-     * Create a Section Board, initially collapsed
-     *
-     * @param unitName name for the owning unit
-     * @param lag the related lag
-     */
-    public SectionBoard (String unitName,
-                         Lag    lag)
-    {
-        this(unitName, lag, false);
-    }
-
-    //--------------//
-    // SectionBoard //
-    //--------------//
-    /**
      * Create a Section Board
-     *
-     * @param unitName name for the owning unit
      * @param lag the related lag
      * @param expanded true for initially expanded, false for collapsed
      */
-    public SectionBoard (String    unitName,
-                         final Lag lag,
+    public SectionBoard (final Lag lag,
                          boolean   expanded)
     {
         super(
-            unitName + "-SectionBoard",
-            "Section",
+            Board.SECTION.name +
+            ((lag.getOrientation() == Orientation.VERTICAL) ? "-vert" : "-hori"),
+            Board.SECTION.position +
+            ((lag.getOrientation() == Orientation.VERTICAL) ? 100 : 0),
             lag.getSectionService(),
             eventsRead,
+            true, // Dump
             expanded);
 
         this.lag = lag;
 
         // Dump button
+        dump = getDumpButton();
         dump.setToolTipText("Dump this section");
         dump.addActionListener(
             new ActionListener() {
@@ -289,15 +274,6 @@ public class SectionBoard
         }
     }
 
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        return lag.getName() + "SectionBoard";
-    }
-
     //--------------//
     // defineLayout //
     //--------------//
@@ -310,11 +286,7 @@ public class SectionBoard
         CellConstraints cst = new CellConstraints();
         int             r = 1; // --------------------------------
 
-        builder.add(lagName, cst.xy(7, r));
-
         builder.add(count, cst.xy(9, r));
-
-        builder.add(dump, cst.xy(11, r));
 
         r += 2; // --------------------------------
         builder.addLabel("Id", cst.xy(1, r));
@@ -376,8 +348,6 @@ public class SectionBoard
             emptyFields(getBody());
 
             if (section == null) {
-                lagName.setText("");
-
                 // If the user is currently using the Id spinner, make sure we
                 // display the right Id value in the spinner, even if there is
                 // no corresponding section
@@ -394,7 +364,6 @@ public class SectionBoard
                 }
             } else {
                 // We have a valid section, let's display its fields
-                lagName.setText(section.getGraph().getName());
                 id.setValue(section.getId());
 
                 Rectangle box = section.getContourBox();

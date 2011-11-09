@@ -98,19 +98,16 @@ public class PixelBoard
     // PixelBoard //
     //------------//
     /**
-     * Create a PixelBoard
-     *
-     * @param unitName name of the unit which declares a pixel board
+     * Create a PixelBoard.
      * @param sheet the related sheet
      */
-    public PixelBoard (String unitName,
-                       Sheet  sheet)
+    public PixelBoard (Sheet sheet)
     {
         super(
-            unitName + "-PixelBoard",
-            "Pixel",
+            Board.PIXEL,
             sheet.getLocationService(),
             eventClasses,
+            false,
             true);
 
         // Needed to process user input when RETURN/ENTER is pressed
@@ -130,8 +127,7 @@ public class PixelBoard
     // onEvent //
     //---------//
     /**
-     * Call-back triggered when Location Selection has been modified
-     *
+     * Call-back triggered when Location Selection has been modified.
      * @param event the selection event
      */
     @Implement(EventSubscriber.class)
@@ -236,7 +232,8 @@ public class PixelBoard
         {
             // Remember & forward the new pixel selection
             // A rectangle (which can be degenerated to a point)
-            selectionService.publish(
+            getSelectionService()
+                .publish(
                 new LocationEvent(
                     PixelBoard.this,
                     SelectionHint.LOCATION_INIT,

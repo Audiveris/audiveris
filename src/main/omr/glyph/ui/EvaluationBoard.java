@@ -119,10 +119,10 @@ class EvaluationBoard
      * network evaluator.
      * @param glyphModel the related glyph model
      */
-    public EvaluationBoard (String           name,
-                            GlyphsController glyphModel)
+    public EvaluationBoard (GlyphsController glyphModel,
+                            boolean          expanded)
     {
-        this(name, glyphModel, null);
+        this(null, glyphModel, expanded);
         useAnnotations = false;
     }
 
@@ -132,20 +132,19 @@ class EvaluationBoard
     /**
      * Create an evaluation board with one neural network evaluator
      * and the ability to force glyph shape.
-     * @param name a rather unique name for this board
      * @param glyphController the related glyph controller
      * @param sheet the related sheet, or null
      */
-    public EvaluationBoard (String           name,
+    public EvaluationBoard (Sheet            sheet,
                             GlyphsController glyphController,
-                            Sheet            sheet)
+                            boolean          expanded)
     {
         super(
-            name,
-            "Neural",
+            Board.EVAL,
             glyphController.getNest().getGlyphService(),
             eventsRead,
-            true);
+            false,
+            expanded);
 
         this.glyphsController = glyphController;
         this.sheet = sheet;
@@ -161,7 +160,7 @@ class EvaluationBoard
     // evaluate //
     //----------//
     /**
-     * Evaluate the glyph at hand, and display the result in the 
+     * Evaluate the glyph at hand, and display the result in the
      * evaluator dedicated area.
      * @param glyph the glyph at hand
      */

@@ -111,7 +111,7 @@ public class Sheet
     /** The recording of key processing data */
     private SheetBench bench;
 
-    /** Related assembly instance */
+    /** Related assembly instance, if any */
     private SheetAssembly assembly;
 
     /** Related errors editor */
@@ -159,9 +159,6 @@ public class Sheet
 
     /** Systems */
     private final SystemManager systemManager;
-
-    /** A ledger line extractor for this sheet */
-    private volatile HorizontalsBuilder horizontalsBuilder;
 
     /** A bar line extractor for this sheet */
     private volatile SystemsBuilder systemsBuilder;
@@ -483,32 +480,6 @@ public class Sheet
     public Horizontals getHorizontals ()
     {
         return horizontals;
-    }
-
-    //-----------------------//
-    // setHorizontalsBuilder //
-    //-----------------------//
-    /**
-     * Set the builder in charge of ledger lines
-     *
-     * @param horizontalsBuilder the builder instance
-     */
-    public void setHorizontalsBuilder (HorizontalsBuilder horizontalsBuilder)
-    {
-        this.horizontalsBuilder = horizontalsBuilder;
-    }
-
-    //-----------------------//
-    // getHorizontalsBuilder //
-    //-----------------------//
-    /**
-     * Give access to the builder in charge of ledger lines
-     *
-     * @return the builder instance
-     */
-    public HorizontalsBuilder getHorizontalsBuilder ()
-    {
-        return horizontalsBuilder;
     }
 
     //-------//
@@ -1502,8 +1473,7 @@ public class Sheet
             assembly.addViewTab(
                 Step.PICTURE_TAB,
                 pictureView,
-                new BoardsPane(
-                    new PixelBoard(page.getIndex() + ":Picture", Sheet.this)));
+                new BoardsPane(new PixelBoard(Sheet.this)));
         }
     }
 
@@ -1521,7 +1491,6 @@ public class Sheet
         horizontals = null;
         hLag = null;
         vLag = null;
-        horizontalsBuilder = null;
         systemsBuilder = null;
         symbolsController = null;
         verticalsController = null;

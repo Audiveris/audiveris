@@ -14,19 +14,34 @@ package omr.ui;
 import omr.log.Logger;
 
 import omr.ui.util.Panel;
+import omr.ui.util.SeparablePopupMenu;
+import static omr.ui.util.UIPredicates.*;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import java.awt.Component;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingConstants;
 
 /**
- * Class {@code BoardsPane} defines a comprehensive user board, where data
- * related to current point, run, section and glyph can be displayed in
- * dedicated boards, as well as a general-purpose Filter board and a custom
- * board.
+ * Class {@code BoardsPane} defines a view on a set of user {@link Board} 
+ * instances, where data related to current point, run, section, glyph, etc 
+ * can be displayed in dedicated boards.
  *
  * <p>There is one BoardsPane instance for each view of the same sheet.
  *
@@ -44,11 +59,14 @@ public class BoardsPane
     /** The concrete UI component */
     private final Panel component;
 
-    /** Collection of boards */
-    private final Board[] boards;
+    /** Sequence of current boards, kept ordered by board preferred position */
+    private final List<Board> boards = new ArrayList<Board>();
 
     /** Unique (application-wide) name for this pane. */
     private String name;
+
+    /** Mouse listener */
+    private MouseAdapter mouseAdapter = new MyMouseAdapter();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -56,17 +74,31 @@ public class BoardsPane
     // BoardsPane //
     //------------//
     /**
-     * Create a BoardsPane, with selected boards
-     *
-     * @param boards a varying number of boards
+     * Create a BoardsPane, with initial boards.
+     * @param boards the initial collection of boards
      */
-    public BoardsPane (Board... boards)
+    public BoardsPane (List<Board> boards)
     {
-        this.boards = boards;
+        this.boards.clear();
+        this.boards.addAll(boards);
+        Collections.sort(this.boards);
 
         component = new Panel();
         component.setNoInsets();
         component.add(defineLayout());
+        component.addMouseListener(mouseAdapter);
+    }
+
+    //------------//
+    // BoardsPane //
+    //------------//
+    /**
+     * Create a BoardsPane, with initial boards.
+     * @param boards the initial collection of boards
+     */
+    public BoardsPane (Board... boards)
+    {
+        this(Arrays.asList(boards));
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -75,8 +107,7 @@ public class BoardsPane
     // getComponent //
     //--------------//
     /**
-     * Report the UI component
-     *
+     * Report the UI component.
      * @return the concrete component
      */
     public JComponent getComponent ()
@@ -88,8 +119,7 @@ public class BoardsPane
     // setName //
     //---------//
     /**
-     * Assign the unique name for this boards pane
-     *
+     * Assign the unique name for this boards pane.
      * @param name the assigned name
      */
     public void setName (String name)
@@ -102,8 +132,7 @@ public class BoardsPane
     // getName //
     //---------//
     /**
-     * Report the unique name for this boards pane
-     *
+     * Report the unique name for this boards pane.
      * @return the declared name
      */
     public String getName ()
@@ -111,17 +140,40 @@ public class BoardsPane
         return name;
     }
 
+    //----------//
+    // addBoard //
+    //----------//
+    /**
+     * Dynamically add a board into BoardsPane structure.
+     * @param board the board instance to add
+     */
+    public void addBoard (Board board)
+    {
+        // Avoid duplicates
+        if (getBoard(board.getName()) != null) {
+            logger.info("Duplicate " + board);
+
+            return;
+        }
+
+        boards.add(board);
+        Collections.sort(this.boards);
+        update();
+    }
+
     //---------//
     // connect //
     //---------//
     /**
-     * Invoked when the boardsPane has been selected
+     * Invoked when the boardsPane has been selected.
      */
     public void connect ()
     {
-        ///logger.info("+BoardPane " + name + " connect");
+        ///logger.warning("Connect " + this);
         for (Board board : boards) {
-            board.connect();
+            if (board.isSelected()) {
+                board.connect();
+            }
         }
     }
 
@@ -129,7 +181,7 @@ public class BoardsPane
     // disconnect //
     //------------//
     /**
-     * Invoked when the boardsPane has been deselected
+     * Invoked when the boardsPane has been deselected.
      */
     public void disconnect ()
     {
@@ -139,13 +191,65 @@ public class BoardsPane
         }
     }
 
+    //-------------//
+    // removeBoard //
+    //-------------//
+    /**
+     * Dynamically remove a board from BoardsPane structure.
+     * @param board the board instance to remove
+     */
+    public void removeBoard (Board board)
+    {
+        boards.remove(board);
+        update();
+    }
+
     //----------//
     // toString //
     //----------//
     @Override
     public String toString ()
     {
-        return "{BoardsPane " + name + "}";
+        StringBuilder sb = new StringBuilder("{");
+        sb.append(getClass().getSimpleName());
+
+        sb.append(" ")
+          .append(name)
+          .append(" [");
+
+        boolean first = true;
+
+        for (Board board : boards) {
+            if (first) {
+                first = false;
+            } else {
+                sb.append(",");
+            }
+
+            sb.append(board.getName());
+
+            if (!board.isSelected()) {
+                sb.append(":HIDDEN");
+            }
+        }
+
+        sb.append("]}");
+
+        return sb.toString();
+    }
+
+    //----------//
+    // getBoard //
+    //----------//
+    private Board getBoard (String title)
+    {
+        for (Board b : boards) {
+            if (b.getName().equals(title)) {
+                return b;
+            }
+        }
+
+        return null;
     }
 
     //--------------//
@@ -156,15 +260,20 @@ public class BoardsPane
         // Prepare layout elements
         final String  panelInterline = Panel.getPanelInterline();
         StringBuilder sbr = new StringBuilder();
+        boolean       first = true;
 
-        for (int n = 0; n <= boards.length; n++) {
-            if (n != 0) {
-                sbr.append(", ")
-                   .append(panelInterline)
-                   .append(", ");
+        for (Board board : boards) {
+            if (board.isSelected()) {
+                if (first) {
+                    first = false;
+                } else {
+                    sbr.append(", ")
+                       .append(panelInterline)
+                       .append(", ");
+                }
+
+                sbr.append("pref");
             }
-
-            sbr.append("pref");
         }
 
         FormLayout layout = new FormLayout("pref", sbr.toString());
@@ -181,13 +290,98 @@ public class BoardsPane
         int r = 1;
 
         for (Board board : boards) {
-            builder.add(board.getComponent(), cst.xy(1, r));
-            r += 2;
+            if (board.isSelected()) {
+                builder.add(board.getComponent(), cst.xy(1, r));
+                r += 2;
+            }
         }
 
         JPanel boardsPanel = builder.getPanel();
         boardsPanel.setBorder(null);
 
         return boardsPanel;
+    }
+
+    //--------//
+    // update //
+    //--------//
+    /**
+     * Modify the BoardsPane component composition.
+     */
+    private void update ()
+    {
+        connect();
+
+        int       count = component.getComponentCount();
+        Component comp = component.getComponent(count - 1);
+        component.remove(comp);
+        component.add(defineLayout());
+        component.revalidate();
+        component.repaint();
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //----------------//
+    // MyMouseAdapter //
+    //----------------//
+    /**
+     * Subclassed to offer mouse interaction.
+     */
+    private class MyMouseAdapter
+        extends MouseAdapter
+        implements ItemListener
+    {
+        //~ Methods ------------------------------------------------------------
+
+        //------------------//
+        // itemStateChanged //
+        //------------------//
+        /**
+         * Triggered from popup menu.
+         * @param e menu item event
+         */
+        public void itemStateChanged (ItemEvent e)
+        {
+            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getItem();
+            Board             board = getBoard(item.getText());
+            board.setSelected(item.getState());
+            update();
+        }
+
+        //--------------//
+        // mousePressed //
+        //--------------//
+        /**
+         * Triggered when mouse is pressed.
+         * @param e mouse event
+         */
+        @Override
+        public void mousePressed (MouseEvent e)
+        {
+            if (isContextWanted(e)) {
+                JPopupMenu popup = new SeparablePopupMenu();
+
+                // A title for this menu
+                JMenuItem head = new JMenuItem("Boards for selection:");
+                head.setHorizontalAlignment(SwingConstants.CENTER);
+                head.setEnabled(false);
+                popup.add(head);
+                popup.addSeparator();
+
+                for (Board board : boards) {
+                    JMenuItem item = new JCheckBoxMenuItem(
+                        board.getName(),
+                        board.isSelected());
+                    item.addItemListener(this);
+                    item.setToolTipText(
+                        board.isSelected() ? "Deselect this board?"
+                                                : "Select this board?");
+                    popup.add(item);
+                }
+
+                popup.show(component, e.getX(), e.getY());
+            }
+        }
     }
 }
