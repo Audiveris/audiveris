@@ -25,9 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
@@ -40,6 +38,8 @@ import javax.xml.bind.annotation.XmlRootElement;
  * Class <code>BrokenLine</code> handles the broken line defined by a sequence
  * of points which can be modified at any time. Several features use a
  * "stickyDistance" constant which defines proximity margins.
+ *
+ * <p>TODO: Reimplement this class, using standard Path2D (via GeoPath).
  *
  * @author Hervé Bitteur
  */
@@ -70,9 +70,6 @@ public class BrokenLine
 
     /** Max distance for colinearity */
     private int colinearDistance = constants.colinearDistance.getValue();
-
-    /** Set of insterested listeners */
-    private final Set<Listener> listeners = new LinkedHashSet<Listener>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -112,6 +109,18 @@ public class BrokenLine
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //----------------------------//
+    // getDefaultDraggingDistance //
+    //----------------------------//
+    /**
+     * Report the default dragging distance.
+     * @return the (default) dragging distance, specified in pixels
+     */
+    public static int getDefaultDraggingDistance ()
+    {
+        return constants.draggingDistance.getValue();
+    }
 
     //--------------------------//
     // getDefaultStickyDistance //
@@ -232,23 +241,6 @@ public class BrokenLine
         return stickyDistance;
     }
 
-    //-------------//
-    // addListener //
-    //-------------//
-    /**
-     * Add a listener to be notified on any modification in this BrokenLine
-     * @param listener the entity to notify
-     */
-    public void addListener (Listener listener)
-    {
-        if (listener == null) {
-            throw new IllegalArgumentException(
-                "BrokenLine cannot add null listeners");
-        }
-
-        listeners.add(listener);
-    }
-
     //----------//
     // addPoint //
     //----------//
@@ -259,7 +251,6 @@ public class BrokenLine
     public void addPoint (Point point)
     {
         points.add(point);
-        fireListeners();
     }
 
     //-----------//
@@ -355,7 +346,6 @@ public class BrokenLine
                              Point point)
     {
         points.add(index, point);
-        fireListeners();
     }
 
     //------------------//
@@ -373,7 +363,6 @@ public class BrokenLine
 
         if (ptIndex != -1) {
             points.add(ptIndex + 1, point);
-            fireListeners();
         } else {
             throw new IllegalArgumentException("Insertion point not found");
         }
@@ -395,19 +384,6 @@ public class BrokenLine
         }
 
         point.setLocation(location);
-        fireListeners();
-    }
-
-    //----------------//
-    // removeListener //
-    //----------------//
-    /**
-     * Remove a listener
-     * @param listener the listener to remove
-     */
-    public void removeListener (Listener listener)
-    {
-        listeners.remove(listener);
     }
 
     //-------------//
@@ -420,7 +396,6 @@ public class BrokenLine
     public void removePoint (Point point)
     {
         points.remove(point);
-        fireListeners();
     }
 
     //-------------//
@@ -437,8 +412,6 @@ public class BrokenLine
             this.points.clear();
             this.points.addAll(newPoints);
         }
-
-        fireListeners();
     }
 
     //------//
@@ -460,23 +433,6 @@ public class BrokenLine
     public String toString ()
     {
         return "{BrokenLine " + getSequenceString() + "}";
-    }
-
-    //---------------//
-    // fireListeners //
-    //---------------//
-    /**
-     * Fire (a copy of) the set of registered listeners
-     */
-    protected void fireListeners ()
-    {
-        for (Listener listener : new LinkedHashSet<Listener>(listeners)) {
-            try {
-                listener.update(this);
-            } catch (Exception ex) {
-                logger.warning("Error notifying BrokenLine listener", ex);
-            }
-        }
     }
 
     //----------------//
@@ -515,19 +471,6 @@ public class BrokenLine
         }
     }
 
-    //~ Inner Interfaces -------------------------------------------------------
-
-    /**
-     * Interface for a potential listener on this broken line, to be notified
-     * of any modification in the line
-     */
-    public static interface Listener
-    {
-        //~ Methods ------------------------------------------------------------
-
-        void update (BrokenLine brokenLine);
-    }
-
     //~ Inner Classes ----------------------------------------------------------
 
     //-----------//
@@ -538,13 +481,14 @@ public class BrokenLine
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** Max distance from a point or segment to get stuck to it */
         Constant.Integer stickyDistance = new Constant.Integer(
             "pixels",
             5,
             "Maximum distance from a point or segment to get stuck to it");
-
-        /** Max distance from a point to a segment to be colinear */
+        Constant.Integer draggingDistance = new Constant.Integer(
+            "pixels",
+            25,
+            "Maximum distance from a point to drag it");
         Constant.Integer colinearDistance = new Constant.Integer(
             "pixels",
             2,

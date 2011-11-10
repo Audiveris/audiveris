@@ -21,15 +21,26 @@ import omr.score.entity.Note;
 import omr.score.entity.Text.CreatorText.CreatorType;
 import omr.score.entity.TimeRational;
 
+import omr.script.BoundaryTask;
 import omr.script.RationalTask;
 import omr.script.SegmentTask;
 import omr.script.SlurTask;
 import omr.script.TextTask;
 
+import omr.sheet.BrokenLineContext;
+import omr.sheet.SystemBoundary;
+import omr.sheet.SystemInfo;
+
+import omr.util.BrokenLine;
+import omr.util.VerticalSide;
+
 import org.jdesktop.application.Task;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Class <code>SymbolsController</code> is a GlyphsController specifically
@@ -131,6 +142,40 @@ public class SymbolsController
     public Task asyncFixLargeSlurs (Collection<Glyph> glyphs)
     {
         return new SlurTask(sheet, glyphs).launch(sheet);
+    }
+
+    //-----------------------//
+    // asyncModifyBoundaries //
+    //-----------------------//
+    /**
+     * Asynchronously perform a modification in systems boundaries
+     * @param modifiedLines the set of modified lines
+     * @return the task that carries out the processing
+     */
+    public Task asyncModifyBoundaries (Set<BrokenLine> modifiedLines)
+    {
+        List<BrokenLineContext> contexts = new ArrayList<BrokenLineContext>();
+
+        // Retrieve impacted systems
+        for (BrokenLine line : modifiedLines) {
+            int above = 0;
+            int below = 0;
+
+            for (SystemInfo system : sheet.getSystems()) {
+                SystemBoundary boundary = system.getBoundary();
+
+                if (boundary.getLimit(VerticalSide.BOTTOM) == line) {
+                    above = system.getId();
+                } else if (boundary.getLimit(VerticalSide.TOP) == line) {
+                    below = system.getId();
+                }
+            }
+
+            contexts.add(new BrokenLineContext(above, below, line));
+        }
+
+        return new BoundaryTask(sheet, contexts).launch(sheet);
+
     }
 
     //--------------//

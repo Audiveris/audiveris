@@ -135,8 +135,9 @@ public abstract class GlyphMenu
     //------------//
     /**
      * Update the menu according to the currently selected glyphs
+     * @param return then number of selected glyphs
      */
-    public void updateMenu ()
+    public int updateMenu ()
     {
         // Analyze the context
         Set<Glyph> glyphs = nest.getSelectedGlyphSet();
@@ -175,6 +176,8 @@ public abstract class GlyphMenu
         } else {
             menu.setText("no glyph");
         }
+
+        return glyphNb;
     }
 
     //-----------------//

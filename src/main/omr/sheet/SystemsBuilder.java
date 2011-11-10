@@ -25,47 +25,31 @@ import omr.glyph.facets.Glyph;
 import omr.glyph.ui.BarMenu;
 import omr.glyph.ui.GlyphsController;
 import omr.glyph.ui.NestView;
-import omr.glyph.ui.SymbolGlyphBoard;
 
 import omr.grid.StaffInfo;
 import omr.grid.SystemManager;
 
-import omr.lag.ui.SectionBoard;
-
 import omr.log.Logger;
-
-import omr.run.RunBoard;
 
 import omr.script.BoundaryTask;
 
 import omr.selection.GlyphEvent;
-import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
-import omr.selection.SelectionHint;
 import omr.selection.SelectionService;
 import omr.selection.UserEvent;
 
 import omr.sheet.BarsChecker.BarCheckSuite;
-import omr.sheet.SystemsBuilder.BarsController;
-import omr.sheet.ui.PixelBoard;
-import omr.sheet.ui.SheetPainter;
 
 import omr.step.Step;
 import omr.step.StepException;
 import omr.step.Steps;
-
-import omr.ui.Board;
-import omr.ui.BoardsPane;
-import omr.ui.view.ScrollView;
 
 import omr.util.BrokenLine;
 import omr.util.VerticalSide;
 
 import org.jdesktop.application.Task;
 
-import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -122,9 +106,6 @@ public class SystemsBuilder
     /** View on bars, if so desired */
     private NestView sceneView;
 
-    /** Glyphs controller */
-    private BarsController barsController;
-
     /** Sheet retrieved systems */
     private final List<SystemInfo> systems;
 
@@ -163,9 +144,15 @@ public class SystemsBuilder
         try {
             doBuildSystems();
         } finally {
-            // Display the resulting stickarea if so asked for
-            if (constants.displayFrame.getValue() && (Main.getGui() != null)) {
-                displayFrame();
+            // Provide use checkboard for barlines
+            if (Main.getGui() != null) {
+                sheet.getAssembly()
+                     .addBoard(
+                    Step.DATA_TAB,
+                    new BarCheckBoard(
+                        barsChecker.getSuite(),
+                        nest.getGlyphService(),
+                        eventClasses));
             }
         }
     }
@@ -191,28 +178,12 @@ public class SystemsBuilder
     //---------------//
     // useBoundaries //
     //---------------//
-    public void useBoundaries ()
+    public SortedSet<SystemInfo> useBoundaries ()
     {
         // Split the entities (horizontals sections, vertical sections,
         // vertical sticks) to the system they belong to.
-        splitSystemEntities();
+        return splitSystemEntities();
     }
-
-    //    //-------------------//
-    //    // getSpecificGlyphs //
-    //    //-------------------//
-    //    private Collection<Glyph> getSpecificGlyphs ()
-    //    {
-    //        List<Glyph> specifics = new ArrayList<Glyph>();
-    //
-    //        for (Glyph stick : nest.getAllGlyphs()) {
-    //            if (!stick.isBar()) {
-    //                specifics.add(stick);
-    //            }
-    //        }
-    //
-    //        return specifics;
-    //    }
 
     //------------------------//
     // allocateScoreStructure //
@@ -262,7 +233,7 @@ public class SystemsBuilder
             }
         }
 
-        //        // Specific degraded case, just one staff, no bar stick
+        // TODO   // Specific degraded case, just one staff, no bar stick
         //        if (systems.isEmpty() && (staffNb == 1)) {
         //            StaffInfo singleStaff = staffManager.getFirstStaff();
         //            system = new SystemInfo(++id, sheet);
@@ -284,40 +255,6 @@ public class SystemsBuilder
                 }
             }
         }
-    }
-
-    //--------------//
-    // displayFrame //
-    //--------------//
-    private void displayFrame ()
-    {
-        barsController = new BarsController();
-
-        sheet.getAssembly()
-             .addBoard(
-            new MyCheckBoard(
-                barsChecker.getSuite(),
-                nest.getGlyphService(),
-                eventClasses),
-            Step.DATA_TAB);
-
-        //        sceneView = new MyView(nest, barsController);
-        //
-        //        BoardsPane boardsPane = new BoardsPane(
-        //            sheet.getAssembly(),
-        //            new PixelBoard(sheet),
-        //            new RunBoard(sheet.getVerticalLag(), false),
-        //            new SectionBoard(sheet.getVerticalLag(), false),
-        //            new SymbolGlyphBoard(sceneView.getController(), true),
-        //            new MyCheckBoard(
-        //                barsChecker.getSuite(),
-        //                nest.getGlyphService(),
-        //                eventClasses));
-        //
-        //        // Create a hosting frame for the view
-        //        ScrollView sv = new ScrollView(sceneView);
-        //        sheet.getAssembly()
-        //             .addViewTab(Step.SYSTEMS_TAB, sv, boardsPane);
     }
 
     //----------------//
@@ -425,50 +362,47 @@ public class SystemsBuilder
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //----------------//
-    // BarsController //
-    //----------------//
-    /**
-     * A glyphs controller specifically meant for barlines
-     */
-    public class BarsController
-        extends GlyphsController
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public BarsController ()
-        {
-            super(SystemsBuilder.this);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        public Task asyncModifyBoundaries (final BrokenLine      brokenLine,
-                                           final Set<SystemInfo> modifiedSystems)
-        {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "asyncModifyBoundaries " + brokenLine +
-                    " modifiedSystems:" + modifiedSystems);
-            }
-
-            if (brokenLine != null) {
-                // Retrieve containing system
-                for (SystemInfo system : sheet.getSystems()) {
-                    SystemBoundary boundary = system.getBoundary();
-
-                    for (VerticalSide side : VerticalSide.values()) {
-                        if (boundary.getLimit(side) == brokenLine) {
-                            return new BoundaryTask(system, side, brokenLine).launch(
-                                sheet);
-                        }
-                    }
-                }
-            }
-
-            return null;
-        }
-    }
+//    //----------------//
+//    // BarsController //
+//    //----------------//
+//    /**
+//     * A glyphs controller specifically meant for barlines
+//     */
+//    public class BarsController
+//        extends GlyphsController
+//    {
+//        //~ Constructors -------------------------------------------------------
+//
+//        public BarsController ()
+//        {
+//            super(SystemsBuilder.this);
+//        }
+//
+//        //~ Methods ------------------------------------------------------------
+//
+//        public Task asyncModifyBoundaries (final Set<SystemInfo> modifiedSystems)
+//        {
+//            if (logger.isFineEnabled()) {
+//                logger.fine(
+//                    "asyncModifyBoundaries " + " modifiedSystems:" +
+//                    modifiedSystems);
+//            }
+//
+//            // Retrieve containing system
+//            for (SystemInfo system : modifiedSystems) {
+//                SystemBoundary boundary = system.getBoundary();
+//
+//                for (VerticalSide side : VerticalSide.values()) {
+//                    if (boundary.getLimit(side) == brokenLine) {
+//                        return new BoundaryTask(system, side, brokenLine).launch(
+//                            sheet);
+//                    }
+//                }
+//            }
+//
+//            return null;
+//        }
+//    }
 
     //-----------//
     // Constants //
@@ -478,18 +412,9 @@ public class SystemsBuilder
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** Should we display a frame on the vertical sticks */
-        Constant.Boolean displayFrame = new Constant.Boolean(
-            true,
-            "Should we display a frame on the vertical sticks");
         Scale.Fraction  maxDeltaLength = new Scale.Fraction(
             0.2,
             "Maximum difference in run length to be part of the same section");
-
-        /** Windox enlarging ratio when dragging a boundary reference point */
-        Constant.Ratio draggingRatio = new Constant.Ratio(
-            5.0,
-            "Windox enlarging ratio when dragging a boundary reference point");
 
         /** Maximum cotangent for checking a barline candidate */
         Constant.Double maxCoTangentForCheck = new Constant.Double(
@@ -501,20 +426,20 @@ public class SystemsBuilder
             "Maximum thickness of an interesting vertical stick");
     }
 
-    //--------------//
-    // MyCheckBoard //
-    //--------------//
+    //---------------//
+    // BarCheckBoard //
+    //---------------//
     /**
      * A specific board dedicated to physical checks of bar sticks
      */
-    private class MyCheckBoard
+    private class BarCheckBoard
         extends CheckBoard<BarsChecker.GlyphContext>
     {
         //~ Constructors -------------------------------------------------------
 
-        public MyCheckBoard (CheckSuite<BarsChecker.GlyphContext> suite,
-                             SelectionService                     eventService,
-                             Class[]                              eventList)
+        public BarCheckBoard (CheckSuite<BarsChecker.GlyphContext> suite,
+                              SelectionService                     eventService,
+                              Class[]                              eventList)
         {
             super("Barline", suite, eventService, eventList);
         }
@@ -551,216 +476,143 @@ public class SystemsBuilder
             }
         }
     }
-
-    //--------//
-    // MyView //
-    //--------//
-    private final class MyView
-        extends NestView
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /** Popup menu related to glyph selection */
-        private BarMenu barMenu;
-
-        /** Acceptable distance since last reference point (while dragging) */
-        private int maxDraggingDelta = (int) Math.rint(
-            constants.draggingRatio.getValue() * BrokenLine.getDefaultStickyDistance());
-
-        // Latest designated reference point, if any */
-        private Point      lastPoint = null;
-
-        // Latest information, meaningful only if lastPoint is not null */
-        private BrokenLine lastLine = null;
-
-        //~ Constructors -------------------------------------------------------
-
-        private MyView (Nest           nest,
-                        BarsController barsController)
-        {
-            super(
-                nest,
-                barsController,
-                Arrays.asList(sheet.getHorizontalLag(), sheet.getVerticalLag()));
-            setName("SystemsBuilder-View");
-
-            setLocationService(sheet.getLocationService());
-
-            barMenu = new BarMenu(getController());
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        //-----------------//
-        // contextSelected //
-        //-----------------//
-        @Override
-        public void contextSelected (Point         pt,
-                                     MouseMovement movement)
-        {
-            // Retrieve the selected glyphs
-            Set<Glyph> glyphs = nest.getSelectedGlyphSet();
-
-            // To display point information
-            if ((glyphs == null) || glyphs.isEmpty()) {
-                pointSelected(pt, movement); // This may change glyph selection
-                glyphs = nest.getSelectedGlyphSet();
-            }
-
-            if ((glyphs != null) && !glyphs.isEmpty()) {
-                // Update the popup menu according to selected glyphs
-                barMenu.updateMenu();
-
-                // Show the popup menu
-                barMenu.getMenu()
-                       .getPopupMenu()
-                       .show(
-                    this,
-                    getZoom().scaled(pt.x),
-                    getZoom().scaled(pt.y));
-            } else {
-                // Popup with no glyph selected ?
-            }
-        }
-
-        //---------//
-        // onEvent //
-        //---------//
-        /**
-         * Notification about selection objects
-         * @param event the notified event
-         */
-        @Override
-        public void onEvent (UserEvent event)
-        {
-            try {
-                // Default lag view behavior, including specifics
-                if (event.movement != MouseMovement.RELEASING) {
-                    super.onEvent(event);
-                }
-
-                if (event instanceof LocationEvent) {
-                    // Update system boundary?
-                    LocationEvent sheetLocation = (LocationEvent) event;
-
-                    if (sheetLocation.hint == SelectionHint.LOCATION_INIT) {
-                        Rectangle rect = sheetLocation.rectangle;
-
-                        if (rect != null) {
-                            if (event.movement != MouseMovement.RELEASING) {
-                                // While user is dragging, simply modify the line
-                                updateBoundary(
-                                    new Point(
-                                        rect.x + (rect.width / 2),
-                                        rect.y + (rect.height / 2)));
-                            } else if (lastLine != null) {
-                                // User has released the mouse with a known line
-
-                                // Perform boundary modifs synchronously
-                                Set<SystemInfo> modifs = splitSystemEntities();
-
-                                // If modifs, launch updates asynchronously
-                                ///if (!modifs.isEmpty()) {
-                                barsController.asyncModifyBoundaries(
-                                    lastLine,
-                                    modifs);
-                                lastPoint = null;
-                                lastLine = null;
-
-                                ///}
-                            }
-                        }
-                    }
-                }
-            } catch (Exception ex) {
-                logger.warning(getClass().getName() + " onEvent error", ex);
-            }
-        }
-
-        //-------------//
-        // renderItems //
-        //-------------//
-        @Override
-        public void renderItems (Graphics2D g)
-        {
-            // Render all physical info known so far, which is just the staff
-            // line info, lineset by lineset
-            sheet.getPage()
-                 .accept(new SheetPainter(g, true));
-
-            super.renderItems(g);
-        }
-
-        //----------------//
-        // updateBoundary //
-        //----------------//
-        /**
-         * Try to update system boundary if any
-         * @param pt Current location of user mouse
-         */
-        private void updateBoundary (Point pt)
-        {
-            Point refPoint = null; // New ref point
-
-            // Are we close to the latest refPoint?
-            if (lastPoint != null) {
-                Rectangle rect = new Rectangle(lastPoint);
-                rect.grow(maxDraggingDelta, maxDraggingDelta);
-
-                if (rect.contains(pt)) {
-                    refPoint = lastPoint;
-                }
-            }
-
-            if (refPoint == null) {
-                // Are we close to any existing refPoint?
-                SystemInfo system = sheet.getSystemsNear(pt)
-                                         .iterator()
-                                         .next();
-
-                for (BrokenLine line : system.getBoundary()
-                                             .getLimits()) {
-                    refPoint = line.findPoint(pt);
-
-                    if (refPoint != null) {
-                        lastLine = line;
-
-                        break;
-                    }
-                }
-            }
-
-            if (refPoint != null) {
-                // Move the current ref point to user pt
-                lastLine.movePoint(refPoint, pt);
-
-                // If we get colinear segments, let's merge them
-                if (lastLine.isColinear(refPoint)) {
-                    lastLine.removePoint(refPoint);
-                    refPoint = null;
-                }
-            } else {
-                // Are we close to a segment, to define a new ref point?
-                SystemInfo system = sheet.getSystemsNear(pt)
-                                         .iterator()
-                                         .next();
-
-                for (BrokenLine line : system.getBoundary()
-                                             .getLimits()) {
-                    Point segmentStart = line.findSegment(pt);
-
-                    if (segmentStart != null) {
-                        // Add a new ref point
-                        refPoint = pt;
-                        lastLine = line;
-                        line.insertPointAfter(pt, segmentStart);
-
-                        break;
-                    }
-                }
-            }
-
-            lastPoint = refPoint;
-        }
-    }
+//
+//    //--------//
+//    // MyView //
+//    //--------//
+//    private final class MyView
+//        extends NestView
+//    {
+//        //~ Instance fields ----------------------------------------------------
+//
+//        /** Popup menu related to glyph selection */
+//        private BarMenu barMenu;
+//
+//        //~ Constructors -------------------------------------------------------
+//
+//        //        /** Acceptable distance since last reference point (while dragging) */
+//        //        private int maxDraggingDelta = (int) Math.rint(
+//        //            constants.draggingRatio.getValue() * BrokenLine.getDefaultStickyDistance());
+//        //
+//        //        // Latest designated reference point, if any */
+//        //        private Point      lastPoint = null;
+//        //
+//        //        // Latest information, meaningful only if lastPoint is not null */
+//        //        private BrokenLine lastLine = null;
+//        private MyView (Nest           nest,
+//                        BarsController barsController)
+//        {
+//            super(
+//                nest,
+//                barsController,
+//                Arrays.asList(sheet.getHorizontalLag(), sheet.getVerticalLag()));
+//            setName("SystemsBuilder-View");
+//
+//            setLocationService(sheet.getLocationService());
+//
+//            barMenu = new BarMenu(getController());
+//        }
+//
+//        //~ Methods ------------------------------------------------------------
+//
+//        //-----------------//
+//        // contextSelected //
+//        //-----------------//
+//        @Override
+//        public void contextSelected (Point         pt,
+//                                     MouseMovement movement)
+//        {
+//            // Retrieve the selected glyphs
+//            Set<Glyph> glyphs = nest.getSelectedGlyphSet();
+//
+//            // To display point information
+//            if ((glyphs == null) || glyphs.isEmpty()) {
+//                pointSelected(pt, movement); // This may change glyph selection
+//                glyphs = nest.getSelectedGlyphSet();
+//            }
+//
+//            if ((glyphs != null) && !glyphs.isEmpty()) {
+//                // Update the popup menu according to selected glyphs
+//                barMenu.updateMenu();
+//
+//                // Show the popup menu
+//                barMenu.getMenu()
+//                       .getPopupMenu()
+//                       .show(
+//                    this,
+//                    getZoom().scaled(pt.x),
+//                    getZoom().scaled(pt.y));
+//            } else {
+//                // Popup with no glyph selected ?
+//            }
+//        }
+//
+//        //        //---------//
+//        //        // onEvent //
+//        //        //---------//
+//        //        /**
+//        //         * Notification about selection objects
+//        //         * @param event the notified event
+//        //         */
+//        //        @Override
+//        //        public void onEvent (UserEvent event)
+//        //        {
+//        //            try {
+//        //                // Default lag view behavior, including specifics
+//        //                if (event.movement != MouseMovement.RELEASING) {
+//        //                    super.onEvent(event);
+//        //                }
+//        //
+//        //                if (event instanceof LocationEvent) {
+//        //                    //                    // Update system boundary?
+//        //                    //                    LocationEvent sheetLocation = (LocationEvent) event;
+//        //                    //
+//        //                    //                    if (sheetLocation.hint == SelectionHint.LOCATION_INIT) {
+//        //                    //                        Rectangle rect = sheetLocation.rectangle;
+//        //                    //
+//        //                    //                        if (rect != null) {
+//        //                    //                            if (event.movement != MouseMovement.RELEASING) {
+//        //                    //                                // While user is dragging, simply modify the line
+//        //                    //                                updateBoundary(
+//        //                    //                                    new Point(
+//        //                    //                                        rect.x + (rect.width / 2),
+//        //                    //                                        rect.y + (rect.height / 2)));
+//        //                    //                            } else if (lastLine != null) {
+//        //                    //                                // User has released the mouse with a known line
+//        //                    //
+//        //                    //                                // Perform boundary modifs synchronously
+//        //                    //                                Set<SystemInfo> modifs = splitSystemEntities();
+//        //                    //
+//        //                    //                                // If modifs, launch updates asynchronously
+//        //                    //                                ///if (!modifs.isEmpty()) {
+//        //                    //                                barsController.asyncModifyBoundaries(
+//        //                    //                                    lastLine,
+//        //                    //                                    modifs);
+//        //                    //                                lastPoint = null;
+//        //                    //                                lastLine = null;
+//        //                    //
+//        //                    //                                ///}
+//        //                    //                            }
+//        //                    //                        }
+//        //                    //                    }
+//        //                }
+//        //            } catch (Exception ex) {
+//        //                logger.warning(getClass().getName() + " onEvent error", ex);
+//        //            }
+//        //        }
+//        //
+//        //        //-------------//
+//        //        // renderItems //
+//        //        //-------------//
+//        //        @Override
+//        //        public void renderItems (Graphics2D g)
+//        //        {
+//        //            // Render all physical info known so far, which is just the staff
+//        //            // line info, lineset by lineset
+//        //            sheet.getPage()
+//        //                 .accept(new SheetPainter(g, true));
+//        //
+//        //            super.renderItems(g);
+//        //        }
+//    }
 }

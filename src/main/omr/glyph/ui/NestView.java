@@ -30,15 +30,11 @@ import omr.math.Circle;
 
 import omr.score.ui.PaintingParameters;
 
-import omr.selection.UserEvent;
-
 import omr.ui.util.UIUtilities;
 import omr.ui.view.RubberPanel;
 
 import omr.util.Implement;
 import omr.util.WeakPropertyChangeListener;
-
-import org.bushe.swing.event.EventSubscriber;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -79,8 +75,8 @@ public class NestView
     /** The sequence of lags */
     protected final List<Lag> lags;
 
-    /** Additional event subscribers */
-    protected final List<EventSubscriber<UserEvent>> subscribers = new ArrayList<EventSubscriber<UserEvent>>();
+    /** Additional items rendering */
+    protected final List<ItemRenderer> itemRenderers = new ArrayList<ItemRenderer>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -88,7 +84,7 @@ public class NestView
     // NestView //
     //-----------//
     /**
-     * Create a nest view
+     * Create a nest view.
      * @param nest the underlying nest of glyphs
      * @param controller the related glyphs controller
      * @param lags the various lags to be displayed
@@ -123,12 +119,16 @@ public class NestView
         return controller;
     }
 
-    //--------------------//
-    // addEventSubscriber //
-    //--------------------//
-    public void addEventSubscriber (EventSubscriber<UserEvent> subscriber,
-                                    Class[]                    eventClasses)
+    //-----------------//
+    // addItemRenderer //
+    //-----------------//
+    /**
+     * Register an items renderer to render items.
+     * @param renderer the additional renderer
+     */
+    public void addItemRenderer (ItemRenderer renderer)
     {
+        itemRenderers.add(renderer);
     }
 
     //----------------//
@@ -154,7 +154,7 @@ public class NestView
     //--------//
     /**
      * Render the nest in the provided Graphics context, which may be already
-     * scaled
+     * scaled.
      * @param g the graphics context
      */
     @Override
@@ -187,7 +187,7 @@ public class NestView
     // renderGlyphArea //
     //-----------------//
     /**
-     * Render the box area of a glyph, using inverted color
+     * Render the box area of a glyph, using inverted color.
      * @param glyph the glyph whose area is to be rendered
      * @param g the graphic context
      */
@@ -206,12 +206,17 @@ public class NestView
     // renderItems //
     //-------------//
     /**
-     * Room for rendering additional items, on top of the basic lag itself.
+     * Room for rendering additional items, on top of the basic nest itself.
      * This default implementation paints the selected section set if any
      * @param g the graphic context
      */
     protected void renderItems (Graphics2D g)
     {
+        // Additional renderers if any
+        for (ItemRenderer renderer : itemRenderers) {
+            renderer.renderItems(g);
+        }
+
         // Render the selected glyph(s) if any
         Set<Glyph> glyphs = nest.getSelectedGlyphSet();
 
@@ -269,7 +274,7 @@ public class NestView
                 !glyph.getAttachments()
                       .isEmpty()) {
                 Font oldFont = g.getFont();
-                g.setFont(oldFont.deriveFont(10f));
+                g.setFont(oldFont.deriveFont(5f));
 
                 for (Map.Entry<String, java.awt.Shape> entry : glyph.getAttachments()
                                                                     .entrySet()) {
@@ -303,7 +308,7 @@ public class NestView
     // drawCircle //
     //------------//
     /**
-     * Draw the approximating circle of a slur
+     * Draw the approximating circle of a slur.
      */
     private void drawCircle (Circle     circle,
                              Graphics2D g)
@@ -322,5 +327,20 @@ public class NestView
                 2 * radius,
                 2 * radius);
         }
+    }
+
+    //~ Inner Interfaces -------------------------------------------------------
+
+    //--------------//
+    // ItemRenderer //
+    //--------------//
+    /**
+     * Used to plug additional items renderers to this view.
+     */
+    public static interface ItemRenderer
+    {
+        //~ Methods ------------------------------------------------------------
+
+        void renderItems (Graphics2D g);
     }
 }

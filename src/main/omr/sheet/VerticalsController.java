@@ -126,8 +126,8 @@ public class VerticalsController
         //                            eventClasses)));
         sheet.getAssembly()
              .addBoard(
-            new MyCheckBoard(sheet.getNest().getGlyphService(), eventClasses),
-            Step.DATA_TAB);
+            Step.DATA_TAB,
+            new MyCheckBoard(sheet.getNest().getGlyphService(), eventClasses));
     }
 
     //~ Inner Classes ----------------------------------------------------------

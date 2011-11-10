@@ -39,8 +39,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 
 /**
- * Class {@code BoardsPane} defines a view on a set of user {@link Board} 
- * instances, where data related to current point, run, section, glyph, etc 
+ * Class {@code BoardsPane} defines a view on a set of user {@link Board}
+ * instances, where data related to current point, run, section, glyph, etc
  * can be displayed in dedicated boards.
  *
  * <p>There is one BoardsPane instance for each view of the same sheet.
@@ -80,7 +80,12 @@ public class BoardsPane
     public BoardsPane (List<Board> boards)
     {
         this.boards.clear();
-        this.boards.addAll(boards);
+
+        for (Board board : boards) {
+            this.boards.add(board);
+            board.setParent(this);
+        }
+
         Collections.sort(this.boards);
 
         component = new Panel();
@@ -157,6 +162,7 @@ public class BoardsPane
         }
 
         boards.add(board);
+        board.setParent(this);
         Collections.sort(this.boards);
         update();
     }
@@ -238,13 +244,32 @@ public class BoardsPane
         return sb.toString();
     }
 
+    //--------//
+    // update //
+    //--------//
+    /**
+     * Modify the BoardsPane component composition.
+     */
+    void update ()
+    {
+        connect();
+
+        int       count = component.getComponentCount();
+        Component comp = component.getComponent(count - 1);
+        component.remove(comp);
+        component.add(defineLayout());
+        component.revalidate();
+        component.repaint();
+    }
+
     //----------//
     // getBoard //
     //----------//
     private Board getBoard (String title)
     {
         for (Board b : boards) {
-            if (b.getName().equals(title)) {
+            if (b.getName()
+                 .equals(title)) {
                 return b;
             }
         }
@@ -302,24 +327,6 @@ public class BoardsPane
         return boardsPanel;
     }
 
-    //--------//
-    // update //
-    //--------//
-    /**
-     * Modify the BoardsPane component composition.
-     */
-    private void update ()
-    {
-        connect();
-
-        int       count = component.getComponentCount();
-        Component comp = component.getComponent(count - 1);
-        component.remove(comp);
-        component.add(defineLayout());
-        component.revalidate();
-        component.repaint();
-    }
-
     //~ Inner Classes ----------------------------------------------------------
 
     //----------------//
@@ -346,7 +353,6 @@ public class BoardsPane
             JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getItem();
             Board             board = getBoard(item.getText());
             board.setSelected(item.getState());
-            update();
         }
 
         //--------------//

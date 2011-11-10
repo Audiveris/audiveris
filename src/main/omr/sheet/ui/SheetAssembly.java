@@ -55,18 +55,18 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class <code>SheetAssembly</code> is a UI assembly dedicated to the display of
- * one sheet, gathering: <ul>
+ * Class {@code SheetAssembly} is a UI assembly dedicated to the
+ * display of one sheet.
  *
+ * It gathers: <ul>
  * <li>a {@link Zoom} with its dedicated graphical {@link LogSlider}</li>
- *
  * <li>a mouse adapter {@link Rubber}</li>
+ * <li>a tabbed pane of {@link ScrollView}'s for all views of this sheet</li>
+ * </ul>
  *
- * <li>a tabbed collection of {@link ScrollView}'s for all views of this sheet.
- *
- * </ul><p>Although not part of the same Swing container, the SheetAssembly also
- * refers to a collection of {@link BoardsPane}'s which is parallel to the
- * collection of ScrollView's.
+ * <p>Although not part of the same Swing container, the SheetAssembly also
+ * refers to a sequence of {@link BoardsPane}'s which is parallel to the
+ * sequence of ScrollView's.
  *
  * @author Hervé Bitteur
  */
@@ -140,8 +140,7 @@ public class SheetAssembly
     // SheetAssembly //
     //---------------//
     /**
-     * Create a new <code>SheetAssembly</code> instance, dedicated to one sheet.
-     *
+     * Create a new {@code SheetAssembly} instance dedicated to one sheet.
      * @param sheet the related sheet
      */
     public SheetAssembly (Sheet sheet)
@@ -182,8 +181,7 @@ public class SheetAssembly
     // getComponent //
     //--------------//
     /**
-     * Report the UI component
-     *
+     * Report the UI component.
      * @return the concrete component
      */
     public JComponent getComponent ()
@@ -195,8 +193,7 @@ public class SheetAssembly
     // getSelectedView //
     //-----------------//
     /**
-     * Report the tabbed view currently selected
-     *
+     * Report the tabbed view currently selected.
      * @return the current tabbed view
      */
     public ScrollView getSelectedView ()
@@ -214,8 +211,7 @@ public class SheetAssembly
     // getSheet //
     //----------//
     /**
-     * Report the sheet this assembly is related to
-     *
+     * Report the sheet this assembly is related to.
      * @return the related sheet
      */
     public Sheet getSheet ()
@@ -227,8 +223,7 @@ public class SheetAssembly
     // setZoomRatio //
     //--------------//
     /**
-     * Modify the ratio of the global zoom for all views of the sheet
-     *
+     * Modify the ratio of the global zoom for all views of the sheet.
      * @param ratio the new display ratio
      */
     public void setZoomRatio (double ratio)
@@ -239,8 +234,14 @@ public class SheetAssembly
     //----------//
     // addBoard //
     //----------//
-    public void addBoard (Board  board,
-                          String title)
+    /**
+     * Add a board into the BoardsPane corresponding to the provided
+     * view tab title.
+     * @param title the title of the targeted view tab
+     * @param board the board to add dynamically
+     */
+    public void addBoard (String title,
+                          Board  board)
     {
         JScrollPane pane = getPane(title);
 
@@ -257,7 +258,7 @@ public class SheetAssembly
     // addViewTab //
     //------------//
     /**
-     * Add a new tab, that contains a new view on the sheet
+     * Add a new tab, that contains a new view on the sheet.
      * @param label the label to use for the tab
      * @param sv the view on the sheet
      * @param boardsPane the board pane associated to the tab
@@ -307,10 +308,10 @@ public class SheetAssembly
     // assemblySelected //
     //------------------//
     /**
-     * Method called when this sheet assembly is selected (since we can have
-     * several sheets displayed, each one with its own sheet assembly). This is
-     * called from {@link omr.sheet.ui.SheetsController} when the tab of another
-     * sheet is selected.
+     * Method called when this sheet assembly is selected.
+     * (we can have several sheets displayed, each with its sheet assembly).
+     * This is called from {@link omr.sheet.ui.SheetsController} when the tab
+     * of another sheet is selected.
      */
     public void assemblySelected ()
     {
@@ -344,7 +345,8 @@ public class SheetAssembly
     // close //
     //-------//
     /**
-     * Close the assembly, by removing it from the containing sheet tabbed pane.
+     * Close the assembly, by removing it from the containing sheet
+     * tabbed pane.
      */
     public void close ()
     {
@@ -369,8 +371,9 @@ public class SheetAssembly
     //----------------//
     /**
      * Called whenever the property ERRORS_DISPLAYED has changed in the
-     * GuiActions instance. This will trigger the inclusion or exclusion of the
-     * errors panel into/from the assembly display.
+     * GuiActions instance.
+     * This will trigger the inclusion or exclusion of the errors panel
+     * into/from the assembly display.
      * @param evt unused
      */
     @Implement(PropertyChangeListener.class)
@@ -383,7 +386,7 @@ public class SheetAssembly
     // selectViewTab //
     //---------------//
     /**
-     * Force a tab selection programmatically
+     * Force a tab selection programmatically.
      * @param step the step whose related tab must be selected
      */
     public void selectViewTab (Step step)
@@ -411,8 +414,8 @@ public class SheetAssembly
     // stateChanged //
     //--------------//
     /**
-     * This method is called whenever another view tab is selected in the Sheet
-     * Assembly (or when a tab is removed)
+     * This method is called whenever another view tab is selected
+     * in the SheetAssembly (or when a tab is removed).
      * @param e the originating change event (not used)
      */
     @Implement(ChangeListener.class)
@@ -443,7 +446,7 @@ public class SheetAssembly
     // getCurrentViewTab //
     //-------------------//
     /**
-     * Report the ViewTab currently selected, if any
+     * Report the ViewTab currently selected, if any.
      * @return the current ViewTab, or null
      */
     private ViewTab getCurrentViewTab ()
@@ -461,7 +464,7 @@ public class SheetAssembly
     // getErrorsPane //
     //---------------//
     /**
-     * Report the UI pane dedicated to the current errors
+     * Report the UI pane dedicated to the current errors.
      * @return the errors pane
      */
     private JComponent getErrorsPane ()
@@ -473,6 +476,11 @@ public class SheetAssembly
     //---------//
     // getPane //
     //---------//
+    /**
+     * Find the view that corresponds to the provided tab title.
+     * @param title the tab title.
+     * @return the view found, or null
+     */
     private JScrollPane getPane (String title)
     {
         for (int i = 0, count = viewsPane.getTabCount(); i < count; i++) {
@@ -488,6 +496,9 @@ public class SheetAssembly
     //--------------//
     // defineLayout //
     //--------------//
+    /**
+     * Define the layout of this assembly.
+     */
     private void defineLayout ()
     {
         component.setLayout(new BorderLayout());
@@ -500,7 +511,7 @@ public class SheetAssembly
     // displayBoards //
     //---------------//
     /**
-     * Make the boards pane visible (for this sheet & view)
+     * Make the boards pane visible (for this sheet & view).
      */
     private void displayBoards ()
     {
@@ -563,7 +574,9 @@ public class SheetAssembly
         //------------//
         // deselected //
         //------------//
-        /** Run when this tab gets deselected */
+        /**
+         * Run when this tab gets deselected.
+         */
         public void deselected ()
         {
             if (logger.isFineEnabled()) {
@@ -585,7 +598,9 @@ public class SheetAssembly
         //--------//
         // remove //
         //--------//
-        /** Remove this viewTab instance */
+        /**
+         * Remove this viewTab instance.
+         */
         public void remove ()
         {
             RubberPanel rubberPanel = scrollView.getView();
@@ -604,7 +619,9 @@ public class SheetAssembly
         //----------//
         // selected //
         //----------//
-        /** Run when this tab gets selected */
+        /**
+         * Run when this tab gets selected.
+         */
         public void selected ()
         {
             if (logger.isFineEnabled()) {

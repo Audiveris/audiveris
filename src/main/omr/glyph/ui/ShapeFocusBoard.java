@@ -217,6 +217,7 @@ public class ShapeFocusBoard
                 }
             }
 
+            setSelected(true);
             setVisible(true);
         } else {
             // Void the shape button

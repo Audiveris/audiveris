@@ -86,6 +86,9 @@ public abstract class Board
     /** The board instance name */
     private final String name;
 
+    /** The hosting BoardsPane, if any */
+    private BoardsPane parent;
+
     /** The board header */
     private final Header header;
 
@@ -167,6 +170,14 @@ public abstract class Board
 
     //~ Methods ----------------------------------------------------------------
 
+    //-----------//
+    // setParent //
+    //-----------//
+    public void setParent (BoardsPane parent)
+    {
+        this.parent = parent;
+    }
+
     //-------------//
     // setSelected //
     //-------------//
@@ -177,6 +188,10 @@ public abstract class Board
     public void setSelected (boolean bool)
     {
         selected = bool;
+
+        if (parent != null) {
+            parent.update();
+        }
     }
 
     //------------//

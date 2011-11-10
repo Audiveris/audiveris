@@ -95,17 +95,4 @@ public class SymbolsStep
 
         system.inspectGlyphs(Grades.symbolMinGrade);
     }
-
-    //----------//
-    // doEpilog //
-    //----------//
-    @Override
-    protected void doEpilog (Collection<SystemInfo> systems,
-                             Sheet                  sheet)
-        throws StepException
-    {
-        if (Main.getGui() != null) {
-            sheet.createSymbolsControllerAndEditor();
-        }
-    }
 }

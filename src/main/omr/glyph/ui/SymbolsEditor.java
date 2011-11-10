@@ -18,6 +18,7 @@ import omr.glyph.GlyphNetwork;
 import omr.glyph.Glyphs;
 import omr.glyph.Nest;
 import omr.glyph.facets.Glyph;
+import omr.glyph.ui.NestView.ItemRenderer;
 
 import omr.lag.Section;
 import omr.lag.Sections;
@@ -39,6 +40,7 @@ import omr.score.ui.PaintingParameters;
 
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphSetEvent;
+import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
 import omr.selection.NestEvent;
 import omr.selection.SectionSetEvent;
@@ -47,6 +49,7 @@ import omr.selection.UserEvent;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+import omr.sheet.ui.BoundaryEditor;
 import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.SheetPainter;
 
@@ -61,6 +64,7 @@ import omr.util.Implement;
 
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -68,6 +72,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.Set;
 
+import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
 /**
@@ -90,10 +95,13 @@ public class SymbolsEditor
     //~ Instance fields --------------------------------------------------------
 
     /** Related instance of symbols builder */
-    private final SymbolsController symbolsBuilder;
+    private final SymbolsController symbolsController;
 
     /** Related sheet */
     private final Sheet sheet;
+
+    /** BoundaryEditor companion */
+    private final BoundaryEditor boundaryEditor;
 
     /** Evaluator to check for NOISE glyphs */
     private final GlyphEvaluator evaluator = GlyphNetwork.getInstance();
@@ -123,7 +131,8 @@ public class SymbolsEditor
                           SymbolsController symbolsController)
     {
         this.sheet = sheet;
-        this.symbolsBuilder = symbolsController;
+        this.symbolsController = symbolsController;
+        sheet.setBoundaryEditor(boundaryEditor = new BoundaryEditor(sheet));
 
         Nest nest = symbolsController.getNest();
 
@@ -146,7 +155,7 @@ public class SymbolsEditor
             sheet.getPage(),
             new SymbolMenu(symbolsController, evaluator, focus));
 
-        BoardsPane   boardsPane = new BoardsPane(
+        BoardsPane boardsPane = new BoardsPane(
             new PixelBoard(sheet),
             new RunBoard(sheet.getHorizontalLag(), false),
             new SectionBoard(sheet.getHorizontalLag(), false),
@@ -160,10 +169,22 @@ public class SymbolsEditor
         // Create a hosting pane for the view
         ScrollView slv = new ScrollView(view);
         sheet.getAssembly()
-             .addViewTab(Step.SYMBOLS_TAB, slv, boardsPane);
+             .addViewTab(Step.DATA_TAB, slv, boardsPane);
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-----------------//
+    // addItemRenderer //
+    //-----------------//
+    /**
+     * Register an items renderer to render items.
+     * @param renderer the additional renderer
+     */
+    public void addItemRenderer (ItemRenderer renderer)
+    {
+        view.addItemRenderer(renderer);
+    }
 
     //-----------//
     // highLight //
@@ -240,7 +261,7 @@ public class SymbolsEditor
         {
             super(
                 nest,
-                symbolsBuilder,
+                symbolsController,
                 Arrays.asList(sheet.getHorizontalLag(), sheet.getVerticalLag()));
             setName("SymbolsEditor-MyView");
         }
@@ -349,11 +370,11 @@ public class SymbolsEditor
                     return;
                 }
 
-                // Default lag view behavior, including specifics
+                // Default nest view behavior
                 super.onEvent(event);
 
-                if (event instanceof GlyphSetEvent) { // GlyphSet => Compound
-                                                      ///handleEvent((GlyphSetEvent) event);
+                if (event instanceof LocationEvent) { // Location => Boundary
+                    handleEvent((LocationEvent) event);
                 } else if (event instanceof SectionSetEvent) { // SectionSet => Compound
                     handleEvent((SectionSetEvent) event);
                 }
@@ -397,7 +418,8 @@ public class SymbolsEditor
             if (painting.isInputPainting()) {
                 // Render all sheet physical info known so far
                 sheet.getPage()
-                     .accept(new SheetPainter(g, false));
+                     .accept(
+                    new SheetPainter(g, boundaryEditor.isSessionOngoing()));
 
                 // Normal display of selected items
                 super.renderItems(g);
@@ -425,51 +447,30 @@ public class SymbolsEditor
                         Colors.SLOT_CURRENT);
                 }
             }
-
-            // Render selected glyph(s) if any
-            ///super.renderItems(g);
         }
 
-        //        //-------------//
-        //        // handleEvent //
-        //        //-------------//
-        //        /**
-        //         * Interest in GlyphSet => Compound
-        //         * @param glyphSetEvent
-        //         */
-        //        private void handleEvent (GlyphSetEvent glyphSetEvent)
-        //        {
-        //            if (ViewParameters.getInstance()
-        //                              .isSectionSelectionEnabled()) {
-        //                return;
-        //            }
-        //
-        //            MouseMovement movement = glyphSetEvent.movement;
-        //            Set<Glyph>    glyphs = glyphSetEvent.getData();
-        //            Glyph         compound = null;
-        //
-        //            if ((glyphs != null) && (glyphs.size() > 1)) {
-        //                try {
-        //                    SystemInfo system = sheet.getSystemOf(glyphs);
-        //
-        //                    if (system != null) {
-        //                        compound = system.buildTransientCompound(glyphs);
-        //                        publish(
-        //                            new GlyphEvent(
-        //                                this,
-        //                                SelectionHint.GLYPH_TRANSIENT,
-        //                                movement,
-        //                                compound));
-        //                    }
-        //                } catch (IllegalArgumentException ex) {
-        //                    // All glyphs do not belong to the same system
-        //                    // No compound is allowed and displayed
-        //                    logger.warning(
-        //                        "Glyphs from different systems " +
-        //                        Glyphs.toString(glyphs));
-        //                }
-        //            }
-        //        }
+        //-------------//
+        // handleEvent //
+        //-------------//
+        /**
+         *  Interest in LocationEvent => boundary modif?
+         * @param locationEvent location event
+         */
+        @SuppressWarnings("unchecked")
+        private void handleEvent (LocationEvent locationEvent)
+        {
+            super.onEvent(locationEvent);
+
+            // Update system boundary?
+            if ((locationEvent.hint == SelectionHint.LOCATION_INIT) &&
+                boundaryEditor.isSessionOngoing()) {
+                Rectangle rect = locationEvent.rectangle;
+
+                if ((rect != null) && (rect.width == 0) && (rect.height == 0)) {
+                    boundaryEditor.inspectBoundary(rect.getLocation());
+                }
+            }
+        }
 
         //-------------//
         // handleEvent //
@@ -530,8 +531,10 @@ public class SymbolsEditor
         private void showPagePopup (Point pt)
         {
             pageMenu.updateMenu(new PixelPoint(pt.x, pt.y));
-            pageMenu.getPopup()
-                    .show(
+
+            JPopupMenu popup = pageMenu.getPopup();
+
+            popup.show(
                 this,
                 getZoom().scaled(pt.x) + 20,
                 getZoom().scaled(pt.y) + 30);

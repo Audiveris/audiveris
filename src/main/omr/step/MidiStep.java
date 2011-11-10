@@ -48,7 +48,7 @@ public class MidiStep
             Level.SCORE_LEVEL,
             Mandatory.OPTIONAL,
             Redoable.REDOABLE,
-            SYMBOLS_TAB,
+            DATA_TAB,
             "Write the output MIDI file");
     }
 

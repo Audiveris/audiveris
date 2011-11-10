@@ -16,29 +16,18 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.GlyphsModel;
-import omr.glyph.ui.GlyphsController;
-import omr.glyph.ui.SymbolGlyphBoard;
+import omr.glyph.ui.SymbolsEditor;
 
-import omr.lag.Lag;
 import omr.lag.Section;
-import omr.lag.ui.SectionBoard;
 
 import omr.log.Logger;
 import static omr.run.Orientation.*;
-import omr.run.RunBoard;
 import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
 
 import omr.sheet.Sheet;
-import omr.sheet.ui.PixelBoard;
 
-import omr.step.Step;
 import omr.step.StepException;
-import omr.step.Steps;
-
-import omr.ui.BoardsPane;
-import omr.ui.view.ScrollView;
 
 import omr.util.StopWatch;
 
@@ -78,9 +67,6 @@ public class GridBuilder
     /** Companion in charge of bar lines */
     private final BarsRetriever barsRetriever;
 
-    /** The grid display if any */
-    private GridView gridView;
-
     //~ Constructors -----------------------------------------------------------
 
     //-------------//
@@ -118,8 +104,8 @@ public class GridBuilder
             buildAllLags();
 
             // Display
-            if (constants.displayFrame.getValue() && (Main.getGui() != null)) {
-                displayGridView();
+            if (Main.getGui() != null) {
+                displayEditor();
             }
 
             // Retrieve the horizontal staff lines filaments
@@ -159,8 +145,9 @@ public class GridBuilder
                 watch.print();
             }
 
-            if (gridView != null) {
-                gridView.refresh();
+            if (Main.getGui() != null) {
+                sheet.getSymbolsEditor()
+                     .refresh();
             }
         }
     }
@@ -185,7 +172,7 @@ public class GridBuilder
                 VERTICAL,
                 sheet.getPicture(),
                 sheet.getPicture().getMaxForeground(),
-                0).createTable("whole-vert");
+                0).createTable("whole");
 
             // Note: from that point on, we could simply discard the sheet picture
             // and save memory, since wholeVertTable contains all foreground pixels.
@@ -215,39 +202,18 @@ public class GridBuilder
         }
     }
 
-    //-----------------//
-    // displayGridView //
-    //-----------------//
-    private void displayGridView ()
+    //---------------//
+    // displayEditor //
+    //---------------//
+    private void displayEditor ()
     {
-        Lag              hLag = sheet.getHorizontalLag();
-        Lag              vLag = sheet.getVerticalLag();
-        GlyphsController gController = new GlyphsController(
-            new GlyphsModel(sheet, sheet.getNest(), Steps.valueOf(Steps.GRID)));
+        sheet.createSymbolsControllerAndEditor();
 
-        // Create a view
-        gridView = new GridView(
-            sheet.getNest(),
-            linesRetriever,
-            hLag,
-            barsRetriever,
-            vLag,
-            gController);
-        gridView.setLocationService(sheet.getLocationService());
+        SymbolsEditor editor = sheet.getSymbolsEditor();
 
-        // Boards
-        BoardsPane boardsPane = new BoardsPane(
-            new PixelBoard(sheet),
-            new RunBoard(hLag, true),
-            new SectionBoard(hLag, true),
-            new RunBoard(vLag, true),
-            new SectionBoard(vLag, true),
-            new SymbolGlyphBoard(gController, true));
-
-        // Create a hosting frame for the view
-        ScrollView sv = new ScrollView(gridView);
-        sheet.getAssembly()
-             .addViewTab(Step.DATA_TAB, sv, boardsPane);
+        // Specific rendering for grid
+        editor.addItemRenderer(linesRetriever);
+        editor.addItemRenderer(barsRetriever);
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -259,10 +225,6 @@ public class GridBuilder
         extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
-
-        Constant.Boolean displayFrame = new Constant.Boolean(
-            true,
-            "Should we display a frame?");
 
         //
         Constant.Boolean showRuns = new Constant.Boolean(

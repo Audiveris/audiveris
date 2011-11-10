@@ -86,13 +86,15 @@ public class BarlineTask
     @Override
     public void epilog (Sheet sheet)
     {
-        sheet.getSystemsBuilder()
-             .rebuildAllSystems();
-        Stepping.reprocessSheet(
-            Steps.valueOf(Steps.MEASURES),
-            sheet,
-            sheet.getSystems(),
-            false);
+        if (sheet.getSystemsBuilder() != null) {
+            sheet.getSystemsBuilder()
+                 .rebuildAllSystems();
+            Stepping.reprocessSheet(
+                Steps.valueOf(Steps.MEASURES),
+                sheet,
+                sheet.getSystems(),
+                false);
+        }
     }
 
     //-----------------//

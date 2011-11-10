@@ -38,7 +38,6 @@ import java.util.List;
  */
 @NotThreadSafe
 public class SystemBoundary
-    implements BrokenLine.Listener
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -82,11 +81,6 @@ public class SystemBoundary
         limits.put(VerticalSide.BOTTOM, south);
 
         buildPolygon();
-
-        // Register
-        for (BrokenLine line : limits.values()) {
-            line.addListener(this);
-        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -146,7 +140,6 @@ public class SystemBoundary
     //--------//
     /**
      * Paint the SystemBoundary in the provided graphic context.
-     *
      * @param g     the Graphics context
      * @param editable flag to indicate that boundary is editable
      */
@@ -160,7 +153,7 @@ public class SystemBoundary
         Color      oldColor = g.getColor();
 
         if (editable) {
-            g.setColor(Color.BLUE);
+            g.setColor(Color.RED);
         }
 
         // Draw the polygon
@@ -195,13 +188,12 @@ public class SystemBoundary
     // update //
     //--------//
     /**
-     * A system boundary line has changed
-     * @param brokenLine the modified line
+     * Update the system boundary, using the (updated) limits lines
      */
-    public void update (BrokenLine brokenLine)
+    public void update ()
     {
+        // Simply rebuild polygon, 
         buildPolygon();
-        system.boundaryUpdated();
     }
 
     //--------------//

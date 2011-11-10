@@ -141,7 +141,7 @@ public class TargetBuilder
         if (Main.getGui() != null) {
             sheet.getAssembly()
                  .addViewTab(
-                "DeWarped",
+                "Dewarped",
                 new ScrollView(new DewarpedView(dewarpedImage)),
                 null);
         }

@@ -263,12 +263,12 @@ public class HorizontalsBuilder
         ///controller = new GlyphsController(this);
         sheet.getAssembly()
              .addBoard(
+            Step.DATA_TAB,
             new CheckBoard<Glyph>(
                 "Ledger",
                 ledgerSuite,
                 sheet.getNest().getGlyphService(),
-                eventClasses),
-            Step.DATA_TAB);
+                eventClasses));
 
         //
         //        for (Dash dash : allDashes) {

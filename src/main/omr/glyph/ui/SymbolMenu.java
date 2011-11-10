@@ -99,19 +99,19 @@ public class SymbolMenu
         register(0, new LargeSlurAction());
 
         // Dump current glyph
-        register(1, new DumpAction());
+        register(0, new DumpAction());
 
         // Dump current glyph text info
-        register(1, new DumpTextAction());
+        register(0, new DumpTextAction());
 
         // Display score counterpart
-        register(1, new TranslationAction());
+        register(0, new TranslationAction());
 
         // Display all glyphs of the same shape
-        register(1, new ShapeAction());
+        register(0, new ShapeAction());
 
         // Display all glyphs similar to the curent glyph
-        register(1, new SimilarAction());
+        register(0, new SimilarAction());
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -196,7 +196,7 @@ public class SymbolMenu
         {
             putValue(NAME, "Trim large Slur");
 
-            if ((glyphNb > 0) && noVirtuals) {
+            if (sheet.hasSystemBoundaries() && (glyphNb > 0) && noVirtuals) {
                 setEnabled(true);
                 putValue(SHORT_DESCRIPTION, "Extract slur from large glyph");
             } else {
@@ -346,7 +346,7 @@ public class SymbolMenu
         {
             putValue(NAME, "Look for short verticals");
 
-            if ((glyphNb > 0) && noVirtuals) {
+            if (sheet.hasSystemBoundaries() && (glyphNb > 0) && noVirtuals) {
                 setEnabled(true);
                 putValue(SHORT_DESCRIPTION, "Extract short stems and leaves");
             } else {
@@ -435,7 +435,7 @@ public class SymbolMenu
         {
             putValue(NAME, "Look for verticals");
 
-            if ((glyphNb > 0) && noVirtuals) {
+            if (sheet.hasSystemBoundaries() && (glyphNb > 0) && noVirtuals) {
                 setEnabled(true);
                 putValue(SHORT_DESCRIPTION, "Extract stems and leaves");
             } else {

@@ -49,6 +49,7 @@ import omr.selection.SelectionService;
 import omr.sheet.picture.ImageFormatException;
 import omr.sheet.picture.Picture;
 import omr.sheet.picture.PictureView;
+import omr.sheet.ui.BoundaryEditor;
 import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.SheetAssembly;
 import omr.sheet.ui.SheetsController;
@@ -114,7 +115,7 @@ public class Sheet
     /** Related assembly instance, if any */
     private SheetAssembly assembly;
 
-    /** Related errors editor */
+    /** Related errors symbolsEditor */
     private ErrorsEditor errorsEditor;
 
     /** Retrieved systems (populated by SYSTEMS/SystemsBuilder) */
@@ -173,7 +174,10 @@ public class Sheet
     private volatile TargetBuilder targetBuilder;
 
     /** Related symbols editor */
-    private SymbolsEditor editor;
+    private SymbolsEditor symbolsEditor;
+
+    /** Related boundary editor */
+    private BoundaryEditor boundaryEditor;
 
     /** The current maximum value for foreground pixels */
     private Integer maxForeground;
@@ -189,6 +193,9 @@ public class Sheet
 
     /** Id of last long horizontal section */
     private int lastLongHSectionId = -1;
+
+    /** Have systems their boundaries? */
+    private boolean hasSystemBoundaries = false;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -290,6 +297,28 @@ public class Sheet
     public SheetBench getBench ()
     {
         return bench;
+    }
+
+    //-------------------//
+    // setBoundaryEditor //
+    //-------------------//
+    /**
+     * @param boundaryEditor the boundaryEditor to set
+     */
+    public void setBoundaryEditor (BoundaryEditor boundaryEditor)
+    {
+        this.boundaryEditor = boundaryEditor;
+    }
+
+    //-------------------//
+    // getBoundaryEditor //
+    //-------------------//
+    /**
+     * @return the boundaryEditor
+     */
+    public BoundaryEditor getBoundaryEditor ()
+    {
+        return boundaryEditor;
     }
 
     //----------------//
@@ -809,11 +838,11 @@ public class Sheet
     /**
      * Give access to the UI dealing with symbol recognition
      *
-     * @return the symbols editor
+     * @return the symbols symbolsEditor
      */
     public SymbolsEditor getSymbolsEditor ()
     {
-        return editor;
+        return symbolsEditor;
     }
 
     //---------------//
@@ -852,8 +881,9 @@ public class Sheet
     public SystemInfo getSystemOf (PixelPoint point)
     {
         for (SystemInfo info : getSystems()) {
-            if (info.getBoundary()
-                    .contains(point)) {
+            SystemBoundary boundary = info.getBoundary();
+
+            if ((boundary != null) && boundary.contains(point)) {
                 return info;
             }
         }
@@ -1205,6 +1235,8 @@ public class Sheet
             prevSystem.setBoundary(
                 new SystemBoundary(prevSystem, north, south));
         }
+
+        hasSystemBoundaries = true;
     }
 
     //----------------------------------//
@@ -1216,7 +1248,7 @@ public class Sheet
         symbolsController = new SymbolsController(model);
 
         if (Main.getGui() != null) {
-            editor = new SymbolsEditor(this, symbolsController);
+            symbolsEditor = new SymbolsEditor(this, symbolsController);
         }
     }
 
@@ -1286,6 +1318,18 @@ public class Sheet
     public boolean hasMaxForeground ()
     {
         return maxForeground != null;
+    }
+
+    //---------------------//
+    // hasSystemBoundaries //
+    //---------------------//
+    /**
+     * Report whether the systems have their boundaries defined yet.
+     * @return true if already defined
+     */
+    public boolean hasSystemBoundaries ()
+    {
+        return hasSystemBoundaries;
     }
 
     //--------//
@@ -1494,7 +1538,7 @@ public class Sheet
         systemsBuilder = null;
         symbolsController = null;
         verticalsController = null;
-        editor = null;
+        symbolsEditor = null;
         maxForeground = null;
         histoRatio = null;
         currentStep = null;

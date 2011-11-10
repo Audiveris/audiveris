@@ -1502,12 +1502,4 @@ public class SystemInfo
             lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
         bottom = (int) Math.rint(botLeft.getY());
     }
-
-    //-----------------//
-    // boundaryUpdated //
-    //-----------------//
-    void boundaryUpdated ()
-    {
-        ///logger.warning("Update for " + this);
-    }
 }

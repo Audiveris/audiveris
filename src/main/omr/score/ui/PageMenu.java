@@ -26,11 +26,14 @@ import omr.score.entity.SystemPart;
 import omr.score.midi.MidiActions;
 import omr.score.midi.MidiAgentFactory;
 
+import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+import omr.sheet.ui.BoundaryEditor;
 
 import java.awt.event.ActionEvent;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.JMenu;
@@ -59,16 +62,17 @@ public class PageMenu
     /** Set of actions to update menu according to current selections */
     private final Collection<DynAction> dynActions = new HashSet<DynAction>();
 
-    //    /** Set of items to update menu according to current selections */
-    //    private final Collection<DynItem> dynItems = new HashSet<DynItem>();
-
     /** Concrete popup menu */
     private final JPopupMenu popup;
 
     /** Submenus */
-    private final SymbolMenu symbolMenu;
+    private final MeasureMenu measureMenu = new MeasureMenu();
+    private final SlotMenu       slotMenu = new SlotMenu();
+    private final SymbolMenu     symbolMenu;
+    private final BoundaryEditor boundaryEditor;
 
     // Context
+    private int         glyphNb = 0;
     private ScoreSystem system;
     private Measure     measure;
     private Slot        slot;
@@ -79,8 +83,7 @@ public class PageMenu
     // PageMenu //
     //----------//
     /**
-     * Create the page menu
-     *
+     * Create the page menu.
      * @param page the related page
      */
     public PageMenu (Page       page,
@@ -88,6 +91,9 @@ public class PageMenu
     {
         this.page = page;
         this.symbolMenu = symbolMenu;
+
+        boundaryEditor = page.getSheet()
+                             .getBoundaryEditor();
 
         popup = new JPopupMenu();
         defineLayout();
@@ -101,12 +107,10 @@ public class PageMenu
     //~ Methods ----------------------------------------------------------------
 
     //----------//
-    // getMenu //
+    // getPopup //
     //----------//
     /**
-     * Report the concrete popup menu
-     *
-     * @return the popup menu
+     * Report the concrete popup menu.
      */
     public JPopupMenu getPopup ()
     {
@@ -117,36 +121,42 @@ public class PageMenu
     // updateMenu //
     //------------//
     /**
-     * Update the popup menu according to the currently selected glyphs
-     *
+     * Update the popup menu according to the currently selected glyphs.
      * @param point the point designated in the page display
      */
     public void updateMenu (PixelPoint point)
     {
         // Analyze the context to retrieve designated system, measure & slot
-        SystemInfo systemInfo = page.getSheet()
-                                    .getSystemOf(point);
-        system = systemInfo.getScoreSystem();
+        Sheet            sheet = page.getSheet();
+        List<SystemInfo> systems = sheet.getSystems();
 
-        SystemPart part = system.getPartAt(point);
-        measure = part.getMeasureAt(point);
+        if (systems != null) {
+            SystemInfo systemInfo = sheet.getSystemOf(point);
 
-        if (measure != null) {
-            slot = measure.getClosestSlot(point);
-        }
+            if (systemInfo != null) {
+                system = systemInfo.getScoreSystem();
 
-        // Update all dynamic actions accordingly
-        for (DynAction action : dynActions) {
-            action.update();
+                SystemPart part = system.getPartAt(point);
+                measure = part.getMeasureAt(point);
+
+                if (measure != null) {
+                    slot = measure.getClosestSlot(point);
+                }
+            }
+
+            // Update all dynamic actions accordingly
+            for (DynAction action : dynActions) {
+                action.update();
+            }
         }
 
         // Update symbol menu
-        symbolMenu.updateMenu();
+        glyphNb = symbolMenu.updateMenu();
 
-        //        // Update all dynamic items accordingly
-        //        for (DynItem item : dynItems) {
-        //            item.update();
-        //        }
+        // Update boundary menu
+        boundaryEditor.updateMenu();
+
+        defineLayout();
     }
 
     //--------------//
@@ -154,14 +164,25 @@ public class PageMenu
     //--------------//
     private void defineLayout ()
     {
+        popup.removeAll();
+
         // Measure
-        popup.add(new MeasureMenu().getPopup());
+        if (measure != null) {
+            popup.add(measureMenu.getMenu());
+        }
 
         // Slot
-        popup.add(new SlotMenu().getPopup());
+        if (slot != null) {
+            popup.add(slotMenu.getMenu());
+        }
 
         // Symbol
-        popup.add(symbolMenu.getMenu());
+        if (glyphNb > 0) {
+            popup.add(symbolMenu.getMenu());
+        }
+
+        // Boundary
+        popup.add(boundaryEditor.getMenu());
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -182,9 +203,6 @@ public class PageMenu
         {
             // Record the instance
             dynActions.add(this);
-
-            // Initially update the action items
-            ///update();
         }
 
         //~ Methods ------------------------------------------------------------
@@ -310,8 +328,8 @@ public class PageMenu
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** Concrete popup menu */
-        private final JMenu popup;
+        /** Concrete menu */
+        private final JMenu menu;
 
         //~ Constructors -------------------------------------------------------
 
@@ -325,15 +343,15 @@ public class PageMenu
          */
         public MeasureMenu ()
         {
-            popup = new JMenu("Measure");
+            menu = new JMenu("Measure");
             defineLayout();
         }
 
         //~ Methods ------------------------------------------------------------
 
-        public JMenu getPopup ()
+        public JMenu getMenu ()
         {
-            return popup;
+            return menu;
         }
 
         public void actionPerformed (ActionEvent e)
@@ -345,20 +363,20 @@ public class PageMenu
         @Override
         public void update ()
         {
-            popup.setEnabled(measure != null);
+            menu.setEnabled(measure != null);
 
             if (measure != null) {
-                popup.setText("Measure #" + measure.getScoreId() + " ...");
+                menu.setText("Measure #" + measure.getScoreId() + " ...");
             } else {
-                popup.setText("no measure");
+                menu.setText("no measure");
             }
         }
 
         private void defineLayout ()
         {
             // Measure
-            popup.add(new JMenuItem(new PlayAction()));
-            popup.add(new JMenuItem(new DumpAction()));
+            menu.add(new JMenuItem(new PlayAction()));
+            menu.add(new JMenuItem(new DumpAction()));
         }
 
         //~ Inner Classes ------------------------------------------------------
@@ -452,22 +470,22 @@ public class PageMenu
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** Concrete popup menu */
-        private final JMenu popup;
+        /** Concrete menu */
+        private final JMenu menu;
 
         //~ Constructors -------------------------------------------------------
 
         public SlotMenu ()
         {
-            popup = new JMenu("Slot");
+            menu = new JMenu("Slot");
             defineLayout();
         }
 
         //~ Methods ------------------------------------------------------------
 
-        public JMenu getPopup ()
+        public JMenu getMenu ()
         {
-            return popup;
+            return menu;
         }
 
         public void actionPerformed (ActionEvent e)
@@ -479,12 +497,12 @@ public class PageMenu
         @Override
         public void update ()
         {
-            popup.setEnabled(slot != null);
+            menu.setEnabled(slot != null);
 
             if (slot != null) {
-                popup.setText("Slot #" + slot.getId() + " ...");
+                menu.setText("Slot #" + slot.getId() + " ...");
             } else {
-                popup.setText("no slot");
+                menu.setText("no slot");
             }
         }
 
@@ -494,8 +512,8 @@ public class PageMenu
         private void defineLayout ()
         {
             // Slot
-            popup.add(new JMenuItem(new DumpChordsAction()));
-            popup.add(new JMenuItem(new DumpVoicesAction()));
+            menu.add(new JMenuItem(new DumpChordsAction()));
+            menu.add(new JMenuItem(new DumpVoicesAction()));
         }
 
         //~ Inner Classes ------------------------------------------------------

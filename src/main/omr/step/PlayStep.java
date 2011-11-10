@@ -48,7 +48,7 @@ public class PlayStep
             Level.SCORE_LEVEL,
             Mandatory.OPTIONAL,
             Redoable.REDOABLE,
-            SYMBOLS_TAB,
+            DATA_TAB,
             "Play the whole score");
     }
 

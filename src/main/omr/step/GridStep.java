@@ -12,11 +12,12 @@
 package omr.step;
 
 import omr.grid.GridBuilder;
+
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import java.util.Collection;
-import omr.sheet.ui.SheetsController;
+import omr.Main;
 
 /**
  * Class {@code GridStep} determine the systems frames of the picture.

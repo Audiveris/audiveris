@@ -18,6 +18,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Glyphs;
 import omr.glyph.facets.Glyph;
+import omr.glyph.ui.NestView;
 
 import omr.lag.BasicLag;
 import omr.lag.JunctionRatioPolicy;
@@ -56,6 +57,7 @@ import omr.util.StopWatch;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.Stroke;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -70,6 +72,7 @@ import java.util.StringTokenizer;
  * @author Hervé Bitteur
  */
 public class LinesRetriever
+    implements NestView.ItemRenderer
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -169,7 +172,7 @@ public class LinesRetriever
 
         // To record the purged runs
         RunsTable purgedVertTable = new RunsTable(
-            "vert",
+            "long-vert",
             VERTICAL,
             new Dimension(sheet.getWidth(), sheet.getHeight()));
 
@@ -201,11 +204,11 @@ public class LinesRetriever
 
         // To record the purged horizontal runs
         purgedHoriTable = new RunsTable(
-            "purged-hori",
+            "short-hori",
             HORIZONTAL,
             new Dimension(sheet.getWidth(), sheet.getHeight()));
 
-        RunsTable longHoriTable = wholeHoriTable.clone("hori")
+        RunsTable longHoriTable = wholeHoriTable.clone("long-hori")
                                                 .purge(
             new Predicate<Run>() {
                     public final boolean check (Run run)
@@ -292,6 +295,79 @@ public class LinesRetriever
                 watch.print();
             }
         }
+    }
+
+    //-------------//
+    // renderItems //
+    //-------------//
+    /**
+     * Render the filaments, their ending tangents, their combs
+     * @param g graphics context
+     * @param showTangents true to display tangents at filament ends
+     * @param showCombs true to display cluster combs
+     */
+    public void renderItems (Graphics2D g)
+    {
+        final Stroke oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
+        final Color  oldColor = g.getColor();
+        g.setColor(Colors.ENTITY_MINOR);
+
+        // Combs stuff?
+        if (constants.showCombs.isSet()) {
+            if (clustersRetriever != null) {
+                clustersRetriever.renderItems(g);
+            }
+
+            if (secondClustersRetriever != null) {
+                secondClustersRetriever.renderItems(g);
+            }
+        }
+
+        // Filament lines?
+        if (constants.showHorizontalLines.getValue() == false) {
+            return;
+        }
+
+        List<LineFilament> allFils = new ArrayList<LineFilament>(filaments);
+
+        if (secondFilaments != null) {
+            allFils.addAll(secondFilaments);
+        }
+
+        // Draw filaments
+        for (Filament filament : allFils) {
+            filament.renderLine(g);
+        }
+
+        // Draw tangent at each ending point?
+        if (constants.showTangents.isSet()) {
+            g.setColor(Colors.TANGENT);
+
+            double dx = sheet.getScale()
+                             .toPixels(constants.tangentLg);
+
+            for (Filament filament : allFils) {
+                Point2D p = filament.getStartPoint();
+                double  der = filament.slopeAt(p.getX(), HORIZONTAL);
+                g.draw(
+                    new Line2D.Double(
+                        p.getX(),
+                        p.getY(),
+                        p.getX() - dx,
+                        p.getY() - (der * dx)));
+                p = filament.getStopPoint();
+                der = filament.slopeAt(p.getX(), HORIZONTAL);
+                g.draw(
+                    new Line2D.Double(
+                        p.getX(),
+                        p.getY(),
+                        p.getX() + dx,
+                        p.getY() + (der * dx)));
+            }
+        }
+
+        g.setStroke(oldStroke);
+        g.setColor(oldColor);
     }
 
     //---------------//
@@ -414,77 +490,6 @@ public class LinesRetriever
 
         sheet.getAssembly()
              .addViewTab(table.getName(), new ScrollView(view), boards);
-    }
-
-    //-------------//
-    // renderItems //
-    //-------------//
-    /**
-     * Render the filaments, their ending tangents, their combs
-     * @param g graphics context
-     * @param showTangents true to display tangents at filament ends
-     * @param showCombs true to display cluster combs
-     */
-    void renderItems (Graphics2D g,
-                      boolean    showTangents,
-                      boolean    showCombs)
-    {
-        // Combs stuff?
-        if (showCombs) {
-            if (clustersRetriever != null) {
-                clustersRetriever.renderItems(g);
-            }
-
-            if (secondClustersRetriever != null) {
-                secondClustersRetriever.renderItems(g);
-            }
-        }
-
-        // Filament lines?
-        if (constants.showHorizontalLines.getValue() == false) {
-            return;
-        }
-
-        List<LineFilament> allFils = new ArrayList<LineFilament>(filaments);
-
-        if (secondFilaments != null) {
-            allFils.addAll(secondFilaments);
-        }
-
-        // Draw filaments
-        for (Filament filament : allFils) {
-            filament.renderLine(g);
-        }
-
-        // Draw tangent at each ending point?
-        if (showTangents) {
-            Color oldColor = g.getColor();
-            g.setColor(Colors.TANGENT);
-
-            double dx = sheet.getScale()
-                             .toPixels(constants.tangentLg);
-
-            for (Filament filament : allFils) {
-                Point2D p = filament.getStartPoint();
-                double  der = filament.slopeAt(p.getX(), HORIZONTAL);
-                g.draw(
-                    new Line2D.Double(
-                        p.getX(),
-                        p.getY(),
-                        p.getX() - dx,
-                        p.getY() - (der * dx)));
-                p = filament.getStopPoint();
-                der = filament.slopeAt(p.getX(), HORIZONTAL);
-                g.draw(
-                    new Line2D.Double(
-                        p.getX(),
-                        p.getY(),
-                        p.getX() + dx,
-                        p.getY() + (der * dx)));
-            }
-
-            g.setColor(oldColor);
-        }
     }
 
     //----------------//
@@ -963,6 +968,12 @@ public class LinesRetriever
         Constant.Boolean printWatch = new Constant.Boolean(
             false,
             "Should we print out the stop watch?");
+        Constant.Boolean showTangents = new Constant.Boolean(
+            false,
+            "Should we show filament ending tangents?");
+        Constant.Boolean showCombs = new Constant.Boolean(
+            false,
+            "Should we show staff lines combs?");
 
         // Constants for debugging
         //
@@ -1089,13 +1100,13 @@ public class LinesRetriever
             if (constants.showHorizontalLines.getValue()) {
                 g.setColor(Colors.ENTITY_MINOR);
                 UIUtilities.setAbsoluteStroke(g, 1f);
-                LinesRetriever.this.renderItems(g, false, false);
+                LinesRetriever.this.renderItems(g);
             }
 
             if (constants.showVerticalLines.getValue()) {
                 g.setColor(Colors.ENTITY_MINOR);
                 UIUtilities.setAbsoluteStroke(g, 1f);
-                barsRetriever.renderItems(g, false);
+                barsRetriever.renderItems(g);
             }
         }
     }

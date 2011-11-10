@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.script;
 
+import omr.sheet.BrokenLineContext;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
@@ -26,11 +27,10 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 
 /**
- * Class {@code BoundaryTask} modifies a system boundary.
+ * Class {@code BoundaryTask} modifies systems boundaries
  *
  * @author Hervé Bitteur
  */
@@ -40,52 +40,34 @@ public class BoundaryTask
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** The specific side of the system */
-    @XmlAttribute(name = "side")
-    private VerticalSide side;
-
-    /** The containing system id */
-    @XmlAttribute(name = "system")
-    private int systemId;
-
-    /** The modified line */
-    @XmlElement(name = "broken-line")
-    private BrokenLine line;
+    /** The collection of line contexts  */
+    @XmlElement(name = "context")
+    private final List<BrokenLineContext> contexts;
 
     //~ Constructors -----------------------------------------------------------
-
-    /**
-     * Creates a new BoundaryTask object.
-     *
-     * @param system The containing system
-     * @param side The north or south side of system boundary
-     * @param line The modified broken line
-     */
-    public BoundaryTask (SystemInfo   system,
-                         VerticalSide side,
-                         BrokenLine   line)
-    {
-        super(system.getSheet());
-
-        systemId = system.getId();
-        this.side = side;
-
-        // Make a deep copy of the line points
-        List<Point> points = new ArrayList<Point>();
-
-        for (Point p : line.getPoints()) {
-            points.add(new Point(p));
-        }
-
-        this.line = new BrokenLine(points);
-    }
 
     //--------------//
     // BoundaryTask //
     //--------------//
-    /** No-arg constructor for JAXB only */
+    /**
+     * Creates a new BoundaryTask object.
+     * @param sheet the related sheet
+     * @param contexts the collections of lines contexts
+     */
+    public BoundaryTask (Sheet                   sheet,
+                         List<BrokenLineContext> contexts)
+    {
+        super(sheet);
+
+        this.contexts = contexts;
+    }
+
+    //--------------//
+    // BoundaryTask // No-arg constructor for JAXB only
+    //--------------//
     private BoundaryTask ()
     {
+        contexts = null;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -97,23 +79,30 @@ public class BoundaryTask
     public void core (Sheet sheet)
         throws Exception
     {
-        SystemInfo  system = sheet.getSystems()
-                                  .get(systemId - 1);
-        BrokenLine  brokenLine = system.getBoundary()
-                                       .getLimit(side);
+        for (BrokenLineContext context : contexts) {
+            // Use a copy of the point sequence
+            List<Point> copy = new ArrayList<Point>();
 
-        // Modify the points and update listeners
-        List<Point> copy = new ArrayList<Point>();
+            for (Point p : context.line.getPoints()) {
+                copy.add(new Point(p));
+            }
 
-        for (Point p : line.getPoints()) {
-            copy.add(new Point(p));
+            if (context.systemAbove != 0) {
+                SystemInfo system = sheet.getSystems()
+                                         .get(context.systemAbove - 1);
+                BrokenLine brokenLine = system.getBoundary()
+                                              .getLimit(VerticalSide.BOTTOM);
+                brokenLine.resetPoints(copy);
+            }
+
+            if (context.systemBelow != 0) {
+                SystemInfo system = sheet.getSystems()
+                                         .get(context.systemBelow - 1);
+                BrokenLine brokenLine = system.getBoundary()
+                                              .getLimit(VerticalSide.TOP);
+                brokenLine.resetPoints(copy);
+            }
         }
-
-        brokenLine.resetPoints(copy);
-
-        // Update the following steps if any
-        sheet.getSystemsBuilder()
-             .useBoundaries();
     }
 
     //--------//
@@ -122,8 +111,13 @@ public class BoundaryTask
     @Override
     public void epilog (Sheet sheet)
     {
+        // Resplit systems content
+        sheet.getSystemsBuilder()
+             .useBoundaries();
+
+        // Update the following steps if any
         Stepping.reprocessSheet(
-            Steps.valueOf(Steps.SPLIT),
+            Steps.valueOf(Steps.VERTICALS),
             sheet,
             sheet.getSystems(),
             false);
@@ -136,13 +130,14 @@ public class BoundaryTask
     protected String internalsString ()
     {
         StringBuilder sb = new StringBuilder(" boundary");
-        sb.append(" system#")
-          .append(systemId);
-        sb.append(" ")
-          .append(side);
-        sb.append(" ")
-          .append(line);
-        sb.append(" ");
+        sb.append(" [");
+
+        for (BrokenLineContext context : contexts) {
+            sb.append(" ")
+              .append(context);
+        }
+
+        sb.append("]");
 
         return sb.toString() + super.internalsString();
     }

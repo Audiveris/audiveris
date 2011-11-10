@@ -18,6 +18,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Glyphs;
 import omr.glyph.facets.Glyph;
+import omr.glyph.ui.NestView;
 
 import omr.lag.BasicLag;
 import omr.lag.JunctionRatioPolicy;
@@ -43,6 +44,7 @@ import omr.sheet.SystemInfo;
 import omr.step.StepException;
 
 import omr.ui.Colors;
+import omr.ui.util.UIUtilities;
 
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
@@ -75,6 +77,7 @@ import java.util.TreeSet;
  * @author Hervé Bitteur
  */
 public class BarsRetriever
+    implements NestView.ItemRenderer
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -175,6 +178,63 @@ public class BarsRetriever
                 sect.setVip();
             }
         }
+    }
+
+    //-------------//
+    // renderItems //
+    //-------------//
+    /**
+     * Render the filaments, their ending tangents, their patterns
+     * @param g graphics context
+     */
+    public void renderItems (Graphics2D g)
+    {
+        if (constants.showVerticalLines.getValue() == false) {
+            return;
+        }
+
+        final Stroke oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
+        final Color  oldColor = g.getColor();
+        g.setColor(Colors.ENTITY_MINOR);
+
+        // Draw filaments
+        for (Glyph filament : filaments) {
+            filament.renderLine(g);
+        }
+
+        // Draw tangent at each ending point (using max coord gap)?
+        if (constants.showTangents.isSet()) {
+            g.setColor(Colors.TANGENT);
+
+            double dy = sheet.getScale()
+                             .toPixels(constants.maxCoordGap);
+
+            for (Glyph glyph : filaments) {
+                Point2D p = glyph.getStartPoint();
+                double  der = (glyph instanceof Filament)
+                              ? ((Filament) glyph).slopeAt(p.getY(), VERTICAL)
+                              : glyph.getInvertedSlope();
+                g.draw(
+                    new Line2D.Double(
+                        p.getX(),
+                        p.getY(),
+                        p.getX() - (der * dy),
+                        p.getY() - dy));
+                p = glyph.getStopPoint();
+                der = (glyph instanceof Filament)
+                      ? ((Filament) glyph).slopeAt(p.getY(), VERTICAL)
+                      : glyph.getInvertedSlope();
+                g.draw(
+                    new Line2D.Double(
+                        p.getX(),
+                        p.getY(),
+                        p.getX() + (der * dy),
+                        p.getY() + dy));
+            }
+        }
+
+        g.setStroke(oldStroke);
+        g.setColor(oldColor);
     }
 
     //---------------------//
@@ -385,61 +445,6 @@ public class BarsRetriever
                     system.getId(),
                     ex);
             }
-        }
-    }
-
-    //-------------//
-    // renderItems //
-    //-------------//
-    /**
-     * Render the filaments, their ending tangents, their patterns
-     * @param g graphics context
-     * @param showTangents true for showing ending tangents
-     */
-    void renderItems (Graphics2D g,
-                      boolean    showTangents)
-    {
-        if (constants.showVerticalLines.getValue() == false) {
-            return;
-        }
-
-        // Draw filaments
-        for (Glyph filament : filaments) {
-            filament.renderLine(g);
-        }
-
-        // Draw tangent at each ending point (using max coord gap)?
-        if (showTangents) {
-            Color oldColor = g.getColor();
-            g.setColor(Colors.TANGENT);
-
-            double dy = sheet.getScale()
-                             .toPixels(constants.maxCoordGap);
-
-            for (Glyph glyph : filaments) {
-                Point2D p = glyph.getStartPoint();
-                double  der = (glyph instanceof Filament)
-                              ? ((Filament) glyph).slopeAt(p.getY(), VERTICAL)
-                              : glyph.getInvertedSlope();
-                g.draw(
-                    new Line2D.Double(
-                        p.getX(),
-                        p.getY(),
-                        p.getX() - (der * dy),
-                        p.getY() - dy));
-                p = glyph.getStopPoint();
-                der = (glyph instanceof Filament)
-                      ? ((Filament) glyph).slopeAt(p.getY(), VERTICAL)
-                      : glyph.getInvertedSlope();
-                g.draw(
-                    new Line2D.Double(
-                        p.getX(),
-                        p.getY(),
-                        p.getX() + (der * dy),
-                        p.getY() + dy));
-            }
-
-            g.setColor(oldColor);
         }
     }
 
@@ -1673,6 +1678,11 @@ public class BarsRetriever
         Constant.Boolean showVerticalLines = new Constant.Boolean(
             true,
             "Should we display the vertical lines?");
+
+        //
+        Constant.Boolean showTangents = new Constant.Boolean(
+            false,
+            "Should we show filament ending tangents?");
 
         //
         Constant.Double  splineThickness = new Constant.Double(

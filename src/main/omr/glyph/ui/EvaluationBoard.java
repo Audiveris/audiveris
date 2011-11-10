@@ -174,9 +174,12 @@ class EvaluationBoard
         } else {
             if (useAnnotations) {
                 SystemInfo system = sheet.getSystemOf(glyph);
-                selector.setEvals(
-                    evaluator.getAnnotatedEvaluations(glyph, system),
-                    glyph);
+
+                if (system != null) {
+                    selector.setEvals(
+                        evaluator.getAnnotatedEvaluations(glyph, system),
+                        glyph);
+                }
             } else {
                 selector.setEvals(evaluator.getRawEvaluations(glyph), glyph);
             }
@@ -207,7 +210,10 @@ class EvaluationBoard
             if (event instanceof GlyphEvent) {
                 GlyphEvent glyphEvent = (GlyphEvent) event;
                 Glyph      glyph = glyphEvent.getData();
-                evaluate(glyph);
+
+                if (sheet.getSystems() != null) {
+                    evaluate(glyph);
+                }
             }
         } catch (Exception ex) {
             logger.warning(getClass().getName() + " output error", ex);
