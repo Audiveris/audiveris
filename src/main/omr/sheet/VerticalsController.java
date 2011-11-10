@@ -121,13 +121,13 @@ public class VerticalsController
         //                        new RunBoard(vLag, false),
         //                        new SectionBoard(vLag, false),
         //                        new SymbolGlyphBoard(this, true),
-        //                        new MyCheckBoard(
+        //                        new StemCheckBoard(
         //                            sheet.getNest().getGlyphService(),
         //                            eventClasses)));
         sheet.getAssembly()
              .addBoard(
             Step.DATA_TAB,
-            new MyCheckBoard(sheet.getNest().getGlyphService(), eventClasses));
+            new StemCheckBoard(sheet.getNest().getGlyphService(), eventClasses));
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -143,55 +143,12 @@ public class VerticalsController
         Constant.Boolean displayFrame = new Constant.Boolean(
             true,
             "Should we display a frame on the stem sticks");
-    }
 
-    //--------------//
-    // MyCheckBoard //
-    //--------------//
-    private class MyCheckBoard
-        extends CheckBoard<Glyph>
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public MyCheckBoard (SelectionService eventService,
-                             Class[]          eventList)
-        {
-            super("Stem", null, eventService, eventList);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public void onEvent (UserEvent event)
-        {
-            try {
-                // Ignore RELEASING
-                if (event.movement == MouseMovement.RELEASING) {
-                    return;
-                }
-
-                if (event instanceof GlyphEvent) {
-                    GlyphEvent glyphEvent = (GlyphEvent) event;
-                    Glyph      glyph = glyphEvent.getData();
-
-                    if (glyph instanceof Glyph) {
-                        try {
-                            Glyph      stick = (Glyph) glyph;
-                            SystemInfo system = sheet.getSystemOf(stick);
-                            // Get a fresh suite
-                            setSuite(system.createStemCheckSuite(true));
-                            tellObject(stick);
-                        } catch (Exception ex) {
-                            logger.warning("Glyph cannot be processed", ex);
-                        }
-                    } else {
-                        tellObject(null);
-                    }
-                }
-            } catch (Exception ex) {
-                logger.warning(getClass().getName() + " onEvent error", ex);
-            }
-        }
+        //
+        Constant.Double maxCoTangentForCheck = new Constant.Double(
+            "cotangent",
+            0.1,
+            "Maximum cotangent for checking a stem candidate");
     }
 
     //--------//
@@ -227,6 +184,56 @@ public class VerticalsController
                  .accept(new SheetPainter(g, false));
 
             super.renderItems(g);
+        }
+    }
+
+    //----------------//
+    // StemCheckBoard //
+    //----------------//
+    private class StemCheckBoard
+        extends CheckBoard<Glyph>
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public StemCheckBoard (SelectionService eventService,
+                               Class[]          eventList)
+        {
+            super("StemCheck", null, eventService, eventList);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void onEvent (UserEvent event)
+        {
+            try {
+                // Ignore RELEASING
+                if (event.movement == MouseMovement.RELEASING) {
+                    return;
+                }
+
+                if (event instanceof GlyphEvent) {
+                    GlyphEvent glyphEvent = (GlyphEvent) event;
+                    Glyph      glyph = glyphEvent.getData();
+
+                    if (glyph instanceof Glyph) {
+                        SystemInfo system = sheet.getSystemOf(glyph);
+
+                        // Make sure this is a rather vertical stick
+                        if (Math.abs(glyph.getInvertedSlope()) <= constants.maxCoTangentForCheck.getValue()) {
+                            // Get a fresh suite
+                            setSuite(system.createStemCheckSuite(true));
+                            tellObject(glyph);
+
+                            return;
+                        }
+                    }
+
+                    tellObject(null);
+                }
+            } catch (Exception ex) {
+                logger.warning(getClass().getName() + " onEvent error", ex);
+            }
         }
     }
 }

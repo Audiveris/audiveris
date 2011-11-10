@@ -37,6 +37,10 @@ import omr.log.Logger;
 import static omr.run.Orientation.*;
 
 import omr.selection.GlyphEvent;
+import omr.selection.MouseMovement;
+import omr.selection.UserEvent;
+
+import omr.sheet.BarsChecker.BarCheckSuite;
 
 import omr.step.Step;
 import omr.step.StepException;
@@ -262,13 +266,13 @@ public class HorizontalsBuilder
     {
         ///controller = new GlyphsController(this);
         sheet.getAssembly()
-             .addBoard(
-            Step.DATA_TAB,
-            new CheckBoard<Glyph>(
-                "Ledger",
-                ledgerSuite,
-                sheet.getNest().getGlyphService(),
-                eventClasses));
+             .addBoard(Step.DATA_TAB, new LedgerCheckBoard());
+
+        //            new CheckBoard<Glyph>(
+        //                "Ledger",
+        //                ledgerSuite,
+        //                sheet.getNest().getGlyphService(),
+        //                eventClasses));
 
         //
         //        for (Dash dash : allDashes) {
@@ -1164,6 +1168,12 @@ public class HorizontalsBuilder
             "slope",
             0.02,
             "High Maximum slope for ending");
+
+        //
+        Constant.Double maxSlopeForCheck = new Constant.Double(
+            "slope",
+            1.5,
+            "Maximum slope for checking a ledger candidate");
     }
 
     //---------------------//
@@ -1406,6 +1416,60 @@ public class HorizontalsBuilder
             int length = stick.getLength(HORIZONTAL);
 
             return (double) stick.getLastStuck() / (double) length;
+        }
+    }
+
+    //------------------//
+    // LedgerCheckBoard //
+    //------------------//
+    /**
+     * A specific board dedicated to physical checks of ledger sticks
+     */
+    private class LedgerCheckBoard
+        extends CheckBoard<Glyph>
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public LedgerCheckBoard ()
+        {
+            super(
+                "LedgerCheck",
+                ledgerSuite,
+                sheet.getNest().getGlyphService(),
+                eventClasses);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void onEvent (UserEvent event)
+        {
+            try {
+                // Ignore RELEASING
+                if (event.movement == MouseMovement.RELEASING) {
+                    return;
+                }
+
+                if (event instanceof GlyphEvent) {
+                    GlyphEvent glyphEvent = (GlyphEvent) event;
+                    Glyph      glyph = glyphEvent.getData();
+
+                    if (glyph != null) {
+                        // Make sure this is a rather horizontal stick
+                        if (Math.abs(glyph.getSlope()) <= constants.maxSlopeForCheck.getValue()) {
+                            // Get a fresh suite
+                            //setSuite(system.createLedgerCheckSuite(true));
+                            tellObject(glyph);
+
+                            return;
+                        }
+                    }
+
+                    tellObject(null);
+                }
+            } catch (Exception ex) {
+                logger.warning(getClass().getName() + " onEvent error", ex);
+            }
         }
     }
 

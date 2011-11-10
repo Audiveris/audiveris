@@ -13,46 +13,22 @@ package omr.sheet;
 
 import omr.Main;
 
-import omr.check.CheckBoard;
-import omr.check.CheckSuite;
-
-import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphsModel;
-import omr.glyph.Nest;
-import omr.glyph.facets.Glyph;
-import omr.glyph.ui.BarMenu;
-import omr.glyph.ui.GlyphsController;
-import omr.glyph.ui.NestView;
 
 import omr.grid.StaffInfo;
 import omr.grid.SystemManager;
 
 import omr.log.Logger;
 
-import omr.script.BoundaryTask;
-
 import omr.selection.GlyphEvent;
-import omr.selection.MouseMovement;
-import omr.selection.SelectionService;
-import omr.selection.UserEvent;
-
-import omr.sheet.BarsChecker.BarCheckSuite;
 
 import omr.step.Step;
 import omr.step.StepException;
 import omr.step.Steps;
 
-import omr.util.BrokenLine;
-import omr.util.VerticalSide;
-
-import org.jdesktop.application.Task;
-
-import java.awt.Point;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -95,16 +71,10 @@ public class SystemsBuilder
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(SystemsBuilder.class);
 
-    /** Events this entity is interested in */
-    private static final Class[] eventClasses = new Class[] { GlyphEvent.class };
-
     //~ Instance fields --------------------------------------------------------
 
     /** Companion physical stick barsChecker */
     private final BarsChecker barsChecker;
-
-    /** View on bars, if so desired */
-    private NestView sceneView;
 
     /** Sheet retrieved systems */
     private final List<SystemInfo> systems;
@@ -116,7 +86,6 @@ public class SystemsBuilder
     //----------------//
     /**
      * Creates a new SystemsBuilder object.
-     *
      * @param sheet the related sheet
      */
     public SystemsBuilder (Sheet sheet)
@@ -147,12 +116,7 @@ public class SystemsBuilder
             // Provide use checkboard for barlines
             if (Main.getGui() != null) {
                 sheet.getAssembly()
-                     .addBoard(
-                    Step.DATA_TAB,
-                    new BarCheckBoard(
-                        barsChecker.getSuite(),
-                        nest.getGlyphService(),
-                        eventClasses));
+                     .addBoard(Step.DATA_TAB, barsChecker.getCheckBoard());
             }
         }
     }
@@ -168,21 +132,16 @@ public class SystemsBuilder
         } catch (StepException ex) {
             logger.warning("Error rebuilding systems info", ex);
         }
-
-        // Update the view accordingly
-        if (sceneView != null) {
-            sceneView.repaint();
-        }
     }
 
     //---------------//
     // useBoundaries //
     //---------------//
-    public SortedSet<SystemInfo> useBoundaries ()
+    public void useBoundaries ()
     {
         // Split the entities (horizontals sections, vertical sections,
         // vertical sticks) to the system they belong to.
-        return splitSystemEntities();
+        splitSystemEntities();
     }
 
     //------------------------//
@@ -362,48 +321,6 @@ public class SystemsBuilder
 
     //~ Inner Classes ----------------------------------------------------------
 
-//    //----------------//
-//    // BarsController //
-//    //----------------//
-//    /**
-//     * A glyphs controller specifically meant for barlines
-//     */
-//    public class BarsController
-//        extends GlyphsController
-//    {
-//        //~ Constructors -------------------------------------------------------
-//
-//        public BarsController ()
-//        {
-//            super(SystemsBuilder.this);
-//        }
-//
-//        //~ Methods ------------------------------------------------------------
-//
-//        public Task asyncModifyBoundaries (final Set<SystemInfo> modifiedSystems)
-//        {
-//            if (logger.isFineEnabled()) {
-//                logger.fine(
-//                    "asyncModifyBoundaries " + " modifiedSystems:" +
-//                    modifiedSystems);
-//            }
-//
-//            // Retrieve containing system
-//            for (SystemInfo system : modifiedSystems) {
-//                SystemBoundary boundary = system.getBoundary();
-//
-//                for (VerticalSide side : VerticalSide.values()) {
-//                    if (boundary.getLimit(side) == brokenLine) {
-//                        return new BoundaryTask(system, side, brokenLine).launch(
-//                            sheet);
-//                    }
-//                }
-//            }
-//
-//            return null;
-//        }
-//    }
-
     //-----------//
     // Constants //
     //-----------//
@@ -412,207 +329,13 @@ public class SystemsBuilder
     {
         //~ Instance fields ----------------------------------------------------
 
-        Scale.Fraction  maxDeltaLength = new Scale.Fraction(
+        Scale.Fraction maxDeltaLength = new Scale.Fraction(
             0.2,
             "Maximum difference in run length to be part of the same section");
 
-        /** Maximum cotangent for checking a barline candidate */
-        Constant.Double maxCoTangentForCheck = new Constant.Double(
-            "cotangent",
-            0.1,
-            "Maximum cotangent for checking a barline candidate");
-        Scale.Fraction  maxBarThickness = new Scale.Fraction(
+        //
+        Scale.Fraction maxBarThickness = new Scale.Fraction(
             1.0,
             "Maximum thickness of an interesting vertical stick");
     }
-
-    //---------------//
-    // BarCheckBoard //
-    //---------------//
-    /**
-     * A specific board dedicated to physical checks of bar sticks
-     */
-    private class BarCheckBoard
-        extends CheckBoard<BarsChecker.GlyphContext>
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public BarCheckBoard (CheckSuite<BarsChecker.GlyphContext> suite,
-                              SelectionService                     eventService,
-                              Class[]                              eventList)
-        {
-            super("Barline", suite, eventService, eventList);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public void onEvent (UserEvent event)
-        {
-            try {
-                // Ignore RELEASING
-                if (event.movement == MouseMovement.RELEASING) {
-                    return;
-                }
-
-                if (event instanceof GlyphEvent) {
-                    BarsChecker.GlyphContext context = null;
-                    GlyphEvent               glyphEvent = (GlyphEvent) event;
-                    Glyph                    glyph = glyphEvent.getData();
-
-                    if (glyph != null) {
-                        // Make sure this is a rather vertical stick
-                        if (Math.abs(glyph.getInvertedSlope()) <= constants.maxCoTangentForCheck.getValue()) {
-                            // To get a fresh suite
-                            setSuite(barsChecker.new BarCheckSuite());
-                            context = new BarsChecker.GlyphContext(glyph);
-                        }
-                    }
-
-                    tellObject(context);
-                }
-            } catch (Exception ex) {
-                logger.warning(getClass().getName() + " onEvent error", ex);
-            }
-        }
-    }
-//
-//    //--------//
-//    // MyView //
-//    //--------//
-//    private final class MyView
-//        extends NestView
-//    {
-//        //~ Instance fields ----------------------------------------------------
-//
-//        /** Popup menu related to glyph selection */
-//        private BarMenu barMenu;
-//
-//        //~ Constructors -------------------------------------------------------
-//
-//        //        /** Acceptable distance since last reference point (while dragging) */
-//        //        private int maxDraggingDelta = (int) Math.rint(
-//        //            constants.draggingRatio.getValue() * BrokenLine.getDefaultStickyDistance());
-//        //
-//        //        // Latest designated reference point, if any */
-//        //        private Point      lastPoint = null;
-//        //
-//        //        // Latest information, meaningful only if lastPoint is not null */
-//        //        private BrokenLine lastLine = null;
-//        private MyView (Nest           nest,
-//                        BarsController barsController)
-//        {
-//            super(
-//                nest,
-//                barsController,
-//                Arrays.asList(sheet.getHorizontalLag(), sheet.getVerticalLag()));
-//            setName("SystemsBuilder-View");
-//
-//            setLocationService(sheet.getLocationService());
-//
-//            barMenu = new BarMenu(getController());
-//        }
-//
-//        //~ Methods ------------------------------------------------------------
-//
-//        //-----------------//
-//        // contextSelected //
-//        //-----------------//
-//        @Override
-//        public void contextSelected (Point         pt,
-//                                     MouseMovement movement)
-//        {
-//            // Retrieve the selected glyphs
-//            Set<Glyph> glyphs = nest.getSelectedGlyphSet();
-//
-//            // To display point information
-//            if ((glyphs == null) || glyphs.isEmpty()) {
-//                pointSelected(pt, movement); // This may change glyph selection
-//                glyphs = nest.getSelectedGlyphSet();
-//            }
-//
-//            if ((glyphs != null) && !glyphs.isEmpty()) {
-//                // Update the popup menu according to selected glyphs
-//                barMenu.updateMenu();
-//
-//                // Show the popup menu
-//                barMenu.getMenu()
-//                       .getPopupMenu()
-//                       .show(
-//                    this,
-//                    getZoom().scaled(pt.x),
-//                    getZoom().scaled(pt.y));
-//            } else {
-//                // Popup with no glyph selected ?
-//            }
-//        }
-//
-//        //        //---------//
-//        //        // onEvent //
-//        //        //---------//
-//        //        /**
-//        //         * Notification about selection objects
-//        //         * @param event the notified event
-//        //         */
-//        //        @Override
-//        //        public void onEvent (UserEvent event)
-//        //        {
-//        //            try {
-//        //                // Default lag view behavior, including specifics
-//        //                if (event.movement != MouseMovement.RELEASING) {
-//        //                    super.onEvent(event);
-//        //                }
-//        //
-//        //                if (event instanceof LocationEvent) {
-//        //                    //                    // Update system boundary?
-//        //                    //                    LocationEvent sheetLocation = (LocationEvent) event;
-//        //                    //
-//        //                    //                    if (sheetLocation.hint == SelectionHint.LOCATION_INIT) {
-//        //                    //                        Rectangle rect = sheetLocation.rectangle;
-//        //                    //
-//        //                    //                        if (rect != null) {
-//        //                    //                            if (event.movement != MouseMovement.RELEASING) {
-//        //                    //                                // While user is dragging, simply modify the line
-//        //                    //                                updateBoundary(
-//        //                    //                                    new Point(
-//        //                    //                                        rect.x + (rect.width / 2),
-//        //                    //                                        rect.y + (rect.height / 2)));
-//        //                    //                            } else if (lastLine != null) {
-//        //                    //                                // User has released the mouse with a known line
-//        //                    //
-//        //                    //                                // Perform boundary modifs synchronously
-//        //                    //                                Set<SystemInfo> modifs = splitSystemEntities();
-//        //                    //
-//        //                    //                                // If modifs, launch updates asynchronously
-//        //                    //                                ///if (!modifs.isEmpty()) {
-//        //                    //                                barsController.asyncModifyBoundaries(
-//        //                    //                                    lastLine,
-//        //                    //                                    modifs);
-//        //                    //                                lastPoint = null;
-//        //                    //                                lastLine = null;
-//        //                    //
-//        //                    //                                ///}
-//        //                    //                            }
-//        //                    //                        }
-//        //                    //                    }
-//        //                }
-//        //            } catch (Exception ex) {
-//        //                logger.warning(getClass().getName() + " onEvent error", ex);
-//        //            }
-//        //        }
-//        //
-//        //        //-------------//
-//        //        // renderItems //
-//        //        //-------------//
-//        //        @Override
-//        //        public void renderItems (Graphics2D g)
-//        //        {
-//        //            // Render all physical info known so far, which is just the staff
-//        //            // line info, lineset by lineset
-//        //            sheet.getPage()
-//        //                 .accept(new SheetPainter(g, true));
-//        //
-//        //            super.renderItems(g);
-//        //        }
-//    }
 }

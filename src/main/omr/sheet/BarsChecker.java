@@ -12,6 +12,7 @@
 package omr.sheet;
 
 import omr.check.Check;
+import omr.check.CheckBoard;
 import omr.check.CheckResult;
 import omr.check.CheckSuite;
 import omr.check.Checkable;
@@ -29,26 +30,29 @@ import omr.grid.Filament;
 import omr.grid.StaffInfo;
 import omr.grid.StaffManager;
 
-import omr.lag.Lag;
 import omr.lag.Section;
 
 import omr.log.Logger;
 
 import omr.run.Orientation;
-import omr.run.Run;
 
 import omr.score.common.PixelRectangle;
+
+import omr.selection.GlyphEvent;
+import omr.selection.MouseMovement;
+import omr.selection.SelectionService;
+import omr.selection.UserEvent;
+
+import omr.sheet.BarsChecker.BarCheckSuite;
 import static omr.util.HorizontalSide.*;
 import omr.util.Implement;
 import omr.util.Predicate;
 
 import net.jcip.annotations.NotThreadSafe;
 
-import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -168,27 +172,15 @@ public class BarsChecker
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------------//
-    // getStaffAnchors //
-    //-----------------//
-    /**
-     * Report the staves at the top and at the bottom of the
-     * provided stick. (Used by package mate SystemsBuilder)
-     * @param stick the stick to lookup
-     * @return a pair of staves, top & bottom, or null if the stick is
-     * not known
-     */
-    public StaffAnchors getStaffAnchors (Glyph stick)
+    //---------------//
+    // getCheckBoard //
+    //---------------//
+    public CheckBoard getCheckBoard ()
     {
-        GlyphContext context = contexts.get(stick);
-
-        if (context == null) {
-            context = new GlyphContext(stick);
-            suite.pass(context);
-            contexts.put(stick, context);
-        }
-
-        return new StaffAnchors(context.topStaff, context.botStaff);
+        return new BarCheckBoard(
+            getSuite(),
+            sheet.getNest().getGlyphService(),
+            new Class[] { GlyphEvent.class });
     }
 
     //----------//
@@ -224,9 +216,8 @@ public class BarsChecker
         for (Glyph stick : sticks) {
             // Allocate the candidate context, and pass the whole check suite
             GlyphContext context = new GlyphContext(stick);
-            initializeContext(context); // Initialization before any check
 
-            double res = suite.pass(context);
+            double       res = suite.pass(context);
 
             if (logger.isFineEnabled() || stick.isVip()) {
                 logger.info(
@@ -377,67 +368,6 @@ public class BarsChecker
         }
     }
 
-    //--------------//
-    // GlyphContext //
-    //--------------//
-    static class GlyphContext
-        implements Checkable
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /** The stick being checked */
-        Glyph stick;
-
-        /** Indicates a part-defining stick (embracing more than one staff) */
-        boolean isPartDefining;
-
-        /** Indicates a thick bar stick */
-        boolean isThick;
-
-        /** Nearest staff for top of bar stick */
-        int topArea = -1;
-
-        /** Nearest staff for bottom of bar stick */
-        int bottomArea = -1;
-
-        /** Precise staff for top of bar stick, assigned when OK */
-        int topStaff = -1;
-
-        /** Precise staff for bottom of bar stick, assigned when OK */
-        int botStaff = -1;
-
-        //~ Constructors -------------------------------------------------------
-
-        public GlyphContext (Glyph stick)
-        {
-            this.stick = stick;
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(Checkable.class)
-        public void setResult (Result result)
-        {
-            stick.setResult(result);
-        }
-
-        public void setVip ()
-        {
-            stick.setVip();
-        }
-
-        public boolean isVip ()
-        {
-            return stick.isVip();
-        }
-
-        @Override
-        public String toString ()
-        {
-            return "stick#" + stick.getId();
-        }
-    }
-
     //---------------//
     // BarCheckSuite //
     //---------------//
@@ -497,6 +427,69 @@ public class BarsChecker
         }
     }
 
+    //--------------//
+    // GlyphContext //
+    //--------------//
+    class GlyphContext
+        implements Checkable
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** The stick being checked */
+        Glyph stick;
+
+        /** Indicates a part-defining stick (embracing more than one staff) */
+        boolean isPartDefining;
+
+        /** Indicates a thick bar stick */
+        boolean isThick;
+
+        /** Nearest staff for top of bar stick */
+        int topArea = -1;
+
+        /** Nearest staff for bottom of bar stick */
+        int bottomArea = -1;
+
+        /** Precise staff for top of bar stick, assigned when OK */
+        int topStaff = -1;
+
+        /** Precise staff for bottom of bar stick, assigned when OK */
+        int botStaff = -1;
+
+        //~ Constructors -------------------------------------------------------
+
+        public GlyphContext (Glyph stick)
+        {
+            this.stick = stick;
+
+            initializeContext(this); // Initialization before any check
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Implement(Checkable.class)
+        public void setResult (Result result)
+        {
+            stick.setResult(result);
+        }
+
+        public void setVip ()
+        {
+            stick.setVip();
+        }
+
+        public boolean isVip ()
+        {
+            return stick.isVip();
+        }
+
+        @Override
+        public String toString ()
+        {
+            return "stick#" + stick.getId();
+        }
+    }
+
     //-------------//
     // AnchorCheck //
     //-------------//
@@ -545,6 +538,60 @@ public class BarsChecker
                 }
 
                 return 0;
+            }
+        }
+    }
+
+    //---------------//
+    // BarCheckBoard //
+    //---------------//
+    /**
+     * A specific board dedicated to physical checks of barline sticks
+     */
+    private class BarCheckBoard
+        extends CheckBoard<GlyphContext>
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public BarCheckBoard (CheckSuite<GlyphContext> suite,
+                              SelectionService         eventService,
+                              Class[]                  eventList)
+        {
+            super("BarlineCheck", suite, eventService, eventList);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void onEvent (UserEvent event)
+        {
+            try {
+                // Ignore RELEASING
+                if (event.movement == MouseMovement.RELEASING) {
+                    return;
+                }
+
+                if (event instanceof GlyphEvent) {
+                    BarsChecker.GlyphContext context = null;
+                    GlyphEvent               glyphEvent = (GlyphEvent) event;
+                    Glyph                    glyph = glyphEvent.getData();
+
+                    if (glyph != null) {
+                        // Make sure this is a rather vertical stick
+                        if (Math.abs(glyph.getInvertedSlope()) <= constants.maxCoTangentForCheck.getValue()) {
+                            // To get a fresh suite
+                            setSuite(new BarCheckSuite());
+                            context = new BarsChecker.GlyphContext(glyph);
+                            tellObject(context);
+
+                            return;
+                        }
+                    }
+
+                    tellObject(null);
+                }
+            } catch (Exception ex) {
+                logger.warning(getClass().getName() + " onEvent error", ex);
             }
         }
     }
@@ -688,6 +735,12 @@ public class BarsChecker
         Constant.Ratio  booleanThreshold = new Constant.Ratio(
             0.5,
             "* DO NOT EDIT * - switch between true & false for a boolean");
+
+        //
+        Constant.Double maxCoTangentForCheck = new Constant.Double(
+            "cotangent",
+            0.1,
+            "Maximum cotangent for checking a barline candidate");
     }
 
     //------------//

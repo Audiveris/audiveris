@@ -156,8 +156,7 @@ public class BoardsPane
     {
         // Avoid duplicates
         if (getBoard(board.getName()) != null) {
-            logger.info("Duplicate " + board);
-
+            ///logger.info("Duplicate " + board);
             return;
         }
 

@@ -154,6 +154,8 @@ public class CheckPanel<C extends Checkable>
         // Remember the 'current' object'
         this.object = object;
 
+        resetValues();
+
         if (object == null) {
             return;
         }
@@ -440,6 +442,18 @@ public class CheckPanel<C extends Checkable>
                 field.setEditable(false);
                 field.setHorizontalAlignment(JTextField.CENTER);
                 values[n][i] = field;
+            }
+        }
+    }
+
+    //-------------//
+    // resetValues //
+    //-------------//
+    private void resetValues ()
+    {
+        for (JTextField[] seq : values) {
+            for (JTextField field : seq) {
+                field.setText("");
             }
         }
     }
