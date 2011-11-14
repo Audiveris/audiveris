@@ -265,6 +265,68 @@ public class CompoundBuilder
         }
     }
 
+    //---------------//
+    // TopRawAdapter //
+    //---------------//
+    /**
+     * This compound adapter tries to find some specific shapes among the top
+     * raw evaluations found for the compound.
+     */
+    public abstract static class TopRawAdapter
+        extends AbstractAdapter
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Collection of desired shapes for a valid compound */
+        protected final EnumSet<Shape> desiredShapes;
+
+        /** Specific predicate for desired shapes*/
+        protected final Predicate<Shape> predicate = new Predicate<Shape>() {
+            public boolean check (Shape shape)
+            {
+                return desiredShapes.contains(shape);
+            }
+        };
+
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Create a TopShapeAdapter instance.
+         * @param system the containing system
+         * @param minGrade maximum acceptable grade on compound shape
+         * @param desiredShapes the valid shapes for the compound
+         */
+        public TopRawAdapter (SystemInfo     system,
+                              double         minGrade,
+                              EnumSet<Shape> desiredShapes)
+        {
+            super(system, minGrade);
+            this.desiredShapes = desiredShapes;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public boolean isCompoundValid (Glyph compound)
+        {
+            // Check if a desired shape appears in the top raw evaluations
+            final Evaluation vote = GlyphNetwork.getInstance()
+                                                .topRawVote(
+                compound,
+                minGrade,
+                predicate);
+
+            if (vote != null) {
+                chosenEvaluation = vote;
+
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
     //-----------------//
     // TopShapeAdapter //
     //-----------------//

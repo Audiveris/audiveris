@@ -137,13 +137,6 @@ public class BrokenLineTest
         ///System.out.println("setUp");
         instance = new BrokenLine(p0, p1, p2, p3);
         instance.setStickyDistance(1);
-        instance.addListener(
-            new BrokenLine.Listener() {
-                    public void update (BrokenLine brokenLine)
-                    {
-                        System.out.println("Notification received");
-                    }
-                });
     }
 
     /**

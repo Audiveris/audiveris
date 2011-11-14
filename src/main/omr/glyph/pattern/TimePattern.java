@@ -83,7 +83,7 @@ public class TimePattern
             // We must find a time out of these glyphs
             Glyph compound = system.buildCompound(
                 glyph,
-                false,
+                true,
                 system.getGlyphs(),
                 new TimeSigAdapter(
                     system,
@@ -123,7 +123,7 @@ public class TimePattern
      * Compound adapter to search for a time sig shape
      */
     private class TimeSigAdapter
-        extends CompoundBuilder.TopShapeAdapter
+        extends CompoundBuilder.TopRawAdapter
     {
         //~ Constructors -------------------------------------------------------
 

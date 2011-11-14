@@ -375,7 +375,7 @@ public class PageMenu
         private void defineLayout ()
         {
             // Measure
-            menu.add(new JMenuItem(new PlayAction()));
+            ///menu.add(new JMenuItem(new PlayAction()));
             menu.add(new JMenuItem(new DumpAction()));
         }
 

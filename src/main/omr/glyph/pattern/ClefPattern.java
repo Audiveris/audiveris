@@ -279,7 +279,7 @@ public class ClefPattern
             0d,
             "Clef vertical offset since staff line");
         Scale.Fraction     xMargin = new Scale.Fraction(
-            0.5d,
+            0d,
             "Clef horizontal outer margin");
         Scale.Fraction     yMargin = new Scale.Fraction(
             0.5d,

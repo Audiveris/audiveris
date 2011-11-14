@@ -175,7 +175,7 @@ public class Grades
 
         //
         Evaluation.Grade timeMinGrade = new Evaluation.Grade(
-            0.1,
+            0,
             "Minimum grade for a time sig");
 
         //

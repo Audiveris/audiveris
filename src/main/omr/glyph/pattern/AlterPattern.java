@@ -220,7 +220,7 @@ public class AlterPattern
     //------------------//
     /**
      * Verify the case of isolated short stems since they may result
-     * from over-segmentation of flay signs
+     * from over-segmentation of flat signs
      * @return the number of cases fixed
      */
     private int checkSingleStems ()
