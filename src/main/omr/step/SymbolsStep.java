@@ -23,8 +23,6 @@ import omr.selection.SelectionService;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
-import java.util.Collection;
-
 /**
  * Class {@code SymbolsStep} recognizes isolated symbols glyphs and aggregates
  * unknown symbols into compound glyphs

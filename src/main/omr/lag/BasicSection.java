@@ -374,6 +374,14 @@ public class BasicSection
         if (nest != null) {
             nest.mapSection(this, glyph);
         }
+
+        if (isVip()) {
+            logger.info(this + " linkedTo " + glyph);
+
+            if (glyph != null) {
+                glyph.setVip();
+            }
+        }
     }
 
     //----------//

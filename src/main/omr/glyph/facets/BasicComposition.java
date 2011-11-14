@@ -18,13 +18,12 @@ import omr.glyph.Shape;
 
 import omr.lag.Section;
 
+import omr.log.Logger;
+
 import omr.score.common.PixelPoint;
 
 import omr.sheet.SystemInfo;
 
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -38,6 +37,12 @@ class BasicComposition
     extends BasicFacet
     implements GlyphComposition
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(
+        BasicComposition.class);
+
     //~ Instance fields --------------------------------------------------------
 
     /**
@@ -47,8 +52,8 @@ class BasicComposition
      */
     private final SortedSet<Section> members = new TreeSet<Section>();
 
-    /** Contained parts, if this glyph is a compound */
-    private final Set<Glyph> parts = new LinkedHashSet<Glyph>();
+    //    /** Contained parts, if this glyph is a compound */
+    //    private final Set<Glyph> parts = new LinkedHashSet<Glyph>();
 
     /** Link to the compound, if any, this one is a part of */
     private Glyph partOf;
@@ -102,14 +107,15 @@ class BasicComposition
             }
         }
 
-        // Parts if any, recursively
-        for (Glyph part : getParts()) {
-            SystemInfo alien = part.getAlienSystem(system);
-
-            if (alien != null) {
-                return alien;
-            }
-        }
+        //
+        //        // Parts if any, recursively
+        //        for (Glyph part : getParts()) {
+        //            SystemInfo alien = part.getAlienSystem(system);
+        //
+        //            if (alien != null) {
+        //                return alien;
+        //            }
+        //        }
 
         // No other system found
         return null;
@@ -161,25 +167,6 @@ class BasicComposition
         return partOf;
     }
 
-    //----------//
-    // setParts //
-    //----------//
-    public void setParts (Collection<?extends Glyph> parts)
-    {
-        if (this.parts != parts) {
-            this.parts.clear();
-            this.parts.addAll(parts);
-        }
-    }
-
-    //----------//
-    // getParts //
-    //----------//
-    public Set<Glyph> getParts ()
-    {
-        return parts;
-    }
-
     //-----------//
     // setResult //
     //-----------//
@@ -202,18 +189,6 @@ class BasicComposition
     public boolean isSuccessful ()
     {
         return result instanceof SuccessResult;
-    }
-
-    //---------//
-    // include //
-    //---------//
-    public void include (Glyph that)
-    {
-        for (Section section : that.getMembers()) {
-            addSection(section, Linking.LINK_BACK);
-        }
-
-        that.setPartOf(glyph);
     }
 
     //------------//
@@ -243,9 +218,9 @@ class BasicComposition
         glyph.invalidateCache();
     }
 
-    //------------------//
+    //-------------//
     // addSections //
-    //------------------//
+    //-------------//
     public void addSections (Glyph   other,
                              Linking linkSections)
     {
@@ -288,9 +263,20 @@ class BasicComposition
     public void dump ()
     {
         System.out.println("   members=" + getMembers());
-        System.out.println("   parts=" + parts);
         System.out.println("   partOf=" + partOf);
         System.out.println("   result=" + getResult());
+    }
+
+    //---------//
+    // include //
+    //---------//
+    public void include (Glyph that)
+    {
+        for (Section section : that.getMembers()) {
+            addSection(section, Linking.LINK_BACK);
+        }
+
+        that.setPartOf(glyph);
     }
 
     //-----------------//

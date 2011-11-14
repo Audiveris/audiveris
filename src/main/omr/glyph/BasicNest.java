@@ -354,6 +354,23 @@ public class BasicNest
     //----------//
     public Glyph addGlyph (Glyph glyph)
     {
+        glyph = registerGlyph(glyph);
+        
+        // Make absolutely all its sections point back to it
+        glyph.linkAllSections();
+
+        if (glyph.isVip()) {
+            logger.info("Glyph#" + glyph.getId() + " added");
+        }
+
+        return glyph;
+    }
+
+    //---------------//
+    // registerGlyph //
+    //---------------//
+    public Glyph registerGlyph (Glyph glyph)
+    {
         // First check this physical glyph does not already exist
         Glyph original = getOriginal(glyph);
 
@@ -385,13 +402,14 @@ public class BasicNest
             }
         }
 
-        // Make absolutely all its sections point back to it
-        glyph.linkAllSections();
-
         // Special for virtual glyphs
         if (glyph.isVirtual()) {
             virtualGlyphs.add(glyph);
         }
+
+//        if (glyph.isVip()) {
+//            logger.info("Glyph#" + glyph.getId() + " registered");
+//        }
 
         return glyph;
     }

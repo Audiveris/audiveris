@@ -66,17 +66,17 @@ public interface GlyphComposition
      */
     public Glyph getPartOf ();
 
-    /**
-     * Record the parts that compose this compound glyph.
-     * @param parts the contained parts
-     */
-    public void setParts (Collection<?extends Glyph> parts);
-
-    /**
-     * Report the parts, if any, that compose this compound.
-     * @return the set of glyphs, perhaps empty, but never null
-     */
-    public Set<Glyph> getParts ();
+//    /**
+//     * Record the parts that compose this compound glyph.
+//     * @param parts the contained parts
+//     */
+//    public void setParts (Collection<?extends Glyph> parts);
+//
+//    /**
+//     * Report the parts, if any, that compose this compound.
+//     * @return the set of glyphs, perhaps empty, but never null
+//     */
+//    public Set<Glyph> getParts ();
 
     /**
      * Tests whether this glyph is active (all its member sections point to it).

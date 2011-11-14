@@ -150,25 +150,29 @@ class BasicRecognition
         // Blacklist the old shape if any
         Shape oldShape = getShape();
 
-        if ((oldShape != null) && (oldShape != Shape.GLYPH_PART)) {
+        if ((oldShape != null) &&
+            (oldShape != shape) &&
+            (oldShape != Shape.GLYPH_PART)) {
             forbidShape(oldShape);
+
+            if (glyph.isVip()) {
+                logger.info(
+                    "Shape " + oldShape + " forbidden for Glyph#" +
+                    glyph.getId());
+            }
         }
 
-        if (shape == null) {
-            // Set the part shape to null as well (rather than GLYPH_PART)
-            for (Glyph part : glyph.getParts()) {
-                if ((part.getPartOf() == glyph) &&
-                    (part.getShape() == Shape.GLYPH_PART)) {
-                    part.setShape(null, grade);
-                }
-            }
-        } else {
+        if (shape != null) {
             // Remove the new shape from the blacklist if any
             allowShape(shape);
         }
 
         // Remember the new shape
         evaluation = new Evaluation(shape, grade);
+
+        if (glyph.isVip()) {
+            logger.info("Glyph#" + glyph.getId() + " assigned " + evaluation);
+        }
     }
 
     //----------//

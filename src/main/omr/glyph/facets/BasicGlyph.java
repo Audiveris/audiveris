@@ -15,7 +15,6 @@ import omr.check.Result;
 
 import omr.glyph.Evaluation;
 import omr.glyph.GlyphSignature;
-import omr.glyph.Glyphs;
 import omr.glyph.Nest;
 import omr.glyph.Shape;
 import omr.glyph.text.TextInfo;
@@ -390,16 +389,6 @@ public class BasicGlyph
     public Glyph getPartOf ()
     {
         return composition.getPartOf();
-    }
-
-    public void setParts (Collection<?extends Glyph> parts)
-    {
-        composition.setParts(parts);
-    }
-
-    public Set<Glyph> getParts ()
-    {
-        return composition.getParts();
     }
 
     public void setPitchPosition (double pitchPosition)
@@ -801,11 +790,6 @@ public class BasicGlyph
         if (getPartOf() != null) {
             sb.append(" partOf#")
               .append(getPartOf().getId());
-        }
-
-        if (!getParts()
-                 .isEmpty()) {
-            sb.append(Glyphs.toString(" parts", getParts()));
         }
 
         if (getCentroid() != null) {

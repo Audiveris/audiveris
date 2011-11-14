@@ -470,62 +470,62 @@ public class GlyphChecker
                         return false;
                     }
 
-                    // Check there is no huge horizontal gap between parts
-                    if (hugeGapBetweenParts(glyph)) {
-                        eval.failure = new Evaluation.Failure("gaps");
-
-                        return false;
-                    }
+//                    // Check there is no huge horizontal gap between parts
+//                    if (hugeGapBetweenParts(glyph)) {
+//                        eval.failure = new Evaluation.Failure("gaps");
+//
+//                        return false;
+//                    }
 
                     return true;
                 }
 
-                /**
-                 * Browse the collection of provided glyphs to make sure there
-                 * is no huge horizontal gap included
-                 * @param glyphs the collection of glyphs that compose the text
-                 * candidate
-                 * @param sheet needed for scale of the context
-                 * @return true if gap found
-                 */
-                private boolean hugeGapBetweenParts (Glyph compound)
-                {
-                    if (compound.getParts()
-                                .isEmpty()) {
-                        return false;
-                    }
-
-                    // Sort glyphs by abscissa
-                    List<Glyph> glyphs = new ArrayList<Glyph>(
-                        compound.getParts());
-                    Collections.sort(glyphs, Glyph.abscissaComparator);
-
-                    final Scale scale = new Scale(glyphs.get(0).getInterline());
-                    final int   maxGap = scale.toPixels(constants.maxTextGap);
-                    int         gapStart = 0;
-                    Glyph       prev = null;
-
-                    for (Glyph glyph : glyphs) {
-                        PixelRectangle box = glyph.getContourBox();
-
-                        if (prev != null) {
-                            if ((box.x - gapStart) > maxGap) {
-                                if (logger.isFineEnabled()) {
-                                    logger.fine(
-                                        "huge gap detected between glyphs #" +
-                                        prev.getId() + " & " + glyph.getId());
-                                }
-
-                                return true;
-                            }
-                        }
-
-                        prev = glyph;
-                        gapStart = (box.x + box.width) - 1;
-                    }
-
-                    return false;
-                }
+//                /**
+//                 * Browse the collection of provided glyphs to make sure there
+//                 * is no huge horizontal gap included
+//                 * @param glyphs the collection of glyphs that compose the text
+//                 * candidate
+//                 * @param sheet needed for scale of the context
+//                 * @return true if gap found
+//                 */
+//                private boolean hugeGapBetweenParts (Glyph compound)
+//                {
+//                    if (compound.getParts()
+//                                .isEmpty()) {
+//                        return false;
+//                    }
+//
+//                    // Sort glyphs by abscissa
+//                    List<Glyph> glyphs = new ArrayList<Glyph>(
+//                        compound.getParts());
+//                    Collections.sort(glyphs, Glyph.abscissaComparator);
+//
+//                    final Scale scale = new Scale(glyphs.get(0).getInterline());
+//                    final int   maxGap = scale.toPixels(constants.maxTextGap);
+//                    int         gapStart = 0;
+//                    Glyph       prev = null;
+//
+//                    for (Glyph glyph : glyphs) {
+//                        PixelRectangle box = glyph.getContourBox();
+//
+//                        if (prev != null) {
+//                            if ((box.x - gapStart) > maxGap) {
+//                                if (logger.isFineEnabled()) {
+//                                    logger.fine(
+//                                        "huge gap detected between glyphs #" +
+//                                        prev.getId() + " & " + glyph.getId());
+//                                }
+//
+//                                return true;
+//                            }
+//                        }
+//
+//                        prev = glyph;
+//                        gapStart = (box.x + box.width) - 1;
+//                    }
+//
+//                    return false;
+//                }
             };
 
         new Checker("FullTimeSig", FullTimes) {

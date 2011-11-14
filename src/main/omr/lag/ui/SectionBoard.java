@@ -164,7 +164,7 @@ public class SectionBoard
     {
         super(
             Board.SECTION.name +
-            ((lag.getOrientation() == Orientation.VERTICAL) ? "-vert" : "-hori"),
+            ((lag.getOrientation() == Orientation.VERTICAL) ? " Vert" : " Hori"),
             Board.SECTION.position +
             ((lag.getOrientation() == Orientation.VERTICAL) ? 100 : 0),
             lag.getSectionService(),

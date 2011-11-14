@@ -127,8 +127,8 @@ public class RunBoard
     {
         super(
             Board.RUN.name +
-            ((runsTable.getOrientation() == Orientation.VERTICAL) ? "-vert"
-             : "-hori"),
+            ((runsTable.getOrientation() == Orientation.VERTICAL) ? " Vert"
+             : " Hori"),
             Board.RUN.position +
             ((runsTable.getOrientation() == Orientation.VERTICAL) ? 100 : 0),
             runsTable.getRunService(),

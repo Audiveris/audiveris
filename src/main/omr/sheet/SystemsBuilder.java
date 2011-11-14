@@ -112,6 +112,8 @@ public class SystemsBuilder
     {
         try {
             doBuildSystems();
+        } catch (Throwable ex) {
+            logger.warning("Error in buildSystems", ex);
         } finally {
             // Provide use checkboard for barlines
             if (Main.getGui() != null) {

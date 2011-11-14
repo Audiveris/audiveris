@@ -115,24 +115,19 @@ public class GlyphsBuilder
     // addGlyph //
     //----------//
     /**
-     * Add a brand new glyph as an active glyph in proper system and lag.
-     * It does not check if the glyph has an assigned shape.
-     * If the glyph is a compound, its parts are made pointing back to it and
-     * are made no longer active glyphs.
-     *
+     * Add a brand new glyph as an active glyph in proper system and nest.
+     * 'Active' means that all member sections are set to point back to the
+     * containing glyph.
      * @param glyph the brand new glyph
      * @return the original glyph as inserted in the glyph nest
      */
     public Glyph addGlyph (Glyph glyph)
     {
-        // Get rid of composing parts if any
-        for (Glyph part : glyph.getParts()) {
-            part.setPartOf(glyph);
-            part.setShape(Shape.GLYPH_PART);
-            removeGlyph(part);
-        }
+        glyph = nest.addGlyph(glyph);
 
-        return registerGlyph(glyph);
+        system.addToGlyphsCollection(glyph);
+
+        return glyph;
     }
 
     //------------//
@@ -154,7 +149,7 @@ public class GlyphsBuilder
     //------------//
     /**
      * Build a glyph from a collection of sections, with a link back from the
-     * sections to the glyph
+     * sections to the glyph.
      * @param scale the context scale
      * @param sections the provided members of the future glyph
      * @return the newly built glyph
@@ -176,7 +171,7 @@ public class GlyphsBuilder
     //------------------------//
     /**
      * Make a new glyph out of a collection of (sub) glyphs, by merging all
-     *
+     * their member sections.
      * @param parts the collection of (sub) glyphs
      * @return the brand new (compound) glyph
      */
@@ -189,12 +184,7 @@ public class GlyphsBuilder
             sections.addAll(part.getMembers());
         }
 
-        Glyph compound = buildTransientGlyph(sections);
-
-        // Register (a copy of) the parts in the compound itself
-        compound.setParts(parts);
-
-        return compound;
+        return buildTransientGlyph(sections);
     }
 
     //---------------------//
@@ -202,7 +192,6 @@ public class GlyphsBuilder
     //---------------------//
     /**
      * Make a new transient glyph out of a collection of sections.
-     *
      * @param sections the collection of sections
      * @return the brand new transientglyph
      */
@@ -233,8 +222,7 @@ public class GlyphsBuilder
     //----------------------//
     /**
      * Compute all the features that will be used to recognize the glyph at hand
-     * (it's a mix of moments plus a few other characteristics)
-     *
+     * (it's a mix of moments plus a few other characteristics).
      * @param glyph the glyph at hand
      */
     public void computeGlyphFeatures (Glyph glyph)
@@ -279,7 +267,8 @@ public class GlyphsBuilder
     //---------------//
     /**
      * Just register this glyph (as inactive) in order to persist glyph info
-     * such as TextInfo. Use {@link #addGlyph} to fully add the glpyh as active.
+     * such as TextInfo.
+     * Use {@link #addGlyph} instead to fully add the glyph as active.
      * @param glyph the glyph to just register
      * @return the proper (original) glyph
      * @see #addGlyph
@@ -287,7 +276,7 @@ public class GlyphsBuilder
     public Glyph registerGlyph (Glyph glyph)
     {
         // Insert in nest, which assigns an id to the glyph
-        Glyph oldGlyph = nest.addGlyph(glyph);
+        Glyph oldGlyph = nest.registerGlyph(glyph);
 
         system.addToGlyphsCollection(oldGlyph);
 
@@ -299,7 +288,6 @@ public class GlyphsBuilder
     //-------------//
     /**
      * Remove a glyph from the containing system glyph list.
-     *
      * @param glyph the glyph to remove
      */
     public void removeGlyph (Glyph glyph)
@@ -481,7 +469,7 @@ public class GlyphsBuilder
         if (!section.isProcessed()) {
             section.setProcessed(true);
 
-            glyph.addSection(section, Glyph.Linking.LINK_BACK);
+            glyph.addSection(section, Glyph.Linking.NO_LINK_BACK);
 
             // Add recursively all linked sections in the lag
 

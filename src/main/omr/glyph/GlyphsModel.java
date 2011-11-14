@@ -206,9 +206,6 @@ public class GlyphsModel
                         glyph.setNest(g.getNest());
                     }
                 }
-
-                // Register (a copy of) the parts in the compound itself
-                glyph.setParts(glyphs);
             }
 
             assignGlyph(glyph, shape, grade);

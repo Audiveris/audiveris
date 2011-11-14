@@ -90,7 +90,8 @@ public class LeftOverPattern
                         "LeftOver glyph#" + glyph.getId() + " Vote: " + vote);
                 }
 
-                glyph.setShape(vote.shape, vote.grade);
+                glyph = system.addGlyph(glyph);
+                glyph.setEvaluation(vote);
                 successNb++;
             }
         }

@@ -147,12 +147,20 @@ public interface Nest
     boolean isVip (Glyph glyph);
 
     /**
-     * Add a glyph in the graph, making sure we do not duplicate any existing
-     * glyph (a glyph being really defined by the set of its member sections)
+     * Register a glyph and make sure all its member sections point back to it.
      * @param glyph the glyph to add to the nest
      * @return the actual glyph (already existing or brand new)
      */
     Glyph addGlyph (Glyph glyph);
+
+    /**
+     * Simply register a glyph in the graph, making sure we do not duplicate
+     * any existing glyph (a glyph being really defined by the set of its member
+     * sections)
+     * @param glyph the glyph to add to the nest
+     * @return the actual glyph (already existing or brand new)
+     */
+    Glyph registerGlyph (Glyph glyph);
 
     /**
      * Print out major internal info about this glyph nest.

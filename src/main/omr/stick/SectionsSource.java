@@ -108,8 +108,7 @@ public class SectionsSource
     // hasNext //
     //---------//
     /**
-     * Check whether we have more sections to scan
-     *
+     * Check whether we have more sections to scan.
      * @return the boolean result of the test
      */
     public boolean hasNext ()
@@ -125,7 +124,7 @@ public class SectionsSource
                     relation.role = null; // Safer ?
                 }
 
-                section.setGlyph(null); // Safer ?
+                section.setGlyph(null);
 
                 return true;
             }
