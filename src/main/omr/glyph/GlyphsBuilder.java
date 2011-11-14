@@ -374,8 +374,8 @@ public class GlyphsBuilder
     //--------------------//
     // checkDashIntersect //
     //--------------------//
-    private boolean checkDashIntersect (List<Glyph>    items,
-                                        PixelRectangle box)
+    private boolean checkDashIntersect (Iterable<Glyph> items,
+                                        PixelRectangle  box)
     {
         for (Glyph item : items) {
             if (item.getContourBox()

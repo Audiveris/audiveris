@@ -40,8 +40,6 @@ import omr.selection.GlyphEvent;
 import omr.selection.MouseMovement;
 import omr.selection.UserEvent;
 
-import omr.sheet.BarsChecker.BarCheckSuite;
-
 import omr.step.Step;
 import omr.step.StepException;
 
@@ -131,15 +129,8 @@ public class HorizontalsBuilder
     /** Total check suite for ledger */
     private ArrayList<CheckSuite<Glyph>> ledgerList;
 
-    //
-    //    /** The related view if any */
-    //    private GlyphLagView lagView;
-
     /** The current collection of ledger candidates */
     private final List<GlyphContext> ledgerCandidates = new ArrayList<GlyphContext>();
-
-    /** Ledgers found */
-    private final List<Glyph> ledgers;
 
     /** Tenuto signs found */
     private final List<Glyph> tenutos;
@@ -169,7 +160,6 @@ public class HorizontalsBuilder
         scale = system.getSheet()
                       .getScale();
 
-        ledgers = system.getLedgers();
         tenutos = system.getTenutos();
         endings = system.getEndings();
 
@@ -675,7 +665,8 @@ public class HorizontalsBuilder
     //----------//
     private void feedback ()
     {
-        int           nl = ledgers.size();
+        int           nl = system.getLedgers()
+                                 .size();
         int           nt = tenutos.size();
         int           ne = endings.size();
 
@@ -861,7 +852,6 @@ public class HorizontalsBuilder
             Ledger ledger = new Ledger(glyph, context.staff, index);
             glyph.setTranslation(ledger);
             context.staff.addLedger(ledger);
-            ledgers.add(glyph);
             glyph.setShape(Shape.LEDGER);
             found++;
 

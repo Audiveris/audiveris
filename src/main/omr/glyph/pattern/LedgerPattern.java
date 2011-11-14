@@ -148,6 +148,9 @@ public class LedgerPattern
 
                             glyph.setShape(null);
                             glyph.clearTranslations();
+                            system.removeFromLedgersCollection(ledger);
+                            it.remove();
+                            nb++;
 
                             // Nullify neighbors evaluations, since they may have
                             // been biased by ledger presence
@@ -156,8 +159,6 @@ public class LedgerPattern
                             //                                    g.resetEvaluation();
                             //                                }
                             //                            }
-                            it.remove();
-                            nb++;
                         }
                     }
                 }

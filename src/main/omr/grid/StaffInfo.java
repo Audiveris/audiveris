@@ -593,6 +593,9 @@ public class StaffInfo
         }
 
         ledgerSet.add(ledger);
+        scoreStaff.getSystem()
+                  .getInfo()
+                  .addToLedgersCollection(ledger);
     }
 
     //---------//

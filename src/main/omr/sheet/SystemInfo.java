@@ -441,12 +441,12 @@ public class SystemInfo
     // getLedgers //
     //------------//
     /**
-     * Report the collection of ledgers found
+     * Report non-modifiable view of ledgers found
      * @return the ledger collection
      */
     public List<Glyph> getLedgers ()
     {
-        return ledgers;
+        return Collections.unmodifiableList(ledgers);
     }
 
     //---------//
@@ -562,7 +562,7 @@ public class SystemInfo
     //----------------//
     /**
      * Given a note, retrieve the proper related staff within the system, using
-     * ledgers if any
+     * ledgers if any.
      *
      * @param point the center of the provided note entity
      * @return the proper note position (staff & pitch)
@@ -800,6 +800,18 @@ public class SystemInfo
     public void addToGlyphsCollection (Glyph glyph)
     {
         glyphs.add(glyph);
+    }
+
+    //------------------------//
+    // addToLedgersCollection //
+    //------------------------//
+    /**
+     * This is a private entry meant for StaffInfo only.
+     * @param glyph the glyph to add to the system glyph collection
+     */
+    public void addToLedgersCollection (Ledger ledger)
+    {
+        ledgers.add(ledger.getStick());
     }
 
     //------------------------//
@@ -1205,6 +1217,18 @@ public class SystemInfo
     public boolean removeFromGlyphsCollection (Glyph glyph)
     {
         return glyphs.remove(glyph);
+    }
+
+    //-----------------------------//
+    // removeFromLedgersCollection //
+    //-----------------------------//
+    /**
+     * This is a private entry meant for StaffInfo only.
+     * @param glyph the glyph to add to the system glyph collection
+     */
+    public void removeFromLedgersCollection (Ledger ledger)
+    {
+        ledgers.remove(ledger.getStick());
     }
 
     //-------------//
