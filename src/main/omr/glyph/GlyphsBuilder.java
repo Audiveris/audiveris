@@ -560,17 +560,16 @@ public class GlyphsBuilder
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** Box heightening to check intersection with ledger */
         Scale.Fraction ledgerHeighten = new Scale.Fraction(
             0.1,
             "Box heightening to check intersection with ledger");
 
-        /** Box widening to check intersection with stem */
+        //
         Scale.Fraction stemWiden = new Scale.Fraction(
-            0.15,
+            0.1,
             "Box widening to check intersection with stem");
 
-        /** Box heightening to check intersection with stem */
+        //
         Scale.Fraction stemHeighten = new Scale.Fraction(
             0.2,
             "Box heightening to check intersection with stem");
