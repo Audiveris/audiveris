@@ -231,6 +231,14 @@ public class ShapeRange
         F_CLEF_OTTAVA_ALTA,
         F_CLEF_OTTAVA_BASSA);
 
+    static {
+        // Make sure all the shape colors are defined
+        ShapeRange.defineAllShapeColors();
+
+        // Debug
+        ///dumpShapeColors();
+    }
+
     //~ Instance fields --------------------------------------------------------
 
     /** Name of the range */
@@ -327,8 +335,7 @@ public class ShapeRange
     // setConstantColor //
     //------------------//
     /**
-     * Define a specific color for the range
-     *
+     * Define a specific color for the range.
      * @param color the specified color
      */
     public void setConstantColor (Color color)

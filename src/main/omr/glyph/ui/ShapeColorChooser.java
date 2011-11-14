@@ -14,6 +14,8 @@ package omr.glyph.ui;
 import omr.glyph.Shape;
 import omr.glyph.ShapeRange;
 
+import omr.log.Logger;
+
 import omr.ui.MainGui;
 
 import omr.util.Implement;
@@ -47,14 +49,14 @@ import javax.swing.event.ChangeListener;
  * choose proper color for each glyph shape. It is derived from the Sun Java
  * tutorial ColorChooserDemo.
  *
- * <p>The lower part of the panel is used by a classic color chooser
+ * <p>The right part of the panel is used by a classic color chooser
  *
- * <p>The upper part of the panel is used by the shape at hand, with a way to
+ * <p>The left part of the panel is used by the shape at hand, with a way to
  * browse through the various defined shapes.
  *
  * <p>The strategy is the following: First the predefined shape ranges (such as
  * "Physicals", "Bars", "Clefs", ...) have their own color defined. Then, each
- * individual shpae within these shape ranges has its color assigned by default
+ * individual shape within these shape ranges has its color assigned by default
  * to the color of the containing range, unless a color is specifically assigned
  * to this individual shape.
  *
@@ -65,15 +67,27 @@ public class ShapeColorChooser
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(
+        ShapeColorChooser.class);
     private static JFrame frame;
 
     //~ Instance fields --------------------------------------------------------
 
-    private Color         chosenColor;
+    /** The classic color chooser utility */
     private JColorChooser colorChooser;
-    private JPanel        component;
-    private RangesPane    ranges;
-    private ShapesPane    shapes;
+
+    /** Color chosen in the JColorChooser utility */
+    private Color chosenColor;
+
+    /** UI component */
+    private JPanel component;
+
+    /** To select shape range */
+    private RangesPane ranges;
+
+    /** To select shape (within selected range) */
+    private ShapesPane shapes;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -99,14 +113,13 @@ public class ShapeColorChooser
         globalPanel.setPreferredSize(new Dimension(400, 400));
 
         // Color chooser
-        colorChooser = new JColorChooser( /*banner.getForeground()*/
-        );
+        colorChooser = new JColorChooser();
         colorChooser.getSelectionModel()
                     .addChangeListener(this);
         colorChooser.setBorder(
             BorderFactory.createTitledBorder("Choose Shape Color"));
 
-        component.add(globalPanel, BorderLayout.WEST);
+        component.add(globalPanel, BorderLayout.CENTER);
         component.add(colorChooser, BorderLayout.EAST);
     }
 
@@ -116,7 +129,7 @@ public class ShapeColorChooser
     // showFrame //
     //-----------//
     /**
-     * Display the UI frame
+     * Display the UI frame.
      */
     public static void showFrame ()
     {
@@ -143,15 +156,14 @@ public class ShapeColorChooser
     // stateChanged //
     //--------------//
     /**
-     * Triggered when color selection in the color choose has changed.
-     *
+     * Triggered when color selection in the color chooser has changed.
      * @param e not used
      */
     @Implement(ChangeListener.class)
     public void stateChanged (ChangeEvent e)
     {
         chosenColor = colorChooser.getColor();
-
+        ///logger.info("chosenColor: " + chosenColor);
         ranges.colorChanged();
         shapes.colorChanged();
     }
@@ -334,7 +346,7 @@ public class ShapeColorChooser
                 // Check if a specific color is assigned
                 Color color = current.getColor();
 
-                if (color != null) {
+                if (color == ranges.current.getColor()) {
                     prepareDefaultOption();
                     refreshBanner();
                 } else {
@@ -346,10 +358,7 @@ public class ShapeColorChooser
 
         private CopyAction   copy = new CopyAction();
         private CutAction    cut = new CutAction();
-        private JButton      copyButton = new JButton(copy);
-        private JButton      cutButton = new JButton(cut);
         private PasteAction  paste = new PasteAction();
-        private JButton      pasteButton = new JButton(paste);
         private SelectAction select = new SelectAction();
         private JButton      selectButton = new JButton(select);
         private boolean      isSpecific;
@@ -368,9 +377,9 @@ public class ShapeColorChooser
 
             // A series of 3 buttons at the bottom
             JPanel buttons = new JPanel(new GridLayout(1, 3));
-            buttons.add(cutButton);
-            buttons.add(copyButton);
-            buttons.add(pasteButton);
+            buttons.add(new JButton(cut));
+            buttons.add(new JButton(copy));
+            buttons.add(new JButton(paste));
             add(buttons, BorderLayout.SOUTH);
 
             cut.setEnabled(false);
@@ -391,9 +400,9 @@ public class ShapeColorChooser
 
             current = null;
             banner.setText("");
-            cutButton.setEnabled(false);
-            copyButton.setEnabled(false);
-            pasteButton.setEnabled(false);
+            cut.setEnabled(false);
+            copy.setEnabled(false);
+            paste.setEnabled(false);
         }
 
         // When color chooser selection has been made
@@ -483,7 +492,7 @@ public class ShapeColorChooser
             public void actionPerformed (ActionEvent e)
             {
                 // Drop specific for default
-                current.setColor(ranges.current.getColor()); 
+                current.setColor(ranges.current.getColor());
 
                 prepareSpecificOption();
 
@@ -507,7 +516,7 @@ public class ShapeColorChooser
             public void actionPerformed (ActionEvent e)
             {
                 // Set a specific color
-                current.setColor(chosenColor);
+                current.setConstantColor(chosenColor);
 
                 prepareDefaultOption();
 

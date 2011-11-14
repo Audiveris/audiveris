@@ -555,14 +555,6 @@ public enum Shape {
     /** Last physical shape */
     public static final Shape LAST_PHYSICAL_SHAPE = PEDAL_UP_MARK;
 
-    static {
-        // Make sure all the shape colors are defined
-        ShapeRange.defineAllShapeColors();
-
-        // Debug
-        ///dumpShapeColors();
-    }
-
     /** A comparator based on shape name */
     public static Comparator<Shape> alphaComparator = new Comparator<Shape>() {
         public int compare (Shape o1,
@@ -596,6 +588,9 @@ public enum Shape {
     /** Potential related physical shape */
     private Shape physicalShape;
 
+    /** Related permanent color */
+    private Constant.Color constantColor;
+
     //--------------------------------------------------------------------------
 
     //-------//
@@ -622,6 +617,13 @@ public enum Shape {
     {
         this.description = description;
         this.physicalShape = physicalShape;
+
+        // Create the underlying constant
+        constantColor = new Constant.Color(
+            getClass().getName(), // Unit
+            name() + ".color", // Name
+            "#000000", // DefaultValue: Black
+            "Color for shape " + name());
     }
 
     //--------------------------------------------------------------------------
@@ -767,17 +769,23 @@ public enum Shape {
     }
 
     //------------------//
+    // setConstantColor //
+    //------------------//
+    /**
+     * Define a specific color for the shape.
+     * @param color the specified color
+     */
+    public void setConstantColor (Color color)
+    {
+        constantColor.setValue(color);
+        setColor(color);
+    }
+
+    //------------------//
     // createShapeColor //
     //------------------//
     void createShapeColor (Color color)
     {
-        // Create the underlying constant
-        Constant.Color constantColor = new Constant.Color(
-            getClass().getName(), // Unit
-            name() + ".color", // Name
-            "#000000", // DefaultValue: Black
-            "Color for shape " + name());
-
         // Assign the shape display color
         if (!constantColor.isSourceValue()) {
             setColor(constantColor.getValue()); // Use the shape specific color
