@@ -109,7 +109,6 @@ public class PagePhysicalPainter
     //----------//
     /**
      * Draw a time slot in the score display.
-     *
      * @param wholeSystem if true, the slot will embrace the whole system,
      * otherwise only the part is embraced
      * @param measure the containing measure
@@ -133,23 +132,30 @@ public class PagePhysicalPainter
                 // Draw for the whole system height
                 system = measure.getSystem();
 
-                final PixelDimension systemDimension = system.getDimension();
-                g.drawLine(
-                    x,
-                    system.getTopLeft().y,
-                    x,
-                    system.getTopLeft().y + systemDimension.height +
-                    system.getLastPart().getLastStaff().getHeight());
+                int top = system.getFirstPart()
+                                .getFirstStaff()
+                                .getInfo()
+                                .getFirstLine()
+                                .yAt(x);
+                int bottom = system.getLastPart()
+                                   .getLastStaff()
+                                   .getInfo()
+                                   .getLastLine()
+                                   .yAt(x);
+
+                g.drawLine(x, top, x, bottom);
             } else {
                 // Draw for just the part height
                 SystemPart part = measure.getPart();
-                Staff      firstStaff = part.getFirstStaff();
-                Staff      lastStaff = part.getLastStaff();
-                g.drawLine(
-                    x,
-                    firstStaff.getTopLeft().y,
-                    x,
-                    lastStaff.getTopLeft().y + lastStaff.getHeight());
+                int        top = part.getFirstStaff()
+                                     .getInfo()
+                                     .getFirstLine()
+                                     .yAt(x);
+                int        bottom = part.getLastStaff()
+                                        .getInfo()
+                                        .getLastLine()
+                                        .yAt(x);
+                g.drawLine(x, top, x, bottom);
 
                 // Draw slot start time
                 Rational slotStartTime = slot.getStartTime();
@@ -157,9 +163,7 @@ public class PagePhysicalPainter
                 if (slotStartTime != null) {
                     paint(
                         basicLayout(slotStartTime.toString(), halfAT),
-                        new PixelPoint(
-                            x,
-                            firstStaff.getTopLeft().y - annotationDy),
+                        new PixelPoint(x, top - annotationDy),
                         BOTTOM_CENTER);
                 }
             }
@@ -281,8 +285,8 @@ public class PagePhysicalPainter
                         basicLayout(measure.getScoreId(), null),
                         new PixelPoint(
                             measure.getLeftX(),
-                            measure.getPart().getFirstStaff().getTopLeft().y -
-                            annotationDy),
+                            measure.getPart().getFirstStaff().getInfo().getFirstLine().yAt(
+                                measure.getLeftX()) - annotationDy),
                         BOTTOM_CENTER);
                 }
 

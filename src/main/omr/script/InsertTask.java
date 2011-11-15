@@ -223,15 +223,9 @@ public class InsertTask
                 sheet.getScale().interline(),
                 location);
 
-            //            if (orientation == Orientation.VERTICAL) {
             SystemInfo system = sheet.getSystemOf(glyph.getAreaCenter());
             glyph = system.addGlyph(glyph);
             system.computeGlyphFeatures(glyph);
-            //            } else {
-            //                sheet.getNest()
-            //                     .addGlyph(glyph);
-            //            }
-            glyph.dump();
 
             glyphs.add(glyph);
         }
