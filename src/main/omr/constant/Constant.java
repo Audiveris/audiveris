@@ -64,9 +64,6 @@ public abstract class Constant
     // Data assigned at ConstantSet initMap time
     //------------------------------------------
 
-    /** Enclosing unit (module) */
-    private java.lang.String unit;
-
     /** Name of the Constant */
     private volatile java.lang.String name;
 
@@ -278,7 +275,6 @@ public abstract class Constant
         //        System.out.println(
         //            Thread.currentThread().getName() + ": " + "Assigning unit:" + unit +
         //            " name:" + name);
-        this.unit = unit;
         this.name = name;
 
         final java.lang.String qName = (unit != null) ? (unit + "." + name) : name;
@@ -358,14 +354,13 @@ public abstract class Constant
     //----------//
     /**
      * Used by ConstantTreeTable to display the name of the constant, so only
-     * the unqualified name is returned
-     *
+     * the unqualified name is returned.
      * @return the (unqualified) constant name
      */
     @Override
     public java.lang.String toString ()
     {
-        return name;
+        return (name != null) ? name : " *no name*";
     }
 
     //--------//

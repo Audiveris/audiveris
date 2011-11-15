@@ -48,17 +48,13 @@ public class ParametersTask
     @XmlAttribute(name = "foreground")
     private Integer foreground;
 
-    /** Histogram percentage for staves */
-    @XmlAttribute(name = "histo-ratio")
-    private Double histoRatio;
-
     /** Language code */
     @XmlAttribute(name = "language")
     private String language;
 
     /** Slot horizontal margin */
-    @XmlElement(name = "slot-margin")
-    private Scale.Fraction slotMargin;
+    @XmlAttribute(name = "slot-margin")
+    private Double slotMargin;
 
     /** Slot policy */
     @XmlAttribute(name = "slot-policy")
@@ -79,7 +75,6 @@ public class ParametersTask
     /** Remember if we have changed these items */
     private boolean foregroundChanged;
     private boolean languageChanged;
-    private boolean histoRatioChanged;
     private boolean slotChanged;
 
     //~ Constructors -----------------------------------------------------------
@@ -105,17 +100,6 @@ public class ParametersTask
         this.foreground = foreground;
     }
 
-    //---------------//
-    // setHistoRatio //
-    //---------------//
-    /**
-     * @param ratio the percentage of histogram for staves
-     */
-    public void setHistoRatio (double ratio)
-    {
-        histoRatio = ratio;
-    }
-
     //-------------//
     // setLanguage //
     //-------------//
@@ -135,7 +119,7 @@ public class ParametersTask
      */
     public void setSlotMargin (double slotMargin)
     {
-        this.slotMargin = new Scale.Fraction(slotMargin, null);
+        this.slotMargin = slotMargin;
     }
 
     //---------------//
@@ -206,39 +190,27 @@ public class ParametersTask
             }
         }
 
-        // Histo Frac
-        if (histoRatio != null) {
-            if (!sheet.hasHistoRatio() ||
-                (!histoRatio.equals(sheet.getHistoRatio()))) {
-                sheet.setHistoRatio(histoRatio);
-                sb.append(" histoRatio:")
-                  .append(histoRatio);
-                histoRatioChanged = true;
+        // Slot policy
+        if (slotPolicy != null) {
+            if (!score.hasSlotPolicy() ||
+                !slotPolicy.equals(score.getSlotPolicy())) {
+                score.setSlotPolicy(slotPolicy);
+                sb.append(" slotPolicy:")
+                  .append(slotPolicy);
+                slotChanged = true;
             }
         }
 
-        //TODO
-        //        // Slot policy
-        //        if (slotPolicy != null) {
-        //            if (!score.hasSlotPolicy() ||
-        //                !slotPolicy.equals(score.getSlotPolicy())) {
-        //                score.setSlotPolicy(slotPolicy);
-        //                sb.append(" slotPolicy:")
-        //                  .append(slotPolicy);
-        //                slotChanged = true;
-        //            }
-        //        }
-        //
-        //        // Slot margin
-        //        if (slotMargin != null) {
-        //            if (!score.hasSlotMargin() ||
-        //                !slotMargin.equals(score.getSlotMargin())) {
-        //                score.setSlotMargin(slotMargin);
-        //                sb.append(" slotMargin:")
-        //                  .append(slotMargin);
-        //                slotChanged = true;
-        //            }
-        //        }
+        // Slot margin
+        if (slotMargin != null) {
+            if (!score.hasSlotMargin() ||
+                !slotMargin.equals(score.getSlotMargin())) {
+                score.setSlotMargin(slotMargin);
+                sb.append(" slotMargin:")
+                  .append(slotMargin);
+                slotChanged = true;
+            }
+        }
 
         // Language
         if (language != null) {
@@ -342,11 +314,6 @@ public class ParametersTask
         if (foreground != null) {
             sb.append(" foreground:")
               .append(foreground);
-        }
-
-        if (histoRatio != null) {
-            sb.append(" histoRatio:")
-              .append(histoRatio);
         }
 
         if (slotPolicy != null) {

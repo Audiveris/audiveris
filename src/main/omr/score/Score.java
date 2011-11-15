@@ -26,11 +26,13 @@ import omr.score.entity.MeasureId.MeasureRange;
 import omr.score.entity.Page;
 import omr.score.entity.ScoreNode;
 import omr.score.entity.ScorePart;
+import omr.score.entity.SlotPolicy;
 import omr.score.ui.ScoreTree;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.script.Script;
 
+import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.picture.PictureLoader;
 import omr.sheet.ui.SheetsController;
@@ -38,7 +40,6 @@ import omr.sheet.ui.SheetsController;
 import omr.step.StepException;
 
 import omr.util.FileUtil;
-import omr.util.StopWatch;
 import omr.util.TreeNode;
 
 import java.awt.image.RenderedImage;
@@ -51,7 +52,7 @@ import java.util.SortedMap;
 import javax.swing.JFrame;
 
 /**
- * Class <code>Score</code> handles a score hierarchy, composed of one or
+ * Class {@code Score} handles a score hierarchy, composed of one or
  * several pages.
  *
  * @author Hervé Bitteur
@@ -120,6 +121,12 @@ public class Score
     /** The script of user actions on this score */
     private Script script;
 
+    /** The (score) slot policy */
+    private SlotPolicy slotPolicy;
+
+    /** The (score) slot horizontal margin, expressed in interline fraction */
+    private Double slotMargin;
+
     //~ Constructors -----------------------------------------------------------
 
     //-------//
@@ -127,7 +134,6 @@ public class Score
     //-------//
     /**
      * Create a Score with a path to an input image file.
-     *
      * @param imageFile the input image file (which may contain several images)
      */
     public Score (File imageFile)
@@ -151,7 +157,7 @@ public class Score
     // getBench //
     //----------//
     /**
-     * Report the related sheet bench
+     * Report the related sheet bench.
      * @return the related bench
      */
     public ScoreBench getBench ()
@@ -163,8 +169,8 @@ public class Score
     // getBrowserFrame //
     //-----------------//
     /**
-     * Create a dedicated frame, where all score elements can be browsed in the
-     * tree hierarchy
+     * Create a dedicated frame, where all score elements can be
+     * browsed in the tree hierarchy.
      * @return the created frame
      */
     public JFrame getBrowserFrame ()
@@ -177,12 +183,59 @@ public class Score
         return scoreTree.getFrame();
     }
 
+    //----------------------//
+    // setDefaultSlotMargin //
+    //----------------------//
+    /**
+     * Assign the default slot margin.
+     * @param fraction the horizontal margin, expressed in interline fraction
+     */
+    public static void setDefaultSlotMargin (double fraction)
+    {
+        constants.defaultSlotMargin.setValue(fraction);
+    }
+
+    //----------------------//
+    // getDefaultSlotMargin //
+    //----------------------//
+    /**
+     * Report the default horizontal Slot margin.
+     * @return the slotMargin (in interline fraction)
+     */
+    public static double getDefaultSlotMargin ()
+    {
+        return constants.defaultSlotMargin.getValue();
+    }
+
+    //----------------------//
+    // setDefaultSlotPolicy //
+    //----------------------//
+    /**
+     * Assign the default slot policy.
+     * @param slotPolicy the slot policy
+     */
+    public static void setDefaultSlotPolicy (SlotPolicy slotPolicy)
+    {
+        constants.defaultSlotPolicy.setValue(slotPolicy);
+    }
+
+    //----------------------//
+    // getDefaultSlotPolicy //
+    //----------------------//
+    /**
+     * Report the default policy to be used for retrieval of time slots.
+     * @return the default time slot policy
+     */
+    public static SlotPolicy getDefaultSlotPolicy ()
+    {
+        return constants.defaultSlotPolicy.getValue();
+    }
+
     //-----------------//
     // setDefaultTempo //
     //-----------------//
     /**
-     * Assign default value for Midi tempo
-     *
+     * Assign default value for Midi tempo.
      * @param tempo the default tempo value
      */
     public static void setDefaultTempo (int tempo)
@@ -194,8 +247,7 @@ public class Score
     // getDefaultTempo //
     //-----------------//
     /**
-     * Report default value for Midi tempo
-     *
+     * Report default value for Midi tempo.
      * @return the default tempo value
      */
     public static int getDefaultTempo ()
@@ -207,8 +259,7 @@ public class Score
     // setDefaultVolume //
     //------------------//
     /**
-     * Assign default value for Midi volume
-     *
+     * Assign default value for Midi volume.
      * @param volume the default volume value
      */
     public static void setDefaultVolume (int volume)
@@ -220,8 +271,7 @@ public class Score
     // getDefaultVolume //
     //------------------//
     /**
-     * Report default value for Midi volume (volume)
-     *
+     * Report default value for Midi volume.
      * @return the default volume value
      */
     public static int getDefaultVolume ()
@@ -233,9 +283,8 @@ public class Score
     // setDurationDivisor //
     //--------------------//
     /**
-     * Remember the common divisor used for this score when simplifying the
-     * durations
-     *
+     * Remember the common divisor used for this score when 
+     * simplifying the durations.
      * @param durationDivisor the computed divisor (GCD), or null
      */
     public void setDurationDivisor (Integer durationDivisor)
@@ -247,9 +296,8 @@ public class Score
     // getDurationDivisor //
     //--------------------//
     /**
-     * Report the common divisor used for this score when simplifying the
-     * durations
-     *
+     * Report the common divisor used for this score when 
+     * simplifying the durations.
      * @return the computed divisor (GCD), or null if not computable
      */
     public Integer getDurationDivisor ()
@@ -265,7 +313,7 @@ public class Score
     // setExportFile //
     //---------------//
     /**
-     * Remember to which file the score is to be exported
+     * Remember to which file the score is to be exported.
      * @param exportFile the exported xml file
      */
     public void setExportFile (File exportFile)
@@ -277,7 +325,7 @@ public class Score
     // getExportFile //
     //---------------//
     /**
-     * Report to which file, if any, the score is to be exported
+     * Report to which file, if any, the score is to be exported.
      * @return the exported xml file, or null
      */
     public File getExportFile ()
@@ -313,7 +361,6 @@ public class Score
     //--------------//
     /**
      * Report the (canonical) file name of the score image(s).
-     *
      * @return the file name
      */
     public String getImagePath ()
@@ -325,7 +372,7 @@ public class Score
     // setLanguage //
     //-------------//
     /**
-     * Set the score dominant language
+     * Set the score dominant language.
      * @param language the dominant language
      */
     public void setLanguage (String language)
@@ -337,7 +384,7 @@ public class Score
     // getLanguage //
     //-------------//
     /**
-     * Report the dominant language in the score text
+     * Report the dominant language in the score text.
      * If the value is not yet set, it is set to the default value and returned.
      * @return the dominant language
      */
@@ -366,8 +413,8 @@ public class Score
     // getMeasureIdOffset //
     //--------------------//
     /**
-     * Report the offset to add to page-based measure ids of the provided page
-     * to get absolute (score-based) ids
+     * Report the offset to add to page-based measure ids of the
+     * provided page to get absolute (score-based) ids.
      * @param page the provided page
      * @return the measure id offset for the page
      */
@@ -399,8 +446,8 @@ public class Score
     // getMeasureOffset //
     //------------------//
     /**
-     * Report the offset to add to page-based measure index of the provided page
-     * to get absolute (score-based) indices
+     * Report the offset to add to page-based measure index of the
+     * provided page to get absolute (score-based) indices.
      * @param page the provided page
      * @return the measure index offset for the page
      */
@@ -425,8 +472,7 @@ public class Score
     // setMeasureRange //
     //-----------------//
     /**
-     * Remember a range of measure for this score
-     *
+     * Remember a range of measure for this score.
      * @param measureRange the range of selected measures
      */
     public void setMeasureRange (MeasureRange measureRange)
@@ -438,8 +484,7 @@ public class Score
     // getMeasureRange //
     //-----------------//
     /**
-     * Report the potential range of selected measures
-     *
+     * Report the potential range of selected measures.
      * @return the selected measure range, perhaps null
      */
     public MeasureRange getMeasureRange ()
@@ -451,7 +496,7 @@ public class Score
     // setMidiFile //
     //-------------//
     /**
-     * Remember to which file the MIDI data is to be exported
+     * Remember to which file the MIDI data is to be exported.
      * @param midiFile the Midi file
      */
     public void setMidiFile (File midiFile)
@@ -463,7 +508,7 @@ public class Score
     // getMidiFile //
     //-------------//
     /**
-     * Report to which file, if any, the MIDI data is to be exported
+     * Report to which file, if any, the MIDI data is to be exported.
      * @return the Midi file, or null
      */
     public File getMidiFile ()
@@ -486,7 +531,7 @@ public class Score
     // getPage //
     //---------//
     /**
-     * Report the page with provided page-index
+     * Report the page with provided page-index.
      * @param pageIndex the desired value for page index
      * @return the proper page, or null if not found
      */
@@ -507,8 +552,7 @@ public class Score
     // getPages //
     //----------//
     /**
-     * Report the collection of pages in that score
-     *
+     * Report the collection of pages in that score.
      * @return the pages
      */
     public List<TreeNode> getPages ()
@@ -520,8 +564,7 @@ public class Score
     // setPartList //
     //-------------//
     /**
-     * Assign a part list valid for the whole score
-     *
+     * Assign a part list valid for the whole score.
      * @param partList the list of score parts
      */
     public void setPartList (List<ScorePart> partList)
@@ -533,8 +576,7 @@ public class Score
     // getPartList //
     //-------------//
     /**
-     * Report the global list of parts
-     *
+     * Report the global list of parts.
      * @return partList the list of score parts
      */
     public List<ScorePart> getPartList ()
@@ -546,7 +588,7 @@ public class Score
     // setPrintFile //
     //--------------//
     /**
-     * Remember to which file the sheet PDF data is to be exported
+     * Remember to which file the sheet PDF data is to be exported.
      * @param sheetPdfFile the sheet PDF file
      */
     public void setPrintFile (File sheetPdfFile)
@@ -558,7 +600,7 @@ public class Score
     // getPrintFile //
     //--------------//
     /**
-     * Report to which file, if any, the sheet PDF data is to be written
+     * Report to which file, if any, the sheet PDF data is to be written.
      * @return the sheet PDF file, or null
      */
     public File getPrintFile ()
@@ -570,9 +612,9 @@ public class Score
     // getRadix //
     //----------//
     /**
-     * Report the radix of the file that corresponds to the score. It is based
-     * on the simple file name of the score, with no path and no extension.
-     *
+     * Report the radix of the file that corresponds to the score.
+     * It is based on the simple file name of the score, with no path and no
+     * extension.
      * @return the score input file radix
      */
     public String getRadix ()
@@ -596,7 +638,7 @@ public class Score
     // setScriptFile //
     //---------------//
     /**
-     * Remember the file where the script is written
+     * Remember the file where the script is written.
      * @param scriptFile the related script file
      */
     public void setScriptFile (File scriptFile)
@@ -608,7 +650,7 @@ public class Score
     // getScriptFile //
     //---------------//
     /**
-     * Report the file, if any, where the script should be written
+     * Report the file, if any, where the script should be written.
      * @return the related script file or null
      */
     public File getScriptFile ()
@@ -616,12 +658,64 @@ public class Score
         return scriptFile;
     }
 
+    //---------------//
+    // setSlotMargin //
+    //---------------//
+    /**
+     * Assign the slot margin for this score.
+     * @param fraction the horizontal margin, expressed in interline fraction
+     */
+    public void setSlotMargin (double slotMargin)
+    {
+        this.slotMargin = slotMargin;
+    }
+
+    //---------------//
+    // getSlotMargin //
+    //---------------//
+    /**
+     * Report the current horizontal Slot margin.
+     * If the value is not yet set, it is set to the default value and returned.
+     * @return the slotMargin (in interline fraction)
+     */
+    public double getSlotMargin ()
+    {
+        if (!hasSlotMargin()) {
+            slotMargin = getDefaultSlotMargin();
+        }
+
+        return slotMargin;
+    }
+
+    //---------------//
+    // setSlotPolicy //
+    //---------------//
+    /**
+     * Assign the slot policy for this score.
+     * @param slotPolicy the policy for determining slots
+     */
+    public void setSlotPolicy (SlotPolicy slotPolicy)
+    {
+        this.slotPolicy = slotPolicy;
+    }
+
+    //---------------//
+    // getSlotPolicy //
+    //---------------//
+    /**
+     * Report the policy used for retrieval of time slots in this score.
+     * @return the score time slot policy
+     */
+    public SlotPolicy getSlotPolicy ()
+    {
+        return slotPolicy;
+    }
+
     //----------//
     // setTempo //
     //----------//
     /**
-     * Assign a tempo value
-     *
+     * Assign a tempo value.
      * @param tempo the tempo value to be assigned
      */
     public void setTempo (Integer tempo)
@@ -633,7 +727,7 @@ public class Score
     // getTempo //
     //----------//
     /**
-     * Report the assigned tempo, if any
+     * Report the assigned tempo, if any.
      * If the value is not yet set, it is set to the default value and returned.
      * @return the assigned tempo, or null
      */
@@ -650,8 +744,7 @@ public class Score
     // setVolume //
     //-----------//
     /**
-     * Assign a volume value
-     *
+     * Assign a volume value.
      * @param volume the volume value to be assigned
      */
     public void setVolume (Integer volume)
@@ -663,7 +756,7 @@ public class Score
     // getVolume //
     //-----------//
     /**
-     * Report the assigned volume, if any
+     * Report the assigned volume, if any.
      * If the value is not yet set, it is set to the default value and returned.
      * @return the assigned volume, or null
      */
@@ -689,7 +782,7 @@ public class Score
     // close //
     //-------//
     /**
-     * Close this score instance, as well as its view if any
+     * Close this score instance, as well as its view if any.
      */
     public void close ()
     {
@@ -728,8 +821,8 @@ public class Score
     // createPages //
     //-------------//
     /**
-     * Create as many pages (and related sheets) as there are images in the
-     * input image file
+     * Create as many pages (and related sheets) as there are images
+     * in the input image file.
      */
     public void createPages ()
     {
@@ -782,7 +875,7 @@ public class Score
     // dump //
     //------//
     /**
-     * Dump a whole score hierarchy
+     * Dump a whole score hierarchy.
      */
     public void dump ()
     {
@@ -801,7 +894,7 @@ public class Score
     // hasLanguage //
     //-------------//
     /**
-     * Check whether a language has been defined for this score
+     * Check whether a language has been defined for this score.
      * @return true if a language is defined
      */
     public boolean hasLanguage ()
@@ -809,11 +902,31 @@ public class Score
         return language != null;
     }
 
+    //---------------//
+    // hasSlotMargin //
+    //---------------//
+    /**
+     * Check whether slotMargin is defined for this score.
+     * @return true if slotMargin is defined
+     */
+    public boolean hasSlotMargin ()
+    {
+        return slotMargin != null;
+    }
+
+    //---------------//
+    // hasSlotPolicy //
+    //---------------//
+    public boolean hasSlotPolicy ()
+    {
+        return slotPolicy != null;
+    }
+
     //----------//
     // hasTempo //
     //----------//
     /**
-     * Check whether a tempo has been defined for this score
+     * Check whether a tempo has been defined for this score.
      * @return true if a tempo is defined
      */
     public boolean hasTempo ()
@@ -825,7 +938,7 @@ public class Score
     // hasVolume //
     //-----------//
     /**
-     * Check whether a volumehas been defined for this score
+     * Check whether a volumehas been defined for this score.
      * @return true if a volume is defined
      */
     public boolean hasVolume ()
@@ -849,9 +962,8 @@ public class Score
     // simpleDurationOf //
     //------------------//
     /**
-     * Export a duration to its simplest form, based on the greatest duration
-     * divisor of the score
-     *
+     * Export a duration to its simplest form, based on the greatest
+     * duration divisor of the score.
      * @param value the raw duration
      * @return the simple duration expression, in the context of proper
      * divisions
@@ -865,8 +977,7 @@ public class Score
     // toString //
     //----------//
     /**
-     * Report a readable description
-     *
+     * Report a readable description.
      * @return a string based on its XML file name
      */
     @Override
@@ -883,7 +994,7 @@ public class Score
     // setMultiPage //
     //--------------//
     /**
-     * @param multiPage the multiPage to set
+     * @param multiPage the multiPage to set.
      */
     private void setMultiPage (boolean multiPage)
     {
@@ -900,16 +1011,25 @@ public class Score
     {
         //~ Instance fields ----------------------------------------------------
 
-        // Default Tempo
-        Constant.Integer defaultTempo = new Constant.Integer(
+        Constant.Integer    defaultTempo = new Constant.Integer(
             "QuartersPerMn",
             100,
             "Default tempo, stated in number of quarters per minute");
 
-        // Default Velocity
-        Constant.Integer defaultVolume = new Constant.Integer(
+        //
+        Constant.Integer    defaultVolume = new Constant.Integer(
             "Volume",
             64,
             "Default Volume in 0..127 range");
+
+        //
+        SlotPolicy.Constant defaultSlotPolicy = new SlotPolicy.Constant(
+            SlotPolicy.HEAD_BASED,
+            "Default policy for determining time slots (HEAD_BASED or SLOT_BASED)");
+
+        //
+        Scale.Fraction defaultSlotMargin = new Scale.Fraction(
+            0.5,
+            "Default horizontal margin between a slot and a glyph candidate");
     }
 }

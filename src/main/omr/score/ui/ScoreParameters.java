@@ -111,8 +111,7 @@ public class ScoreParameters
     // ScoreParameters //
     //-----------------//
     /**
-     * Create a ScoreParameters object
-     *
+     * Create a ScoreParameters object.
      * @param score the related score
      */
     public ScoreParameters (Score score)
@@ -126,7 +125,6 @@ public class ScoreParameters
         panes.add(new ScriptPane());
         panes.add(new DnDPane());
         panes.add(new ForegroundPane());
-        panes.add(new HistoPane());
         panes.add(new SlotPane());
         panes.add(new LanguagePane());
         panes.add(new VolumePane());
@@ -521,56 +519,6 @@ public class ScoreParameters
                 (intValue() != Sheet.getDefaultMaxForeground())) {
                 Sheet.setDefaultMaxForeground(intValue());
                 logger.info("Default max foreground is now " + intValue());
-            }
-        }
-    }
-
-    //-----------//
-    // HistoPane //
-    //-----------//
-    /**
-     * Pane to define the histogram threshold used for staff retrieval
-     */
-    private class HistoPane
-        extends SliderPane
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public HistoPane ()
-        {
-            super(
-                "Staff Lines",
-                new LDoubleField(
-                    false,
-                    "Ratio",
-                    "Ratio of horizontal histogram for staff lines",
-                    "%.2f"),
-                0,
-                100,
-                ((score != null) &&
-                                (score.getFirstPage().getSheet().hasHistoRatio()))
-                                ? score.getFirstPage().getSheet().getHistoRatio()
-                                : Sheet.getDefaultHistoRatio());
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public boolean isValid ()
-        {
-            task.setHistoRatio(dblValue());
-
-            return true;
-        }
-
-        @Override
-        public void commit ()
-        {
-            if (defaultBox.isSelected() &&
-                (dblValue() != Sheet.getDefaultHistoRatio())) {
-                logger.info(
-                    "Default lines histogram ratio is now " + dblValue());
-                Sheet.setDefaultHistoRatio(dblValue());
             }
         }
     }
@@ -1206,10 +1154,9 @@ public class ScoreParameters
                     "%.2f"),
                 0,
                 (int) (constants.maxSlotMargin.getValue() * 100),
-                ((score != null) && score.getFirstPage()
-                                         .hasSlotMargin())
-                                ? score.getFirstPage().getSlotMargin().getValue()
-                                : Page.getDefaultSlotMargin().getValue());
+                ((score != null) && score.hasSlotMargin())
+                                ? score.getSlotMargin()
+                                : Score.getDefaultSlotMargin());
             policyCombo = createPolicyCombo();
             policyDefaultBox.setText("Set as default");
             policyDefaultBox.setToolTipText(
@@ -1241,15 +1188,15 @@ public class ScoreParameters
 
             if (policyDefaultBox.isSelected()) {
                 logger.info("Default slot policy is now " + policy);
-                Page.setDefaultSlotPolicy(policy);
+                Score.setDefaultSlotPolicy(policy);
             }
 
             double val = dblValue();
 
             if (defaultBox.isSelected() &&
-                (Math.abs(Page.getDefaultSlotMargin().getValue() - val) > .001)) {
+                (Math.abs(Score.getDefaultSlotMargin() - val) > .001)) {
                 logger.info("Default slot margin is now " + val);
-                Page.setDefaultSlotMargin(val);
+                Score.setDefaultSlotMargin(val);
             }
         }
 
@@ -1275,10 +1222,9 @@ public class ScoreParameters
             combo.setToolTipText("Policy to determine time slots");
 
             combo.setSelectedItem(
-                ((score != null) && score.getFirstPage()
-                                         .hasSlotPolicy())
-                                ? score.getFirstPage().getSlotPolicy()
-                                : Page.getDefaultSlotPolicy());
+                ((score != null) && score.hasSlotPolicy())
+                                ? score.getSlotPolicy()
+                                : Score.getDefaultSlotPolicy());
 
             return combo;
         }

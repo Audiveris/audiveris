@@ -195,12 +195,14 @@ public class ScoreActions
         Score score = ScoreController.getCurrentScore();
 
         if (parametersAreConfirmed(score)) {
-            // Invalidate the midi sequence
+            // Invalidate the midi sequence?
             try {
-                MidiAgent agent = MidiAgentFactory.getAgent();
+                if (MidiAgentFactory.hasAgent()) {
+                    MidiAgent agent = MidiAgentFactory.getAgent();
 
-                if ((agent.getScore() == score) && (score != null)) {
-                    agent.reset();
+                    if ((agent.getScore() == score) && (score != null)) {
+                        agent.reset();
+                    }
                 }
             } catch (Exception ex) {
                 logger.warning("Cannot reset Midi sequence", ex);

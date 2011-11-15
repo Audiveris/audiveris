@@ -62,15 +62,6 @@ public class Page
     /** Page global scale */
     private Scale scale;
 
-    /** Sheet skew angle in radians */
-    private double skewAngle;
-
-    /** The page slot policy */
-    private SlotPolicy slotPolicy;
-
-    /** The page slot horizontal margin, expressed in interline fraction */
-    private Scale.Fraction slotMargin;
-
     /** Average beam thickness, if known */
     private Integer beamThickness;
 
@@ -126,54 +117,6 @@ public class Page
     public Integer getBeamThickness ()
     {
         return beamThickness;
-    }
-
-    //----------------------//
-    // setDefaultSlotMargin //
-    //----------------------//
-    /**
-     * Assign the default slot margin
-     * @param fraction the horizontal margin, expressed in interline fraction
-     */
-    public static void setDefaultSlotMargin (double fraction)
-    {
-        constants.defaultSlotMargin.setValue(fraction);
-    }
-
-    //----------------------//
-    // getDefaultSlotMargin //
-    //----------------------//
-    /**
-     * Report the default horizontal Slot margin
-     * @return the slotMargin (in interline fraction)
-     */
-    public static Scale.Fraction getDefaultSlotMargin ()
-    {
-        return constants.defaultSlotMargin;
-    }
-
-    //----------------------//
-    // setDefaultSlotPolicy //
-    //----------------------//
-    /**
-     * Assign the default slot policy
-     * @param slotPolicy the slot policy
-     */
-    public static void setDefaultSlotPolicy (SlotPolicy slotPolicy)
-    {
-        constants.defaultSlotPolicy.setValue(slotPolicy);
-    }
-
-    //----------------------//
-    // getDefaultSlotPolicy //
-    //----------------------//
-    /**
-     * Report the default policy to be used for retrieval of time slots
-     * @return the default time slot policy
-     */
-    public static SlotPolicy getDefaultSlotPolicy ()
-    {
-        return constants.defaultSlotPolicy.getValue();
     }
 
     //-------------------//
@@ -398,59 +341,6 @@ public class Page
     }
 
     //---------------//
-    // setSlotMargin //
-    //---------------//
-    /**
-     * Assign the slot margin for this score
-     * @param fraction the horizontal margin, expressed in interline fraction
-     */
-    public void setSlotMargin (Scale.Fraction fraction)
-    {
-        slotMargin = fraction;
-    }
-
-    //---------------//
-    // getSlotMargin //
-    //---------------//
-    /**
-     * Report the current horizontal Slot margin
-     * If the value is not yet set, it is set to the default value and returned.
-     * @return the slotMargin (in interline fraction)
-     */
-    public Scale.Fraction getSlotMargin ()
-    {
-        if (!hasSlotMargin()) {
-            slotMargin = getDefaultSlotMargin();
-        }
-
-        return slotMargin;
-    }
-
-    //---------------//
-    // setSlotPolicy //
-    //---------------//
-    /**
-     * Assign the slot policy for this score
-     * @param slotPolicy the policy for determining slots
-     */
-    public void setSlotPolicy (SlotPolicy slotPolicy)
-    {
-        this.slotPolicy = slotPolicy;
-    }
-
-    //---------------//
-    // getSlotPolicy //
-    //---------------//
-    /**
-     * Report the policy used for retrieval of time slots in this score
-     * @return the score time slot policy
-     */
-    public SlotPolicy getSlotPolicy ()
-    {
-        return slotPolicy;
-    }
-
-    //---------------//
     // getSystemById //
     //---------------//
     /**
@@ -547,26 +437,6 @@ public class Page
         logger.info(sheet.getLogPrefix() + prefix.toString());
     }
 
-    //---------------//
-    // hasSlotMargin //
-    //---------------//
-    /**
-     * Check whether slotMargin is defined for this score
-     * @return true if slotMargin is defined
-     */
-    public boolean hasSlotMargin ()
-    {
-        return slotMargin != null;
-    }
-
-    //---------------//
-    // hasSlotPolicy //
-    //---------------//
-    public boolean hasSlotPolicy ()
-    {
-        return slotPolicy != null;
-    }
-
     //--------------//
     // resetSystems //
     //--------------//
@@ -583,16 +453,6 @@ public class Page
         if (partList != null) {
             partList.clear();
         }
-
-        //        // Discard cached recent system
-        //        recentSystemRef = null;
-        //
-        //        // Discard current score location event (which contains a system id)
-        //        if (Main.getGui() != null) {
-        //            getSheet()
-        //                .getLocationService()
-        //                .publish(new ScoreLocationEvent(this, null, null, null));
-        //        }
     }
 
     //----------//
@@ -630,18 +490,6 @@ public class Page
         extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
-
-        /** Default slot policy */
-        SlotPolicy.Constant defaultSlotPolicy = new SlotPolicy.Constant(
-            SlotPolicy.HEAD_BASED,
-            "Default policy for determining time slots (HEAD_BASED or SLOT_BASED)");
-
-        /**
-         * Default horizontal margin between a slot and a glyph candidate
-         */
-        Scale.Fraction defaultSlotMargin = new Scale.Fraction(
-            0.5,
-            "Default horizontal margin between a slot and a glyph candidate");
 
         /** Minimum spacing between slots before alerting user */
         private final Scale.Fraction minSlotSpacing = new Scale.Fraction(

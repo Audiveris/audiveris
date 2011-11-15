@@ -592,12 +592,12 @@ public class SystemTranslator
 
         public void translate (Glyph glyph)
         {
-            Page page = system.getPage();
+            Score score = system.getScore();
             Slot.populate(
                 glyph,
                 currentMeasure,
-                page.hasSlotPolicy() ? page.getSlotPolicy()
-                                : Page.getDefaultSlotPolicy());
+                score.hasSlotPolicy() ? score.getSlotPolicy()
+                                : Score.getDefaultSlotPolicy());
         }
     }
 

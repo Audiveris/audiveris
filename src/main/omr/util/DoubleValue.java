@@ -34,7 +34,6 @@ public class DoubleValue
     //-------------//
     /**
      * Creates a new DoubleValue object.
-     *
      * @param value a double value
      */
     public DoubleValue (double value)
@@ -47,7 +46,6 @@ public class DoubleValue
     //-------------//
     /**
      * Creates a new DoubleValue object.
-     *
      * @param value a Double value (note the initial capital D)
      */
     public DoubleValue (Double value)
@@ -60,7 +58,6 @@ public class DoubleValue
     //-------------//
     /**
      * Creates a new DoubleValue object.
-     *
      * @param str the string representation of the value
      */
     public DoubleValue (String str)
@@ -86,7 +83,6 @@ public class DoubleValue
     //-------------//
     /**
      * Returns the <code>double</code> value of this object.
-     *
      * @return the <code>double</code> value represented by this object
      */
     public double doubleValue ()

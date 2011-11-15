@@ -121,17 +121,16 @@ public abstract class Slot
     //------//
     /**
      * Creates a new Slot object.
-     *
      * @param measure the containing measure
      */
     public Slot (Measure measure)
     {
         this.measure = measure;
 
-        Scale.Fraction slotMargin = measure.getPage()
-                                           .getSlotMargin();
-        xUnitsMargin = measure.getScale()
-                              .toPixels(slotMargin);
+        double slotMargin = measure.getScore()
+                                   .getSlotMargin();
+        xUnitsMargin = (int) Math.rint(
+            measure.getScale().interline() * slotMargin);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -141,7 +140,6 @@ public abstract class Slot
     //---------------//
     /**
      * Check whether a system point is roughly aligned with this slot instance.
-     *
      * @param sysPt the system point to check
      * @return true if aligned
      */

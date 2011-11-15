@@ -97,7 +97,7 @@ public class StepTask
     }
 
     //---------//
-    // setStep //
+    // setStep // Meant for JAXB
     //---------//
     @XmlAttribute(name = "name")
     private void setStep (String name)
@@ -106,7 +106,7 @@ public class StepTask
     }
 
     //---------//
-    // getStep //
+    // getStep // Meant for JAXB
     //---------//
     private String getStep ()
     {

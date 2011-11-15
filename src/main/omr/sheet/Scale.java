@@ -409,6 +409,12 @@ public class Scale
             super("Line", defaultValue, description);
         }
 
+        // Meant for JAXB
+        private LineFraction ()
+        {
+            this(0d, null);
+        }
+
         //~ Methods ------------------------------------------------------------
 
         @Override

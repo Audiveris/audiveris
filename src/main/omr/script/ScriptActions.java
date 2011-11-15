@@ -349,6 +349,8 @@ public class ScriptActions
                 logger.warning("Cannot find script file " + file, ex);
             } catch (JAXBException ex) {
                 logger.warning("Cannot marshal script", ex);
+            } catch (Throwable ex) {
+                logger.warning("Error storing script", ex);
             } finally {
                 if (fos != null) {
                     try {
