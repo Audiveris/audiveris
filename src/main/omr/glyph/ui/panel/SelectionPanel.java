@@ -18,7 +18,7 @@ import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphRegression;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
-import omr.glyph.ui.GlyphRepository;
+import omr.glyph.GlyphRepository;
 import static omr.glyph.ui.panel.GlyphTrainer.Task.Activity.*;
 
 import omr.log.Logger;

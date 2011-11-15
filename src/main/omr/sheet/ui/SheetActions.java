@@ -16,7 +16,7 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.ui.GlyphRepository;
+import omr.glyph.GlyphRepository;
 
 import omr.log.Logger;
 

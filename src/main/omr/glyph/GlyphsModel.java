@@ -273,8 +273,7 @@ public class GlyphsModel
     //-------------//
     /**
      * Assign a Shape to a glyph, inserting the glyph to its containing system
-     * and lag if it is still transient
-     *
+     * and nest if it is still transient.
      * @param glyph the glyph to be assigned
      * @param shape the assigned shape, which may be null
      * @param grade the grade about shape
@@ -319,10 +318,12 @@ public class GlyphsModel
             (Main.getGui() != null) &&
             ScoreActions.getInstance()
                         .isManualPersisted()) {
-            // TODO: We should also record the glyph into the training data for
-            // this sheet, in order not to lose this information.
             GlyphChecker.getInstance()
-                        .relax(shape, glyph, GlyphEvaluator.feedInput(glyph));
+                        .relax(
+                shape,
+                glyph,
+                GlyphEvaluator.feedInput(glyph),
+                sheet);
         }
 
         return glyph;

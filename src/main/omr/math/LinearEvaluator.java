@@ -86,7 +86,10 @@ public class LinearEvaluator
     @XmlElement(name = "categories")
     private final SortedMap<String, Category> categories;
 
-    /** Flag to indicate that some data has changed since unmarshalling */
+    /**
+     * Flag to indicate that some data has changed since unmarshalling
+     * and that engine internals are to be marshalled to disk before exiting.
+     */
     private boolean dataModified = false;
 
     //~ Constructors -----------------------------------------------------------
@@ -275,7 +278,7 @@ public class LinearEvaluator
                 categories.put(sample.category, category);
             }
 
-            category.include(sample.pattern, true);
+            category.include(sample.pattern);
 
             if (logger.isFineEnabled()) {
                 logger.fine(
@@ -284,38 +287,7 @@ public class LinearEvaluator
             }
         }
 
-        // Compute parameters means & weights for each category
-        for (Category category : categories.values()) {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "Computing " + category.getId() + " count:" +
-                    category.getCardinality());
-            }
-
-            category.compute();
-        }
-
-        // Compute default weight for each parameter
-        // (using the sample populations of all categories)
-        for (int p = 0; p < parameters.length; p++) {
-            Population paramPop = new Population();
-
-            for (Category category : categories.values()) {
-                CategoryParam param = category.params[p];
-
-                if (param.training != CategoryParam.TrainingStatus.NONE) {
-                    paramPop.includePopulation(param.population);
-                }
-            }
-
-            if (paramPop.getCardinality() > 1) {
-                double var = paramPop.getVariance();
-
-                if (var >= EPSILON) {
-                    parameters[p].defaultWeight = 1 / var;
-                }
-            }
-        }
+        computeCategoriesParams();
     }
 
     //-----------//
@@ -392,9 +364,9 @@ public class LinearEvaluator
     // includeSample //
     //---------------//
     /**
-     * Include a new sample (on top of unmarshalled data). For the time being,
-     * this is used only to perhaps widen the min/max constraints, but not to
-     * increase the population.
+     * Include a new sample (on top of unmarshalled data).
+     * We use this to widen the min/max constraints, and also to increase
+     * the population and thus the categories training status.
      * @param params the parameters
      * @param categoryId the targeted category
      * @return true if some min/max bound has changed
@@ -410,13 +382,14 @@ public class LinearEvaluator
                 "Unknown category: " + categoryId);
         }
 
-        boolean modified = category.include(params, false);
+        boolean extended = category.include(params);
 
-        if (modified) {
-            dataModified = true;
-        }
+        // Update categories parameters accordingly
+        computeCategoriesParams();
 
-        return modified;
+        dataModified = true;
+
+        return extended;
     }
 
     //----------------//
@@ -471,6 +444,45 @@ public class LinearEvaluator
         }
 
         return category;
+    }
+
+    //-------------------------//
+    // computeCategoriesParams //
+    //-------------------------//
+    private void computeCategoriesParams ()
+    {
+        // Compute parameters means & weights for each category
+        for (Category category : categories.values()) {
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "Computing " + category.getId() + " count:" +
+                    category.getCardinality());
+            }
+
+            category.compute();
+        }
+
+        // Compute default weight for each parameter
+        // (using the sample populations of all categories)
+        for (int p = 0; p < parameters.length; p++) {
+            Population paramPop = new Population();
+
+            for (Category category : categories.values()) {
+                CategoryParam param = category.params[p];
+
+                if (param.training != CategoryParam.TrainingStatus.NONE) {
+                    paramPop.includePopulation(param.population);
+                }
+            }
+
+            if (paramPop.getCardinality() > 1) {
+                double var = paramPop.getVariance();
+
+                if (var >= EPSILON) {
+                    parameters[p].defaultWeight = 1 / var;
+                }
+            }
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -741,8 +753,7 @@ public class LinearEvaluator
         }
 
         /** Include data from the provided pattern into category descriptor */
-        public synchronized boolean include (double[] pattern,
-                                             boolean  populate)
+        public synchronized boolean include (double[] pattern)
         {
             boolean extended = false;
 
@@ -752,7 +763,7 @@ public class LinearEvaluator
             }
 
             for (int p = 0; p < params.length; p++) {
-                if (params[p].includeValue(pattern[p], populate)) {
+                if (params[p].includeValue(pattern[p])) {
                     extended = true;
                 }
             }
@@ -955,18 +966,14 @@ public class LinearEvaluator
         /**
          * Include a new value for this category parameter
          * @param val the new value
-         * @param populate true if population must include the data
          * @return true if any of the min/max bounds has changed
          */
-        public boolean includeValue (double  val,
-                                     boolean populate)
+        public boolean includeValue (double val)
         {
             boolean extended = false;
 
-            // Cumulate into Population?
-            if (populate) {
-                population.includeValue(val);
-            }
+            // Cumulate into Population
+            population.includeValue(val);
 
             // Handle min value
             if (min != null) {

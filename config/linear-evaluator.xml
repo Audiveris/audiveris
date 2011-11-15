@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <linear-evaluator>
     <defaults>
-        <parameter name="weight" weight="0.14388952332861302"/>
-        <parameter name="width" weight="0.0953212045191052"/>
-        <parameter name="height" weight="0.14557946069751407"/>
-        <parameter name="n20" weight="0.8561566705271327"/>
-        <parameter name="n11" weight="83.97251794432495"/>
-        <parameter name="n02" weight="3.704857616612327"/>
-        <parameter name="n30" weight="6.341100866451637"/>
-        <parameter name="n21" weight="39.78395161363693"/>
-        <parameter name="n12" weight="293.10424953285786"/>
-        <parameter name="n03" weight="15.376326530138911"/>
-        <parameter name="ledger" weight="12.347859425032503"/>
-        <parameter name="stemNb" weight="1.759560243700914"/>
+        <parameter name="weight" weight="0.14391481390146946"/>
+        <parameter name="width" weight="0.09533623533524595"/>
+        <parameter name="height" weight="0.14560608879973597"/>
+        <parameter name="n20" weight="0.8563182030721873"/>
+        <parameter name="n11" weight="83.98189520160527"/>
+        <parameter name="n02" weight="3.7055222498756972"/>
+        <parameter name="n30" weight="6.342294681873751"/>
+        <parameter name="n21" weight="39.790411558949216"/>
+        <parameter name="n12" weight="293.1369680170515"/>
+        <parameter name="n03" weight="15.379226924866924"/>
+        <parameter name="ledger" weight="12.349962416426001"/>
+        <parameter name="stemNb" weight="1.7595737136084648"/>
     </defaults>
     <categories>
         <item id="ACCENT">
@@ -1802,41 +1802,41 @@
             </parameter>
         </item>
         <item id="DYNAMICS_MF">
-            <parameter name="weight" training="NOMINAL" weight="33.696771773287416" min="2.310657596371882" mean="2.5112160749716557" max="2.7165532879818595">
-                <population count="4" squares-sum="25.313854000688174" sum="10.044864299886623"/>
+            <parameter name="weight" training="NOMINAL" weight="43.80614837219356" min="2.310657596371882" mean="2.5218980300453517" max="2.7165532879818595">
+                <population count="5" squares-sum="31.89115975292104" sum="12.609490150226758"/>
             </parameter>
-            <parameter name="width" training="NOMINAL" weight="12.651301781778113" min="2.761904761904762" mean="2.9627976190476186" max="3.375">
-                <population count="4" squares-sum="35.34980867346939" sum="11.851190476190474"/>
+            <parameter name="width" training="NOMINAL" weight="7.498007544763655" min="2.761904761904762" mean="3.0845238095238092" max="3.5714285714285716">
+                <population count="5" squares-sum="48.104910714285715" sum="15.422619047619046"/>
             </parameter>
-            <parameter name="height" training="NOMINAL" weight="191.05231984211025" min="2.142857142857143" mean="2.2209821428571432" max="2.3125">
-                <population count="4" squares-sum="19.746749220521544" sum="8.883928571428573"/>
+            <parameter name="height" training="NOMINAL" weight="35.102294633418204" min="2.142857142857143" mean="2.2910714285714286" max="2.5714285714285716">
+                <population count="5" squares-sum="26.35899411848073" sum="11.455357142857144"/>
             </parameter>
-            <parameter name="n20" training="NOMINAL" weight="881.1461581737973" min="0.1904721891949934" mean="0.2111387412027625" max="0.26131971981448743">
-                <population count="4" squares-sum="0.18172292865256312" sum="0.84455496481105"/>
+            <parameter name="n20" training="NOMINAL" weight="346.34206659890145" min="0.1904721891949934" mean="0.23131870546778166" max="0.3120385625278583">
+                <population count="5" squares-sum="0.27909099315701524" sum="1.1565935273389083"/>
             </parameter>
-            <parameter name="n11" training="NOMINAL" weight="11102.677687373582" min="-0.057738037641800764" mean="-0.04480359815195697" max="-0.03488673454664313">
-                <population count="4" squares-sum="0.008299654717308343" sum="-0.17921439260782787"/>
+            <parameter name="n11" training="NOMINAL" weight="1575.2805366496596" min="-0.0980603485212581" mean="-0.05545494822581719" max="-0.03488673454664313">
+                <population count="5" squares-sum="0.01791548666941895" sum="-0.27727474112908596"/>
             </parameter>
-            <parameter name="n02" training="NOMINAL" weight="5688.161821312747" min="0.08609137875306949" mean="0.10489423391448165" max="0.11634897291136809">
-                <population count="4" squares-sum="0.04453861238972622" sum="0.4195769356579266"/>
+            <parameter name="n02" training="NOMINAL" weight="2372.7596959402276" min="0.08609137875306949" mean="0.11250471866479472" max="0.14294665766604708">
+                <population count="5" squares-sum="0.06497235932762027" sum="0.5625235933239736"/>
             </parameter>
-            <parameter name="n30" training="NOMINAL" weight="61684.39410019347" min="-0.0019163441651762405" mean="0.0019912352658817234" max="0.007079295282216975">
-                <population count="4" squares-sum="6.449473908496857E-5" sum="0.007964941063526894"/>
+            <parameter name="n30" training="NOMINAL" weight="24782.953769986594" min="-0.009881348375840605" mean="-3.8328146246274233E-4" max="0.007079295282216975">
+                <population count="5" squares-sum="1.6213578480969633E-4" sum="-0.0019164073123137115"/>
             </parameter>
-            <parameter name="n21" training="NOMINAL" weight="14200.640605961078" min="-0.04856493891823007" mean="-0.03666528195657044" max="-0.029309209706482556">
-                <population count="4" squares-sum="0.00558862967894725" sum="-0.14666112782628177"/>
+            <parameter name="n21" training="NOMINAL" weight="6462.860496851381" min="-0.05923913054986454" mean="-0.041180051675229264" max="-0.029309209706482556">
+                <population count="5" squares-sum="0.009097904267251145" sum="-0.2059002583761463"/>
             </parameter>
-            <parameter name="n12" training="NOMINAL" weight="38180.16040732556" min="0.01589526374467296" mean="0.020912823761890603" max="0.027983547554547024">
-                <population count="4" squares-sum="0.0018279596309098301" sum="0.08365129504756241"/>
+            <parameter name="n12" training="NOMINAL" weight="16586.535760495426" min="0.01589526374467296" mean="0.023764004389589772" max="0.03516872690038645">
+                <population count="5" squares-sum="0.0030647989827037956" sum="0.11882002194794886"/>
             </parameter>
-            <parameter name="n03" training="NOMINAL" weight="2.8045723252802506E7" min="0.006030111759587546" mean="0.006177706260686072" max="0.006452570799867481">
-                <population count="4" squares-sum="1.5276318675423744E-4" sum="0.02471082504274429"/>
+            <parameter name="n03" training="NOMINAL" weight="8622138.897090474" min="0.005509729999734054" mean="0.006044111008495669" max="0.006452570799867481">
+                <population count="5" squares-sum="1.8312031142420687E-4" sum="0.030220555042478343"/>
             </parameter>
             <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
-                <population count="4" squares-sum="0.0" sum="0.0"/>
+                <population count="5" squares-sum="0.0" sum="0.0"/>
             </parameter>
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
-                <population count="4" squares-sum="0.0" sum="0.0"/>
+                <population count="5" squares-sum="0.0" sum="0.0"/>
             </parameter>
         </item>
         <item id="DYNAMICS_MP">
@@ -2825,386 +2825,6 @@
             </parameter>
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="4" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-        </item>
-        <item id="HEAD_AND_FLAG_1">
-            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-        </item>
-        <item id="HEAD_AND_FLAG_1_UP">
-            <parameter name="weight" training="NOMINAL" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="width" training="NOMINAL" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="height" training="NOMINAL" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n20" training="NOMINAL" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n11" training="NOMINAL" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n02" training="NOMINAL" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n30" training="NOMINAL" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n21" training="NOMINAL" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n12" training="NOMINAL" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n03" training="NOMINAL" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="ledger" training="NOMINAL" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="stemNb" training="NOMINAL" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-        </item>
-        <item id="HEAD_AND_FLAG_2">
-            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-        </item>
-        <item id="HEAD_AND_FLAG_2_UP">
-            <parameter name="weight" training="NOMINAL" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="width" training="NOMINAL" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="height" training="NOMINAL" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n20" training="NOMINAL" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n11" training="NOMINAL" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n02" training="NOMINAL" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n30" training="NOMINAL" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n21" training="NOMINAL" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n12" training="NOMINAL" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n03" training="NOMINAL" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="ledger" training="IDENTICAL_VALUES" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="stemNb" training="NOMINAL" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-        </item>
-        <item id="HEAD_AND_FLAG_3">
-            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-        </item>
-        <item id="HEAD_AND_FLAG_3_UP">
-            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-        </item>
-        <item id="HEAD_AND_FLAG_4">
-            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-        </item>
-        <item id="HEAD_AND_FLAG_4_UP">
-            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-        </item>
-        <item id="HEAD_AND_FLAG_5">
-            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-        </item>
-        <item id="HEAD_AND_FLAG_5_UP">
-            <parameter name="weight" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="width" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="height" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n20" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n11" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n02" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n30" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n21" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n12" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="n03" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="ledger" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
-            </parameter>
-            <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" mean="0.0">
-                <population count="0" squares-sum="0.0" sum="0.0"/>
             </parameter>
         </item>
         <item id="INVERTED_MORDENT">

@@ -15,7 +15,7 @@ import omr.glyph.Evaluation;
 import omr.glyph.GlyphEvaluator;
 import omr.glyph.Grades;
 import omr.glyph.facets.Glyph;
-import omr.glyph.ui.GlyphRepository;
+import omr.glyph.GlyphRepository;
 import omr.glyph.ui.GlyphVerifier;
 
 import omr.log.Logger;

@@ -17,7 +17,6 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 import static omr.glyph.Shape.*;
 import omr.glyph.facets.Glyph;
-import omr.glyph.ui.GlyphRepository;
 
 import omr.log.Logger;
 
@@ -379,20 +378,20 @@ public class GlyphRegression
      * relax the related constraints if needed
      * @param params the observed input parameters
      * @param shape the provided shape
-     * @return true if constraints have been widened
+     * @return true if constraints have been extended
      */
     public boolean includeSample (double[] params,
                                   Shape    shape)
     {
         // Include this observation
-        if (engine.includeSample(params, shape.toString())) {
-            // Update constraints for the shape
-            defineOneShapeConstraints(shape);
+        boolean extended = engine.includeSample(params, shape.toString());
 
-            return true;
+        if (extended) {
+            // Update extended constraints for the shape
+            defineOneShapeConstraints(shape);
         }
 
-        return false;
+        return extended;
     }
 
     //-----------------//

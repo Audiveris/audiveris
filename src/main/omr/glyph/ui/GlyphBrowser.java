@@ -15,6 +15,7 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.BasicNest;
+import omr.glyph.GlyphRepository;
 import omr.glyph.GlyphsModel;
 import omr.glyph.Nest;
 import omr.glyph.facets.Glyph;

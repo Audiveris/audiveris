@@ -13,6 +13,7 @@ package omr.glyph.ui;
 
 import omr.WellKnowns;
 
+import omr.glyph.GlyphRepository;
 import omr.glyph.Shape;
 
 import omr.log.Logger;
@@ -532,6 +533,11 @@ public class GlyphVerifier
             }
 
             Collections.sort(folders);
+
+            // Finally, the samples folder
+            for (File file : repository.getSampleDirectories()) {
+                folders.add(file.getName());
+            }
 
             for (String folder : folders) {
                 model.addElement(folder);

@@ -16,7 +16,7 @@ import omr.glyph.GlyphNetwork;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 import omr.glyph.facets.Glyph;
-import omr.glyph.ui.GlyphRepository;
+import omr.glyph.GlyphRepository;
 import static omr.glyph.ui.panel.GlyphTrainer.Task.Activity.*;
 
 import omr.log.Logger;

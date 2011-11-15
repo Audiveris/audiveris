@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="EIGHTH_REST" interline="18" id="5066">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>0.16666666666666666</pitch-position>
+    <section orientation="VERTICAL" first-pos="2063" id="2325">
+        <run start="293" level="26" length="7"/>
+        <run start="292" level="18" length="10"/>
+        <run start="291" level="12" length="11"/>
+        <run start="291" level="4" length="12"/>
+        <run start="291" level="0" length="12"/>
+        <run start="290" level="10" length="13"/>
+        <run start="290" level="10" length="13"/>
+        <run start="291" level="0" length="12"/>
+        <run start="291" level="11" length="12"/>
+        <run start="292" level="7" length="10"/>
+        <run start="294" level="37" length="8"/>
+    </section>
+    <section orientation="HORIZONTAL" first-pos="321" id="1305">
+        <run start="2071" level="0" length="1"/>
+        <run start="2071" level="0" length="1"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2072" id="2337">
+        <run start="319" level="13" length="6"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2073" id="2339">
+        <run start="315" level="21" length="10"/>
+        <run start="313" level="26" length="8"/>
+        <run start="310" level="30" length="7"/>
+        <run start="305" level="18" length="8"/>
+        <run start="303" level="42" length="6"/>
+    </section>
+    <section orientation="HORIZONTAL" first-pos="297" id="1288">
+        <run start="2076" level="0" length="2"/>
+        <run start="2074" level="0" length="4"/>
+        <run start="2074" level="0" length="3"/>
+        <run start="2074" level="0" length="2"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2078" id="2346">
+        <run start="296" level="22" length="11"/>
+        <run start="294" level="33" length="8"/>
+    </section>
+    <section orientation="HORIZONTAL" first-pos="293" id="1286">
+        <run start="2080" level="0" length="1"/>
+        <run start="2080" level="0" length="1"/>
+        <run start="2080" level="0" length="1"/>
+        <run start="2080" level="0" length="1"/>
+        <run start="2080" level="0" length="1"/>
+    </section>
+</glyph>

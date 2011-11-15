@@ -36,13 +36,13 @@ import omr.score.entity.SystemPart;
 
 import omr.sheet.Ledger;
 import omr.sheet.Scale;
+import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.util.Predicate;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
@@ -157,10 +157,12 @@ public class GlyphChecker
      * @param shape the assigned shape
      * @param glyph the glyph at hand
      * @param features the glyph features
+     * @param sheet the containing sheet
      */
     public void relax (Shape    shape,
                        Glyph    glyph,
-                       double[] features)
+                       double[] features,
+                       Sheet    sheet)
     {
         Collection<Checker> checks = checkerMap.get(shape);
 
@@ -169,7 +171,7 @@ public class GlyphChecker
         }
 
         for (Checker checker : checks) {
-            checker.relax(shape, glyph, features);
+            checker.relax(shape, glyph, features, sheet);
         }
     }
 
@@ -239,16 +241,21 @@ public class GlyphChecker
                 @Override
                 public void relax (Shape    shape,
                                    Glyph    glyph,
-                                   double[] features)
+                                   double[] features,
+                                   Sheet    sheet)
                 {
                     // Here relax the constraints if so needed
-                    boolean widened = GlyphRegression.getInstance()
-                                                     .includeSample(
+                    boolean extended = GlyphRegression.getInstance()
+                                                      .includeSample(
                         features,
                         shape);
                     logger.info(
-                        "Constraints " + (widened ? "widened" : "included") +
+                        "Constraints " + (extended ? "extended" : "included") +
                         " for glyph#" + glyph.getId() + " as " + shape);
+
+                    // Record the glyph description to disk
+                    GlyphRepository.getInstance()
+                                   .recordOneGlyph(glyph, sheet);
                 }
             };
 
@@ -470,62 +477,61 @@ public class GlyphChecker
                         return false;
                     }
 
-//                    // Check there is no huge horizontal gap between parts
-//                    if (hugeGapBetweenParts(glyph)) {
-//                        eval.failure = new Evaluation.Failure("gaps");
-//
-//                        return false;
-//                    }
-
+                    //                    // Check there is no huge horizontal gap between parts
+                    //                    if (hugeGapBetweenParts(glyph)) {
+                    //                        eval.failure = new Evaluation.Failure("gaps");
+                    //
+                    //                        return false;
+                    //                    }
                     return true;
                 }
 
-//                /**
-//                 * Browse the collection of provided glyphs to make sure there
-//                 * is no huge horizontal gap included
-//                 * @param glyphs the collection of glyphs that compose the text
-//                 * candidate
-//                 * @param sheet needed for scale of the context
-//                 * @return true if gap found
-//                 */
-//                private boolean hugeGapBetweenParts (Glyph compound)
-//                {
-//                    if (compound.getParts()
-//                                .isEmpty()) {
-//                        return false;
-//                    }
-//
-//                    // Sort glyphs by abscissa
-//                    List<Glyph> glyphs = new ArrayList<Glyph>(
-//                        compound.getParts());
-//                    Collections.sort(glyphs, Glyph.abscissaComparator);
-//
-//                    final Scale scale = new Scale(glyphs.get(0).getInterline());
-//                    final int   maxGap = scale.toPixels(constants.maxTextGap);
-//                    int         gapStart = 0;
-//                    Glyph       prev = null;
-//
-//                    for (Glyph glyph : glyphs) {
-//                        PixelRectangle box = glyph.getContourBox();
-//
-//                        if (prev != null) {
-//                            if ((box.x - gapStart) > maxGap) {
-//                                if (logger.isFineEnabled()) {
-//                                    logger.fine(
-//                                        "huge gap detected between glyphs #" +
-//                                        prev.getId() + " & " + glyph.getId());
-//                                }
-//
-//                                return true;
-//                            }
-//                        }
-//
-//                        prev = glyph;
-//                        gapStart = (box.x + box.width) - 1;
-//                    }
-//
-//                    return false;
-//                }
+                //                /**
+                //                 * Browse the collection of provided glyphs to make sure there
+                //                 * is no huge horizontal gap included
+                //                 * @param glyphs the collection of glyphs that compose the text
+                //                 * candidate
+                //                 * @param sheet needed for scale of the context
+                //                 * @return true if gap found
+                //                 */
+                //                private boolean hugeGapBetweenParts (Glyph compound)
+                //                {
+                //                    if (compound.getParts()
+                //                                .isEmpty()) {
+                //                        return false;
+                //                    }
+                //
+                //                    // Sort glyphs by abscissa
+                //                    List<Glyph> glyphs = new ArrayList<Glyph>(
+                //                        compound.getParts());
+                //                    Collections.sort(glyphs, Glyph.abscissaComparator);
+                //
+                //                    final Scale scale = new Scale(glyphs.get(0).getInterline());
+                //                    final int   maxGap = scale.toPixels(constants.maxTextGap);
+                //                    int         gapStart = 0;
+                //                    Glyph       prev = null;
+                //
+                //                    for (Glyph glyph : glyphs) {
+                //                        PixelRectangle box = glyph.getContourBox();
+                //
+                //                        if (prev != null) {
+                //                            if ((box.x - gapStart) > maxGap) {
+                //                                if (logger.isFineEnabled()) {
+                //                                    logger.fine(
+                //                                        "huge gap detected between glyphs #" +
+                //                                        prev.getId() + " & " + glyph.getId());
+                //                                }
+                //
+                //                                return true;
+                //                            }
+                //                        }
+                //
+                //                        prev = glyph;
+                //                        gapStart = (box.x + box.width) - 1;
+                //                    }
+                //
+                //                    return false;
+                //                }
             };
 
         new Checker("FullTimeSig", FullTimes) {
@@ -826,10 +832,12 @@ public class GlyphChecker
          * @param shape the assigned shape
          * @param glyph the glyph at hand
          * @param features the glyph features
+         * @param sheet the containing sheet
          */
         public void relax (Shape    shape,
                            Glyph    glyph,
-                           double[] features)
+                           double[] features,
+                           Sheet    sheet)
         {
             // Void by default
         }
