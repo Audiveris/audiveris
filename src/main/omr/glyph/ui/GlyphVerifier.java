@@ -108,6 +108,12 @@ public class GlyphVerifier
     /** The panel in charge of the sheets (or icons folder) selection */
     private FolderSelector folderSelector = new FolderSelector(shapeSelector);
 
+    /** Sheets folder */
+    private final File sheetsFolder = repository.getSheetsFolder();
+
+    /** Samples folder */
+    private final File samplesFolder = repository.getSamplesFolder();
+
     //~ Constructors -----------------------------------------------------------
 
     //---------------//
@@ -258,9 +264,10 @@ public class GlyphVerifier
     // getActualDir //
     //--------------//
     /**
-     * Report the real directory (either the sheets directory or the
+     * Report the real directory (either the sheets or samples directory or the
      * icons directory) that corresponds to a given folder name.
-     * @param folder the folder name, such as 'batuque' or 'icons'
+     * @param folder the folder name, such as 'icons' or 'sheets/batuque' or
+     * 'samples/batuque'
      * @return the concrete directory
      */
     private File getActualDir (String folder)
@@ -268,7 +275,17 @@ public class GlyphVerifier
         if (repository.isIconsFolder(folder)) {
             return WellKnowns.SYMBOLS_FOLDER;
         } else {
-            return new File(repository.getSheetsFolder(), folder);
+            int    slashPos = folder.indexOf(File.separatorChar);
+            String root = folder.substring(0, slashPos);
+            String name = folder.substring(slashPos + 1);
+
+            if (root.equals(sheetsFolder.getName())) {
+                return new File(sheetsFolder, name);
+            } else if (root.equals(samplesFolder.getName())) {
+                return new File(samplesFolder, name);
+            } else {
+                throw new IllegalArgumentException("Unexpected root: " + root);
+            }
         }
     }
 
@@ -525,19 +542,24 @@ public class GlyphVerifier
             // First insert the dedicated icons folder
             model.addElement(WellKnowns.SYMBOLS_FOLDER.getName());
 
-            // Then populate with all sorted existing sheets folders
+            // Then the sheets folders
+            String            root = repository.getSheetsFolder()
+                                               .getName();
             ArrayList<String> folders = new ArrayList<String>();
 
             for (File file : repository.getSheetDirectories()) {
-                folders.add(file.getName());
+                folders.add(root + File.separator + file.getName());
+            }
+
+            // Finally, the samples folders
+            root = repository.getSamplesFolder()
+                             .getName();
+
+            for (File file : repository.getSampleDirectories()) {
+                folders.add(root + File.separator + file.getName());
             }
 
             Collections.sort(folders);
-
-            // Finally, the samples folder
-            for (File file : repository.getSampleDirectories()) {
-                folders.add(file.getName());
-            }
 
             for (String folder : folders) {
                 model.addElement(folder);
@@ -606,7 +628,8 @@ public class GlyphVerifier
                         String shapeName = radixOf(file.getName());
 
                         if (shapeList.contains(shapeName)) {
-                            gNames.add(dir.getName() + "/" + file.getName());
+                            gNames.add(
+                                folder + File.separator + file.getName());
                         }
                     }
 

@@ -211,9 +211,7 @@ class EvaluationBoard
                 GlyphEvent glyphEvent = (GlyphEvent) event;
                 Glyph      glyph = glyphEvent.getData();
 
-                if (sheet.getSystems() != null) {
-                    evaluate(glyph);
-                }
+                evaluate(glyph);
             }
         } catch (Exception ex) {
             logger.warning(getClass().getName() + " output error", ex);

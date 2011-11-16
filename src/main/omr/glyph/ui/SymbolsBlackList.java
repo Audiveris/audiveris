@@ -44,34 +44,4 @@ public class SymbolsBlackList
     {
         super(WellKnowns.SYMBOLS_FOLDER);
     }
-
-    //    //-----------//
-    //    // listFiles //
-    //    //-----------//
-    //    @Override
-    //    public File[] listFiles (FileFilter filter)
-    //    {
-    //        if (logger.isFineEnabled()) {
-    //            logger.fine("Retrieving legal symbols in " + dir);
-    //        }
-    //
-    //        // Getting all legal files & dirs, w/ additional filter if any
-    //        List<File> legals = new ArrayList<File>();
-    //        File[]     files = dir.listFiles(blackFilter);
-    //
-    //        for (Shape shape : ShapeRange.allSymbols) {
-    //            File file = new File(
-    //                dir,
-    //                shape.name() + GlyphRepository.SYMBOL_EXTENSION);
-    //
-    //            if ((Symbols.getSymbol(shape) != null) &&
-    //                isLegal(file) &&
-    //                ((filter == null) || filter.accept(file))) {
-    //                legals.add(file);
-    //            }
-    //        }
-    //
-    //        // Return legals as an array
-    //        return legals.toArray(new File[legals.size()]);
-    //    }
 }

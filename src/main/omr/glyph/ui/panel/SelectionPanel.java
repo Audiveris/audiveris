@@ -295,7 +295,7 @@ class SelectionPanel
             }
         }
 
-        // Quickly train the regression evaluator
+        // Quickly train the regression evaluator (on the whole base)
         regression.train(glyphs, null, GlyphEvaluator.StartingMode.SCRATCH);
 
         // Measure all glyphs of each shape

@@ -16,7 +16,6 @@ import omr.WellKnowns;
 import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
 import omr.glyph.facets.GlyphValue;
-import omr.glyph.ui.SymbolsBlackList;
 
 import omr.lag.Section;
 
@@ -201,13 +200,12 @@ public class GlyphRepository
      * Return a glyph knowing its full glyph name, which is the name of
      * the corresponding training material.
      * If not already done, the glyph is deserialized from the training file,
-     * searching first in the icons area, then the core area, then in the
-     * samples area and finally in the sheets area.
+     * searching first in the icons area, then the train area.
      * @param gName the full glyph name (format is: sheetName/Shape.id.xml)
      * @param monitor the monitor, if any, to be kept informed of glyph loading
      * @return the glyph instance if found, null otherwise
      */
-    public Glyph getGlyph (String  gName,
+    public synchronized Glyph getGlyph (String  gName,
                            Monitor monitor)
     {
         // First, try the map of glyphs
@@ -218,21 +216,12 @@ public class GlyphRepository
             if (isIcon(gName)) {
                 glyph = buildSymbolGlyph(gName);
             } else {
-                File file = new File(coreFolder, gName);
+                File file = new File(WellKnowns.TRAIN_FOLDER, gName);
 
                 if (!file.exists()) {
-                    file = new File(samplesFolder, gName);
+                    logger.warning("Unable to find file for glyph " + gName);
 
-                    if (!file.exists()) {
-                        file = new File(sheetsFolder, gName);
-
-                        if (!file.exists()) {
-                            logger.warning(
-                                "Unable to find file for glyph " + gName);
-
-                            return null;
-                        }
-                    }
+                    return null;
                 }
 
                 glyph = buildGlyph(gName, file);
@@ -242,10 +231,10 @@ public class GlyphRepository
                 glyphsMap.put(gName, glyph);
                 namesMap.put(glyph, gName);
             }
-        }
 
-        if (monitor != null) {
-            monitor.loadedGlyph(gName);
+            if (monitor != null) {
+                monitor.loadedGlyph(gName);
+            }
         }
 
         return glyph;
@@ -337,7 +326,7 @@ public class GlyphRepository
     //----------//
     // isLoaded //
     //----------//
-    public boolean isLoaded (String gName)
+    public synchronized boolean isLoaded (String gName)
     {
         return glyphsMap.get(gName) != null;
     }
@@ -592,33 +581,24 @@ public class GlyphRepository
         }
 
         // Create the core directory if needed
-        File coreDir = coreFolder;
-        coreDir.mkdirs();
+        coreFolder.mkdirs();
 
         // Empty the directory
-        FileUtil.deleteAll(coreDir.listFiles());
+        FileUtil.deleteAll(coreFolder.listFiles());
 
         // Copy the glyph and icon files into the core directory
         int copyNb = 0;
 
         for (String gName : coreBase) {
-            File    source;
-            boolean isIcon = isIcon(gName);
+            final boolean isIcon = isIcon(gName);
+            final File    source = isIcon
+                                   ? new File(
+                WellKnowns.SYMBOLS_FOLDER.getParentFile(),
+                gName) : new File(WellKnowns.TRAIN_FOLDER, gName);
 
-            if (isIcon) {
-                source = new File(
-                    WellKnowns.SYMBOLS_FOLDER.getParentFile(),
-                    gName);
-            } else {
-                source = new File(getSheetsFolder(), gName);
-            }
-
-            File targetDir = new File(
-                coreDir,
-                source.getParentFile().getName());
-            targetDir.mkdirs();
-
-            File target = new File(targetDir, source.getName());
+            final File    target = new File(coreFolder, gName);
+            target.getParentFile()
+                  .mkdirs();
 
             if (logger.isFineEnabled()) {
                 logger.fine("Storing " + target + " as core");
@@ -664,7 +644,7 @@ public class GlyphRepository
     //-------------//
     // unloadGlyph //
     //-------------//
-    void unloadGlyph (String gName)
+    synchronized void unloadGlyph (String gName)
     {
         if (glyphsMap.containsKey(gName)) {
             glyphsMap.remove(gName);
@@ -855,8 +835,16 @@ public class GlyphRepository
      */
     private String glyphNameOf (File file)
     {
-        return file.getParentFile()
-                   .getName() + "/" + file.getName();
+        if (isIcon(file)) {
+            return file.getParentFile()
+                       .getName() + File.separator + file.getName();
+        } else {
+            return file.getParentFile()
+                       .getParentFile()
+                       .getName() + File.separator +
+                   file.getParentFile()
+                       .getName() + File.separator + file.getName();
+        }
     }
 
     //-------------//
@@ -890,11 +878,7 @@ public class GlyphRepository
     //----------------//
     private File[] listLegalFiles (File dir)
     {
-        if (isIconsFolder(dir.getName())) {
-            return new SymbolsBlackList().listFiles(glyphFilter);
-        } else {
-            return new BlackList(dir).listFiles(glyphFilter);
-        }
+        return new BlackList(dir).listFiles(glyphFilter);
     }
 
     //----------//
@@ -922,7 +906,7 @@ public class GlyphRepository
         }
 
         // Now, collect the glyphs names
-        List<String> base = new ArrayList<String>(4000);
+        List<String> base = new ArrayList<String>(files.size());
 
         for (File file : files) {
             base.add(glyphNameOf(file));
@@ -961,11 +945,11 @@ public class GlyphRepository
     private void loadDirectory (File       dir,
                                 List<File> all)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Browsing directory " + dir);
-        }
-
         File[] files = listLegalFiles(dir);
+
+        if (logger.isFineEnabled()) {
+            logger.fine("Browsing directory " + dir + " total:" + files.length);
+        }
 
         if (files != null) {
             for (File file : files) {
