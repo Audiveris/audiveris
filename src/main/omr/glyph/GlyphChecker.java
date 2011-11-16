@@ -769,6 +769,26 @@ public class GlyphChecker
                     return ledger != null;
                 }
             };
+
+        new Checker("SystemTop", DAL_SEGNO, DA_CAPO, SEGNO, CODA, BREATH_MARK) {
+                public boolean check (SystemInfo system,
+                                      Evaluation eval,
+                                      Glyph      glyph,
+                                      double[]   features)
+                {
+                    // Check that these markers are just above first staff
+                    PixelPoint point = glyph.getAreaCenter();
+                    StaffInfo  staff = system.getStaffAt(point);
+
+                    if (staff != system.getFirstStaff()) {
+                        return false;
+                    }
+
+                    double pitch = staff.pitchPositionOf(point);
+
+                    return pitch <= -5;
+                }
+            };
     }
 
     //~ Inner Classes ----------------------------------------------------------
