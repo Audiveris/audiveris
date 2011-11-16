@@ -164,19 +164,14 @@ public class Grades
             "Minimum grade for a clef");
 
         //
-        Evaluation.Grade forteMinGrade = new Evaluation.Grade(
-            0.3,
-            "Minimum grade for glyph close to Forte");
-
-        //
         Evaluation.Grade consistentNoteMinGrade = new Evaluation.Grade(
             0.1,
             "Minimum grade for a consistent note head");
 
         //
-        Evaluation.Grade timeMinGrade = new Evaluation.Grade(
-            0,
-            "Minimum grade for a time sig");
+        Evaluation.Grade forteMinGrade = new Evaluation.Grade(
+            0.01,
+            "Minimum grade for glyph close to Forte");
 
         //
         Evaluation.Grade keySigMinGrade = new Evaluation.Grade(
@@ -187,5 +182,10 @@ public class Grades
         Evaluation.Grade textMinGrade = new Evaluation.Grade(
             0.01,
             "Minimum grade for a text symbol");
+
+        //
+        Evaluation.Grade timeMinGrade = new Evaluation.Grade(
+            0,
+            "Minimum grade for a time sig");
     }
 }

@@ -99,8 +99,11 @@ public class CompoundBuilder
         }
 
         for (Glyph g : suitables) {
-            if (adapter.isCandidateSuitable(g) && adapter.isGlyphClose(box, g)) {
-                neighbors.add(g);
+            if (includeSeed || (g != seed)) {
+                if (adapter.isCandidateSuitable(g) &&
+                    adapter.isGlyphClose(box, g)) {
+                    neighbors.add(g);
+                }
             }
         }
 

@@ -818,11 +818,11 @@ public class GlyphRegression
 
         Constant.Double factorForMinima = new Constant.Double(
             "factor",
-            0.8,
+            0.7,
             "Factor applied to all minimum constraints");
         Constant.Double factorForMaxima = new Constant.Double(
             "factor",
-            1.2,
+            1.3,
             "Factor applied to all maximum constraints");
     }
 }
