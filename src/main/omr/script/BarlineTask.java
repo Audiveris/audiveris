@@ -16,6 +16,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.sheet.Sheet;
 
+import omr.step.StepException;
 import omr.step.Stepping;
 import omr.step.Steps;
 
@@ -87,13 +88,17 @@ public class BarlineTask
     public void epilog (Sheet sheet)
     {
         if (sheet.getSystemsBuilder() != null) {
-            sheet.getSystemsBuilder()
-                 .rebuildAllSystems();
-            Stepping.reprocessSheet(
-                Steps.valueOf(Steps.MEASURES),
-                sheet,
-                sheet.getSystems(),
-                false);
+            try {
+                sheet.getSystemsBuilder()
+                     .buildSystems();
+                Stepping.reprocessSheet(
+                    Steps.valueOf(Steps.MEASURES),
+                    sheet,
+                    sheet.getSystems(),
+                    false);
+            } catch (StepException ex) {
+                logger.warning("Error in BarlineTask", ex);
+            }
         }
     }
 

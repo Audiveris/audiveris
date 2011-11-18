@@ -1115,8 +1115,9 @@ public class BarsRetriever
         bars.removeAll(sideBars);
 
         // Check the others, now using more strict checks
-        BarsChecker barsChecker = new BarsChecker(sheet, false);
-        barsChecker.checkCandidates(bars);
+        sheet.setBarsChecker(new BarsChecker(sheet, false));
+        sheet.getBarsChecker()
+             .checkCandidates(bars);
 
         // Purge bars collection
         for (Iterator<Glyph> it = bars.iterator(); it.hasNext();) {

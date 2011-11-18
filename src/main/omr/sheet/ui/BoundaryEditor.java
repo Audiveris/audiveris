@@ -325,7 +325,7 @@ public class BoundaryEditor
                 sheet.getSymbolsController()
                      .asyncModifyBoundaries(modifiedLines);
             } else {
-                logger.info("No boundary modified.");
+                logger.info("No boundary modified");
             }
 
             sessionOngoing = false;

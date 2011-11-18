@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.grid;
 
+import omr.glyph.GlyphsBuilder;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
@@ -151,6 +152,9 @@ public class LagWeaver
         watch.start("Hori <-> Vert");
         horiWithVert();
 
+        watch.start("buildGlyphs");
+        buildGlyphs();
+
         // The end
         ///watch.print();
     }
@@ -195,6 +199,41 @@ public class LagWeaver
     {
         logger.fine("addPointBelow " + x + "," + y);
         pointsBelow.add(new Point(x, y));
+    }
+
+    //-------------//
+    // buildGlyphs //
+    //-------------//
+    private void buildGlyphs ()
+    {
+        // Group (unknown) sections into glyphs
+        // Consider all unknown vertical & horizontal sections
+        List<Section> allSections = new ArrayList<Section>();
+
+        for (Section section : sheet.getVerticalLag()
+                                    .getSections()) {
+            if (!section.isKnown()) {
+                section.setProcessed(false);
+                allSections.add(section);
+            } else {
+                section.setProcessed(true);
+            }
+        }
+
+        for (Section section : sheet.getHorizontalLag()
+                                    .getSections()) {
+            if (!section.isKnown()) {
+                section.setProcessed(false);
+                allSections.add(section);
+            } else {
+                section.setProcessed(true);
+            }
+        }
+
+        GlyphsBuilder.retrieveGlyphs(
+            allSections,
+            sheet.getNest(),
+            sheet.getScale());
     }
 
     //------------------//

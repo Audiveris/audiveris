@@ -62,8 +62,6 @@ import omr.step.Steps;
 import omr.ui.BoardsPane;
 import omr.ui.ErrorsEditor;
 
-import omr.util.BrokenLine;
-
 import java.awt.Point;
 import java.awt.image.RenderedImage;
 import java.util.ArrayList;
@@ -160,6 +158,9 @@ public class Sheet
 
     /** Systems */
     private final SystemManager systemManager;
+
+    /** Bars checker */
+    private volatile BarsChecker barsChecker;
 
     /** A bar line extractor for this sheet */
     private volatile SystemsBuilder systemsBuilder;
@@ -285,6 +286,28 @@ public class Sheet
     public SheetAssembly getAssembly ()
     {
         return assembly;
+    }
+
+    //----------------//
+    // setBarsChecker //
+    //----------------//
+    /**
+     * @param barsChecker the barsChecker
+     */
+    public void setBarsChecker (BarsChecker barsChecker)
+    {
+        this.barsChecker = barsChecker;
+    }
+
+    //----------------//
+    // getBarsChecker //
+    //----------------//
+    /**
+     * @return the barsChecker
+     */
+    public BarsChecker getBarsChecker ()
+    {
+        return barsChecker;
     }
 
     //----------//
@@ -845,6 +868,17 @@ public class Sheet
         return symbolsEditor;
     }
 
+    //---------------------//
+    // setSystemBoundaries //
+    //---------------------//
+    /**
+     * Set the flag about systems boundaries.
+     */
+    public void setSystemBoundaries ()
+    {
+        hasSystemBoundaries = true;
+    }
+
     //---------------//
     // getSystemById //
     //---------------//
@@ -1192,53 +1226,6 @@ public class Sheet
     //        }
     //    }
 
-    //-------------------------//
-    // computeSystemBoundaries //
-    //-------------------------//
-    /**
-     * Compute the default boundary of the related area of each system
-     */
-    public void computeSystemBoundaries ()
-    {
-        // Compute the dimensions of the picture area of every system
-        SystemInfo prevSystem = null;
-        int        top = 0;
-        BrokenLine north = new BrokenLine(
-            new Point(0, top),
-            new Point(getWidth(), top));
-        BrokenLine south;
-
-        for (SystemInfo system : getSystems()) {
-            // Not the very first system?
-            if (prevSystem != null) {
-                // Top of system area, defined as middle ordinate between
-                // ordinate of last line of last staff of previous system and
-                // ordinate of first line of first staff of current system
-                int bottom = (prevSystem.getBottom() + system.getTop()) / 2;
-                south = new BrokenLine(
-                    new Point(0, bottom),
-                    new Point(getWidth(), bottom));
-                prevSystem.setBoundary(
-                    new SystemBoundary(prevSystem, north, south));
-                north = south;
-            }
-
-            // Remember this info for next system
-            prevSystem = system;
-        }
-
-        // Last system
-        if (prevSystem != null) {
-            south = new BrokenLine(
-                new Point(0, getHeight()),
-                new Point(getWidth(), getHeight()));
-            prevSystem.setBoundary(
-                new SystemBoundary(prevSystem, north, south));
-        }
-
-        hasSystemBoundaries = true;
-    }
-
     //----------------------------------//
     // createSymbolsControllerAndEditor //
     //----------------------------------//
@@ -1561,7 +1548,7 @@ public class Sheet
             140,
             "Maximum gray level for a pixel to be considered as foreground (black)");
 
-        /** Ratio of horizontal histogram to detect staves */
+        //
         Constant.Ratio defaultStaffThreshold = new Constant.Ratio(
             0.44,
             "Ratio of horizontal histogram to detect staves");

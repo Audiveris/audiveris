@@ -348,16 +348,18 @@ public class GlyphChecker
                     PixelPoint     point = box.getLocation();
                     SystemPart     part = scoreSystem.getPartAt(point);
                     Measure        measure = part.getMeasureAt(point);
-                    Barline        insideBar = measure.getInsideBarline();
-                    Staff          staff = part.getStaffAt(point);
-                    Clef           clef = measure.getFirstMeasureClef(
-                        staff.getId());
-                    int            start = (clef != null)
-                                           ? (clef.getBox().x +
-                                           clef.getBox().width)
-                                           : ((insideBar != null)
-                                              ? insideBar.getLeftX()
-                                              : measure.getLeftX());
+
+                    if (measure == null) {
+                        return true;
+                    }
+
+                    Barline insideBar = measure.getInsideBarline();
+                    Staff   staff = part.getStaffAt(point);
+                    Clef    clef = measure.getFirstMeasureClef(staff.getId());
+                    int     start = (clef != null)
+                                    ? (clef.getBox().x + clef.getBox().width)
+                                    : ((insideBar != null)
+                                       ? insideBar.getLeftX() : measure.getLeftX());
 
                     return (point.x - start) <= maxKeyXOffset;
                 }

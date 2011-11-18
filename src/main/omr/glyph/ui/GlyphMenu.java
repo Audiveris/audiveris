@@ -135,7 +135,7 @@ public abstract class GlyphMenu
     //------------//
     /**
      * Update the menu according to the currently selected glyphs
-     * @param return then number of selected glyphs
+     * @return the number of selected glyphs
      */
     public int updateMenu ()
     {

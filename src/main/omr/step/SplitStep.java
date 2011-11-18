@@ -48,13 +48,11 @@ public class SplitStep
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------//
-    // displayUI //
-    //-----------//
     @Override
     public void displayUI (Sheet sheet)
     {
-        //        Main.getGui().scoreController.setScoreEditor(sheet.getScore());
+        sheet.getAssembly()
+             .addBoard(Step.DATA_TAB, sheet.getBarsChecker().getCheckBoard());
     }
 
     //------//
@@ -67,6 +65,7 @@ public class SplitStep
     {
         // Purge sections & runs of staff lines from hLag
         // Cross-connect vertical & remaining horizontal sections
+        // Build glyphs out of connected sections
         new LagWeaver(sheet).buildInfo();
 
         // Create systems & parts

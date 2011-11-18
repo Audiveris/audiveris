@@ -402,6 +402,30 @@ public class Glyphs
         return set;
     }
 
+    //-------//
+    // purge //
+    //-------//
+    /**
+     * Purge a collection of glyphs of those which match the given predicate
+     * @param glyphs the glyph collection to purge
+     * @param predicate the predicate to detect glyphs to purge
+     */
+    public static void purge (Collection<Glyph> glyphs,
+                              Predicate<Glyph>  predicate)
+    {
+        if (predicate == null) {
+            return;
+        }
+
+        for (Iterator<Glyph> it = glyphs.iterator(); it.hasNext();) {
+            Glyph glyph = it.next();
+
+            if (predicate.check(glyph)) {
+                it.remove();
+            }
+        }
+    }
+
     //--------------//
     // purgeManuals //
     //--------------//

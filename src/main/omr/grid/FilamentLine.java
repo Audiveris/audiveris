@@ -82,6 +82,14 @@ public class FilamentLine
         fil.setEndingPoints(pStart, pStop);
     }
 
+    //-------------//
+    // getFilament //
+    //-------------//
+    public LineFilament getFilament ()
+    {
+        return fil;
+    }
+
     //-------//
     // getId //
     //-------//

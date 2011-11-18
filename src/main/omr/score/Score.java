@@ -663,7 +663,7 @@ public class Score
     //---------------//
     /**
      * Assign the slot margin for this score.
-     * @param fraction the horizontal margin, expressed in interline fraction
+     * @param slotMargin the horizontal margin, expressed in interline fraction
      */
     public void setSlotMargin (double slotMargin)
     {

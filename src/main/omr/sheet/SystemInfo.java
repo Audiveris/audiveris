@@ -807,7 +807,7 @@ public class SystemInfo
     //------------------------//
     /**
      * This is a private entry meant for StaffInfo only.
-     * @param glyph the glyph to add to the system glyph collection
+     * @param ledger the ledger to add to the system ledger glyph collection
      */
     public void addToLedgersCollection (Ledger ledger)
     {
@@ -1224,7 +1224,7 @@ public class SystemInfo
     //-----------------------------//
     /**
      * This is a private entry meant for StaffInfo only.
-     * @param glyph the glyph to add to the system glyph collection
+     * @param ledger the ledger to remove from the system ledger glyph collection
      */
     public void removeFromLedgersCollection (Ledger ledger)
     {

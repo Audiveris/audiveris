@@ -14,7 +14,6 @@ package omr.grid;
 import omr.Main;
 
 import omr.glyph.facets.BasicGlyph;
-import omr.glyph.facets.Glyph;
 import omr.glyph.facets.GlyphComposition.Linking;
 
 import omr.lag.Section;

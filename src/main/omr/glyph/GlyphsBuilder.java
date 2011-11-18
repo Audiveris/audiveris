@@ -310,54 +310,26 @@ public class GlyphsBuilder
     {
         // Consider all unknown vertical & horizontal sections
         List<Section> allSections = new ArrayList<Section>();
+        allSections.addAll(system.getVerticalSections());
+        allSections.addAll(system.getHorizontalSections());
 
-        for (Section section : system.getVerticalSections()) {
-            if (!section.isKnown()) {
-                section.setProcessed(false);
-                allSections.add(section);
-            } else {
-                section.setProcessed(true);
-            }
-        }
+        List<Glyph> glyphs = retrieveGlyphs(allSections, nest, scale);
 
-        for (Section section : system.getHorizontalSections()) {
-            if (!section.isKnown()) {
-                section.setProcessed(false);
-                allSections.add(section);
-            } else {
-                section.setProcessed(true);
-            }
-        }
+        // Record them into the system
+        for (Glyph glyph : glyphs) {
+            system.addToGlyphsCollection(glyph);
 
-        // Browse the various unrecognized sections
-        for (Section section : allSections) {
-            // Not already visited ?
-            if (!section.isProcessed()) {
-                // Let's build a new glyph around this starting section
-                Glyph glyph = new BasicGlyph(scale.interline());
-                considerConnection(glyph, section);
+            // Make sure all aggregated sections belong to the same system
+            SystemInfo alienSystem = glyph.getAlienSystem(system);
 
-                // Insert this newly built glyph into system collection
-                glyph = addGlyph(glyph);
+            if (alienSystem != null) {
+                removeGlyph(glyph);
 
-                if (logger.isFineEnabled()) {
-                    logger.fine("Retrieved " + glyph);
-                }
-
-                // Make sure all aggregated sections belong to the same system
-                SystemInfo alienSystem = glyph.getAlienSystem(system);
-
-                if (alienSystem != null) {
-                    removeGlyph(glyph);
-
-                    // Publish the error on north side only of the boundary
-                    SystemInfo north = (system.getId() < alienSystem.getId())
-                                       ? system : alienSystem;
-                    north.getScoreSystem()
-                         .addError(
-                        glyph,
-                        "Glyph crosses system south boundary");
-                }
+                // Publish the error on north side only of the boundary
+                SystemInfo north = (system.getId() < alienSystem.getId())
+                                   ? system : alienSystem;
+                north.getScoreSystem()
+                     .addError(glyph, "Glyph crosses system south boundary");
             }
         }
 
@@ -369,6 +341,48 @@ public class GlyphsBuilder
                 computeGlyphFeatures(glyph);
             }
         }
+    }
+
+    //----------------//
+    // retrieveGlyphs //
+    //----------------//
+    /**
+     * Browse through the provided sections not assigned to known
+     * glyphs, and build new glyphs out of connected sections.
+     * @param sections the sections to browse
+     * @param nest the nest to host glyphs
+     * @param scale the sheet scale
+     */
+    public static List<Glyph> retrieveGlyphs (List<Section> sections,
+                                              Nest          nest,
+                                              Scale         scale)
+    {
+        List<Glyph> created = new ArrayList<Glyph>();
+
+        // Reset section processed flag
+        for (Section section : sections) {
+            if (!section.isKnown()) {
+                section.setProcessed(false);
+            } else {
+                section.setProcessed(true);
+            }
+        }
+
+        // Browse the various unrecognized sections
+        for (Section section : sections) {
+            // Not already visited ?
+            if (!section.isProcessed()) {
+                // Let's build a new glyph around this starting section
+                Glyph glyph = new BasicGlyph(scale.interline());
+                considerConnection(glyph, section);
+
+                // Insert this newly built glyph into nest (no system invloved)
+                glyph = nest.addGlyph(glyph);
+                created.add(glyph);
+            }
+        }
+
+        return created;
     }
 
     //--------------------//
@@ -462,8 +476,8 @@ public class GlyphsBuilder
      * @param glyph the provided glyph
      * @param section the section to consider
      */
-    private void considerConnection (Glyph   glyph,
-                                     Section section)
+    private static void considerConnection (Glyph   glyph,
+                                            Section section)
     {
         // Check whether this section is suitable to expand the glyph
         if (!section.isProcessed()) {

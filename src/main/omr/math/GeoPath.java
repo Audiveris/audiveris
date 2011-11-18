@@ -17,6 +17,7 @@ import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import static java.awt.geom.PathIterator.*;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 
 /**
  * Class {@code GeoPath} is a Path2D.Double with some additions
@@ -95,6 +96,56 @@ public class GeoPath
         default :
             throw new RuntimeException("Illegal segmentKind " + segmentKind);
         }
+    }
+
+    //------------//
+    // intersects //
+    //------------//
+    /**
+     * Check whether the flattened path intersects the provided rectangle.
+     * @param rect the provided rectangle to check for intersection
+     * @param flatness maximum distance used for line segment approximation
+     * @return true if intersection found
+     */
+    public boolean intersects (Rectangle2D rect,
+                               double      flatness)
+    {
+        final double[] buffer = new double[6];
+        double         x1 = 0;
+        double         y1 = 0;
+
+        for (PathIterator it = getPathIterator(null, flatness); !it.isDone();
+             it.next()) {
+            int          segmentKind = it.currentSegment(buffer);
+            int          count = countOf(segmentKind);
+            final double x2 = buffer[count - 2];
+            final double y2 = buffer[count - 1];
+
+            switch (segmentKind) {
+            case SEG_MOVETO :
+                x1 = x2;
+                y1 = y2;
+
+                break;
+
+            case SEG_LINETO :
+
+                if (rect.intersectsLine(x1, y1, x2, y2)) {
+                    return true;
+                }
+
+                break;
+
+            case SEG_CLOSE :
+                break;
+
+            default :
+                throw new RuntimeException(
+                    "Illegal segmentKind " + segmentKind);
+            }
+        }
+
+        return false;
     }
 
     //----------//

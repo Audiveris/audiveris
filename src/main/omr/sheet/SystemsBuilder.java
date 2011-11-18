@@ -15,22 +15,30 @@ import omr.Main;
 
 import omr.constant.ConstantSet;
 
+import omr.glyph.Glyphs;
 import omr.glyph.GlyphsModel;
+import omr.glyph.facets.Glyph;
 
+import omr.grid.LineInfo;
 import omr.grid.StaffInfo;
 import omr.grid.SystemManager;
 
 import omr.log.Logger;
 
-import omr.selection.GlyphEvent;
+import omr.math.BasicLine;
+import omr.math.Line;
 
-import omr.step.Step;
 import omr.step.StepException;
 import omr.step.Steps;
 
+import omr.util.BrokenLine;
+import omr.util.HorizontalSide;
+
+import java.awt.Point;
+import java.awt.Polygon;
+import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
  * Class <code>SystemsBuilder</code> is in charge of retrieving the systems
@@ -73,9 +81,6 @@ public class SystemsBuilder
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Companion physical stick barsChecker */
-    private final BarsChecker barsChecker;
-
     /** Sheet retrieved systems */
     private final List<SystemInfo> systems;
 
@@ -93,9 +98,6 @@ public class SystemsBuilder
         super(sheet, sheet.getNest(), Steps.valueOf(Steps.SPLIT));
 
         systems = sheet.getSystems();
-
-        // BarsChecker companion, in charge of purely physical tests
-        barsChecker = new BarsChecker(sheet, false);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -110,40 +112,37 @@ public class SystemsBuilder
     public void buildSystems ()
         throws StepException
     {
-        try {
-            doBuildSystems();
-        } catch (Throwable ex) {
-            logger.warning("Error in buildSystems", ex);
-        } finally {
-            // Provide use checkboard for barlines
-            if (Main.getGui() != null) {
-                sheet.getAssembly()
-                     .addBoard(Step.DATA_TAB, barsChecker.getCheckBoard());
-            }
-        }
-    }
+        // Systems have been created by GRID step on sheet side
+        // Build parts on sheet side
+        buildParts();
 
-    //-------------------//
-    // rebuildAllSystems //
-    //-------------------//
-    public void rebuildAllSystems ()
-    {
-        // Update the retrieved systems
-        try {
-            doBuildSystems();
-        } catch (StepException ex) {
-            logger.warning("Error rebuilding systems info", ex);
-        }
-    }
+        // Create score counterparts
+        // Build systems, parts & measures on score side
+        allocateScoreStructure();
 
-    //---------------//
-    // useBoundaries //
-    //---------------//
-    public void useBoundaries ()
-    {
-        // Split the entities (horizontals sections, vertical sections,
-        // vertical sticks) to the system they belong to.
+        // Report number of systems retrieved
+        reportResults();
+
+        // Define precisely the systems boundaries
+        computeBoundaries();
+
+        // Split sections & glyphs per system
         splitSystemEntities();
+    }
+
+    //---------------------//
+    // splitSystemEntities //
+    //---------------------//
+    /**
+     * Split horizontals, vertical sections, glyphs per system
+     */
+    public void splitSystemEntities ()
+    {
+        // Split everything, including horizontals, per system
+        ///sheet.splitHorizontals();
+        sheet.splitHorizontalSections();
+        sheet.splitVerticalSections();
+        sheet.splitBarSticks(nest.getAllGlyphs());
     }
 
     //------------------------//
@@ -218,27 +217,108 @@ public class SystemsBuilder
         }
     }
 
-    //----------------//
-    // doBuildSystems //
-    //----------------//
-    private void doBuildSystems ()
-        throws StepException
+    //-------------------//
+    // computeBoundaries //
+    //-------------------//
+    /**
+     * Compute the boundary of the related area of each system.
+     */
+    private void computeBoundaries ()
     {
-        // Systems have been created by GRID step on sheet side
-        // Build parts on sheet side
-        buildParts();
+        // Very first system top border
+        SystemInfo prevSystem = null;
+        BrokenLine prevBorder = new BrokenLine(
+            new Point(0, 0),
+            new Point(sheet.getWidth(), 0));
 
-        // Create score counterparts
-        // Build systems, parts & measures on score side
-        allocateScoreStructure();
+        BrokenLine border; // Top border of current system
 
-        // Report number of systems retrieved
-        reportResults();
+        for (SystemInfo system : sheet.getSystems()) {
+            if (prevSystem != null) {
+                // Try the simplistic approach, defining top border as the 
+                // middle between last line of last staff of previous system
+                // and first line of first staff of current system
+                Line     line = new BasicLine();
+                LineInfo topLine = prevSystem.getLastStaff()
+                                             .getLastLine();
+                LineInfo botLine = system.getFirstStaff()
+                                         .getFirstLine();
 
-        // Define precisely the systems boundaries
-        sheet.computeSystemBoundaries();
+                for (HorizontalSide side : HorizontalSide.values()) {
+                    Point2D top = topLine.getEndPoint(side);
+                    Point2D bot = botLine.getEndPoint(side);
+                    line.includePoint(
+                        (top.getX() + bot.getX()) / 2,
+                        (top.getY() + bot.getY()) / 2);
+                }
 
-        useBoundaries();
+                border = new BrokenLine(
+                    new Point(0, line.yAtX(0)),
+                    new Point(sheet.getWidth(), line.yAtX(sheet.getWidth())));
+
+                // Check if the border is acceptable and replace it if needed
+                border = refineBorder(border, prevSystem, system);
+
+                prevSystem.setBoundary(
+                    new SystemBoundary(prevSystem, prevBorder, border));
+                prevBorder = border;
+            }
+
+            prevSystem = system;
+        }
+
+        // Very last system
+        if (prevSystem != null) {
+            border = new BrokenLine(
+                new Point(0, sheet.getHeight()),
+                new Point(sheet.getWidth(), sheet.getHeight()));
+            prevSystem.setBoundary(
+                new SystemBoundary(prevSystem, prevBorder, border));
+        }
+
+        sheet.setSystemBoundaries();
+    }
+
+    //--------------//
+    // refineBorder //
+    //--------------//
+    private BrokenLine refineBorder (BrokenLine border,
+                                     SystemInfo prevSystem,
+                                     SystemInfo system)
+    {
+        // Define the inter-system yellow zone
+        int     yellowDy = sheet.getScale()
+                                .toPixels(constants.yellowZoneHalfHeight);
+        Polygon polygon = new Polygon();
+        Point   left = border.getPoint(0);
+        Point   right = border.getPoint(1);
+        polygon.addPoint(left.x, left.y - yellowDy);
+        polygon.addPoint(right.x, right.y - yellowDy);
+        polygon.addPoint(right.x, right.y + yellowDy);
+        polygon.addPoint(left.x, left.y + yellowDy);
+
+        // Look for glyphs intersected by this yellow zone
+        List<Glyph> intersected = new ArrayList<Glyph>();
+
+        for (Glyph glyph : nest.getActiveGlyphs()) {
+            if (polygon.intersects(glyph.getContourBox())) {
+                intersected.add(glyph);
+            }
+        }
+
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                "S#" + prevSystem.getId() + "-" + system.getId() + " : " +
+                polygon.getBounds() + Glyphs.toString(" inter:", intersected));
+        }
+
+        // If the yellow zone is empty, keep the border
+        // Otherwise, use the more complex approach
+        if (intersected.isEmpty()) {
+            return border;
+        } else {
+            return new BorderBuilder(sheet, prevSystem, system).buildBorder();
+        }
     }
 
     //---------------//
@@ -287,40 +367,6 @@ public class SystemsBuilder
         logger.info(sheet.getLogPrefix() + sb.toString());
     }
 
-    //---------------------//
-    // splitSystemEntities //
-    //---------------------//
-    /**
-     * Split horizontals, vertical sections, glyphs per system
-     * @return the set of modified systems
-     */
-    private SortedSet<SystemInfo> splitSystemEntities ()
-    {
-        // Split everything, including horizontals, per system
-        SortedSet<SystemInfo> modifiedSystems = new TreeSet<SystemInfo>();
-        ///modifiedSystems.addAll(sheet.splitHorizontals());
-        modifiedSystems.addAll(sheet.splitHorizontalSections());
-        modifiedSystems.addAll(sheet.splitVerticalSections());
-        modifiedSystems.addAll(sheet.splitBarSticks(nest.getAllGlyphs()));
-
-        if (!modifiedSystems.isEmpty()) {
-            StringBuilder sb = new StringBuilder("[");
-
-            for (SystemInfo system : modifiedSystems) {
-                sb.append("#")
-                  .append(system.getId());
-            }
-
-            sb.append("]");
-
-            if (logger.isFineEnabled()) {
-                logger.info(sheet.getLogPrefix() + "Impacted systems: " + sb);
-            }
-        }
-
-        return modifiedSystems;
-    }
-
     //~ Inner Classes ----------------------------------------------------------
 
     //-----------//
@@ -331,13 +377,8 @@ public class SystemsBuilder
     {
         //~ Instance fields ----------------------------------------------------
 
-        Scale.Fraction maxDeltaLength = new Scale.Fraction(
-            0.2,
-            "Maximum difference in run length to be part of the same section");
-
-        //
-        Scale.Fraction maxBarThickness = new Scale.Fraction(
-            1.0,
-            "Maximum thickness of an interesting vertical stick");
+        Scale.Fraction yellowZoneHalfHeight = new Scale.Fraction(
+            1,
+            "Half height of inter-system yellow zone");
     }
 }

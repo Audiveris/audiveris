@@ -303,8 +303,6 @@ public class LinesRetriever
     /**
      * Render the filaments, their ending tangents, their combs
      * @param g graphics context
-     * @param showTangents true to display tangents at filament ends
-     * @param showCombs true to display cluster combs
      */
     public void renderItems (Graphics2D g)
     {

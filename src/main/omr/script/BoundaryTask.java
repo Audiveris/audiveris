@@ -113,7 +113,7 @@ public class BoundaryTask
     {
         // Resplit systems content
         sheet.getSystemsBuilder()
-             .useBoundaries();
+             .splitSystemEntities();
 
         // Update the following steps if any
         Stepping.reprocessSheet(
