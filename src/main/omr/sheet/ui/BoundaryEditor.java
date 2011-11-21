@@ -167,7 +167,7 @@ public class BoundaryEditor
 
         if (lastPoint != null) {
             // Move the current ref point to user pt
-            lastLine.movePoint(lastPoint, pt);
+            lastPoint.setLocation(pt);
 
             // If now we get colinear segments, let's merge them
             if (lastLine.isColinear(lastPoint)) {

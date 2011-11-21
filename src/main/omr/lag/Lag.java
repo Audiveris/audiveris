@@ -17,7 +17,6 @@ import omr.run.Oriented;
 import omr.run.Run;
 import omr.run.RunsTable;
 
-import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
 import omr.selection.SectionEvent;

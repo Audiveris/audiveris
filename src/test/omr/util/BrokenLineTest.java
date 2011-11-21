@@ -11,11 +11,8 @@
 // </editor-fold>
 package omr.util;
 
-import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.*;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.awt.Point;
@@ -51,18 +48,16 @@ public class BrokenLineTest
 
     //~ Methods ----------------------------------------------------------------
 
-    @BeforeClass
-    public static void setUpClass ()
-        throws Exception
+    /**
+     * Test of areColinear method, of class BrokenLine.
+     */
+    @Test
+    public void isColinear ()
     {
-        ///System.out.println("setUpClass");
-    }
-
-    @AfterClass
-    public static void tearDownClass ()
-        throws Exception
-    {
-        ///System.out.println("tearDownClass");
+        System.out.println("isColinear");
+        instance.insertPointAfter(new Point(0, 1), p3);
+        assertTrue(instance.isColinear(p3));
+        assertFalse(instance.isColinear(p2));
     }
 
     /**
@@ -151,6 +146,7 @@ public class BrokenLineTest
         Point point = new Point(2, 3);
         instance.addPoint(point);
         System.out.println("after : " + instance.getSequenceString());
+
         ///assertEquals(5, instance.size());
     }
 
@@ -167,19 +163,8 @@ public class BrokenLineTest
         Point point = new Point(2, 3);
         instance.addPoint(point);
         System.out.println("after : " + instance.getSequenceString());
-        ///assertEquals(1, instance.size());
-    }
 
-    /**
-     * Test of areColinear method, of class BrokenLine.
-     */
-    @Test
-    public void isColinear ()
-    {
-        System.out.println("isColinear");
-        instance.insertPointAfter(new Point(0,1), p3);
-        assertTrue(instance.isColinear(p3));
-        assertFalse(instance.isColinear(p2));
+        ///assertEquals(1, instance.size());
     }
 
     /**
@@ -279,7 +264,8 @@ public class BrokenLineTest
         System.out.println("before: " + instance.getSequenceString());
 
         Point location = new Point(11, 6);
-        instance.movePoint(p1, location);
+        p1.setLocation(location);
+        
         System.out.println("after : " + instance.getSequenceString());
         assertEquals(location, instance.getPoint(1));
     }
