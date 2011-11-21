@@ -172,10 +172,12 @@ public class BorderBuilder
         // Build a raw border out of the two limits
         BrokenLine rawBorder = getRawBorder();
 
-        // Return the refined border
-        return getRefinedBorder(rawBorder);
-
-        ///return rawBorder;
+        if (false) {
+            return rawBorder;
+        } else {
+            // Return the refined border
+            return getRefinedBorder(rawBorder);
+        }
     }
 
     //--------------//
@@ -188,8 +190,8 @@ public class BorderBuilder
     private BrokenLine getRawBorder ()
     {
         // Smoothens the border, but may lead to impossible borders
-        //        topLimit.grow(xMargin, 0);
-        //        botLimit.grow(xMargin, 0);
+        topLimit.grow(xMargin, 0);
+        botLimit.grow(xMargin, 0);
 
         //
         BrokenLine line = new BrokenLine();
@@ -200,9 +202,10 @@ public class BorderBuilder
             int top = topLimit.getY(x, -1);
             int bot = botLimit.getY(x, +1);
 
-            //            if (top > bot) {
-            //                logger.warning("Closed at x: " + x);
-            //            }
+            if (top > bot) {
+                logger.warning("Border closed at x: " + x);
+            }
+
             int y = (top + bot) / 2;
 
             if (x == xMax) {
@@ -247,7 +250,7 @@ public class BorderBuilder
         while (true) {
             Point lastPoint = line.getPoint(lastIndex);
 
-            for (int index = lastIndex + 2; index < line.size(); index++) {
+            for (int index = lastIndex + 1; index < line.size(); index++) {
                 Point pt = line.getPoint(index);
 
                 if (topLimit.intersects(lastPoint, pt) ||
@@ -318,7 +321,7 @@ public class BorderBuilder
                     }
 
                     it.remove();
-                } else if (botLimit.intersects(blob)) {
+                } else if (botLimit.intersects(rect)) {
                     botLimit.add(blob);
 
                     if (logger.isFineEnabled()) {
@@ -590,7 +593,9 @@ public class BorderBuilder
 
             for (Rectangle rect : boxes) {
                 if (rect instanceof LineRect) {
-                    sb.append("-");
+                    sb.append("-")
+                      .append(rect.height)
+                      .append("-");
                 } else {
                     sb.append(rect);
                 }
@@ -618,10 +623,14 @@ public class BorderBuilder
 
         private boolean intersects (Rectangle rectangle)
         {
+            Rectangle prevRect = null;
+
             for (Rectangle rect : boxes) {
                 if (rect.intersects(rectangle)) {
                     return true;
                 }
+
+                prevRect = rect;
             }
 
             return false;
