@@ -64,7 +64,7 @@ public class HorizontalsStep
         sheet.getSystems()
              .get(0)
              .getHorizontalsBuilder()
-             .displayFrame();
+             .addCheckBoard();
     }
 
     //----------//

@@ -187,6 +187,15 @@ public class HorizontalsBuilder
         return glyph.getLength(HORIZONTAL) >= minFullLedgerLength;
     }
 
+    //---------------//
+    // addCheckBoard //
+    //---------------//
+    public void addCheckBoard ()
+    {
+        sheet.getAssembly()
+             .addBoard(Step.DATA_TAB, new LedgerCheckBoard());
+    }
+
     //    //--------------//
     //    // assignGlyphs //
     //    //--------------//
@@ -236,68 +245,12 @@ public class HorizontalsBuilder
 
             // Filter ledgers more accurately
             filterLedgers();
-
-            //            // Display the results if so asked for
-            //            if (constants.displayFrame.getValue() && (Main.getGui() != null)) {
-            //                displayFrame();
-            //            }
         } catch (Throwable ex) {
             logger.warning("Error retrieving horizontals", ex);
         } finally {
             // User feedback
             feedback();
         }
-    }
-
-    //--------------//
-    // displayFrame //
-    //--------------//
-    public void displayFrame ()
-    {
-        ///controller = new GlyphsController(this);
-        sheet.getAssembly()
-             .addBoard(Step.DATA_TAB, new LedgerCheckBoard());
-
-        //            new CheckBoard<Glyph>(
-        //                "Ledger",
-        //                ledgerSuite,
-        //                sheet.getNest().getGlyphService(),
-        //                eventClasses));
-
-        //
-        //        for (Dash dash : allDashes) {
-        //            dashSections.addAll(dash.getStick().getMembers());
-        //        }
-        //
-        //        // Specific rubber display
-        //        lagView = new MyView(scene, dashSections, getController());
-        //
-        //        final String  unit = sheet.getId() + ":HorizontalsBuilder";
-        //        BoardsPane    boardsPane = new BoardsPane(
-        //            new PixelBoard(unit, sheet),
-        //            new RunBoard(unit, scene),
-        //            new SectionBoard(unit, scene),
-        //            new GlyphBoard(unit, getController(), null, true),
-        //            new CheckBoard<Glyph>(
-        //                unit + "-Common",
-        //                commonSuite,
-        //                scene.getSelectionService(),
-        //                eventClasses),
-        //            new CheckBoard<Glyph>(
-        //                unit + "-Ledger",
-        //                ledgerSuite,
-        //                scene.getSelectionService(),
-        //                eventClasses),
-        //            new CheckBoard<Glyph>(
-        //                unit + "-Ending",
-        //                endingSuite,
-        //                scene.getSelectionService(),
-        //                eventClasses));
-        //
-        //        // Create a hosting frame for the view
-        //        ScrollView slv = new ScrollView(lagView);
-        //        sheet.getAssembly()
-        //             .addViewTab(Step.HORIZONTALS_TAB, slv, boardsPane);
     }
 
     //----------------------//
@@ -1087,9 +1040,6 @@ public class HorizontalsBuilder
         //        Scale.Fraction     chunkWidth = new Scale.Fraction(
         //            0.33,
         //            "Width of half area to look for chunks");
-        Constant.Boolean   displayFrame = new Constant.Boolean(
-            false,
-            "Should we display a frame on the horizontal sticks");
         Scale.Fraction     extensionMinPointNb = new Scale.Fraction(
             0.2,
             "Minimum number of points to compute extension of crossing objects");
