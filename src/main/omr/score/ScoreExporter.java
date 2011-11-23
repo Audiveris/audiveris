@@ -368,7 +368,7 @@ public class ScoreExporter
     public BigDecimal toTenths (double dist)
     {
         return new BigDecimal(
-            "" + (int) Math.rint((10f * dist) / current.scale.interline()));
+            "" + (int) Math.rint((10f * dist) / current.scale.getInterline()));
     }
 
     //- All Visiting Methods ---------------------------------------------------
@@ -1614,7 +1614,7 @@ public class ScoreExporter
                 defaults.setScaling(scaling);
                 scaling.setMillimeters(
                     new BigDecimal(
-                        "" + ((current.scale.interline() * 25.4 * 4) / 300))); // Assuming 300 DPI
+                        "" + ((current.scale.getInterline() * 25.4 * 4) / 300))); // Assuming 300 DPI
                 scaling.setTenths(new BigDecimal(40));
 
                 // [Defaults]/PageLayout (using first page)

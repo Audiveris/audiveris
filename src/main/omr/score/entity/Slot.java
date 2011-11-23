@@ -130,7 +130,7 @@ public abstract class Slot
         double slotMargin = measure.getScore()
                                    .getSlotMargin();
         xUnitsMargin = (int) Math.rint(
-            measure.getScale().interline() * slotMargin);
+            measure.getScale().getInterline() * slotMargin);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -872,7 +872,7 @@ public abstract class Slot
                 int dy = Math.abs(
                     newChord.getHeadLocation().y -
                     oldChord.getHeadLocation().y) / newChord.getScale()
-                                                            .interline();
+                                                            .getInterline();
                 int dStem = Math.abs(
                     newChord.getStemDir() - oldChord.getStemDir());
 

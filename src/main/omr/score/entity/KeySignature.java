@@ -23,7 +23,7 @@ import omr.glyph.facets.Glyph;
 import omr.log.Logger;
 
 import omr.math.Histogram;
-import omr.math.Histogram.Pair;
+import omr.math.Histogram.PeakEntry;
 
 import omr.run.Orientation;
 
@@ -339,13 +339,15 @@ public class KeySignature
                 histo.print(System.out);
             }
 
-            List<Histogram.Pair<Integer>> pairs = histo.getPeaks(
-                ((int) Math.rint(
-                    histo.getMaxCount() * constants.heightRatio.getValue())));
+            List<PeakEntry<Integer>> peaks = histo.getPeaks(
+                (int) Math.rint(
+                    histo.getMaxCount() * constants.heightRatio.getValue()),
+                true,
+                false);
 
             if (logger.isFineEnabled()) {
-                for (Histogram.Pair<Integer> pair : pairs) {
-                    logger.fine(pair.toString());
+                for (PeakEntry<Integer> peak : peaks) {
+                    logger.fine(peak.toString());
                 }
             }
 
@@ -353,21 +355,22 @@ public class KeySignature
 
             if (key > 0) {
                 // Sharps : use center of the two vertical sticks
-                if (pairs.size() == (2 * key)) {
+                if (peaks.size() == (2 * key)) {
                     for (int i = 0; i < key; i++) {
-                        Pair<Integer> left = pairs.get(2 * i);
-                        Pair<Integer> right = pairs.get((2 * i) + 1);
+                        PeakEntry<Integer> left = peaks.get(2 * i);
+                        PeakEntry<Integer> right = peaks.get((2 * i) + 1);
                         refs.add(
                             (int) Math.rint(
-                                (left.first + left.second + right.first +
-                                                                right.second) / 4d));
+                                (left.getKey().first + left.getKey().second +
+                                                                right.getKey().first +
+                                                                right.getKey().second) / 4d));
                     }
                 }
             } else {
                 // Flats : use vertical stick on left
-                if (pairs.size() == -key) {
-                    for (Pair<Integer> pair : pairs) {
-                        refs.add(pair.first);
+                if (peaks.size() == -key) {
+                    for (PeakEntry<Integer> peak : peaks) {
+                        refs.add(peak.getKey().first);
                     }
                 }
             }

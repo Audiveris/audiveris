@@ -138,7 +138,7 @@ public class Note
         this(
             chord,
             glyph,
-            getItemCenter(glyph, 0, chord.getScale().interline()),
+            getItemCenter(glyph, 0, chord.getScale().getInterline()),
             1,
             0);
         glyph.setTranslation(this);
@@ -219,7 +219,7 @@ public class Note
                         (staff.getTopLeft().y -
                                                 staff.getSystem().getTopLeft().y) +
                         ((chord.getScale()
-                               .interline() * (4d + pitchPosition)) / 2))));
+                               .getInterline() * (4d + pitchPosition)) / 2))));
         }
 
         // Note box
@@ -254,7 +254,7 @@ public class Note
 
         ScoreSystem system = getSystem();
         int         interline = system.getScale()
-                                      .interline();
+                                      .getInterline();
 
         // Rest?
         isRest = ShapeRange.Rests.contains(glyph.getShape());
@@ -615,7 +615,7 @@ public class Note
         }
 
         for (int i = 0; i < card; i++) {
-            PixelRectangle itemBox = getItemBox(glyph, i, scale.interline());
+            PixelRectangle itemBox = getItemBox(glyph, i, scale.getInterline());
 
             if (stem != null) {
                 if (!itemBox.intersects(stemBox)) {

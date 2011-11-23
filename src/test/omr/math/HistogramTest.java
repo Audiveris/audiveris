@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.math;
 
-import omr.math.Histogram.Pair;
+import omr.math.Histogram.Peak;
 
 import junit.framework.Assert;
 import static org.junit.Assert.*;
@@ -258,18 +258,18 @@ public class HistogramTest
         int                minCount = 6;
         Histogram<Integer> instance = createHistogram();
         List               expResult = Arrays.asList(
-            new Pair(4, 5),
-            new Pair(10, 10));
+            new Peak(4, 5),
+            new Peak(10, 10));
         List               result = instance.getPeaks(minCount);
 
         assertEquals(expResult.size(), result.size());
 
-        Iterator<Pair<Integer>> expIt = expResult.iterator();
-        Iterator<Pair<Integer>> resIt = result.iterator();
+        Iterator<Peak<Integer>> expIt = expResult.iterator();
+        Iterator<Peak<Integer>> resIt = result.iterator();
 
         while (expIt.hasNext()) {
-            Pair expPair = expIt.next();
-            Pair resPair = resIt.next();
+            Peak expPair = expIt.next();
+            Peak resPair = resIt.next();
             assertEquals(expPair.first, resPair.first);
             assertEquals(expPair.second, resPair.second);
         }

@@ -15,6 +15,8 @@ import omr.constant.Constant;
 
 import omr.log.Logger;
 
+import omr.math.Histogram;
+
 import omr.util.DoubleValue;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -23,10 +25,11 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class <code>Scale</code> encapsulates what drives the scale of a given sheet,
- * namely the main lengths of foreground and background vertical lags (which are
- * staff line thickness and white interval between staff lines respectively),
- * and the sum of both which represents the main interline value.
+ * Class {@code Scale} encapsulates what drives the scale of a sheet,
+ * namely the main lengths of foreground and background vertical runs
+ * (which are staff line thickness and white interval between staff
+ * lines respectively), and the sum of these lengths which represents
+ * the main interline value.
  *
  * <p>This class also provides methods for converting values based on what the
  * interline and the line thickness are actually worth.
@@ -56,17 +59,47 @@ public class Scale
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Most frequent vertical distance in pixels from one line to the other*/
-    @XmlElement
-    private int interline;
+    //
+    //    /** Most frequent vertical distance in pixels from one line to the other */
+    //    @XmlElement
+    //    private final int interline;
+    //
+    //    /** Most frequent foreground height */
+    //    @XmlElement
+    //    private final int mainFore;
+    //
+    //    /** Minimum interline (using standard percentile) */
+    //    @XmlElement
+    //    private final Integer minInterline;
+    //
+    //    /** Maximum interline (using standard percentile) */
+    //    @XmlElement
+    //    private final Integer maxInterline;
+    //
+    //    /** Second most frequent interline */
+    //    @XmlElement
+    //    private final Integer secondInterline;
+    //
+    //    /** Minimum second interline */
+    //    @XmlElement
+    //    private final Integer minSecondInterline;
+    //
+    //    /** Maximum second interline */
+    //    @XmlElement
+    //    private final Integer maxSecondInterline;
+    //
+    //    /** Maximum foreground height (using standard percentile) */
+    //    @XmlElement
+    //    private final Integer maxFore;
 
-    /** Second most frequent vertical distance in pixels from one line to the other*/
-    @XmlElement
-    private Integer secondInterline;
+    /** Line thickness range */
+    private Range lineRange;
 
-    /** Most frequent foreground height */
-    @XmlElement
-    private int mainFore;
+    /** Main interline range */
+    private Range interlineRange;
+
+    /** Second interline range */
+    private Range secondInterlineRange;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -74,33 +107,13 @@ public class Scale
     // Scale //
     //-------//
     /**
-     * Create a scale entity, this is meant for allocation after a score is
-     * read.
-     *
+     * Create a degenerated scale entity, meant for computing scale-dependent
+     * parameters.
      * @param interline the score interline value.
      */
     public Scale (int interline)
     {
-        this.interline = interline;
-    }
-
-    //-------//
-    // Scale //
-    //-------//
-    /**
-     * Create a scale entity, meant for a whole sheet.
-     *
-     * @param interline the interline value
-     * @param mainFore  the line thickness
-     * @param secondInterline the second interline value, or null
-     */
-    public Scale (int     interline,
-                  int     mainFore,
-                  Integer secondInterline)
-    {
-        this.mainFore = mainFore;
-        this.interline = interline;
-        this.secondInterline = secondInterline;
+        this(interline, -1);
     }
 
     //-------//
@@ -108,96 +121,181 @@ public class Scale
     //-------//
     /**
      * Create a scale entity, meant for a staff.
-     *
      * @param interline the interline value
      * @param mainFore  the line thickness
      */
     public Scale (int interline,
                   int mainFore)
     {
-        this(interline, mainFore, null);
+        this(new Range(-1, mainFore, -1), new Range(-1, interline, -1), null);
     }
 
     //-------//
     // Scale //
     //-------//
-    /** Needed by JAXB */
-    public Scale ()
+    /**
+     * Create a scale entity, meant for a whole sheet.
+     * @param lineRange range of line thickness
+     * @param interlineRange range of interline
+     * @param secondInterlineRange range of secondInterline
+     */
+    public Scale (Range lineRange,
+                  Range interlineRange,
+                  Range secondInterlineRange)
     {
+        this.lineRange = lineRange;
+        this.interlineRange = interlineRange;
+        this.secondInterlineRange = secondInterlineRange;
+    }
+
+    //-------//
+    // Scale //
+    //-------//
+    /** No-arg constructor, needed by JAXB */
+    private Scale ()
+    {
+        this(null, null, null);
     }
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------//
-    // interline //
-    //-----------//
+    //--------------//
+    // getInterline //
+    //--------------//
     /**
-     * Report the interline value this scale is based upon
-     *
+     * Report the interline value this scale is based upon.
      * @return the number of pixels (black + white) from one line to the other.
      */
-    public int interline ()
+    public int getInterline ()
     {
-        return interline;
+        return interlineRange.best;
     }
 
-    //----------//
-    // mainFore //
-    //----------//
+    //-------------//
+    // getMainFore //
+    //-------------//
     /**
-     * Report the line thickness this scale is based upon
-     *
+     * Report the line thickness this scale is based upon.
      * @return the number of black pixels in a staff line
      */
-    public int mainFore ()
+    public int getMainFore ()
     {
-        return mainFore;
+        return lineRange.best;
+    }
+
+    //------------//
+    // getMaxFore //
+    //------------//
+    /**
+     * Report the maximum line thickness (using standard percentile)
+     * @return the maxFore value
+     */
+    public Integer getMaxFore ()
+    {
+        return lineRange.max;
+    }
+
+    //-----------------//
+    // getMaxInterline //
+    //-----------------//
+    /**
+     * Report the maximum interline (using standard percentile)
+     * @return the maxInterline
+     */
+    public Integer getMaxInterline ()
+    {
+        return interlineRange.max;
+    }
+
+    //-----------------------//
+    // getMaxSecondInterline //
+    //-----------------------//
+    /**
+     * Report the maximum second interline (using standard percentile)
+     * @return the maxSecondInterline
+     */
+    public Integer getMaxSecondInterline ()
+    {
+        if (secondInterlineRange != null) {
+            return secondInterlineRange.max;
+        } else {
+            return null;
+        }
+    }
+
+    //-----------------//
+    // getMinInterline //
+    //-----------------//
+    /**
+     * Report the minimum interline (using standard percentile)
+     * @return the minInterline
+     */
+    public Integer getMinInterline ()
+    {
+        return interlineRange.min;
+    }
+
+    //-----------------------//
+    // getMinSecondInterline //
+    //-----------------------//
+    /**
+     * Report the minimum second interline (using standard percentile)
+     * @return the minSecondInterline
+     */
+    public Integer getMinSecondInterline ()
+    {
+        if (secondInterlineRange != null) {
+            return secondInterlineRange.min;
+        } else {
+            return null;
+        }
+    }
+
+    //--------------------//
+    // getSecondInterline //
+    //--------------------//
+    /**
+     * Report the second interline value this scale is based upon.
+     * @return the second number if any of pixels (black + white) from one line
+     * to the other, otherwise null.
+     */
+    public Integer getSecondInterline ()
+    {
+        if (secondInterlineRange != null) {
+            return secondInterlineRange.best;
+        } else {
+            return null;
+        }
     }
 
     //------------------//
     // pixelsToAreaFrac //
     //------------------//
     /**
-     * Compute the interline area fraction that corresponds to the given number
-     * of pixels.
-     *
+     * Compute the interline area fraction that corresponds to the
+     * given number of pixels.
      * @param pixels the equivalent in number of pixels
      * @return the interline area fraction
      * @see #toPixels
      */
     public double pixelsToAreaFrac (double pixels)
     {
-        return pixels / (interline * interline);
+        return pixels / (interlineRange.best * interlineRange.best);
     }
 
     //--------------//
     // pixelsToFrac //
     //--------------//
     /**
-     * Compute the interline fraction that corresponds to the given number of
-     * pixels.
-     *
+     * Compute the interline fraction that corresponds to the given
+     * number of pixels.
      * @param pixels the equivalent in number of pixels
      * @return the interline fraction
      * @see #toPixels
      */
     public double pixelsToFrac (double pixels)
     {
-        return pixels / interline;
-    }
-
-    //-----------------//
-    // secondInterline //
-    //-----------------//
-    /**
-     * Report the second interline value this scale is based upon
-     *
-     * @return the second number if any of pixels (black + white) from one line
-     * to the other, otherwise null.
-     */
-    public Integer secondInterline ()
-    {
-        return secondInterline;
+        return pixels / interlineRange.best;
     }
 
     //----------//
@@ -206,9 +304,7 @@ public class Scale
     /**
      * Compute the number of pixels that corresponds to the fraction of
      * interline provided, according to the scale.
-     *
      * @param frac a measure based on interline (1 = one interline)
-     *
      * @return the actual number of pixels with the current scale
      */
     public int toPixels (Fraction frac)
@@ -222,63 +318,61 @@ public class Scale
     /**
      * Compute the number of pixels that corresponds to the fraction of
      * line thickness provided, according to the scale.
-     *
-     * @param lFrac a measure based on line thickness (1 = one line height)
-     *
+     * @param lineFrac a measure based on line thickness (1 = one line height)
      * @return the actual number of pixels with the current scale
      */
-    public int toPixels (LineFraction lFrac)
+    public int toPixels (LineFraction lineFrac)
     {
-        return (int) Math.rint(toPixelsDouble(lFrac));
+        return (int) Math.rint(toPixelsDouble(lineFrac));
     }
 
     //----------//
     // toPixels //
     //----------//
     /**
-     * Compute the squared-normalized number of pixels, according to the scale.
-     *
+     * Compute the squared-normalized number of pixels, according to
+     * the scale.
      * @param areaFrac a measure based on interline (1 = one interline square)
-     *
      * @return the actual squared number of pixels with the current scale
      */
     public int toPixels (AreaFraction areaFrac)
     {
-        return (int) Math.rint(interline * interline * areaFrac.getValue());
+        return (int) Math.rint(
+            interlineRange.best * interlineRange.best * areaFrac.getValue());
     }
 
     //----------------//
     // toPixelsDouble //
     //----------------//
     /**
-     * Convenient method, working directly on a constant of interline fraction.
+     * Convenient method, working directly on a constant of interline
+     * fraction.
      * Same as toPixels, but the result is a double instead of a rounded int.
-     *
      * @param frac the interline fraction constant
      * @return the equivalent in number of pixels
      * @see #toPixels
      */
     public double toPixelsDouble (Fraction frac)
     {
-        return (double) interline * frac.getWrappedValue()
-                                        .doubleValue();
+        return (double) interlineRange.best * frac.getWrappedValue()
+                                                  .doubleValue();
     }
 
     //----------------//
     // toPixelsDouble //
     //----------------//
     /**
-     * Convenient method, working directly on a constant of line fraction.
+     * Convenient method, working directly on a constant of line
+     * fraction.
      * Same as toPixels, but the result is a double instead of a rounded int.
-     *
-     * @param lFrac the line fraction constant
+     * @param lineFrac the line fraction constant
      * @return the equivalent in number of pixels
      * @see #toPixels
      */
-    public double toPixelsDouble (LineFraction lFrac)
+    public double toPixelsDouble (LineFraction lineFrac)
     {
-        return (double) mainFore * lFrac.getWrappedValue()
-                                        .doubleValue();
+        return (double) lineRange.best * lineFrac.getWrappedValue()
+                                                 .doubleValue();
     }
 
     //----------//
@@ -289,14 +383,16 @@ public class Scale
     {
         StringBuilder sb = new StringBuilder();
         sb.append("{Scale");
-        sb.append(" mainFore=")
-          .append(mainFore);
-        sb.append(" interline=")
-          .append(interline);
 
-        if (secondInterline != null) {
-            sb.append(" secondInterline=")
-              .append(secondInterline);
+        sb.append(" line:")
+          .append(lineRange);
+
+        sb.append(" interline:")
+          .append(interlineRange);
+
+        if (secondInterlineRange != null) {
+            sb.append(" secondInterline:")
+              .append(secondInterlineRange);
         }
 
         sb.append("}");
@@ -319,8 +415,8 @@ public class Scale
         //~ Constructors -------------------------------------------------------
 
         /**
-         * Specific constructor, where 'unit' and 'name' are assigned later
-         *
+         * Specific constructor, where 'unit' and 'name' are assigned
+         * later.
          * @param defaultValue the (double) default value
          * @param description  the semantic of the constant
          */
@@ -335,10 +431,11 @@ public class Scale
     // Fraction //
     //----------//
     /**
-     * A subclass of Constant.Double, meant to store a fraction of interline,
-     * since many distances on a music sheet are expressed in fraction of staff
-     * interline (as opposed to {@link Scale.LineFraction} which stores a
-     * fraction of line thickness)
+     * A subclass of Constant.Double, meant to store a fraction of
+     * interline, since many distances on a music sheet are expressed
+     * in fraction of staff interline (as opposed to
+     * {@link Scale.LineFraction} which stores a fraction of line
+     * thickness).
      */
     public static class Fraction
         extends Constant.Double
@@ -346,8 +443,8 @@ public class Scale
         //~ Constructors -------------------------------------------------------
 
         /**
-         * Specific constructor, where 'unit' and 'name' are assigned later
-         *
+         * Specific constructor, where 'unit' and 'name' are assigned
+         * later.
          * @param defaultValue the (double) default value
          * @param description  the semantic of the constant
          */
@@ -389,8 +486,8 @@ public class Scale
     //--------------//
     /**
      * A subclass of Constant.Double, meant to store a fraction of line
-     * thickness (as opposed to {@link Scale.Fraction} which stores a fraction
-     * of interline)
+     * thickness (as opposed to {@link Scale.Fraction} which stores a
+     * fraction of interline).
      */
     public static class LineFraction
         extends Constant.Double
@@ -398,8 +495,8 @@ public class Scale
         //~ Constructors -------------------------------------------------------
 
         /**
-         * Specific constructor, where 'unit' and 'name' are assigned later
-         *
+         * Specific constructor, where 'unit' and 'name' are assigned
+         * later.
          * @param defaultValue the (double) default value
          * @param description  the semantic of the constant
          */
@@ -433,6 +530,42 @@ public class Scale
         protected DoubleValue decode (java.lang.String str)
         {
             return new DoubleValue(java.lang.Double.valueOf(str));
+        }
+    }
+
+    //-------//
+    // Range //
+    //-------//
+    public static class Range
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Value at beginning of range */
+        public final int min;
+
+        /** Value at highest point in range */
+        public final int best;
+
+        /** Value at end of range */
+        public final int max;
+
+        //~ Constructors -------------------------------------------------------
+
+        public Range (int min,
+                      int best,
+                      int max)
+        {
+            this.min = min;
+            this.best = best;
+            this.max = max;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public String toString ()
+        {
+            return "(" + min + "," + best + "," + max + ")";
         }
     }
 }

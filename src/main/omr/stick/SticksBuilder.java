@@ -730,7 +730,7 @@ public class SticksBuilder
      */
     private void aggregateMemberSections ()
     {
-        final int interline = scale.interline();
+        final int interline = scale.getInterline();
 
         for (Section section : members) {
             if (section.isAggregable()) {

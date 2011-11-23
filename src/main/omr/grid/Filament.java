@@ -126,7 +126,7 @@ public class Filament
     public Filament (Scale                             scale,
                      Class<?extends FilamentAlignment> alignmentClass)
     {
-        super(scale.interline(), alignmentClass);
+        super(scale.getInterline(), alignmentClass);
         this.scale = scale;
     }
 
@@ -252,7 +252,7 @@ public class Filament
      */
     public int trueLength ()
     {
-        return (int) Math.rint((double) getWeight() / scale.mainFore());
+        return (int) Math.rint((double) getWeight() / scale.getMainFore());
     }
 
     //--------------//

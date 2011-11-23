@@ -87,7 +87,7 @@ public class SlurInspector
         compoundBuilder = new CompoundBuilder(system);
 
         // Compute parameters
-        interline = scale.interline();
+        interline = scale.getInterline();
         minChunkWeight = scale.toPixels(constants.minChunkWeight);
         slurBoxDx = scale.toPixels(constants.slurBoxDx);
         slurBoxDy = scale.toPixels(constants.slurBoxDy);

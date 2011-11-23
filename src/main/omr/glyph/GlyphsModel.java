@@ -197,7 +197,7 @@ public class GlyphsModel
             if (system != null) {
                 glyph = system.buildTransientCompound(glyphs);
             } else {
-                glyph = new BasicGlyph(sheet.getScale().interline());
+                glyph = new BasicGlyph(sheet.getScale().getInterline());
 
                 for (Glyph g : glyphs) {
                     glyph.include(g);

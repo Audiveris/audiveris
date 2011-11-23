@@ -242,7 +242,7 @@ public class StaffInfo
             return null;
         }
 
-        int         interline = specificScale.interline();
+        int         interline = specificScale.getInterline();
         Rectangle2D searchBox;
 
         if (rawPitch < 0) {
@@ -358,7 +358,7 @@ public class StaffInfo
     public int getHeight ()
     {
         return getSpecificScale()
-                   .interline() * (lines.size() - 1);
+                   .getInterline() * (lines.size() - 1);
     }
 
     //-------//
@@ -519,7 +519,7 @@ public class StaffInfo
                 Point2D center = bestLedger.getStick()
                                            .getAreaCenter();
                 int     ledgerPitch = bestLedger.getPitchPosition();
-                double  deltaPitch = (2d * (point.getY() - center.getY())) / specificScale.interline();
+                double  deltaPitch = (2d * (point.getY() - center.getY())) / specificScale.getInterline();
                 pitch = ledgerPitch + deltaPitch;
             }
         }
@@ -725,7 +725,7 @@ public class StaffInfo
 
         if (specificScale != null) {
             sb.append(" specificScale=")
-              .append(specificScale.interline());
+              .append(specificScale.getInterline());
         }
 
         if (leftBar != null) {

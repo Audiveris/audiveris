@@ -67,6 +67,9 @@ public class GridBuilder
     /** Companion in charge of bar lines */
     private final BarsRetriever barsRetriever;
 
+    /** For runs display, if any */
+    private final RunsViewer runsViewer;
+
     //~ Constructors -----------------------------------------------------------
 
     //-------------//
@@ -83,6 +86,9 @@ public class GridBuilder
 
         barsRetriever = new BarsRetriever(sheet);
         linesRetriever = new LinesRetriever(sheet, barsRetriever);
+
+        runsViewer = (Main.getGui() != null)
+                     ? new RunsViewer(sheet, linesRetriever, barsRetriever) : null;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -180,21 +186,20 @@ public class GridBuilder
             // allow the dewarping of the initial picture.
 
             // View on the initial runs (just for information)
-            if (showRuns) {
-                // Add a view on runs table
-                linesRetriever.addRunsTab(wholeVertTable);
+            if (showRuns && (Main.getGui() != null)) {
+                runsViewer.display(wholeVertTable);
             }
 
             // hLag creation
             watch.start("linesRetriever.buildLag");
 
-            RunsTable purgedVertTable = linesRetriever.buildLag(
+            RunsTable longVertTable = linesRetriever.buildLag(
                 wholeVertTable,
                 showRuns);
 
             // vLag creation
             watch.start("barsRetriever.buildLag");
-            barsRetriever.buildLag(purgedVertTable, showRuns);
+            barsRetriever.buildLag(longVertTable, showRuns);
         } finally {
             if (constants.printWatch.getValue()) {
                 watch.print();

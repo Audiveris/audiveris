@@ -157,7 +157,7 @@ public class GlyphsBuilder
     public static Glyph buildGlyph (Scale               scale,
                                     Collection<Section> sections)
     {
-        Glyph glyph = new BasicGlyph(scale.interline());
+        Glyph glyph = new BasicGlyph(scale.getInterline());
 
         for (Section section : sections) {
             glyph.addSection(section, Glyph.Linking.LINK_BACK);
@@ -198,7 +198,7 @@ public class GlyphsBuilder
     public Glyph buildTransientGlyph (Collection<Section> sections)
     {
         // Build a glyph from all sections
-        Glyph compound = new BasicGlyph(scale.interline());
+        Glyph compound = new BasicGlyph(scale.getInterline());
 
         for (Section section : sections) {
             compound.addSection(section, Glyph.Linking.NO_LINK_BACK);
@@ -373,7 +373,7 @@ public class GlyphsBuilder
             // Not already visited ?
             if (!section.isProcessed()) {
                 // Let's build a new glyph around this starting section
-                Glyph glyph = new BasicGlyph(scale.interline());
+                Glyph glyph = new BasicGlyph(scale.getInterline());
                 considerConnection(glyph, section);
 
                 // Insert this newly built glyph into nest (no system invloved)

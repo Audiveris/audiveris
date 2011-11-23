@@ -244,7 +244,7 @@ public class PagePhysicalPainter
                 final PixelPoint head = new PixelPoint(chord.getHeadLocation());
 
                 // Slightly correct the ordinate on head side
-                final int dyFix = scale.interline() / 4;
+                final int dyFix = scale.getInterline() / 4;
 
                 if (tail.y < head.y) {
                     // Stem up
@@ -479,7 +479,7 @@ public class PagePhysicalPainter
             }
 
             // Determine proper font size for the system
-            musicFont = MusicFont.getFont(scale.interline());
+            musicFont = MusicFont.getFont(scale.getInterline());
 
             g.setColor(defaultColor);
 

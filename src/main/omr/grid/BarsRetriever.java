@@ -189,7 +189,7 @@ public class BarsRetriever
      */
     public void renderItems (Graphics2D g)
     {
-        if (constants.showVerticalLines.getValue() == false) {
+        if (!constants.showVerticalLines.isSet()) {
             return;
         }
 

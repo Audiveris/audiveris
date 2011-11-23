@@ -728,7 +728,7 @@ public class HorizontalsBuilder
         // Define a bounding rectangle for the virtual line
         // Properly shifted and enlarged
         Rectangle box = staffLine.getContourBox();
-        box.y += (index * scale.interline());
+        box.y += (index * scale.getInterline());
         box.grow(0, scale.toPixels(constants.ledgerMarginY));
 
         // Filter enclosed candidates

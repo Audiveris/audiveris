@@ -19,6 +19,7 @@ import omr.constant.ConstantSet;
 import omr.log.Logger;
 
 import omr.math.Histogram;
+import omr.math.Histogram.PeakEntry;
 
 import omr.run.Orientation;
 import omr.run.RunsRetriever;
@@ -43,7 +44,6 @@ import org.jfree.ui.RefineryUtilities;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map.Entry;
 
 import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
@@ -63,7 +63,7 @@ import javax.swing.WindowConstants;
  * case and if the sheet at hand is part of a multi-page score, we propose to
  * simply discard this sheet.</p>
  *
- * @see omr.sheet.Scale
+ * @see Scale
  *
  * @author Hervé Bitteur
  */
@@ -95,16 +95,19 @@ public class ScaleBuilder
     private Histogram<Integer> backHisto;
 
     /** Minimum population percentage for validating an extremum */
-    private final double quorumRatio = constants.minExtremaRatio.getValue();
+    private final double quorumRatio = constants.peakRatio.getValue();
 
     /** Most frequent length of foreground runs found in the picture */
-    private Peak forePeak;
+    private PeakEntry<Double> forePeak;
 
     /** Most frequent length of background runs found in the picture */
-    private Peak backPeak;
+    private PeakEntry<Double> backPeak;
 
     /** Second frequent length of background runs found in the picture */
-    private Peak secondBackPeak;
+    private PeakEntry<Double> secondBackPeak;
+
+    /** Resulting scale, if any */
+    private Scale scale;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -135,7 +138,7 @@ public class ScaleBuilder
         if (adapter != null) {
             adapter.writePlot();
         } else {
-            logger.warning("No scale adapter available");
+            logger.warning("No scale data available");
         }
     }
 
@@ -161,47 +164,23 @@ public class ScaleBuilder
         runsBuilder.retrieveRuns(
             new PixelRectangle(0, 0, picture.getWidth(), picture.getHeight()));
 
-        // Check this page looks like music staves
-        // If not, StepException is raised
+        // Check this page looks like music staves. If not, throw StepException
         checkStaves();
 
-        // Check we have acceptable resolution
-        // If not, StepException is raised
+        // Check we have acceptable resolution.  If not, throw StepException
         checkResolution();
 
         // Here, we keep going. Let's compute derived data
-        int           interline = forePeak.value + backPeak.value;
+        scale = new Scale(
+            computeLine(),
+            computeInterline(),
+            computeSecondInterline());
 
-        // Report results to the user
-        StringBuilder sb = new StringBuilder(sheet.getLogPrefix());
-        sb.append("Scale main black is ")
-          .append(forePeak.value);
+        logger.info(sheet.getLogPrefix() + scale);
 
-        sb.append(", white is ")
-          .append(backPeak.value);
-
-        if (secondBackPeak != null) {
-            sb.append(", second white is ")
-              .append(secondBackPeak.value);
-        }
-
-        sb.append(", main interline is ")
-          .append(interline);
-
-        Integer secondInterline = null;
-
-        if (secondBackPeak != null) {
-            secondInterline = forePeak.value + secondBackPeak.value;
-            sb.append(", second interline is ")
-              .append(secondInterline);
-        }
-
-        logger.info(sb.toString());
-
-        // Register computation results
-        Scale scale = new Scale(interline, forePeak.value, secondInterline);
         sheet.getBench()
              .recordScale(scale);
+
         sheet.setScale(scale);
     }
 
@@ -216,9 +195,9 @@ public class ScaleBuilder
     void checkResolution ()
         throws StepException
     {
-        int interline = forePeak.value + backPeak.value;
+        int interline = (int) (forePeak.getKey().best + backPeak.getKey().best);
 
-        if (interline < constants.minInterline.getValue()) {
+        if (interline < constants.minResolution.getValue()) {
             makeDecision(
                 sheet.getId() + lineSeparator + "With an interline value of " +
                 interline + " pixels," + lineSeparator +
@@ -243,11 +222,11 @@ public class ScaleBuilder
 
         if (forePeak == null) {
             error = "No foreground runs found.";
-        } else if (forePeak.ratio < quorumRatio) {
+        } else if (forePeak.getValue() < quorumRatio) {
             error = "No regular foreground lines found.";
         } else if (backPeak == null) {
             error = "No background runs found.";
-        } else if (backPeak.ratio < quorumRatio) {
+        } else if (backPeak.getValue() < quorumRatio) {
             error = "No regularly spaced lines found.";
         }
 
@@ -255,6 +234,84 @@ public class ScaleBuilder
             makeDecision(
                 sheet.getId() + lineSeparator + error + lineSeparator +
                 "This sheet does not seem to contain staff lines.");
+        }
+    }
+
+    //------------------//
+    // computeInterline //
+    //------------------//
+    private Scale.Range computeInterline ()
+    {
+        int best = (int) (forePeak.getKey().best + backPeak.getKey().best);
+        int min = (int) Math.rint(
+            forePeak.getKey().first + backPeak.getKey().first);
+        int max = (int) Math.rint(
+            forePeak.getKey().second + backPeak.getKey().second);
+
+        return new Scale.Range(min, best, max);
+    }
+
+    //-------------//
+    // computeLine //
+    //-------------//
+    /**
+     * Compute the range for line thickness.
+     * The computation of line max is key for the rest of the application,
+     * since it governs the threshold between horizontal and vertical lags.
+     * @return the line range
+     */
+    private Scale.Range computeLine ()
+    {
+        int                     best = (int) Math.rint(forePeak.getKey().best);
+
+        int                     min = (int) Math.rint(forePeak.getKey().first);
+
+        // We use a lower count value, computed WRT best count, to measure
+        // actual dispersion around median value.
+        double                  ratio = constants.distributionRatio.getValue();
+        List<PeakEntry<Double>> forePeaks = foreHisto.getDoublePeaks(
+            foreHisto.getQuorumValue(
+                Math.min(
+                    constants.peakRatio.getValue(),
+                    forePeak.getValue() * ratio)),
+            false,
+            true);
+        PeakEntry<Double>       newForePeak = forePeaks.get(0);
+
+        // Is we had no dispersion at all (case of perfect scores,
+        // with 100% for the single value and 0 for prev and next values)
+        // the peak would exhibit a spread of: 2 * (1 - ratio)
+        // So, let's remove this bias.
+        double bias = 2 * (1 - ratio);
+        double delta = newForePeak.getKey().second -
+                       newForePeak.getKey().first - bias;
+        double median = (newForePeak.getKey().first +
+                        newForePeak.getKey().second) / 2;
+
+        // We need enough margin on poor quality scores
+        // So we take margin larger than strict delta/2
+        int max = (int) Math.rint(
+            median + (delta * constants.spreadFactor.getValue()));
+
+        return new Scale.Range(min, best, max);
+    }
+
+    //------------------------//
+    // computeSecondInterline //
+    //------------------------//
+    private Scale.Range computeSecondInterline ()
+    {
+        if (secondBackPeak != null) {
+            int best = (int) Math.rint(
+                forePeak.getKey().best + secondBackPeak.getKey().best);
+            int min = (int) Math.rint(
+                forePeak.getKey().first + secondBackPeak.getKey().first);
+            int max = (int) Math.rint(
+                forePeak.getKey().second + secondBackPeak.getKey().second);
+
+            return new Scale.Range(min, best, max);
+        } else {
+            return null;
         }
     }
 
@@ -388,39 +445,51 @@ public class ScaleBuilder
         // terminate //
         //-----------//
         /**
-         * Just compute scaling data from histograms, no decision yet.
+         * Just compute scaling data from histograms, no decision is made here.
          */
         @Implement(RunsRetriever.Adapter.class)
         public void terminate ()
         {
             if (logger.isFineEnabled()) {
-                logger.info("fore: " + Arrays.toString(fore));
-                logger.info("back: " + Arrays.toString(back));
+                logger.info("fore values: " + Arrays.toString(fore));
+                logger.info("back values: " + Arrays.toString(back));
             }
 
             StringBuilder sb = new StringBuilder(sheet.getLogPrefix());
 
             // Foreground peak
             foreHisto = createHistogram(fore);
-            forePeak = Peak.createPeak(foreHisto);
+
+            List<PeakEntry<Double>> forePeaks = foreHisto.getDoublePeaks(
+                foreHisto.getQuorumValue(constants.peakRatio.getValue()),
+                false,
+                true);
+
+            if (!forePeaks.isEmpty()) {
+                forePeak = forePeaks.get(0);
+            }
+
             sb.append("fore: ")
               .append(forePeak);
 
             // Background peak
             backHisto = createHistogram(back);
-            backPeak = Peak.createPeak(backHisto);
+
+            List<PeakEntry<Double>> backPeaks = backHisto.getDoublePeaks(
+                backHisto.getQuorumValue(0.1),
+                false,
+                true);
+
+            if (!backPeaks.isEmpty()) {
+                backPeak = backPeaks.get(0);
+            }
+
             sb.append(" back: ")
               .append(backPeak);
 
             // Second background peak?
-            List<Entry<Integer, Integer>> backMaxima = backHisto.getMaxima(
-                quorumRatio);
-
-            if (backMaxima.size() > 1) {
-                Entry<Integer, Integer> entry = backMaxima.get(1);
-                secondBackPeak = new Peak(
-                    entry.getKey(),
-                    entry.getValue() / (double) backHisto.getTotalCount());
+            if (backPeaks.size() > 1) {
+                secondBackPeak = backPeaks.get(1);
                 sb.append(" secondBack: ")
                   .append(secondBackPeak);
             }
@@ -434,13 +503,14 @@ public class ScaleBuilder
         public void writePlot ()
         {
             XYSeriesCollection dataset = new XYSeriesCollection();
-            int                upper = Math.min(
+            int                upper = (int) Math.min(
                 fore.length,
-                ((backPeak != null) ? ((backPeak.value * 3) / 2) : 20));
+                ((backPeak != null) ? ((backPeak.getKey().best * 3) / 2) : 20));
 
             // Foreground
             int      foreThreshold = foreHisto.getQuorumValue(quorumRatio);
-            XYSeries foreSeries = new XYSeries("Foreground: " + forePeak.value);
+            XYSeries foreSeries = new XYSeries(
+                "Foreground: " + forePeak.getKey().best);
 
             for (int i = 0; i <= upper; i++) {
                 foreSeries.add(i, fore[i]);
@@ -451,8 +521,9 @@ public class ScaleBuilder
             // Background
             int      backThreshold = backHisto.getQuorumValue(quorumRatio);
             XYSeries backSeries = new XYSeries(
-                "Background: " + backPeak.value +
-                ((secondBackPeak != null) ? (" & " + secondBackPeak.value) : ""));
+                "Background: " + backPeak.getKey().best +
+                ((secondBackPeak != null)
+                 ? (" & " + secondBackPeak.getKey().best) : ""));
 
             for (int i = 0; i <= upper; i++) {
                 backSeries.add(i, back[i]);
@@ -477,7 +548,7 @@ public class ScaleBuilder
             // Chart
             JFreeChart chart = ChartFactory.createXYLineChart(
                 sheet.getId() + " (Runs)", // Title
-                "Lengths", // X-Axis label
+                "Lengths " + scale, // X-Axis label
                 "Counts", // Y-Axis label
                 dataset, // Dataset
                 PlotOrientation.VERTICAL, // orientation,
@@ -520,60 +591,24 @@ public class ScaleBuilder
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** Should we produce a chart on computed scale data ? */
-        final Constant.Boolean plotting = new Constant.Boolean(
-            false,
-            "Should we produce a chart on computed scale data ?");
-
-        /** Minimum number of pixels per interline */
-        final Constant.Integer minInterline = new Constant.Integer(
+        final Constant.Integer minResolution = new Constant.Integer(
             "Pixels",
             11,
-            "Minimum number of pixels per interline");
+            "Minimum resolution, expressed as number of pixels per interline");
 
-        /** Minimum ratio of pixels for extrema acceptance */
-        final Constant.Ratio minExtremaRatio = new Constant.Ratio(
+        //
+        final Constant.Ratio peakRatio = new Constant.Ratio(
             0.1,
-            "Minimum ratio of pixels for extrema acceptance ");
-    }
+            "Minimum ratio of total pixels for peak acceptance");
 
-    //------//
-    // Peak //
-    //------//
-    /**
-     * Record a specific run length, together with its representative ratio.
-     */
-    private static final class Peak
-    {
-        //~ Instance fields ----------------------------------------------------
+        //
+        final Constant.Ratio distributionRatio = new Constant.Ratio(
+            0.25,
+            "Ratio of best count for reading line thickness distribution");
 
-        final int    value; // Related run length
-        final double ratio; // Ratio of this run length WRT all run lengths
-
-        //~ Constructors -------------------------------------------------------
-
-        public Peak (int    value,
-                     double ratio)
-        {
-            this.value = value;
-            this.ratio = ratio;
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        public static Peak createPeak (Histogram histo)
-        {
-            Entry<Integer, Integer> entry = histo.getMaximum();
-
-            return new Peak(
-                entry.getKey(),
-                entry.getValue() / (double) histo.getTotalCount());
-        }
-
-        @Override
-        public String toString ()
-        {
-            return value + "(" + (int) (100 * ratio) + "%)";
-        }
+        //
+        final Constant.Ratio spreadFactor = new Constant.Ratio(
+            1.0,
+            "Factor applied on line thickness spread");
     }
 }

@@ -588,7 +588,7 @@ public class Sheet
      */
     public int getInterline ()
     {
-        return scale.interline();
+        return scale.getInterline();
     }
 
     //--------------------//

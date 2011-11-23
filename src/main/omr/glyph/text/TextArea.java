@@ -29,6 +29,7 @@ import omr.lag.Roi;
 import omr.log.Logger;
 
 import omr.math.Histogram;
+import omr.math.Histogram.PeakEntry;
 
 import omr.run.Orientation;
 
@@ -505,17 +506,25 @@ public class TextArea
         // Retrieve max histogram value, and take threshold at half
         maxValue = histo.getMaxCount();
 
-        int                           mainThreshold = (int) Math.rint(
+        int                      mainThreshold = (int) Math.rint(
             maxValue * constants.mainHistoThreshold.getValue());
 
         // Use the main threshold for baseline
-        List<Histogram.Pair<Integer>> mainPeaks = histo.getPeaks(mainThreshold);
-        List<Histogram.Pair<Integer>> topPeaks = histo.getPeaks(
-            (int) Math.rint(maxValue * constants.topHistoThreshold.getValue()));
+        List<PeakEntry<Integer>> mainPeaks = histo.getPeaks(
+            mainThreshold,
+            true,
+            false);
+        List<PeakEntry<Integer>> topPeaks = histo.getPeaks(
+            (int) Math.rint(maxValue * constants.topHistoThreshold.getValue()),
+            true,
+            false);
 
-        topline = topPeaks.get(0).first;
-        medianLine = mainPeaks.get(0).first;
-        baseline = mainPeaks.get(mainPeaks.size() - 1).second;
+        topline = topPeaks.get(0)
+                          .getKey().first;
+        medianLine = mainPeaks.get(0)
+                              .getKey().first;
+        baseline = mainPeaks.get(mainPeaks.size() - 1)
+                            .getKey().second;
 
         //        int minMedianLine = baseline -
         //                            (int) ((baseline - topline) * constants.maxMedianRatio.getValue());
@@ -619,14 +628,14 @@ public class TextArea
                               : scale.toPixels(constants.minVerticalPacket);
 
         ///logger.info(this + " minGap:" + minGap + " minPacket:" + minPacket);
-        for (Histogram.Pair<Integer> packet : histo.getPeaks(1)) {
+        for (PeakEntry<Integer> packet : histo.getPeaks(1, true, false)) {
             // Pending packet?
             if (packetStart == null) {
-                packetStart = packet.first;
-                packetEnd = packet.second;
+                packetStart = packet.getKey().first;
+                packetEnd = packet.getKey().second;
             } else {
                 // Real gap before?
-                if ((packet.first - packetEnd) >= minGap) {
+                if ((packet.getKey().first - packetEnd) >= minGap) {
                     // Did we have a big enough packet?
                     if ((packetEnd - packetStart) >= minPacket) {
                         children++;
@@ -637,12 +646,12 @@ public class TextArea
                         }
                     }
 
-                    packetStart = packet.first;
+                    packetStart = packet.getKey().first;
                 } else {
                     // Gap too small
                 }
 
-                packetEnd = packet.second;
+                packetEnd = packet.getKey().second;
             }
         }
 

@@ -193,6 +193,14 @@ public class FilamentsFactory
     //--------------//
     // setMaxPosGap //
     //--------------//
+    public void setMaxPosGap (Scale.LineFraction lineFrac)
+    {
+        params.maxPosGap = scale.toPixels(lineFrac);
+    }
+
+    //--------------//
+    // setMaxPosGap //
+    //--------------//
     public void setMaxPosGap (Scale.Fraction frac)
     {
         params.maxPosGap = scale.toPixels(frac);
@@ -666,7 +674,7 @@ public class FilamentsFactory
             List<Glyph> glyphs = new ArrayList<Glyph>(sections.size());
 
             for (Section section : sections) {
-                Glyph glyph = new BasicGlyph(scale.interline());
+                Glyph glyph = new BasicGlyph(scale.getInterline());
                 glyph.addSection(
                     section,
                     GlyphComposition.Linking.NO_LINK_BACK);
@@ -880,6 +888,9 @@ public class FilamentsFactory
         Scale.LineFraction maxFilamentThickness = new Scale.LineFraction(
             1.5,
             "Maximum filament thickness WRT mean line height");
+        Scale.LineFraction maxPosGap = new Scale.LineFraction(
+            0.75,
+            "Maximum delta position for a gap between filaments");
 
         // Constants specified WRT mean interline
         // --------------------------------------
@@ -892,9 +903,6 @@ public class FilamentsFactory
         Scale.Fraction maxCoordGap = new Scale.Fraction(
             1,
             "Maximum delta coordinate for a gap between filaments");
-        Scale.Fraction maxPosGap = new Scale.Fraction(
-            0.2,
-            "Maximum delta position for a gap between filaments");
         Scale.Fraction maxSpace = new Scale.Fraction(
             0.16,
             "Maximum space between overlapping filaments");
@@ -913,7 +921,7 @@ public class FilamentsFactory
     // Parameters //
     //------------//
     /**
-     * Class {@code Parameters} gathers all constants related to horizontal frames
+     * Class {@code Parameters} gathers all scale-dependent parameters
      */
     private class Parameters
     {

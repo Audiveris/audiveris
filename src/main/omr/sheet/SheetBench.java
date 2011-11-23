@@ -123,11 +123,11 @@ public class SheetBench
     //-------------//
     public void recordScale (Scale scale)
     {
-        addProp("scale.mainFore", "" + scale.mainFore());
-        addProp("scale.interline", "" + scale.interline());
+        addProp("scale.mainFore", "" + scale.getMainFore());
+        addProp("scale.interline", "" + scale.getInterline());
 
-        if (scale.secondInterline() != null) {
-            addProp("scale.secondInterline", "" + scale.secondInterline());
+        if (scale.getSecondInterline() != null) {
+            addProp("scale.secondInterline", "" + scale.getSecondInterline());
         }
     }
 

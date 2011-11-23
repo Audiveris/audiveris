@@ -187,7 +187,7 @@ public class Page
      */
     public int getMeanStaffHeight ()
     {
-        return (Score.LINE_NB - 1) * scale.interline();
+        return (Score.LINE_NB - 1) * scale.getInterline();
     }
 
     //-----------------//

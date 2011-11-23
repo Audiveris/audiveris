@@ -302,7 +302,7 @@ public class TargetBuilder
                     TargetLine targetLine = new TargetLine(
                         line,
                         targetStaff.top +
-                        (staff.getSpecificScale().interline() * lineIdx),
+                        (staff.getSpecificScale().getInterline() * lineIdx),
                         targetStaff);
                     allTargetLines.add(targetLine);
                     targetStaff.lines.add(targetLine);

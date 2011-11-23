@@ -31,17 +31,27 @@ import java.util.TreeMap;
  *
  * @author Hervé Bitteur
  */
-public class Histogram<K>
+public class Histogram<K extends Number>
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** To sort entries by decreasing value */
-    public final Comparator<Entry<K, Integer>> reverseValueComparator = new Comparator<Entry<K, Integer>>() {
-        public int compare (Entry<K, Integer> e1,
-                            Entry<K, Integer> e2)
+    /** To sort peaks by decreasing value */
+    public final Comparator<PeakEntry<K>> reversePeakComparator = new Comparator<PeakEntry<K>>() {
+        public int compare (PeakEntry<K> e1,
+                            PeakEntry<K> e2)
         {
             // Put largest value first!
-            return Integer.signum(e2.getValue() - e1.getValue());
+            return Double.compare(e2.getValue(), e1.getValue());
+        }
+    };
+
+    /** To sort double peaks by decreasing value */
+    public final Comparator<PeakEntry<Double>> reverseDoublePeakComparator = new Comparator<PeakEntry<Double>>() {
+        public int compare (PeakEntry<Double> e1,
+                            PeakEntry<Double> e2)
+        {
+            // Put largest value first!
+            return Double.compare(e2.getValue(), e1.getValue());
         }
     };
 
@@ -103,6 +113,73 @@ public class Histogram<K>
         }
     }
 
+    //----------//
+    // getPeaks //
+    //----------//
+    /**
+     * Report the sequence of bucket peaks whose count is equal to or greater
+     * than the specified minCount value
+     * @param minCount the desired minimum count value
+     * @param absolute if true, absolute counts values are reported in peaks,
+     * otherwise relative counts to total histogram are used
+     * @param sorted if true, the reported sequence is sorted by decreasing
+     * count value, otherwise it is reported as naturally found along K data.
+     * @return the (perhaps empty but not null) sequence of peaks of buckets
+     */
+    public List<PeakEntry<Double>> getDoublePeaks (int     minCount,
+                                                   boolean absolute,
+                                                   boolean sorted)
+    {
+        final List<PeakEntry<Double>> peaks = new ArrayList<PeakEntry<Double>>();
+        K                             start = null;
+        K                             stop = null;
+        K                             best = null;
+        Integer                       bestCount = null;
+        boolean                       isAbove = false;
+
+        for (Entry<K, Integer> entry : map.entrySet()) {
+            if (entry.getValue() >= minCount) {
+                if ((bestCount == null) || (bestCount < entry.getValue())) {
+                    best = entry.getKey();
+                    bestCount = entry.getValue();
+                }
+
+                if (isAbove) { // Above -> Above
+                    stop = entry.getKey();
+                } else { // Below -> Above
+                    stop = start = entry.getKey();
+                    isAbove = true;
+                }
+            } else {
+                if (isAbove) { // Above -> Below
+                    peaks.add(
+                        new PeakEntry<Double>(
+                            createDoublePeak(start, best, stop, minCount),
+                            absolute ? bestCount : ((double) bestCount / totalCount)));
+                    stop = start = best = null;
+                    bestCount = null;
+                    isAbove = false;
+                } else { // Below -> Below
+                }
+            }
+        }
+
+        // Last range
+        if (isAbove) {
+            peaks.add(
+                new PeakEntry<Double>(
+                    createDoublePeak(start, best, stop, minCount),
+                    absolute ? bestCount : ((double) bestCount / totalCount)));
+        }
+
+        // Sort by decreasing count values?
+        if (sorted) {
+            Collections.sort(peaks, reverseDoublePeakComparator);
+        }
+
+        return peaks;
+    }
+
     //--------------//
     // getMaxBucket //
     //--------------//
@@ -143,66 +220,6 @@ public class Histogram<K>
         return max;
     }
 
-    //-----------//
-    // getMaxima //
-    //-----------//
-    /**
-     * Report the list of detected maxima in this histogram
-     * @param quorumRatio minimum value for significant maxima and minima,
-     * defined as ratio of total sum of values
-     * @return the sequence of maxima (key & value), sorted by decreasing value
-     */
-    public List<Entry<K, Integer>> getMaxima (double quorumRatio)
-    {
-        final List<Entry<K, Integer>> maxima = new ArrayList<Entry<K, Integer>>();
-
-        // Compute min count
-        final int         minCount = getQuorumValue(quorumRatio);
-
-        ///System.out.println("minCount: " + minCount);
-
-        // Current status WRT min count threshold
-        boolean           isAbove = false;
-
-        // Current maximum
-        Entry<K, Integer> best = null;
-
-        for (Entry<K, Integer> entry : map.entrySet()) {
-            int value = entry.getValue();
-
-            if (value >= minCount) {
-                if (isAbove) {
-                    // Above -> Above
-                    if ((best == null) || (value > best.getValue())) {
-                        best = entry;
-                    }
-                } else {
-                    // Below -> Above
-                    best = entry;
-                    isAbove = true;
-                }
-            } else {
-                if (isAbove) {
-                    // Above -> Below
-                    maxima.add(best);
-                    best = null;
-                    isAbove = false;
-                } else {
-                    // Below -> Below
-                }
-            }
-        }
-
-        if (isAbove) {
-            maxima.add(best);
-        }
-
-        // Sort by decreasing count value
-        Collections.sort(maxima, reverseValueComparator);
-
-        return maxima;
-    }
-
     //------------//
     // getMaximum //
     //------------//
@@ -210,11 +227,11 @@ public class Histogram<K>
      * Report the maximum entry in this histogram
      * @return the maximum entry (key & value)
      */
-    public Entry<K, Integer> getMaximum ()
+    public Map.Entry<K, Integer> getMaximum ()
     {
-        Entry<K, Integer> maximum = null;
+        Map.Entry<K, Integer> maximum = null;
 
-        for (Entry<K, Integer> entry : map.entrySet()) {
+        for (Map.Entry<K, Integer> entry : map.entrySet()) {
             int value = entry.getValue();
 
             if ((maximum == null) || (value > maximum.getValue())) {
@@ -229,20 +246,33 @@ public class Histogram<K>
     // getPeaks //
     //----------//
     /**
-     * Report the sequence of bucket ranges whose count is equal to or greater
+     * Report the sequence of bucket peaks whose count is equal to or greater
      * than the specified minCount value
      * @param minCount the desired minimum count value
-     * @return the (perhaps empty but not null) sequence of pairs of buckets
+     * @param absolute if true, absolute counts values are reported in peaks,
+     * otherwise relative counts to total histogram are used
+     * @param sorted if true, the reported sequence is sorted by decreasing
+     * count value, otherwise it is reported as naturally found along K data.
+     * @return the (perhaps empty but not null) sequence of peaks of buckets
      */
-    public List<Pair<K>> getPeaks (int minCount)
+    public List<PeakEntry<K>> getPeaks (int     minCount,
+                                        boolean absolute,
+                                        boolean sorted)
     {
-        final List<Pair<K>> peaks = new ArrayList<Pair<K>>();
-        boolean             isAbove = false;
-        K                   start = null;
-        K                   stop = null;
+        final List<PeakEntry<K>> peaks = new ArrayList<PeakEntry<K>>();
+        K                        start = null;
+        K                        stop = null;
+        K                        best = null;
+        Integer                  bestCount = null;
+        boolean                  isAbove = false;
 
-        for (Map.Entry<K, Integer> entry : map.entrySet()) {
+        for (Entry<K, Integer> entry : map.entrySet()) {
             if (entry.getValue() >= minCount) {
+                if ((bestCount == null) || (bestCount < entry.getValue())) {
+                    best = entry.getKey();
+                    bestCount = entry.getValue();
+                }
+
                 if (isAbove) { // Above -> Above
                     stop = entry.getKey();
                 } else { // Below -> Above
@@ -251,16 +281,29 @@ public class Histogram<K>
                 }
             } else {
                 if (isAbove) { // Above -> Below
-                    peaks.add(new Pair<K>(start, stop));
-                    stop = start = null;
+                    peaks.add(
+                        new PeakEntry<K>(
+                            new Peak<K>(start, best, stop),
+                            absolute ? bestCount : ((double) bestCount / totalCount)));
+                    stop = start = best = null;
+                    bestCount = null;
                     isAbove = false;
                 } else { // Below -> Below
                 }
             }
         }
 
+        // Last range
         if (isAbove) {
-            peaks.add(new Pair<K>(start, stop));
+            peaks.add(
+                new PeakEntry<K>(
+                    new Peak<K>(start, best, stop),
+                    absolute ? bestCount : ((double) bestCount / totalCount)));
+        }
+
+        // Sort by decreasing count values?
+        if (sorted) {
+            Collections.sort(peaks, reversePeakComparator);
         }
 
         return peaks;
@@ -426,24 +469,126 @@ public class Histogram<K>
         return map.values();
     }
 
+    //------------------//
+    // createDoublePeak //
+    //------------------//
+    private DoublePeak createDoublePeak (K   first,
+                                         K   best,
+                                         K   second,
+                                         int count)
+    {
+        // Use interpolation for more accurate data on first & second
+        double preciseFirst = first.doubleValue();
+        K      prevKey = prevKey(first);
+
+        if (prevKey != null) {
+            preciseFirst = preciseKey(prevKey, first, count);
+        }
+
+        double preciseSecond = second.doubleValue();
+        K      nextKey = nextKey(second);
+
+        if (nextKey != null) {
+            preciseSecond = preciseKey(second, nextKey, count);
+        }
+
+        return new DoublePeak(preciseFirst, best.doubleValue(), preciseSecond);
+    }
+
+    //---------//
+    // nextKey //
+    //---------//
+    private K nextKey (K key)
+    {
+        boolean found = false;
+
+        for (K k : map.keySet()) {
+            if (found) {
+                return k;
+            } else if (key.equals(k)) {
+                found = true;
+            }
+        }
+
+        return null;
+    }
+
+    //------------//
+    // preciseKey //
+    //------------//
+    private double preciseKey (K   prev,
+                               K   next,
+                               int count)
+    {
+        // Use interpolation for accurate data between prev & next keys
+        double prevCount = getCount(prev);
+        double nextCount = getCount(next);
+
+        return ((prev.doubleValue() * (nextCount - count)) +
+               (next.doubleValue() * (count - prevCount))) / (nextCount -
+                                                             prevCount);
+    }
+
+    //---------//
+    // prevKey //
+    //---------//
+    private K prevKey (K key)
+    {
+        K prev = null;
+
+        for (K k : map.keySet()) {
+            if (key.equals(k)) {
+                return prev;
+            } else {
+                prev = k;
+            }
+        }
+
+        return null;
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
+    //------------//
+    // DoublePeak //
+    //------------//
+    public static class DoublePeak
+        extends Peak<Double>
+    {
+        //~ Constructors -------------------------------------------------------
+
+        private DoublePeak (double first,
+                            double best,
+                            double second)
+        {
+            super(first, best, second);
+        }
+    }
+
     //------//
-    // Pair //
+    // Peak //
     //------//
-    public static class Pair<K>
+    public static class Peak<K extends Number>
     {
         //~ Instance fields ----------------------------------------------------
 
+        /** Value at beginning of range */
         public final K first;
+
+        /** Value at highest point in range */
+        public final K best;
+
+        /** Value at end of range */
         public final K second;
 
         //~ Constructors -------------------------------------------------------
 
-        public Pair (K first,
+        public Peak (K first,
+                     K best,
                      K second)
         {
             this.first = first;
+            this.best = best;
             this.second = second;
         }
 
@@ -452,7 +597,57 @@ public class Histogram<K>
         @Override
         public String toString ()
         {
-            return "(" + first + "," + second + ")";
+            return "(" + first.floatValue() + "," + best.floatValue() + "," +
+                   second.floatValue() + ")";
+        }
+    }
+
+    //-----------//
+    // PeakEntry //
+    //-----------//
+    public static class PeakEntry<K extends Number>
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** The peak data */
+        private final Peak<K> key;
+
+        /** Count at best value */
+        private final double value;
+
+        //~ Constructors -------------------------------------------------------
+
+        public PeakEntry (Peak<K> key,
+                          double  value)
+        {
+            this.key = key;
+            this.value = value;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        /**
+         * Returns the key.
+         * @return the key
+         */
+        public Peak<K> getKey ()
+        {
+            return key;
+        }
+
+        /**
+         * Returns the value associated with the key.
+         * @return the value associated with the key
+         */
+        public double getValue ()
+        {
+            return value;
+        }
+
+        @Override
+        public String toString ()
+        {
+            return key + "=" + (float) value;
         }
     }
 }

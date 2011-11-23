@@ -168,8 +168,8 @@ public class BassPattern
             PixelRectangle pixRect = new PixelRectangle(seed.getCentroid());
             pixRect.add(
                 new PixelPoint(
-                    pixRect.x - (2 * scale.interline()),
-                    pixRect.y + (3 * scale.interline())));
+                    pixRect.x - (2 * scale.getInterline()),
+                    pixRect.y + (3 * scale.getInterline())));
 
             return pixRect;
         }

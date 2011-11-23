@@ -216,7 +216,7 @@ public class Staff
     public int pitchToPixels (double pitchPosition)
     {
         int interline = getScale()
-                            .interline();
+                            .getInterline();
 
         return (int) Math.rint(((pitchPosition + 4) * interline) / 2.0);
     }

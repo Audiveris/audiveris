@@ -182,7 +182,7 @@ public class SplitPattern
 
             for (Section s : others) {
                 if ((s.getGlyph() == master) && !s.isProcessed()) {
-                    Glyph g = new BasicGlyph(scale.interline());
+                    Glyph g = new BasicGlyph(scale.getInterline());
                     expand(g, s, master);
 
                     split.sigs.put(g.getSignature(), g);

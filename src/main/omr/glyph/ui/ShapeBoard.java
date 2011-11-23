@@ -550,7 +550,7 @@ public class ShapeBoard
 
                     // Try to use full image size, adapted to current zoom
                     int           zoomedInterline = (int) Math.rint(
-                        view.getZoom().getRatio() * sheet.getScale().interline());
+                        view.getZoom().getRatio() * sheet.getScale().getInterline());
                     Shape         displayedShape = shape.isDraggable() ? shape
                                                    : Shape.NON_DRAGGABLE;
                     BufferedImage image = MusicFont.buildImage(

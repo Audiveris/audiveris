@@ -220,7 +220,7 @@ public class InsertTask
         for (PixelPoint location : locations) {
             Glyph      glyph = new VirtualGlyph(
                 shape,
-                sheet.getScale().interline(),
+                sheet.getScale().getInterline(),
                 location);
 
             SystemInfo system = sheet.getSystemOf(glyph.getAreaCenter());

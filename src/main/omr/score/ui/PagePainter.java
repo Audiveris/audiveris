@@ -246,7 +246,7 @@ public abstract class PagePainter
             box.height -= 2; // Gives better results
 
             // How many half arpeggiate symbols do we need?
-            final int        halfHeight = scale.interline();
+            final int        halfHeight = scale.getInterline();
             final int        count = (int) Math.rint(
                 (double) box.height / halfHeight);
             final TextLayout layout = musicFont.layout(ARPEGGIATO);
@@ -942,14 +942,14 @@ public abstract class PagePainter
     protected void initParameters ()
     {
         // Determine staff lines parameters
-        lineThickness = scale.mainFore();
+        lineThickness = scale.getMainFore();
         lineStroke = new BasicStroke(
             lineThickness,
             BasicStroke.CAP_ROUND,
             BasicStroke.JOIN_ROUND);
 
         // Determine stems parameters
-        stemThickness = scale.mainFore();
+        stemThickness = scale.getMainFore();
         stemHalfThickness = stemThickness / 2;
         stemStroke = new BasicStroke(
             stemThickness,
