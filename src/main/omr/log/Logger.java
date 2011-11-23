@@ -398,8 +398,10 @@ public class Logger
         //~ Instance fields ----------------------------------------------------
 
         final Constant.Boolean printStackOnWarning = new Constant.Boolean(
-            false,
+            true,
             "Should we print out the stack of any warning logged with exception?");
+
+        //
         final Constant.Boolean printThreadName = new Constant.Boolean(
             false,
             "Should we print out the name of the originating thread?");
