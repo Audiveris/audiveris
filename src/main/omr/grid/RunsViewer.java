@@ -53,7 +53,6 @@ public class RunsViewer
      * @param sheet the related sheet
      * @param linesRetriever the related lines retriever
      * @param barsRetriever the related bars retriever
-     * @param table the runs to display
      */
     public RunsViewer (Sheet          sheet,
                        LinesRetriever linesRetriever,

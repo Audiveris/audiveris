@@ -45,30 +45,30 @@ import java.util.concurrent.ConcurrentHashMap;
  * <em><b>source declaration</b></em> of the constants in the Java source file
  * itself. For example, in the <em><b>"omr/sheet/ScaleBuilder.java"</b></em>
  * file, we can find the following declaration which defines the minimum value
- * for sheet interline, here specified in pixels (the application reject scans
- * with lower values).
+ * for sheet resolution, here specified in pixels (the application has
+ * difficulties with scans of lower resolution).
  *
  * <pre>
- * Constant.Integer minInterline = new Constant.Integer(
+ * Constant.Integer minResolution = new Constant.Integer(
  *    "Pixels",
- *    15,
- *    "Minimum number of pixels per interline");
+ *    11,
+ *    "Minimum resolution, expressed as number of pixels per interline");
  * </pre>This declaration must be read as follows:<ul>
  *
- * <li><code>minInterline</code> is the Java object used in the application. It
- * is defined as a Constant.Integer, a subtype of Constant meant to host Integer
- * values</li>
+ * <li><code>minResolution</code> is the Java object used in the application.
+ * It is defined as a Constant.Integer, a subtype of Constant meant to host 
+ * Integer values</li>
  *
  * <li><code>"Pixels"</code> specifies the unit used. Here we are counting in
  * pixels.</li>
  *
- * <li><code>15</code> is the constant value. This is the value used by the
+ * <li><code>11</code> is the constant value. This is the value used by the
  * application, provided it is not overridden in the DEFAULT or USER properties
  * files, or later via a dedicated GUI tool.</li>
  *
- * <li><code>"Minimum number of pixels per interline"</code> is the constant
- * description, which will be used as a tool tip in the GUI interface in charge
- * of editing these constants.</li></ul>
+ * <li><code>"Minimum resolution, expressed as number of pixels per interline"
+ * </code> is the constant description, which will be used as a tool tip in 
+ * the GUI interface in charge of editing these constants.</li></ul>
  *
  * </li><br/>
  *
@@ -99,8 +99,13 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * <li>Then, <b>CLI</b> values, as set on the command line interface, by means
  * of the <em><b>"-option"</b> key=value</em> command. For further details on
- * this command, refer to the {@link Main} documentation. These constant values
- * defined at the CLI level are persisted in the USER file.</li> <br/>
+ * this command, refer to the {@link omr.CLI} class documentation. 
+ * <br/>Persistency here depends on the way Audiveris is running:<ul>
+ * <li>When running in <i>batch</i> mode, these CLI-defined constant values
+ * <b>are not</b> persisted in the USER file, unless the constant 
+ * <code>omr.Main.persistBatchCliConstants</code> is set to true.</li>
+ * <li>When running in <i>interactive</i> mode, these CLI-defined constant 
+ * values <b>are</b> always persisted in the USER file.</li></ul></li> <br/>
  *
  * <li>Finally, <b>UI Options Menu</b> values, as set online through the
  * graphical user interface. These constant values defined at the GUI level are
