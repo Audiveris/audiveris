@@ -975,7 +975,7 @@ public class TextLine
                         Glyph glyph = merge.compound;
                         system.computeGlyphFeatures(glyph);
                         glyph = system.addGlyph(glyph);
-                        glyph.setShape(merge.vote.shape, merge.vote.grade);
+                        glyph.setEvaluation(merge.vote);
 
                         if (logger.isFineEnabled()) {
                             logger.fine(

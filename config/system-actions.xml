@@ -56,7 +56,6 @@
     <action domain="VIEW" section="30"  class="omr.glyph.ui.ViewParameters"                   method="toggleAttachments" item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="30"  class="omr.glyph.ui.ViewParameters"                   method="toggleSections" item="javax.swing.JCheckBoxMenuItem" button="javax.swing.JToggleButton" />
 <!--    <action domain="VIEW" section="40"  class="omr.sheet.LinesBuilder$LinesParameters"        method="toggleLines"    item="javax.swing.JCheckBoxMenuItem"/>-->
-<!--    <action domain="VIEW" section="40"  class="omr.sheet.HorizontalsBuilder$LedgerParameters" method="toggleLines"    item="javax.swing.JCheckBoxMenuItem"/>-->
     <action domain="VIEW" section="50"  class="omr.ui.GuiActions"                             method="toggleBoards"   item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="50"  class="omr.ui.GuiActions"                             method="toggleLog"      item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="50"  class="omr.ui.GuiActions"                             method="toggleErrors"   item="javax.swing.JCheckBoxMenuItem"/>

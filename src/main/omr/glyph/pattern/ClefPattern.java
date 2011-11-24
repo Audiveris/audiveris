@@ -233,7 +233,7 @@ public class ClefPattern
                     system,
                     clefPredicate);
 
-                if ((newVote != null) && (newVote.grade < vote.grade)) {
+                if ((newVote != null) && (newVote.grade > vote.grade)) {
                     if (logger.isFineEnabled()) {
                         logger.fine(
                             vote + " better built with glyph#" + g.getId());

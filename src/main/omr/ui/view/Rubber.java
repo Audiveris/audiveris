@@ -752,7 +752,7 @@ public class Rubber
         //~ Instance fields ----------------------------------------------------
 
         Constant.Boolean displayCross = new Constant.Boolean(
-            false,
+            true,
             "Should we display just a cross for rubber (or whole lines)");
         Constant.Integer crossLegLength = new Constant.Integer(
             "pixels",

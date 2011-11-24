@@ -146,7 +146,7 @@ public class StemPattern
                     system);
 
                 if (vote != null) {
-                    glyph.setShape(vote.shape, vote.grade);
+                    glyph.setEvaluation(vote);
 
                     if (glyph.isWellKnown()) {
                         if (logger.isFineEnabled()) {

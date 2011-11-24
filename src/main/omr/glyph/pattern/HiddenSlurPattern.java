@@ -103,7 +103,7 @@ public class HiddenSlurPattern
                     system);
 
                 if ((vote != null) && (vote.shape == Shape.SLUR)) {
-                    compound.setShape(vote.shape, vote.grade);
+                    compound.setEvaluation(vote);
                     compound = system.addGlyph(compound);
 
                     if (logger.isFineEnabled()) {

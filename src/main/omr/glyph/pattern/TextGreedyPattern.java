@@ -130,7 +130,7 @@ public class TextGreedyPattern
 
             if ((vote != null) && (vote.shape == Shape.TEXT)) {
                 compound = system.addGlyph(compound);
-                compound.setShape(vote.shape, vote.grade);
+                compound.setEvaluation(vote);
 
                 if (logger.isFineEnabled()) {
                     logger.info(

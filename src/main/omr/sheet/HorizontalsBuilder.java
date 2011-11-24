@@ -818,71 +818,6 @@ public class HorizontalsBuilder
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //------------------//
-    // LedgerParameters //
-    //------------------//
-    public static class LedgerParameters
-        extends AbstractBean
-    {
-        //~ Static fields/initializers -----------------------------------------
-
-        /** Should the original ledger be painted */
-        public static final String ORIGINAL_LEDGER_PAINTING = "linePainting";
-
-        //~ Methods ------------------------------------------------------------
-
-        //-------------//
-        // getInstance //
-        //-------------//
-        public static LedgerParameters getInstance ()
-        {
-            return Holder.INSTANCE;
-        }
-
-        //-----------------//
-        // setLinePainting //
-        //-----------------//
-        public void setLinePainting (boolean value)
-        {
-            boolean oldValue = constants.displayLedgerLines.getValue();
-            constants.displayLedgerLines.setValue(value);
-            firePropertyChange(
-                ORIGINAL_LEDGER_PAINTING,
-                oldValue,
-                constants.displayLedgerLines.getValue());
-        }
-
-        //----------------//
-        // isLinePainting //
-        //----------------//
-        public boolean isLinePainting ()
-        {
-            return constants.displayLedgerLines.getValue();
-        }
-
-        //-------------//
-        // toggleLines //
-        //-------------//
-        /**
-         * Action that toggles the display of original pixels for the staff
-         * lines
-         * @param e the event that triggered this action
-         */
-        @Action(selectedProperty = ORIGINAL_LEDGER_PAINTING)
-        public void toggleLines (ActionEvent e)
-        {
-        }
-
-        //~ Inner Classes ------------------------------------------------------
-
-        private static class Holder
-        {
-            //~ Static fields/initializers -------------------------------------
-
-            public static final LedgerParameters INSTANCE = new LedgerParameters();
-        }
-    }
-
     //    //------------//
     //    // ChunkCheck //
     //    //------------//
@@ -1020,10 +955,6 @@ public class HorizontalsBuilder
 
         ///
 
-        /** Should we display original ledger lines */
-        Constant.Boolean displayLedgerLines = new Constant.Boolean(
-            false,
-            "Should we display original ledger lines?");
         Scale.Fraction     minCoreLength = new Scale.Fraction(
             0.2,
             "Minimum length for ledger core");

@@ -591,7 +591,7 @@ public class TextArea
         glyph = system.addGlyph(glyph);
 
         // No! glyph.setTextArea(this);
-        glyph.setShape(eval.shape, eval.grade);
+        glyph.setEvaluation(eval);
 
         if (logger.isFineEnabled()) {
             logger.fine("Glyph#" + glyph.getId() + " TEXT recognized");
