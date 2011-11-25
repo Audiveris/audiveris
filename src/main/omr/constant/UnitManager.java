@@ -29,14 +29,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
- * Class <code>UnitManager</code> manages all units (aka classes), for which we
- * have either a ConstantSet, or a Logger, or both.
+ * Class {@code UnitManager} manages all units (aka classes),
+ * for which we have either a ConstantSet, or a Logger, or both.
  *
  * <p>To help {@link UnitTreeTable} display the whole tree of UnitNodes,
  * UnitManager can pre-load all the classes known to contain a ConstantSet or a
  * Logger. This list is kept up-to-date and stored as a property
- *
- * <p>This class is meant to be thread-safe.
  *
  * @author Hervé Bitteur
  */
@@ -69,8 +67,8 @@ public class UnitManager
     private final ConcurrentSkipListSet<String> dirtySets = new ConcurrentSkipListSet<String>();
 
     /**
-     * Lists of all units known as containing a constantset. This is kept
-     * up-to-date and saved as a property.
+     * Lists of all units known as containing a constantset.
+     * This is kept up-to-date and saved as a property.
      */
     private Constant.String units;
 
@@ -82,7 +80,7 @@ public class UnitManager
     //-------------//
     // UnitManager //
     //-------------//
-    /** This is a singleton */
+    /** This is a singleton. */
     private UnitManager ()
     {
         mapOfNodes.put("<root>", root);
@@ -94,8 +92,7 @@ public class UnitManager
     // getInstance //
     //-------------//
     /**
-     * Report the single instance of this package
-     *
+     * Report the single instance of this package.
      * @return the single instance
      */
     public static UnitManager getInstance ()
@@ -107,10 +104,8 @@ public class UnitManager
     // getNode //
     //---------//
     /**
-     * Retrieves a node object, knowing its path name
-     *
+     * Retrieves a node object, knowing its path name.
      * @param path fully qualified node name
-     *
      * @return the node object, or null if not found
      */
     public Node getNode (String path)
@@ -122,8 +117,7 @@ public class UnitManager
     // getRoot //
     //---------//
     /**
-     * Return the PackageNode at the root of the node hierarchy
-     *
+     * Return the PackageNode at the root of the node hierarchy.
      * @return the root PackageNode
      */
     public PackageNode getRoot ()
@@ -135,9 +129,9 @@ public class UnitManager
     // addLogger //
     //-----------//
     /**
-     * Add a Logger, which like addSet means perhaps adding a UnitNode if not
-     * already allocated and setting its Logger reference to the provided Logger
-     *
+     * Add a Logger, which like addSet means perhaps adding a UnitNode
+     * if not already allocated and setting its Logger reference to the
+     * provided Logger.
      * @param logger the Logger to add to the hierarchy
      */
     public void addLogger (Logger logger)
@@ -151,10 +145,9 @@ public class UnitManager
     // addSet //
     //--------//
     /**
-     * Add a ConstantSet, which means perhaps adding a UnitNode if not already
-     * allocated and setting its ConstantSet reference to the provided
-     * ConstantSet.
-     *
+     * Add a ConstantSet, which means perhaps adding a UnitNode if not
+     * already allocated and setting its ConstantSet reference to the
+     * provided ConstantSet.
      * @param set the ConstantSet to add to the hierarchy
      */
     public void addSet (ConstantSet set)
@@ -171,7 +164,7 @@ public class UnitManager
     // checkAllUnits //
     //---------------//
     /**
-     * Check if all defined constants are used by at least one unit
+     * Check if all defined constants are used by at least one unit.
      */
     public void checkAllUnits ()
     {
@@ -216,8 +209,8 @@ public class UnitManager
     // checkDirtySets //
     //----------------//
     /**
-     * Go through all registered to-be-initialized sets, and initialize them,
-     * then clear the set of such dirty sets
+     * Go through all registered to-be-initialized sets, and initialize
+     * them, then clear the set of such dirty sets.
      */
     public void checkDirtySets ()
     {
@@ -248,8 +241,8 @@ public class UnitManager
     // dumpAllUnits //
     //--------------//
     /**
-     * Dumps on the standard output the current value of all Constants of all
-     * ConstantSets.
+     * Dumps on the standard output the current value of all Constants
+     * of all ConstantSets.
      */
     public void dumpAllUnits ()
     {
@@ -278,11 +271,11 @@ public class UnitManager
     // preLoadUnits //
     //--------------//
     /**
-     * Allows to preload the names of the various nodes in the hierarchy, by
-     * simply extracting names stored at previous runs. This will load the
-     * classes not already loaded. This method is meant to be used by the UI
-     * which let the user browse and modify the whole collection of constants.
-     *
+     * Allows to preload the names of the various nodes in the
+     * hierarchy, by simply extracting names stored at previous runs.
+     * This will load the classes not already loaded.
+     * This method is meant to be used by the UI which let the user browse and
+     * modify the whole collection of constants.
      * @param main the application main class name
      */
     public void preLoadUnits (String main)
@@ -331,19 +324,29 @@ public class UnitManager
     // searchUnits //
     //-------------//
     /**
-     * Search for all the units for which the provided string is found in the
-     * unit name or the unit description.
+     * Search for all the units for which the provided string is found
+     * in the unit name or the unit description.
      * @param string the string to search for
-     * @return the set (perhaps empty) of the matching units
+     * @return the set (perhaps empty) of the matching units, a mix of UnitNode
+     * and Constant instances.
      */
-    public Set<Constant> searchUnits (String string)
+    public Set<Object> searchUnits (String string)
     {
-        String        str = string.toLowerCase();
-        Set<Constant> found = new LinkedHashSet<Constant>();
+        String      str = string.toLowerCase();
+        Set<Object> found = new LinkedHashSet<Object>();
 
         for (Node node : mapOfNodes.values()) {
             if (node instanceof UnitNode) {
-                UnitNode    unit = (UnitNode) node;
+                UnitNode unit = (UnitNode) node;
+
+                // Search in unit name itself
+                if (unit.getSimpleName()
+                        .toLowerCase()
+                        .contains(str)) {
+                    found.add(unit);
+                }
+
+                // Search in unit constants, if any
                 ConstantSet set = unit.getConstantSet();
 
                 if (set != null) {
@@ -370,8 +373,7 @@ public class UnitManager
     // addUnit //
     //---------//
     /**
-     * Include a Unit in the hierarchy
-     *
+     * Include a Unit in the hierarchy.
      * @param unit the Unit to include
      */
     private void addUnit (UnitNode unit)
@@ -427,11 +429,9 @@ public class UnitManager
     // retrieveUnit //
     //--------------//
     /**
-     * Looks for the unit with given name. If the unit does not exist, it is
-     * created and inserted in the hierarchy
-     *
+     * Looks for the unit with given name.
+     * If the unit does not exist, it is created and inserted in the hierarchy.
      * @param name the name of the desired unit
-     *
      * @return the unit (found, or created)
      */
     private UnitNode retrieveUnit (String name)
@@ -457,8 +457,8 @@ public class UnitManager
     // storeUnits //
     //------------//
     /**
-     * Build a string by concatenating all node names and store it to disk for
-     * subsequent runs.
+     * Build a string by concatenating all node names and store it to
+     * disk for subsequent runs.
      */
     private void storeUnits ()
     {
@@ -489,10 +489,10 @@ public class UnitManager
     // updateParents //
     //---------------//
     /**
-     * Update the chain of parents of a Unit, by walking up all the package
-     * names found in the fully qualified Unit name, creating PackageNodes when
-     * needed, or adding a new child to an existing PackageNode.
-     *
+     * Update the chain of parents of a Unit, by walking up all the
+     * package names found in the fully qualified Unit name,
+     * creating PackageNodes when needed, or adding a new child to an
+     * existing PackageNode.
      * @param unit the Unit whose chain of parents is to be updated
      */
     private void updateParents (UnitNode unit)

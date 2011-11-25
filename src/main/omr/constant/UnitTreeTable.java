@@ -21,8 +21,8 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.Rectangle;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -211,58 +211,50 @@ public class UnitTreeTable
         }
     }
 
-    //-----------------------//
-    // setConstantsSelection //
-    //-----------------------//
+    //-------------------//
+    // setNodesSelection //
+    //-------------------//
     /**
-     * Select the rows that correspond to the provided constants
-     * @param constants the constants to select
+     * Select the rows that correspond to the provided nodes
+     * @param matches the nodes to select
      * @return the relevant rows
      */
-    public int[] setConstantsSelection (Collection<Constant> constants)
+    public List<Integer> setNodesSelection (Collection<Object> matches)
     {
         List<TreePath> paths = new ArrayList<TreePath>();
 
-        for (Constant constant : constants) {
-            TreePath path = getPath(constant);
-            paths.add(path);
+        for (Object object : matches) {
+            if (object instanceof Constant) {
+                Constant constant = (Constant) object;
+                TreePath path = getPath(constant, constant.getQualifiedName());
+                paths.add(path);
+            } else if (object instanceof Node) {
+                Node     node = (Node) object;
+                TreePath path = getPath(node, node.getName());
+                paths.add(path);
+            }
         }
 
+        // Selection on tree side
         tree.setSelectionPaths(paths.toArray(new TreePath[0]));
 
-        int[] rows = tree.getSelectionRows();
+        // Selection on table side
+        clearSelection();
 
-        if (rows != null) {
-            Arrays.sort(rows);
+        List<Integer> rows = new ArrayList<Integer>();
+
+        for (TreePath path : paths) {
+            int row = tree.getRowForPath(path);
+
+            if (row != -1) {
+                rows.add(row);
+                addRowSelectionInterval(row, row);
+            }
         }
+
+        Collections.sort(rows);
 
         return rows;
-    }
-
-    //---------//
-    // getPath //
-    //---------//
-    public TreePath getPath (Constant constant)
-    {
-        UnitManager  unitManager = UnitManager.getInstance();
-        String       fullName = constant.getQualifiedName();
-        List<Object> objects = new ArrayList<Object>();
-        objects.add(unitManager.getRoot());
-
-        int dotPos = -1;
-
-        while ((dotPos = fullName.indexOf('.', dotPos + 1)) != -1) {
-            String path = fullName.substring(0, dotPos);
-            objects.add(unitManager.getNode(path));
-        }
-
-        objects.add(constant);
-
-        if (logger.isFineEnabled()) {
-            logger.fine("constant:" + fullName + " objects:" + objects);
-        }
-
-        return new TreePath(objects.toArray());
     }
 
     //--------------------//
@@ -285,6 +277,32 @@ public class UnitTreeTable
         }
 
         scrollRectToVisible(rect);
+    }
+
+    //---------//
+    // getPath //
+    //---------//
+    private TreePath getPath (Object object,
+                              String fullName)
+    {
+        UnitManager  unitManager = UnitManager.getInstance();
+        List<Object> objects = new ArrayList<Object>();
+        objects.add(unitManager.getRoot());
+
+        int dotPos = -1;
+
+        while ((dotPos = fullName.indexOf('.', dotPos + 1)) != -1) {
+            String path = fullName.substring(0, dotPos);
+            objects.add(unitManager.getNode(path));
+        }
+
+        objects.add(object);
+
+        if (logger.isFineEnabled()) {
+            logger.fine("path to " + fullName + " objects:" + objects);
+        }
+
+        return new TreePath(objects.toArray());
     }
 
     //---------------//

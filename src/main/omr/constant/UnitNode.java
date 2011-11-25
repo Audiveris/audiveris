@@ -14,9 +14,9 @@ package omr.constant;
 import omr.log.Logger;
 
 /**
- * Class <code>UnitNode</code> represents a unit (class) in the hierarchy of
- * nodes. It represents a class and can have either a Logger, a ConstantSet, or
- * both.
+ * Class {@code UnitNode} represents a unit (class) in the hierarchy of
+ * nodes. 
+ * It represents a class and can have either a Logger, a ConstantSet, or both.
  *
  * @author Hervé Bitteur
  */
@@ -38,7 +38,6 @@ public class UnitNode
     //----------//
     /**
      * Create a new UnitNode.
-     *
      * @param name the fully qualified class/unit name
      */
     public UnitNode (String name)
@@ -52,8 +51,7 @@ public class UnitNode
     // setConstantSet //
     //----------------//
     /**
-     * Assigns the provided ConstantSet to this enclosing unit
-     *
+     * Assigns the provided ConstantSet to this enclosing unit.
      * @param set the ConstantSet to be assigned
      */
     public void setConstantSet (ConstantSet set)
@@ -65,8 +63,7 @@ public class UnitNode
     // getConstantSet //
     //----------------//
     /**
-     * Retrieves the ConstantSet associated to the unit (if any)
-     *
+     * Retrieves the ConstantSet associated to the unit (if any).
      * @return the ConstantSet instance, or null
      */
     public ConstantSet getConstantSet ()
@@ -78,8 +75,7 @@ public class UnitNode
     // setLogger //
     //-----------//
     /**
-     * Assigns the provided Logger to the unit
-     *
+     * Assigns the provided Logger to the unit.
      * @param logger the Logger instance
      */
     public void setLogger (Logger logger)
@@ -91,8 +87,7 @@ public class UnitNode
     // getLogger //
     //-----------//
     /**
-     * Retrieves the Logger instance associated to the unit (if any)
-     *
+     * Retrieves the Logger instance associated to the unit (if any).
      * @return the Logger instance, or null
      */
     public Logger getLogger ()

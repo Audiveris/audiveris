@@ -13,7 +13,6 @@ package omr.ui;
 
 import omr.Main;
 
-import omr.constant.Constant;
 import omr.constant.UnitManager;
 import omr.constant.UnitModel;
 import omr.constant.UnitTreeTable;
@@ -26,6 +25,10 @@ import org.jdesktop.application.ResourceMap;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
@@ -68,7 +71,7 @@ public class Options
     private String searchString = "";
 
     /** The relevant rows */
-    private int[] rows;
+    private List<Integer> rows = Collections.emptyList();
 
     /** Current user position in the relevant rows */
     private Integer rowIndex;
@@ -97,14 +100,14 @@ public class Options
         {
             setSelection();
 
-            if (rows != null) {
+            if (!rows.isEmpty()) {
                 if ((rowIndex != null) && (rowIndex > 0)) {
                     rowIndex--;
                 } else {
-                    rowIndex = rows.length - 1;
+                    rowIndex = rows.size() - 1;
                 }
 
-                unitTreeTable.scrollRowToVisible(rows[rowIndex]);
+                unitTreeTable.scrollRowToVisible(rows.get(rowIndex));
             }
         }
     };
@@ -115,14 +118,14 @@ public class Options
         {
             setSelection();
 
-            if (rows != null) {
-                if ((rowIndex != null) && (rowIndex < (rows.length - 1))) {
+            if (!rows.isEmpty()) {
+                if ((rowIndex != null) && (rowIndex < (rows.size() - 1))) {
                     rowIndex++;
                 } else {
                     rowIndex = 0;
                 }
 
-                unitTreeTable.scrollRowToVisible(rows[rowIndex]);
+                unitTreeTable.scrollRowToVisible(rows.get(rowIndex));
             }
         }
     };
@@ -199,6 +202,16 @@ public class Options
                                           .getContext()
                                           .getResourceMap(Options.class);
         resource.injectComponents(frame);
+
+        // Make sure the search entry field gets the focus at creation time
+        frame.addWindowListener(
+            new WindowAdapter() {
+                    @Override
+                    public void windowOpened (WindowEvent e)
+                    {
+                        searchField.requestFocus();
+                    }
+                });
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -215,16 +228,16 @@ public class Options
     // setSelection //
     //--------------//
     /**
-     * Pre-select the matching rows of the table, if any
+     * Pre-select the matching rows of the table, if any.
      */
     private void setSelection ()
     {
         searchString = searchField.getText()
                                   .trim();
 
-        Set<Constant> constants = UnitManager.getInstance()
+        Set<Object> matches = UnitManager.getInstance()
                                              .searchUnits(searchString);
-        rows = unitTreeTable.setConstantsSelection(constants);
+        rows = unitTreeTable.setNodesSelection(matches);
 
         if (rows == null) {
             rowIndex = null;

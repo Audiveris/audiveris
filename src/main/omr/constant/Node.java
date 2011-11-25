@@ -14,7 +14,7 @@ package omr.constant;
 import java.util.Comparator;
 
 /**
- * Abstract class <code>Node</code> represents a node in the hierarchy of
+ * Abstract class {@code Node} represents a node in the hierarchy of
  * packages and units (aka classes).
  *
  * @author Hervé Bitteur
@@ -46,7 +46,6 @@ public abstract class Node
     //------//
     /**
      * Create a new Node.
-     *
      * @param name the fully qualified node name
      */
     public Node (String name)
@@ -60,8 +59,7 @@ public abstract class Node
     // getName //
     //---------//
     /**
-     * Report the fully qualified name for this node
-     *
+     * Report the fully qualified name for this node.
      * @return the fully qualified node name
      */
     public String getName ()
@@ -69,31 +67,36 @@ public abstract class Node
         return name;
     }
 
+    //---------------//
+    // getSimpleName //
+    //---------------//
+    /**
+     * Return the last path component (non-qualified).
+     * @return the non-qualified node name
+     */
+    public String getSimpleName ()
+    {
+        int dot = name.lastIndexOf('.');
+
+        if (dot != -1) {
+            return name.substring(dot + 1);
+        } else {
+            return name;
+        }
+    }
+
     //----------//
     // toString //
     //----------//
     /**
-     * Since <code>toString()</code> is used by JTreeTable to display the node
-     * name, this method returns the last path component of the node, in other
-     * words the non-qualified name.
-     *
+     * Since {@code toString()} is used by JTreeTable to display the
+     * node name, this method returns the last path component of the
+     * node, in other words the non-qualified name.
      * @return the non-qualified node name
      */
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder();
-
-        //sb.append("<html><font color=\"#0000FF\">");
-        int dot = name.lastIndexOf('.');
-
-        if (dot != -1) {
-            sb.append(name.substring(dot + 1));
-        } else {
-            sb.append(name);
-        }
-
-        //sb.append("</font></html>");
-        return sb.toString();
+        return getSimpleName();
     }
 }

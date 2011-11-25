@@ -326,7 +326,7 @@ public class JTreeTable
         }
 
         /**
-         * Sublcassed to translate the graphics such that the last visible row
+         * Subclassed to translate the graphics such that the last visible row
          * will be drawn at 0,0.
          */
         @Override
