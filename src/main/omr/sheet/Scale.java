@@ -15,13 +15,10 @@ import omr.constant.Constant;
 
 import omr.log.Logger;
 
-import omr.math.Histogram;
-
 import omr.util.DoubleValue;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -59,46 +56,16 @@ public class Scale
 
     //~ Instance fields --------------------------------------------------------
 
-    //
-    //    /** Most frequent vertical distance in pixels from one line to the other */
-    //    @XmlElement
-    //    private final int interline;
-    //
-    //    /** Most frequent foreground height */
-    //    @XmlElement
-    //    private final int mainFore;
-    //
-    //    /** Minimum interline (using standard percentile) */
-    //    @XmlElement
-    //    private final Integer minInterline;
-    //
-    //    /** Maximum interline (using standard percentile) */
-    //    @XmlElement
-    //    private final Integer maxInterline;
-    //
-    //    /** Second most frequent interline */
-    //    @XmlElement
-    //    private final Integer secondInterline;
-    //
-    //    /** Minimum second interline */
-    //    @XmlElement
-    //    private final Integer minSecondInterline;
-    //
-    //    /** Maximum second interline */
-    //    @XmlElement
-    //    private final Integer maxSecondInterline;
-    //
-    //    /** Maximum foreground height (using standard percentile) */
-    //    @XmlElement
-    //    private final Integer maxFore;
-
     /** Line thickness range */
     private Range lineRange;
 
     /** Main interline range */
     private Range interlineRange;
 
-    /** Second interline range */
+    /** Beam thickness, if any */
+    private Integer beamValue;
+
+    /** Second interline range, if any */
     private Range secondInterlineRange;
 
     //~ Constructors -----------------------------------------------------------
@@ -127,7 +94,11 @@ public class Scale
     public Scale (int interline,
                   int mainFore)
     {
-        this(new Range(-1, mainFore, -1), new Range(-1, interline, -1), null);
+        this(
+            new Range(-1, mainFore, -1),
+            new Range(-1, interline, -1),
+            null,
+            null);
     }
 
     //-------//
@@ -137,14 +108,17 @@ public class Scale
      * Create a scale entity, meant for a whole sheet.
      * @param lineRange range of line thickness
      * @param interlineRange range of interline
+     * @param beamValue beam thickness
      * @param secondInterlineRange range of secondInterline
      */
     public Scale (Range lineRange,
                   Range interlineRange,
+                  Integer beamValue,
                   Range secondInterlineRange)
     {
         this.lineRange = lineRange;
         this.interlineRange = interlineRange;
+        this.beamValue = beamValue;
         this.secondInterlineRange = secondInterlineRange;
     }
 
@@ -154,7 +128,7 @@ public class Scale
     /** No-arg constructor, needed by JAXB */
     private Scale ()
     {
-        this(null, null, null);
+        this(null, null, null, null);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -169,6 +143,22 @@ public class Scale
     public int getInterline ()
     {
         return interlineRange.best;
+    }
+
+    //-------------//
+    // getMainBeam //
+    //-------------//
+    /**
+     * Report the main beam thickness, if any
+     * @return the main beam thickness, or null
+     */
+    public Integer getMainBeam ()
+    {
+        if (lineRange != null) {
+            return lineRange.best;
+        } else {
+            return null;
+        }
     }
 
     //-------------//
@@ -389,6 +379,11 @@ public class Scale
 
         sb.append(" interline:")
           .append(interlineRange);
+
+        if (beamValue!= null) {
+            sb.append(" beam:")
+              .append(beamValue);
+        }
 
         if (secondInterlineRange != null) {
             sb.append(" secondInterline:")

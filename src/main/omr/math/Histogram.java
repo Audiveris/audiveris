@@ -55,6 +55,16 @@ public class Histogram<K extends Number>
         }
     };
 
+    /** To sort double peaks by decreasing value */
+    public final Comparator<MaxEntry<K>> reverseMaxComparator = new Comparator<MaxEntry<K>>() {
+        public int compare (MaxEntry<K> e1,
+                            MaxEntry<K> e2)
+        {
+            // Put largest value first!
+            return Double.compare(e2.getValue(), e1.getValue());
+        }
+    };
+
     /**
      * Underlying map:
      * - K for the type of entity to be accumulated
@@ -120,15 +130,9 @@ public class Histogram<K extends Number>
      * Report the sequence of bucket peaks whose count is equal to or greater
      * than the specified minCount value
      * @param minCount the desired minimum count value
-     * @param absolute if true, absolute counts values are reported in peaks,
-     * otherwise relative counts to total histogram are used
-     * @param sorted if true, the reported sequence is sorted by decreasing
-     * count value, otherwise it is reported as naturally found along K data.
      * @return the (perhaps empty but not null) sequence of peaks of buckets
      */
-    public List<PeakEntry<Double>> getDoublePeaks (int     minCount,
-                                                   boolean absolute,
-                                                   boolean sorted)
+    public List<PeakEntry<Double>> getDoublePeaks (int minCount)
     {
         final List<PeakEntry<Double>> peaks = new ArrayList<PeakEntry<Double>>();
         K                             start = null;
@@ -155,7 +159,7 @@ public class Histogram<K extends Number>
                     peaks.add(
                         new PeakEntry<Double>(
                             createDoublePeak(start, best, stop, minCount),
-                            absolute ? bestCount : ((double) bestCount / totalCount)));
+                            (double) bestCount / totalCount));
                     stop = start = best = null;
                     bestCount = null;
                     isAbove = false;
@@ -169,15 +173,55 @@ public class Histogram<K extends Number>
             peaks.add(
                 new PeakEntry<Double>(
                     createDoublePeak(start, best, stop, minCount),
-                    absolute ? bestCount : ((double) bestCount / totalCount)));
+                    (double) bestCount / totalCount));
         }
 
-        // Sort by decreasing count values?
-        if (sorted) {
-            Collections.sort(peaks, reverseDoublePeakComparator);
-        }
+        // Sort by decreasing count values
+        Collections.sort(peaks, reverseDoublePeakComparator);
 
         return peaks;
+    }
+
+    //----------------//
+    // getLocalMaxima //
+    //----------------//
+    /**
+     * Report the local maximum points, sorted by decreasing count
+     * @return the (count-based) sorted sequence of local maxima
+     */
+    public List<MaxEntry<K>> getLocalMaxima ()
+    {
+        final List<MaxEntry<K>> maxima = new ArrayList<MaxEntry<K>>();
+        K                       prevKey = null;
+        int                     prevValue = 0;
+        boolean                 growing = false;
+
+        for (Entry<K, Integer> entry : map.entrySet()) {
+            K   key = entry.getKey();
+            int value = entry.getValue();
+
+            if (prevKey != null) {
+                if (value >= prevValue) {
+                    growing = true;
+                } else {
+                    if (growing) {
+                        // End of a local max
+                        maxima.add(
+                            new MaxEntry<K>(prevKey, prevValue / (double) totalCount));
+                    }
+
+                    growing = false;
+                }
+            }
+
+            prevKey = key;
+            prevValue = value;
+        }
+
+        // Sort by decreasing count values
+        Collections.sort(maxima, reverseMaxComparator);
+
+        return maxima;
     }
 
     //--------------//
@@ -565,6 +609,53 @@ public class Histogram<K extends Number>
         }
     }
 
+    //----------//
+    // MaxEntry //
+    //----------//
+    public static class MaxEntry<K extends Number>
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Key at local maximum */
+        private final K key;
+
+        /** Related count (normalized by total histogram count) */
+        private final double value;
+
+        //~ Constructors -------------------------------------------------------
+
+        public MaxEntry (K      key,
+                         double value)
+        {
+            this.key = key;
+            this.value = value;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        /**
+         * @return the key
+         */
+        public K getKey ()
+        {
+            return key;
+        }
+
+        /**
+         * @return the value
+         */
+        public double getValue ()
+        {
+            return value;
+        }
+
+        @Override
+        public String toString ()
+        {
+            return getKey() + "=" + (float) getValue();
+        }
+    }
+
     //------//
     // Peak //
     //------//
@@ -612,7 +703,7 @@ public class Histogram<K extends Number>
         /** The peak data */
         private final Peak<K> key;
 
-        /** Count at best value */
+        /** Count at best value (normalized by total histogram count) */
         private final double value;
 
         //~ Constructors -------------------------------------------------------
