@@ -17,6 +17,7 @@ import omr.glyph.CompoundBuilder;
 import omr.glyph.Evaluation;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
+import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -65,7 +66,7 @@ public class AlterPattern
     final PairAdapter        sharpAdapter;
     final PairAdapter        naturalAdapter;
 
-    /** Collection of (short) stems */
+    /** Collection of (short) stems, sorted on abscissa */
     private SortedSet<Glyph> stems;
 
     //~ Constructors -----------------------------------------------------------
@@ -102,13 +103,16 @@ public class AlterPattern
     public int runPattern ()
     {
         int successNb = 0; // Success counter
-        stems = retrieveShortStems(); // Ordered short stems
+        stems = retrieveShortStems(); // Sorted short stems
 
         // Look for close stems
         successNb += checkCloseStems();
 
         // Look for isolated stems
         successNb += checkSingleStems();
+
+        // Impacted neighbors
+        checkFormerStems();
 
         return successNb;
     }
@@ -147,7 +151,7 @@ public class AlterPattern
                 final int            dx = rightX - leftX;
 
                 if (dx > maxCloseStemDx) {
-                    break; // Since the set is ordered, no candidate is left
+                    break; // Since the set is sorted, no candidate is left
                 }
 
                 // Check vertical overlap
@@ -213,6 +217,49 @@ public class AlterPattern
         }
 
         return nb;
+    }
+
+    //------------------//
+    // checkFormerStems //
+    //------------------//
+    /**
+     * Look for glyphs whose shape was dependent on former stems,
+     * and call their shape into question again.
+     */
+    private void checkFormerStems ()
+    {
+        SortedSet<Glyph> impacted = Glyphs.sortedSet();
+
+        for (Glyph glyph : system.getGlyphs()) {
+            if (!glyph.isActive()) {
+                continue;
+            }
+
+            Glyph stem = glyph.getLeftStem();
+
+            if ((stem != null) && (stem.getShape() != Shape.COMBINING_STEM)) {
+                impacted.add(glyph);
+            }
+
+            stem = glyph.getRightStem();
+
+            if ((stem != null) && (stem.getShape() != Shape.COMBINING_STEM)) {
+                impacted.add(glyph);
+            }
+        }
+
+        if (logger.isFineEnabled()) {
+            logger.fine(Glyphs.toString("Impacted alteration neighbors", impacted));
+        }
+
+        for (Glyph glyph : impacted) {
+            // Re-compute glyph features
+            system.computeGlyphFeatures(glyph);
+
+            if (ShapeRange.StemSymbols.contains(glyph.getShape())) {
+                glyph.setShape(null); // TODO: a bit too simple?
+            }
+        }
     }
 
     //------------------//

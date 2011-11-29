@@ -407,6 +407,11 @@ public class BasicGlyph
         return alignment.getPositionAt(coord, orientation);
     }
 
+    public Point2D getRectangleCentroid (PixelRectangle absRoi)
+    {
+        return alignment.getRectangleCentroid(absRoi);
+    }
+
     public void setResult (Result result)
     {
         composition.setResult(result);

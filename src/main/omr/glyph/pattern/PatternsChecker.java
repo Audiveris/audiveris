@@ -63,6 +63,8 @@ public class PatternsChecker
                        
         new LedgerPattern(system),
                        
+        new AlterPattern(system), 
+                       
         new HiddenSlurPattern(system),
                        
         system.getSlurInspector(),
@@ -72,8 +74,6 @@ public class PatternsChecker
         new ClefPattern(system),
                        
         new TimePattern(system),
-                       
-        new AlterPattern(system), 
         //
         // Text patterns
         new TextBorderPattern(system), // Glyphs -> Text

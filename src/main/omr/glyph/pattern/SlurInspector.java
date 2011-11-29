@@ -20,6 +20,8 @@ import omr.glyph.Shape;
 import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
 
+import omr.grid.StaffInfo;
+
 import omr.lag.Section;
 import omr.lag.Sections;
 
@@ -36,6 +38,8 @@ import omr.sheet.SystemInfo;
 import omr.util.Implement;
 import omr.util.Wrapper;
 
+import java.awt.geom.CubicCurve2D;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -70,6 +74,10 @@ public class SlurInspector
     final int    minChunkWeight;
     final int    slurBoxDx;
     final int    slurBoxDy;
+    final int    targetHypot;
+    final int    targetLineHypot;
+    final int    minSlurWidth;
+    final int    minExtensionHeight;
     final double maxCircleDistance;
 
     //~ Constructors -----------------------------------------------------------
@@ -86,11 +94,15 @@ public class SlurInspector
         super("Slur", system);
         compoundBuilder = new CompoundBuilder(system);
 
-        // Compute parameters
+        // Compute scale-dependent parameters
         interline = scale.getInterline();
         minChunkWeight = scale.toPixels(constants.minChunkWeight);
         slurBoxDx = scale.toPixels(constants.slurBoxDx);
         slurBoxDy = scale.toPixels(constants.slurBoxDy);
+        targetHypot = scale.toPixels(constants.slurBoxHypot);
+        targetLineHypot = scale.toPixels(constants.slurLineBoxHypot);
+        minSlurWidth = scale.toPixels(constants.minSlurWidth);
+        minExtensionHeight = scale.toPixels(constants.minExtensionHeight);
         maxCircleDistance = constants.maxCircleDistance.getValue();
     }
 
@@ -157,7 +169,7 @@ public class SlurInspector
      * For large glyphs, we suspect a slur with a stuck object, so the strategy
      * is to rebuild the true Slur portions from the underlying sections.
      * @param oldSlur the spurious slur
-     * @return the extracted oldSlur glyph, if any
+     * @return the extracted slur glyph, if any
      */
     public Glyph fixLargeSlur (Glyph oldSlur)
     {
@@ -495,9 +507,10 @@ public class SlurInspector
     // findSeedSection //
     //-----------------//
     /**
-     *  Find the suitable seed, which is chosen as the section with best circle
+     * Find the suitable seed, which is chosen as the section with best circle
      * distance among the sections whose weight is significant
      * @param sortedMembers the candidate sections, by decreasing weight
+     * @param seedDist (output) the distance measured for chosen seed
      * @return the suitable seed, perhaps null
      */
     private Section findSeedSection (List<Section>   sortedMembers,
@@ -507,14 +520,16 @@ public class SlurInspector
         seedDist.value = Double.MAX_VALUE;
 
         for (Section seed : sortedMembers) {
-            if (seed.getWeight() >= minChunkWeight) {
-                Circle circle = computeCircle(Arrays.asList(seed));
-                double dist = circle.getDistance();
+            if (seed.getWeight() < minChunkWeight) {
+                break;
+            }
 
-                if ((dist <= maxCircleDistance) && (dist < seedDist.value)) {
-                    seedDist.value = dist;
-                    seedSection = seed;
-                }
+            Circle circle = computeCircle(Arrays.asList(seed));
+            double dist = circle.getDistance();
+
+            if ((dist <= maxCircleDistance) && (dist < seedDist.value)) {
+                seedDist.value = dist;
+                seedSection = seed;
             }
         }
 
@@ -599,14 +614,34 @@ public class SlurInspector
             "Minimum weight of a chunk to be part of slur" + " computation");
 
         //
-        Scale.Fraction slurBoxDx = new Scale.Fraction(
-            1.2, //0.7,
+        Scale.Fraction     slurBoxDx = new Scale.Fraction(
+            0.7,
             "Extension abscissa when looking for slur compound");
 
         //
-        Scale.Fraction slurBoxDy = new Scale.Fraction(
-            0.5, //0.4,
+        Scale.Fraction     slurBoxDy = new Scale.Fraction(
+            0.4,
             "Extension ordinate when looking for slur compound");
+
+        //
+        Scale.Fraction     slurBoxHypot = new Scale.Fraction(
+            0.75,
+            "Extension length when looking for slur compound");
+
+        //
+        Scale.Fraction     slurLineBoxHypot = new Scale.Fraction(
+            1.5,
+            "Extension length when looking for line-touching slur compound");
+
+        //
+        Scale.Fraction     minSlurWidth = new Scale.Fraction(
+            2,
+            "Minimum width to use curve rather than line for extension");
+
+        //
+        Scale.LineFraction minExtensionHeight = new Scale.LineFraction(
+            2,
+            "Minimum height for extension box, specified as LineFraction");
     }
 
     //---------------------//
@@ -619,6 +654,14 @@ public class SlurInspector
     private class SlurCompoundAdapter
         extends CompoundBuilder.AbstractAdapter
     {
+        //~ Instance fields ----------------------------------------------------
+
+        CubicCurve2D   curve;
+
+        // Boxes at each slur end
+        PixelRectangle startBox;
+        PixelRectangle stopBox;
+
         //~ Constructors -------------------------------------------------------
 
         public SlurCompoundAdapter (SystemInfo system)
@@ -667,11 +710,134 @@ public class SlurInspector
             return false;
         }
 
+        /**
+         * Specific distance test, adapted at slur shape crossing staff lines
+         * @param box unused, we use two boxes instead, one at start point and
+         * one at stop point
+         * @param glyph candidate glyph
+         * @return true if close
+         */
+        @Override
+        public boolean isGlyphClose (PixelRectangle box,
+                                     Glyph          glyph)
+        {
+            PixelRectangle glyphBox = glyph.getContourBox();
+
+            return startBox.intersects(glyphBox) ||
+                   stopBox.intersects(glyphBox);
+        }
+
         @Implement(CompoundBuilder.CompoundAdapter.class)
         public PixelRectangle getReferenceBox ()
         {
-            PixelRectangle box = new PixelRectangle(seed.getContourBox());
-            box.grow(slurBoxDx, slurBoxDy);
+            return null; // void
+        }
+
+        @Override
+        public void setSeed (Glyph seed)
+        {
+            super.setSeed(seed);
+
+            //            if (seed.getId() == 2913) {
+            //                logger.warning("BINGO");
+            //            }
+            final Circle circle = computeCircle(seed);
+            curve = circle.getCurve();
+
+            if (curve == null) {
+                logger.warning("Null curve");
+            }
+
+            startBox = getBox(-1);
+            stopBox = getBox(+1);
+        }
+
+        /**
+         * Compute the extension box in the provided direction.
+         * Nota: for short glyphs (width less than 2 interline) circle/curve are
+         * not reliable and we must use approximating line instead.
+         * @param dir -1 for start, +1 for stop
+         * @return the extension box
+         */
+        private PixelRectangle getBox (int dir)
+        {
+            PixelRectangle seedBox = seed.getContourBox();
+            boolean        isShort = seedBox.width <= minSlurWidth;
+            Point2D        p; // Ending point
+            Point2D        c; // Control point
+
+            if (isShort) {
+                p = (dir < 0) ? seed.getStartPoint() : seed.getStopPoint();
+                c = (dir < 0) ? seed.getStopPoint() : seed.getStartPoint();
+            } else {
+                p = (dir < 0) ? curve.getP1() : curve.getP2();
+                c = (dir < 0) ? curve.getCtrlP1() : curve.getCtrlP2();
+            }
+
+            // Exact ending point (?)
+            PixelRectangle roi = (dir > 0)
+                                 ? new PixelRectangle(
+                (seedBox.x + seedBox.width) - 1,
+                seedBox.y,
+                1,
+                seedBox.height)
+                                 : new PixelRectangle(
+                seedBox.x,
+                seedBox.y,
+                1,
+                seedBox.height);
+
+            Point2D        ep = seed.getRectangleCentroid(roi);
+
+            if (ep != null) {
+                if (dir > 0) {
+                    ep.setLocation(ep.getX() + 1, ep.getY());
+                }
+            } else {
+                ep = p; // Better than nothing
+            }
+
+            final StaffInfo staff = system.getStaffAt(p);
+            final double    pitch = staff.pitchPositionOf(p);
+            final int       intPitch = (int) Math.rint(pitch);
+
+            String          suffix;
+            double          target;
+            PixelRectangle  box;
+
+            if ((Math.abs(intPitch) <= 4) && ((intPitch % 2) == 0)) {
+                // This end touches a staff line, use larger margins
+                target = targetLineHypot;
+                suffix = "=";
+            } else {
+                // No staff line is involved, use smaller margins
+                target = targetHypot;
+                suffix = "";
+            }
+
+            Point2D cp = new Point2D.Double(
+                p.getX() - c.getX(),
+                p.getY() - c.getY());
+            double  hypot = Math.hypot(cp.getX(), cp.getY());
+            double  lambda = target / hypot;
+            Point2D ext = new Point2D.Double(
+                ep.getX() + (lambda * cp.getX()),
+                ep.getY() + (lambda * cp.getY()));
+
+            box = new PixelRectangle(
+                (int) Math.rint(Math.min(ext.getX(), ep.getX())),
+                (int) Math.rint(Math.min(ext.getY(), ep.getY())),
+                (int) Math.rint(Math.abs(ext.getX() - ep.getX())),
+                (int) Math.rint(Math.abs(ext.getY() - ep.getY())));
+
+            // Check minimum height
+            if (box.height < minExtensionHeight) {
+                box.grow(
+                    0,
+                    (int) Math.rint((minExtensionHeight - box.height) / 2.0));
+            }
+
+            seed.addAttachment(((dir > 0) ? "e" : "b") + suffix, box);
 
             return box;
         }

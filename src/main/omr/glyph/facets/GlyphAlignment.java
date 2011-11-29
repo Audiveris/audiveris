@@ -15,6 +15,8 @@ import omr.math.Line;
 
 import omr.run.Orientation;
 
+import omr.score.common.PixelRectangle;
+
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
 
@@ -44,7 +46,7 @@ public interface GlyphAlignment
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * Report the ratio of length over thickness, using provided 
+     * Report the ratio of length over thickness, using provided
      * orientation.
      * @param orientation the general orientation reference
      * @return the "slimness" of the glyph
@@ -88,15 +90,15 @@ public interface GlyphAlignment
 
     /**
      * Return the approximating line computed on the glyph, as an
-     * <b>absolute</b> line, with x for horizontal axis and y for 
+     * <b>absolute</b> line, with x for horizontal axis and y for
      * vertical axis.
      * @return The absolute line
      */
     Line getLine ();
 
     /**
-     * Return the mean quadratic distance of the defining population 
-     * of points to the resulting line. 
+     * Return the mean quadratic distance of the defining population
+     * of points to the resulting line.
      * This can be used to measure how well the line fits the points.
      *
      * @return the absolute value of the mean distance
@@ -104,7 +106,7 @@ public interface GlyphAlignment
     double getMeanDistance ();
 
     /**
-     * Return the position at the middle of the glyph, 
+     * Return the position at the middle of the glyph,
      * using the provided orientation.
      * @return the position of the middle of the glyph
      */
@@ -118,6 +120,14 @@ public interface GlyphAlignment
      */
     double getPositionAt (double      coord,
                           Orientation orientation);
+
+    /**
+     * Report the absolute centroid of all the glyph pixels found in the
+     * provided absolute ROI
+     * @param absRoi the desired absolute region of interest
+     * @return the absolute barycenter of the pixels found
+     */
+    Point2D getRectangleCentroid (PixelRectangle absRoi);
 
     /**
      * Report the tangent of glyph line angle with abscissa axis

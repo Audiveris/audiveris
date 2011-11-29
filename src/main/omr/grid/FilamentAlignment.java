@@ -573,30 +573,6 @@ public class FilamentAlignment
             inter.getY() - point.getY());
     }
 
-    //----------------------//
-    // getRectangleCentroid //
-    //----------------------//
-    /**
-     * Report the absolute centroid of all the filament pixels found in the
-     * provided absolute ROI
-     * @param absRoi the desired absolute region of interest
-     * @return the absolute barycenter of the pixels found
-     */
-    private Point2D getRectangleCentroid (PixelRectangle absRoi)
-    {
-        Barycenter barycenter = new Barycenter();
-
-        for (Section section : glyph.getMembers()) {
-            section.cumulate(barycenter, absRoi);
-        }
-
-        if (barycenter.getWeight() != 0) {
-            return new Point2D.Double(barycenter.getX(), barycenter.getY());
-        } else {
-            return null;
-        }
-    }
-
     //---------------------//
     // getRoughOrientation //
     //---------------------//

@@ -671,7 +671,7 @@ public class SystemInfo
      * @param point the provided point
      * @return the "containing" staff
      */
-    public StaffInfo getStaffAt (PixelPoint point)
+    public StaffInfo getStaffAt (Point2D point)
     {
         return sheet.getStaffManager()
                     .getStaffAt(point);

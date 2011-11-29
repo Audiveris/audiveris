@@ -19,6 +19,7 @@ import omr.lag.Section;
 
 import omr.log.Logger;
 
+import omr.math.Barycenter;
 import omr.math.BasicLine;
 import omr.math.Line;
 import omr.math.LineUtilities;
@@ -252,6 +253,30 @@ public class BasicAlignment
         return constants.probeWidth;
     }
 
+    //----------------------//
+    // getRectangleCentroid //
+    //----------------------//
+    /**
+     * Report the absolute centroid of all the glyph pixels found in the
+     * provided absolute ROI
+     * @param absRoi the desired absolute region of interest
+     * @return the absolute barycenter of the pixels found
+     */
+    public Point2D getRectangleCentroid (PixelRectangle absRoi)
+    {
+        Barycenter barycenter = new Barycenter();
+
+        for (Section section : glyph.getMembers()) {
+            section.cumulate(barycenter, absRoi);
+        }
+
+        if (barycenter.getWeight() != 0) {
+            return new Point2D.Double(barycenter.getX(), barycenter.getY());
+        } else {
+            return null;
+        }
+    }
+
     //------------------//
     // getSlope //
     //------------------//
@@ -391,25 +416,65 @@ public class BasicAlignment
 
         slope = line.getSlope();
 
-        Point2D tl = box.getLocation();
-        Point2D tr = new Point2D.Double(tl.getX() + box.width, tl.getY());
-        Point2D bl = new Point2D.Double(tl.getX(), tl.getY() + box.height);
-        Point2D br = new Point2D.Double(tr.getX(), bl.getY());
+        double top = box.y;
+        double bot = (box.y + box.height) - 1;
+        double left = box.x;
+        double right = (box.x + box.width) - 1;
 
         if (isRatherVertical()) {
             // Use line intersections with top & bottom box sides
-            Point2D p3 = new Point2D.Double(line.xAtY(tl.getY()), tl.getY());
-            Point2D p4 = new Point2D.Double(line.xAtY(bl.getY()), bl.getY());
-            startPoint = LineUtilities.intersection(tl, tr, p3, p4);
-            stopPoint = LineUtilities.intersection(bl, br, p3, p4);
-            stopPoint.setLocation(stopPoint.getX(), stopPoint.getY() - 1);
+            startPoint = new Point2D.Double(line.xAtY(top), top);
+            stopPoint = new Point2D.Double(line.xAtY(bot), bot);
+
+            if (!line.isVertical()) {
+                Point2D pLeft = new Point2D.Double(left, line.yAtX(left));
+                Point2D pRight = new Point2D.Double(right, line.yAtX(right));
+
+                if (line.getInvertedSlope() > 0) {
+                    if (pLeft.getY() > startPoint.getY()) {
+                        startPoint = pLeft;
+                    }
+
+                    if (pRight.getY() < stopPoint.getY()) {
+                        stopPoint = pRight;
+                    }
+                } else {
+                    if (pRight.getY() > startPoint.getY()) {
+                        startPoint = pRight;
+                    }
+
+                    if (pLeft.getY() < stopPoint.getY()) {
+                        stopPoint = pLeft;
+                    }
+                }
+            }
         } else {
             // Use line intersections with left & right box sides
-            Point2D p3 = new Point2D.Double(tl.getX(), line.yAtX(tl.getX()));
-            Point2D p4 = new Point2D.Double(tr.getX(), line.yAtX(tr.getX()));
-            startPoint = LineUtilities.intersection(tl, bl, p3, p4);
-            stopPoint = LineUtilities.intersection(tr, br, p3, p4);
-            stopPoint.setLocation(stopPoint.getX() - 1, stopPoint.getY());
+            startPoint = new Point2D.Double(left, line.yAtX(left));
+            stopPoint = new Point2D.Double(right, line.yAtX(right));
+
+            if (!line.isHorizontal()) {
+                Point2D pTop = new Point2D.Double(line.xAtY(top), top);
+                Point2D pBot = new Point2D.Double(line.xAtY(bot), bot);
+
+                if (slope > 0) {
+                    if (pTop.getX() > startPoint.getX()) {
+                        startPoint = pTop;
+                    }
+
+                    if (pBot.getX() < stopPoint.getX()) {
+                        stopPoint = pBot;
+                    }
+                } else {
+                    if (pBot.getX() > startPoint.getX()) {
+                        startPoint = pBot;
+                    }
+
+                    if (pTop.getX() < stopPoint.getX()) {
+                        stopPoint = pTop;
+                    }
+                }
+            }
         }
     }
 
