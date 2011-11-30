@@ -19,6 +19,8 @@ import omr.math.GeoPath;
 import omr.math.LineUtilities;
 import omr.math.ReversePathIterator;
 
+import omr.run.Orientation;
+
 import omr.score.entity.Staff;
 
 import omr.sheet.Dash;
@@ -645,8 +647,8 @@ public class StaffInfo
         return LineUtilities.intersection(
             midLine.getEndPoint(LEFT),
             midLine.getEndPoint(RIGHT),
-            stick.getStartPoint(),
-            stick.getStopPoint());
+            stick.getStartPoint(Orientation.VERTICAL),
+            stick.getStopPoint(Orientation.VERTICAL));
     }
 
     //-----------------//

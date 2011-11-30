@@ -146,7 +146,7 @@ public class ClefPattern
                     Barline.linePredicate);
 
                 if (line != null) {
-                    line.addAttachment("clefInner#" + staffId, inner);
+                    line.addAttachment("ci" + staffId, inner);
                 }
             }
 
@@ -205,7 +205,7 @@ public class ClefPattern
             outer.grow(xMargin, yMargin);
 
             if (line != null) {
-                line.addAttachment("clefOuter#" + staffId, outer);
+                line.addAttachment("co" + staffId, outer);
             }
 
             List<Glyph> outerGlyphs = system.lookupIntersectedGlyphs(outer);

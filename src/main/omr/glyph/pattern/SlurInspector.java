@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.glyph.pattern;
 
+import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.CompoundBuilder;
@@ -29,6 +30,7 @@ import omr.log.Logger;
 
 import omr.math.Circle;
 import omr.math.PointsCollector;
+import static omr.run.Orientation.*;
 
 import omr.score.common.PixelRectangle;
 
@@ -38,6 +40,7 @@ import omr.sheet.SystemInfo;
 import omr.util.Implement;
 import omr.util.Wrapper;
 
+import java.awt.Rectangle;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -72,6 +75,7 @@ public class SlurInspector
     // Cached system-dependent constants
     final int    interline;
     final int    minChunkWeight;
+    final double maxChunkThickness;
     final int    slurBoxDx;
     final int    slurBoxDy;
     final int    targetHypot;
@@ -97,6 +101,7 @@ public class SlurInspector
         // Compute scale-dependent parameters
         interline = scale.getInterline();
         minChunkWeight = scale.toPixels(constants.minChunkWeight);
+        maxChunkThickness = scale.toPixels(constants.maxChunkThickness);
         slurBoxDx = scale.toPixels(constants.slurBoxDx);
         slurBoxDy = scale.toPixels(constants.slurBoxDy);
         targetHypot = scale.toPixels(constants.slurBoxHypot);
@@ -184,7 +189,7 @@ public class SlurInspector
          * used to rebuild the stuck object(s).
          */
         if (logger.isFineEnabled()) {
-            logger.fine("fixing Large Slur for glyph #" + oldSlur.getId());
+            logger.info("fixing Large Slur for glyph #" + oldSlur.getId());
         }
 
         // Get a COPY of the member list, sorted by decreasing weight */
@@ -301,17 +306,16 @@ public class SlurInspector
 
         slurs.addAll(toAdd);
 
-        // Then verify each slur seed in turn
-        for (Glyph seed : slurs) {
+        // Then verify each slur in turn
+        for (Glyph slur : slurs) {
             // Check this slur has not just been 'merged' with another one
-            if (seed.isActive()) {
-                if (!computeCircle(seed)
-                         .isValid(maxCircleDistance)) {
+            if (slur.isActive()) {
+                if (!isValid(slur)) {
                     try {
-                        Glyph newSlur = fixSpuriousSlur(seed);
+                        Glyph newSlur = fixSpuriousSlur(slur);
 
                         if (newSlur == null) {
-                            seed.setShape(null);
+                            slur.setShape(null);
                         } else {
                             modifs++;
                         }
@@ -319,12 +323,45 @@ public class SlurInspector
                         logger.warning("Error in fixing slur", ex);
                     }
                 } else if (logger.isFineEnabled()) {
-                    logger.finest("Valid slur " + seed.getId());
+                    logger.finest("Valid slur " + slur.getId());
+                    slur.addAttachment("^", computeCircle(slur).getCurve());
                 }
             }
         }
 
         return modifs;
+    }
+
+    //---------//
+    // isValid //
+    //---------//
+    private boolean isValid (Glyph slur)
+    {
+        Circle circle = computeCircle(slur);
+
+        // Check distance to circle
+        if (!circle.isValid(maxCircleDistance)) {
+            return false;
+        }
+
+        // Check circle is rather close to slur box
+        Rectangle curveBox = circle.getCurve()
+                                   .getBounds();
+        Rectangle glyphBox = slur.getContourBox();
+
+        double    heightRatio = (double) curveBox.height / glyphBox.height;
+
+        if (heightRatio > constants.maxHeightRatio.getValue()) {
+            ///if (logger.isFineEnabled()) {
+            logger.info(
+                "Slur#" + slur.getId() + " too high ratio: " +
+                (float) heightRatio);
+
+            ///}
+            return false;
+        }
+
+        return true;
     }
 
     //----------------//
@@ -366,6 +403,8 @@ public class SlurInspector
                     newGlyph.getId());
             }
 
+            newGlyph.addAttachment("^", circle.getCurve());
+
             return newGlyph;
         } else {
             if (logger.isFineEnabled()) {
@@ -396,10 +435,10 @@ public class SlurInspector
         }
 
         SlurCompoundAdapter adapter = new SlurCompoundAdapter(system);
-        adapter.setSeed(oldSlur);
 
         // Collect glyphs suitable for participating in compound building
-        List<Glyph> suitables = new ArrayList<Glyph>(system.getGlyphs().size());
+        List<Glyph>         suitables = new ArrayList<Glyph>(
+            system.getGlyphs().size());
 
         for (Glyph g : system.getGlyphs()) {
             if ((g != oldSlur) && adapter.isCandidateSuitable(g)) {
@@ -456,51 +495,77 @@ public class SlurInspector
         double        bestDistance = distThreshold;
 
         for (Section section : members) {
-            if (section == seedSection) {
-                continue;
-            }
+            section.setProcessed(false);
+        }
 
-            distThreshold = bestDistance;
+        // First, let's grow the seed incrementally as much as possible
+        PixelRectangle slurBox = seedSection.getContourBox();
+        seedSection.setProcessed(true);
 
-            if (logger.isFineEnabled()) {
-                logger.fine("Trying " + section);
-            }
+        boolean growing = true;
 
-            // Try a circle
-            tried.clear();
-            tried.addAll(kept);
-            tried.add(section);
+        while (growing) {
+            growing = false;
 
-            try {
-                Circle circle = computeCircle(tried);
-                double distance = circle.getDistance();
-
-                if (logger.isFineEnabled()) {
-                    logger.fine("dist=" + distance);
+            for (Section section : members) {
+                if (section.isProcessed()) {
+                    continue;
                 }
 
-                if (distance <= distThreshold) {
-                    kept.add(section);
-                    bestDistance = distance;
+                // Need connection
+                PixelRectangle sctBox = section.getContourBox();
+                sctBox.grow(1, 1);
 
-                    if (logger.isFineEnabled()) {
-                        logger.fine("Keep " + section);
-                    }
-                } else {
-                    left.add(section);
-
-                    if (logger.isFineEnabled()) {
-                        logger.fine("Discard " + section);
-                    }
+                if (!sctBox.intersects(slurBox)) {
+                    continue;
                 }
-            } catch (Exception ex) {
-                left.add(section);
+
+                distThreshold = bestDistance;
 
                 if (logger.isFineEnabled()) {
-                    logger.fine(ex.getMessage() + " w/ " + section);
+                    logger.fine("Trying " + section);
+                }
+
+                // Try a circle
+                tried.clear();
+                tried.addAll(kept);
+                tried.add(section);
+
+                try {
+                    Circle circle = computeCircle(tried);
+                    double distance = circle.getDistance();
+
+                    if (logger.isFineEnabled()) {
+                        logger.fine("dist=" + distance);
+                    }
+
+                    if (distance <= distThreshold) {
+                        kept.add(section);
+                        bestDistance = distance;
+                        section.setProcessed(true);
+                        slurBox.add(section.getContourBox());
+                        growing = true;
+
+                        if (logger.isFineEnabled()) {
+                            logger.fine("Keep " + section);
+                        }
+                    } else {
+                        if (logger.isFineEnabled()) {
+                            logger.fine("Discard " + section);
+                        }
+                    }
+                } catch (Exception ex) {
+                    if (logger.isFineEnabled()) {
+                        logger.fine(ex.getMessage() + " w/ " + section);
+                    }
                 }
             }
         }
+
+        // Update left collection
+        List<Section> list = new ArrayList<Section>(members);
+        list.removeAll(kept);
+        left.addAll(list);
     }
 
     //-----------------//
@@ -520,8 +585,20 @@ public class SlurInspector
         seedDist.value = Double.MAX_VALUE;
 
         for (Section seed : sortedMembers) {
-            if (seed.getWeight() < minChunkWeight) {
-                break;
+            // Check minimum weight
+            int weight = seed.getWeight();
+
+            if (weight < minChunkWeight) {
+                break; // Since sections are sorted
+            }
+
+            // Check meanthickness
+            double thickness = Math.min(
+                seed.getMeanThickness(VERTICAL),
+                seed.getMeanThickness(HORIZONTAL));
+
+            if (thickness > maxChunkThickness) {
+                continue;
             }
 
             Circle circle = computeCircle(Arrays.asList(seed));
@@ -599,8 +676,8 @@ public class SlurInspector
 
         //
         Scale.Fraction     maxCircleDistance = new Scale.Fraction(
-            0.15,
-            "Maximum distance to approximating circle" + " for a slur");
+            0.22,
+            "Maximum distance to approximating circle for a slur");
 
         //
         Scale.AreaFraction spuriousWeightThreshold = new Scale.AreaFraction(
@@ -610,8 +687,8 @@ public class SlurInspector
 
         //
         Scale.AreaFraction minChunkWeight = new Scale.AreaFraction(
-            0.5,
-            "Minimum weight of a chunk to be part of slur" + " computation");
+            0.3, //0.5,
+            "Minimum weight of a chunk to be part of slur computation");
 
         //
         Scale.Fraction     slurBoxDx = new Scale.Fraction(
@@ -642,6 +719,16 @@ public class SlurInspector
         Scale.LineFraction minExtensionHeight = new Scale.LineFraction(
             2,
             "Minimum height for extension box, specified as LineFraction");
+
+        //
+        Scale.LineFraction maxChunkThickness = new Scale.LineFraction(
+            1.5,
+            "Maximum mean thickness of a chunk to be part of slur computation");
+
+        //
+        Constant.Ratio maxHeightRatio = new Constant.Ratio(
+            2.0,
+            "Maximum height ratio between curve height and glyph height");
     }
 
     //---------------------//
@@ -738,14 +825,13 @@ public class SlurInspector
         {
             super.setSeed(seed);
 
-            //            if (seed.getId() == 2913) {
-            //                logger.warning("BINGO");
-            //            }
             final Circle circle = computeCircle(seed);
             curve = circle.getCurve();
 
             if (curve == null) {
                 logger.warning("Null curve");
+            } else {
+                seed.addAttachment("^", curve);
             }
 
             startBox = getBox(-1);
@@ -767,8 +853,10 @@ public class SlurInspector
             Point2D        c; // Control point
 
             if (isShort) {
-                p = (dir < 0) ? seed.getStartPoint() : seed.getStopPoint();
-                c = (dir < 0) ? seed.getStopPoint() : seed.getStartPoint();
+                p = (dir < 0) ? seed.getStartPoint(HORIZONTAL)
+                    : seed.getStopPoint(HORIZONTAL);
+                c = (dir < 0) ? seed.getStopPoint(HORIZONTAL)
+                    : seed.getStartPoint(HORIZONTAL);
             } else {
                 p = (dir < 0) ? curve.getP1() : curve.getP2();
                 c = (dir < 0) ? curve.getCtrlP1() : curve.getCtrlP2();
@@ -801,18 +889,15 @@ public class SlurInspector
             final double    pitch = staff.pitchPositionOf(p);
             final int       intPitch = (int) Math.rint(pitch);
 
-            String          suffix;
             double          target;
             PixelRectangle  box;
 
             if ((Math.abs(intPitch) <= 4) && ((intPitch % 2) == 0)) {
                 // This end touches a staff line, use larger margins
                 target = targetLineHypot;
-                suffix = "=";
             } else {
                 // No staff line is involved, use smaller margins
                 target = targetHypot;
-                suffix = "";
             }
 
             Point2D cp = new Point2D.Double(
@@ -830,14 +915,14 @@ public class SlurInspector
                 (int) Math.rint(Math.abs(ext.getX() - ep.getX())),
                 (int) Math.rint(Math.abs(ext.getY() - ep.getY())));
 
-            // Check minimum height
+            // Ensure minimum box height
             if (box.height < minExtensionHeight) {
                 box.grow(
                     0,
                     (int) Math.rint((minExtensionHeight - box.height) / 2.0));
             }
 
-            seed.addAttachment(((dir > 0) ? "e" : "b") + suffix, box);
+            seed.addAttachment(((dir < 0) ? "e^" : "^e"), box);
 
             return box;
         }

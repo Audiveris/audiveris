@@ -202,8 +202,10 @@ public class PagePhysicalPainter
                     final Rectangle      oldClip = g.getClipBounds();
 
                     final PixelRectangle box = glyph.getContourBox();
-                    box.y = (int) Math.floor(glyph.getStartPoint().getY());
-                    box.height = (int) Math.ceil(glyph.getStopPoint().getY()) -
+                    box.y = (int) Math.floor(
+                        glyph.getStartPoint(Orientation.VERTICAL).getY());
+                    box.height = (int) Math.ceil(
+                        glyph.getStopPoint(Orientation.VERTICAL).getY()) -
                                  box.y;
                     g.setClip(oldClip.intersection(box));
 

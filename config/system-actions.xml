@@ -51,7 +51,6 @@
     <action domain="VIEW" section="20"  class="omr.score.ui.PaintingParameters"               method="toggleVoices"   item="javax.swing.JCheckBoxMenuItem" button="javax.swing.JToggleButton" />
     <action domain="VIEW" section="20"  class="omr.score.ui.PaintingParameters"               method="toggleMarks"    item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="30"  class="omr.glyph.ui.ViewParameters"                   method="toggleLines"    item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="30"  class="omr.glyph.ui.ViewParameters"                   method="toggleCircles"  item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="30"  class="omr.glyph.ui.ViewParameters"                   method="toggleLetters"  item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="30"  class="omr.glyph.ui.ViewParameters"                   method="toggleAttachments" item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="30"  class="omr.glyph.ui.ViewParameters"                   method="toggleSections" item="javax.swing.JCheckBoxMenuItem" button="javax.swing.JToggleButton" />

@@ -334,7 +334,7 @@ public class TimeSignatureRetriever
                     Barline.linePredicate);
 
                 if (line != null) {
-                    line.addAttachment("timeInner#" + staff.getId(), box);
+                    line.addAttachment("ti" + staff.getId(), box);
                 }
             }
 

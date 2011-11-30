@@ -22,6 +22,7 @@ import omr.grid.StaffInfo;
 import omr.grid.StickIntersection;
 
 import omr.log.Logger;
+import static omr.run.Orientation.*;
 
 import omr.score.entity.Barline;
 import omr.score.entity.Measure;
@@ -435,11 +436,11 @@ public class MeasuresBuilder
                               Glyph two)
     {
         double start = Math.max(
-            one.getStartPoint().getY(),
-            two.getStartPoint().getY());
+            one.getStartPoint(VERTICAL).getY(),
+            two.getStartPoint(VERTICAL).getY());
         double stop = Math.min(
-            one.getStopPoint().getY(),
-            two.getStopPoint().getY());
+            one.getStopPoint(VERTICAL).getY(),
+            two.getStopPoint(VERTICAL).getY());
 
         return start < stop;
     }

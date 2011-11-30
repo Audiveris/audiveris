@@ -22,7 +22,6 @@ import omr.log.Logger;
 import omr.math.Barycenter;
 import omr.math.BasicLine;
 import omr.math.Line;
-import omr.math.LineUtilities;
 
 import omr.run.Orientation;
 import static omr.run.Orientation.*;
@@ -215,13 +214,13 @@ public class BasicAlignment
     {
         if (orientation == VERTICAL) {
             return (int) Math.rint(
-                (getStartPoint()
-                     .getX() + getStopPoint()
+                (getStartPoint(orientation)
+                     .getX() + getStopPoint(orientation)
                                    .getX()) / 2.0);
         } else {
             return (int) Math.rint(
-                (getStartPoint()
-                     .getY() + getStopPoint()
+                (getStartPoint(orientation)
+                     .getY() + getStopPoint(orientation)
                                    .getY()) / 2.0);
         }
     }
@@ -277,9 +276,9 @@ public class BasicAlignment
         }
     }
 
-    //------------------//
+    //----------//
     // getSlope //
-    //------------------//
+    //----------//
     public double getSlope ()
     {
         if (slope == null) {
@@ -295,21 +294,49 @@ public class BasicAlignment
     //---------------//
     // getStartPoint //
     //---------------//
-    public Point2D getStartPoint ()
+    public Point2D getStartPoint (Orientation orientation)
     {
         checkLine();
 
-        return startPoint;
+        if (orientation == Orientation.HORIZONTAL) {
+            // Use left side
+            if (startPoint.getX() <= stopPoint.getX()) {
+                return startPoint;
+            } else {
+                return stopPoint;
+            }
+        } else {
+            // Use top side
+            if (startPoint.getY() <= stopPoint.getY()) {
+                return startPoint;
+            } else {
+                return stopPoint;
+            }
+        }
     }
 
     //--------------//
     // getStopPoint //
     //--------------//
-    public Point2D getStopPoint ()
+    public Point2D getStopPoint (Orientation orientation)
     {
         checkLine();
 
-        return stopPoint;
+        if (orientation == Orientation.HORIZONTAL) {
+            // Use right side
+            if (stopPoint.getX() >= startPoint.getX()) {
+                return stopPoint;
+            } else {
+                return startPoint;
+            }
+        } else {
+            // Use bottom side
+            if (stopPoint.getY() >= startPoint.getY()) {
+                return stopPoint;
+            } else {
+                return startPoint;
+            }
+        }
     }
 
     //--------------//
@@ -344,8 +371,8 @@ public class BasicAlignment
     @Override
     public void dump ()
     {
-        System.out.println("   start=" + getStartPoint());
-        System.out.println("   stop=" + getStopPoint());
+        System.out.println("   start=" + startPoint);
+        System.out.println("   stop=" + stopPoint);
         System.out.println("   line=" + getLine());
         System.out.println("   dist=" + getMeanDistance());
     }

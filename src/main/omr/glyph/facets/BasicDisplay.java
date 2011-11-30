@@ -111,6 +111,10 @@ class BasicDisplay
     public void addAttachment (String         id,
                                java.awt.Shape attachment)
     {
+        if (attachment == null) {
+            throw new IllegalArgumentException("Glyph null attachment");
+        }
+
         if (attachments == null) {
             attachments = new HashMap<String, java.awt.Shape>();
         }

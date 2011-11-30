@@ -135,7 +135,7 @@ public class FilamentLine
     //---------------//
     public Point2D getStartPoint ()
     {
-        return fil.getStartPoint();
+        return fil.getStartPoint(Orientation.HORIZONTAL);
     }
 
     //---------------//
@@ -151,7 +151,7 @@ public class FilamentLine
     //--------------//
     public Point2D getStopPoint ()
     {
-        return fil.getStopPoint();
+        return fil.getStopPoint(Orientation.HORIZONTAL);
     }
 
     //--------------//

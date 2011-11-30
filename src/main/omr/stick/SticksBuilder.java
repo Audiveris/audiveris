@@ -466,10 +466,10 @@ public class SticksBuilder
                                int   maxDeltaCoord,
                                int   maxDeltaPos)
     {
-        Point2D oneStart = orientation.oriented(one.getStartPoint());
-        Point2D oneStop = orientation.oriented(one.getStopPoint());
-        Point2D twoStart = orientation.oriented(two.getStartPoint());
-        Point2D twoStop = orientation.oriented(two.getStopPoint());
+        Point2D oneStart = orientation.oriented(one.getStartPoint(orientation));
+        Point2D oneStop = orientation.oriented(one.getStopPoint(orientation));
+        Point2D twoStart = orientation.oriented(two.getStartPoint(orientation));
+        Point2D twoStop = orientation.oriented(two.getStopPoint(orientation));
 
         if (Math.abs(oneStop.getX() - twoStart.getX()) <= maxDeltaCoord) {
             // Case: this ... that

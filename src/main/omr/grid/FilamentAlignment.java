@@ -21,14 +21,11 @@ import omr.lag.Section;
 
 import omr.log.Logger;
 
-import omr.math.Barycenter;
 import omr.math.LineUtilities;
 import omr.math.NaturalSpline;
 import omr.math.Population;
 
 import omr.run.Orientation;
-
-import omr.score.common.PixelRectangle;
 
 import omr.sheet.Scale;
 
@@ -199,32 +196,32 @@ public class FilamentAlignment
             }
         }
     }
-
-    //---------------//
-    // getStartPoint //
-    //---------------//
-    @Override
-    public Point2D getStartPoint ()
-    {
-        if (startPoint == null) {
-            computeLine();
-        }
-
-        return startPoint;
-    }
-
-    //--------------//
-    // getStopPoint //
-    //--------------//
-    @Override
-    public Point2D getStopPoint ()
-    {
-        if (stopPoint == null) {
-            computeLine();
-        }
-
-        return stopPoint;
-    }
+//
+//    //---------------//
+//    // getStartPoint //
+//    //---------------//
+//    @Override
+//    public Point2D getStartPoint ()
+//    {
+//        if (startPoint == null) {
+//            computeLine();
+//        }
+//
+//        return startPoint;
+//    }
+//
+//    //--------------//
+//    // getStopPoint //
+//    //--------------//
+//    @Override
+//    public Point2D getStopPoint ()
+//    {
+//        if (stopPoint == null) {
+//            computeLine();
+//        }
+//
+//        return stopPoint;
+//    }
 
     //------//
     // dump //

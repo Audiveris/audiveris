@@ -463,9 +463,9 @@ public class BasicGlyph
         return alignment.getSlope();
     }
 
-    public Point2D getStartPoint ()
+    public Point2D getStartPoint (Orientation orientation)
     {
-        return alignment.getStartPoint();
+        return alignment.getStartPoint(orientation);
     }
 
     public boolean isStem ()
@@ -483,9 +483,9 @@ public class BasicGlyph
         return environment.getStemNumber();
     }
 
-    public Point2D getStopPoint ()
+    public Point2D getStopPoint (Orientation orientation)
     {
-        return alignment.getStopPoint();
+        return alignment.getStopPoint(orientation);
     }
 
     public boolean isSuccessful ()

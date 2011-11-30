@@ -230,27 +230,27 @@ public class NestView
 
         for (Glyph glyph : glyphs) {
             // Draw circle arc or stick average line
-            if (glyph.getShape() == Shape.SLUR) {
-                if (ViewParameters.getInstance()
-                                  .isCirclePainting()) {
-                    Circle circle = SlurInspector.computeCircle(glyph);
-
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            String.format(
-                                "dist=%g " + circle.toString(),
-                                circle.getDistance()));
-                    }
-
-                    drawCircle(circle, g);
-                }
-
-                //            } else if (ViewParameters.getInstance()
-                //                                     .isLinePainting()) {
-                //                if (glyph instanceof Stick) {
-                //                    drawStickLine((Stick) glyph, g);
-                //                }
-            }
+            //            if (glyph.getShape() == Shape.SLUR) {
+            //                if (ViewParameters.getInstance()
+            //                                  .isCirclePainting()) {
+            //                    Circle circle = SlurInspector.computeCircle(glyph);
+            //
+            //                    if (logger.isFineEnabled()) {
+            //                        logger.fine(
+            //                            String.format(
+            //                                "dist=%g " + circle.toString(),
+            //                                circle.getDistance()));
+            //                    }
+            //
+            //                    drawCircle(circle, g);
+            //                }
+            //
+            //                //            } else if (ViewParameters.getInstance()
+            //                //                                     .isLinePainting()) {
+            //                //                if (glyph instanceof Stick) {
+            //                //                    drawStickLine((Stick) glyph, g);
+            //                //                }
+            //            }
 
             // Draw character boxes for textual glyphs?
             if (glyph.isText()) {
@@ -283,7 +283,10 @@ public class NestView
 
                     String    key = entry.getKey();
                     Rectangle rect = shape.getBounds();
-                    g.drawString(key, rect.x, rect.y - 4);
+                    g.drawString(
+                        key,
+                        rect.x + (rect.width / 2),
+                        rect.y + (rect.height / 2));
                 }
 
                 g.setFont(oldFont);
@@ -302,31 +305,6 @@ public class NestView
         }
 
         g2.dispose();
-    }
-
-    //------------//
-    // drawCircle //
-    //------------//
-    /**
-     * Draw the approximating circle of a slur.
-     */
-    private void drawCircle (Circle     circle,
-                             Graphics2D g)
-    {
-        CubicCurve2D.Double curve = circle.getCurve();
-
-        if (curve != null) {
-            // Draw the bezier arc
-            g.draw(curve);
-        } else {
-            // Draw the full circle
-            int radius = (int) Math.rint(circle.getRadius());
-            g.drawOval(
-                (int) Math.rint(circle.getCenter().x - radius),
-                (int) Math.rint(circle.getCenter().y - radius),
-                2 * radius,
-                2 * radius);
-        }
     }
 
     //~ Inner Interfaces -------------------------------------------------------

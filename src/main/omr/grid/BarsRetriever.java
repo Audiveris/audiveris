@@ -210,7 +210,7 @@ public class BarsRetriever
                              .toPixels(constants.maxCoordGap);
 
             for (Glyph glyph : filaments) {
-                Point2D p = glyph.getStartPoint();
+                Point2D p = glyph.getStartPoint(VERTICAL);
                 double  der = (glyph instanceof Filament)
                               ? ((Filament) glyph).slopeAt(p.getY(), VERTICAL)
                               : glyph.getInvertedSlope();
@@ -220,7 +220,7 @@ public class BarsRetriever
                         p.getY(),
                         p.getX() - (der * dy),
                         p.getY() - dy));
-                p = glyph.getStopPoint();
+                p = glyph.getStopPoint(VERTICAL);
                 der = (glyph instanceof Filament)
                       ? ((Filament) glyph).slopeAt(p.getY(), VERTICAL)
                       : glyph.getInvertedSlope();
@@ -539,9 +539,9 @@ public class BarsRetriever
                 Glyph.reverseWeightComparator);
 
             for (Glyph stick : bar.getSticksAncestors()) {
-                Point2D   start = stick.getStartPoint();
+                Point2D   start = stick.getStartPoint(VERTICAL);
                 StaffInfo topStaff = staffManager.getStaffAt(start);
-                Point2D   stop = stick.getStopPoint();
+                Point2D   stop = stick.getStopPoint(VERTICAL);
                 StaffInfo botStaff = staffManager.getStaffAt(stop);
 
                 if ((topStaff == system.getFirstStaff()) &&
@@ -700,11 +700,12 @@ public class BarsRetriever
         if ((prevBar != null) && (nextBar != null)) {
             // case: Bar - Bar
             for (Glyph prevStick : prevBar.getSticksAncestors()) {
-                Point2D prevPoint = skew.deskewed(prevStick.getStopPoint());
+                Point2D prevPoint = skew.deskewed(
+                    prevStick.getStopPoint(VERTICAL));
 
                 for (Glyph nextStick : nextBar.getSticksAncestors()) {
                     Point2D nextPoint = skew.deskewed(
-                        nextStick.getStartPoint());
+                        nextStick.getStartPoint(VERTICAL));
 
                     // Check dx
                     double dx = Math.abs(nextPoint.getX() - prevPoint.getX());
@@ -744,7 +745,7 @@ public class BarsRetriever
             Point2D prevPoint = null;
 
             for (Glyph prevStick : prevBar.getSticksAncestors()) {
-                Point2D point = skew.deskewed(prevStick.getStopPoint());
+                Point2D point = skew.deskewed(prevStick.getStopPoint(VERTICAL));
 
                 if ((prevPoint == null) || (prevPoint.getY() < point.getY())) {
                     prevPoint = point;
@@ -766,7 +767,8 @@ public class BarsRetriever
             Point2D nextPoint = null;
 
             for (Glyph nextStick : nextBar.getSticksAncestors()) {
-                Point2D point = skew.deskewed(nextStick.getStartPoint());
+                Point2D point = skew.deskewed(
+                    nextStick.getStartPoint(VERTICAL));
 
                 if ((nextPoint == null) || (nextPoint.getY() > point.getY())) {
                     nextPoint = point;
@@ -1040,9 +1042,9 @@ public class BarsRetriever
                 continue;
             }
 
-            Point2D   start = stick.getStartPoint();
+            Point2D   start = stick.getStartPoint(VERTICAL);
             StaffInfo topStaff = staffManager.getStaffAt(start);
-            Point2D   stop = stick.getStopPoint();
+            Point2D   stop = stick.getStopPoint(VERTICAL);
             StaffInfo botStaff = staffManager.getStaffAt(stop);
 
             if (logger.isFineEnabled() || stick.isVip()) {
@@ -1076,8 +1078,8 @@ public class BarsRetriever
     private Point2D preciseIntersection (Glyph    stick,
                                          LineInfo line)
     {
-        Point2D startPoint = stick.getStartPoint();
-        Point2D stopPoint = stick.getStopPoint();
+        Point2D startPoint = stick.getStartPoint(VERTICAL);
+        Point2D stopPoint = stick.getStopPoint(VERTICAL);
         Point2D pt = LineUtilities.intersection(
             line.getEndPoint(LEFT),
             line.getEndPoint(RIGHT),
@@ -1176,11 +1178,11 @@ public class BarsRetriever
                     }
 
                     // Perform adjustment only when on bottom staff
-                    Point2D   stop = stick.getStopPoint();
+                    Point2D   stop = stick.getStopPoint(VERTICAL);
                     StaffInfo botStaff = staffManager.getStaffAt(stop);
 
                     if (botStaff == staff) {
-                        Point2D   start = stick.getStartPoint();
+                        Point2D   start = stick.getStartPoint(VERTICAL);
                         StaffInfo topStaff = staffManager.getStaffAt(start);
                         stick.setEndingPoints(
                             preciseIntersection(stick, topStaff.getFirstLine()),
@@ -1286,7 +1288,7 @@ public class BarsRetriever
                     continue;
                 }
 
-                Point2D   start = stick.getStartPoint();
+                Point2D   start = stick.getStartPoint(VERTICAL);
                 StaffInfo topStaff = staffManager.getStaffAt(start);
                 int       top = topStaff.getId();
 
@@ -1508,7 +1510,7 @@ public class BarsRetriever
             BarInfo bar = staff.getBar(LEFT);
 
             for (Glyph stick : bar.getSticksAncestors()) {
-                Point2D   start = stick.getStartPoint();
+                Point2D   start = stick.getStartPoint(VERTICAL);
                 StaffInfo topStaff = staffManager.getStaffAt(start);
                 int       top = topStaff.getId();
 

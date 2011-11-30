@@ -250,7 +250,7 @@ public class FilamentTest
             Filament instance = createFil();
             Point2D  expResult = orientation.absolute(
                 new Point2D.Double(100, 25.5));
-            Point2D  result = instance.getStartPoint();
+            Point2D  result = instance.getStartPoint(Orientation.HORIZONTAL);
             instance.drawAscii();
             assertEquals(expResult, result);
         }
@@ -270,7 +270,7 @@ public class FilamentTest
             Filament instance = createFil();
             Point2D  expResult = orientation.absolute(
                 new Point2D.Double(171, 27.8));
-            Point2D  result = instance.getStopPoint();
+            Point2D  result = instance.getStopPoint(Orientation.HORIZONTAL);
             assertEquals(expResult.getX(), result.getX(), 0.1);
             assertEquals(expResult.getY(), result.getY(), 0.1);
         }
@@ -396,7 +396,7 @@ public class FilamentTest
             instance.include(createFilFour());
 
             PixelPoint pStart = new PixelPoint(80, 26);
-            Point2D    pStop = instance.getStopPoint();
+            Point2D    pStop = instance.getStopPoint(Orientation.HORIZONTAL);
             instance.setEndingPoints(pStart, pStop);
 
             instance.drawAscii();

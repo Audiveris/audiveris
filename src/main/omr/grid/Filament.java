@@ -40,34 +40,6 @@ public class Filament
     private static final Logger logger = Logger.getLogger(Filament.class);
 
     /**
-     * For comparing Filament instances on their starting point
-     */
-    public static final Comparator<Filament> startComparator = new Comparator<Filament>() {
-        public int compare (Filament f1,
-                            Filament f2)
-        {
-            // Sort on start
-            return Double.compare(
-                f1.getStartPoint().getX(),
-                f2.getStartPoint().getX());
-        }
-    };
-
-    /**
-     * For comparing Filament instances on their stopping point
-     */
-    public static final Comparator<Filament> stopComparator = new Comparator<Filament>() {
-        public int compare (Filament f1,
-                            Filament f2)
-        {
-            // Sort on stop
-            return Double.compare(
-                f1.getStopPoint().getX(),
-                f2.getStopPoint().getX());
-        }
-    };
-
-    /**
      * For comparing Filament instances on their top ordinate
      */
     public static final Comparator<Filament> topComparator = new Comparator<Filament>() {
@@ -274,17 +246,18 @@ public class Filament
 
         //        sb.append(" lg:")
         //          .append(getLength());
-        sb.append(" start[x=")
-          .append((float) getStartPoint().getX())
-          .append(",y=")
-          .append((float) getStartPoint().getY())
-          .append("]");
 
-        sb.append(" stop[x=")
-          .append((float) getStopPoint().getX())
-          .append(",y=")
-          .append((float) getStopPoint().getY())
-          .append("]");
+        //        sb.append(" start[x=")
+        //          .append((float) getStartPoint().getX())
+        //          .append(",y=")
+        //          .append((float) getStartPoint().getY())
+        //          .append("]");
+        //
+        //        sb.append(" stop[x=")
+        //          .append((float) getStopPoint().getX())
+        //          .append(",y=")
+        //          .append((float) getStopPoint().getY())
+        //          .append("]");
 
         //        sb.append(" meanDist:")
         //          .append((float) getMeanDistance());

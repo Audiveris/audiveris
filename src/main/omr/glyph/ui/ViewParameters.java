@@ -38,9 +38,6 @@ public class ViewParameters
     /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Should the slur circles be painted  */
-    public static final String CIRCLE_PAINTING = "circlePainting";
-
     /** Should the letter boxes be painted */
     public static final String LETTER_BOX_PAINTING = "letterBoxPainting";
 
@@ -84,24 +81,6 @@ public class ViewParameters
     public boolean isAttachmentPainting ()
     {
         return constants.attachmentPainting.getValue();
-    }
-
-    //-------------------//
-    // setCirclePainting //
-    //-------------------//
-    public void setCirclePainting (boolean value)
-    {
-        boolean oldValue = constants.circlePainting.getValue();
-        constants.circlePainting.setValue(value);
-        firePropertyChange(CIRCLE_PAINTING, oldValue, value);
-    }
-
-    //------------------//
-    // isCirclePainting //
-    //------------------//
-    public boolean isCirclePainting ()
-    {
-        return constants.circlePainting.getValue();
     }
 
     //----------------------//
@@ -171,19 +150,6 @@ public class ViewParameters
     }
 
     //---------------//
-    // toggleCircles //
-    //---------------//
-    /**
-     * Action that toggles the display of approximating circles in selected
-     * slur-shaped glyphs
-     * @param e the event that triggered this action
-     */
-    @Action(selectedProperty = CIRCLE_PAINTING)
-    public void toggleCircles (ActionEvent e)
-    {
-    }
-
-    //---------------//
     // toggleLetters //
     //---------------//
     /**
@@ -217,8 +183,8 @@ public class ViewParameters
     @Action(selectedProperty = SECTION_SELECTION_ENABLED)
     public void toggleSections (ActionEvent e)
     {
-//        logger.info(
-//            "Section mode is " + (isSectionSelectionEnabled() ? "on" : "off"));
+        //        logger.info(
+        //            "Section mode is " + (isSectionSelectionEnabled() ? "on" : "off"));
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -231,22 +197,16 @@ public class ViewParameters
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** Should the circles be painted */
-        final Constant.Boolean circlePainting = new Constant.Boolean(
-            true,
-            "Should the slur circles be painted");
-
-        /** Should the letter boxes be painted */
         final Constant.Boolean letterBoxPainting = new Constant.Boolean(
             true,
             "Should the letter boxes be painted");
 
-        /** Should the lines be painted */
+        //
         final Constant.Boolean linePainting = new Constant.Boolean(
             false,
             "Should the stick lines be painted");
 
-        /** Should the glyph attachments be painted */
+        //
         final Constant.Boolean attachmentPainting = new Constant.Boolean(
             true,
             "Should the glyph attachments be painted");

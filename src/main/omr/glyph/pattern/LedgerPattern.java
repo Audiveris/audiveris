@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
+import omr.run.Orientation;
 
 /**
  * Class {@code LedgerPattern} checks the related system for invalid ledgers.
@@ -274,7 +275,7 @@ public class LedgerPattern
 
         public PixelRectangle getReferenceBox ()
         {
-            Point2D        stop = seed.getStopPoint();
+            Point2D        stop = seed.getStopPoint(Orientation.HORIZONTAL);
             PixelRectangle box = new PixelRectangle(
                 (int) Math.rint(stop.getX()),
                 (int) Math.rint(stop.getY()),

@@ -778,8 +778,8 @@ public class Slur
         }
 
         // Visualize these rectangles (for debug)
-        glyph.addAttachment("sl", leftRect);
-        glyph.addAttachment("sr", rightRect);
+        glyph.addAttachment("|^", leftRect);
+        glyph.addAttachment("^|", rightRect);
 
         // System > Part > Measure > Chord > Note
         for (TreeNode pNode : system.getParts()) {

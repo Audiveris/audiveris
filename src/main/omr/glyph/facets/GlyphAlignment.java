@@ -136,17 +136,20 @@ public interface GlyphAlignment
     double getSlope ();
 
     /**
-     * Report the absolute point at the beginning of the approximating
-     * line.
+     * Report the absolute point at the beginning (with respect to the provided
+     * orientation) of the approximating line.
+     * @param orientation the general orientation reference
      * @return the starting point of the glyph line
      */
-    Point2D getStartPoint ();
+    Point2D getStartPoint (Orientation orientation);
 
     /**
-     * Report the absolute point at the end of the approximating line.
+     * Report the absolute point at the end (with respect to the provided
+     * orientation) of the approximating line.
+     * @param orientation the general orientation reference
      * @return the ending point of the line
      */
-    Point2D getStopPoint ();
+    Point2D getStopPoint (Orientation orientation);
 
     /**
      * Report the glyph thickness across the desired orientation.

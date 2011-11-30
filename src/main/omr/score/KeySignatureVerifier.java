@@ -256,7 +256,7 @@ public class KeySignatureVerifier
                         Barline.linePredicate);
 
                     if (line != null) {
-                        line.addAttachment("Key#" + staff.getId(), inner);
+                        line.addAttachment("k" + staff.getId(), inner);
                     }
                 }
 

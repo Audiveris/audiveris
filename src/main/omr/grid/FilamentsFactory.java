@@ -421,10 +421,14 @@ public class FilamentsFactory
 
         try {
             // Start & Stop points for each filament
-            Point2D oneStart = orientation.oriented(one.getStartPoint());
-            Point2D oneStop = orientation.oriented(one.getStopPoint());
-            Point2D twoStart = orientation.oriented(two.getStartPoint());
-            Point2D twoStop = orientation.oriented(two.getStopPoint());
+            Point2D oneStart = orientation.oriented(
+                one.getStartPoint(orientation));
+            Point2D oneStop = orientation.oriented(
+                one.getStopPoint(orientation));
+            Point2D twoStart = orientation.oriented(
+                two.getStartPoint(orientation));
+            Point2D twoStop = orientation.oriented(
+                two.getStopPoint(orientation));
 
             // coord gap?
             double overlapStart = Math.max(oneStart.getX(), twoStart.getX());

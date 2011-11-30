@@ -36,11 +36,9 @@ import omr.sheet.Skew;
 
 import omr.util.Wrapper;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.Stroke;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -71,8 +69,34 @@ public class ClustersRetriever
     private static final Logger logger = Logger.getLogger(
         ClustersRetriever.class);
 
-    /** Stroke for drawing combs */
-    private static final Stroke combStroke = new BasicStroke(0.5f);
+    /**
+     * For comparing Filament instances on their starting point
+     */
+    private static final Comparator<Filament> startComparator = new Comparator<Filament>() {
+        public int compare (Filament f1,
+                            Filament f2)
+        {
+            // Sort on start
+            return Double.compare(
+                f1.getStartPoint(HORIZONTAL).getX(),
+                f2.getStartPoint(HORIZONTAL).getX());
+        }
+    };
+
+    /**
+     * For comparing Filament instances on their stopping point
+     */
+    private static final Comparator<Filament> stopComparator = new Comparator<Filament>() {
+        public int compare (Filament f1,
+                            Filament f2)
+        {
+            // Sort on stop
+            return Double.compare(
+                f1.getStopPoint(HORIZONTAL).getX(),
+                f2.getStopPoint(HORIZONTAL).getX());
+        }
+    };
+
 
     //~ Instance fields --------------------------------------------------------
 
@@ -622,10 +646,10 @@ public class ClustersRetriever
     private void expandClusters ()
     {
         List<LineFilament> startFils = new ArrayList<LineFilament>(filaments);
-        Collections.sort(startFils, LineFilament.startComparator);
+        Collections.sort(startFils, startComparator);
 
         List<LineFilament> stopFils = new ArrayList<LineFilament>(startFils);
-        Collections.sort(stopFils, LineFilament.stopComparator);
+        Collections.sort(stopFils, stopComparator);
 
         // Browse clusters, starting with the longest ones
         Collections.sort(clusters, LineCluster.reverseLengthComparator);
@@ -999,9 +1023,9 @@ public class ClustersRetriever
         List<FilY> list = new ArrayList<FilY>();
 
         for (LineFilament fil : filaments) {
-            if ((x >= fil.getStartPoint()
+            if ((x >= fil.getStartPoint(HORIZONTAL)
                          .getX()) &&
-                (x <= fil.getStopPoint()
+                (x <= fil.getStopPoint(HORIZONTAL)
                          .getX())) {
                 list.add(new FilY(fil, fil.getPositionAt(x, HORIZONTAL)));
             }

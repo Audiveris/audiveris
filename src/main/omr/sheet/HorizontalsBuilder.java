@@ -485,11 +485,11 @@ public class HorizontalsBuilder
         // staff. Distance is negative if the stick is within the staff,
         // positive outside.
         final Point2D   mid = new Point2D.Double(
-            (stick.getStartPoint()
-                  .getX() + stick.getStopPoint()
+            (stick.getStartPoint(HORIZONTAL)
+                  .getX() + stick.getStopPoint(HORIZONTAL)
                                  .getX()) / 2,
-            (stick.getStartPoint()
-                  .getY() + stick.getStopPoint()
+            (stick.getStartPoint(HORIZONTAL)
+                  .getY() + stick.getStopPoint(HORIZONTAL)
                                  .getY()) / 2);
         final StaffInfo staff = sheet.getStaffManager()
                                      .getStaffAt(mid);
@@ -954,7 +954,6 @@ public class HorizontalsBuilder
             "Minimum length for a full ledger with no stem");
 
         ///
-
         Scale.Fraction     minCoreLength = new Scale.Fraction(
             0.2,
             "Minimum length for ledger core");
@@ -1213,11 +1212,11 @@ public class HorizontalsBuilder
             this.stick = stick;
 
             mid = new Point2D.Double(
-                (stick.getStartPoint()
-                      .getX() + stick.getStopPoint()
+                (stick.getStartPoint(HORIZONTAL)
+                      .getX() + stick.getStopPoint(HORIZONTAL)
                                      .getX()) / 2,
-                (stick.getStartPoint()
-                      .getY() + stick.getStopPoint()
+                (stick.getStartPoint(HORIZONTAL)
+                      .getY() + stick.getStopPoint(HORIZONTAL)
                                      .getY()) / 2);
             staff = sheet.getStaffManager()
                          .getStaffAt(mid);

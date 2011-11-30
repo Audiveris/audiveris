@@ -352,7 +352,7 @@ public class LinesRetriever
                              .toPixels(constants.tangentLg);
 
             for (Filament filament : allFils) {
-                Point2D p = filament.getStartPoint();
+                Point2D p = filament.getStartPoint(HORIZONTAL);
                 double  der = filament.slopeAt(p.getX(), HORIZONTAL);
                 g.draw(
                     new Line2D.Double(
@@ -360,7 +360,7 @@ public class LinesRetriever
                         p.getY(),
                         p.getX() - dx,
                         p.getY() - (der * dx)));
-                p = filament.getStopPoint();
+                p = filament.getStopPoint(HORIZONTAL);
                 der = filament.slopeAt(p.getX(), HORIZONTAL);
                 g.draw(
                     new Line2D.Double(
@@ -701,9 +701,9 @@ public class LinesRetriever
                     PixelRectangle lineBox = filament.getContourBox();
                     lineBox.grow(0, scale.getMainFore());
 
-                    double minX = filament.getStartPoint()
+                    double minX = filament.getStartPoint(HORIZONTAL)
                                           .getX();
-                    double maxX = filament.getStopPoint()
+                    double maxX = filament.getStopPoint(HORIZONTAL)
                                           .getX();
                     int    minY = lineBox.y;
                     int    maxY = lineBox.y + lineBox.height;
@@ -770,9 +770,9 @@ public class LinesRetriever
                     PixelRectangle lineBox = fil.getContourBox();
                     lineBox.grow(0, scale.getMainFore());
 
-                    double        minX = fil.getStartPoint()
+                    double        minX = fil.getStartPoint(HORIZONTAL)
                                             .getX();
-                    double        maxX = fil.getStopPoint()
+                    double        maxX = fil.getStopPoint(HORIZONTAL)
                                             .getX();
                     int           minY = lineBox.y;
                     int           maxY = lineBox.y + lineBox.height;
@@ -838,8 +838,8 @@ public class LinesRetriever
 
         for (int i = 0; i < topCount; i++) {
             Filament fil = filaments.get(i);
-            Point2D  start = fil.getStartPoint();
-            Point2D  stop = fil.getStopPoint();
+            Point2D  start = fil.getStartPoint(HORIZONTAL);
+            Point2D  stop = fil.getStopPoint(HORIZONTAL);
             slopes += ((stop.getY() - start.getY()) / (stop.getX() -
                                                       start.getX()));
         }

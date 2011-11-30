@@ -35,6 +35,7 @@ import omr.lag.Section;
 import omr.log.Logger;
 
 import omr.run.Orientation;
+import static omr.run.Orientation.*;
 
 import omr.score.common.PixelRectangle;
 
@@ -329,8 +330,10 @@ public class BarsChecker
     private void initializeContext (GlyphContext context)
     {
         Glyph     stick = context.stick;
-        StaffInfo startStaff = staffManager.getStaffAt(stick.getStartPoint());
-        StaffInfo stopStaff = staffManager.getStaffAt(stick.getStopPoint());
+        StaffInfo startStaff = staffManager.getStaffAt(
+            stick.getStartPoint(VERTICAL));
+        StaffInfo stopStaff = staffManager.getStaffAt(
+            stick.getStopPoint(VERTICAL));
 
         // Remember top & bottom areas
         context.topArea = staffManager.getIndexOf(startStaff);
@@ -622,7 +625,7 @@ public class BarsChecker
         protected double getValue (GlyphContext context)
         {
             Glyph     stick = context.stick;
-            Point2D   stop = stick.getStopPoint();
+            Point2D   stop = stick.getStopPoint(VERTICAL);
 
             // Which staff area contains the bottom of the stick?
             StaffInfo staff = staffManager.getStaffAt(stop);
@@ -827,13 +830,13 @@ public class BarsChecker
         @Override
         protected PixelRectangle getBox (Glyph stick)
         {
-            Point2D        bottom = stick.getStopPoint();
+            Point2D        bottom = stick.getStopPoint(VERTICAL);
             PixelRectangle box = new PixelRectangle(
                 (int) Math.rint(bottom.getX() - nWidth),
                 (int) Math.rint(bottom.getY() - (1.5 * nHeight)),
                 nWidth,
                 2 * nHeight);
-            stick.addAttachment("BL", box);
+            stick.addAttachment("bl", box);
 
             return box;
         }
@@ -863,13 +866,13 @@ public class BarsChecker
         @Override
         protected PixelRectangle getBox (Glyph stick)
         {
-            Point2D        bottom = stick.getStopPoint();
+            Point2D        bottom = stick.getStopPoint(VERTICAL);
             PixelRectangle box = new PixelRectangle(
                 (int) Math.rint(bottom.getX()),
                 (int) Math.rint(bottom.getY() - (1.5 * nHeight)),
                 nWidth,
                 2 * nHeight);
-            stick.addAttachment("BR", box);
+            stick.addAttachment("br", box);
 
             return box;
         }
@@ -1117,7 +1120,7 @@ public class BarsChecker
         protected double getValue (GlyphContext context)
         {
             Glyph     stick = context.stick;
-            Point2D   start = stick.getStartPoint();
+            Point2D   start = stick.getStartPoint(VERTICAL);
 
             // Which staff area contains the top of the stick?
             StaffInfo staff = staffManager.getStaffAt(start);
@@ -1172,13 +1175,13 @@ public class BarsChecker
         @Override
         protected PixelRectangle getBox (Glyph stick)
         {
-            Point2D        top = stick.getStartPoint();
+            Point2D        top = stick.getStartPoint(VERTICAL);
             PixelRectangle box = new PixelRectangle(
                 (int) Math.rint(top.getX() - nWidth),
                 (int) Math.rint(top.getY() - (nHeight / 2)),
                 nWidth,
                 2 * nHeight);
-            stick.addAttachment("TL", box);
+            stick.addAttachment("tl", box);
 
             return box;
         }
@@ -1208,13 +1211,13 @@ public class BarsChecker
         @Override
         protected PixelRectangle getBox (Glyph stick)
         {
-            Point2D        top = stick.getStartPoint();
+            Point2D        top = stick.getStartPoint(VERTICAL);
             PixelRectangle box = new PixelRectangle(
                 (int) Math.rint(top.getX()),
                 (int) Math.rint(top.getY() - (nHeight / 2)),
                 nWidth,
                 2 * nHeight);
-            stick.addAttachment("TR", box);
+            stick.addAttachment("tr", box);
 
             return box;
         }
@@ -1246,8 +1249,8 @@ public class BarsChecker
         protected double getValue (GlyphContext context)
         {
             Glyph   stick = context.stick;
-            Point2D start = stick.getStartPoint();
-            Point2D stop = stick.getStopPoint();
+            Point2D start = stick.getStartPoint(VERTICAL);
+            Point2D stop = stick.getStopPoint(VERTICAL);
 
             // Beware of sign of stickSlope (it is opposite of globalSlope)
             double stickSlope = -(stop.getX() - start.getX()) / (stop.getY() -

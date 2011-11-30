@@ -165,7 +165,7 @@ public class TimePattern
                               .yAt(center.x) - yOffset - box.y;
 
             // Draw the time core box, for visual debug
-            seed.addAttachment("time", box);
+            seed.addAttachment("t", box);
 
             return box;
         }
