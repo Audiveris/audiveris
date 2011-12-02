@@ -262,7 +262,7 @@ public class BarsRetriever
         partTops = retrievePartTops();
 
         logger.info(
-            sheet.getLogPrefix() + "parts   top staff ids: " +
+            sheet.getLogPrefix() + "Parts   top staff ids: " +
             Arrays.toString(partTops));
 
         // Refine ending points for each bar line
@@ -616,7 +616,7 @@ public class BarsRetriever
             }
 
             logger.info(
-                sheet.getLogPrefix() + "systems top staff ids: " +
+                sheet.getLogPrefix() + "Systems top staff ids: " +
                 Arrays.toString(systemTops));
 
             // Create system frames using staves tops

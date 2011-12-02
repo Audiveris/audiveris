@@ -201,6 +201,7 @@ public class TimeSignatureFixer
 
                         if (!timeRational.equals(bestRational)) {
                             logger.info(
+                                measure.getPage().getSheet().getLogPrefix() +
                                 "Measure#" + measure.getPageId() + " " +
                                 staff.getContextString() + "T" + staff.getId() +
                                 " " + timeRational + "->" + bestRational);

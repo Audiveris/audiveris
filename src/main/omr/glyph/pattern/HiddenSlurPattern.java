@@ -63,7 +63,7 @@ public class HiddenSlurPattern
      */
     public HiddenSlurPattern (SystemInfo system)
     {
-        super("GreedySlur", system);
+        super("HiddenSlur", system);
     }
 
     //~ Methods ----------------------------------------------------------------

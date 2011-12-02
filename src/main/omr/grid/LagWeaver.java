@@ -142,9 +142,12 @@ public class LagWeaver
         watch.start("purge hLag");
 
         List<Section> staffLinesSections = removeStaffLines(hLag);
-        logger.info(
-            sheet.getLogPrefix() + "StaffLine sections removed: " +
-            staffLinesSections.size());
+
+        if (logger.isFineEnabled()) {
+            logger.info(
+                sheet.getLogPrefix() + "StaffLine sections removed: " +
+                staffLinesSections.size());
+        }
 
         watch.start("Hori <-> Hori");
         horiWithHori();

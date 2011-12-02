@@ -355,61 +355,13 @@ public class BasicNest
     public Glyph addGlyph (Glyph glyph)
     {
         glyph = registerGlyph(glyph);
-        
+
         // Make absolutely all its sections point back to it
         glyph.linkAllSections();
 
         if (glyph.isVip()) {
             logger.info("Glyph#" + glyph.getId() + " added");
         }
-
-        return glyph;
-    }
-
-    //---------------//
-    // registerGlyph //
-    //---------------//
-    public Glyph registerGlyph (Glyph glyph)
-    {
-        // First check this physical glyph does not already exist
-        Glyph original = getOriginal(glyph);
-
-        if (original != null) {
-            if (original != glyph) {
-                // Reuse the existing glyph
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "new avatar of #" + original.getId() +
-                        Sections.toString(" members", glyph.getMembers()) +
-                        Sections.toString(" original", original.getMembers()));
-                }
-
-                glyph = original;
-                glyph.setPartOf(null);
-            }
-        } else {
-            // Create a brand new glyph
-            final int id = generateId();
-            glyph.setId(id);
-            glyph.setNest(this);
-            originals.put(glyph.getSignature(), glyph);
-            allGlyphs.put(id, glyph);
-
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "Registered glyph #" + glyph.getId() + " as original " +
-                    glyph.getSignature());
-            }
-        }
-
-        // Special for virtual glyphs
-        if (glyph.isVirtual()) {
-            virtualGlyphs.add(glyph);
-        }
-
-//        if (glyph.isVip()) {
-//            logger.info("Glyph#" + glyph.getId() + " registered");
-//        }
 
         return glyph;
     }
@@ -557,6 +509,57 @@ public class BasicNest
         } catch (Throwable ex) {
             logger.warning(getClass().getName() + " onEvent error", ex);
         }
+    }
+
+    //---------------//
+    // registerGlyph //
+    //---------------//
+    public Glyph registerGlyph (Glyph glyph)
+    {
+        // First check this physical glyph does not already exist
+        Glyph original = getOriginal(glyph);
+
+        if (original != null) {
+            if (original != glyph) {
+                // Reuse the existing glyph
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "new avatar of #" + original.getId() +
+                        Sections.toString(" members", glyph.getMembers()) +
+                        Sections.toString(" original", original.getMembers()));
+                }
+
+                glyph = original;
+                glyph.setPartOf(null);
+            }
+        } else {
+            // Create a brand new glyph
+            final int id = generateId();
+            glyph.setId(id);
+            glyph.setNest(this);
+            originals.put(glyph.getSignature(), glyph);
+            allGlyphs.put(id, glyph);
+
+            if (isVip(glyph)) {
+                glyph.setVip();
+            }
+
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "Registered glyph #" + glyph.getId() + " as original " +
+                    glyph.getSignature());
+            }
+        }
+
+        // Special for virtual glyphs
+        if (glyph.isVirtual()) {
+            virtualGlyphs.add(glyph);
+        }
+
+        //        if (glyph.isVip()) {
+        //            logger.info("Glyph#" + glyph.getId() + " registered");
+        //        }
+        return glyph;
     }
 
     //--------------------//

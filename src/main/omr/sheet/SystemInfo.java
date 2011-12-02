@@ -382,8 +382,7 @@ public class SystemInfo
     // getGlyphs //
     //-----------//
     /**
-     * Report the unmodifiable collection of glyphs within the system area
-     *
+     * Report the unmodifiable collection of glyphs within the system area.
      * @return the unmodifiable collection of glyphs
      */
     public SortedSet<Glyph> getGlyphs ()
@@ -1076,7 +1075,7 @@ public class SystemInfo
     }
 
     //--------------//
-    // fixLargeSlur //
+    // trimSlur //
     //--------------//
     /**
      * For large glyphs, we suspect a slur with a stuck object. So the strategy
@@ -1093,23 +1092,7 @@ public class SystemInfo
      */
     public Glyph fixLargeSlur (Glyph slur)
     {
-        return slurInspector.fixLargeSlur(slur);
-    }
-
-    //-----------------//
-    // fixSpuriousSlur //
-    //-----------------//
-    /**
-     * Try to correct the slur glyphs (which have a too high circle distance) by
-     * either adding a neigboring glyph (for small slurs) or removing stuck
-     * glyph sections (for large slurs)
-     *
-     * @param glyph the spurious glyph at hand
-     * @return true if the slur glyph has actually been fixed
-     */
-    public Glyph fixSpuriousSlur (Glyph glyph)
-    {
-        return slurInspector.fixSpuriousSlur(glyph);
+        return slurInspector.trimSlur(slur);
     }
 
     //---------------//
@@ -1209,8 +1192,8 @@ public class SystemInfo
     // removeFromGlyphsCollection //
     //----------------------------//
     /**
-     * Meant for access by GlypsBuilder only
-     * Standard entry is {@link #removeGlyph}
+     * Meant for access by GlyphsBuilder only,
+     * since standard entry is {@link #removeGlyph}.
      * @param glyph the glyph to remove
      * @return true if the glyph was registered
      */

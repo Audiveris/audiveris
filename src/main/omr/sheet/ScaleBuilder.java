@@ -432,7 +432,9 @@ public class ScaleBuilder
               .append(secondBackPeak);
         }
 
-        logger.info(sb.toString());
+        if (logger.isFineEnabled()) {
+            logger.info(sb.toString());
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------

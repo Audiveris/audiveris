@@ -142,8 +142,7 @@ public class Slur
     // Slur //
     //------//
     /**
-     * Create a slur with all the specified parameters
-     *
+     * Create a slur with all the specified parameters.
      * @param part  the containing system part
      * @param glyph the underlying glyph
      * @param curve the underlying bezier curve
@@ -184,8 +183,7 @@ public class Slur
     // getCurve //
     //----------//
     /**
-     * Report the curve of the slur
-     *
+     * Report the curve of the slur.
      * @return the curve to draw
      */
     public CubicCurve2D getCurve ()
@@ -197,7 +195,7 @@ public class Slur
     // getId //
     //-------//
     /**
-     * Report the slur id (as the id of the underlying glyph)
+     * Report the slur id (as the id of the underlying glyph).
      * @return the id of the underlying glyph
      */
     public int getId ()
@@ -210,8 +208,7 @@ public class Slur
     //------------------//
     /**
      * Report the slur (if any) at the end of previous system that could be
-     * considered as an extension of this slur
-     *
+     * considered as an extension of this slur.
      * @return the connected slur on left, or null if none
      */
     public Slur getLeftExtension ()
@@ -224,7 +221,7 @@ public class Slur
     //-------------//
     /**
      * Report the note (if any) embraced by the left side of this slur
-     * @return the embraced note
+     * @return the embraced note.
      */
     public Note getLeftNote ()
     {
@@ -236,8 +233,7 @@ public class Slur
     //-------------------//
     /**
      * Report the slur (if any) at the beginning of next system that could be
-     * considered as an extension of this slur
-     *
+     * considered as an extension of this slur.
      * @return the connected slur on right, or null if none
      */
     public Slur getRightExtension ()
@@ -249,7 +245,7 @@ public class Slur
     // getRightNote //
     //--------------//
     /**
-     * Report the note (if any) embraced by the right side of this slur
+     * Report the note (if any) embraced by the right side of this slur.
      * @return the embraced note
      */
     public Note getRightNote ()
@@ -261,8 +257,7 @@ public class Slur
     // isTie //
     //-------//
     /**
-     * Report whether this slur is actually a tie (a slur between similar notes)
-     *
+     * Report whether this slur is actually a tie (a slur between similar notes).
      * @return true if is a Tie, false otherwise
      */
     public boolean isTie ()
@@ -292,7 +287,7 @@ public class Slur
     // canExtend //
     //-----------//
     /**
-     * Check whether this slur can extend the prevSlur of the preceding system
+     * Check whether this slur can extend the prevSlur of the preceding system.
      * @param prevSlur the slur candidate in the preceding system
      * @return true if connection is possible
      */
@@ -309,7 +304,6 @@ public class Slur
     /**
      * Given a glyph (potentially representing a Slur), allocate the Slur
      * entity that corresponds to this glyph.
-     *
      * @param glyph The glyph to process
      * @param system The system which will contain the allocated Slur
      */
@@ -322,7 +316,7 @@ public class Slur
 
         // Compute the approximating circle
         Circle       circle = SlurInspector.computeCircle(glyph);
-        CubicCurve2D curve = computeCurve(circle, system);
+        CubicCurve2D curve = circle.getCurve();
 
         // Safer
         if (curve == null) {
@@ -446,8 +440,7 @@ public class Slur
     // isBelow //
     //---------//
     /**
-     * Report whether the placement of this slur is below the embraced notes
-     *
+     * Report whether the placement of this slur is below the embraced notes.
      * @return true if below, false if above
      */
     public boolean isBelow ()
@@ -459,8 +452,7 @@ public class Slur
     // connectTo //
     //-----------//
     /**
-     * Make the connection with another slur in the previous system
-     *
+     * Make the connection with another slur in the previous system.
      * @param prevSlur slur at the end of previous system
      */
     public void connectTo (Slur prevSlur)
@@ -485,7 +477,7 @@ public class Slur
     // resetLeftExtension //
     //--------------------//
     /**
-     * Reset to null the left extension of this slur
+     * Reset to null the left extension of this slur.
      */
     public void resetLeftExtension ()
     {
@@ -496,7 +488,7 @@ public class Slur
     // resetRightExtension //
     //---------------------//
     /**
-     * Reset to null the right extension of this slur
+     * Reset to null the right extension of this slur.
      */
     public void resetRightExtension ()
     {
@@ -507,7 +499,7 @@ public class Slur
     // toString //
     //----------//
     /**
-     * Report a readable description for this slur
+     * Report a readable description for this slur.
      * @return a string with all slur parameters
      */
     @Override
@@ -580,7 +572,7 @@ public class Slur
     //---------//
     /**
      * Report whether the provided curve is below the notes (turned upwards)
-     * or above the notes (turned downwards)
+     * or above the notes (turned downwards).
      * @param curve the provided curve to check
      * @return true if below, false if above
      */
@@ -601,8 +593,7 @@ public class Slur
     //------------------//
     /**
      * Check whether two slurs to-be-connected are roughly compatible with each
-     * other (same staff id, and pitch positions not too different)
-     *
+     * other (same staff id, and pitch positions not too different).
      * @param prevSlur the previous slur
      * @return true if found compatible
      */
@@ -656,29 +647,12 @@ public class Slur
         return res;
     }
 
-    //--------------//
-    // computeCurve //
-    //--------------//
-    /**
-     *  Build the slur curve from its circle using system-based coordinates
-     *
-     * @param circle the approximating circle
-     * @param system the containing system
-     * @return the resulting curve
-     */
-    private static CubicCurve2D computeCurve (Circle      circle,
-                                              ScoreSystem system)
-    {
-        return circle.getCurve();
-    }
-
     //-------------//
     // filterNodes //
     //-------------//
     /**
      * Keep in the provided collection of nodes the very first ones that
-     * cannot be separated via the normal node comparator
-     *
+     * cannot be separated via the normal node comparator.
      * @param nodes the collection of nodes found in the neighborhood
      * @param ref the reference point to compare distance from
      */
@@ -721,7 +695,6 @@ public class Slur
     /**
      * Check whether two notes represent the same pitch (same octave, same step,
      * same alteration). This is needed to detects tie slurs.
-     *
      * @param n1 one note
      * @param n2 the other note
      * @return true if the notes are equivalent.
@@ -741,7 +714,6 @@ public class Slur
     /**
      * Retrieve the notes that are embraced on the left side and on the right
      * side of a slur glyph.
-     *
      * @param system the containing system
      * @param curve the slur underlying curve
      * @param leftNodes output: the ordered list of notes found on left side
@@ -899,7 +871,7 @@ public class Slur
     // Side //
     //------//
     /**
-     *  Note information on one side of a slur
+     *  Note information on one side of a slur.
      */
     private static class Side
     {
