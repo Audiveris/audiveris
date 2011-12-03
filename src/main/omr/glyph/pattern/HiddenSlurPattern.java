@@ -13,14 +13,8 @@ package omr.glyph.pattern;
 
 import omr.constant.ConstantSet;
 
-import omr.glyph.Evaluation;
-import omr.glyph.GlyphEvaluator;
-import omr.glyph.GlyphNetwork;
-import omr.glyph.Grades;
-import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.lag.Section;
 
 import omr.log.Logger;
 
@@ -29,13 +23,10 @@ import omr.sheet.SystemInfo;
 
 import omr.util.Implement;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
- * Class {@code HiddenSlurPattern} processes the significant glyphs which have
- * not been assigned a shape, looking for a slur in one of their section
+ * Class {@code HiddenSlurPattern} processes the significant glyphs 
+ * which have not been assigned a shape, looking for a slur inside.
  *
  * @author Hervé Bitteur
  */
@@ -58,7 +49,6 @@ public class HiddenSlurPattern
     //-------------------//
     /**
      * Creates a new HiddenSlurPattern object.
-     *
      * @param system the containing system
      */
     public HiddenSlurPattern (SystemInfo system)
@@ -74,11 +64,9 @@ public class HiddenSlurPattern
     @Implement(GlyphPattern.class)
     public int runPattern ()
     {
+        SlurInspector inspector = system.getSlurInspector();
         int                  successNb = 0;
         final double         minGlyphWeight = constants.minGlyphWeight.getValue();
-        final int            minSectionWeight = scale.toPixels(
-            constants.minSectionWeight);
-        final GlyphEvaluator evaluator = GlyphNetwork.getInstance();
 
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.isKnown() ||
@@ -87,35 +75,14 @@ public class HiddenSlurPattern
                 continue;
             }
 
-            List<Section> sections = new ArrayList<Section>(glyph.getMembers());
-            Collections.sort(sections, Section.reverseWeightComparator);
-
-            for (Section section : sections) {
-                if (section.getWeight() < minSectionWeight) {
-                    break;
-                }
-
-                Glyph      compound = system.buildTransientGlyph(
-                    Collections.singleton(section));
-                Evaluation vote = evaluator.vote(
-                    compound,
-                    Grades.slurMinGrade,
-                    system);
-
-                if ((vote != null) && (vote.shape == Shape.SLUR)) {
-                    compound.setEvaluation(vote);
-                    compound = system.addGlyph(compound);
-
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            "SLUR extracted as glyph#" + compound.getId());
-                    }
-
-                    successNb++;
-
-                    break;
-                }
+            if (glyph.isVip()) {
+                logger.info("Running HiddenSlur on glyph#" + glyph.getId());
             }
+
+            // Pickup a long thin section as seed
+            // Aggregate others progressively
+            if (inspector.trimSlur(glyph) != null)
+                successNb++;
         }
 
         return successNb;
@@ -134,8 +101,5 @@ public class HiddenSlurPattern
         Scale.AreaFraction minGlyphWeight = new Scale.AreaFraction(
             0.5,
             "Minimum normalized glyph weight to lookup a slur section");
-        Scale.AreaFraction minSectionWeight = new Scale.AreaFraction(
-            0.4,
-            "Minimum normalized section weight to check for a slur shape");
     }
 }

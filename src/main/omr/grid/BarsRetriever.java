@@ -1679,7 +1679,7 @@ public class BarsRetriever
         // Constants for display
         //
         Constant.Boolean showVerticalLines = new Constant.Boolean(
-            true,
+            false,
             "Should we display the vertical lines?");
 
         //

@@ -207,6 +207,14 @@ public class BasicAlignment
         return line.getMeanDistance();
     }
 
+    //------------------//
+    // getMeanThickness //
+    //------------------//
+    public double getMeanThickness (Orientation orientation)
+    {
+        return (double) glyph.getWeight() / getLength(orientation);
+    }
+
     //-----------//
     // getMidPos //
     //-----------//

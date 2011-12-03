@@ -60,7 +60,6 @@ public class SplitPattern
     private static final EnumSet<Shape> invalidShapes = EnumSet.of(
         Shape.CLUTTER,
         Shape.NOISE,
-        Shape.SLUR,
         Shape.STRUCTURE);
 
     //~ Instance fields --------------------------------------------------------
@@ -164,6 +163,10 @@ public class SplitPattern
      */
     private boolean splitGlyph (Glyph master)
     {
+        if (master.isVip()) {
+            logger.info("Trying to split G#" + master.getId());
+        }
+
         List<Split> splits = new ArrayList<Split>();
 
         // Retrieve all binary splits of this glyph
@@ -205,7 +208,7 @@ public class SplitPattern
 
         bestSplit.register(system);
 
-        if (logger.isFineEnabled()) {
+        if (master.isVip() || logger.isFineEnabled()) {
             logger.info("Checking " + bestSplit);
         }
 
@@ -219,8 +222,8 @@ public class SplitPattern
                 system);
 
             if ((vote == null) || invalidShapes.contains(vote.shape)) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("No valid shape for chunk " + chunk);
+                if (master.isVip() || logger.isFineEnabled()) {
+                    logger.info("No valid shape for chunk " + chunk);
                 }
 
                 return false;
@@ -234,7 +237,7 @@ public class SplitPattern
         }
 
         // Now actually perform the split!
-        if (logger.isFineEnabled()) {
+        if (master.isVip() || logger.isFineEnabled()) {
             logger.info(system.getLogPrefix() + "Performing " + bestSplit);
         }
 

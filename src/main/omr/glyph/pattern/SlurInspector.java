@@ -703,7 +703,7 @@ public class SlurInspector
 
         //
         Scale.Fraction     maxCircleDistance = new Scale.Fraction(
-            0.22,
+           0.3, //0.22,
             "Maximum distance to approximating circle for a slur");
 
         //
@@ -798,11 +798,20 @@ public class SlurInspector
                 return false; // Safer
             }
 
-            Shape shape = glyph.getShape();
+            // Check meanthickness
+            double thickness = Math.min(
+                glyph.getMeanThickness(VERTICAL),
+                glyph.getMeanThickness(HORIZONTAL));
+
+            if (thickness > maxChunkThickness) {
+                return false;
+            }
 
             if (!glyph.isKnown()) {
                 return true;
             }
+
+            Shape shape = glyph.getShape();
 
             if ((shape == Shape.SLUR) && !glyph.isManualShape()) {
                 return true;

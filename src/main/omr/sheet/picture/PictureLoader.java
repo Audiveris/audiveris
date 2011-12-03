@@ -317,7 +317,7 @@ public class PictureLoader
                         images.put(i, img);
 
                         logger.info(
-                            imgFile.getName() + " Loaded image #" + i + " (" +
+                            imgFile.getName() + " loaded image #" + i + " (" +
                             img.getWidth() + " x " + img.getHeight() + ")");
                     }
                 }

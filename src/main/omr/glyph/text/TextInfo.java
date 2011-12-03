@@ -857,7 +857,7 @@ public class TextInfo
         {
             StringBuilder word = new StringBuilder();
 
-            for (index = index + 1; index < content.length(); index++) {
+            for (index += 1; index < content.length(); index++) {
                 pos = (int) Math.rint(index * ratio);
 
                 String str = content.substring(index, index + 1);
@@ -924,7 +924,7 @@ public class TextInfo
         {
             StringBuilder word = new StringBuilder();
 
-            for (pos = pos + 1; pos < chars.size(); pos++) {
+            for (pos += 1; pos < chars.size(); pos++) {
                 OcrChar charDesc = chars.get(pos);
 
                 // White space

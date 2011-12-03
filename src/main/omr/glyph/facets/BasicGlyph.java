@@ -341,6 +341,11 @@ public class BasicGlyph
         return alignment.getMeanDistance();
     }
 
+    public double getMeanThickness (Orientation orientation)
+    {
+        return alignment.getMeanThickness(orientation);
+    }
+
     public SortedSet<Section> getMembers ()
     {
         return composition.getMembers();
