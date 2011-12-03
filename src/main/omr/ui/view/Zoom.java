@@ -26,7 +26,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class <code>Zoom</code> encapsulates a zoom ratio, which is typically
+ * Class {@code Zoom} encapsulates a zoom ratio, which is typically
  * the ratio between display values (such as the size of the display of an
  * entity) and model values (such as the size of the entity itself). For
  * example, a Zoom with ratio set to a 2.0 value would double the display

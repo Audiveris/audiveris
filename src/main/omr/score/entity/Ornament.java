@@ -19,7 +19,7 @@ import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
 
 /**
- * Class <code>Ornament</code> represents an ornament event, a special notation.
+ * Class {@code Ornament} represents an ornament event, a special notation.
  * This should apply to:
  * <pre>
  * trill-mark           standard

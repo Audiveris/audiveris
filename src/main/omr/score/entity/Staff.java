@@ -24,7 +24,7 @@ import omr.util.TreeNode;
 import java.util.Iterator;
 
 /**
- * Class <code>Staff</code> handles a staff in a system part. It is useful for
+ * Class {@code Staff} handles a staff in a system part. It is useful for
  * its geometric parameters (topLeft corner, width and height, ability to
  * convert between a PixelPoint ordinate and a staff-based pitchPosition. But
  * it contains no further entities, the Measure's are the actual containers.
@@ -255,7 +255,7 @@ public class Staff
     // PartIterator //
     //--------------//
     /**
-     * Class <code>PartIterator</code> implements an iterator on the sequence
+     * Class {@code PartIterator} implements an iterator on the sequence
      * of staves within all parallel measures of a SystemPart
      */
     public static class PartIterator
@@ -297,7 +297,7 @@ public class Staff
     // SystemIterator //
     //----------------//
     /**
-     * Class <code>SystemIterator</code> implements an iterator on the
+     * Class {@code SystemIterator} implements an iterator on the
      * sequence of staves within all parallel measures of a system
      */
     public static class SystemIterator

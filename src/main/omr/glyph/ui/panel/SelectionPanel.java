@@ -56,7 +56,7 @@ import javax.swing.JProgressBar;
 import javax.swing.KeyStroke;
 
 /**
- * Class <code>SelectionPanel</code> handles a user panel to select <B>names</B>
+ * Class {@code SelectionPanel} handles a user panel to select <B>names</B>
  * from glyph repository, either the whole population or a core set of
  * glyphs. This class is a dedicated companion of {@link GlyphTrainer}.
  *

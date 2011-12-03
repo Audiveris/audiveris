@@ -21,7 +21,7 @@ import omr.log.Logger;
 import javax.swing.UIManager;
 
 /**
- * Class <code>UILookAndFeel</code> enables to select the UI Look & Feel to
+ * Class {@code UILookAndFeel} enables to select the UI Look & Feel to
  * be used in this application.
  *
  * @author Hervé Bitteur and Brenton Partridge

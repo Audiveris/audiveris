@@ -58,7 +58,7 @@ import java.awt.Stroke;
 import java.util.ConcurrentModificationException;
 
 /**
- * Class <code>PagePhysicalPainter</code> paints the recognized page
+ * Class {@code PagePhysicalPainter} paints the recognized page
  * entities at the location of their image counterpart, so that discrepancies
  * between them can be easily seen.
  *

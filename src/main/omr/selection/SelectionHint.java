@@ -13,7 +13,7 @@ package omr.selection;
 
 
 /**
- * Enum <code>SelectionHint</code> gives a hint about what observers should do
+ * Enum {@code SelectionHint} gives a hint about what observers should do
  * with the updated selection
  *
  * @author Hervé Bitteur

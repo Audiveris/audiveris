@@ -41,7 +41,7 @@ import java.awt.Graphics2D;
 import java.awt.Stroke;
 
 /**
- * Class <code>SheetPainter</code> defines for every node in Page hierarchy
+ * Class {@code SheetPainter} defines for every node in Page hierarchy
  * the rendering of related sections (with preset colors) in the dedicated
  * <b>Sheet</b> display.
  *

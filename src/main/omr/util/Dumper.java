@@ -18,7 +18,7 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
- * Class <code>Dumper</code> is a debugging utility that reports, in a brute
+ * Class {@code Dumper} is a debugging utility that reports, in a brute
  * force manner, any internal data of a class instance.
  *
  * <p> When used on a class instance, all class internal fields which are
@@ -28,16 +28,16 @@ import java.util.Map;
  * non-relevant. </p>
  *
  * <p> A (super)class is considered "relevant" if the static method
- * <code>isClassRelevant(class)</code> returns true. This method can be
+ * {@code isClassRelevant(class)} returns true. This method can be
  * overridden in a subclass of Dumper to adapt to local needs. </p>
  *
  * <p> A field is considered "relevant" if the following condition if the method
- * <code>isFieldRelevant(field)</code> returns true. Similarly, the behavior of
+ * {@code isFieldRelevant(field)} returns true. Similarly, the behavior of
  * this predicate can be customized by subclassing the Dumper class. </p>
  *
  * <p> There are several kinds of print outs available through subclassing. Each
- * of them export two public methods: <code>dump()</code> which prints the
- * result on default output stream, and <code>dumpOf()</code> which simply
+ * of them export two public methods: {@code dump()} which prints the
+ * result on default output stream, and {@code dumpOf()} which simply
  * returns the generated dump string.
  *
  * <ul> <li> <b>Column</b> a dump with one line per field </li>
@@ -285,7 +285,7 @@ public class Dumper
     // Column //
     //--------//
     /**
-     * Class <code>Column</code> implements a Dumper where all fields are
+     * Class {@code Column} implements a Dumper where all fields are
      * presented in one column, each field on a separate line. The column can be
      * left indented, according to the specified indentation level.
      */
@@ -360,7 +360,7 @@ public class Dumper
     // Html //
     //------//
     /**
-     * Class <code>Html</code> implements a Dumper using HTML tags to present
+     * Class {@code Html} implements a Dumper using HTML tags to present
      * fields in a table.
      */
     public static class Html
@@ -433,7 +433,7 @@ public class Dumper
     // Row //
     //-----//
     /**
-     * Class <code>Row</code> implements a Dumper where all fields are
+     * Class {@code Row} implements a Dumper where all fields are
      * presented on the same line.
      */
     public static class Row

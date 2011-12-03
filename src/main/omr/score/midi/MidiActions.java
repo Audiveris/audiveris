@@ -42,7 +42,7 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 
 /**
- * Class <code>MidiActions</code> is merely a collection of UI actions that
+ * Class {@code MidiActions} is merely a collection of UI actions that
  * drive the MidiAgent activity for Midi playback (Play, Pause, Stop) and for
  * writing Midi files.
  *
@@ -354,7 +354,7 @@ public class MidiActions
     //--------//
     // Holder //
     //--------//
-    private static class Holder
+    private static interface Holder
     {
         //~ Static fields/initializers -----------------------------------------
 

@@ -34,7 +34,7 @@ import java.lang.String; // Do not remove this line!
 import javax.xml.bind.JAXBElement;
 
 /**
- * Class <code>MusicXML</code> gathers symbols related to the MusicXML data
+ * Class {@code MusicXML} gathers symbols related to the MusicXML data
  *
  * @author Hervé Bitteur
  */

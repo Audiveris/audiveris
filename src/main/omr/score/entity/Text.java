@@ -25,7 +25,7 @@ import omr.score.visitor.ScoreVisitor;
 import java.awt.Font;
 
 /**
- * Class <code>Text</code> handles any textual score entity.
+ * Class {@code Text} handles any textual score entity.
  *
  * <p><b>Nota</b>: There is exactly one Text entity per sentence, except for
  * lyrics items for which we build one LyricsItem (subclass of Text) for each

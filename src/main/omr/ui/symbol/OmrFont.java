@@ -26,7 +26,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ConcurrentModificationException;
 
 /**
- * Class <code>OmrFont</code> is meant to simplify the use of rendering symbols
+ * Class {@code OmrFont} is meant to simplify the use of rendering symbols
  * when using a Text or a Music font
  *
  * @author Hervé Bitteur

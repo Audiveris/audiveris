@@ -27,7 +27,7 @@ import omr.sheet.Scale;
 import java.util.List;
 
 /**
- * Class <code>Arpeggiate</code> represents a arpeggiate event.
+ * Class {@code Arpeggiate} represents a arpeggiate event.
  * For the time being we don't handle up & down variations
  *
  * @author Hervé Bitteur

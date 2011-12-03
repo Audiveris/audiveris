@@ -41,7 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class <code>SystemsBuilder</code> is in charge of retrieving the systems
+ * Class {@code SystemsBuilder} is in charge of retrieving the systems
  * (SystemInfo instances) and parts (PartInfo instances) in the provided sheet
  * and to allocate the corresponding instances on the Score side (the Score
  * instance, and the various instances of ScoreSystem, SystemPart and Staff).

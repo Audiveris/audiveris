@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
- * Class <code>RunsRetriever</code> is in charge of reading a source of pixels
+ * Class {@code RunsRetriever} is in charge of reading a source of pixels
  * and retrieving foreground runs and background runs from it. What is done
  * with the retrieved runs is essentially the purpose of the provided adapter.
  *
@@ -72,7 +72,7 @@ public class RunsRetriever
     // retrieveRuns //
     //--------------//
     /**
-     * The <code>retrieveRuns</code> method can be used to build the runs on the
+     * The {@code retrieveRuns} method can be used to build the runs on the
      * fly, by providing a given absolute rectangle.
      *
      * @param area the ABSOLUTE rectangular area  to explore

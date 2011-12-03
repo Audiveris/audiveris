@@ -18,7 +18,7 @@ import omr.score.entity.Page;
 import omr.score.visitor.AbstractScoreVisitor;
 
 /**
- * Class <code>MeasureBasicNumberer</code> visits a page hierarchy to assign
+ * Class {@code MeasureBasicNumberer} visits a page hierarchy to assign
  * very basic measures ids. These Ids are very basic (and temporary), ranging
  * from 1 for the first measure in the page.
  *

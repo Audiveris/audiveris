@@ -14,7 +14,7 @@ package omr.selection;
 import omr.lag.Section;
 
 /**
- * Class <code>SectionEvent</code> represents a Section selection
+ * Class {@code SectionEvent} represents a Section selection
  *
  * <dl>
  * <dt><b>Publishers:</b><dd>GlyphLag, Lag, LagView

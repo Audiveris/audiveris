@@ -13,7 +13,7 @@ package omr.sheet;
 
 
 /**
- * Class <code>Peak</code> encapsulates a peak in the histogram of horizontal
+ * Class {@code Peak} encapsulates a peak in the histogram of horizontal
  * projections. When reading sequentially the projection histogram, a peak is
  * created when the threshold is passed, and the peak ordinate is extended until
  * we get under the threshold again.

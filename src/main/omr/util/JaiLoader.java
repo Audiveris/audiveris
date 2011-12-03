@@ -17,13 +17,13 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 /**
- * Class <code>JaiLoader</code> is designed to speed up the load time of the
- * first <code>Picture</code> by allowing the <code>JAI</code> class to be
- * preloaded. Because, in some implementations, the <code>JAI</code> class must
+ * Class {@code JaiLoader} is designed to speed up the load time of the
+ * first {@code Picture</code> by allowing the <code>JAI} class to be
+ * preloaded. Because, in some implementations, the {@code JAI} class must
  * load a number of renderers, its static initialization can take a long time.
  * On the first call to any static method in this class, this initialization
  * will begin in a low-priority thread, and any call to
- * <code>ensureLoaded</code> is guaranteed to block until the initialization is
+ * {@code ensureLoaded} is guaranteed to block until the initialization is
  * complete.
  *
  * @author Brenton Partridge (original version)

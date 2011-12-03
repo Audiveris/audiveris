@@ -42,7 +42,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class <code>SheetsController</code> is the UI Controller in charge of user
+ * Class {@code SheetsController} is the UI Controller in charge of user
  * interactions with the sheets.
  *
  * <p>Multiple sheets are handled by means of a tabbed pane. For each tab, and

@@ -22,7 +22,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Class <code>Dumping</code> is a Dumping service, for which Package
+ * Class {@code Dumping} is a Dumping service, for which Package
  * dependency can be injected at construction time.
  *
  * @author Hervé Bitteur

@@ -47,7 +47,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class <code>FilamentsFactory</code> builds filaments (long series of
+ * Class {@code FilamentsFactory} builds filaments (long series of
  * sections) out of a collection of sections.
  *
  * <p>These filaments are meant to represent good candidates for

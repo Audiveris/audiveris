@@ -23,7 +23,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class <code>Steps</code> handles the (ordered) set of all defined steps
+ * Class {@code Steps} handles the (ordered) set of all defined steps
  *
  * @author Hervé Bitteur
  */
@@ -223,7 +223,7 @@ public class Steps
     // Constant //
     //----------//
     /**
-     * Class <code>Constant</code> is a subclass of
+     * Class {@code Constant} is a subclass of
      * {@link omr.constant.Constant}, meant to store a {@link Step} value.
      */
     public static class Constant

@@ -15,7 +15,7 @@ import omr.glyph.facets.Glyph;
 import omr.grid.StaffInfo;
 
 /**
- * Class <code>Ending</code> is a physical {@link Dash} that is the horizontal
+ * Class {@code Ending} is a physical {@link Dash} that is the horizontal
  * part of an alternate ending.
  *
  * @author Hervé Bitteur

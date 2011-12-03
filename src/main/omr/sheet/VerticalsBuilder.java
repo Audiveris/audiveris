@@ -48,7 +48,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- * Class <code>VerticalsBuilder</code> is in charge of retrieving all the
+ * Class {@code VerticalsBuilder} is in charge of retrieving all the
  * vertical sticks of a dedicated system. Bars are assumed to have
  * been already recognized, so this accounts for stems, vertical edges of
  * endings, and potentially parts of alterations (sharp, natural, flat).

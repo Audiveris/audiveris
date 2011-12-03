@@ -15,14 +15,14 @@ import omr.run.Run;
 
 
 /**
- * Class <code>JunctionRatioPolicy</code> defines a junction policy based on the
+ * Class {@code JunctionRatioPolicy} defines a junction policy based on the
  * ratio between the length of the candidate run and the mean length of the
  * section runs so far.
  *
  * @author Hervé Bitteur
  */
 public class JunctionRatioPolicy
-    extends JunctionPolicy
+    implements JunctionPolicy
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -42,11 +42,10 @@ public class JunctionRatioPolicy
     // JunctionRatioPolicy //
     //---------------------//
     /**
-     * Creates a policy based on ratio of run length versus mean length of
-     * section runs
-     *
+     * Creates a policy based on ratio of run length versus mean length
+     * of section runs.
      * @param maxLengthRatio maximum difference ratio to continue the
-     *                       current section
+     * current section
      */
     public JunctionRatioPolicy (double maxLengthRatio)
     {
@@ -60,12 +59,11 @@ public class JunctionRatioPolicy
     // consistentRun //
     //---------------//
     /**
-     * Check whether the Run is consistent with the provided Section, according
-     * to this junction policy, based on run length and mean section run length
-     *
+     * Check whether the Run is consistent with the provided Section, 
+     * according to this junction policy, based on run length and mean
+     * section run length.
      * @param run the Run candidate
      * @param section the potentially hosting Section
-     *
      * @return true if consistent, false otherwise
      */
     public boolean consistentRun (Run     run,
@@ -80,11 +78,6 @@ public class JunctionRatioPolicy
     //----------//
     // toString //
     //----------//
-    /**
-     * Return a descriptive string of this junction policy
-     *
-     * @return a descriptive string
-     */
     @Override
     public String toString ()
     {

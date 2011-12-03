@@ -76,7 +76,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
 /**
- * Class <code>SymbolsEditor</code> defines, for a given sheet, a UI pane from
+ * Class {@code SymbolsEditor} defines, for a given sheet, a UI pane from
  * which all symbol processing actions can be launched and their results checked
  *
  * @author Hervé Bitteur

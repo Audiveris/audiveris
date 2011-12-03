@@ -33,7 +33,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Class <code>Barline</code> encapsulates a logical bar line, that may be
+ * Class {@code Barline} encapsulates a logical bar line, that may be
  * composed of several physical components : repeat dots, thin and thick bars.
  *
  * @author Hervé Bitteur

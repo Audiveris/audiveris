@@ -22,7 +22,7 @@ import omr.score.entity.SystemPart;
 import omr.score.visitor.AbstractScoreVisitor;
 
 /**
- * Class <code>ScoreCleaner</code> can visit the score hierarchy to get rid of
+ * Class {@code ScoreCleaner} can visit the score hierarchy to get rid of
  * all measure items except barlines, ready for a new score translation.
  *
  * @author Hervé Bitteur

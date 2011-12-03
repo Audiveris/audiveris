@@ -34,7 +34,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 /**
- * Class <code>Board</code> defines the common properties of any user board
+ * Class {@code Board} defines the common properties of any user board
  * such as PixelBoard, SectionBoard, and the like.
  *
  * <p>Each board has a standard header composed of a title, a horizontal

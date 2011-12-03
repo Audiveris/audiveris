@@ -18,7 +18,7 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class <code>LSpinner</code> is a logical combination of a JLabel and a
+ * Class {@code LSpinner} is a logical combination of a JLabel and a
  * JSpinner, a "Labelled Spinner", where the label describes
  * the dynamic content of the spinner.
  *

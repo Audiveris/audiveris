@@ -20,7 +20,7 @@ import omr.util.Implement;
 import omr.util.TreeNode;
 
 /**
- * Class <code>VisitableNode</code> is a node which can accept a score visitor
+ * Class {@code VisitableNode} is a node which can accept a score visitor
  * for itself and for its children.
  *
  * <img src="doc-files/Visitable-Hierarchy.jpg" />

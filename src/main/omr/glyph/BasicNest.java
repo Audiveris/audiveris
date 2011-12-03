@@ -61,7 +61,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Class <code>BasicNest</code> implements a {@link Nest}.
+ * Class {@code BasicNest} implements a {@link Nest}.
  *
  * @author Hervé Bitteur
  */

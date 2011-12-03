@@ -28,7 +28,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class <code>LyricsLine</code> gathers one line of lyrics within a system part.
+ * Class {@code LyricsLine} gathers one line of lyrics within a system part.
  * A lyrics line is composed of instances of LyricsItem, which can be Syllables,
  * Hyphens, Extensions or Elisions
  *

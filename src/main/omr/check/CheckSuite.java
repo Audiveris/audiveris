@@ -18,7 +18,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Class <code>CheckSuite</code> represents a suite of homogeneous checks, that
+ * Class {@code CheckSuite} represents a suite of homogeneous checks, that
  * is checks working on the same type. Every check in the suite is assigned a
  * weight, to represent its relative importance in the suite.
  *

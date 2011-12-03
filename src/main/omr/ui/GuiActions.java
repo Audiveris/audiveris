@@ -61,7 +61,7 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.text.JTextComponent;
 
 /**
- * Class <code>GuiActions</code> gathers individual actions trigerred from the
+ * Class {@code GuiActions} gathers individual actions trigerred from the
  * main Gui interface.
  *
  * @author Hervé Bitteur
@@ -404,7 +404,7 @@ public class GuiActions
     // AboutAction //
     //-------------//
     /**
-     * Class <code>AboutAction</code> opens an 'About' dialog with some
+     * Class {@code AboutAction} opens an 'About' dialog with some
      * information about the application.
      *
      */

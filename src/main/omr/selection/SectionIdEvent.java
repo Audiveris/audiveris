@@ -13,7 +13,7 @@ package omr.selection;
 
 
 /**
- * Class <code>SectionIdEvent</code> represents a Section Id selection
+ * Class {@code SectionIdEvent} represents a Section Id selection
  *
  *
  * <dl>

@@ -30,7 +30,7 @@ import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 
 /**
- * Class <code>EntityAction</code> is a template for any entity-dependent
+ * Class {@code EntityAction} is a template for any entity-dependent
  * action.  It builds the action, registers it in the list of entity-dependent
  * actions if such list if provided, inserts the action in the proper menu, and
  * inserts a button in the toolbar if provided.

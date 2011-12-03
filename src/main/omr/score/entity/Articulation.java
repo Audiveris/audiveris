@@ -24,7 +24,7 @@ import omr.score.visitor.ScoreVisitor;
 import omr.sheet.Scale;
 
 /**
- * Class <code>Articulation</code> represents an articulation event, a special
+ * Class {@code Articulation} represents an articulation event, a special
  * notation.
  * This should apply to:
  * <pre>

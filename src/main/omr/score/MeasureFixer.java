@@ -33,7 +33,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class <code>MeasureFixer</code> visits the score hierarchy to fix measures:
+ * Class {@code MeasureFixer} visits the score hierarchy to fix measures:
  * <ul>
  * <li>Detect implicit measures (as pickup measures)</li>
  * <li>Detect first half repeat measures</li>

@@ -14,7 +14,7 @@ package omr.glyph.text;
 import omr.score.common.PixelRectangle;
 
 /**
- * Class <code>OcrChar</code> manages information about a OCR-decoded character
+ * Class {@code OcrChar} manages information about a OCR-decoded character
  *
  * @author Hervé Bitteur
  */

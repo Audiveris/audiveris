@@ -42,7 +42,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class <code>Glyphs</code> is just a collection of static convenient methods,
+ * Class {@code Glyphs} is just a collection of static convenient methods,
  * providing features related to a collection of glyphs.
  *
  * @author Hervé Bitteur

@@ -24,7 +24,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class <code>ScoreReductor</code> can visit the score hierarchy to simplify
+ * Class {@code ScoreReductor} can visit the score hierarchy to simplify
  * all duration values.
  *
  * @author Hervé Bitteur

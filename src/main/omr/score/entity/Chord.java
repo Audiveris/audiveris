@@ -45,7 +45,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class <code>Chord</code> represents an ensemble of entities (rests, notes)
+ * Class {@code Chord} represents an ensemble of entities (rests, notes)
  * attached to the same stem if any, and that occur on the same time in a staff.
  * <p><b>NB</>We assume that all notes of a chord have the same duration.
  *
@@ -1701,7 +1701,7 @@ public class Chord
     // SplitOrder //
     //------------//
     /**
-     * Class <code>SplitOrder</code> records a chord split order.
+     * Class {@code SplitOrder} records a chord split order.
      * Splitting must be separate from browsing to avoid concurrent modification
      * of collections
      */

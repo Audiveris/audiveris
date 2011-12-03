@@ -28,7 +28,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class <code>ScoreSystem</code> encapsulates a system in a score.
+ * Class {@code ScoreSystem} encapsulates a system in a score.
  *
  * <p>A system contains only one kind of direct children : SystemPart instances
  *

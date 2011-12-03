@@ -24,7 +24,7 @@ import javax.swing.KeyStroke;
 import javax.swing.UIDefaults;
 
 /**
- * Class <code>OmrUIDefaults</code> handles all the user interface defaults for
+ * Class {@code OmrUIDefaults} handles all the user interface defaults for
  * the OMR application
  *
  * @author Hervé Bitteur

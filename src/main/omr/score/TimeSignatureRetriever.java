@@ -48,7 +48,7 @@ import omr.util.TreeNode;
 import java.util.EnumSet;
 
 /**
- * Class <code>TimeSignatureRetriever</code> checks carefully the first
+ * Class {@code TimeSignatureRetriever} checks carefully the first
  * measure of each staff for a time signature.
  *
  * @author Hervé Bitteur

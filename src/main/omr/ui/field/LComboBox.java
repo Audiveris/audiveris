@@ -16,7 +16,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JComboBox;
 
 /**
- * Class <code>LComboBox</code> is a logical combination of a JLabel and a
+ * Class {@code LComboBox} is a logical combination of a JLabel and a
  * JComboBox, a "Labelled Combo", where the label describes
  * the dynamic content of the combo.
  *

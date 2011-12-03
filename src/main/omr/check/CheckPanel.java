@@ -35,7 +35,7 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 
 /**
- * Class <code>CheckPanel</code> handles a panel to display the results of a
+ * Class {@code CheckPanel} handles a panel to display the results of a
  * check suite.
  *
  * @param <C> the subtype of Checkable-compatible objects used in the

@@ -62,7 +62,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class <code>ShapeFocusBoard</code> handles a user iteration within a
+ * Class {@code ShapeFocusBoard} handles a user iteration within a
  * collection of glyphs. The collection may be built from glyphs of a given
  * shape, or from glyphs similar to a given glyph, etc.
  *

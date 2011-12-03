@@ -48,7 +48,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 /**
- * Class <code>GlyphChecker</code> gathers additional specific glyph checks,
+ * Class {@code GlyphChecker} gathers additional specific glyph checks,
  * still working on symbols in isolation from other symbols, meant to complement
  * the work done by an evaluator (neural network evaluator or regression
  * evaluator).

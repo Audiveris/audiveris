@@ -21,7 +21,7 @@ import com.xenoage.zong.musicxml.types.MxlScorePartwise;
 import com.xenoage.zong.player.gui.BasicFrameController;
 
 /**
- * Class <code>OmrFrameController</code> is the Midi controller specific for
+ * Class {@code OmrFrameController} is the Midi controller specific for
  * Audiveris
  *
  * @author Hervé Bitteur

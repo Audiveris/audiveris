@@ -17,10 +17,10 @@ import java.util.concurrent.BlockingQueue;
 import java.util.logging.LogRecord;
 
 /**
- * <p>Class <code>LogGuiAppender</code> is a specific Log Appender, to be used
+ * <p>Class {@code LogGuiAppender} is a specific Log Appender, to be used
  * with logging utility, and which logs directly into the GUI log pane.</p>
  *
- * <p>As a <code>Handler</code>, it should be added to the highest-level
+ * <p>As a {@code Handler}, it should be added to the highest-level
  * logger instance, either programmatically or in a properties file.</p>
  *
  * @author Hervé Bitteur

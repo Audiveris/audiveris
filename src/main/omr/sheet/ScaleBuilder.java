@@ -50,7 +50,7 @@ import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
 
 /**
- * Class <code>ScaleBuilder</code> encapsulates the computation of a sheet
+ * Class {@code ScaleBuilder} encapsulates the computation of a sheet
  * scale, by adding the most frequent foreground run length to the most frequent
  * background run length, since this gives the average interline value.
  *

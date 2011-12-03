@@ -85,7 +85,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
- * Class <code>PagePainter</code> is an abstract class that defines common
+ * Class {@code PagePainter} is an abstract class that defines common
  * features of a page painter.
  * <p>It is specialized by: <ul>
  * <li>{@link PagePhysicalPainter} for the presentation of page entities over

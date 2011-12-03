@@ -22,7 +22,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 
 /**
- * Class <code>SymbolPicture</code> is an adapter which wraps a ShapeSymbol in
+ * Class {@code SymbolPicture} is an adapter which wraps a ShapeSymbol in
  * order to use it as a source of pixels.
  *
  * @author Hervé Bitteur

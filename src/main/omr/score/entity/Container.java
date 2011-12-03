@@ -13,7 +13,7 @@ package omr.score.entity;
 
 
 /**
- * Class <code>Container</code> is meant for intermediate containers with
+ * Class {@code Container} is meant for intermediate containers with
  * no values by themselves. Thus, there are shown in the score tree, only if
  * have children.
  *

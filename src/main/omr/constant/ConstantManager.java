@@ -33,7 +33,7 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Class <code>ConstantManager</code> manages the persistency of the whole
+ * Class {@code ConstantManager} manages the persistency of the whole
  * population of Constants, including their mapping to properties, their storing
  * on disk and their reloading from disk.
  *
@@ -55,14 +55,14 @@ import java.util.concurrent.ConcurrentHashMap;
  *    "Minimum resolution, expressed as number of pixels per interline");
  * </pre>This declaration must be read as follows:<ul>
  *
- * <li><code>minResolution</code> is the Java object used in the application.
+ * <li>{@code minResolution} is the Java object used in the application.
  * It is defined as a Constant.Integer, a subtype of Constant meant to host 
  * Integer values</li>
  *
- * <li><code>"Pixels"</code> specifies the unit used. Here we are counting in
+ * <li>{@code "Pixels"} specifies the unit used. Here we are counting in
  * pixels.</li>
  *
- * <li><code>11</code> is the constant value. This is the value used by the
+ * <li>{@code 11} is the constant value. This is the value used by the
  * application, provided it is not overridden in the DEFAULT or USER properties
  * files, or later via a dedicated GUI tool.</li>
  *
@@ -74,7 +74,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * <li>Then, <b>DEFAULT</b> values, contained in a property file named
  * <em><b>"config/run.default.properties"</b></em> can assign overriding values
- * to some constants. For example, the <code>minInterline</code> constant above
+ * to some constants. For example, the {@code minInterline} constant above
  * could be altered by the following line in this default file: <pre>
  * omr.sheet.ScaleBuilder.minInterline=12</pre> This file is mandatory, although
  * it can be empty, and must be located in the <u>config</u> subfolder of the
@@ -103,7 +103,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * <br/>Persistency here depends on the way Audiveris is running:<ul>
  * <li>When running in <i>batch</i> mode, these CLI-defined constant values
  * <b>are not</b> persisted in the USER file, unless the constant 
- * <code>omr.Main.persistBatchCliConstants</code> is set to true.</li>
+ * {@code omr.Main.persistBatchCliConstants} is set to true.</li>
  * <li>When running in <i>interactive</i> mode, these CLI-defined constant 
  * values <b>are</b> always persisted in the USER file.</li></ul></li> <br/>
  *

@@ -14,7 +14,7 @@ package omr.score.common;
 import java.awt.geom.Point2D;
 
 /**
- * Class <code>PixelPoint</code> is a simple Point that is meant to represent a
+ * Class {@code PixelPoint} is a simple Point that is meant to represent a
  * point in a sheet, with its absolute coordinates specified in pixels and the
  * origin being the top left corner of the sheet.
  *

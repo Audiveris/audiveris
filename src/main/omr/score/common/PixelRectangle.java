@@ -14,7 +14,7 @@ package omr.score.common;
 import java.awt.Rectangle;
 
 /**
- * Class <code>PixelRectangle</code> is a simple Rectangle that is meant to
+ * Class {@code PixelRectangle} is a simple Rectangle that is meant to
  * represent an absolute rectangle in a sheet, with its components specified in
  * pixels, so the name.
  * 
@@ -35,7 +35,7 @@ public class PixelRectangle
     // PixelRectangle //
     //----------------//
     /**
-     * Creates an instance of <code>PixelRectangle</code> with all data set to
+     * Creates an instance of {@code PixelRectangle} with all data set to
      * zero.
      */
     public PixelRectangle ()
@@ -46,7 +46,7 @@ public class PixelRectangle
     // PixelRectangle //
     //----------------//
     /**
-     * Construct a <code>PixelRectangle</code> and initialize it with the
+     * Construct a {@code PixelRectangle} and initialize it with the
      * specified data
      *
      * @param x the specified x
@@ -66,7 +66,7 @@ public class PixelRectangle
     // PixelRectangle //
     //----------------//
     /**
-     * Construct a <code>PixelRectangle</code> and initialize it with the
+     * Construct a {@code PixelRectangle} and initialize it with the
      * specified generic rectangle
      *
      * @param rect the specified generic rectangle
@@ -80,7 +80,7 @@ public class PixelRectangle
     // PixelRectangle //
     //----------------//
     /**
-     * Construct a <code>PixelRectangle</code> with just a PixelPoint
+     * Construct a {@code PixelRectangle} with just a PixelPoint
      *
      * @param pt the specified point
      */

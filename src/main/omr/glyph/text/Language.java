@@ -30,7 +30,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * Class <code>Language</code> handles the collection of language codes with
+ * Class {@code Language} handles the collection of language codes with
  * their related full name, as well as the default language.
  *
  * <p>Note: This is implemented as a (sorted) map, since a compiled enum would

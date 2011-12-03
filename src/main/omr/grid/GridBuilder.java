@@ -34,7 +34,7 @@ import omr.util.StopWatch;
 import java.util.List;
 
 /**
- * Class <code>GridBuilder</code> computes the grid of systems of a sheet
+ * Class {@code GridBuilder} computes the grid of systems of a sheet
  * picture, based on the retrieval of horizontal staff lines and of vertical
  * bar lines.
  *

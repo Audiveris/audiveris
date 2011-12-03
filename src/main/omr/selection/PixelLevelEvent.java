@@ -13,7 +13,7 @@ package omr.selection;
 
 
 /**
- * Class <code>PixelLevelEvent</code> represent a Pixel Level selection
+ * Class {@code PixelLevelEvent} represent a Pixel Level selection
  *
  *
  * <dl>

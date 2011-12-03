@@ -14,7 +14,7 @@ package omr.math;
 import java.util.Arrays;
 
 /**
- * Class <code>InjectionSolver</code> handles the injection of a collection
+ * Class {@code InjectionSolver} handles the injection of a collection
  * of elements (called domain) into another collection of elements (called
  * range, or codomain).
  *
@@ -136,7 +136,7 @@ public class InjectionSolver
     //~ Inner Interfaces -------------------------------------------------------
 
     /**
-     * Interface <code>Distance</code> provides the measurement for
+     * Interface {@code Distance} provides the measurement for
      * individual mapping costs.
      */
     public static interface Distance

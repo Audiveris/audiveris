@@ -14,7 +14,7 @@ package omr.selection;
 import omr.run.Run;
 
 /**
- * Class <code>RunEvent</code> represents a Run selection
+ * Class {@code RunEvent} represents a Run selection
  *
  * <dl>
  * <dt><b>Publishers:</b><dd>GlyphLag, Lag, LagView

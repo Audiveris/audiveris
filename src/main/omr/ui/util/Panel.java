@@ -26,7 +26,7 @@ import java.awt.Insets;
 import javax.swing.JPanel;
 
 /**
- * Class <code>Panel</code> is a JPanel with specific features to define
+ * Class {@code Panel} is a JPanel with specific features to define
  * and position label and text fields.
  *
  * <P><B>note</B> : To actually display the cell limits as a debugging aid

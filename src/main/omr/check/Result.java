@@ -13,7 +13,7 @@ package omr.check;
 
 
 /**
- * Class <code>Result</code> is the root of all result information stored while
+ * Class {@code Result} is the root of all result information stored while
  * processing processing checks.
  *
  * @author Hervé Bitteur

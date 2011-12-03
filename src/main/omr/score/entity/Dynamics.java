@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Class <code>Dynamics</code> represents a dynamics event
+ * Class {@code Dynamics} represents a dynamics event
  *
  * @author Hervé Bitteur
  */

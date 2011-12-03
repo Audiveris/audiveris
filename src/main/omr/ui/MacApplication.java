@@ -31,7 +31,7 @@ import java.lang.reflect.Proxy;
 import javax.swing.SwingWorker;
 
 /**
- * Class <code>MacApplication</code> provides dynamic hooks into the
+ * Class {@code MacApplication} provides dynamic hooks into the
  * OSX-only eawt package, registering Audiveris actions for the
  * Preferences, About, and Quit menu items.
  *

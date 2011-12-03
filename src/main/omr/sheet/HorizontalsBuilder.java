@@ -56,7 +56,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class <code>HorizontalsBuilder</code> is in charge of retrieving horizontal
+ * Class {@code HorizontalsBuilder} is in charge of retrieving horizontal
  * dashes (ledgers, legato signs and endings) in a given system.
  *
  * <p>Nota: Endings and legato signs are currently disabled.
@@ -822,7 +822,7 @@ public class HorizontalsBuilder
     //    // ChunkCheck //
     //    //------------//
     //    /**
-    //     * Class <code>ChunkCheck</code> checks for absence of a chunk either at
+    //     * Class {@code ChunkCheck} checks for absence of a chunk either at
     //     * start or stop
     //     */
     //    private class ChunkCheck

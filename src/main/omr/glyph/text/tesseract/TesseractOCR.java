@@ -49,7 +49,7 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 
 /**
- * Class <code>TesseractOCR</code> is an OCR service built on the Google
+ * Class {@code TesseractOCR} is an OCR service built on the Google
  * Tesseract engine.
  *
  * <p>It relies on the <b>tessdll.dll</b> library, accessed through the

@@ -17,7 +17,7 @@ import omr.constant.ConstantSet;
 import omr.log.Logger;
 
 /**
- * Class <code>ScorePart</code> defines a part at score level. It is
+ * Class {@code ScorePart} defines a part at score level. It is
  * instantiated in each System by a SystemPart.
  *
  * <p>There is an intermediate ScorePart instance at Page level, which records

@@ -16,7 +16,7 @@ import omr.ui.MainGui;
 import org.jdesktop.application.Task;
 
 /**
- * Class <code>BasicTask</code> is an Application Framework Task for Audiveris
+ * Class {@code BasicTask} is an Application Framework Task for Audiveris
  * application, with no generic parameters to handle
  *
  * @author Hervé Bitteur

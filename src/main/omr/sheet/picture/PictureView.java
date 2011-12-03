@@ -32,7 +32,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 /**
- * Class <code>PictureView</code> defines the view dedicated to the display of
+ * Class {@code PictureView} defines the view dedicated to the display of
  * the picture image of a music sheet.
  *
  * @author Hervé Bitteur
@@ -57,7 +57,7 @@ public class PictureView
     // PictureView //
     //-------------//
     /**
-     * Create a new <code>PictureView</code> instance, dedicated to a sheet.
+     * Create a new {@code PictureView} instance, dedicated to a sheet.
      *
      * @param sheet the related sheet
      */

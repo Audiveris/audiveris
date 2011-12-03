@@ -14,7 +14,7 @@ package omr.score.entity;
 import omr.score.visitor.Visitable;
 
 /**
- * Interface <code>Direction</code> is the basis for all variants of direction
+ * Interface {@code Direction} is the basis for all variants of direction
  * indications.
  * This should apply to:
  * <pre>

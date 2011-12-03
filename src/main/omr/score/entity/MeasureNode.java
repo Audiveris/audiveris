@@ -18,7 +18,7 @@ import omr.util.TreeNode;
 import java.util.Comparator;
 
 /**
- * Class <code>MeasureNode</code> is an abstract class that is subclassed for
+ * Class {@code MeasureNode} is an abstract class that is subclassed for
  * any PartNode with a containing measure. So this class encapsulates a direct
  * link to the enclosing measure.
  *

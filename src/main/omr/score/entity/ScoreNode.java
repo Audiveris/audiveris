@@ -18,7 +18,7 @@ import omr.score.Score;
 import omr.util.TreeNode;
 
 /**
- * Class <code>ScoreNode</code> handles a node in the tree hierarchy of a score
+ * Class {@code ScoreNode} handles a node in the tree hierarchy of a score
  * entity.
  *
  * @author Hervé Bitteur

@@ -21,7 +21,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 /**
- * Class <code>ClassUtil</code> provides utilities related to Class handling.
+ * Class {@code ClassUtil} provides utilities related to Class handling.
  *
  * @author Hervé Bitteur
  */

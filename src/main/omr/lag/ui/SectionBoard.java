@@ -56,7 +56,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class <code>SectionBoard</code> defines a board dedicated to the display of
+ * Class {@code SectionBoard} defines a board dedicated to the display of
  * {@link omr.lag.Section} information, it can also be used as an input means
  * by directly entering the section id in the proper Id spinner.
  *

@@ -17,7 +17,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 
 /**
- * Class <code>SectionView</code> defines one view meant for display of a
+ * Class {@code SectionView} defines one view meant for display of a
  * given section.
  *
  * @author Hervé Bitteur

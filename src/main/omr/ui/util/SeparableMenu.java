@@ -16,7 +16,7 @@ import javax.swing.JMenu;
 import javax.swing.JSeparator;
 
 /**
- * Class <code>SeparableMenu</code> is a menu which is able to collapse unneeded
+ * Class {@code SeparableMenu} is a menu which is able to collapse unneeded
  * separators
  *
  * @author Brenton Partridge

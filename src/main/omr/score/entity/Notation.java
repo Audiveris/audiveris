@@ -14,7 +14,7 @@ package omr.score.entity;
 import omr.score.visitor.Visitable;
 
 /**
- * Interface <code>Notation</code> is used to flag a measure element used
+ * Interface {@code Notation} is used to flag a measure element used
  * as a (note related) notation.
  * This should apply to:
  * <pre>

@@ -14,7 +14,7 @@ package omr.stick;
 import java.awt.Color;
 
 /**
- * Class <code>StickRelation</code> complements {@link omr.lag.Section}
+ * Class {@code StickRelation} complements {@link omr.lag.Section}
  * for easy stick elaboration.
  *
  * @author Hervé Bitteur

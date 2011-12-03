@@ -14,7 +14,7 @@ package omr.selection;
 import omr.glyph.facets.Glyph;
 
 /**
- * Class <code>GlyphEvent</code> represents a Glyph selection
+ * Class {@code GlyphEvent} represents a Glyph selection
  *
  * <dl>
  * <dt><b>Publishers:</b><dd>ErrorsEditor, GlyphBoard, GlyphBrowser, GlyphLag,

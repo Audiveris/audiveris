@@ -13,7 +13,7 @@ package omr.util;
 
 
 /**
- * Annotation <code>Navigable</code> is used to drive the browsing done by
+ * Annotation {@code Navigable} is used to drive the browsing done by
  * ScoreTree.
  */
 import java.lang.annotation.Documented;

@@ -18,7 +18,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 
 /**
- * Class <code>Run</code> implements a contiguous run of pixels of the same
+ * Class {@code Run} implements a contiguous run of pixels of the same
  * color. Note that the direction (vertical or horizontal) is not relevant.
  *
  * @author Hervé Bitteur
@@ -49,7 +49,7 @@ public class Run
     // Run //
     //-----//
     /**
-     * Creates a new <code>Run</code> instance.
+     * Creates a new {@code Run} instance.
      *
      * @param start  the coordinate of start for a run (y for vertical run)
      * @param length the length of the run in pixels
@@ -166,10 +166,10 @@ public class Run
     // toString //
     //----------//
     /**
-     * The <code>toString</code> method is used to get a readable image of the
+     * The {@code toString} method is used to get a readable image of the
      * run.
      *
-     * @return a <code>String</code> value
+     * @return a {@code String} value
      */
     @Override
     public String toString ()

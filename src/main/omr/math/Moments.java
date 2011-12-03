@@ -16,7 +16,7 @@ import omr.log.Logger;
 import omr.score.common.PixelPoint;
 
 /**
- * Class <code>Moments</code> encapsulates the set of all moments that
+ * Class {@code Moments} encapsulates the set of all moments that
  * characterize a figure made of points.
  *
  * @author Hervé Bitteur

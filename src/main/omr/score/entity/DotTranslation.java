@@ -33,7 +33,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
- * Class <code>DotTranslation</code> is a set of functions forassigning a dot
+ * Class {@code DotTranslation} is a set of functions forassigning a dot
  * glyph, since a dot can be an augmentation dot, part of a repeat sign, a
  * staccato sign.
  *

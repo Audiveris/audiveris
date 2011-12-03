@@ -18,7 +18,7 @@ import omr.log.Logger;
 import omr.score.common.PixelPoint;
 
 /**
- * Class <code>Notation</code> is the basis for all variants of notations:
+ * Class {@code Notation} is the basis for all variants of notations:
  * tied, slur, ...
  *
  * @author Hervé Bitteur

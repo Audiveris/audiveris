@@ -22,7 +22,7 @@ import java.awt.geom.Point2D;
 import java.util.Collection;
 
 /**
- * Interface <code>LineInfo</code> describes the handling of one staff line.
+ * Interface {@code LineInfo} describes the handling of one staff line.
  *
  * @author Hervé Bitteur
  */

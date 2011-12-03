@@ -23,7 +23,7 @@ import omr.score.entity.Page;
 import omr.score.visitor.AbstractScoreVisitor;
 
 /**
- * Class <code>BeamReader</code> visits a score or page hierarchy to retrieve
+ * Class {@code BeamReader} visits a score or page hierarchy to retrieve
  * the mean beam thickness per page.
  *
  * @author Hervé Bitteur

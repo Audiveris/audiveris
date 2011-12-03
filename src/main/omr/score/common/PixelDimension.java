@@ -13,7 +13,7 @@ package omr.score.common;
 
 
 /**
- * Class <code>PixelDimension</code> is a simple Dimension that is meant to
+ * Class {@code PixelDimension} is a simple Dimension that is meant to
  * represent an absolute  dimension in a sheet, with its components (width and
  * height) specified in pixels, so the name.
  *
@@ -31,7 +31,7 @@ public class PixelDimension
     // PixelDimension //
     //----------------//
     /**
-     * Creates an instance of <code>PixelDimension</code> with a width of zero
+     * Creates an instance of {@code PixelDimension} with a width of zero
      * and a height of zero.
      */
     public PixelDimension ()
@@ -42,7 +42,7 @@ public class PixelDimension
     // PixelDimension //
     //----------------//
     /**
-     * Constructs a <code>PixelDimension</code> and initializes it to the
+     * Constructs a {@code PixelDimension} and initializes it to the
      * specified width and specified height.
      *
      * @param width the specified width

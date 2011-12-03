@@ -15,7 +15,7 @@ import java.awt.Color;
 import static java.awt.Color.*;
 
 /**
- * Class <code>SectionRole</code> handles the role of a section in the building
+ * Class {@code SectionRole} handles the role of a section in the building
  * of a stick.
  *
  * @author Hervé Bitteur

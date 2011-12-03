@@ -15,14 +15,14 @@ import omr.run.Run;
 
 
 /**
- * Class <code>JunctionDeltaPolicy</code> defined a junction policy based on the
- * delta between the length of the candidate run and the length of the last run
- * of the section.
+ * Class {@code JunctionDeltaPolicy} defines a junction policy based
+ * on the delta between the length of the candidate run and the length
+ * of the last run of the section.
  *
  * @author Hervé Bitteur
  */
 public class JunctionDeltaPolicy
-    extends JunctionPolicy
+    implements JunctionPolicy
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -37,10 +37,9 @@ public class JunctionDeltaPolicy
     // JunctionDeltaPolicy //
     //---------------------//
     /**
-     * Creates an instance of policy based on delta run length
-     *
+     * Creates an instance of policy based on delta run length.
      * @param maxDeltaLength the maximum possible length gap between two
-     *                       consecutive rows
+     * consecutive rows
      */
     public JunctionDeltaPolicy (int maxDeltaLength)
     {
@@ -53,12 +52,11 @@ public class JunctionDeltaPolicy
     // consistentRun //
     //---------------//
     /**
-     * Check whether the Run is consistent with the provided Section, according
-     * to this junction policy, based on run length and last section run length
-     *
+     * Check whether the Run is consistent with the provided Section,
+     * according to this junction policy, based on run length and last
+     * section run length.
      * @param run the Run candidate
      * @param section the potentially hosting Section
-     *
      * @return true if consistent, false otherwise
      */
     public boolean consistentRun (Run     run,
@@ -73,11 +71,6 @@ public class JunctionDeltaPolicy
     //----------//
     // toString //
     //----------//
-    /**
-     * Report a readable description of the policy
-     *
-     * @return a descriptive string
-     */
     @Override
     public String toString ()
     {

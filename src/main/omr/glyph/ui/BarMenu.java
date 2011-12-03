@@ -17,7 +17,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 /**
- * Class <code>BarMenu</code> defines the popup menu to interact with barlines
+ * Class {@code BarMenu} defines the popup menu to interact with barlines
  *
  * @author Hervé Bitteur
  */

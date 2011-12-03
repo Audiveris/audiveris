@@ -38,7 +38,7 @@ import java.awt.Graphics2D;
 import java.util.Arrays;
 
 /**
- * Class <code>VerticalsController</code> is in charge of handling assignment
+ * Class {@code VerticalsController} is in charge of handling assignment
  * and deassignment of vertical entities (stems) at sheet level
  *
  * @author Hervé Bitteur

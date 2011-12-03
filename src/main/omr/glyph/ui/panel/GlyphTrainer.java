@@ -37,7 +37,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class <code>GlyphTrainer</code> handles a User Interface dedicated to the
+ * Class {@code GlyphTrainer} handles a User Interface dedicated to the
  * training and testing of a glyph evaluator. This class can be launched as a
  * stand-alone program.
  *
@@ -248,7 +248,7 @@ public class GlyphTrainer
     // Task //
     //------//
     /**
-     * Class <code>Task</code> handles which activity is currently being carried
+     * Class {@code Task} handles which activity is currently being carried
      * out, only one being current at any time.
      */
     static class Task
@@ -257,7 +257,7 @@ public class GlyphTrainer
         //~ Enumerations -------------------------------------------------------
 
         /**
-         * Enum <code>Activity</code> defines the possible activities in
+         * Enum {@code Activity} defines the possible activities in
          * training.
          */
         static enum Activity {

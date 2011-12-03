@@ -49,7 +49,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class <code>TextLine</code> encapsulates a growing ordered set of text
+ * Class {@code TextLine} encapsulates a growing ordered set of text
  * glyphs (loosely similar to words) that represents a whole expression.
  *
  * <p>Since TextLine instances are recreated from scratch in the PATTERNS step,

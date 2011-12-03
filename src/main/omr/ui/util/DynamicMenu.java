@@ -17,7 +17,7 @@ import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
 /**
- * Class <code>DynamicMenu</code> simplifies the definition of a menu,
+ * Class {@code DynamicMenu} simplifies the definition of a menu,
  * whose content needs to be updated on-the-fly when the menu is being
  * selected.
  *

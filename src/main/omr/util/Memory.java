@@ -13,7 +13,7 @@ package omr.util;
 
 
 /**
- * Class <code>Memory</code> is a collection of static methods to ease the
+ * Class {@code Memory} is a collection of static methods to ease the
  * interaction with the memory characteristics.
  *
  * @author Hervé Bitteur

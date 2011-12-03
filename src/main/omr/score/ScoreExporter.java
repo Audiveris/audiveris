@@ -152,7 +152,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 
 /**
- * Class <code>ScoreExporter</code> visits the score hierarchy to export
+ * Class {@code ScoreExporter} visits the score hierarchy to export
  * the score to a MusicXML file, stream or DOM.
  *
  * @author Hervé Bitteur

@@ -24,7 +24,7 @@ import javax.swing.AbstractSpinnerModel;
 import javax.swing.SpinnerModel;
 
 /**
- * Class <code>SpinnerGlyphModel</code> is a spinner model backed by a {@link
+ * Class {@code SpinnerGlyphModel} is a spinner model backed by a {@link
  * Nest}. Any modification in the nest is thus transparently
  * handled, since the nest <b>is</b> the model. <p>A glyph {@link Predicate} can
  * be assigned to this SpinnerGlyphModel at construction time in order to
@@ -96,7 +96,7 @@ public class SpinnerGlyphModel
     //--------------//
     /**
      * Return the next legal glyph id in the sequence that comes after the glyph
-     * id returned by <code>getValue()</code>. If the end of the sequence has
+     * id returned by {@code getValue()}. If the end of the sequence has
      * been reached then return null.
      *
      * @return the next legal glyph id or null if one doesn't exist
@@ -142,7 +142,7 @@ public class SpinnerGlyphModel
     //------------------//
     /**
      * Return the legal glyph id in the sequence that comes before the glyph id
-     * returned by <code>getValue()</code>.  If the end of the sequence has been
+     * returned by {@code getValue()}.  If the end of the sequence has been
      * reached then return null.
      *
      * @return the previous legal value or null if one doesn't exist
@@ -181,10 +181,10 @@ public class SpinnerGlyphModel
     //----------//
     /**
      * Changes current glyph id of the model.  If the glyph id is illegal then
-     * an <code>IllegalArgumentException</code> is thrown.
+     * an {@code IllegalArgumentException} is thrown.
      *
      * @param value the value to set
-     * @exception IllegalArgumentException if <code>value</code> isn't allowed
+     * @exception IllegalArgumentException if {@code value} isn't allowed
      */
     @Implement(SpinnerModel.class)
     public void setValue (Object value)

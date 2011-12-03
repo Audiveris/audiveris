@@ -18,7 +18,7 @@ import omr.score.common.PixelRectangle;
 import java.awt.Rectangle;
 
 /**
- * Class <code>LocationEvent</code> is UI Event that represents a new
+ * Class {@code LocationEvent} is UI Event that represents a new
  * location (a rectangle, perhaps degenerated to a point) within the Sheet space
  *
  * <dl>

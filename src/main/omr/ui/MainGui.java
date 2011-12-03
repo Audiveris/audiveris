@@ -83,7 +83,7 @@ import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 
 /**
- * Class <code>MainGui</code> is the Java User Interface, the main class for
+ * Class {@code MainGui} is the Java User Interface, the main class for
  * displaying a score, the related sheet, the message log and the various tools.
  *
  * @author Hervé Bitteur
@@ -136,7 +136,7 @@ public class MainGui
     // MainGui //
     //---------//
     /**
-     * Creates a new <code>MainGui</code> instance, to handle any user display
+     * Creates a new {@code MainGui} instance, to handle any user display
      * and interaction.
      */
     public MainGui ()
@@ -827,7 +827,7 @@ public class MainGui
     // HistoryListener //
     //-----------------//
     /**
-     * Class <code>HistoryListener</code> is used to reload an image file, when
+     * Class {@code HistoryListener} is used to reload an image file, when
      * selected from the history of previous image files.
      */
     private static class HistoryListener

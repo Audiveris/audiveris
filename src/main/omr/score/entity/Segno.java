@@ -17,7 +17,7 @@ import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
 
 /**
- * Class <code>Segno</code> represents a segno event
+ * Class {@code Segno} represents a segno event
  *
  * @author Hervé Bitteur
  */

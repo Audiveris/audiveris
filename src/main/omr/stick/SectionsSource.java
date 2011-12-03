@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.ListIterator;
 
 /**
- * Class <code>Source</code> allows to formalize the way relevant sections are
+ * Class {@code Source} allows to formalize the way relevant sections are
  * made available to the area to be scanned.
  *
  * @author Hervé Bitteur

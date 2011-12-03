@@ -14,7 +14,7 @@ package omr.score.common;
 import java.awt.Rectangle;
 
 /**
- * Class <code>SimpleRectangle</code> is meant to be subclassed to
+ * Class {@code SimpleRectangle} is meant to be subclassed to
  * represent a rectangle in a given context.
  *
  * @author Hervé Bitteur
@@ -28,7 +28,7 @@ public abstract class SimpleRectangle
     // SimpleRectangle //
     //-----------------//
     /**
-     * Creates an instance of <code>SimpleRectangle</code> with all items set to
+     * Creates an instance of {@code SimpleRectangle} with all items set to
      * zero.
      */
     public SimpleRectangle ()
@@ -39,7 +39,7 @@ public abstract class SimpleRectangle
     // SimpleRectangle //
     //-----------------//
     /**
-     * Constructs a <code>SimpleRectangle</code> and initializes it with the
+     * Constructs a {@code SimpleRectangle} and initializes it with the
      * specified data.
      *
      * @param x the specified x

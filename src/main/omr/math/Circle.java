@@ -21,7 +21,7 @@ import static java.lang.Math.*;
 import java.util.ArrayList;
 
 /**
- * Class <code>Circle</code> handles a circle (or a portion of circle) which
+ * Class {@code Circle} handles a circle (or a portion of circle) which
  * approximates a collection of data points. Besides usual characteristics of a
  * circle (center, radius), and of a circle arc (start and stop angles) it also
  * defines the approximating bezier curve.

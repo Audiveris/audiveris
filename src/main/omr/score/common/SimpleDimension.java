@@ -14,7 +14,7 @@ package omr.score.common;
 import java.awt.Dimension;
 
 /**
- * Class <code>SimpleDimension</code> is meant to be subclassed to represent a
+ * Class {@code SimpleDimension} is meant to be subclassed to represent a
  * dimension in a specific context.
  *
  * @author Hervé Bitteur
@@ -28,7 +28,7 @@ public abstract class SimpleDimension
     // SimpleDimension //
     //-----------------//
     /**
-     * Creates an instance of <code>SimpleDimension</code> with a width of zero
+     * Creates an instance of {@code SimpleDimension} with a width of zero
      * and a height of zero.
      */
     public SimpleDimension ()
@@ -39,7 +39,7 @@ public abstract class SimpleDimension
     // SimpleDimension //
     //-----------------//
     /**
-     * Constructs a <code>SimpleDimension</code> and initializes it to the
+     * Constructs a {@code SimpleDimension} and initializes it to the
      * specified width and specified height.
      *
      * @param width the specified width

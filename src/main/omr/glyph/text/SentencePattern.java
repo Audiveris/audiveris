@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class <code>SentencePattern</code> gathers text-shaped glyphs found within
+ * Class {@code SentencePattern} gathers text-shaped glyphs found within
  * a system into proper sentences.
  *
  * @author Hervé Bitteur

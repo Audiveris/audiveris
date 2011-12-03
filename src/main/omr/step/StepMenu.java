@@ -31,7 +31,7 @@ import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
 /**
- * Class <code>StepMenu</code> encapsulates the user interface needed to deal
+ * Class {@code StepMenu} encapsulates the user interface needed to deal
  * with application steps.  Steps are represented by menu items, each one being
  * a check box, to indicate the current status regarding the execution of the
  * step (done or not done).
@@ -166,7 +166,7 @@ public class StepMenu
     // StepItem //
     //----------//
     /**
-     * Class <code>StepItem</code> implements a checkable menu item
+     * Class {@code StepItem} implements a checkable menu item
      * linked to a given step
      */
     private static class StepItem
@@ -212,7 +212,7 @@ public class StepMenu
     // MyMenuListener //
     //----------------//
     /**
-     * Class <code>MyMenuListener</code> is triggered when the whole sub-menu
+     * Class {@code MyMenuListener} is triggered when the whole sub-menu
      * is entered. This is done with respect to currently displayed sheet. The
      * steps already done are flagged as such.
      */

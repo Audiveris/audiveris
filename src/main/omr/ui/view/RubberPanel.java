@@ -44,7 +44,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class <code>RubberPanel</code> is a combination of two linked entities:
+ * Class {@code RubberPanel} is a combination of two linked entities:
  * a {@link Zoom} and a {@link Rubber}.
  *
  * <p>Its <i>paintComponent</i> method is declared final to ensure that the

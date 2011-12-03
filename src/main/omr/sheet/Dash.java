@@ -32,7 +32,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Class <code>Dash</code> is used to handle a horizontal segment, which can
+ * Class {@code Dash} is used to handle a horizontal segment, which can
  * represent a ledger, a legato sign or the horizontal part of an alternate
  * ending.
  *

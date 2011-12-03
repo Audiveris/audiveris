@@ -22,7 +22,7 @@ import org.jdesktop.application.Action;
 import java.awt.event.ActionEvent;
 
 /**
- * Class <code>PaintingParameters</code> handles the dynamic parameters related
+ * Class {@code PaintingParameters} handles the dynamic parameters related
  * to the painting of any score (slots, voices and marks)
  *
  * @author Hervé Bitteur
@@ -300,7 +300,7 @@ public class PaintingParameters
     //--------//
     // Holder //
     //--------//
-    private static class Holder
+    private static interface Holder
     {
         //~ Static fields/initializers -----------------------------------------
 

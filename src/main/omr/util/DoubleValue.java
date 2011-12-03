@@ -14,7 +14,7 @@ package omr.util;
 import javax.xml.bind.annotation.XmlValue;
 
 /**
- * Class <code>DoubleValue</code> is a "poor man" version of java.lang.Double,
+ * Class {@code DoubleValue} is a "poor man" version of java.lang.Double,
  * when we need a non-final class (whereas Double is declared as final)
  *
  * @author Hervé Bitteur
@@ -82,8 +82,8 @@ public class DoubleValue
     // doubleValue //
     //-------------//
     /**
-     * Returns the <code>double</code> value of this object.
-     * @return the <code>double</code> value represented by this object
+     * Returns the {@code double} value of this object.
+     * @return the {@code double} value represented by this object
      */
     public double doubleValue ()
     {

@@ -21,7 +21,7 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
 /**
- * Class <code>FileUtil</code> gathers convenient utility methods for files
+ * Class {@code FileUtil} gathers convenient utility methods for files
  *
  * @author Hervé Bitteur
  */

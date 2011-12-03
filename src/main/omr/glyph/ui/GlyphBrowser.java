@@ -97,7 +97,7 @@ class GlyphBrowser
     private static final Class[] locEvents = new Class[] { LocationEvent.class };
 
     /**
-     * Field constant <code>NO_INDEX</code> is a specific value {@value} to
+     * Field constant {@code NO_INDEX} is a specific value {@value} to
      * indicate absence of index
      */
     private static final int NO_INDEX = -1;

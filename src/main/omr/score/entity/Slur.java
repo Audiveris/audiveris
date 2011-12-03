@@ -39,7 +39,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class <code>Slur</code> encapsulates a slur (a curve) in a system.
+ * Class {@code Slur} encapsulates a slur (a curve) in a system.
  * A slur is used for a tie (2 notes with he same octave & step) or for
  * just a phrase embracing several notes.
  *
@@ -835,7 +835,7 @@ public class Slur
     // NodeComparator //
     //----------------//
     /**
-     * Class <code>NodeComparator</code> implements a Node comparator, where
+     * Class {@code NodeComparator} implements a Node comparator, where
      * nodes are ordered according to the ordinate of the left point (whether
      * its'a Note or a chord tail location, from top to bottom.
      */

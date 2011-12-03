@@ -21,7 +21,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class <code>Rational</code> implements non-mutable rational numbers
+ * Class {@code Rational} implements non-mutable rational numbers
  * (composed of a numerator and a denominator).
  *
  * <p>Invariants:<ol>

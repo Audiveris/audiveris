@@ -21,7 +21,7 @@ import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
 
 /**
- * Class <code>Clef</code> encapsulates a clef.
+ * Class {@code Clef} encapsulates a clef.
  *
  * <p>The following image, directly pulled from wikipedia, explains the most
  * popular clefs today (Treble, Alto, Tenor and Bass) and for each presents

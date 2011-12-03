@@ -17,7 +17,7 @@ import omr.util.Implement;
 import omr.util.Predicate;
 
 /**
- * Class <code>UnknownSectionPredicate</code> is a basic predicate on
+ * Class {@code UnknownSectionPredicate} is a basic predicate on
  * sections used to build sticks, for which we just check if not section
  * isKnown().
  *

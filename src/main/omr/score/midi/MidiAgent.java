@@ -42,7 +42,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 /**
- * Class <code>MidiAgent</code> is in charge of representing a score when
+ * Class {@code MidiAgent} is in charge of representing a score when
  * dealing with the Midi System. There are two main usages: playing a score
  * and writing the Midi file for a score.
  *

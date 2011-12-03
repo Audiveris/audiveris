@@ -34,7 +34,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * Class <code>Slot</code> represents a roughly defined time slot within a
+ * Class {@code Slot} represents a roughly defined time slot within a
  * measure, to gather all chord entities (rests, notes, noteheads) that occur at
  * the same time because their abscissae are roughly the same.
  *

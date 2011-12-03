@@ -28,7 +28,7 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class <code>NeuralNetwork</code> implements a back-propagation neural
+ * Class {@code NeuralNetwork} implements a back-propagation neural
  * network, with one input layer, one hidden layer and one output layer. The
  * transfer function is the sigmoid.
  *
@@ -775,7 +775,7 @@ public class NeuralNetwork
     // Monitor //
     //---------//
     /**
-     * Interface <code>Monitor</code> allows to plug a monitor to a Neural
+     * Interface {@code Monitor} allows to plug a monitor to a Neural
      * Network instance, and inform the monitor about the progress of the
      * training.
      */
@@ -809,7 +809,7 @@ public class NeuralNetwork
     // Backup //
     //--------//
     /**
-     * Class <code>Backup</code> is an opaque class that encapsulates a snapshot
+     * Class {@code Backup} is an opaque class that encapsulates a snapshot
      * of a NeuralNetwork internal memory (its weights). A Backup instance can
      * only be obtained through the use of {@link #backup} method of a
      * NeuralNetwork. A Backup instance is the needed parameter for a

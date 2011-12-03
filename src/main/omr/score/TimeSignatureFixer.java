@@ -33,7 +33,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * Class <code>TimeSignatureFixer</code> can visit the score hierarchy to
+ * Class {@code TimeSignatureFixer} can visit the score hierarchy to
  * check whether each of the time signatures are consistent with most of
  * measures intrinsic time signature.
  *

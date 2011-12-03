@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class <code>PartInfo</code> is the physical gathering of StaffInfo instances
+ * Class {@code PartInfo} is the physical gathering of StaffInfo instances
  * in a part
  *
  * @author Hervé Bitteur

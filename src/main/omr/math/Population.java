@@ -17,7 +17,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class <code>Population</code> is used to cumulate measurements, and compute
+ * Class {@code Population} is used to cumulate measurements, and compute
  * mean value, standard deviation and variance on them.
  *
  * @author Hervé Bitteur

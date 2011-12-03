@@ -15,7 +15,7 @@ import java.util.logging.LogRecord;
 
 /**
  * Filters out log messages that have null or empty message strings.
- * Should be set as the filter for <code>Handler</code>'s that
+ * Should be set as the filter for {@code Handler}'s that
  * display messages on screen.
  */
 public class LogEmptyMessageFilter

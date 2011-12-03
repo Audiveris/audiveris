@@ -28,7 +28,7 @@ import javax.swing.ImageIcon;
 import javax.swing.WindowConstants;
 
 /**
- * Class <code>OmrFrameView</code> is the specific Midi view for Audiveris
+ * Class {@code OmrFrameView} is the specific Midi view for Audiveris
  *
  * @author Hervé Bitteur
  */

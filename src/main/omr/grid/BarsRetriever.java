@@ -68,7 +68,7 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 /**
- * Class <code>BarsRetriever</code> focuses on the retrieval of vertical bars
+ * Class {@code BarsRetriever} focuses on the retrieval of vertical bars
  * lines.
  * Bar lines are used to determine the side limits of staves and, most
  * importantly, the gathering of staves into systems.

@@ -45,7 +45,7 @@ public enum SlotPolicy {
     // Constant //
     //----------//
     /**
-     * Class <code>Constant</code> is a subclass of
+     * Class {@code Constant} is a subclass of
      * {@link omr.constant.Constant}, meant to store a {@link SlotPolicy} value.
      */
     public static class Constant

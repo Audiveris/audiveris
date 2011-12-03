@@ -13,7 +13,7 @@ package omr.math;
 
 
 /**
- * Interface <code>Line</code> handles the equation of a line (or more
+ * Interface {@code Line} handles the equation of a line (or more
  * generally some curved line for which Y can be computed from X), whatever its
  * orientation
  *

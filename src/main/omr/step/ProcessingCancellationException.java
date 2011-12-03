@@ -24,7 +24,7 @@ public class ProcessingCancellationException
     //~ Constructors -----------------------------------------------------------
 
     /**
-     * Construct an <code>ProcessingCancellationException</code> with no detail
+     * Construct an {@code ProcessingCancellationException} with no detail
      * message.
      */
     public ProcessingCancellationException ()
@@ -33,7 +33,7 @@ public class ProcessingCancellationException
     }
 
     /**
-     * Construct an <code>ProcessingCancellationException</code> with detail
+     * Construct an {@code ProcessingCancellationException} with detail
      * message.
      * @param message the related message
      */
@@ -43,7 +43,7 @@ public class ProcessingCancellationException
     }
 
     /**
-     * Construct an <code>ProcessingCancellationException</code> from an
+     * Construct an {@code ProcessingCancellationException} from an
      * existing exception.
      * @param ex the related exception
      */

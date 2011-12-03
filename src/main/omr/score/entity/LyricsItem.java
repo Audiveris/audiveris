@@ -30,7 +30,7 @@ import omr.util.TreeNode;
 import java.util.Comparator;
 
 /**
- * Class <code>LyricsItem</code> is specific subclass of Text, meant for one
+ * Class {@code LyricsItem} is specific subclass of Text, meant for one
  * item of a lyrics line (Syllable, Hyphen, Extension, Elision)
  *
  * @author Hervé Bitteur

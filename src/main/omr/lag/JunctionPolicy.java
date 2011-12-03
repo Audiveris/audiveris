@@ -15,13 +15,14 @@ import omr.run.Run;
 
 
 /**
- * Class <code>JunctionPolicy</code> encapsulates the policy that decides if a
- * run can extend a given section. If not, the run is part of a new section,
- * linked to the previous one by a junction.
+ * Interface {@code JunctionPolicy} encapsulates the policy that 
+ * decides if a run can extend a given section.
+ * If not, the run is part of a new section, linked to the previous one by a 
+ * junction.
  *
  * @author Hervé Bitteur
  */
-public abstract class JunctionPolicy
+public interface JunctionPolicy
 {
     //~ Methods ----------------------------------------------------------------
 
@@ -29,11 +30,10 @@ public abstract class JunctionPolicy
     // consistentRun //
     //---------------//
     /**
-     * Check if provided run is consistent with the section as defined so far
-     *
+     * Check if provided run is consistent with the section defined 
+     * so far.
      * @param run     the candidate run for section extension
      * @param section the to-be extended section
-     *
      * @return true is extension is compatible with the defined junction policy
      */
     public abstract boolean consistentRun (Run     run,

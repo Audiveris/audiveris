@@ -14,7 +14,7 @@ package omr.constant;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
- * Class <code>PackageNode</code> represents a package in the hierarchy of
+ * Class {@code PackageNode} represents a package in the hierarchy of
  * nodes. It can have children, which can be sub-packages and units. For
  * example, the unit/class <b>omr.score.Page</b> will need PackageNode
  * <b>omr</b> and PackageNode <b>omr.score</b>.
@@ -27,8 +27,8 @@ public class PackageNode
     //~ Instance fields --------------------------------------------------------
 
     /**
-     * The children, composed of either other <code>PackageNode</code> or
-     * <code>ConstantSet</code>.
+     * The children, composed of either other {@code PackageNode} or
+     * {@code ConstantSet}.
      */
     private final ConcurrentSkipListSet<Node> children = new ConcurrentSkipListSet<Node>(
         Node.nameComparator);

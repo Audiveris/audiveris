@@ -43,7 +43,7 @@ import java.io.File;
 import javax.swing.JOptionPane;
 
 /**
- * Class <code>SheetActions</code> simply gathers UI actions related to sheet
+ * Class {@code SheetActions} simply gathers UI actions related to sheet
  * handling. These methods are ready to be picked up by the plugins mechanism.
  *
  * @author Hervé Bitteur

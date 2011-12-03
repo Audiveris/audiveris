@@ -51,7 +51,7 @@ import javax.swing.JRadioButton;
 import javax.swing.SwingWorker;
 
 /**
- * Class <code>TrainingPanel</code> is a panel dedicated to the training of an
+ * Class {@code TrainingPanel} is a panel dedicated to the training of an
  * evaluator. It is used through its subclasses {@link NetworkPanel} and
  * {@link RegressionPanel} to train the neural network evaluator and the linear
  * evaluator respectively. It is a dedicated companion of class

@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class <code>TreeNode</code> handles a node in a tree hierarchy, which is
+ * Class {@code TreeNode} handles a node in a tree hierarchy, which is
  * typically the tree organization of a score entity.
  *
  * <p/> A TreeNode has : <ul>

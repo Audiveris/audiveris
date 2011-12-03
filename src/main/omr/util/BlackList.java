@@ -28,7 +28,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class <code>BlackList</code> handles the mechanism of excluding certain files
+ * Class {@code BlackList} handles the mechanism of excluding certain files
  * and subdirectories in a directory, according to the presence and content of a
  * specific black-list in this directory. <b>Nota</b>: The scope of this
  * blacklist is just the directory that contains the black-list file, not its

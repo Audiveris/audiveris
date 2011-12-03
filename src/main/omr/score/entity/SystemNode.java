@@ -25,7 +25,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 /**
- * Class <code>SystemNode</code> is an abstract class that is subclassed
+ * Class {@code SystemNode} is an abstract class that is subclassed
  * for any Node that is contained in a system, beginning by the system itself.
  * So this class encapsulates a direct link to the enclosing system.
  *

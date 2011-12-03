@@ -14,7 +14,7 @@ package omr.selection;
 import omr.log.Logger;
 
 /**
- * Interface <code>UserEvent</code> defines the common behavior of user events
+ * Interface {@code UserEvent} defines the common behavior of user events
  * that are stored as selections, and handled by the EventBus.
  *
  * <p>All events are subclasses of this abstract class, and managed by proper

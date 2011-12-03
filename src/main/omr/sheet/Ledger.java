@@ -16,7 +16,7 @@ import omr.glyph.facets.Glyph;
 import omr.grid.StaffInfo;
 
 /**
- * Class <code>Ledger</code> is a physical {@link Dash} which is logically a
+ * Class {@code Ledger} is a physical {@link Dash} which is logically a
  * Ledger (to represents portions of virtual staff lines)
  *
  * @author Hervé Bitteur

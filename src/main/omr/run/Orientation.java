@@ -24,7 +24,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 
 /**
- * Class <code>Orientation</code> defines orientation as horizontal or
+ * Class {@code Orientation} defines orientation as horizontal or
  * vertical, and provides convenient methods to convert entities between
  * absolute and oriented definitions.
  *

@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Interface <code>OCR</code> defines the interaction with an OCR engine.
+ * Interface {@code OCR} defines the interaction with an OCR engine.
  *
  * @author Hervé Bitteur
  */

@@ -50,7 +50,7 @@ import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 
 /**
- * Class <code>ScoreActions</code> gathers user actions related to scores
+ * Class {@code ScoreActions} gathers user actions related to scores
  *
  * @author Hervé Bitteur
  */

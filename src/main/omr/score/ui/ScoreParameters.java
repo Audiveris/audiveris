@@ -63,7 +63,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class <code>ScoreParameters</code> is a dialog that manages information
+ * Class {@code ScoreParameters} is a dialog that manages information
  * as both a display and possible input from user for major Score/Sheet
  * parameters such as:<ul>
  * <li>Call-stack printed on exception</li>

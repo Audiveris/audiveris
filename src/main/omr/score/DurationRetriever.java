@@ -30,7 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Class <code>DurationRetriever</code> can visit a page hierarchy to compute
+ * Class {@code DurationRetriever} can visit a page hierarchy to compute
  * the actual duration of every measure
  *
  * @author Hervé Bitteur

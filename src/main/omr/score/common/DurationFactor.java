@@ -14,7 +14,7 @@ package omr.score.common;
 import omr.math.Rational;
 
 /**
- * Class <code>DurationFactor</code> handles a rational representation of
+ * Class {@code DurationFactor} handles a rational representation of
  * duration modification
  *
  * @author Hervé Bitteur

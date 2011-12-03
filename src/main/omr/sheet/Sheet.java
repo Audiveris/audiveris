@@ -78,7 +78,7 @@ import java.util.SortedSet;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
- * Class <code>Sheet</code> is the corner stone for Sheet processing, keeping
+ * Class {@code Sheet} is the corner stone for Sheet processing, keeping
  * pointers to all processings related to the image, and to their results.
  *
  * @author Hervé Bitteur
@@ -204,7 +204,7 @@ public class Sheet
     // Sheet //
     //-------//
     /**
-     * Create a new <code>Sheet</code> instance, based on a couple made of
+     * Create a new {@code Sheet} instance, based on a couple made of
      * an image (the original pixel input) and a page (the score entities
      * output).
      *

@@ -17,7 +17,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 
 /**
- * Class <code>OmrFileFilter</code> is a special file filter, based on file
+ * Class {@code OmrFileFilter} is a special file filter, based on file
  * extensions
  *
  * @author Hervé Bitteur
@@ -139,8 +139,8 @@ public class OmrFileFilter
      *
      * @param   dir    the directory in which the file was found.
      * @param   name   the name of the file.
-     * @return  <code>true</code> if and only if the name should be
-     * included in the file list; <code>false</code> otherwise.
+     * @return  {@code true} if and only if the name should be
+     * included in the file list; {@code false} otherwise.
      */
     @Implement(FilenameFilter.class)
     public boolean accept (File   dir,

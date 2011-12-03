@@ -15,7 +15,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 
 /**
- * Class <code>Skew</code> handles the skew angle of a given sheet picture.
+ * Class {@code Skew} handles the skew angle of a given sheet picture.
  *
  * @author Hervé Bitteur
  */

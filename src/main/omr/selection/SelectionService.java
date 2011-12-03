@@ -22,7 +22,7 @@ import org.bushe.swing.event.ThreadSafeEventService;
 import java.util.List;
 
 /**
- * Class <code>SelectionService</code> is an OMR customized version of an
+ * Class {@code SelectionService} is an OMR customized version of an
  * EventService as provided by the EventBus framework.
  *
  * @author Hervé Bitteur

@@ -28,7 +28,7 @@ import omr.util.Navigable;
 import java.util.Collection;
 
 /**
- * Class <code>BeamItem</code> represents a single beam hook or beam or a beam
+ * Class {@code BeamItem} represents a single beam hook or beam or a beam
  * item part of a larger beam pack.
  *
  * @author Hervé Bitteur

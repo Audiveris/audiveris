@@ -19,7 +19,7 @@ import omr.log.Logger;
 import javax.swing.JButton;
 
 /**
- * Class <code>RegressionPanel</code> is the user interface that handles the
+ * Class {@code RegressionPanel} is the user interface that handles the
  * training of the linear evaluator. It is a dedicated companion of class
  * {@link GlyphTrainer}.
  *

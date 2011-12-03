@@ -48,7 +48,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class <code>TextArea</code> handles a rectangular area likely to contain
+ * Class {@code TextArea} handles a rectangular area likely to contain
  * some text
  *
  * @author Hervé Bitteur

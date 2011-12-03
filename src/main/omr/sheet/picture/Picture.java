@@ -52,7 +52,7 @@ import javax.media.jai.PlanarImage;
 import javax.media.jai.RenderedImageAdapter;
 
 /**
- * Class <code>Picture</code> encapsulates an image, allowing modifications and
+ * Class {@code Picture} encapsulates an image, allowing modifications and
  * rendering. Its current implementation is based on JAI (Java Advanced
  * Imaging).
  *

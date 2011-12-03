@@ -16,7 +16,7 @@ import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
 /**
- * Class <code>LField</code> is a kind of "Labelled Field", a logical
+ * Class {@code LField} is a kind of "Labelled Field", a logical
  * composition of a label and a component, which are handled as a whole.
  *
  * @param <C> the precise subtype of the JComponent field

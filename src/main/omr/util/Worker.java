@@ -14,7 +14,7 @@ package omr.util;
 import omr.log.Logger;
 
 /**
- * Class <code>Worker</code> is a simple way to delegate processing to a worker
+ * Class {@code Worker} is a simple way to delegate processing to a worker
  * thread, and synchronize at the end of the work. This is actually derived from
  * the standard SwingWorker class, with the Swing part removed. The worker
  * thread is always assigned the minimum priority.
@@ -97,7 +97,7 @@ public abstract class Worker<T>
     // Worker //
     //--------//
     /**
-     * Prepare a thread that will call the <code>construct</code> method
+     * Prepare a thread that will call the {@code construct} method
      * and then exit. You need to start() this worker.
      * The worker will use the default stakc size.
      */
@@ -113,7 +113,7 @@ public abstract class Worker<T>
     // construct //
     //-----------//
     /**
-     * Compute the value to be returned by the <code>get</code> method.
+     * Compute the value to be returned by the {@code get} method.
      * @return the work result, if any
      */
     public abstract T construct ();
@@ -122,11 +122,11 @@ public abstract class Worker<T>
     // get //
     //-----//
     /**
-     * Return the value created by the <code>construct</code> method.
+     * Return the value created by the {@code construct} method.
      * Returns null if either the constructing thread or the current
      * thread was interrupted before a value was produced.
      *
-     * @return the value created by the <code>construct</code> method
+     * @return the value created by the {@code construct} method
      */
     public T get ()
     {

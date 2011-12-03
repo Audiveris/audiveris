@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class <code>SymbolsModel</code> is a GlyphsModel specifically meant for
+ * Class {@code SymbolsModel} is a GlyphsModel specifically meant for
  * symbol glyphs
  *
  * @author Hervé Bitteur

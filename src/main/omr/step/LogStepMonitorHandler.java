@@ -18,7 +18,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 /**
- * <p>Class <code>LogStepMonitorHandler</code> provides a connection between
+ * <p>Class {@code LogStepMonitorHandler} provides a connection between
  * the default step monitor's progress bar and any INFO messages
  * logged. Info messages will cause the bar to increase its value by a
  * small proportion.</p>
@@ -28,7 +28,7 @@ import java.util.logging.LogRecord;
  * messages can be used to force an increment. Also note that
  * these animations are only shown when a Step is ongoing.</p>
  *
- * <p>As a <code>Handler</code>, it should be added to the highest-level
+ * <p>As a {@code Handler}, it should be added to the highest-level
  * logger instance, either programmatically or in a properties file.</p>
  *
  * @author Brenton Partridge

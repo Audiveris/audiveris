@@ -19,7 +19,7 @@ import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
 
 /**
- * Class <code>DirectionStatement</code> represents a direction in the score
+ * Class {@code DirectionStatement} represents a direction in the score
  *
  * @author Hervé Bitteur
  */

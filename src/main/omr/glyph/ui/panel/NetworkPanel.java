@@ -42,7 +42,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class <code>NetworkPanel</code> is the user interface that handles the
+ * Class {@code NetworkPanel} is the user interface that handles the
  * training of the neural network evaluator. It is a dedicated companion of
  * class {@link GlyphTrainer}.
  *

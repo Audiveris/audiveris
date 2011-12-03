@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.Comparator;
 
 /**
- * Class <code>Sections</code> handles features related to a collection of
+ * Class {@code Sections} handles features related to a collection of
  * sections
  *
  * @author Hervé Bitteur

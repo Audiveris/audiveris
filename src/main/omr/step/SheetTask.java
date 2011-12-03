@@ -18,7 +18,7 @@ import omr.sheet.SystemInfo;
 import java.util.Collection;
 
 /**
- * Class <code>SheetTask</code> defines the task for a step at the whole
+ * Class {@code SheetTask} defines the task for a step at the whole
  * sheet level. This is meant for steps where the systems have not yet been
  * retrieved.
  *

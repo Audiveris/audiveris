@@ -30,7 +30,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class <code>BeamGroup</code> represents a group of related beams. It handles
+ * Class {@code BeamGroup} represents a group of related beams. It handles
  * the level of each beam within the group. The contained beams are ordered in
  * increasing order from stem/chord tail to stem/chord head
  *
@@ -619,7 +619,7 @@ public class BeamGroup
     // SplitOrder //
     //------------//
     /**
-     * Class <code>SplitOrder</code> records a beam group split order.
+     * Class {@code SplitOrder} records a beam group split order.
      * Splitting must be separate from browsing to avoid concurrent modification
      * of collections
      */

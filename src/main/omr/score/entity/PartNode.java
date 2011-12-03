@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.SortedSet;
 
 /**
- * Class <code>PartNode</code> is an abstract class that is subclassed for any
+ * Class {@code PartNode} is an abstract class that is subclassed for any
  * SystemNode that is contained in a system part. So this class encapsulates a
  * direct link to the enclosing part.
  *

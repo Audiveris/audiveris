@@ -31,7 +31,7 @@ import omr.ui.symbol.SymbolPicture;
 import java.awt.image.BufferedImage;
 
 /**
- * Class <code>SymbolGlyph</code> is an articial glyph, built from a symbol.
+ * Class {@code SymbolGlyph} is an articial glyph, built from a symbol.
  * It is used to generate glyphs for training, when no real glyph (glyph
  * retrieved from scanned sheet) is available.
  *

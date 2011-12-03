@@ -530,7 +530,7 @@ public abstract class GlyphEvaluator
     // Monitor //
     //---------//
     /**
-     * Interface <code>Monitor</code> specifies a general monitoring
+     * Interface {@code Monitor} specifies a general monitoring
      * interface to pass information about the behavior of evaluators.
      */
     public static interface Monitor

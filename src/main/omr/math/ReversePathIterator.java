@@ -336,8 +336,8 @@ public class ReversePathIterator
     /**
      * Tests if the iteration is complete.
      *
-     * @return <code>true</code> if all the segments have
-     *         been read; <code>false</code> otherwise.
+     * @return {@code true} if all the segments have
+     *         been read; {@code false} otherwise.
      */
     public boolean isDone ()
     {

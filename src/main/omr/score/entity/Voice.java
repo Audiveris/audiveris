@@ -29,7 +29,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * Class <code>Voice</code> gathers all informations related to a voice within
+ * Class {@code Voice} gathers all informations related to a voice within
  * a measure.
  * <p>If a voice is assigned to a whole/multi rest, then this rest chord is
  * defined as the wholeChord of this voice, and the slot table is left empty.

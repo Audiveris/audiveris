@@ -23,7 +23,7 @@ import javax.swing.AbstractSpinnerModel;
 import javax.swing.SpinnerModel;
 
 /**
- * Class <code>SpinnerSectionModel</code> is a spinner model backed by a
+ * Class {@code SpinnerSectionModel} is a spinner model backed by a
  * {@link Lag}. Any modification in the lag is thus transparently handled,
  * since the lag <b>is</b> the model.
  *
@@ -75,7 +75,7 @@ public class SpinnerSectionModel
     //--------------//
     /**
      * Return the next legal section id in the sequence that comes after the section
-     * id returned by <code>getValue()</code>. If the end of the sequence has
+     * id returned by {@code getValue()}. If the end of the sequence has
      * been reached then return null.
      *
      * @return the next legal section id or null if one doesn't exist
@@ -101,7 +101,7 @@ public class SpinnerSectionModel
     //------------------//
     /**
      * Return the legal section id in the sequence that comes before the section id
-     * returned by <code>getValue()</code>.  If the end of the sequence has been
+     * returned by {@code getValue()}.  If the end of the sequence has been
      * reached then return null.
      *
      * @return the previous legal value or null if one doesn't exist
@@ -127,10 +127,10 @@ public class SpinnerSectionModel
     //----------//
     /**
      * Changes current section id of the model.  If the section id is illegal then
-     * an <code>IllegalArgumentException</code> is thrown.
+     * an {@code IllegalArgumentException} is thrown.
      *
      * @param value the value to set
-     * @exception IllegalArgumentException if <code>value</code> isn't allowed
+     * @exception IllegalArgumentException if {@code value} isn't allowed
      */
     @Implement(SpinnerModel.class)
     public void setValue (Object value)

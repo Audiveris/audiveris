@@ -17,7 +17,7 @@ import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
 
 /**
- * Class <code>Coda</code> represents a coda event
+ * Class {@code Coda} represents a coda event
  *
  * @author Hervé Bitteur
  */

@@ -30,7 +30,7 @@ import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 
 /**
- * Class <code>Logger</code> is a specific subclass of standard java Logger,
+ * Class {@code Logger} is a specific subclass of standard java Logger,
  * augmented to fit the needs of Audiveris project.
  *
  * <p>The levels in descending order are: <ol>

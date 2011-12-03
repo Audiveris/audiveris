@@ -25,7 +25,7 @@ import org.bushe.swing.event.EventSubscriber;
 import org.jdesktop.application.AbstractBean;
 
 /**
- * Class <code>SheetDependent</code> handles the dependency on sheet
+ * Class {@code SheetDependent} handles the dependency on sheet
  * availability
  *
  * @author Hervé Bitteur

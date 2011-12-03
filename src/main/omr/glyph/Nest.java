@@ -31,7 +31,7 @@ import java.util.Collection;
 import java.util.Set;
 
 /**
- * Class <code>Nest</code> handles a collection of {@link Glyph} instances,
+ * Class {@code Nest} handles a collection of {@link Glyph} instances,
  * with the ability to retrieve a Glyph based on its Id or its location, and the
  * ability to give birth to new glyphs.
  *

@@ -24,7 +24,7 @@ import omr.sheet.SystemInfo;
 import omr.util.Implement;
 
 /**
- * Class <code>TextAreaPattern</code> subdivides a system into sub-areas to
+ * Class {@code TextAreaPattern} subdivides a system into sub-areas to
  * find out TEXT glyphs, as detected by the neural network evaluation.
  *
  * @author Hervé Bitteur

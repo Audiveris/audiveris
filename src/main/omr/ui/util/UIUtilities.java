@@ -41,7 +41,7 @@ import javax.swing.JToggleButton;
 import javax.swing.border.Border;
 
 /**
- * Class <code>UIUtilities</code> gathers utilities related to User Interface
+ * Class {@code UIUtilities} gathers utilities related to User Interface
  *
  * @author Hervé Bitteur and Brenton Partridge
  */

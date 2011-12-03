@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class <code>Horizontals</code> gathers horizontal dashes in the given
+ * Class {@code Horizontals} gathers horizontal dashes in the given
  * sheet. We use it for all horizontal glyphs (ledgers of course, but also
  * legato signs or alternate endings)
  *

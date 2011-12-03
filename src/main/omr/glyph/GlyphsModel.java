@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- * Class <code>GlyphsModel</code> is a common model for synchronous glyph
+ * Class {@code GlyphsModel} is a common model for synchronous glyph
  * and section handling.
  *
  * <p>Nota: User gesture should trigger actions in GlyphsController which will

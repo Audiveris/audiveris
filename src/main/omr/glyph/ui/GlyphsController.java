@@ -38,7 +38,7 @@ import java.util.Collection;
 import java.util.Set;
 
 /**
- * Class <code>GlyphsController</code> is a common basis for glyph handling,
+ * Class {@code GlyphsController} is a common basis for glyph handling,
  * used by any user interface which needs to act on the actual glyph data.
  *
  * <p>There are two main methods in this class ({@link #asyncAssignGlyphs} and

@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class <code>SectionsBuilder</code> populates a full lag, by building the
+ * Class {@code SectionsBuilder} populates a full lag, by building the
  * lag sections and junctions, out of a provided {@link RunsTable} instance.
  *
  * @author Hervé Bitteur

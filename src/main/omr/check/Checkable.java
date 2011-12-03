@@ -14,7 +14,7 @@ package omr.check;
 import omr.util.Vip;
 
 /**
- * Interface <code>Checkable</code> describes a class that may be checked and
+ * Interface {@code Checkable} describes a class that may be checked and
  * then assigned a result for that check.
  *
  * @author Hervé Bitteur

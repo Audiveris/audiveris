@@ -14,7 +14,7 @@ package omr.score.common;
 import java.awt.Point;
 
 /**
- * Class <code>SimplePoint</code> is meant to be subclassed by more specific
+ * Class {@code SimplePoint} is meant to be subclassed by more specific
  * definitions according to the context
  *
  * @author Hervé Bitteur

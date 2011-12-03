@@ -57,13 +57,26 @@
     <!-- ============================= -->
     <target name="global-replace"
         description="Modify token of every source file">
-        
+
+	<!--
         <replace encoding="utf8" dir="${train.dir}">
             <replacetoken>section </replacetoken>
             <replacevalue>section orientation="VERTICAL" </replacevalue>
             <include name="**/*.xml"/>
         </replace>
+	     -->
 
+	<replaceregexp
+	    encoding="utf8"
+	    match="&lt;code&gt;(.*)&lt;/code&gt;"
+	    replace="{@code \1}"
+	    flags="g"
+	    byline="true">
+	    <fileset dir="${src.dir}">
+		<include name="**/*.java"/>
+	    </fileset>
+        </replaceregexp>
+	
     </target>
     
     <!-- ======== -->

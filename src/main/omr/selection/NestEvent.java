@@ -13,7 +13,7 @@ package omr.selection;
 
 
 /**
- * Class <code>NestEvent</code> is an abstract class to represent any event
+ * Class {@code NestEvent} is an abstract class to represent any event
  * specific to a glyph service (glyph, glyph id, glyph set)
  *
  * <dl>

@@ -27,7 +27,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 /**
- * Class <code>NameSet</code> encapsulates the handling of a list of names, a
+ * Class {@code NameSet} encapsulates the handling of a list of names, a
  * typical use is a history of file names.
  *
  * <p> Actually, rather than a set, it is a list where the most recently used

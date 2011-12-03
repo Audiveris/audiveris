@@ -28,7 +28,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Class <code>SystemPart</code> handles each of the various parts found in
+ * Class {@code SystemPart} handles each of the various parts found in
  * one system, since the layout of parts may vary from system to system.
  *
  * @author Hervé Bitteur

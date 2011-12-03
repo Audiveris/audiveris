@@ -26,7 +26,7 @@ import omr.util.Implement;
 import org.bushe.swing.event.EventSubscriber;
 
 /**
- * Class <code>ScoreDependent</code> handles the dependency on score
+ * Class {@code ScoreDependent} handles the dependency on score
  * availability
  *
  * @author Hervé Bitteur

@@ -13,7 +13,7 @@ package omr.selection;
 
 
 /**
- * Class <code>LagEvent</code> is an abstract class to represent any event
+ * Class {@code LagEvent} is an abstract class to represent any event
  * related to a lag (run, section, section id)
  *
  *

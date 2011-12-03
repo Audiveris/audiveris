@@ -13,7 +13,7 @@ package omr.lag;
 
 
 /**
- * Interface <code>PixelSource</code> defines the operations expected from a
+ * Interface {@code PixelSource} defines the operations expected from a
  * rectangular pixel source, limited by its width and height, in order to
  * populate a lag for example.
  *

@@ -34,7 +34,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class <code>Beam</code> represents a beam hook or a beam line, that may be
+ * Class {@code Beam} represents a beam hook or a beam line, that may be
  * composed of several beam items, aligned one after the other, along the same
  * line.
  *

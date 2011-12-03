@@ -18,7 +18,7 @@ import omr.log.Logger;
 import omr.score.common.PixelPoint;
 
 /**
- * Class <code>Direction</code> is the basis for all variants of direction
+ * Class {@code Direction} is the basis for all variants of direction
  * indications: pedal, words, dynamics, wedge, dashes, etc...
  *
  * <p>For some directions (such as wedge, dashes, pedal), we may have two

@@ -30,7 +30,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class <code>GlyphInspector</code> is at a System level, dedicated to the
+ * Class {@code GlyphInspector} is at a System level, dedicated to the
  * inspection of retrieved glyphs, their recognition being usually based on
  * features used by a neural network evaluator.
  *
@@ -155,7 +155,7 @@ public class GlyphInspector
     // BasicAdapter //
     //--------------//
     /**
-     * Class <code>BasicAdapter</code> is a CompoundAdapter meant to retrieve
+     * Class {@code BasicAdapter} is a CompoundAdapter meant to retrieve
      * all compounds (in a system).
      */
     private class BasicAdapter

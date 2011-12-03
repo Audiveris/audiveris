@@ -41,7 +41,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class <code>TextInfo</code> handles the textual aspects of a glyph.
+ * Class {@code TextInfo} handles the textual aspects of a glyph.
  *
  * <p>It handles several text contents, by decreasing priority: <ol>
  * <li>manual content (entered manually by the user)</li>

@@ -17,7 +17,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class <code>ActionDescriptor</code> gathers parameters related to an action
+ * Class {@code ActionDescriptor} gathers parameters related to an action
  * from the User Interface point of view
  *
  * @author Hervé Bitteur

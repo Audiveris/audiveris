@@ -25,7 +25,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Class <code>Shape</code> defines the comprehensive list of glyph shapes. It
+ * Class {@code Shape} defines the comprehensive list of glyph shapes. It
  * is organized according to the Unicode Standard 4.0, with a few addition for
  * convenience only.
  *

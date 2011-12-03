@@ -18,7 +18,7 @@ import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
 
 /**
- * Class <code>Pedal</code> represents a pedal (start) or pedal up (stop) event
+ * Class {@code Pedal} represents a pedal (start) or pedal up (stop) event
  *
  * @author Hervé Bitteur
  */

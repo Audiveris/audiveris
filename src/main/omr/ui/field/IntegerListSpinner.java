@@ -16,7 +16,7 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerListModel;
 
 /**
- * Class <code>IntegerListSpinner</code> is a spinner whose model is a list of
+ * Class {@code IntegerListSpinner} is a spinner whose model is a list of
  * integers
  *
  * @author Hervé Bitteur

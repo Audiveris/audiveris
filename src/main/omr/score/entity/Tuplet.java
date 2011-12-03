@@ -30,7 +30,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class <code>Tuplet</code> represents a tuplet notation and encapsulates the
+ * Class {@code Tuplet} represents a tuplet notation and encapsulates the
  * translation from tuplet glyph to the impacted chords.
  *
  * @author Hervé Bitteur

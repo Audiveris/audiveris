@@ -58,7 +58,7 @@ public class StdOutErrLevel
     /**
      * Method to avoid creating duplicate instances when deserializing the
      * object.
-     * @return the singleton instance of this <code>Level</code> value in this
+     * @return the singleton instance of this {@code Level} value in this
      * classloader
      * @throws ObjectStreamException If unable to deserialize
      */

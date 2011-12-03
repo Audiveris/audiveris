@@ -46,7 +46,7 @@ import javax.swing.JComponent;
 import javax.swing.JProgressBar;
 
 /**
- * Class <code>ValidationPanel</code> handles the validation of an evaluator
+ * Class {@code ValidationPanel} handles the validation of an evaluator
  * against the selected population of glyphs (either the whole base or the core
  * base). It is a dedicated companion of class {@link GlyphTrainer}.
  *

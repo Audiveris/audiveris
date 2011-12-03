@@ -16,7 +16,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
 /**
- * Annotation <code>Implement</code> is used to flag a method which is (part of)
+ * Annotation {@code Implement} is used to flag a method which is (part of)
  * the implementation of an interface. It is foreseen to be used by a tool such
  * 'apt' in the future.
  */

@@ -30,7 +30,7 @@ import java.util.Collection;
 import java.util.SortedSet;
 
 /**
- * Class <code>Sentence</code> encapsulates a consistent ordered set of text
+ * Class {@code Sentence} encapsulates a consistent ordered set of text
  * glyphs (loosely similar to words) that represents a whole expression.
  *
  * <h4>Textual glyph Data Model:<br/>

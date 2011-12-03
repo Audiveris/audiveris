@@ -19,7 +19,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class <code>RectangleFacade</code> is a (hopefully temporary) fix to allow Xml
+ * Class {@code RectangleFacade} is a (hopefully temporary) fix to allow Xml
  * binding of standard class Rectangle that we cannot annotate
  *
  *

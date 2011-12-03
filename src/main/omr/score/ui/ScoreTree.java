@@ -59,7 +59,7 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 /**
- * Class <code>ScoreTree</code> provides a user interface (a frame) where the
+ * Class {@code ScoreTree} provides a user interface (a frame) where the
  * whole score hierarchy can be browsed as a tree.
  *
  * @author Hervé Bitteur

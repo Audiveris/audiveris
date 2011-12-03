@@ -33,7 +33,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class <code>Measure</code> handles a measure of a system part, that is all
+ * Class {@code Measure} handles a measure of a system part, that is all
  * entities within the same measure time frame, for all staves that compose the
  * system part.
  *

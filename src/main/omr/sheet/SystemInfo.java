@@ -60,7 +60,7 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
- * Class <code>SystemInfo</code> gathers information from the original picture
+ * Class {@code SystemInfo} gathers information from the original picture
  * about a retrieved system. Most of the physical processing is done in parallel
  * at system level, and thus is handled from this SystemInfo object.
  *

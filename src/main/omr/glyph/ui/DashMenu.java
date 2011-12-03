@@ -20,7 +20,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 /**
- * Class <code>DashMenu</code> is a GlyphMenu popup, dedicated to horizontal
+ * Class {@code DashMenu} is a GlyphMenu popup, dedicated to horizontal
  * dashes (ledgers and endings glyphs)
  *
  * @author Hervé Bitteur

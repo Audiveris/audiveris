@@ -14,7 +14,7 @@ package omr.selection;
 import omr.sheet.Sheet;
 
 /**
- * Class <code>SheetEvent</code> represent a Sheet selection event
+ * Class {@code SheetEvent} represent a Sheet selection event
  *
  * <dl>
  * <dt><b>Publishers:</b><dd>SheetController, SheetManager

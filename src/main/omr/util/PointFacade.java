@@ -19,7 +19,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class <code>PointFacade</code> is a (hopefully temporary) fix to allow Xml
+ * Class {@code PointFacade} is a (hopefully temporary) fix to allow Xml
  * binding of standard class Point that we cannot annotate
  *
  *

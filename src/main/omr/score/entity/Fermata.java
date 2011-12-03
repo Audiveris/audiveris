@@ -20,7 +20,7 @@ import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
 
 /**
- * Class <code>Fermata</code> represents a fermata event (upright or inverted)
+ * Class {@code Fermata} represents a fermata event (upright or inverted)
  *
  * @author Hervé Bitteur
  */

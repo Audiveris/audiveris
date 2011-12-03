@@ -54,7 +54,7 @@ import java.util.List;
 import java.util.SortedSet;
 
 /**
- * Class <code>ScoreChecker</code> can visit the score hierarchy and perform
+ * Class {@code ScoreChecker} can visit the score hierarchy and perform
  * global checking on score nodes.
  * <p>We use it for: <ul>
  * <li>Improving the recognition of beam hooks</li>

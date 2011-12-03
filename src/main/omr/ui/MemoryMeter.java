@@ -31,7 +31,7 @@ import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 
 /**
- * Class <code>MemoryMeter</code> encapsulates the display of a linear memory
+ * Class {@code MemoryMeter} encapsulates the display of a linear memory
  * meter in MB (both used and total), together with a garbage-collection
  * button.
  *

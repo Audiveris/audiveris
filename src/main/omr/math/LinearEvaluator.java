@@ -37,7 +37,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class <code>LinearEvaluator</code> is an evaluator using linear regression.
+ * Class {@code LinearEvaluator} is an evaluator using linear regression.
  *
  * <p>It provides a distance between 2 "patterns". A pattern is a vector of
  * parameter values in the input domain.

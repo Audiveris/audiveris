@@ -13,7 +13,7 @@ package omr.sheet.picture;
 
 
 /**
- * Class <code>ImageFormatException</code> describes an exception raised when a
+ * Class {@code ImageFormatException} describes an exception raised when a
  * non-handled format is detected in an image file.
  *
  * @author Hervé Bitteur
@@ -24,7 +24,7 @@ public class ImageFormatException
     //~ Constructors -----------------------------------------------------------
 
     /**
-     * Construct an <code>ImageFormatException</code> with provided detail
+     * Construct an {@code ImageFormatException} with provided detail
      * message.
      */
     public ImageFormatException (String message)

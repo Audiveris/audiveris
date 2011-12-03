@@ -22,7 +22,7 @@ import org.jdesktop.application.Action;
 import java.awt.event.ActionEvent;
 
 /**
- * Class <code>ViewParameters</code> handles parameters for SceneView,
+ * Class {@code ViewParameters} handles parameters for SceneView,
  * using properties referenced through their programmatic name to avoid typos.
  *
  * @author Hervé Bitteur
@@ -215,7 +215,7 @@ public class ViewParameters
     //--------//
     // Holder //
     //--------//
-    private static class Holder
+    private static interface Holder
     {
         //~ Static fields/initializers -----------------------------------------
 

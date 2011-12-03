@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.Set;
 
 /**
- * Class <code>SymbolMenu</code> defines the menu menu which is linked to the
+ * Class {@code SymbolMenu} defines the menu menu which is linked to the
  * current selection of either one or several glyphs
  *
  * @author Hervé Bitteur

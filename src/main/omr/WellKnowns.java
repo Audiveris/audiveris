@@ -17,7 +17,7 @@ import java.io.File;
 import java.net.URISyntaxException;
 
 /**
- * Class <code>WellKnowns</code> gathers top public static final data to be
+ * Class {@code WellKnowns} gathers top public static final data to be
  * shared within omr application.
  *
  * <p>Note that a few initial operations are performed here, because they need

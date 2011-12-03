@@ -58,7 +58,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class <code>SystemTranslator</code> performs all translation tasks for one
+ * Class {@code SystemTranslator} performs all translation tasks for one
  * system only.
  */
 public class SystemTranslator
@@ -229,7 +229,7 @@ public class SystemTranslator
     // Translator //
     //------------//
     /**
-     * Class <code>Translator</code> is an abstract class that defines the
+     * Class {@code Translator} is an abstract class that defines the
      * pattern for every translation engine
      */
     private abstract class Translator

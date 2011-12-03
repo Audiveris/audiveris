@@ -13,7 +13,7 @@ package omr.check;
 
 
 /**
- * Class <code>SuccessResult</code> is the root of all results that store a
+ * Class {@code SuccessResult} is the root of all results that store a
  * success.
  *
  * @author Hervé Bitteur

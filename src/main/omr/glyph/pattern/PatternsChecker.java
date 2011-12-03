@@ -19,7 +19,7 @@ import omr.log.Logger;
 import omr.sheet.SystemInfo;
 
 /**
- * Class <code>PatternsChecker</code> gathers for a gien system a series of
+ * Class {@code PatternsChecker} gathers for a gien system a series of
  * specific patterns to process (verify, recognize, fix, ...) glyphs in their
  * sheet environment.
  *

@@ -23,7 +23,7 @@ import javax.swing.SpinnerListModel;
 import javax.swing.SpinnerModel;
 
 /**
- * Class <code>SpinnerUtilities</code> gathers a few utilities for JSpinner
+ * Class {@code SpinnerUtilities} gathers a few utilities for JSpinner
  * entities
  *
  * @author Hervé Bitteur

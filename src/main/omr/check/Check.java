@@ -16,7 +16,7 @@ import omr.constant.Constant;
 import omr.log.Logger;
 
 /**
- * Class <code>Check</code> encapsulates the <b>definition</b> of a check,
+ * Class {@code Check} encapsulates the <b>definition</b> of a check,
  * which can later be used on a whole population of objects.
  *
  * <p>The result of using a check on a given object is not recorded in this

@@ -44,7 +44,7 @@ import omr.score.entity.VisitableNode;
 import omr.score.entity.Wedge;
 
 /**
- * Interface <code>ScoreVisitor</code> is meant to visit any node of the Score
+ * Interface {@code ScoreVisitor} is meant to visit any node of the Score
  * hierarchy.
  *
  * <p>The hierarchy is meant to be browsed "depth-first".

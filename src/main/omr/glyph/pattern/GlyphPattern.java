@@ -15,7 +15,7 @@ import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
 /**
- * Class <code>GlyphPattern</code> describes a specific pattern applied on
+ * Class {@code GlyphPattern} describes a specific pattern applied on
  * glyphs of a given system.
  *
  * @author Hervé Bitteur

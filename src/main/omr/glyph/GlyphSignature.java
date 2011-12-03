@@ -24,7 +24,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class <code>GlyphSignature</code> is used to implement a map of glyphs,
+ * Class {@code GlyphSignature} is used to implement a map of glyphs,
  * based only on their physical properties.
  *
  * @author Hervé Bitteur

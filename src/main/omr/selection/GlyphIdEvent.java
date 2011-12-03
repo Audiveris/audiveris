@@ -13,7 +13,7 @@ package omr.selection;
 
 
 /**
- * Class <code>GlyphIdEvent</code> represents a Glyph Id selection
+ * Class {@code GlyphIdEvent} represents a Glyph Id selection
  *
  * <dl>
  * <dt><b>Publishers:</b><dd>GlyphBoard, ShapeFocusBoard

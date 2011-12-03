@@ -14,7 +14,7 @@ package omr.graph;
 import java.util.Collection;
 
 /**
- * Class <code>Digraph</code> handles a directed graph, a structure containing
+ * Class {@code Digraph} handles a directed graph, a structure containing
  * an <b>homogeneous</b> collection of instances of Vertex (or a collection of
  * homogeneous types derived from Vertex), potentially linked by directed edges.
  * <p/>
@@ -24,7 +24,7 @@ import java.util.Collection;
  * and outgoing edges.
  *
  * <p><b>NOTA</b>: Since we have no data to carry in edges, there is no
- * <code>Edge</code> type per se, links between vertices are implemented simply
+ * {@code Edge} type per se, links between vertices are implemented simply
  * by Lists of Vertex.
  *
  * @param <D> precise type for digraph (which is pointed back by vertex)

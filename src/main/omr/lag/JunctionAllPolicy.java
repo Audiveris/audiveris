@@ -15,13 +15,13 @@ import omr.run.Run;
 
 
 /**
- * Class <code>JunctionAllPolicy</code> defines a junction policy which imposes
+ * Class {@code JunctionAllPolicy} defines a junction policy which imposes
  * no condition on run consistency, thus taking all runs considered.
  *
  * @author Hervé Bitteur
  */
 public class JunctionAllPolicy
-    extends JunctionPolicy
+    implements JunctionPolicy
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -29,7 +29,7 @@ public class JunctionAllPolicy
     // JunctionAllPolicy //
     //-------------------//
     /**
-     * Creates an instance of this policy
+     * Creates an instance of this policy.
      */
     public JunctionAllPolicy ()
     {
@@ -41,12 +41,10 @@ public class JunctionAllPolicy
     // consistentRun //
     //---------------//
     /**
-     * Check whether the Run is consistent with the provided Section, according
-     * to this junction policy
-     *
+     * Check whether the Run is consistent with the provided Section,
+     * according to this junction policy.
      * @param run the Run candidate
      * @param section the potentially hosting Section
-     *
      * @return always true
      */
     public boolean consistentRun (Run     run,
@@ -58,14 +56,9 @@ public class JunctionAllPolicy
     //----------//
     // toString //
     //----------//
-    /**
-     * Report a readable description of the policy
-     *
-     * @return a descriptive string
-     */
     @Override
     public String toString ()
     {
-        return "{JunctionNoPolicy}";
+        return "{JunctionAllPolicy}";
     }
 }

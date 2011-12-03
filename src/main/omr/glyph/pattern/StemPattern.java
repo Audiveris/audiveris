@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class <code>StemPattern</code> is a GlyphInspector dedicated to the
+ * Class {@code StemPattern} is a GlyphInspector dedicated to the
  * inspection of Stems at System level
  *
  * @author Hervé Bitteur

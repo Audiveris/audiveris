@@ -44,7 +44,7 @@ import omr.score.entity.VisitableNode;
 import omr.score.entity.Wedge;
 
 /**
- * Class <code>AbstractScoreVisitor</code> provides a default implementation of
+ * Class {@code AbstractScoreVisitor} provides a default implementation of
  * the ScoreVisitor interface, where by default all visit() methods are void and
  * return true (to allow automatic visit of the children of each node).
  *

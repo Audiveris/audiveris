@@ -22,7 +22,7 @@ import omr.score.common.PixelRectangle;
 import omr.score.visitor.ScoreVisitor;
 
 /**
- * Class <code>Wedge</code> represents a crescendo or decrescendo (diminuendo)
+ * Class {@code Wedge} represents a crescendo or decrescendo (diminuendo)
  *
  * @author Hervé Bitteur
  */

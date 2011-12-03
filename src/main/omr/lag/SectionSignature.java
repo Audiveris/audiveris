@@ -14,7 +14,7 @@ package omr.lag;
 import java.awt.Rectangle;
 
 /**
- * Class <code>SectionSignature</code> defines a signature for a section
+ * Class {@code SectionSignature} defines a signature for a section
  *
  * @author Hervé Bitteur
  */

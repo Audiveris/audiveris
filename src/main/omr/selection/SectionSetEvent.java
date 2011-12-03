@@ -17,7 +17,7 @@ import omr.lag.Sections;
 import java.util.Set;
 
 /**
- * Class <code>SectionSetEvent</code> represents a Section Set selection
+ * Class {@code SectionSetEvent} represents a Section Set selection
  *
  * <dl>
  * <dt><b>Publishers:</b><dd>TODO

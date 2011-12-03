@@ -49,7 +49,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Class <code>SticksBuilder</code> introduces the scanning of a source of
+ * Class {@code SticksBuilder} introduces the scanning of a source of
  * sections, to retrieve sticks.
  *
  * <p> The same algorithms are used for all kinds of sticks with only one

@@ -51,7 +51,7 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 
 /**
- * Class <code>SymbolGlyphBoard</code> defines an extended glyph board, with
+ * Class {@code SymbolGlyphBoard} defines an extended glyph board, with
  * characteristics (pitch position, stem number, etc) that are specific to a
  * symbol, and an additional symbol glyph spinner : <ul>
  *

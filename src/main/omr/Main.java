@@ -52,7 +52,7 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.JFrame;
 
 /**
- * Class <code>Main</code> is the main class for OMR application.
+ * Class {@code Main} is the main class for OMR application.
  * It deals with the main routine and its command line parameters.
  * It launches the User Interface, unless a batch mode is selected.
  *

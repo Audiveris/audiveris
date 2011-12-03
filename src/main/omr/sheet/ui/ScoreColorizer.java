@@ -23,7 +23,7 @@ import omr.score.visitor.AbstractScoreVisitor;
 import java.awt.Color;
 
 /**
- * Class <code>ScoreColorizer</code> can visit the score hierarchy for
+ * Class {@code ScoreColorizer} can visit the score hierarchy for
  * colorization (assigning colors) of related sections in the Sheet display.
  *
  * @author Hervé Bitteur

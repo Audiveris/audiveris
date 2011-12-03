@@ -37,7 +37,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class <code>TimeSignature</code> encapsulates a time signature, which may be
+ * Class {@code TimeSignature} encapsulates a time signature, which may be
  * composed of one or several glyphs.
  *
  * @author Hervé Bitteur

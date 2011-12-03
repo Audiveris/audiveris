@@ -27,7 +27,7 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 /**
- * Class <code>Zip</code> is a convenient utility that provides both writing and
+ * Class {@code Zip} is a convenient utility that provides both writing and
  * reading from a file which is transparently compressed in Zip.
  *
  * @author Hervé Bitteur

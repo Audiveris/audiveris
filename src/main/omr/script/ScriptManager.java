@@ -140,7 +140,7 @@ public class ScriptManager
     //--------//
     // Holder //
     //--------//
-    private static class Holder
+    private static interface Holder
     {
         //~ Static fields/initializers -----------------------------------------
 

@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Interface <code>Lag</code> defines a graph of {@link Section} instances
+ * Interface {@code Lag} defines a graph of {@link Section} instances
  * (sets of contiguous runs with compatible lengths), linked by Junctions when
  * there is no more contiguous run or when the compatibility is no longer met.
  *

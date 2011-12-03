@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Class <code>OmrExecutors</code> handles several pools of threads
+ * Class {@code OmrExecutors} handles several pools of threads
  * provided to the Audiveris application: <ul>
  * <li>lowExecutor: a fixed nb (#cpu+1) of threads with low priority</li>
  * <li>highExecutor: a fixed nb (#cpu+1) of threads with high priority</li>

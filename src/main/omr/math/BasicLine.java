@@ -17,7 +17,7 @@ import omr.util.Implement;
 import static java.lang.Math.*;
 
 /**
- * Class <code>BasicLine</code> is a basic Line implementation which switches
+ * Class {@code BasicLine} is a basic Line implementation which switches
  * between horizontal and vertical equations when computing the points
  * regression
  *

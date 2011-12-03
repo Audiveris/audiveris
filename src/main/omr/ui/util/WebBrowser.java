@@ -20,7 +20,7 @@ import com.centerkey.utils.BareBonesBrowserLaunch;
 import java.lang.reflect.Method;
 
 /**
- * Class <code>WebBrowser</code> gathers functionality to
+ * Class {@code WebBrowser} gathers functionality to
  * browse a webpage in an external web browser. Uses
  * reflection for compatibility with Java 5 and Mac OS X.
  *

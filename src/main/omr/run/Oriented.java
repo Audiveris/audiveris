@@ -12,7 +12,7 @@
 package omr.run;
 
 /**
- * Interface <code>Oriented</code> flags an entity as having some orientation.
+ * Interface {@code Oriented} flags an entity as having some orientation.
  *
  * @author Hervé Bitteur
  */
