@@ -57,6 +57,8 @@ public class PatternsChecker
         patterns = new GlyphPattern[] {
                        
         //
+        new BeamHookPattern(system),
+                       
         new FortePattern(system),
                        
         new HiddenSlurPattern(system),
@@ -65,7 +67,7 @@ public class PatternsChecker
                        
         new LedgerPattern(system),
                        
-        new AlterPattern(system), 
+        new AlterPattern(system),
                        
         system.getSlurInspector(),
                        
@@ -73,7 +75,7 @@ public class PatternsChecker
                        
         new ClefPattern(system),
                        
-        new TimePattern(system),
+        new TimePattern(system), 
         //
         // Text patterns
         new TextBorderPattern(system), // Glyphs -> Text
@@ -81,8 +83,7 @@ public class PatternsChecker
         new TextAreaPattern(system), //   Glyphs -> Text
         new SentencePattern(system), // Text -> sentences
                                      //
-        ///new ArticulationPattern(system),
-                       
+                                     ///new ArticulationPattern(system),
         new LeftOverPattern(system)
                    };
     }

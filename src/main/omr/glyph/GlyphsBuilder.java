@@ -92,8 +92,7 @@ public class GlyphsBuilder
     // GlyphsBuilder //
     //---------------//
     /**
-     * Creates a system-dedicated builder of glyphs
-     *
+     * Creates a system-dedicated builder of glyphs.
      * @param system the dedicated system
      */
     public GlyphsBuilder (SystemInfo system)
@@ -553,12 +552,12 @@ public class GlyphsBuilder
     //-----------//
     /**
      * Report a enlarged box of a given (stem) glyph
-     * @param s the stem
+     * @param stem the stem
      * @return the enlarged stem box
      */
-    private PixelRectangle stemBoxOf (Glyph s)
+    public PixelRectangle stemBoxOf (Glyph stem)
     {
-        PixelRectangle box = new PixelRectangle(s.getContourBox());
+        PixelRectangle box = new PixelRectangle(stem.getContourBox());
         box.grow(stemWiden, stemHeighten);
 
         return box;

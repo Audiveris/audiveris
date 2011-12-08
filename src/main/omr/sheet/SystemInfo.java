@@ -1259,6 +1259,19 @@ public class SystemInfo
         }
     }
 
+    //-----------//
+    // stemBoxOf //
+    //-----------//
+    /**
+     * Report a enlarged box of a given (stem) glyph
+     * @param stem the stem
+     * @return the enlarged stem box
+     */
+    public PixelRectangle stemBoxOf (Glyph stem)
+    {
+        return glyphsBuilder.stemBoxOf(stem);
+    }
+
     //----------------//
     // resetSentences //
     //----------------//

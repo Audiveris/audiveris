@@ -18,6 +18,7 @@ import omr.run.Run;
 
 import omr.score.common.PixelRectangle;
 
+import omr.util.HorizontalSide;
 import omr.util.Predicate;
 
 import java.awt.Rectangle;
@@ -167,6 +168,31 @@ class BasicEnvironment
     public Glyph getRightStem ()
     {
         return rightStem;
+    }
+
+    //---------//
+    // setStem //
+    //---------//
+    public void setStem (Glyph          stem,
+                         HorizontalSide side)
+    {
+        if (side == HorizontalSide.LEFT) {
+            setLeftStem(stem);
+        } else {
+            setRightStem(stem);
+        }
+    }
+
+    //---------//
+    // getStem //
+    //---------//
+    public Glyph getStem (HorizontalSide side)
+    {
+        if (side == HorizontalSide.LEFT) {
+            return getLeftStem();
+        } else {
+            return getRightStem();
+        }
     }
 
     //---------------//

@@ -584,7 +584,7 @@ public class Stepping
             return;
         }
 
-        logger.info(score.getRadix() + " Scheduling " + stepSet);
+        logger.info(score.getRadix() + " scheduling " + stepSet);
 
         long startTime = System.currentTimeMillis();
         notifyStart();

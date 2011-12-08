@@ -40,7 +40,6 @@ public abstract class GlyphPattern
     //--------------//
     /**
      * Creates a new GlyphPattern object.
-     *
      * @param name the unique name for this pattern
      * @param system the related system
      */
@@ -60,7 +59,8 @@ public abstract class GlyphPattern
     // runPattern //
     //------------//
     /**
-     * This method runs the pattern and reports the number of modified glyphs
+     * This method runs the pattern and reports the number of modified
+     * glyphs.
      * @return the number of modified glyphs
      */
     public abstract int runPattern ();

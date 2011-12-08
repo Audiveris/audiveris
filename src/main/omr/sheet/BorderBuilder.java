@@ -283,7 +283,7 @@ public class BorderBuilder
 
         logger.info(
             sheet.getLogPrefix() + "Smart S" + prevSystem.getId() + "-S" +
-            system.getId() + " border: " + line);
+            system.getId() + " system border: " + line);
 
         return line;
     }

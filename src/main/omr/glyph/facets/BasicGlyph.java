@@ -35,6 +35,7 @@ import omr.score.entity.TimeRational;
 
 import omr.sheet.SystemInfo;
 
+import omr.util.HorizontalSide;
 import omr.util.Predicate;
 
 import java.awt.Color;
@@ -471,6 +472,17 @@ public class BasicGlyph
     public Point2D getStartPoint (Orientation orientation)
     {
         return alignment.getStartPoint(orientation);
+    }
+
+    public void setStem (Glyph          stem,
+                         HorizontalSide side)
+    {
+        environment.setStem(stem, side);
+    }
+
+    public Glyph getStem (HorizontalSide side)
+    {
+        return environment.getStem(side);
     }
 
     public boolean isStem ()

@@ -12,13 +12,14 @@
 package omr.glyph.facets;
 
 import omr.lag.Lag;
+import omr.lag.Section;
 
 import omr.score.common.PixelRectangle;
 
+import omr.util.HorizontalSide;
 import omr.util.Predicate;
 
 import java.util.Set;
-import omr.lag.Section;
 
 /**
  * Interface {@code GlyphEnvironment} defines the facet in charge of the
@@ -79,6 +80,19 @@ interface GlyphEnvironment
      * @return stem on right, or null
      */
     Glyph getRightStem ();
+
+    /**
+     * Assign the stem on the provided side
+     * @param stem stem glyph
+     */
+    void setStem (Glyph          stem,
+                  HorizontalSide side);
+
+    /**
+     * Report the stem attached on the provided side, if any
+     * @return stem on provided side, or null
+     */
+    Glyph getStem (HorizontalSide side);
 
     /**
      * Remember the number of stems near by

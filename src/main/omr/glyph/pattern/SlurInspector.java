@@ -200,35 +200,6 @@ public class SlurInspector
         return circle;
     }
 
-    //------------------//
-    // getSlurPointNear //
-    //------------------//
-    /**
-     * Retrieve the best slur point near the provided abscissa.
-     * @param x the provided abscissa
-     * @param sections the slur sections
-     * @param box the slur bounding box
-     * @return the best approximating point
-     */
-    private Point2D.Double getSlurPointNear (int                          x,
-                                             Collection<?extends Section> sections,
-                                             PixelRectangle               box)
-    {
-        PixelRectangle roi = new PixelRectangle(x, box.y, 0, box.height);
-        Barycenter     bary;
-
-        do {
-            bary = new Barycenter();
-            roi.grow(1, 0);
-
-            for (Section section : sections) {
-                section.cumulate(bary, roi);
-            }
-        } while (bary.getWeight() == 0);
-
-        return new Point2D.Double(bary.getX(), bary.getY());
-    }
-
     //------------//
     // runPattern //
     //------------//
@@ -429,6 +400,35 @@ public class SlurInspector
 
             return null;
         }
+    }
+
+    //------------------//
+    // getSlurPointNear //
+    //------------------//
+    /**
+     * Retrieve the best slur point near the provided abscissa.
+     * @param x the provided abscissa
+     * @param sections the slur sections
+     * @param box the slur bounding box
+     * @return the best approximating point
+     */
+    private Point2D.Double getSlurPointNear (int                          x,
+                                             Collection<?extends Section> sections,
+                                             PixelRectangle               box)
+    {
+        PixelRectangle roi = new PixelRectangle(x, box.y, 0, box.height);
+        Barycenter     bary;
+
+        do {
+            bary = new Barycenter();
+            roi.grow(1, 0);
+
+            for (Section section : sections) {
+                section.cumulate(bary, roi);
+            }
+        } while (bary.getWeight() == 0);
+
+        return new Point2D.Double(bary.getX(), bary.getY());
     }
 
     //---------//
