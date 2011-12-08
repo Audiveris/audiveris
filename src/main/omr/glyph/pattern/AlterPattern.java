@@ -27,14 +27,15 @@ import omr.score.common.PixelRectangle;
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
+import omr.util.HorizontalSide;
 import omr.util.Implement;
 
 import java.util.EnumSet;
 import java.util.SortedSet;
 
 /**
- * Class {@code AlterPattern} implements a pattern for alteration glyphs which
- * have been "over-segmented" into stem(s) + other stuff.
+ * Class {@code AlterPattern} implements a pattern for alteration
+ * glyphs which have been "oversegmented" into stem(s) + other stuff.
  * <p>This applies for sharp, natural and flat signs.
  * We use the fact that the stem(s) are rather short and, for the case of sharp
  * and natural, very close to each other.
@@ -96,19 +97,21 @@ public class AlterPattern
     // runPattern //
     //------------//
     /**
-     * Check the neighborhood of all short stems
+     * Check the neighborhood of all short stems.
      * @return the number of cases fixed
      */
     @Implement(GlyphPattern.class)
     public int runPattern ()
     {
         int successNb = 0; // Success counter
-        stems = retrieveShortStems(); // Sorted short stems
 
-        // Look for close stems
+        // Sorted short stems
+        stems = retrieveShortStems();
+
+        // Look for close stems (sharps & naturals)
         successNb += checkCloseStems();
 
-        // Look for isolated stems
+        // Look for isolated stems (flats)
         successNb += checkSingleStems();
 
         // Impacted neighbors
@@ -121,15 +124,14 @@ public class AlterPattern
     // checkCloseStems //
     //-----------------//
     /**
-     * Verify the case of stems very close to each other since they may result
-     * from over-segmentation of sharp or natural signs
+     * Verify the case of stems very close to each other since they
+     * may result from oversegmentation of sharp or natural signs.
      * @return the number of cases fixed
      */
     private int checkCloseStems ()
     {
         int nb = 0;
 
-        // Look for close stems
         for (Glyph glyph : stems) {
             if (!glyph.isStem()) {
                 continue;
@@ -235,21 +237,20 @@ public class AlterPattern
                 continue;
             }
 
-            Glyph stem = glyph.getLeftStem();
+            for (HorizontalSide side : HorizontalSide.values()) {
+                // Retrieve "deassigned" stem if any
+                Glyph stem = glyph.getStem(side);
 
-            if ((stem != null) && (stem.getShape() != Shape.COMBINING_STEM)) {
-                impacted.add(glyph);
-            }
-
-            stem = glyph.getRightStem();
-
-            if ((stem != null) && (stem.getShape() != Shape.COMBINING_STEM)) {
-                impacted.add(glyph);
+                if ((stem != null) &&
+                    (stem.getShape() != Shape.COMBINING_STEM)) {
+                    impacted.add(glyph);
+                }
             }
         }
 
         if (logger.isFineEnabled()) {
-            logger.fine(Glyphs.toString("Impacted alteration neighbors", impacted));
+            logger.fine(
+                Glyphs.toString("Impacted alteration neighbors", impacted));
         }
 
         for (Glyph glyph : impacted) {
@@ -267,7 +268,7 @@ public class AlterPattern
     //------------------//
     /**
      * Verify the case of isolated short stems since they may result
-     * from over-segmentation of flat signs
+     * from oversegmentation of flat signs.
      * @return the number of cases fixed
      */
     private int checkSingleStems ()
@@ -275,7 +276,6 @@ public class AlterPattern
         int         nb = 0;
         FlatAdapter flatAdapter = new FlatAdapter(system);
 
-        // Look for close stems
         for (Glyph glyph : stems) {
             if (!glyph.isStem()) {
                 continue;
@@ -322,10 +322,8 @@ public class AlterPattern
 
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.isStem() && glyph.isActive()) {
-                PixelRectangle box = glyph.getContourBox();
-
                 // Check stem length
-                if (box.height <= maxAlterStemLength) {
+                if (glyph.getContourBox().height <= maxAlterStemLength) {
                     stems.add(glyph);
                 }
             }
@@ -340,8 +338,8 @@ public class AlterPattern
     // PairAdapter //
     //-------------//
     /**
-     * Abstract compound adapter meant to build sharps or naturals from a pair
-     * of close stems
+     * Abstract compound adapter meant to build sharps or naturals
+     * from a pair of close stems.
      */
     private abstract class PairAdapter
         extends CompoundBuilder.TopShapeAdapter
@@ -446,7 +444,7 @@ public class AlterPattern
     // FlatAdapter //
     //-------------//
     /**
-     * Compound adapter meant to build flats
+     * Compound adapter meant to build flats.
      */
     private class FlatAdapter
         extends CompoundBuilder.TopShapeAdapter
@@ -486,7 +484,7 @@ public class AlterPattern
     // NaturalAdapter //
     //----------------//
     /**
-     * Compound adapter meant to build naturals
+     * Compound adapter meant to build naturals.
      */
     private class NaturalAdapter
         extends PairAdapter
@@ -514,7 +512,7 @@ public class AlterPattern
     // SharpAdapter //
     //--------------//
     /**
-     * Compound adapter meant to build sharps
+     * Compound adapter meant to build sharps.
      */
     private class SharpAdapter
         extends PairAdapter

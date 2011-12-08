@@ -20,6 +20,7 @@ import omr.math.Rational;
 
 import omr.score.common.PixelPoint;
 
+import omr.util.HorizontalSide;
 import omr.util.Navigable;
 import omr.util.TreeNode;
 
@@ -424,8 +425,8 @@ public class BeamGroup
                 continue;
             }
 
-            double length = beam.getLeftPoint()
-                                .distance(beam.getRightPoint());
+            double length = beam.getPoint(HorizontalSide.LEFT)
+                                .distance(beam.getPoint(HorizontalSide.RIGHT));
 
             if (length > bestLength) {
                 bestLength = length;
@@ -438,8 +439,8 @@ public class BeamGroup
                                    .getSlope();
 
             for (Beam beam : beams) {
-                PixelPoint left = beam.getLeftPoint();
-                PixelPoint right = beam.getRightPoint();
+                PixelPoint left = beam.getPoint(HorizontalSide.LEFT);
+                PixelPoint right = beam.getPoint(HorizontalSide.RIGHT);
                 double     yMid = (left.y + right.y) / 2d;
                 double     dy = (right.x - left.x) * slope;
                 left.y = (int) Math.rint(yMid - (dy / 2));

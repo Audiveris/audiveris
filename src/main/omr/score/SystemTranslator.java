@@ -52,6 +52,7 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
+import omr.util.HorizontalSide;
 import omr.util.TreeNode;
 
 import java.util.Collections;
@@ -474,10 +475,10 @@ public class SystemTranslator
         {
             // Staff, measure and staff point need specific processing
             // We use the attached stem(s) to determine proper containment
-            if (glyph.getLeftStem() != null) {
-                super.computeLocation(glyph.getLeftStem());
-            } else if (glyph.getRightStem() != null) {
-                super.computeLocation(glyph.getRightStem());
+            Glyph stem = glyph.getFirstStem();
+
+            if (stem != null) {
+                super.computeLocation(stem);
             } else {
                 currentMeasure.addError(
                     glyph,
@@ -802,10 +803,10 @@ public class SystemTranslator
         public void computeLocation (Glyph glyph)
         {
             // We use the attached stem(s) to determine proper containment
-            if (glyph.getLeftStem() != null) {
-                super.computeLocation(glyph.getLeftStem());
-            } else if (glyph.getRightStem() != null) {
-                super.computeLocation(glyph.getRightStem());
+            Glyph stem = glyph.getStem(HorizontalSide.LEFT);
+
+            if (stem != null) {
+                super.computeLocation(stem);
             } else {
                 system.addError(
                     glyph,

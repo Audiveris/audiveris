@@ -46,16 +46,10 @@ interface GlyphEnvironment
                             Predicate<Section> predicate);
 
     /**
-     * Assign the stem on left
-     * @param leftStem stem glyph
+     * Report the first stem attached (left then right), if any
+     * @return first stem found, or null
      */
-    void setLeftStem (Glyph leftStem);
-
-    /**
-     * Report the stem attached on left side, if any
-     * @return stem on left, or null
-     */
-    Glyph getLeftStem ();
+    Glyph getFirstStem ();
 
     /**
      * Setter for the pitch position, with respect to the containing staff
@@ -68,18 +62,6 @@ interface GlyphEnvironment
      * @return the pitchPosition value
      */
     double getPitchPosition ();
-
-    /**
-     * Assign the stem on right
-     * @param rightStem stem glyph
-     */
-    void setRightStem (Glyph rightStem);
-
-    /**
-     * Report the stem attached on right side, if any
-     * @return stem on right, or null
-     */
-    Glyph getRightStem ();
 
     /**
      * Assign the stem on the provided side

@@ -30,6 +30,7 @@ import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
 
+import omr.util.HorizontalSide;
 import omr.util.Implement;
 import omr.util.TreeNode;
 
@@ -1144,8 +1145,7 @@ public class Chord
     // populateFlag //
     //--------------//
     /**
-     * Try to assign a flag to a relevant chord
-     *
+     * Try to assign a flag to a relevant chord.
      * @param glyph the underlying glyph of this flag
      * @param measure the containing measure
      */
@@ -1159,26 +1159,26 @@ public class Chord
         // Retrieve the related chord
         Glyph stem = null;
 
-        if (glyph.getLeftStem() != null) {
-            stem = glyph.getLeftStem();
-        } else if (glyph.getRightStem() != null) {
-            stem = glyph.getRightStem();
-        }
+        for (HorizontalSide side : HorizontalSide.values()) {
+            stem = glyph.getStem(side);
 
-        if (stem == null) {
-            measure.addError(glyph, "Flag glyph with no stem");
-        } else {
-            List<Chord> sideChords = Chord.getStemChords(measure, stem);
+            if (stem != null) {
+                List<Chord> sideChords = Chord.getStemChords(measure, stem);
 
-            if (!sideChords.isEmpty()) {
-                for (Chord chord : sideChords) {
-                    chord.flagsNumber += getFlagValue(glyph.getShape());
-                    glyph.addTranslation(chord);
+                if (!sideChords.isEmpty()) {
+                    for (Chord chord : sideChords) {
+                        chord.flagsNumber += getFlagValue(glyph.getShape());
+                        glyph.addTranslation(chord);
+                    }
+                } else {
+                    measure.addError(stem, "No chord for stem " + stem.getId());
                 }
-            } else {
-                measure.addError(stem, "No chord for stem " + stem.getId());
+
+                return;
             }
         }
+
+        measure.addError(glyph, "Flag glyph with no stem");
     }
 
     //--------------//

@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.glyph.facets;
 
+import omr.glyph.Shape;
+
 import omr.lag.Lag;
 import omr.lag.Section;
 
@@ -122,20 +124,20 @@ class BasicEnvironment
         return count;
     }
 
-    //-------------//
-    // setLeftStem //
-    //-------------//
-    public void setLeftStem (Glyph leftStem)
+    //--------------//
+    // getFirstStem //
+    //--------------//
+    public Glyph getFirstStem ()
     {
-        this.leftStem = leftStem;
-    }
+        for (HorizontalSide side : HorizontalSide.values()) {
+            Glyph stem = getStem(side);
 
-    //-------------//
-    // getLeftStem //
-    //-------------//
-    public Glyph getLeftStem ()
-    {
-        return leftStem;
+            if (stem != null) {
+                return stem;
+            }
+        }
+
+        return null;
     }
 
     //------------------//
@@ -154,22 +156,6 @@ class BasicEnvironment
         return pitchPosition;
     }
 
-    //--------------//
-    // setRightStem //
-    //--------------//
-    public void setRightStem (Glyph rightStem)
-    {
-        this.rightStem = rightStem;
-    }
-
-    //--------------//
-    // getRightStem //
-    //--------------//
-    public Glyph getRightStem ()
-    {
-        return rightStem;
-    }
-
     //---------//
     // setStem //
     //---------//
@@ -177,9 +163,9 @@ class BasicEnvironment
                          HorizontalSide side)
     {
         if (side == HorizontalSide.LEFT) {
-            setLeftStem(stem);
+            leftStem = stem;
         } else {
-            setRightStem(stem);
+            rightStem = stem;
         }
     }
 
@@ -189,9 +175,9 @@ class BasicEnvironment
     public Glyph getStem (HorizontalSide side)
     {
         if (side == HorizontalSide.LEFT) {
-            return getLeftStem();
+            return leftStem;
         } else {
-            return getRightStem();
+            return rightStem;
         }
     }
 
@@ -280,8 +266,10 @@ class BasicEnvironment
     //---------------------//
     public void copyStemInformation (Glyph other)
     {
-        setLeftStem(other.getLeftStem());
-        setRightStem(other.getRightStem());
+        for (HorizontalSide side : HorizontalSide.values()) {
+            setStem(other.getStem(side), side);
+        }
+
         setStemNumber(other.getStemNumber());
     }
 
@@ -292,8 +280,8 @@ class BasicEnvironment
     public void dump ()
     {
         System.out.println("   stemNumber=" + getStemNumber());
-        System.out.println("   leftStem=" + getLeftStem());
-        System.out.println("   rightStem=" + getRightStem());
+        System.out.println("   leftStem=" + getStem(HorizontalSide.LEFT));
+        System.out.println("   rightStem=" + getStem(HorizontalSide.RIGHT));
         System.out.println("   pitchPosition=" + getPitchPosition());
         System.out.println("   withLedger=" + isWithLedger());
     }

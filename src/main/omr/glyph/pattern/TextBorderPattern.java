@@ -37,6 +37,7 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.util.BrokenLine;
+import omr.util.HorizontalSide;
 import omr.util.VerticalSide;
 
 import java.awt.Polygon;
@@ -397,11 +398,9 @@ public class TextBorderPattern
 
             // We remove candidates that are stuck to a stem that goes into a
             // staff because these glyphs are not likely to be text items
-            Glyph[] stems = new Glyph[] {
-                                glyph.getLeftStem(), glyph.getRightStem()
-                            };
+            for (HorizontalSide side : HorizontalSide.values()) {
+                Glyph stem = glyph.getStem(side);
 
-            for (Glyph stem : stems) {
                 if ((stem != null) &&
                     stem.getContourBox()
                         .intersects(systemBox)) {

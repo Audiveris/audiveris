@@ -16,7 +16,6 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
-import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
 import omr.glyph.text.Sentence;
 
@@ -66,6 +65,8 @@ import omr.ui.symbol.ShapeSymbol;
 import omr.ui.symbol.Symbols;
 import static omr.ui.symbol.Symbols.*;
 import omr.ui.util.UIUtilities;
+
+import omr.util.HorizontalSide;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -302,8 +303,10 @@ public abstract class PagePainter
     public boolean visit (Beam beam)
     {
         try {
-            final PixelPoint left = new PixelPoint(beam.getLeftPoint());
-            final PixelPoint right = new PixelPoint(beam.getRightPoint());
+            final PixelPoint left = new PixelPoint(
+                beam.getPoint(HorizontalSide.LEFT));
+            final PixelPoint right = new PixelPoint(
+                beam.getPoint(HorizontalSide.RIGHT));
             final int        dx = (int) Math.rint(stemHalfThickness);
             final int        dy = (int) Math.rint(beamHalfThickness);
 

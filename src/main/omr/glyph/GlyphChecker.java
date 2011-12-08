@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
+import omr.util.HorizontalSide;
 
 /**
  * Class {@code GlyphChecker} gathers additional specific glyph checks,
@@ -447,7 +448,7 @@ public class GlyphChecker
                                       Glyph      glyph,
                                       double[]   features)
                 {
-                    return glyph.getLeftStem() != null;
+                    return glyph.getStem(HorizontalSide.LEFT) != null;
                 }
             };
 

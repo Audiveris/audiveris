@@ -262,6 +262,11 @@ public class BasicGlyph
         return composition.getFirstSection();
     }
 
+    public Glyph getFirstStem ()
+    {
+        return environment.getFirstStem();
+    }
+
     public int getFirstStuck ()
     {
         return alignment.getFirstStuck();
@@ -305,16 +310,6 @@ public class BasicGlyph
     public int getLastStuck ()
     {
         return alignment.getLastStuck();
-    }
-
-    public void setLeftStem (Glyph leftStem)
-    {
-        environment.setLeftStem(leftStem);
-    }
-
-    public Glyph getLeftStem ()
-    {
-        return environment.getLeftStem();
     }
 
     public int getLength (Orientation orientation)
@@ -426,16 +421,6 @@ public class BasicGlyph
     public Result getResult ()
     {
         return composition.getResult();
-    }
-
-    public void setRightStem (Glyph rightStem)
-    {
-        environment.setRightStem(rightStem);
-    }
-
-    public Glyph getRightStem ()
-    {
-        return environment.getRightStem();
     }
 
     public void setShape (Shape  shape,

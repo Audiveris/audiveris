@@ -22,6 +22,7 @@ import omr.math.Line;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
+import omr.util.HorizontalSide;
 import omr.util.Implement;
 import omr.util.Navigable;
 
@@ -198,32 +199,6 @@ public class BeamItem
         return glyph.getShape() == Shape.BEAM_HOOK;
     }
 
-    //--------------//
-    // getLeftPoint //
-    //--------------//
-    /**
-     * Report the point that define the left edge of the beam item
-     *
-     * @return the PixelPoint coordinates of the rigleftht point
-     */
-    public PixelPoint getLeftPoint ()
-    {
-        return left;
-    }
-
-    //-------------//
-    // getLeftStem //
-    //-------------//
-    /**
-     * Report the left stem (if any) of this beam item
-     *
-     * @return the left stem or null
-     */
-    public Glyph getLeftStem ()
-    {
-        return glyph.getLeftStem();
-    }
-
     //---------//
     // getLine //
     //---------//
@@ -245,30 +220,32 @@ public class BeamItem
         return line;
     }
 
-    //---------------//
-    // getRightPoint //
-    //---------------//
+    //----------//
+    // getPoint //
+    //----------//
     /**
-     * Report the point that define the right edge of the beam item
-     *
-     * @return the PixelPoint coordinates of the right point
+     * Report the point that define the desired edge of the beam item.
+     * @return the PixelPoint coordinates of the point on desired side
      */
-    public PixelPoint getRightPoint ()
+    public PixelPoint getPoint (HorizontalSide side)
     {
-        return right;
+        if (side == HorizontalSide.LEFT) {
+            return left;
+        } else {
+            return right;
+        }
     }
 
-    //--------------//
-    // getRightStem //
-    //--------------//
+    //---------//
+    // getStem //
+    //---------//
     /**
-     * Report the right stem (if any) of this beam item
-     *
-     * @return the right stem or null
+     * Report the stem (if any) of this beam item on the desired side.
+     * @return the foundstem or null
      */
-    public Glyph getRightStem ()
+    public Glyph getStem (HorizontalSide side)
     {
-        return glyph.getRightStem();
+        return glyph.getStem(side);
     }
 
     //-----------//

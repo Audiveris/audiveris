@@ -28,6 +28,8 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
+import omr.util.HorizontalSide;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -234,19 +236,15 @@ public class GlyphsBuilder
                                  .getStaffAt(center);
 
         // Connected stems
-        glyph.setLeftStem(null);
-        glyph.setRightStem(null);
-
         int stemNb = 0;
 
-        // Look left
-        if (checkStemIntersect(system.getGlyphs(), glyph, true)) {
-            stemNb++;
-        }
+        for (HorizontalSide side : HorizontalSide.values()) {
+            Glyph stem = lookupStem(side, system.getGlyphs(), glyph);
 
-        // Look right
-        if (checkStemIntersect(system.getGlyphs(), glyph, false)) {
-            stemNb++;
+            if (stem != null) {
+                glyph.setStem(stem, side);
+                stemNb++;
+            }
         }
 
         glyph.setStemNumber(stemNb);
@@ -384,6 +382,22 @@ public class GlyphsBuilder
         return created;
     }
 
+    //-----------//
+    // stemBoxOf //
+    //-----------//
+    /**
+     * Report a enlarged box of a given (stem) glyph
+     * @param stem the stem
+     * @return the enlarged stem box
+     */
+    public PixelRectangle stemBoxOf (Glyph stem)
+    {
+        PixelRectangle box = new PixelRectangle(stem.getContourBox());
+        box.grow(stemWiden, stemHeighten);
+
+        return box;
+    }
+
     //--------------------//
     // checkDashIntersect //
     //--------------------//
@@ -394,72 +408,6 @@ public class GlyphsBuilder
             if (item.getContourBox()
                     .intersects(box)) {
                 return true;
-            }
-        }
-
-        return false;
-    }
-
-    //--------------------//
-    // checkStemIntersect //
-    //--------------------//
-    private boolean checkStemIntersect (Collection<Glyph> glyphs,
-                                        Glyph             glyph,
-                                        boolean           onLeft)
-    {
-        if (glyph.isStem()) {
-            return false;
-        }
-
-        // Box for searching for a stem
-        PixelRectangle box;
-
-        if (onLeft) {
-            box = leftStemBox(glyph.getContourBox());
-        } else {
-            box = rightStemBox(glyph.getContourBox());
-        }
-
-        for (Glyph s : glyphs) {
-            // Check bounding box intersection
-            if (s.isStem() && s.getContourBox()
-                               .intersects(box)) {
-                // Check adjacency
-                for (Section section : glyph.getMembers()) {
-                    if (onLeft) {
-                        for (Section source : section.getSources()) {
-                            if (source.getGlyph() == s) {
-                                glyph.setLeftStem(s);
-
-                                return true;
-                            }
-                        }
-                    } else {
-                        for (Section target : section.getTargets()) {
-                            if (target.getGlyph() == s) {
-                                glyph.setRightStem(s);
-
-                                return true;
-                            }
-                        }
-                    }
-                }
-
-                // Check close distance
-                PixelRectangle b = stemBoxOf(s);
-
-                for (Section section : glyph.getMembers()) {
-                    if (section.getContourBox()
-                               .intersects(b)) {
-                        if (onLeft) {
-                            glyph.setLeftStem(s);
-                        } else {
-                            glyph.setRightStem(s);
-                        }
-
-                        return true;
-                    }
-                }
             }
         }
 
@@ -514,51 +462,58 @@ public class GlyphsBuilder
         return box;
     }
 
-    //-------------//
-    // leftStemBox //
-    //-------------//
+    //------------//
+    // lookupStem //
+    //------------//
+    private Glyph lookupStem (HorizontalSide    side,
+                              Collection<Glyph> glyphs,
+                              Glyph             glyph)
+    {
+        if (glyph.isStem()) {
+            return null;
+        }
+
+        // Box for searching for a stem
+        PixelRectangle box = stemLUBox(side, glyph);
+
+        for (Glyph s : glyphs) {
+            // Check bounding box intersection
+            if (s.isStem() && s.getContourBox()
+                               .intersects(box)) {
+                // Check close distance
+                PixelRectangle b = stemBoxOf(s);
+
+                for (Section section : glyph.getMembers()) {
+                    if (section.getContourBox()
+                               .intersects(b)) {
+                        return s;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    //-----------//
+    // stemLUBox //
+    //-----------//
     /**
-     * Report the stem lookup box on the left side of a rectangle
+     * Report the stem lookup box on the provided side of a rectangle
      * @param rect the given (glyph) rectangle
      * @return the proper stem box
      */
-    private PixelRectangle leftStemBox (PixelRectangle rect)
+    private PixelRectangle stemLUBox (HorizontalSide side,
+                                      Glyph          glyph)
     {
-        PixelRectangle box = new PixelRectangle(rect);
+        PixelRectangle box = glyph.getContourBox();
+        int            width = box.width;
         box.grow(stemWiden, stemHeighten);
         box.width = 2 * stemWiden;
 
-        return box;
-    }
-
-    //--------------//
-    // rightStemBox //
-    //--------------//
-    /**
-     * Report the stem lookup box on the right side of a rectangle
-     * @param rect the given (glyph) rectangle
-     * @return the proper stem box
-     */
-    private PixelRectangle rightStemBox (PixelRectangle rect)
-    {
-        PixelRectangle box = leftStemBox(rect);
-        box.x += rect.width;
-
-        return box;
-    }
-
-    //-----------//
-    // stemBoxOf //
-    //-----------//
-    /**
-     * Report a enlarged box of a given (stem) glyph
-     * @param stem the stem
-     * @return the enlarged stem box
-     */
-    public PixelRectangle stemBoxOf (Glyph stem)
-    {
-        PixelRectangle box = new PixelRectangle(stem.getContourBox());
-        box.grow(stemWiden, stemHeighten);
+        if (side == HorizontalSide.RIGHT) {
+            box.x += width;
+        }
 
         return box;
     }

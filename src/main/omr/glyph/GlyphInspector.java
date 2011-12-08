@@ -180,14 +180,10 @@ public class GlyphInspector
         {
             super(system, minGrade);
 
-            if (seed.getStemNumber() > 0) {
-                // Remember this stem as a border
-                if (seed.getLeftStem() != null) {
-                    stem = seed.getLeftStem();
-                } else {
-                    stem = seed.getRightStem();
-                }
+            stem = seed.getFirstStem();
 
+            if (stem != null) {
+                // Remember this stem as a border
                 stemX = stem.getCentroid().x;
                 stemToSeed = seed.getCentroid().x - stemX;
             }

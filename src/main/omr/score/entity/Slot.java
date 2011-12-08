@@ -22,6 +22,7 @@ import omr.score.common.PixelPoint;
 
 import omr.sheet.Scale;
 
+import omr.util.HorizontalSide;
 import omr.util.Navigable;
 import omr.util.TreeNode;
 
@@ -271,14 +272,13 @@ public abstract class Slot
             if (glyph.getStemNumber() > 0) {
                 // Beware of noteheads with 2 stems, we need to duplicate them
                 // in order to actually have two logical chords.
-                if (glyph.getLeftStem() != null) {
-                    Chord chord = getStemChord(glyph.getLeftStem());
-                    Note.createPack(chord, glyph);
-                }
+                for (HorizontalSide side : HorizontalSide.values()) {
+                    Glyph stem = glyph.getStem(side);
 
-                if (glyph.getRightStem() != null) {
-                    Chord chord = getStemChord(glyph.getRightStem());
-                    Note.createPack(chord, glyph);
+                    if (stem != null) {
+                        Chord chord = getStemChord(stem);
+                        Note.createPack(chord, glyph);
+                    }
                 }
             } else {
                 Chord chord = new Chord(measure, this);
@@ -457,15 +457,8 @@ public abstract class Slot
             case STEM_BASED :
 
                 if (glyph.getStemNumber() == 1) {
-                    Glyph stem = glyph.getLeftStem();
-
-                    if (stem == null) {
-                        stem = glyph.getRightStem();
-                    }
-
-                    if (stem != null) {
-                        pt = stem.getAreaCenter();
-                    }
+                    pt = glyph.getFirstStem()
+                              .getAreaCenter();
                 }
 
                 break;

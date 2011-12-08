@@ -27,6 +27,8 @@ import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
 
+import omr.util.HorizontalSide;
+import static omr.util.HorizontalSide.*;
 import omr.util.TreeNode;
 
 import java.util.List;
@@ -34,9 +36,9 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class {@code Beam} represents a beam hook or a beam line, that may be
- * composed of several beam items, aligned one after the other, along the same
- * line.
+ * Class {@code Beam} represents a beam hook or a beam line, that may
+ * be composed of several beam items, aligned one after the other,
+ * along the same line.
  *
  * @author Hervé Bitteur
  */
@@ -80,8 +82,7 @@ public class Beam
     //------//
     // Beam //
     //------//
-    /** Creates a new instance of Beam
-     *
+    /** Creates a new instance of Beam.
      * @param measure the enclosing measure
      */
     public Beam (Measure measure)
@@ -97,8 +98,7 @@ public class Beam
     // getChords //
     //-----------//
     /**
-     * Report the sequence of chords that are linked by this beam
-     *
+     * Report the sequence of chords that are linked by this beam.
      * @return the sorted set of linked chords
      */
     public SortedSet<Chord> getChords ()
@@ -110,8 +110,7 @@ public class Beam
     // getGroup //
     //----------//
     /**
-     * Report the containing group
-     *
+     * Report the containing group.
      * @return the containing group, if already set, or null
      */
     public BeamGroup getGroup ()
@@ -132,8 +131,7 @@ public class Beam
     // getId //
     //-------//
     /**
-     * Report the unique id of the beam within its containing measure
-     *
+     * Report the unique id of the beam within its containing measure.
      * @return the beam id, starting from 1
      */
     public int getId ()
@@ -145,9 +143,9 @@ public class Beam
     // getItems //
     //----------//
     /**
-     * Report the ordered sequence of items (one or several BeamItem instances
-     * of BEAM shape, or one glyph of BEAM_HOOK shape) that compose this beam
-     *
+     * Report the ordered sequence of items (one or several BeamItem
+     * instances of BEAM shape, or one glyph of BEAM_HOOK shape) that
+     * compose this beam.
      * @return the ordered set of beam items
      */
     public SortedSet<BeamItem> getItems ()
@@ -155,27 +153,12 @@ public class Beam
         return items;
     }
 
-    //--------------//
-    // getLeftPoint //
-    //--------------//
-    /**
-     * Report the point that define the left edge of the beam
-     *
-     * @return the PixelPoint coordinates of the left point
-     */
-    public PixelPoint getLeftPoint ()
-    {
-        return items.first()
-                    .getLeftPoint();
-    }
-
     //----------//
     // getLevel //
     //----------//
     /**
-     * Report the level of this beam within the containing BeamGroup, starting
-     * from 1
-     *
+     * Report the level of this beam within the containing BeamGroup,
+     * starting from 1.
      * @return the beam level in its group
      */
     public int getLevel ()
@@ -188,8 +171,7 @@ public class Beam
     // getLine //
     //---------//
     /**
-     * Report the line equation defined by the beam
-     *
+     * Report the line equation defined by the beam.
      * @return the line equation
      */
     public Line getLine ()
@@ -198,27 +180,31 @@ public class Beam
             line = new BasicLine();
 
             // Take left side of first item, and right side of last item
-            left = getLeftPoint();
+            left = getPoint(LEFT);
             line.includePoint(left.x, left.y);
-            right = getRightPoint();
+            right = getPoint(RIGHT);
             line.includePoint(right.x, right.y);
         }
 
         return line;
     }
 
-    //---------------//
-    // getRightPoint //
-    //---------------//
+    //----------//
+    // getPoint //
+    //----------//
     /**
-     * Report the point that define the right edge of the beam
-     *
-     * @return the PixelPoint coordinates of the right point
+     * Report the point that define the desired edge of the beam.
+     * @return the PixelPoint coordinates of the point on desired side
      */
-    public PixelPoint getRightPoint ()
+    public PixelPoint getPoint (HorizontalSide side)
     {
-        return items.last()
-                    .getRightPoint();
+        if (side == LEFT) {
+            return items.first()
+                        .getPoint(LEFT);
+        } else {
+            return items.last()
+                        .getPoint(RIGHT);
+        }
     }
 
     //--------//
@@ -234,8 +220,7 @@ public class Beam
     // addChord //
     //----------//
     /**
-     * Insert a chord linked by this beam
-     *
+     * Insert a chord linked by this beam.
      * @param chord the linked chord
      */
     public void addChord (Chord chord)
@@ -247,8 +232,8 @@ public class Beam
     // closeConnections //
     //------------------//
     /**
-     * Make sure all connections between this beam and the linked chords/stems
-     * are actually recorded
+     * Make sure all connections between this beam and the linked
+     * chords/stems are actually recorded.
      */
     public void closeConnections ()
     {
@@ -284,10 +269,10 @@ public class Beam
     // compareTo //
     //-----------//
     /**
-     * Implement the order between two beams (of the same BeamGroup). We use the
-     * order along the first common chord, starting from chord tail. Note that,
-     * apart from the trivial case where a beam is compared to itself, two beams
-     * of the same group cannot be equal.
+     * Implement the order between two beams (of the same BeamGroup).
+     * We use the order along the first common chord, starting from chord tail.
+     * Note that, apart from the trivial case where a beam is compared to itself,
+     * two beams of the same group cannot be equal.
      *
      * @param other the other beam to be compared with
      * @return -1, 0, +1 according to the comparison result
@@ -336,9 +321,9 @@ public class Beam
     // determineGroup //
     //----------------//
     /**
-     * Determine which BeamGroup this beam is part of. The BeamGroup is either
-     * reused (if one of its beams has a linked chord in common with this beam)
-     * or created from scratch otherwise
+     * Determine which BeamGroup this beam is part of.
+     * The BeamGroup is either reused (if one of its beams has a linked chord
+     * in common with this beam) or created from scratch otherwise
      */
     public void determineGroup ()
     {
@@ -378,7 +363,7 @@ public class Beam
     // dump //
     //------//
     /**
-     * Utility method for easy dumping of the beam entity
+     * Utility method for easy dumping of the beam entity.
      */
     public void dump ()
     {
@@ -390,8 +375,8 @@ public class Beam
     // linkChords //
     //------------//
     /**
-     * Assign the both-way link between this beam and the chords connected by the
-     * beam
+     * Assign the both-way link between this beam and the chords
+     * connected by the beam.
      */
     public void linkChords ()
     {
@@ -399,8 +384,7 @@ public class Beam
             //////////////////////////////////////////////////////////////////
             // TODO for a beam (non hook) both stems must exist and be linked
             //////////////////////////////////////////////////////////////////
-            linkChordsOnStem("left", item.getLeftStem());
-            linkChordsOnStem("right", item.getRightStem());
+            linkChordsOnStems(item);
 
             // Include other stems in the middle
         }
@@ -410,8 +394,7 @@ public class Beam
     // populate //
     //----------//
     /**
-     * Populate a (or create a brand new) beam with this glyph
-     *
+     * Populate a (or create a brand new) beam with this glyph.
      * @param item a beam item
      * @param measure the containing measure
      */
@@ -449,8 +432,7 @@ public class Beam
     // removeChord //
     //-------------//
     /**
-     * Remove a chord from this beam
-     *
+     * Remove a chord from this beam.
      * @param chord the chord to remove
      */
     public void removeChord (Chord chord)
@@ -462,8 +444,8 @@ public class Beam
     // switchGroup //
     //-------------//
     /**
-     * Switch this beam to a BeamGroup, by setting the link both ways between
-     * this beam and the containing group.
+     * Switch this beam to a BeamGroup, by setting the link both ways
+     * between this beam and the containing group.
      *
      * @param group the (new) containing beam group
      */
@@ -497,8 +479,7 @@ public class Beam
     // toLongString //
     //--------------//
     /**
-     * A rather lengthy version of toString()
-     *
+     * A rather lengthy version of toString().
      * @return a complete description string
      */
     public String toLongString ()
@@ -515,10 +496,10 @@ public class Beam
         }
 
         sb.append(" left=")
-          .append(getLeftPoint());
+          .append(getPoint(LEFT));
 
         sb.append(" right=")
-          .append(getRightPoint());
+          .append(getPoint(LEFT));
 
         sb.append(BeamItem.toString(items));
         sb.append("}");
@@ -558,7 +539,7 @@ public class Beam
     // computeCenter //
     //---------------//
     /**
-     * Compute the center of this beam
+     * Compute the center of this beam.
      */
     @Override
     protected void computeCenter ()
@@ -572,7 +553,7 @@ public class Beam
     // reset //
     //-------//
     /**
-     * Invalidate cached data, to force its recomputation when needed
+     * Invalidate cached data, to force its recomputation when needed.
      */
     @Override
     protected void reset ()
@@ -588,8 +569,8 @@ public class Beam
     // isCompatibleWith //
     //------------------//
     /**
-     * Check compatibility of a given BEAM/BEAM_HOOK item with this beam. We
-     * use alignment and distance criterias.
+     * Check compatibility of a given BEAM/BEAM_HOOK item with this beam.
+     * We use alignment and distance criterias.
      *
      * @param item the beam item to check for compatibility
      * @return true if compatible
@@ -619,18 +600,11 @@ public class Beam
         double maxGap = getScale()
                             .toPixels(constants.maxGap);
 
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "maxGap=" + maxGap + " leftGap=" +
-                item.getRightPoint().distance(getLeftPoint()) + " rightGap=" +
-                item.getLeftPoint().distance(getRightPoint()));
-        }
-
-        if ((item.getRightPoint()
-                 .distance(getLeftPoint()) <= maxGap) ||
-            (item.getLeftPoint()
-                 .distance(getRightPoint()) <= maxGap)) {
-            return true;
+        for (HorizontalSide side : HorizontalSide.values()) {
+            if (item.getPoint(side)
+                    .distance(getPoint(side)) <= maxGap) {
+                return true;
+            }
         }
 
         return false;
@@ -640,8 +614,7 @@ public class Beam
     // addItem //
     //---------//
     /**
-     * Insert a (BEAM/BEAM_HOOK) item as a component of this beam
-     *
+     * Insert a (BEAM/BEAM_HOOK) item as a component of this beam.
      * @param item the beam item to insert
      */
     private void addItem (BeamItem item)
@@ -651,21 +624,26 @@ public class Beam
     }
 
     //------------------//
-    // linkChordsOnStem //
+    // linkChordsOnStems //
     //------------------//
-    private void linkChordsOnStem (String side,
-                                   Glyph  stem)
+    private void linkChordsOnStems (BeamItem item)
     {
-        if (stem != null) {
-            List<Chord> sideChords = Chord.getStemChords(getMeasure(), stem);
+        for (HorizontalSide side : HorizontalSide.values()) {
+            Glyph stem = item.getStem(side);
 
-            if (!sideChords.isEmpty()) {
-                for (Chord chord : sideChords) {
-                    chords.add(chord);
-                    chord.addBeam(this);
+            if (stem != null) {
+                List<Chord> sideChords = Chord.getStemChords(
+                    getMeasure(),
+                    stem);
+
+                if (!sideChords.isEmpty()) {
+                    for (Chord chord : sideChords) {
+                        chords.add(chord);
+                        chord.addBeam(this);
+                    }
+                } else {
+                    addError("Beam with no chord on " + side + " stem");
                 }
-            } else {
-                addError("Beam with no chord on " + side + " stem");
             }
         }
     }
