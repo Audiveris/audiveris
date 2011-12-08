@@ -16,15 +16,16 @@ import omr.log.Logger;
 import Jama.Matrix;
 
 import java.awt.geom.CubicCurve2D;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import static java.lang.Math.*;
 import java.util.ArrayList;
 
 /**
- * Class {@code Circle} handles a circle (or a portion of circle) which
- * approximates a collection of data points. Besides usual characteristics of a
- * circle (center, radius), and of a circle arc (start and stop angles) it also
- * defines the approximating bezier curve.
+ * Class {@code Circle} handles a circle (or a portion of circle)
+ * which approximates a collection of data points.
+ * Besides usual characteristics of a circle (center, radius), and of a circle
+ * arc (start and stop angles) it also defines the approximating bezier curve.
  *
  * @author Hervé Bitteur
  */
@@ -40,23 +41,8 @@ public class Circle
 
     //~ Instance fields --------------------------------------------------------
 
-    // Coefficients of the algebraic equation
-    // A*(x**2 + y**2) + D*x + E*y + F = 0
-
-    /** Coefficient of (x**2 + y**2) */
-    private double A;
-
-    /** Coefficient of x */
-    private double D;
-
-    /** Coefficient of y */
-    private double E;
-
-    /** Coefficient of 1 */
-    private double F;
-
-    /** Mean algebraic distance between ellipse and the defining points */
-    private double distance;
+    /** Mean algebraic distance between circle and the defining points */
+    private final double distance;
 
     // Circle characteristics
 
@@ -87,7 +73,7 @@ public class Circle
     // Circle //
     //--------//
     /**
-     * Creates a new instance of Circle, defined by a set of points
+     * Creates a new instance of Circle, defined by a set of points.
      * @param x array of abscissae
      * @param y array of ordinates
      */
@@ -95,6 +81,32 @@ public class Circle
                    double[] y)
     {
         fit(x, y);
+        computeAngles(x, y);
+        distance = computeDistance(x, y);
+    }
+
+    //--------//
+    // Circle //
+    //--------//
+    /**
+     * Creates a new instance of Circle, fitted to 3 defining points.
+     * The provided collection of coordinates is used only to compute the
+     * resulting distance.
+     * @param left left defining point
+     * @param middle middle defining point
+     * @param right right defining point
+     * @param x array of abscissae (including the defining points)
+     * @param y array of ordinates (including the defining points)
+     */
+    public Circle (Point2D  left,
+                   Point2D  middle,
+                   Point2D  right,
+                   double[] x,
+                   double[] y)
+    {
+        defineCircle(left, middle, right);
+        computeAngles(x, y);
+        distance = computeDistance(x, y);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -103,8 +115,7 @@ public class Circle
     // getCenter //
     //-----------//
     /**
-     * Report the circle center
-     *
+     * Report the circle center.
      * @return the center of the circle
      */
     public Point2D.Double getCenter ()
@@ -116,8 +127,7 @@ public class Circle
     // getCurve //
     //----------//
     /**
-     * Report the Bezier curve which best approximates the circle arc
-     *
+     * Report the Bezier curve which best approximates the circle arc.
      * @return the Bezier curve
      */
     public CubicCurve2D.Double getCurve ()
@@ -133,8 +143,7 @@ public class Circle
     // getDistance //
     //-------------//
     /**
-     * Report the mean distance between the data points and the circle
-     *
+     * Report the mean distance between the data points and the circle.
      * @return the mean distance
      */
     public double getDistance ()
@@ -146,8 +155,7 @@ public class Circle
     // getRadius //
     //-----------//
     /**
-     * Report the circle radius
-     *
+     * Report the circle radius.
      * @return the circle radius
      */
     public Double getRadius ()
@@ -159,9 +167,8 @@ public class Circle
     // getStartAngle //
     //---------------//
     /**
-     * Report the angle at start of the circle arc
-     *
-     * @return the starting angle
+     * Report the angle at start of the circle arc.
+     * @return the starting angle, in radians
      */
     public Double getStartAngle ()
     {
@@ -172,9 +179,8 @@ public class Circle
     // getStopAngle //
     //--------------//
     /**
-     * Report the angle at stop of the circle arc
-     *
-     * @return the stopping angle
+     * Report the angle at stop of the circle arc.
+     * @return the stopping angle, in radians
      */
     public Double getStopAngle ()
     {
@@ -198,17 +204,16 @@ public class Circle
         StringBuilder sb = new StringBuilder();
 
         sb.append("{Circle");
-        ///sb.append(String.format(" dist=%g", distance));
+        sb.append(String.format(" dist=%g", distance));
         sb.append(String.format(" center[%g,%g]", center.x, center.y));
         sb.append(String.format(" radius=%g", radius));
 
-        if (startAngle != null) {
+        if ((startAngle != null) && (stopAngle != null)) {
             sb.append(
-                String.format(" startDeg=%g", toDegrees(startAngle)));
-        }
-
-        if (stopAngle != null) {
-            sb.append(String.format(" stopDeg=%g", toDegrees(stopAngle)));
+                String.format(
+                    " angles=(%g,%g)",
+                    toDegrees(startAngle),
+                    toDegrees(stopAngle)));
         }
 
         sb.append("}");
@@ -216,25 +221,15 @@ public class Circle
         return sb.toString();
     }
 
-    //------------------------//
-    // computeCharacteristics //
-    //------------------------//
+    //---------------//
+    // computeAngles //
+    //---------------//
     /**
-     * Compute the usual characteristics of a circle out of its algebraic
-     * coefficients (which are assumed to have been computed)
+     * Compute the start and stop angles of a circle.
      */
-    private void computeCharacteristics (double[] x,
-                                         double[] y)
+    private void computeAngles (double[] x,
+                                double[] y)
     {
-        // Compute circle center
-        center = new Point2D.Double(-(D / A) / 2, -(E / A) / 2);
-        //        System.out.println("center=" + getCenter());
-
-        // Compute radius
-        radius = Math.sqrt(
-            ((getCenter().x * getCenter().x) + (getCenter().y * getCenter().y)) -
-            (F / A));
-
         // Get all angles, split into buckets
         final int   BUCKET_NB = 8;
         final int[] buckets = new int[BUCKET_NB];
@@ -313,7 +308,7 @@ public class Circle
     // computeCurve //
     //--------------//
     /**
-     * Compute the bezier points for the circle arc
+     * Compute the bezier points for the circle arc.
      */
     private void computeCurve ()
     {
@@ -431,8 +426,8 @@ public class Circle
     //-----//
     /**
      * Given a collection of points, determine the best approximating
-     * circle. The result is available in the 'distance' variable.
-     *
+     * circle.
+     * The result is available in the center and radius variables.
      * @param x the array of abscissae
      * @param y the array of ordinates
      */
@@ -517,26 +512,69 @@ public class Circle
 
         ///print(newScatterInv, "newScatterInv");
         Matrix Solution = newScatterInv.times(first);
+
         ///print(Solution, "Solution [D E F Lambda]");
-        A = 1.0;
-        D = Solution.get(0, 0);
-        E = Solution.get(1, 0);
-        F = Solution.get(2, 0);
 
-        // Characteristics
-        computeCharacteristics(x, y);
+        // Coefficients of the algebraic equation
+        // x**2 + y**2 + D*x + E*y + F = 0
+        double D = Solution.get(0, 0);
+        double E = Solution.get(1, 0);
+        double F = Solution.get(2, 0);
 
-        // Compute distance (brute force...)
-        distance = 0;
+        // Compute center & radius
+        center = new Point2D.Double(-D / 2, -E / 2);
+        radius = Math.sqrt(((center.x * center.x) + (center.y * center.y)) - F);
+    }
+
+    //-----------------//
+    // computeDistance //
+    //-----------------//
+    /**
+     * Compute the mean quadratic distance of all points to the circle.
+     * @param x array of abscissae
+     * @param y array of ordinates
+     * @return the mean quadratic distance
+     */
+    private double computeDistance (double[] x,
+                                    double[] y)
+    {
+        final int nbPoints = x.length;
+        double    sum = 0;
 
         for (int i = 0; i < nbPoints; i++) {
             double delta = Math.hypot(
                 x[i] - getCenter().x,
                 y[i] - getCenter().y) - getRadius();
-            distance += (delta * delta);
+            sum += (delta * delta);
         }
 
-        ///distance = Math.sqrt(distance / nbPoints);
-        distance = Math.sqrt(distance) / nbPoints;
+        return Math.sqrt(sum) / nbPoints;
+    }
+
+    //--------------//
+    // defineCircle //
+    //--------------//
+    /**
+     * Define the circle by means of a sequence of 3 key points.
+     * @param left precise left point
+     * @param middle a point rather in the middle
+     * @param right precise right point
+     */
+    private void defineCircle (Point2D left,
+                               Point2D middle,
+                               Point2D right)
+    {
+        Line2D prevBisector = LineUtilities.bisector(
+            new Line2D.Double(left, middle));
+        Line2D bisector = LineUtilities.bisector(
+            new Line2D.Double(middle, right));
+        center = LineUtilities.intersection(
+            prevBisector.getP1(),
+            prevBisector.getP2(),
+            bisector.getP1(),
+            bisector.getP2());
+        radius = Math.hypot(
+            center.getX() - right.getX(),
+            center.getY() - right.getY());
     }
 }

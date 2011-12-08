@@ -315,7 +315,9 @@ public class Slur
         }
 
         // Compute the approximating circle
-        Circle       circle = SlurInspector.computeCircle(glyph);
+        Circle       circle = system.getInfo()
+                                    .getSlurInspector()
+                                    .computeCircle(glyph);
         CubicCurve2D curve = circle.getCurve();
 
         // Safer
@@ -749,7 +751,7 @@ public class Slur
             rightRect.y -= dy;
         }
 
-        // Visualize these rectangles (for debug)
+        // Visualize these rectangles (for visual debug)
         glyph.addAttachment("|^", leftRect);
         glyph.addAttachment("^|", rightRect);
 

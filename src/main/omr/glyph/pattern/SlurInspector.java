@@ -28,6 +28,7 @@ import omr.lag.Sections;
 
 import omr.log.Logger;
 
+import omr.math.Barycenter;
 import omr.math.Circle;
 import omr.math.PointsCollector;
 import static omr.run.Orientation.*;
@@ -40,7 +41,6 @@ import omr.sheet.SystemInfo;
 import omr.util.Implement;
 import omr.util.Wrapper;
 
-import java.awt.Rectangle;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -82,7 +82,10 @@ public class SlurInspector
     final int    targetLineHypot;
     final int    minSlurWidth;
     final int    minExtensionHeight;
+    final int    largeSlurWidth;
     final double maxCircleDistance;
+    final double minCircleRadius;
+    final double maxCircleRadius;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -109,7 +112,10 @@ public class SlurInspector
         targetLineHypot = scale.toPixels(constants.slurLineBoxHypot);
         minSlurWidth = scale.toPixels(constants.minSlurWidth);
         minExtensionHeight = scale.toPixels(constants.minExtensionHeight);
-        maxCircleDistance = constants.maxCircleDistance.getValue();
+        maxCircleDistance = scale.toPixelsDouble(constants.maxCircleDistance);
+        minCircleRadius = scale.toPixels(constants.minCircleRadius);
+        maxCircleRadius = scale.toPixels(constants.maxCircleRadius);
+        largeSlurWidth = scale.toPixels(constants.largeSlurWidth);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -118,11 +124,12 @@ public class SlurInspector
     // computeCircle //
     //---------------//
     /**
-     * Compute the Circle which best approximates the pixels of a given glyph.
+     * Compute the Circle which best approximates the pixels of a given
+     * glyph.
      * @param glyph The glyph to fit the circle on
      * @return The best circle possible
      */
-    public static Circle computeCircle (Glyph glyph)
+    public Circle computeCircle (Glyph glyph)
     {
         return computeCircle(glyph.getMembers());
     }
@@ -133,48 +140,102 @@ public class SlurInspector
     /**
      * Compute the Circle which best approximates the pixels of a given
      * collection of sections.
-     * @param sections The collection of sections to fit the circle on
+     * @param sections The collection of sections to fit the circle upon
      * @return The best circle possible
      */
-    public static Circle computeCircle (Collection<?extends Section> sections)
+    public Circle computeCircle (Collection<?extends Section> sections)
     {
-        // First cumulate point from sections
-        int weight = 0;
+        final PixelRectangle box = Sections.getContourBox(sections);
 
-        for (Section section : sections) {
-            weight += section.getWeight();
-        }
-
-        double[]        xx = new double[weight];
-        double[]        yy = new double[weight];
-
-        // Append recursively all points
-        PointsCollector collector = new PointsCollector(null, weight);
+        // Cumulate points from sections
+        PointsCollector collector = new PointsCollector(box);
 
         for (Section section : sections) {
             section.cumulate(collector);
         }
 
-        // Convert arrays of int's to arrays of double's
-        int[] intXX = collector.getXValues();
-        int[] intYY = collector.getYValues();
+        int[]    intXX = collector.getXValues();
+        int[]    intYY = collector.getYValues();
+        double[] xx = new double[collector.getSize()];
+        double[] yy = new double[collector.getSize()];
 
-        for (int i = 0; i < weight; i++) {
+        for (int i = 0; i < xx.length; i++) {
             xx[i] = intXX[i];
             yy[i] = intYY[i];
         }
 
-        // Then compute the circle 
-        return new Circle(xx, yy);
+        // We force 3 defining points
+        Point2D left = getSlurPointNear(box.x, sections, box);
+        Point2D right = getSlurPointNear(box.x + box.width, sections, box);
+        Point2D middle = getSlurPointNear(
+            box.x + (box.width / 2),
+            sections,
+            box);
+
+        // Adjust middle abscissa according to slur orientation
+        double  slope = (right.getY() - left.getY()) / (right.getX() -
+                                                       left.getX());
+        Point2D inter = new Point2D.Double(
+            middle.getX(),
+            left.getY() + ((middle.getX() - left.getX()) * slope));
+        double  dy = middle.getY() - inter.getY();
+        double  dx = -dy * slope;
+        middle = getSlurPointNear(
+            box.x + (box.width / 2) + (int) Math.rint(dx),
+            sections,
+            box);
+
+        Circle circle = new Circle(left, middle, right, xx, yy);
+
+        // Switch to points fitting, if needed
+        if ((circle.getDistance() > maxCircleDistance) &&
+            (box.width > largeSlurWidth)) {
+            if (logger.isFineEnabled()) {
+                logger.info("Using total fit for slur " + box);
+            }
+
+            circle = new Circle(xx, yy);
+        }
+
+        return circle;
+    }
+
+    //------------------//
+    // getSlurPointNear //
+    //------------------//
+    /**
+     * Retrieve the best slur point near the provided abscissa.
+     * @param x the provided abscissa
+     * @param sections the slur sections
+     * @param box the slur bounding box
+     * @return the best approximating point
+     */
+    private Point2D.Double getSlurPointNear (int                          x,
+                                             Collection<?extends Section> sections,
+                                             PixelRectangle               box)
+    {
+        PixelRectangle roi = new PixelRectangle(x, box.y, 0, box.height);
+        Barycenter     bary;
+
+        do {
+            bary = new Barycenter();
+            roi.grow(1, 0);
+
+            for (Section section : sections) {
+                section.cumulate(bary, roi);
+            }
+        } while (bary.getWeight() == 0);
+
+        return new Point2D.Double(bary.getX(), bary.getY());
     }
 
     //------------//
     // runPattern //
     //------------//
     /**
-     * Check all the slur glyphs in the given system, and try to correct the
-     * spurious ones if any.
-     * @return the number of slurs fixed
+     * Check all the slur glyphs in the given system, and try to
+     * correct the invalid ones if any.
+     * @return the number of invalid slurs that are fixed
      *
      * <p><b>Synopsis:</b>
      * <pre>
@@ -195,8 +256,12 @@ public class SlurInspector
         int         modifs = 0;
 
         for (Glyph glyph : system.getGlyphs()) {
-            if ((glyph.getShape() == Shape.SLUR) && !glyph.isManualShape()) {
-                slurs.add(glyph);
+            if (glyph.getShape() == Shape.SLUR) {
+                if (glyph.isManualShape()) {
+                    glyph.addAttachment("^", computeCircle(glyph).getCurve());
+                } else {
+                    slurs.add(glyph);
+                }
             }
         }
 
@@ -246,18 +311,14 @@ public class SlurInspector
 
             // Check slur validity
             if (!isValid(slur)) {
-                Glyph fixedSlur = null;
-
                 // Extension has already been tried to no avail
                 // So, just try to trim the slur down
                 try {
-                    fixedSlur = trimSlur(slur);
+                    if (trimSlur(slur) == null) {
+                        slur.setShape(null);
+                    }
                 } catch (Exception ex) {
                     logger.warning("Error in triming slur#" + slur.getId(), ex);
-                }
-
-                if (fixedSlur == null) {
-                    slur.setShape(null);
                 }
 
                 modifs++;
@@ -267,6 +328,14 @@ public class SlurInspector
             }
         }
 
+        // Debug
+        //        for (Glyph glyph : system.getGlyphs()) {
+        //            if (glyph.isActive() && (glyph.getShape() == Shape.SLUR)) {
+        //                logger.info(computeCircle(glyph) + " for G#" + glyph.getId());
+        //            }
+        //        }
+
+        //
         return modifs;
     }
 
@@ -274,8 +343,9 @@ public class SlurInspector
     // trimSlur //
     //----------//
     /**
-     * For large glyphs, we suspect a slur with a stuck object, so the strategy
-     * is to rebuild the true Slur portions from the underlying sections.
+     * For large glyphs, we suspect a slur with a stuck object,
+     * so the strategy is to rebuild the true Slur portions from the
+     * underlying sections.
      * @param oldSlur the spurious slur
      * @return the extracted slur glyph, if any
      */
@@ -291,8 +361,8 @@ public class SlurInspector
          * Sections left over are put into the "left" collection in order to be
          * used to rebuild the stuck object(s).
          */
-        if (logger.isFineEnabled()) {
-            logger.info("fixing Large Slur for glyph #" + oldSlur.getId());
+        if (oldSlur.isVip() || logger.isFineEnabled()) {
+            logger.info("Trimming slur #" + oldSlur.getId());
         }
 
         // Get a COPY of the member list, sorted by decreasing weight */
@@ -322,14 +392,14 @@ public class SlurInspector
                 Glyph newSlur = buildFinalSlur(kept);
 
                 if (newSlur != null) {
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
+                    if (oldSlur.isVip() || logger.isFineEnabled()) {
+                        logger.info(
                             "Trimmed slur #" + oldSlur.getId() +
                             " as smaller #" + newSlur.getId());
                     }
                 } else {
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
+                    if (oldSlur.isVip() || logger.isFineEnabled()) {
+                        logger.info(
                             "Giving up slur #" + oldSlur.getId() + " w/ " +
                             kept);
                     }
@@ -364,16 +434,29 @@ public class SlurInspector
     //---------//
     // isValid //
     //---------//
+    /**
+     * Check validity of a glyph as a slur.
+     * @param glyph the glyph to check
+     * @return true if valid
+     */
     private boolean isValid (Glyph slur)
     {
-        return isValid(slur.getMembers(), slur.getContourBox());
+        if (slur.isVip()) {
+            logger.info("Checking validity of slur#" + slur.getId());
+        }
+
+        return isValid(slur.getMembers());
     }
 
     //---------//
     // isValid //
     //---------//
-    private boolean isValid (Collection<Section> sections,
-                             PixelRectangle      contourBox)
+    /**
+     * Check validity of a collection of sections as a slur.
+     * @param sections the provided sections
+     * @return true if valid
+     */
+    private boolean isValid (Collection<Section> sections)
     {
         Circle circle = computeCircle(sections);
 
@@ -382,22 +465,44 @@ public class SlurInspector
             return false;
         }
 
-        // Check curve bounds are rather close to slur box
-        Rectangle curveBox = circle.getCurve()
-                                   .getBounds();
+        // Check radius 
+        double radius = circle.getRadius();
 
-        double    heightRatio = (double) curveBox.height / contourBox.height;
-
-        if (heightRatio > constants.maxHeightRatio.getValue()) {
+        if (radius < minCircleRadius) {
             if (logger.isFineEnabled()) {
                 logger.info(
-                    "Too high ratio: " + (float) heightRatio +
-                    " for curve box " + curveBox);
+                    "Too small radius " + (float) radius + " vs " +
+                    minCircleRadius);
             }
 
             return false;
         }
 
+        if (radius > maxCircleRadius) {
+            if (logger.isFineEnabled()) {
+                logger.info(
+                    "Too large radius " + (float) radius + " vs " +
+                    maxCircleRadius);
+            }
+
+            return false;
+        }
+
+        //        // Check curve bounds are rather close to slur box
+        //        Rectangle curveBox = circle.getCurve()
+        //                                   .getBounds();
+        //
+        //        double    heightRatio = (double) curveBox.height / contourBox.height;
+        //
+        //        if (heightRatio > constants.maxHeightRatio.getValue()) {
+        //            if (logger.isFineEnabled()) {
+        //                logger.info(
+        //                    "Too high ratio: " + (float) heightRatio +
+        //                    " for curve box " + curveBox);
+        //            }
+        //
+        //            return false;
+        //        }
         return true;
     }
 
@@ -411,7 +516,7 @@ public class SlurInspector
      */
     private Glyph buildFinalSlur (List<Section> sections)
     {
-        if (isValid(sections, Sections.getContourBox(sections))) {
+        if (isValid(sections)) {
             // Build new slur glyph with sections kept
             Glyph newGlyph = new BasicGlyph(interline);
 
@@ -500,8 +605,8 @@ public class SlurInspector
     // findSectionsOnCircle //
     //----------------------//
     /**
-     * From the provided members, find all sections which are well located
-     * on the slur circle.
+     * From the provided members, find all sections which are well
+     * located on the slur circle.
      * @param members
      * @param seedSection
      * @param seedDist
@@ -519,7 +624,7 @@ public class SlurInspector
 
         List<Section> tried = new ArrayList<Section>();
         double        distThreshold = seedDist;
-        double        bestDistance = distThreshold;
+        double        lastDistance = distThreshold;
 
         for (Section section : members) {
             section.setProcessed(false);
@@ -547,7 +652,7 @@ public class SlurInspector
                     continue;
                 }
 
-                distThreshold = bestDistance;
+                distThreshold = (lastDistance + maxCircleDistance) / 2;
 
                 if (logger.isFineEnabled()) {
                     logger.fine("Trying " + section);
@@ -568,7 +673,7 @@ public class SlurInspector
 
                     if (distance <= distThreshold) {
                         kept.add(section);
-                        bestDistance = distance;
+                        lastDistance = distance;
                         section.setProcessed(true);
                         slurBox.add(section.getContourBox());
                         growing = true;
@@ -702,9 +807,24 @@ public class SlurInspector
         //~ Instance fields ----------------------------------------------------
 
         //
-        Scale.Fraction     maxCircleDistance = new Scale.Fraction(
-           0.3, //0.22,
+        Scale.LineFraction maxCircleDistance = new Scale.LineFraction(
+            0.04,
             "Maximum distance to approximating circle for a slur");
+
+        //
+        Scale.Fraction     minCircleRadius = new Scale.Fraction(
+            1,
+            "Minimum circle radius for a slur");
+
+        //
+        Scale.Fraction     maxCircleRadius = new Scale.Fraction(
+            100,
+            "Maximum circle radius for a slur");
+
+        //
+        Scale.Fraction     largeSlurWidth = new Scale.Fraction(
+            30,
+            "Minimum width to detect a really large slur");
 
         //
         Scale.AreaFraction minChunkWeight = new Scale.AreaFraction(

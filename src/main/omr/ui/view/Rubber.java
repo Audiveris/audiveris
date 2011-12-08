@@ -593,6 +593,32 @@ public class Rubber
         return "{Rubber #" + id + " " + rect + "}";
     }
 
+    //-----------//
+    // setCursor //
+    //-----------//
+    private void setCursor (MouseEvent e)
+    {
+        if (isDragWanted(e)) {
+            e.getComponent()
+             .setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+        } else if (isAdditionWanted(e)) {
+            e.getComponent()
+             .setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+        } else if (isContextWanted(e)) {
+            e.getComponent()
+             .setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        } else if (isRubberWanted(e)) {
+            e.getComponent()
+             .setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
+        } else if (isRezoomWanted(e)) {
+            e.getComponent()
+             .setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
+        } else {
+            e.getComponent()
+             .setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
+    }
+
     //-- private access ---------------------------------------------------
 
     //-----------//
@@ -666,7 +692,7 @@ public class Rubber
     //-------//
     // reset //
     //-------//
-    private final void reset (MouseEvent e)
+    private void reset (MouseEvent e)
     {
         if (rawRect == null) {
             rawRect = new Rectangle(e.getX(), e.getY(), 0, 0);
@@ -676,32 +702,6 @@ public class Rubber
 
         normalize();
         resetOrigin(rect.x, rect.y);
-    }
-
-    //-----------//
-    // setCursor //
-    //-----------//
-    private void setCursor (MouseEvent e)
-    {
-        if (isDragWanted(e)) {
-            e.getComponent()
-             .setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
-        } else if (isAdditionWanted(e)) {
-            e.getComponent()
-             .setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
-        } else if (isContextWanted(e)) {
-            e.getComponent()
-             .setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        } else if (isRubberWanted(e)) {
-            e.getComponent()
-             .setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
-        } else if (isRezoomWanted(e)) {
-            e.getComponent()
-             .setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
-        } else {
-            e.getComponent()
-             .setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        }
     }
 
     //--------//

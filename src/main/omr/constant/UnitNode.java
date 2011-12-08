@@ -15,7 +15,7 @@ import omr.log.Logger;
 
 /**
  * Class {@code UnitNode} represents a unit (class) in the hierarchy of
- * nodes. 
+ * nodes.
  * It represents a class and can have either a Logger, a ConstantSet, or both.
  *
  * @author Hervé Bitteur

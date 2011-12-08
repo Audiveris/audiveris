@@ -63,10 +63,10 @@ public class LineUtilities
      * @param p4 second point of line B
      * @return the intersection point
      */
-    public static Point2D intersection (Point2D p1,
-                                        Point2D p2,
-                                        Point2D p3,
-                                        Point2D p4)
+    public static Point2D.Double intersection (Point2D p1,
+                                               Point2D p2,
+                                               Point2D p3,
+                                               Point2D p4)
     {
         double x1 = p1.getX();
         double y1 = p1.getY();

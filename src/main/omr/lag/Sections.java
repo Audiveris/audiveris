@@ -45,7 +45,7 @@ public class Sections
      * @param sections the provided collection of sections
      * @return the bounding contour
      */
-    public static PixelRectangle getContourBox (Collection<Section> sections)
+    public static PixelRectangle getContourBox (Collection<?extends Section> sections)
     {
         PixelRectangle box = null;
 

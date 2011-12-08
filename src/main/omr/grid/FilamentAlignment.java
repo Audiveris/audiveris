@@ -41,9 +41,9 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Class {@code FilamentAlignment} is a GlyphAlignment meant for a Filament
- * instance, where the underlying Line is actually not a straight line, but a
- * NaturalSpline.
+ * Class {@code FilamentAlignment} is a GlyphAlignment meant for a 
+ * Filamentinstance, where the underlying Line is actually not a 
+ * straight line, but a NaturalSpline.
  *
  * @author Hervé Bitteur
  */
@@ -95,9 +95,10 @@ public class FilamentAlignment
     // getMeanCurvature //
     //------------------//
     /**
-     * Report the average radius of curvature along all segments of the curve.
+     * Report the average radius of curvature along all segments of 
+     * the curve.
      * This is not a global radius, but rather a way to mesure how straight
-     * the curve is
+     * the curve is.
      * @return the average of radius measurements along all curve segments
      */
     public double getMeanCurvature ()

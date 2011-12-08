@@ -29,19 +29,12 @@ import omr.log.Logger;
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 /**
- * Class {@code SplitPattern} tries to split large unknown glyphs into two
- * valid chunks.
+ * Class {@code SplitPattern} tries to split large unknown glyphs into
+ * two valid chunks.
  *
  * @author Hervé Bitteur
  */
@@ -64,8 +57,9 @@ public class SplitPattern
 
     //~ Instance fields --------------------------------------------------------
 
-    private final double       minGlyphWeight;
-    private final GlyphNetwork evaluator = GlyphNetwork.getInstance();
+    // Scale-dependent parameters
+    private final double minGlyphWeight;
+    private final double minChunkWeight;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -81,6 +75,7 @@ public class SplitPattern
         super("Split", system);
 
         minGlyphWeight = scale.toPixels(constants.minGlyphWeight);
+        minChunkWeight = scale.toPixels(constants.minChunkWeight);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -89,8 +84,8 @@ public class SplitPattern
     // runPattern //
     //------------//
     /**
-     * In the related system, look for heavy unknown glyphs which might be
-     * composed of several glyphs, each with a valid shape.
+     * In the related system, look for heavy unknown glyphs which might
+     * be composed of several glyphs, each with a valid shape.
      * @return the number of glyphs actually split
      */
     @Override
@@ -157,7 +152,8 @@ public class SplitPattern
     // splitGlyph //
     //------------//
     /**
-     * Try to split the provided master glyph into two valid glyph chunks.
+     * Try to split the provided master glyph into two valid glyph
+     * chunks.
      * @param master the master glyph to split
      * @return true if successful
      */
@@ -192,7 +188,21 @@ public class SplitPattern
                 }
             }
 
-            if (split.sigs.size() == 2) {
+            // Check if we have exactly two significant chunks
+            // (neglecting very small others)
+            int count = split.sigs.size();
+
+            for (GlyphSignature sig : split.sigs.keySet()) {
+                if (sig.getWeight() < minChunkWeight) {
+                    count--;
+                }
+            }
+
+            if (count == 2) {
+                if (master.isVip()) {
+                    logger.info("Split candidate: " + split);
+                }
+
                 splits.add(split);
             }
         }
@@ -214,9 +224,14 @@ public class SplitPattern
 
         // Check whether each of the chunks can be assigned a valid shape
         for (Glyph chunk : bestSplit.sigs.values()) {
+            if (chunk.getWeight() < minChunkWeight) {
+                continue;
+            }
+
             system.computeGlyphFeatures(chunk);
 
-            Evaluation vote = evaluator.vote(
+            Evaluation vote = GlyphNetwork.getInstance()
+                                          .vote(
                 chunk,
                 Grades.partMinGrade,
                 system);
@@ -261,13 +276,18 @@ public class SplitPattern
         Scale.AreaFraction minGlyphWeight = new Scale.AreaFraction(
             1.3,
             "Minimum normalized glyph weight to look for split");
+
+        //
+        Scale.AreaFraction minChunkWeight = new Scale.AreaFraction(
+            0.01,
+            "Minimum normalized weight of a chunk to be part of a split");
     }
 
     //-------//
     // Split //
     //-------//
     /**
-     * Records information about a potential split of a master glyph
+     * Records information about a potential split of a master glyph.
      */
     private static class Split
         implements Comparable<Split>
@@ -275,13 +295,13 @@ public class SplitPattern
         //~ Instance fields ----------------------------------------------------
 
         // Master glyph
-        private final Glyph                      master;
+        private final Glyph                            master;
 
         // The section used for the split
-        private final Section                    seed;
+        private final Section                          seed;
 
-        // The resulting glyph chunks
-        private final Map<GlyphSignature, Glyph> sigs = new HashMap<GlyphSignature, Glyph>();
+        // The resulting glyph chunks, kept sorted by (increasing) weight
+        private final SortedMap<GlyphSignature, Glyph> sigs = new TreeMap<GlyphSignature, Glyph>();
 
         //~ Constructors -------------------------------------------------------
 
@@ -308,8 +328,8 @@ public class SplitPattern
 
         public void register (SystemInfo system)
         {
-            // Include section seed into the smaller chunk
-            Entry<GlyphSignature, Glyph> lowEntry = getLowerEntry();
+            // Include section seed into the second largest chunk
+            Entry<GlyphSignature, Glyph> lowEntry = getSecondLargest();
             Glyph                        smallerGlyph = lowEntry.getValue();
             sigs.remove(lowEntry.getKey());
             smallerGlyph.addSection(seed, Linking.NO_LINK_BACK);
@@ -358,27 +378,28 @@ public class SplitPattern
             return sb.toString();
         }
 
-        private Entry<GlyphSignature, Glyph> getLowerEntry ()
+        private int getLowerWeight ()
         {
-            Entry<GlyphSignature, Glyph> best = null;
+            return getSecondLargest()
+                       .getKey()
+                       .getWeight();
+        }
+
+        private Entry<GlyphSignature, Glyph> getSecondLargest ()
+        {
+            // The map entries are sorted from small to large key
+            Entry<GlyphSignature, Glyph> prevEntry = null;
+            GlyphSignature               lastKey = sigs.lastKey();
 
             for (Entry<GlyphSignature, Glyph> entry : sigs.entrySet()) {
-                if ((best == null) ||
-                    (best.getKey()
-                         .getWeight() > entry.getKey()
-                                             .getWeight())) {
-                    best = entry;
+                if (entry.getKey() == lastKey) {
+                    return prevEntry;
+                } else {
+                    prevEntry = entry;
                 }
             }
 
-            return best;
-        }
-
-        private int getLowerWeight ()
-        {
-            return getLowerEntry()
-                       .getKey()
-                       .getWeight();
+            return prevEntry;
         }
     }
 }

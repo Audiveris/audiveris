@@ -19,8 +19,8 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
- * Interface {@code GlyphDisplay} defines the facet which handles the way a
- * glyph is displayed (its color, its image).
+ * Interface {@code GlyphDisplay} defines the facet which handles the
+ * way a glyph is displayed (its color, its image).
  *
  * @author Hervé Bitteur
  */
@@ -30,15 +30,14 @@ interface GlyphDisplay
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * Report a map of attachments
+     * Report a view on the map of attachments.
      * @return a (perhaps empty) map of attachments
      */
     Map<String, java.awt.Shape> getAttachments ();
 
     /**
-     * Report the color to be used to colorize the provided glyph, according to
-     * the color policy which is based on the glyph shape
-     *
+     * Report the color to be used to colorize the provided glyph,
+     * according to the color policy which is based on the glyph shape.
      * @return the related shape color of the glyph, or the predefined {@link
      * omr.ui.Colors#SHAPE_UNKNOWN} if the glyph has no related shape
      */
@@ -51,10 +50,11 @@ interface GlyphDisplay
     BufferedImage getImage ();
 
     /**
-     * Flag the glyph with a key and a rectangle. This is meant to add arbitrary
-     * awt shapes to a glyph, mainly for display and analysis purposes.
+     * Flag the glyph with a key and a rectangle.
+     * This is meant to add arbitrary awt shapes to a glyph, mainly for display
+     * and analysis purposes.
      * @param id the attachment ID
-     * @param attachment the awt shape to attach
+     * @param attachment awt shape to attach. If null, attachment is ignored.
      */
     void addAttachment (String         id,
                         java.awt.Shape attachment);
@@ -66,7 +66,7 @@ interface GlyphDisplay
     void colorize (Color color);
 
     /**
-     * Set the display color of all sections gathered by the provided list
+     * Set the display color of all sections in provided collection.
      * @param sections  the collection of sections
      * @param color     the display color
      */
@@ -74,7 +74,7 @@ interface GlyphDisplay
                    Color               color);
 
     /**
-     * Draw a basic representation of the glyph, using ascii characters
+     * Draw a basic representation of the glyph, using ascii characters.
      */
     void drawAscii ();
 

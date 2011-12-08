@@ -313,7 +313,7 @@ public class FilamentsFactory
                     section.cumulate(collector);
 
                     int startThickness = (int) Math.rint(
-                        (double) collector.getCount() / oRoi.width);
+                        (double) collector.getSize() / oRoi.width);
 
                     // Stop side
                     oRoi.translate(stopCoord - startCoord, stopPos - startPos);
@@ -321,7 +321,7 @@ public class FilamentsFactory
                     section.cumulate(collector);
 
                     int stopThickness = (int) Math.rint(
-                        (double) collector.getCount() / oRoi.width);
+                        (double) collector.getSize() / oRoi.width);
 
                     section.setFat(
                         (startThickness > params.maxSectionThickness) ||

@@ -174,7 +174,7 @@ public class Glyphs
         }
 
         // Case of no pixels found
-        if (collector.getCount() == 0) {
+        if (collector.getSize() == 0) {
             return 0;
         }
 
@@ -184,7 +184,7 @@ public class Glyphs
         int[] vals = (orientation == Orientation.HORIZONTAL)
                      ? collector.getYValues() : collector.getXValues();
 
-        for (int i = 0, iBreak = collector.getCount(); i < iBreak; i++) {
+        for (int i = 0, iBreak = collector.getSize(); i < iBreak; i++) {
             int val = vals[i];
             minVal = Math.min(minVal, val);
             maxVal = Math.max(maxVal, val);

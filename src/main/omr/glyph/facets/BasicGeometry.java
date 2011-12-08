@@ -322,7 +322,7 @@ class BasicGeometry
             moments = new Moments(
                 collector.getXValues(),
                 collector.getYValues(),
-                collector.getCount(),
+                collector.getSize(),
                 getInterline());
         } catch (Exception ex) {
             logger.warning(

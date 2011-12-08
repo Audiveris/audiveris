@@ -667,8 +667,25 @@ public class LagWeaver
                     {
                         Glyph glyph = section.getGlyph();
 
-                        return (glyph != null) &&
-                               (glyph.getShape() == Shape.STAFF_LINE);
+                        if ((glyph != null) &&
+                            (glyph.getShape() == Shape.STAFF_LINE)) {
+                            // Check if this staff line section  should be kept
+                            // Limit width 
+                            if (section.getLength(Orientation.HORIZONTAL) > 1) {
+                                return true;
+                            } else {
+                                if (logger.isFineEnabled()) {
+                                    logger.info(
+                                        "Keeping staffline section " + section);
+                                }
+
+                                section.setGlyph(null);
+
+                                return false;
+                            }
+                        } else {
+                            return false;
+                        }
                     }
                 });
     }

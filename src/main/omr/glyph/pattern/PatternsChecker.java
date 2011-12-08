@@ -59,13 +59,13 @@ public class PatternsChecker
         //
         new FortePattern(system),
                        
+        new HiddenSlurPattern(system),
+                       
         new SplitPattern(system),
                        
         new LedgerPattern(system),
                        
         new AlterPattern(system), 
-                       
-        new HiddenSlurPattern(system),
                        
         system.getSlurInspector(),
                        

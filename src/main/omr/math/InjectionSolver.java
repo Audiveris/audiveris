@@ -83,11 +83,31 @@ public class InjectionSolver
         return bestConfig;
     }
 
+    //------//
+    // dump //
+    //------//
+    private void dump ()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("bestCost=")
+          .append(bestCost);
+        sb.append(" [");
+
+        for (int i = 0; i < bestConfig.length; i++) {
+            sb.append(" ")
+              .append(bestConfig[i]);
+        }
+
+        sb.append("]");
+
+        System.out.println(sb.toString());
+    }
+
     //---------//
     // inspect //
     //---------//
-    private final void inspect (int id,
-                                int cost)
+    private void inspect (int id,
+                          int cost)
     {
         //        System.out.println("inspect id=" + id + " cost=" + cost);
         for (int ir = 0; ir < rangeSize; ir++) {
@@ -111,26 +131,6 @@ public class InjectionSolver
                 free[ir] = true;
             }
         }
-    }
-
-    //------//
-    // dump //
-    //------//
-    private void dump ()
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append("bestCost=")
-          .append(bestCost);
-        sb.append(" [");
-
-        for (int i = 0; i < bestConfig.length; i++) {
-            sb.append(" ")
-              .append(bestConfig[i]);
-        }
-
-        sb.append("]");
-
-        System.out.println(sb.toString());
     }
 
     //~ Inner Interfaces -------------------------------------------------------

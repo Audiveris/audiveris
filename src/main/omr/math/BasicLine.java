@@ -372,6 +372,7 @@ public class BasicLine
         if (n == 1) {
             return sx;
         }
+
         checkLineParameters();
 
         if (a != 0d) {

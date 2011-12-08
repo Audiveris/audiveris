@@ -764,7 +764,7 @@ public class NeuralNetwork
      *
      * @return the related function value
      */
-    private final double sigmoid (double val)
+    private double sigmoid (double val)
     {
         return 1.0d / (1.0d + Math.exp(-val));
     }

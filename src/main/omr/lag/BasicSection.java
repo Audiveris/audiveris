@@ -1527,20 +1527,20 @@ public class BasicSection
               .append(oppositeSections.size());
         }
 
-        sb.append(" fPos=")
-          .append(firstPos)
-          .append(" ");
-        sb.append(getFirstRun());
-
-        if (getRunCount() > 1) {
-            sb.append("-")
-              .append(getRunCount())
-              .append("-")
-              .append(getLastRun());
-        }
-
-        sb.append(" Wt=")
-          .append(weight);
+        //        sb.append(" fPos=")
+        //          .append(firstPos)
+        //          .append(" ");
+        //        sb.append(getFirstRun());
+        //
+        //        if (getRunCount() > 1) {
+        //            sb.append("-")
+        //              .append(getRunCount())
+        //              .append("-")
+        //              .append(getLastRun());
+        //        }
+        //
+        //        sb.append(" Wt=")
+        //          .append(weight);
 
         //        sb.append(" lv=")
         //          .append(getLevel());
@@ -1561,10 +1561,10 @@ public class BasicSection
             }
         }
 
-        if (system != null) {
-            sb.append(" syst:")
-              .append(system.getId());
-        }
+//        if (system != null) {
+//            sb.append(" syst:")
+//              .append(system.getId());
+//        }
 
         return sb.toString();
     }
