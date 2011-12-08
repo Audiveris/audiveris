@@ -887,8 +887,13 @@ public class TextLine
                     }
                 }
             }
-        } else {
-            logger.fine("No OCR line for glyph #" + glyph.getId());
+        }
+
+        if (sentences.isEmpty()) {
+            if (glyph.isVip() || logger.isFineEnabled()) {
+                logger.info("No OCR line for glyph #" + glyph.getId());
+            }
+
             glyph.setShape(null);
             glyph.forbidShape(Shape.TEXT);
         }
