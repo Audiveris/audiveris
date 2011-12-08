@@ -880,7 +880,6 @@ public class TextLine
                         }
 
                         glyph.setShape(null);
-                        glyph.forbidShape(Shape.TEXT);
                         sentences.clear();
 
                         return sentences;
@@ -895,7 +894,6 @@ public class TextLine
             }
 
             glyph.setShape(null);
-            glyph.forbidShape(Shape.TEXT);
         }
 
         return sentences;
