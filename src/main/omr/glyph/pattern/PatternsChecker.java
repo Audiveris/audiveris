@@ -20,8 +20,8 @@ import omr.sheet.SystemInfo;
 
 /**
  * Class {@code PatternsChecker} gathers for a gien system a series of
- * specific patterns to process (verify, recognize, fix, ...) glyphs in their
- * sheet environment.
+ * specific patterns to process (verify, recognize, fix, ...) glyphs 
+ * in their sheet environment.
  *
  * @author Hervé Bitteur
  */
@@ -58,6 +58,8 @@ public class PatternsChecker
                        
         //
         new BeamHookPattern(system),
+                       
+        new FlagPattern(system),
                        
         new FortePattern(system),
                        

@@ -35,7 +35,8 @@ public class BeamHookPattern
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(FortePattern.class);
+    private static final Logger logger = Logger.getLogger(
+        BeamHookPattern.class);
 
     //~ Constructors -----------------------------------------------------------
 
