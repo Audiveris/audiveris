@@ -50,6 +50,7 @@ import omr.util.Predicate;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -1135,42 +1136,26 @@ public class SystemInfo
     // lookupIntersectedGlyphs //
     //-------------------------//
     /**
-     * Look up in system glyphs for <b>all</b> glyphs, apart from the excluded
-     * glyph, intersected by a provided rectangle
+     * Look up in system glyphs for <b>all</b> glyphs, apart from the
+     * excluded glyphs, intersected by a provided rectangle.
      *
      * @param rect the coordinates rectangle, in pixels
-     * @param excluded the glyph to be excluded
+     * @param excluded the glyphs to be excluded
      * @return the glyphs found, which may be an empty list
      */
     public List<Glyph> lookupIntersectedGlyphs (PixelRectangle rect,
-                                                Glyph          excluded)
+                                                Glyph... excluded)
     {
+        List<Glyph> exc = Arrays.asList(excluded);
         List<Glyph> found = new ArrayList<Glyph>();
 
         for (Glyph glyph : getGlyphs()) {
-            if (glyph != excluded) {
-                if (glyph.intersects(rect)) {
-                    found.add(glyph);
-                }
+            if (!exc.contains(glyph) && glyph.intersects(rect)) {
+                found.add(glyph);
             }
         }
 
         return found;
-    }
-
-    //-------------------------//
-    // lookupIntersectedGlyphs //
-    //-------------------------//
-    /**
-     * Look up in system glyphs for <b>all</b> glyphs intersected by a
-     * provided rectangle
-     *
-     * @param rect the coordinates rectangle, in pixels
-     * @return the glyphs found, which may be an empty list
-     */
-    public List<Glyph> lookupIntersectedGlyphs (PixelRectangle rect)
-    {
-        return lookupIntersectedGlyphs(rect, null);
     }
 
     //---------------//
@@ -1257,19 +1242,6 @@ public class SystemInfo
             // Remove glyph from system & cut sections links to it
             removeGlyph(glyph);
         }
-    }
-
-    //-----------//
-    // stemBoxOf //
-    //-----------//
-    /**
-     * Report a enlarged box of a given (stem) glyph
-     * @param stem the stem
-     * @return the enlarged stem box
-     */
-    public PixelRectangle stemBoxOf (Glyph stem)
-    {
-        return glyphsBuilder.stemBoxOf(stem);
     }
 
     //----------------//
@@ -1377,6 +1349,19 @@ public class SystemInfo
         }
 
         return selected;
+    }
+
+    //-----------//
+    // stemBoxOf //
+    //-----------//
+    /**
+     * Report a enlarged box of a given (stem) glyph
+     * @param stem the stem
+     * @return the enlarged stem box
+     */
+    public PixelRectangle stemBoxOf (Glyph stem)
+    {
+        return glyphsBuilder.stemBoxOf(stem);
     }
 
     //----------//

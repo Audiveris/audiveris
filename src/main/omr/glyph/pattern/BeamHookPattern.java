@@ -96,11 +96,8 @@ public class BeamHookPattern
 
                     for (Glyph g : system.lookupIntersectedGlyphs(
                         stemBox,
-                        stem)) {
-                        if (g == hook) {
-                            continue;
-                        }
-
+                        stem,
+                        hook)) {
                         // We look for  beam on same stem side
                         if ((g.getStem(side) == stem)) {
                             Shape shape = g.getShape();

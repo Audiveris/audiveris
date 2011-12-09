@@ -93,11 +93,7 @@ public class FlagPattern
             PixelRectangle stemBox = system.stemBoxOf(stem);
             boolean        found = false;
 
-            for (Glyph g : system.lookupIntersectedGlyphs(stemBox, stem)) {
-                if (g == flag) {
-                    continue;
-                }
-
+            for (Glyph g : system.lookupIntersectedGlyphs(stemBox, stem, flag)) {
                 // We are looking for head (or some similar large stuff)
                 Shape shape = g.getShape();
 
@@ -116,9 +112,10 @@ public class FlagPattern
 
             if (!found) {
                 // Deassign this flag w/ no head neighbor
-                ///if (flag.isVip() || logger.isFineEnabled()) {
-                logger.info("Cancelled flag #" + flag.getId());
-                ///}
+                if (flag.isVip() || logger.isFineEnabled()) {
+                    logger.info("Cancelled flag #" + flag.getId());
+                }
+
                 flag.setShape(null);
                 nb++;
             }
