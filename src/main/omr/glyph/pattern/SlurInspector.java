@@ -73,19 +73,19 @@ public class SlurInspector
     private final SlurCompoundAdapter compoundAdapter;
 
     // Cached system-dependent constants
-    final int    interline;
-    final int    minChunkWeight;
-    final double maxChunkThickness;
-    final int    slurBoxDx;
-    final int    slurBoxDy;
-    final int    targetHypot;
-    final int    targetLineHypot;
-    final int    minSlurWidth;
-    final int    minExtensionHeight;
-    final int    largeSlurWidth;
-    final double maxCircleDistance;
-    final double minCircleRadius;
-    final double maxCircleRadius;
+    private final int    interline;
+    private final int    minChunkWeight;
+    private final double maxChunkThickness;
+    private final int    slurBoxDx;
+    private final int    slurBoxDy;
+    private final int    targetHypot;
+    private final int    targetLineHypot;
+    private final int    minSlurWidth;
+    private final int    minExtensionHeight;
+    private final int    largeSlurWidth;
+    private final double maxCircleDistance;
+    private final double minCircleRadius;
+    private final double maxCircleRadius;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -863,7 +863,7 @@ public class SlurInspector
 
         //
         Scale.LineFraction maxChunkThickness = new Scale.LineFraction(
-            1.5,
+            1.7,
             "Maximum mean thickness of a chunk to be part of slur computation");
 
         //

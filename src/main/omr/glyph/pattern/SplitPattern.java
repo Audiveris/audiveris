@@ -279,7 +279,7 @@ public class SplitPattern
 
         //
         Scale.AreaFraction minChunkWeight = new Scale.AreaFraction(
-            0.01,
+            0.025,
             "Minimum normalized weight of a chunk to be part of a split");
     }
 
