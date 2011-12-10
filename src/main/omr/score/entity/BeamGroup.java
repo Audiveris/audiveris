@@ -23,6 +23,7 @@ import omr.score.common.PixelPoint;
 import omr.util.HorizontalSide;
 import omr.util.Navigable;
 import omr.util.TreeNode;
+import omr.util.Vip;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -31,13 +32,15 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class {@code BeamGroup} represents a group of related beams. It handles
- * the level of each beam within the group. The contained beams are ordered in
- * increasing order from stem/chord tail to stem/chord head
+ * Class {@code BeamGroup} represents a group of related beams.
+ * It handles the level of each beam within the group.
+ * The contained beams are sorted in increasing order from stem/chord tail to
+ * stem/chord head
  *
  * @author Hervé Bitteur
  */
 public class BeamGroup
+    implements Vip
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -49,6 +52,9 @@ public class BeamGroup
 
     //~ Instance fields --------------------------------------------------------
 
+    /** (Debug) flag this object as VIP */
+    private boolean vip;
+
     /** Id for debug mainly */
     private final int id;
 
@@ -56,7 +62,7 @@ public class BeamGroup
     @Navigable(false)
     private final Measure measure;
 
-    /** Ordered collection of contained beams */
+    /** Sorted collection of contained beams */
     private SortedSet<Beam> beams = new TreeSet<Beam>();
 
     /** Same voice for all chords of this beam group */
@@ -68,7 +74,7 @@ public class BeamGroup
     // BeamGroup //
     //-----------//
     /**
-     * Creates a new instance of BeamGroup
+     * Creates a new instance of BeamGroup.
      * @param measure the containing measure
      */
     public BeamGroup (Measure measure)
@@ -77,6 +83,10 @@ public class BeamGroup
         measure.addGroup(this);
         id = measure.getBeamGroups()
                     .indexOf(this) + 1;
+
+        if (logger.isFineEnabled()) {
+            logger.fine(measure.getContextString() + " Created " + this);
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -85,9 +95,8 @@ public class BeamGroup
     // getBeams //
     //----------//
     /**
-     * Report the ordered set of beams that are part of this group
-     *
-     * @return the ordered set of contained beams
+     * Report the ordered set of beams that are part of this group.
+     * @return the sorted set of contained beams
      */
     public SortedSet<Beam> getBeams ()
     {
@@ -98,9 +107,8 @@ public class BeamGroup
     // getChords //
     //-----------//
     /**
-     * Report the x-ordered collection of chords that are grouped by this
-     * beam group.
-     *
+     * Report the x-ordered collection of chords that are grouped by
+     * this beam group.
      * @return the (perhaps empty) collection of 'beamed' chords.
      */
     public SortedSet<Chord> getChords ()
@@ -120,7 +128,8 @@ public class BeamGroup
     // getDuration //
     //-------------//
     /**
-     * Report the total duration of the sequence of chords within this group
+     * Report the total duration of the sequence of chords within this
+     * group.
      * @return the total group duration, perhaps null
      */
     public Rational getDuration ()
@@ -153,8 +162,7 @@ public class BeamGroup
     // getId //
     //-------//
     /**
-     * Report the group id (unique within the measure, starting from 1)
-     *
+     * Report the group id (unique within the measure, starting from 1).
      * @return the group id
      */
     public int getId ()
@@ -166,10 +174,9 @@ public class BeamGroup
     // getLevel //
     //----------//
     /**
-     * Report the level of a beam within its containing BeamGroup
-     *
+     * Report the level of a beam within its containing BeamGroup.
      * @param beam the given beam (assumed to be part of this group)
-     * @return the beam level within the group
+     * @return the beam level within the group, counted from 1
      */
     public int getLevel (Beam beam)
     {
@@ -189,12 +196,27 @@ public class BeamGroup
         return 0;
     }
 
+    //--------//
+    // setVip //
+    //--------//
+    public void setVip ()
+    {
+        vip = true;
+    }
+
+    //-------//
+    // isVip //
+    //-------//
+    public boolean isVip ()
+    {
+        return vip;
+    }
+
     //---------//
     // addBeam //
     //---------//
     /**
-     * Include a beam as part of this group
-     *
+     * Include a beam as part of this group.
      * @param beam the beam to include
      */
     public void addBeam (Beam beam)
@@ -202,14 +224,24 @@ public class BeamGroup
         if (!beams.add(beam)) {
             beam.addError(beam + " already in " + this);
         }
+
+        if (beam.isVip()) {
+            setVip();
+        }
+
+        if (isVip() || logger.isFineEnabled()) {
+            logger.info(
+                measure.getContextString() + " Added " + beam + " to " + this);
+        }
     }
 
     //-------------------//
     // computeStartTimes //
     //-------------------//
     /**
-     * Compute start times for all chords of this beam group, assuming the first
-     * chord of the group already has its startTime set
+     * Compute start times for all chords of this beam group,
+     * assuming the first chord of the group already has its
+     * startTime set.
      */
     public void computeStartTimes ()
     {
@@ -247,13 +279,12 @@ public class BeamGroup
     // populate //
     //----------//
     /**
-     * Populate all the BeamGroup instances for a given measure
-     *
+     * Populate all the BeamGroup instances for a given measure.
      * @param measure the containing measure
      */
     public static void populate (Measure measure)
     {
-        // Allocate beams to chords
+        // Link beams to chords
         for (TreeNode node : measure.getBeams()) {
             Beam beam = (Beam) node;
             beam.linkChords();
@@ -277,7 +308,6 @@ public class BeamGroup
                 break;
             }
 
-            ///  java.lang.System.out.println("populate. processSplit " + split);
             split.group.splitGroup(split);
         }
 
@@ -306,8 +336,7 @@ public class BeamGroup
     // setVoice //
     //----------//
     /**
-     * Assign a voice to this beam group
-     *
+     * Assign a voice to this beam group.
      * @param voice the voice to assign
      */
     public void setVoice (Voice voice)
@@ -316,7 +345,7 @@ public class BeamGroup
         if (this.voice == null) {
             this.voice = voice;
 
-            // Extend this information to the beamed chords
+            // Formard this information to the beamed chords
             // Including the interleaved rests if any
             Chord prevChord = null;
 
@@ -347,9 +376,8 @@ public class BeamGroup
     // removeBeam //
     //------------//
     /**
-     * Remove a beam from this group (in order to assign the beam to another
-     * group)
-     *
+     * Remove a beam from this group (in order to assign the beam to
+     * another group).
      * @param beam the beam to remove
      */
     public void removeBeam (Beam beam)
@@ -366,8 +394,7 @@ public class BeamGroup
     public String toString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("{BeamGroup")
-          .append(" #")
+        sb.append("{BeamGroup#")
           .append(id)
           .append(" beams[");
 
@@ -387,9 +414,8 @@ public class BeamGroup
     // checkBeamGroups //
     //-----------------//
     /**
-     * Check all the BeamGroup instances of the given measure, to find the first
-     * split if any to perform
-     *
+     * Check all the BeamGroup instances of the given measure, to find
+     * the first split if any to perform.
      * @param measure the given measure
      * @return the first split parameters, or null if everything is OK
      */
@@ -410,8 +436,8 @@ public class BeamGroup
     // align //
     //-------//
     /**
-     * Force all beams (and beam items) to use the same slope within that beam
-     * group
+     * Force all beams (and beam items) to use the same slope within
+     * that beam group.
      */
     private void align ()
     {
@@ -453,9 +479,8 @@ public class BeamGroup
     // checkGroup //
     //------------//
     /**
-     * Run a consistency check on the group, and detect when a group has to be
-     * split
-     *
+     * Run a consistency check on the group, and detect when a group
+     * has to be splitted.
      * @return the split order parameters, or null if no split is needed
      */
     private SplitOrder checkGroup ()
@@ -463,7 +488,7 @@ public class BeamGroup
         // Make sure all chords are part of the same group
         // We use the fact that for any given slot, there must be at most one
         // chord for this beam group
-        // Another possibility might be to use beam slope and proximity TODO
+        // TODO: Another possibility might be to use beam slope and proximity 
         for (Slot slot : measure.getSlots()) {
             Chord prevChord = null;
 
@@ -494,8 +519,7 @@ public class BeamGroup
     // splitChord //
     //------------//
     /**
-     * We actually split a chord which embraces the two beam groups
-     *
+     * We actually split a chord which embraces the two beam groups.
      * @param chord the chord to split
      * @param split the split parameters
      * @param alienGroup the alien beam group
@@ -551,8 +575,7 @@ public class BeamGroup
     // splitGroup //
     //------------//
     /**
-     * Actually split a group in two, according to the split parameters
-     *
+     * Actually split a group in two, according to the split parameters.
      * @param split the split parameters
      */
     private void splitGroup (SplitOrder split)

@@ -48,8 +48,13 @@ public abstract class PageNode
     public String getContextString ()
     {
         StringBuilder sb = new StringBuilder(super.getContextString());
-        sb.append("#")
-          .append(getPage().getIndex());
+
+        if (getScore()
+                .isMultiPage()) {
+            sb.append("[#")
+              .append(getPage().getIndex())
+              .append("] ");
+        }
 
         return sb.toString();
     }

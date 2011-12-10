@@ -431,8 +431,8 @@ public abstract class MeasureId
         // toScoreString //
         //---------------//
         /**
-         * Present the score-based display (even though the stored value is
-         * page-based)
+         * Present the score-based display (even though the stored 
+         * value is page-based)
          * @return [X]absId
          */
         public String toScoreString ()
@@ -455,7 +455,7 @@ public abstract class MeasureId
         @Override
         public String toString ()
         {
-            StringBuilder sb = new StringBuilder("P");
+            StringBuilder sb = new StringBuilder("*");
 
             if (secondHalf) {
                 sb.append(SH_STRING);

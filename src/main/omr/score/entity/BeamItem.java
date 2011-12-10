@@ -25,17 +25,20 @@ import omr.score.common.PixelRectangle;
 import omr.util.HorizontalSide;
 import omr.util.Implement;
 import omr.util.Navigable;
+import omr.util.Vip;
 
 import java.util.Collection;
 
 /**
- * Class {@code BeamItem} represents a single beam hook or beam or a beam
- * item part of a larger beam pack.
+ * Class {@code BeamItem} represents either a single beam hook
+ * (stuck to 1 stem) or a beam (stuck to 2 stems).
+ * By extension, a BeamItem can be a logical part of thick beam "pack" due to
+ * glyphs stuck vertically.
  *
  * @author Hervé Bitteur
  */
 public class BeamItem
-    implements Comparable<BeamItem>
+    implements Comparable<BeamItem>, Vip
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -43,6 +46,9 @@ public class BeamItem
     private static final Logger logger = Logger.getLogger(BeamItem.class);
 
     //~ Instance fields --------------------------------------------------------
+
+    /** (Debug) flag this object as VIP */
+    private boolean vip;
 
     /** The containing measure */
     @Navigable(false)
@@ -52,7 +58,7 @@ public class BeamItem
     private final Glyph glyph;
 
     /**
-     * Cardinality of the beam pack (nb of stuck glyphs) this item is part of.
+     * Cardinality of the containing beam pack (nb of stuck glyphs).
      * Card = 1 for an isolated beam
      */
     private final int packCard;
@@ -77,25 +83,7 @@ public class BeamItem
     //----------//
     // BeamItem //
     //----------//
-    /**
-     * Create a beam item that correspond to a simple glyph (either beam hook or
-     * beam)
-     *
-     * @param measure the containing measure
-     * @param glyph the underlying glyph
-     */
-    private BeamItem (Measure measure,
-                      Glyph   glyph)
-    {
-        this(measure, glyph, 1, 0);
-        glyph.setTranslation(this);
-    }
-
-    //----------//
-    // BeamItem //
-    //----------//
-    /** Create a new instance of beam item, as a chunk of a larger beam pack.
-     *
+    /** Create a new instance of beam item, as part of a beam pack.
      * @param measure the containing measure
      * @param glyph the underlying glyph
      * @param packCard the number of items in the pack
@@ -150,6 +138,14 @@ public class BeamItem
                 right = new PixelPoint(box.x + box.width, lowY);
             }
         }
+
+        if (glyph.isVip()) {
+            setVip();
+        }
+
+        if (isVip() || logger.isFineEnabled()) {
+            logger.info(measure.getContextString() + " Created " + this);
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -159,8 +155,7 @@ public class BeamItem
     //-----------//
     /**
      * Report the center of the beam item (which is different from the
-     * glyph center in case of a multi-beam glyph)
-     *
+     * glyph center in case of a multi-beam pack glyph).
      * @return the system-based center of the beam item
      */
     public PixelPoint getCenter ()
@@ -178,7 +173,7 @@ public class BeamItem
     // getGlyph //
     //----------//
     /**
-     * Report the underlying glyph
+     * Report the underlying glyph.
      * @return the underlying glyph
      */
     public Glyph getGlyph ()
@@ -190,8 +185,7 @@ public class BeamItem
     // isHook //
     //--------//
     /**
-     * Check whether the item is a beam hook
-     *
+     * Check whether the item is a beam hook.
      * @return true if beam hook, false otherwise
      */
     public boolean isHook ()
@@ -203,8 +197,7 @@ public class BeamItem
     // getLine //
     //---------//
     /**
-     * Report the (horizontal) line equation defined by the beam item
-     *
+     * Report the (horizontal) line equation defined by the beam item.
      * @return the line equation
      */
     public Line getLine ()
@@ -224,7 +217,7 @@ public class BeamItem
     // getPoint //
     //----------//
     /**
-     * Report the point that define the desired edge of the beam item.
+     * Report the point that defines the desired edge of the beam item.
      * @return the PixelPoint coordinates of the point on desired side
      */
     public PixelPoint getPoint (HorizontalSide side)
@@ -241,7 +234,7 @@ public class BeamItem
     //---------//
     /**
      * Report the stem (if any) of this beam item on the desired side.
-     * @return the foundstem or null
+     * @return the found stem or null
      */
     public Glyph getStem (HorizontalSide side)
     {
@@ -252,8 +245,8 @@ public class BeamItem
     // compareTo //
     //-----------//
     /**
-     * Compare to another BeamItem, by delegating to the underlying glyph
-     *
+     * Compare (horizontally) to another BeamItem, by delegating to
+     * the underlying glyph.
      * @param other the other BeamItem instance
      * @return -1, 0 or 1
      */
@@ -268,8 +261,8 @@ public class BeamItem
     // populate //
     //----------//
     /**
-     * Populate a (series of) beam item with this glyph
-     *
+     * Populate a BeamItem with this glyph, or a series of BeamItem's
+     * if the glyph is a beam pack.
      * @param glyph glyph of the beam, or beam pack
      * @param measure the containing measure
      */
@@ -283,9 +276,8 @@ public class BeamItem
     // toString //
     //----------//
     /**
-     * Convenient method, to build a string with just the ids of the items
-     * collection
-     *
+     * Convenient method, to build a string with just the ids of the
+     * items collection.
      * @param items the collection of beam items
      * @return the string built
      */
@@ -302,6 +294,22 @@ public class BeamItem
         sb.append("]");
 
         return sb.toString();
+    }
+
+    //--------//
+    // setVip //
+    //--------//
+    public void setVip ()
+    {
+        vip = true;
+    }
+
+    //-------//
+    // isVip //
+    //-------//
+    public boolean isVip ()
+    {
+        return vip;
     }
 
     //----------//
@@ -355,8 +363,7 @@ public class BeamItem
     // createPack //
     //------------//
     /**
-     * Create a bunch of beam item instances for one beam pack
-     *
+     * Create a bunch of BeamItem instances for one pack.
      * @param measure the containing measure
      * @param glyph the underlying glyph of the beam pack
      */
@@ -383,8 +390,7 @@ public class BeamItem
     // packCardOf //
     //------------//
     /**
-     * Report the cardinality inferred from the glyph shape
-     *
+     * Report the cardinality inferred from the glyph shape.
      * @param shape the shape of the underlying glyph
      * @return the number of beam items for this shape
      */

@@ -59,6 +59,8 @@ public class PatternsChecker
         //
         new BeamHookPattern(system),
                        
+        new DoubleBeamPattern(system),
+                       
         new FlagPattern(system),
                        
         new FortePattern(system),

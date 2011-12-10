@@ -86,6 +86,9 @@ public class Grades
     /** Minimum grade for a validation */
     public static final double validationMinGrade = constants.validationMinGrade.getValue();
 
+    /** No minimum grade */
+    public static final double noMinGrade = 0;
+
     //~ Inner Classes ----------------------------------------------------------
 
     //-----------//

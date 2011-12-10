@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="PEDAL_UP_MARK" interline="18" id="5276">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>15.5</pitch-position>
+    <section orientation="HORIZONTAL" first-pos="3017" id="3820">
+        <run start="2214" level="0" length="1"/>
+        <run start="2213" level="0" length="2"/>
+        <run start="2213" level="0" length="2"/>
+        <run start="2213" level="0" length="2"/>
+        <run start="2214" level="0" length="1"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2215" id="2514">
+        <run start="3016" level="18" length="6"/>
+        <run start="3016" level="19" length="6"/>
+    </section>
+    <section orientation="HORIZONTAL" first-pos="3008" id="3802">
+        <run start="2218" level="0" length="2"/>
+        <run start="2218" level="0" length="2"/>
+        <run start="2217" level="0" length="3"/>
+        <run start="2218" level="0" length="2"/>
+        <run start="2218" level="0" length="2"/>
+    </section>
+    <section orientation="HORIZONTAL" first-pos="3017" id="3821">
+        <run start="2217" level="0" length="1"/>
+    </section>
+    <section orientation="HORIZONTAL" first-pos="3018" id="3824">
+        <run start="2217" level="0" length="9"/>
+        <run start="2217" level="0" length="9"/>
+    </section>
+    <section orientation="HORIZONTAL" first-pos="3020" id="3827">
+        <run start="2217" level="0" length="2"/>
+        <run start="2217" level="0" length="1"/>
+    </section>
+    <section orientation="HORIZONTAL" first-pos="3025" id="3837">
+        <run start="2218" level="0" length="1"/>
+        <run start="2218" level="0" length="1"/>
+        <run start="2217" level="0" length="2"/>
+        <run start="2217" level="0" length="2"/>
+        <run start="2218" level="0" length="1"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2219" id="2523">
+        <run start="3025" level="16" length="6"/>
+        <run start="3025" level="11" length="6"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2220" id="2528">
+        <run start="3007" level="22" length="6"/>
+    </section>
+    <section orientation="HORIZONTAL" first-pos="3008" id="3803">
+        <run start="2221" level="0" length="1"/>
+        <run start="2221" level="0" length="1"/>
+        <run start="2221" level="0" length="1"/>
+        <run start="2221" level="0" length="1"/>
+        <run start="2221" level="0" length="1"/>
+    </section>
+    <section orientation="HORIZONTAL" first-pos="3025" id="3838">
+        <run start="2221" level="0" length="1"/>
+        <run start="2221" level="0" length="1"/>
+        <run start="2221" level="0" length="1"/>
+        <run start="2221" level="0" length="1"/>
+        <run start="2221" level="0" length="1"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2222" id="2529">
+        <run start="3008" level="34" length="6"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2222" id="2530">
+        <run start="3024" level="52" length="6"/>
+    </section>
+    <section orientation="HORIZONTAL" first-pos="3012" id="3807">
+        <run start="2223" level="0" length="1"/>
+        <run start="2223" level="0" length="2"/>
+        <run start="2223" level="0" length="2"/>
+        <run start="2224" level="0" length="2"/>
+        <run start="2225" level="0" length="1"/>
+    </section>
+    <section orientation="HORIZONTAL" first-pos="3020" id="3828">
+        <run start="2225" level="0" length="1"/>
+        <run start="2225" level="0" length="1"/>
+        <run start="2224" level="0" length="2"/>
+        <run start="2223" level="0" length="2"/>
+        <run start="2223" level="0" length="1"/>
+    </section>
+    <section orientation="HORIZONTAL" first-pos="3004" id="3791">
+        <run start="2226" level="0" length="1"/>
+        <run start="2226" level="0" length="1"/>
+        <run start="2226" level="0" length="1"/>
+        <run start="2226" level="0" length="1"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2226" id="2534">
+        <run start="3016" level="31" length="6"/>
+    </section>
+    <section orientation="HORIZONTAL" first-pos="3030" id="3851">
+        <run start="2226" level="0" length="1"/>
+        <run start="2226" level="0" length="1"/>
+        <run start="2226" level="0" length="1"/>
+        <run start="2226" level="0" length="1"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2227" id="2535">
+        <run start="3004" level="25" length="6"/>
+    </section>
+    <section orientation="HORIZONTAL" first-pos="3016" id="3819">
+        <run start="2227" level="0" length="1"/>
+    </section>
+    <section orientation="HORIZONTAL" first-pos="3021" id="3830">
+        <run start="2227" level="0" length="1"/>
+        <run start="2227" level="0" length="1"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2227" id="2536">
+        <run start="3029" level="35" length="6"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2228" id="2539">
+        <run start="3003" level="16" length="14"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2228" id="2540">
+        <run start="3021" level="44" length="14"/>
+        <run start="3021" level="52" length="14"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2229" id="2542">
+        <run start="3004" level="9" length="6"/>
+    </section>
+    <section orientation="HORIZONTAL" first-pos="3015" id="3813">
+        <run start="2229" level="0" length="1"/>
+        <run start="2229" level="0" length="2"/>
+        <run start="2230" level="0" length="1"/>
+    </section>
+    <section orientation="HORIZONTAL" first-pos="3004" id="3792">
+        <run start="2230" level="0" length="1"/>
+        <run start="2230" level="0" length="2"/>
+        <run start="2230" level="0" length="2"/>
+        <run start="2230" level="0" length="1"/>
+        <run start="2230" level="0" length="1"/>
+    </section>
+    <section orientation="HORIZONTAL" first-pos="3021" id="3831">
+        <run start="2230" level="0" length="1"/>
+        <run start="2230" level="0" length="1"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2230" id="2543">
+        <run start="3029" level="38" length="6"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2231" id="2545">
+        <run start="3016" level="9" length="7"/>
+    </section>
+    <section orientation="HORIZONTAL" first-pos="3031" id="3853">
+        <run start="2231" level="0" length="1"/>
+        <run start="2231" level="0" length="1"/>
+        <run start="2231" level="0" length="1"/>
+    </section>
+    <section orientation="HORIZONTAL" first-pos="3015" id="3814">
+        <run start="2232" level="0" length="1"/>
+    </section>
+    <section orientation="HORIZONTAL" first-pos="3018" id="3825">
+        <run start="2232" level="0" length="8"/>
+        <run start="2232" level="0" length="8"/>
+    </section>
+    <section orientation="HORIZONTAL" first-pos="3022" id="3834">
+        <run start="2232" level="0" length="1"/>
+        <run start="2232" level="0" length="2"/>
+        <run start="2233" level="0" length="2"/>
+        <run start="2234" level="0" length="2"/>
+        <run start="2234" level="0" length="2"/>
+        <run start="2234" level="0" length="2"/>
+        <run start="2235" level="0" length="1"/>
+        <run start="2235" level="0" length="1"/>
+    </section>
+    <section orientation="HORIZONTAL" first-pos="3014" id="3811">
+        <run start="2233" level="0" length="1"/>
+    </section>
+    <section orientation="HORIZONTAL" first-pos="3012" id="3808">
+        <run start="2234" level="0" length="1"/>
+        <run start="2234" level="0" length="1"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2235" id="2548">
+        <run start="3008" level="39" length="6"/>
+    </section>
+    <section orientation="HORIZONTAL" first-pos="3008" id="3804">
+        <run start="2236" level="0" length="3"/>
+        <run start="2236" level="0" length="4"/>
+        <run start="2236" level="0" length="4"/>
+        <run start="2236" level="0" length="4"/>
+        <run start="2236" level="0" length="4"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2236" id="2549">
+        <run start="3025" level="18" length="6"/>
+        <run start="3025" level="16" length="6"/>
+        <run start="3025" level="29" length="6"/>
+    </section>
+    <section orientation="HORIZONTAL" first-pos="3017" id="3822">
+        <run start="2239" level="0" length="1"/>
+    </section>
+    <section orientation="HORIZONTAL" first-pos="3020" id="3829">
+        <run start="2239" level="0" length="1"/>
+    </section>
+    <section orientation="HORIZONTAL" first-pos="3026" id="3842">
+        <run start="2239" level="0" length="1"/>
+        <run start="2239" level="0" length="1"/>
+        <run start="2239" level="0" length="1"/>
+        <run start="2239" level="0" length="1"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2240" id="2555">
+        <run start="3016" level="29" length="6"/>
+        <run start="3016" level="12" length="6"/>
+        <run start="3016" level="17" length="6"/>
+    </section>
+    <section orientation="HORIZONTAL" first-pos="3017" id="3823">
+        <run start="2243" level="0" length="1"/>
+        <run start="2243" level="0" length="1"/>
+        <run start="2243" level="0" length="2"/>
+        <run start="2243" level="0" length="1"/>
+        <run start="2243" level="0" length="1"/>
+    </section>
+</glyph>

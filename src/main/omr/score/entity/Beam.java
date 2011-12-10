@@ -30,21 +30,23 @@ import omr.sheet.Scale;
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
 import omr.util.TreeNode;
+import omr.util.Vip;
 
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class {@code Beam} represents a beam hook or a beam line, that may
- * be composed of several beam items, aligned one after the other,
- * along the same line.
+ * Class {@code Beam} represents a beam "line", that may
+ * be composed of several BeamItem instances, aligned horizontally one
+ * after the other, along the same line.
+ * It can degenerate to just a single beam hook.
  *
  * @author Hervé Bitteur
  */
 public class Beam
     extends MeasureNode
-    implements Comparable<Beam>
+    implements Comparable<Beam>, Vip
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -56,13 +58,16 @@ public class Beam
 
     //~ Instance fields --------------------------------------------------------
 
+    /** (Debug) flag this object as VIP */
+    private boolean vip;
+
     /** Id for debug */
     private final int id;
 
     /** The containing beam group */
     private BeamGroup group;
 
-    /** Items that compose this beam, ordered by abscissa */
+    /** Items that compose this beam, sorted by abscissa */
     private SortedSet<BeamItem> items = new TreeSet<BeamItem>();
 
     /** Sequence of Chords that are linked by this beam, ordered by abscissa */
@@ -90,6 +95,10 @@ public class Beam
         super(measure);
 
         id = 1 + getChildIndex();
+
+        if (logger.isFineEnabled()) {
+            logger.fine(measure.getContextString() + " Created " + this);
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -205,6 +214,22 @@ public class Beam
             return items.last()
                         .getPoint(RIGHT);
         }
+    }
+
+    //--------//
+    // setVip //
+    //--------//
+    public void setVip ()
+    {
+        vip = true;
+    }
+
+    //-------//
+    // isVip //
+    //-------//
+    public boolean isVip ()
+    {
+        return vip;
     }
 
     //--------//
@@ -569,40 +594,47 @@ public class Beam
     // isCompatibleWith //
     //------------------//
     /**
-     * Check compatibility of a given BEAM/BEAM_HOOK item with this beam.
+     * Check compatibility of a given BeamItem with this Beam instance.
      * We use alignment and distance criterias.
-     *
      * @param item the beam item to check for compatibility
      * @return true if compatible
      */
     private boolean isCompatibleWith (BeamItem item)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Check beam item " + item + " with " + this);
+        boolean logging = isVip() || item.isVip() || logger.isFineEnabled();
+
+        if (logging) {
+            logger.info("Check beam item " + item + " with " + this);
         }
 
-        // Check alignment
+        // Check alignment, using distance to line
         PixelPoint gsp = item.getCenter();
-        double     dist = getLine()
-                              .distanceOf(gsp.x, gsp.y);
-        double     maxDistance = getScale()
-                                     .toPixels(constants.maxDistance);
+        double     dy = getScale()
+                            .pixelsToFrac(getLine().distanceOf(gsp.x, gsp.y));
 
-        if (logger.isFineEnabled()) {
-            logger.fine("maxDistance=" + maxDistance + " dist=" + dist);
+        if (logging) {
+            logger.info(
+                "dy=" + (float) Math.abs(dy) + " vs " +
+                constants.maxDistance.getValue());
         }
 
-        if (Math.abs(dist) > maxDistance) {
+        if (Math.abs(dy) > constants.maxDistance.getValue()) {
             return false;
         }
 
         // Check distance along the same alignment
-        double maxGap = getScale()
-                            .toPixels(constants.maxGap);
-
         for (HorizontalSide side : HorizontalSide.values()) {
-            if (item.getPoint(side)
-                    .distance(getPoint(side)) <= maxGap) {
+            double dx = getScale()
+                            .pixelsToFrac(
+                item.getPoint(side).distance(
+                    getPoint((side == LEFT) ? RIGHT : LEFT)));
+
+            if (logging) {
+                logger.info(
+                    "dx=" + (float) dx + " vs " + constants.maxGap.getValue());
+            }
+
+            if (dx <= constants.maxGap.getValue()) {
                 return true;
             }
         }
@@ -621,6 +653,16 @@ public class Beam
     {
         items.add(item);
         reset();
+
+        if (item.isVip()) {
+            setVip();
+        }
+
+        if (isVip() || logger.isFineEnabled()) {
+            logger.info(
+                getMeasure().getContextString() + " Added " + item + " to " +
+                this);
+        }
     }
 
     //------------------//
