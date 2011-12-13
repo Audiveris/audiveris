@@ -123,7 +123,7 @@ public class Grades
 
         //
         Evaluation.Grade partMinGrade = new Evaluation.Grade(
-            40,
+            35,
             "Minimum grade for a part of a split glyph");
 
         //

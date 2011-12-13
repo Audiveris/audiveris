@@ -1075,19 +1075,13 @@ public class SystemInfo
         retrieveGlyphs();
     }
 
-    //--------------//
+    //----------//
     // trimSlur //
-    //--------------//
+    //----------//
     /**
-     * For large glyphs, we suspect a slur with a stuck object. So the strategy
-     * is to rebuild the true Slur portions from the underlying sections. These
-     * "good" sections are put into the "kept" collection. Sections left over
-     * are put into the "left" collection in order to be used to rebuild the
-     * stuck object(s).
-     *
-     * <p>The method by itself does not build the new slur glyph, this task must
-     * be done by the caller.
-     *
+     * For large glyphs, we suspect a slur with a stuck object,
+     * so the strategy is to rebuild the true Slur portions from some
+     * underlying sections.
      * @param slur the spurious slur slur
      * @return the extracted slur glyph, if any
      */
@@ -1100,8 +1094,9 @@ public class SystemInfo
     // inspectGlyphs //
     //---------------//
     /**
-     * Process the given system, by retrieving unassigned glyphs, evaluating
-     * and assigning them if OK, or trying compounds otherwise.
+     * Process the given system, by retrieving unassigned glyphs,
+     * evaluating and assigning them if OK, or trying compounds
+     * otherwise.
      * @param minGrade the minimum acceptable grade for this processing
      */
     public void inspectGlyphs (double minGrade)

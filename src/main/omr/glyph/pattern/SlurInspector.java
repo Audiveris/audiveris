@@ -51,8 +51,8 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class {@code SlurInspector} encapsulates physical processing dedicated
- * to inspection at system level of glyphs with SLUR shape.
+ * Class {@code SlurInspector} encapsulates physical processing 
+ * dedicated to inspection at system level of glyphs with SLUR shape.
  *
  * @author Hervé Bitteur
  */
@@ -323,10 +323,11 @@ public class SlurInspector
     public Glyph trimSlur (Glyph oldSlur)
     {
         /**
-         * Sections are first ordered by decreasing weight and continuously
-         * tested via the distance to the best approximating circle.  Sections
-         * whose weight is under a given threshold are appended to the slur only
-         * if the resulting circle distance gets lower.
+         * Sections are first ordered by decreasing weight and 
+         * continuously tested via the distance to the best 
+         * approximating circle.  
+         * Sections whose weight is under a given threshold are appended to the
+         * slur only if the resulting circle distance gets lower.
          *
          * The "good" sections are put into the "kept" collection.
          * Sections left over are put into the "left" collection in order to be
@@ -358,9 +359,11 @@ public class SlurInspector
         removeIsolatedSections(seedSection, kept, left);
 
         if (!kept.isEmpty()) {
+            Glyph newSlur = null;
+
             try {
                 // Make sure we do have a suitable slur
-                Glyph newSlur = buildFinalSlur(kept);
+                newSlur = buildFinalSlur(kept);
 
                 if (newSlur != null) {
                     if (oldSlur.isVip() || logger.isFineEnabled()) {
@@ -385,12 +388,14 @@ public class SlurInspector
                 return null;
             } finally {
                 // Remove former oldSlur glyph
-                oldSlur.setShape(null);
-                system.removeGlyph(oldSlur);
+                if (oldSlur != newSlur) {
+                    oldSlur.setShape(null);
+                    system.removeGlyph(oldSlur);
 
-                // Free the sections left over (useful???)
-                for (Section section : left) {
-                    section.setGlyph(null);
+                    // Free the sections left over (useful???)
+                    for (Section section : left) {
+                        section.setGlyph(null);
+                    }
                 }
             }
         } else {

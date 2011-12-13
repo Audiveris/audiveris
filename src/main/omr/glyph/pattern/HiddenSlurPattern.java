@@ -15,7 +15,6 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
 
-
 import omr.log.Logger;
 
 import omr.sheet.Scale;
@@ -23,9 +22,8 @@ import omr.sheet.SystemInfo;
 
 import omr.util.Implement;
 
-
 /**
- * Class {@code HiddenSlurPattern} processes the significant glyphs 
+ * Class {@code HiddenSlurPattern} processes the significant glyphs
  * which have not been assigned a shape, looking for a slur inside.
  *
  * @author Hervé Bitteur
@@ -65,8 +63,8 @@ public class HiddenSlurPattern
     public int runPattern ()
     {
         SlurInspector inspector = system.getSlurInspector();
-        int                  successNb = 0;
-        final double         minGlyphWeight = constants.minGlyphWeight.getValue();
+        int           successNb = 0;
+        final double  minGlyphWeight = constants.minGlyphWeight.getValue();
 
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.isKnown() ||
@@ -81,8 +79,11 @@ public class HiddenSlurPattern
 
             // Pickup a long thin section as seed
             // Aggregate others progressively
-            if (inspector.trimSlur(glyph) != null)
+            Glyph newSlur = inspector.trimSlur(glyph);
+
+            if ((newSlur != null) && (newSlur != glyph)) {
                 successNb++;
+            }
         }
 
         return successNb;
