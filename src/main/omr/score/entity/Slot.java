@@ -20,24 +20,17 @@ import omr.math.Rational;
 
 import omr.score.common.PixelPoint;
 
-import omr.sheet.Scale;
-
 import omr.util.HorizontalSide;
 import omr.util.Navigable;
 import omr.util.TreeNode;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Class {@code Slot} represents a roughly defined time slot within a
- * measure, to gather all chord entities (rests, notes, noteheads) that occur at
- * the same time because their abscissae are roughly the same.
+ * measure, to gather all chord entities (rests, whole notes or
+ * noteheads) that occur at the same time because their abscissae are
+ * roughly the same.
  *
  * <p>There are two policies to define slots: one based on heads implemented in
  * {@link HeadBasedSlot} and one based on stems implemented in
@@ -107,7 +100,7 @@ public abstract class Slot
     protected List<Glyph> glyphs = new ArrayList<Glyph>();
 
     /** Cached margin for abscissa alignment */
-    protected final int xUnitsMargin;
+    protected final int xMargin;
 
     /** Collection of chords in this slot, order by staff, then by ordinate */
     private List<Chord> chords = new ArrayList<Chord>();
@@ -130,7 +123,7 @@ public abstract class Slot
 
         double slotMargin = measure.getScore()
                                    .getSlotMargin();
-        xUnitsMargin = (int) Math.rint(
+        xMargin = (int) Math.rint(
             measure.getScale().getInterline() * slotMargin);
     }
 
@@ -140,13 +133,96 @@ public abstract class Slot
     // isAlignedWith //
     //---------------//
     /**
-     * Check whether a system point is roughly aligned with this slot instance.
+     * Check whether a system point is roughly aligned with this slot
+     * instance.
      * @param sysPt the system point to check
      * @return true if aligned
      */
     public boolean isAlignedWith (PixelPoint sysPt)
     {
-        return Math.abs(sysPt.x - getX()) <= xUnitsMargin;
+        return Math.abs(sysPt.x - getX()) <= xMargin;
+    }
+
+    //---------------//
+    // getChordAbove //
+    //---------------//
+    /**
+     * Report the chord which is just above the given point in this
+     * slot.
+     * @param point the given point
+     * @return the chord above, or null
+     */
+    public Chord getChordAbove (PixelPoint point)
+    {
+        Chord chordAbove = null;
+
+        // We look for the chord just above
+        for (Chord chord : getChords()) {
+            if (chord.getHeadLocation().y < point.y) {
+                chordAbove = chord;
+            } else {
+                break;
+            }
+        }
+
+        return chordAbove;
+    }
+
+    //---------------//
+    // getChordBelow //
+    //---------------//
+    /**
+     * Report the chord which is just below the given point in this
+     * slot.
+     * @param point the given point
+     * @return the chord below, or null
+     */
+    public Chord getChordBelow (PixelPoint point)
+    {
+        // We look for the chord just below
+        for (Chord chord : getChords()) {
+            if (chord.getHeadLocation().y > point.y) {
+                return chord;
+            }
+        }
+
+        // Not found
+        return null;
+    }
+
+    //-----------//
+    // getChords //
+    //-----------//
+    /**
+     * Report the (sorted) collection of chords in this time slot.
+     * @return the collection of chords
+     */
+    public List<Chord> getChords ()
+    {
+        return chords;
+    }
+
+    //-------------------//
+    // getEmbracedChords //
+    //-------------------//
+    /**
+     * Report the chords whose notes stand in the given vertical range.
+     * @param top upper point of range
+     * @param bottom lower point of range
+     * @return the collection of chords, which may be empty
+     */
+    public List<Chord> getEmbracedChords (PixelPoint top,
+                                          PixelPoint bottom)
+    {
+        List<Chord> embracedChords = new ArrayList<Chord>();
+
+        for (Chord chord : getChords()) {
+            if (chord.isEmbracedBy(top, bottom)) {
+                embracedChords.add(chord);
+            }
+        }
+
+        return embracedChords;
     }
 
     //-------//
@@ -157,11 +233,23 @@ public abstract class Slot
         this.id = id;
     }
 
+    //-------//
+    // getId //
+    //-------//
+    /**
+     * Report the slot Id.
+     * @return the slot id (for debug)
+     */
+    public int getId ()
+    {
+        return id;
+    }
+
     //------------------//
     // getLocationGlyph //
     //------------------//
     /**
-     * Report a glyph that can be used to show the location of the slot
+     * Report a glyph that can be used to show the location of the slot.
      * @return a glyph from the slot
      */
     public Glyph getLocationGlyph ()
@@ -178,9 +266,8 @@ public abstract class Slot
     // setStartTime //
     //--------------//
     /**
-     * Assign the time startTime since the beginning of the measure, for all
-     * chords in this time slot
-     *
+     * Assign the startTime since the beginning of the measure,
+     * for all chords in this time slot.
      * @param startTime time offset since measure start
      */
     public void setStartTime (Rational startTime)
@@ -226,8 +313,8 @@ public abstract class Slot
     // getStartTime //
     //--------------//
     /**
-     * Report the time offset of this time slot since beginning of the measure
-     *
+     * Report the time offset of this time slot since the beginning of
+     * the measure.
      * @return the time offset of this time slot.
      */
     public Rational getStartTime ()
@@ -235,12 +322,33 @@ public abstract class Slot
         return startTime;
     }
 
+    //----------//
+    // getStems //
+    //----------//
+    /**
+     * Report the set of all stems that belong to this slot.
+     * @return the set of related stems
+     */
+    public Set<Glyph> getStems ()
+    {
+        Set<Glyph> stems = new HashSet<Glyph>();
+
+        for (Chord chord : chords) {
+            Glyph stem = chord.getStem();
+
+            if (stem != null) {
+                stems.add(stem);
+            }
+        }
+
+        return stems;
+    }
+
     //------//
     // getX //
     //------//
     /**
-     * Report the abscissa of this slot
-     *
+     * Report the abscissa of this slot.
      * @return the slot abscissa, wrt the page (and not measure)
      */
     public abstract int getX ();
@@ -249,8 +357,7 @@ public abstract class Slot
     // addGlyph //
     //----------//
     /**
-     * Insert a glyph (supposedly from a chord) into this slot
-     *
+     * Insert a glyph (supposedly from a chord) into this slot.
      * @param glyph the glyph to insert
      */
     public void addGlyph (Glyph glyph)
@@ -262,8 +369,9 @@ public abstract class Slot
     // allocateChordsAndNotes //
     //------------------------//
     /**
-     * Based on the current collection of glyphs within this slot, allocate the
-     * proper chords, a strategy based on each glyph-related stem.
+     * Based on the current collection of glyphs within this slot,
+     * allocate the proper chords, a strategy based on each
+     * glyph-related stem.
      */
     public void allocateChordsAndNotes ()
     {
@@ -292,9 +400,8 @@ public abstract class Slot
     // compareTo //
     //-----------//
     /**
-     * Compare this slot to another, as needed to insert slots in an ordered
-     * collection
-     *
+     * Compare this slot to another, as needed to insert slots in an
+     * ordered collection.
      * @param other another slot
      * @return -1, 0 or +1, according to their relative abscissae
      */
@@ -328,109 +435,23 @@ public abstract class Slot
         }
     }
 
-    //---------------//
-    // getChordAbove //
-    //---------------//
+    //-------------//
+    // includeSlot //
+    //-------------//
     /**
-     * Report the chord which is just above the given point in this slot
-     *
-     * @param point the given point
-     * @return the chord above, or null
+     * Include the other slot into this one
+     * @param that the other slot to include
      */
-    public Chord getChordAbove (PixelPoint point)
+    public void includeSlot (Slot that)
     {
-        Chord chordAbove = null;
-
-        // We look for the chord just above
-        for (Chord chord : getChords()) {
-            if (chord.getHeadLocation().y < point.y) {
-                chordAbove = chord;
-            } else {
-                break;
-            }
-        }
-
-        return chordAbove;
-    }
-
-    //---------------//
-    // getChordBelow //
-    //---------------//
-    /**
-     * Report the chord which is just below the given point in this slot
-     *
-     * @param point the given point
-     * @return the chord below, or null
-     */
-    public Chord getChordBelow (PixelPoint point)
-    {
-        // We look for the chord just below
-        for (Chord chord : getChords()) {
-            if (chord.getHeadLocation().y > point.y) {
-                return chord;
-            }
-        }
-
-        // Not found
-        return null;
-    }
-
-    //-----------//
-    // getChords //
-    //-----------//
-    /**
-     * Report the (ordered) collection of chords in this time slot
-     *
-     * @return the collection of chords
-     */
-    public List<Chord> getChords ()
-    {
-        return chords;
-    }
-
-    //-------------------//
-    // getEmbracedChords //
-    //-------------------//
-    /**
-     * Report the chords whose notes stand in the given vertical range
-     *
-     * @param top upper point of range
-     * @param bottom lower point of range
-     * @return the collection of chords, which may be empty
-     */
-    public List<Chord> getEmbracedChords (PixelPoint top,
-                                          PixelPoint bottom)
-    {
-        List<Chord> embracedChords = new ArrayList<Chord>();
-
-        for (Chord chord : getChords()) {
-            if (chord.isEmbracedBy(top, bottom)) {
-                embracedChords.add(chord);
-            }
-        }
-
-        return embracedChords;
-    }
-
-    //-------//
-    // getId //
-    //-------//
-    /**
-     * Report the slot Id
-     *
-     * @return the slot id (for debug)
-     */
-    public int getId ()
-    {
-        return id;
+        glyphs.addAll(that.glyphs);
     }
 
     //----------//
     // populate //
     //----------//
     /**
-     * Populate a slot with this note glyph
-     *
+     * Populate a slot with the provided note glyph.
      * @param glyph a chord-relevant glyph (rest, note or notehead)
      * @param measure the containing measure
      * @param policy the policy to use for slot positioning
@@ -439,9 +460,11 @@ public abstract class Slot
                                  Measure    measure,
                                  SlotPolicy policy)
     {
-        //        if (logger.isFineEnabled()) {
-        //            logger.fine("Populating slot with " + glyph);
-        //        }
+        final boolean logging = glyph.isVip() || logger.isFineEnabled();
+
+        if (logging) {
+            logger.info("Populating slot with " + glyph);
+        }
 
         // Special case for measure rests: they don't belong to any time slot,
         // and their duration is the measure duration
@@ -449,8 +472,7 @@ public abstract class Slot
                  .isMeasureRest()) {
             measure.addWholeChord(glyph);
         } else {
-            ScoreSystem system = measure.getSystem();
-            PixelPoint  pt = null;
+            PixelPoint pt = null;
 
             // Use the stem abscissa or the note abscissa
             switch (policy) {
@@ -473,16 +495,20 @@ public abstract class Slot
                 pt = glyph.getAreaCenter();
             }
 
-            // First look for a suitable slot
+            // First look for a compatible slot
             for (Slot slot : measure.getSlots()) {
                 if (slot.isAlignedWith(pt)) {
+                    if (logging) {
+                        logger.info(measure + " Joining slot " + slot);
+                    }
+
                     slot.addGlyph(glyph);
 
                     return;
                 }
             }
 
-            // No compatible slot, so let's create a brand new one
+            // No compatible slot found, so let's create a brand new one
             Slot slot = null;
 
             switch (policy) {
@@ -499,8 +525,8 @@ public abstract class Slot
 
             slot.addGlyph(glyph);
 
-            if (logger.isFineEnabled()) {
-                logger.fine(measure + " Adding slot " + slot);
+            if (logging) {
+                logger.info(measure + " Creating new slot " + slot);
             }
 
             measure.getSlots()
@@ -512,8 +538,7 @@ public abstract class Slot
     // BuildVoices //
     //-------------//
     /**
-     * Compute the various voices and start times in this slot
-     *
+     * Compute the various voices and start times in this slot.
      * @param activeChords the chords which were active right before this slot
      */
     public void buildVoices (List<Chord> activeChords)
@@ -723,11 +748,10 @@ public abstract class Slot
     // getStemChord //
     //--------------//
     /**
-     * Given a stem, look up for a slot that already contains it, otherwise
-     * create a brand new slot to host the stem.
-     *
+     * Given a stem, look up for a chord that already contains it,
+     * otherwise create a brand new chord to host the stem.
      * @param stem the stem to look up
-     * @return the existing/created slot that contains the stem
+     * @return the existing/created chord that contains the stem
      */
     private Chord getStemChord (Glyph stem)
     {
@@ -748,8 +772,8 @@ public abstract class Slot
     }
 
     /**
-     * Assign available voices to the chords that have yet no voice assigned
-     *
+     * Assign available voices to the chords that have yet no voice
+     * assigned.
      * @param chords the collection of chords to process for this slot
      */
     private void assignVoices (Collection<Chord> chords)
@@ -785,7 +809,7 @@ public abstract class Slot
     //------------------//
     /**
      * Based on the active chords before this slot, determine the next
-     * expiration time, which governs this slot
+     * expiration time, which governs this slot.
      * @param activeChords
      */
     private void computeStartTime (Collection<Chord> activeChords)

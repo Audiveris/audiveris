@@ -41,7 +41,6 @@ public class HeadBasedSlot
     //---------------//
     /**
      * Creates a new HeadBasedSlot object.
-     *
      * @param measure the containing measure
      */
     public HeadBasedSlot (Measure measure)
@@ -55,8 +54,7 @@ public class HeadBasedSlot
     // getX //
     //------//
     /**
-     * Report the abscissa of this slot
-     *
+     * Report the abscissa of this slot.
      * @return the slot abscissa, wrt the containing system (and not measure)
      */
     public int getX ()
@@ -76,9 +74,8 @@ public class HeadBasedSlot
     // addGlyph //
     //----------//
     /**
-     * Insert a glyph (supposedly from a chord) into this slot, invalidating the
-     * internal computed data
-     *
+     * Insert a glyph (supposedly from a chord) into this slot, 
+     * invalidating the internal computed data.
      * @param glyph the glyph to insert
      */
     @Override

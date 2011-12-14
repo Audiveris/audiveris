@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.score;
 
+import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import static omr.glyph.ShapeRange.*;
 import omr.glyph.facets.Glyph;
@@ -56,7 +57,9 @@ import omr.util.HorizontalSide;
 import omr.util.TreeNode;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Class {@code SystemTranslator} performs all translation tasks for one
@@ -231,7 +234,7 @@ public class SystemTranslator
     //------------//
     /**
      * Class {@code Translator} is an abstract class that defines the
-     * pattern for every translation engine
+     * pattern for every translation engine.
      */
     private abstract class Translator
     {
@@ -255,14 +258,14 @@ public class SystemTranslator
         //~ Methods ------------------------------------------------------------
 
         /**
-         * Check if provided glyph is relevant
+         * Check if provided glyph is relevant.
          * @param glyph the glyph at hand
          * @return true if the glyph at hand is relevant for the translator
          */
         public abstract boolean isRelevant (Glyph glyph);
 
         /**
-         * Specific browsing of a given measure
+         * Specific browsing of a given measure.
          * @param measure the given measure
          */
         public void browse (Measure measure)
@@ -270,11 +273,26 @@ public class SystemTranslator
         }
 
         /**
-         * Hook for final processing at end of the system
+         * Hook for final processing at end of the system.
          */
         public void completeSystem ()
         {
-            browseSystemMeasures();
+            for (TreeNode node : system.getParts()) {
+                SystemPart part = (SystemPart) node;
+
+                for (TreeNode mn : part.getMeasures()) {
+                    Measure measure = (Measure) mn;
+
+                    try {
+                        browse(measure);
+                    } catch (Exception ex) {
+                        logger.warning(
+                            measure.getContextString() +
+                            " Exception in measure browsing",
+                            ex);
+                    }
+                }
+            }
         }
 
         /**
@@ -303,30 +321,7 @@ public class SystemTranslator
         public abstract void translate (Glyph glyph);
 
         /**
-         * Pattern to browse through all measures in the current system
-         */
-        public void browseSystemMeasures ()
-        {
-            for (TreeNode node : system.getParts()) {
-                SystemPart part = (SystemPart) node;
-
-                for (TreeNode mn : part.getMeasures()) {
-                    Measure measure = (Measure) mn;
-
-                    try {
-                        browse(measure);
-                    } catch (Exception ex) {
-                        logger.warning(
-                            measure.getContextString() +
-                            " Exception in measure browsing",
-                            ex);
-                    }
-                }
-            }
-        }
-
-        /**
-         * Browsing on every glyph within the system
+         * Browsing on every glyph within the system.
          */
         protected void translateGlyphs ()
         {
@@ -546,16 +541,37 @@ public class SystemTranslator
         public void browse (Measure measure)
         {
             // Allocate proper chords in every slot
-            int id = 0;
-
-            for (Slot slot : measure.getSlots()) {
-                slot.setId(++id);
-                slot.allocateChordsAndNotes();
-            }
+            purgeSlots(measure);
 
             // Check that slots are not too close to each other
+            checkMinSpacing(measure);
+        }
+
+        @Override
+        public void completeSystem ()
+        {
+            super.completeSystem();
+
+            if (logger.isFineEnabled()) {
+                Slot.dumpSystemSlots(system);
+            }
+        }
+
+        public void translate (Glyph glyph)
+        {
+            Score score = system.getScore();
+            Slot.populate(
+                glyph,
+                currentMeasure,
+                score.hasSlotPolicy() ? score.getSlotPolicy()
+                                : Score.getDefaultSlotPolicy());
+        }
+
+        private void checkMinSpacing (Measure measure)
+        {
             Scale scale = system.getScale();
             Slot  prevSlot = null;
+
             int   minSlotSpacing = scale.toPixels(Page.getMinSlotSpacing());
             int   minSpacing = Integer.MAX_VALUE;
             Slot  minSlot = null;
@@ -581,24 +597,58 @@ public class SystemTranslator
             }
         }
 
-        @Override
-        public void completeSystem ()
+        private void purgeSlots (Measure measure)
         {
-            super.completeSystem();
+            boolean purging;
 
-            if (logger.isFineEnabled()) {
-                Slot.dumpSystemSlots(system);
-            }
-        }
+            do {
+                purging = false;
 
-        public void translate (Glyph glyph)
-        {
-            Score score = system.getScore();
-            Slot.populate(
-                glyph,
-                currentMeasure,
-                score.hasSlotPolicy() ? score.getSlotPolicy()
-                                : Score.getDefaultSlotPolicy());
+                // Allocate proper chords in every slot
+                measure.getChords()
+                       .clear();
+
+                int id = 0;
+
+                for (Slot slot : measure.getSlots()) {
+                    slot.getChords()
+                        .clear();
+                    slot.setId(++id);
+                    slot.allocateChordsAndNotes();
+                }
+
+                // Check that the same chord is not linked to more than one slot
+                Slot       prevSlot = null;
+                Set<Glyph> prevStems = null;
+
+                for (Iterator<Slot> it = measure.getSlots()
+                                                .iterator(); it.hasNext();) {
+                    Slot slot = it.next();
+
+                    if (prevSlot != null) {
+                        // Look for stem in common
+                        Set<Glyph> stems = slot.getStems();
+                        stems.retainAll(prevStems);
+
+                        if (!stems.isEmpty()) {
+                            logger.info(
+                                measure.getContextString() +
+                                " merging slots #" + prevSlot.getId() + " & #" +
+                                slot.getId() + " around " +
+                                Glyphs.toString("stems", stems));
+
+                            prevSlot.includeSlot(slot);
+                            it.remove();
+                            purging = true;
+
+                            break;
+                        }
+                    }
+
+                    prevSlot = slot;
+                    prevStems = slot.getStems();
+                }
+            } while (purging);
         }
     }
 
@@ -1192,7 +1242,6 @@ public class SystemTranslator
             PixelRectangle box = glyph.getContourBox();
             currentCenter = new PixelPoint(box.x, box.y + (box.height / 2));
             currentStaff = system.getStaffAt(currentCenter);
-            // Bof!
             currentPart = currentStaff.getPart();
             currentMeasure = currentPart.getMeasureAt(currentCenter);
         }

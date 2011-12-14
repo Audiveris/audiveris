@@ -28,8 +28,7 @@ public class StemBasedSlot
     // StemBasedSlot //
     //---------------//
     /**
-     * Create a new StemBasedSlot object
-     *
+     * Create a new StemBasedSlot object.
      * @param measure the containing measure
      * @param refPoint the slot reference point
      */
@@ -46,8 +45,7 @@ public class StemBasedSlot
     // getX //
     //------//
     /**
-     * Report the abscissa of this slot
-     *
+     * Report the abscissa of this slot.
      * @return the slot abscissa, wrt the containing system (and not measure)
      */
     public int getX ()
