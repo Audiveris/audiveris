@@ -240,11 +240,9 @@ public class SplitPattern
                 if (master.isVip() || logger.isFineEnabled()) {
                     logger.info("No valid shape for chunk " + chunk);
                 }
-
-                return false;
             } else {
-                if (logger.isFineEnabled()) {
-                    logger.fine(vote + " for chunk " + chunk);
+                if (master.isVip() || logger.isFineEnabled()) {
+                    logger.info(vote + " for chunk " + chunk);
                 }
 
                 chunk.setEvaluation(vote);
@@ -274,7 +272,7 @@ public class SplitPattern
         //~ Instance fields ----------------------------------------------------
 
         Scale.AreaFraction minGlyphWeight = new Scale.AreaFraction(
-            1.3,
+            1.0,
             "Minimum normalized glyph weight to look for split");
 
         //
