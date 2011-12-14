@@ -337,9 +337,9 @@ public class SystemPart
     // getPrecedingInPage //
     //--------------------//
     /**
-     * Report the corresponding part (if any) in the previous system. Even if
-     * there is a previous system, there may be no part that corresponds to this
-     * one.
+     * Report the corresponding part (if any) in the previous system. 
+     * Even if there is a previous system, there may be no part that corresponds
+     * to this one.
      * @return the corresponding part, or null
      */
     public SystemPart getPrecedingInPage ()

@@ -178,7 +178,7 @@ public enum Shape {
     /** Alpha = 4/4 */
     COMMON_TIME("Alpha = 4/4"), 
     /** Semi-Alpha = 2/4 */
-    CUT_TIME("Semi-Alpha = 2/4"), 
+    CUT_TIME("Semi-Alpha = 2/2"), 
     /** 8 va */
     OTTAVA_ALTA("8 va"), 
     /** 8 vb */

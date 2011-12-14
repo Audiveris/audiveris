@@ -217,8 +217,7 @@ public class ScoreSystem
     // getPart //
     //---------//
     /**
-     * Report the part with the provided id, if any
-     *
+     * Report the part with the provided id, if any.
      * @param id the id of the desired part
      * @return the part found or null
      */
@@ -232,7 +231,9 @@ public class ScoreSystem
             }
         }
 
-        logger.info(getContextString() + " No part " + id + " found");
+        if (logger.isFineEnabled()) {
+            logger.info(getContextString() + " No part " + id + " found");
+        }
 
         return null;
     }

@@ -394,8 +394,8 @@ public class ScoreChecker
     // checkNoteConsistency //
     //----------------------//
     /**
-     * Check that all note heads of a chord are of the same shape (either all
-     * black or all void).
+     * Check that all note heads of a chord are of the same shape
+     * (either all black or all void).
      * @param chord
      */
     private void checkNoteConsistency (Chord chord)
@@ -412,10 +412,10 @@ public class ScoreChecker
 
                 if (notes == null) {
                     notes = new ArrayList<Note>();
+                    shapes.put(shape, notes);
                 }
 
                 notes.add(note);
-                shapes.put(shape, notes);
             }
         }
 
@@ -426,7 +426,7 @@ public class ScoreChecker
                 "Note inconsistency in " + chord + shapes);
 
             // Check evaluations
-            double bestEval = Double.MAX_VALUE;
+            double bestEval = Double.MIN_VALUE;
             Shape  bestShape = null;
 
             for (Shape shape : shapes.keySet()) {
@@ -434,7 +434,7 @@ public class ScoreChecker
 
                 for (Note note : notes) {
                     for (Glyph glyph : note.getGlyphs()) {
-                        if (glyph.getGrade() < bestEval) {
+                        if (glyph.getGrade() > bestEval) {
                             bestEval = glyph.getGrade();
                             bestShape = shape;
                         }

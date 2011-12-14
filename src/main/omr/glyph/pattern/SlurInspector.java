@@ -51,7 +51,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class {@code SlurInspector} encapsulates physical processing 
+ * Class {@code SlurInspector} encapsulates physical processing
  * dedicated to inspection at system level of glyphs with SLUR shape.
  *
  * @author Hervé Bitteur
@@ -260,14 +260,14 @@ public class SlurInspector
                 if (logger.isFineEnabled()) {
                     logger.info(
                         system.getSheet().getLogPrefix() +
-                        "Abnormal curve slur #" + slur.getId());
+                        "Abnormal curve slur#" + slur.getId());
                 }
 
                 slur.setShape(null);
                 it.remove();
                 modifs++;
             } catch (Exception ex) {
-                logger.warning("Error in extending slur", ex);
+                logger.warning("Error in extending slur#" + slur.getId(), ex);
             }
         }
 
@@ -289,7 +289,9 @@ public class SlurInspector
                         slur.setShape(null);
                     }
                 } catch (Exception ex) {
-                    logger.warning("Error in triming slur#" + slur.getId(), ex);
+                    logger.warning(
+                        "Error in trimming slur#" + slur.getId(),
+                        ex);
                 }
 
                 modifs++;
@@ -323,9 +325,9 @@ public class SlurInspector
     public Glyph trimSlur (Glyph oldSlur)
     {
         /**
-         * Sections are first ordered by decreasing weight and 
-         * continuously tested via the distance to the best 
-         * approximating circle.  
+         * Sections are first ordered by decreasing weight and
+         * continuously tested via the distance to the best
+         * approximating circle.
          * Sections whose weight is under a given threshold are appended to the
          * slur only if the resulting circle distance gets lower.
          *
@@ -813,7 +815,7 @@ public class SlurInspector
 
         //
         Scale.LineFraction maxCircleDistance = new Scale.LineFraction(
-            0.04,
+            0.045,
             "Maximum distance to approximating circle for a slur");
 
         //
@@ -990,6 +992,12 @@ public class SlurInspector
             super.setSeed(seed);
 
             final Circle circle = computeCircle(seed);
+
+            if (circle.getRadius()
+                      .isInfinite()) {
+                throw new NoSlurCurveException();
+            }
+
             curve = circle.getCurve();
 
             if (curve == null) {

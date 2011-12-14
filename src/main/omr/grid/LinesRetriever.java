@@ -877,7 +877,7 @@ public class LinesRetriever
 
         // Should be 1.0, unless ledgers are thicker than staff lines
         final Scale.LineFraction ledgerThickness = new Scale.LineFraction(
-            1.0,
+            2.0, //1.0,
             "Ratio of ledger thickness vs staff line thickness");
 
         //

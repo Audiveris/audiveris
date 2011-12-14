@@ -103,7 +103,7 @@ public class TimeSignatureRetriever
         try {
             // We simply consider the very first measure of every staff
             ScoreSystem system = page.getFirstSystem();
-            Measure     firstMeasure = system.getFirstPart()
+            Measure     firstMeasure = system.getFirstRealPart()
                                              .getFirstMeasure();
 
             // If we have some TS, then it's OK

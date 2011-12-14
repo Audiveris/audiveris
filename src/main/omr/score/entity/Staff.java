@@ -11,13 +11,13 @@
 // </editor-fold>
 package omr.score.entity;
 
+import omr.grid.StaffInfo;
+
 import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.visitor.ScoreVisitor;
-
-import omr.grid.StaffInfo;
 
 import omr.util.TreeNode;
 
@@ -81,7 +81,10 @@ public class Staff
 
         this.info = info;
         this.topLeft = topLeft;
-        info.setScoreStaff(this);
+
+        if (info != null) {
+            info.setScoreStaff(this);
+        }
 
         if (topLeft != null) {
             setBox(new PixelRectangle(topLeft.x, topLeft.y, width, height));

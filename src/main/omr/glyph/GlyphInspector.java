@@ -26,13 +26,13 @@ import omr.sheet.SystemInfo;
 import omr.util.Implement;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 
 /**
  * Class {@code GlyphInspector} is at a System level, dedicated to the
- * inspection of retrieved glyphs, their recognition being usually based on
- * features used by a neural network evaluator.
+ * inspection of retrieved glyphs, their recognition being usually
+ * based on features used by a neural network evaluator.
  *
  * @author Hervé Bitteur
  */
@@ -45,6 +45,21 @@ public class GlyphInspector
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(GlyphInspector.class);
+
+    /** Shapes acceptable for a part candidate */
+    private static final EnumSet<Shape> partShapes = EnumSet.noneOf(
+        Shape.class);
+
+    static {
+        partShapes.add(Shape.DOT);
+        partShapes.add(Shape.NOISE);
+        partShapes.add(Shape.CLUTTER);
+        partShapes.add(Shape.STRUCTURE);
+        partShapes.add(Shape.STACCATISSIMO);
+        partShapes.add(Shape.VOID_NOTEHEAD);
+        partShapes.add(Shape.COMBINING_FLAG_1);
+        partShapes.add(Shape.COMBINING_FLAG_1_UP);
+    }
 
     //~ Instance fields --------------------------------------------------------
 
@@ -71,8 +86,9 @@ public class GlyphInspector
     // evaluateGlyphs //
     //----------------//
     /**
-     * All unassigned symbol glyphs of a given system, for which we can get
-     * a positive vote from the evaluator, are assigned the voted shape.
+     * All unassigned symbol glyphs of a given system, for which we can
+     * get a positive vote from the evaluator, are assigned the voted
+     * shape.
      * @param minGrade the lower limit on grade to accept an evaluation
      */
     public void evaluateGlyphs (double minGrade)
@@ -95,8 +111,9 @@ public class GlyphInspector
     // inspectGlyphs //
     //---------------//
     /**
-     * Process the given system, by retrieving unassigned glyphs, evaluating
-     * and assigning them if OK, or trying compounds otherwise.
+     * Process the given system, by retrieving unassigned glyphs,
+     * evaluating and assigning them if OK, or trying compounds
+     * otherwise.
      * @param minGrade the minimum acceptable grade for this processing
      */
     public void inspectGlyphs (double minGrade)
@@ -128,23 +145,15 @@ public class GlyphInspector
      */
     private void retrieveCompounds (double minGrade)
     {
-        // Sort suitable glyphs by decreasing weight
+        // Use a copy to avoid concurrent modifications
         List<Glyph> glyphs = new ArrayList<Glyph>(system.getGlyphs());
-        Collections.sort(glyphs, Glyph.reverseWeightComparator);
 
-        for (int index = 0; index < glyphs.size(); index++) {
-            Glyph        seed = glyphs.get(index);
-
-            // Now process this seed, by looking at smaller ones
-            // Do not cross a stem if any is found
+        for (Glyph seed : glyphs) {
+            // Now process this seed, by looking at neighbors
             BasicAdapter adapter = new BasicAdapter(system, minGrade, seed);
 
             if (adapter.isCandidateSuitable(seed)) {
-                system.buildCompound(
-                    seed,
-                    true,
-                    glyphs.subList(index + 1, glyphs.size()),
-                    adapter);
+                system.buildCompound(seed, true, glyphs, adapter);
             }
         }
     }
@@ -155,8 +164,8 @@ public class GlyphInspector
     // BasicAdapter //
     //--------------//
     /**
-     * Class {@code BasicAdapter} is a CompoundAdapter meant to retrieve
-     * all compounds (in a system).
+     * Class {@code BasicAdapter} is a CompoundAdapter meant to
+     * retrieve all compounds (in a system).
      */
     private class BasicAdapter
         extends CompoundBuilder.AbstractAdapter
@@ -194,26 +203,33 @@ public class GlyphInspector
         @Implement(CompoundAdapter.class)
         public boolean isCandidateSuitable (Glyph glyph)
         {
-            Shape   shape = glyph.getShape();
-            boolean ok = glyph.isActive() && (shape != Shape.LEDGER) &&
-                         (!glyph.isKnown() ||
-                         (!glyph.isManualShape() &&
-                         ((shape == Shape.DOT) || (shape == Shape.NOISE) ||
-                         (shape == Shape.CLUTTER) ||
-                         (shape == Shape.STRUCTURE) ||
-                         (shape == Shape.STACCATISSIMO) ||
-                         (glyph.getGrade() <= Grades.compoundPartMaxGrade))));
+            Shape shape = glyph.getShape();
 
-            if (!ok) {
+            //            boolean ok = glyph.isActive() && (shape != Shape.LEDGER) &&
+            //                         (!glyph.isKnown() ||
+            //                         (!glyph.isManualShape() &&
+            //                         ((shape == Shape.DOT) || (shape == Shape.NOISE) ||
+            //                         (shape == Shape.CLUTTER) ||
+            //                         (shape == Shape.STRUCTURE) ||
+            //                         (shape == Shape.STACCATISSIMO) ||
+            //                         (glyph.getGrade() <= Grades.compoundPartMaxGrade))));
+            if (!glyph.isActive() || (shape == Shape.LEDGER)) {
+                return false;
+            }
+
+            if (glyph.isKnown() &&
+                (glyph.isManualShape() ||
+                (!partShapes.contains(shape) &&
+                (glyph.getGrade() > Grades.compoundPartMaxGrade)))) {
                 return false;
             }
 
             // Stay on same side of the stem if any
             if ((stem != null)) {
-                ok = ((glyph.getCentroid().x - stemX) * stemToSeed) > 0;
+                return ((glyph.getCentroid().x - stemX) * stemToSeed) > 0;
+            } else {
+                return true;
             }
-
-            return ok;
         }
 
         @Implement(CompoundAdapter.class)

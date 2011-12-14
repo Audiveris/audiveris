@@ -1107,9 +1107,9 @@ public class Measure
     // getPrecedingInPage //
     //--------------------//
     /**
-     * Report the preceding measure of this one, either in this system / part,
-     * or in the preceding system /part, but still in the same page.
-     *
+     * Report the preceding measure of this one, either in this 
+     * system / part, or in the preceding system /part, but still 
+     * in the same page.
      * @return the preceding measure, or null if not found in the page
      */
     public Measure getPrecedingInPage ()
@@ -1134,9 +1134,8 @@ public class Measure
     // getRightX //
     //-----------//
     /**
-     * Report the abscissa of the end of the measure, relative to system/part
-     * left edge
-     *
+     * Report the abscissa of the end of the measure, relative to 
+     * system/part left edge.
      * @return part-based abscissa of right side of the measure
      */
     public Integer getRightX ()
