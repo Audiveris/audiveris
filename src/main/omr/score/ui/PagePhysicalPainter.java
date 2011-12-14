@@ -24,7 +24,6 @@ import omr.math.Rational;
 
 import omr.run.Orientation;
 
-import omr.score.common.PixelDimension;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.entity.Barline;
@@ -59,8 +58,8 @@ import java.util.ConcurrentModificationException;
 
 /**
  * Class {@code PagePhysicalPainter} paints the recognized page
- * entities at the location of their image counterpart, so that discrepancies
- * between them can be easily seen.
+ * entities at the location of their image counterpart, so that
+ * discrepancies between them can be easily seen.
  *
  * <p>TODO:
  * - Paint breath marks
@@ -311,6 +310,14 @@ public class PagePhysicalPainter
             }
 
             g.setColor(oldColor);
+        }
+
+        // WholeChords are not in the children hierarchy
+        // Thus, we must explicitly visit them
+        for (Chord chord : measure.getWholeChords()) {
+            if (chord.accept(this)) {
+                chord.acceptChildren(this);
+            }
         }
 
         return true;

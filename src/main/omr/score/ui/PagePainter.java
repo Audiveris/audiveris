@@ -376,14 +376,6 @@ public abstract class PagePainter
     public boolean visit (Chord chord)
     {
         try {
-            final PixelPoint tail = chord.getTailLocation();
-            final PixelPoint head = chord.getHeadLocation();
-
-            if ((tail == null) || (head == null)) {
-                ///chord.addError("No head - tail defined for chord");
-                return false;
-            }
-
             // Voice indication ?
             if (coloredVoices) {
                 g.setColor(defaultColor);
@@ -401,6 +393,9 @@ public abstract class PagePainter
             final int fn = chord.getFlagsNumber();
 
             if (fn > 0) {
+                PixelPoint tail = chord.getTailLocation();
+                PixelPoint head = chord.getHeadLocation();
+
                 // We draw from tail
                 boolean goesUp = head.y < tail.y;
                 paint(

@@ -33,9 +33,9 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class {@code Measure} handles a measure of a system part, that is all
- * entities within the same measure time frame, for all staves that compose the
- * system part.
+ * Class {@code Measure} handles a measure of a system part, that is 
+ * all entities within the same measure time frame, for all staves 
+ * that compose the system part.
  *
  * <p>As a ScoreNode, the children of a Measure are : ending Barline, list of
  * TimeSignature(s), list of Clef(s), list of KeySignature(s), list of Chord(s)
