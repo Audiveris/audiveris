@@ -14,8 +14,6 @@
      
      The order of menus in the menu bar are predefined, but the order of items
      within a section depends on this.
-     
-     Version $Id$
      -->
      
 <actions>

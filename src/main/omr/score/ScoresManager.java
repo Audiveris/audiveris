@@ -39,8 +39,8 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class {@code ScoresManager} is a singleton which provides administrative
- * features for score instances.
+ * Class {@code ScoresManager} is a singleton which provides
+ * administrative features for score instances.
  * <p>It handles the collection of all loaded score instances.</p>
  * <p>It handles the history of scores previously loaded.</p>
  *
@@ -116,7 +116,7 @@ public class ScoresManager
     // getDefaultExportFile //
     //----------------------//
     /**
-     * Report the file to which the score would be written by default
+     * Report the file to which the score would be written by default.
      * @param folder the target folder if any
      * @param score the score to export
      * @return the default file
@@ -141,7 +141,7 @@ public class ScoresManager
     // setDefaultInputDirectory //
     //--------------------------//
     /**
-     * Remember the directory where images should be found
+     * Remember the directory where images should be found.
      * @param directory the latest image directory
      */
     public void setDefaultInputDirectory (String directory)
@@ -153,7 +153,7 @@ public class ScoresManager
     // getDefaultInputDirectory //
     //--------------------------//
     /**
-     * Report the directory where images should be found
+     * Report the directory where images should be found.
      * @return the latest image directory
      */
     public String getDefaultInputDirectory ()
@@ -165,7 +165,7 @@ public class ScoresManager
     // getDefaultMidiFile //
     //--------------------//
     /**
-     * Report the file to which the MIDI data would be written by default
+     * Report the file to which the MIDI data would be written by default.
      * @param folder the target folder if any
      * @param score the score to export
      * @return the default file
@@ -190,7 +190,7 @@ public class ScoresManager
     // getDefaultPrintFile //
     //---------------------//
     /**
-     * Report the file to which the sheet PDF data would be written by default
+     * Report the file to which the sheet PDF data would be written by default.
      * @param folder the target folder if any
      * @param score the score to export
      * @return the default file
@@ -215,8 +215,7 @@ public class ScoresManager
     // getHistory //
     //------------//
     /**
-     * Get access to the list of previously handled images
-     *
+     * Get access to the list of previously handled images.
      * @return the history set of image files
      */
     public NameSet getHistory ()
@@ -235,8 +234,7 @@ public class ScoresManager
     // getInstance //
     //-------------//
     /**
-     * Report the single instance of this class
-     *
+     * Report the single instance of this class.
      * @return the single instance
      */
     public static ScoresManager getInstance ()
@@ -252,7 +250,7 @@ public class ScoresManager
     // getDefaultBenchFile //
     //---------------------//
     /**
-     * Report the file to which the bench data would be written by default
+     * Report the file to which the bench data would be written by default.
      * @param folder the target folder if any
      * @param score the score to export
      * @return the default file
@@ -273,7 +271,7 @@ public class ScoresManager
     // getDefaultDewarpDirectory //
     //---------------------------//
     /**
-     * Report the directory to which dewarped images would be saved by default
+     * Report the directory to which dewarped images would be saved by default.
      * @return the default file
      */
     public File getDefaultDewarpDirectory ()
@@ -285,7 +283,7 @@ public class ScoresManager
     // isMultiScore //
     //--------------//
     /**
-     * Report whether we are handling more than one score
+     * Report whether we are handling more than one score.
      * @return true if more than one score
      */
     public static boolean isMultiScore ()
@@ -297,8 +295,7 @@ public class ScoresManager
     // addInstance //
     //-------------//
     /**
-     * Insert this new score in the set of score instances
-     *
+     * Insert this new score in the set of score instances.
      * @param score the score to insert
      */
     public synchronized void addInstance (Score score)
@@ -332,9 +329,8 @@ public class ScoresManager
     // export //
     //--------//
     /**
-     * Export a score using the partwise structure of MusicXML to the default
-     * file for the provided score
-     *
+     * Export a score using the partwise structure of MusicXML to the
+     * default file for the provided score.
      * @param score the score to export
      */
     public void export (Score score)
@@ -346,9 +342,8 @@ public class ScoresManager
     // export //
     //--------//
     /**
-     * Export a score using the partwise structure of MusicXML to the provided
-     * file
-     *
+     * Export a score using the partwise structure of MusicXML to the
+     * provided file.
      * @param score the score to export
      * @param file the xml file to write, or null
      * @param injectSignature should we inject our signature?
@@ -397,9 +392,8 @@ public class ScoresManager
     // midiClose //
     //-----------//
     /**
-     * Cut any relationship between the provided score and the Midi interface
-     * (MidiAgent & MidiReceiver) if any
-     *
+     * Cut any relationship between the provided score and the Midi
+     * interface (MidiAgent & MidiReceiver) if any.
      * @param score the score being closed
      */
     public void midiClose (Score score)
@@ -422,7 +416,6 @@ public class ScoresManager
     //-----------//
     /**
      * Write the Midi sequence of the score into the provided midi file.
-     *
      * @param score the provided score
      * @param file the Midi file to write
      * @throws Exception if the writing goes wrong
@@ -471,7 +464,7 @@ public class ScoresManager
     // removeInstance //
     //----------------//
     /**
-     * Remove the provided score from the collection of instances
+     * Remove the provided score from the collection of instances.
      * @param score the score to remove
      */
     public synchronized void removeInstance (Score score)
@@ -487,7 +480,7 @@ public class ScoresManager
     // storeBench //
     //------------//
     /**
-     * Store the sheet bench
+     * Store the sheet bench.
      * @param bench the bench to write to disk
      * @param file the written file, or null
      * @param complete true if we need to complete the bench data
@@ -548,7 +541,6 @@ public class ScoresManager
     //------------------//
     /**
      * Print the score physical appearance into the provided PDF file.
-     *
      * @param score the provided score
      * @param file the PDF file to write
      */
@@ -584,9 +576,9 @@ public class ScoresManager
     // getActualFile //
     //---------------//
     /**
-     * Report the actual file to be used as target, using the provided target
-     * file if any, otherwise the score default, and making sure the file parent
-     * folder really exists
+     * Report the actual file to be used as target, using the provided
+     * target file if any, otherwise the score default, and making sure
+     * the file parent folder really exists.
      * @param targetFile the provided target candidate, or null
      * @param defaultFile the default target
      * @return the file to use
@@ -620,7 +612,7 @@ public class ScoresManager
     // closeAllScores //
     //----------------//
     /**
-     * Close all score instances
+     * Close all score instances.
      */
     private void closeAllScores ()
     {

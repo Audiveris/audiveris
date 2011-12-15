@@ -29,6 +29,8 @@ public abstract class DynamicMenu
 
     /** The concrete UI menu */
     private final JMenu menu;
+
+    /** Specific menu listener */
     private MenuListener listener = new MenuListener() {
         public void menuCanceled (MenuEvent e)
         {
@@ -55,8 +57,7 @@ public abstract class DynamicMenu
     // DynamicMenu //
     //-------------//
     /**
-     * Create the dynamic menu
-     *
+     * Create the dynamic menu.
      * @param menuLabel the label to be used for the menu
      */
     public DynamicMenu (String menuLabel)
@@ -69,8 +70,7 @@ public abstract class DynamicMenu
 
     /**
      * Creates a new DynamicMenu object.
-     *
-     * @param action DOCUMENT ME!
+     * @param action related action
      */
     public DynamicMenu (Action action)
     {
@@ -86,7 +86,7 @@ public abstract class DynamicMenu
     // getMenu //
     //---------//
     /**
-     * Report the concrete menu
+     * Report the concrete menu.
      * @return the usable menu
      */
     public JMenu getMenu ()
@@ -98,8 +98,8 @@ public abstract class DynamicMenu
     // buildItems //
     //------------//
     /**
-     * This is the method that is called whenever the menu is selected, so
-     * this is the method which must be implemented in a subclass.
+     * This is the method that is called whenever the menu is selected.
+     * To be implemented in a subclass.
      */
     protected abstract void buildItems ();
 }
