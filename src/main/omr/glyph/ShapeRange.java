@@ -231,6 +231,18 @@ public class ShapeRange
         F_CLEF_OTTAVA_ALTA,
         F_CLEF_OTTAVA_BASSA);
 
+    /** All black note heads */
+    public static final EnumSet<Shape> BlackNoteHeads = EnumSet.of(
+        NOTEHEAD_BLACK,
+        NOTEHEAD_BLACK_2,
+        NOTEHEAD_BLACK_3);
+
+    /** All void note heads */
+    public static final EnumSet<Shape> VoidNoteHeads = EnumSet.of(
+        VOID_NOTEHEAD,
+        VOID_NOTEHEAD_2,
+        VOID_NOTEHEAD_3);
+
     static {
         // Make sure all the shape colors are defined
         ShapeRange.defineAllShapeColors();

@@ -99,6 +99,10 @@ public class CompoundBuilder
         }
 
         for (Glyph g : suitables) {
+            if (g.isVip()) {
+                logger.fine("BINGO " + g);
+            }
+
             if (includeSeed || (g != seed)) {
                 if (adapter.isCandidateSuitable(g) &&
                     adapter.isGlyphClose(box, g)) {

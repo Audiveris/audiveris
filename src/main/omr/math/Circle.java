@@ -187,14 +187,6 @@ public class Circle
         return stopAngle;
     }
 
-    //---------//
-    // isValid //
-    //---------//
-    public boolean isValid (double maxDistance)
-    {
-        return (getDistance() <= maxDistance) && (getCurve() != null);
-    }
-
     //----------//
     // toString //
     //----------//
@@ -421,6 +413,58 @@ public class Circle
         //        System.out.println(" P2=" + curve.getP2());
     }
 
+    //-----------------//
+    // computeDistance //
+    //-----------------//
+    /**
+     * Compute the mean quadratic distance of all points to the circle.
+     * @param x array of abscissae
+     * @param y array of ordinates
+     * @return the mean quadratic distance
+     */
+    private double computeDistance (double[] x,
+                                    double[] y)
+    {
+        final int nbPoints = x.length;
+        double    sum = 0;
+
+        for (int i = 0; i < nbPoints; i++) {
+            double delta = Math.hypot(
+                x[i] - getCenter().x,
+                y[i] - getCenter().y) - getRadius();
+            sum += (delta * delta);
+        }
+
+        return Math.sqrt(sum) / nbPoints;
+    }
+
+    //--------------//
+    // defineCircle //
+    //--------------//
+    /**
+     * Define the circle by means of a sequence of 3 key points.
+     * @param left precise left point
+     * @param middle a point rather in the middle
+     * @param right precise right point
+     */
+    private void defineCircle (Point2D left,
+                               Point2D middle,
+                               Point2D right)
+    {
+        Line2D prevBisector = LineUtilities.bisector(
+            new Line2D.Double(left, middle));
+        Line2D bisector = LineUtilities.bisector(
+            new Line2D.Double(middle, right));
+        center = LineUtilities.intersection(
+            prevBisector.getP1(),
+            prevBisector.getP2(),
+            bisector.getP1(),
+            bisector.getP2());
+        radius = Math.hypot(
+            center.getX() - right.getX(),
+            center.getY() - right.getY());
+    }
+
     //-----//
     // fit //
     //-----//
@@ -524,57 +568,5 @@ public class Circle
         // Compute center & radius
         center = new Point2D.Double(-D / 2, -E / 2);
         radius = Math.sqrt(((center.x * center.x) + (center.y * center.y)) - F);
-    }
-
-    //-----------------//
-    // computeDistance //
-    //-----------------//
-    /**
-     * Compute the mean quadratic distance of all points to the circle.
-     * @param x array of abscissae
-     * @param y array of ordinates
-     * @return the mean quadratic distance
-     */
-    private double computeDistance (double[] x,
-                                    double[] y)
-    {
-        final int nbPoints = x.length;
-        double    sum = 0;
-
-        for (int i = 0; i < nbPoints; i++) {
-            double delta = Math.hypot(
-                x[i] - getCenter().x,
-                y[i] - getCenter().y) - getRadius();
-            sum += (delta * delta);
-        }
-
-        return Math.sqrt(sum) / nbPoints;
-    }
-
-    //--------------//
-    // defineCircle //
-    //--------------//
-    /**
-     * Define the circle by means of a sequence of 3 key points.
-     * @param left precise left point
-     * @param middle a point rather in the middle
-     * @param right precise right point
-     */
-    private void defineCircle (Point2D left,
-                               Point2D middle,
-                               Point2D right)
-    {
-        Line2D prevBisector = LineUtilities.bisector(
-            new Line2D.Double(left, middle));
-        Line2D bisector = LineUtilities.bisector(
-            new Line2D.Double(middle, right));
-        center = LineUtilities.intersection(
-            prevBisector.getP1(),
-            prevBisector.getP2(),
-            bisector.getP1(),
-            bisector.getP2());
-        radius = Math.hypot(
-            center.getX() - right.getX(),
-            center.getY() - right.getY());
     }
 }

@@ -42,9 +42,9 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class {@code Note} represents the characteristics of a note. Besides a
- * regular note (standard note, or rest), it can also be a cue note or a grace
- * note (these last two variants are not handled yet, TODO).
+ * Class {@code Note} represents the characteristics of a note. 
+ * Besides a regular note (standard note, or rest), it can also be a cue note 
+ * or a grace note (these last two variants are not handled yet, TODO).
  *
  * @author Hervé Bitteur
  */

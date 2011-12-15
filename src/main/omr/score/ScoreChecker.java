@@ -191,6 +191,9 @@ public class ScoreChecker
 
             // Check note heads consistency
             checkNoteConsistency(chord);
+
+            // Check void note heads WRT flags or beams
+            checkVoidHeads(chord);
         } catch (Exception ex) {
             logger.warning(
                 getClass().getSimpleName() + " Error visiting " + chord,
@@ -487,8 +490,8 @@ public class ScoreChecker
     // checkNotePitches //
     //------------------//
     /**
-     * Check that on each side of the chord stem, the notes pitches are not
-     * too close to each other.
+     * Check that on each side of the chord stem, the notes pitches are
+     * not too close to each other.
      * @param chord the chord at hand
      */
     private void checkNotePitches (Chord chord)
@@ -571,6 +574,84 @@ public class ScoreChecker
                         logger.fine(
                             sig.getContextString() + " Existing sig " + sig);
                     }
+                }
+            }
+        }
+    }
+
+    //----------------//
+    // checkVoidHeads //
+    //----------------//
+    /**
+     * Check that void note heads do not coexist with flags of beams
+     * @param chord
+     */
+    private void checkVoidHeads (Chord chord)
+    {
+        // Void heads?
+        double      noteGrade = Double.MIN_VALUE;
+        List<Glyph> voidGlyphs = new ArrayList<Glyph>();
+
+        for (TreeNode node : chord.getNotes()) {
+            Note  note = (Note) node;
+            Shape noteShape = note.getShape();
+
+            if (ShapeRange.VoidNoteHeads.contains(noteShape)) {
+                for (Glyph glyph : note.getGlyphs()) {
+                    noteGrade = Math.max(noteGrade, glyph.getGrade());
+                    voidGlyphs.add(glyph);
+                }
+            }
+        }
+
+        if (voidGlyphs.isEmpty()) {
+            return;
+        }
+
+        ScoreSystem      system = chord.getSystem();
+        Predicate<Shape> predicate = new Predicate<Shape>() {
+            public boolean check (Shape shape)
+            {
+                return ShapeRange.BlackNoteHeads.contains(shape);
+            }
+        };
+
+        // Flags or beams
+        boolean fix = false;
+
+        if (!chord.getBeams()
+                  .isEmpty()) {
+            // We trust beams
+            logger.info(
+                chord.getContextString() + " Head/beam conflict in " + chord);
+            fix = true;
+        } else if (chord.getFlagsNumber() > 0) {
+            // Check grade of flag(s)
+            double flagGrade = Double.MIN_VALUE;
+
+            for (Glyph flag : chord.getFlagGlyphs()) {
+                flagGrade = Math.max(flagGrade, flag.getGrade());
+            }
+
+            logger.info(
+                chord.getContextString() + " Head/flag conflict in " + chord);
+
+            if (noteGrade <= flagGrade) {
+                fix = true;
+            }
+        }
+
+        if (fix) {
+            // Change note shape (void -> black)
+            for (Glyph glyph : voidGlyphs) {
+                Evaluation vote = evaluator.topVote(
+                    glyph,
+                    Grades.consistentNoteMinGrade,
+                    system.getInfo(),
+                    predicate);
+
+                if (vote != null) {
+                    glyph.setEvaluation(vote);
                 }
             }
         }

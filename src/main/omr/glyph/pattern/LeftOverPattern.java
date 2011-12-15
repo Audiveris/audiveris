@@ -27,9 +27,10 @@ import omr.sheet.SystemInfo;
 import omr.util.Implement;
 
 /**
- * Class {@code LeftOverPattern} processes the significant glyphs which have
- * been left over. It addresses glyphs of non-assigned shape with significant
- * weight, and assigns them the top 1 shape.
+ * Class {@code LeftOverPattern} processes the significant glyphs
+ * which have been left over.
+ * It addresses glyphs of non-assigned shape with significant weight, and
+ * assigns them the top 1 shape.
  *
  * @author Hervé Bitteur
  */
@@ -110,7 +111,7 @@ public class LeftOverPattern
         //~ Instance fields ----------------------------------------------------
 
         Scale.AreaFraction minWeight = new Scale.AreaFraction(
-            0.5,
+            0.3,
             "Minimum normalized weight to be a left over glyph");
     }
 }

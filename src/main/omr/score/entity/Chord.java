@@ -124,6 +124,9 @@ public class Chord
     /** Number of augmentation dots */
     private int dotsNumber;
 
+    /** Flag glyphs */
+    private Set<Glyph> flagGlyphs = new HashSet<Glyph>();
+
     /** Number of flags (a beam is not a flag) */
     private int flagsNumber;
 
@@ -1168,6 +1171,7 @@ public class Chord
                 if (!sideChords.isEmpty()) {
                     for (Chord chord : sideChords) {
                         chord.flagsNumber += getFlagValue(glyph.getShape());
+                        chord.addFlagGlyph(glyph);
                         glyph.addTranslation(chord);
                     }
                 } else {
@@ -1179,6 +1183,29 @@ public class Chord
         }
 
         measure.addError(glyph, "Flag glyph with no stem");
+    }
+
+    //---------------//
+    // getFlagGlyphs //
+    //---------------//
+    /**
+     * @return the flagGlyphs
+     */
+    public Set<Glyph> getFlagGlyphs ()
+    {
+        return flagGlyphs;
+    }
+
+    //--------------//
+    // addFlagGlyph //
+    //--------------//
+    /**
+     * Remember a flag glyph for this chord
+     * @param flag the glyph (which may represent several flags)
+     */
+    public void addFlagGlyph (Glyph flag)
+    {
+        flagGlyphs.add(flag);
     }
 
     //--------------//

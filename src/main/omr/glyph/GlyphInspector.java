@@ -47,19 +47,15 @@ public class GlyphInspector
     private static final Logger logger = Logger.getLogger(GlyphInspector.class);
 
     /** Shapes acceptable for a part candidate */
-    private static final EnumSet<Shape> partShapes = EnumSet.noneOf(
-        Shape.class);
-
-    static {
-        partShapes.add(Shape.DOT);
-        partShapes.add(Shape.NOISE);
-        partShapes.add(Shape.CLUTTER);
-        partShapes.add(Shape.STRUCTURE);
-        partShapes.add(Shape.STACCATISSIMO);
-        partShapes.add(Shape.VOID_NOTEHEAD);
-        partShapes.add(Shape.COMBINING_FLAG_1);
-        partShapes.add(Shape.COMBINING_FLAG_1_UP);
-    }
+    private static final EnumSet<Shape> partShapes = EnumSet.of(
+        Shape.DOT,
+        Shape.NOISE,
+        Shape.CLUTTER,
+        Shape.STRUCTURE,
+        Shape.STACCATISSIMO,
+        Shape.VOID_NOTEHEAD,
+        Shape.COMBINING_FLAG_1,
+        Shape.COMBINING_FLAG_1_UP);
 
     //~ Instance fields --------------------------------------------------------
 

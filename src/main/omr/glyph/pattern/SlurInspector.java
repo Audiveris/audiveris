@@ -448,11 +448,17 @@ public class SlurInspector
      */
     private boolean isValid (Glyph slur)
     {
+        Object cause = isValid(slur.getMembers());
+
         if (slur.isVip()) {
-            logger.info("Checking validity of slur#" + slur.getId());
+            if (cause != null) {
+                logger.info("Invalid slur #" + slur.getId() + " : " + cause);
+            } else {
+                logger.info("Valid slur #" + slur.getId());
+            }
         }
 
-        return isValid(slur.getMembers());
+        return cause == null;
     }
 
     //---------//
@@ -461,38 +467,33 @@ public class SlurInspector
     /**
      * Check validity of a collection of sections as a slur.
      * @param sections the provided sections
-     * @return true if valid
+     * @return null if OK, otherwise the cause of invalidity
      */
-    private boolean isValid (Collection<Section> sections)
+    private Object isValid (Collection<Section> sections)
     {
         Circle circle = computeCircle(sections);
 
         // Check distance to circle
-        if (!circle.isValid(maxCircleDistance)) {
-            return false;
+        double dist = circle.getDistance();
+
+        if (dist > maxCircleDistance) {
+            return "distance " + (float) dist + " vs " + maxCircleDistance;
+        }
+
+        // Check curve is computable
+        if (circle.getCurve() == null) {
+            return "no curve";
         }
 
         // Check radius 
         double radius = circle.getRadius();
 
         if (radius < minCircleRadius) {
-            if (logger.isFineEnabled()) {
-                logger.info(
-                    "Too small radius " + (float) radius + " vs " +
-                    minCircleRadius);
-            }
-
-            return false;
+            return "small radius " + (float) radius + " vs " + minCircleRadius;
         }
 
         if (radius > maxCircleRadius) {
-            if (logger.isFineEnabled()) {
-                logger.info(
-                    "Too large radius " + (float) radius + " vs " +
-                    maxCircleRadius);
-            }
-
-            return false;
+            return "large radius " + (float) radius + " vs " + maxCircleRadius;
         }
 
         //        // Check curve bounds are rather close to slur box
@@ -510,7 +511,7 @@ public class SlurInspector
         //
         //            return false;
         //        }
-        return true;
+        return null;
     }
 
     //----------------//
@@ -523,7 +524,7 @@ public class SlurInspector
      */
     private Glyph buildFinalSlur (List<Section> sections)
     {
-        if (isValid(sections)) {
+        if (null == isValid(sections)) {
             // Build new slur glyph with sections kept
             Glyph newGlyph = new BasicGlyph(interline);
 
@@ -574,6 +575,10 @@ public class SlurInspector
                 system.getGlyphs().size());
 
             for (Glyph g : system.getGlyphs()) {
+                if (g.isVip()) {
+                    logger.fine("BINGO first " + g);
+                }
+
                 if ((g != root) && compoundAdapter.isCandidateSuitable(g)) {
                     suitables.add(g);
                 }
@@ -814,8 +819,8 @@ public class SlurInspector
         //~ Instance fields ----------------------------------------------------
 
         //
-        Scale.LineFraction maxCircleDistance = new Scale.LineFraction(
-            0.045,
+        Scale.Fraction     maxCircleDistance = new Scale.Fraction(
+            0.006,
             "Maximum distance to approximating circle for a slur");
 
         //
@@ -870,7 +875,7 @@ public class SlurInspector
 
         //
         Scale.LineFraction maxChunkThickness = new Scale.LineFraction(
-            1.7,
+            1.8,
             "Maximum mean thickness of a chunk to be part of slur computation");
 
         //
@@ -895,8 +900,8 @@ public class SlurInspector
     // SlurCompoundAdapter //
     //---------------------//
     /**
-     * Class {@code SlurCompoundAdapter} is a CompoundAdapter meant to process
-     * the extension of a slur.
+     * Class {@code SlurCompoundAdapter} is a CompoundAdapter meant to
+     * process the extension of a slur.
      */
     private class SlurCompoundAdapter
         extends CompoundBuilder.AbstractAdapter
@@ -1006,8 +1011,8 @@ public class SlurInspector
                 seed.addAttachment("^", curve);
             }
 
-            startBox = getBox(-1);
-            stopBox = getBox(+1);
+            startBox = getExtensionBox(-1);
+            stopBox = getExtensionBox(+1);
         }
 
         /**
@@ -1017,21 +1022,21 @@ public class SlurInspector
          * @param dir -1 for start, +1 for stop
          * @return the extension box
          */
-        private PixelRectangle getBox (int dir)
+        private PixelRectangle getExtensionBox (int dir)
         {
             PixelRectangle seedBox = seed.getContourBox();
             boolean        isShort = seedBox.width <= minSlurWidth;
-            Point2D        p; // Ending point
-            Point2D        c; // Control point
+            Point2D        pt; // Ending point
+            Point2D        cp; // Control point
 
             if (isShort) {
-                p = (dir < 0) ? seed.getStartPoint(HORIZONTAL)
-                    : seed.getStopPoint(HORIZONTAL);
-                c = (dir < 0) ? seed.getStopPoint(HORIZONTAL)
-                    : seed.getStartPoint(HORIZONTAL);
+                pt = (dir < 0) ? seed.getStartPoint(HORIZONTAL)
+                     : seed.getStopPoint(HORIZONTAL);
+                cp = (dir < 0) ? seed.getStopPoint(HORIZONTAL)
+                     : seed.getStartPoint(HORIZONTAL);
             } else {
-                p = (dir < 0) ? curve.getP1() : curve.getP2();
-                c = (dir < 0) ? curve.getCtrlP1() : curve.getCtrlP2();
+                pt = (dir < 0) ? curve.getP1() : curve.getP2();
+                cp = (dir < 0) ? curve.getCtrlP1() : curve.getCtrlP2();
             }
 
             // Exact ending point (?)
@@ -1054,11 +1059,11 @@ public class SlurInspector
                     ep.setLocation(ep.getX() + 1, ep.getY());
                 }
             } else {
-                ep = p; // Better than nothing
+                ep = pt; // Better than nothing
             }
 
-            final StaffInfo staff = system.getStaffAt(p);
-            final double    pitch = staff.pitchPositionOf(p);
+            final StaffInfo staff = system.getStaffAt(pt);
+            final double    pitch = staff.pitchPositionOf(pt);
             final int       intPitch = (int) Math.rint(pitch);
 
             double          target;
@@ -1072,14 +1077,14 @@ public class SlurInspector
                 target = targetHypot;
             }
 
-            Point2D cp = new Point2D.Double(
-                p.getX() - c.getX(),
-                p.getY() - c.getY());
-            double  hypot = Math.hypot(cp.getX(), cp.getY());
+            Point2D cp2pt = new Point2D.Double(
+                pt.getX() - cp.getX(),
+                pt.getY() - cp.getY());
+            double  hypot = Math.hypot(cp2pt.getX(), cp2pt.getY());
             double  lambda = target / hypot;
             Point2D ext = new Point2D.Double(
-                ep.getX() + (lambda * cp.getX()),
-                ep.getY() + (lambda * cp.getY()));
+                ep.getX() + (lambda * cp2pt.getX()),
+                ep.getY() + (lambda * cp2pt.getY()));
 
             box = new PixelRectangle(
                 (int) Math.rint(Math.min(ext.getX(), ep.getX())),
@@ -1091,6 +1096,7 @@ public class SlurInspector
             if (box.height < minExtensionHeight) {
                 box.grow(
                     0,
+                    1 +
                     (int) Math.rint((minExtensionHeight - box.height) / 2.0));
             }
 
