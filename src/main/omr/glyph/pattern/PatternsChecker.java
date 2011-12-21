@@ -83,7 +83,11 @@ public class PatternsChecker
                        
         new ClefPattern(system),
                        
-        new TimePattern(system), 
+        new TimePattern(system),
+                       
+
+        // Refresh ...
+        new RefreshPattern(system), 
         //
         // Text patterns
         new TextBorderPattern(system), // Glyphs -> Text
@@ -115,7 +119,7 @@ public class PatternsChecker
                 logger.finest("Starting " + pattern);
             }
 
-            system.inspectGlyphs(Grades.leafMinGrade);
+            system.removeInactiveGlyphs();
 
             try {
                 int modifs = pattern.runPattern();
@@ -143,5 +147,34 @@ public class PatternsChecker
         }
 
         return totalModifs != 0;
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    //----------------//
+    // RefreshPattern //
+    //----------------//
+    /**
+     * Dummy pattern, just to refresh the system glyphs
+     */
+    private static class RefreshPattern
+        extends GlyphPattern
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public RefreshPattern (SystemInfo system)
+        {
+            super("Refresh", system);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public int runPattern ()
+        {
+            system.inspectGlyphs(Grades.leafMinGrade);
+
+            return 0;
+        }
     }
 }

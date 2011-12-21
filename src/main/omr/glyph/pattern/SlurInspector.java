@@ -420,7 +420,6 @@ public class SlurInspector
                 // Remove former oldSlur glyph
                 if (oldSlur != newSlur) {
                     oldSlur.setShape(null);
-                    system.removeGlyph(oldSlur);
 
                     // Free the sections left over (useful???)
                     for (Section section : left) {
