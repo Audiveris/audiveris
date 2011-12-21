@@ -20,8 +20,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * Class {@code LineFilament} is a {@link Filament}, used as (part of) a
- * candidate staff line.
+ * Class {@code LineFilament} is a {@link Filament}, used as (part of)
+ * a candidate staff line.
  */
 public class LineFilament
     extends Filament

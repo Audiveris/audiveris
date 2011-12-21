@@ -266,8 +266,8 @@ public class FilamentsFactory
     // isSectionFat //
     //--------------//
     /**
-     * Detect if the provided section is a thick one (as seen in the context of
-     * the factory orientation).
+     * Detect if the provided section is a thick one 
+     * (as seen in the context of the factory orientation).
      * @param section the section to check
      * @return true if fat
      */

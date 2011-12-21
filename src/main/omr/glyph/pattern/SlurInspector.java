@@ -91,12 +91,14 @@ public class SlurInspector
     private final int    slurBoxDy;
     private final int    targetHypot;
     private final int    targetLineHypot;
+    private final int    targetLineTangentHypot;
     private final int    minSlurWidth;
     private final int    minExtensionHeight;
     private final int    largeSlurWidth;
     private final double maxCircleDistance;
     private final double minCircleRadius;
     private final double maxCircleRadius;
+    private final double maxTangentSlope;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -121,12 +123,15 @@ public class SlurInspector
         slurBoxDy = scale.toPixels(constants.slurBoxDy);
         targetHypot = scale.toPixels(constants.slurBoxHypot);
         targetLineHypot = scale.toPixels(constants.slurLineBoxHypot);
+        targetLineTangentHypot = scale.toPixels(
+            constants.slurLineTangentBoxHypot);
         minSlurWidth = scale.toPixels(constants.minSlurWidth);
         minExtensionHeight = scale.toPixels(constants.minExtensionHeight);
         maxCircleDistance = scale.toPixelsDouble(constants.maxCircleDistance);
         minCircleRadius = scale.toPixels(constants.minCircleRadius);
         maxCircleRadius = scale.toPixels(constants.maxCircleRadius);
         largeSlurWidth = scale.toPixels(constants.largeSlurWidth);
+        maxTangentSlope = constants.maxTangentSlope.getValue();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -146,6 +151,7 @@ public class SlurInspector
 
         if (circle == null) {
             circle = computeCircle(glyph.getMembers());
+            glyph.setCircle(circle);
         }
 
         return circle;
@@ -209,8 +215,7 @@ public class SlurInspector
         Circle circle = new Circle(left, middle, right, xx, yy);
 
         // Switch to points fitting, if needed
-        if ((circle.getDistance() > maxCircleDistance) &&
-            (box.width > largeSlurWidth)) {
+        if ((circle.getDistance() > maxCircleDistance)) {
             if (logger.isFineEnabled()) {
                 logger.info("Using total fit for slur " + box);
             }
@@ -726,7 +731,7 @@ public class SlurInspector
                         "Trying to " + side + " extend slur #" + root.getId());
                 }
 
-                // Look at neighboring glyphs (TODO: should be incremental)
+                // Look at neighboring glyphs (TODO: should be incremental?)
                 Glyph compound = system.buildCompound(
                     root,
                     true, // include seed
@@ -1015,6 +1020,11 @@ public class SlurInspector
             "Extension length when looking for line-touching slur compound");
 
         //
+        Scale.Fraction     slurLineTangentBoxHypot = new Scale.Fraction(
+            3.0,
+            "Extension length when looking for line-tangent slur compound");
+
+        //
         Scale.Fraction     minSlurWidth = new Scale.Fraction(
             2,
             "Minimum width to use curve rather than line for extension");
@@ -1030,9 +1040,15 @@ public class SlurInspector
             "Maximum mean thickness of a chunk to be part of slur computation");
 
         //
-        Constant.Ratio maxHeightRatio = new Constant.Ratio(
+        Constant.Ratio  maxHeightRatio = new Constant.Ratio(
             2.0,
             "Maximum height ratio between curve height and glyph height");
+
+        //
+        Constant.Double maxTangentSlope = new Constant.Double(
+            "tangent",
+            0.05,
+            "Maximum slope for staff line tangent");
     }
 
     //----------------------//
@@ -1261,8 +1277,17 @@ public class SlurInspector
             PixelRectangle  rect = null;
 
             if ((Math.abs(intPitch) <= 4) && ((intPitch % 2) == 0)) {
-                // This end touches a staff line, use larger margins
-                target = targetLineHypot;
+                // TODO: beware of vertical 
+                double slope = (ep.getY() - cp.getY()) / (ep.getX() -
+                                                         cp.getX());
+
+                if (Math.abs(slope) <= maxTangentSlope) {
+                    // This end touches a staff line, with horizontal tangent
+                    target = targetLineTangentHypot;
+                } else {
+                    // This end touches a staff line not horizontally
+                    target = targetLineHypot;
+                }
             } else {
                 // No staff line is involved, use smaller margins
                 target = targetHypot;

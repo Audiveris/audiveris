@@ -11,9 +11,13 @@
 // </editor-fold>
 package omr.grid;
 
+import omr.glyph.Glyphs;
+
 import omr.lag.Section;
 
 import omr.log.Logger;
+
+import omr.run.Orientation;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -32,8 +36,8 @@ import java.util.TreeMap;
 
 /**
  * Class {@code LineCluster} is meant to aggregate instances of
- * {@link Filament} that are linked by {@link FilamentComb} instances and
- * thus a cluster represents a staff candidate
+ * {@link Filament} that are linked by {@link FilamentComb} instances
+ * and thus a cluster represents a staff candidate.
  *
  * @author Hervé Bitteur
  */
@@ -41,9 +45,6 @@ public class LineCluster
     implements Vip
 {
     //~ Static fields/initializers ---------------------------------------------
-
-    //    /** Specific application parameters */
-    //    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(LineCluster.class);
@@ -89,7 +90,6 @@ public class LineCluster
     //-------------//
     /**
      * Creates a new LineCluster object.
-     *
      * @param seed the first filament of the cluster
      */
     public LineCluster (int          interline,
@@ -117,7 +117,7 @@ public class LineCluster
     // getAncestor //
     //-------------//
     /**
-     * Report the top ancestor of this cluster
+     * Report the top ancestor of this cluster.
      * @return the cluster ancestor
      */
     public LineCluster getAncestor ()
@@ -135,7 +135,7 @@ public class LineCluster
     // getCenter //
     //-----------//
     /**
-     * Report the center of cluster
+     * Report the center of cluster.
      * @return the center
      */
     public PixelPoint getCenter ()
@@ -234,7 +234,8 @@ public class LineCluster
     // getPointsAt //
     //-------------//
     /**
-     * Report the sequence of points that correspond to a provided abscissa
+     * Report the sequence of points that correspond to a provided
+     * abscissa.
      * @param x the provided abscissa
      * @param xMargin maximum abscissa margin for horizontal extrapolation
      * @param interline the standard interline value, used for vertical
@@ -367,7 +368,7 @@ public class LineCluster
     // getTrueLength //
     //---------------//
     /**
-     * Report a measurement of the cluster length
+     * Report a measurement of the cluster length.
      * @return the mean true length of cluster lines
      */
     public int getTrueLength ()
@@ -425,7 +426,7 @@ public class LineCluster
     // destroy //
     //---------//
     /**
-     * Remove the link back from filaments to this cluster
+     * Remove the link back from filaments to this cluster.
      */
     public void destroy ()
     {
@@ -440,8 +441,8 @@ public class LineCluster
     // includeFilamentByIndex //
     //------------------------//
     /**
-     * Include a filament to this cluster, using the provided relative line
-     * index counted from zero (rather than the line position)
+     * Include a filament to this cluster, using the provided relative
+     * line index counted from zero (rather than the line position).
      * Check this room is "free" on the cluster line
      * @param filament the filament to include
      * @param index the zero-based line index
@@ -458,16 +459,32 @@ public class LineCluster
                 FilamentLine line = entry.getValue();
 
                 // Check for horizontal room
-                // TODO: Should check the resulting thickness !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                // For filaments one above the other, check resulting thickness
                 for (Section section : line.fil.getMembers()) {
-                    if (section.getContourBox()
-                               .intersects(filBox)) {
-                        if (logger.isFineEnabled()) {
-                            logger.fine(
-                                "No room for " + filament + " in " + this);
-                        }
+                    PixelRectangle sctBox = section.getContourBox();
+                    int            xStart = Math.max(filBox.x, sctBox.x);
+                    int            xStop = Math.min(
+                        filBox.x + filBox.width,
+                        sctBox.x + sctBox.width);
 
-                        return false;
+                    // Horizontal overlap?
+                    if (xStop > xStart) {
+                        // Check resulting thickness
+                        double thickness = Glyphs.getThicknessAt(
+                            (xStart + xStop) / 2,
+                            Orientation.HORIZONTAL,
+                            filament,
+                            line.fil);
+
+                        if (thickness > line.fil.getScale()
+                                                .getMaxFore()) {
+                            if (filament.isVip() || logger.isFineEnabled()) {
+                                logger.info(
+                                    "No room for " + filament + " in " + this);
+                            }
+
+                            return false;
+                        }
                     }
                 }
 
@@ -507,7 +524,7 @@ public class LineCluster
     // renumberLines //
     //---------------//
     /**
-     * Renumber the remaining lines counting from zero
+     * Renumber the remaining lines counting from zero.
      */
     public void renumberLines ()
     {
@@ -560,7 +577,7 @@ public class LineCluster
     // trim //
     //------//
     /**
-     * Remove lines in excess
+     * Remove lines in excess.
      * @param count the target line count
      */
     public void trim (int count)
@@ -708,7 +725,7 @@ public class LineCluster
     // include //
     //---------//
     /**
-     * Merge another cluster with this one
+     * Merge another cluster with this one.
      * @param that the other cluster
      * @param deltaPos the delta to apply to that cluster positions
      */

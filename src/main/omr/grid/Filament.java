@@ -137,6 +137,18 @@ public class Filament
         return refDist;
     }
 
+    //----------//
+    // getScale //
+    //----------//
+    /**
+     * Report the scale that governs this filament.
+     * @return the related scale
+     */
+    public Scale getScale ()
+    {
+        return scale;
+    }
+
     //------------//
     // addSection //
     //------------//
