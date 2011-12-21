@@ -35,7 +35,7 @@ import omr.util.Implement;
 import java.util.EnumSet;
 
 /**
- * Class {@code TimePattern} verifies the time signature glyphs
+ * Class {@code TimePattern} verifies the time signature glyphs.
  *
  * @author Hervé Bitteur
  */

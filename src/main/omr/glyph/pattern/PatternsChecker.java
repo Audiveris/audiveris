@@ -57,6 +57,8 @@ public class PatternsChecker
         patterns = new GlyphPattern[] {
                        
         //
+        new CaesuraPattern(system),
+                       
         new BeamHookPattern(system),
                        
         new DoubleBeamPattern(system),

@@ -44,9 +44,9 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class {@code ClefPattern} verifies all the initial clefs of a system, using
- * an intersection inner rectangle and a containing outer rectangle to retrieve
- * the clef glyphs and only those ones.
+ * Class {@code ClefPattern} verifies all the initial clefs of a 
+ * system, using an intersection inner rectangle and a containing 
+ * outer rectangle to retrieve the clef glyphs and only those ones.
  *
  * @author Hervé Bitteur
  */
@@ -108,7 +108,7 @@ public class ClefPattern
     // runPattern //
     //------------//
     /**
-     * Check that each staff begins with a clef
+     * Check that each staff begins with a clef.
      * @return the number of clefs rebuilt
      */
     @Implement(GlyphPattern.class)

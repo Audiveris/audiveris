@@ -583,7 +583,7 @@ public class ScoreChecker
     // checkVoidHeads //
     //----------------//
     /**
-     * Check that void note heads do not coexist with flags of beams
+     * Check that void note heads do not coexist with flags or beams.
      * @param chord
      */
     private void checkVoidHeads (Chord chord)
