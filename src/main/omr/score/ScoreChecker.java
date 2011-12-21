@@ -622,8 +622,12 @@ public class ScoreChecker
         if (!chord.getBeams()
                   .isEmpty()) {
             // We trust beams
-            logger.info(
-                chord.getContextString() + " Head/beam conflict in " + chord);
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    chord.getContextString() + " Head/beam conflict in " +
+                    chord);
+            }
+
             fix = true;
         } else if (chord.getFlagsNumber() > 0) {
             // Check grade of flag(s)
@@ -633,8 +637,11 @@ public class ScoreChecker
                 flagGrade = Math.max(flagGrade, flag.getGrade());
             }
 
-            logger.info(
-                chord.getContextString() + " Head/flag conflict in " + chord);
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    chord.getContextString() + " Head/flag conflict in " +
+                    chord);
+            }
 
             if (noteGrade <= flagGrade) {
                 fix = true;

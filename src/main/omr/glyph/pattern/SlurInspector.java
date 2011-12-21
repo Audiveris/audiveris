@@ -751,7 +751,9 @@ public class SlurInspector
                     Glyph sectSlur = extendSlurSections(root, side);
 
                     if (sectSlur != null) {
-                        logger.warning("sectSlur: " + sectSlur);
+                        if (root.isVip() || logger.isFineEnabled()) {
+                            logger.info("sectSlur: " + sectSlur);
+                        }
 
                         bestSlur = sectSlur;
                     }
@@ -865,16 +867,17 @@ public class SlurInspector
                             compound.setEvaluation(
                                 adapter.getChosenEvaluation());
 
-                            //                    if (root.isVip() || logger.isFineEnabled()) {
-                            logger.warning(
-                                "Slur #" + root.getId() + " extended as #" +
-                                compound.getId() + " with " +
-                                Sections.toString(added));
-                            //
-                            //                        if (root.isVip()) {
-                            //                            compound.setVip();
-                            //                        }
-                            //                    }
+                            if (root.isVip() || logger.isFineEnabled()) {
+                                logger.info(
+                                    "Slur #" + root.getId() + " extended as #" +
+                                    compound.getId() + " with " +
+                                    Sections.toString(added));
+
+                                if (root.isVip()) {
+                                    compound.setVip();
+                                }
+                            }
+
                             bestSlur = compound;
                             root = compound;
                             adapter.setSeed(root);
@@ -884,9 +887,11 @@ public class SlurInspector
                     }
 
                     if (!sectionOk) {
-                        logger.info(
-                            "Slur #" + root.getId() + " excluding section#" +
-                            section);
+                        if (root.isVip() || logger.isFineEnabled()) {
+                            logger.info(
+                                "Slur #" + root.getId() +
+                                " excluding section#" + section);
+                        }
 
                         break;
                     }
