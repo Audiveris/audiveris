@@ -247,21 +247,22 @@ public class GlyphInspector
         }
 
         @Implement(CompoundAdapter.class)
-        public PixelRectangle getReferenceBox ()
+        public PixelRectangle computeReferenceBox ()
         {
             if (seed == null) {
                 throw new NullPointerException(
                     "Compound seed has not been set");
             }
 
-            PixelRectangle box = seed.getContourBox();
+            PixelRectangle newBox = seed.getContourBox();
+
             Scale          scale = system.getScoreSystem()
                                          .getScale();
             int            boxWiden = scale.toPixels(
                 GlyphInspector.constants.boxWiden);
-            box.grow(boxWiden, boxWiden);
+            newBox.grow(boxWiden, boxWiden);
 
-            return box;
+            return newBox;
         }
     }
 

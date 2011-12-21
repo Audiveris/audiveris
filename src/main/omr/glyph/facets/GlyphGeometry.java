@@ -13,6 +13,7 @@ package omr.glyph.facets;
 
 import omr.glyph.GlyphSignature;
 
+import omr.math.Circle;
 import omr.math.Moments;
 
 import omr.score.common.PixelPoint;
@@ -44,6 +45,18 @@ interface GlyphGeometry
      * @return the absolute mass center point
      */
     PixelPoint getCentroid ();
+
+    /**
+     * Remember an approximating circle.
+     * @param circle the circle value, or null
+     */
+    void setCircle (Circle circle);
+
+    /**
+     * Report the approximating circle, if any.
+     * @return the approximating circle, or null
+     */
+    Circle getCircle ();
 
     /**
      * Force the glyph contour box (when start and stop points are forced)

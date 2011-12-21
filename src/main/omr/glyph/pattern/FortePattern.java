@@ -124,17 +124,17 @@ public class FortePattern
             return new Evaluation(chosenEvaluation.shape, Evaluation.ALGORITHM);
         }
 
-        public PixelRectangle getReferenceBox ()
+        public PixelRectangle computeReferenceBox ()
         {
-            PixelRectangle box = seed.getContourBox();
+            PixelRectangle rect = seed.getContourBox();
             PixelRectangle leftBox = new PixelRectangle(
-                box.x,
-                box.y + (box.height / 3),
-                box.width / 3,
-                box.height / 3);
+                rect.x,
+                rect.y + (rect.height / 3),
+                rect.width / 3,
+                rect.height / 3);
             seed.addAttachment("fl", leftBox);
 
-            return box;
+            return rect;
         }
     }
 }

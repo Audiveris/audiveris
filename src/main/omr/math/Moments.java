@@ -28,7 +28,7 @@ public class Moments
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Moments.class);
 
-    /**  Number of moments handled : {@value}*/
+    /**  Number of moments handled: {@value}*/
     public static final int size = 19;
 
     /** Labels for better display */
@@ -56,9 +56,7 @@ public class Moments
 
     //~ Instance fields --------------------------------------------------------
 
-    /**
-     * The various moments, implemented as an array of double's
-     */
+    /** The various moments, implemented as an array of double's */
     private Double[] k = new Double[size];
 
     //~ Constructors -----------------------------------------------------------
@@ -67,23 +65,13 @@ public class Moments
     // Moments //
     //---------//
     /**
-     * Default constructor, needed for XML binder
-     */
-    public Moments ()
-    {
-    }
-
-    //---------//
-    // Moments //
-    //---------//
-    /**
-     * Compute the moments for a set of points whose x and y coordinates are
-     * provided, all values being normed by the provided unit value.
-     *
+     * Compute the moments for a set of points whose x and y
+     * coordinates are provided, all values being normalized by the
+     * provided unit value.     *
      * @param x    the array of abscissa values
      * @param y    the array of ordinate values
      * @param dim  the number of points
-     * @param unit the length (number of pixels, for example 20) of norming unit
+     * @param unit the length (number of pixels) of normalizing unit
      */
     public Moments (int[] x,
                     int[] y,
@@ -92,8 +80,7 @@ public class Moments
     {
         // Safety check
         if (unit == 0) {
-            ///logger.warning("Cannot compute moments with unit set to 0");
-            throw new RuntimeException("Zero-valued unit");
+            throw new IllegalArgumentException("Zero-valued unit");
         }
 
         int    xMin = Integer.MAX_VALUE;
@@ -117,9 +104,9 @@ public class Moments
         double n30 = 0d;
 
         // Total weight
-        double w = dim; // For p+q = 0
-        double w2 = w * w; // For p+q = 2
-        double w3 = Math.sqrt(w * w * w * w * w); // For p+q = 3
+        double w = dim; // For p+q == 0
+        double w2 = w * w; // For p+q == 2
+        double w3 = Math.sqrt(w * w * w * w * w); // For p+q == 3
 
         // Mean x & y
         for (int i = dim - 1; i >= 0; i--) {
@@ -190,10 +177,9 @@ public class Moments
         k[7] = n21; //
         k[8] = n12; //
         k[9] = n03; // Y signed eccentricity
-                    //
-                    // Assign orthogonals moments (Hu set)
-                    // (Invariant to translation / scaling / rotation)
 
+        // Assign orthogonals moments (Hu set)
+        // (Invariant to translation / scaling / rotation)
         k[10] = n20 + n02;
         //
         k[11] = ((n20 - n02) * (n20 - n02)) + (4 * n11 * n11);
@@ -226,14 +212,23 @@ public class Moments
         k[18] = n01; // yBar
     }
 
+    //---------//
+    // Moments //
+    //---------//
+    /**
+     * No-arg constructor, needed for XML binder.
+     */
+    private Moments ()
+    {
+    }
+
     //~ Methods ----------------------------------------------------------------
 
     //-------------//
     // getCentroid //
     //-------------//
     /**
-     * Report the mass center of the glyph
-     *
+     * Report the mass center of the glyph.
      * @return the centroid
      */
     public PixelPoint getCentroid ()
@@ -245,8 +240,7 @@ public class Moments
     // getHeight //
     //-----------//
     /**
-     * Report the height of the glyph, normalized by unit
-     *
+     * Report the height of the glyph, normalized by unit.
      * @return the normalized height
      */
     public Double getHeight ()
@@ -258,8 +252,7 @@ public class Moments
     // getLabel //
     //----------//
     /**
-     * Report the label related to moment at specified index
-     *
+     * Report the label related to moment at specified index.
      * @param index the moment index
      * @return the related index
      */
@@ -272,8 +265,7 @@ public class Moments
     // getValues //
     //-----------//
     /**
-     * Report the array of moment values
-     *
+     * Report the array of moment values.
      * @return the moment values
      */
     public Double[] getValues ()
@@ -285,8 +277,7 @@ public class Moments
     // getWeight //
     //-----------//
     /**
-     * Report the total weight of the glyph, normalized by unit**2
-     *
+     * Report the total weight of the glyph, normalized by unit**2.
      * @return the normalized weight
      */
     public Double getWeight ()
@@ -298,8 +289,7 @@ public class Moments
     // getWidth //
     //----------//
     /**
-     * Report the width of the glyph, normalized by unit
-     *
+     * Report the width of the glyph, normalized by unit.
      * @return the normalized width
      */
     public Double getWidth ()
@@ -310,11 +300,6 @@ public class Moments
     //----------//
     // toString //
     //----------//
-    /**
-     * Report a string description of the moments
-     *
-     * @return a string of description
-     */
     @Override
     public String toString ()
     {

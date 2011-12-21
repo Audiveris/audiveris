@@ -140,28 +140,32 @@ public abstract class GlyphMenu
     public int updateMenu ()
     {
         // Analyze the context
-        Set<Glyph> glyphs = nest.getSelectedGlyphSet();
-        glyphNb = glyphs.size();
+        glyphNb = 0;
         knownNb = 0;
         stemNb = 0;
         virtualNb = 0;
-        noVirtuals = true;
 
-        for (Glyph glyph : glyphs) {
-            if (glyph.isKnown()) {
-                knownNb++;
+        Set<Glyph> glyphs = nest.getSelectedGlyphSet();
 
-                if (glyph.getShape() == Shape.COMBINING_STEM) {
-                    stemNb++;
+        if (glyphs != null) {
+            glyphNb = glyphs.size();
+
+            for (Glyph glyph : glyphs) {
+                if (glyph.isKnown()) {
+                    knownNb++;
+
+                    if (glyph.getShape() == Shape.COMBINING_STEM) {
+                        stemNb++;
+                    }
                 }
-            }
 
-            if (glyph.isVirtual()) {
-                virtualNb++;
+                if (glyph.isVirtual()) {
+                    virtualNb++;
+                }
             }
         }
 
-        noVirtuals = virtualNb == 0;
+        noVirtuals = (virtualNb == 0);
 
         // Update all dynamic actions accordingly
         for (DynAction action : dynActions.keySet()) {

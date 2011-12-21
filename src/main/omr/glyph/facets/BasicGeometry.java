@@ -18,6 +18,7 @@ import omr.lag.Section;
 
 import omr.log.Logger;
 
+import omr.math.Circle;
 import omr.math.Moments;
 import omr.math.PointsCollector;
 
@@ -29,8 +30,8 @@ import omr.ui.symbol.ShapeSymbol;
 import java.awt.Rectangle;
 
 /**
- * Class {@code BasicGeometry} is the basic implementation of the geometry
- * facet
+ * Class {@code BasicGeometry} is the basic implementation of the
+ * geometry facet.
  *
  * @author Hervé Bitteur
  */
@@ -51,12 +52,6 @@ class BasicGeometry
     /** Total weight of this glyph */
     private Integer weight;
 
-    /**
-     * Bounding rectangle, defined as union of all member section bounds so
-     * this implies that it has the same orientation as the sections
-     */
-    private Rectangle bounds;
-
     /** Computed moments of this glyph */
     private Moments moments;
 
@@ -66,15 +61,14 @@ class BasicGeometry
     /**  Box center coordinates */
     private PixelPoint center;
 
-    /**
-     * Display box (always properly oriented), so that rectangle width is
-     * aligned with display horizontal and rectangle height with display
-     * vertical
-     */
+    /** Absolute display box */
     private Rectangle contourBox;
 
     /** A signature to retrieve this glyph */
     private GlyphSignature signature;
+
+    /** Approximating circle, if any */
+    private Circle circle;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -124,6 +118,21 @@ class BasicGeometry
         return centroid;
     }
 
+    //-----------//
+    // setCircle //
+    //-----------//
+    public void setCircle (Circle circle)
+    {
+        this.circle = circle;
+    }
+
+    //-----------//
+    // getCircle //
+    //-----------//
+    public Circle getCircle ()
+    {
+        return circle;
+    }
 
     //---------------//
     // setContourBox //
@@ -132,7 +141,7 @@ class BasicGeometry
     {
         this.contourBox = contourBox;
     }
-    
+
     //---------------//
     // getContourBox //
     //---------------//
@@ -246,25 +255,6 @@ class BasicGeometry
                    .getWidth();
     }
 
-    //-------------------//
-    // getOrientedBounds //
-    //-------------------//
-    public Rectangle getOrientedBounds ()
-    {
-        if (bounds == null) {
-            for (Section section : glyph.getMembers()) {
-                if (bounds == null) {
-                    bounds = new Rectangle(section.getOrientedBounds());
-                } else {
-                    bounds.add(section.getOrientedBounds());
-                }
-            }
-        }
-
-        // Return a COPY
-        return new Rectangle(bounds);
-    }
-
     //--------------//
     // getSignature //
     //--------------//
@@ -344,6 +334,7 @@ class BasicGeometry
         System.out.println("   moments=" + getMoments());
         System.out.println("   signature=" + getSignature());
         System.out.println("   weight=" + getWeight());
+        System.out.println("   circle=" + circle);
     }
 
     //------------//
@@ -370,13 +361,13 @@ class BasicGeometry
     @Override
     public void invalidateCache ()
     {
-        bounds = null;
         center = null;
         centroid = null;
         contourBox = null;
         moments = null;
         signature = null;
         weight = null;
+        circle = null;
     }
 
     //-----------//

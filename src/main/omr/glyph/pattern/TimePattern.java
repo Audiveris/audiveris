@@ -147,7 +147,7 @@ public class TimePattern
             return new Evaluation(chosenEvaluation.shape, Evaluation.ALGORITHM);
         }
 
-        public PixelRectangle getReferenceBox ()
+        public PixelRectangle computeReferenceBox ()
         {
             // Retrieve environment (staff)
             final int      xOffset = scale.toPixels(constants.xOffset);
@@ -157,17 +157,17 @@ public class TimePattern
             PixelPoint     center = seed.getAreaCenter();
             StaffInfo      staff = system.getStaffAt(center);
 
-            PixelRectangle box = seed.getContourBox();
-            box.grow(-xOffset, 0);
-            box.y = staff.getFirstLine()
-                         .yAt(center.x) + yOffset;
-            box.height = staff.getLastLine()
-                              .yAt(center.x) - yOffset - box.y;
+            PixelRectangle rect = seed.getContourBox();
+            rect.grow(-xOffset, 0);
+            rect.y = staff.getFirstLine()
+                          .yAt(center.x) + yOffset;
+            rect.height = staff.getLastLine()
+                               .yAt(center.x) - yOffset - rect.y;
 
             // Draw the time core box, for visual debug
-            seed.addAttachment("t", box);
+            seed.addAttachment("t", rect);
 
-            return box;
+            return rect;
         }
     }
 }

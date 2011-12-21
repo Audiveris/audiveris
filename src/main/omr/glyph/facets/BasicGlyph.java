@@ -24,6 +24,7 @@ import omr.lag.Section;
 
 import omr.log.Logger;
 
+import omr.math.Circle;
 import omr.math.Line;
 import omr.math.Moments;
 
@@ -214,6 +215,16 @@ public class BasicGlyph
     public PixelPoint getCentroid ()
     {
         return geometry.getCentroid();
+    }
+
+    public void setCircle (Circle circle)
+    {
+        geometry.setCircle(circle);
+    }
+
+    public Circle getCircle ()
+    {
+        return geometry.getCircle();
     }
 
     public boolean isClef ()

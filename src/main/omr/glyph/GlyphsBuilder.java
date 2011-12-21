@@ -37,28 +37,27 @@ import java.util.List;
 
 /**
  * Class {@code GlyphsBuilder} is, at a system level, in charge of
- * building (and removing) glyphs and of updating accordingly the containing
- * entities (Nest and SystemInfo).
+ * building (and removing) glyphs and of updating accordingly the
+ * containing entities (Nest and SystemInfo).
  *
- * <p>It does not handle the shape of a glyph (this higher-level task is handled
- * by {@link GlyphInspector} among others). But it does handle all the physical
- * characteristics of a glyph via {@link #computeGlyphFeatures} (moments, plus
- * additional data such as ledger, stem).
+ * <p>It does not handle the shape of a glyph (this higher-level task is
+ * handled by {@link GlyphInspector} among others).
+ * But it does handle all the physical characteristics of a glyph via {@link
+ * #computeGlyphFeatures} (moments, plus additional data such as ledger, stem).
  *
  * <p>It typically handles via {@link #retrieveGlyphs} the building of glyphs
  * out of the remaining sections of a sheet (since this is done using the
  * physical edges between the sections).
  *
- * <p>It provides the provisioning methods to actually insert or remove a glyph.
+ * <p>It provides provisioning methods to actually insert or remove a glyph:
  * <ul>
  *
- * <li>A given newly built glyph can be inserted via {@link #addGlyph}
+ * <li>A given newly built glyph can be inserted via {@link #addGlyph}</li>
  *
  * <li>Similarly {@link #removeGlyph} allows the removal of an existing glyph.
  * <B>Nota:</B> Remember that the sections that compose a glyph are not removed,
  * only the glyph is removed. The link from the contained sections back to the
- * containing glyph is updated or not according to the proper method parameter.
- *
+ * containing glyph is set to null.</li>
  * </ul>
  *
  * @author Hervé Bitteur
@@ -135,8 +134,8 @@ public class GlyphsBuilder
     // buildGlyph //
     //------------//
     /**
-     * Build a glyph from a collection of sections, with a link back from the
-     * sections to the glyph, using the system scale.
+     * Build a glyph from a collection of sections, with a link back
+     * from the sections to the glyph, using the system scale.
      * @param sections the provided members of the future glyph
      * @return the newly built glyph
      */
@@ -149,8 +148,8 @@ public class GlyphsBuilder
     // buildGlyph //
     //------------//
     /**
-     * Build a glyph from a collection of sections, with a link back from the
-     * sections to the glyph.
+     * Build a glyph from a collection of sections, with a link back
+     * from the sections to the glyph.
      * @param scale the context scale
      * @param sections the provided members of the future glyph
      * @return the newly built glyph
@@ -171,8 +170,8 @@ public class GlyphsBuilder
     // buildTransientCompound //
     //------------------------//
     /**
-     * Make a new glyph out of a collection of (sub) glyphs, by merging all
-     * their member sections.
+     * Make a new transient glyph out of a collection of (sub) glyphs,
+     * by merging all their member sections.
      * @param parts the collection of (sub) glyphs
      * @return the brand new (compound) glyph
      */
@@ -222,7 +221,8 @@ public class GlyphsBuilder
     // computeGlyphFeatures //
     //----------------------//
     /**
-     * Compute all the features that will be used to recognize the glyph at hand
+     * Compute all the features that will be used to recognize the
+     * glyph at hand.
      * (it's a mix of moments plus a few other characteristics).
      * @param glyph the glyph at hand
      */
@@ -263,8 +263,8 @@ public class GlyphsBuilder
     // registerGlyph //
     //---------------//
     /**
-     * Just register this glyph (as inactive) in order to persist glyph info
-     * such as TextInfo.
+     * Just register this glyph (as inactive) in order to persist glyph
+     * info such as TextInfo.
      * Use {@link #addGlyph} instead to fully add the glyph as active.
      * @param glyph the glyph to just register
      * @return the proper (original) glyph
@@ -299,8 +299,8 @@ public class GlyphsBuilder
     // retrieveGlyphs //
     //----------------//
     /**
-     * In a given system area, browse through all sections not assigned to known
-     * glyphs, and build new glyphs out of connected sections
+     * In a given system area, browse through all sections not assigned
+     * to known glyphs, and build new glyphs out of connected sections.
      * @param compute if true, compute the characteristics of the created glyphs
      */
     public void retrieveGlyphs (boolean compute)
@@ -386,7 +386,7 @@ public class GlyphsBuilder
     // stemBoxOf //
     //-----------//
     /**
-     * Report a enlarged box of a given (stem) glyph
+     * Report a enlarged box of a given (stem) glyph.
      * @param stem the stem
      * @return the enlarged stem box
      */
@@ -418,8 +418,8 @@ public class GlyphsBuilder
     // considerConnection //
     //--------------------//
     /**
-     * Consider all sections transitively connected to the provided section
-     * in order to populate the provided glyph.
+     * Consider all sections transitively connected to the provided
+     * section in order to populate the provided glyph.
      * @param glyph the provided glyph
      * @param section the section to consider
      */

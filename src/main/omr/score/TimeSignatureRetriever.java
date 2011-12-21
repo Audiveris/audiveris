@@ -311,20 +311,22 @@ public class TimeSignatureRetriever
             return new Evaluation(chosenEvaluation.shape, Evaluation.ALGORITHM);
         }
 
-        public PixelRectangle getReferenceBox ()
+        public PixelRectangle computeReferenceBox ()
         {
             StaffInfo      staffInfo = staff.getInfo();
-            PixelRectangle box = new PixelRectangle(
+            PixelRectangle newBox = new PixelRectangle(
                 center,
                 staffInfo.getFirstLine().yAt(center) +
                 (staffInfo.getHeight() / 2),
                 0,
                 0);
-            box.grow((timeSigWidth / 2), (staffInfo.getHeight() / 2) - yOffset);
+            newBox.grow(
+                (timeSigWidth / 2),
+                (staffInfo.getHeight() / 2) - yOffset);
 
             // Draw the box, for visual debug
             SystemPart part = system.getScoreSystem()
-                                    .getPartAt(box.getCenter());
+                                    .getPartAt(newBox.getCenter());
             Barline    barline = part.getStartingBarline();
             Glyph      line = null;
 
@@ -334,11 +336,11 @@ public class TimeSignatureRetriever
                     Barline.linePredicate);
 
                 if (line != null) {
-                    line.addAttachment("ti" + staff.getId(), box);
+                    line.addAttachment("ti" + staff.getId(), newBox);
                 }
             }
 
-            return box;
+            return newBox;
         }
     }
 }

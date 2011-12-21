@@ -18,6 +18,7 @@ import omr.glyph.CompoundBuilder;
 import omr.glyph.Evaluation;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
+import omr.glyph.ShapeRange;
 import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
 
@@ -38,15 +39,19 @@ import omr.score.common.PixelRectangle;
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
+import omr.util.HorizontalSide;
+import static omr.util.HorizontalSide.*;
 import omr.util.Implement;
 import omr.util.Wrapper;
 
 import java.awt.geom.CubicCurve2D;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -61,6 +66,12 @@ public class SlurInspector
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /**
+     * TODO:
+     * - extendSlur() should extend glyph by glyph
+     * - extendSlurSection() & collectMemberSections() should be factorized
+     */
+
     /** Specific application parameters */
     private static final Constants constants = new Constants();
 
@@ -69,8 +80,8 @@ public class SlurInspector
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Adapter to extend slurs */
-    private final SlurCompoundAdapter compoundAdapter;
+    /** Compound adapter to extend slurs */
+    private final SlurCompoundAdapter adapter;
 
     // Cached system-dependent constants
     private final int    interline;
@@ -100,7 +111,7 @@ public class SlurInspector
     {
         super("Slur", system);
 
-        compoundAdapter = new SlurCompoundAdapter(system);
+        adapter = new SlurCompoundAdapter(system);
 
         // Compute scale-dependent parameters
         interline = scale.getInterline();
@@ -120,28 +131,38 @@ public class SlurInspector
 
     //~ Methods ----------------------------------------------------------------
 
-    //---------------//
-    // computeCircle //
-    //---------------//
+    //-----------//
+    // getCircle //
+    //-----------//
     /**
-     * Compute the Circle which best approximates the pixels of a given
+     * Report the circle which best approximates the pixels of a given
      * glyph.
      * @param glyph The glyph to fit the circle on
      * @return The best circle possible
      */
-    public Circle computeCircle (Glyph glyph)
+    public Circle getCircle (Glyph glyph)
     {
-        return computeCircle(glyph.getMembers());
+        Circle circle = glyph.getCircle();
+
+        if (circle == null) {
+            circle = computeCircle(glyph.getMembers());
+        }
+
+        return circle;
     }
 
     //---------------//
     // computeCircle //
     //---------------//
     /**
-     * Compute the Circle which best approximates the pixels of a given
+     * Compute the circle which best approximates the pixels of a given
      * collection of sections.
-     * @param sections The collection of sections to fit the circle upon
-     * @return The best circle possible
+     * We use a rather simple approach, based on 3 defining points (slur ending
+     * points, plus a middle point) which gives good results.
+     * If resulting distance is too high (and if slur width is large enough),
+     * we fall back using plain fitting on all sections points.
+     * @param sections the collection of sections to fit the circle upon
+     * @return the best circle possible
      */
     public Circle computeCircle (Collection<?extends Section> sections)
     {
@@ -165,9 +186,9 @@ public class SlurInspector
         }
 
         // We force 3 defining points
-        Point2D left = getSlurPointNear(box.x, sections, box);
-        Point2D right = getSlurPointNear(box.x + box.width, sections, box);
-        Point2D middle = getSlurPointNear(
+        Point2D left = getSlurPointNearX(box.x, sections, box);
+        Point2D right = getSlurPointNearX(box.x + box.width, sections, box);
+        Point2D middle = getSlurPointNearX(
             box.x + (box.width / 2),
             sections,
             box);
@@ -180,7 +201,7 @@ public class SlurInspector
             left.getY() + ((middle.getX() - left.getX()) * slope));
         double  dy = middle.getY() - inter.getY();
         double  dx = -dy * slope;
-        middle = getSlurPointNear(
+        middle = getSlurPointNearX(
             box.x + (box.width / 2) + (int) Math.rint(dx),
             sections,
             box);
@@ -211,10 +232,11 @@ public class SlurInspector
      * <p><b>Synopsis:</b>
      * <pre>
      *      + extendSlur()      // attempt to get to a valid larger slur
+     *          + extendSlurSections()
      *      + isValid()
      *      + trimSlur()        // attempt to get to a valid smaller slur
-     *          + findSectionsOnCircle()
-     *          + removeIsolatedSections()
+     *          + collectMemberSections()
+     *          + detectIsolatedSections()
      *          + buildFinalSlur()
      * </pre>
      */
@@ -229,7 +251,7 @@ public class SlurInspector
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.getShape() == Shape.SLUR) {
                 if (glyph.isManualShape()) {
-                    glyph.addAttachment("^", computeCircle(glyph).getCurve());
+                    glyph.addAttachment("^", getCircle(glyph).getCurve());
                 } else {
                     slurs.add(glyph);
                 }
@@ -297,18 +319,10 @@ public class SlurInspector
                 modifs++;
             } else if (logger.isFineEnabled()) {
                 logger.finest("Valid slur " + slur.getId());
-                slur.addAttachment("^", computeCircle(slur).getCurve());
+                slur.addAttachment("^", getCircle(slur).getCurve());
             }
         }
 
-        // Debug
-        //        for (Glyph glyph : system.getGlyphs()) {
-        //            if (glyph.isActive() && (glyph.getShape() == Shape.SLUR)) {
-        //                logger.info(computeCircle(glyph) + " for G#" + glyph.getId());
-        //            }
-        //        }
-
-        //
         return modifs;
     }
 
@@ -354,18 +368,27 @@ public class SlurInspector
             return null;
         }
 
-        List<Section> kept = new ArrayList<Section>();
-        List<Section> left = new ArrayList<Section>();
+        // Sections collected (including seedSection)
+        List<Section> collected = collectMemberSections(
+            members,
+            seedSection,
+            seedDist.value);
 
-        findSectionsOnCircle(members, seedSection, seedDist.value, kept, left);
-        removeIsolatedSections(seedSection, kept, left);
+        // Sections left over
+        List<Section> left = new ArrayList<Section>(members);
+        left.removeAll(collected);
 
-        if (!kept.isEmpty()) {
+        // Sections too far from the other ones
+        List<Section> isolated = detectIsolatedSections(seedSection, collected);
+        collected.removeAll(isolated);
+        left.addAll(isolated);
+
+        if (!collected.isEmpty()) {
             Glyph newSlur = null;
 
             try {
                 // Make sure we do have a suitable slur
-                newSlur = buildFinalSlur(kept);
+                newSlur = buildFinalSlur(collected);
 
                 if (newSlur != null) {
                     if (oldSlur.isVip() || logger.isFineEnabled()) {
@@ -377,15 +400,15 @@ public class SlurInspector
                     if (oldSlur.isVip() || logger.isFineEnabled()) {
                         logger.info(
                             "Giving up slur #" + oldSlur.getId() + " w/ " +
-                            kept);
+                            collected);
                     }
 
-                    left.addAll(kept);
+                    left.addAll(collected);
                 }
 
                 return newSlur;
             } catch (Exception ex) {
-                left.addAll(kept);
+                left.addAll(collected);
 
                 return null;
             } finally {
@@ -409,69 +432,21 @@ public class SlurInspector
         }
     }
 
-    //------------------//
-    // getSlurPointNear //
-    //------------------//
-    /**
-     * Retrieve the best slur point near the provided abscissa.
-     * @param x the provided abscissa
-     * @param sections the slur sections
-     * @param box the slur bounding box
-     * @return the best approximating point
-     */
-    private Point2D.Double getSlurPointNear (int                          x,
-                                             Collection<?extends Section> sections,
-                                             PixelRectangle               box)
-    {
-        PixelRectangle roi = new PixelRectangle(x, box.y, 0, box.height);
-        Barycenter     bary;
-
-        do {
-            bary = new Barycenter();
-            roi.grow(1, 0);
-
-            for (Section section : sections) {
-                section.cumulate(bary, roi);
-            }
-        } while (bary.getWeight() == 0);
-
-        return new Point2D.Double(bary.getX(), bary.getY());
-    }
-
-    //---------//
-    // isValid //
-    //---------//
-    /**
-     * Check validity of a glyph as a slur.
-     * @param glyph the glyph to check
-     * @return true if valid
-     */
-    private boolean isValid (Glyph slur)
-    {
-        Object cause = isValid(slur.getMembers());
-
-        if (slur.isVip()) {
-            if (cause != null) {
-                logger.info("Invalid slur #" + slur.getId() + " : " + cause);
-            } else {
-                logger.info("Valid slur #" + slur.getId());
-            }
-        }
-
-        return cause == null;
-    }
-
-    //---------//
-    // isValid //
-    //---------//
+    //---------------//
+    // getInvalidity //
+    //---------------//
     /**
      * Check validity of a collection of sections as a slur.
      * @param sections the provided sections
+     * @param resulting circle if already known
      * @return null if OK, otherwise the cause of invalidity
      */
-    private Object isValid (Collection<Section> sections)
+    private Object getInvalidity (Collection<Section> sections,
+                                  Circle              circle)
     {
-        Circle circle = computeCircle(sections);
+        if (circle == null) {
+            circle = computeCircle(sections);
+        }
 
         // Check distance to circle
         double dist = circle.getDistance();
@@ -514,17 +489,69 @@ public class SlurInspector
         return null;
     }
 
+    //-------------------//
+    // getSlurPointNearX //
+    //-------------------//
+    /**
+     * Retrieve the best slur point near the provided abscissa.
+     * @param x the provided abscissa
+     * @param sections the slur sections
+     * @param box the slur bounding box
+     * @return the best approximating point
+     */
+    private Point2D getSlurPointNearX (int                          x,
+                                       Collection<?extends Section> sections,
+                                       PixelRectangle               box)
+    {
+        PixelRectangle roi = new PixelRectangle(x, box.y, 0, box.height);
+        Barycenter     bary;
+
+        do {
+            bary = new Barycenter();
+            roi.grow(1, 0);
+
+            for (Section section : sections) {
+                section.cumulate(bary, roi);
+            }
+        } while (bary.getWeight() == 0);
+
+        return new Point2D.Double(bary.getX(), bary.getY());
+    }
+
+    //---------//
+    // isValid //
+    //---------//
+    /**
+     * Check validity of a glyph as a slur.
+     * @param glyph the glyph to check
+     * @return true if valid
+     */
+    private boolean isValid (Glyph slur)
+    {
+        Object cause = getInvalidity(slur.getMembers(), slur.getCircle());
+
+        if (slur.isVip()) {
+            if (cause != null) {
+                logger.info("Invalid slur #" + slur.getId() + " : " + cause);
+            } else {
+                logger.info("Valid slur #" + slur.getId());
+            }
+        }
+
+        return cause == null;
+    }
+
     //----------------//
     // buildFinalSlur //
     //----------------//
     /**
-     * Try to build a valid slur from the provided collection of sections
+     * Try to build a valid slur from a collection of sections.
      * @param sections the slur sections
      * @return the valid slur if any, null otherwise
      */
     private Glyph buildFinalSlur (List<Section> sections)
     {
-        if (null == isValid(sections)) {
+        if (null == getInvalidity(sections, null)) {
             // Build new slur glyph with sections kept
             Glyph newGlyph = new BasicGlyph(interline);
 
@@ -538,7 +565,7 @@ public class SlurInspector
             newGlyph = newSystem.addGlyph(newGlyph);
             newGlyph.setShape(Shape.SLUR);
 
-            newGlyph.addAttachment("^", computeCircle(newGlyph).getCurve());
+            newGlyph.addAttachment("^", getCircle(newGlyph).getCurve());
 
             return newGlyph;
         } else {
@@ -546,103 +573,33 @@ public class SlurInspector
         }
     }
 
-    //------------//
-    // extendSlur //
-    //------------//
+    //-----------------------//
+    // collectMemberSections //
+    //-----------------------//
     /**
-     * Try to build a compound glyph with compatible neighboring glyphs,
-     * and test the validity of the resulting slur.
-     * @param root the slur glyph to extend
-     * @return the extended slur glyph if any, or null. A non-null glyph
-     * is returned IFF we have found a slur which is both larger than the
-     * initial slur and valid.
+     * From the provided members, find all sections well located
+     * on the slur circle, including the seed section.
+     * We start from the best seed section, then grow incrementally with
+     * compatible sections, continuously checking distance to resulting circle.
+     * @param members the glyph sections
+     * @param seedSection the starting seed section
+     * @param lastDistance
+     * @return the list of sections collected (including seed section)
      */
-    private Glyph extendSlur (Glyph root)
+    private List<Section> collectMemberSections (List<Section> members,
+                                                 Section       seedSection,
+                                                 double        lastDistance)
     {
-        // The best compound obtained so far
-        Glyph bestSlur = null;
+        List<Section> collected = new ArrayList<Section>();
 
-        // Loop on extensions
-        while (true) {
-            if (root.isVip() || logger.isFineEnabled()) {
-                logger.info("Trying to extend slur #" + root.getId());
-            }
-
-            Glyph       compound = null;
-
-            // Collect glyphs suitable for participating in compound building
-            List<Glyph> suitables = new ArrayList<Glyph>(
-                system.getGlyphs().size());
-
-            for (Glyph g : system.getGlyphs()) {
-                if (g.isVip()) {
-                    logger.fine("BINGO first " + g);
-                }
-
-                if ((g != root) && compoundAdapter.isCandidateSuitable(g)) {
-                    suitables.add(g);
-                }
-            }
-
-            // Sort suitable glyphs by decreasing weight
-            Collections.sort(suitables, Glyph.reverseWeightComparator);
-
-            // Process that slur, looking at neighbors
-            compound = system.buildCompound(
-                root,
-                true, // include seed
-                suitables,
-                compoundAdapter);
-
-            if (compound != null) {
-                if (root.isVip() || logger.isFineEnabled()) {
-                    logger.info(
-                        "Slur #" + root.getId() + " extended as #" +
-                        compound.getId());
-
-                    if (root.isVip()) {
-                        compound.setVip();
-                    }
-                }
-
-                bestSlur = compound;
-                root = compound;
-            } else {
-                return bestSlur;
-            }
-        }
-    }
-
-    //----------------------//
-    // findSectionsOnCircle //
-    //----------------------//
-    /**
-     * From the provided members, find all sections which are well
-     * located on the slur circle.
-     * @param members
-     * @param seedSection
-     * @param seedDist
-     * @param kept
-     * @param left
-     */
-    private void findSectionsOnCircle (List<Section> members,
-                                       Section       seedSection,
-                                       double        seedDist,
-                                       List<Section> kept,
-                                       List<Section> left)
-    {
         // We impose the seed
-        kept.add(seedSection);
-
-        List<Section> tried = new ArrayList<Section>();
-        double        distThreshold = seedDist;
-        double        lastDistance = distThreshold;
+        collected.add(seedSection);
 
         for (Section section : members) {
             section.setProcessed(false);
         }
 
-        // First, let's grow the seed incrementally as much as possible
+        // Let's grow the seed incrementally as much as possible
         PixelRectangle slurBox = seedSection.getContourBox();
         seedSection.setProcessed(true);
 
@@ -664,27 +621,24 @@ public class SlurInspector
                     continue;
                 }
 
-                distThreshold = (lastDistance + maxCircleDistance) / 2;
-
                 if (logger.isFineEnabled()) {
                     logger.fine("Trying " + section);
                 }
 
                 // Try a circle
-                tried.clear();
-                tried.addAll(kept);
-                tried.add(section);
+                List<Section> config = new ArrayList<Section>(collected);
+                config.add(section);
 
                 try {
-                    Circle circle = computeCircle(tried);
+                    Circle circle = computeCircle(config);
                     double distance = circle.getDistance();
 
                     if (logger.isFineEnabled()) {
                         logger.fine("dist=" + distance);
                     }
 
-                    if (distance <= distThreshold) {
-                        kept.add(section);
+                    if (distance <= ((lastDistance + maxCircleDistance) / 2)) {
+                        collected.add(section);
                         lastDistance = distance;
                         section.setProcessed(true);
                         slurBox.add(section.getContourBox());
@@ -706,18 +660,251 @@ public class SlurInspector
             }
         }
 
-        // Update left collection
-        List<Section> list = new ArrayList<Section>(members);
-        list.removeAll(kept);
-        left.addAll(list);
+        return collected;
+    }
+
+    //------------------------//
+    // detectIsolatedSections //
+    //------------------------//
+    /**
+     * Detect any section which is too far from the other ones.
+     * @param seedSection the initial seed section
+     * @param collected the sections collected, including seed section
+     * @return the collection of isolated sections found
+     */
+    private List<Section> detectIsolatedSections (Section       seedSection,
+                                                  List<Section> collected)
+    {
+        final List<Section>  isolated = new ArrayList<Section>(collected);
+        final PixelRectangle slurBox = seedSection.getContourBox();
+        boolean              makingProgress;
+
+        do {
+            makingProgress = false;
+
+            for (Iterator<Section> it = isolated.iterator(); it.hasNext();) {
+                Section        section = it.next();
+                PixelRectangle sectBox = section.getContourBox();
+                sectBox.grow(slurBoxDx, slurBoxDy);
+
+                if (sectBox.intersects(slurBox)) {
+                    slurBox.add(sectBox);
+                    it.remove();
+                    makingProgress = true;
+                }
+            }
+        } while (makingProgress);
+
+        return isolated;
+    }
+
+    //------------//
+    // extendSlur //
+    //------------//
+    /**
+     * Try to build a compound glyph with compatible neighboring
+     * glyphs, and test the validity of the resulting slur.
+     * @param root the slur glyph to extend
+     * @return the extended slur glyph if any, or null. A non-null glyph
+     * is returned IFF we have found a slur which is both larger than the
+     * initial slur and valid.
+     */
+    private Glyph extendSlur (Glyph root)
+    {
+        // The best compound obtained so far
+        Glyph bestSlur = null;
+
+        // Loop on extensions, left then right sides
+        for (HorizontalSide side : HorizontalSide.values()) {
+            // Extend as far as possible on the desired side
+            adapter.setSide(side);
+
+            SideLoop: 
+            while (true) {
+                if (root.isVip() || logger.isFineEnabled()) {
+                    logger.info(
+                        "Trying to " + side + " extend slur #" + root.getId());
+                }
+
+                // Look at neighboring glyphs (TODO: should be incremental)
+                Glyph compound = system.buildCompound(
+                    root,
+                    true, // include seed
+                    system.getGlyphs(),
+                    adapter);
+
+                if (compound != null) {
+                    if (root.isVip() || logger.isFineEnabled()) {
+                        logger.info(
+                            "Slur #" + root.getId() + " " + side +
+                            " extended as #" + compound.getId());
+
+                        if (root.isVip()) {
+                            compound.setVip();
+                        }
+                    }
+
+                    bestSlur = compound;
+                    root = compound;
+                } else {
+                    // Look at neighboring sections
+                    Glyph sectSlur = extendSlurSections(root, side);
+
+                    if (sectSlur != null) {
+                        logger.warning("sectSlur: " + sectSlur);
+
+                        bestSlur = sectSlur;
+                    }
+
+                    break SideLoop; // We are through on this side
+                }
+            }
+        }
+
+        return bestSlur;
+    }
+
+    //--------------------//
+    // extendSlurSections //
+    //--------------------//
+    /**
+     * Try to extend the provided slur with neighboring sections on
+     * the provided side.
+     * Starting from the slur seed, we incrementally aggregate compatible
+     * sections, sorted according to their distance to slur ending point.
+     * The process is stopped at the first failed attempt.
+     * @param root the slur glyph to extend
+     * @return the extended slur glyph if any, or null. A non-null glyph
+     * is returned IFF we have found a slur which is both larger than the
+     * initial slur and valid.
+     */
+    private Glyph extendSlurSections (Glyph          root,
+                                      HorizontalSide side)
+    {
+        // The best compound obtained so far
+        Glyph         bestSlur = null;
+
+        List<Section> sections = new ArrayList<Section>();
+        sections.addAll(system.getHorizontalSections());
+        sections.addAll(system.getVerticalSections());
+
+        for (Section section : sections) {
+            section.setProcessed(false);
+        }
+
+        for (Section section : root.getMembers()) {
+            section.setProcessed(true);
+        }
+
+        // Initial conditions
+        double lastDistance = getCircle(root)
+                                  .getDistance();
+        adapter.setSide(side);
+
+        // Loop on extensions
+        boolean growing = true;
+
+        while (growing) {
+            growing = false;
+
+            if (root.isVip() || logger.isFineEnabled()) {
+                logger.info("Trying to section-extend slur #" + root.getId());
+            }
+
+            // Process that slur, looking at neighboring sections
+            if (adapter.setSeed(root) == null) {
+                logger.warning("Null reference box");
+            }
+
+            // Retrieve good neighbors among the suitable sections
+            List<Section> neighbors = new ArrayList<Section>();
+
+            for (Section section : sections) {
+                if (section.isVip()) {
+                    logger.fine("Section " + section);
+                }
+
+                if (!section.isProcessed()) {
+                    if (adapter.isSectionClose(section) &&
+                        adapter.isSectionSuitable(section)) {
+                        neighbors.add(section);
+                        section.setProcessed(true);
+                    }
+                }
+            }
+
+            // Let's try neighbors incrementally
+            if (!neighbors.isEmpty()) {
+                // Sort neighbors according to their distance from slur ending
+                Collections.sort(neighbors, adapter.sectionComparator);
+
+                // Sections effectively added
+                List<Section> added = new ArrayList<Section>();
+
+                for (Section section : neighbors) {
+                    added.add(section);
+
+                    // slur config = seed sections + added sections
+                    List<Section> config = new ArrayList<Section>(added);
+                    config.addAll(root.getMembers());
+
+                    boolean sectionOk = false;
+                    double  distance = computeCircle(config)
+                                           .getDistance();
+
+                    if (logger.isFineEnabled()) {
+                        logger.fine("dist=" + distance);
+                    }
+
+                    if (distance <= ((lastDistance + maxCircleDistance) / 2)) {
+                        Glyph compound = system.buildTransientGlyph(config);
+
+                        if (adapter.isCompoundValid(compound)) {
+                            // Assign and insert into system & nest environments
+                            compound = system.addGlyph(compound);
+                            compound.setEvaluation(
+                                adapter.getChosenEvaluation());
+
+                            //                    if (root.isVip() || logger.isFineEnabled()) {
+                            logger.warning(
+                                "Slur #" + root.getId() + " extended as #" +
+                                compound.getId() + " with " +
+                                Sections.toString(added));
+                            //
+                            //                        if (root.isVip()) {
+                            //                            compound.setVip();
+                            //                        }
+                            //                    }
+                            bestSlur = compound;
+                            root = compound;
+                            adapter.setSeed(root);
+                            growing = true;
+                            sectionOk = true;
+                        }
+                    }
+
+                    if (!sectionOk) {
+                        logger.info(
+                            "Slur #" + root.getId() + " excluding section#" +
+                            section);
+
+                        break;
+                    }
+                }
+            } else {
+                return bestSlur;
+            }
+        }
+
+        return bestSlur;
     }
 
     //-----------------//
     // findSeedSection //
     //-----------------//
     /**
-     * Find the best seed, which is chosen as the section with best circle
-     * distance among the sections whose weight is significant.
+     * Find the best seed, which is chosen as the section with best
+     * circle distance among the sections whose weight is significant.
      * @param sortedMembers the candidate sections, by decreasing weight
      * @param seedDist (output) the distance measured for chosen seed
      * @return the suitable seed, perhaps null
@@ -765,47 +952,6 @@ public class SlurInspector
         }
 
         return seedSection;
-    }
-
-    //------------------------//
-    // removeIsolatedSections //
-    //------------------------//
-    /**
-     * Remove any section which is too far from the other ones
-     * @param seedSection
-     * @param kept
-     * @param left
-     */
-    private void removeIsolatedSections (Section       seedSection,
-                                         List<Section> kept,
-                                         List<Section> left)
-    {
-        PixelRectangle slurBox = seedSection.getContourBox();
-        List<Section>  toCheck = new ArrayList<Section>(kept);
-        toCheck.remove(seedSection);
-        kept.clear();
-        kept.add(seedSection);
-
-        boolean makingProgress;
-
-        do {
-            makingProgress = false;
-
-            for (Iterator<Section> it = toCheck.iterator(); it.hasNext();) {
-                Section        section = it.next();
-                PixelRectangle sectBox = section.getContourBox();
-                sectBox.grow(slurBoxDx, slurBoxDy);
-
-                if (sectBox.intersects(slurBox)) {
-                    slurBox.add(sectBox);
-                    it.remove();
-                    kept.add(section);
-                    makingProgress = true;
-                }
-            }
-        } while (makingProgress);
-
-        left.addAll(toCheck);
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -888,8 +1034,8 @@ public class SlurInspector
     // NoSlurCurveException //
     //----------------------//
     /**
-     * Used to signal an abnormal "slur" glyph, for which the curve cannot be
-     * computed.
+     * Used to signal an abnormal "slur" glyph, for which the curve
+     * cannot be computed or is degenerated to a straight line.
      */
     private static class NoSlurCurveException
         extends RuntimeException
@@ -900,25 +1046,44 @@ public class SlurInspector
     // SlurCompoundAdapter //
     //---------------------//
     /**
-     * Class {@code SlurCompoundAdapter} is a CompoundAdapter meant to
-     * process the extension of a slur.
+     * CompoundAdapter meant to process the extension of a slur.
      */
     private class SlurCompoundAdapter
         extends CompoundBuilder.AbstractAdapter
     {
         //~ Instance fields ----------------------------------------------------
 
-        CubicCurve2D   curve;
+        // Underlying slur circle 
+        protected Circle           circle;
 
-        // Boxes at each slur end
-        PixelRectangle startBox;
-        PixelRectangle stopBox;
+        // Underlying slur circle 
+        protected CubicCurve2D     curve;
+
+        // Current extension side
+        protected HorizontalSide   side;
+
+        // Current slur ending point
+        protected Point2D          endPt;
+
+        /** To sort sections according to the distance to slur end */
+        public Comparator<Section> sectionComparator = new Comparator<Section>() {
+            public int compare (Section s1,
+                                Section s2)
+            {
+                // We use distance from section to adapter end point
+                return Double.compare(toEndSq(s1), toEndSq(s2));
+            }
+        };
+
 
         //~ Constructors -------------------------------------------------------
 
         public SlurCompoundAdapter (SystemInfo system)
         {
-            super(system, 0d); // Value is irrelevant
+            // Note: minGrade value (0d) is irrelevant, since compound validity
+            // will be checked against specific slur characteristics rather
+            // than evaluation grade.
+            super(system, 0d);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -968,35 +1133,48 @@ public class SlurInspector
             return false;
         }
 
-        /**
-         * Specific distance test, adapted at slur shape crossing staff lines
-         * @param box unused, we use two boxes instead, one at start point and
-         * one at stop point
-         * @param glyph candidate glyph
-         * @return true if close
-         */
-        @Override
-        public boolean isGlyphClose (PixelRectangle box,
-                                     Glyph          glyph)
+        public boolean isSectionClose (Section section)
         {
-            PixelRectangle glyphBox = glyph.getContourBox();
-
-            return startBox.intersects(glyphBox) ||
-                   stopBox.intersects(glyphBox);
+            return box.intersects(section.getContourBox());
         }
 
-        @Implement(CompoundBuilder.CompoundAdapter.class)
-        public PixelRectangle getReferenceBox ()
+        public boolean isSectionSuitable (Section section)
         {
-            return null; // void
+            Glyph glyph = section.getGlyph();
+
+            if ((glyph != null) && !glyph.isActive()) {
+                return false; // Safer
+            }
+
+            // Check meanthickness
+            double thickness = Math.min(
+                section.getMeanThickness(VERTICAL),
+                section.getMeanThickness(HORIZONTAL));
+
+            if (thickness > maxChunkThickness) {
+                return false;
+            }
+
+            if ((glyph == null) || !glyph.isKnown()) {
+                return true;
+            }
+
+            Shape shape = glyph.getShape();
+
+            if (ShapeRange.Barlines.contains(shape) || (shape == Shape.SLUR)) {
+                return false;
+            }
+
+            return !glyph.isManualShape();
         }
 
         @Override
-        public void setSeed (Glyph seed)
+        public PixelRectangle setSeed (Glyph seed)
         {
-            super.setSeed(seed);
+            box = null;
 
-            final Circle circle = computeCircle(seed);
+            // Side-effect: compute underlying circle & curve
+            circle = getCircle(seed);
 
             if (circle.getRadius()
                       .isInfinite()) {
@@ -1011,43 +1189,51 @@ public class SlurInspector
                 seed.addAttachment("^", curve);
             }
 
-            startBox = getExtensionBox(-1);
-            stopBox = getExtensionBox(+1);
+            return super.setSeed(seed);
         }
 
         /**
-         * Compute the extension box in the provided direction.
-         * Nota: for short glyphs (width less than 2 interline) circle/curve are
-         * not reliable and we must use approximating line instead.
-         * @param dir -1 for start, +1 for stop
-         * @return the extension box
+         * Remember the desired extension side.
+         * @param side the desired side
          */
-        private PixelRectangle getExtensionBox (int dir)
+        public void setSide (HorizontalSide side)
+        {
+            this.side = side;
+        }
+
+        /**
+         * Compute the extension box on the provided side.
+         * @return the extension box
+         * @see #setSide
+         */
+        @Implement(CompoundBuilder.CompoundAdapter.class)
+        public PixelRectangle computeReferenceBox ()
         {
             PixelRectangle seedBox = seed.getContourBox();
             boolean        isShort = seedBox.width <= minSlurWidth;
-            Point2D        pt; // Ending point
-            Point2D        cp; // Control point
+            Point2D        cp; // Related control point
 
             if (isShort) {
-                pt = (dir < 0) ? seed.getStartPoint(HORIZONTAL)
-                     : seed.getStopPoint(HORIZONTAL);
-                cp = (dir < 0) ? seed.getStopPoint(HORIZONTAL)
+                // For short glyphs, circle/curve are not reliable
+                // so we use approximating line instead.
+                endPt = (side == LEFT) ? seed.getStartPoint(HORIZONTAL)
+                        : seed.getStopPoint(HORIZONTAL);
+                cp = (side == LEFT) ? seed.getStopPoint(HORIZONTAL)
                      : seed.getStartPoint(HORIZONTAL);
             } else {
-                pt = (dir < 0) ? curve.getP1() : curve.getP2();
-                cp = (dir < 0) ? curve.getCtrlP1() : curve.getCtrlP2();
+                endPt = (side == LEFT) ? curve.getP1() : curve.getP2();
+                cp = (side == LEFT) ? curve.getCtrlP1() : curve.getCtrlP2();
             }
 
             // Exact ending point (?)
-            PixelRectangle roi = (dir > 0)
+            PixelRectangle roi = (side == LEFT)
                                  ? new PixelRectangle(
-                (seedBox.x + seedBox.width) - 1,
+                seedBox.x,
                 seedBox.y,
                 1,
                 seedBox.height)
                                  : new PixelRectangle(
-                seedBox.x,
+                (seedBox.x + seedBox.width) - 1,
                 seedBox.y,
                 1,
                 seedBox.height);
@@ -1055,19 +1241,19 @@ public class SlurInspector
             Point2D        ep = seed.getRectangleCentroid(roi);
 
             if (ep != null) {
-                if (dir > 0) {
+                if (side == RIGHT) {
                     ep.setLocation(ep.getX() + 1, ep.getY());
                 }
             } else {
-                ep = pt; // Better than nothing
+                ep = endPt; // Better than nothing
             }
 
-            final StaffInfo staff = system.getStaffAt(pt);
-            final double    pitch = staff.pitchPositionOf(pt);
+            final StaffInfo staff = system.getStaffAt(endPt);
+            final double    pitch = staff.pitchPositionOf(endPt);
             final int       intPitch = (int) Math.rint(pitch);
 
             double          target;
-            PixelRectangle  box;
+            PixelRectangle  rect = null;
 
             if ((Math.abs(intPitch) <= 4) && ((intPitch % 2) == 0)) {
                 // This end touches a staff line, use larger margins
@@ -1078,31 +1264,55 @@ public class SlurInspector
             }
 
             Point2D cp2pt = new Point2D.Double(
-                pt.getX() - cp.getX(),
-                pt.getY() - cp.getY());
+                endPt.getX() - cp.getX(),
+                endPt.getY() - cp.getY());
             double  hypot = Math.hypot(cp2pt.getX(), cp2pt.getY());
             double  lambda = target / hypot;
             Point2D ext = new Point2D.Double(
                 ep.getX() + (lambda * cp2pt.getX()),
                 ep.getY() + (lambda * cp2pt.getY()));
 
-            box = new PixelRectangle(
+            rect = new PixelRectangle(
                 (int) Math.rint(Math.min(ext.getX(), ep.getX())),
                 (int) Math.rint(Math.min(ext.getY(), ep.getY())),
                 (int) Math.rint(Math.abs(ext.getX() - ep.getX())),
                 (int) Math.rint(Math.abs(ext.getY() - ep.getY())));
 
             // Ensure minimum box height
-            if (box.height < minExtensionHeight) {
-                box.grow(
+            if (rect.height < minExtensionHeight) {
+                rect.grow(
                     0,
                     1 +
-                    (int) Math.rint((minExtensionHeight - box.height) / 2.0));
+                    (int) Math.rint((minExtensionHeight - rect.height) / 2.0));
             }
 
-            seed.addAttachment(((dir < 0) ? "e^" : "^e"), box);
+            seed.addAttachment(((side == LEFT) ? "e^" : "^e"), rect);
 
-            return box;
+            return rect;
+        }
+
+        /**
+         * Report the (square) distance from the slur ending point to
+         * the provided section, according to the current side.
+         * @param section the provided section
+         * @return the square distance
+         */
+        private double toEndSq (Section section)
+        {
+            PixelRectangle b = section.getContourBox();
+
+            if (side == LEFT) {
+                // Use box right vertical
+                return new Line2D.Double(
+                    b.x + b.width,
+                    b.y,
+                    b.x + b.width,
+                    b.y + b.height).ptSegDistSq(endPt);
+            } else {
+                // Use box left vertical
+                return new Line2D.Double(b.x, b.y, b.x, b.y + b.height).ptSegDistSq(
+                    endPt);
+            }
         }
     }
 }

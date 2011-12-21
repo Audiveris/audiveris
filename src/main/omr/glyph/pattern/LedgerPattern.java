@@ -26,6 +26,8 @@ import omr.lag.Section;
 
 import omr.log.Logger;
 
+import omr.run.Orientation;
+
 import omr.score.common.PixelRectangle;
 
 import omr.sheet.HorizontalsBuilder;
@@ -43,7 +45,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
-import omr.run.Orientation;
 
 /**
  * Class {@code LedgerPattern} checks the related system for invalid ledgers.
@@ -273,18 +274,18 @@ public class LedgerPattern
             return new Evaluation(chosenEvaluation.shape, Evaluation.ALGORITHM);
         }
 
-        public PixelRectangle getReferenceBox ()
+        public PixelRectangle computeReferenceBox ()
         {
             Point2D        stop = seed.getStopPoint(Orientation.HORIZONTAL);
-            PixelRectangle box = new PixelRectangle(
+            PixelRectangle rect = new PixelRectangle(
                 (int) Math.rint(stop.getX()),
                 (int) Math.rint(stop.getY()),
                 interChunkDx,
                 0);
-            box.grow(0, interChunkDy);
-            seed.addAttachment("-", box);
+            rect.grow(0, interChunkDy);
+            seed.addAttachment("-", rect);
 
-            return box;
+            return rect;
         }
     }
 }

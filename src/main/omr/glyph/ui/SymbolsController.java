@@ -130,20 +130,6 @@ public class SymbolsController
             sheet);
     }
 
-    //--------------------//
-    // asyncFixLargeSlurs //
-    //--------------------//
-    /**
-     * Asynchronously fix a collection of glyphs as large slurs
-     *
-     * @param glyphs the slur glyphs to fix
-     * @return the task that carries out the processing
-     */
-    public Task asyncFixLargeSlurs (Collection<Glyph> glyphs)
-    {
-        return new SlurTask(sheet, glyphs).launch(sheet);
-    }
-
     //-----------------------//
     // asyncModifyBoundaries //
     //-----------------------//
@@ -175,7 +161,6 @@ public class SymbolsController
         }
 
         return new BoundaryTask(sheet, contexts).launch(sheet);
-
     }
 
     //--------------//
@@ -192,6 +177,20 @@ public class SymbolsController
                               final boolean     isShort)
     {
         return new SegmentTask(sheet, isShort, glyphs).launch(sheet);
+    }
+
+    //----------------//
+    // asyncTrimSlurs //
+    //----------------//
+    /**
+     * Asynchronously fix a collection of glyphs as large slurs
+     *
+     * @param glyphs the slur glyphs to fix
+     * @return the task that carries out the processing
+     */
+    public Task asyncTrimSlurs (Collection<Glyph> glyphs)
+    {
+        return new SlurTask(sheet, glyphs).launch(sheet);
     }
 
     //------------------//

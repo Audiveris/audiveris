@@ -317,7 +317,7 @@ public class Slur
         // Compute the approximating circle
         Circle       circle = system.getInfo()
                                     .getSlurInspector()
-                                    .computeCircle(glyph);
+                                    .getCircle(glyph);
         CubicCurve2D curve = circle.getCurve();
 
         // Safer

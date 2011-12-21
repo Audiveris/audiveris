@@ -61,9 +61,10 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
- * Class {@code SystemInfo} gathers information from the original picture
- * about a retrieved system. Most of the physical processing is done in parallel
- * at system level, and thus is handled from this SystemInfo object.
+ * Class {@code SystemInfo} gathers information from the original
+ * picture about a retrieved system.
+ * Most of the physical processing is done in parallel at system level, and
+ * thus is handled from this SystemInfo object.
  *
  * <p>Many processing tasks are actually handled by companion classes, but
  * SystemInfo is the interface of choice, with delegation to the proper
@@ -204,8 +205,7 @@ public class SystemInfo
     // SystemInfo //
     //------------//
     /**
-     * Create a SystemInfo entity, to register the provided parameters
-     *
+     * Create a SystemInfo entity, to register the provided parameters.
      * @param id the unique identity
      * @param sheet the containing sheet
      * @param staves the (initial) sequence of staves
@@ -236,6 +236,7 @@ public class SystemInfo
     // setBar //
     //--------//
     /**
+     * Assign system barline on the provided side.
      * @param side proper horizontal side
      * @param bar the bar to set
      */
@@ -253,6 +254,7 @@ public class SystemInfo
     // getBar //
     //--------//
     /**
+     * Report the system barline on the provided side.
      * @param side proper horizontal side
      * @return the system bar on this side, or null
      */
@@ -269,6 +271,7 @@ public class SystemInfo
     // setBarAlignments //
     //------------------//
     /**
+     * Record the various bar alignments for this system.
      * @param barAlignments the barAlignments to set
      */
     public void setBarAlignments (List<BarAlignment> barAlignments)
@@ -280,6 +283,7 @@ public class SystemInfo
     // getBarAlignments //
     //------------------//
     /**
+     * Report the system bar alignments.
      * @return the barAlignments
      */
     public List<BarAlignment> getBarAlignments ()
@@ -291,9 +295,8 @@ public class SystemInfo
     // getBottom //
     //-----------//
     /**
-     * Report the ordinate of the bottom of the system, which is the ordinate of
-     * the last line of the last staff of this system
-     *
+     * Report the ordinate of the bottom of the system, which is the
+     * ordinate of the last line of the last staff of this system.
      * @return the system bottom, in pixels
      */
     public int getBottom ()
@@ -305,7 +308,7 @@ public class SystemInfo
     // setBoundary //
     //-------------//
     /**
-     * Define the precise boundary of this system
+     * Define the precise boundary of this system.
      * @param boundary the (new) boundary
      */
     public void setBoundary (SystemBoundary boundary)
@@ -317,7 +320,7 @@ public class SystemInfo
     // getBoundary //
     //-------------//
     /**
-     * Report the precise boundary of this system
+     * Report the precise boundary of this system.
      * @return the precise system boundary
      */
     public SystemBoundary getBoundary ()
@@ -329,7 +332,7 @@ public class SystemInfo
     // getBounds //
     //-----------//
     /**
-     * Report the rectangular bounds that enclose this system
+     * Report the rectangular bounds that enclose this system.
      * @return the system rectangular bounds
      */
     public PixelRectangle getBounds ()
@@ -345,9 +348,9 @@ public class SystemInfo
     // getDeltaY //
     //-----------//
     /**
-     * Report the deltaY of the system, that is the difference in ordinate
-     * between first and last staves of the system. This deltaY is of course 0
-     * for a one-staff system.
+     * Report the deltaY of the system, that is the difference in
+     * ordinate between first and last staves of the system.
+     * This deltaY is of course 0 for a one-staff system.
      *
      * @return the deltaY value, expressed in pixels
      */
@@ -360,7 +363,7 @@ public class SystemInfo
     // getEndings //
     //------------//
     /**
-     * Report the collection of endings found
+     * Report the collection of endings found.
      * @return the endings collection
      */
     public List<Glyph> getEndings ()
@@ -372,6 +375,7 @@ public class SystemInfo
     // getFirstStaff //
     //---------------//
     /**
+     * Report the first staff of the system.
      * @return the first staff
      */
     public StaffInfo getFirstStaff ()
@@ -383,7 +387,8 @@ public class SystemInfo
     // getGlyphs //
     //-----------//
     /**
-     * Report the unmodifiable collection of glyphs within the system area.
+     * Report the unmodifiable collection of glyphs within the system
+     * area.
      * @return the unmodifiable collection of glyphs
      */
     public SortedSet<Glyph> getGlyphs ()
@@ -395,9 +400,8 @@ public class SystemInfo
     // getHorizontalSections //
     //-----------------------//
     /**
-     * Report the (unmodifiable) collection of horizontal sections in the system
-     * related area
-     *
+     * Report the (unmodifiable) collection of horizontal sections in
+     * the system related area.
      * @return the area horizontal sections
      */
     public Collection<Section> getHorizontalSections ()
@@ -417,8 +421,7 @@ public class SystemInfo
     // getId //
     //-------//
     /**
-     * Report the id (debugging info) of the system info
-     *
+     * Report the id (debugging info) of the system info.
      * @return the id
      */
     public int getId ()
@@ -441,7 +444,7 @@ public class SystemInfo
     // getLedgers //
     //------------//
     /**
-     * Report non-modifiable view of ledgers found
+     * Report non-modifiable view of ledgers found.
      * @return the ledger collection
      */
     public List<Glyph> getLedgers ()
@@ -453,8 +456,7 @@ public class SystemInfo
     // getLeft //
     //---------//
     /**
-     * Report the left abscissa
-     *
+     * Report the left abscissa.
      * @return the left abscissa value, expressed in pixels
      */
     public int getLeft ()
@@ -466,6 +468,7 @@ public class SystemInfo
     // setLimit //
     //----------//
     /**
+     * Record the system limit on the provided side.
      * @param side proper horizontal side
      * @param limit the limit to set
      */
@@ -479,10 +482,11 @@ public class SystemInfo
         }
     }
 
-    //---------//
+    //----------//
     // getLimit //
-    //---------//
+    //----------//
     /**
+     * Report the system limit on the provided side.
      * @param side proper horizontal side
      * @return the leftBar
      */
@@ -499,7 +503,7 @@ public class SystemInfo
     // getLogPrefix //
     //--------------//
     /**
-     * Report the proper prefix to use when logging a message
+     * Report the proper prefix to use when logging a message.
      * @return the proper prefix
      */
     public String getLogPrefix ()
@@ -521,9 +525,8 @@ public class SystemInfo
     // getMutableHorizontalSections //
     //------------------------------//
     /**
-     * Report the (modifiable) collection of horizontal sections in the system
-     * related area
-     *
+     * Report the (modifiable) collection of horizontal sections in the
+     * system related area.
      * @return the area vertical sections
      */
     public Collection<Section> getMutableHorizontalSections ()
@@ -535,9 +538,8 @@ public class SystemInfo
     // getMutableVerticalSections //
     //----------------------------//
     /**
-     * Report the (modifiable) collection of vertical sections in the system
-     * related area
-     *
+     * Report the (modifiable) collection of vertical sections in the
+     * system related area.
      * @return the area vertical sections
      */
     public Collection<Section> getMutableVerticalSections ()
@@ -549,7 +551,7 @@ public class SystemInfo
     // getNewSentenceId //
     //------------------//
     /**
-     * Report the id for a new sentence
+     * Report the id for a new sentence.
      * @return the next id
      */
     public int getNewSentenceId ()
@@ -561,9 +563,8 @@ public class SystemInfo
     // getNoteStaffAt //
     //----------------//
     /**
-     * Given a note, retrieve the proper related staff within the system, using
-     * ledgers if any.
-     *
+     * Given a note, retrieve the proper related staff within the
+     * system, using ledgers if any.
      * @param point the center of the provided note entity
      * @return the proper note position (staff & pitch)
      */
@@ -620,7 +621,7 @@ public class SystemInfo
     // getParts //
     //----------//
     /**
-     * Reports the parts of this system
+     * Reports the parts of this system.
      * @return the parts (non-null)
      */
     public List<PartInfo> getParts ()
@@ -632,8 +633,7 @@ public class SystemInfo
     // getRight //
     //----------//
     /**
-     * Report the abscissa of the end of the system
-     *
+     * Report the abscissa of the end of the system.
      * @return the right abscissa, expressed in pixels
      */
     public int getRight ()
@@ -645,8 +645,7 @@ public class SystemInfo
     // getScoreSystem //
     //----------------//
     /**
-     * Report the related logical score system
-     *
+     * Report the related logical score system.
      * @return the logical score System counterpart
      */
     public ScoreSystem getScoreSystem ()
@@ -666,8 +665,7 @@ public class SystemInfo
     // getStaffAt //
     //------------//
     /**
-     * Given a point, retrieve the closest staff within the system
-     *
+     * Given a point, retrieve the closest staff within the system.
      * @param point the provided point
      * @return the "containing" staff
      */
@@ -693,8 +691,7 @@ public class SystemInfo
     // getStaves //
     //-----------//
     /**
-     * Report the list of staves that compose this system
-     *
+     * Report the list of staves that compose this system.
      * @return the staves
      */
     public List<StaffInfo> getStaves ()
@@ -706,7 +703,7 @@ public class SystemInfo
     // getTenutos //
     //------------//
     /**
-     * Report the collection of tenutos found
+     * Report the collection of tenutos found.
      * @return the tenutos collection
      */
     public List<Glyph> getTenutos ()
@@ -718,8 +715,7 @@ public class SystemInfo
     // getTop //
     //--------//
     /**
-     * Report the ordinate of the top of this system
-     *
+     * Report the ordinate of the top of this system.
      * @return the top ordinate, expressed in pixels
      */
     public int getTop ()
@@ -731,9 +727,8 @@ public class SystemInfo
     // getVerticalSections //
     //---------------------//
     /**
-     * Report the (unmodifiable) collection of vertical sections in the system
-     * related area
-     *
+     * Report the (unmodifiable) collection of vertical sections in
+     * the system related area.
      * @return the area vertical sections
      */
     public Collection<Section> getVerticalSections ()
@@ -745,8 +740,7 @@ public class SystemInfo
     // getWidth //
     //----------//
     /**
-     * Report the width of the system
-     *
+     * Report the width of the system.
      * @return the width value, expressed in pixels
      */
     public int getWidth ()
@@ -758,7 +752,8 @@ public class SystemInfo
     // addGlyph //
     //----------//
     /**
-     * Add a brand new glyph as an active glyph in proper system and nest.
+     * Add a brand new glyph as an active glyph in proper system
+     * (and nest).
      * If the glyph is a compound, its parts are made pointing back to it and
      * are made no longer active glyphs. To just register a glyph (without
      * impacting its sections), use {@link #registerGlyph} instead.
@@ -781,7 +776,7 @@ public class SystemInfo
     // addPart //
     //---------//
     /**
-     * Add a part (set of staves) in this system
+     * Add a part (set of staves) in this system.
      * @param partInfo the part to add
      */
     public void addPart (PartInfo partInfo)
@@ -818,8 +813,8 @@ public class SystemInfo
     // allocateScoreStructure //
     //------------------------//
     /**
-     * Build the corresponding ScoreSystem entity with all its depending Parts
-     * and Staves
+     * Build the corresponding ScoreSystem entity with all its
+     * depending Parts and Staves.
      */
     public void allocateScoreStructure ()
     {
@@ -870,8 +865,8 @@ public class SystemInfo
     // buildGlyph //
     //------------//
     /**
-     * Build a glyph from a collection of sections, and make the sections point
-     * back to the glyph
+     * Build a glyph from a collection of sections, and make the
+     * sections point back to the glyph.
      * @param sections the provided members of the future glyph
      * @return the newly built glyph
      */
@@ -884,7 +879,7 @@ public class SystemInfo
     // buildMeasures //
     //---------------//
     /**
-     * Based on barlines found, build, check and cleanup score measures
+     * Based on barlines found, build, check and cleanup score measures.
      */
     public void buildMeasures ()
     {
@@ -895,11 +890,12 @@ public class SystemInfo
     // buildTransientCompound //
     //------------------------//
     /**
-     * Make a new glyph out of a collection of (sub) glyphs, by merging all
-     * their member sections. This compound is transient, since until it is
-     * properly inserted by use of {@link #addGlyph}, this building has no
-     * impact on either the containing nest, the containing system, nor the
-     * contained sections themselves.
+     * Make a new glyph out of a collection of (sub) glyphs,
+     * by merging all their member sections.
+     * This compound is transient, since until it is properly inserted by use
+     * of {@link #addGlyph}, this building has no impact on either the
+     * containing nest, the containing system, nor the contained sections
+     * themselves.
      *
      * <p>If the newly built compound duplicates an original glyph, the original
      * glyph is used in place of the compound. Finally, the glyph features are
@@ -938,7 +934,7 @@ public class SystemInfo
     // checkBoundaries //
     //-----------------//
     /**
-     * Check this system for glyphs that cross the system boundaries
+     * Check this system for glyphs that cross the system boundaries.
      */
     public void checkBoundaries ()
     {
@@ -949,7 +945,7 @@ public class SystemInfo
     // clearGlyphs //
     //-------------//
     /**
-     * Empty the system glyph collection
+     * Empty the system glyph collection.
      */
     public void clearGlyphs ()
     {
@@ -960,7 +956,7 @@ public class SystemInfo
     // compareTo //
     //-----------//
     /**
-     * Needed to implement natural SystemInfo sorting, based on system id
+     * Needed to implement natural SystemInfo sorting, based on system id.
      * @param o the other system to compare to
      * @return the comparison result
      */
@@ -973,8 +969,8 @@ public class SystemInfo
     // computeGlyphFeatures //
     //----------------------//
     /**
-     * Compute all the features that will be used to recognize the glyph at hand
-     * (it's a mix of moments plus a few other characteristics)
+     * Compute all the features that will be used to recognize the
+     * glyph at hand (a mix of moments plus a few other characteristics).
      *
      * @param glyph the glyph at hand
      */
@@ -987,7 +983,7 @@ public class SystemInfo
     // createStemCheckSuite //
     //----------------------//
     /**
-     * Build a check suite for stem retrievals
+     * Build a check suite for stem retrievals.
      * @param isShort are we looking for short (vs standard) stems?
      * @return the newly built check suite
      * @throws omr.step.StepException
@@ -1002,7 +998,7 @@ public class SystemInfo
     // dumpGlyphs //
     //------------//
     /**
-     * Dump all glyphs handled by this system
+     * Dump all glyphs handled by this system.
      */
     public void dumpGlyphs ()
     {
@@ -1013,9 +1009,8 @@ public class SystemInfo
     // dumpGlyphs //
     //------------//
     /**
-     * Dump the glyphs handled by this system and that are contained by the
-     * provided rectangle
-     *
+     * Dump the glyphs handled by this system and that are contained
+     * by the provided rectangle.
      * @param rect the region of interest
      */
     public void dumpGlyphs (PixelRectangle rect)
@@ -1035,7 +1030,7 @@ public class SystemInfo
     // dumpSections //
     //--------------//
     /**
-     * Dump all (vertical) sections handled by this system
+     * Dump all (vertical) sections handled by this system.
      */
     public void dumpSections ()
     {
@@ -1047,8 +1042,7 @@ public class SystemInfo
     //--------------//
     /**
      * Dump the (vertical) sections handled by this system and that are
-     * contained by the provided rectangle
-     *
+     * contained by the provided rectangle.
      * @param rect the region of interest
      */
     public void dumpSections (PixelRectangle rect)
@@ -1066,28 +1060,13 @@ public class SystemInfo
     // extractNewGlyphs //
     //------------------//
     /**
-     * In the specified system, build new glyphs from unknown sections (sections
-     * not linked to a known glyph)
+     * In the specified system, build new glyphs from unknown sections
+     * (sections not linked to a known glyph).
      */
     public void extractNewGlyphs ()
     {
         removeInactiveGlyphs();
         retrieveGlyphs();
-    }
-
-    //----------//
-    // trimSlur //
-    //----------//
-    /**
-     * For large glyphs, we suspect a slur with a stuck object,
-     * so the strategy is to rebuild the true Slur portions from some
-     * underlying sections.
-     * @param slur the spurious slur slur
-     * @return the extracted slur glyph, if any
-     */
-    public Glyph fixLargeSlur (Glyph slur)
-    {
-        return slurInspector.trimSlur(slur);
     }
 
     //---------------//
@@ -1109,8 +1088,7 @@ public class SystemInfo
     //-----------------------//
     /**
      * Look up in system glyphs for the glyphs contained by a
-     * provided rectangle
-     *
+     * provided rectangle.
      * @param rect the coordinates rectangle, in pixels
      * @return the glyphs found, which may be an empty list
      */
@@ -1133,7 +1111,6 @@ public class SystemInfo
     /**
      * Look up in system glyphs for <b>all</b> glyphs, apart from the
      * excluded glyphs, intersected by a provided rectangle.
-     *
      * @param rect the coordinates rectangle, in pixels
      * @param excluded the glyphs to be excluded
      * @return the glyphs found, which may be an empty list
@@ -1157,8 +1134,9 @@ public class SystemInfo
     // registerGlyph //
     //---------------//
     /**
-     * Just register this glyph (as inactive) in order to persist glyph info
-     * such as TextInfo. Use {@link #addGlyph} to fully add the glpyh as active.
+     * Just register this glyph (as inactive) in order to persist glyph
+     * info such as TextInfo.
+     * Use {@link #addGlyph} to fully add the glpyh as active.
      * @param glyph the glyph to just register
      * @return the proper (original) glyph
      * @see #addGlyph
@@ -1198,8 +1176,8 @@ public class SystemInfo
     // removeGlyph //
     //-------------//
     /**
-     * Remove a glyph from the containing system glyph list, and make it
-     * inactive by cutting the link from its member sections
+     * Remove a glyph from the containing system glyph list, and make
+     * it inactive by cutting the link from its member sections.
      *
      * @param glyph the glyph to remove
      */
@@ -1212,8 +1190,9 @@ public class SystemInfo
     // removeInactiveGlyphs //
     //----------------------//
     /**
-     * On a specified system, look for all inactive glyphs and remove them from
-     * its glyphs collection (but leave them in the containing lag).
+     * On a specified system, look for all inactive glyphs and remove
+     * them from its glyphs collection (but leave them in the
+     * containing nest).
      * Purpose is to prepare room for a new glyph extraction
      */
     public void removeInactiveGlyphs ()
@@ -1252,8 +1231,8 @@ public class SystemInfo
     // retrieveGlyphs //
     //----------------//
     /**
-     * In a given system area, browse through all sections not assigned to known
-     * glyphs, and build new glyphs out of connected sections
+     * In a given system area, browse through all sections not assigned
+     * to known glyphs, and build new glyphs out of connected sections.
      */
     public void retrieveGlyphs ()
     {
@@ -1264,7 +1243,7 @@ public class SystemInfo
     // retrieveHorizontals //
     //---------------------//
     /**
-     * Retrieve ledgers (and tenuto, and horizontal endings)
+     * Retrieve ledgers (and tenuto, and horizontal endings).
      * @throws omr.step.StepException
      */
     public void retrieveHorizontals ()
@@ -1281,7 +1260,7 @@ public class SystemInfo
     // retrieveVerticals //
     //-------------------//
     /**
-     * Retrieve stems (and vertical endings)
+     * Retrieve stems (and vertical endings).
      * @return the number of glyphs built
      * @throws omr.step.StepException
      */
@@ -1295,7 +1274,7 @@ public class SystemInfo
     // runPatterns //
     //-------------//
     /**
-     * Run the series of glyphs patterns
+     * Run the series of glyphs patterns.
      * @return true if some progress has been made
      */
     public boolean runPatterns ()
@@ -1307,7 +1286,8 @@ public class SystemInfo
     // segmentGlyphOnStems //
     //---------------------//
     /**
-     * Process a glyph to retrieve its internal potential stems and leaves
+     * Process a glyph to retrieve its internal potential stems and
+     * leaves.
      * @param glyph the glyph to segment along stems
      * @param isShort should we look for short (rather than standard) stems?
      */
@@ -1321,8 +1301,8 @@ public class SystemInfo
     // selectGlyphs //
     //--------------//
     /**
-     * Select glyphs out of a provided collection of glyphs,for which the
-     * provided predicate holds true
+     * Select glyphs out of a provided collection of glyphs,for which
+     * the provided predicate holds true.
      * @param glyphs the provided collection of glyphs candidates, or the full
      * system collection if null
      * @param predicate the condition to be fulfilled to get selected
@@ -1350,7 +1330,7 @@ public class SystemInfo
     // stemBoxOf //
     //-----------//
     /**
-     * Report a enlarged box of a given (stem) glyph
+     * Report a enlarged box of a given (stem) glyph.
      * @param stem the stem
      * @return the enlarged stem box
      */
@@ -1363,8 +1343,7 @@ public class SystemInfo
     // toString //
     //----------//
     /**
-     * Report a readable description
-     *
+     * Report a readable description.
      * @return a description based on staff indices
      */
     @Override
@@ -1410,9 +1389,8 @@ public class SystemInfo
     // toString //
     //----------//
     /**
-     * Convenient method, to build a string with just the ids of the system
-     * collection
-     *
+     * Convenient method, to build a string with just the ids of the
+     * system collection.
      * @param systems the collection of glysystemsphs
      * @return the string built
      */
@@ -1451,7 +1429,7 @@ public class SystemInfo
     // getSheet //
     //----------//
     /**
-     * Report the sheet this system belongs to
+     * Report the sheet this system belongs to.
      * @return the containing sheet
      */
     public Sheet getSheet ()
@@ -1463,8 +1441,8 @@ public class SystemInfo
     // translateFinal //
     //----------------//
     /**
-     * Launch from this system the final processing of impacted systems to
-     * translate them to score entities
+     * Launch from this system the final processing of impacted systems
+     * to translate them to score entities.
      */
     public void translateFinal ()
     {
@@ -1475,11 +1453,25 @@ public class SystemInfo
     // translateSystem //
     //-----------------//
     /**
-     * Translate the physical Sheet system data into Score system entities
+     * Translate the physical Sheet system data into Score system
+     * entities.
      */
     public void translateSystem ()
     {
         translator.translateSystem();
+    }
+
+    //----------//
+    // trimSlur //
+    //----------//
+    /**
+     * Rebuild true Slur from some underlying sections.
+     * @param slur the spurious slur
+     * @return the extracted slur glyph, if any
+     */
+    public Glyph trimSlur (Glyph slur)
+    {
+        return slurInspector.trimSlur(slur);
     }
 
     //-------------------//
@@ -1501,5 +1493,16 @@ public class SystemInfo
         deltaY = (int) Math.rint(
             lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
         bottom = (int) Math.rint(botLeft.getY());
+    }
+
+    //--------------------//
+    // getCompoundBuilder //
+    //--------------------//
+    /**
+     * @return the compoundBuilder
+     */
+    public CompoundBuilder getCompoundBuilder ()
+    {
+        return compoundBuilder;
     }
 }

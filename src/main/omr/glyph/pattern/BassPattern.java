@@ -158,7 +158,7 @@ public class BassPattern
         }
 
         @Override
-        public PixelRectangle getReferenceBox ()
+        public PixelRectangle computeReferenceBox ()
         {
             if (seed == null) {
                 throw new NullPointerException(

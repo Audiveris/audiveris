@@ -360,16 +360,16 @@ public class AlterPattern
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public boolean isCandidateSuitable (Glyph glyph)
+        public boolean isCandidateClose (Glyph glyph)
         {
-            return !glyph.isManualShape();
+            // We use containment instead of intersection
+            return box.contains(glyph.getContourBox());
         }
 
         @Override
-        public boolean isGlyphClose (PixelRectangle box,
-                                     Glyph          glyph)
+        public boolean isCandidateSuitable (Glyph glyph)
         {
-            return box.contains(glyph.getContourBox());
+            return !glyph.isManualShape();
         }
 
         public void setStemBoxes (PixelRectangle leftBox,
@@ -468,7 +468,7 @@ public class AlterPattern
         }
 
         @Override
-        public PixelRectangle getReferenceBox ()
+        public PixelRectangle computeReferenceBox ()
         {
             final PixelRectangle stemBox = seed.getContourBox();
 
@@ -499,12 +499,12 @@ public class AlterPattern
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public PixelRectangle getReferenceBox ()
+        public PixelRectangle computeReferenceBox ()
         {
-            PixelRectangle box = getStemsBox();
-            box.grow(maxCloseStemDx / 4, minCloseStemOverlap / 2);
+            PixelRectangle newBox = getStemsBox();
+            newBox.grow(maxCloseStemDx / 4, minCloseStemOverlap / 2);
 
-            return box;
+            return newBox;
         }
     }
 
@@ -527,12 +527,12 @@ public class AlterPattern
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public PixelRectangle getReferenceBox ()
+        public PixelRectangle computeReferenceBox ()
         {
-            PixelRectangle box = getStemsBox();
-            box.grow(maxCloseStemDx / 2, minCloseStemOverlap / 2);
+            PixelRectangle newBox = getStemsBox();
+            newBox.grow(maxCloseStemDx / 2, minCloseStemOverlap / 2);
 
-            return box;
+            return newBox;
         }
     }
 }

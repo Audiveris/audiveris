@@ -24,8 +24,8 @@ import java.util.Collections;
 import java.util.Set;
 
 /**
- * Class {@code SymbolMenu} defines the menu menu which is linked to the
- * current selection of either one or several glyphs
+ * Class {@code SymbolMenu} defines the menu menu which is linked to 
+ * the current selection of either one or several glyphs.
  *
  * @author Hervé Bitteur
  */
@@ -50,8 +50,7 @@ public class SymbolMenu
     // SymbolMenu //
     //------------//
     /**
-     * Create the Symbol menu
-     *
+     * Create the Symbol menu.
      * @param symbolsController the top companion
      * @param evaluator the glyph evaluator
      * @param shapeFocus the current shape focus
@@ -96,7 +95,7 @@ public class SymbolMenu
         register(0, new ProposedAction());
 
         // Trim large slur glyphs
-        register(0, new LargeSlurAction());
+        register(0, new TrimSlurAction());
 
         // Dump current glyph
         register(0, new DumpAction());
@@ -120,8 +119,8 @@ public class SymbolMenu
     // DumpTextAction //
     //----------------//
     /**
-     * Dump the text information of each glyph in the selected collection of
-     * glyphs
+     * Dump the text information of each glyph in the selected 
+     * collection of glyphs.
      */
     private class DumpTextAction
         extends DynAction
@@ -168,49 +167,11 @@ public class SymbolMenu
         }
     }
 
-    //-----------------//
-    // LargeSlurAction //
-    //-----------------//
-    /**
-     * Cleanup a glyph with focus on its slur shape
-     */
-    private class LargeSlurAction
-        extends DynAction
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public LargeSlurAction ()
-        {
-            super(60);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        public void actionPerformed (ActionEvent e)
-        {
-            Set<Glyph> glyphs = nest.getSelectedGlyphSet();
-            ((SymbolsController) controller).asyncFixLargeSlurs(glyphs);
-        }
-
-        public void update ()
-        {
-            putValue(NAME, "Trim large Slur");
-
-            if (sheet.hasSystemBoundaries() && (glyphNb > 0) && noVirtuals) {
-                setEnabled(true);
-                putValue(SHORT_DESCRIPTION, "Extract slur from large glyph");
-            } else {
-                setEnabled(false);
-                putValue(SHORT_DESCRIPTION, "No slur to fix");
-            }
-        }
-    }
-
     //----------------//
     // ProposedAction //
     //----------------//
     /**
-     * Accept the proposed compound with its evaluated shape
+     * Accept the proposed compound with its evaluated shape.
      */
     private class ProposedAction
         extends DynAction
@@ -273,7 +234,7 @@ public class SymbolMenu
     // ShapeAction //
     //-------------//
     /**
-     * Set the focus on all glyphs with the same shape
+     * Set the focus on all glyphs with the same shape.
      */
     private class ShapeAction
         extends DynAction
@@ -321,7 +282,8 @@ public class SymbolMenu
     // ShortStemSegmentAction //
     //------------------------//
     /**
-     * Perform a segmentation on the selected glyphs, into short stems and leaves
+     * Perform a segmentation on the selected glyphs, into short stems
+     * and leaves.
      */
     private class ShortStemSegmentAction
         extends DynAction
@@ -360,7 +322,7 @@ public class SymbolMenu
     // SimilarAction //
     //---------------//
     /**
-     * Set the focus on all glyphs similar to the selected glyph
+     * Set the focus on all glyphs similar to the selected glyph.
      */
     private class SimilarAction
         extends DynAction
@@ -410,7 +372,8 @@ public class SymbolMenu
     // StemSegmentAction //
     //-------------------//
     /**
-     * Perform a segmentation on the selected glyphs, into stems and leaves
+     * Perform a segmentation on the selected glyphs, into stems and 
+     * leaves.
      */
     private class StemSegmentAction
         extends DynAction
@@ -449,7 +412,7 @@ public class SymbolMenu
     // TranslationAction //
     //-------------------//
     /**
-     * Display the score entity that translates this glyph
+     * Display the score entity that translates this glyph.
      */
     private class TranslationAction
         extends DynAction
@@ -493,6 +456,44 @@ public class SymbolMenu
             setEnabled(false);
             putValue(NAME, "Translations");
             putValue(SHORT_DESCRIPTION, "No translation");
+        }
+    }
+
+    //----------------//
+    // TrimSlurAction //
+    //----------------//
+    /**
+     * Cleanup a glyph with focus on its slur shape.
+     */
+    private class TrimSlurAction
+        extends DynAction
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public TrimSlurAction ()
+        {
+            super(60);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        public void actionPerformed (ActionEvent e)
+        {
+            Set<Glyph> glyphs = nest.getSelectedGlyphSet();
+            ((SymbolsController) controller).asyncTrimSlurs(glyphs);
+        }
+
+        public void update ()
+        {
+            putValue(NAME, "Trim slur");
+
+            if (sheet.hasSystemBoundaries() && (glyphNb > 0) && noVirtuals) {
+                setEnabled(true);
+                putValue(SHORT_DESCRIPTION, "Extract slur from large glyph");
+            } else {
+                setEnabled(false);
+                putValue(SHORT_DESCRIPTION, "No slur to fix");
+            }
         }
     }
 }

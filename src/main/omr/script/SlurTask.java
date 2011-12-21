@@ -62,7 +62,7 @@ public class SlurTask
     {
         sheet.getSymbolsController()
              .getModel()
-             .fixLargeSlurs(getInitialGlyphs());
+             .trimSlurs(getInitialGlyphs());
     }
 
     //-----------------//

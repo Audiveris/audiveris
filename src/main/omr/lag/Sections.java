@@ -113,6 +113,7 @@ public class Sections
 
         for (Section section : sections) {
             sb.append("#")
+              .append(section.isVertical() ? "V" : "H")
               .append(section.getId());
         }
 

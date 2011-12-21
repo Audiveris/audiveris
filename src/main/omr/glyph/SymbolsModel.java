@@ -198,27 +198,6 @@ public class SymbolsModel
     }
 
     //---------------//
-    // fixLargeSlurs //
-    //---------------//
-    public void fixLargeSlurs (Collection<Glyph> glyphs)
-    {
-        List<Glyph> slurs = new ArrayList<Glyph>();
-
-        for (Glyph glyph : new ArrayList<Glyph>(glyphs)) {
-            SystemInfo system = sheet.getSystemOf(glyph);
-            Glyph      slur = system.fixLargeSlur(glyph);
-
-            if (slur != null) {
-                slurs.add(slur);
-            }
-        }
-
-        if (!slurs.isEmpty()) {
-            assignGlyphs(slurs, Shape.SLUR, false, Evaluation.MANUAL);
-        }
-    }
-
-    //---------------//
     // segmentGlyphs //
     //---------------//
     public void segmentGlyphs (Collection<Glyph> glyphs,
@@ -229,6 +208,27 @@ public class SymbolsModel
         for (Glyph glyph : new ArrayList<Glyph>(glyphs)) {
             SystemInfo system = sheet.getSystemOf(glyph);
             system.segmentGlyphOnStems(glyph, isShort);
+        }
+    }
+
+    //-----------//
+    // trimSlurs //
+    //-----------//
+    public void trimSlurs (Collection<Glyph> glyphs)
+    {
+        List<Glyph> slurs = new ArrayList<Glyph>();
+
+        for (Glyph glyph : new ArrayList<Glyph>(glyphs)) {
+            SystemInfo system = sheet.getSystemOf(glyph);
+            Glyph      slur = system.trimSlur(glyph);
+
+            if (slur != null) {
+                slurs.add(slur);
+            }
+        }
+
+        if (!slurs.isEmpty()) {
+            assignGlyphs(slurs, Shape.SLUR, false, Evaluation.MANUAL);
         }
     }
 
