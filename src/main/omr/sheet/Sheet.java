@@ -78,8 +78,9 @@ import java.util.SortedSet;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
- * Class {@code Sheet} is the corner stone for Sheet processing, keeping
- * pointers to all processings related to the image, and to their results.
+ * Class {@code Sheet} is the corner stone for Sheet processing,
+ * keeping pointers to all processings related to the image, and to
+ * their results.
  *
  * @author Hervé Bitteur
  */
@@ -218,9 +219,7 @@ public class Sheet
         this.page = page;
         this.score = page.getScore();
 
-        locationService = new SelectionService(
-            "sheet " + page.getId(),
-            allowedEvents);
+        locationService = new SelectionService("sheet", allowedEvents);
 
         // Beware: Nest must subscribe to location before any lag,
         // to allow cleaning up of glyph data, before publication by a lag

@@ -26,7 +26,6 @@ import omr.selection.SelectionService;
 
 import omr.util.Predicate;
 
-import java.awt.Rectangle;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;

@@ -642,11 +642,8 @@ public class BasicNest
                                            .next();
                 publish(new GlyphEvent(this, hint, movement, glyph));
 
-                // Publish GlyphSet (if more than just one glyph)
-                if (glyphsFound.size() > 1) {
-                    publish(
-                        new GlyphSetEvent(this, hint, movement, glyphsFound));
-                }
+                // Publish GlyphSet
+                publish(new GlyphSetEvent(this, hint, movement, glyphsFound));
             }
         } else {
             // This is just a point
@@ -710,8 +707,6 @@ public class BasicNest
                     } else {
                         glyphs.add(glyph);
                     }
-
-                    publish(new GlyphSetEvent(this, hint, movement, glyphs));
                 }
             } else {
                 // Overwriting the set of glyphs
@@ -721,9 +716,9 @@ public class BasicNest
                 } else {
                     glyphs = Glyphs.sortedSet();
                 }
-
-                publish(new GlyphSetEvent(this, hint, movement, glyphs));
             }
+
+            publish(new GlyphSetEvent(this, hint, movement, glyphs));
         }
     }
 
@@ -738,9 +733,11 @@ public class BasicNest
     {
         if (ViewParameters.getInstance()
                           .isSectionSelectionEnabled()) {
+            // Section mode
             return;
         }
 
+        // Glyph mode
         MouseMovement movement = glyphSetEvent.movement;
         Set<Glyph>    glyphs = glyphSetEvent.getData();
         Glyph         compound = null;

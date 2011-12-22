@@ -20,6 +20,7 @@ import omr.glyph.Nest;
 import omr.glyph.facets.Glyph;
 import omr.glyph.ui.NestView.ItemRenderer;
 
+import omr.lag.Lag;
 import omr.lag.Section;
 import omr.lag.Sections;
 import omr.lag.ui.SectionBoard;
@@ -69,15 +70,18 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
 /**
- * Class {@code SymbolsEditor} defines, for a given sheet, a UI pane from
- * which all symbol processing actions can be launched and their results checked
+ * Class {@code SymbolsEditor} defines, for a given sheet, a UI pane
+ * from which all symbol processing actions can be launched and their
+ * results checked.
  *
  * @author Hervé Bitteur
  */
@@ -121,9 +125,8 @@ public class SymbolsEditor
     // SymbolsEditor //
     //---------------//
     /**
-     * Create a view in the sheet assembly tabs, dedicated to the display and
-     * handling of glyphs
-     *
+     * Create a view in the sheet assembly tabs, dedicated to the
+     * display and handling of glyphs.
      * @param sheet the sheet whose glyphs are considered
      * @param symbolsController the symbols controller for this sheet
      */
@@ -170,6 +173,14 @@ public class SymbolsEditor
         ScrollView slv = new ScrollView(view);
         sheet.getAssembly()
              .addViewTab(Step.DATA_TAB, slv, boardsPane);
+
+        // Subscribe to both lags for SectionSet events
+        sheet.getHorizontalLag()
+             .getSectionService()
+             .subscribeStrongly(SectionSetEvent.class, view);
+        sheet.getVerticalLag()
+             .getSectionService()
+             .subscribeStrongly(SectionSetEvent.class, view);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -190,8 +201,8 @@ public class SymbolsEditor
     // highLight //
     //-----------//
     /**
-     * Highlight the corresponding slot within the score display, using the
-     * values of measure and slot.
+     * Highlight the corresponding slot within the score display,
+     * using the values of measure and slot.
      * @param measure the measure that contains the highlighted slot
      * @param slot the slot to highlight
      */
@@ -220,8 +231,8 @@ public class SymbolsEditor
     // refresh //
     //---------//
     /**
-     * Refresh the UI display (reset the model values of all spinners, update
-     * the colors of the glyphs)
+     * Refresh the UI display (reset the model values of all spinners,
+     * update the colors of the glyphs).
      */
     public void refresh ()
     {
@@ -279,8 +290,9 @@ public class SymbolsEditor
 
             if (ViewParameters.getInstance()
                               .isSectionSelectionEnabled()) {
+                // Section mode
             } else {
-                // Retrieve the selected glyphs
+                // Glyph mode: Retrieve the selected glyphs
                 Set<Glyph> glyphs = nest.getSelectedGlyphSet();
 
                 if (movement == MouseMovement.RELEASING) {
@@ -298,9 +310,9 @@ public class SymbolsEditor
         public void contextSelected (Point         pt,
                                      MouseMovement movement)
         {
-            // Section selection?
             if (!ViewParameters.getInstance()
                                .isSectionSelectionEnabled()) {
+                // Glyph mode
                 pointSelected(pt, movement);
             }
 
@@ -311,7 +323,7 @@ public class SymbolsEditor
         // highLight //
         //-----------//
         /**
-         * Make the provided slot stand out
+         * Make the provided slot stand out.
          * @param measure the current measure
          * @param slot the current slot
          */
@@ -351,9 +363,8 @@ public class SymbolsEditor
         // onEvent //
         //---------//
         /**
-         * On reception of GLYPH_SET or SECTION_SET information, we build a
+         * On reception of SECTION_SET information, we build a
          * transient compound glyph which is then dispatched.
-         *
          * Such glyph is always generated (a null glyph if the set is null or
          * empty, a simple glyph if the set contains just one glyph, and a true
          * compound glyph when the set contains several glyphs)
@@ -370,7 +381,7 @@ public class SymbolsEditor
                     return;
                 }
 
-                // Default nest view behavior
+                // Default nest view behavior (locationEvent)
                 super.onEvent(event);
 
                 if (event instanceof LocationEvent) { // Location => Boundary
@@ -453,7 +464,7 @@ public class SymbolsEditor
         // handleEvent //
         //-------------//
         /**
-         *  Interest in LocationEvent => boundary modif?
+         * Interest in LocationEvent => system boundary modification?
          * @param locationEvent location event
          */
         @SuppressWarnings("unchecked")
@@ -476,7 +487,7 @@ public class SymbolsEditor
         // handleEvent //
         //-------------//
         /**
-         *  Interest in SectionSetEvent => transient Glyph
+         * Interest in SectionSetEvent => transient Glyph.
          * @param sectionSetEvent
          */
         @SuppressWarnings("unchecked")
@@ -484,44 +495,59 @@ public class SymbolsEditor
         {
             if (!ViewParameters.getInstance()
                                .isSectionSelectionEnabled()) {
+                // Glyph selection mode
                 return;
             }
 
-            Set<Section> sections = sectionSetEvent.getData();
-
-            if ((sections == null) || sections.isEmpty()) {
-                return;
-            }
-
+            // Section selection mode
+            SelectionHint hint = sectionSetEvent.hint;
             MouseMovement movement = sectionSetEvent.movement;
-            Glyph         compound = null;
 
-            try {
-                SystemInfo system = sheet.getSystemOfSections(sections);
+            if (hint == SelectionHint.LOCATION_ADD) {
+                // Collect section sets from all lags
+                List<Section> allSections = new ArrayList<Section>();
 
-                if (system != null) {
-                    compound = system.buildTransientGlyph(sections);
+                for (Lag lag : lags) {
+                    Set<Section> selected = lag.getSelectedSectionSet();
+
+                    if (selected != null) {
+                        allSections.addAll(selected);
+                    }
                 }
 
-                publish(
-                    new GlyphEvent(
-                        this,
-                        SelectionHint.GLYPH_TRANSIENT,
-                        movement,
-                        compound));
+                if (allSections.isEmpty()) {
+                    return;
+                }
 
-                publish(
-                    new GlyphSetEvent(
-                        this,
-                        SelectionHint.GLYPH_TRANSIENT,
-                        movement,
-                        Glyphs.sortedSet(compound)));
-            } catch (IllegalArgumentException ex) {
-                // All sections do not belong to the same system
-                // No compound is allowed and displayed
-                logger.warning(
-                    "Sections from different systems " +
-                    Sections.toString(sections));
+                ///logger.info("SymbolsEditor got all " + Sections.toString(all));
+                try {
+                    Glyph      compound = null;
+                    SystemInfo system = sheet.getSystemOfSections(allSections);
+
+                    if (system != null) {
+                        compound = system.buildTransientGlyph(allSections);
+                    }
+
+                    publish(
+                        new GlyphEvent(
+                            this,
+                            SelectionHint.GLYPH_TRANSIENT,
+                            movement,
+                            compound));
+
+                    publish(
+                        new GlyphSetEvent(
+                            this,
+                            SelectionHint.GLYPH_TRANSIENT,
+                            movement,
+                            Glyphs.sortedSet(compound)));
+                } catch (IllegalArgumentException ex) {
+                    // All sections do not belong to the same system
+                    // No compound is allowed and displayed
+                    logger.warning(
+                        "Sections from different systems " +
+                        Sections.toString(allSections));
+                }
             }
         }
 

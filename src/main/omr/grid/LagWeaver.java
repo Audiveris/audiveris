@@ -669,12 +669,13 @@ public class LagWeaver
 
                         if ((glyph != null) &&
                             (glyph.getShape() == Shape.STAFF_LINE)) {
-                            // Check if this staff line section  should be kept
-                            // Limit width 
-                            if (section.getLength(Orientation.HORIZONTAL) > 1) {
-                                return true;
-                            } else {
-                                if (logger.isFineEnabled()) {
+                            /**
+                             * Narrow horizontal section can be kept to avoid
+                             * over-segmentation between vertical sections
+                             */
+                            if ((section.getLength(Orientation.HORIZONTAL) == 1) &&
+                                (section.getLength(Orientation.VERTICAL) > 1)) {
+                                if (section.isVip() || logger.isFineEnabled()) {
                                     logger.info(
                                         "Keeping staffline section " + section);
                                 }
@@ -682,6 +683,8 @@ public class LagWeaver
                                 section.setGlyph(null);
 
                                 return false;
+                            } else {
+                                return true;
                             }
                         } else {
                             return false;

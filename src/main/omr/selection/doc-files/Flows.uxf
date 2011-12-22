@@ -493,7 +493,7 @@ bg=light_gray</panel_attributes>
       <h>20</h>
     </coordinates>
     <panel_attributes>*(v/h)Run*
-bg=cyan</panel_attributes>
+bg=#88ff88</panel_attributes>
     <additional_attributes/>
   </element>
   <element>

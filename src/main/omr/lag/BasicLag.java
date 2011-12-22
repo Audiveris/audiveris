@@ -458,23 +458,20 @@ public class BasicLag
 
         // Non-degenerated rectangle? look for enclosed sections
         if ((rect.width > 0) && (rect.height > 0)) {
-            if (lagService.subscribersCount(SectionSetEvent.class) > 0) {
-                // Look for enclosed glyphs
-                Set<Section> sectionsFound = lookupSections(rect);
+            ///if (lagService.subscribersCount(SectionSetEvent.class) > 0) {
+            // Look for enclosed glyphs
+            Set<Section> sectionsFound = lookupSections(rect);
 
-                //                // Publish no Run information
-                //                publish(new RunEvent(this, hint, movement, null));
+            // Publish (first) Section found
+            Section section = sectionsFound.isEmpty() ? null
+                              : sectionsFound.iterator()
+                                             .next();
+            publish(new SectionEvent(this, hint, movement, section));
 
-                // Publish (first) Section found
-                Section section = sectionsFound.isEmpty() ? null
-                                  : sectionsFound.iterator()
-                                                 .next();
-                publish(new SectionEvent(this, hint, movement, section));
+            // Publish whole SectionSet
+            publish(new SectionSetEvent(this, hint, movement, sectionsFound));
 
-                // Publish whole SectionSet
-                publish(
-                    new SectionSetEvent(this, hint, movement, sectionsFound));
-            }
+            ///}
 
             //        } else {
             //            // Just section addition / removal
@@ -543,7 +540,8 @@ public class BasicLag
         publish(new RunEvent(this, hint, movement, null));
 
         // Lookup a lag section with proper ID
-        publish(new SectionEvent(this, hint, movement, getVertexById(id)));
+        publish(
+            new SectionEvent(this, hint, movement, getVertexById(id)));
     }
 
     //-------------//
@@ -571,9 +569,8 @@ public class BasicLag
 
         // In section-selection mode, update section set
         if (ViewParameters.getInstance()
-                          .isSectionSelectionEnabled() &&
-            (lagService.subscribersCount(SectionSetEvent.class) > 0)) {
-            // Update section set
+                          .isSectionSelectionEnabled()) {
+            // Section mode: Update section set
             Set<Section> sections = getSelectedSectionSet();
 
             if (sections == null) {
@@ -593,9 +590,6 @@ public class BasicLag
                         // Always adding to the set of glyphs
                         sections.add(section);
                     }
-
-                    publish(
-                        new SectionSetEvent(this, hint, movement, sections));
                 }
             } else {
                 // Overwriting the set of sections
@@ -607,9 +601,9 @@ public class BasicLag
                     // Empty the section set
                     sections.clear();
                 }
-
-                publish(new SectionSetEvent(this, hint, movement, sections));
             }
+
+            publish(new SectionSetEvent(this, hint, movement, sections));
         }
 
         if (glyphService != null) {

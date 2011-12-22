@@ -45,7 +45,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class {@code NestView} is a  view that combines the display of 
+ * Class {@code NestView} is a  view that combines the display of
  * several lags to represent a nest of glyphs.
  *
  * @author Hervé Bitteur
@@ -216,91 +216,83 @@ public class NestView
         // Render the selected glyph(s) if any
         Set<Glyph> glyphs = nest.getSelectedGlyphSet();
 
-        if ((glyphs == null) || glyphs.isEmpty()) {
-            return;
-        }
+        if (glyphs != null) {
+            // Decorations first
+            Stroke oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
+            g.setColor(Color.blue);
 
-        // Decorations first
-        Stroke oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
-        g.setColor(Color.blue);
+            for (Glyph glyph : glyphs) {
+                // Draw character boxes for textual glyphs?
+                if (glyph.isText()) {
+                    if (ViewParameters.getInstance()
+                                      .isLetterBoxPainting()) {
+                        TextInfo info = glyph.getTextInfo();
+                        OcrLine  ocrLine = info.getOcrLine();
 
-        for (Glyph glyph : glyphs) {
-            // Draw circle arc or stick average line
-            //            if (glyph.getShape() == Shape.SLUR) {
-            //                if (ViewParameters.getInstance()
-            //                                  .isCirclePainting()) {
-            //                    Circle circle = SlurInspector.computeCircle(glyph);
-            //
-            //                    if (logger.isFineEnabled()) {
-            //                        logger.fine(
-            //                            String.format(
-            //                                "dist=%g " + circle.toString(),
-            //                                circle.getDistance()));
-            //                    }
-            //
-            //                    drawCircle(circle, g);
-            //                }
-            //
-            //                //            } else if (ViewParameters.getInstance()
-            //                //                                     .isLinePainting()) {
-            //                //                if (glyph instanceof Stick) {
-            //                //                    drawStickLine((Stick) glyph, g);
-            //                //                }
-            //            }
-
-            // Draw character boxes for textual glyphs?
-            if (glyph.isText()) {
-                if (ViewParameters.getInstance()
-                                  .isLetterBoxPainting()) {
-                    TextInfo info = glyph.getTextInfo();
-                    OcrLine  ocrLine = info.getOcrLine();
-
-                    if (ocrLine != null) {
-                        for (OcrChar ch : ocrLine.getChars()) {
-                            Rectangle b = ch.getBox();
-                            g.drawRect(b.x, b.y, b.width, b.height);
+                        if (ocrLine != null) {
+                            for (OcrChar ch : ocrLine.getChars()) {
+                                Rectangle b = ch.getBox();
+                                g.drawRect(b.x, b.y, b.width, b.height);
+                            }
                         }
                     }
                 }
-            }
 
-            // Draw attachments, if any, with their key name
-            if (ViewParameters.getInstance()
-                              .isAttachmentPainting() &&
-                !glyph.getAttachments()
-                      .isEmpty()) {
-                Font oldFont = g.getFont();
-                g.setFont(oldFont.deriveFont(5f));
+                // Draw attachments, if any, with their key name
+                if (ViewParameters.getInstance()
+                                  .isAttachmentPainting() &&
+                    !glyph.getAttachments()
+                          .isEmpty()) {
+                    Font oldFont = g.getFont();
+                    g.setFont(oldFont.deriveFont(5f));
 
-                for (Map.Entry<String, java.awt.Shape> entry : glyph.getAttachments()
-                                                                    .entrySet()) {
-                    java.awt.Shape shape = entry.getValue();
-                    g.draw(shape);
+                    for (Map.Entry<String, java.awt.Shape> entry : glyph.getAttachments()
+                                                                        .entrySet()) {
+                        java.awt.Shape shape = entry.getValue();
+                        g.draw(shape);
 
-                    String    key = entry.getKey();
-                    Rectangle rect = shape.getBounds();
-                    g.drawString(
-                        key,
-                        rect.x + (rect.width / 2),
-                        rect.y + (rect.height / 2));
+                        String    key = entry.getKey();
+                        Rectangle rect = shape.getBounds();
+                        g.drawString(
+                            key,
+                            rect.x + (rect.width / 2),
+                            rect.y + (rect.height / 2));
+                    }
+
+                    g.setFont(oldFont);
                 }
-
-                g.setFont(oldFont);
             }
-        }
 
-        g.setStroke(oldStroke);
+            g.setStroke(oldStroke);
+        }
 
         // Glyph areas second, using XOR mode for the area
-        Graphics2D g2 = (Graphics2D) g.create();
-        g2.setColor(Color.black);
-        g2.setXORMode(Color.darkGray);
+        if (!ViewParameters.getInstance()
+                           .isSectionSelectionEnabled()) {
+            // Glyph selection mode
+            if (glyphs != null) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setColor(Color.black);
+                g2.setXORMode(Color.darkGray);
 
-        for (Glyph glyph : glyphs) {
-            renderGlyphArea(glyph, g2);
+                for (Glyph glyph : glyphs) {
+                    renderGlyphArea(glyph, g2);
+                }
+
+                g2.dispose();
+            }
+        } else {
+            // Section selection mode
+            for (Lag lag : lags) {
+                Set<Section> selected = lag.getSelectedSectionSet();
+
+                if ((selected != null) && !selected.isEmpty()) {
+                    for (Section section : selected) {
+                        section.renderSelected(g);
+                    }
+                }
+            }
         }
-
-        g2.dispose();
     }
 
     //~ Inner Interfaces -------------------------------------------------------

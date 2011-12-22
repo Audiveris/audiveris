@@ -133,7 +133,8 @@ public class RubberPanel
     // setLocationService //
     //--------------------//
     /**
-     * Allow to inject a dependency on a location service. This location is used
+     * Allow to inject a dependency on a location service.
+     * This location is used
      * for two purposes: <ol>
      *
      * <li>First, this panel is a producer of location information. The

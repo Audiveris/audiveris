@@ -53,9 +53,8 @@ public interface SectionView
     public Color getDefaultColor ();
 
     /**
-     * Render the section using the provided graphics object, while showing that
-     * the section has been selected
-     *
+     * Render the section using the provided graphics object, while 
+     * showing that the section has been selected.
      * @param g the graphics environment (which may be applying transformation
      * such as scale)
      * @return true if the section is concerned by the clipping rectangle, which
