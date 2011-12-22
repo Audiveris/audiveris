@@ -92,7 +92,7 @@ public class BasicLag
     protected final SelectionService lagService;
 
     /** Scene service */
-    private SelectionService sceneService;
+    private SelectionService glyphService;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -128,40 +128,6 @@ public class BasicLag
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //-----------------//
-    // getFirstRectRun //
-    //-----------------//
-    public Run getFirstRectRun (int coordMin,
-                                int coordMax,
-                                int posMin,
-                                int posMax)
-    {
-        Run best = null;
-
-        // Relevant portion of runs
-        for (int pos = posMin; pos <= posMax; pos++) {
-            List<Run> runList = runsTable.getSequence(pos);
-
-            for (Run run : runList) {
-                if (run.getStart() > coordMax) {
-                    break; // Over for this column
-                }
-
-                if (run.getStop() < coordMin) {
-                    continue;
-                }
-
-                if (best == null) {
-                    best = run;
-                } else if (run.getStart() < best.getStart()) {
-                    best = run;
-                }
-            }
-        }
-
-        return best;
-    }
 
     //-------------//
     // getSections //
@@ -225,23 +191,6 @@ public class BasicLag
         return lagService;
     }
 
-    //---------------//
-    // getSectionsIn //
-    //---------------//
-    public List<Section> getSectionsIn (Rectangle rect)
-    {
-        List<Section> found = new ArrayList<Section>();
-
-        // Iterate on (all?) sections
-        for (Section section : getSections()) {
-            if (rect.intersects(section.getOrientedBounds())) {
-                found.add(section);
-            }
-        }
-
-        return found;
-    }
-
     //--------------------//
     // getSelectedSection //
     //--------------------//
@@ -267,7 +216,7 @@ public class BasicLag
                              SelectionService sceneService)
     {
         this.locationService = locationService;
-        this.sceneService = sceneService;
+        this.glyphService = sceneService;
 
         runsTable.setLocationService(locationService);
 
@@ -332,11 +281,10 @@ public class BasicLag
     //----------------//
     public Set<Section> lookupSections (PixelRectangle rect)
     {
-        Rectangle    target = orientation.oriented(rect);
         Set<Section> found = new LinkedHashSet<Section>();
 
         for (Section section : getSections()) {
-            if (target.contains(section.getOrientedBounds())) {
+            if (rect.contains(section.getContourBox())) {
                 found.add(section);
             }
         }
@@ -441,22 +389,6 @@ public class BasicLag
 
         // Return the sections purged
         return purges;
-    }
-
-    //-------------------//
-    // purgeTinySections //
-    //-------------------//
-    public List<Section> purgeTinySections (final int minForeWeight)
-    {
-        return purgeSections(
-            new Predicate<Section>() {
-                    public boolean check (Section section)
-                    {
-                        return (section.getForeWeight() < minForeWeight) &&
-                               ((section.getInDegree() == 0) ||
-                               (section.getOutDegree() == 0));
-                    }
-                });
     }
 
     //-----------------//
@@ -664,7 +596,7 @@ public class BasicLag
             }
         }
 
-        if (sceneService != null) {
+        if (glyphService != null) {
             // Section -> Glyph
             if ((hint == LOCATION_ADD) ||
                 (hint == LOCATION_INIT) ||
@@ -673,7 +605,7 @@ public class BasicLag
                 Glyph glyph = (section != null) ? section.getGlyph() : null;
 
                 if (glyph != null) {
-                    sceneService.publish(
+                    glyphService.publish(
                         new GlyphEvent(this, hint, movement, glyph));
                 }
             }

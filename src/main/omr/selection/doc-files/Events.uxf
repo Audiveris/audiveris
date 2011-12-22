@@ -201,7 +201,7 @@ bg=pink</panel_attributes>
       <h>90</h>
     </coordinates>
     <panel_attributes> 
-'Scene
+'Nest
 'GlyphService
 '1 inst / sheet
 bg=pink</panel_attributes>
@@ -386,7 +386,7 @@ r1=publish</panel_attributes>
       <w>90</w>
       <h>30</h>
     </coordinates>
-    <panel_attributes>/SceneEvent/
+    <panel_attributes>/NestEvent/
 </panel_attributes>
     <additional_attributes/>
   </element>

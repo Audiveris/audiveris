@@ -86,7 +86,7 @@ class BasicEnvironment
         final int       posMax = (oRoi.y + oRoi.height) - 1;
         int             count = 0;
 
-        for (Section section : lag.getSectionsIn(oRoi)) {
+        for (Section section : lag.lookupSections(absRoi)) {
             // Exclude sections that are part of the glyph
             if (section.getGlyph() == glyph) {
                 continue;

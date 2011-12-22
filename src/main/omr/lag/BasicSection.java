@@ -648,22 +648,6 @@ public class BasicSection
         return getOrientedBounds().x;
     }
 
-    //---------------//
-    // getStartPoint //
-    //---------------//
-    public PixelPoint getStartPoint ()
-    {
-        if (startPoint == null) {
-            Rectangle roi = new Rectangle(getOrientedBounds());
-            roi.width = 3;
-
-            Point pt = getOrientedCentroid(roi);
-            startPoint = orientation.absolute(new Point(getStartCoord(), pt.y));
-        }
-
-        return startPoint;
-    }
-
     //--------------//
     // getStopCoord //
     //--------------//
@@ -672,23 +656,6 @@ public class BasicSection
         Rectangle bounds = getOrientedBounds();
 
         return bounds.x + (bounds.width - 1);
-    }
-
-    //--------------//
-    // getStopPoint //
-    //--------------//
-    public PixelPoint getStopPoint ()
-    {
-        if (stopPoint == null) {
-            Rectangle roi = new Rectangle(getOrientedBounds());
-            roi.x += (roi.width - 3);
-            roi.width = 3;
-
-            Point pt = getOrientedCentroid(roi);
-            stopPoint = orientation.absolute(new Point(getStopCoord(), pt.y));
-        }
-
-        return stopPoint;
     }
 
     //--------------//
@@ -781,10 +748,16 @@ public class BasicSection
             throw new IllegalArgumentException("Rectangle of Interest is null");
         }
 
-        Rectangle roi = orientation.oriented(absRoi);
-        Point     point = getOrientedCentroid(roi);
+        Barycenter barycenter = new Barycenter();
+        cumulate(barycenter, absRoi);
 
-        return orientation.absolute(point);
+        if (barycenter.getWeight() != 0) {
+            return new PixelPoint(
+                (int) Math.rint(barycenter.getX()),
+                (int) Math.rint(barycenter.getY()));
+        } else {
+            return null;
+        }
     }
 
     //--------//
@@ -1561,11 +1534,10 @@ public class BasicSection
             }
         }
 
-//        if (system != null) {
-//            sb.append(" syst:")
-//              .append(system.getId());
-//        }
-
+        //        if (system != null) {
+        //            sb.append(" syst:")
+        //              .append(system.getId());
+        //        }
         return sb.toString();
     }
 
@@ -1581,47 +1553,6 @@ public class BasicSection
         startPoint = null;
         stopPoint = null;
         orientedLine = null;
-    }
-
-    //---------------------//
-    // getOrientedCentroid //
-    //---------------------//
-    /**
-     * Report the <b>oriented</b> mass center of the section runs intersected
-     * by the provided <b>oriented</b> rectangle
-     * @param oRoi the oriented rectangle of interest
-     * @return the oriented centroid of the intersected points, or null
-     * @throws IllegalArgumentException if provided roi is null
-     */
-    private Point getOrientedCentroid (Rectangle oRoi)
-    {
-        if (oRoi == null) {
-            throw new IllegalArgumentException("Rectangle of Interest is null");
-        }
-
-        Barycenter barycenter = new Barycenter();
-        cumulate(barycenter, orientation.absolute(oRoi));
-
-        if (barycenter.getWeight() != 0) {
-            return new Point(
-                (int) Math.rint(barycenter.getX()),
-                (int) Math.rint(barycenter.getY()));
-        } else {
-            return null;
-        }
-    }
-
-    //-------------//
-    // getRunAtPos //
-    //-------------//
-    /**
-     * Retrieves the run at the given position
-     * @param pos position of the desired run (x for vertical, y for horizontal)
-     * @return the proper Run
-     */
-    private Run getRunAtPos (int pos)
-    {
-        return runs.get(pos - firstPos);
     }
 
     //--------//

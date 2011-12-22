@@ -373,25 +373,11 @@ public interface Section
     public int getStartCoord ();
 
     /**
-     * Return the approximate absolute point which starts the section.
-     * (left point for horizontal section, top point for vertical section).
-     * @return the approximate absolute starting point
-     */
-    public PixelPoint getStartPoint ();
-
-    /**
      * Return the largest run stopping coordinate, which is the
      * largest y value (ordinate) for a section of vertical runs.
      * @return the stopping coordinate of the section
      */
     public int getStopCoord ();
-
-    /**
-     * Return the approximate absolute point which stops the section.
-     * (right point for horizontal section, bottom point for vertical section)
-     * @return the approximate absolute stopping point
-     */
-    public PixelPoint getStopPoint ();
 
     /**
      * Assign a containing system.

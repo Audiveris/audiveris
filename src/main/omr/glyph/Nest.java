@@ -32,8 +32,8 @@ import java.util.Set;
 
 /**
  * Class {@code Nest} handles a collection of {@link Glyph} instances,
- * with the ability to retrieve a Glyph based on its Id or its location, and the
- * ability to give birth to new glyphs.
+ * with the ability to retrieve a Glyph based on its Id or its location,
+ * and the ability to give birth to new glyphs.
  *
  * <p>A nest has no orientation, nor any of its glyphs since a glyph is a
  * collection of sections that can be differently oriented.</p>
@@ -42,7 +42,7 @@ import java.util.Set;
  * member sections. Sections are made of runs of pixels and thus sections do not
  * overlap. Different glyphs can have sections in common, and in that case they
  * overlap, however only one of these glyphs is the current "owner" of these
- * common sections. It is known as being "active" while the others are inactive
+ * common sections. It is known as being "active" while the others are inactive.
  * </p>
  *
  * <p>A nest hosts a SelectionService that deals with glyph selection

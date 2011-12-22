@@ -14,7 +14,8 @@ package omr.math;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code Barycenter} is meant to cumulate data when computing barycenter.
+ * Class {@code Barycenter} is meant to cumulate data when computing
+ * barycenter.
  */
 public class Barycenter
 {
@@ -59,7 +60,7 @@ public class Barycenter
     // getX //
     //------//
     /**
-     * Report the current barycenter abscissa
+     * Report the current barycenter abscissa.
      * @return current abscissa
      */
     public final double getX ()
@@ -71,7 +72,7 @@ public class Barycenter
     // getY //
     //------//
     /**
-     * Report the current barycenter ordinate
+     * Report the current barycenter ordinate.
      * @return current ordinate
      */
     public final double getY ()
@@ -83,7 +84,7 @@ public class Barycenter
     // include //
     //---------//
     /**
-     * Include another barycenter
+     * Include another barycenter.
      * @param weight total weight of this other barycenter
      * @param x abscissa
      * @param y ordinate
@@ -101,7 +102,7 @@ public class Barycenter
     // include //
     //---------//
     /**
-     * Include another barycenter
+     * Include another barycenter.
      * @param that the other barycenter to include
      */
     public final void include (Barycenter that)
@@ -115,7 +116,7 @@ public class Barycenter
     // include //
     //---------//
     /**
-     * Include one point (with default weight assigned to 1)
+     * Include one point (with default weight assigned to 1).
      * @param x point abscissa
      * @param y point ordinate
      */
@@ -129,7 +130,7 @@ public class Barycenter
     // include //
     //---------//
     /**
-     * Include one point (with default weight assigned to 1)
+     * Include one point (with default weight assigned to 1).
      * @param point point to include
      */
     public final void include (Point2D point)
@@ -141,7 +142,7 @@ public class Barycenter
     // include //
     //---------//
     /**
-     * Include one point
+     * Include one point.
      * @param weight weight assigned to the point
      * @param point point to include
      */

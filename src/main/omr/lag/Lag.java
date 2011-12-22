@@ -33,8 +33,9 @@ import java.util.Set;
 
 /**
  * Interface {@code Lag} defines a graph of {@link Section} instances
- * (sets of contiguous runs with compatible lengths), linked by Junctions when
- * there is no more contiguous run or when the compatibility is no longer met.
+ * (sets of contiguous runs with compatible lengths), linked by
+ * Junctions when there is no more contiguous run or when the
+ * compatibility is no longer met.
  *
  * Sections are thus vertices of the graph, while junctions are directed edges
  * between sections. All the sections (and runs) have the same orientation
@@ -68,24 +69,7 @@ public interface Lag
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * Return the first run (the one with minimum position, then with minimum
-     * coordinate) found in the given rectangle
-     *
-     * @param coordMin min abscissa for horizontal lag
-     * @param coordMax max abscissa for horizontal lag
-     * @param posMin   min ordinate for horizontal lag
-     * @param posMax   max ordinate for horizontal lag
-     *
-     * @return the run, or null if none found
-     */
-    Run getFirstRectRun (int coordMin,
-                         int coordMax,
-                         int posMin,
-                         int posMax);
-
-    /**
      * Report the run found at given coordinates, if any.
-     *
      * @param x absolute abscissa
      * @param y absolute ordinate
      * @return  the run found, or null otherwise
@@ -94,63 +78,52 @@ public interface Lag
                   int y);
 
     /**
-     * Report the selection service for runs
+     * Report the selection service for runs.
      * @return the run selection service
      */
     SelectionService getRunService ();
 
     /**
-     * Use the provided runs table as the lag underlying table
+     * Use the provided runs table as the lag underlying table.
      * @param runsTable the populated runs
      */
     void setRuns (RunsTable runsTable);
 
     /**
-     * Report the provided runs table
+     * Report the underlying runs table.
      * @return the table of runs
      */
     RunsTable getRuns ();
 
     /**
-     * Report the section selection service
+     * Report the section selection service.
      * @return the section selection service
      */
     SelectionService getSectionService ();
 
     /**
-     * Return a view of the collection of sections that are currently part of
-     * this lag
-     *
+     * Return a view of the collection of sections that are currently
+     * part of this lag.
      * @return the sections collection
      */
     Collection<Section> getSections ();
 
     /**
-     * Return the collection of sections which intersect the provided rectangle
-     *
-     * @param rect the rectangular area to be checked, specified in the usual
-     * (coord, pos) form.
-     *
-     * @return the list of sections found (may be empty)
-     */
-    List<Section> getSectionsIn (Rectangle rect);
-
-    /**
-     * Convenient method to report the UI currently selected Section, if any, in
-     * this lag
+     * Convenient method to report the UI currently selected Section,
+     * if any, in this lag.
      * @return the UI selected section, or null if none
      */
     Section getSelectedSection ();
 
     /**
-     * Convenient method to report the UI currently selected set of Sections,
-     * if any, in this lag
+     * Convenient method to report the UI currently selected set of
+     * Sections, if any, in this lag.
      * @return the UI selected section set, or null if none
      */
     Set<Section> getSelectedSectionSet ();
 
     /**
-     * Inject dependency about other services for lag
+     * Inject dependency about other services for lag.
      * @param locationService the location service to read & write
      * @param sceneService the glyphservice to write
      */
@@ -164,11 +137,9 @@ public interface Lag
     void addRuns (RunsTable runsTable);
 
     /**
-     * Create a section in the lag (using the defined vertexClass)
-     *
+     * Create a section in the lag (using the defined vertexClass).
      * @param firstPos the starting position of the section
      * @param firstRun the very first run of the section
-     *
      * @return the created section
      */
     Section createSection (int firstPos,
@@ -176,29 +147,17 @@ public interface Lag
 
     /**
      * Lookup for sections that are contained in the provided
-     * rectangle. Specific sections are not considered.
-     *
+     * rectangle.
+     * Specific sections are not considered.
      * @param rect the given rectangle
-     *
      * @return the set of sections found, which may be empty
      */
     Set<Section> lookupSections (PixelRectangle rect);
 
     /**
-     * Purge the lag of all sections for which provided predicate applies
-     *
+     * Purge the lag of all sections for which provided predicate holds.
      * @param predicate means to specify whether a section applies for purge
-     *
      * @return the list of sections purged in this call
      */
     List<Section> purgeSections (Predicate<Section> predicate);
-
-    /**
-     * Purge the lag from section with a too small foreground weight, provided
-     * they do not cut larger glyphs
-     *
-     * @param minForeWeight
-     * @return the purged sections
-     */
-    List<Section> purgeTinySections (final int minForeWeight);
 }

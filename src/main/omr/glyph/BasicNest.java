@@ -88,19 +88,19 @@ public class BasicNest
 
     //~ Instance fields --------------------------------------------------------
 
-    /** (Debug) a unique name for this nest */
+    /** (Debug) a unique name for this nest. */
     private final String name;
 
-    /** Related sheet */
+    /** Related sheet. */
     private final Sheet sheet;
 
-    /** Elaborated constants for this nest */
+    /** Elaborated constants for this nest. */
     private final Parameters params;
 
     /**
-     * Smart glyph map, based on a physical glyph signature, and thus usable
-     * across several glyph extractions, to ensure glyph unicity whatever the
-     * sequential ID it is assigned.
+     * Smart glyph map, based on a physical glyph signature, and thus
+     * usable across several glyph extractions, to ensure glyph unicity
+     * whatever the sequential ID it is assigned.
      */
     private final ConcurrentHashMap<GlyphSignature, Glyph> originals = new ConcurrentHashMap<GlyphSignature, Glyph>();
 
@@ -111,33 +111,31 @@ public class BasicNest
     private final ConcurrentHashMap<Integer, Glyph> allGlyphs = new ConcurrentHashMap<Integer, Glyph>();
 
     /**
-     * Current map of section -> glyphs. This defines the glyphs that are
-     * currently active, since there is at least one section pointing to them
-     * (and the sections collection is immutable).
+     * Current map of section -> glyphs.
+     * This defines the glyphs that are currently active, since there is at
+     * least one section pointing to them (the sections collection is immutable).
      * Nota: The glyph reference within the section is kept in sync
      */
     private final ConcurrentHashMap<Section, Glyph> activeMap = new ConcurrentHashMap<Section, Glyph>();
 
     /**
-     * Collection of active glyphs. This is derived from the activeMap, to give
-     * direct access to all the active glyphs, and is kept in sync with
-     * activeMap. It also contains the virtual glyphs since these are always
-     * active.
+     * Collection of active glyphs.
+     * This is derived from the activeMap, to give direct access to all the
+     * active glyphs, and is kept in sync with activeMap.
+     * It also contains the virtual glyphs since these are always active.
      */
     private Set<Glyph> activeGlyphs;
 
-    /**
-     * Collection of virtual glyphs (with no underlying sections)
-     */
+    /** Collection of virtual glyphs (with no underlying sections). */
     private Set<Glyph> virtualGlyphs = new HashSet<Glyph>();
 
-    /** Global id to uniquely identify a glyph */
+    /** Global id to uniquely identify a glyph. */
     private final AtomicInteger globalGlyphId = new AtomicInteger(0);
 
-    /** Location service (read & write) */
+    /** Location service (read & write). */
     private SelectionService locationService;
 
-    /** Hosted glyph service (Glyph, GlyphId and GlyphSet) */
+    /** Hosted glyph service (Glyph, GlyphId and GlyphSet). */
     protected final SelectionService glyphService;
 
     //~ Constructors -----------------------------------------------------------
@@ -146,7 +144,7 @@ public class BasicNest
     // BasicNest //
     //-----------//
     /**
-     * Create a glyph nest
+     * Create a glyph nest.
      * @param name the distinguished name for this instance
      */
     public BasicNest (String name,
@@ -424,41 +422,6 @@ public class BasicNest
 
         return null;
     }
-
-    //    //----------------------//
-    //    // transferManualGlyphs //
-    //    //----------------------//
-    //    /**
-    //     * Transfer all manually assigned shapes from the old lag, and store them in
-    //     * this lag
-    //     * @param oldLag the lag to "copy" manual glyphs from
-    //     */
-    //    public void transferManualGlyphs (GlyphLag oldLag)
-    //    {
-    //        if (logger.isFineEnabled()) {
-    //            logger.fine(
-    //                "Transfering manual glyphs from " + oldLag + " to " + this);
-    //        }
-    //
-    //        Set<Glyph> transfered = new HashSet<Glyph>();
-    //
-    //        for (Glyph alien : oldLag.getActiveGlyphs()) {
-    //            if (alien.isManualShape()) {
-    //                Glyph glyph = transferAlienGlyph(alien);
-    //
-    //                // Transfer shape info (what else?)
-    //                glyph.setShape(alien.getShape(), alien.getGrade());
-    //
-    //                transfered.add(glyph);
-    //            }
-    //        }
-    //
-    //        if (!transfered.isEmpty()) {
-    //            logger.info(
-    //                "Transfered " + transfered.size() + " glyph" +
-    //                ((transfered.size() == 1) ? "" : "s") + " from previous lag");
-    //        }
-    //    }
 
     //------------//
     // mapSection //

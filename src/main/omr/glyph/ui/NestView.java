@@ -12,9 +12,7 @@
 package omr.glyph.ui;
 
 import omr.glyph.Nest;
-import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
-import omr.glyph.pattern.SlurInspector;
 import omr.glyph.text.OcrChar;
 import omr.glyph.text.OcrLine;
 import omr.glyph.text.TextInfo;
@@ -25,8 +23,6 @@ import omr.lag.Lag;
 import omr.lag.Section;
 
 import omr.log.Logger;
-
-import omr.math.Circle;
 
 import omr.score.ui.PaintingParameters;
 
@@ -41,7 +37,6 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Stroke;
-import java.awt.geom.CubicCurve2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -50,8 +45,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class {@code NestView} is a  view that combines the display of several lags
- * to represent a nest of glyphs
+ * Class {@code NestView} is a  view that combines the display of 
+ * several lags to represent a nest of glyphs.
  *
  * @author Hervé Bitteur
  */
@@ -153,8 +148,8 @@ public class NestView
     // render //
     //--------//
     /**
-     * Render the nest in the provided Graphics context, which may be already
-     * scaled.
+     * Render the nest in the provided Graphics context, which may be
+     * already scaled.
      * @param g the graphics context
      */
     @Override
@@ -206,7 +201,8 @@ public class NestView
     // renderItems //
     //-------------//
     /**
-     * Room for rendering additional items, on top of the basic nest itself.
+     * Room for rendering additional items, on top of the basic nest
+     * itself.
      * This default implementation paints the selected section set if any
      * @param g the graphic context
      */

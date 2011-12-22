@@ -153,30 +153,6 @@ public class LagTest
         assertEquals("Retrieved sections.", sections, lagSections);
     }
 
-    //-------------------//
-    // testGetSectionsIn //
-    //-------------------//
-    public void testGetSectionsIn ()
-    {
-        Section s2 = vLag.createSection(180, new Run(100, 10, 127));
-        s2.append(new Run(101, 20, 127));
-
-        Section s3 = vLag.createSection(200, new Run(150, 10, 127));
-        s3.append(new Run(161, 20, 127));
-        s3.append(new Run(170, 15, 127));
-
-        List<Section> founds = null;
-
-        founds = vLag.getSectionsIn(new Rectangle(0, 0, 0, 0));
-        assertEquals("No section.", 0, founds.size());
-
-        founds = vLag.getSectionsIn(new Rectangle(100, 180, 1, 1));
-        assertEquals("One section.", 1, founds.size());
-
-        founds = vLag.getSectionsIn(new Rectangle(100, 180, 51, 21));
-        assertEquals("Two sections.", 2, founds.size());
-    }
-
     //----------//
     // testHLag //
     //----------//
@@ -225,24 +201,28 @@ public class LagTest
         assertEquals("Non expected switch.", cp, xy);
     }
 
-    //-------------------//
-    // testGetSectionsIn //
-    //-------------------//
-    public void testPurgeTinySections ()
+    //--------------------//
+    // testLookupSections //
+    //--------------------//
+    public void testLookupSections ()
     {
-        Section s1 = vLag.createSection(10, createRun(vTable, 10, 25, 35));
-        s1.append(createRun(vTable, 11, 20, 36));
-        s1.dump();
+        Section s2 = vLag.createSection(180, new Run(100, 10, 127));
+        s2.append(new Run(101, 20, 127));
 
-        Section s2 = vLag.createSection(20, createRun(vTable, 20, 10, 30));
-        s2.dump();
+        Section s3 = vLag.createSection(200, new Run(150, 10, 127));
+        s3.append(new Run(161, 20, 127));
+        s3.append(new Run(170, 15, 127));
 
-        List<Section> purged = null;
+        Set<Section> founds = null;
 
-        purged = vLag.purgeTinySections(4000);
-        assertEquals("One section.", 1, purged.size());
-        assertSame("s2 should have been purged.", s2, purged.get(0));
-        assertEquals("One section left.", 1, vLag.getVertexCount());
+        founds = vLag.lookupSections(new PixelRectangle(0, 0, 0, 0));
+        assertEquals("No section.", 0, founds.size());
+
+        founds = vLag.lookupSections(new PixelRectangle(180, 100, 2, 21));
+        assertEquals("One section.", 1, founds.size());
+
+        founds = vLag.lookupSections(new PixelRectangle(180, 100, 23, 85));
+        assertEquals("Two sections.", 2, founds.size());
     }
 
     //---------------//
@@ -384,6 +364,8 @@ public class LagTest
     //------------------//
     private void commonAssertions (Section s)
     {
+        Orientation ori = s.getGraph()
+                           .getOrientation();
         assertEquals(
             "Bad Bounds",
             s.getOrientedBounds(),
@@ -391,12 +373,29 @@ public class LagTest
         assertEquals(
             "Bad Centroid",
             s.getCentroid(),
-            s.getGraph().getOrientation().absolute(new Point(109, 180)));
-        assertTrue("Bad Containment", s.contains(100, 180));
-        assertFalse("Bad Containment", s.contains(100, 181));
-        assertTrue("Bad Containment", s.contains(101, 181));
-        assertFalse("Bad Containment", s.contains(110, 180));
-        assertFalse("Bad Containment", s.contains(121, 181));
+            ori.absolute(new Point(109, 180)));
+
+        //        assertTrue("Bad Containment", s.contains(100, 180));
+        //        assertFalse("Bad Containment", s.contains(100, 181));
+        //        assertTrue("Bad Containment", s.contains(101, 181));
+        //        assertFalse("Bad Containment", s.contains(110, 180));
+        //        assertFalse("Bad Containment", s.contains(121, 181));
+        Point pt;
+        pt = ori.absolute(new Point(100, 180));
+        assertTrue("Bad Containment", s.contains(pt.x, pt.y));
+
+        pt = ori.absolute(new Point(100, 181));
+        assertFalse("Bad Containment", s.contains(pt.x, pt.y));
+
+        pt = ori.absolute(new Point(101, 181));
+        assertTrue("Bad Containment", s.contains(pt.x, pt.y));
+
+        pt = ori.absolute(new Point(110, 180));
+        assertFalse("Bad Containment", s.contains(pt.x, pt.y));
+
+        pt = ori.absolute(new Point(121, 181));
+        assertFalse("Bad Containment", s.contains(pt.x, pt.y));
+
         assertEquals("Bad FirstPos", s.getFirstPos(), 180);
         assertEquals("Bad LastPos", s.getLastPos(), 181);
         assertEquals("Bad MaxRunLength", s.getMaxRunLength(), 20);
