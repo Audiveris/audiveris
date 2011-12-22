@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.TreeSet;
 
 /**
- * Class {@code IntersectionSequence} handled a sorted sequence of sticks
- * intersections
+ * Class {@code IntersectionSequence} handles a sorted sequence of
+ * sticks intersections.
  *
  * @author Hervé Bitteur
  */
@@ -42,7 +42,6 @@ class IntersectionSequence
     //----------------------//
     /**
      * Creates a new IntersectionSequence object.
-     *
      * @param comparator the comparator (hori or vert) to use for the sequence
      */
     public IntersectionSequence (Comparator<?super StickIntersection> comparator)

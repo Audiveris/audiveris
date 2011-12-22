@@ -46,6 +46,37 @@ public class LagTest
 
     //~ Methods ----------------------------------------------------------------
 
+    //    /**
+    //     * Test of addRuns method, of class Lag.
+    //     */
+    //    @Test
+    //    public void testAddRuns ()
+    //    {
+    //        System.out.println("addRuns");
+    //
+    //        RunsTable runsTable = null;
+    //        Lag       instance = new LagImpl();
+    //        instance.addRuns(runsTable);
+    //        fail("The test case is a prototype.");
+    //    }
+
+    //    /**
+    //     * Test of createSection method, of class Lag.
+    //     */
+    //    @Test
+    //    public void testCreateSection ()
+    //    {
+    //        System.out.println("createSection");
+    //
+    //        int     firstPos = 0;
+    //        Run     firstRun = null;
+    //        Lag     instance = new LagImpl();
+    //        Section expResult = null;
+    //        Section result = instance.createSection(firstPos, firstRun);
+    //        assertEquals(expResult, result);
+    //        fail("The test case is a prototype.");
+    //    }
+
     //------------------------//
     // testCreateSectionNoRun //
     //------------------------//
@@ -61,6 +92,9 @@ public class LagTest
         }
     }
 
+    //-------------------------------//
+    // testGetRectangleCendroidEmpty //
+    //-------------------------------//
     public void testGetRectangleCendroidEmpty ()
     {
         Section        s2 = hLag.createSection(
@@ -68,32 +102,41 @@ public class LagTest
             createRun(hTable, 180, 100, 10));
 
         PixelRectangle roi = new PixelRectangle(0, 0, 20, 20);
-        Point          pt = null;
-
-        pt = s2.getRectangleCentroid(roi);
+        Point          pt = s2.getRectangleCentroid(roi);
         System.out.println("roi=" + roi + " pt=" + pt);
         assertNull("External roi should give a null centroid", pt);
     }
 
+    //------------------------------//
+    // testGetRectangleCendroidHori //
+    //------------------------------//
     public void testGetRectangleCendroidHori ()
     {
         int     p = 180;
-        Section s1 = hLag.createSection(180, createRun(hTable, p++, 100, 10));
-        s1.append(createRun(hTable, p++, 102, 20));
-        s1.append(createRun(hTable, p++, 102, 20));
-        s1.append(createRun(hTable, p++, 102, 20));
+        Section s = hLag.createSection(180, createRun(hTable, p++, 100, 10));
+        s.append(createRun(hTable, p++, 102, 20));
+        s.append(createRun(hTable, p++, 102, 20));
+        s.append(createRun(hTable, p++, 102, 20));
+        s.drawAscii();
 
-        PixelRectangle roi = null;
-        Point          pt = null;
-
-        roi = new PixelRectangle(100, 180, 1, 1);
-        pt = s1.getRectangleCentroid(roi);
+        PixelRectangle roi = new PixelRectangle(100, 180, 1, 1);
+        Point          pt = s.getRectangleCentroid(roi);
         System.out.println("roi=" + roi + " pt=" + pt);
 
         PixelPoint expected = new PixelPoint(100, 180);
         assertEquals("Wrong pt", expected, pt);
+
+        roi = new PixelRectangle(102, 178, 3, 5);
+        pt = s.getRectangleCentroid(roi);
+        System.out.println("roi=" + roi + " pt=" + pt);
+
+        expected = new PixelPoint(103, 181);
+        assertEquals("Wrong pt", expected, pt);
     }
 
+    //------------------------------//
+    // testGetRectangleCendroidNull //
+    //------------------------------//
     public void testGetRectangleCendroidNull ()
     {
         Section s2 = hLag.createSection(180, createRun(hTable, 180, 100, 10));
@@ -111,26 +154,87 @@ public class LagTest
         }
     }
 
+    //------------------------------//
+    // testGetRectangleCendroidVert //
+    //------------------------------//
     public void testGetRectangleCendroidVert ()
     {
         int     p = 50;
-        Section s1 = vLag.createSection(p, createRun(vTable, p, 100, 10));
-        p++;
-        s1.append(createRun(vTable, p++, 102, 20));
-        s1.append(createRun(vTable, p++, 102, 20));
-        s1.append(createRun(vTable, p++, 102, 20));
-        s1.drawAscii();
+        Section s = vLag.createSection(p, createRun(vTable, p++, 100, 10));
+        s.append(createRun(vTable, p++, 102, 20));
+        s.append(createRun(vTable, p++, 102, 20));
+        s.append(createRun(vTable, p++, 102, 20));
+        s.drawAscii();
 
-        PixelRectangle roi = null;
-        Point          pt = null;
-
-        roi = new PixelRectangle(48, 102, 5, 3);
-        pt = s1.getRectangleCentroid(roi);
+        PixelRectangle roi = new PixelRectangle(48, 102, 5, 3);
+        Point          pt = s.getRectangleCentroid(roi);
         System.out.println("roi=" + roi + " pt=" + pt);
 
         PixelPoint expected = new PixelPoint(51, 103);
         assertEquals("Wrong pt", expected, pt);
     }
+
+    //    /**
+    //     * Test of getRunAt method, of class Lag.
+    //     */
+    //    @Test
+    //    public void testGetRunAt ()
+    //    {
+    //        System.out.println("getRunAt");
+    //
+    //        int x = 0;
+    //        int y = 0;
+    //        Lag instance = new LagImpl();
+    //        Run expResult = null;
+    //        Run result = instance.getRunAt(x, y);
+    //        assertEquals(expResult, result);
+    //        fail("The test case is a prototype.");
+    //    }
+
+    //    /**
+    //     * Test of getRunService method, of class Lag.
+    //     */
+    //    @Test
+    //    public void testGetRunService ()
+    //    {
+    //        System.out.println("getRunService");
+    //
+    //        Lag              instance = new LagImpl();
+    //        SelectionService expResult = null;
+    //        SelectionService result = instance.getRunService();
+    //        assertEquals(expResult, result);
+    //        fail("The test case is a prototype.");
+    //    }
+    //
+    //    /**
+    //     * Test of getRuns method, of class Lag.
+    //     */
+    //    @Test
+    //    public void testGetRuns ()
+    //    {
+    //        System.out.println("getRuns");
+    //
+    //        Lag       instance = new LagImpl();
+    //        RunsTable expResult = null;
+    //        RunsTable result = instance.getRuns();
+    //        assertEquals(expResult, result);
+    //        fail("The test case is a prototype.");
+    //    }
+    //
+    //    /**
+    //     * Test of getSectionService method, of class Lag.
+    //     */
+    //    @Test
+    //    public void testGetSectionService ()
+    //    {
+    //        System.out.println("getSectionService");
+    //
+    //        Lag              instance = new LagImpl();
+    //        SelectionService expResult = null;
+    //        SelectionService result = instance.getSectionService();
+    //        assertEquals(expResult, result);
+    //        fail("The test case is a prototype.");
+    //    }
 
     //-----------------//
     // testGetSections //
@@ -153,6 +257,36 @@ public class LagTest
         assertEquals("Retrieved sections.", sections, lagSections);
     }
 
+    //    /**
+    //     * Test of getSelectedSection method, of class Lag.
+    //     */
+    //    @Test
+    //    public void testGetSelectedSection ()
+    //    {
+    //        System.out.println("getSelectedSection");
+    //
+    //        Lag     instance = new LagImpl();
+    //        Section expResult = null;
+    //        Section result = instance.getSelectedSection();
+    //        assertEquals(expResult, result);
+    //        fail("The test case is a prototype.");
+    //    }
+    //
+    //    /**
+    //     * Test of getSelectedSectionSet method, of class Lag.
+    //     */
+    //    @Test
+    //    public void testGetSelectedSectionSet ()
+    //    {
+    //        System.out.println("getSelectedSectionSet");
+    //
+    //        Lag instance = new LagImpl();
+    //        Set expResult = null;
+    //        Set result = instance.getSelectedSectionSet();
+    //        assertEquals(expResult, result);
+    //        fail("The test case is a prototype.");
+    //    }
+
     //----------//
     // testHLag //
     //----------//
@@ -162,15 +296,15 @@ public class LagTest
         assertFalse("hLag is not vertical", hLag.getOrientation().isVertical());
     }
 
+    //--------------//
+    // testHSection //
+    //--------------//
     public void testHSection ()
     {
         // Test of horizontal section
-        Run     r1 = new Run(100, 10, 127);
-        Section s1 = hLag.createSection(180, r1);
+        Section s1 = hLag.createSection(180, new Run(100, 10, 127));
+        s1.append(new Run(101, 20, 127));
         hLag.dump(null);
-
-        Run r2 = new Run(101, 20, 127);
-        s1.append(r2);
         dump("s1 dump:", s1);
         commonAssertions(s1);
         assertEquals(
@@ -201,10 +335,60 @@ public class LagTest
         assertEquals("Non expected switch.", cp, xy);
     }
 
-    //--------------------//
-    // testLookupSections //
-    //--------------------//
-    public void testLookupSections ()
+    //-----------------------------------//
+    // testLookupIntersectedSectionsHori //
+    //-----------------------------------//
+    public void testLookupIntersectedSectionsHori ()
+    {
+        Section s2 = hLag.createSection(180, new Run(100, 10, 127));
+        s2.append(new Run(101, 20, 127));
+
+        Section s3 = hLag.createSection(200, new Run(150, 10, 127));
+        s3.append(new Run(161, 20, 127));
+        s3.append(new Run(170, 15, 127));
+
+        Set<Section> founds = null;
+
+        founds = hLag.lookupIntersectedSections(new PixelRectangle(0, 0, 0, 0));
+        assertEquals("No section.", 0, founds.size());
+
+        founds = hLag.lookupIntersectedSections(
+            new PixelRectangle(100, 180, 1, 1));
+        assertEquals("One section.", 1, founds.size());
+
+        founds = hLag.lookupIntersectedSections(
+            new PixelRectangle(0, 180, 200, 21));
+        assertEquals("Two sections.", 2, founds.size());
+    }
+
+    //------------------------//
+    // testLookupSectionsHori //
+    //------------------------//
+    public void testLookupSectionsHori ()
+    {
+        Section s2 = hLag.createSection(180, new Run(100, 10, 127));
+        s2.append(new Run(101, 20, 127));
+
+        Section s3 = hLag.createSection(200, new Run(150, 10, 127));
+        s3.append(new Run(161, 20, 127));
+        s3.append(new Run(170, 15, 127));
+
+        Set<Section> founds = null;
+
+        founds = hLag.lookupSections(new PixelRectangle(0, 0, 0, 0));
+        assertEquals("No section.", 0, founds.size());
+
+        founds = hLag.lookupSections(new PixelRectangle(100, 180, 21, 2));
+        assertEquals("One section.", 1, founds.size());
+
+        founds = hLag.lookupSections(new PixelRectangle(100, 180, 85, 23));
+        assertEquals("Two sections.", 2, founds.size());
+    }
+
+    //------------------------//
+    // testLookupSectionsVert //
+    //------------------------//
+    public void testLookupSectionsVert ()
     {
         Section s2 = vLag.createSection(180, new Run(100, 10, 127));
         s2.append(new Run(101, 20, 127));
@@ -224,6 +408,51 @@ public class LagTest
         founds = vLag.lookupSections(new PixelRectangle(180, 100, 23, 85));
         assertEquals("Two sections.", 2, founds.size());
     }
+
+    //    /**
+    //     * Test of purgeSections method, of class Lag.
+    //     */
+    //    @Test
+    //    public void testPurgeSections ()
+    //    {
+    //        System.out.println("purgeSections");
+    //
+    //        Predicate<Section> predicate = null;
+    //        Lag                instance = new LagImpl();
+    //        List               expResult = null;
+    //        List               result = instance.purgeSections(predicate);
+    //        assertEquals(expResult, result);
+    //        fail("The test case is a prototype.");
+    //    }
+    //
+    //    /**
+    //     * Test of setRuns method, of class Lag.
+    //     */
+    //    @Test
+    //    public void testSetRuns ()
+    //    {
+    //        System.out.println("setRuns");
+    //
+    //        RunsTable runsTable = null;
+    //        Lag       instance = new LagImpl();
+    //        instance.setRuns(runsTable);
+    //        fail("The test case is a prototype.");
+    //    }
+    //
+    //    /**
+    //     * Test of setServices method, of class Lag.
+    //     */
+    //    @Test
+    //    public void testSetServices ()
+    //    {
+    //        System.out.println("setServices");
+    //
+    //        SelectionService locationService = null;
+    //        SelectionService sceneService = null;
+    //        Lag              instance = new LagImpl();
+    //        instance.setServices(locationService, sceneService);
+    //        fail("The test case is a prototype.");
+    //    }
 
     //---------------//
     // testTranslate //

@@ -188,8 +188,8 @@ public class BarsChecker
     // getSuite //
     //----------//
     /**
-     * Report the suite currently defined (used by package mate SystemsBuilder)
-     *
+     * Report the suite currently defined.
+     * (used by package mate SystemsBuilder)
      * @return the check suite
      */
     public CheckSuite<GlyphContext> getSuite ()
@@ -201,9 +201,8 @@ public class BarsChecker
     // checkCandidates //
     //-----------------//
     /**
-     * From the list of vertical sticks, this method uses several tests to
-     * provide the initial collection of good barlines candidates.
-     *
+     * From the list of vertical sticks, this method uses several tests
+     * to provide the initial collection of good barlines candidates.
      * @param sticks the collection of candidate sticks
      */
     public void checkCandidates (Collection<?extends Glyph> sticks)

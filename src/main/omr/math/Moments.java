@@ -218,7 +218,7 @@ public class Moments
     /**
      * No-arg constructor, needed for XML binder.
      */
-    private Moments ()
+    public Moments ()
     {
     }
 

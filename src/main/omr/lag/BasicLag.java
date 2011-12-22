@@ -276,6 +276,22 @@ public class BasicLag
         return section;
     }
 
+    //---------------------------//
+    // lookupIntersectedSections //
+    //---------------------------//
+    public Set<Section> lookupIntersectedSections (PixelRectangle rect)
+    {
+        Set<Section> found = new LinkedHashSet<Section>();
+
+        for (Section section : getSections()) {
+            if (rect.intersects(section.getContourBox())) {
+                found.add(section);
+            }
+        }
+
+        return found;
+    }
+
     //----------------//
     // lookupSections //
     //----------------//

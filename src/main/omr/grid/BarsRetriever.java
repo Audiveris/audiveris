@@ -794,13 +794,14 @@ public class BarsRetriever
     // checkBarsAlignment //
     //--------------------//
     /**
-     * Check that, within the same system, bars are vertically aligned across
-     * all staves. Resulting alignments are stored in the SystemInfo instance.
+     * Check that, within the same system, bars are vertically aligned
+     * across all staves.
+     * We first build BarAlignment instances to record the bar locations
+     * and finally check these alignments for correctness.
+     * Resulting alignments are stored in the SystemInfo instance.
      */
     private void checkBarsAlignment (SystemInfo system)
     {
-        // We first build BarAlignment instances to record the bar locations
-        // and finally check these alignments for correctness
         List<StaffInfo> staves = system.getStaves();
         int             staffCount = staves.size();
 
@@ -814,9 +815,13 @@ public class BarsRetriever
         for (int iStaff = 0; iStaff < staves.size(); iStaff++) {
             StaffInfo            staff = staves.get(iStaff);
 
-            ///logger.info("Staff#" + staff.getId());
             IntersectionSequence staffBars = barSticks.get(staff);
 
+            //            logger.info("System#" + system.getId() +" Staff#" + staff.getId());
+            //            for (StickIntersection inter : staffBars) {
+            //                logger.info(inter.toString());
+            //            }
+            //
             if (alignments == null) {
                 // Initialize the alignments
                 alignments = new ArrayList<BarAlignment>();
