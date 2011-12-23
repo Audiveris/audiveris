@@ -14,13 +14,7 @@ package omr.selection;
 
 /**
  * Class {@code NestEvent} is an abstract class to represent any event
- * specific to a glyph service (glyph, glyph id, glyph set)
- *
- * <dl>
- * <dt><b>Publishers:</b><dd>
- * <dt><b>Subscribers:</b><dd>
- * <dt><b>Readers:</b><dd>
- * </dl>
+ * specific to a glyph service (glyph, glyph id, glyph set).
  *
  * @author Hervé Bitteur
  */

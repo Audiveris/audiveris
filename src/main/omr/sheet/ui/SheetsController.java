@@ -33,8 +33,6 @@ import org.bushe.swing.event.EventSubscriber;
 import org.jdesktop.application.Action;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 
 import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
@@ -42,12 +40,13 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class {@code SheetsController} is the UI Controller in charge of user
- * interactions with the sheets.
+ * Class {@code SheetsController} is the UI Controller in charge of
+ * user interactions with the sheets.
  *
  * <p>Multiple sheets are handled by means of a tabbed pane. For each tab, and
  * thus for each sheet, we have a separate {@link SheetAssembly}. All methods
- * that access these shared entities (tabbedPane, assemblies) are synchronized.</p>
+ * that access these shared entities (tabbedPane, assemblies) are synchronized.
+ * </p>
  *
  * <p>This class encapsulates an event service, which publishes the sheet
  * currently selected by a user interface. See {@link #subscribe},
@@ -84,8 +83,8 @@ public class SheetsController
     private final JTabbedPane tabbedPane;
 
     /**
-     * The global event service dedicated to publication of the currently
-     * selected sheet.
+     * The global event service dedicated to publication of the
+     * currently selected sheet.
      */
     private final SelectionService sheetService = new SelectionService(
         getClass().getSimpleName(),
@@ -97,7 +96,7 @@ public class SheetsController
     // SheetsController //
     //------------------//
     /**
-     * Create the SheetsController singleton
+     * Create the SheetsController singleton.
      */
     private SheetsController ()
     {
@@ -114,8 +113,8 @@ public class SheetsController
     // getCurrentSheet //
     //-----------------//
     /**
-     * A convenient static method to directly report the currently selected
-     * sheet, if any
+     * A convenient static method to directly report the currently
+     * selected sheet, if any.
      * @return the selected sheet, or null
      */
     public static Sheet getCurrentSheet ()
@@ -128,8 +127,7 @@ public class SheetsController
     // getInstance //
     //-------------//
     /**
-     * Report the single instance of this class,
-     *
+     * Report the single instance of this class.
      * @return the single instance
      */
     public static SheetsController getInstance ()
@@ -145,8 +143,7 @@ public class SheetsController
     // getComponent //
     //--------------//
     /**
-     * Give access to the real pane (for insertion in proper UI hierarchy)
-     *
+     * Give access to the real pane (to insert in proper UI hierarchy).
      * @return the concrete component
      */
     public JComponent getComponent ()
@@ -158,8 +155,8 @@ public class SheetsController
     // getSelectedSheet //
     //------------------//
     /**
-     * Convenient method to directly access currently selected sheet if any
-     *
+     * Convenient method to directly access currently selected sheet,
+     * if any.
      * @return the selected sheet, which may be null (if no sheet is selected)
      */
     public Sheet getSelectedSheet ()
@@ -174,13 +171,13 @@ public class SheetsController
     // callAboutSheet //
     //----------------//
     /**
-     * Call the attention about the provided sheet, by publishing it on the
-     * proper event service
+     * Call the attention about the provided sheet, by publishing it on
+     * the proper event service.
      * @param sheet the provided sheet, which may be null
      */
     public void callAboutSheet (Sheet sheet)
     {
-        sheetService.publish(new SheetEvent(this, sheet));
+        sheetService.publish(new SheetEvent(this, null, null, sheet));
     }
 
     //----------------//
@@ -188,7 +185,6 @@ public class SheetsController
     //----------------//
     /**
      * Create the assembly that relates to the specified sheet.
-     *
      * @param sheet the sheet to be viewed (sheet cannot be null).
      */
     public synchronized void createAssembly (Sheet sheet)
@@ -239,8 +235,8 @@ public class SheetsController
     // dumpCurrentSheetServices //
     //--------------------------//
     /**
-     * Debug action to dump the current status of all event services related to
-     * the selected sheet if any.
+     * Debug action to dump the current status of all event services
+     * related to the selected sheet if any.
      */
     public void dumpCurrentSheetServices ()
     {
@@ -281,8 +277,7 @@ public class SheetsController
     // removeAssembly //
     //----------------//
     /**
-     * Remove the specified view from the tabbed pane
-     *
+     * Remove the specified view from the tabbed pane.
      * @param sheet the sheet to close
      * @return true if we have actually closed the sheet UI stuff
      */
@@ -336,7 +331,6 @@ public class SheetsController
     //--------------//
     /**
      * Display the assembly that relates to the specified sheet.
-     *
      * @param sheet the sheet to be viewed (sheet cannot be null).
      */
     public synchronized void showAssembly (Sheet sheet)
@@ -364,9 +358,9 @@ public class SheetsController
     // stateChanged //
     //--------------//
     /**
-     * This method is called whenever the sheet selection is modified, whether
-     * it's programmatically (by means of {@link #showAssembly}) of by user
-     * action (manual selection of the sheet tab).
+     * This method is called whenever the sheet selection is modified,
+     * whether programmatically (by means of {@link #showAssembly})
+     * or by user action (manual selection of the sheet tab).
      *
      * <p> Set the state (enabled or disabled) of all menu items that depend on
      * status of current sheet.
@@ -389,7 +383,7 @@ public class SheetsController
     // subscribe //
     //-----------//
     /**
-     * Subscribe to the sheet event service (for the SheetEvent class)
+     * Subscribe to the sheet event service (for the SheetEvent class).
      * @param subscriber The subscriber to accept the events when published.
      */
     public void subscribe (EventSubscriber subscriber)
@@ -401,7 +395,7 @@ public class SheetsController
     // unsubscribe //
     //-------------//
     /**
-     * Unsubscribe to the sheet event service (for the SheetEvent class)
+     * Unsubscribe to the sheet event service (for the SheetEvent class).
      * @param subscriber the entity to unsubscribe
      */
     public void unsubscribe (EventSubscriber subscriber)
@@ -413,7 +407,7 @@ public class SheetsController
     // defineTitleFor //
     //----------------//
     /**
-     * Generate proper tab title for the provided sheet
+     * Generate proper tab title for the provided sheet.
      * @param sheet the provided sheet instance
      * @return the title to use for the related tab
      */
@@ -433,7 +427,7 @@ public class SheetsController
     // sheetTabSelected //
     //------------------//
     /**
-     * Run when a sheetTab has been selected in the tabbedPane
+     * Run when a sheetTab has been selected in the tabbedPane.
      * @param sheetIndex the index of the tab
      */
     private void sheetTabSelected (int sheetIndex)

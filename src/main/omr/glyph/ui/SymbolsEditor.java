@@ -173,14 +173,6 @@ public class SymbolsEditor
         ScrollView slv = new ScrollView(view);
         sheet.getAssembly()
              .addViewTab(Step.DATA_TAB, slv, boardsPane);
-
-        // Subscribe to both lags for SectionSet events
-        sheet.getHorizontalLag()
-             .getSectionService()
-             .subscribeStrongly(SectionSetEvent.class, view);
-        sheet.getVerticalLag()
-             .getSectionService()
-             .subscribeStrongly(SectionSetEvent.class, view);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -275,6 +267,12 @@ public class SymbolsEditor
                 symbolsController,
                 Arrays.asList(sheet.getHorizontalLag(), sheet.getVerticalLag()));
             setName("SymbolsEditor-MyView");
+
+            // Subscribe to all lags for SectionSet events
+            for (Lag lag : lags) {
+                lag.getSectionService()
+                   .subscribeStrongly(SectionSetEvent.class, this);
+            }
         }
 
         //~ Methods ------------------------------------------------------------
@@ -475,7 +473,7 @@ public class SymbolsEditor
             // Update system boundary?
             if ((locationEvent.hint == SelectionHint.LOCATION_INIT) &&
                 boundaryEditor.isSessionOngoing()) {
-                Rectangle rect = locationEvent.rectangle;
+                Rectangle rect = locationEvent.getData();
 
                 if ((rect != null) && (rect.width == 0) && (rect.height == 0)) {
                     boundaryEditor.inspectBoundary(rect.getLocation());

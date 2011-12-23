@@ -14,8 +14,8 @@ package omr.selection;
 import omr.log.Logger;
 
 /**
- * Interface {@code UserEvent} defines the common behavior of user events
- * that are stored as selections, and handled by the EventBus.
+ * Interface {@code UserEvent} defines the common behavior of user
+ * events that are stored as selections, and handled by the EventBus.
  *
  * <p>All events are subclasses of this abstract class, and managed by proper
  * EventService instances: <ul>
@@ -26,26 +26,17 @@ import omr.log.Logger;
  * <li>Sheet event service: each Sheet instance handles events of types
  * {@link LocationEvent} and {@link PixelLevelEvent}
  *
- * <li>Lag event service: each Lag instance handles {@link RunEvent}, {@link
- * SectionEvent} and {@link SectionIdEvent} (all are subclasses of {@link
- * LagEvent})
+ * <li>Run event service: each RunsTable instance handles {@link RunEvent}
+ *
+ * <li>Lag event service: each Lag instance handles {@link SectionEvent},
+ * {@link SectionIdEvent} and {@link SectionSetEvent} (all are subclasses of
+ * {@link LagEvent})
  *
  * <li>Nest event service: each glyph Nest instance handles
- *  {@link GlyphEvent}, {@link GlyphIdEvent} and {@link
+ * {@link GlyphEvent}, {@link GlyphIdEvent} and {@link
  * GlyphSetEvent} (all are subclasses of {@link NestEvent})
  *
  * </ul>
- *
- * <p>All event classes are documented as follows:</p>
- *
- * <dl> <dt><b>Publishers:</b><dd>All classes that publish this event (using
- * {@link org.bushe.swing.event.EventService#subscribeStrongly})
- *
- * <dt><b>Subscribers:</b><dd>All classes that subscribe to this event (and
- * implement the {@link org.bushe.swing.event.EventSubscriber#onEvent} method)
- *
- * <dt><b>Readers:</b><dd>All classes that simply read this event (using the
- * {@link org.bushe.swing.event.EventService#getLastEvent} method) </dl>
  *
  * @author Hervé Bitteur
  */
@@ -74,7 +65,6 @@ public abstract class UserEvent
     //-----------//
     /**
      * Creates a new UserEvent object.
-     *
      * @param source the (non null) entity that created this event
      * @param hint hint about the origin
      * @param movement the originating mouse movement
@@ -101,7 +91,7 @@ public abstract class UserEvent
     // getData //
     //---------//
     /**
-     * Report the data conveyed by this event
+     * Report the data conveyed by this event.
      * @return the conveyed data (which may be null)
      */
     public abstract Object getData ();
@@ -138,7 +128,7 @@ public abstract class UserEvent
     // internalString //
     //----------------//
     /**
-     * Report a string that describes the internals of the specific subclass
+     * Report a string about the internals of the specific subclass.
      * @return the (sub)class internals as a string
      */
     protected String internalString ()

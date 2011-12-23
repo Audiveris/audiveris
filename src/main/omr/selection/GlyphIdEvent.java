@@ -13,13 +13,7 @@ package omr.selection;
 
 
 /**
- * Class {@code GlyphIdEvent} represents a Glyph Id selection
- *
- * <dl>
- * <dt><b>Publishers:</b><dd>GlyphBoard, ShapeFocusBoard
- * <dt><b>Subscribers:</b><dd>GlyphLag
- * <dt><b>Readers:</b><dd>
- * </dl>
+ * Class {@code GlyphIdEvent} represents a Glyph Id selection.
  *
  * @author Hervé Bitteur
  */
@@ -29,13 +23,12 @@ public class GlyphIdEvent
     //~ Instance fields --------------------------------------------------------
 
     /** The selected glyph id, which may be null */
-    public final Integer id;
+    private final Integer id;
 
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new GlyphIdEvent object.
-     *
      * @param source the entity that created this event
      * @param hint hint about event origin (or null)
      * @param movement the precise mouse movement

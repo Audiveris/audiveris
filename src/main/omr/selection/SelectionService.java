@@ -124,8 +124,8 @@ public class SelectionService
     // publish //
     //---------//
     /**
-     * This method is overridden just to be able to potentially check and trace
-     * every publication
+     * This method is overridden just to be able to potentially check
+     * and trace every publication.
      * @param event the published event
      */
     @Override
@@ -151,7 +151,8 @@ public class SelectionService
     // subscribeStrongly //
     //-------------------//
     /**
-     * Overridden to check that the subscription corresponds to a declared class
+     * Overridden to check that the subscription corresponds to a
+     * declared class.
      * @param type the observed class
      * @param es the subscriber
      * @return I don't know
@@ -173,8 +174,8 @@ public class SelectionService
     // subscribersCount //
     //------------------//
     /**
-     * Convenient method to retrieve the number of subscribers on the selection
-     * service for a specific class
+     * Convenient method to retrieve the number of subscribers on the
+     * selection service for a specific class.
      * @param classe the specific class
      * @return the number of subscribers found
      */

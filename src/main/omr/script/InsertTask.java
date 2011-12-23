@@ -40,8 +40,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 
 /**
- * Class {@code InsertTask} inserts a set of (virtual) glyphs into the sheet
- * environment
+ * Class {@code InsertTask} inserts a set of (virtual) glyphs into the
+ * sheet environment.
  *
  * @author Hervé Bitteur
  */
@@ -68,8 +68,7 @@ public class InsertTask
     // InsertTask //
     //------------//
     /**
-     * Create an glyph insertion task
-     *
+     * Create an glyph insertion task.
      * @param sheet the sheet impacted
      * @param shape the inserted shape
      * @param locations the locations for insertion
@@ -111,7 +110,7 @@ public class InsertTask
     // getInsertedShape //
     //------------------//
     /**
-     * Report the inserted shape
+     * Report the inserted shape.
      * @return the insertedShape
      */
     public Shape getInsertedShape ()
@@ -209,8 +208,8 @@ public class InsertTask
     // retrieveGlyphs //
     //----------------//
     /**
-     * Here, we have to build virtual glyphs, based on the desired shape and the
-     * locations.
+     * Here, we have to build virtual glyphs, based on the desired 
+     * shape and the locations.
      */
     @Override
     protected void retrieveGlyphs ()
@@ -235,8 +234,8 @@ public class InsertTask
     // afterUnmarshal //
     //----------------//
     /**
-     * Called after all the properties (except IDREF) are unmarshalled for this
-     * object, but before this object is set to the parent object.
+     * Called after all the properties (except IDREF) are unmarshalled
+     * for this object, but before this object is set to the parent object.
      */
     private void afterUnmarshal (Unmarshaller um,
                                  Object       parent)

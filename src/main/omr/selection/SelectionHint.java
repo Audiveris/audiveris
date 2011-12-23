@@ -13,8 +13,8 @@ package omr.selection;
 
 
 /**
- * Enum {@code SelectionHint} gives a hint about what observers should do
- * with the updated selection
+ * Enum {@code SelectionHint} gives a hint about what observers should
+ * do with the published selection.
  *
  * @author Hervé Bitteur
  */
@@ -50,7 +50,7 @@ public enum SelectionHint {
     GLYPH_MODIFIED, 
     /**
      * Glyph information is for temporary display / evaluation only, with no
-     * impact on other structures such as glyph set.
+     * impact on other structures such as glyph set
      */
     GLYPH_TRANSIENT;
 }

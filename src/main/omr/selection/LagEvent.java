@@ -14,14 +14,8 @@ package omr.selection;
 
 /**
  * Class {@code LagEvent} is an abstract class to represent any event
- * related to a lag (run, section, section id)
+ * related to a lag (section, section id, section set).
  *
- *
- * <dl>
- * <dt><b>Publishers:</b><dd>
- * <dt><b>Subscribers:</b><dd>
- * <dt><b>Readers:</b><dd>
- * </dl>
  * @author Hervé Bitteur
  */
 public abstract class LagEvent

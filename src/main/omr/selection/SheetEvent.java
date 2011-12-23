@@ -14,13 +14,7 @@ package omr.selection;
 import omr.sheet.Sheet;
 
 /**
- * Class {@code SheetEvent} represent a Sheet selection event
- *
- * <dl>
- * <dt><b>Publishers:</b><dd>SheetController, SheetManager
- * <dt><b>Subscribers:</b><dd>ActionManager, MainGui, MidiActions, ScoreDependent, SheetDependent
- * <dt><b>Readers:</b><dd>SheetManager
- * </dl>
+ * Class {@code SheetEvent} represent a Sheet selection event.
  *
  * @author Hervé Bitteur
  */
@@ -30,7 +24,7 @@ public class SheetEvent
     //~ Instance fields --------------------------------------------------------
 
     /** The selected sheet, which may be null */
-    public final Sheet sheet;
+    private final Sheet sheet;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -39,11 +33,14 @@ public class SheetEvent
     //------------//
     /**
      * Creates a new SheetEvent object.
-     *
      * @param source the entity that created this event
+     * @param hint hint about event origin
+     * @param movement the mouse movement
      * @param sheet the selected sheet (or null)
      */
     public SheetEvent (Object source,
+                         SelectionHint hint,
+                         MouseMovement movement,
                        Sheet  sheet)
     {
         super(source, null, null);

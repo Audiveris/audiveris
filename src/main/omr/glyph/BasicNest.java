@@ -619,7 +619,7 @@ public class BasicNest
     {
         SelectionHint  hint = locationEvent.hint;
         MouseMovement  movement = locationEvent.movement;
-        PixelRectangle rect = locationEvent.rectangle;
+        PixelRectangle rect = locationEvent.getData();
 
         if ((hint != LOCATION_ADD) && (hint != LOCATION_INIT)) {
             return;
@@ -673,7 +673,7 @@ public class BasicNest
     {
         SelectionHint hint = glyphEvent.hint;
         MouseMovement movement = glyphEvent.movement;
-        Glyph         glyph = glyphEvent.glyph;
+        Glyph         glyph = glyphEvent.getData();
 
         if ((hint == GLYPH_INIT) || (hint == GLYPH_MODIFIED)) {
             // Display glyph contour

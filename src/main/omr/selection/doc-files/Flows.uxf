@@ -384,7 +384,7 @@ bg=green</panel_attributes>
   <element>
     <type>com.umlet.element.Relation</type>
     <coordinates>
-      <x>890</x>
+      <x>1110</x>
       <y>20</y>
       <w>50</w>
       <h>210</h>
@@ -477,7 +477,7 @@ kb</panel_attributes>
     <coordinates>
       <x>20</x>
       <y>570</y>
-      <w>1060</w>
+      <w>1370</w>
       <h>20</h>
     </coordinates>
     <panel_attributes>*PixelLevel*
@@ -489,7 +489,7 @@ bg=light_gray</panel_attributes>
     <coordinates>
       <x>20</x>
       <y>490</y>
-      <w>1060</w>
+      <w>1370</w>
       <h>20</h>
     </coordinates>
     <panel_attributes>*(v/h)Run*
@@ -501,7 +501,7 @@ bg=#88ff88</panel_attributes>
     <coordinates>
       <x>20</x>
       <y>440</y>
-      <w>1060</w>
+      <w>1370</w>
       <h>20</h>
     </coordinates>
     <panel_attributes>*(v/h)SectionId*
@@ -512,20 +512,8 @@ bg=cyan</panel_attributes>
     <type>com.umlet.element.Note</type>
     <coordinates>
       <x>20</x>
-      <y>340</y>
-      <w>1060</w>
-      <h>20</h>
-    </coordinates>
-    <panel_attributes>*(v/h)SectionSet*
-bg=cyan</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Note</type>
-    <coordinates>
-      <x>20</x>
       <y>260</y>
-      <w>1060</w>
+      <w>1370</w>
       <h>20</h>
     </coordinates>
     <panel_attributes>*GlyphId*
@@ -537,7 +525,7 @@ bg=magenta</panel_attributes>
     <coordinates>
       <x>20</x>
       <y>160</y>
-      <w>1060</w>
+      <w>1370</w>
       <h>20</h>
     </coordinates>
     <panel_attributes>*GlyphSet*
@@ -549,7 +537,7 @@ bg=magenta</panel_attributes>
     <coordinates>
       <x>20</x>
       <y>720</y>
-      <w>1060</w>
+      <w>1370</w>
       <h>20</h>
     </coordinates>
     <panel_attributes>*Sheet*
@@ -649,7 +637,7 @@ bg=orange</panel_attributes>
     <coordinates>
       <x>20</x>
       <y>210</y>
-      <w>1060</w>
+      <w>1370</w>
       <h>20</h>
     </coordinates>
     <panel_attributes>*Glyph*
@@ -671,20 +659,8 @@ bg=magenta</panel_attributes>
     <type>com.umlet.element.Note</type>
     <coordinates>
       <x>20</x>
-      <y>650</y>
-      <w>1060</w>
-      <h>20</h>
-    </coordinates>
-    <panel_attributes>*Location*
-bg=yellow</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Note</type>
-    <coordinates>
-      <x>20</x>
       <y>390</y>
-      <w>1060</w>
+      <w>1370</w>
       <h>20</h>
     </coordinates>
     <panel_attributes>*(v/h)Section*
@@ -807,5 +783,134 @@ bg=cyan</panel_attributes>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-</panel_attributes>
     <additional_attributes>30;190;30;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>1060</x>
+      <y>20</y>
+      <w>100</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>bt=*
+SymbolsEditor
+bg=red</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>1070</x>
+      <y>20</y>
+      <w>50</w>
+      <h>360</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;.&gt;</panel_attributes>
+    <additional_attributes>30;340;30;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>1050</x>
+      <y>20</y>
+      <w>50</w>
+      <h>670</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.&gt;&gt;&gt;</panel_attributes>
+    <additional_attributes>30;30;30;650</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>1090</x>
+      <y>20</y>
+      <w>50</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>30;140;30;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>890</x>
+      <y>20</y>
+      <w>50</w>
+      <h>210</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>30;190;30;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Note</type>
+    <coordinates>
+      <x>20</x>
+      <y>340</y>
+      <w>1370</w>
+      <h>20</h>
+    </coordinates>
+    <panel_attributes>*(v/h)SectionSet*
+bg=cyan</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Note</type>
+    <coordinates>
+      <x>20</x>
+      <y>650</y>
+      <w>1370</w>
+      <h>20</h>
+    </coordinates>
+    <panel_attributes>*Location*
+bg=yellow</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>1170</x>
+      <y>20</y>
+      <w>120</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>bt=*
+GlyphsController
+bg=red</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>1160</x>
+      <y>20</y>
+      <w>50</w>
+      <h>210</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>30;190;30;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>1300</x>
+      <y>20</y>
+      <w>90</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>bt=*
+ShapeBoard
+bg=red</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>1290</x>
+      <y>20</y>
+      <w>50</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>30;140;30;30</additional_attributes>
   </element>
 </diagram>

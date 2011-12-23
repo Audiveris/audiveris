@@ -146,7 +146,7 @@ public class PixelBoard
             if (event instanceof LocationEvent) {
                 // Display rectangle attributes
                 LocationEvent sheetLocation = (LocationEvent) event;
-                Rectangle     rect = sheetLocation.rectangle;
+                Rectangle     rect = sheetLocation.getData();
 
                 if (rect != null) {
                     x.setValue(rect.x);
@@ -164,7 +164,7 @@ public class PixelBoard
             } else if (event instanceof PixelLevelEvent) {
                 // Display pixel gray level
                 PixelLevelEvent pixelLevelEvent = (PixelLevelEvent) event;
-                final Integer   pixelLevel = pixelLevelEvent.pixelLevel;
+                final Integer   pixelLevel = pixelLevelEvent.getData();
 
                 if (pixelLevel != null) {
                     level.setValue(pixelLevel);

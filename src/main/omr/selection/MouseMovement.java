@@ -13,25 +13,26 @@ package omr.selection;
 
 
 /**
- * Class {@code MouseMovement} defines which phase of user action generated
- * the event. For example, we may decide to update minimal information while the
+ * Class {@code MouseMovement} defines which phase of user action
+ * generated the event.
+ * For example, we may decide to update minimal information while the
  * user is moving the mouse, and launch expensive processing only when the user
- * is releasing the mouse
+ * is releasing the mouse.
  *
  * @author Hervé Bitteur
  */
 public enum MouseMovement {
     /**
-     * User presses the mouse button down, or manually enters the location
-     * data in a dedicated board
+     * User presses the mouse button down or, by extension, manually 
+     * enters the location data in a dedicated board.
      */
     PRESSING,
     /**
-     * User moves the mouse while keeping the button down
+     * User moves the mouse while keeping the button down.
      */
     DRAGGING, 
     /**
-     * User releases the mouse button
+     * User releases the mouse button.
      */
     RELEASING;
 }

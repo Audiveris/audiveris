@@ -542,7 +542,7 @@ class GlyphBrowser
                     LocationEvent sheetLocation = (LocationEvent) event;
 
                     if (sheetLocation.hint == SelectionHint.LOCATION_INIT) {
-                        Rectangle rect = sheetLocation.rectangle;
+                        Rectangle rect = sheetLocation.getData();
 
                         if ((rect != null) &&
                             (rect.width == 0) &&

@@ -77,9 +77,8 @@ public class GlyphsController
     // GlyphsController //
     //------------------//
     /**
-     * Create an instance of GlyphsController, with its underlying GlyphsModel
-     * instance
-     *
+     * Create an instance of GlyphsController, with its underlying 
+     * GlyphsModel instance.
      * @param model the related glyphs model
      */
     public GlyphsController (GlyphsModel model)

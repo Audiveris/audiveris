@@ -252,7 +252,7 @@ public class RubberPanel
         LocationEvent locationEvent = (LocationEvent) locationService.getLastEvent(
             LocationEvent.class);
 
-        return (locationEvent != null) ? locationEvent.getRectangle() : null;
+        return (locationEvent != null) ? locationEvent.getData() : null;
     }
 
     //---------//
@@ -333,7 +333,7 @@ public class RubberPanel
             if (event instanceof LocationEvent) {
                 // Location => move view focus on this location w/ markers
                 LocationEvent locationEvent = (LocationEvent) event;
-                showFocusLocation(locationEvent.getRectangle(), false);
+                showFocusLocation(locationEvent.getData(), false);
             }
         } catch (Exception ex) {
             logger.warning(getClass().getName() + " onEvent error", ex);

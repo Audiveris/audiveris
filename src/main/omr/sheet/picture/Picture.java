@@ -423,7 +423,8 @@ public class Picture
                 }
             }
 
-            levelService.publish(new PixelLevelEvent(this, level));
+            levelService.publish(
+                new PixelLevelEvent(this, event.hint, event.movement, level));
         } catch (Exception ex) {
             logger.warning(getClass().getName() + " onEvent error", ex);
         }

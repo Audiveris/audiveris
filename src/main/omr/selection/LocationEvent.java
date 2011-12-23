@@ -19,15 +19,9 @@ import java.awt.Rectangle;
 
 /**
  * Class {@code LocationEvent} is UI Event that represents a new
- * location (a rectangle, perhaps degenerated to a point) within the Sheet space
+ * location (a rectangle, perhaps degenerated to a point) within the
+ * Sheet coordinates space.
  *
- * <dl>
- * <dt><b>Publishers:</b><dd>GlyphBrowser, GlyphLag, Lag, PixelBoard,
- * ScoreSheetBridge, ScoreView, SheetAssembly, ZoomedPanel
- * <dt><b>Subscribers:</b><dd>ZoomedPanel, GlyphBrowser, GlyphLag(hLag, vLag),
- *  LagView, Picture, PixelBoard, ScoreSheetBridge, SystemsBuilder
- * <dt><b>Readers:</b><dd>ScoreView, SheetAssembly, TextAreaBrowser
- * </dl>
  * @author Hervé Bitteur
  */
 public class LocationEvent
@@ -44,7 +38,7 @@ public class LocationEvent
      * The location rectangle, which can be degenerated to a point when both
      * width and height values equal zero
      */
-    public final PixelRectangle rectangle;
+    private final PixelRectangle rectangle;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -71,14 +65,6 @@ public class LocationEvent
     //---------//
     @Override
     public PixelRectangle getData ()
-    {
-        return rectangle;
-    }
-
-    //--------------//
-    // getRectangle //
-    //--------------//
-    public Rectangle getRectangle ()
     {
         return rectangle;
     }

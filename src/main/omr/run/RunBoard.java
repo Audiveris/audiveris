@@ -163,7 +163,7 @@ public class RunBoard
 
             if (event instanceof RunEvent) {
                 final RunEvent runEvent = (RunEvent) event;
-                final Run      run = runEvent.run;
+                final Run      run = runEvent.getData();
 
                 if (run != null) {
                     rStart.setValue(run.getStart());

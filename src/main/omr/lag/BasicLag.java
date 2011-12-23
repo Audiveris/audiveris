@@ -514,7 +514,7 @@ public class BasicLag
      */
     private void handleEvent (SectionIdEvent idEvent)
     {
-        Integer id = idEvent.id;
+        Integer id = idEvent.getData();
 
         if ((id == null) || (id == 0)) {
             return;
@@ -541,7 +541,7 @@ public class BasicLag
     {
         SelectionHint hint = sectionEvent.hint;
         MouseMovement movement = sectionEvent.movement;
-        Section       section = sectionEvent.section;
+        Section       section = sectionEvent.getData();
 
         if (hint == SelectionHint.SECTION_INIT) {
             // Publish section contour

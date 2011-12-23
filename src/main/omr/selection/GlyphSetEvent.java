@@ -17,15 +17,8 @@ import omr.glyph.facets.Glyph;
 import java.util.Set;
 
 /**
- * Class {@code GlyphSetEvent} represents a Glyph Set selection
+ * Class {@code GlyphSetEvent} represents a Glyph Set selection.
  *
- * <dl>
- * <dt><b>Publishers:</b><dd>GlyphLag, 
- * <dt><b>Subscribers:</b><dd>GlyphBoard,  ScoreMenu,
- * SymbolGlyphBoard, SymbolsEditor
- * <dt><b>Readers:</b><dd>GlyphBoard, GlyphLag,  GlyphMenu,
- * SymbolsEditor
- * </dl>
  * @author Hervé Bitteur
  */
 public class GlyphSetEvent
@@ -34,7 +27,7 @@ public class GlyphSetEvent
     //~ Instance fields --------------------------------------------------------
 
     /** The selected glyph set, which may be null */
-    public final Set<Glyph> glyphs;
+    private final Set<Glyph> glyphs;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -43,7 +36,6 @@ public class GlyphSetEvent
     //------------//
     /**
      * Creates a new GlyphEvent object.
-     *
      * @param source the entity that created this event
      * @param hint hint about event origin (or null)
      * @param movement the user movement

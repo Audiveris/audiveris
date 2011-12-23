@@ -13,14 +13,8 @@ package omr.selection;
 
 
 /**
- * Class {@code SectionIdEvent} represents a Section Id selection
+ * Class {@code SectionIdEvent} represents a Section Id selection.
  *
- *
- * <dl>
- * <dt><b>Publishers:</b><dd>SectionBoard
- * <dt><b>Subscribers:</b><dd>Lag, LagView
- * <dt><b>Readers:</b><dd>
- * </dl>
  * @author Hervé Bitteur
  */
 public class SectionIdEvent
@@ -29,13 +23,12 @@ public class SectionIdEvent
     //~ Instance fields --------------------------------------------------------
 
     /** The selected section id, which may be null */
-    public final Integer id;
+    private final Integer id;
 
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new SectionIdEvent object.
-     *
      * @param source the entity that created this event
      * @param hint hint about event origin (or null)
      * @param id the selected section id (or null)

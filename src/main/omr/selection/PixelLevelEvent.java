@@ -13,14 +13,8 @@ package omr.selection;
 
 
 /**
- * Class {@code PixelLevelEvent} represent a Pixel Level selection
+ * Class {@code PixelLevelEvent} represent a Pixel Level selection.
  *
- *
- * <dl>
- * <dt><b>Publishers:</b><dd>Picture
- * <dt><b>Subscribers:</b><dd>PixelBoard
- * <dt><b>Readers:</b><dd>
- * </dl>
  * @author Hervé Bitteur
  */
 public class PixelLevelEvent
@@ -29,7 +23,7 @@ public class PixelLevelEvent
     //~ Instance fields --------------------------------------------------------
 
     /** The current pixel level, which may be null */
-    public final Integer pixelLevel;
+    private final Integer pixelLevel;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -38,14 +32,17 @@ public class PixelLevelEvent
     //-----------------//
     /**
      * Creates a new PixelLevelEvent object.
-     *
      * @param source the entity that created this event
+     * @param hint hint about event origin
+     * @param movement the mouse movement
      * @param pixelLevel the selected pixelLevel (or null)
      */
-    public PixelLevelEvent (Object  source,
-                            Integer pixelLevel)
+    public PixelLevelEvent (Object        source,
+                            SelectionHint hint,
+                            MouseMovement movement,
+                            Integer       pixelLevel)
     {
-        super(source, null, null);
+        super(source, hint, movement);
         this.pixelLevel = pixelLevel;
     }
 

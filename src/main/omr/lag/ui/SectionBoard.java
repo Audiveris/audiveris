@@ -336,7 +336,7 @@ public class SectionBoard
             updating = true;
 
             final Section section = (sectionEvent != null)
-                                    ? sectionEvent.section : null;
+                                    ? sectionEvent.getData() : null;
             dump.setEnabled(section != null);
 
             Integer sectionId = null;

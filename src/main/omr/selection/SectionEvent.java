@@ -14,13 +14,7 @@ package omr.selection;
 import omr.lag.Section;
 
 /**
- * Class {@code SectionEvent} represents a Section selection
- *
- * <dl>
- * <dt><b>Publishers:</b><dd>GlyphLag, Lag, LagView
- * <dt><b>Subscribers:</b><dd>GlyphLag, Lag
- * <dt><b>Readers:</b><dd>SectionBoard
- * </dl>
+ * Class {@code SectionEvent} represents a Section selection.
  *
  * @author Hervé Bitteur
  */
@@ -30,7 +24,7 @@ public class SectionEvent
     //~ Instance fields --------------------------------------------------------
 
     /** The selected section, which may be null */
-    public final Section section;
+    private final Section section;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -39,9 +33,8 @@ public class SectionEvent
     //--------------//
     /**
      * Creates a new SectionEvent object.
-     *
      * @param source the entity that created this event
-     * @param hint hint about event origin (or null)
+     * @param hint hint about event origin
      * @param movement the mouse movement
      * @param section the selected section (or null)
      */

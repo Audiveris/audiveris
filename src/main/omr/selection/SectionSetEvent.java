@@ -17,13 +17,7 @@ import omr.lag.Sections;
 import java.util.Set;
 
 /**
- * Class {@code SectionSetEvent} represents a Section Set selection
- *
- * <dl>
- * <dt><b>Publishers:</b><dd>TODO
- * <dt><b>Subscribers:</b><dd>TODO
- * <dt><b>Readers:</b><dd>TODO
- * </dl>
+ * Class {@code SectionSetEvent} represents a Section Set selection.
  *
  * @author Hervé Bitteur
  */
@@ -33,7 +27,7 @@ public class SectionSetEvent
     //~ Instance fields --------------------------------------------------------
 
     /** The selected section set, which may be null */
-    public final Set<Section> sections;
+    private final Set<Section> sections;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -42,7 +36,6 @@ public class SectionSetEvent
     //-----------------//
     /**
      * Creates a new SectionSetEvent object.
-     *
      * @param source the entity that created this event
      * @param hint hint about event origin (or null)
      * @param movement the mouse movement

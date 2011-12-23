@@ -14,13 +14,8 @@ package omr.selection;
 import omr.run.Run;
 
 /**
- * Class {@code RunEvent} represents a Run selection
+ * Class {@code RunEvent} represents a Run selection.
  *
- * <dl>
- * <dt><b>Publishers:</b><dd>GlyphLag, Lag, LagView
- * <dt><b>Subscribers:</b><dd>RunBoard
- * <dt><b>Readers:</b><dd>
- * </dl>
  * @author Hervé Bitteur
  */
 public class RunEvent
@@ -29,7 +24,7 @@ public class RunEvent
     //~ Instance fields --------------------------------------------------------
 
     /** The selected run, which may be null */
-    public final Run run;
+    private final Run run;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -38,7 +33,6 @@ public class RunEvent
     //----------//
     /**
      * Creates a new RunEvent object.
-     *
      * @param source the entity that created this event
      * @param hint how the event originated
      * @param movement the mouse movement

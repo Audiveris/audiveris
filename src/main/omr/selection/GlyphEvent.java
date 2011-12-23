@@ -14,16 +14,7 @@ package omr.selection;
 import omr.glyph.facets.Glyph;
 
 /**
- * Class {@code GlyphEvent} represents a Glyph selection
- *
- * <dl>
- * <dt><b>Publishers:</b><dd>ErrorsEditor, GlyphBoard, GlyphBrowser, GlyphLag,
- *  GlyphMenu, GlyphModel, SymbolsEditor
- * <dt><b>Subscribers:</b><dd>EvaluationBoard, GlyphBoard, GlyphBrowser,
- * GlyphLag,  HorizontalsBuilder CheckBoards, ShapeFocusBoard,
- * SymbolGlyphBoard, SystemsBuilder, VerticalsBuilder CheckBoard
- * <dt><b>Readers:</b><dd>EvaluationBoard, GlyphBoard, GlyphMenu, TextAreaBrowser
- * </dl>
+ * Class {@code GlyphEvent} represents a Glyph selection.
  *
  * @author Hervé Bitteur
  */
@@ -33,7 +24,7 @@ public class GlyphEvent
     //~ Instance fields --------------------------------------------------------
 
     /** The selected glyph, which may be null */
-    public final Glyph glyph;
+    private final Glyph glyph;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -42,7 +33,6 @@ public class GlyphEvent
     //------------//
     /**
      * Creates a new GlyphEvent object.
-     *
      * @param source the entity that created this event
      * @param hint hint about event origin (or null)
      * @param movement the mouse movement
