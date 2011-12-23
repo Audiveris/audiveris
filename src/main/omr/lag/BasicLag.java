@@ -440,8 +440,6 @@ public class BasicLag
             logger.fine("Lag. sheetLocation:" + locationEvent);
         }
 
-        // Lookup for Section(s) embraced by location lasso
-        // Search and forward section info
         PixelRectangle rect = locationEvent.getData();
 
         if (rect == null) {
@@ -456,35 +454,24 @@ public class BasicLag
             return;
         }
 
-        // Non-degenerated rectangle? look for enclosed sections
-        if ((rect.width > 0) && (rect.height > 0)) {
-            ///if (lagService.subscribersCount(SectionSetEvent.class) > 0) {
-            // Look for enclosed glyphs
-            Set<Section> sectionsFound = lookupSections(rect);
+        // Section selection mode?
+        if (ViewParameters.getInstance()
+                          .isSectionSelectionEnabled()) {
+            // Non-degenerated rectangle? 
+            if ((rect.width > 0) && (rect.height > 0)) {
+                // Look for enclosed sections
+                Set<Section> sectionsFound = lookupSections(rect);
 
-            // Publish (first) Section found
-            Section section = sectionsFound.isEmpty() ? null
-                              : sectionsFound.iterator()
-                                             .next();
-            publish(new SectionEvent(this, hint, movement, section));
+                // Publish (first) Section found
+                Section section = sectionsFound.isEmpty() ? null
+                                  : sectionsFound.iterator()
+                                                 .next();
+                publish(new SectionEvent(this, hint, movement, section));
 
-            // Publish whole SectionSet
-            publish(new SectionSetEvent(this, hint, movement, sectionsFound));
-
-            ///}
-
-            //        } else {
-            //            // Just section addition / removal
-            //            PixelPoint pt = rect.getLocation();
-            //
-            //            // Publish Run information?
-            //            Run     run = getRunAt(pt.x, pt.y);
-            //
-            //            ///??? publish(new RunEvent(this, hint, movement, run));
-            //
-            //            // Publish Section information
-            //            Section section = (run != null) ? (Section) run.getSection() : null;
-            //            publish(new SectionEvent(this, hint, movement, section));
+                // Publish whole SectionSet
+                publish(
+                    new SectionSetEvent(this, hint, movement, sectionsFound));
+            }
         }
     }
 
@@ -540,8 +527,7 @@ public class BasicLag
         publish(new RunEvent(this, hint, movement, null));
 
         // Lookup a lag section with proper ID
-        publish(
-            new SectionEvent(this, hint, movement, getVertexById(id)));
+        publish(new SectionEvent(this, hint, movement, getVertexById(id)));
     }
 
     //-------------//

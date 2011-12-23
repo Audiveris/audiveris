@@ -629,22 +629,19 @@ public class BasicNest
             return;
         }
 
-        if ((rect.width > 0) || (rect.height > 0)) {
+        if ((rect.width > 0) && (rect.height > 0)) {
             // This is a non-degenerated rectangle
-            // Look for set of enclosed active glyphs, if any one interested
-            if (subscribersCount(GlyphSetEvent.class) > 0) {
-                // Look for enclosed glyphs
-                Set<Glyph> glyphsFound = lookupGlyphs(rect);
+            // Look for set of enclosed active glyphs
+            Set<Glyph> glyphsFound = lookupGlyphs(rect);
 
-                // Publish Glyph (and the related 1-glyph GlyphSet ???)
-                Glyph glyph = glyphsFound.isEmpty() ? null
-                              : glyphsFound.iterator()
-                                           .next();
-                publish(new GlyphEvent(this, hint, movement, glyph));
+            // Publish Glyph
+            Glyph glyph = glyphsFound.isEmpty() ? null
+                          : glyphsFound.iterator()
+                                       .next();
+            publish(new GlyphEvent(this, hint, movement, glyph));
 
-                // Publish GlyphSet
-                publish(new GlyphSetEvent(this, hint, movement, glyphsFound));
-            }
+            // Publish GlyphSet
+            publish(new GlyphSetEvent(this, hint, movement, glyphsFound));
         } else {
             // This is just a point
             Glyph glyph = lookupVirtualGlyph(
@@ -660,7 +657,7 @@ public class BasicNest
                 publish(new GlyphEvent(this, hint, movement, null));
 
                 // And let proper lag publish non-null glyph later
-                // Since BasicNest is first subscriber on location
+                // Since BasicNest is first subscriber on location (berk!)
             }
         }
     }
