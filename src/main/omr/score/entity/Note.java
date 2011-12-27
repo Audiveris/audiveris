@@ -42,8 +42,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class {@code Note} represents the characteristics of a note. 
- * Besides a regular note (standard note, or rest), it can also be a cue note 
+ * Class {@code Note} represents the characteristics of a note.
+ * Besides a regular note (standard note, or rest), it can also be a cue note
  * or a grace note (these last two variants are not handled yet, TODO).
  *
  * @author Hervé Bitteur
@@ -357,21 +357,22 @@ public class Note
     // getMirroredNote //
     //-----------------//
     /**
-     * If any, report the note that is the mirror of this one. This happens when
-     * the same note head is "shared" by 2 chords (because the note head is
-     * shared by 2 stems or by 1 stem leading to 2 beam groups).
+     * If any, report the note that is the mirror of this one.
+     * This happens when the same note head is "shared" by 2 chords (because the
+     * note head is shared by 2 stems or by 1 stem leading to 2 beam groups).
      * @return the mirrored note, or null if none.
      */
     public Note getMirroredNote ()
     {
         // We use the underlying glyph which keeps the link to translated notes
-        Glyph glyph = getGlyphs()
-                          .iterator()
-                          .next();
+        Collection<Glyph> glyphs = getGlyphs();
 
-        if (glyph == null) {
+        if (glyphs.isEmpty()) {
             return null;
         }
+
+        Glyph glyph = glyphs.iterator()
+                            .next();
 
         for (Object obj : glyph.getTranslations()) {
             if ((obj != this) && obj instanceof Note) {

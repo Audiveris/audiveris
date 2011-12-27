@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Class {@code Dynamics} represents a dynamics event
+ * Class {@code Dynamics} represents a dynamics event.
  *
  * @author Hervé Bitteur
  */
@@ -45,7 +45,7 @@ public class Dynamics
     /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Map Shape -> Signature */
+    /** Map Shape -> Signature. */
     private static final Map<Shape, String> sigs = new HashMap<Shape, String>();
 
     static {
@@ -81,7 +81,7 @@ public class Dynamics
         sigs.put(Shape.DYNAMICS_SFZ, "sfz");
     }
 
-    /* Map Signature -> Shape */
+    /** Map Signature -> Shape. */
     private static final Map<String, Shape> shapes = new HashMap<String, Shape>();
 
     static {
@@ -110,23 +110,53 @@ public class Dynamics
         shapes.put("sfz", Shape.DYNAMICS_SFZ);
     }
 
+    /** Map Shape -> Sound. (TODO: complete the table) */
+    private static final Map<Shape, Integer> sounds = new HashMap<Shape, Integer>();
+
+    static {
+        //        sounds.put(Shape.DYNAMICS_FFFFFF, "ffffff");
+        //        sounds.put(Shape.DYNAMICS_FFFFF, "fffff");
+        sounds.put(Shape.DYNAMICS_FFFF, 166);
+        sounds.put(Shape.DYNAMICS_FFF, 144);
+        sounds.put(Shape.DYNAMICS_FF, 122);
+        sounds.put(Shape.DYNAMICS_F, 100);
+
+        //        sounds.put(Shape.DYNAMICS_FP, "fp");
+        //        sounds.put(Shape.DYNAMICS_FZ, "fz");
+        sounds.put(Shape.DYNAMICS_MF, 89);
+        sounds.put(Shape.DYNAMICS_MP, 78);
+        sounds.put(Shape.DYNAMICS_P, 67);
+        sounds.put(Shape.DYNAMICS_PP, 56);
+        sounds.put(Shape.DYNAMICS_PPP, 45);
+        sounds.put(Shape.DYNAMICS_PPPP, 34);
+
+        //        sounds.put(Shape.DYNAMICS_PPPPP, "ppppp");
+        //        sounds.put(Shape.DYNAMICS_PPPPPP, "pppppp");
+        //        sounds.put(Shape.DYNAMICS_RF, "rf");
+        //        sounds.put(Shape.DYNAMICS_RFZ, "rfz");
+        //        sounds.put(Shape.DYNAMICS_SF, "sf");
+        //        sounds.put(Shape.DYNAMICS_SFFZ, "sffz");
+        //        sounds.put(Shape.DYNAMICS_SFP, "sfp");
+        //        sounds.put(Shape.DYNAMICS_SFPP, "sfpp");
+        //        sounds.put(Shape.DYNAMICS_SFZ, "sfz");
+    }
+
     //~ Constructors -----------------------------------------------------------
 
     //----------//
     // Dynamics //
     //----------//
     /**
-     * Creates a new instance of Dynamics event
-     *
+     * Creates a new instance of Dynamics event.
      * @param measure measure that contains this mark
      * @param point location of mark
      * @param chord the chord related to the mark
      * @param glyph the underlying glyph
      */
-    public Dynamics (Measure     measure,
+    public Dynamics (Measure    measure,
                      PixelPoint point,
-                     Chord       chord,
-                     Glyph       glyph)
+                     Chord      chord,
+                     Glyph      glyph)
     {
         super(measure, true, point, chord, glyph);
 
@@ -150,14 +180,13 @@ public class Dynamics
     // populate //
     //----------//
     /**
-     * Used by SystemTranslator to allocate the dynamics marks
-     *
+     * Used by SystemTranslator to allocate the dynamics marks.
      * @param glyph underlying glyph
      * @param measure measure where the mark is located
      * @param point location for the mark
      */
-    public static void populate (Glyph       glyph,
-                                 Measure     measure,
+    public static void populate (Glyph      glyph,
+                                 Measure    measure,
                                  PixelPoint point)
     {
         // Can we gather with another dynamics letter? (e.g. m + p -> mp)
@@ -177,6 +206,20 @@ public class Dynamics
         // Otherwise, create a brand new instance
         glyph.setTranslation(
             new Dynamics(measure, point, findChord(measure, point), glyph));
+    }
+
+    //---------------//
+    // getSoundLevel //
+    //---------------//
+    public Integer getSoundLevel ()
+    {
+        Shape shape = getShape();
+
+        if (shape != null) {
+            return sounds.get(shape);
+        } else {
+            return null;
+        }
     }
 
     //---------------//

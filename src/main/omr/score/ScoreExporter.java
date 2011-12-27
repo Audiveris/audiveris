@@ -296,7 +296,7 @@ public class ScoreExporter
     {
         export(new FileOutputStream(xmlFile), injectSignature);
     }
-  
+
     //--------//
     // export //
     //--------//
@@ -784,6 +784,15 @@ public class ScoreExporter
                 toTenths(
                     dynamics.getReferencePoint().x -
                     current.note.getCenterLeft().x));
+
+            // Related sound level, if available
+            Integer soundLevel = dynamics.getSoundLevel();
+
+            if (soundLevel != null) {
+                Sound sound = factory.createSound();
+                sound.setDynamics(new BigDecimal(soundLevel));
+                direction.setSound(sound);
+            }
 
             // Everything is now OK
             directionType.setDynamics(pmDynamics);
