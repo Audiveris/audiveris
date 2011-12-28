@@ -20,10 +20,12 @@ import omr.score.common.PixelRectangle;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * Class {@code Sections} handles features related to a collection of
- * sections
+ * sections.
  *
  * @author Hervé Bitteur
  */
@@ -41,7 +43,6 @@ public class Sections
     //---------------//
     /**
      * Return the display bounding box of a collection of sections.
-     *
      * @param sections the provided collection of sections
      * @return the bounding contour
      */
@@ -65,7 +66,7 @@ public class Sections
     //----------------------------//
     /**
      * Return a comparator for comparing Section instances on their
-     * decreasing length, using the provided orientation
+     * decreasing length, using the provided orientation.
      * @param orientation the provided orientation
      */
     public static Comparator<Section> getReverseLengthComparator (final Orientation orientation)
@@ -80,22 +81,60 @@ public class Sections
             };
     }
 
-    //----------//
-    // contains //
-    //----------//
-    public static boolean contains (Collection<?extends Section> sections,
-                                    Section                      section)
+    //---------------------------//
+    // lookupIntersectedSections //
+    //---------------------------//
+    /**
+     * Convenient method to look for sections that intersect the
+     * provided rectangle
+     * @param rect provided rectangle
+     * @param sections the collection of sections to browse
+     * @return the set of intersecting sections
+     */
+    public static Set<Section> lookupIntersectedSections (PixelRectangle               rect,
+                                                          Collection<?extends Section> sections)
     {
-        return sections.contains(section);
+        Set<Section> found = new LinkedHashSet<Section>();
+
+        for (Section section : sections) {
+            if (section.intersects(rect)) {
+                found.add(section);
+            }
+        }
+
+        return found;
+    }
+
+    //----------------//
+    // lookupSections //
+    //----------------//
+    /**
+     * Convenient method to look for sections contained by the provided
+     * rectangle
+     * @param rect provided rectangle
+     * @param sections the collection of sections to browse
+     * @return the set of contained sections
+     */
+    public static Set<Section> lookupSections (PixelRectangle               rect,
+                                               Collection<?extends Section> sections)
+    {
+        Set<Section> found = new LinkedHashSet<Section>();
+
+        for (Section section : sections) {
+            if (rect.contains(section.getContourBox())) {
+                found.add(section);
+            }
+        }
+
+        return found;
     }
 
     //----------//
     // toString //
     //----------//
     /**
-     * Convenient method, to build a string with just the ids of the section
-     * collection, introduced by the provided label
-     *
+     * Convenient method, to build a string with just the ids of the
+     * section collection, introduced by the provided label.
      * @param label the string that introduces the list of IDs
      * @param sections the collection of sections
      * @return the string built
@@ -126,9 +165,8 @@ public class Sections
     // toString //
     //----------//
     /**
-     * Convenient method, to build a string with just the ids of the section
-     * array, introduced by the provided label
-     *
+     * Convenient method, to build a string with just the ids of the
+     * section array, introduced by the provided label.
      * @param label the string that introduces the list of IDs
      * @param sections the array of sections
      * @return the string built
@@ -143,9 +181,8 @@ public class Sections
     // toString //
     //----------//
     /**
-     * Convenient method, to build a string with just the ids of the section
-     * collection, introduced by the label "sections"
-     *
+     * Convenient method, to build a string with just the ids of the
+     * section collection, introduced by the label "sections".
      * @param sections the collection of sections
      * @return the string built
      */
@@ -158,9 +195,8 @@ public class Sections
     // toString //
     //----------//
     /**
-     * Convenient method, to build a string with just the ids of the section
-     * array, introduced by the label "sections"
-     *
+     * Convenient method, to build a string with just the ids of the
+     * section array, introduced by the label "sections".
      * @param sections the array of sections
      * @return the string built
      */

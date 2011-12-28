@@ -64,7 +64,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <p><b>Beware</b>, the section orientation only governs the runs orientation.
  * It by no means implies that the section dimension is longer in the direction
  * along the runs than in the direction across.
- * To enforce this, the {@link #getLength(Orientation)} requires that an 
+ * To enforce this, the {@link #getLength(Orientation)} requires that an
  * explicit orientation be provided, just like for {@link Glyph} instances.
  *
  * @author Hervé Bitteur
@@ -533,10 +533,18 @@ public interface Section
     public void translate (PixelPoint vector);
 
     /**
-     * Write the pixels of the section in the given picture
+     * Write the pixels of the section in the given picture.
      * @param picture the picture to update
      * @param pixel   the gray level to be used for the pixels
      */
     public void write (Picture picture,
                        int     pixel);
+
+    /**
+     * Predicate to check whether the given absolute rectangle is
+     * intersected by the section.
+     * @param rectangle absolute rectangle
+     * @return true if intersection is not empty
+     */
+    boolean intersects (Rectangle rectangle);
 }

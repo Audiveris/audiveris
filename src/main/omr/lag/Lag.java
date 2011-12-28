@@ -145,20 +145,20 @@ public interface Lag
                            Run firstRun);
 
     /**
-     * Lookup for sections that are intersected by the provided
-     * rectangle.
+     * Lookup for lag sections that are <b>intersected</b> by the 
+     * provided rectangle.
      * Specific sections are not considered.
      * @param rect the given rectangle
-     * @return the set of sections found, which may be empty
+     * @return the set of lag sections intersected, which may be empty
      */
     Set<Section> lookupIntersectedSections (PixelRectangle rect);
 
     /**
-     * Lookup for sections that are contained in the provided
-     * rectangle.
+     * Lookup for lag sections that are <b>contained</b> in the 
+     * provided rectangle.
      * Specific sections are not considered.
      * @param rect the given rectangle
-     * @return the set of sections found, which may be empty
+     * @return the set of lag sections contained, which may be empty
      */
     Set<Section> lookupSections (PixelRectangle rect);
 

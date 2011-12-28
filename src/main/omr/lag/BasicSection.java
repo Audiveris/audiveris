@@ -102,12 +102,6 @@ public class BasicSection
     /** Absolute mass center */
     private PixelPoint centroid;
 
-    /** Approximate absolute starting point */
-    private PixelPoint startPoint;
-
-    /** Approximate absolute stopping point */
-    private PixelPoint stopPoint;
-
     /** Contribution to the foreground */
     private int foreWeight;
 
@@ -658,6 +652,14 @@ public class BasicSection
         return bounds.x + (bounds.width - 1);
     }
 
+    //-----------//
+    // getSystem //
+    //-----------//
+    public SystemInfo getSystem ()
+    {
+        return system;
+    }
+
     //--------------//
     // getThickness //
     //--------------//
@@ -845,7 +847,8 @@ public class BasicSection
     public boolean contains (int x,
                              int y)
     {
-        return polygon.contains(x, y);
+        return getPolygon()
+                   .contains(x, y);
     }
 
     //----------//
@@ -1056,14 +1059,6 @@ public class BasicSection
     }
 
     //-----------//
-    // getSystem //
-    //-----------//
-    public SystemInfo getSystem ()
-    {
-        return system;
-    }
-
-    //-----------//
     // fillImage //
     //-----------//
     public void fillImage (BufferedImage im,
@@ -1207,6 +1202,15 @@ public class BasicSection
         logger.severe("inPreviousSibling inconsistent graph");
 
         return null;
+    }
+
+    //------------//
+    // intersects //
+    //------------//
+    public boolean intersects (Rectangle rect)
+    {
+        return getPolygon()
+                   .intersects(rect);
     }
 
     //-------//
@@ -1550,8 +1554,6 @@ public class BasicSection
         centroid = null;
         polygon = null;
         contourBox = null;
-        startPoint = null;
-        stopPoint = null;
         orientedLine = null;
     }
 

@@ -281,15 +281,7 @@ public class BasicLag
     //---------------------------//
     public Set<Section> lookupIntersectedSections (PixelRectangle rect)
     {
-        Set<Section> found = new LinkedHashSet<Section>();
-
-        for (Section section : getSections()) {
-            if (rect.intersects(section.getContourBox())) {
-                found.add(section);
-            }
-        }
-
-        return found;
+        return Sections.lookupIntersectedSections(rect, getSections());
     }
 
     //----------------//
@@ -297,15 +289,7 @@ public class BasicLag
     //----------------//
     public Set<Section> lookupSections (PixelRectangle rect)
     {
-        Set<Section> found = new LinkedHashSet<Section>();
-
-        for (Section section : getSections()) {
-            if (rect.contains(section.getContourBox())) {
-                found.add(section);
-            }
-        }
-
-        return found;
+        return Sections.lookupSections(rect, getSections());
     }
 
     //---------//
