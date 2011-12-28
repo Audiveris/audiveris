@@ -63,68 +63,70 @@ public class BeamHookPattern
         int nb = 0;
 
         for (Glyph hook : system.getGlyphs()) {
-            if (hook.getShape() == Shape.BEAM_HOOK) {
-                if (hook.getStemNumber() != 1) {
+            if ((hook.getShape() != Shape.BEAM_HOOK) || hook.isManualShape()) {
+                continue;
+            }
+
+            if (hook.getStemNumber() != 1) {
+                if (hook.isVip() || logger.isFineEnabled()) {
+                    logger.info(
+                        hook.getStemNumber() + " stem(s) for beam hook #" +
+                        hook.getId());
+                }
+
+                hook.setShape(null);
+                nb++;
+            } else {
+                if (hook.isVip() || logger.isFineEnabled()) {
+                    logger.info("Checking hook #" + hook.getId());
+                }
+
+                Glyph          stem = null;
+                HorizontalSide side = null;
+
+                for (HorizontalSide s : HorizontalSide.values()) {
+                    side = s;
+                    stem = hook.getStem(s);
+
+                    if (stem != null) {
+                        break;
+                    }
+                }
+
+                // Look for other stuff on the stem
+                PixelRectangle stemBox = system.stemBoxOf(stem);
+                boolean        found = false;
+
+                for (Glyph g : system.lookupIntersectedGlyphs(
+                    stemBox,
+                    stem,
+                    hook)) {
+                    // We look for  beam on same stem side
+                    if ((g.getStem(side) == stem)) {
+                        Shape shape = g.getShape();
+
+                        if (ShapeRange.Beams.contains(shape) &&
+                            (shape != Shape.BEAM_HOOK)) {
+                            if (hook.isVip() || logger.isFineEnabled()) {
+                                logger.info(
+                                    "Confirmed beam hook #" + hook.getId());
+                            }
+
+                            found = true;
+
+                            break;
+                        }
+                    }
+                }
+
+                if (!found) {
+                    // Deassign this hook w/ no beam neighbor
                     if (hook.isVip() || logger.isFineEnabled()) {
-                        logger.info(
-                            hook.getStemNumber() + " stem(s) for beam hook #" +
-                            hook.getId());
+                        logger.info("Cancelled beam hook #" + hook.getId());
                     }
 
                     hook.setShape(null);
                     nb++;
-                } else {
-                    if (hook.isVip() || logger.isFineEnabled()) {
-                        logger.info("Checking hook #" + hook.getId());
-                    }
-
-                    Glyph          stem = null;
-                    HorizontalSide side = null;
-
-                    for (HorizontalSide s : HorizontalSide.values()) {
-                        side = s;
-                        stem = hook.getStem(s);
-
-                        if (stem != null) {
-                            break;
-                        }
-                    }
-
-                    // Look for other stuff on the stem
-                    PixelRectangle stemBox = system.stemBoxOf(stem);
-                    boolean        found = false;
-
-                    for (Glyph g : system.lookupIntersectedGlyphs(
-                        stemBox,
-                        stem,
-                        hook)) {
-                        // We look for  beam on same stem side
-                        if ((g.getStem(side) == stem)) {
-                            Shape shape = g.getShape();
-
-                            if (ShapeRange.Beams.contains(shape) &&
-                                (shape != Shape.BEAM_HOOK)) {
-                                if (hook.isVip() || logger.isFineEnabled()) {
-                                    logger.info(
-                                        "Confirmed beam hook #" + hook.getId());
-                                }
-
-                                found = true;
-
-                                break;
-                            }
-                        }
-                    }
-
-                    if (!found) {
-                        // Deassign this hook w/ no beam neighbor
-                        if (hook.isVip() || logger.isFineEnabled()) {
-                            logger.info("Cancelled beam hook #" + hook.getId());
-                        }
-
-                        hook.setShape(null);
-                        nb++;
-                    }
                 }
             }
         }

@@ -99,7 +99,7 @@ public class StemPattern
         List<Glyph>            SuspectedStems = new ArrayList<Glyph>();
 
         for (Glyph glyph : system.getGlyphs()) {
-            if (glyph.isStem() && glyph.isActive()) {
+            if (!glyph.isStem() || glyph.isManualShape() || !glyph.isActive()) {
                 Set<Glyph> goods = new HashSet<Glyph>();
                 Set<Glyph> bads = new HashSet<Glyph>();
                 glyph.getSymbolsBefore(reliableStemSymbols, goods, bads);

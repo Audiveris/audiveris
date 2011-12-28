@@ -76,7 +76,8 @@ public class TimePattern
         int successNb = 0;
 
         for (Glyph glyph : system.getGlyphs()) {
-            if (!ShapeRange.Times.contains(glyph.getShape())) {
+            if (!ShapeRange.Times.contains(glyph.getShape()) ||
+                glyph.isManualShape()) {
                 continue;
             }
 

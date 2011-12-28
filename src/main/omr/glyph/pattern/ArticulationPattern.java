@@ -81,7 +81,8 @@ public class ArticulationPattern
         int nb = 0;
 
         for (Glyph glyph : system.getGlyphs()) {
-            if (!ShapeRange.Articulations.contains(glyph.getShape())) {
+            if (!ShapeRange.Articulations.contains(glyph.getShape()) ||
+                glyph.isManualShape()) {
                 continue;
             }
 

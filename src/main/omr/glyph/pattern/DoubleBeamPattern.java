@@ -69,59 +69,62 @@ public class DoubleBeamPattern
         int nb = 0;
 
         for (final Glyph beam : system.getGlyphs()) {
-            if ((beam.getShape() == Shape.BEAM) && (beam.getStemNumber() == 1)) {
-                if (beam.isVip() || logger.isFineEnabled()) {
-                    logger.info("Checking single-stem beam #" + beam.getId());
+            if ((beam.getShape() != Shape.BEAM) ||
+                beam.isManualShape() ||
+                (beam.getStemNumber() != 1)) {
+                continue;
+            }
+
+            if (beam.isVip() || logger.isFineEnabled()) {
+                logger.info("Checking single-stem beam #" + beam.getId());
+            }
+
+            final Glyph          stem = beam.getFirstStem();
+
+            // Look for a beam glyph next to it
+            final PixelRectangle beamBox = beam.getContourBox();
+            beamBox.grow(1, 1);
+
+            Set<Glyph> candidates = Glyphs.lookupGlyphs(
+                system.getGlyphs(),
+                new Predicate<Glyph>() {
+                        public boolean check (Glyph glyph)
+                        {
+                            return (glyph != stem) && (glyph != beam) &&
+                                   (glyph.getShape() == Shape.BEAM) &&
+                                   glyph.getContourBox()
+                                        .intersects(beamBox);
+                        }
+                    });
+
+            for (Glyph candidate : candidates) {
+                if (beam.isVip() || candidate.isVip() ||
+                    logger.isFineEnabled()) {
+                    logger.info("Beam candidate #" + candidate);
                 }
 
-                final Glyph          stem = beam.getFirstStem();
+                Glyph      compound = system.buildTransientCompound(
+                    Arrays.asList(beam, candidate));
+                Evaluation eval = GlyphNetwork.getInstance()
+                                              .vote(
+                    compound,
+                    Grades.noMinGrade,
+                    system);
 
-                // Look for a beam glyph next to it
-                final PixelRectangle beamBox = beam.getContourBox();
-                beamBox.grow(1, 1);
+                if (eval != null) {
+                    // Assign and insert into system & lag environments
+                    compound = system.addGlyph(compound);
+                    compound.setEvaluation(eval);
 
-                Set<Glyph> candidates = Glyphs.lookupGlyphs(
-                    system.getGlyphs(),
-                    new Predicate<Glyph>() {
-                            public boolean check (Glyph glyph)
-                            {
-                                return (glyph != stem) && (glyph != beam) &&
-                                       (glyph.getShape() == Shape.BEAM) &&
-                                       glyph.getContourBox()
-                                            .intersects(beamBox);
-                            }
-                        });
-
-                for (Glyph candidate : candidates) {
-                    if (beam.isVip() ||
-                        candidate.isVip() ||
-                        logger.isFineEnabled()) {
-                        logger.info("Beam candidate #" + candidate);
+                    if (compound.isVip() || logger.isFineEnabled()) {
+                        logger.info(
+                            "Compound #" + compound.getId() + " built as " +
+                            compound.getEvaluation());
                     }
 
-                    Glyph      compound = system.buildTransientCompound(
-                        Arrays.asList(beam, candidate));
-                    Evaluation eval = GlyphNetwork.getInstance()
-                                                  .vote(
-                        compound,
-                        Grades.noMinGrade,
-                        system);
+                    nb++;
 
-                    if (eval != null) {
-                        // Assign and insert into system & lag environments
-                        compound = system.addGlyph(compound);
-                        compound.setEvaluation(eval);
-
-                        if (compound.isVip() || logger.isFineEnabled()) {
-                            logger.info(
-                                "Compound #" + compound.getId() + " built as " +
-                                compound.getEvaluation());
-                        }
-
-                        nb++;
-
-                        break;
-                    }
+                    break;
                 }
             }
         }

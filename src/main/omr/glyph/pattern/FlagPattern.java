@@ -68,7 +68,8 @@ public class FlagPattern
         int nb = 0;
 
         for (Glyph flag : system.getGlyphs()) {
-            if (!ShapeRange.Flags.contains(flag.getShape())) {
+            if (!ShapeRange.Flags.contains(flag.getShape()) ||
+                flag.isManualShape()) {
                 continue;
             }
 

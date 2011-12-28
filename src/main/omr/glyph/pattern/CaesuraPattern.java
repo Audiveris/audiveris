@@ -63,20 +63,22 @@ public class CaesuraPattern
         ScoreSystem scoreSystem = system.getScoreSystem();
 
         for (Glyph glyph : system.getGlyphs()) {
-            if (glyph.getShape() == Shape.CAESURA) {
-                PixelPoint center = glyph.getAreaCenter();
-                SystemPart part = scoreSystem.getPartAt(center);
-                Measure    measure = part.getMeasureAt(center);
+            if ((glyph.getShape() != Shape.CAESURA) || glyph.isManualShape()) {
+                continue;
+            }
 
-                if (!measure.getChords()
-                            .isEmpty()) {
-                    if (glyph.isVip() || logger.isFineEnabled()) {
-                        logger.info("Cancelled caesura #" + glyph.getId());
-                    }
+            PixelPoint center = glyph.getAreaCenter();
+            SystemPart part = scoreSystem.getPartAt(center);
+            Measure    measure = part.getMeasureAt(center);
 
-                    glyph.setShape(null);
-                    nb++;
+            if (!measure.getChords()
+                        .isEmpty()) {
+                if (glyph.isVip() || logger.isFineEnabled()) {
+                    logger.info("Cancelled caesura #" + glyph.getId());
                 }
+
+                glyph.setShape(null);
+                nb++;
             }
         }
 
