@@ -141,9 +141,15 @@ import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.SortedSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -221,8 +227,7 @@ public class ScoreExporter
     // ScoreExporter //
     //---------------//
     /**
-     * Create a new ScoreExporter object, on a related score instance
-     *
+     * Create a new ScoreExporter object, on a related score instance.
      * @param score the score to export (cannot be null)
      * @throws InterruptedException
      * @throws ExecutionException
@@ -246,7 +251,7 @@ public class ScoreExporter
     // preload //
     //---------//
     /**
-     * Empty static method, just to trigger class elaboration
+     * Empty static method, just to trigger class elaboration.
      */
     public static void preload ()
     {
@@ -256,8 +261,7 @@ public class ScoreExporter
     // setMeasureRange //
     //-----------------//
     /**
-     * Set a specific range of measures to export
-     *
+     * Set a specific range of measures to export.
      * @param measureRange the range of desired measures
      */
     public void setMeasureRange (MeasureRange measureRange)
@@ -269,7 +273,7 @@ public class ScoreExporter
     // buildScorePartwise //
     //--------------------//
     /**
-     * Fill a ScorePartwise with the Score information
+     * Fill a ScorePartwise with the Score information.
      * @return the filled document
      */
     public ScorePartwise buildScorePartwise ()
@@ -284,8 +288,7 @@ public class ScoreExporter
     // export //
     //--------//
     /**
-     * Export the score to a file
-     *
+     * Export the score to a file.
      * @param xmlFile the xml file to write (cannot be null)
      * @param injectSignature should we inject out signature?
      * @throws java.lang.Exception
@@ -301,8 +304,7 @@ public class ScoreExporter
     // export //
     //--------//
     /**
-     * Export the score to an output stream
-     *
+     * Export the score to an output stream.
      * @param os the output stream where XML data is written (cannot be null)
      * @param injectSignature should we inject our signature?
      * @throws java.io.IOException
@@ -330,8 +332,7 @@ public class ScoreExporter
     // export //
     //--------//
     /**
-     * Export the score to DOM node
-     *
+     * Export the score to DOM node.
      * @param node the DOM node to export to (cannot be null)
      * @param injectSignature should we inject our signature?
      * @throws java.io.IOException
@@ -359,9 +360,8 @@ public class ScoreExporter
     // toTenths //
     //----------//
     /**
-     * Convert a distance expressed in pixels to a string value expressed in
-     * tenths of interline
-     *
+     * Convert a distance expressed in pixels to a string value
+     * expressed in tenths of interline.
      * @param dist the distance in pixels
      * @return the number of tenths as a string
      */
@@ -552,74 +552,9 @@ public class ScoreExporter
             }
 
             if (isNewClef(clef)) {
-                proxymusic.Clef pmClef = factory.createClef();
-
-                // Staff number (only for multi-staff parts)
-                if (current.scorePart.isMultiStaff()) {
-                    pmClef.setNumber(
-                        new BigInteger("" + (clef.getStaff().getId())));
-                }
-
-                // Line (General computation that could be overridden by more
-                // specific shape test below)
-                pmClef.setLine(
-                    new BigInteger(
-                        "" +
-                        (3 - (int) Math.rint(clef.getPitchPosition() / 2.0))));
-
-                Shape shape = clef.getShape();
-
-                switch (shape) {
-                case G_CLEF :
-                    pmClef.setSign(ClefSign.G);
-
-                    break;
-
-                case G_CLEF_OTTAVA_ALTA :
-                    pmClef.setSign(ClefSign.G);
-                    pmClef.setClefOctaveChange(new BigInteger("1"));
-
-                    break;
-
-                case G_CLEF_OTTAVA_BASSA :
-                    pmClef.setSign(ClefSign.G);
-                    pmClef.setClefOctaveChange(new BigInteger("-1"));
-
-                    break;
-
-                case C_CLEF :
-                    pmClef.setSign(ClefSign.C);
-
-                    break;
-
-                case F_CLEF :
-                    pmClef.setSign(ClefSign.F);
-
-                    break;
-
-                case F_CLEF_OTTAVA_ALTA :
-                    pmClef.setSign(ClefSign.F);
-                    pmClef.setClefOctaveChange(new BigInteger("1"));
-
-                    break;
-
-                case F_CLEF_OTTAVA_BASSA :
-                    pmClef.setSign(ClefSign.F);
-                    pmClef.setClefOctaveChange(new BigInteger("-1"));
-
-                    break;
-
-                case PERCUSSION_CLEF :
-                    pmClef.setSign(ClefSign.PERCUSSION);
-
-                    break;
-
-                default :
-                }
-
                 getMeasureAttributes()
                     .getClef()
-                    .add(pmClef);
+                    .add(buildClef(clef));
             }
         } catch (Exception ex) {
             logger.warning(
@@ -932,14 +867,16 @@ public class ScoreExporter
 
             // Right Barline
             if (!measure.isDummy()) {
-                visit(measure.getBarline());
+                measure.getBarline()
+                       .accept(this);
             }
 
             // Left barline ?
             Measure prevMeasure = (Measure) measure.getPreviousSibling();
 
             if ((prevMeasure != null) && !prevMeasure.isDummy()) {
-                visit(prevMeasure.getBarline());
+                prevMeasure.getBarline()
+                           .accept(this);
             }
 
             // Do we need to create & export a dummy initial measure?
@@ -1108,13 +1045,23 @@ public class ScoreExporter
             }
 
             // Specific browsing down the measure
-            // Clefs, KeySignatures, TimeSignatures
-            measure.getClefList()
-                   .acceptChildren(this);
+            // Insert KeySignatures, TimeSignatures
             measure.getKeySigList()
                    .acceptChildren(this);
             measure.getTimeSigList()
                    .acceptChildren(this);
+
+            // Clefs may be inserted further down the measure
+            ClefIterators   clefIters = new ClefIterators(measure);
+
+            // Insert clefs that occur before first time slot
+            SortedSet<Slot> slots = measure.getSlots();
+
+            if (slots.isEmpty()) {
+                clefIters.push(null, null);
+            } else {
+                clefIters.push(slots.first().getX(), null);
+            }
 
             // Now voice per voice
             Rational timeCounter = Rational.ZERO;
@@ -1130,33 +1077,34 @@ public class ScoreExporter
 
                 if (voice.isWhole()) {
                     // Delegate to the chord children directly
-                    voice.getWholeChord()
-                         .acceptChildren(this);
+                    Chord chord = voice.getWholeChord();
+                    clefIters.push(measure.getRightX(), chord.getStaff());
+                    chord.acceptChildren(this);
                     timeCounter = measure.getExpectedDuration();
                 } else {
                     for (Slot slot : measure.getSlots()) {
                         ChordInfo info = voice.getSlotInfo(slot);
 
-                        if (info != null) { // Skip free slots
+                        if ((info != null) && // Skip free slots
+                            (info.getStatus() == Voice.Status.BEGIN)) {
+                            Chord chord = info.getChord();
+                            clefIters.push(
+                                chord.getCenter().x,
+                                chord.getStaff());
 
-                            if (info.getStatus() == Voice.Status.BEGIN) {
-                                Chord    chord = info.getChord();
+                            // Need a forward before this chord ?
+                            Rational startTime = chord.getStartTime();
 
-                                // Need a forward before this chord ?
-                                Rational startTime = chord.getStartTime();
-
-                                if (timeCounter.compareTo(startTime) < 0) {
-                                    insertForward(
-                                        startTime.minus(timeCounter),
-                                        chord);
-                                    timeCounter = startTime;
-                                }
-
-                                // Delegate to the chord children directly
-                                chord.acceptChildren(this);
-                                timeCounter = timeCounter.plus(
-                                    chord.getDuration());
+                            if (timeCounter.compareTo(startTime) < 0) {
+                                insertForward(
+                                    startTime.minus(timeCounter),
+                                    chord);
+                                timeCounter = startTime;
                             }
+
+                            // Delegate to the chord children directly
+                            chord.acceptChildren(this);
+                            timeCounter = timeCounter.plus(chord.getDuration());
                         }
                     }
 
@@ -1174,6 +1122,9 @@ public class ScoreExporter
                 }
             }
 
+            // Clefs that occur after time slots, if any
+            clefIters.push(null, null);
+
             // Everything is now OK
             current.pmPart.getMeasure()
                           .add(current.pmMeasure);
@@ -1189,7 +1140,7 @@ public class ScoreExporter
         tupletNumbers.clear();
         isFirst.measure = false;
 
-        return true;
+        return false; // Not this way
     }
 
     //------------//
@@ -1686,11 +1637,10 @@ public class ScoreExporter
     // visit ScoreSystem //
     //-------------------//
     /**
-     * Allocate/populate everything that directly relates to this system in the
-     * current scorePart. The rest of processing is directly delegated to the
-     * measures
-     *
-     * @param system visit the system to export
+     * Allocate/populate everything that directly relates to this
+     * system in the current scorePart.
+     * The rest of processing is directly delegated to the measures
+     * @param system the system to export
      * @return false
      */
     @Override
@@ -1714,7 +1664,7 @@ public class ScoreExporter
                 SystemPart dummyPart = system.getFirstRealPart()
                                              .createDummyPart(
                     current.scorePart.getId());
-                visit(dummyPart);
+                dummyPart.accept(this);
             }
 
             // If we have exported a measure, we are no longer in the first system
@@ -2243,7 +2193,6 @@ public class ScoreExporter
     //-----//
     /**
      * Report the musicXML staff-based Y value of a PixelPoint ordinate.
-     *
      * @param ordinate the ordinate (page-based, in pixels)
      * @param staff the related staff
      * @return the upward-oriented ordinate wrt staff top line (in tenths)
@@ -2261,7 +2210,6 @@ public class ScoreExporter
      * Report the musicXML staff-based Y value of a PixelPoint.
      * This method is safer than the other one which simply accepts a (detyped)
      * double ordinate.
-     *
      * @param point the pixel point
      * @param staff the related staff
      * @return the upward-oriented ordinate wrt staff top line (in tenths)
@@ -2312,9 +2260,8 @@ public class ScoreExporter
     // getArticulations //
     //------------------//
     /**
-     * Report (after creating it if necessary) the articulations elements in the
-     * notations element of the current note
-     *
+     * Report (after creating it if necessary) the articulations
+     * elements in the notations element of the current note.
      * @return the note notations articulations element
      */
     private Articulations getArticulations ()
@@ -2357,8 +2304,8 @@ public class ScoreExporter
     // getScorePart //
     //--------------//
     /**
-     * Generate the proxymusic ScorePart instance that relates to the Audiveris
-     * provided ScorePart
+     * Generate the proxymusic ScorePart instance that relates to the
+     * Audiveris provided ScorePart.
      * @param scorePart provided ScorePart
      * @return the newly built proxymusic ScorePart instance
      */
@@ -2445,8 +2392,8 @@ public class ScoreExporter
     // getMeasureAttributes //
     //----------------------//
     /**
-     * Report (after creating it if necessary) the measure attributes element
-     *
+     * Report (after creating it if necessary) the measure attributes
+     * element.
      * @return the measure attributes element
      */
     private Attributes getMeasureAttributes ()
@@ -2464,9 +2411,10 @@ public class ScoreExporter
     // isNewClef //
     //-----------//
     /**
-     * Make sure we have a NEW clef, not already assigned. We have to go back
-     * (on the same staff) in current measure, then in previous measures,
-     * then in same staff in previous systems, until we find a previous clef.
+     * Make sure we have a NEW clef, not already assigned.
+     * We have to go back (on the same staff) in current measure, then in
+     * previous measures, then in same staff in previous systems, until we find
+     * a previous clef.
      * And we compare the two shapes.
      * @param clef the potentially new clef
      * @return true if this clef is really new
@@ -2493,9 +2441,10 @@ public class ScoreExporter
     // isNewKeySignature //
     //-------------------//
     /**
-     * Make sure we have a NEW key, not already assigned. We have to go back
-     * in current measure, then in current staff, then in same staff in previous
-     * systems, until we find a previous key. And we compare the two shapes.
+     * Make sure we have a NEW key, not already assigned.
+     * We have to go back in current measure, then in current staff, then in
+     * same staff in previous systems, until we find a previous key.
+     * And we compare the two shapes.
      * @param key the potentially new key
      * @return true if this key is really new
      */
@@ -2522,9 +2471,8 @@ public class ScoreExporter
     // getNotations //
     //--------------//
     /**
-     * Report (after creating it if necessary) the notations element of the
-     * current note
-     *
+     * Report (after creating it if necessary) the notations element
+     * of the current note.
      * @return the note notations element
      */
     private Notations getNotations ()
@@ -2543,9 +2491,8 @@ public class ScoreExporter
     // getOrnaments //
     //--------------//
     /**
-     * Report (after creating it if necessary) the ornaments elements in the
-     * notations element of the current note
-     *
+     * Report (after creating it if necessary) the ornaments elements
+     * in the notations element of the current note.
      * @return the note notations ornaments element
      */
     private Ornaments getOrnaments ()
@@ -2577,6 +2524,77 @@ public class ScoreExporter
         }
 
         return current.pmWork;
+    }
+
+    //-----------//
+    // buildClef //
+    //-----------//
+    private proxymusic.Clef buildClef (Clef clef)
+    {
+        proxymusic.Clef pmClef = factory.createClef();
+
+        // Staff number (only for multi-staff parts)
+        if (current.scorePart.isMultiStaff()) {
+            pmClef.setNumber(new BigInteger("" + (clef.getStaff().getId())));
+        }
+
+        // Line (General computation that could be overridden by more
+        // specific shape test below)
+        pmClef.setLine(
+            new BigInteger(
+                "" + (3 - (int) Math.rint(clef.getPitchPosition() / 2.0))));
+
+        Shape shape = clef.getShape();
+
+        switch (shape) {
+        case G_CLEF :
+            pmClef.setSign(ClefSign.G);
+
+            break;
+
+        case G_CLEF_OTTAVA_ALTA :
+            pmClef.setSign(ClefSign.G);
+            pmClef.setClefOctaveChange(new BigInteger("1"));
+
+            break;
+
+        case G_CLEF_OTTAVA_BASSA :
+            pmClef.setSign(ClefSign.G);
+            pmClef.setClefOctaveChange(new BigInteger("-1"));
+
+            break;
+
+        case C_CLEF :
+            pmClef.setSign(ClefSign.C);
+
+            break;
+
+        case F_CLEF :
+            pmClef.setSign(ClefSign.F);
+
+            break;
+
+        case F_CLEF_OTTAVA_ALTA :
+            pmClef.setSign(ClefSign.F);
+            pmClef.setClefOctaveChange(new BigInteger("1"));
+
+            break;
+
+        case F_CLEF_OTTAVA_BASSA :
+            pmClef.setSign(ClefSign.F);
+            pmClef.setClefOctaveChange(new BigInteger("-1"));
+
+            break;
+
+        case PERCUSSION_CLEF :
+            pmClef.setSign(ClefSign.PERCUSSION);
+
+            break;
+
+        default :
+        }
+
+        return pmClef;
     }
 
     //--------------//
@@ -2616,21 +2634,21 @@ public class ScoreExporter
             Clef clef = measure.getClefBefore(staffPoint, staff);
 
             if (clef != null) {
-                visit(clef);
+                clef.accept(this);
             }
 
             // Key?
             KeySignature key = measure.getKeyBefore(staffPoint, staff);
 
             if (key != null) {
-                visit(key);
+                key.accept(this);
             }
 
             // Time?
             TimeSignature time = measure.getCurrentTimeSignature();
 
             if (time != null) {
-                visit(time);
+                time.accept(this);
             }
         }
     }
@@ -2661,8 +2679,8 @@ public class ScoreExporter
     // insertStaffId //
     //---------------//
     /**
-     * If needed (if current scorePart contains more than one staff), we insert the
-     * id of the staff related to the element at hand
+     * If needed (if current scorePart contains more than one staff),
+     * we insert the id of the staff related to the element at hand.
      *
      * @param obj the element at hand
      * @staff the related score staff
@@ -2686,10 +2704,120 @@ public class ScoreExporter
 
     //~ Inner Classes ----------------------------------------------------------
 
+    //---------------//
+    // ClefIterators //
+    //---------------//
+    /**
+     * Class to handle the insertion of clefs in a measure.
+     * If needed, this class could be reused for some attribute other than clef,
+     * such as key signature or time signature (if these attributes can indeed
+     * occur in the middle of a mesure. To be checked).
+     */
+    private class ClefIterators
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Containing measure */
+        private final Measure measure;
+
+        /** Staves of the containing part */
+        private final List<TreeNode> staves;
+
+        /** Per staff, iterator on Clefs sorted by abscissa */
+        private final Map<Staff, ListIterator<Clef>> iters;
+
+        //~ Constructors -------------------------------------------------------
+
+        public ClefIterators (Measure measure)
+        {
+            this.measure = measure;
+
+            staves = measure.getPart()
+                            .getStaves();
+
+            Map<Staff, List<Clef>> map = new HashMap<Staff, List<Clef>>();
+
+            for (TreeNode tn : measure.getClefList()
+                                      .getChildren()) {
+                Clef       clef = (Clef) tn;
+                Staff      staff = clef.getStaff();
+                List<Clef> list = map.get(staff);
+
+                if (list == null) {
+                    map.put(staff, list = new ArrayList<Clef>());
+                }
+
+                list.add(clef);
+            }
+
+            iters = new HashMap<Staff, ListIterator<Clef>>();
+
+            for (Entry<Staff, List<Clef>> entry : map.entrySet()) {
+                List<Clef> list = entry.getValue();
+                Collections.sort(
+                    list,
+                    new Comparator<Clef>() {
+                            public int compare (Clef o1,
+                                                Clef o2)
+                            {
+                                return Integer.signum(
+                                    o1.getCenter().x - o2.getCenter().x);
+                            }
+                        });
+                iters.put(entry.getKey(), list.listIterator());
+            }
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        /**
+         * Push as far as possible the relevant clefs iterators,
+         * according to the current abscissa.
+         * @param abscissa the abscissa of chord to be exported, if any
+         * @param specificStaff a specific staff, or null for all staves
+         */
+        public void push (Integer abscissa,
+                          Staff   specificStaff)
+        {
+            if (abscissa != null) {
+                for (TreeNode node : staves) {
+                    Staff staff = (Staff) node;
+
+                    if ((specificStaff == null) || (staff == specificStaff)) {
+                        final ListIterator<Clef> it = iters.get(staff);
+
+                        // Check pending clef WRT current abscissa
+                        if ((it != null) && it.hasNext()) {
+                            final Clef clef = it.next();
+
+                            if (measure.isDummy() ||
+                                measure.isTemporary() ||
+                                (clef.getCenter().x <= abscissa)) {
+                                // Consume this clef
+                                clef.accept(ScoreExporter.this);
+                            } else {
+                                // Reset iterator
+                                it.previous();
+                            }
+                        }
+                    }
+                }
+            } else {
+                // Flush all iterators
+                for (ListIterator<Clef> it : iters.values()) {
+                    while (it.hasNext()) {
+                        it.next()
+                          .accept(ScoreExporter.this);
+                    }
+                }
+            }
+        }
+    }
+
     //---------//
     // Current //
     //---------//
-    /** Keep references of all current entities */
+    /** Keep references of all current entities. */
     private static class Current
     {
         //~ Instance fields ----------------------------------------------------
@@ -2747,7 +2875,7 @@ public class ScoreExporter
     //---------//
     // IsFirst //
     //---------//
-    /** Composite flag to help drive processing of any entity */
+    /** Composite flag to help drive processing of any entity. */
     private static class IsFirst
     {
         //~ Instance fields ----------------------------------------------------

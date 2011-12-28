@@ -1385,7 +1385,7 @@ public class Chord
     // computeBox //
     //------------//
     /**
-     * Compute the bounding box of this chord, including its stem (if any) as
+     * Compute the chord bounding box, including its stem (if any) as
      * well as all the notes of the chord.
      */
     @Override

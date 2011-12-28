@@ -78,7 +78,7 @@ public abstract class SystemNode
     // getBox //
     //--------//
     /**
-     * Report a copy of the bounding box of the entity
+     * Report a copy of the bounding box of the entity.
      * @return the box
      */
     public PixelRectangle getBox ()
@@ -98,8 +98,8 @@ public abstract class SystemNode
     // getCenter //
     //-----------//
     /**
-     * Report a copy of the center of this entity, WRT system top-left corner.
-     * @return the center, in units, wrt system top-left
+     * Report a copy of the center of this entity.
+     * @return the center point
      */
     public PixelPoint getCenter ()
     {

@@ -11,9 +11,6 @@
 // </editor-fold>
 package omr.score.ui;
 
-import omr.constant.Constant;
-import omr.constant.ConstantSet;
-
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 import omr.glyph.facets.Glyph;
@@ -52,7 +49,6 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.util.ConcurrentModificationException;
 
@@ -71,9 +67,6 @@ public class PagePhysicalPainter
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Specific application parameters */
-    private static final Constants constants = new Constants();
-
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
         PagePhysicalPainter.class);
@@ -85,7 +78,6 @@ public class PagePhysicalPainter
     //---------------------//
     /**
      * Creates a new PagePhysicalPainter object.
-     *
      * @param graphics Graphic context
      * @param color the color to be used for foreground
      * @param coloredVoices true for voices with different colors
@@ -182,6 +174,11 @@ public class PagePhysicalPainter
     @Override
     public boolean visit (Barline barline)
     {
+        if (!barline.getBox()
+                    .intersects(oldClip)) {
+            return false;
+        }
+
         g.setColor(defaultColor);
 
         try {
@@ -198,8 +195,6 @@ public class PagePhysicalPainter
 
                     // Stroke is now OK for thickness but will draw beyond start
                     // and stop points of the bar. So use clipping to fix this.
-                    final Rectangle      oldClip = g.getClipBounds();
-
                     final PixelRectangle box = glyph.getContourBox();
                     box.y = (int) Math.floor(
                         glyph.getStartPoint(Orientation.VERTICAL).getY());
@@ -274,10 +269,10 @@ public class PagePhysicalPainter
     public boolean visit (Measure measure)
     {
         if (annotated) {
-            final SystemPart part = measure.getPart();
-            final Color      oldColor = g.getColor();
-
             if (!measure.isDummy()) {
+                final SystemPart part = measure.getPart();
+                final Color      oldColor = g.getColor();
+
                 // Write the score-based measure id, on first real part only
                 if (part == measure.getSystem()
                                    .getFirstRealPart()) {
@@ -307,9 +302,8 @@ public class PagePhysicalPainter
                 //                    measure.getLeftX() + 10,
                 //                    measure.getPart().getFirstStaff().getTopLeft().y - 15);
                 //            }
+                g.setColor(oldColor);
             }
-
-            g.setColor(oldColor);
         }
 
         // WholeChords are not in the children hierarchy
@@ -449,8 +443,8 @@ public class PagePhysicalPainter
     // visit Staff //
     //-------------//
     /**
-     * This specific version paints the staff lines as closely as possible to
-     * the physical sheet lines
+     * This specific version paints the staff lines as closely as
+     * possible to the physical sheet lines.
      * @param staff the staff to handle
      * @return true if actually painted
      */
@@ -483,7 +477,7 @@ public class PagePhysicalPainter
             // Check that this system is visible
             PixelRectangle bounds = systemInfo.getBounds();
 
-            if ((bounds == null) || !bounds.intersects(g.getClipBounds())) {
+            if ((bounds == null) || !bounds.intersects(oldClip)) {
                 return false;
             }
 
@@ -560,22 +554,5 @@ public class PagePhysicalPainter
         } else {
             return center;
         }
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /** Alpha parameter for slot axis transparency (0 .. 255) */
-        final Constant.Integer slotAlpha = new Constant.Integer(
-            "ByteLevel",
-            150,
-            "Alpha parameter for slot axis transparency (0 .. 255)");
     }
 }

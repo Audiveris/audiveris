@@ -24,13 +24,12 @@ import omr.util.TreeNode;
 import java.util.Iterator;
 
 /**
- * Class {@code Staff} handles a staff in a system part. It is useful for
- * its geometric parameters (topLeft corner, width and height, ability to
- * convert between a PixelPoint ordinate and a staff-based pitchPosition. But
- * it contains no further entities, the Measure's are the actual containers.
+ * Class {@code Staff} handles a staff in a system part.
+ * It is useful for its geometric parameters (topLeft corner, width and height,
+ * ability to convert between a PixelPoint ordinate and a staff-based pitchPosition.
+ * But it contains no further entities, the Measure's are the actual containers.
  * Within a measure, some entities may be assigned a staff, more like a tag than
  * like a parent.
- *
  *
  * @author Hervé Bitteur
  */
@@ -62,8 +61,7 @@ public class Staff
     // Staff //
     //-------//
     /**
-     * Build a staff, given all its parameters
-     *
+     * Build a staff, given all its parameters.
      * @param info the physical information read from the sheet
      * @param part the containing systemPart
      * @param topLeft the coordinate of the upper left corner of this staff,
@@ -111,8 +109,7 @@ public class Staff
     // getHeight //
     //-----------//
     /**
-     * Report the height of the staff
-     *
+     * Report the height of the staff.
      * @return height in units
      */
     public int getHeight ()
@@ -124,8 +121,7 @@ public class Staff
     // getId //
     //-------//
     /**
-     * Report the staff id within the containing system part
-     *
+     * Report the staff id within the containing system part.
      * @return the id, counting from 1
      */
     public int getId ()
@@ -137,8 +133,7 @@ public class Staff
     // getInfo //
     //---------//
     /**
-     * Report the physical information retrieved from the sheet
-     *
+     * Report the physical information retrieved from the sheet.
      * @return the info entity for this staff
      */
     public StaffInfo getInfo ()
@@ -150,8 +145,8 @@ public class Staff
     // getTopLeft //
     //------------//
     /**
-     * Report the coordinates of the top left corner of the staff, wrt the score
-     *
+     * Report the coordinates of the top left corner of the staff,
+     * wrt the containing page.
      * @return the top left coordinates
      */
     public PixelPoint getTopLeft ()
@@ -163,8 +158,7 @@ public class Staff
     // setWidth //
     //----------//
     /**
-     * Set the staff width
-     *
+     * Set the staff width.
      * @param width width of the staff
      */
     public void setWidth (int width)
@@ -181,8 +175,7 @@ public class Staff
     // getWidth //
     //----------//
     /**
-     * Report the width of the staff
-     *
+     * Report the width of the staff.
      * @return the width in units
      */
     public int getWidth ()
@@ -203,8 +196,7 @@ public class Staff
     // pitchPositionOf //
     //-----------------//
     /**
-     * Compute the pitch position of a pixel point
-     *
+     * Compute the pitch position of a pixel point.
      * @param pt the pixel point
      * @return the pitch position
      */
@@ -230,10 +222,9 @@ public class Staff
     @Override
     public String toString ()
     {
-        try {
-            StringBuilder sb = new StringBuilder();
-            sb.append("{Staff");
+        StringBuilder sb = new StringBuilder("{Staff");
 
+        try {
             if (isDummy()) {
                 sb.append(" dummy");
             }
@@ -244,12 +235,13 @@ public class Staff
               .append(getWidth());
             sb.append(" size=")
               .append(getHeight());
-            sb.append("}");
-
-            return sb.toString();
         } catch (NullPointerException e) {
-            return "{Staff INVALID}";
+            sb.append("NONE");
         }
+
+        sb.append("}");
+
+        return sb.toString();
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -258,8 +250,8 @@ public class Staff
     // PartIterator //
     //--------------//
     /**
-     * Class {@code PartIterator} implements an iterator on the sequence
-     * of staves within all parallel measures of a SystemPart
+     * Class {@code PartIterator} implements an iterator on the
+     * sequence of staves within all parallel measures of a SystemPart.
      */
     public static class PartIterator
         implements Iterator<Staff>
@@ -301,7 +293,7 @@ public class Staff
     //----------------//
     /**
      * Class {@code SystemIterator} implements an iterator on the
-     * sequence of staves within all parallel measures of a system
+     * sequence of staves within all parallel measures of a system.
      */
     public static class SystemIterator
         implements Iterator<Staff>

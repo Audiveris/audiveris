@@ -631,11 +631,13 @@ public class SystemTranslator
                         stems.retainAll(prevStems);
 
                         if (!stems.isEmpty()) {
-                            logger.info(
-                                measure.getContextString() +
-                                " merging slots #" + prevSlot.getId() + " & #" +
-                                slot.getId() + " around " +
-                                Glyphs.toString("stems", stems));
+                            if (logger.isFineEnabled()) {
+                                logger.info(
+                                    measure.getContextString() +
+                                    " merging slots #" + prevSlot.getId() +
+                                    " & #" + slot.getId() + " around " +
+                                    Glyphs.toString("stems", stems));
+                            }
 
                             prevSlot.includeSlot(slot);
                             it.remove();

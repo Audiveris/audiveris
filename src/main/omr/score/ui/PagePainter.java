@@ -151,6 +151,9 @@ public abstract class PagePainter
 
     //~ Instance fields --------------------------------------------------------
 
+    /** Clipping area */
+    protected final Rectangle oldClip;
+
     /** Flag for painting staff lines */
     protected final boolean linePainting;
 
@@ -213,6 +216,9 @@ public abstract class PagePainter
                         boolean  annotated)
     {
         g = (Graphics2D) graphics.create();
+
+        oldClip = g.getClipBounds();
+
         this.defaultColor = color;
         this.coloredVoices = coloredVoices;
         this.linePainting = linePainting;
@@ -242,7 +248,6 @@ public abstract class PagePainter
             // Draw an arpeggiate symbol with proper height
             // Using half-height of arpeggiate character as the elementary unit
             // We need clipping to draw half characters
-            final Rectangle      oldClip = g.getClipBounds();
             final PixelRectangle box = arpeggiate.getBox();
             box.height -= 2; // Gives better results
 
@@ -275,7 +280,7 @@ public abstract class PagePainter
                 start.y -= halfHeight;
             }
 
-            // Restore clip
+            // Restore oldClip
             g.setClip(oldClip);
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {

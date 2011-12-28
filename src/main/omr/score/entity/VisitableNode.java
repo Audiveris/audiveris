@@ -20,8 +20,8 @@ import omr.util.Implement;
 import omr.util.TreeNode;
 
 /**
- * Class {@code VisitableNode} is a node which can accept a score visitor
- * for itself and for its children.
+ * Class {@code VisitableNode} is a node which can accept a score
+ * visitor for itself and for its children.
  *
  * <img src="doc-files/Visitable-Hierarchy.jpg" />
  *
@@ -56,12 +56,13 @@ public abstract class VisitableNode
     // accept //
     //--------//
     /**
-     * This class is visitable by definition, and calls the proper polymorphic
-     * visit() method in the provided visitor. The returned boolean is used to
-     * tell whether the visit shall continue to the children of this class
+     * This class is visitable by definition, and calls the proper
+     * polymorphic visit() method in the provided visitor.
+     * The returned boolean is used to tell whether the visit shall continue to
+     * the children of this class
      * @param visitor the specific visitor which browses this class
      * @return false if children should not be (automatically) visited,
-     * true otherwise which should be the default
+     * true otherwise (which should be the default).
      */
     @Implement(Visitable.class)
     public boolean accept (ScoreVisitor visitor)
@@ -73,9 +74,8 @@ public abstract class VisitableNode
     // acceptChildren //
     //----------------//
     /**
-     * Pattern to traverse the children of this node, and recursively the
-     * grand-children, etc... in a "depth-first" mode.
-     *
+     * Pattern to traverse the children of this node, and recursively
+     * the grand-children, etc, in a "depth-first" mode.
      * @param visitor concrete visitor object to define the actual processing
      */
     public void acceptChildren (ScoreVisitor visitor)
