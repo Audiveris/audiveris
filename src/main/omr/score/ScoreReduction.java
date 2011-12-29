@@ -32,12 +32,13 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * Class {@code ScoreReduction} is the "reduce" part of a MapReduce Job for a
- * given score, based on the merge of Audiveris Page instances.<ol>
- * <li>Any Map task processes a score page and produces the related XML fragment
- * as its output.</li>
- * <li>The Reduce task takes all the XML fragments as input and consolidates
- * them in a global Score output.</li></ol>
+ * Class {@code ScoreReduction} is the "reduce" part of a MapReduce
+ * job for a given score, based on the merge of Audiveris Page
+ * instances.<ol>
+ * <li>Any Map task processes a score page and produces the related
+ * XML fragment as its output.</li>
+ * <li>The Reduce task takes all the XML fragments as input and
+ * consolidates them in a global Score output.</li></ol>
  *
  * <p>Typical calling of the feature is as follows:
  * <code>
@@ -66,20 +67,19 @@ public class ScoreReduction
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Related score */
+    /** Related score. */
     private final Score score;
 
-    /** Pages to process */
+    /** Pages to process. */
     private final SortedMap<Integer, Page> pages = new TreeMap<Integer, Page>();
 
-    /** Global connection of parts */
+    /** Global connection of parts. */
     private PartConnection connection;
 
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new ScoreReduction object.
-     *
      * @param score the score to process
      */
     public ScoreReduction (Score score)
@@ -126,13 +126,12 @@ public class ScoreReduction
     // addPartList //
     //-------------//
     /**
-     * Build the part-list as the sequence of Result/ScorePart instances, and
-     * map each of them to a Part.
+     * Build the part-list as the sequence of Result/ScorePart
+     * instances, and map each of them to a Part.
      */
     private void addPartList ()
     {
         // Map (page) ScorePart -> (score) ScorePart data
-        /////partData = new HashMap<ScorePart, Part>();
         List<ScorePart> partList = new ArrayList<ScorePart>();
 
         for (Result result : connection.getResultMap()
@@ -193,7 +192,7 @@ public class ScoreReduction
     // dumpResultMapping //
     //-------------------//
     /**
-     * Debug: List details of all candidates per result
+     * Debug: List details of all candidates per result.
      */
     private void dumpResultMapping ()
     {

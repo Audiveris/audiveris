@@ -329,7 +329,7 @@ public class SheetActions
             GlyphRepository.getInstance()
                            .recordSheetGlyphs(
                 sheet, /* emptyStructures => */
-                sheet.isOnSymbols());
+                sheet.isOnPatterns());
 
             return null;
         }

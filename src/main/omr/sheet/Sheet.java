@@ -678,17 +678,16 @@ public class Sheet
         return nest;
     }
 
-    //-------------//
-    // isOnSymbols //
-    //-------------//
+    //--------------//
+    // isOnPatterns //
+    //--------------//
     /**
-     * Check whether current step is SYMBOLS
-     *
-     * @return true if on SYMBOLS
+     * Check whether current step is PATTERNS.
+     * @return true if on PATTERNS
      */
-    public boolean isOnSymbols ()
+    public boolean isOnPatterns ()
     {
-        return Stepping.getLatestStep(this) == Steps.valueOf(Steps.SYMBOLS);
+        return Stepping.getLatestStep(this) == Steps.valueOf(Steps.PATTERNS);
     }
 
     //---------//

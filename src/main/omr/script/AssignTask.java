@@ -14,8 +14,6 @@ package omr.script;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.run.Orientation;
-
 import omr.sheet.Sheet;
 
 import omr.step.Stepping;
@@ -145,21 +143,12 @@ public class AssignTask
     @Override
     public void epilog (Sheet sheet)
     {
-        // We rebuild from SYMBOLS is case of deassignment
-        // And just from PATTERNS in case of assignment
-        if (shape == null) {
-            Stepping.reprocessSheet(
-                Steps.valueOf(Steps.SYMBOLS),
-                sheet,
-                getImpactedSystems(sheet),
-                false);
-        } else {
-            Stepping.reprocessSheet(
-                Steps.valueOf(Steps.PATTERNS),
-                sheet,
-                getImpactedSystems(sheet),
-                false);
-        }
+        // We rebuild from PATTERNS
+        Stepping.reprocessSheet(
+            Steps.valueOf(Steps.PATTERNS),
+            sheet,
+            getImpactedSystems(sheet),
+            false);
     }
 
     //-----------------//

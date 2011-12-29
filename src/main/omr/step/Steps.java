@@ -42,7 +42,6 @@ public class Steps
     public static final String             MEASURES = "MEASURES";
     public static final String             VERTICALS = "VERTICALS";
     public static final String             HORIZONTALS = "HORIZONTALS";
-    public static final String             SYMBOLS = "SYMBOLS";
     public static final String             PATTERNS = "PATTERNS";
     public static final String             PAGES = "PAGES";
     public static final String             MERGE = "MERGE";
@@ -68,7 +67,6 @@ public class Steps
         addStep(new MeasuresStep());
         addStep(new VerticalsStep());
         addStep(new HorizontalsStep());
-        addStep(new SymbolsStep());
         addStep(new PatternsStep());
         addStep(new PagesStep());
         addStep(new MergeStep());

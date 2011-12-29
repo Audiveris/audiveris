@@ -68,7 +68,7 @@ public class MergeStep
     @Override
     public void displayUI (Sheet sheet)
     {
-        Steps.valueOf(Steps.SYMBOLS)
+        Steps.valueOf(Steps.PATTERNS)
              .displayUI(sheet);
     }
 
@@ -109,7 +109,7 @@ public class MergeStep
                  .clearStep(this);
         }
 
-        // Merge the pages
+        // Merge the pages (connecting the parts across pages)
         ScoreReduction reduction = new ScoreReduction(score);
         reduction.reduce();
 
@@ -125,6 +125,7 @@ public class MergeStep
 
             // - Check all voices timing, assign forward items if needed.
             // - Detect special measures and assign proper measure ids
+            // If needed, we can trigger a reprocessing of this page
             page.accept(new MeasureFixer());
 
             // Connect slurs across pages

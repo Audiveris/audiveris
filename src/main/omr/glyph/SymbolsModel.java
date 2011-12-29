@@ -57,7 +57,7 @@ public class SymbolsModel
      */
     public SymbolsModel (Sheet sheet)
     {
-        super(sheet, sheet.getNest(), Steps.valueOf(Steps.SYMBOLS));
+        super(sheet, sheet.getNest(), Steps.valueOf(Steps.PATTERNS));
     }
 
     //~ Methods ----------------------------------------------------------------

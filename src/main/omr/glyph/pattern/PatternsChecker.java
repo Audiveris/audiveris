@@ -114,6 +114,8 @@ public class PatternsChecker
         int           totalModifs = 0;
         StringBuilder sb = new StringBuilder();
 
+        system.inspectGlyphs(Grades.leafMinGrade);
+
         for (GlyphPattern pattern : patterns) {
             if (logger.isFineEnabled()) {
                 logger.finest("Starting " + pattern);

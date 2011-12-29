@@ -75,7 +75,7 @@ public class PagesStep
     @Override
     public void displayUI (Sheet sheet)
     {
-        Steps.valueOf(Steps.SYMBOLS)
+        Steps.valueOf(Steps.PATTERNS)
              .displayUI(sheet);
     }
 
@@ -128,14 +128,14 @@ public class PagesStep
                              Sheet                  sheet)
         throws StepException
     {
-        // For the very first time, we reperform from the SYMBOLS step
+        // For the very first time, we reperform from the PATTERNS step
         if (!sheet.isDone(this)) {
             sheet.done(this);
 
-            // Reperform stmbols once
+            // Reperform patterns once
             try {
                 Stepping.reprocessSheet(
-                    Steps.valueOf("SYMBOLS"),
+                    Steps.valueOf(Steps.PATTERNS),
                     sheet,
                     systems,
                     true);

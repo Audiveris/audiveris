@@ -57,16 +57,16 @@ public class Scale
     //~ Instance fields --------------------------------------------------------
 
     /** Line thickness range */
-    private Range lineRange;
+    private final Range lineRange;
 
     /** Main interline range */
-    private Range interlineRange;
+    private final Range interlineRange;
 
     /** Beam thickness, if any */
-    private Integer beamValue;
+    private final Integer beamValue;
 
     /** Second interline range, if any */
-    private Range secondInterlineRange;
+    private final Range secondInterlineRange;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -74,8 +74,8 @@ public class Scale
     // Scale //
     //-------//
     /**
-     * Create a degenerated scale entity, meant for computing scale-dependent
-     * parameters.
+     * Create a degenerated scale entity, meant for computing 
+     * scale-dependent parameters.
      * @param interline the score interline value.
      */
     public Scale (int interline)
@@ -111,10 +111,10 @@ public class Scale
      * @param beamValue beam thickness
      * @param secondInterlineRange range of secondInterline
      */
-    public Scale (Range lineRange,
-                  Range interlineRange,
+    public Scale (Range   lineRange,
+                  Range   interlineRange,
                   Integer beamValue,
-                  Range secondInterlineRange)
+                  Range   secondInterlineRange)
     {
         this.lineRange = lineRange;
         this.interlineRange = interlineRange;
@@ -125,7 +125,7 @@ public class Scale
     //-------//
     // Scale //
     //-------//
-    /** No-arg constructor, needed by JAXB */
+    /** No-arg constructor, needed by JAXB. */
     private Scale ()
     {
         this(null, null, null, null);
@@ -149,7 +149,7 @@ public class Scale
     // getMainBeam //
     //-------------//
     /**
-     * Report the main beam thickness, if any
+     * Report the main beam thickness, if any.
      * @return the main beam thickness, or null
      */
     public Integer getMainBeam ()
@@ -173,7 +173,7 @@ public class Scale
     // getMaxFore //
     //------------//
     /**
-     * Report the maximum line thickness (using standard percentile)
+     * Report the maximum line thickness (using standard percentile).
      * @return the maxFore value
      */
     public Integer getMaxFore ()
@@ -185,7 +185,7 @@ public class Scale
     // getMaxInterline //
     //-----------------//
     /**
-     * Report the maximum interline (using standard percentile)
+     * Report the maximum interline (using standard percentile).
      * @return the maxInterline
      */
     public Integer getMaxInterline ()
@@ -197,7 +197,7 @@ public class Scale
     // getMaxSecondInterline //
     //-----------------------//
     /**
-     * Report the maximum second interline (using standard percentile)
+     * Report the maximum second interline (using standard percentile).
      * @return the maxSecondInterline
      */
     public Integer getMaxSecondInterline ()
@@ -213,7 +213,7 @@ public class Scale
     // getMinInterline //
     //-----------------//
     /**
-     * Report the minimum interline (using standard percentile)
+     * Report the minimum interline (using standard percentile).
      * @return the minInterline
      */
     public Integer getMinInterline ()
@@ -225,7 +225,7 @@ public class Scale
     // getMinSecondInterline //
     //-----------------------//
     /**
-     * Report the minimum second interline (using standard percentile)
+     * Report the minimum second interline (using standard percentile).
      * @return the minSecondInterline
      */
     public Integer getMinSecondInterline ()
@@ -376,7 +376,7 @@ public class Scale
         sb.append(" interline:")
           .append(interlineRange);
 
-        if (beamValue!= null) {
+        if (beamValue != null) {
             sb.append(" beam:")
               .append(beamValue);
         }

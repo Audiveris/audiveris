@@ -27,10 +27,13 @@ import omr.sheet.SystemInfo;
 import omr.util.TreeNode;
 
 import java.util.Iterator;
+import omr.selection.GlyphEvent;
+import omr.selection.SelectionService;
 
 /**
- * Class {@code PatternsStep} prtforms specific patterns at sheet glyph level
- * (clefs, sharps, naturals, stems, slurs, ...)
+ * Class {@code PatternsStep} builds symbols glyphs and
+ * performs specific patterns at sheet  glyph level 
+ * (clefs, sharps, naturals, stems, slurs, etc).
  *
  * @author Hervé Bitteur
  */
@@ -72,8 +75,19 @@ public class PatternsStep
     @Override
     public void displayUI (Sheet sheet)
     {
-        Steps.valueOf(Steps.SYMBOLS)
-             .displayUI(sheet);
+        sheet.getSymbolsEditor()
+             .refresh();
+
+        // Update glyph board if needed (to see OCR'ed data)
+        SelectionService service = sheet.getNest()
+                                        .getGlyphService();
+        GlyphEvent       glyphEvent = (GlyphEvent) service.getLastEvent(
+            GlyphEvent.class);
+
+        if (glyphEvent != null) {
+            service.publish(glyphEvent);
+        }
+        
     }
 
     //----------//
