@@ -18,7 +18,6 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
-import omr.score.BeamReader;
 import omr.score.ScoreChecker;
 import omr.score.ScoreCleaner;
 import omr.score.TimeSignatureFixer;
@@ -133,7 +132,7 @@ public class PagesStep
         if (!sheet.isDone(this)) {
             sheet.done(this);
 
-            // Reperform verticals once
+            // Reperform stmbols once
             try {
                 Stepping.reprocessSheet(
                     Steps.valueOf("SYMBOLS"),
@@ -156,9 +155,6 @@ public class PagesStep
 
                 // Finally, all actions for completed page (in proper order)
                 Page page = sheet.getPage();
-
-                // Compute mean beam thickness at page level
-                page.accept(new BeamReader());
 
                 // 1/ Look carefully for time signatures
                 page.accept(new TimeSignatureRetriever());

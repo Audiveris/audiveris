@@ -591,7 +591,7 @@ public class Stepping
 
         try {
             // SCALE step, if present, is always the first step
-            // We performed this step on all sheets, to allow early filtering
+            // We perform this step on all sheets, to allow early filtering
             Step scaleStep = Steps.valueOf(Steps.SCALE);
 
             if (stepSet.contains(scaleStep)) {

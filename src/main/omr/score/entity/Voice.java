@@ -29,13 +29,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * Class {@code Voice} gathers all informations related to a voice within
- * a measure.
- * <p>If a voice is assigned to a whole/multi rest, then this rest chord is
- * defined as the wholeChord of this voice, and the slot table is left empty.
- * Otherwise, the status is defined by the slot table (empty => free, or filled
- * either by the beginning of a chord, or by a chord whose sound is still active
- * during the specified slot).
+ * Class {@code Voice} gathers all informations related to a voice
+ * within a measure.
  *
  * @author Hervé Bitteur
  */
@@ -69,7 +64,10 @@ public class Voice
 
     /**
      * Map (SlotId -> ChordInfo) to store chord information for each slot.
-     * If the voice/slot combination is empty, the voice is free for this slot
+     * If a voice is assigned to a whole/multi rest, then this rest chord is
+     * defined as the wholeChord of this voice, and the whole slot table is left
+     * empty.
+     * If the voice/slot combination is empty, the voice is free for this slot.
      * Otherwise, the active chord is referenced with a status flag to make a
      * difference between a slot where the chord starts, and the potential
      * following slots for which the chord is still active.
@@ -92,7 +90,6 @@ public class Voice
     //-------//
     /**
      * Creates a new Voice object.
-     *
      * @param chord the initial chord for this voice
      */
     public Voice (Chord chord)
@@ -113,8 +110,7 @@ public class Voice
     // isFree //
     //--------//
     /**
-     * Report whether the voice is available at this slot
-     *
+     * Report whether the voice is available at this slot.
      * @param slot the specific slot for which we consider this voice
      * @return true if free
      */
@@ -128,8 +124,7 @@ public class Voice
     // getId //
     //-------//
     /**
-     * Report the voice id, starting from 1
-     *
+     * Report the voice id, starting from 1.
      * @return the voice id
      */
     public int getId ()
@@ -141,9 +136,8 @@ public class Voice
     // getInferredTimeSignature //
     //--------------------------//
     /**
-     * Report the time signature value that can be inferred from the content of
-     * this voice
-     *
+     * Report the time signature value that can be inferred from the 
+     * content of this voice.
      * @return the "intrinsic" time signature rational value for this voice,
      * or null
      */
@@ -241,8 +235,7 @@ public class Voice
     // getLastChord //
     //--------------//
     /**
-     * Report the last chord of this voice
-     *
+     * Report the last chord of this voice.
      * @return the last chord, which may be a whole/multi
      */
     public Chord getLastChord ()
@@ -266,9 +259,8 @@ public class Voice
     // getPreviousChord //
     //------------------//
     /**
-     * Starting from a provided chord in this voice, report the previous chord
-     * if any within that voice
-     *
+     * Starting from a provided chord in this voice, report the 
+     * previous chord, if any, within that voice.
      * @param chord the provided chord
      * @return the chord right before, or null
      */
@@ -293,8 +285,7 @@ public class Voice
     // setSlotInfo //
     //-------------//
     /**
-     * Define the chord information for the specified slot
-     *
+     * Define the chord information for the specified slot.
      * @param slot the specified slot
      * @param chordInfo the precise chord information, or null to free the slot
      */
@@ -319,8 +310,7 @@ public class Voice
     // getSlotInfo //
     //-------------//
     /**
-     * Report the chord information for the specified slot
-     *
+     * Report the chord information for the specified slot.
      * @param slot the specified slot
      * @return chordInfo the precise chord information, or null
      */
@@ -333,8 +323,7 @@ public class Voice
     // getTermination //
     //----------------//
     /**
-     * Report how this voice finishes
-     *
+     * Report how this voice finishes.
      * @return 0=perfect, -n=too_short, +n=overlast, null=whole_rest/multi_rest
      */
     public Rational getTermination ()
@@ -346,8 +335,7 @@ public class Voice
     // isWhole //
     //---------//
     /**
-     * Report whether this voice is made of a whole/multi rest
-     *
+     * Report whether this voice is made of a whole/multi rest.
      * @return true if made of a whole/multi rest
      */
     public boolean isWhole ()
@@ -359,8 +347,7 @@ public class Voice
     // getWholeChord //
     //---------------//
     /**
-     * Report the whole/multi rest chord which fills the voice, if any
-     *
+     * Report the whole/multi rest chord which fills the voice, if any.
      * @return the whole chord or null
      */
     public Chord getWholeChord ()
@@ -372,8 +359,8 @@ public class Voice
     // createWholeVoice //
     //------------------//
     /**
-     * Factory method to create a voice made of just one whole/multi rest
-     *
+     * Factory method to create a voice made of just one whole/multi
+     * rest.
      * @param wholeChord the whole/multi rest chord
      * @return the created voice instance
      */
@@ -389,7 +376,8 @@ public class Voice
     // checkDuration //
     //---------------//
     /**
-     * Check the duration of the voice, compared to measure expected duration
+     * Check the duration of the voice, compared to measure expected 
+     * duration.
      */
     public void checkDuration ()
     {
@@ -460,8 +448,7 @@ public class Voice
     // toStrip //
     //---------//
     /**
-     * Return a string which represents the life of this voice
-     *
+     * Return a string which represents the life of this voice.
      * @return a strip-like graphic of the voice
      */
     public String toStrip ()
@@ -513,7 +500,7 @@ public class Voice
     // updateSlotTable //
     //-----------------//
     /**
-     * Update the slotTable
+     * Update the slotTable.
      */
     public void updateSlotTable ()
     {
@@ -577,7 +564,8 @@ public class Voice
     // timeSigOf //
     //-----------//
     /**
-     * Based on the number of common groups, derive the proper time rational
+     * Based on the number of common groups, derive the proper time 
+     * rational value.
      * @param count the number of groups
      * @param common the common time duration of each group
      * @return the inferred time rational

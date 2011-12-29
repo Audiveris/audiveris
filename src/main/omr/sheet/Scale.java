@@ -154,11 +154,7 @@ public class Scale
      */
     public Integer getMainBeam ()
     {
-        if (lineRange != null) {
-            return lineRange.best;
-        } else {
-            return null;
-        }
+        return beamValue;
     }
 
     //-------------//

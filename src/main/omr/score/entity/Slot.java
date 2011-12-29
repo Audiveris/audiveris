@@ -102,7 +102,7 @@ public abstract class Slot
     /** Cached margin for abscissa alignment */
     protected final int xMargin;
 
-    /** Collection of chords in this slot, order by staff, then by ordinate */
+    /** Collection of chords in this slot, sorted by staff, then by ordinate */
     private List<Chord> chords = new ArrayList<Chord>();
 
     /** Time offset since measure start */
@@ -439,7 +439,7 @@ public abstract class Slot
     // includeSlot //
     //-------------//
     /**
-     * Include the other slot into this one
+     * Include the other slot into this one.
      * @param that the other slot to include
      */
     public void includeSlot (Slot that)

@@ -365,8 +365,8 @@ public class PagePhysicalPainter
             initParameters();
 
             // Determine beams parameters
-            if (page.getBeamThickness() != null) {
-                beamThickness = page.getBeamThickness();
+            if (scale.getMainBeam() != null) {
+                beamThickness = scale.getMainBeam();
                 beamHalfThickness = beamThickness / 2;
             }
 

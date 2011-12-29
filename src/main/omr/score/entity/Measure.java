@@ -33,8 +33,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class {@code Measure} handles a measure of a system part, that is 
- * all entities within the same measure time frame, for all staves 
+ * Class {@code Measure} handles a measure of a system part, that is
+ * all entities within the same measure time frame, for all staves
  * that compose the system part.
  *
  * <p>As a ScoreNode, the children of a Measure are : ending Barline, list of
@@ -119,8 +119,7 @@ public class Measure
     // Measure //
     //---------//
     /**
-     * Create a measure with the specified parameters
-     *
+     * Create a measure with the specified parameters.
      * @param part the containing system part
      */
     public Measure (SystemPart part)
@@ -135,8 +134,7 @@ public class Measure
     // setActualDuration //
     //-------------------//
     /**
-     * Register in this measure its actual duration
-     *
+     * Register in this measure its actual duration.
      * @param actualDuration the duration value
      */
     public void setActualDuration (Rational actualDuration)
@@ -148,9 +146,8 @@ public class Measure
     // getActualDuration //
     //-------------------//
     /**
-     * Report the duration of this measure, as computed from its contained
-     * voices
-     *
+     * Report the duration of this measure, as computed from its
+     * contained voices.
      * @return the (actual) measure duration, or 0 if no rest / note exist in
      * this measure
      */
@@ -168,8 +165,7 @@ public class Measure
     // getBarline //
     //------------//
     /**
-     * Report the ending bar line
-     *
+     * Report the ending bar line.
      * @return the ending bar line
      */
     public Barline getBarline ()
@@ -181,8 +177,7 @@ public class Measure
     // getBeamGroups //
     //---------------//
     /**
-     * Report the collection of beam groups
-     *
+     * Report the collection of beam groups.
      * @return the list of beam groups
      */
     public List<BeamGroup> getBeamGroups ()
@@ -194,8 +189,7 @@ public class Measure
     // getBeams //
     //----------//
     /**
-     * Report the collection of beams
-     *
+     * Report the collection of beams.
      * @return the list of beams
      */
     public List<TreeNode> getBeams ()
@@ -207,8 +201,7 @@ public class Measure
     // getChords //
     //-----------//
     /**
-     * Report the collection of chords
-     *
+     * Report the collection of chords.
      * @return the list of chords
      */
     public List<TreeNode> getChords ()
@@ -220,8 +213,8 @@ public class Measure
     // getChordsAbove //
     //----------------//
     /**
-     * Report the collection of chords whose head is located in the staff above
-     * the provided point
+     * Report the collection of chords whose head is located in the
+     * staff above the provided point.
      * @param point the provided point
      * @return the (perhaps empty) collection of chords
      */
@@ -247,8 +240,8 @@ public class Measure
     // getChordsBelow //
     //----------------//
     /**
-     * Report the collection of chords whose head is located in the staff below
-     * the provided point
+     * Report the collection of chords whose head is located in the
+     * staff below the provided point.
      * @param point the provided point
      * @return the (perhaps empty) collection of chords
      */
@@ -276,8 +269,7 @@ public class Measure
     /**
      * Report the first clef, if any, defined after this measure point
      * (looking in end of the measure, then in next measures, then in
-     * next systems) while staying in the same logical staff
-     *
+     * next systems) while staying in the same logical staff.
      * @param point the point after which to look
      * @return the first clef defined, or null
      */
@@ -318,8 +310,8 @@ public class Measure
     // getClefBefore //
     //---------------//
     /**
-     * Same functionally than the other method, but with a staff provided
-     *
+     * Same functionally than the other method, but with a staff
+     * provided.
      * @param point the point before which to look
      * @param staff the containing staff (if null, it is derived from center.y)
      * @return the latest clef defined, or null
@@ -355,8 +347,7 @@ public class Measure
     // getClefList //
     //-------------//
     /**
-     * Report the node that collect the clefs
-     *
+     * Report the node that collect the clefs.
      * @return the clef list node
      */
     public Container getClefList ()
@@ -368,8 +359,7 @@ public class Measure
     // getClefs //
     //----------//
     /**
-     * Report the collection of clefs
-     *
+     * Report the collection of clefs.
      * @return the list of clefs
      */
     public List<TreeNode> getClefs ()
@@ -381,9 +371,8 @@ public class Measure
     // getClosestChord //
     //-----------------//
     /**
-     * From a provided Chord collection, report the chord which has the closest
-     * abscissa to a provided point
-     *
+     * From a provided Chord collection, report the chord which has the
+     * closest abscissa to a provided point.
      * @param chords the collection of chords to browse
      * @param point the reference point
      * @return the abscissa-wise closest chord
@@ -411,8 +400,7 @@ public class Measure
     //-----------------//
     /**
      * Report the chord of this measure which has the closest
-     * abscissa to a provided point
-     *
+     * abscissa to a provided point.
      * @param point the reference point
      * @return the abscissa-wise closest chord, perhaps null
      */
@@ -438,9 +426,8 @@ public class Measure
     // getClosestChordAbove //
     //----------------------//
     /**
-     * Report the chord above the provided point which has the closest abscissa
-     * to the provided point
-     *
+     * Report the chord above the provided point which has the closest
+     * abscissa to the provided point.
      * @param point the reference point
      * @return the abscissa-wise closest chord among the chords above, if any.
      */
@@ -465,9 +452,8 @@ public class Measure
     // getClosestChordBelow //
     //----------------------//
     /**
-     * Report the chord below the provided point which has the closest abscissa
-     * to the provided point
-     *
+     * Report the chord below the provided point which has the closest
+     * abscissa to the provided point.
      * @param point the reference point
      * @return the abscissa-wise closest chord among the chords below, if any.
      */
@@ -492,8 +478,8 @@ public class Measure
     // getClosestSlot //
     //----------------//
     /**
-     * Report the time slot which has the closest abscissa to a provided point
-     *
+     * Report the time slot which has the closest abscissa to a
+     * provided point.
      * @param point the reference point
      * @return the abscissa-wise closest slot
      */
@@ -518,13 +504,12 @@ public class Measure
     // getCurrentTimeSignature //
     //-------------------------//
     /**
-     * Report the time signature which applies in this measure, whether a time
-     * signature actually starts this measure in whatever staff, or whether a
-     * time signature was found in a previous measure, even in preceding pages.
-     *
+     * Report the time signature which applies in this measure,
+     * whether a time signature actually starts this measure in
+     * whatever staff, or whether a time signature was found in a
+     * previous measure, even in preceding pages.
      * <p><b>NOTA</b>This method looks up for time sig in preceding pages
      * as well</p>
-     *
      * @return the current time signature, or null if not found at all
      */
     public TimeSignature getCurrentTimeSignature ()
@@ -564,8 +549,8 @@ public class Measure
     // getDirectionChord //
     //-------------------//
     /**
-     * Retrieve the most suitable chord for a direction, looking at staff above
-     * if any, otherwise the staff below.
+     * Retrieve the most suitable chord for a direction, looking at
+     * staff above if any, otherwise the staff below.
      * @param point the system-based location
      * @return the most suitable chord, or null
      */
@@ -601,8 +586,7 @@ public class Measure
     // getEventChord //
     //---------------//
     /**
-     * Retrieve the most suitable chord to connect the event point to
-     *
+     * Retrieve the most suitable chord to connect the event point to.
      * @param point the system-based location
      * @return the most suitable chord, or null
      */
@@ -634,8 +618,7 @@ public class Measure
     // setExcess //
     //-----------//
     /**
-     * Assign an excess duration for this measure
-     *
+     * Assign an excess duration for this measure.
      * @param excess the duration in excess
      */
     public void setExcess (Rational excess)
@@ -647,8 +630,7 @@ public class Measure
     // getExcess //
     //-----------//
     /**
-     * Report the excess duration of this measure, if any
-     *
+     * Report the excess duration of this measure, if any.
      * @return the duration in excess, or null
      */
     public Rational getExcess ()
@@ -668,9 +650,8 @@ public class Measure
     // getExpectedDuration //
     //---------------------//
     /**
-     * Report the theoretical duration of this measure, based on current time
-     * signature
-     *
+     * Report the theoretical duration of this measure, based on
+     * current time signature.
      * @return the expected measure duration
      * @throws InvalidTimeSignature
      */
@@ -726,9 +707,8 @@ public class Measure
     // getFirstMeasureClef //
     //---------------------//
     /**
-     * Report the first clef (if any) in this measure, tagged  with the provided
-     * staff
-     *
+     * Report the first clef (if any) in this measure, tagged  with
+     * the provided staff.
      * @param staffId the imposed related staff id
      * @return the first clef, or null
      */
@@ -751,9 +731,8 @@ public class Measure
     // getFirstMeasureKey //
     //--------------------//
     /**
-     * Report the first key signature (if any) in this measure, tagged with the
-     * provided staff
-     *
+     * Report the first key signature (if any) in this measure,
+     * tagged with the provided staff.
      * @param staffId the imposed related staff id
      * @return the first key signature, or null
      */
@@ -775,9 +754,8 @@ public class Measure
     // getFollowing //
     //--------------//
     /**
-     * Report the following measure of this one, either in this system / part,
-     * or in the following system /part.
-     *
+     * Report the following measure of this one, either in this
+     * system / part, or in the following system /part.
      * @return the following measure, or null if none
      */
     public Measure getFollowing ()
@@ -802,8 +780,7 @@ public class Measure
     // getIdValue //
     //------------//
     /**
-     * Report the numeric value of the measure id
-     *
+     * Report the numeric value of the measure id.
      * @return the numeric value of measure id
      */
     public int getIdValue ()
@@ -815,7 +792,7 @@ public class Measure
     // setImplicit //
     //-------------//
     /**
-     * Flag this measure as implicit
+     * Flag this measure as implicit.
      */
     public void setImplicit ()
     {
@@ -826,8 +803,7 @@ public class Measure
     // isImplicit //
     //------------//
     /**
-     * Report whether this measure is implicit
-     *
+     * Report whether this measure is implicit.
      * @return true if measure is implicit
      */
     public boolean isImplicit ()
@@ -839,7 +815,7 @@ public class Measure
     // getInsideBarline //
     //------------------//
     /**
-     * @return the insideBarline, if any
+     * @return the insideBarline, if any.
      */
     public Barline getInsideBarline ()
     {
@@ -850,10 +826,10 @@ public class Measure
     // getKeyBefore //
     //--------------//
     /**
-     * Report the key signature which applies in this measure, whether a key
-     * signature actually starts this measure in the same staff, or whether a
-     * key signature was found in a previous measure, for the same staff.
-     *
+     * Report the key signature which applies in this measure, whether
+     * a key signature actually starts this measure in the same staff,
+     * or whether a key signature was found in a previous measure,
+     * for the same staff.
      * @param point the point before which to look
      * @param staff the containing staff (cannot be null)
      * @return the current key signature, or null if not found
@@ -899,8 +875,7 @@ public class Measure
     // getKeySigList //
     //---------------//
     /**
-     * Report the list that collects the KeySignature instances
-     *
+     * Report the list that collects the KeySignature instances.
      * @return the single instance of KeySigList
      */
     public Container getKeySigList ()
@@ -912,8 +887,7 @@ public class Measure
     // getKeySignatures //
     //------------------//
     /**
-     * Report the collection of KeySignature's
-     *
+     * Report the collection of KeySignature's.
      * @return the list of KeySignature's
      */
     public List<TreeNode> getKeySignatures ()
@@ -925,9 +899,8 @@ public class Measure
     // getLastMeasureClef //
     //--------------------//
     /**
-     * Report the last clef (if any) in this measure, tagged  with the provided
-     * staff
-     *
+     * Report the last clef (if any) in this measure, tagged  with the
+     * provided staff.
      * @param staffId the imposed related staff id
      * @return the last clef, or null
      */
@@ -952,9 +925,8 @@ public class Measure
     // getLastMeasureKey //
     //-------------------//
     /**
-     * Report the last key signature (if any) in this measure, tagged with the
-     * provided staff
-     *
+     * Report the last key signature (if any) in this measure,
+     * tagged with the provided staff.
      * @param staffId the imposed related staff id
      * @return the last key signature, or null
      */
@@ -979,9 +951,8 @@ public class Measure
     // getLastSoundTime //
     //------------------//
     /**
-     * Report the time, counted from beginning of this measure, when sound stops
-     * which means that ending rests are not counted.
-     *
+     * Report the time, counted from beginning of this measure, when
+     * sound stops which means that ending rests are not counted.
      * @return the relative time of last Midi "note off" in this measure
      */
     public Rational getLastSoundTime ()
@@ -1018,8 +989,7 @@ public class Measure
     // getLeftX //
     //----------//
     /**
-     * Report the abscissa of the start of the measure
-     *
+     * Report the abscissa of the start of the measure.
      * @return abscissa of left side of the measure
      */
     public Integer getLeftX ()
@@ -1031,9 +1001,8 @@ public class Measure
     // getMeasureClefBefore //
     //----------------------//
     /**
-     * Report the current clef, if any, defined within this measure and staff,
-     * and located before this measure point.
-     *
+     * Report the current clef, if any, defined within this measure
+     * and staff, and located before this measure point.
      * @param point the point before which to look
      * @param staff the containing staff (if null, it is derived from point.y)
      * @return the measure clef defined, or null
@@ -1066,8 +1035,7 @@ public class Measure
     // setPageId //
     //-----------//
     /**
-     * Assign the proper page-based id to this measure
-     *
+     * Assign the proper page-based id to this measure.
      * @param id the proper page-based measure id value
      * @param secondHalf true if the measure is the second half of a repeat
      */
@@ -1081,8 +1049,7 @@ public class Measure
     // setPageId //
     //-----------//
     /**
-     * Assign the proper page-based id to this measure
-     *
+     * Assign the proper page-based id to this measure.
      * @param pageId the page-based id
      */
     public void setPageId (MeasureId.PageBased pageId)
@@ -1094,8 +1061,7 @@ public class Measure
     // getPageId //
     //-----------//
     /**
-     * Report the page-based measure id
-     *
+     * Report the page-based measure id.
      * @return the page-based measure id
      */
     public MeasureId.PageBased getPageId ()
@@ -1107,8 +1073,8 @@ public class Measure
     // getPrecedingInPage //
     //--------------------//
     /**
-     * Report the preceding measure of this one, either in this 
-     * system / part, or in the preceding system /part, but still 
+     * Report the preceding measure of this one, either in this
+     * system / part, or in the preceding system /part, but still
      * in the same page.
      * @return the preceding measure, or null if not found in the page
      */
@@ -1134,7 +1100,7 @@ public class Measure
     // getRightX //
     //-----------//
     /**
-     * Report the abscissa of the end of the measure, relative to 
+     * Report the abscissa of the end of the measure, relative to
      * system/part left edge.
      * @return part-based abscissa of right side of the measure
      */
@@ -1147,8 +1113,7 @@ public class Measure
     // getScoreId //
     //------------//
     /**
-     * Report the image of the score-based measure id
-     *
+     * Report the image of the score-based measure id.
      * @return the score-based measure id string
      */
     public String getScoreId ()
@@ -1160,8 +1125,7 @@ public class Measure
     // getSlots //
     //----------//
     /**
-     * Report the ordered collection of slots
-     *
+     * Report the ordered collection of slots.
      * @return the collection of slots
      */
     public SortedSet<Slot> getSlots ()
@@ -1173,7 +1137,7 @@ public class Measure
     // getStaffId //
     //------------//
     /**
-     * Report the id of the staff containing the provided point
+     * Report the id of the staff containing the provided point.
      * @param point the provided point
      * @param staff the staff if known, otherwise null
      * @return the staff id
@@ -1207,8 +1171,7 @@ public class Measure
     // getTimeSigList //
     //----------------//
     /**
-     * Report the node that collects the TimeSignature instances
-     *
+     * Report the node that collects the TimeSignature instances.
      * @return the node of TimeSignature instances
      */
     public Container getTimeSigList ()
@@ -1220,8 +1183,8 @@ public class Measure
     // getTimeSignature //
     //------------------//
     /**
-     * Report the potential time signature in this measure for the related staff
-     *
+     * Report the potential time signature in this measure for the
+     * related staff.
      * @param staff the related staff
      * @return the time signature, or null if not found
      */
@@ -1242,8 +1205,8 @@ public class Measure
     // getTimeSignature //
     //------------------//
     /**
-     * Report the potential time signature in this measure (whatever the staff)
-     *
+     * Report the potential time signature in this measure
+     * (whatever the staff).
      * @return the time signature, or null if not found
      */
     public TimeSignature getTimeSignature ()
@@ -1267,8 +1230,7 @@ public class Measure
     // getVoicesNumber //
     //-----------------//
     /**
-     * Report the number of voices in this measure
-     *
+     * Report the number of voices in this measure.
      * @return the number fo voices computed
      */
     public int getVoicesNumber ()
@@ -1280,8 +1242,7 @@ public class Measure
     // getWholeChords //
     //----------------//
     /**
-     * Report the collection of whole chords
-     *
+     * Report the collection of whole chords.
      * @return the whole chords of this measure
      */
     public Collection<Chord> getWholeChords ()
@@ -1293,8 +1254,7 @@ public class Measure
     // getWidth //
     //----------//
     /**
-     * Report the width, in units, of the measure
-     *
+     * Report the width, in units, of the measure.
      * @return the measure width, or null in case of dummy measure
      */
     public Integer getWidth ()
@@ -1319,9 +1279,8 @@ public class Measure
     // addChild //
     //----------//
     /**
-     * Override normal behavior, so that a given child is stored in its proper
-     * type collection (clef to clef list, etc...)
-     *
+     * Override normal behavior, so that a given child is stored in its
+     * proper type collection (clef to clef list, etc...).
      * @param node the child to insert into the measure
      */
     @Override
@@ -1352,8 +1311,7 @@ public class Measure
     // addGroup //
     //----------//
     /**
-     * Add a beam goup to this measure
-     *
+     * Add a beam goup to this measure.
      * @param group a beam group to add
      */
     public void addGroup (BeamGroup group)
@@ -1373,8 +1331,8 @@ public class Measure
     // buildVoices //
     //-------------//
     /**
-     * Browse the slots and chords, in order to compute the various voices and
-     * start times
+     * Browse the slots and chords, in order to compute the various
+     * voices and start times.
      */
     public void buildVoices ()
     {
@@ -1416,8 +1374,8 @@ public class Measure
     // checkDuration //
     //---------------//
     /**
-     * Check the duration as computed in this measure from its contained voices,
-     * compared to its theoretical duration.
+     * Check the duration as computed in this measure from its
+     * contained voices, compared to its theoretical duration.
      */
     public void checkDuration ()
     {
@@ -1431,7 +1389,7 @@ public class Measure
     // checkTiedChords //
     //-----------------//
     /**
-     * Check ties for all chords of this measure
+     * Check ties for all chords of this measure.
      */
     public void checkTiedChords ()
     {
@@ -1446,7 +1404,7 @@ public class Measure
     // cleanupNode //
     //-------------//
     /**
-     * Get rid of all nodes of this measure, except the barlines
+     * Get rid of all nodes of this measure, except the barlines.
      */
     public void cleanupNode ()
     {
@@ -1488,9 +1446,8 @@ public class Measure
     // createTemporaryBefore //
     //-----------------------//
     /**
-     * Create a temporary initial measure to be exported right before this
-     * measure, just to set up global parameters (clef, time, key)
-     *
+     * Create a temporary initial measure to be exported right before
+     * this measure, just to set up global parameters (clef, time, key).
      * @return the created dummy measure
      */
     public Measure createTemporaryBefore ()
@@ -1549,7 +1506,8 @@ public class Measure
     // mergeWithRight //
     //----------------//
     /**
-     * Merge this measure with the content of the following measure on the right
+     * Merge this measure with the content of the following measure on
+     * the right.
      * @param right the following measure
      */
     public void mergeWithRight (Measure right)
@@ -1580,8 +1538,7 @@ public class Measure
     // printChords //
     //-------------//
     /**
-     * Print the chords of this measure on standard output
-     *
+     * Print the chords of this measure on standard output.
      * @param title a specific title, or null
      */
     public void printChords (String title)
@@ -1607,8 +1564,7 @@ public class Measure
     // printSlots //
     //------------//
     /**
-     * Print the slots of this measure on standard output
-     *
+     * Print the slots of this measure on standard output.
      * @param title a specific title, or null
      */
     public void printSlots (String title)
@@ -1633,8 +1589,7 @@ public class Measure
     // printVoices//
     //------------//
     /**
-     * Print the voices of this measure on standard output
-     *
+     * Print the voices of this measure on standard output.
      * @param title a potential title for this printout, or null
      */
     public void printVoices (String title)
@@ -1676,8 +1631,8 @@ public class Measure
     // resetAbscissae //
     //----------------//
     /**
-     * Reset the coordinates of the measure, they will be lazily recomputed when
-     * needed
+     * Reset the coordinates of the measure, they will be lazily
+     * recomputed when needed.
      */
     public void resetAbscissae ()
     {
@@ -1692,8 +1647,7 @@ public class Measure
     // shorten //
     //---------//
     /**
-     * Flag this measure as partial (shorter than expected duration)
-     *
+     * Flag this measure as partial (shorter than expected duration).
      * @param shortening how much the measure duration is to be reduced
      */
     public void shorten (Rational shortening)
@@ -1801,7 +1755,7 @@ public class Measure
     // computeCenter //
     //---------------//
     /**
-     * The 'center' here is the middle of the measure
+     * The 'center' here is the middle of the measure.
      */
     @Override
     protected void computeCenter ()
@@ -1814,8 +1768,7 @@ public class Measure
     // addWholeChord //
     //---------------//
     /**
-     * Insert a note as a whole (or multi) rest
-     *
+     * Insert a note as a whole (or multi) rest.
      * @param glyph the underlying glyph
      */
     void addWholeChord (Glyph glyph)
@@ -1831,7 +1784,7 @@ public class Measure
     // addWholeRest //
     //--------------//
     /**
-     * Insert a whole rest at provided center
+     * Insert a whole rest at provided center.
      * @param center the location for the rest note
      */
     void addWholeRest (Staff      staff,

@@ -31,8 +31,9 @@ import java.awt.image.RenderedImage;
 import java.util.List;
 
 /**
- * Class {@code Page} represents a page in the score hierarchy, and corresponds
- * to a {@link Sheet} with its specific scale, skew, dimension, etc.
+ * Class {@code Page} represents a page in the score hierarchy,
+ * and corresponds to a {@link Sheet} with its specific scale, skew,
+ * dimension, etc.
  * Page instances compose a {@link Score}.
  *
  * @author Hervé Bitteur
@@ -61,9 +62,6 @@ public class Page
 
     /** Page global scale */
     private Scale scale;
-
-    /** Average beam thickness, if known */
-    private Integer beamThickness;
 
     /** ScorePart list for the page */
     private List<ScorePart> partList;
@@ -102,22 +100,6 @@ public class Page
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //------------------//
-    // setBeamThickness //
-    //------------------//
-    public void setBeamThickness (int beamThickness)
-    {
-        this.beamThickness = beamThickness;
-    }
-
-    //------------------//
-    // getBeamThickness //
-    //------------------//
-    public Integer getBeamThickness ()
-    {
-        return beamThickness;
-    }
 
     //-------------------//
     // setDeltaMeasureId //

@@ -115,7 +115,8 @@ public class MergeStep
 
         // This work needs to know which time sig governs any measure, and this
         // time sig may be inherited from a previous page, therefore it cannot
-        // be performed on every page in isolation.
+        // be performed on every page in isolation (except when the page starts
+        // with an explicit time sig).
         for (TreeNode pn : score.getPages()) {
             Page page = (Page) pn;
 
