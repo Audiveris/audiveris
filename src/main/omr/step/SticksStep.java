@@ -1,10 +1,10 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                         V e r t i c a l s S t e p                          //
+//                            S t i c k s S t e p                             //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright (C) Herve Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -21,35 +21,36 @@ import omr.sheet.SystemInfo;
 import java.util.Collection;
 
 /**
- * Class {@code VerticalsStep} retrieves the vertical items such as stems
+ * Class {@code SticksStep} retrieves the vertical sticks such as
+ * stems and horizontal sticks such as ledgers and endings.
  *
  * @author Hervé Bitteur
  */
-public class VerticalsStep
+public class SticksStep
     extends AbstractSystemStep
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(VerticalsStep.class);
+    private static final Logger logger = Logger.getLogger(SticksStep.class);
 
     //~ Constructors -----------------------------------------------------------
 
-    //---------------//
-    // VerticalsStep //
-    //---------------//
+    //------------//
+    // SticksStep //
+    //------------//
     /**
-     * Creates a new VerticalsStep object.
+     * Creates a new SticksStep object.
      */
-    public VerticalsStep ()
+    public SticksStep ()
     {
         super(
-            Steps.VERTICALS,
+            Steps.STICKS,
             Level.SHEET_LEVEL,
             Mandatory.MANDATORY,
             Redoable.REDOABLE,
             DATA_TAB,
-            "Extract verticals");
+            "Extract vertical & horizontal sticks");
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -63,6 +64,12 @@ public class VerticalsStep
         // Create verticals display
         sheet.getVerticalsController()
              .refresh();
+
+        // Add ledger checkboard
+        sheet.getSystems()
+             .get(0)
+             .getHorizontalsBuilder()
+             .addCheckBoard();
     }
 
     //----------//
@@ -78,8 +85,8 @@ public class VerticalsStep
                   .clearSystem(this, system.getId());
         }
 
-        int stemCount = system.retrieveVerticals();
-        ///logger.info("S#" + system.getId() + " Stems found: " + stemCount);
+        system.retrieveVerticals();
+        system.retrieveHorizontals();
     }
 
     //----------//

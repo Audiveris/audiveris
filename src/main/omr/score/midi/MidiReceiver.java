@@ -376,7 +376,7 @@ public class MidiReceiver
                 // Switch page?
                 if (current.page != current.prevPage) {
                     sheet.getAssembly()
-                         .selectViewTab(Steps.valueOf(Steps.PATTERNS));
+                         .selectViewTab(Steps.valueOf(Steps.SYMBOLS));
                     SheetsController.getInstance()
                                     .showAssembly(sheet);
                     current.prevPage = current.page;

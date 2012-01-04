@@ -143,9 +143,9 @@ public class AssignTask
     @Override
     public void epilog (Sheet sheet)
     {
-        // We rebuild from PATTERNS
+        // We rebuild from SYMBOLS
         Stepping.reprocessSheet(
-            Steps.valueOf(Steps.PATTERNS),
+            Steps.valueOf(Steps.SYMBOLS),
             sheet,
             getImpactedSystems(sheet),
             false);

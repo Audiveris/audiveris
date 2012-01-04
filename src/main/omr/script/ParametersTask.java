@@ -282,7 +282,7 @@ public class ParametersTask
         }
 
         if (languageChanged) {
-            from = Steps.valueOf(Steps.PATTERNS);
+            from = Steps.valueOf(Steps.SYMBOLS);
         }
 
         Step loadStep = Steps.valueOf(Steps.LOAD);

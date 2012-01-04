@@ -622,9 +622,9 @@ public class Stepping
             doScoreStepSet(sheetSet, score);
 
             // Finally, perform steps that must be done at score level
-            // MERGE step if present, must be done first, and in case of failure
+            // SCORE step if present, must be done first, and in case of failure
             // must prevent the following score-level steps to run.
-            Step mergeStep = Steps.valueOf(Steps.MERGE);
+            Step mergeStep = Steps.valueOf(Steps.SCORE);
 
             if (stepSet.contains(mergeStep)) {
                 stepSet.remove(mergeStep);

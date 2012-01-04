@@ -23,7 +23,8 @@ import omr.sheet.SystemInfo;
 import java.util.Collection;
 
 /**
- * Class {@code MeasuresStep} retrieves the measures from the barline glyphs
+ * Class {@code MeasuresStep} retrieves the measures from the barline
+ * glyphs.
  *
  * @author Hervé Bitteur
  */
@@ -55,15 +56,6 @@ public class MeasuresStep
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //-----------//
-    // displayUI //
-    //-----------//
-    @Override
-    public void displayUI (Sheet sheet)
-    {
-        //        Main.getGui().scoreController.setScoreEditor(sheet.getScore());
-    }
 
     //----------//
     // doSystem //

@@ -682,12 +682,12 @@ public class Sheet
     // isOnPatterns //
     //--------------//
     /**
-     * Check whether current step is PATTERNS.
-     * @return true if on PATTERNS
+     * Check whether current step is SYMBOLS.
+     * @return true if on SYMBOLS
      */
     public boolean isOnPatterns ()
     {
-        return Stepping.getLatestStep(this) == Steps.valueOf(Steps.PATTERNS);
+        return Stepping.getLatestStep(this) == Steps.valueOf(Steps.SYMBOLS);
     }
 
     //---------//

@@ -142,7 +142,7 @@ public abstract class ScoreDependent
             Sheet sheet = event.getData();
             setScoreAvailable((sheet != null) && (sheet.getScore() != null));
             setScoreMerged(
-                (sheet != null) && sheet.isDone(Steps.valueOf(Steps.MERGE)));
+                (sheet != null) && sheet.isDone(Steps.valueOf(Steps.SCORE)));
         } catch (Exception ex) {
             logger.warning(getClass().getName() + " onEvent error", ex);
         }

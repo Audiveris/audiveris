@@ -117,7 +117,7 @@ public class BoundaryTask
 
         // Update the following steps if any
         Stepping.reprocessSheet(
-            Steps.valueOf(Steps.VERTICALS),
+            Steps.valueOf(Steps.STICKS),
             sheet,
             sheet.getSystems(),
             false);

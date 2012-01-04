@@ -1,10 +1,10 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                          P a t t e r n s S t e p                           //
+//                           S y m b o l s S t e p                            //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright (C) Herve Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -31,13 +31,13 @@ import omr.selection.GlyphEvent;
 import omr.selection.SelectionService;
 
 /**
- * Class {@code PatternsStep} builds symbols glyphs and
- * performs specific patterns at sheet  glyph level 
+ * Class {@code SymbolsStep} builds symbols glyphs and
+ * performs specific patterns at symbol level
  * (clefs, sharps, naturals, stems, slurs, etc).
  *
  * @author Hervé Bitteur
  */
-public class PatternsStep
+public class SymbolsStep
     extends AbstractSystemStep
 {
     //~ Static fields/initializers ---------------------------------------------
@@ -46,25 +46,25 @@ public class PatternsStep
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(PatternsStep.class);
+    private static final Logger logger = Logger.getLogger(SymbolsStep.class);
 
     //~ Constructors -----------------------------------------------------------
 
-    //--------------//
-    // PatternsStep //
-    //--------------//
+    //-------------//
+    // SymbolsStep //
+    //-------------//
     /**
-     * Creates a new PatternsStep object.
+     * Creates a new SymbolsStep object.
      */
-    public PatternsStep ()
+    public SymbolsStep ()
     {
         super(
-            Steps.PATTERNS,
+            Steps.SYMBOLS,
             Level.SHEET_LEVEL,
             Mandatory.MANDATORY,
             Redoable.REDOABLE,
             DATA_TAB,
-            "Specific sheet glyph patterns");
+            "Apply specific glyph patterns");
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -87,7 +87,7 @@ public class PatternsStep
         if (glyphEvent != null) {
             service.publish(glyphEvent);
         }
-        
+
     }
 
     //----------//

@@ -164,7 +164,7 @@ public class MidiActions
     {
         final Sheet sheet = SheetsController.getCurrentSheet();
         setMidiAvailable(
-            (sheet != null) && sheet.isDone(Steps.valueOf(Steps.MERGE)));
+            (sheet != null) && sheet.isDone(Steps.valueOf(Steps.SCORE)));
     }
 
     //-----------//

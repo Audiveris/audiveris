@@ -40,11 +40,10 @@ public class Steps
     public static final String             GRID = "GRID";
     public static final String             SPLIT = "SPLIT";
     public static final String             MEASURES = "MEASURES";
-    public static final String             VERTICALS = "VERTICALS";
-    public static final String             HORIZONTALS = "HORIZONTALS";
-    public static final String             PATTERNS = "PATTERNS";
+    public static final String             STICKS = "STICKS";
+    public static final String             SYMBOLS = "SYMBOLS";
     public static final String             PAGES = "PAGES";
-    public static final String             MERGE = "MERGE";
+    public static final String             SCORE = "SCORE";
 
     // Optional step names
     public static final String             PRINT = "PRINT";
@@ -65,11 +64,10 @@ public class Steps
         addStep(new GridStep());
         addStep(new SplitStep());
         addStep(new MeasuresStep());
-        addStep(new VerticalsStep());
-        addStep(new HorizontalsStep());
-        addStep(new PatternsStep());
+        addStep(new SticksStep());
+        addStep(new SymbolsStep());
         addStep(new PagesStep());
-        addStep(new MergeStep());
+        addStep(new ScoreStep());
 
         // Optional steps
         addStep(new PrintStep());

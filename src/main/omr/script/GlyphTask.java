@@ -137,7 +137,7 @@ public abstract class GlyphTask
     public void epilog (Sheet sheet)
     {
         Stepping.reprocessSheet(
-            Steps.valueOf(Steps.PATTERNS),
+            Steps.valueOf(Steps.SYMBOLS),
             sheet,
             getImpactedSystems(sheet),
             false);

@@ -80,7 +80,7 @@ public class VerticalsController
             new GlyphsModel(
                 sheet,
                 sheet.getNest(),
-                Steps.valueOf(Steps.VERTICALS)));
+                Steps.valueOf(Steps.STICKS)));
     }
 
     //~ Methods ----------------------------------------------------------------

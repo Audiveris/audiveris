@@ -1,10 +1,10 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                             M e r g e S t e p                              //
+//                             S c o r e S t e p                              //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright (C) Herve Bitteur 2000-2011. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -29,35 +29,35 @@ import omr.util.TreeNode;
 import java.util.Collection;
 
 /**
- * Class {@code MergeStep} merges all pages into one score
+ * Class {@code ScoreStep} merges all pages into one score.
  *
  * @author Hervé Bitteur
  */
-public class MergeStep
+public class ScoreStep
     extends AbstractStep
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(MergeStep.class);
+    private static final Logger logger = Logger.getLogger(ScoreStep.class);
 
     //~ Constructors -----------------------------------------------------------
 
     //-----------//
-    // MergeStep //
+    // ScoreStep //
     //-----------//
     /**
-     * Creates a new MergeStep object.
+     * Creates a new ScoreStep object.
      */
-    public MergeStep ()
+    public ScoreStep ()
     {
         super(
-            Steps.MERGE,
+            Steps.SCORE,
             Level.SCORE_LEVEL,
             Mandatory.MANDATORY,
             Redoable.REDOABLE,
             DATA_TAB,
-            "Merges all pages into one score");
+            "Merge all pages into one score");
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -68,7 +68,7 @@ public class MergeStep
     @Override
     public void displayUI (Sheet sheet)
     {
-        Steps.valueOf(Steps.PATTERNS)
+        Steps.valueOf(Steps.SYMBOLS)
              .displayUI(sheet);
     }
 

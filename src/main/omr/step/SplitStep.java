@@ -43,7 +43,7 @@ public class SplitStep
             Mandatory.MANDATORY,
             Redoable.REDOABLE,
             DATA_TAB,
-            "Retrieve Systems from Bar sticks");
+            "Split all data per system");
     }
 
     //~ Methods ----------------------------------------------------------------
