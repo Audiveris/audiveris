@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.glyph.pattern;
 
+import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.ShapeRange;
 import omr.glyph.facets.Glyph;
@@ -25,7 +26,8 @@ import omr.util.HorizontalSide;
 
 /**
  * Class {@code BeamHookPattern} removes beam hooks for which the
- * related stem has no beam on the same side.
+ * related stem has no beam on the same horizontal side of the stem
+ * and on the same vertical end of the stem.
  *
  * @author Hervé Bitteur
  */
@@ -93,6 +95,9 @@ public class BeamHookPattern
                     }
                 }
 
+                int            hookDy = hook.getCentroid().y -
+                                        stem.getCentroid().y;
+
                 // Look for other stuff on the stem
                 PixelRectangle stemBox = system.stemBoxOf(stem);
                 boolean        found = false;
@@ -107,14 +112,20 @@ public class BeamHookPattern
 
                         if (ShapeRange.Beams.contains(shape) &&
                             (shape != Shape.BEAM_HOOK)) {
-                            if (hook.isVip() || logger.isFineEnabled()) {
-                                logger.info(
-                                    "Confirmed beam hook #" + hook.getId());
+                            // Check same vertical end
+                            int beamDy = g.getCentroid().y -
+                                         stem.getCentroid().y;
+
+                            if ((hookDy * beamDy) > 0) {
+                                if (hook.isVip() || logger.isFineEnabled()) {
+                                    logger.info(
+                                        "Confirmed beam hook #" + hook.getId());
+                                }
+
+                                found = true;
+
+                                break;
                             }
-
-                            found = true;
-
-                            break;
                         }
                     }
                 }

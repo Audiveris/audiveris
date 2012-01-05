@@ -42,10 +42,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
- * Class {@code ClefPattern} verifies all the initial clefs of a 
- * system, using an intersection inner rectangle and a containing 
+ * Class {@code ClefPattern} verifies all the initial clefs of a
+ * system, using an intersection inner rectangle and a containing
  * outer rectangle to retrieve the clef glyphs and only those ones.
  *
  * @author Hervé Bitteur
@@ -62,10 +63,18 @@ public class ClefPattern
     private static final Logger logger = Logger.getLogger(ClefPattern.class);
 
     /** Specific predicate to filter clef shapes */
-    private static final Predicate<Shape> clefPredicate = new Predicate<Shape>() {
+    private static final Predicate<Shape> clefShapePredicate = new Predicate<Shape>() {
         public boolean check (Shape shape)
         {
             return ShapeRange.Clefs.contains(shape);
+        }
+    };
+
+    /** Specific predicate to filter clef glyphs */
+    private static final Predicate<Glyph> clefGlyphPredicate = new Predicate<Glyph>() {
+        public boolean check (Glyph glyph)
+        {
+            return glyph.isClef();
         }
     };
 
@@ -115,9 +124,7 @@ public class ClefPattern
     public int runPattern ()
     {
         int         successNb = 0;
-
         ScoreSystem scoreSystem = system.getScoreSystem();
-
         int         staffId = 0;
 
         for (StaffInfo staff : system.getStaves()) {
@@ -177,11 +184,30 @@ public class ClefPattern
                                Glyph             line,
                                int               staffId)
     {
-        Glyphs.purgeManuals(glyphs);
-
         if (glyphs.isEmpty()) {
             return false;
         }
+
+        // Check if we already have a clef among the intersected glyphs
+        Set<Glyph> clefs = Glyphs.lookupGlyphs(glyphs, clefGlyphPredicate);
+        Glyph      orgClef = null;
+
+        if (!clefs.isEmpty()) {
+            if (Glyphs.containsManual(clefs)) {
+                return false; // Respect user decision
+            } else {
+                // Remember grade of the best existing clef
+                for (Glyph glyph : clefs) {
+                    if ((orgClef == null) ||
+                        (glyph.getGrade() > orgClef.getGrade())) {
+                        orgClef = glyph;
+                    }
+                }
+            }
+        }
+
+        // Remove potential aliens
+        Glyphs.purgeManuals(glyphs);
 
         Glyph      compound = system.buildTransientCompound(glyphs);
 
@@ -191,9 +217,10 @@ public class ClefPattern
             compound,
             Grades.clefMinGrade,
             system,
-            clefPredicate);
+            clefShapePredicate);
 
-        if (vote != null) {
+        if ((vote != null) &&
+            ((orgClef == null) || (vote.grade > orgClef.getGrade()))) {
             // We now have a clef!
             // Look around for an even better result...
             if (logger.isFineEnabled()) {
@@ -231,7 +258,7 @@ public class ClefPattern
                     newCompound,
                     Grades.clefMinGrade,
                     system,
-                    clefPredicate);
+                    clefShapePredicate);
 
                 if ((newVote != null) && (newVote.grade > vote.grade)) {
                     if (logger.isFineEnabled()) {

@@ -653,6 +653,7 @@ public class BarsRetriever
         factory.setMaxFilamentThickness(constants.maxFilamentThickness);
         factory.setMaxCoordGap(constants.maxCoordGap);
         factory.setMaxPosGap(constants.maxPosGap);
+        factory.setMaxSpace(constants.maxSpace);
         factory.setMaxOverlapDeltaPos(constants.maxOverlapDeltaPos);
 
         // Retrieve filaments out of vertical sections
@@ -1621,7 +1622,7 @@ public class BarsRetriever
         //~ Instance fields ----------------------------------------------------
 
         Constant.Ratio   maxLengthRatio = new Constant.Ratio(
-            1.5,
+            1.4,
             "Maximum ratio in length for a run to be combined with an existing section");
 
         // Constants specified WRT mean interline
@@ -1641,6 +1642,9 @@ public class BarsRetriever
         Scale.Fraction   maxPosGap = new Scale.Fraction(
             0.2,
             "Maximum delta abscissa for a gap between filaments");
+        Scale.Fraction   maxSpace = new Scale.Fraction(
+            0.1,
+            "Maximum space between overlapping bar filaments");
         Scale.Fraction   maxBarCoordGap = new Scale.Fraction(
             2,
             "Maximum delta coordinate for a vertical gap between bars");

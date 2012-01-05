@@ -43,12 +43,8 @@ import omr.selection.UserEvent;
 import omr.step.Step;
 import omr.step.StepException;
 
-import org.jdesktop.application.AbstractBean;
-import org.jdesktop.application.Action;
-
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,8 +52,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code HorizontalsBuilder} is in charge of retrieving horizontal
- * dashes (ledgers, legato signs and endings) in a given system.
+ * Class {@code HorizontalsBuilder} is in charge of retrieving 
+ * horizontal dashes (ledgers, legato signs and endings) in a system.
  *
  * <p>Nota: Endings and legato signs are currently disabled.
  *
@@ -222,8 +218,8 @@ public class HorizontalsBuilder
     // buildInfo //
     //-----------//
     /**
-     * Run the Horizontals step, searching all horizontal sticks for typical
-     * things like ledgers, endings and legato signs.
+     * Run the Horizontals step, searching all horizontal sticks for 
+     * typical things like ledgers, endings and legato signs.
      *
      * @throws StepException raised if process gets stopped
      */
@@ -608,6 +604,7 @@ public class HorizontalsBuilder
         // max thickness parameters
         for (Section section : sections) {
             section.resetFat();
+            section.setGlyph(null);
         }
 
         return factory.retrieveFilaments(sections, true);

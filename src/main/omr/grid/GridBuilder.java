@@ -94,7 +94,7 @@ public class GridBuilder
     //~ Methods ----------------------------------------------------------------
 
     //-----------//
-    // retrieveSystemBars //
+    // buildInfo //
     //-----------//
     /**
      * Compute and display the system frames of the sheet picture

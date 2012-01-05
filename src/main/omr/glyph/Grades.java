@@ -53,9 +53,6 @@ public class Grades
     /** Minimum grade for a key signature */
     public static final double keySigMinGrade = constants.keySigMinGrade.getValue();
 
-    /** Minimum grade for a leaf glyph */
-    public static final double leafMinGrade = constants.leafMinGrade.getValue();
-
     /** Minimum grade for a glyph left over */
     public static final double leftOverMinGrade = constants.leftOverMinGrade.getValue();
 
@@ -113,23 +110,18 @@ public class Grades
 
         //
         Evaluation.Grade symbolMinGrade = new Evaluation.Grade(
-            83,
+            45, //77,
             "Minimum grade for a symbol");
 
         //
-        Evaluation.Grade leafMinGrade = new Evaluation.Grade(
-            77,
-            "Minimum grade for a leaf");
+        Evaluation.Grade patternsMinGrade = new Evaluation.Grade(
+            45, //67,
+            "Minimum grade for pattern phase");
 
         //
         Evaluation.Grade partMinGrade = new Evaluation.Grade(
             35,
             "Minimum grade for a part of a split glyph");
-
-        //
-        Evaluation.Grade patternsMinGrade = new Evaluation.Grade(
-            67,
-            "Minimum grade for pattern phase");
 
         //
         Evaluation.Grade bassMinGrade = new Evaluation.Grade(

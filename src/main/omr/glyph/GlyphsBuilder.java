@@ -484,8 +484,7 @@ public class GlyphsBuilder
                 PixelRectangle b = stemBoxOf(s);
 
                 for (Section section : glyph.getMembers()) {
-                    if (section.getContourBox()
-                               .intersects(b)) {
+                    if (section.intersects(b)) {
                         return s;
                     }
                 }
@@ -534,12 +533,12 @@ public class GlyphsBuilder
 
         //
         Scale.Fraction stemWiden = new Scale.Fraction(
-            0.1,
+            0.05,
             "Box widening to check intersection with stem");
 
         //
         Scale.Fraction stemHeighten = new Scale.Fraction(
-            0.2,
+            0.1,
             "Box heightening to check intersection with stem");
     }
 }

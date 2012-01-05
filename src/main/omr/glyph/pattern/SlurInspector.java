@@ -368,7 +368,9 @@ public class SlurInspector
 
         // If no significant section has been found, just give up
         if (seedSection == null) {
-            oldSlur.setShape(null);
+            if (oldSlur.getShape() == Shape.SLUR) {
+                oldSlur.setShape(null);
+            }
 
             return null;
         }

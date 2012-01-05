@@ -60,6 +60,9 @@ public class PatternsChecker
         new CaesuraPattern(system),
                        
         new BeamHookPattern(system),
+
+        // Refresh ...
+        new RefreshPattern(system), 
                        
         new DoubleBeamPattern(system),
                        
@@ -114,7 +117,7 @@ public class PatternsChecker
         int           totalModifs = 0;
         StringBuilder sb = new StringBuilder();
 
-        system.inspectGlyphs(Grades.leafMinGrade);
+        system.inspectGlyphs(Grades.symbolMinGrade);
 
         for (GlyphPattern pattern : patterns) {
             if (logger.isFineEnabled()) {
@@ -142,7 +145,7 @@ public class PatternsChecker
             }
         }
 
-        system.inspectGlyphs(Grades.leafMinGrade);
+        system.inspectGlyphs(Grades.symbolMinGrade);
 
         if ((totalModifs > 0) && logger.isFineEnabled()) {
             logger.fine("S#" + system.getId() + " Patterns" + sb);
@@ -174,7 +177,7 @@ public class PatternsChecker
         @Override
         public int runPattern ()
         {
-            system.inspectGlyphs(Grades.leafMinGrade);
+            system.inspectGlyphs(Grades.symbolMinGrade);
 
             return 0;
         }
