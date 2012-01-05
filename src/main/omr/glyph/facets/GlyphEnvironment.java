@@ -22,9 +22,9 @@ import omr.util.Predicate;
 import java.util.Set;
 
 /**
- * Interface {@code GlyphEnvironment} defines the facet in charge of the
- * surrounding environment of a glyph, in terms of staff-based pitch position,
- * of presence of stem or ledgers, etc.
+ * Interface {@code GlyphEnvironment} defines the facet in charge of 
+ * the surrounding environment of a glyph, in terms of staff-based 
+ * pitch position, of presence of stem or ledgers, etc.
  *
  * @author Hervé Bitteur
  */
@@ -34,8 +34,8 @@ interface GlyphEnvironment
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * Report the number of alien pixels, from the provided lag, found in the
-     * specified absolute roi
+     * Report the number of alien pixels, from the provided lag, found
+     * in the specified absolute roi
      * @param lag the lag to serach
      * @param absRoi the absolute region of interest
      * @param predicate optional predicate to further filter these aliens
@@ -52,7 +52,7 @@ interface GlyphEnvironment
     Glyph getFirstStem ();
 
     /**
-     * Setter for the pitch position, with respect to the containing staff
+     * Setter for the pitch position, with respect to containing staff
      * @param pitchPosition the pitch position wrt the staff
      */
     void setPitchPosition (double pitchPosition);
@@ -89,8 +89,8 @@ interface GlyphEnvironment
     int getStemNumber ();
 
     /**
-     * Return the known glyphs stuck on last side of the stick (this is relevant
-     * mainly for a stem glyph)
+     * Return the known glyphs stuck on last side of the stick.
+     * (this is relevant mainly for a stem glyph)
      * @param predicate the predicate to apply on each glyph
      * @param goods the set of correct glyphs (perhaps empty)
      * @param bads the set of non-correct glyphs (perhaps empty)
@@ -100,8 +100,8 @@ interface GlyphEnvironment
                           Set<Glyph>       bads);
 
     /**
-     * Return the known glyphs stuck on first side of the stick (this is
-     * relevant mainly for a stem glyph)
+     * Return the known glyphs stuck on first side of the stick.
+     * (this is relevant mainly for a stem glyph)
      * @param predicate the predicate to apply on each glyph
      * @param goods the set of correct glyphs (perhaps empty)
      * @param bads the set of non-correct glyphs (perhaps empty)

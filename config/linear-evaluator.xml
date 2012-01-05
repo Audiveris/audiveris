@@ -13,6 +13,7 @@
         <parameter name="n03" weight="14.976313242970917"/>
         <parameter name="ledger" weight="12.222405902343624"/>
         <parameter name="stemNb" weight="1.8009077221037912"/>
+        <parameter name="aspect" weight="0.16080691721967105"/>
     </defaults>
     <categories>
         <item id="ACCENT">
@@ -52,6 +53,9 @@
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="13" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="113.75182400655414" min="0.5714285714285714" mean="0.723630553066008" max="0.896551724137931">
+                <population count="13" squares-sum="6.912828119191784" sum="9.407197189858104"/>
+            </parameter>
         </item>
         <item id="ARPEGGIATO">
             <parameter name="weight" training="NOMINAL" weight="11.734135721543627" min="0.56640625" mean="2.0337032681202714" max="2.462962962962963">
@@ -89,6 +93,9 @@
             </parameter>
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="31" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="0.8844141577724339" min="3.7777777777777777" mean="8.582669122991708" max="9.363636363636363">
+                <population count="31" squares-sum="2317.4492470805126" sum="266.06274281274295"/>
             </parameter>
         </item>
         <item id="BEAM">
@@ -128,6 +135,9 @@
             <parameter name="stemNb" training="NOMINAL" weight="424.001183431958" min="1.0" mean="1.9976387249114522" max="2.0">
                 <population count="847" squares-sum="3382.0" sum="1692.0"/>
             </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="62.43624963540626" min="0.03684210526315789" mean="0.30634504959738007" max="0.6666666666666666">
+                <population count="847" squares-sum="93.03847502901678" sum="259.47425700898094"/>
+            </parameter>
         </item>
         <item id="BEAM_2">
             <parameter name="weight" training="NOMINAL" weight="2.555594122235153" min="2.59375" mean="3.036072530864198" max="3.478395061728395">
@@ -165,6 +175,9 @@
             </parameter>
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="2.0" mean="2.0" max="2.0">
                 <population count="2" squares-sum="8.0" sum="4.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="27.01393254835104" min="0.6226415094339622" mean="0.7586891757696127" max="0.8947368421052632">
+                <population count="2" squares-sum="1.1882364658907014" sum="1.5173783515392254"/>
             </parameter>
         </item>
         <item id="BEAM_3">
@@ -204,6 +217,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="2.0" mean="2.0" max="2.0">
                 <population count="1" squares-sum="4.0" sum="2.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="1.1842105263157894" mean="1.1842105263157894" max="1.1842105263157894">
+                <population count="1" squares-sum="1.402354570637119" sum="1.1842105263157894"/>
+            </parameter>
         </item>
         <item id="BEAM_HOOK">
             <parameter name="weight" training="NOMINAL" weight="103.44653685147465" min="0.3601108033240997" mean="0.5537942052002862" max="0.764172335600907">
@@ -241,6 +257,9 @@
             </parameter>
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="1.0" mean="1.0" max="1.0">
                 <population count="56" squares-sum="56.0" sum="56.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="67.00139074489057" min="0.4" mean="0.6462667859585947" max="0.9411764705882353">
+                <population count="56" squares-sum="24.209880966558288" sum="36.1909400136813"/>
             </parameter>
         </item>
         <item id="BRACE">
@@ -280,6 +299,9 @@
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="38" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="0.003011675479682885" min="11.37037037037037" mean="18.89237758334109" max="120.71428571428571">
+                <population count="38" squares-sum="25848.55358798623" sum="717.9103481669614"/>
+            </parameter>
         </item>
         <item id="BRACKET">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="4.640625" mean="4.640625" max="4.640625">
@@ -317,6 +339,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="4.6923076923076925" mean="4.6923076923076925" max="4.6923076923076925">
+                <population count="1" squares-sum="22.01775147928994" sum="4.6923076923076925"/>
             </parameter>
         </item>
         <item id="BREATH_MARK">
@@ -356,6 +381,9 @@
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="3" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="52.655941359165666" min="1.5833333333333333" mean="1.690781440781441" max="1.8461538461538463">
+                <population count="3" squares-sum="8.614208059949817" sum="5.072344322344323"/>
+            </parameter>
         </item>
         <item id="BREVE">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="1.96875" mean="1.96875" max="1.96875">
@@ -393,6 +421,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.55" mean="0.55" max="0.55">
+                <population count="1" squares-sum="0.30250000000000005" sum="0.55"/>
             </parameter>
         </item>
         <item id="BREVE_REST">
@@ -432,6 +463,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="1.6" mean="1.6" max="1.6">
+                <population count="1" squares-sum="2.5600000000000005" sum="1.6"/>
+            </parameter>
         </item>
         <item id="CAESURA">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="0.9921875" mean="0.9921875" max="0.9921875">
@@ -469,6 +503,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="1.0" mean="1.0" max="1.0">
+                <population count="1" squares-sum="1.0" sum="1.0"/>
             </parameter>
         </item>
         <item id="CHARACTER">
@@ -508,6 +545,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="1.1176470588235294" mean="1.1176470588235294" max="1.1176470588235294">
+                <population count="1" squares-sum="1.2491349480968859" sum="1.1176470588235294"/>
+            </parameter>
         </item>
         <item id="CLUTTER">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="0.4609375" mean="0.4609375" max="0.4609375">
@@ -545,6 +585,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="2.0" mean="2.0" max="2.0">
+                <population count="1" squares-sum="4.0" sum="2.0"/>
             </parameter>
         </item>
         <item id="CODA">
@@ -584,6 +627,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="1.1379310344827587" mean="1.1379310344827587" max="1.1379310344827587">
+                <population count="1" squares-sum="1.2948870392390013" sum="1.1379310344827587"/>
+            </parameter>
         </item>
         <item id="COMBINING_FLAG_1">
             <parameter name="weight" training="NOMINAL" weight="162.57192598326822" min="0.39335180055401664" mean="0.5729061947312653" max="0.7466666666666667">
@@ -621,6 +667,9 @@
             </parameter>
             <parameter name="stemNb" training="NOMINAL" weight="26.0204081632653" min="1.0" mean="1.0392156862745099" max="2.0">
                 <population count="51" squares-sum="57.0" sum="53.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="8.72078300599119" min="1.8421052631578947" mean="2.480158208665133" max="3.0588235294117645">
+                <population count="51" squares-sum="319.4438518654453" sum="126.48806864192179"/>
             </parameter>
         </item>
         <item id="COMBINING_FLAG_1_UP">
@@ -660,6 +709,9 @@
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="1.0" mean="1.0" max="1.0">
                 <population count="38" squares-sum="38.0" sum="38.0"/>
             </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="25.561029958280233" min="1.9411764705882353" mean="2.5590558223734745" max="2.85">
+                <population count="38" squares-sum="250.30065068311288" sum="97.24412125019202"/>
+            </parameter>
         </item>
         <item id="COMBINING_FLAG_2">
             <parameter name="weight" training="NOMINAL" weight="92.90785195250604" min="0.814404432132964" mean="0.9223889802631579" max="1.11328125">
@@ -697,6 +749,9 @@
             </parameter>
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="1.0" mean="1.0" max="1.0">
                 <population count="6" squares-sum="6.0" sum="6.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="26.027403091415465" min="2.6315789473684212" mean="2.870871623503202" max="3.1">
+                <population count="6" squares-sum="49.643528491934376" sum="17.225229741019213"/>
             </parameter>
         </item>
         <item id="COMBINING_FLAG_2_UP">
@@ -736,6 +791,9 @@
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="1.0" mean="1.0" max="1.0">
                 <population count="3" squares-sum="3.0" sum="3.0"/>
             </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="66.39824380165248" min="2.5652173913043477" mean="2.6360708534621575" max="2.7777777777777777">
+                <population count="3" squares-sum="20.876729912016614" sum="7.908212560386473"/>
+            </parameter>
         </item>
         <item id="COMBINING_FLAG_3">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="1.8203125" mean="1.8203125" max="1.8203125">
@@ -773,6 +831,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="1.0" mean="1.0" max="1.0">
                 <population count="1" squares-sum="1.0" sum="1.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="4.111111111111111" mean="4.111111111111111" max="4.111111111111111">
+                <population count="1" squares-sum="16.90123456790123" sum="4.111111111111111"/>
             </parameter>
         </item>
         <item id="COMBINING_FLAG_3_UP">
@@ -812,6 +873,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="1.0" mean="1.0" max="1.0">
                 <population count="1" squares-sum="1.0" sum="1.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="4.055555555555555" mean="4.055555555555555" max="4.055555555555555">
+                <population count="1" squares-sum="16.447530864197528" sum="4.055555555555555"/>
+            </parameter>
         </item>
         <item id="COMBINING_FLAG_4">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="2.19140625" mean="2.19140625" max="2.19140625">
@@ -849,6 +913,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="1.0" mean="1.0" max="1.0">
                 <population count="1" squares-sum="1.0" sum="1.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="4.333333333333333" mean="4.333333333333333" max="4.333333333333333">
+                <population count="1" squares-sum="18.777777777777775" sum="4.333333333333333"/>
             </parameter>
         </item>
         <item id="COMBINING_FLAG_4_UP">
@@ -888,6 +955,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="1.0" mean="1.0" max="1.0">
                 <population count="1" squares-sum="1.0" sum="1.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="4.166666666666667" mean="4.166666666666667" max="4.166666666666667">
+                <population count="1" squares-sum="17.361111111111114" sum="4.166666666666667"/>
+            </parameter>
         </item>
         <item id="COMBINING_FLAG_5">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="2.8984375" mean="2.8984375" max="2.8984375">
@@ -925,6 +995,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="1.0" mean="1.0" max="1.0">
                 <population count="1" squares-sum="1.0" sum="1.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="5.555555555555555" mean="5.555555555555555" max="5.555555555555555">
+                <population count="1" squares-sum="30.864197530864196" sum="5.555555555555555"/>
             </parameter>
         </item>
         <item id="COMBINING_FLAG_5_UP">
@@ -964,6 +1037,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="1.0" mean="1.0" max="1.0">
                 <population count="1" squares-sum="1.0" sum="1.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="5.444444444444445" mean="5.444444444444445" max="5.444444444444445">
+                <population count="1" squares-sum="29.641975308641978" sum="5.444444444444445"/>
+            </parameter>
         </item>
         <item id="COMMON_TIME">
             <parameter name="weight" training="NOMINAL" weight="9.495467092610399" min="1.1777777777777778" mean="1.407248263888889" max="1.63671875">
@@ -1001,6 +1077,9 @@
             </parameter>
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="2" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="175.21919999999875" min="1.1153846153846154" mean="1.1688034188034189" max="1.2222222222222223">
+                <population count="2" squares-sum="2.7379100007305137" sum="2.3376068376068377"/>
             </parameter>
         </item>
         <item id="CRESCENDO">
@@ -1040,6 +1119,9 @@
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="14" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="169.90483917590993" min="0.04397705544933078" mean="0.11478793166393887" max="0.3">
+                <population count="14" squares-sum="0.2609811876967795" sum="1.6070310432951442"/>
+            </parameter>
         </item>
         <item id="CUT_TIME">
             <parameter name="weight" training="NOMINAL" weight="86.48617382556641" min="1.7746913580246915" mean="1.8367734053497944" max="1.9609375">
@@ -1077,6 +1159,9 @@
             </parameter>
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="3" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="45.85262382015174" min="1.78125" mean="1.8665123456790125" max="2.037037037037037">
+                <population count="3" squares-sum="10.495223015260631" sum="5.599537037037037"/>
             </parameter>
         </item>
         <item id="C_CLEF">
@@ -1116,6 +1201,9 @@
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="2" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="483.80353100966744" min="1.4705882352941178" mean="1.5027359781121752" max="1.5348837209302326">
+                <population count="2" squares-sum="4.518497794562103" sum="3.0054719562243504"/>
+            </parameter>
         </item>
         <item id="DAL_SEGNO">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="1.4375" mean="1.4375" max="1.4375">
@@ -1153,6 +1241,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.4791666666666667" mean="0.4791666666666667" max="0.4791666666666667">
+                <population count="1" squares-sum="0.22960069444444448" sum="0.4791666666666667"/>
             </parameter>
         </item>
         <item id="DA_CAPO">
@@ -1192,6 +1283,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.46153846153846156" mean="0.46153846153846156" max="0.46153846153846156">
+                <population count="1" squares-sum="0.21301775147928997" sum="0.46153846153846156"/>
+            </parameter>
         </item>
         <item id="DECRESCENDO">
             <parameter name="weight" training="NOMINAL" weight="0.12016127264367421" min="1.734375" mean="5.757315062268293" max="9.33641975308642">
@@ -1229,6 +1323,9 @@
             </parameter>
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="7" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="112.25573408710804" min="0.049079754601226995" mean="0.1295301232885395" max="0.3">
+                <population count="7" squares-sum="0.1708957553222767" sum="0.9067108630197765"/>
             </parameter>
         </item>
         <item id="DOT">
@@ -1268,6 +1365,9 @@
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="208" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="122.19777196081054" min="0.7142857142857143" mean="0.9437643152787373" max="1.2727272727272727">
+                <population count="208" squares-sum="186.9577204603633" sum="196.30297757797734"/>
+            </parameter>
         </item>
         <item id="DOUBLE_FLAT">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="1.4453125" mean="1.4453125" max="1.4453125">
@@ -1305,6 +1405,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="1.75" mean="1.75" max="1.75">
+                <population count="1" squares-sum="3.0625" sum="1.75"/>
             </parameter>
         </item>
         <item id="DOUBLE_SHARP">
@@ -1344,6 +1447,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="1.0" mean="1.0" max="1.0">
+                <population count="1" squares-sum="1.0" sum="1.0"/>
+            </parameter>
         </item>
         <item id="DYNAMICS_CHAR_M">
             <parameter name="weight" training="NOMINAL" weight="155.8722212889244" min="1.1005917159763314" mean="1.1497626972386588" max="1.2421875">
@@ -1381,6 +1487,9 @@
             </parameter>
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="3" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="389.44236673179057" min="0.5806451612903226" mean="0.6329423264907136" max="0.6818181818181818">
+                <population count="3" squares-sum="1.2069835140736664" sum="1.8988269794721409"/>
             </parameter>
         </item>
         <item id="DYNAMICS_CHAR_R">
@@ -1420,6 +1529,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.9444444444444444" mean="0.9444444444444444" max="0.9444444444444444">
+                <population count="1" squares-sum="0.8919753086419753" sum="0.9444444444444444"/>
+            </parameter>
         </item>
         <item id="DYNAMICS_CHAR_S">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="0.62109375" mean="0.62109375" max="0.62109375">
@@ -1457,6 +1569,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="1.2" mean="1.2" max="1.2">
+                <population count="1" squares-sum="1.44" sum="1.2"/>
             </parameter>
         </item>
         <item id="DYNAMICS_CHAR_Z">
@@ -1496,6 +1611,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.8947368421052632" mean="0.8947368421052632" max="0.8947368421052632">
+                <population count="1" squares-sum="0.8005540166204986" sum="0.8947368421052632"/>
+            </parameter>
         </item>
         <item id="DYNAMICS_F">
             <parameter name="weight" training="NOMINAL" weight="18.412216536827643" min="0.8842975206611571" mean="1.21001554354123" max="1.4691358024691359">
@@ -1533,6 +1651,9 @@
             </parameter>
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="8" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="652.2728795750214" min="1.1282051282051282" mean="1.1804085554085553" max="1.2307692307692308">
+                <population count="8" squares-sum="11.157646566264974" sum="9.443268443268442"/>
             </parameter>
         </item>
         <item id="DYNAMICS_FF">
@@ -1572,6 +1693,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.74" mean="0.74" max="0.74">
+                <population count="1" squares-sum="0.5476" sum="0.74"/>
+            </parameter>
         </item>
         <item id="DYNAMICS_FFF">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="4.03125" mean="4.03125" max="4.03125">
@@ -1609,6 +1733,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.5522388059701493" mean="0.5522388059701493" max="0.5522388059701493">
+                <population count="1" squares-sum="0.3049676988193362" sum="0.5522388059701493"/>
             </parameter>
         </item>
         <item id="DYNAMICS_FFFF">
@@ -1648,6 +1775,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.4523809523809524" mean="0.4523809523809524" max="0.4523809523809524">
+                <population count="1" squares-sum="0.20464852607709752" sum="0.4523809523809524"/>
+            </parameter>
         </item>
         <item id="DYNAMICS_FFFFF">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="6.609375" mean="6.609375" max="6.609375">
@@ -1685,6 +1815,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.3958333333333333" mean="0.3958333333333333" max="0.3958333333333333">
+                <population count="1" squares-sum="0.15668402777777776" sum="0.3958333333333333"/>
             </parameter>
         </item>
         <item id="DYNAMICS_FFFFFF">
@@ -1724,6 +1857,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.3220338983050847" mean="0.3220338983050847" max="0.3220338983050847">
+                <population count="1" squares-sum="0.10370583165756965" sum="0.3220338983050847"/>
+            </parameter>
         </item>
         <item id="DYNAMICS_FP">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="2.6796875" mean="2.6796875" max="2.6796875">
@@ -1761,6 +1897,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.7450980392156863" mean="0.7450980392156863" max="0.7450980392156863">
+                <population count="1" squares-sum="0.5551710880430604" sum="0.7450980392156863"/>
             </parameter>
         </item>
         <item id="DYNAMICS_FZ">
@@ -1800,6 +1939,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.9047619047619048" mean="0.9047619047619048" max="0.9047619047619048">
+                <population count="1" squares-sum="0.8185941043083901" sum="0.9047619047619048"/>
+            </parameter>
         </item>
         <item id="DYNAMICS_MF">
             <parameter name="weight" training="NOMINAL" weight="43.80614837219356" min="2.310657596371882" mean="2.5218980300453517" max="2.7165532879818595">
@@ -1837,6 +1979,9 @@
             </parameter>
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="5" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="433.7445303323093" min="0.6851851851851852" mean="0.7465207441970719" max="0.7966101694915254">
+                <population count="5" squares-sum="2.795688125891397" sum="3.7326037209853595"/>
             </parameter>
         </item>
         <item id="DYNAMICS_MP">
@@ -1876,6 +2021,9 @@
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="3" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="18950.84774027363" min="0.5365853658536586" mean="0.541682301438399" max="0.55">
+                <population count="3" squares-sum="0.8803646832506715" sum="1.625046904315197"/>
+            </parameter>
         </item>
         <item id="DYNAMICS_P">
             <parameter name="weight" training="NOMINAL" weight="20.231259160332502" min="0.7892561983471075" mean="1.2416489766518308" max="1.5648148148148149">
@@ -1913,6 +2061,9 @@
             </parameter>
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="24" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="74.9977759912762" min="0.8205128205128205" mean="0.9501378205904066" max="1.125">
+                <population count="24" squares-sum="21.9729608354518" sum="22.80330769416976"/>
             </parameter>
         </item>
         <item id="DYNAMICS_PP">
@@ -1952,6 +2103,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.5283018867924528" mean="0.5283018867924528" max="0.5283018867924528">
+                <population count="1" squares-sum="0.27910288358846563" sum="0.5283018867924528"/>
+            </parameter>
         </item>
         <item id="DYNAMICS_PPP">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="4.125" mean="4.125" max="4.125">
@@ -1989,6 +2143,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.36363636363636365" mean="0.36363636363636365" max="0.36363636363636365">
+                <population count="1" squares-sum="0.1322314049586777" sum="0.36363636363636365"/>
             </parameter>
         </item>
         <item id="DYNAMICS_PPPP">
@@ -2028,6 +2185,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.27722772277227725" mean="0.27722772277227725" max="0.27722772277227725">
+                <population count="1" squares-sum="0.07685521027350262" sum="0.27722772277227725"/>
+            </parameter>
         </item>
         <item id="DYNAMICS_PPPPP">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="6.85546875" mean="6.85546875" max="6.85546875">
@@ -2065,6 +2225,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.224" mean="0.224" max="0.224">
+                <population count="1" squares-sum="0.050176000000000005" sum="0.224"/>
             </parameter>
         </item>
         <item id="DYNAMICS_PPPPPP">
@@ -2104,6 +2267,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.18791946308724833" mean="0.18791946308724833" max="0.18791946308724833">
+                <population count="1" squares-sum="0.035313724606999684" sum="0.18791946308724833"/>
+            </parameter>
         </item>
         <item id="DYNAMICS_RF">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="1.8046875" mean="1.8046875" max="1.8046875">
@@ -2141,6 +2307,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.9047619047619048" mean="0.9047619047619048" max="0.9047619047619048">
+                <population count="1" squares-sum="0.8185941043083901" sum="0.9047619047619048"/>
             </parameter>
         </item>
         <item id="DYNAMICS_RFZ">
@@ -2180,6 +2349,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.7450980392156863" mean="0.7450980392156863" max="0.7450980392156863">
+                <population count="1" squares-sum="0.5551710880430604" sum="0.7450980392156863"/>
+            </parameter>
         </item>
         <item id="DYNAMICS_SF">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="1.99609375" mean="1.99609375" max="1.99609375">
@@ -2217,6 +2389,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.9743589743589743" mean="0.9743589743589743" max="0.9743589743589743">
+                <population count="1" squares-sum="0.9493754109138725" sum="0.9743589743589743"/>
             </parameter>
         </item>
         <item id="DYNAMICS_SFFZ">
@@ -2256,6 +2431,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.59375" mean="0.59375" max="0.59375">
+                <population count="1" squares-sum="0.3525390625" sum="0.59375"/>
+            </parameter>
         </item>
         <item id="DYNAMICS_SFP">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="3.37109375" mean="3.37109375" max="3.37109375">
@@ -2293,6 +2471,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.6666666666666666" mean="0.6666666666666666" max="0.6666666666666666">
+                <population count="1" squares-sum="0.4444444444444444" sum="0.6666666666666666"/>
             </parameter>
         </item>
         <item id="DYNAMICS_SFPP">
@@ -2332,6 +2513,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.4691358024691358" mean="0.4691358024691358" max="0.4691358024691358">
+                <population count="1" squares-sum="0.22008840115835998" sum="0.4691358024691358"/>
+            </parameter>
         </item>
         <item id="DYNAMICS_SFZ">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="2.64453125" mean="2.64453125" max="2.64453125">
@@ -2369,6 +2553,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.7916666666666666" mean="0.7916666666666666" max="0.7916666666666666">
+                <population count="1" squares-sum="0.626736111111111" sum="0.7916666666666666"/>
             </parameter>
         </item>
         <item id="EIGHTH_REST">
@@ -2408,6 +2595,9 @@
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="102" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="199.70234959183355" min="1.6538461538461537" mean="1.8032344458499114" max="2.0">
+                <population count="102" squares-sum="332.17450829083225" sum="183.92991347669096"/>
+            </parameter>
         </item>
         <item id="FERMATA">
             <parameter name="weight" training="NOMINAL" weight="19.050340818124585" min="1.2403628117913832" mean="1.4870775856638951" max="1.6820987654320987">
@@ -2445,6 +2635,9 @@
             </parameter>
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="4" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="1619.1396915058542" min="0.5476190476190477" mean="0.5811355311355312" max="0.6">
+                <population count="4" squares-sum="1.3527268580015832" sum="2.3245421245421247"/>
             </parameter>
         </item>
         <item id="FERMATA_BELOW">
@@ -2484,6 +2677,9 @@
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="2" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="625.4626038781716" min="0.5476190476190477" mean="0.5758928571428572" max="0.6041666666666666">
+                <population count="2" squares-sum="0.6649039824263039" sum="1.1517857142857144"/>
+            </parameter>
         </item>
         <item id="FLAT">
             <parameter name="weight" training="NOMINAL" weight="140.2190958539626" min="0.5207100591715976" mean="0.6939949450931082" max="0.9152892561983471">
@@ -2521,6 +2717,9 @@
             </parameter>
             <parameter name="stemNb" training="NOMINAL" weight="22.438834951456315" min="0.0" mean="0.046296296296296294" max="1.0">
                 <population count="108" squares-sum="5.0" sum="5.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="13.649250649980823" min="2.0869565217391304" mean="2.625921476872563" max="3.230769230769231">
+                <population count="108" squares-sum="752.5493272856761" sum="283.59951950223683"/>
             </parameter>
         </item>
         <item id="F_CLEF">
@@ -2560,6 +2759,9 @@
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="32" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="114.4242271972449" min="0.918918918918919" mean="1.1208568692209946" max="1.2352941176470589">
+                <population count="32" squares-sum="40.47316552717884" sum="35.86741981507183"/>
+            </parameter>
         </item>
         <item id="F_CLEF_OTTAVA_ALTA">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="3.3671875" mean="3.3671875" max="3.3671875">
@@ -2597,6 +2799,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="1.5555555555555556" mean="1.5555555555555556" max="1.5555555555555556">
+                <population count="1" squares-sum="2.419753086419753" sum="1.5555555555555556"/>
             </parameter>
         </item>
         <item id="F_CLEF_OTTAVA_BASSA">
@@ -2636,6 +2841,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="1.5777777777777777" mean="1.5777777777777777" max="1.5777777777777777">
+                <population count="1" squares-sum="2.4893827160493824" sum="1.5777777777777777"/>
+            </parameter>
         </item>
         <item id="GRACE_NOTE_NO_SLASH">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="0.62890625" mean="0.62890625" max="0.62890625">
@@ -2673,6 +2881,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="1.7777777777777777" mean="1.7777777777777777" max="1.7777777777777777">
+                <population count="1" squares-sum="3.1604938271604937" sum="1.7777777777777777"/>
             </parameter>
         </item>
         <item id="GRACE_NOTE_SLASH">
@@ -2712,6 +2923,9 @@
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="6" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="91.98328491110121" min="1.4857142857142858" mean="1.6326588250930358" max="1.7272727272727273">
+                <population count="6" squares-sum="16.047806737031806" sum="9.795952950558215"/>
+            </parameter>
         </item>
         <item id="G_CLEF">
             <parameter name="weight" training="NOMINAL" weight="0.5933200349854776" min="1.9640831758034027" mean="5.792277983976466" max="7.462585034013605">
@@ -2749,6 +2963,9 @@
             </parameter>
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="89" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="85.99716682786618" min="2.1951219512195124" mean="2.6321212725336083" max="2.8461538461538463">
+                <population count="89" squares-sum="617.6208425308934" sum="234.25879325549116"/>
             </parameter>
         </item>
         <item id="G_CLEF_OTTAVA_ALTA">
@@ -2788,6 +3005,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="3.3333333333333335" mean="3.3333333333333335" max="3.3333333333333335">
+                <population count="1" squares-sum="11.111111111111112" sum="3.3333333333333335"/>
+            </parameter>
         </item>
         <item id="G_CLEF_OTTAVA_BASSA">
             <parameter name="weight" training="NOMINAL" weight="1.0764439624787736" min="6.1875" mean="7.626806972789115" max="8.206349206349206">
@@ -2825,6 +3045,9 @@
             </parameter>
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="4" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="35.81153980243383" min="2.9365079365079363" mean="3.104147255588292" max="3.3333333333333335">
+                <population count="4" squares-sum="38.62669261708799" sum="12.416589022353168"/>
             </parameter>
         </item>
         <item id="INVERTED_MORDENT">
@@ -2864,6 +3087,9 @@
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="4" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="889.4858893562388" min="0.6842105263157895" mean="0.7311091718241668" max="0.7636363636363637">
+                <population count="4" squares-sum="2.141455219286903" sum="2.924436687296667"/>
+            </parameter>
         </item>
         <item id="INVERTED_TURN">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="1.5546875" mean="1.5546875" max="1.5546875">
@@ -2901,6 +3127,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.43902439024390244" mean="0.43902439024390244" max="0.43902439024390244">
+                <population count="1" squares-sum="0.19274241522903035" sum="0.43902439024390244"/>
             </parameter>
         </item>
         <item id="KEY_FLAT_2">
@@ -2940,6 +3169,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="2.357142857142857" mean="2.357142857142857" max="2.357142857142857">
+                <population count="1" squares-sum="5.556122448979592" sum="2.357142857142857"/>
+            </parameter>
         </item>
         <item id="KEY_FLAT_3">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="2.04296875" mean="2.04296875" max="2.04296875">
@@ -2977,6 +3209,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="1.6904761904761905" mean="1.6904761904761905" max="1.6904761904761905">
+                <population count="1" squares-sum="2.8577097505668934" sum="1.6904761904761905"/>
             </parameter>
         </item>
         <item id="KEY_FLAT_4">
@@ -3016,6 +3251,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="1.2982456140350878" mean="1.2982456140350878" max="1.2982456140350878">
+                <population count="1" squares-sum="1.685441674361342" sum="1.2982456140350878"/>
+            </parameter>
         </item>
         <item id="KEY_FLAT_5">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="3.44140625" mean="3.44140625" max="3.44140625">
@@ -3053,6 +3291,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="1.125" mean="1.125" max="1.125">
+                <population count="1" squares-sum="1.265625" sum="1.125"/>
             </parameter>
         </item>
         <item id="KEY_FLAT_6">
@@ -3092,6 +3333,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.9534883720930233" mean="0.9534883720930233" max="0.9534883720930233">
+                <population count="1" squares-sum="0.9091400757166036" sum="0.9534883720930233"/>
+            </parameter>
         </item>
         <item id="KEY_FLAT_7">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="4.83203125" mean="4.83203125" max="4.83203125">
@@ -3129,6 +3373,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.8910891089108911" mean="0.8910891089108911" max="0.8910891089108911">
+                <population count="1" squares-sum="0.794039800019606" sum="0.8910891089108911"/>
             </parameter>
         </item>
         <item id="KEY_SHARP_2">
@@ -3168,6 +3415,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="2.28125" mean="2.28125" max="2.28125">
+                <population count="1" squares-sum="5.2041015625" sum="2.28125"/>
+            </parameter>
         </item>
         <item id="KEY_SHARP_3">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="4.41015625" mean="4.41015625" max="4.41015625">
@@ -3205,6 +3455,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="1.625" mean="1.625" max="1.625">
+                <population count="1" squares-sum="2.640625" sum="1.625"/>
             </parameter>
         </item>
         <item id="KEY_SHARP_4">
@@ -3244,6 +3497,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="1.2461538461538462" mean="1.2461538461538462" max="1.2461538461538462">
+                <population count="1" squares-sum="1.5528994082840237" sum="1.2461538461538462"/>
+            </parameter>
         </item>
         <item id="KEY_SHARP_5">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="7.38671875" mean="7.38671875" max="7.38671875">
@@ -3281,6 +3537,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="1.1728395061728396" mean="1.1728395061728396" max="1.1728395061728396">
+                <population count="1" squares-sum="1.3755525072397503" sum="1.1728395061728396"/>
             </parameter>
         </item>
         <item id="KEY_SHARP_6">
@@ -3320,6 +3579,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.9591836734693877" mean="0.9591836734693877" max="0.9591836734693877">
+                <population count="1" squares-sum="0.920033319450229" sum="0.9591836734693877"/>
+            </parameter>
         </item>
         <item id="KEY_SHARP_7">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="10.36328125" mean="10.36328125" max="10.36328125">
@@ -3357,6 +3619,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.8508771929824561" mean="0.8508771929824561" max="0.8508771929824561">
+                <population count="1" squares-sum="0.7239919975377038" sum="0.8508771929824561"/>
             </parameter>
         </item>
         <item id="LONG_REST">
@@ -3396,6 +3661,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="3.2" mean="3.2" max="3.2">
+                <population count="1" squares-sum="10.240000000000002" sum="3.2"/>
+            </parameter>
         </item>
         <item id="MORDENT">
             <parameter name="weight" training="NOMINAL" weight="49.768369236658124" min="0.9421487603305785" mean="1.0724916064049586" max="1.2734375">
@@ -3433,6 +3701,9 @@
             </parameter>
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="4" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="901.4933938527669" min="0.38461538461538464" mean="0.42603854217061765" max="0.46">
+                <population count="4" squares-sum="0.729363169067128" sum="1.7041541686824706"/>
             </parameter>
         </item>
         <item id="NATURAL">
@@ -3472,6 +3743,9 @@
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="31" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="6.311211766889161" min="3.05" mean="3.978261393582726" max="4.583333333333333">
+                <population count="31" squares-sum="495.37692049995536" sum="123.3261032010645"/>
+            </parameter>
         </item>
         <item id="NOTEHEAD_BLACK">
             <parameter name="weight" training="NOMINAL" weight="150.3745116471594" min="0.7665289256198347" mean="0.9316800060319715" max="1.1635802469135803">
@@ -3509,6 +3783,9 @@
             </parameter>
             <parameter name="stemNb" training="NOMINAL" weight="69.92313773183302" min="1.0" mean="1.014502307185234" max="2.0">
                 <population count="1517" squares-sum="1583.0" sum="1539.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="258.1651321008425" min="0.6923076923076923" mean="0.9152217945133793" max="1.2916666666666667">
+                <population count="1517" squares-sum="1276.5583360941296" sum="1388.3914622767963"/>
             </parameter>
         </item>
         <item id="NOTEHEAD_BLACK_2">
@@ -3548,6 +3825,9 @@
             <parameter name="stemNb" training="NOMINAL" weight="27.999999999999968" min="1.0" mean="1.0357142857142858" max="2.0">
                 <population count="28" squares-sum="31.0" sum="29.0"/>
             </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="91.31016123552536" min="1.5416666666666667" mean="1.7733181821719735" max="2.0">
+                <population count="28" squares-sum="88.34610196479287" sum="49.65290910081526"/>
+            </parameter>
         </item>
         <item id="NOTEHEAD_BLACK_3">
             <parameter name="weight" training="NOMINAL" weight="30.34985968026214" min="2.6838842975206614" mean="2.985637018938787" max="3.2685185185185186">
@@ -3585,6 +3865,9 @@
             </parameter>
             <parameter name="stemNb" training="NOMINAL" weight="11.052631578947363" min="1.0" mean="1.0952380952380953" max="2.0">
                 <population count="21" squares-sum="27.0" sum="23.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="84.92290332127011" min="2.4074074074074074" mean="2.6020664757673133" max="2.7142857142857144">
+                <population count="21" squares-sum="142.42125655836205" sum="54.64339599111358"/>
             </parameter>
         </item>
         <item id="OLD_QUARTER_REST">
@@ -3624,6 +3907,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="1.7647058823529411" mean="1.7647058823529411" max="1.7647058823529411">
+                <population count="1" squares-sum="3.1141868512110724" sum="1.7647058823529411"/>
+            </parameter>
         </item>
         <item id="ONE_HUNDRED_TWENTY_EIGHTH_REST">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="2.8203125" mean="2.8203125" max="2.8203125">
@@ -3661,6 +3947,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="2.6857142857142855" mean="2.6857142857142855" max="2.6857142857142855">
+                <population count="1" squares-sum="7.2130612244897945" sum="2.6857142857142855"/>
             </parameter>
         </item>
         <item id="OTTAVA_ALTA">
@@ -3700,6 +3989,9 @@
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="2" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="169029.59183314283" min="0.6181818181818182" mean="0.6199017199017198" max="0.6216216216216216">
+                <population count="2" squares-sum="0.768562200798073" sum="1.2398034398034397"/>
+            </parameter>
         </item>
         <item id="OTTAVA_BASSA">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="1.03515625" mean="1.03515625" max="1.03515625">
@@ -3737,6 +4029,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.6388888888888888" mean="0.6388888888888888" max="0.6388888888888888">
+                <population count="1" squares-sum="0.40817901234567894" sum="0.6388888888888888"/>
             </parameter>
         </item>
         <item id="PEDAL_MARK">
@@ -3776,6 +4071,9 @@
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="3" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="219.1810866541392" min="0.5686274509803921" mean="0.6367540630556182" max="0.7037037037037037">
+                <population count="3" squares-sum="1.225492085371011" sum="1.9102621891668545"/>
+            </parameter>
         </item>
         <item id="PEDAL_UP_MARK">
             <parameter name="weight" training="NOMINAL" weight="340.1619366323028" min="1.0092592592592593" mean="1.0475983796296298" max="1.0859375">
@@ -3813,6 +4111,9 @@
             </parameter>
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="2" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="1057.9999999998656" min="0.9565217391304348" mean="0.9782608695652174" max="1.0">
+                <population count="2" squares-sum="1.9149338374291116" sum="1.9565217391304348"/>
             </parameter>
         </item>
         <item id="PERCUSSION_CLEF">
@@ -3852,6 +4153,9 @@
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="3" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="1.7310507982042727" min="1.5625" mean="2.0321969696969697" max="2.909090909090909">
+                <population count="3" squares-sum="13.544841167355372" sum="6.096590909090909"/>
+            </parameter>
         </item>
         <item id="QUARTER_REST">
             <parameter name="weight" training="NOMINAL" weight="45.42529457359924" min="0.7851239669421488" mean="1.1531615472433159" max="1.34765625">
@@ -3889,6 +4193,9 @@
             </parameter>
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="60" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="36.29527604278096" min="2.32" mean="2.72364555730572" max="3.0625">
+                <population count="60" squares-sum="446.72026320674485" sum="163.4187334383432"/>
             </parameter>
         </item>
         <item id="SEGNO">
@@ -3928,6 +4235,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="1.303030303030303" mean="1.303030303030303" max="1.303030303030303">
+                <population count="1" squares-sum="1.6978879706152432" sum="1.303030303030303"/>
+            </parameter>
         </item>
         <item id="SHARP">
             <parameter name="weight" training="NOMINAL" weight="91.90017059903748" min="0.8765432098765432" mean="1.2862620522592714" max="1.5277777777777777">
@@ -3965,6 +4275,9 @@
             </parameter>
             <parameter name="stemNb" training="NOMINAL" weight="17.25194805194805" min="0.0" mean="0.06097560975609756" max="1.0">
                 <population count="82" squares-sum="5.0" sum="5.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="14.52545865558147" min="2.2413793103448274" mean="2.8067343546423453" max="3.8333333333333335">
+                <population count="82" squares-sum="651.5525504736859" sum="230.1522170806723"/>
             </parameter>
         </item>
         <item id="SIXTEENTH_REST">
@@ -4004,6 +4317,9 @@
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="34" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="107.54940297428338" min="2.08" mean="2.2194050013167663" max="2.423076923076923">
+                <population count="34" squares-sum="167.78262676954904" sum="75.45977004477005"/>
+            </parameter>
         </item>
         <item id="SIXTY_FOURTH_REST">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="2.296875" mean="2.296875" max="2.296875">
@@ -4041,6 +4357,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="2.6" mean="2.6" max="2.6">
+                <population count="1" squares-sum="6.760000000000001" sum="2.6"/>
             </parameter>
         </item>
         <item id="SLUR">
@@ -4080,6 +4399,9 @@
             <parameter name="stemNb" training="NOMINAL" weight="37.77083333333333" min="0.0" mean="0.02702702702702703" max="1.0">
                 <population count="148" squares-sum="4.0" sum="4.0"/>
             </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="30.71217375586623" min="0.030821917808219176" mean="0.2253078543180321" max="1.0217391304347827">
+                <population count="148" squares-sum="12.299392753868357" sum="33.34556243906875"/>
+            </parameter>
         </item>
         <item id="STACCATISSIMO">
             <parameter name="weight" training="NOMINAL" weight="80.0238921641775" min="0.1796875" mean="0.25873263888888887" max="0.3377777777777778">
@@ -4117,6 +4439,9 @@
             </parameter>
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="2" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="0.797783933518006" min="1.25" mean="2.041666666666667" max="2.8333333333333335">
+                <population count="2" squares-sum="9.590277777777779" sum="4.083333333333334"/>
             </parameter>
         </item>
         <item id="STRONG_ACCENT">
@@ -4156,6 +4481,9 @@
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="2" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="9.174034348068684" min="1.0625" mean="1.2959558823529411" max="1.5294117647058822">
+                <population count="2" squares-sum="3.468006596020761" sum="2.5919117647058822"/>
+            </parameter>
         </item>
         <item id="STRUCTURE">
             <parameter name="weight" training="NOMINAL" weight="0.05494895009591912" min="0.9628099173553719" mean="3.6529604089864636" max="24.786703601108034">
@@ -4193,6 +4521,9 @@
             </parameter>
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="615" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="0.7621339969393817" min="0.3317307692307692" mean="2.6452656406116626" max="7.214285714285714">
+                <population count="615" squares-sum="5109.052248806573" sum="1626.8383689761724"/>
             </parameter>
         </item>
         <item id="TENUTO">
@@ -4232,6 +4563,9 @@
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="2" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="IDENTICAL_VALUES" weight="0.0" min="0.15789473684210525" mean="0.15789473684210525" max="0.15789473684210525">
+                <population count="2" squares-sum="0.04986149584487534" sum="0.3157894736842105"/>
+            </parameter>
         </item>
         <item id="TEXT">
             <parameter name="weight" training="NOMINAL" weight="0.013190649983930089" min="0.9074074074074074" mean="5.04985995620989" max="64.38461538461539">
@@ -4269,6 +4603,9 @@
             </parameter>
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="63" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="34.71816791415334" min="0.05317324185248713" mean="0.2849975952790885" max="0.7837837837837838">
+                <population count="63" squares-sum="6.90289716511147" sum="17.95484850258258"/>
             </parameter>
         </item>
         <item id="THIRTY_SECOND_REST">
@@ -4308,6 +4645,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="2.3846153846153846" mean="2.3846153846153846" max="2.3846153846153846">
+                <population count="1" squares-sum="5.686390532544379" sum="2.3846153846153846"/>
+            </parameter>
         </item>
         <item id="TIME_EIGHT">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="1.3828125" mean="1.3828125" max="1.3828125">
@@ -4345,6 +4685,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="1.3333333333333333" mean="1.3333333333333333" max="1.3333333333333333">
+                <population count="1" squares-sum="1.7777777777777777" sum="1.3333333333333333"/>
             </parameter>
         </item>
         <item id="TIME_FIVE">
@@ -4384,6 +4727,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="1.4210526315789473" mean="1.4210526315789473" max="1.4210526315789473">
+                <population count="1" squares-sum="2.0193905817174516" sum="1.4210526315789473"/>
+            </parameter>
         </item>
         <item id="TIME_FOUR">
             <parameter name="weight" training="NOMINAL" weight="181.0033032219167" min="0.9855371900826446" mean="1.0957180586594142" max="1.1950113378684808">
@@ -4421,6 +4767,9 @@
             </parameter>
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="6" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="117.10270107789921" min="1.2857142857142858" mean="1.4307881773399014" max="1.5714285714285714">
+                <population count="6" squares-sum="12.325626413863207" sum="8.584729064039408"/>
             </parameter>
         </item>
         <item id="TIME_FOUR_FOUR">
@@ -4460,6 +4809,9 @@
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="71" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="163.20896979474992" min="2.45" mean="2.570643157188745" max="2.8666666666666667">
+                <population count="71" squares-sum="469.61154114923914" sum="182.51566416040092"/>
+            </parameter>
         </item>
         <item id="TIME_NINE">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="1.48046875" mean="1.48046875" max="1.48046875">
@@ -4497,6 +4849,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="1.2727272727272727" mean="1.2727272727272727" max="1.2727272727272727">
+                <population count="1" squares-sum="1.6198347107438016" sum="1.2727272727272727"/>
             </parameter>
         </item>
         <item id="TIME_ONE">
@@ -4536,6 +4891,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="1.6875" mean="1.6875" max="1.6875">
+                <population count="1" squares-sum="2.84765625" sum="1.6875"/>
+            </parameter>
         </item>
         <item id="TIME_SEVEN">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="1.11328125" mean="1.11328125" max="1.11328125">
@@ -4573,6 +4931,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="1.2727272727272727" mean="1.2727272727272727" max="1.2727272727272727">
+                <population count="1" squares-sum="1.6198347107438016" sum="1.2727272727272727"/>
             </parameter>
         </item>
         <item id="TIME_SIX">
@@ -4612,6 +4973,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="1.2727272727272727" mean="1.2727272727272727" max="1.2727272727272727">
+                <population count="1" squares-sum="1.6198347107438016" sum="1.2727272727272727"/>
+            </parameter>
         </item>
         <item id="TIME_SIXTEEN">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="2.45703125" mean="2.45703125" max="2.45703125">
@@ -4649,6 +5013,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.717948717948718" mean="0.717948717948718" max="0.717948717948718">
+                <population count="1" squares-sum="0.5154503616042078" sum="0.717948717948718"/>
             </parameter>
         </item>
         <item id="TIME_SIX_EIGHT">
@@ -4688,6 +5055,9 @@
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="9" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="77.07604741516316" min="2.5172413793103448" mean="2.684948112541272" max="2.857142857142857">
+                <population count="9" squares-sum="64.9843108977068" sum="24.16453301287145"/>
+            </parameter>
         </item>
         <item id="TIME_THREE">
             <parameter name="weight" training="NOMINAL" weight="186.00713079378582" min="1.3181818181818181" mean="1.3700284090909092" max="1.421875">
@@ -4725,6 +5095,9 @@
             </parameter>
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="2" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="199.9999999999865" min="1.3333333333333333" mean="1.3833333333333333" max="1.4333333333333333">
+                <population count="2" squares-sum="3.832222222222222" sum="2.7666666666666666"/>
             </parameter>
         </item>
         <item id="TIME_THREE_FOUR">
@@ -4764,6 +5137,9 @@
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="71" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="143.97629832185697" min="2.45" mean="2.496616541353382" max="2.9">
+                <population count="71" squares-sum="443.03587610944675" sum="177.2597744360901"/>
+            </parameter>
         </item>
         <item id="TIME_TWELVE">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="2.38671875" mean="2.38671875" max="2.38671875">
@@ -4801,6 +5177,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.717948717948718" mean="0.717948717948718" max="0.717948717948718">
+                <population count="1" squares-sum="0.5154503616042078" sum="0.717948717948718"/>
             </parameter>
         </item>
         <item id="TIME_TWO">
@@ -4840,6 +5219,9 @@
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="3" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="152.02419730106504" min="1.2727272727272727" mean="1.3464646464646464" max="1.4333333333333333">
+                <population count="3" squares-sum="5.452056932966023" sum="4.039393939393939"/>
+            </parameter>
         </item>
         <item id="TIME_TWO_FOUR">
             <parameter name="weight" training="NOMINAL" weight="14.907884900864303" min="2.061224489795918" mean="3.09040377240694" max="3.2958579881656807">
@@ -4877,6 +5259,9 @@
             </parameter>
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="48" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="49.52927520510282" min="2.3333333333333335" mean="2.507048395924926" max="3.0689655172413794">
+                <population count="48" squares-sum="302.64293338920197" sum="120.33832300439644"/>
             </parameter>
         </item>
         <item id="TIME_TWO_TWO">
@@ -4916,6 +5301,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="2.727272727272727" mean="2.727272727272727" max="2.727272727272727">
+                <population count="1" squares-sum="7.438016528925619" sum="2.727272727272727"/>
+            </parameter>
         </item>
         <item id="TIME_ZERO">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="1.37890625" mean="1.37890625" max="1.37890625">
@@ -4953,6 +5341,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="1.2173913043478262" mean="1.2173913043478262" max="1.2173913043478262">
+                <population count="1" squares-sum="1.4820415879017015" sum="1.2173913043478262"/>
             </parameter>
         </item>
         <item id="TR">
@@ -4992,6 +5383,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.75" mean="0.75" max="0.75">
+                <population count="1" squares-sum="0.5625" sum="0.75"/>
+            </parameter>
         </item>
         <item id="TUPLET_SIX">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="0.64453125" mean="0.64453125" max="0.64453125">
@@ -5029,6 +5423,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="1.4285714285714286" mean="1.4285714285714286" max="1.4285714285714286">
+                <population count="1" squares-sum="2.0408163265306123" sum="1.4285714285714286"/>
             </parameter>
         </item>
         <item id="TUPLET_THREE">
@@ -5068,6 +5465,9 @@
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="8" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="147.92519955956092" min="1.25" mean="1.4371623847167323" max="1.5">
+                <population count="8" squares-sum="16.570806974192863" sum="11.497299077733858"/>
+            </parameter>
         </item>
         <item id="TURN">
             <parameter name="weight" training="NOMINAL" weight="7.445714766317303" min="0.808641975308642" mean="1.0051842206790125" max="1.5546875">
@@ -5105,6 +5505,9 @@
             </parameter>
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="4" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="1514.1678924035114" min="0.43902439024390244" mean="0.4666888706702193" max="0.5">
+                <population count="4" squares-sum="0.8731752942629969" sum="1.8667554826808772"/>
             </parameter>
         </item>
         <item id="TURN_SLASH">
@@ -5144,6 +5547,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="0.6" mean="0.6" max="0.6">
+                <population count="1" squares-sum="0.36" sum="0.6"/>
+            </parameter>
         </item>
         <item id="TURN_UP">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="1.4609375" mean="1.4609375" max="1.4609375">
@@ -5181,6 +5587,9 @@
             </parameter>
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="2.2777777777777777" mean="2.2777777777777777" max="2.2777777777777777">
+                <population count="1" squares-sum="5.188271604938271" sum="2.2777777777777777"/>
             </parameter>
         </item>
         <item id="VOID_NOTEHEAD">
@@ -5220,6 +5629,9 @@
             <parameter name="stemNb" training="NOMINAL" weight="97.00000000000034" min="1.0" mean="1.0103092783505154" max="2.0">
                 <population count="97" squares-sum="100.0" sum="98.0"/>
             </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="149.17619032080782" min="0.7368421052631579" mean="0.9140846885406814" max="1.1578947368421053">
+                <population count="97" squares-sum="81.69196366105564" sum="88.6662147884461"/>
+            </parameter>
         </item>
         <item id="VOID_NOTEHEAD_2">
             <parameter name="weight" training="NOMINAL" weight="643.9466300087681" min="1.3076923076923077" mean="1.3442129629629629" max="1.40625">
@@ -5257,6 +5669,9 @@
             </parameter>
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="1.0" mean="1.0" max="1.0">
                 <population count="5" squares-sum="5.0" sum="5.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="66.28879277638272" min="1.4210526315789473" mean="1.634609250398724" max="1.736842105263158">
+                <population count="5" squares-sum="13.420079032582183" sum="8.17304625199362"/>
             </parameter>
         </item>
         <item id="VOID_NOTEHEAD_3">
@@ -5296,6 +5711,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="1.0" mean="1.0" max="1.0">
                 <population count="1" squares-sum="1.0" sum="1.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="2.5789473684210527" mean="2.5789473684210527" max="2.5789473684210527">
+                <population count="1" squares-sum="6.650969529085873" sum="2.5789473684210527"/>
+            </parameter>
         </item>
         <item id="WHOLE_NOTE">
             <parameter name="weight" training="NOMINAL" weight="61.32307912366889" min="0.8088888888888889" mean="1.1125148556779163" max="1.31">
@@ -5333,6 +5751,9 @@
             </parameter>
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="18" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="298.54313969918735" min="0.55" mean="0.5927838054300042" max="0.8095238095238095">
+                <population count="18" squares-sum="6.382010713905135" sum="10.670108497740076"/>
             </parameter>
         </item>
         <item id="WHOLE_NOTE_2">
@@ -5372,6 +5793,9 @@
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="2" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="170.63850415510723" min="1.0769230769230769" mean="1.1310541310541309" max="1.1851851851851851">
+                <population count="2" squares-sum="2.564427236791909" sum="2.2621082621082618"/>
+            </parameter>
         </item>
         <item id="WHOLE_NOTE_3">
             <parameter name="weight" training="SINGLE_DATA" weight="0.0" min="3.03515625" mean="3.03515625" max="3.03515625">
@@ -5410,6 +5834,9 @@
             <parameter name="stemNb" training="SINGLE_DATA" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="1" squares-sum="0.0" sum="0.0"/>
             </parameter>
+            <parameter name="aspect" training="SINGLE_DATA" weight="0.0" min="1.7777777777777777" mean="1.7777777777777777" max="1.7777777777777777">
+                <population count="1" squares-sum="3.1604938271604937" sum="1.7777777777777777"/>
+            </parameter>
         </item>
         <item id="WHOLE_OR_HALF_REST">
             <parameter name="weight" training="NOMINAL" weight="307.48851906664163" min="0.56" mean="0.7250949637914261" max="0.8888888888888888">
@@ -5447,6 +5874,9 @@
             </parameter>
             <parameter name="stemNb" training="IDENTICAL_VALUES" weight="0.0" min="0.0" mean="0.0" max="0.0">
                 <population count="179" squares-sum="0.0" sum="0.0"/>
+            </parameter>
+            <parameter name="aspect" training="NOMINAL" weight="1059.6644079994746" min="0.3888888888888889" mean="0.4475744212243869" max="0.5">
+                <population count="179" squares-sum="36.02577010305863" sum="80.11582139916526"/>
             </parameter>
         </item>
     </categories>

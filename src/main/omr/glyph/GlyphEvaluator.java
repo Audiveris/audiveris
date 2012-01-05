@@ -22,6 +22,8 @@ import omr.log.Logger;
 import omr.math.Moments;
 import omr.math.NeuralNetwork;
 
+import omr.run.Orientation;
+
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
@@ -66,9 +68,9 @@ public abstract class GlyphEvaluator
 
     /**
      * Number of useful input parameters : nb of useful moments +
-     * stemNumber, isWithLedger = {@value}.
+     * aspect + stemNumber, isWithLedger = {@value}.
      */
-    public static final int paramCount = inMoments + 2;
+    public static final int paramCount = inMoments + 3;
 
     /** Number of shapes to differentiate. */
     public static final int shapeCount = 1 +
@@ -164,6 +166,9 @@ public abstract class GlyphEvaluator
      * Prepare the evaluator input, by picking up some characteristics
      * of the glyph (some of its moments, and some info on
      * surroundings).
+     *
+     * NOTA: Keep in sync class {@link LabelsHolder}
+     *
      * @param glyph the glyph to be evaluated
      * @return the filled input array
      */
@@ -179,14 +184,13 @@ public abstract class GlyphEvaluator
             ins[i] = k[i];
         }
 
-        // We append ledger presence and stem count)
+        // We append ledger presence and stem count and aspect
         int i = inMoments;
         /* 10 */ ins[i++] = boolAsDouble(glyph.isWithLedger());
         /* 11 */ ins[i++] = glyph.getStemNumber();
+        /* 12 */ ins[i++] = glyph.getAspect(Orientation.VERTICAL);
 
-        ////////* 12 */ ins[i++] = glyph.getPitchPosition();
-
-        // We skip moments 17 & 18 (xMean and yMean) ???
+        //////// ins[i++] = glyph.getPitchPosition();
         return ins;
     }
 
@@ -563,7 +567,11 @@ public abstract class GlyphEvaluator
     //--------------//
     // LabelsHolder //
     //--------------//
-    /** Descriptive strings for glyph characteristics. */
+    /**
+     * Descriptive strings for glyph characteristics.
+     *
+     * NOTA: Keep in sync method {@link #feedInput}
+     */
     private static class LabelsHolder
     {
         //~ Static fields/initializers -----------------------------------------
@@ -581,6 +589,7 @@ public abstract class GlyphEvaluator
             int i = inMoments;
             /* 10 */ labels[i++] = "ledger";
             /* 11 */ labels[i++] = "stemNb";
+            /* 12 */ labels[i++] = "aspect";
 
             ////* 12 */ labels[i++] = "pitch";
             for (int j = 0; j < labels.length; j++) {

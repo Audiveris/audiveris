@@ -105,7 +105,7 @@ public class Grades
 
         //
         Evaluation.Grade validationMinGrade = new Evaluation.Grade(
-            83,
+            50, ///83,
             "Minimum grade for a validation");
 
         //

@@ -17,6 +17,7 @@ import omr.constant.ConstantSet;
 import omr.glyph.Evaluation;
 import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphNetwork;
+import omr.glyph.Glyphs;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.ShapeRange;
@@ -50,7 +51,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedSet;
 
 /**
@@ -589,8 +592,8 @@ public class ScoreChecker
     private void checkVoidHeads (Chord chord)
     {
         // Void heads?
-        double      noteGrade = Double.MIN_VALUE;
-        List<Glyph> voidGlyphs = new ArrayList<Glyph>();
+        double     noteGrade = Double.MIN_VALUE;
+        Set<Glyph> voidGlyphs = new HashSet<Glyph>();
 
         for (TreeNode node : chord.getNotes()) {
             Note  note = (Note) node;
@@ -651,10 +654,9 @@ public class ScoreChecker
         if (fix) {
             // Change note shape (void -> black)
             for (Glyph glyph : voidGlyphs) {
-                Evaluation vote = evaluator.topVote(
+                Evaluation vote = evaluator.topRawVote(
                     glyph,
                     Grades.consistentNoteMinGrade,
-                    system.getInfo(),
                     predicate);
 
                 if (vote != null) {
