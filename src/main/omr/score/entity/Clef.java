@@ -90,7 +90,7 @@ public class Clef
         }
 
         setStaff(staff);
-        this.shape = shape;
+        this.shape = (shape == Shape.G_CLEF_SMALL) ? Shape.G_CLEF : shape;
         setCenter(center);
         this.pitchPosition = pitchPosition;
 
@@ -219,6 +219,7 @@ public class Clef
 
         switch (shape) {
         case G_CLEF :
+        case G_CLEF_SMALL :
         case G_CLEF_OTTAVA_ALTA :
         case G_CLEF_OTTAVA_BASSA :
             glyph.setTranslation(
@@ -237,6 +238,7 @@ public class Clef
             return true;
 
         case F_CLEF :
+        case F_CLEF_SMALL :
         case F_CLEF_OTTAVA_ALTA :
         case F_CLEF_OTTAVA_BASSA :
             glyph.setTranslation(
@@ -292,6 +294,7 @@ public class Clef
     {
         switch (shape) {
         case G_CLEF :
+        case G_CLEF_SMALL :
         case G_CLEF_OTTAVA_ALTA :
         case G_CLEF_OTTAVA_BASSA :
             return Note.Step.values()[(71 - pitchPosition) % 7];
@@ -303,6 +306,7 @@ public class Clef
             return Note.Step.values()[(72 - this.pitchPosition - pitchPosition) % 7];
 
         case F_CLEF :
+        case F_CLEF_SMALL :
         case F_CLEF_OTTAVA_ALTA :
         case F_CLEF_OTTAVA_BASSA :
             return Note.Step.values()[(73 - pitchPosition) % 7];
@@ -330,6 +334,7 @@ public class Clef
     {
         switch (shape) {
         case G_CLEF :
+        case G_CLEF_SMALL :
             return (34 - pitchPosition) / 7;
 
         case G_CLEF_OTTAVA_ALTA :
@@ -345,6 +350,7 @@ public class Clef
             return (28 - this.pitchPosition - pitchPosition) / 7;
 
         case F_CLEF :
+        case F_CLEF_SMALL :
             return (22 - pitchPosition) / 7;
 
         case F_CLEF_OTTAVA_ALTA :

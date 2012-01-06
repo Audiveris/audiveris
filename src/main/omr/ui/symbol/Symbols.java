@@ -260,11 +260,13 @@ public class Symbols
         map(FINAL_BARLINE, 211);
         sym.put(FLAT, new FlatSymbol(FLAT, 98));
         map(F_CLEF, 63);
+        map(F_CLEF_SMALL, 63);
         ottava(true, F_CLEF_OTTAVA_ALTA, 63);
         ottava(false, F_CLEF_OTTAVA_BASSA, 63);
         map(GRACE_NOTE_NO_SLASH, 59);
         map(GRACE_NOTE_SLASH, 201);
         map(G_CLEF, 38);
+        map(G_CLEF_SMALL, 38);
         ottava(true, G_CLEF_OTTAVA_ALTA, 38);
         ottava(false, G_CLEF_OTTAVA_BASSA, 38);
         sym.put(HALF_REST, new RestSymbol(HALF_REST, false, 238));

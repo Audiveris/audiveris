@@ -195,12 +195,14 @@ public class ShapeRange
     /** All sorts of F clefs */
     public static final EnumSet<Shape> BassClefs = EnumSet.of(
         F_CLEF,
+        F_CLEF_SMALL,
         F_CLEF_OTTAVA_ALTA,
         F_CLEF_OTTAVA_BASSA);
 
     /** All sorts of G clefs */
     public static final EnumSet<Shape> TrebleClefs = EnumSet.of(
         G_CLEF,
+        G_CLEF_SMALL,
         G_CLEF_OTTAVA_ALTA,
         G_CLEF_OTTAVA_BASSA);
 

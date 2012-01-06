@@ -237,14 +237,7 @@ public class GlyphVerifier
      */
     List<String> getGlyphNames ()
     {
-        Object[]     names = glyphSelector.list.getSelectedValues();
-        List<String> list = new ArrayList<String>(names.length);
-
-        for (Object name : names) {
-            list.add((String) name);
-        }
-
-        return list;
+        return glyphSelector.list.getSelectedValuesList();
     }
 
     //-----------------//
@@ -336,7 +329,7 @@ public class GlyphVerifier
      * Each selector is made of a list of names, which can be selected and
      * deselected at will.
      */
-    private abstract static class Selector
+    private abstract static class Selector<E>
         extends TitledPanel
         implements ActionListener, ChangeListener
     {
@@ -352,13 +345,15 @@ public class GlyphVerifier
         private ChangeEvent changeEvent;
 
         // Buttons
-        protected JButton                load = new JButton("Load");
-        protected JButton                selectAll = new JButton("Select All");
-        protected JButton                cancelAll = new JButton("Cancel All");
+        protected JButton                   load = new JButton("Load");
+        protected JButton                   selectAll = new JButton(
+            "Select All");
+        protected JButton                   cancelAll = new JButton(
+            "Cancel All");
 
         // List of items, with its model
-        protected final DefaultListModel model = new DefaultListModel();
-        protected JList                  list = new JList(model);
+        protected final DefaultListModel<E> model = new DefaultListModel<E>();
+        protected JList<E>                  list = new JList<E>(model);
 
         // ScrollPane around the list
         protected JScrollPane scrollPane = new JScrollPane(list);
@@ -433,12 +428,12 @@ public class GlyphVerifier
         //--------------//
         // populateWith //
         //--------------//
-        public void populateWith (Collection<?extends Object> names)
+        public void populateWith (Collection<E> items)
         {
             model.removeAllElements();
 
-            for (Object name : names) {
-                model.addElement(name);
+            for (E item : items) {
+                model.addElement(item);
             }
 
             updateCardinal();
@@ -521,7 +516,7 @@ public class GlyphVerifier
     // FolderSelector //
     //----------------//
     private class FolderSelector
-        extends Selector
+        extends Selector<String>
     {
         //~ Constructors -------------------------------------------------------
 
@@ -573,7 +568,7 @@ public class GlyphVerifier
     // GlyphSelector //
     //---------------//
     private class GlyphSelector
-        extends Selector
+        extends Selector<String>
     {
         //~ Constructors -------------------------------------------------------
 
@@ -588,46 +583,40 @@ public class GlyphVerifier
         @Implement(ActionListener.class)
         public void actionPerformed (ActionEvent e)
         {
-            final Object[]           folders = folderSelector.list.getSelectedValues();
-            final Object[]           shapes = shapeSelector.list.getSelectedValues();
-            final Collection<String> shapeList = new ArrayList<String>(
-                shapes.length);
-
-            for (Object obj : shapes) {
-                Shape shape = (Shape) obj;
-                shapeList.add(shape.name());
-            }
+            final List<String> folders = folderSelector.list.getSelectedValuesList();
+            final List<Shape>  shapes = shapeSelector.list.getSelectedValuesList();
 
             // Debug
             if (logger.isFineEnabled()) {
-                logger.fine("Glyph Selector. Got Sheets:");
+                logger.fine("Glyph Selector. Got Folders:");
 
-                for (Object fName : folders) {
-                    logger.fine(fName.toString());
+                for (String fName : folders) {
+                    logger.fine(fName);
                 }
 
                 logger.fine("Glyph Selector. Got Shapes:");
 
-                for (Object shapeName : shapes) {
-                    logger.fine(shapeName.toString());
+                for (Shape shape : shapes) {
+                    logger.fine(shape.toString());
                 }
             }
 
-            if (shapes.length == 0) {
+            if (shapes.isEmpty()) {
                 logger.warning("No shapes selected in Shape Selector");
             } else {
                 model.removeAllElements();
 
                 // Populate with all possible glyphs, sorted by gName
-                for (Object folder : folders) {
+                for (String folder : folders) {
                     // Add proper glyphs files from this directory
                     ArrayList<String> gNames = new ArrayList<String>();
-                    File              dir = getActualDir((String) folder);
+                    File              dir = getActualDir(folder);
 
                     for (File file : repository.getGlyphsIn(dir)) {
                         String shapeName = radixOf(file.getName());
+                        Shape shape = Shape.valueOf(shapeName);
 
-                        if (shapeList.contains(shapeName)) {
+                        if (shapes.contains(shape)) {
                             gNames.add(
                                 folder + File.separator + file.getName());
                         }
@@ -650,7 +639,7 @@ public class GlyphVerifier
     //-------------------//
     private class ShapeCellRenderer
         extends JLabel
-        implements ListCellRenderer
+        implements ListCellRenderer<Shape>
     {
         //~ Constructors -------------------------------------------------------
 
@@ -666,14 +655,13 @@ public class GlyphVerifier
          * to the selected value and returns the label, set up
          * to display the text and image.
          */
+        @Override
         public Component getListCellRendererComponent (JList   list,
-                                                       Object  value,
+                                                       Shape   shape,
                                                        int     index,
                                                        boolean isSelected,
                                                        boolean cellHasFocus)
         {
-            Shape shape = (Shape) value;
-
             if (isSelected) {
                 setBackground(list.getSelectionBackground());
                 setForeground(list.getSelectionForeground());
@@ -694,7 +682,7 @@ public class GlyphVerifier
     // ShapeSelector //
     //---------------//
     private class ShapeSelector
-        extends Selector
+        extends Selector<Shape>
     {
         //~ Constructors -------------------------------------------------------
 

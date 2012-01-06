@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<glyph shape="G_CLEF" interline="18" id="446">
+<glyph shape="G_CLEF_SMALL" interline="18" id="446">
     <stem-number>0</stem-number>
     <with-ledger>false</with-ledger>
     <pitch-position>0.6486486486486487</pitch-position>

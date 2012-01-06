@@ -693,8 +693,8 @@ public class KeySignature
     //-------------//
     /**
      * Classify clefs by clef kinds, since for example the same key is
-     * represented with idebtical pitch positions for G_CLEF, G_CLEF_OTTAVA_ALTA
-     * and G_CLEF_OTTAVA_BASSA.
+     * represented with identical pitch positions for G_CLEF, 
+     * G_CLEF_OTTAVA_ALTA and G_CLEF_OTTAVA_BASSA.
      *
      * @param shape the precise clef shape
      * @return the clef kind
@@ -703,11 +703,13 @@ public class KeySignature
     {
         switch (shape) {
         case G_CLEF :
+        case G_CLEF_SMALL :
         case G_CLEF_OTTAVA_ALTA :
         case G_CLEF_OTTAVA_BASSA :
             return G_CLEF;
 
         case F_CLEF :
+        case F_CLEF_SMALL :
         case F_CLEF_OTTAVA_ALTA :
         case F_CLEF_OTTAVA_BASSA :
             return F_CLEF;
@@ -842,6 +844,7 @@ public class KeySignature
     {
         switch (clef) {
         case G_CLEF :
+        case G_CLEF_SMALL :
         case G_CLEF_OTTAVA_ALTA :
         case G_CLEF_OTTAVA_BASSA :
             return G_CLEF;
@@ -850,6 +853,7 @@ public class KeySignature
             return C_CLEF;
 
         case F_CLEF :
+        case F_CLEF_SMALL :
         case F_CLEF_OTTAVA_ALTA :
         case F_CLEF_OTTAVA_BASSA :
             return F_CLEF;

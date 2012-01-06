@@ -115,6 +115,8 @@ public enum Shape {
     //
     /** Treble Clef */
     G_CLEF("Treble Clef"), 
+    /** Treble Clef */
+    G_CLEF_SMALL("Small Treble Clef"), 
     /** Ottava Alta */
     G_CLEF_OTTAVA_ALTA("Ottava Alta"), 
     /** Ottava Bassa */
@@ -123,6 +125,8 @@ public enum Shape {
     C_CLEF("Ut Clef"), 
     /** Bass Clef */
     F_CLEF("Bass Clef"), 
+    /** Bass Clef */
+    F_CLEF_SMALL("Small Bass Clef"), 
     /** Bass Clef Ottava Alta */
     F_CLEF_OTTAVA_ALTA("Bass Clef Ottava Alta"), 
 
