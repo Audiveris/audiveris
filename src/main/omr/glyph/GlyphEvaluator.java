@@ -167,7 +167,7 @@ public abstract class GlyphEvaluator
      * of the glyph (some of its moments, and some info on
      * surroundings).
      *
-     * NOTA: Keep in sync class {@link LabelsHolder}
+     * NOTA: Keep in sync class {@link GlyphEvaluator.LabelsHolder}
      *
      * @param glyph the glyph to be evaluated
      * @return the filled input array

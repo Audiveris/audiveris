@@ -49,8 +49,10 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
- * Class {@code StaffInfo} handles the physical informations of a staff with
- * its lines.
+ * Class {@code StaffInfo} handles the physical informations of a staff
+ * with its lines.
+ * Note: All methods are meant to provide correct results, rehardless of the
+ * actual number of lines in the staff instance.
  *
  * @author Hervé Bitteur
  */
@@ -68,7 +70,7 @@ public class StaffInfo
 
     /**
      * Scale specific to this staff, since different staves in a page may
-     * exhibit different scales.
+     * exhibit different scales
      */
     private Scale specificScale;
 
@@ -108,8 +110,7 @@ public class StaffInfo
     // StaffInfo //
     //-----------//
     /**
-     * Create info about a staff, with its contained staff lines
-     *
+     * Create info about a staff, with its contained staff lines.
      * @param id the id of the staff
      * @param left abscissa of the left side
      * @param right abscissa of the right side
@@ -134,6 +135,11 @@ public class StaffInfo
     //-------------//
     // setAbscissa //
     //-------------//
+    /**
+     * Set the staff abscissa of the provided side.
+     * @param side provided side
+     * @param val abscissa of staff end
+     */
     public void setAbscissa (HorizontalSide side,
                              double         val)
     {
@@ -147,6 +153,11 @@ public class StaffInfo
     //-------------//
     // getAbscissa //
     //-------------//
+    /**
+     * Report the staff abscissa, on the provided side.
+     * @param side provided side
+     * @return the staff abscissa
+     */
     public double getAbscissa (HorizontalSide side)
     {
         if (side == HorizontalSide.LEFT) {
@@ -160,7 +171,7 @@ public class StaffInfo
     // getArea //
     //---------//
     /**
-     * Report the lazily computed area defined by the staff limits
+     * Report the lazily computed area defined by the staff limits.
      * @return the whole staff area
      */
     public GeoPath getArea ()
@@ -180,7 +191,7 @@ public class StaffInfo
     // getAreaBounds //
     //---------------//
     /**
-     * Report the bounding box of the staff area
+     * Report the bounding box of the staff area.
      * @return the lazily computed bounding box
      */
     public Rectangle2D getAreaBounds ()
@@ -193,6 +204,7 @@ public class StaffInfo
     // setBar //
     //--------//
     /**
+     * Set a barline on the provided side
      * @param side proper horizontal side
      * @param bar the bar to set
      */
@@ -210,8 +222,9 @@ public class StaffInfo
     // getBar //
     //--------//
     /**
+     * Report the barline, if any, on the provided side
      * @param side proper horizontal side
-     * @return the leftBar
+     * @return the bar on the provided side, if any
      */
     public BarInfo getBar (HorizontalSide side)
     {
@@ -300,11 +313,34 @@ public class StaffInfo
     }
 
     //----------------//
+    // getClosestLine //
+    //----------------//
+    /**
+     * Report the staff line which is closest to the provided point
+     * @param point the provided point
+     * @return the closest line found
+     */
+    public LineInfo getClosestLine (Point2D point)
+    {
+        double pos = pitchPositionOf(point);
+        int    idx = (int) Math.rint((pos + (lines.size() - 1)) / 2);
+
+        if (idx < 0) {
+            idx = 0;
+        } else if (idx > (lines.size() - 1)) {
+            idx = lines.size() - 1;
+        }
+
+        return lines.get(idx);
+    }
+
+    //----------------//
     // getEndingSlope //
     //----------------//
     /**
-     * Discard highest and lowest absolute slopes
-     * And return the average values for the remaining ones
+     * Report mean ending slope, on the provided side.
+     * We discard highest and lowest absolute slopes, and return the average
+     * values for the remaining ones.
      * @param side which side to select (left or right)
      * @return a "mean" value
      */
@@ -340,8 +376,7 @@ public class StaffInfo
     // getFirstLine //
     //--------------//
     /**
-     * Report the first line in the series
-     *
+     * Report the first line in the series.
      * @return the first line
      */
     public LineInfo getFirstLine ()
@@ -353,8 +388,7 @@ public class StaffInfo
     // getHeight //
     //-----------//
     /**
-     * Report the mean height of the staff, between first and last line
-     *
+     * Report the mean height of the staff, between first and last line.
      * @return the mean staff height
      */
     public int getHeight ()
@@ -367,7 +401,8 @@ public class StaffInfo
     // getId //
     //-------//
     /**
-     * @return the id
+     * Report the staff id, counted from 1 in the sheet.
+     * @return the staff id
      */
     public int getId ()
     {
@@ -378,8 +413,7 @@ public class StaffInfo
     // getLastLine //
     //-------------//
     /**
-     * Report the last line in the series
-     *
+     * Report the last line in the series.
      * @return the last line
      */
     public LineInfo getLastLine ()
@@ -413,7 +447,7 @@ public class StaffInfo
     // setLimit //
     //----------//
     /**
-     * Define the limit at the bottom of the staff area.
+     * Define the limit of the staff area, on the provided vertical side.
      * @param side proper vertical side
      * @param limit assigned limit
      */
@@ -430,6 +464,13 @@ public class StaffInfo
     //-------------//
     // getLimitAtX //
     //-------------//
+    /**
+     * Report the precise ordinate of staff area limit, on the provided
+     * vertical side.
+     * @param side the provided vertical side
+     * @param x the provided abscissa
+     * @return the ordinate of staff limit
+     */
     public double getLimitAtX (VerticalSide side,
                                double       x)
     {
@@ -442,8 +483,7 @@ public class StaffInfo
     // getLines //
     //----------//
     /**
-     * Report the sequence of lines
-     *
+     * Report the sequence of lines.
      * @return the list of lines in this staff
      */
     public List<LineInfo> getLines ()
@@ -455,7 +495,7 @@ public class StaffInfo
     // getLinesEnd //
     //-------------//
     /**
-     * Report the ending abscissa of the staff lines
+     * Report the ending abscissa of the staff lines.
      * @param side desired horizontal side
      * @return the abscissa corresponding to lines extrema
      */
@@ -485,6 +525,12 @@ public class StaffInfo
     //----------------//
     // getMidOrdinate //
     //----------------//
+    /**
+     * Report an approximate ordinate of staff ending, on the provided
+     * horizontal side.
+     * @param side provided side
+     * @return the middle ordinate of staff ending
+     */
     public double getMidOrdinate (HorizontalSide side)
     {
         return (getFirstLine()
@@ -498,23 +544,18 @@ public class StaffInfo
     // getNotePosition //
     //-----------------//
     /**
-     * Report the precise position for a note-like entity with respect to this
-     * staff.
+     * Report the precise position for a note-like entity with respect
+     * to this staff, taking ledgers (if any) into account.
      * @param point the absolute location of the provided note
      * @return the detailed note position
      */
     public NotePosition getNotePosition (Point2D point)
     {
-        double top = getFirstLine()
-                         .yAt(point.getX());
-        double bottom = getLastLine()
-                            .yAt(point.getX());
-        double pitch = (4.0d * ((2 * point.getY()) - bottom - top)) / (bottom -
-                                                                      top);
+        double pitch = pitchPositionOf(point);
         Ledger bestLedger = null;
 
-        // If we are rather far from the staff, try help from ledgers
-        if (Math.abs(pitch) > 5) {
+        // If we are rather far from the staff, try getting help from ledgers
+        if (Math.abs(pitch) > lines.size()) {
             bestLedger = getClosestLedger(point);
 
             if (bestLedger != null) {
@@ -533,6 +574,7 @@ public class StaffInfo
     // setScoreStaff //
     //---------------//
     /**
+     * Remember the related score staff entity.
      * @param scoreStaff the corresponding scoreStaff to set
      */
     public void setScoreStaff (Staff scoreStaff)
@@ -544,6 +586,7 @@ public class StaffInfo
     // getScoreStaff //
     //---------------//
     /**
+     * Report the related score staff entity.
      * @return the corresponding scoreStaff
      */
     public Staff getScoreStaff ()
@@ -555,9 +598,8 @@ public class StaffInfo
     // getSpecificScale //
     //------------------//
     /**
-     * Report the <b>specific</b> staff scale, which may have a different
-     * interline value than the page average.
-     *
+     * Report the <b>specific</b> staff scale, which may have a
+     * different interline value than the page average.
      * @return the staff scale
      */
     public Scale getSpecificScale ()
@@ -600,19 +642,6 @@ public class StaffInfo
                   .addToLedgersCollection(ledger);
     }
 
-    //---------//
-    // cleanup //
-    //---------//
-    /**
-     * Forward the cleaning order to each of the staff lines
-     */
-    public void cleanup ()
-    {
-        for (LineInfo line : lines) {
-            line.cleanup();
-        }
-    }
-
     //------//
     // dump //
     //------//
@@ -635,8 +664,8 @@ public class StaffInfo
     // intersection //
     //--------------//
     /**
-     * Report the approximate point where a provided vertical stick crosses this
-     * staff
+     * Report the approximate point where a provided vertical stick 
+     * crosses this staff.
      * @param stick the rather vertical stick
      * @return the crossing point
      */
@@ -655,9 +684,9 @@ public class StaffInfo
     // pitchPositionOf //
     //-----------------//
     /**
-     * Compute an approximation of the pitch position of a pixel point, since it
-     * is based only on distance to staff, with no consideration for ledgers.
-     *
+     * Compute an approximation of the pitch position of a pixel point,
+     * since it is based only on distance to staff, with no
+     * consideration for ledgers.
      * @param pt the pixel point
      * @return the pitch position
      */
@@ -668,7 +697,8 @@ public class StaffInfo
         double bottom = getLastLine()
                             .yAt(pt.getX());
 
-        return (4.0d * ((2 * pt.getY()) - bottom - top)) / (bottom - top);
+        return ((lines.size() - 1) * ((2 * pt.getY()) - bottom - top)) / (bottom -
+                                                                         top);
     }
 
     //--------//
@@ -677,7 +707,7 @@ public class StaffInfo
     /**
      * Paint the staff lines.
      * @param g the graphics context
-     * @return true if something has been drawn
+     * @return true if something has been actually drawn
      */
     public boolean render (Graphics2D g)
     {
@@ -709,10 +739,6 @@ public class StaffInfo
     //----------//
     // toString //
     //----------//
-    /**
-     * Report a readable description
-     * @return a string based on main parameters
-     */
     @Override
     public String toString ()
     {

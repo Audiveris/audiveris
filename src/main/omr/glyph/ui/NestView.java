@@ -75,9 +75,9 @@ public class NestView
 
     //~ Constructors -----------------------------------------------------------
 
-    //-----------//
+    //----------//
     // NestView //
-    //-----------//
+    //----------//
     /**
      * Create a nest view.
      * @param nest the underlying nest of glyphs
@@ -130,6 +130,7 @@ public class NestView
     // propertyChange //
     //----------------//
     @Implement(PropertyChangeListener.class)
+    @Override
     public void propertyChange (PropertyChangeEvent evt)
     {
         // Whatever the property change, we simply repaint the view
@@ -139,6 +140,7 @@ public class NestView
     //---------//
     // refresh //
     //---------//
+    @Override
     public void refresh ()
     {
         repaint();

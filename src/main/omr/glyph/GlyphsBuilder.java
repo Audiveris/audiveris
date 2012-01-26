@@ -84,8 +84,8 @@ public class GlyphsBuilder
     private final Nest nest;
 
     /** Margins for a stem */
-    private final int stemWiden;
-    private final int stemHeighten;
+    private final int stemXMargin;
+    private final int stemYMargin;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -105,11 +105,75 @@ public class GlyphsBuilder
         nest = sheet.getNest();
 
         // Cache parameters
-        stemWiden = scale.toPixels(constants.stemWiden);
-        stemHeighten = scale.toPixels(constants.stemHeighten);
+        stemXMargin = scale.toPixels(constants.stemXMargin);
+        stemYMargin = scale.toPixels(constants.stemYMargin);
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //------------//
+    // buildGlyph //
+    //------------//
+    /**
+     * Build a glyph from a collection of sections, with a link back
+     * from the sections to the glyph.
+     * @param scale the context scale
+     * @param sections the provided members of the future glyph
+     * @return the newly built glyph
+     */
+    public static Glyph buildGlyph (Scale               scale,
+                                    Collection<Section> sections)
+    {
+        Glyph glyph = new BasicGlyph(scale.getInterline());
+
+        for (Section section : sections) {
+            glyph.addSection(section, Glyph.Linking.LINK_BACK);
+        }
+
+        return glyph;
+    }
+
+    //----------------//
+    // retrieveGlyphs //
+    //----------------//
+    /**
+     * Browse through the provided sections not assigned to known
+     * glyphs, and build new glyphs out of connected sections.
+     * @param sections the sections to browse
+     * @param nest the nest to host glyphs
+     * @param scale the sheet scale
+     */
+    public static List<Glyph> retrieveGlyphs (List<Section> sections,
+                                              Nest          nest,
+                                              Scale         scale)
+    {
+        List<Glyph> created = new ArrayList<Glyph>();
+
+        // Reset section processed flag
+        for (Section section : sections) {
+            if (!section.isKnown()) {
+                section.setProcessed(false);
+            } else {
+                section.setProcessed(true);
+            }
+        }
+
+        // Browse the various unrecognized sections
+        for (Section section : sections) {
+            // Not already visited ?
+            if (!section.isProcessed()) {
+                // Let's build a new glyph around this starting section
+                Glyph glyph = new BasicGlyph(scale.getInterline());
+                considerConnection(glyph, section);
+
+                // Insert this newly built glyph into nest (no system invloved)
+                glyph = nest.addGlyph(glyph);
+                created.add(glyph);
+            }
+        }
+
+        return created;
+    }
 
     //----------//
     // addGlyph //
@@ -142,28 +206,6 @@ public class GlyphsBuilder
     public Glyph buildGlyph (Collection<Section> sections)
     {
         return buildGlyph(scale, sections);
-    }
-
-    //------------//
-    // buildGlyph //
-    //------------//
-    /**
-     * Build a glyph from a collection of sections, with a link back
-     * from the sections to the glyph.
-     * @param scale the context scale
-     * @param sections the provided members of the future glyph
-     * @return the newly built glyph
-     */
-    public static Glyph buildGlyph (Scale               scale,
-                                    Collection<Section> sections)
-    {
-        Glyph glyph = new BasicGlyph(scale.getInterline());
-
-        for (Section section : sections) {
-            glyph.addSection(section, Glyph.Linking.LINK_BACK);
-        }
-
-        return glyph;
     }
 
     //------------------------//
@@ -340,78 +382,43 @@ public class GlyphsBuilder
         }
     }
 
-    //----------------//
-    // retrieveGlyphs //
-    //----------------//
-    /**
-     * Browse through the provided sections not assigned to known
-     * glyphs, and build new glyphs out of connected sections.
-     * @param sections the sections to browse
-     * @param nest the nest to host glyphs
-     * @param scale the sheet scale
-     */
-    public static List<Glyph> retrieveGlyphs (List<Section> sections,
-                                              Nest          nest,
-                                              Scale         scale)
-    {
-        List<Glyph> created = new ArrayList<Glyph>();
-
-        // Reset section processed flag
-        for (Section section : sections) {
-            if (!section.isKnown()) {
-                section.setProcessed(false);
-            } else {
-                section.setProcessed(true);
-            }
-        }
-
-        // Browse the various unrecognized sections
-        for (Section section : sections) {
-            // Not already visited ?
-            if (!section.isProcessed()) {
-                // Let's build a new glyph around this starting section
-                Glyph glyph = new BasicGlyph(scale.getInterline());
-                considerConnection(glyph, section);
-
-                // Insert this newly built glyph into nest (no system invloved)
-                glyph = nest.addGlyph(glyph);
-                created.add(glyph);
-            }
-        }
-
-        return created;
-    }
-
     //-----------//
     // stemBoxOf //
     //-----------//
     /**
-     * Report a enlarged box of a given (stem) glyph.
+     * Report an enlarged box of a given (stem) glyph.
      * @param stem the stem
      * @return the enlarged stem box
      */
     public PixelRectangle stemBoxOf (Glyph stem)
     {
         PixelRectangle box = new PixelRectangle(stem.getContourBox());
-        box.grow(stemWiden, stemHeighten);
+        box.grow(stemXMargin, stemYMargin);
 
         return box;
     }
 
-    //--------------------//
-    // checkDashIntersect //
-    //--------------------//
-    private boolean checkDashIntersect (Iterable<Glyph> items,
-                                        PixelRectangle  box)
+    //-----------//
+    // stemBoxOf //
+    //-----------//
+    /**
+     * Report the stem lookup box on the specified side only
+     * @param stem the stem glyph
+     * @param side the desired side for the box
+     * @return the proper stem side box
+     */
+    public PixelRectangle stemBoxOf (Glyph stem, HorizontalSide side)
     {
-        for (Glyph item : items) {
-            if (item.getContourBox()
-                    .intersects(box)) {
-                return true;
-            }
+        PixelRectangle box = stem.getContourBox();
+        int            width = box.width;
+        box.grow(stemXMargin, stemYMargin);
+        box.width = 2 * stemXMargin;
+
+        if (side == HorizontalSide.RIGHT) {
+            box.x += width;
         }
 
-        return false;
+        return box;
     }
 
     //--------------------//
@@ -451,13 +458,29 @@ public class GlyphsBuilder
         }
     }
 
+    //--------------------//
+    // checkDashIntersect //
+    //--------------------//
+    private boolean checkDashIntersect (Iterable<Glyph> items,
+                                        PixelRectangle  box)
+    {
+        for (Glyph item : items) {
+            if (item.getContourBox()
+                    .intersects(box)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     //-----------//
     // ledgerBox //
     //-----------//
     private PixelRectangle ledgerBox (PixelRectangle rect)
     {
         PixelRectangle box = new PixelRectangle(rect);
-        box.grow(0, stemHeighten);
+        box.grow(0, stemYMargin);
 
         return box;
     }
@@ -474,7 +497,7 @@ public class GlyphsBuilder
         }
 
         // Box for searching for a stem
-        PixelRectangle box = stemLUBox(side, glyph);
+        PixelRectangle box = stemBoxOf(glyph, side);
 
         for (Glyph s : glyphs) {
             // Check bounding box intersection
@@ -494,29 +517,6 @@ public class GlyphsBuilder
         return null;
     }
 
-    //-----------//
-    // stemLUBox //
-    //-----------//
-    /**
-     * Report the stem lookup box on the provided side of a rectangle
-     * @param rect the given (glyph) rectangle
-     * @return the proper stem box
-     */
-    private PixelRectangle stemLUBox (HorizontalSide side,
-                                      Glyph          glyph)
-    {
-        PixelRectangle box = glyph.getContourBox();
-        int            width = box.width;
-        box.grow(stemWiden, stemHeighten);
-        box.width = 2 * stemWiden;
-
-        if (side == HorizontalSide.RIGHT) {
-            box.x += width;
-        }
-
-        return box;
-    }
-
     //~ Inner Classes ----------------------------------------------------------
 
     //-----------//
@@ -532,13 +532,13 @@ public class GlyphsBuilder
             "Box heightening to check intersection with ledger");
 
         //
-        Scale.Fraction stemWiden = new Scale.Fraction(
-            0.05,
+        Scale.Fraction stemXMargin = new Scale.Fraction(
+            0.2d, //0.05,
             "Box widening to check intersection with stem");
 
         //
-        Scale.Fraction stemHeighten = new Scale.Fraction(
-            0.1,
+        Scale.Fraction stemYMargin = new Scale.Fraction(
+            0.2d, //0.1,
             "Box heightening to check intersection with stem");
     }
 }

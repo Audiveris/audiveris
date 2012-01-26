@@ -68,12 +68,6 @@ public interface LineInfo
     public Collection<Section> getSections ();
 
     /**
-     * Cleanup the line, by removing the sections that compose the line and by
-     * extending the external crossing sections
-     */
-    public void cleanup ();
-
-    /**
      * Paint the computed line on the provided environment.
      * @param g     the graphics context
      */

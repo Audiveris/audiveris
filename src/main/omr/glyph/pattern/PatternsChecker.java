@@ -48,7 +48,6 @@ public class PatternsChecker
     //-----------------//
     /**
      * Creates a new PatternsChecker object.
-     *
      * @param system the dedicated system
      */
     public PatternsChecker (final SystemInfo system)
@@ -99,6 +98,8 @@ public class PatternsChecker
         new SentencePattern(system), // Text -> sentences
                                      //
                                      ///new ArticulationPattern(system),
+        
+        ///new SegmentationPattern(system),
         new LeftOverPattern(system)
                    };
     }

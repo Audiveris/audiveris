@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph id="4189" interline="21" shape="COMBINING_FLAG_1">
+    <stem-number>2</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-5.7884191310781885</pitch-position>
+    <section first-pos="1144" orientation="VERTICAL" id="867">
+        <run length="13" level="0" start="324"/>
+        <run length="12" level="0" start="326"/>
+        <run length="11" level="0" start="327"/>
+        <run length="10" level="0" start="328"/>
+        <run length="10" level="0" start="329"/>
+        <run length="9" level="0" start="331"/>
+        <run length="9" level="0" start="331"/>
+        <run length="9" level="0" start="332"/>
+        <run length="9" level="0" start="333"/>
+        <run length="9" level="0" start="334"/>
+    </section>
+    <section first-pos="336" orientation="HORIZONTAL" id="1688">
+        <run length="1" level="0" start="1154"/>
+        <run length="2" level="0" start="1154"/>
+        <run length="2" level="0" start="1154"/>
+        <run length="2" level="0" start="1154"/>
+        <run length="2" level="0" start="1154"/>
+        <run length="2" level="0" start="1154"/>
+        <run length="2" level="0" start="1154"/>
+        <run length="2" level="0" start="1154"/>
+        <run length="1" level="0" start="1155"/>
+    </section>
+    <section first-pos="1156" orientation="VERTICAL" id="876">
+        <run length="9" level="0" start="338"/>
+        <run length="9" level="0" start="339"/>
+        <run length="9" level="0" start="341"/>
+        <run length="10" level="0" start="343"/>
+    </section>
+</glyph>

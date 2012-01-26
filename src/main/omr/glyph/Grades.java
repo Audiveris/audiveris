@@ -105,17 +105,17 @@ public class Grades
 
         //
         Evaluation.Grade validationMinGrade = new Evaluation.Grade(
-            50, ///83,
+            83,
             "Minimum grade for a validation");
 
         //
         Evaluation.Grade symbolMinGrade = new Evaluation.Grade(
-            45, //77,
+            77,
             "Minimum grade for a symbol");
 
         //
         Evaluation.Grade patternsMinGrade = new Evaluation.Grade(
-            45, //67,
+            67,
             "Minimum grade for pattern phase");
 
         //

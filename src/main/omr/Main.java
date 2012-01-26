@@ -390,7 +390,7 @@ public class Main
     /**
      * Specific starting method for the application.
      * @param args command line parameters
-     * @see omr.Main the possible command line parameters
+     * @see omr.CLI the possible command line parameters
      */
     public static void doMain (String[] args)
     {

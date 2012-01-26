@@ -53,7 +53,6 @@ public class LeftOverPattern
     //-----------------//
     /**
      * Creates a new LeftOverPattern object.
-     *
      * @param system the containing system
      */
     public LeftOverPattern (SystemInfo system)
@@ -86,13 +85,14 @@ public class LeftOverPattern
                 system);
 
             if (vote != null) {
-                if (logger.isFineEnabled()) {
-                    logger.info(
-                        "LeftOver glyph#" + glyph.getId() + " Vote: " + vote);
-                }
-
                 glyph = system.addGlyph(glyph);
                 glyph.setEvaluation(vote);
+
+                if (logger.isFineEnabled() || glyph.isVip()) {
+                    logger.info(
+                        "LeftOver glyph#" + glyph.getId() + " vote: " + vote);
+                }
+
                 successNb++;
             }
         }

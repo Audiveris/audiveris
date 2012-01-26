@@ -14,6 +14,7 @@ package omr.score;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.*;
 import omr.glyph.Evaluation;
 import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphNetwork;
@@ -242,8 +243,6 @@ public class ScoreChecker
     {
         try {
             final Scale       scale = measure.getScale();
-            final int         xMargin = scale.toPixels(constants.stemXMargin);
-            final int         yMargin = scale.toPixels(constants.stemYMargin);
             final ScoreSystem system = measure.getSystem();
             final SystemInfo  systemInfo = system.getInfo();
 
@@ -254,15 +253,13 @@ public class ScoreChecker
                 for (Chord chord : chords) {
                     Glyph stem = chord.getStem();
 
-                    if (stem != null) { // We could have rests w/o stem!
-
-                        final PixelRectangle box = stem.getContourBox();
-                        box.grow(xMargin, yMargin);
-
-                        final Collection<Glyph> glyphs = systemInfo.lookupIntersectedGlyphs(
-                            box,
-                            stem);
-                        searchHooks(chord, glyphs);
+                    // We could have rests (w/o stem!)
+                    if (stem != null) {
+                        searchHooks(
+                            chord,
+                            systemInfo.lookupIntersectedGlyphs(
+                                systemInfo.stemBoxOf(stem),
+                                stem));
                     }
                 }
             }
@@ -910,13 +907,7 @@ public class ScoreChecker
     {
         //~ Instance fields ----------------------------------------------------
 
-        private final Scale.Fraction stemXMargin = new Scale.Fraction(
-            0.2d,
-            "Margin around stem width for intersecting beams & beam hooks");
-        private final Scale.Fraction stemYMargin = new Scale.Fraction(
-            0.2d,
-            "Margin around stem height for intersecting beams & beam hooks");
-        Constant.Double              minDeltaNotePitch = new Constant.Double(
+        Constant.Double minDeltaNotePitch = new Constant.Double(
             "PitchPosition",
             1.5,
             "Minimum pitch difference between note heads on same stem side");

@@ -307,12 +307,9 @@ public class LinesRetriever
      * Render the filaments, their ending tangents, their combs
      * @param g graphics context
      */
+    @Override
     public void renderItems (Graphics2D g)
     {
-        if (!constants.showHorizontalLines.isSet()) {
-            return;
-        }
-
         final Stroke oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
         final Color  oldColor = g.getColor();
         g.setColor(Colors.ENTITY_MINOR);
@@ -329,45 +326,42 @@ public class LinesRetriever
         }
 
         // Filament lines?
-        if (constants.showHorizontalLines.getValue() == false) {
-            return;
-        }
+        if (constants.showHorizontalLines.isSet()) {
+            List<LineFilament> allFils = new ArrayList<LineFilament>(filaments);
 
-        List<LineFilament> allFils = new ArrayList<LineFilament>(filaments);
-
-        if (secondFilaments != null) {
-            allFils.addAll(secondFilaments);
-        }
-
-        // Draw filaments
-        for (Filament filament : allFils) {
-            filament.renderLine(g);
-        }
-
-        // Draw tangent at each ending point?
-        if (constants.showTangents.isSet()) {
-            g.setColor(Colors.TANGENT);
-
-            double dx = sheet.getScale()
-                             .toPixels(constants.tangentLg);
+            if (secondFilaments != null) {
+                allFils.addAll(secondFilaments);
+            }
 
             for (Filament filament : allFils) {
-                Point2D p = filament.getStartPoint(HORIZONTAL);
-                double  der = filament.slopeAt(p.getX(), HORIZONTAL);
-                g.draw(
-                    new Line2D.Double(
-                        p.getX(),
-                        p.getY(),
-                        p.getX() - dx,
-                        p.getY() - (der * dx)));
-                p = filament.getStopPoint(HORIZONTAL);
-                der = filament.slopeAt(p.getX(), HORIZONTAL);
-                g.draw(
-                    new Line2D.Double(
-                        p.getX(),
-                        p.getY(),
-                        p.getX() + dx,
-                        p.getY() + (der * dx)));
+                filament.renderLine(g);
+            }
+
+            // Draw tangent at each ending point?
+            if (constants.showTangents.isSet()) {
+                g.setColor(Colors.TANGENT);
+
+                double dx = sheet.getScale()
+                                 .toPixels(constants.tangentLg);
+
+                for (Filament filament : allFils) {
+                    Point2D p = filament.getStartPoint(HORIZONTAL);
+                    double  der = filament.slopeAt(p.getX(), HORIZONTAL);
+                    g.draw(
+                        new Line2D.Double(
+                            p.getX(),
+                            p.getY(),
+                            p.getX() - dx,
+                            p.getY() - (der * dx)));
+                    p = filament.getStopPoint(HORIZONTAL);
+                    der = filament.slopeAt(p.getX(), HORIZONTAL);
+                    g.draw(
+                        new Line2D.Double(
+                            p.getX(),
+                            p.getY(),
+                            p.getX() + dx,
+                            p.getY() + (der * dx)));
+                }
             }
         }
 
@@ -872,13 +866,21 @@ public class LinesRetriever
             3.0,
             "Maximum ratio in length for a short run to be combined with an existing section");
 
-        // Constants specified WRT mean line thickness
-        // -------------------------------------------
+        // Constants specified WRT *maximum* line thickness (scale.getmaxFore())
+        // ----------------------------------------------
 
         // Should be 1.0, unless ledgers are thicker than staff lines
-        final Scale.LineFraction ledgerThickness = new Scale.LineFraction(
+        final Constant.Ratio     ledgerThickness = new Constant.Ratio(
             2.0, //1.0,
-            "Ratio of ledger thickness vs staff line thickness");
+            "Ratio of ledger thickness vs staff line MAXIMUM thickness");
+
+        //
+        final Constant.Ratio     stickerThickness = new Constant.Ratio(
+            1.2,
+            "Ratio of sticker thickness vs staff line MAXIMUM thickness");
+
+        // Constants specified WRT mean line thickness
+        // -------------------------------------------
 
         //
         final Scale.LineFraction maxStickerGap = new Scale.LineFraction(
@@ -938,8 +940,8 @@ public class LinesRetriever
     // Parameters //
     //------------//
     /**
-     * Class {@code Parameters} gathers all pre-scaled constants related to
-     * horizontal frames.
+     * Class {@code Parameters} gathers all pre-scaled constants
+     * related to horizontal frames.
      */
     private static class Parameters
     {
@@ -986,6 +988,8 @@ public class LinesRetriever
             // Special parameters
             maxVerticalRunLength = (int) Math.rint(
                 scale.getMaxFore() * constants.ledgerThickness.getValue());
+            maxStickerThickness = (int) Math.rint(
+                scale.getMaxFore() * constants.stickerThickness.getValue());
 
             // Others
             minRunLength = scale.toPixels(constants.minRunLength);
@@ -994,7 +998,6 @@ public class LinesRetriever
             topRatioForSlope = constants.topRatioForSlope.getValue();
             maxStickerGap = scale.toPixelsDouble(constants.maxStickerGap);
             maxStickerExtension = scale.toPixels(constants.maxStickerExtension);
-            maxStickerThickness = scale.getMaxFore();
             maxThinStickerWeight = scale.toPixels(
                 constants.maxThinStickerWeight);
 

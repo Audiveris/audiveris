@@ -24,8 +24,6 @@ import omr.score.entity.ScoreSystem;
 import omr.score.entity.SystemPart;
 import omr.score.visitor.AbstractScoreVisitor;
 
-import omr.sheet.Ending;
-import omr.sheet.Ledger;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 

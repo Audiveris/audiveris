@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<!-- ======================================================================= -->
+<!--                       s n a p s h o t s . h t m l                       -->
+<!-- ======================================================================= -->
+<html lang="en">
+    <head>
+        <title>Audiveris - Snapshots</title>
+        <script>context = {page:"Snapshots", root:"../../"};</script>
+        
+        <meta name="author" content="Hervé Bitteur" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link rel="icon" href="../../branding/images/Play-256.ico" type="image/x-icon" />
+        <link rel="stylesheet" href="../../branding/css/global.css"/>
+        <style type="text/css">
+            /*<![CDATA[*/
+            #slideshow{
+                background-color:#F5F5F5;
+                border:1px solid #FFFFFF;
+                height:753px;
+                margin:150px auto 0;
+                position:relative;
+                width:808px;
+
+                -moz-box-shadow:0 0 11px rgba(45,20,6,0.5);
+                -webkit-box-shadow:0 0 11px rgba(45,20,6,0.5);
+                box-shadow:0 0 11px rgba(45,20,6,0.5);
+            }
+
+            #slideshow ul{
+                height:753px;
+                left:0px;
+                list-style:none outside none;
+                overflow:hidden;
+                position:absolute;
+                top:0px;
+                padding: 0px;
+                margin: 0px;
+                width:810px;
+            }
+
+            #slideshow li{
+                position:absolute;
+                display:none;
+                z-index:10;
+            }
+
+            #slideshow li:first-child{
+                display:block;
+                z-index:1000;
+            }
+
+            #slideshow .slideActive{
+                z-index:1000;
+            }
+
+            #slideshow canvas{
+                display:none;
+                position:absolute;
+                z-index:100;
+            }
+
+            #slideshow .arrow{
+                height:86px;
+                width:60px;
+                position:absolute;
+                background:url('../../branding/images/arrows.png') no-repeat;
+                top:50%;
+                margin-top:-43px;
+                cursor:pointer;
+                z-index:5000;
+            }
+
+            #slideshow .previous{ background-position:left top;left:0;}
+            #slideshow .previous:hover{ background-position:left bottom;}
+
+            #slideshow .next{ background-position:right top;right:0;}
+            #slideshow .next:hover{ background-position:right bottom;}            /*]]>*/
+        </style>
+    </head>
+    <body>
+        <script src="../../branding/js/header.js"></script> 
+        <div  id="slideshow">
+
+            <ul class="slides">
+                <li><img src="../images/main-picture-input.png"  alt="main-data-input" /></li>
+                <li><img src="../images/main-picture-both.png"   alt="main-data-both" /></li>
+                <li><img src="../images/main-picture-output.png" alt="main-data-output" /></li>
+                <li><img src="../images/main-data-input.png"  alt="main-data-input" /></li>
+                <li><img src="../images/main-data-both.png"   alt="main-data-both" /></li>
+                <li><img src="../images/main-data-output.png"  alt="main-data-output" /></li>
+                <li><img src="../images/main-data-output-voices-annot.png"  alt="main-data-output" /></li>
+            </ul>
+
+            <span class="arrow previous"></span>
+            <span class="arrow next"></span>
+        </div>
+
+        <script src="../../branding/js/footer.js"></script> 
+
+        <script src="../../branding/js/jquery.min.js"></script>        
+        <script src="../../branding/js/slideshow.js"></script>        
+        <script src="../../branding/js/autoadvance.js"></script>        
+    </body>
+</html>

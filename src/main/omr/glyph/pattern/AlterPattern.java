@@ -56,16 +56,16 @@ public class AlterPattern
     //~ Instance fields --------------------------------------------------------
 
     // Scale-dependent constants for alter verification
-    final int                maxCloseStemDx;
-    final int                minCloseStemOverlap;
-    final int                maxAlterStemLength;
-    final int                maxNaturalOverlap;
-    final int                flatHeadWidth;
-    final int                flatHeadHeight;
+    private final int         maxCloseStemDx;
+    private final int         minCloseStemOverlap;
+    private final int         maxAlterStemLength;
+    private final int         maxNaturalOverlap;
+    private final int         flatHeadWidth;
+    private final int         flatHeadHeight;
 
     // Adapters
-    final PairAdapter        sharpAdapter;
-    final PairAdapter        naturalAdapter;
+    private final PairAdapter sharpAdapter;
+    private final PairAdapter naturalAdapter;
 
     /** Collection of (short) stems, sorted on abscissa */
     private SortedSet<Glyph> stems;
@@ -334,64 +334,6 @@ public class AlterPattern
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //-------------//
-    // PairAdapter //
-    //-------------//
-    /**
-     * Abstract compound adapter meant to build sharps or naturals
-     * from a pair of close stems.
-     */
-    private abstract class PairAdapter
-        extends CompoundBuilder.TopShapeAdapter
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        protected PixelRectangle leftBox;
-        protected PixelRectangle rightBox;
-
-        //~ Constructors -------------------------------------------------------
-
-        public PairAdapter (SystemInfo     system,
-                            EnumSet<Shape> shapes)
-        {
-            super(system, constants.alterMinGrade.getValue(), shapes);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public boolean isCandidateClose (Glyph glyph)
-        {
-            // We use containment instead of intersection
-            return box.contains(glyph.getContourBox());
-        }
-
-        @Override
-        public boolean isCandidateSuitable (Glyph glyph)
-        {
-            return !glyph.isManualShape();
-        }
-
-        public void setStemBoxes (PixelRectangle leftBox,
-                                  PixelRectangle rightBox)
-        {
-            this.leftBox = leftBox;
-            this.rightBox = rightBox;
-        }
-
-        protected PixelRectangle getStemsBox ()
-        {
-            if ((leftBox == null) || (rightBox == null)) {
-                throw new NullPointerException("Stem boxes have not been set");
-            }
-
-            PixelRectangle box = new PixelRectangle(leftBox);
-            box.add(rightBox);
-
-            return box;
-        }
-    }
-
     //-----------//
     // Constants //
     //-----------//
@@ -505,6 +447,64 @@ public class AlterPattern
             newBox.grow(maxCloseStemDx / 4, minCloseStemOverlap / 2);
 
             return newBox;
+        }
+    }
+
+    //-------------//
+    // PairAdapter //
+    //-------------//
+    /**
+     * Abstract compound adapter meant to build sharps or naturals
+     * from a pair of close stems.
+     */
+    private abstract class PairAdapter
+        extends CompoundBuilder.TopShapeAdapter
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        protected PixelRectangle leftBox;
+        protected PixelRectangle rightBox;
+
+        //~ Constructors -------------------------------------------------------
+
+        public PairAdapter (SystemInfo     system,
+                            EnumSet<Shape> shapes)
+        {
+            super(system, constants.alterMinGrade.getValue(), shapes);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public boolean isCandidateClose (Glyph glyph)
+        {
+            // We use containment instead of intersection
+            return box.contains(glyph.getContourBox());
+        }
+
+        @Override
+        public boolean isCandidateSuitable (Glyph glyph)
+        {
+            return !glyph.isManualShape();
+        }
+
+        public void setStemBoxes (PixelRectangle leftBox,
+                                  PixelRectangle rightBox)
+        {
+            this.leftBox = leftBox;
+            this.rightBox = rightBox;
+        }
+
+        protected PixelRectangle getStemsBox ()
+        {
+            if ((leftBox == null) || (rightBox == null)) {
+                throw new NullPointerException("Stem boxes have not been set");
+            }
+
+            PixelRectangle box = new PixelRectangle(leftBox);
+            box.add(rightBox);
+
+            return box;
         }
     }
 

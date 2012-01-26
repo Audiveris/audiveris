@@ -172,6 +172,16 @@ public class BasicSection
 
     //~ Methods ----------------------------------------------------------------
 
+    //-----------------//
+    // getAbsoluteLine //
+    //-----------------//
+    public Line getAbsoluteLine ()
+    {
+        getOrientedLine();
+
+        return orientation.switchRef(orientedLine);
+    }
+
     //--------------//
     // isAggregable //
     //--------------//
@@ -535,6 +545,14 @@ public class BasicSection
         }
     }
 
+    //----------------//
+    // getOrientation //
+    //----------------//
+    public Orientation getOrientation ()
+    {
+        return orientation;
+    }
+
     //-------------------//
     // getOrientedBounds //
     //-------------------//
@@ -573,6 +591,28 @@ public class BasicSection
         return orientedLine;
     }
 
+    //-----------//
+    // setParams //
+    //-----------//
+    /**
+     * Assign major parameters (kind, layer and direction), since the enclosing
+     * stick may be assigned later.
+     *
+     * @param role      the role of this section in stick elaboration
+     * @param layer     the layer from stick core
+     * @param direction the direction when departing from the stick core
+     */
+    public void setParams (SectionRole role,
+                           int         layer,
+                           int         direction)
+    {
+        if (relation == null) {
+            relation = new StickRelation();
+        }
+
+        relation.setParams(role, layer, direction);
+    }
+
     //-----------------//
     // getPathIterator //
     //-----------------//
@@ -608,6 +648,27 @@ public class BasicSection
     public boolean isProcessed ()
     {
         return processed;
+    }
+
+    //----------------------//
+    // getRectangleCentroid //
+    //----------------------//
+    public PixelPoint getRectangleCentroid (PixelRectangle absRoi)
+    {
+        if (absRoi == null) {
+            throw new IllegalArgumentException("Rectangle of Interest is null");
+        }
+
+        Barycenter barycenter = new Barycenter();
+        cumulate(barycenter, absRoi);
+
+        if (barycenter.getWeight() != 0) {
+            return new PixelPoint(
+                (int) Math.rint(barycenter.getX()),
+                (int) Math.rint(barycenter.getY()));
+        } else {
+            return null;
+        }
     }
 
     //-------------//
@@ -650,6 +711,14 @@ public class BasicSection
         Rectangle bounds = getOrientedBounds();
 
         return bounds.x + (bounds.width - 1);
+    }
+
+    //-----------//
+    // setSystem //
+    //-----------//
+    public void setSystem (SystemInfo system)
+    {
+        this.system = system;
     }
 
     //-----------//
@@ -739,27 +808,6 @@ public class BasicSection
         }
 
         return table;
-    }
-
-    //----------------------//
-    // getRectangleCentroid //
-    //----------------------//
-    public PixelPoint getRectangleCentroid (PixelRectangle absRoi)
-    {
-        if (absRoi == null) {
-            throw new IllegalArgumentException("Rectangle of Interest is null");
-        }
-
-        Barycenter barycenter = new Barycenter();
-        cumulate(barycenter, absRoi);
-
-        if (barycenter.getWeight() != 0) {
-            return new PixelPoint(
-                (int) Math.rint(barycenter.getX()),
-                (int) Math.rint(barycenter.getY()));
-        } else {
-            return null;
-        }
     }
 
     //--------//
@@ -1008,54 +1056,6 @@ public class BasicSection
             System.out.print((iy + box.y) + ": ");
             System.out.println(table[iy]);
         }
-    }
-
-    //-----------------//
-    // getAbsoluteLine //
-    //-----------------//
-    public Line getAbsoluteLine ()
-    {
-        getOrientedLine();
-
-        return orientation.switchRef(orientedLine);
-    }
-
-    //----------------//
-    // getOrientation //
-    //----------------//
-    public Orientation getOrientation ()
-    {
-        return orientation;
-    }
-
-    //-----------//
-    // setParams //
-    //-----------//
-    /**
-     * Assign major parameters (kind, layer and direction), since the enclosing
-     * stick may be assigned later.
-     *
-     * @param role      the role of this section in stick elaboration
-     * @param layer     the layer from stick core
-     * @param direction the direction when departing from the stick core
-     */
-    public void setParams (SectionRole role,
-                           int         layer,
-                           int         direction)
-    {
-        if (relation == null) {
-            relation = new StickRelation();
-        }
-
-        relation.setParams(role, layer, direction);
-    }
-
-    //-----------//
-    // setSystem //
-    //-----------//
-    public void setSystem (SystemInfo system)
-    {
-        this.system = system;
     }
 
     //-----------//
@@ -1523,6 +1523,10 @@ public class BasicSection
         //          .append(getLevel());
         //        sb.append(" fW=")
         //          .append(foreWeight);
+        if ((isFat() != null) && isFat()) {
+            sb.append(" fat");
+        }
+
         if (relation != null) {
             sb.append(" ")
               .append(relation);

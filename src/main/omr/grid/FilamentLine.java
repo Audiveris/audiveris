@@ -190,14 +190,6 @@ public class FilamentLine
     }
 
     //---------//
-    // cleanup //
-    //---------//
-    public void cleanup ()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    //---------//
     // include //
     //---------//
     public void include (FilamentLine that)
@@ -219,6 +211,7 @@ public class FilamentLine
     //--------//
     // render //
     //--------//
+    @Override
     public void render (Graphics2D g)
     {
         fil.renderLine(g);
