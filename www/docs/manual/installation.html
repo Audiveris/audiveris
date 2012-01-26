@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<!-- ======================================================================= -->
+<!--                    i n s t a l l a t i o n . h t m l                    -->
+<!-- ======================================================================= -->
+<html>
+    <head>
+        <title>Audiveris - Installation</title>
+        <script>context = {page:"Installation", root:"../../"};</script>
+        <meta name="classification" content="Procedure for Audiveris installation"/>
+        <meta name="description" content="How to download and install Audiveris"/>
+
+        <meta name="author" content="Hervé Bitteur"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link rel="icon" href="../../branding/images/Play-256.ico" type="image/x-icon"/>
+        <link rel="stylesheet" href="../../branding/css/global.css"/>
+        <style type="text/css">
+            /*<![CDATA[*/
+            h1.page-title {
+                text-align: center
+            }
+            div.block  {
+                width: 93%;
+            }
+            div#summary  {
+                width: 320px;
+            }
+            /*]]>*/
+        </style>
+
+    </head>
+    <body>
+        <script src="../../branding/js/header.js"> </script> 
+        <div class="main">
+
+            <h1 class="page-title">
+                Installation
+            </h1>
+
+            <div class="block" id="summary">
+                <h2>Summary</h2>
+                <ul>
+                    <li><a href="#download">Download</a> and expand</li>
+                    <li>Needed environment:
+                        <ul>
+                            <li><a href="#system">Operating system</a> (Windows or Linux)</li>
+                            <li><a href="#font">MusicalSymbols</a> font</li>
+                            <li><a href="#java">Java</a></li>
+                            <li><a href="#cpp">C++</a> (to allow OCR features)</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="block" id="download">
+                <h2>Downloading Audiveris</h2>
+                <p>
+                    The latest distribution is always available on the 
+                    <a href="http://kenai.com/projects/audiveris/downloads">
+                        Audiveris download area</a> on Kenai site.
+                </p>
+                <p>
+                    There is one single archive per release which, besides the 
+                    binary components and user manuals, provides source code, 
+                    javadoc, build procedures, training material, etc.
+                    The archive name structure is <b>audiveris-V.v-full-yyyymmdd.zip</b>,
+                    for example audiveris-4.1-full-20120121.zip.
+                </p>
+                <p>
+                    Just download the latest distribution (about 30MB).
+                    Create a dedicated directory on your computer and expand the
+                    downloaded archive into the dedicated directory.
+                </p>
+            </div>
+                
+            <div class="block" id="system">
+                <h2>Operating system</h2>
+                <ul>
+                    <li>
+                        
+                        Today Audiveris runs on <b>Windows</b> and <b>Linux</b>.
+                    </li>
+                    <li>
+                        Audiveris is essentially a Java application,
+                        and as such should run on many platforms.
+                        Since release 3.2a, Audiveris delegates to  <b>Google Tesseract OCR</b> 
+                        the transcription of textual glyphs. 
+                        Tesseract is developed in C++ which makes it OS-dependent.
+                    </li>
+                    <li>
+                        Audiveris has run on <b>Mac OS</b> for some time but, most notably, 
+                        the connection to Tesseract is not yet implemented for this platform.
+                    </li>
+                </ul>
+            </div>
+
+            <div class="block" id="font">
+                <h2>MusicalSymbols font</h2>
+                <ul>
+                    <li>
+                        Audiveris makes use of a free font named <b>MusicalSymbols.ttf</b>.
+                        The font is needed for interactive mode (score display) and
+                        also for batch mode (computation of symbols characteristics).
+                    </li>
+                    <li>
+                        You can download the font from various sites such as the
+                        <a href="http://www.allfreefonts.com/font-9626-musical_symbols.html">allfreefonts site</a>.
+                        Follow the simple instructions provided on this site to 
+                        install the font according to your system.
+                    </li>
+                    <li>
+                        (For your convenience, a copy of this font file is already
+                        available in the <code>config</code> folder of the 
+                        Audiveris installation directory).
+                    </li>
+                </ul>
+            </div>
+                
+            <div class="block" id="java">
+                <h2>Java runtime</h2>
+                <ul>
+                    <li>
+                        <b>Java 6</b>, or higher, is required.
+                    </li>
+                        
+                    <li>You can download and install the latest Java version from 
+                        <a href="http://www.java.com/en/download/">Sun/Oracle site</a>.
+                    </li>
+                </ul>
+            </div>
+                
+            <div class="block" id="cpp">
+                <h2>C++ runtime</h2>
+                <p>
+                    C++ runtime environment is needed to run Tesseract OCR which
+                    comes with Audiveris distribution.
+                </p>
+                <ul>
+                    <li>For <b>Windows</b>, you need the <b>Microsoft C/C++ runtime</b>. 
+                        You can install it by running the <code>vcredist_x86.exe</code>
+                        installer downloadable from <a href="http://www.microsoft.com/downloads/details.aspx?FamilyID=a5c84275-3b97-4ab7-a40d-3802b2af5fc2&amp;displaylang=en">
+                            Microsoft Visual C++ 2008 SP1 Redistributable Package (x86)</a>.
+                        <br/>
+                        (You no longer need to define the <code>TESSDATA_PREFIX</code> variable)
+                    </li>
+                    <li>For <b>Linux</b>, download the <code>tesjeract</code> source
+                        from <a href="http://code.google.com/p/tesjeract/">http://code.google.com/p/tesjeract/</a>
+                        and follow the provided instructions to build this interface.
+                    </li>
+                </ul>
+                <p>
+                    You can also decide to make no use of OCR features. 
+                    This will save you the need for C++ environment, but will
+                    also lower Audiveris recognition capabilities, so this is not
+                    recommended.
+                    If you do want to remove any use of OCR, you need to set the
+                    <code>useOCR</code> constant to false through one of the 
+                    following ways:
+                </p>
+                <ul>
+                    <li>
+                        Through graphic user interface, click on Tools | Options menu.
+                        Type the "<code>useOCR</code>" string (without the quotes) 
+                        in the search box or navigate in the table to 
+                        <code>omr.glyph.text.TextLine.useOCR</code> line and 
+                        uncheck the facing checkbox. 
+                        <br/>
+                        This setting is persistent across program runs.
+                    </li>
+                    <li>
+                        Through command line interface, add the parameter:
+                        <code>-option omr.glyph.text.TextLine.useOCR=false</code>
+                        <br/>
+                        This setting is not persistent across program runs.
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+        <script src="../../branding/js/footer.js"></script> 
+    </body>
+</html>
