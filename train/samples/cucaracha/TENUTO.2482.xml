@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph id="2482" interline="21" shape="TENUTO">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-6.976698787614035</pitch-position>
+    <section first-pos="1506" orientation="HORIZONTAL" id="701">
+        <run length="28" level="0" start="1282"/>
+        <run length="28" level="0" start="1282"/>
+        <run length="28" level="0" start="1282"/>
+        <run length="28" level="0" start="1282"/>
+        <run length="28" level="0" start="1282"/>
+        <run length="27" level="0" start="1283"/>
+    </section>
+</glyph>

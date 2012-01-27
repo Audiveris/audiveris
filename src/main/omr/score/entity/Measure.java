@@ -13,6 +13,8 @@ package omr.score.entity;
 
 import omr.glyph.facets.Glyph;
 
+import omr.grid.StaffInfo;
+
 import omr.log.Logger;
 
 import omr.math.Rational;
@@ -597,14 +599,14 @@ public class Measure
 
         if (slot != null) {
             // Choose the y-closest staff
-            Staff staff = getPart()
-                              .getStaffAt(point);
+            Staff     staff = getPart()
+                                  .getStaffAt(point);
+            
+            // Are we below or above the staff?
+            StaffInfo staffInfo = staff.getInfo();
+            double    pitch = staffInfo.pitchPositionOf(point);
 
-            int   staffY = staff.getTopLeft().y - getSystem()
-                                                      .getTopLeft().y +
-                           (staff.getHeight() / 2);
-
-            if (staffY <= point.y) {
+            if (pitch > 0) {
                 return slot.getChordAbove(point);
             } else {
                 return slot.getChordBelow(point);

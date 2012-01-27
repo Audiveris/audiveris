@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph id="2488" interline="21" shape="TENUTO">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-7.909090636259756</pitch-position>
+    <section first-pos="908" orientation="HORIZONTAL" id="338">
+        <run length="28" level="0" start="1811"/>
+        <run length="29" level="0" start="1810"/>
+        <run length="29" level="0" start="1810"/>
+        <run length="29" level="0" start="1810"/>
+        <run length="28" level="0" start="1811"/>
+    </section>
+    <section first-pos="913" orientation="HORIZONTAL" id="3889">
+        <run length="4" level="0" start="1813"/>
+    </section>
+    <section first-pos="913" orientation="HORIZONTAL" id="3890">
+        <run length="1" level="0" start="1819"/>
+    </section>
+    <section first-pos="913" orientation="HORIZONTAL" id="3891">
+        <run length="1" level="0" start="1821"/>
+    </section>
+    <section first-pos="913" orientation="HORIZONTAL" id="3892">
+        <run length="1" level="0" start="1824"/>
+    </section>
+    <section first-pos="913" orientation="HORIZONTAL" id="3893">
+        <run length="3" level="0" start="1826"/>
+    </section>
+    <section first-pos="913" orientation="HORIZONTAL" id="3894">
+        <run length="1" level="0" start="1830"/>
+    </section>
+    <section first-pos="913" orientation="HORIZONTAL" id="3895">
+        <run length="1" level="0" start="1833"/>
+    </section>
+</glyph>

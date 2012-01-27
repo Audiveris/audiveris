@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph id="2503" interline="21" shape="DECRESCENDO">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>6.151464983703447</pitch-position>
+    <section first-pos="1640" orientation="HORIZONTAL" id="7435">
+        <run length="5" level="0" start="742"/>
+        <run length="11" level="0" start="742"/>
+        <run length="20" level="0" start="742"/>
+    </section>
+    <section first-pos="1643" orientation="HORIZONTAL" id="880">
+        <run length="32" level="0" start="742"/>
+        <run length="38" level="0" start="748"/>
+        <run length="40" level="0" start="757"/>
+        <run length="45" level="0" start="767"/>
+        <run length="36" level="0" start="778"/>
+        <run length="28" level="0" start="786"/>
+        <run length="26" level="0" start="787"/>
+        <run length="26" level="0" start="782"/>
+        <run length="22" level="0" start="777"/>
+        <run length="23" level="0" start="769"/>
+        <run length="21" level="0" start="764"/>
+        <run length="21" level="0" start="758"/>
+    </section>
+    <section first-pos="1657" orientation="HORIZONTAL" id="7453">
+        <run length="19" level="0" start="742"/>
+        <run length="14" level="0" start="742"/>
+        <run length="8" level="0" start="742"/>
+    </section>
+    <section first-pos="1656" orientation="HORIZONTAL" id="883">
+        <run length="23" level="0" start="744"/>
+    </section>
+    <section first-pos="1655" orientation="HORIZONTAL" id="7450">
+        <run length="20" level="0" start="752"/>
+    </section>
+</glyph>

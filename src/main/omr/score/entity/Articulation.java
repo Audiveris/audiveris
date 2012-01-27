@@ -82,15 +82,6 @@ public class Articulation
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
     //----------//
     // populate //
     //----------//
@@ -115,8 +106,10 @@ public class Articulation
             int        dy = Math.min(
                 Math.abs(head.y - point.y),
                 Math.abs(tail.y - point.y));
+            double     normedDy = measure.getScale()
+                                         .pixelsToFrac(dy);
 
-            if (dy <= constants.maxArticulationDy.getValue()) {
+            if (normedDy <= constants.maxArticulationDy.getValue()) {
                 glyph.setTranslation(
                     new Articulation(measure, point, chord, glyph));
 
@@ -130,6 +123,15 @@ public class Articulation
         }
 
         glyph.setShape(null, Evaluation.ALGORITHM);
+    }
+
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -146,7 +148,7 @@ public class Articulation
          * Maximum dy between articulation and chord
          */
         Scale.Fraction maxArticulationDy = new Scale.Fraction(
-            1.0,
+            3,
             "Maximum dy between articulation and chord");
     }
 }

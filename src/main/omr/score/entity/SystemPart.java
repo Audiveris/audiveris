@@ -337,7 +337,7 @@ public class SystemPart
     // getPrecedingInPage //
     //--------------------//
     /**
-     * Report the corresponding part (if any) in the previous system. 
+     * Report the corresponding part (if any) in the previous system.
      * Even if there is a previous system, there may be no part that corresponds
      * to this one.
      * @return the corresponding part, or null
@@ -411,29 +411,16 @@ public class SystemPart
     // getStaffAt //
     //------------//
     /**
-     * Report the staff nearest (in ordinate) to a provided page point
-     *
+     * Report the staff nearest (in ordinate) to a provided page point.
      * @param point the provided page point
-     *
      * @return the nearest staff
      */
     public Staff getStaffAt (PixelPoint point)
     {
-        int   minDy = Integer.MAX_VALUE;
-        Staff best = null;
-
-        for (TreeNode node : getStaves()) {
-            Staff staff = (Staff) node;
-            int   midY = staff.getTopLeft().y + (staff.getHeight() / 2);
-            int   dy = Math.abs(point.y - midY);
-
-            if (dy < minDy) {
-                minDy = dy;
-                best = staff;
-            }
-        }
-
-        return best;
+        return getSystem()
+                   .getInfo()
+                   .getStaffAt(point)
+                   .getScoreStaff();
     }
 
     //--------------------//
