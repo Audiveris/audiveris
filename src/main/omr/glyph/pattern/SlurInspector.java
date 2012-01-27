@@ -797,7 +797,14 @@ public class SlurInspector
         sections.addAll(system.getVerticalSections());
 
         for (Section section : sections) {
-            section.setProcessed(false);
+            Glyph glyph = section.getGlyph();
+
+            // Discard manual sections
+            if ((glyph != null) && glyph.isManualShape()) {
+                section.setProcessed(true);
+            } else {
+                section.setProcessed(false);
+            }
         }
 
         for (Section section : root.getMembers()) {
@@ -1136,8 +1143,7 @@ public class SlurInspector
                 return true;
             }
 
-            return (!glyph.isManualShape() &&
-                   (shape == Shape.CLUTTER)) ||
+            return (!glyph.isManualShape() && (shape == Shape.CLUTTER)) ||
                    (glyph.getGrade() <= Grades.compoundPartMaxGrade);
         }
 

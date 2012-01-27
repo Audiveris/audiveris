@@ -114,13 +114,13 @@ public class GlyphRegression
             Main.getGui()
                 .addExitListener(
                 new ExitListener() {
-                @Override
+                        @Override
                         public boolean canExit (EventObject eo)
                         {
                             return true;
                         }
 
-                @Override
+                        @Override
                         public void willExit (EventObject eo)
                         {
                             if (engine.isDataModified()) {
@@ -132,6 +132,17 @@ public class GlyphRegression
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-----------//
+    // getEngine //
+    //-----------//
+    /**
+     * @return the engine
+     */
+    public LinearEvaluator getEngine ()
+    {
+        return engine;
+    }
 
     //-------------//
     // getInstance //
@@ -149,17 +160,6 @@ public class GlyphRegression
         }
 
         return INSTANCE;
-    }
-
-    //-----------//
-    // getEngine //
-    //-----------//
-    /**
-     * @return the engine
-     */
-    public LinearEvaluator getEngine ()
-    {
-        return engine;
     }
 
     //------------//
@@ -601,7 +601,8 @@ public class GlyphRegression
             "n30",
             "n21",
             "n12",
-            "n03")) {
+            "n03",
+            "aspect")) {
             int p = GlyphEvaluator.getParameterIndex(label);
             setMinimum(p, shape, null);
             setMaximum(p, shape, null);
