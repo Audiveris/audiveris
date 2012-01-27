@@ -90,9 +90,6 @@ public class GlyphRepository
     /** Extension for place-holder symbol files */
     public static final String SYMBOL_EXTENSION = ".symbol";
 
-    /** Name of Structures sub-directory */
-    private static final String STRUCTURES_NAME = ".structures";
-
     /** Specific subdirectory for sheet glyphs */
     private static final File sheetsFolder = new File(
         WellKnowns.TRAIN_FOLDER,
@@ -461,18 +458,6 @@ public class GlyphRepository
             deleteXmlFiles(sheetDir);
         }
 
-        // Prepare structures directory
-        File structuresDir = new File(
-            getSheetsFolder(),
-            sheet.getId() + STRUCTURES_NAME);
-
-        // Make sure related structure subdirectory exists
-        if (structuresDir.mkdirs()) {
-            logger.info("Creating subdirectory " + structuresDir);
-        } else if (emptyStructures) {
-            deleteXmlFiles(structuresDir);
-        }
-
         // Now record each relevant glyph
         int glyphNb = 0;
 
@@ -480,15 +465,7 @@ public class GlyphRepository
             Shape shape = getRecordableShape(glyph);
 
             if (shape != null) {
-                File parentDir;
-
-                if (shape != Shape.STRUCTURE) {
-                    parentDir = sheetDir;
-                } else {
-                    parentDir = structuresDir;
-                }
-
-                glyphNb += recordGlyph(glyph, shape, parentDir);
+                glyphNb += recordGlyph(glyph, shape, sheetDir);
             }
         }
 

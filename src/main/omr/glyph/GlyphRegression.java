@@ -114,11 +114,13 @@ public class GlyphRegression
             Main.getGui()
                 .addExitListener(
                 new ExitListener() {
+                @Override
                         public boolean canExit (EventObject eo)
                         {
                             return true;
                         }
 
+                @Override
                         public void willExit (EventObject eo)
                         {
                             if (engine.isDataModified()) {
@@ -612,13 +614,6 @@ public class GlyphRegression
         case TEXT :
             disableMaximum(TEXT, "weight");
             disableMaximum(TEXT, "width");
-
-            break;
-
-        case STRUCTURE :
-            disableMaximum(STRUCTURE, "weight");
-            disableMaximum(STRUCTURE, "width");
-            disableMaximum(STRUCTURE, "height");
 
             break;
 

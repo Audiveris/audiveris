@@ -28,11 +28,12 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class {@code BlackList} handles the mechanism of excluding certain files
- * and subdirectories in a directory, according to the presence and content of a
- * specific black-list in this directory. <b>Nota</b>: The scope of this
- * blacklist is just the directory that contains the black-list file, not its
- * subdirectories if any.
+ * Class {@code BlackList} handles the mechanism of excluding certain 
+ * files and subdirectories in a directory, according to the presence 
+ * and content of a specific black-list in this directory. 
+ * 
+ * <b>Nota</b>: The scope of this blacklist is just the directory that contains
+ * the black-list file, not its subdirectories if any.
  *
  * @author Hervé Bitteur
  */
@@ -59,6 +60,7 @@ public class BlackList
 
     /** Specific filter for blacklist */
     protected final FileFilter blackFilter = new FileFilter() {
+        @Override
         public boolean accept (File file)
         {
             return isLegal(file);
@@ -69,8 +71,7 @@ public class BlackList
     //~ Constructors -----------------------------------------------------------
 
     /**
-     * Create a BlackList object, related to provided directory
-     *
+     * Create a BlackList object, related to provided directory.
      * @param dir the containing directory
      */
     public BlackList (File dir)
@@ -86,8 +87,7 @@ public class BlackList
     // isLegal //
     //---------//
     /**
-     * Check whether a file is legal (not blacklisted)
-     *
+     * Check whether a file is legal (not blacklisted).
      * @param file the file to check
      * @return true if legal
      */
@@ -100,8 +100,7 @@ public class BlackList
     // add //
     //-----//
     /**
-     * Blacklist a file
-     *
+     * Blacklist a file.
      * @param file the file to blacklist
      */
     public void add (File file)
@@ -119,9 +118,8 @@ public class BlackList
     // listFiles //
     //-----------//
     /**
-     * Report an array of files and directories that are not blacklisted in the
-     * containing directory of this BlackList file
-     *
+     * Report an array of files and directories that are not blacklisted
+     * in the containing directory of this BlackList file.
      * @return an array of legal File instances
      */
     public File[] listFiles ()
@@ -133,9 +131,9 @@ public class BlackList
     // listFiles //
     //-----------//
     /**
-     * Report an array of files and directories that are not blacklisted in the
-     * containing directory of this BlackList file, and that are accepted by
-     * the provided file filter
+     * Report an array of files and directories that are not blacklisted
+     * in the containing directory of this BlackList file, and that are
+     * accepted by the provided file filter.
      *
      * @return an array of filtered legal File instances
      */
@@ -167,8 +165,7 @@ public class BlackList
     // remove //
     //--------//
     /**
-     * Remove a file from the black list
-     *
+     * Remove a file from the black list.
      * @param file the file to remove
      */
     public void remove (File file)

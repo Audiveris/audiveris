@@ -474,19 +474,24 @@ public class Main
     //-------------//
     private static void checkLocale ()
     {
-        final String country = constants.localeCountry.getValue();
+        final String localeStr = constants.locale.getValue()
+                                                 .trim();
 
-        if (!country.equals("")) {
+        if (!localeStr.isEmpty()) {
             for (Locale locale : Locale.getAvailableLocales()) {
-                if (locale.getCountry()
-                          .equals(country)) {
+                if (locale.toString()
+                          .equalsIgnoreCase(localeStr)) {
                     Locale.setDefault(locale);
+
+                    if (logger.isFineEnabled()) {
+                        logger.fine("Locale set to " + locale);
+                    }
 
                     return;
                 }
             }
 
-            logger.info("Cannot set locale country to " + country);
+            logger.warning("Cannot set locale to " + localeStr);
         }
     }
 
@@ -563,10 +568,10 @@ public class Main
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** Selection of locale country code (2 letters), or empty */
-        private final Constant.String localeCountry = new Constant.String(
+        /** Selection of locale, or empty */
+        private final Constant.String locale = new Constant.String(
             "",
-            "Locale country to be used in the whole application (US, FR, ...)");
+            "Locale language to be used in the whole application (en, fr)");
 
         /** "Should we persist CLI-defined options when running in batch? */
         private final Constant.Boolean persistBatchCliConstants = new Constant.Boolean(

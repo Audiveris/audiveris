@@ -60,8 +60,6 @@ public enum Shape {
     // evaluators won't detect this and you'll have to retrain them on your own.
     // =========================================================================
 
-    /** Structure of items */
-    STRUCTURE("Structure of items"),
     //
     // Pure physical stuff -----------------------------------------------------
     //
@@ -728,7 +726,7 @@ public enum Shape {
     public boolean isWellKnown ()
     {
         return (this != NO_LEGAL_TIME) && (this != GLYPH_PART) &&
-               (this != STRUCTURE) && (this != NOISE);
+               (this != NOISE);
     }
 
     //----------------//

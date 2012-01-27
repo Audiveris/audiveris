@@ -533,7 +533,7 @@ public class GlyphsBuilder
 
         //
         Scale.Fraction stemXMargin = new Scale.Fraction(
-            0.2d, //0.05,
+            0.1d, //0.05,
             "Box widening to check intersection with stem");
 
         //

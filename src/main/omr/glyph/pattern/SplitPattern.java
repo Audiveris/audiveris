@@ -52,8 +52,7 @@ public class SplitPattern
     /** Set of shapes not accepted for glyph chunks. TODO: expand the set */
     private static final EnumSet<Shape> invalidShapes = EnumSet.of(
         Shape.CLUTTER,
-        Shape.NOISE,
-        Shape.STRUCTURE);
+        Shape.NOISE);
 
     //~ Instance fields --------------------------------------------------------
 

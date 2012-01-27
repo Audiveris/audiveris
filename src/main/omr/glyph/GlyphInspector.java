@@ -51,7 +51,6 @@ public class GlyphInspector
         Shape.DOT,
         Shape.NOISE,
         Shape.CLUTTER,
-        Shape.STRUCTURE,
         Shape.STACCATISSIMO,
         Shape.VOID_NOTEHEAD,
         Shape.COMBINING_FLAG_1,

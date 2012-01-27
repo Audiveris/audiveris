@@ -73,6 +73,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import omr.WellKnowns;
 
 /**
  * Class {@code GlyphBrowser} gathers a navigator to move between selected
@@ -284,7 +285,7 @@ class GlyphBrowser
             if (repository.isIcon(gName)) {
                 new SymbolsBlackList().add(new File(gName));
             } else {
-                File file = new File(repository.getSheetsFolder(), gName);
+                File file = new File(WellKnowns.TRAIN_FOLDER, gName);
                 new BlackList(file.getParentFile()).add(new File(gName));
             }
 

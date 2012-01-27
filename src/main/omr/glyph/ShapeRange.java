@@ -132,7 +132,7 @@ public class ShapeRange
     //
     public static final ShapeRange     Physicals = new ShapeRange(
         TEXT,
-        shapesOf(TEXT, CHARACTER, CLUTTER, DOT, STRUCTURE));
+        shapesOf(TEXT, CHARACTER, CLUTTER, DOT));
     public static final ShapeRange     Logicals = new ShapeRange(
         REPEAT_DOTS,
         shapesOf(REPEAT_DOTS, COMBINING_AUGMENTATION_DOT, ENDING));

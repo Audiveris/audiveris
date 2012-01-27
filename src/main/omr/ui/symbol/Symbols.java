@@ -169,7 +169,6 @@ public class Symbols
         dec.put(LONG_REST, new LongRestSymbol(true));
         dec.put(NON_DRAGGABLE, new NonDraggableSymbol(192));
         dec.put(SLUR, new SlurSymbol());
-        dec.put(STRUCTURE, new StructureSymbol());
         dec.put(TEXT, new TextSymbol(TEXT, "txt"));
         dec.put(WHOLE_REST, new RestSymbol(WHOLE_REST, true, 183));
     }

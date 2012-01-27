@@ -18,8 +18,8 @@ import omr.log.Logger;
 import omr.util.BlackList;
 
 /**
- * Class {@code SymbolsBlackList} is a special {@link BlackList} meant to
- * handle the collection of symbols as artificial glyphs.
+ * Class {@code SymbolsBlackList} is a special {@link BlackList} meant
+ * to handle the collection of symbols as artificial glyphs.
  *
  * @author Hervé Bitteur
  */

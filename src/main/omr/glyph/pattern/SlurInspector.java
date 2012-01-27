@@ -1137,7 +1137,7 @@ public class SlurInspector
             }
 
             return (!glyph.isManualShape() &&
-                   ((shape == Shape.CLUTTER) || (shape == Shape.STRUCTURE))) ||
+                   (shape == Shape.CLUTTER)) ||
                    (glyph.getGrade() <= Grades.compoundPartMaxGrade);
         }
 

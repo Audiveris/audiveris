@@ -701,15 +701,15 @@ public class GlyphVerifier
         public void actionPerformed (ActionEvent e)
         {
             // Populate with shape names found in selected folders
-            Object[] folders = folderSelector.list.getSelectedValues();
+            List<String> folders = folderSelector.list.getSelectedValuesList();
 
-            if (folders.length == 0) {
+            if (folders.isEmpty()) {
                 logger.warning("No folders selected in Folder Selector");
             } else {
                 EnumSet<Shape> shapeSet = EnumSet.noneOf(Shape.class);
 
-                for (Object folder : folders) {
-                    File dir = getActualDir((String) folder);
+                for (String folder : folders) {
+                    File dir = getActualDir(folder);
 
                     // Add all glyphs files from this directory
                     for (File file : repository.getGlyphsIn(dir)) {
