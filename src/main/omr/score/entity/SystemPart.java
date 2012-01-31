@@ -100,8 +100,7 @@ public class SystemPart
     // SystemPart //
     //------------//
     /**
-     * Create a new instance of SystemPart
-     *
+     * Create a new instance of SystemPart.
      * @param system the containing system
      */
     public SystemPart (ScoreSystem system)
@@ -160,8 +159,7 @@ public class SystemPart
     // getFirstMeasure //
     //-----------------//
     /**
-     * Report the first measure in this system part
-     *
+     * Report the first measure in this system part.
      * @return the first measure entity
      */
     public Measure getFirstMeasure ()
@@ -174,8 +172,7 @@ public class SystemPart
     // getFirstStaff //
     //---------------//
     /**
-     * Report the first staff in this system aprt
-     *
+     * Report the first staff in this system part.
      * @return the first staff entity
      */
     public Staff getFirstStaff ()
@@ -203,8 +200,7 @@ public class SystemPart
     // setId //
     //-------//
     /**
-     * Set the part id within the containing system, starting at 1
-     *
+     * Set the part id within the containing system, starting at 1.
      * @param id the id value
      */
     public void setId (int id)
@@ -216,8 +212,7 @@ public class SystemPart
     // getId //
     //-------//
     /**
-     * Report the part id within the containing system, starting at 1
-     *
+     * Report the part id within the containing system, starting at 1.
      * @return the part id
      */
     public int getId ()
@@ -229,8 +224,7 @@ public class SystemPart
     // getLastMeasure //
     //----------------//
     /**
-     * Report the last measure in the system part
-     *
+     * Report the last measure in the system part.
      * @return the last measure entity
      */
     public Measure getLastMeasure ()
@@ -248,8 +242,7 @@ public class SystemPart
     // getLastStaff //
     //--------------//
     /**
-     * Report the last staff in this system part
-     *
+     * Report the last staff in this system part.
      * @return the last staff entity
      */
     public Staff getLastStaff ()
@@ -262,8 +255,7 @@ public class SystemPart
     // getLyrics //
     //-----------//
     /**
-     * Report the collection of lyrics
-     *
+     * Report the collection of lyrics.
      * @return the lyrics list, which may be empty but not null
      */
     public List<TreeNode> getLyrics ()
@@ -275,9 +267,8 @@ public class SystemPart
     // getMeasureAt //
     //--------------//
     /**
-     * Report the measure that contains a given point (assumed to be in the
-     * containing system part)
-     *
+     * Report the measure that contains a given point (assumed to be in
+     * the containing system part).
      * @param point page-based coordinates of the given point
      * @return the containing measure
      */
@@ -302,8 +293,7 @@ public class SystemPart
     // getMeasures //
     //-------------//
     /**
-     * Report the collection of measures
-     *
+     * Report the collection of measures.
      * @return the measure list, which may be empty but not null
      */
     public List<TreeNode> getMeasures ()
@@ -374,8 +364,7 @@ public class SystemPart
     // getSlurs //
     //----------//
     /**
-     * Report the collection of slurs
-     *
+     * Report the collection of slurs.
      * @return the slur list, which may be empty but not null
      */
     public List<TreeNode> getSlurs ()
@@ -387,8 +376,8 @@ public class SystemPart
     // getSlurs //
     //----------//
     /**
-     * Report the collection of slurs for which the provided predicate is true
-     *
+     * Report the collection of slurs for which the provided predicate 
+     * is true.
      * @param predicate the check to run
      * @return the collection of selected slurs, which may be empty
      */
@@ -411,24 +400,38 @@ public class SystemPart
     // getStaffAt //
     //------------//
     /**
-     * Report the staff nearest (in ordinate) to a provided page point.
+     * Report the staff nearest (in ordinate) to a provided page point
+     * within the part staves.
      * @param point the provided page point
-     * @return the nearest staff
+     * @return the nearest staff, within the part staves
      */
     public Staff getStaffAt (PixelPoint point)
     {
-        return getSystem()
-                   .getInfo()
-                   .getStaffAt(point)
-                   .getScoreStaff();
+        Staff staff = getSystem()
+                          .getInfo()
+                          .getStaffAt(point)
+                          .getScoreStaff();
+
+        if (staves.getChildren()
+                  .contains(staff)) {
+            return staff;
+        }
+
+        if (staff.getInfo()
+                 .getId() < getFirstStaff()
+                                .getInfo()
+                                .getId()) {
+            return getFirstStaff();
+        } else {
+            return getLastStaff();
+        }
     }
 
     //--------------------//
     // setStartingBarline //
     //--------------------//
     /**
-     * Set the barline that starts the part
-     *
+     * Set the barline that starts the part.
      * @param startingBarline the starting barline
      */
     public void setStartingBarline (Barline startingBarline)
@@ -440,8 +443,7 @@ public class SystemPart
     // getStartingBarline //
     //--------------------//
     /**
-     * Get the barline that starts the part
-     *
+     * Get the barline that starts the part.
      * @return barline the starting bar line (which may be null)
      */
     public Barline getStartingBarline ()
@@ -453,8 +455,7 @@ public class SystemPart
     // getStaves //
     //-----------//
     /**
-     * Report the ordered list of staves that belong to this system part
-     *
+     * Report the ordered list of staves that belong to this system part.
      * @return the list of staves
      */
     public List<TreeNode> getStaves ()
@@ -466,8 +467,7 @@ public class SystemPart
     // getSystem //
     //-----------//
     /**
-     * Report the containing system
-     *
+     * Report the containing system.
      * @return the containing system
      */
     @Override
@@ -497,8 +497,8 @@ public class SystemPart
     // addChild //
     //----------//
     /**
-     * Overrides normal behavior, to deal with the separation of specific children
-     *
+     * Overrides normal behavior, to deal with the separation of 
+     * specific children.
      * @param node the node to insert
      */
     @Override
@@ -555,8 +555,8 @@ public class SystemPart
     // connectSlursWith //
     //------------------//
     /**
-     * Try to connect the orphan slurs at the beginning of this part with the
-     * orphan slurs at the en of the provided preceding part
+     * Try to connect the orphan slurs at the beginning of this part
+     * with the orphan slurs at the end of the provided preceding part.
      * @param precedingPart the part to connect to, either in the preceding
      * system, or in the last system of the preceding page
      */
@@ -744,7 +744,7 @@ public class SystemPart
     // mapSyllables //
     //--------------//
     /**
-     * Assign each syllable to its related node
+     * Assign each syllable to its related node.
      */
     public void mapSyllables ()
     {
@@ -758,7 +758,7 @@ public class SystemPart
     // populateLyricsLines //
     //---------------------//
     /**
-     * Organize the various lyrics items in aligned lyrics lines
+     * Organize the various lyrics items in aligned lyrics lines.
      */
     public void populateLyricsLines ()
     {
@@ -787,8 +787,8 @@ public class SystemPart
     // refineLyricSyllables //
     //----------------------//
     /**
-     * Determine for each lyrics item of syllable kind, its precise syllabic type
-     * (single, of part of a longer word)
+     * Determine for each lyrics item of syllable kind, its precise 
+     * syllabic type (single, of part of a longer word).
      */
     public void refineLyricSyllables ()
     {
@@ -802,8 +802,9 @@ public class SystemPart
     // retrieveSlurConnections //
     //-------------------------//
     /**
-     * Retrieve the connections between the (orphan) slurs at the beginning of
-     * this part and the (orphan) slurs at the end of the preceding part
+     * Retrieve the connections between the (orphan) slurs at the 
+     * beginning of this part and the (orphan) slurs at the end of the 
+     * preceding part.
      */
     public void retrieveSlurConnections ()
     {

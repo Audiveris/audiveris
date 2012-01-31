@@ -871,12 +871,12 @@ public class LinesRetriever
 
         // Should be 1.0, unless ledgers are thicker than staff lines
         final Constant.Ratio     ledgerThickness = new Constant.Ratio(
-            2.0, //1.0,
+            1.2, // 2.0, 
             "Ratio of ledger thickness vs staff line MAXIMUM thickness");
 
         //
         final Constant.Ratio     stickerThickness = new Constant.Ratio(
-            1.2,
+            1.0, //1.2,
             "Ratio of sticker thickness vs staff line MAXIMUM thickness");
 
         // Constants specified WRT mean line thickness

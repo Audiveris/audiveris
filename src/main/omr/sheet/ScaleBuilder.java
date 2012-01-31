@@ -41,7 +41,6 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-import org.jfree.ui.RefineryUtilities;
 
 import java.util.Arrays;
 import java.util.List;
@@ -51,8 +50,9 @@ import javax.swing.WindowConstants;
 
 /**
  * Class {@code ScaleBuilder} encapsulates the computation of a sheet
- * scale, by adding the most frequent foreground run length to the most frequent
- * background run length, since this gives the average interline value.
+ * scale, by adding the most frequent foreground run length to the most
+ * frequent background run length, since this gives the average
+ * interline value.
  *
  * <p>If we have not been able to retrieve the main run length for background
  * or for foreground, then we suspect a wrong image format. In that case,
@@ -439,6 +439,35 @@ public class ScaleBuilder
 
     //~ Inner Classes ----------------------------------------------------------
 
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final Constant.Integer minResolution = new Constant.Integer(
+            "Pixels",
+            11,
+            "Minimum resolution, expressed as number of pixels per interline");
+
+        //
+        final Constant.Ratio quorumRatio = new Constant.Ratio(
+            0.1,
+            "Absolute ratio of total pixels for peak acceptance");
+
+        //
+        final Constant.Ratio spreadRatio = new Constant.Ratio(
+            0.33,
+            "Relative ratio of best count for spread reading");
+
+        //
+        final Constant.Ratio spreadFactor = new Constant.Ratio(
+            1.0,
+            "Factor applied on line thickness spread");
+    }
+
     //---------//
     // Adapter //          
     //---------//
@@ -578,35 +607,6 @@ public class ScaleBuilder
         }
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        final Constant.Integer minResolution = new Constant.Integer(
-            "Pixels",
-            11,
-            "Minimum resolution, expressed as number of pixels per interline");
-
-        //
-        final Constant.Ratio quorumRatio = new Constant.Ratio(
-            0.1,
-            "Absolute ratio of total pixels for peak acceptance");
-
-        //
-        final Constant.Ratio spreadRatio = new Constant.Ratio(
-            0.33,
-            "Relative ratio of best count for spread reading");
-
-        //
-        final Constant.Ratio spreadFactor = new Constant.Ratio(
-            1.0,
-            "Factor applied on line thickness spread");
-    }
-
     //---------//
     // Plotter //
     //---------//
@@ -720,7 +720,8 @@ public class ScaleBuilder
             }
 
             XYSeries series = new XYSeries(
-                "Peak:" + key + ((secondPeak != null) ? (" & " + secKey) : ""));
+                "Peak:" + key + "(" + (int) (peak.getValue() * 100) + "%)" +
+                ((secondPeak != null) ? (" & " + secKey) : ""));
 
             for (int i = 0; i <= upper; i++) {
                 series.add(i, values[i]);

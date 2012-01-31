@@ -989,7 +989,7 @@ public class SlurInspector
 
         //
         Scale.Fraction     minCircleRadius = new Scale.Fraction(
-            1,
+            0.8,
             "Minimum circle radius for a slur");
 
         //

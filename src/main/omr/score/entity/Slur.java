@@ -14,7 +14,6 @@ package omr.score.entity;
 import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
-import omr.glyph.pattern.SlurInspector;
 
 import omr.log.Logger;
 
@@ -40,7 +39,7 @@ import java.util.List;
 
 /**
  * Class {@code Slur} encapsulates a slur (a curve) in a system.
- * A slur is used for a tie (2 notes with he same octave & step) or for
+ * A slur is used for a tie (2 notes with the same octave & step) or for
  * just a phrase embracing several notes.
  *
  * @author Hervé Bitteur
@@ -115,7 +114,7 @@ public class Slur
     /** Underlying glyph */
     private final Glyph glyph;
 
-    /** Underlying curve, where points are PixelPoint instances (in Double) */
+    /** Underlying curve */
     private final CubicCurve2D curve;
 
     /** Note on left side, if any */
@@ -124,10 +123,10 @@ public class Slur
     /** Note on right side, if any */
     private final Note rightNote;
 
-    /** Extension on left side, if any */
+    /** Slur extension on left side, if any */
     private Slur leftExtension;
 
-    /** Extension on right side, if any */
+    /** Slur extension on right side, if any */
     private Slur rightExtension;
 
     /** Placement / orientation */
@@ -207,8 +206,8 @@ public class Slur
     // getLeftExtension //
     //------------------//
     /**
-     * Report the slur (if any) at the end of previous system that could be
-     * considered as an extension of this slur.
+     * Report the slur (if any) at the end of previous system that could
+     * be considered as an extension of this slur.
      * @return the connected slur on left, or null if none
      */
     public Slur getLeftExtension ()
@@ -216,24 +215,12 @@ public class Slur
         return leftExtension;
     }
 
-    //-------------//
-    // getLeftNote //
-    //-------------//
-    /**
-     * Report the note (if any) embraced by the left side of this slur
-     * @return the embraced note.
-     */
-    public Note getLeftNote ()
-    {
-        return leftNote;
-    }
-
     //-------------------//
     // getRightExtension //
     //-------------------//
     /**
-     * Report the slur (if any) at the beginning of next system that could be
-     * considered as an extension of this slur.
+     * Report the slur (if any) at the beginning of next system that
+     * could be considered as an extension of this slur.
      * @return the connected slur on right, or null if none
      */
     public Slur getRightExtension ()
@@ -241,37 +228,17 @@ public class Slur
         return rightExtension;
     }
 
-    //--------------//
-    // getRightNote //
-    //--------------//
-    /**
-     * Report the note (if any) embraced by the right side of this slur.
-     * @return the embraced note
-     */
-    public Note getRightNote ()
-    {
-        return rightNote;
-    }
-
     //-------//
     // isTie //
     //-------//
     /**
-     * Report whether this slur is actually a tie (a slur between similar notes).
+     * Report whether this slur is actually a tie (a slur between
+     * similar notes).
      * @return true if is a Tie, false otherwise
      */
     public boolean isTie ()
     {
         return tie;
-    }
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
     }
 
     //----------//
@@ -284,18 +251,28 @@ public class Slur
     }
 
     //-----------//
-    // canExtend //
+    // connectTo //
     //-----------//
     /**
-     * Check whether this slur can extend the prevSlur of the preceding system.
-     * @param prevSlur the slur candidate in the preceding system
-     * @return true if connection is possible
+     * Make the connection with another slur in the previous system.
+     * @param prevSlur slur at the end of previous system
      */
-    public boolean canExtend (Slur prevSlur)
+    public void connectTo (Slur prevSlur)
     {
-        return (this.leftExtension == null) &&
-               (prevSlur.rightExtension == null) &&
-               this.isCompatibleWith(prevSlur);
+        // Cross-extensions
+        this.leftExtension = prevSlur;
+        prevSlur.rightExtension = this;
+
+        // Tie?
+        boolean isATie = haveSameHeight(prevSlur.leftNote, this.rightNote);
+        prevSlur.tie = isATie;
+        this.tie = isATie;
+
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                (isATie ? "Tie" : "Slur") + " connection #" +
+                prevSlur.glyph.getId() + " -> #" + this.glyph.getId());
+        }
     }
 
     //----------//
@@ -341,9 +318,9 @@ public class Slur
             leftNodes,
             rightNodes);
 
-        // Now choose the most relevant note, if any, on each slur side
-        Side leftSide = null;
-        Side rightSide = null;
+        // Now choose the most relevant note, if any, on each slur end
+        End leftEnd = null;
+        End rightEnd = null;
 
         switch (leftNodes.size()) {
         case 0 :
@@ -353,34 +330,34 @@ public class Slur
                 break;
 
             case 1 :
-                rightSide = new Side(rightNodes.get(0));
+                rightEnd = new End(rightNodes.get(0));
 
                 break;
 
             default :
-                rightSide = new Side(rightNodes.get(0)); // Why not?
+                rightEnd = new End(rightNodes.get(0)); // Why not?
             }
 
             break;
 
         case 1 :
-            leftSide = new Side(leftNodes.get(0));
+            leftEnd = new End(leftNodes.get(0));
 
             switch (rightNodes.size()) {
             case 0 :
                 break;
 
             case 1 :
-                rightSide = new Side(rightNodes.get(0));
+                rightEnd = new End(rightNodes.get(0));
 
                 break;
 
             default :
 
                 for (MeasureNode node : rightNodes) {
-                    rightSide = new Side(node);
+                    rightEnd = new End(node);
 
-                    if (leftSide.stemDir == rightSide.stemDir) {
+                    if (leftEnd.stemDir == rightEnd.stemDir) {
                         break;
                     }
                 }
@@ -392,17 +369,17 @@ public class Slur
 
             switch (rightNodes.size()) {
             case 0 :
-                leftSide = new Side(leftNodes.get(0)); // Why not?
+                leftEnd = new End(leftNodes.get(0)); // Why not?
 
                 break;
 
             case 1 :
-                rightSide = new Side(rightNodes.get(0));
+                rightEnd = new End(rightNodes.get(0));
 
                 for (MeasureNode node : leftNodes) {
-                    leftSide = new Side(node);
+                    leftEnd = new End(node);
 
-                    if (leftSide.stemDir == rightSide.stemDir) {
+                    if (leftEnd.stemDir == rightEnd.stemDir) {
                         break;
                     }
                 }
@@ -410,31 +387,29 @@ public class Slur
                 break;
 
             default : // N left & P right
-                leftSide = new Side(leftNodes.get(0)); // Why not?
-                rightSide = new Side(rightNodes.get(0)); // Why not?
+                leftEnd = new End(leftNodes.get(0)); // Why not?
+                rightEnd = new End(rightNodes.get(0)); // Why not?
             }
         }
 
         // Should we allocate the slur entity?
-        if ((leftSide != null) || (rightSide != null)) {
-            SystemPart part = (leftSide != null) ? leftSide.note.getPart()
-                              : rightSide.note.getPart();
+        if ((leftEnd != null) || (rightEnd != null)) {
+            SystemPart part = (leftEnd != null) ? leftEnd.note.getPart()
+                              : rightEnd.note.getPart();
             Slur       slur = new Slur(
                 part,
                 glyph,
                 curve,
                 below,
-                (leftSide != null) ? leftSide.note : null,
-                (rightSide != null) ? rightSide.note : null);
+                (leftEnd != null) ? leftEnd.note : null,
+                (rightEnd != null) ? rightEnd.note : null);
             glyph.setTranslation(slur);
 
             if (logger.isFineEnabled()) {
                 logger.finest(slur.toString());
             }
         } else {
-            system.addError(
-                glyph,
-                "Slur " + glyph.getId() + " with no embraced notes");
+            system.addError(glyph, "Slur with no embraced notes");
         }
     }
 
@@ -450,29 +425,53 @@ public class Slur
         return below;
     }
 
+    //-------------//
+    // getLeftNote //
+    //-------------//
+    /**
+     * Report the note (if any) embraced by the left side of this slur
+     * @return the embraced note, or null
+     */
+    public Note getLeftNote ()
+    {
+        return leftNote;
+    }
+
+    //--------------//
+    // getRightNote //
+    //--------------//
+    /**
+     * Report the note (if any) embraced by the right side of this slur.
+     * @return the embraced note, or null
+     */
+    public Note getRightNote ()
+    {
+        return rightNote;
+    }
+
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
     //-----------//
-    // connectTo //
+    // canExtend //
     //-----------//
     /**
-     * Make the connection with another slur in the previous system.
-     * @param prevSlur slur at the end of previous system
+     * Check whether this slur can extend the prevSlur of the preceding
+     * system.
+     * @param prevSlur the slur candidate in the preceding system
+     * @return true if connection is possible
      */
-    public void connectTo (Slur prevSlur)
+    public boolean canExtend (Slur prevSlur)
     {
-        // Cross-extensions
-        this.leftExtension = prevSlur;
-        prevSlur.rightExtension = this;
-
-        // Tie ?
-        boolean isATie = haveSameHeight(prevSlur.leftNote, this.rightNote);
-        prevSlur.tie = isATie;
-        this.tie = isATie;
-
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                (isATie ? "Tie" : "Slur") + " connection #" +
-                prevSlur.glyph.getId() + " -> #" + this.glyph.getId());
-        }
+        return (this.leftExtension == null) &&
+               (prevSlur.rightExtension == null) &&
+               this.isCompatibleWith(prevSlur);
     }
 
     //--------------------//
@@ -500,10 +499,6 @@ public class Slur
     //----------//
     // toString //
     //----------//
-    /**
-     * Report a readable description for this slur.
-     * @return a string with all slur parameters
-     */
     @Override
     public String toString ()
     {
@@ -573,8 +568,8 @@ public class Slur
     // isBelow //
     //---------//
     /**
-     * Report whether the provided curve is below the notes (turned upwards)
-     * or above the notes (turned downwards).
+     * Report whether the provided curve is below the notes (turned
+     * upwards) or above the notes (turned downwards).
      * @param curve the provided curve to check
      * @return true if below, false if above
      */
@@ -594,8 +589,9 @@ public class Slur
     // isCompatibleWith //
     //------------------//
     /**
-     * Check whether two slurs to-be-connected are roughly compatible with each
-     * other (same staff id, and pitch positions not too different).
+     * Check whether two slurs to-be-connected are roughly compatible
+     * with each other (same staff id, and pitch positions not too
+     * different).
      * @param prevSlur the previous slur
      * @return true if found compatible
      */
@@ -695,8 +691,9 @@ public class Slur
     // haveSameHeight //
     //----------------//
     /**
-     * Check whether two notes represent the same pitch (same octave, same step,
-     * same alteration). This is needed to detects tie slurs.
+     * Check whether two notes represent the same pitch (same octave,
+     * same step, same alteration).
+     * This is needed to detects tie slurs.
      * @param n1 one note
      * @param n2 the other note
      * @return true if the notes are equivalent.
@@ -714,8 +711,8 @@ public class Slur
     // retrieveEmbracedNotes //
     //-----------------------//
     /**
-     * Retrieve the notes that are embraced on the left side and on the right
-     * side of a slur glyph.
+     * Retrieve the notes that are embraced on the left side and on the
+     * right side of a slur glyph.
      * @param system the containing system
      * @param curve the slur underlying curve
      * @param leftNodes output: the ordered list of notes found on left side
@@ -833,13 +830,47 @@ public class Slur
             "Maximum difference in vertical position between connecting slurs");
     }
 
+    //-----//
+    // End //
+    //-----//
+    /**
+     *  Note information on one end of a slur.
+     */
+    private static class End
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        // The precise note embraced by the slur on this side
+        final Note note;
+
+        // The related chord stem direction
+        final int stemDir;
+
+        //~ Constructors -------------------------------------------------------
+
+        public End (MeasureNode node)
+        {
+            if (node instanceof Note) {
+                note = (Note) node;
+            } else {
+                Chord chord = (Chord) node;
+                // Take the last note (closest to the tail)
+                note = (Note) chord.getNotes()
+                                   .get(chord.getNotes().size() - 1);
+            }
+
+            stemDir = note.getChord()
+                          .getStemDir();
+        }
+    }
+
     //----------------//
     // NodeComparator //
     //----------------//
     /**
      * Class {@code NodeComparator} implements a Node comparator, where
-     * nodes are ordered according to the ordinate of the left point (whether
-     * its'a Note or a chord tail location, from top to bottom.
+     * nodes are sorted according to the ordinate of the left point
+     * (whether its'a Note or a chord tail location, from top to bottom).
      */
     private static final class NodeComparator
         implements Comparator<MeasureNode>, Serializable
@@ -866,40 +897,6 @@ public class Slur
                             ? ((Chord) n2).getTailLocation() : n2.getCenter();
 
             return Double.compare(p1.distance(ref), p2.distance(ref));
-        }
-    }
-
-    //------//
-    // Side //
-    //------//
-    /**
-     *  Note information on one side of a slur.
-     */
-    private static class Side
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        // The precise note embraced by the slur on this side
-        final Note note;
-
-        // The related chord stem direction
-        final int stemDir;
-
-        //~ Constructors -------------------------------------------------------
-
-        public Side (MeasureNode node)
-        {
-            if (node instanceof Note) {
-                note = (Note) node;
-            } else {
-                Chord chord = (Chord) node;
-                // Take the last note (closest to the tail)
-                note = (Note) chord.getNotes()
-                                   .get(chord.getNotes().size() - 1);
-            }
-
-            stemDir = note.getChord()
-                          .getStemDir();
         }
     }
 }

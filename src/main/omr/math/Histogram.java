@@ -24,8 +24,9 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * Class {@code Histogram} is an histogram implementation which handles integer
- * counts in buckets, the buckets identities being values of type K.
+ * Class {@code Histogram} is an histogram implementation which handles
+ * integer counts in buckets, the buckets identities being values of 
+ * type K.
  *
  * @param <K> the precise type for histogram buckets
  *
@@ -37,6 +38,7 @@ public class Histogram<K extends Number>
 
     /** To sort peaks by decreasing value */
     public final Comparator<PeakEntry<K>> reversePeakComparator = new Comparator<PeakEntry<K>>() {
+        @Override
         public int compare (PeakEntry<K> e1,
                             PeakEntry<K> e2)
         {
@@ -47,6 +49,7 @@ public class Histogram<K extends Number>
 
     /** To sort double peaks by decreasing value */
     public final Comparator<PeakEntry<Double>> reverseDoublePeakComparator = new Comparator<PeakEntry<Double>>() {
+        @Override
         public int compare (PeakEntry<Double> e1,
                             PeakEntry<Double> e2)
         {
@@ -57,6 +60,7 @@ public class Histogram<K extends Number>
 
     /** To sort double peaks by decreasing value */
     public final Comparator<MaxEntry<K>> reverseMaxComparator = new Comparator<MaxEntry<K>>() {
+        @Override
         public int compare (MaxEntry<K> e1,
                             MaxEntry<K> e2)
         {
@@ -127,8 +131,8 @@ public class Histogram<K extends Number>
     // getPeaks //
     //----------//
     /**
-     * Report the sequence of bucket peaks whose count is equal to or greater
-     * than the specified minCount value
+     * Report the sequence of bucket peaks whose count is equal to or 
+     * greater than the specified minCount value.
      * @param minCount the desired minimum count value
      * @return the (perhaps empty but not null) sequence of peaks of buckets
      */
