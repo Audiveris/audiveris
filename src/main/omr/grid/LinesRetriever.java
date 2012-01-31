@@ -237,8 +237,8 @@ public class LinesRetriever
     // completeLines //
     //---------------//
     /**
-     * Complete the retrieved staff lines whenever possible with filaments and
-     * short sections left over.
+     * Complete the retrieved staff lines whenever possible with
+     * filaments and short sections left over.
      *
      * <p><b>Synopsis:</b>
      * <pre>
@@ -543,13 +543,15 @@ public class LinesRetriever
      * @param isVip true if entity is vip
      * @param box the entity contour box
      * @param center the entity center
+     * @param candidate the section or glyph candidate
      * @return true if OK, false otherwise
      */
     private boolean canInclude (LineFilament   filament,
                                 boolean        isVip,
                                 String         idStr,
                                 PixelRectangle box,
-                                PixelPoint     center)
+                                PixelPoint     center,
+                                Object         candidate)
     {
         // For VIP debugging
         String vips = null;
@@ -564,7 +566,7 @@ public class LinesRetriever
         if (height > params.maxStickerThickness) {
             if (logger.isFineEnabled() || isVip) {
                 logger.info(
-                    vips + "TTT height:" + height + " vs " +
+                    vips + "SSS height:" + height + " vs " +
                     params.maxStickerThickness);
             }
 
@@ -601,6 +603,33 @@ public class LinesRetriever
             return false;
         }
 
+        // Check resulting thickness
+        double thickness = 0;
+
+        if (candidate instanceof Section) {
+            thickness = Glyphs.getThicknessAt(
+                center.x,
+                HORIZONTAL,
+                (Section) candidate,
+                filament);
+        } else if (candidate instanceof Glyph) {
+            thickness = Glyphs.getThicknessAt(
+                center.x,
+                HORIZONTAL,
+                (Glyph) candidate,
+                filament);
+        }
+
+        if (thickness > params.maxStickerThickness) {
+            if (logger.isFineEnabled() || isVip) {
+                logger.info(
+                    vips + "RRR thickness:" + (float) thickness + " vs " +
+                    params.maxStickerExtension);
+            }
+
+            return false;
+        }
+
         if (logger.isFineEnabled() || isVip) {
             logger.info(vips + "---");
         }
@@ -612,7 +641,8 @@ public class LinesRetriever
     // canIncludeFilament //
     //--------------------//
     /**
-     * Check whether the staff line filament could include the candidate filament
+     * Check whether the staff line filament could include the candidate
+     * filament
      * @param filament the staff line filament
      * @param fil the candidate filament
      * @return true if OK
@@ -625,14 +655,16 @@ public class LinesRetriever
             fil.isVip(),
             "Fil#" + fil.getId(),
             fil.getContourBox(),
-            fil.getCentroid());
+            fil.getCentroid(),
+            fil);
     }
 
     //-------------------//
     // canIncludeSection //
     //-------------------//
     /**
-     * Check whether the staff line filament could include the provided section
+     * Check whether the staff line filament could include the candidate
+     * section
      * @param filament the staff line filament
      * @param section the candidate sticker
      * @return true if OK, false otherwise
@@ -645,7 +677,8 @@ public class LinesRetriever
             section.isVip(),
             "Sct#" + section.getId(),
             section.getContourBox(),
-            section.getCentroid());
+            section.getCentroid(),
+            section);
     }
 
     //---------------------//
@@ -876,7 +909,7 @@ public class LinesRetriever
 
         //
         final Constant.Ratio     stickerThickness = new Constant.Ratio(
-            1.0, //1.2,
+            1.2,
             "Ratio of sticker thickness vs staff line MAXIMUM thickness");
 
         // Constants specified WRT mean line thickness

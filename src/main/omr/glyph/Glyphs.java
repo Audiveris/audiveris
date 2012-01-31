@@ -133,12 +133,40 @@ public class Glyphs
                                          Orientation orientation,
                                          Glyph... glyphs)
     {
+        return getThicknessAt(coord, orientation, null, glyphs);
+    }
+
+    //----------------//
+    // getThicknessAt //
+    //----------------//
+    /**
+     * Report the resulting thickness of the collection of sticks at
+     * the provided coordinate.
+     * @param coord the desired coordinate
+     * @param orientation the desired orientation reference
+     * @param section section contributing to the resulting thickness
+     * @param glyphs glyphs contributing to the resulting thickness
+     * @return the thickness measured, expressed in number of pixels.
+     */
+    public static double getThicknessAt (double      coord,
+                                         Orientation orientation,
+                                         Section     section,
+                                         Glyph... glyphs)
+    {
         if (glyphs.length == 0) {
-            return 0;
+            if (section == null) {
+                return 0;
+            } else {
+                return section.getMeanThickness(orientation);
+            }
         }
 
         // Retrieve global bounds
         PixelRectangle absBox = null;
+
+        if (section != null) {
+            absBox = section.getContourBox();
+        }
 
         for (Glyph g : glyphs) {
             if (absBox == null) {
@@ -167,9 +195,14 @@ public class Glyphs
 
         // Collect sections contribution
         for (Glyph g : glyphs) {
-            for (Section section : g.getMembers()) {
-                section.cumulate(collector);
+            for (Section sct : g.getMembers()) {
+                sct.cumulate(collector);
             }
+        }
+
+        // Contributing section, if any
+        if (section != null) {
+            section.cumulate(collector);
         }
 
         // Case of no pixels found
