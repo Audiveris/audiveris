@@ -86,6 +86,7 @@ public class SlurInspector
     // Cached system-dependent constants
     private final int    interline;
     private final int    minChunkWeight;
+    private final int    minExtensionWeight;
     private final double maxChunkThickness;
     private final int    slurBoxDx;
     private final int    slurBoxDy;
@@ -118,6 +119,7 @@ public class SlurInspector
         // Compute scale-dependent parameters
         interline = scale.getInterline();
         minChunkWeight = scale.toPixels(constants.minChunkWeight);
+        minExtensionWeight = scale.toPixels(constants.minExtensionWeight);
         maxChunkThickness = scale.toPixels(constants.maxChunkThickness);
         slurBoxDx = scale.toPixels(constants.slurBoxDx);
         slurBoxDy = scale.toPixels(constants.slurBoxDy);
@@ -989,7 +991,7 @@ public class SlurInspector
 
         //
         Scale.Fraction     minCircleRadius = new Scale.Fraction(
-            0.8,
+            0.7,
             "Minimum circle radius for a slur");
 
         //
@@ -1006,6 +1008,11 @@ public class SlurInspector
         Scale.AreaFraction minChunkWeight = new Scale.AreaFraction(
             0.3, //0.5,
             "Minimum weight of a chunk to be part of slur computation");
+
+        //
+        Scale.AreaFraction minExtensionWeight = new Scale.AreaFraction(
+            0.01,
+            "Minimum weight of a glyph to be considered for slur extension");
 
         //
         Scale.Fraction     slurBoxDx = new Scale.Fraction(
@@ -1124,7 +1131,7 @@ public class SlurInspector
                 return false; // Safer
             }
 
-            // Check meanthickness
+            // Check mean thickness
             double thickness = Math.min(
                 glyph.getMeanThickness(VERTICAL),
                 glyph.getMeanThickness(HORIZONTAL));
@@ -1133,6 +1140,12 @@ public class SlurInspector
                 return false;
             }
 
+            // Check minimum weight
+            if (glyph.getWeight() < minExtensionWeight) {
+                return false;
+            }
+
+            // Check shape
             if (!glyph.isKnown()) {
                 return true;
             }
@@ -1193,7 +1206,16 @@ public class SlurInspector
                 return false;
             }
 
-            return !glyph.isManualShape();
+            if (glyph.isManualShape()) {
+                return false;
+            }
+
+            // Check shape grade
+            if (glyph.getGrade() > Grades.compoundPartMaxGrade) {
+                return false;
+            }
+
+            return true;
         }
 
         @Override

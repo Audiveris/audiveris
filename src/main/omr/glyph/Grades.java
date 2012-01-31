@@ -31,7 +31,7 @@ public class Grades
 
     /** <b>Maximum</b> grade for a glyph before being merged in a compound */
     public static final double compoundPartMaxGrade = constants.compoundPartMaxGrade.getValue();
-
+    
     // Minimum values
     //---------------
 
@@ -67,9 +67,6 @@ public class Grades
 
     /** Minimum grade for a patterns-issued glyph */
     public static final double patternsMinGrade = constants.patternsMinGrade.getValue();
-
-    /** Minimum grade for a slur glyph */
-    public static final double slurMinGrade = constants.slurMinGrade.getValue();
 
     /** Minimum grade for a symbol glyph */
     public static final double symbolMinGrade = constants.symbolMinGrade.getValue();
@@ -127,11 +124,6 @@ public class Grades
         Evaluation.Grade bassMinGrade = new Evaluation.Grade(
             33,
             "Minimum grade for a bass clef");
-
-        //
-        Evaluation.Grade slurMinGrade = new Evaluation.Grade(
-            25,
-            "Minimum grade for a slur");
 
         //
         Evaluation.Grade hookMinGrade = new Evaluation.Grade(
