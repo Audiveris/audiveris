@@ -570,7 +570,7 @@ public class Main
 
         /** Selection of locale, or empty */
         private final Constant.String locale = new Constant.String(
-            "",
+            "en",
             "Locale language to be used in the whole application (en, fr)");
 
         /** "Should we persist CLI-defined options when running in batch? */
