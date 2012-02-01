@@ -1026,7 +1026,7 @@ public class SlurInspector
 
         //
         Scale.Fraction     slurBoxHypot = new Scale.Fraction(
-            0.75,
+            0.9,
             "Extension length when looking for line-free slur compound");
 
         //
@@ -1197,7 +1197,12 @@ public class SlurInspector
             }
 
             if ((glyph == null) || !glyph.isKnown()) {
-                return true;
+                // Check section weight
+                if (section.getWeight() >= minExtensionWeight) {
+                    return true;
+                } else {
+                    return false;
+                }
             }
 
             Shape shape = glyph.getShape();

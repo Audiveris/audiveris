@@ -78,7 +78,10 @@ public class Slur
 
                 if (measure == slur.getPart()
                                    .getLastMeasure()) {
-                    return true;
+                    // Check slur ends in last measure half
+                    if (p2.getX() > measure.getCenter().x) {
+                        return true;
+                    }
                 }
             }
 
@@ -100,7 +103,10 @@ public class Slur
 
                 if (measure == slur.getPart()
                                    .getFirstMeasure()) {
-                    return true;
+                    // Check slur begins in first measure half
+                    if (p1.getX() < measure.getCenter().x) {
+                        return true;
+                    }
                 }
             }
 

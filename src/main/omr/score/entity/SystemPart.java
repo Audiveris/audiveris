@@ -376,7 +376,7 @@ public class SystemPart
     // getSlurs //
     //----------//
     /**
-     * Report the collection of slurs for which the provided predicate 
+     * Report the collection of slurs for which the provided predicate
      * is true.
      * @param predicate the check to run
      * @return the collection of selected slurs, which may be empty
@@ -497,7 +497,7 @@ public class SystemPart
     // addChild //
     //----------//
     /**
-     * Overrides normal behavior, to deal with the separation of 
+     * Overrides normal behavior, to deal with the separation of
      * specific children.
      * @param node the node to insert
      */
@@ -787,7 +787,7 @@ public class SystemPart
     // refineLyricSyllables //
     //----------------------//
     /**
-     * Determine for each lyrics item of syllable kind, its precise 
+     * Determine for each lyrics item of syllable kind, its precise
      * syllabic type (single, of part of a longer word).
      */
     public void refineLyricSyllables ()
@@ -802,8 +802,8 @@ public class SystemPart
     // retrieveSlurConnections //
     //-------------------------//
     /**
-     * Retrieve the connections between the (orphan) slurs at the 
-     * beginning of this part and the (orphan) slurs at the end of the 
+     * Retrieve the connections between the (orphan) slurs at the
+     * beginning of this part and the (orphan) slurs at the end of the
      * preceding part.
      */
     public void retrieveSlurConnections ()

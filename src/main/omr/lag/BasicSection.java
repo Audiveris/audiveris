@@ -810,29 +810,6 @@ public class BasicSection
         return table;
     }
 
-    //-----------//
-    // drawTable //
-    //-----------//
-    /**
-     * Printout the filled drawing table
-     *
-     * @param table the filled table
-     * @param box the table limits in the image
-     */
-    public static void drawTable (char[][]  table,
-                                  Rectangle box)
-    {
-        System.out.println(
-            "xMin=" + box.x + ", xMax=" + ((box.x + box.width) - 1));
-        System.out.println(
-            "yMin=" + box.y + ", yMax=" + ((box.y + box.height) - 1));
-
-        for (int iy = 0; iy < table.length; iy++) {
-            System.out.print((iy + box.y) + ": ");
-            System.out.println(table[iy]);
-        }
-    }
-
     //--------//
     // append //
     //--------//
@@ -1056,6 +1033,29 @@ public class BasicSection
         char[][]  table = allocateTable(box);
         fillTable(table, box);
         drawTable(table, box);
+    }
+
+    //-----------//
+    // drawTable //
+    //-----------//
+    /**
+     * Printout the filled drawing table
+     *
+     * @param table the filled table
+     * @param box the table limits in the image
+     */
+    public static void drawTable (char[][]  table,
+                                  Rectangle box)
+    {
+        System.out.println(
+            "xMin=" + box.x + ", xMax=" + ((box.x + box.width) - 1));
+        System.out.println(
+            "yMin=" + box.y + ", yMax=" + ((box.y + box.height) - 1));
+
+        for (int iy = 0; iy < table.length; iy++) {
+            System.out.print((iy + box.y) + ": ");
+            System.out.println(table[iy]);
+        }
     }
 
     //-----------//
