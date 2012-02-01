@@ -23,7 +23,7 @@ document.write("    </a>");
 // Download button
 document.write("    <a id='download-button' href='" + context.root + "docs/manual/installation.html'>");
 document.write("        <div id='download-version'>");
-document.write("            <b>V4.1</b>");
+document.write("            <b>V4.1beta</b>");
 document.write("        </div>");
 document.write("    </a>");
 
