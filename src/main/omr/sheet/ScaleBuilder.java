@@ -42,6 +42,7 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
+import java.awt.Point;
 import java.util.Arrays;
 import java.util.List;
 
@@ -98,8 +99,11 @@ public class ScaleBuilder
     /** Absolute population percentage for validating an extremum */
     private final double quorumRatio = constants.quorumRatio.getValue();
 
-    /** Relative population percentage for reading spread */
-    private final double spreadRatio = constants.spreadRatio.getValue();
+    /** Relative population percentage for reading foreground spread */
+    private final double foreSpreadRatio = constants.foreSpreadRatio.getValue();
+
+    /** Relative population percentage for reading background spread */
+    private final double backSpreadRatio = constants.backSpreadRatio.getValue();
 
     /** Foreground peak */
     private PeakEntry<Double> forePeak;
@@ -122,11 +126,10 @@ public class ScaleBuilder
     // ScaleBuilder //
     //--------------//
     /**
-     * (package private) constructor, to enable scale computation on a given
-     * sheet.
+     * Constructor to enable scale computation on a given sheet.
      * @param sheet the sheet at hand
      */
-    ScaleBuilder (Sheet sheet)
+    public ScaleBuilder (Sheet sheet)
     {
         this.sheet = sheet;
     }
@@ -152,9 +155,10 @@ public class ScaleBuilder
     // retrieveScale //
     //---------------//
     /**
-     * Retrieve the global scale values by processing the provided picture runs,
-     * make decisions about the validity of current picture as a music page and
-     * store the results as a {@link Scale} instance in the related sheet.
+     * Retrieve the global scale values by processing the provided
+     * picture runs, make decisions about the validity of current
+     * picture as a music page and store the results as a {@link Scale}
+     * instance in the related sheet.
      * @throws StepException if processing must stop for this sheet.
      */
     public void retrieveScale ()
@@ -228,6 +232,7 @@ public class ScaleBuilder
     // getPeak //
     //---------//
     private PeakEntry<Double> getPeak (Histogram histo,
+                                       double    spreadRatio,
                                        int       index)
     {
         PeakEntry<Double>       peak = null;
@@ -286,7 +291,13 @@ public class ScaleBuilder
         if (beamEntry != null) {
             return beamEntry.getKey();
         } else {
-            return null;
+            if (backPeak != null) {
+                logger.info("No beam peak found, computing a default value");
+
+                return (int) Math.rint(0.7 * backPeak.getKey().best);
+            } else {
+                return null;
+            }
         }
     }
 
@@ -323,7 +334,7 @@ public class ScaleBuilder
         if (forePeak != null) {
             int min = (int) Math.rint(forePeak.getKey().first);
             int best = (int) Math.rint(forePeak.getKey().best);
-            int max = (int) Math.rint(forePeak.getKey().second);
+            int max = (int) Math.ceil(forePeak.getKey().second);
 
             return new Scale.Range(min, best, max);
         } else {
@@ -393,26 +404,28 @@ public class ScaleBuilder
         StringBuilder sb = new StringBuilder(sheet.getLogPrefix());
 
         // Foreground peak
-        forePeak = getPeak(foreHisto, 0);
+        forePeak = getPeak(foreHisto, foreSpreadRatio, 0);
         sb.append("fore:")
           .append(forePeak);
 
         // Background peak
-        backPeak = getPeak(backHisto, 0);
+        backPeak = getPeak(backHisto, backSpreadRatio, 0);
         sb.append(" back:")
           .append(backPeak);
 
         // Second foreground peak (beam)? 
         if ((forePeak != null) && (backPeak != null)) {
-            // No minCount known, use local max
+            // Take first local max for which key (beam thickness) is larger
+            // than twice the mean line thickness
             List<MaxEntry<Integer>> foreMaxima = foreHisto.getLocalMaxima();
+            double                  minBeamLineRatio = constants.minBeamLineRatio.getValue();
 
             for (MaxEntry<Integer> max : foreMaxima) {
-                if (max.getKey() <= forePeak.getKey().second) {
+                if (max.getKey() <= (minBeamLineRatio * forePeak.getKey().best)) {
                     continue;
                 }
 
-                if (max.getKey() >= backPeak.getKey().first) {
+                if (max.getKey() > backPeak.getKey().best) {
                     break;
                 }
 
@@ -425,7 +438,7 @@ public class ScaleBuilder
         }
 
         // Second background peak?
-        secondBackPeak = getPeak(backHisto, 1);
+        secondBackPeak = getPeak(backHisto, backSpreadRatio, 1);
 
         if (secondBackPeak != null) {
             sb.append(" secondBack:")
@@ -458,14 +471,24 @@ public class ScaleBuilder
             "Absolute ratio of total pixels for peak acceptance");
 
         //
-        final Constant.Ratio spreadRatio = new Constant.Ratio(
-            0.33,
-            "Relative ratio of best count for spread reading");
+        final Constant.Ratio foreSpreadRatio = new Constant.Ratio(
+            0.15,
+            "Relative ratio of best count for foreground spread reading");
+
+        //
+        final Constant.Ratio backSpreadRatio = new Constant.Ratio(
+            0.3,
+            "Relative ratio of best count for background spread reading");
 
         //
         final Constant.Ratio spreadFactor = new Constant.Ratio(
             1.0,
             "Factor applied on line thickness spread");
+
+        //
+        final Constant.Ratio minBeamLineRatio = new Constant.Ratio(
+            2.0,
+            "Minimum ratio between beam thickness and line thickness");
     }
 
     //---------//
@@ -582,14 +605,22 @@ public class ScaleBuilder
                 fore.length,
                 ((backPeak != null) ? ((backPeak.getKey().best * 3) / 2) : 20));
 
-            new Plotter("black", fore, foreHisto, forePeak, null, upper).plot();
+            new Plotter(
+                "black",
+                fore,
+                foreHisto,
+                foreSpreadRatio,
+                forePeak,
+                null,
+                upper).plot(new Point(0, 0));
             new Plotter(
                 "white",
                 back,
                 backHisto,
+                backSpreadRatio,
                 backPeak,
                 secondBackPeak,
-                upper).plot();
+                upper).plot(new Point(20, 20));
         }
 
         //-----------------//
@@ -620,6 +651,7 @@ public class ScaleBuilder
         private final String             name;
         private final int[]              values;
         private final Histogram<Integer> histo;
+        private final double             spreadRatio;
         private final PeakEntry<Double>  peak;
         private final PeakEntry<Double>  secondPeak;
         private final int                upper;
@@ -630,6 +662,7 @@ public class ScaleBuilder
         public Plotter (String             name,
                         int[]              values,
                         Histogram<Integer> histo,
+                        double             spreadRatio,
                         PeakEntry<Double>  peak,
                         PeakEntry<Double>  secondPeak, // if any
                         int                upper)
@@ -637,6 +670,7 @@ public class ScaleBuilder
             this.name = name;
             this.values = values;
             this.histo = histo;
+            this.spreadRatio = spreadRatio;
             this.peak = peak;
             this.secondPeak = secondPeak;
             this.upper = upper;
@@ -644,7 +678,7 @@ public class ScaleBuilder
 
         //~ Methods ------------------------------------------------------------
 
-        public void plot ()
+        public void plot (Point upperLeft)
         {
             // All values, quorum line & spread line
             plotValues();
@@ -675,7 +709,7 @@ public class ScaleBuilder
                 true);
             frame.pack();
             frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-            ///RefineryUtilities.centerFrameOnScreen(frame);
+            frame.setLocation(upperLeft);
             frame.setVisible(true);
         }
 
