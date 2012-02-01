@@ -14,11 +14,9 @@ package omr.score;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.*;
 import omr.glyph.Evaluation;
 import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphNetwork;
-import omr.glyph.Glyphs;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.ShapeRange;
@@ -27,7 +25,6 @@ import omr.glyph.facets.Glyph;
 import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import omr.score.entity.Beam;
 import omr.score.entity.BeamGroup;
 import omr.score.entity.Chord;
@@ -158,16 +155,30 @@ public class ScoreChecker
             }
 
             // Check that there is at least one full beam on the same chord
-            for (Beam b : chords.first()
-                                .getBeams()) {
+            // And vertically closer than the chord head 
+            Chord  chord = chords.first();
+            int    stemX = chord.getStem()
+                                .getLocation().x;
+            double hookY = glyph.getCentroid().y;
+            int    headY = chord.getHeadLocation().y;
+            double toHead = Math.abs(headY - hookY);
+
+            for (Beam b : chord.getBeams()) {
                 if (!b.isHook()) {
-                    return true;
+                    // Check hook is closer to beam than to head
+                    double beamY = b.getLine()
+                                    .yAtX(stemX);
+                    double toBeam = Math.abs(beamY - hookY);
+
+                    if (toBeam <= toHead) {
+                        return true;
+                    }
                 }
             }
 
             // No real beam found on the same chord, so let's discard the hook
-            if (logger.isFineEnabled()) {
-                logger.fine("Removing false beam hook glyph#" + glyph.getId());
+            if (glyph.isVip() || logger.isFineEnabled()) {
+                logger.info("Removing false beam hook glyph#" + glyph.getId());
             }
 
             glyph.setShape(null);

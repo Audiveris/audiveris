@@ -100,37 +100,31 @@ public class BeamHookPattern
 
                 // Look for other stuff on the stem
                 PixelRectangle stemBox = system.stemBoxOf(stem);
-                boolean        found = false;
+                boolean        beamFound = false;
 
                 for (Glyph g : system.lookupIntersectedGlyphs(
                     stemBox,
                     stem,
                     hook)) {
-                    // We look for  beam on same stem side
+                    // We look for a beam on the same stem side
                     if ((g.getStem(side) == stem)) {
                         Shape shape = g.getShape();
 
                         if (ShapeRange.Beams.contains(shape) &&
                             (shape != Shape.BEAM_HOOK)) {
-                            // Check same vertical end
-                            int beamDy = g.getCentroid().y -
-                                         stem.getCentroid().y;
-
-                            if ((hookDy * beamDy) > 0) {
-                                if (hook.isVip() || logger.isFineEnabled()) {
-                                    logger.info(
-                                        "Confirmed beam hook #" + hook.getId());
-                                }
-
-                                found = true;
-
-                                break;
+                            if (hook.isVip() || logger.isFineEnabled()) {
+                                logger.info(
+                                    "Confirmed beam hook #" + hook.getId());
                             }
+
+                            beamFound = true;
+
+                            break;
                         }
                     }
                 }
 
-                if (!found) {
+                if (!beamFound) {
                     // Deassign this hook w/ no beam neighbor
                     if (hook.isVip() || logger.isFineEnabled()) {
                         logger.info("Cancelled beam hook #" + hook.getId());
