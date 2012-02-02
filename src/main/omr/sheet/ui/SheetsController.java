@@ -19,8 +19,6 @@ import omr.log.Logger;
 import omr.score.Score;
 import omr.score.entity.Page;
 
-import omr.script.ScriptActions;
-
 import omr.selection.SelectionService;
 import omr.selection.SheetEvent;
 
@@ -279,15 +277,9 @@ public class SheetsController
     /**
      * Remove the specified view from the tabbed pane.
      * @param sheet the sheet to close
-     * @return true if we have actually closed the sheet UI stuff
      */
-    public synchronized boolean removeAssembly (Sheet sheet)
+    public synchronized void removeAssembly (Sheet sheet)
     {
-        // Check whether the script has been saved (or user has declined)
-        if (!ScriptActions.checkStored(sheet.getScore().getScript())) {
-            return false;
-        }
-
         SheetAssembly assembly = sheet.getAssembly();
         int           sheetIndex = tabbedPane.indexOfComponent(
             assembly.getComponent());
@@ -312,18 +304,21 @@ public class SheetsController
 
             // Make sure the first sheet of a multipage score is OK
             // We need to modify the tab label for the score (new) first tab
-            if (!score.getPages()
-                      .isEmpty()) {
+            if (score.getPages()
+                     .size() > 1) {
                 Page  firstPage = (Page) score.getPages()
                                               .get(0);
                 Sheet firstSheet = firstPage.getSheet();
                 int   firstIndex = tabbedPane.indexOfComponent(
                     firstSheet.getAssembly().getComponent());
-                tabbedPane.setTitleAt(firstIndex, defineTitleFor(firstSheet));
+
+                if (firstIndex != -1) {
+                    tabbedPane.setTitleAt(
+                        firstIndex,
+                        defineTitleFor(firstSheet));
+                }
             }
         }
-
-        return true;
     }
 
     //--------------//

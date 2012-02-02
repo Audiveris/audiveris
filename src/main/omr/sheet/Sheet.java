@@ -248,6 +248,46 @@ public class Sheet
 
     //~ Methods ----------------------------------------------------------------
 
+    //----------------------//
+    // setDefaultHistoRatio //
+    //----------------------//
+    /**
+     * Set the default value of histogram threhold for staff detection
+     * @param histoRatio the default ratio of maximum histogram value
+     */
+    public static void setDefaultHistoRatio (double histoRatio)
+    {
+        constants.defaultStaffThreshold.setValue(histoRatio);
+    }
+
+    //----------------------//
+    // getDefaultHistoRatio //
+    //----------------------//
+    /**
+     * Report the default value of histogram threhold for staff detection
+     * @return the default ratio of maximum histogram value
+     */
+    public static double getDefaultHistoRatio ()
+    {
+        return constants.defaultStaffThreshold.getValue();
+    }
+
+    //-------------------------//
+    // setDefaultMaxForeground //
+    //-------------------------//
+    public static void setDefaultMaxForeground (int level)
+    {
+        constants.maxForegroundGrayLevel.setValue(level);
+    }
+
+    //-------------------------//
+    // getDefaultMaxForeground //
+    //-------------------------//
+    public static int getDefaultMaxForeground ()
+    {
+        return constants.maxForegroundGrayLevel.getValue();
+    }
+
     //-----------------//
     // getActiveGlyphs //
     //-----------------//
@@ -344,6 +384,14 @@ public class Sheet
     }
 
     //----------------//
+    // setCurrentStep //
+    //----------------//
+    public void setCurrentStep (Step step)
+    {
+        currentStep = step;
+    }
+
+    //----------------//
     // getCurrentStep //
     //----------------//
     /**
@@ -353,54 +401,6 @@ public class Sheet
     public Step getCurrentStep ()
     {
         return currentStep;
-    }
-
-    //----------------------//
-    // setDefaultHistoRatio //
-    //----------------------//
-    /**
-     * Set the default value of histogram threhold for staff detection
-     * @param histoRatio the default ratio of maximum histogram value
-     */
-    public static void setDefaultHistoRatio (double histoRatio)
-    {
-        constants.defaultStaffThreshold.setValue(histoRatio);
-    }
-
-    //----------------------//
-    // getDefaultHistoRatio //
-    //----------------------//
-    /**
-     * Report the default value of histogram threhold for staff detection
-     * @return the default ratio of maximum histogram value
-     */
-    public static double getDefaultHistoRatio ()
-    {
-        return constants.defaultStaffThreshold.getValue();
-    }
-
-    //-------------------------//
-    // setDefaultMaxForeground //
-    //-------------------------//
-    public static void setDefaultMaxForeground (int level)
-    {
-        constants.maxForegroundGrayLevel.setValue(level);
-    }
-
-    //-------------------------//
-    // getDefaultMaxForeground //
-    //-------------------------//
-    public static int getDefaultMaxForeground ()
-    {
-        return constants.maxForegroundGrayLevel.getValue();
-    }
-
-    //----------------//
-    // setCurrentStep //
-    //----------------//
-    public void setCurrentStep (Step step)
-    {
-        currentStep = step;
     }
 
     //--------------//
@@ -480,6 +480,43 @@ public class Sheet
         return histoRatio;
     }
 
+    //----------//
+    // setImage //
+    //----------//
+    public final void setImage (RenderedImage image)
+        throws StepException
+    {
+        // Reset most of all members
+        reset();
+
+        try {
+            picture = new Picture(image, locationService);
+
+            if (picture.getImplicitForeground() == null) {
+                picture.setMaxForeground(getMaxForeground());
+            }
+
+            setPicture(picture);
+            getBench()
+                .recordImageDimension(picture.getWidth(), picture.getHeight());
+
+            done(Steps.valueOf(Steps.LOAD));
+        } catch (ImageFormatException ex) {
+            String msg = "Unsupported image format in file " +
+                         getScore()
+                             .getImagePath() + "\n" + ex.getMessage();
+
+            if (Main.getGui() != null) {
+                Main.getGui()
+                    .displayWarning(msg);
+            } else {
+                logger.warning(msg);
+            }
+
+            throw new StepException(ex);
+        }
+    }
+
     //------------------//
     // setHorizontalLag //
     //------------------//
@@ -539,43 +576,6 @@ public class Sheet
     public String getId ()
     {
         return page.getId();
-    }
-
-    //----------//
-    // setImage //
-    //----------//
-    public final void setImage (RenderedImage image)
-        throws StepException
-    {
-        // Reset most of all members
-        reset();
-
-        try {
-            picture = new Picture(image, locationService);
-
-            if (picture.getImplicitForeground() == null) {
-                picture.setMaxForeground(getMaxForeground());
-            }
-
-            setPicture(picture);
-            getBench()
-                .recordImageDimension(picture.getWidth(), picture.getHeight());
-
-            done(Steps.valueOf(Steps.LOAD));
-        } catch (ImageFormatException ex) {
-            String msg = "Unsupported image format in file " +
-                         getScore()
-                             .getImagePath() + "\n" + ex.getMessage();
-
-            if (Main.getGui() != null) {
-                Main.getGui()
-                    .displayWarning(msg);
-            } else {
-                logger.warning(msg);
-            }
-
-            throw new StepException(ex);
-        }
     }
 
     //--------------//
@@ -1323,30 +1323,30 @@ public class Sheet
     /**
      * Remove this sheet from the containing score
      */
-    public void remove ()
+    public void remove (boolean closing)
     {
         if (logger.isFineEnabled()) {
-            logger.fine("Closing " + this);
+            logger.fine("remove sheet " + this + " closing:" + closing);
+        }
+
+        // Close related UI assembly if any
+        if (assembly != null) {
+            SheetsController.getInstance()
+                            .removeAssembly(this);
+            assembly.close();
         }
 
         // Close the related page
         getScore()
             .remove(page);
 
-        // Close related UI assembly if any
-        if (assembly != null) {
-            assembly.close();
-            SheetsController.getInstance()
-                            .removeAssembly(this);
-        }
-
         if (picture != null) {
             picture.close();
         }
 
-        // If no sheet is left, close the score
-        if (score.getPages()
-                 .isEmpty()) {
+        // If no sheet is left, force score closing
+        if (!closing && score.getPages()
+                             .isEmpty()) {
             score.close();
         }
     }

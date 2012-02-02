@@ -593,7 +593,7 @@ public class GuiActions
         //~ Instance fields ----------------------------------------------------
 
         Constant.String        webSiteUrl = new Constant.String(
-            "http://kenai.com/projects/audiveris",
+            "http://www.audiveris.org",
             "URL of Audiveris home page");
 
         //

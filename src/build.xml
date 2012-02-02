@@ -89,10 +89,6 @@
 
         <mkdir dir="${build.classes.dir}"/>
         
-        <echo>
-            bootclasspath = "${env.java_home}/jre/lib/rt.jar"
-        </echo>
-        
         <!-- baseline classes -->
         <javac
             bootclasspath = "${env.java_home}/jre/lib/rt.jar"

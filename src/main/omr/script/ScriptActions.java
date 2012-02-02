@@ -122,6 +122,12 @@ public class ScriptActions
     //-------------//
     // checkStored //
     //-------------//
+    /**
+     * Check whether the provided script has been safely saved if needed
+     * (and therefore, if the sheet can be closed)
+     * @param script the script to check
+     * @return true if close is allowed, false if not
+     */
     public static boolean checkStored (Script script)
     {
         if (script.isModified() && isConfirmOnClose()) {
@@ -137,13 +143,16 @@ public class ScriptActions
                     task.execute();
                 }
 
+                // Here user has saved the script
                 return true;
             }
 
             if (answer == JOptionPane.NO_OPTION) {
+                // Here user specifically chooses NOT to save the script
                 return true;
             }
 
+            // // Here user says Oops!, cancelling the current close request
             return false;
         } else {
             return true;

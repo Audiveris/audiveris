@@ -388,7 +388,7 @@ public class ScaleBuilder
                  .displayModelessConfirm(
             msg + lineSeparator + "OK for discarding this sheet?") == JOptionPane.OK_OPTION)) {
             if (score.isMultiPage()) {
-                sheet.remove();
+                sheet.remove(false);
                 throw new StepException("Sheet removed");
             } else {
                 throw new StepException("Sheet ignored");

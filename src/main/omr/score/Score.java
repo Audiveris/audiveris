@@ -31,6 +31,7 @@ import omr.score.ui.ScoreTree;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.script.Script;
+import omr.script.ScriptActions;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
@@ -153,36 +154,6 @@ public class Score
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------//
-    // getBench //
-    //----------//
-    /**
-     * Report the related sheet bench.
-     * @return the related bench
-     */
-    public ScoreBench getBench ()
-    {
-        return bench;
-    }
-
-    //-----------------//
-    // getBrowserFrame //
-    //-----------------//
-    /**
-     * Create a dedicated frame, where all score elements can be
-     * browsed in the tree hierarchy.
-     * @return the created frame
-     */
-    public JFrame getBrowserFrame ()
-    {
-        if (scoreTree == null) {
-            // Build the ScoreTree on the score
-            scoreTree = new ScoreTree(this);
-        }
-
-        return scoreTree.getFrame();
-    }
-
     //----------------------//
     // setDefaultSlotMargin //
     //----------------------//
@@ -279,11 +250,41 @@ public class Score
         return constants.defaultVolume.getValue();
     }
 
+    //----------//
+    // getBench //
+    //----------//
+    /**
+     * Report the related sheet bench.
+     * @return the related bench
+     */
+    public ScoreBench getBench ()
+    {
+        return bench;
+    }
+
+    //-----------------//
+    // getBrowserFrame //
+    //-----------------//
+    /**
+     * Create a dedicated frame, where all score elements can be
+     * browsed in the tree hierarchy.
+     * @return the created frame
+     */
+    public JFrame getBrowserFrame ()
+    {
+        if (scoreTree == null) {
+            // Build the ScoreTree on the score
+            scoreTree = new ScoreTree(this);
+        }
+
+        return scoreTree.getFrame();
+    }
+
     //--------------------//
     // setDurationDivisor //
     //--------------------//
     /**
-     * Remember the common divisor used for this score when 
+     * Remember the common divisor used for this score when
      * simplifying the durations.
      * @param durationDivisor the computed divisor (GCD), or null
      */
@@ -296,7 +297,7 @@ public class Score
     // getDurationDivisor //
     //--------------------//
     /**
-     * Report the common divisor used for this score when 
+     * Report the common divisor used for this score when
      * simplifying the durations.
      * @return the computed divisor (GCD), or null if not computable
      */
@@ -790,11 +791,16 @@ public class Score
             logger.info("Score. Closing " + this);
         }
 
+        // Check whether the score script has been saved (or user has declined)
+        if (!ScriptActions.checkStored(getScript())) {
+            return;
+        }
+
         // Close contained sheets (and pages)
         for (TreeNode pn : new ArrayList<TreeNode>(getPages())) {
             Page  page = (Page) pn;
             Sheet sheet = page.getSheet();
-            sheet.remove();
+            sheet.remove(true);
         }
 
         // Close tree if any
