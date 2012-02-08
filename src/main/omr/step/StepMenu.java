@@ -19,7 +19,6 @@ import omr.sheet.Sheet;
 import omr.sheet.ui.SheetsController;
 
 import omr.util.BasicTask;
-import omr.util.Implement;
 
 import java.awt.event.ActionEvent;
 
@@ -32,9 +31,9 @@ import javax.swing.event.MenuListener;
 
 /**
  * Class {@code StepMenu} encapsulates the user interface needed to deal
- * with application steps.  Steps are represented by menu items, each one being
- * a check box, to indicate the current status regarding the execution of the
- * step (done or not done).
+ * with application steps.
+ * Steps are represented by menu items, each one being a check box, to indicate
+ * the current status regarding the execution of the step (done or not done).
  *
  * @author Hervé Bitteur
  */
@@ -57,7 +56,6 @@ public class StepMenu
     //----------//
     /**
      * Generates the menu to be inserted in the application menu hierarchy.
-     *
      * @param menu the hosting menu, or null
      */
     public StepMenu (JMenu menu)
@@ -91,8 +89,7 @@ public class StepMenu
     // getMenu //
     //---------//
     /**
-     * Report the concrete UI menu
-     *
+     * Report the concrete UI menu.
      * @return the menu entity
      */
     public JMenu getMenu ()
@@ -106,7 +103,7 @@ public class StepMenu
     // StepAction //
     //------------//
     /**
-     * Action to be performed when the related step item is selected
+     * Action to be performed when the related step item is selected.
      */
     private static class StepAction
         extends AbstractAction
@@ -127,7 +124,7 @@ public class StepMenu
 
         //~ Methods ------------------------------------------------------------
 
-        @Implement(AbstractAction.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             final Sheet sheet = SheetsController.getCurrentSheet();
@@ -166,8 +163,8 @@ public class StepMenu
     // StepItem //
     //----------//
     /**
-     * Class {@code StepItem} implements a checkable menu item
-     * linked to a given step
+     * Class {@code StepItem} implements a checkable menu item linked
+     * to a given step.
      */
     private static class StepItem
         extends JCheckBoxMenuItem
@@ -213,25 +210,26 @@ public class StepMenu
     //----------------//
     /**
      * Class {@code MyMenuListener} is triggered when the whole sub-menu
-     * is entered. This is done with respect to currently displayed sheet. The
-     * steps already done are flagged as such.
+     * is entered.
+     * This is done with respect to currently displayed sheet.
+     * The steps already done are flagged as such.
      */
     private class MyMenuListener
         implements MenuListener
     {
         //~ Methods ------------------------------------------------------------
 
-        @Implement(MenuListener.class)
+        @Override
         public void menuCanceled (MenuEvent e)
         {
         }
 
-        @Implement(MenuListener.class)
+        @Override
         public void menuDeselected (MenuEvent e)
         {
         }
 
-        @Implement(MenuListener.class)
+        @Override
         public void menuSelected (MenuEvent e)
         {
             Sheet sheet = SheetsController.getCurrentSheet();

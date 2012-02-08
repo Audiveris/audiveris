@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.ui;
 
-import java.awt.Graphics;
 import omr.Main;
 import omr.WellKnowns;
 
@@ -23,6 +22,8 @@ import omr.constant.ConstantManager;
 import omr.constant.ConstantSet;
 
 import omr.log.Logger;
+
+import omr.plugin.PluginsManager;
 
 import omr.score.Score;
 import omr.score.ScoreExporter;
@@ -145,31 +146,6 @@ public class MainGui
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------------//
-    // getGlassPane //
-    //--------------//
-    /**
-     * Report the main window glassPane, needed for shape drag 'n drop
-     * @return the ghost glass pane
-     */
-    public GhostGlassPane getGlassPane ()
-    {
-        return glassPane;
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single instance of this application
-     *
-     * @return the SingleFrameApplication instance
-     */
-    public static SingleFrameApplication getInstance ()
-    {
-        return (SingleFrameApplication) Application.getInstance();
-    }
-
     //---------------//
     // setBoardsPane //
     //---------------//
@@ -194,6 +170,31 @@ public class MainGui
     public JFrame getFrame ()
     {
         return frame;
+    }
+
+    //--------------//
+    // getGlassPane //
+    //--------------//
+    /**
+     * Report the main window glassPane, needed for shape drag 'n drop
+     * @return the ghost glass pane
+     */
+    public GhostGlassPane getGlassPane ()
+    {
+        return glassPane;
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of this application
+     *
+     * @return the SingleFrameApplication instance
+     */
+    public static SingleFrameApplication getInstance ()
+    {
+        return (SingleFrameApplication) Application.getInstance();
     }
 
     //---------//
@@ -676,6 +677,10 @@ public class MainGui
         // Specific step menu
         JMenu       stepMenu = new StepMenu(new SeparableMenu()).getMenu();
 
+        // Specific plugin menu
+        JMenu       pluginMenu = PluginsManager.getInstance()
+                                               .getMenu(null);
+
         // For history sub-menu
         ResourceMap resource = MainGui.getInstance()
                                       .getContext()
@@ -687,6 +692,7 @@ public class MainGui
         ActionManager mgr = ActionManager.getInstance();
         mgr.injectMenu(Actions.Domain.FILE.name(), sheetMenu);
         mgr.injectMenu(Actions.Domain.STEP.name(), stepMenu);
+        mgr.injectMenu(Actions.Domain.PLUGIN.name(), pluginMenu);
 
         // All other commands
         mgr.loadAllDescriptors();
@@ -704,54 +710,18 @@ public class MainGui
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //------------------//
-    // BoardsScrollPane //
-    //------------------//
-    /**
-     * Just a scrollPane to host the pane of user boards, trying to offer
-     * enough room for the boards.
-     */
-    private class BoardsScrollPane
-        extends JScrollPane
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Instance fields ----------------------------------------------------
 
-        public void setBoards (JComponent boards)
-        {
-            setViewportView(boards);
-            revalidate();
-
-            if ((boards != null) &&
-                GuiActions.getInstance()
-                          .isBoardsDisplayed()) {
-                // Make sure we have enough room
-                SwingUtilities.invokeLater(
-                    new Runnable() {
-                            public void run ()
-                            {
-                                adjustRoom();
-                            }
-                        });
-            }
-        }
-
-        public void adjustRoom ()
-        {
-            Component view = getViewport()
-                                 .getView();
-
-            if (view != null) {
-                int boardsWidth = view.getBounds().width;
-
-                if (boardsWidth != 0) {
-                    int horiWidth = horiSplitPane.getBounds().width;
-                    horiSplitPane.setDividerLocation(
-                        horiWidth - boardsWidth -
-                        horiSplitPane.getDividerSize());
-                    repaint();
-                }
-            }
-        }
+        /** Flag for the preloading of costly packages in the background */
+        private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
+            true,
+            "Should we preload costly packages in the background?");
     }
 
     //------------//
@@ -809,20 +779,6 @@ public class MainGui
         }
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /** Flag for the preloading of costly packages in the background */
-        private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
-            true,
-            "Should we preload costly packages in the background?");
-    }
-
     //-----------------//
     // HistoryListener //
     //-----------------//
@@ -840,6 +796,56 @@ public class MainGui
         {
             File file = new File(e.getActionCommand());
             new OpenTask(file).execute();
+        }
+    }
+
+    //------------------//
+    // BoardsScrollPane //
+    //------------------//
+    /**
+     * Just a scrollPane to host the pane of user boards, trying to offer
+     * enough room for the boards.
+     */
+    private class BoardsScrollPane
+        extends JScrollPane
+    {
+        //~ Methods ------------------------------------------------------------
+
+        public void setBoards (JComponent boards)
+        {
+            setViewportView(boards);
+            revalidate();
+
+            if ((boards != null) &&
+                GuiActions.getInstance()
+                          .isBoardsDisplayed()) {
+                // Make sure we have enough room
+                SwingUtilities.invokeLater(
+                    new Runnable() {
+                            public void run ()
+                            {
+                                adjustRoom();
+                            }
+                        });
+            }
+        }
+
+        public void adjustRoom ()
+        {
+            Component view = getViewport()
+                                 .getView();
+
+            if (view != null) {
+                int boardsWidth = view.getBounds().width;
+
+                if (boardsWidth != 0) {
+                    int horiWidth = horiSplitPane.getBounds().width;
+                    horiSplitPane.setDividerLocation(
+                        horiWidth - boardsWidth -
+                        horiSplitPane.getDividerSize());
+                    repaint();
+                }
+            }
         }
     }
 }

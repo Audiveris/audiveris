@@ -73,6 +73,8 @@ public class Actions
         VIEW, 
         /** Domain of utilities */
         TOOL, 
+        /** Domain of plugins */
+        PLUGIN, 
         /** Domain of help information */
         HELP;
     }

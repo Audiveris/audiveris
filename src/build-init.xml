@@ -50,6 +50,10 @@
 	    </not>
 	</condition>
 
+	<echo>
+	    no.hg.present=${no.hg.present}
+	</echo>
+
     </target>
     
 </project>

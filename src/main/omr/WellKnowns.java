@@ -88,6 +88,14 @@ public class WellKnowns
         HOME_FOLDER,
         OCR_FOLDER_NAME);
 
+    /** Specific folder name for plugins */
+    public static final String PLUGINS_FOLDER_NAME = "plugins";
+
+    /** The folder where plugin scripts are found */
+    public static final File PLUGINS_FOLDER = new File(
+        HOME_FOLDER,
+        PLUGINS_FOLDER_NAME);
+
     /** Specific folder name for documentation */
     public static final String DOC_FOLDER_NAME = "www";
 

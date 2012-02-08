@@ -154,6 +154,36 @@ public class Score
 
     //~ Methods ----------------------------------------------------------------
 
+    //----------//
+    // getBench //
+    //----------//
+    /**
+     * Report the related sheet bench.
+     * @return the related bench
+     */
+    public ScoreBench getBench ()
+    {
+        return bench;
+    }
+
+    //-----------------//
+    // getBrowserFrame //
+    //-----------------//
+    /**
+     * Create a dedicated frame, where all score elements can be
+     * browsed in the tree hierarchy.
+     * @return the created frame
+     */
+    public JFrame getBrowserFrame ()
+    {
+        if (scoreTree == null) {
+            // Build the ScoreTree on the score
+            scoreTree = new ScoreTree(this);
+        }
+
+        return scoreTree.getFrame();
+    }
+
     //----------------------//
     // setDefaultSlotMargin //
     //----------------------//
@@ -248,36 +278,6 @@ public class Score
     public static int getDefaultVolume ()
     {
         return constants.defaultVolume.getValue();
-    }
-
-    //----------//
-    // getBench //
-    //----------//
-    /**
-     * Report the related sheet bench.
-     * @return the related bench
-     */
-    public ScoreBench getBench ()
-    {
-        return bench;
-    }
-
-    //-----------------//
-    // getBrowserFrame //
-    //-----------------//
-    /**
-     * Create a dedicated frame, where all score elements can be
-     * browsed in the tree hierarchy.
-     * @return the created frame
-     */
-    public JFrame getBrowserFrame ()
-    {
-        if (scoreTree == null) {
-            // Build the ScoreTree on the score
-            scoreTree = new ScoreTree(this);
-        }
-
-        return scoreTree.getFrame();
     }
 
     //--------------------//
@@ -792,7 +792,7 @@ public class Score
         }
 
         // Check whether the score script has been saved (or user has declined)
-        if (!ScriptActions.checkStored(getScript())) {
+        if ((Main.getGui() != null) && !ScriptActions.checkStored(getScript())) {
             return;
         }
 
