@@ -24,7 +24,7 @@
     <!--  - F U L L - D I S T  -->
     <!-- ===================== -->
     <target name="-full-dist"
-            depends="clean, jar, execs, javadoc">
+            depends="clean, jar, execs">
 <!--         description="Build the whole release distribution." -->
 
         <!-- Special copy for NetBeans -->
@@ -46,7 +46,7 @@
         
             <!-- Execs -->
             <zipfileset dir="${basedir}"
-                     includes="*.bat, *.exe"
+                     includes="*.bat, *.exe, *.ini"
                      excludes="${dist.excludes}"
                      />
         
@@ -68,8 +68,32 @@
                      excludes="${dist.excludes}"
                      />
         
-            <!-- config files -->
-            <zipfileset dir="${config.dir}" prefix="config"
+            <!-- dev files -->
+            <zipfileset dir="${dev.dir}" prefix="dev"
+                     includes="**"
+                     excludes="${dist.excludes}"
+                     />
+        
+            <!-- res files -->
+            <zipfileset dir="${res.dir}" prefix="res"
+                     includes="**"
+                     excludes="${dist.excludes}"
+                     />
+        
+            <!-- eval files -->
+            <zipfileset dir="${eval.dir}" prefix="eval"
+                     includes="**"
+                     excludes="${dist.excludes}"
+                     />
+        
+            <!-- settings files -->
+            <zipfileset dir="${settings.dir}" prefix="settings"
+                     includes="**"
+                     excludes="${dist.excludes}, **/run.properties"
+                     />
+        
+            <!-- plugins files -->
+            <zipfileset dir="${basedir}/plugins" prefix="plugins"
                      includes="**"
                      excludes="${dist.excludes}"
                      />

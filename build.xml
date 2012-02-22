@@ -106,12 +106,6 @@
     <target name="-post-init"
 	    depends="-common.-hg-tip" />
 
-    <!-- =================== -->
-    <!--  - P O S T - J A R  -->
-    <!-- =================== -->
-    <target name="-post-jar"
-            depends="-common.-post-jar"/>
-
     <!-- === Imports ======================================================== -->
 
     <!-- Load NetBeans implementation targets -->

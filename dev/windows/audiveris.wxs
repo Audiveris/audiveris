@@ -218,7 +218,7 @@
             
             <!-- vc is in vc.wxs (this leads to many warnings) -->
             <!-- uncomment following line to actually handle VC++ redist -->
-<!--             <FeatureRef Id="VCFeature" /> -->
+             <FeatureRef Id="VCFeature" /> 
             
             <Feature Id="OcrFeature" Title="OCR" 
                      Description="Optical Character Recognition" Level="1">
