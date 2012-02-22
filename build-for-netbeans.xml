@@ -65,7 +65,7 @@
     <!--  J A V A D O C  -->
     <!-- =============== -->
     <target name="javadoc"
-            depends="init, -common.-javadoc-build, -post-javadoc, -javadoc-browse"
+            depends="init, -common.-javadoc-build, -javadoc-browse"
             description="Build Javadoc."/>
     
     <!-- ======= -->
@@ -105,12 +105,6 @@
     <!-- ===================== -->
     <target name="-post-init"
 	    depends="-common.-hg-tip" />
-
-    <!-- =================== -->
-    <!--  - P O S T - J A R  -->
-    <!-- =================== -->
-    <target name="-post-jar"
-            depends="-common.-post-jar"/>
 
     <!-- === Imports ======================================================== -->
 
