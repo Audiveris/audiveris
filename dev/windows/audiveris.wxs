@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- ======================================================================= -->
+<!--                                                                         -->
+<!--                        a u d i v e r i s . w x s                        -->
+<!--                                                                         -->
+<!-- ======================================================================= -->
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    
+    <!--
+        Personal rules:
+            - Variables start with "my" and are defined in wix.xml
+            - Ids start with a lowercase letter and end with "Id"
+            - Component Ids end with ".CID"
+    -->
+        
+    <Product Name="$(var.myFullName)" Id="51e936e3-3222-4f5d-88cf-b643089f134c" UpgradeCode="93f5ea46-0cc0-48c9-9836-a06313db7169"
+             Language="1033" Codepage="1252" Version="$(var.myBuildVersion)" Manufacturer="$(var.myCompany)">
+
+        <Package Id="*" Keywords="Installer"
+                 Description="$(var.myCompany)'s $(var.myFullName) Installer" Manufacturer="$(var.myCompany)"
+                 InstallerVersion="300" Languages="1033" Compressed="yes" SummaryCodepage="1252" />
+
+        <Media Id="1" Cabinet="Sample.cab" EmbedCab="yes" />
+
+        <Directory Id="TARGETDIR" Name="SourceDir">
+            
+            <!-- ======= -->
+            <!-- Program -->
+            <!-- ======= -->
+            <Directory Id="ProgramFilesFolder">
+                <Directory Id="manufacturerDirId" Name="$(var.myCompany)">
+                    <Directory Id="INSTALLDIR" Name="$(var.myFullName)">
+
+                        <!-- audiveris.exe & .ini-->
+                        <Component Id="mainExec.CID" Guid="6c534d31-29ff-4d78-a107-bf0ab542fb7e">
+                            <File Id="exeId" Name="$(var.mySoftware).exe" DiskId="1" Source="$(var.mySoftware).exe" KeyPath="yes">
+                                <Shortcut Id="startmenuExeId" Directory="programMenuDirId" Name="$(var.mySoftware) application" 
+                                          WorkingDirectory="INSTALLDIR" Icon="myIcon.exe" IconIndex="0" Advertise="yes" />
+                                <Shortcut Id="desktopExeId" Directory="DesktopFolder" Name="$(var.myFullName)" 
+                                          WorkingDirectory="INSTALLDIR" Icon="myIcon.exe" IconIndex="0" Advertise="yes" />
+                            </File>
+                            <File Id="exeIniId" Name="audiveris.l4j.ini" DiskId="1" Source="audiveris.l4j.ini"/>
+                            
+                        </Component>
+                            
+                        <!-- audiveris-console.exe & .ini -->
+                        <Component Id="mainConsole.CID" Guid="8d961fd4-caf9-4139-8093-71d90e826b0c">
+                            <File Id="consoleId" Name="$(var.myConsole).exe" DiskId="1" Source="$(var.myConsole).exe" />
+                            <File Id="consoleIniId" Name="audiveris-console.l4j.ini" DiskId="1" Source="audiveris-console.l4j.ini"/>
+                        </Component>
+                            
+                        <!-- audiveris.bat -->
+                        <Component Id="bat.CID" Guid="89e7a9f3-a224-4f14-8356-9dbabe93c2cc">
+                            <File Id="batId" Name="audiveris.bat" DiskId="1" Source="audiveris.bat"/>
+                        </Component>
+
+                        <!-- dist folder -->
+                        <Directory Id="distDirId" Name="dist">
+                            <Component Id="jar.CID" Guid="f4b1128a-a246-47dd-9a88-da2e1c8d1495">                            
+                                <File Id="jarId" Name="$(var.myFullName).jar" DiskId="1" Source="$(var.myJar)" />
+                            </Component>
+                            <!-- lib (in separate gen-common-lib.wxs) -->
+                        </Directory>
+
+                        <!-- ocr     (in separate gen-common-ocr.wxs) -->
+                        <!-- res     (in separate gen-common-res.wxs) -->                        
+                        <!-- www     (in separate gen-common-www.wxs) -->
+
+                    </Directory>
+                </Directory>
+            </Directory>
+
+            <!-- Program Menu -->
+            <Directory Id="ProgramMenuFolder">
+                <Directory Id="programMenuDirId" Name="$(var.myFullName)">
+                    <Component Id="programMenu.CID" Guid="70585908-a861-460e-b672-348861589ceb">
+                        <RemoveFolder Id="programMenuDirId" On="uninstall" />
+                        <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" 
+                                       Name="application" Type="string" Value="installed" KeyPath="yes" />
+                    </Component>
+                </Directory>
+            </Directory>
+
+            <!-- Desktop -->
+            <Directory Id="DesktopFolder" Name="Desktop" />
+        
+            <!-- MusicalSymbols font -->
+            <Directory Id="FontsFolder">
+                <Component Id="fonts.CID" Guid="7ef37a03-35f7-4759-89d7-7ee047a9c737">
+                    <File Id="musicalSymbolsId" Source="$(var.myMaterial)/MusicalSymbols.ttf" TrueType="yes" />
+                </Component>
+            </Directory>
+            
+            <!-- ================ -->            
+            <!-- Application data -->            
+            <!-- ================ -->            
+            <Directory Id="AppDataFolder">
+                <Directory Id="adManufacturerDirId" Name="$(var.myCompany)">
+                    <Directory Id="adProductDirId" Name="$(var.myFullName)">
+                        
+                        <Component Id="data.CID" Guid="640e0573-e200-437f-9196-0be336587ea5">                            
+                            <RemoveFolder Id='adProductDirId' Directory='adProductDirId' On='uninstall'/>
+                            <RemoveFolder Id='adManufacturerDirId' Directory='adManufacturerDirId' On='uninstall'/>
+                            <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" 
+                                           Name="data" Type="string" Value="installed" KeyPath="yes" />
+                        </Component>
+                        
+                        <!-- settings (in separate gen-user-settings.wxs) -->
+                        <!-- eval     (in separate gen-user-eval.wxs) -->
+                        <!-- examples (in separate gen-user-examples.wxs) -->
+                        <!-- plugins  (in separate gen-user-plugins.wxs) -->
+                        <!-- train    (in separate gen-user-train.wxs) -->
+                        
+                        <!-- benches empty folder -->
+                        <Directory Id="benchesDirId" Name="benches" >
+                            <Component Id="benches.CID" Guid="a7981cb8-3c22-4da4-a764-48803eb45458">                                
+                                <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" 
+                                               Name="benches" Type="string" Value="installed" KeyPath="yes" />
+                                <CreateFolder />
+                                <RemoveFolder Id="benchesDirId" On="uninstall" />                                
+                            </Component>
+                        </Directory>                        
+                        <!-- midi    empty folder -->
+                        <Directory Id="midiDirId" Name="midi" >
+                            <Component Id="midi.CID" Guid="927b3d25-b64c-4b90-8e3d-61b7207e66ee">
+                                <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" 
+                                               Name="midi" Type="string" Value="installed" KeyPath="yes" />
+                                <CreateFolder />
+                                <RemoveFolder Id="midiDirId" On="uninstall" />                                
+                            </Component>
+                        </Directory>                        
+                        <!-- print   empty folder -->
+                        <Directory Id="printDirId" Name="print" >
+                            <Component Id="print.CID" Guid="969331fb-1b9a-4df0-8952-67e184ee9006">
+                                <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" 
+                                               Name="print" Type="string" Value="installed" KeyPath="yes" />
+                                <CreateFolder />
+                                <RemoveFolder Id="printDirId" On="uninstall" />                                
+                            </Component>
+                        </Directory>                        
+                        <!-- scores  empty folder -->
+                        <Directory Id="scoresDirId" Name="scores" >
+                            <Component Id="scores.CID" Guid="4c458e06-4c2b-4b75-a2e3-c5a46b88a7c0">
+                                <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" 
+                                               Name="scores" Type="string" Value="installed" KeyPath="yes" />
+                                <CreateFolder />
+                                <RemoveFolder Id="scoresDirId" On="uninstall" />                                
+                            </Component>
+                        </Directory>                        
+                        <!-- scripts empty folder -->                        
+                        <Directory Id="scriptsDirId" Name="scripts" >
+                            <Component Id="scripts.CID" Guid="fa1bb9d9-db27-48a2-bd99-7c5661d7bdb4">
+                                <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" 
+                                               Name="scripts" Type="string" Value="installed" KeyPath="yes" />
+                                <CreateFolder />
+                                <RemoveFolder Id="scriptsDirId" On="uninstall" />                                
+                            </Component>
+                        </Directory>                        
+                        
+                    </Directory>
+                </Directory>
+            </Directory>
+
+        </Directory>
+
+        <!-- ShortCut for console -->
+        <DirectoryRef Id="programMenuDirId">
+            <Component Id="consoleShortcut.CID" Guid="f82fd137-8342-4ad2-a481-5913043bd0ca">
+                <Shortcut Id="startmenuConsole"
+                          Name="$(var.mySoftware) console"
+                          Description="Application Console"
+                          Target="[INSTALLDIR]audiveris-console.exe"
+                          WorkingDirectory="INSTALLDIR"/>
+                <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" 
+                               Name="console" Type="string" Value="installed" KeyPath="yes" />
+            </Component>
+        </DirectoryRef>        
+
+        <!-- ShortCut for documentation -->
+<!--        <DirectoryRef Id="programMenuDirId">
+            <Component Id="documentationShortcut.CID" Guid="57ae104a-30c0-44ca-8349-7d5d6cec1bd1">
+                <Shortcut Id="startmenuDocumentation" 
+                          Name="$(var.mySoftware) documentation"
+                          Description="Application Documentation"
+                          Target="[www]index.html"
+                          WorkingDirectory="www"/>
+                <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" 
+                               Name="documentation" Type="string" Value="installed" KeyPath="yes" />
+            </Component>
+        </DirectoryRef>        -->
+
+        <!-- ======== -->
+        <!-- Features -->
+        <!-- ======== -->
+        <Feature Id="Complete" Title="$(var.myFullName) features" Description="The complete package."
+                 Display="expand" Level="1" ConfigurableDirectory="INSTALLDIR">
+            <Feature Id="MainProgram" Title="Program" Description="The main executable" Level="1">
+                <ComponentRef Id="mainExec.CID" />
+                <ComponentRef Id="mainConsole.CID" />
+                <ComponentRef Id="consoleShortcut.CID" />
+                <ComponentRef Id="bat.CID" />
+                <ComponentRef Id="programMenu.CID" />
+                <ComponentRef Id="jar.CID" />
+                <ComponentRef Id="data.CID" />
+                <ComponentRef Id="benches.CID" />
+                <ComponentRef Id="midi.CID" />
+                <ComponentRef Id="print.CID" />
+                <ComponentRef Id="scripts.CID" />
+                <ComponentRef Id="scores.CID" />
+                <ComponentRef Id="fonts.CID" />
+                <ComponentGroupRef Id="lib.CID" />
+                <ComponentGroupRef Id="res.CID" />
+                <ComponentGroupRef Id="settings.CID" />
+                <ComponentGroupRef Id="eval.CID" />
+            </Feature>
+            
+            <!-- vc is in vc.wxs (this leads to many warnings) -->
+            <!-- uncomment following line to actually handle VC++ redist -->
+<!--             <FeatureRef Id="VCFeature" /> -->
+            
+            <Feature Id="OcrFeature" Title="OCR" 
+                     Description="Optical Character Recognition" Level="1">
+                <ComponentGroupRef Id="ocr.CID" />
+            </Feature>
+
+            <Feature Id="WwwFeature" Title="Documentation" 
+                     Description="$(var.mySoftware) documentation" Level="1">
+                <ComponentGroupRef Id="www.CID" />
+                <!-- <ComponentRef Id="documentationShortcut.CID" />-->
+            </Feature>
+
+            <Feature Id="ExamplesFeature" Title="Examples" 
+                     Description="$(var.mySoftware) examples" Level="10">
+                <ComponentGroupRef Id="examples.CID" />
+            </Feature>
+
+            <Feature Id="PluginsFeature" Title="Plugins" 
+                     Description="$(var.mySoftware) plugins" Level="10">
+                <ComponentGroupRef Id="plugins.CID" />
+            </Feature>
+
+            <!-- All training material (lots of stuff!) -->
+            <!-- uncomment for final distribution -->
+            <Feature Id="TrainFeature" Title="Training material" 
+                     Description="$(var.mySoftware) training material" Level="10">
+                <ComponentGroupRef Id="train.CID" />
+            </Feature>
+            
+        </Feature>
+
+        <!-- For installation customization by end user -->
+        <UIRef Id="WixUI_Mondo" />
+        <UIRef Id="WixUI_ErrorProgressText" />
+
+        <!-- Application icon -->
+        <Icon Id="myIcon.exe" SourceFile="$(var.myIconSource)" />
+
+    </Product>
+</Wix>

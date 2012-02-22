@@ -11,14 +11,9 @@
 // </editor-fold>
 package omr.util;
 
-import omr.Main;
-
 import omr.log.Logger;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 
 /**
  * Class {@code ClassUtil} provides utilities related to Class handling.
@@ -128,54 +123,11 @@ public class ClassUtil
         }
     }
 
-    //-----------------//
-    // getProperStream //
-    //-----------------//
-    /**
-     * Retrieve the proper input stream for desired information, by looking first
-     * in the local folder if any, then in the related resource
-     * @param folder the containing local folder
-     * @param fileName just the name.ext info
-     * @return the proper input stream, or null if failed
-     */
-    public static InputStream getProperStream (File   folder,
-                                               String fileName)
-    {
-        InputStream input = null;
-
-        // Look for a local file first
-        File file = new File(folder, fileName);
-
-        if (file.exists()) {
-            try {
-                input = new FileInputStream(file);
-            } catch (FileNotFoundException ex) {
-                logger.warning("Cannot find config file " + file, ex);
-            }
-        }
-
-        String resName = null;
-
-        if (input == null) {
-            // Then look for a resource
-            resName = "/" + folder.getName() + "/" + fileName;
-            input = Main.class.getResourceAsStream(resName);
-        }
-
-        if (input == null) {
-            if (logger.isFineEnabled()) {
-                logger.fine("Cannot find config resource " + resName);
-            }
-        }
-
-        return input;
-    }
-
     //------//
     // load //
     //------//
     /**
-     * Try to load a (library) file
+     * Try to load a (library) file.
      * @param file the file to load, which must point to the precise location
      * @throws Exception
      */
@@ -207,7 +159,7 @@ public class ClassUtil
     // loadLibrary //
     //-------------//
     /**
-     * Try to load a library
+     * Try to load a library.
      * @param library the library to load
      * @throws Exception
      */
@@ -237,7 +189,8 @@ public class ClassUtil
     // nameOf //
     //--------//
     /**
-     * Report the full name of the object class, without the package information
+     * Report the full name of the object class, without the package
+     * information.
      *
      * @param obj the object to name
      * @return the concatenation of (enclosing) simple names

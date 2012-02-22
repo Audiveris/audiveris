@@ -12,6 +12,7 @@
 package omr.sheet;
 
 import omr.Main;
+import static omr.WellKnowns.LINE_SEPARATOR;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -78,9 +79,6 @@ public class ScaleBuilder
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScaleBuilder.class);
-
-    /** Line separator */
-    private static String lineSeparator = System.getProperty("line.separator");
 
     //~ Instance fields --------------------------------------------------------
 
@@ -221,9 +219,9 @@ public class ScaleBuilder
 
         if (interline < constants.minResolution.getValue()) {
             makeDecision(
-                sheet.getId() + lineSeparator + "With an interline value of " +
-                interline + " pixels," + lineSeparator +
-                "either this page contains no staves," + lineSeparator +
+                sheet.getId() + LINE_SEPARATOR + "With an interline value of " +
+                interline + " pixels," + LINE_SEPARATOR +
+                "either this page contains no staves," + LINE_SEPARATOR +
                 "or the picture resolution is too low.");
         }
     }
@@ -278,7 +276,7 @@ public class ScaleBuilder
 
         if (error != null) {
             makeDecision(
-                sheet.getId() + lineSeparator + error + lineSeparator +
+                sheet.getId() + LINE_SEPARATOR + error + LINE_SEPARATOR +
                 "This sheet does not seem to contain staff lines.");
         }
     }
@@ -373,7 +371,7 @@ public class ScaleBuilder
     private void makeDecision (String msg)
         throws StepException
     {
-        logger.warning(msg.replaceAll(lineSeparator, " "));
+        logger.warning(msg.replaceAll(LINE_SEPARATOR, " "));
 
         Score score = sheet.getScore();
 
@@ -386,7 +384,7 @@ public class ScaleBuilder
         if ((Main.getGui() == null) ||
             (Main.getGui()
                  .displayModelessConfirm(
-            msg + lineSeparator + "OK for discarding this sheet?") == JOptionPane.OK_OPTION)) {
+            msg + LINE_SEPARATOR + "OK for discarding this sheet?") == JOptionPane.OK_OPTION)) {
             if (score.isMultiPage()) {
                 sheet.remove(false);
                 throw new StepException("Sheet removed");

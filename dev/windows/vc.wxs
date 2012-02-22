@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- ======================================================================= -->
+<!--                                                                         -->
+<!--                               v c . w x s                               -->
+<!--                                                                         -->
+<!-- ======================================================================= -->
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    
+    <Fragment Id="vcFragment">
+        
+        <!-- VC++ run time (this leads to many warnings) -->
+        <DirectoryRef Id="TARGETDIR">
+            <Merge Id="VCRedist.MID" 
+                   SourceFile="$(var.myVC)" 
+                   DiskId="1" 
+                   Language="0"/>
+        </DirectoryRef>            
+        
+        <Feature Id="VCFeature" 
+                 Title="Visual C++ 8.0 Runtime" 
+                 AllowAdvertise="no" 
+                 Display="hidden" 
+                 Level="1">
+            <MergeRef Id="VCRedist.MID"/>
+        </Feature>
+
+    </Fragment>
+</Wix>

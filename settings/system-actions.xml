@@ -64,8 +64,6 @@
     <action domain="TOOL" section="40"  class="omr.ui.GuiActions" method="showMemory" />
     <action domain="TOOL" section="40"  class="omr.ui.GuiActions" method="defineOptions" />
 
-    <action domain="PLUGIN" section="10" class="omr.plugin.PluginsManager" method="invokeDefaultPlugin" button="javax.swing.JButton" />
-
 <!--    <action domain="HELP" section="20"  class="omr.ui.GuiActions" method="showManual" />-->
     <action domain="HELP" section="20"  class="omr.ui.GuiActions" method="visitWebSite" />
     <action domain="HELP" section="40"  class="omr.ui.GuiActions" method="showAbout" />

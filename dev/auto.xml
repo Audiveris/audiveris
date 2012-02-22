@@ -1,16 +1,17 @@
 <!-- +=====================================================================+ -->
 <!-- |                                                                     | -->
-<!-- |                    b u i l d - a u t o . x m l                      | -->
+<!-- |                          a u t o . x m l                            | -->
 <!-- |                                                                     | -->
 <!-- +=====================================================================+ -->
 
-<project name="audiveris-auto" basedir="..">
+<project name="auto" basedir="..">
     
     <description>
-	Targets for auto building, meant for Hudson
+	Standalone project for auto building, meant for Hudson
+	(not currently used)
     </description>
 
-    <import file="${basedir}/src/build.xml"/>
+    <import file="${basedir}/dev/build.xml"/>
 
     <!-- ===================== -->
     <!--  P R O P E R T I E S  -->
@@ -19,8 +20,6 @@
         description="Print out all properties for the build file.">
         <echoproperties/>
     </target>
-
-
 
     <!-- ================= -->
     <!--  F I N D B U G S  -->
@@ -40,8 +39,8 @@
 	
 	<findbugs home="${findbugs.home}"
 		  outputFile="findbugs.xml" >
-	    <sourcePath path="${basedir}/src/main" />
-	    <class location="${basedir}/dist/audiveris-3.3.jar" /> 
+	    <sourcePath path="${src.dir}" />
+	    <class location="${dist.jar}" /> 
 	</findbugs>
 	
     </target>

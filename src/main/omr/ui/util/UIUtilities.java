@@ -227,8 +227,7 @@ public class UIUtilities
                 String dir = fd.getDirectory();
 
                 if ((dir != null) && (fileName != null)) {
-                    String fullName = dir +
-                                      System.getProperty("file.separator") +
+                    String fullName = dir + WellKnowns.FILE_SEPARATOR +
                                       fileName;
                     file = new File(fullName);
                 }

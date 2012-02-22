@@ -34,19 +34,21 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Class {@code ConstantManager} manages the persistency of the whole
- * population of Constants, including their mapping to properties, their storing
- * on disk and their reloading from disk.
+ * population of Constants, including their mapping to properties,
+ * their storing on disk and their reloading from disk.
  *
- * <p/> The actual value of an application "constant", as returned by the method
+ * <p/>
+ * The actual value of an application "constant", as returned by the method
  * {@link Constant#getCurrentString}, is determined in the following order, any
  * definition overriding the previous ones:
  *
  * <ol> <li> First, <b>SOURCE</b> values are always provided within
  * <em><b>source declaration</b></em> of the constants in the Java source file
- * itself. For example, in the <em><b>"omr/sheet/ScaleBuilder.java"</b></em>
- * file, we can find the following declaration which defines the minimum value
- * for sheet resolution, here specified in pixels (the application has
- * difficulties with scans of lower resolution).
+ * itself.
+ * For example, in the <em><b>"omr/sheet/ScaleBuilder.java"</b></em> file,
+ * we can find the following declaration which defines the minimum value for
+ * sheet resolution, here specified in pixels (the application has difficulties
+ * with scans of lower resolution).
  *
  * <pre>
  * Constant.Integer minResolution = new Constant.Integer(
@@ -56,7 +58,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * </pre>This declaration must be read as follows:<ul>
  *
  * <li>{@code minResolution} is the Java object used in the application.
- * It is defined as a Constant.Integer, a subtype of Constant meant to host 
+ * It is defined as a Constant.Integer, a subtype of Constant meant to host
  * Integer values</li>
  *
  * <li>{@code "Pixels"} specifies the unit used. Here we are counting in
@@ -67,44 +69,46 @@ import java.util.concurrent.ConcurrentHashMap;
  * files, or later via a dedicated GUI tool.</li>
  *
  * <li><code>"Minimum resolution, expressed as number of pixels per interline"
- * </code> is the constant description, which will be used as a tool tip in 
+ * </code> is the constant description, which will be used as a tool tip in
  * the GUI interface in charge of editing these constants.</li></ul>
  *
  * </li><br/>
  *
  * <li>Then, <b>DEFAULT</b> values, contained in a property file named
- * <em><b>"config/run.default.properties"</b></em> can assign overriding values
- * to some constants. For example, the {@code minInterline} constant above
- * could be altered by the following line in this default file: <pre>
- * omr.sheet.ScaleBuilder.minInterline=12</pre> This file is mandatory, although
- * it can be empty, and must be located in the <u>config</u> subfolder of the
- * distribution file hierarchy. If this file is not found at start-up the
- * application is stopped.  Typically, this file defines values for a
- * distribution of the application, for example Linux and Windows binaries might
- * need different values for some constants. The only way to modify the content
- * of this file is to manually edit it, and this should be reserved to a
- * knowledgeable person.</li> <br/>
+ * <em><b>"settings/run.default.properties"</b></em> can assign overriding
+ * values to some constants. For example, the {@code minInterline} constant
+ * above could be altered by the following line in this default file:
+ * <pre>
+ * omr.sheet.ScaleBuilder.minInterline=12</pre>
+ * This file is mandatory, although it can be empty, and must be located in the
+ * <u>settings</u> subfolder of the user's config hierarchy.
+ * If this file is not found at start-up the application is stopped.
+ * Typically, this file defines values for a distribution of the application,
+ * for example Linux and Windows binaries might need different values for some
+ * constants.
+ * The only way to modify the content of this file is to manually edit it, and
+ * this should be reserved to a knowledgeable person.</li> <br/>
  *
  * <li>Then, <b>USER</b> values, may be contained in another property file
- * named <em><b>"run.properties"</b></em>. This file is modified every time the
- * user updates the value of a constant by means of the provided Constant user
- * interface at run-time. The file is not mandatory, the user's home directory
- * (which corresponds to java property <b>user.home</b>) is searched for a
- * <b>.audiveris</b> folder to contain such file. Its values override the SOURCE
- * (and DEFAULT if any) corresponding constants. Typically, these USER values
- * represent some modification made by the end user at run-time and thus saved
- * from one run to the other. The format of the user file is the same as the
- * default file, and it is not meant to be edited manually, but rather through
- * the provided GUI tool.</li> <br/>
+ * named <em><b>"run.properties"</b></em>.
+ * This file is modified every time the user updates the value of a constant by
+ * means of the provided Constant user interface at run-time.
+ * The file is not mandatory, and is located in the same folder as the file
+ * for DEFAULT values.
+ * Its values override the SOURCE (and DEFAULT if any) corresponding constants.
+ * Typically, these USER values represent some modification made by the end user
+ * at run-time and thus saved from one run to the other.
+ * The format of the user file is the same as the default file, and it is not
+ * meant to be edited manually, but rather through the provided GUI tool.</li> <br/>
  *
  * <li>Then, <b>CLI</b> values, as set on the command line interface, by means
  * of the <em><b>"-option"</b> key=value</em> command. For further details on
- * this command, refer to the {@link omr.CLI} class documentation. 
+ * this command, refer to the {@link omr.CLI} class documentation.
  * <br/>Persistency here depends on the way Audiveris is running:<ul>
  * <li>When running in <i>batch</i> mode, these CLI-defined constant values
- * <b>are not</b> persisted in the USER file, unless the constant 
+ * <b>are not</b> persisted in the USER file, unless the constant
  * {@code omr.Main.persistBatchCliConstants} is set to true.</li>
- * <li>When running in <i>interactive</i> mode, these CLI-defined constant 
+ * <li>When running in <i>interactive</i> mode, these CLI-defined constant
  * values <b>are</b> always persisted in the USER file.</li></ul></li> <br/>
  *
  * <li>Finally, <b>UI Options Menu</b> values, as set online through the
@@ -149,11 +153,6 @@ public class ConstantManager
     /** User properties file name */
     private static final String USER_FILE_NAME = "run.properties";
 
-    /** User properties file folder */
-    private static final File USER_FILE_FOLDER = new File(
-        System.getProperty("user.home") +
-        (WellKnowns.MAC_OS_X ? "/Library/Preferences/Audiveris" : "/.audiveris"));
-
     /** The singleton */
     private static final ConstantManager INSTANCE = new ConstantManager();
 
@@ -167,13 +166,11 @@ public class ConstantManager
 
     /** Default properties */
     private final DefaultHolder defaultHolder = new DefaultHolder(
-        "/" + WellKnowns.CONFIG_FOLDER.getName() + "/" + DEFAULT_FILE_NAME,
-        new File(WellKnowns.CONFIG_FOLDER, DEFAULT_FILE_NAME));
+        new File(WellKnowns.SETTINGS_FOLDER, DEFAULT_FILE_NAME));
 
     /** User properties */
     private final UserHolder userHolder = new UserHolder(
-        null,
-        new File(USER_FILE_FOLDER, USER_FILE_NAME),
+        new File(WellKnowns.SETTINGS_FOLDER, USER_FILE_NAME),
         defaultHolder);
 
     //~ Constructors -----------------------------------------------------------
@@ -187,24 +184,12 @@ public class ConstantManager
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the singleton of this class
-     * @return the only ConstantManager instance
-     */
-    public static ConstantManager getInstance ()
-    {
-        return INSTANCE;
-    }
-
     //------------------//
     // getAllProperties //
     //------------------//
     /**
-     * Report the whole collection of properties (coming from DEFAULT and USER
-     * sources) backed up on disk
+     * Report the whole collection of properties (coming from DEFAULT
+     * and USER sources) backed up on disk.
      * @return the collection of constant properties
      */
     public Collection<String> getAllProperties ()
@@ -215,12 +200,24 @@ public class ConstantManager
         return props;
     }
 
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the singleton of this class.
+     * @return the only ConstantManager instance
+     */
+    public static ConstantManager getInstance ()
+    {
+        return INSTANCE;
+    }
+
     //----------------------------//
     // getUnusedDefaultProperties //
     //----------------------------//
     /**
-     * Report the collection of DEFAULT properties that do not relate to any
-     * known application Constant
+     * Report the collection of DEFAULT properties that do not relate to
+     * any known application Constant.
      * @return the potential old stuff in DEFAULT properties
      */
     public Collection<String> getUnusedDefaultProperties ()
@@ -232,8 +229,8 @@ public class ConstantManager
     // getUnusedUserProperties //
     //-------------------------//
     /**
-     * Report the collection of USER properties that do not relate to any
-     * known application Constant
+     * Report the collection of USER properties that do not relate to
+     * any known application Constant.
      * @return the potential old stuff in USER properties
      */
     public Collection<String> getUnusedUserProperties ()
@@ -245,8 +242,8 @@ public class ConstantManager
     // getUselessDefaultProperties //
     //-----------------------------//
     /**
-     * Report the collection of used DEFAULT properties but whose content is
-     * equal to the source value (and are thus useless)
+     * Report the collection of used DEFAULT properties but whose
+     * content is equal to the source value (and are thus useless).
      * @return the useless items in DEFAULT properties
      */
     public Collection<String> getUselessDefaultProperties ()
@@ -259,7 +256,7 @@ public class ConstantManager
     //-------------//
     /**
      * Register a brand new constant with a provided name to retrieve
-     * a predefined value loaded from disk backup if any
+     * a predefined value loaded from disk backup if any.
      * @param qName the constant qualified name
      * @param constant the Constant instance to register
      * @return the loaded value if any, otherwise null
@@ -288,9 +285,6 @@ public class ConstantManager
             if (cliValue != null) {
                 return cliValue;
             }
-
-            //        } else {
-            //            System.err.println("*** cliConstants are not yet available ***");
         }
 
         // Fallback on using default/user value
@@ -301,7 +295,7 @@ public class ConstantManager
     // removeConstant //
     //----------------//
     /**
-     * Remove a constant
+     * Remove a constant.
      * @param constant the constant to remove
      * @return the removed Constant, or null if not found
      */
@@ -319,9 +313,9 @@ public class ConstantManager
     // storeResource //
     //---------------//
     /**
-     * Stores the current content of the whole property set to disk.  More
-     * specifically, only the values set OUTSIDE the original Default parts are
-     * stored, and they are stored in the user property file.
+     * Stores the current content of the whole property set to disk.
+     * More specifically, only the values set OUTSIDE the original Default
+     * parts are stored, and they are stored in the user property file.
      */
     public void storeResource ()
     {
@@ -353,21 +347,16 @@ public class ConstantManager
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** Null if no related file */
+        /** Related file */
         protected final File file;
-
-        /** Null if no related resource*/
-        protected final String resourceName;
 
         /** The handled properties */
         protected Properties properties;
 
         //~ Constructors -------------------------------------------------------
 
-        public AbstractHolder (String resourceName,
-                               File   file)
+        public AbstractHolder (File file)
         {
-            this.resourceName = resourceName;
             this.file = file;
         }
 
@@ -421,12 +410,7 @@ public class ConstantManager
 
         public void load ()
         {
-            // First, load from resource
-            if (resourceName != null) {
-                loadFromResource();
-            }
-
-            // Second, load from local file
+            // Load from local file
             if (file != null) {
                 loadFromFile();
             }
@@ -459,104 +443,7 @@ public class ConstantManager
                 }
             }
         }
-
-        private void loadFromResource ()
-        {
-            try {
-                InputStream in = Main.class.getResourceAsStream(resourceName);
-
-                if (in != null) {
-                    properties.load(in);
-                    in.close();
-
-                    //                } else {
-                    //                    // We should have a resource available
-                    //                    logger.warning(
-                    //                        "[" + ConstantManager.class.getName() + "]" +
-                    //                        " No property resource " + resourceName);
-                }
-            } catch (IOException ex) {
-                logger.severe(
-                    "Error loading constants resource " + resourceName);
-            }
-        }
     }
-
-    //    //---------------//
-    //    // CurrentHolder //
-    //    //---------------//
-    //    /**
-    //     * This utility holder is meant to ease the storing of ALL current values
-    //     * in some XML file
-    //     */
-    //    private class CurrentHolder
-    //        extends AbstractHolder
-    //    {
-    //        //~ Constructors -------------------------------------------------------
-    //
-    //        public CurrentHolder (String resourceName,
-    //                              File   file)
-    //        {
-    //            super(resourceName, file);
-    //        }
-    //
-    //        //~ Methods ------------------------------------------------------------
-    //
-    //        public void buildProperties ()
-    //        {
-    //            properties = new Properties();
-    //
-    //            // Browse all constant entries
-    //            for (Entry<String, Constant> entry : constants.entrySet()) {
-    //                final String   key = entry.getKey();
-    //                final Constant constant = entry.getValue();
-    //                final String   current = constant.getCurrentString();
-    //                properties.setProperty(key, current);
-    //            }
-    //        }
-    //
-    //        public void store ()
-    //        {
-    //            buildProperties();
-    //
-    //            // Save all the current values
-    //            FileOutputStream out = null;
-    //
-    //            try {
-    //                if (logger.isFineEnabled()) {
-    //                    logger.fine("Store constants into " + file);
-    //                }
-    //
-    //                // First make sure the directory exists
-    //                if (file.getParentFile()
-    //                        .mkdirs()) {
-    //                    logger.info("Creating " + file);
-    //                }
-    //
-    //                // Then write down the properties
-    //                out = new FileOutputStream(file);
-    //                properties.storeToXML(
-    //                    out,
-    //                    "Audiveris current properties. Do not edit");
-    //                out.close();
-    //            } catch (FileNotFoundException ex) {
-    //                logger.warning(
-    //                    "Property file " + file.getAbsolutePath() +
-    //                    " not found or not writable");
-    //            } catch (IOException ex) {
-    //                logger.warning(
-    //                    "Error while storing the property file " +
-    //                    file.getAbsolutePath());
-    //            } finally {
-    //                if (out != null) {
-    //                    try {
-    //                        out.close();
-    //                    } catch (Exception ignored) {
-    //                    }
-    //                }
-    //            }
-    //        }
-    //    }
 
     //---------------//
     // DefaultHolder //
@@ -566,10 +453,9 @@ public class ConstantManager
     {
         //~ Constructors -------------------------------------------------------
 
-        public DefaultHolder (String resourceName,
-                              File   file)
+        public DefaultHolder (File file)
         {
-            super(resourceName, file);
+            super(file);
             properties = new Properties();
             load();
         }
@@ -579,9 +465,9 @@ public class ConstantManager
     // UserHolder //
     //------------//
     /**
-     * Triggers the loading of property files, first the default, then the user
-     * values if any. Any modification made at run-time will be saved in the
-     * user part.
+     * Triggers the loading of property files, first the default,
+     * then the user values if any.
+     * Any modification made at run-time will be saved in the user part.
      */
     private class UserHolder
         extends AbstractHolder
@@ -592,11 +478,10 @@ public class ConstantManager
 
         //~ Constructors -------------------------------------------------------
 
-        public UserHolder (String         resourceName,
-                           File           file,
+        public UserHolder (File           file,
                            AbstractHolder defaultHolder)
         {
-            super(resourceName, file);
+            super(file);
             this.defaultHolder = defaultHolder;
             properties = new Properties(defaultHolder.properties);
             load();
@@ -605,10 +490,10 @@ public class ConstantManager
         //~ Methods ------------------------------------------------------------
 
         /**
-         * Remove from the USER collection the properties that are already in
-         * the DEFAULT collection with identical value, and insert properties
-         * that need to reflect the current values which differ from DEFAULT or
-         * from source.
+         * Remove from the USER collection the properties that are
+         * already in the DEFAULT collection with identical value,
+         * and insert properties that need to reflect the current values
+         * which differ from DEFAULT or from source.
          */
         public void cleanup ()
         {

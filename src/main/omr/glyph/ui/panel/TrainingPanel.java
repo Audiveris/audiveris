@@ -13,10 +13,10 @@ package omr.glyph.ui.panel;
 
 import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphNetwork;
+import omr.glyph.GlyphRepository;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 import omr.glyph.facets.Glyph;
-import omr.glyph.GlyphRepository;
 import static omr.glyph.ui.panel.GlyphTrainer.Task.Activity.*;
 
 import omr.log.Logger;
@@ -356,10 +356,7 @@ class TrainingPanel
             if (confirmationRequired) {
                 int answer = JOptionPane.showConfirmDialog(
                     component,
-                    "Do you really want to retrain from scratch?" +
-                    "\nMake sure you have a backup of files:" +
-                    "\n- config/neural-network.xml" +
-                    "\n- config/linear-evaluator.xml");
+                    "Do you really want to retrain evaluator from scratch?");
 
                 if (answer != JOptionPane.YES_OPTION) {
                     return;

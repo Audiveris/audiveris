@@ -85,7 +85,7 @@ public class Plugin
     // getDescription //
     //----------------//
     /**
-     * Report a descriptive sentence for this plugin
+     * Report a descriptive sentence for this plugin.
      * @return a sentence meant for tool tip
      */
     public String getDescription ()
@@ -102,7 +102,7 @@ public class Plugin
     // getId //
     //-------//
     /**
-     * Report a unique ID for this plugin
+     * Report a unique ID for this plugin.
      * @return plugin unique ID
      */
     public String getId ()
@@ -114,7 +114,7 @@ public class Plugin
     // getTask //
     //---------//
     /**
-     * Report the asynchronous plugin task on provided score
+     * Report the asynchronous plugin task on provided score.
      * @param score the score to process through this plugin
      */
     public Task getTask (Score score)
@@ -126,7 +126,7 @@ public class Plugin
     // getTitle //
     //----------//
     /**
-     * Report a title meant for user interface
+     * Report a title meant for user interface.
      * @return a title for this plugin
      */
     public String getTitle ()
@@ -142,7 +142,7 @@ public class Plugin
     // perform //
     //---------//
     /**
-     * Perform this plugin on the provided score instance
+     * Perform this plugin on the provided score instance.
      * @param score the score to process through this plugin
      */
     public void perform (Score score)
@@ -172,7 +172,7 @@ public class Plugin
     // evaluateScript //
     //----------------//
     /**
-     * Evaluate the plugin script to get precise information built
+     * Evaluate the plugin script to get precise information built.
      */
     private void evaluateScript ()
     {
@@ -197,6 +197,10 @@ public class Plugin
     //------------//
     // PluginTask //
     //------------//
+    /**
+     * Handles the processing defined by the underlying javascript.
+     * The lifecycle of this instance is limited to the duration of the task.
+     */
     private class PluginTask
         extends BasicTask
     {
@@ -236,7 +240,7 @@ public class Plugin
             }
 
             // Retrieve proper sequence of command items
-            List<String> args = null;
+            List<String> args;
 
             try {
                 if (logger.isFineEnabled()) {
@@ -297,14 +301,6 @@ public class Plugin
             }
 
             return null;
-        }
-
-        @Override
-        protected void finished ()
-        {
-            if (logger.isFineEnabled()) {
-                logger.info(Plugin.this + " finished");
-            }
         }
     }
 }

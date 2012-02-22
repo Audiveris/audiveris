@@ -59,13 +59,13 @@ public class SymbolGlyph
     // SymbolGlyph //
     //-------------//
     /**
-     * Build an (artificial) glyph out of a symbol icon. This construction is
-     * meant to populate and train on glyph shapes for which we have no real
-     * instance yet.
+     * Build an (artificial) glyph out of a symbol icon.
+     * This construction is meant to populate and train on glyph shapes for
+     * which we have no real instance yet.
      *
-     * @param shape the corresponding shape
-     * @param symbol the related drawing
-     * @param interline the related interline scaling value
+     * @param shape      the corresponding shape
+     * @param symbol     the related drawing
+     * @param interline  the related interline scaling value
      * @param descriptor additional features, if any
      */
     public SymbolGlyph (Shape                 shape,

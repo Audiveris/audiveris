@@ -181,6 +181,93 @@ public class TesseractOCR
         }
     }
 
+    //-----------//
+    // isNewLine //
+    //-----------//
+    /**
+     * Report whether this char is the last one of a line
+     * @param ch the char descriptor
+     * @return true if end of line
+     */
+    private static boolean isNewLine (EANYCodeChar ch)
+    {
+        return ((ch.formatting & 0x40) != 0) // newLine
+                ||((ch.formatting & 0x80) != 0); // newPara
+    }
+
+    //-----------//
+    // dumpChars //
+    //-----------//
+    /**
+     * Dump the raw char descriptions as read from Tesseract
+     * @param chars the sequence of raw char descriptions
+     * @param the optional label
+     */
+    private static void dumpChars (EANYCodeChar[] chars,
+                                   String         label)
+    {
+        System.out.println(
+            "-- " + ((label != null) ? label : "") + " Raw Tesseract output:");
+        System.out.println(
+            "char     code  left right   top   bot  font  conf  size blanks   format");
+
+        for (EANYCodeChar ch : chars) {
+            System.out.println(
+                String.format(
+                    "%3s %5d=%2Xh %5d %5d %5d %5d %5d %5d %5d %5d %5d=%2Xh",
+                    String.copyValueOf(Character.toChars(ch.char_code)),
+                    ch.char_code,
+                    ch.char_code,
+                    ch.left,
+                    ch.right,
+                    ch.top,
+                    ch.bottom,
+                    ch.font_index,
+                    ch.confidence,
+                    ch.point_size,
+                    ch.blanks,
+                    ch.formatting,
+                    ch.formatting));
+        }
+    }
+
+    //---------------//
+    // utf8ByteCount //
+    //---------------//
+    /**
+     * Return the number of bytes of this UTF8 sequence
+     * @param code the char code of the first byte of the sequence
+     * @return the number of bytes for this sequence (or 0 if the byte is not
+     * a sequence starting byte)
+     */
+    private static int utf8ByteCount (int code)
+    {
+        // Unicode          Byte1    Byte2    Byte3    Byte4
+        // -------          -----    -----    -----    -----
+        // U+0000-U+007F    0xxxxxxx
+        // U+0080-U+07FF    110yyyxx 10xxxxxx
+        // U+0800-U+FFFF    1110yyyy 10yyyyxx 10xxxxxx
+        // U+10000-U+10FFFF 11110zzz 10zzyyyy 10yyyyxx 10xxxxxx
+        if ((code & 0x80) == 0x00) {
+            return 1;
+        }
+
+        if ((code & 0xE0) == 0xC0) {
+            return 2;
+        }
+
+        if ((code & 0xF0) == 0xE0) {
+            return 3;
+        }
+
+        if ((code & 0xF8) == 0xF0) {
+            return 4;
+        }
+
+        // This is not a legal sequence start
+        return 0;
+    }
+
     //----------//
     // getLines //
     //----------//
@@ -233,20 +320,6 @@ public class TesseractOCR
 
             return null;
         }
-    }
-
-    //-----------//
-    // isNewLine //
-    //-----------//
-    /**
-     * Report whether this char is the last one of a line
-     * @param ch the char descriptor
-     * @return true if end of line
-     */
-    private static boolean isNewLine (EANYCodeChar ch)
-    {
-        return ((ch.formatting & 0x40) != 0) // newLine
-                ||((ch.formatting & 0x80) != 0); // newPara
     }
 
     //---------------//
@@ -312,42 +385,6 @@ public class TesseractOCR
         return new OcrChar(str, box, ch.point_size, ch.blanks);
     }
 
-    //-----------//
-    // dumpChars //
-    //-----------//
-    /**
-     * Dump the raw char descriptions as read from Tesseract
-     * @param chars the sequence of raw char descriptions
-     * @param the optional label
-     */
-    private static void dumpChars (EANYCodeChar[] chars,
-                                   String         label)
-    {
-        System.out.println(
-            "-- " + ((label != null) ? label : "") + " Raw Tesseract output:");
-        System.out.println(
-            "char     code  left right   top   bot  font  conf  size blanks   format");
-
-        for (EANYCodeChar ch : chars) {
-            System.out.println(
-                String.format(
-                    "%3s %5d=%2Xh %5d %5d %5d %5d %5d %5d %5d %5d %5d=%2Xh",
-                    String.copyValueOf(Character.toChars(ch.char_code)),
-                    ch.char_code,
-                    ch.char_code,
-                    ch.left,
-                    ch.right,
-                    ch.top,
-                    ch.bottom,
-                    ch.font_index,
-                    ch.confidence,
-                    ch.point_size,
-                    ch.blanks,
-                    ch.formatting,
-                    ch.formatting));
-        }
-    }
-
     //-------------------//
     // imageToTiffBuffer //
     //-------------------//
@@ -395,7 +432,7 @@ public class TesseractOCR
                 try {
                     ClassUtil.loadLibrary("tesjeract");
                 } catch (UnsatisfiedLinkError ex) {
-                    String arch = System.getProperty("os.arch");
+                    String arch = WellKnowns.OS_ARCH;
 
                     if (arch.equals("amd64")) {
                         arch = "x86_64";
@@ -433,42 +470,5 @@ public class TesseractOCR
         tesjeractLoaded = true;
 
         return true;
-    }
-
-    //---------------//
-    // utf8ByteCount //
-    //---------------//
-    /**
-     * Return the number of bytes of this UTF8 sequence
-     * @param code the char code of the first byte of the sequence
-     * @return the number of bytes for this sequence (or 0 if the byte is not
-     * a sequence starting byte)
-     */
-    private static int utf8ByteCount (int code)
-    {
-        // Unicode          Byte1    Byte2    Byte3    Byte4
-        // -------          -----    -----    -----    -----
-        // U+0000-U+007F    0xxxxxxx
-        // U+0080-U+07FF    110yyyxx 10xxxxxx
-        // U+0800-U+FFFF    1110yyyy 10yyyyxx 10xxxxxx
-        // U+10000-U+10FFFF 11110zzz 10zzyyyy 10yyyyxx 10xxxxxx
-        if ((code & 0x80) == 0x00) {
-            return 1;
-        }
-
-        if ((code & 0xE0) == 0xC0) {
-            return 2;
-        }
-
-        if ((code & 0xF0) == 0xE0) {
-            return 3;
-        }
-
-        if ((code & 0xF8) == 0xF0) {
-            return 4;
-        }
-
-        // This is not a legal sequence start
-        return 0;
     }
 }

@@ -292,15 +292,13 @@ class BasicGeometry
     // computeMoments //
     //----------------//
     /**
-     * Compute all the moments for this glyph, knowing that it can be a mix of
-     * vertical sections and horizontal sections.
+     * Compute all the moments for this glyph, knowing that it can be
+     * a mix of vertical sections and horizontal sections.
      */
     public void computeMoments ()
     {
         // First cumulate point from member sections
-        weight = getWeight();
-
-        PointsCollector collector = new PointsCollector(null, weight);
+        PointsCollector collector = new PointsCollector(null, getWeight());
 
         // Append all points, whatever section orientation
         for (Section section : glyph.getMembers()) {

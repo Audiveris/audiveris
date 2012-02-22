@@ -72,12 +72,6 @@ public class Main
     /** Build reference of the application as displayed to the user */
     private static String toolBuild;
 
-    /** Name of the application as displayed to the user */
-    private static String toolName;
-
-    /** Version of the application as displayed to the user */
-    private static String toolVersion;
-
     /** Master View */
     private static MainGui gui;
 
@@ -342,48 +336,6 @@ public class Main
         return toolBuild;
     }
 
-    //-------------//
-    // setToolName //
-    //-------------//
-    public static void setToolName (String toolName)
-    {
-        Main.toolName = toolName;
-    }
-
-    //-------------//
-    // getToolName //
-    //-------------//
-    /**
-     * Report the name of the application as displayed to the user
-     *
-     * @return Name of the application
-     */
-    public static String getToolName ()
-    {
-        return toolName;
-    }
-
-    //----------------//
-    // setToolVersion //
-    //----------------//
-    public static void setToolVersion (String toolVersion)
-    {
-        Main.toolVersion = toolVersion;
-    }
-
-    //----------------//
-    // getToolVersion //
-    //----------------//
-    /**
-     * Report the version of the application as displayed to the user
-     *
-     * @return version of the application
-     */
-    public static String getToolVersion ()
-    {
-        return toolVersion;
-    }
-
     //--------//
     // doMain //
     //--------//
@@ -500,21 +452,8 @@ public class Main
     //------------//
     private static void initialize ()
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("homeFolder=" + HOME_FOLDER);
-            logger.fine("classContainer=" + CLASS_CONTAINER);
-            logger.fine(
-                "classContainer.isDirectory=" + CLASS_CONTAINER.isDirectory());
-        }
-
-        // Tool name
-        final Package thisPackage = Main.class.getPackage();
-        toolName = thisPackage.getSpecificationTitle();
-
-        // Tool version
-        toolVersion = thisPackage.getSpecificationVersion();
-
         // Tool build
+        final Package thisPackage = Main.class.getPackage();
         toolBuild = thisPackage.getImplementationVersion();
     }
 
@@ -524,7 +463,7 @@ public class Main
     private static void process (String[] args)
     {
         // First get the provided arguments if any
-        parameters = new CLI(toolName, args).getParameters();
+        parameters = new CLI(WellKnowns.TOOL_NAME, args).getParameters();
 
         if (parameters == null) {
             logger.warning("Exiting ...");

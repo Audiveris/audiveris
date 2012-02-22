@@ -65,7 +65,7 @@
     <!--  J A V A D O C  -->
     <!-- =============== -->
     <target name="javadoc"
-            depends="init, -common.-javadoc-build, -post-javadoc, -javadoc-browse"
+            depends="init, -common.-javadoc-build, -javadoc-browse"
             description="Build Javadoc."/>
     
     <!-- ======= -->

@@ -12,6 +12,7 @@
 package omr.sheet.ui;
 
 import omr.Main;
+import omr.WellKnowns;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -121,7 +122,7 @@ public class SheetActions
     @Action
     public Task openImageFile (ActionEvent e)
     {
-        String suffixes = constants.validImageFiles.getValue();
+        String suffixes = constants.validImageExtensions.getValue();
         String allSuffixes = suffixes + " " + suffixes.toUpperCase();
         File   file = UIUtilities.fileChooser(
             false,
@@ -302,13 +303,8 @@ public class SheetActions
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** Default directory for selection of image files */
-        Constant.String defaultImageDirectory = new Constant.String(
-            System.getProperty("user.home"),
-            "Default directory for selection of input image files");
-
         /** Valid extensions for image files */
-        Constant.String validImageFiles = new Constant.String(
+        Constant.String validImageExtensions = new Constant.String(
             ".bmp .gif .jpg .png .tiff .tif .pdf",
             "Valid image file extensions, whitespace-separated");
     }

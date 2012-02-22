@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.log;
 
+import omr.WellKnowns;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 import omr.constant.UnitManager;
@@ -20,6 +22,7 @@ import omr.step.LogStepMonitorHandler;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.logging.ConsoleHandler;
@@ -33,7 +36,8 @@ import java.util.logging.LogRecord;
  * Class {@code Logger} is a specific subclass of standard java Logger,
  * augmented to fit the needs of Audiveris project.
  *
- * <p>The levels in descending order are: <ol>
+ * <p>The levels in descending order are:
+ * <ol>
  * <li>SEVERE (highest value)</li>
  * <li>WARNING</li>
  * <li>INFO</li>
@@ -73,6 +77,60 @@ public class Logger
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-------------------//
+    // getEffectiveLevel //
+    //-------------------//
+    /**
+     * Report the resulting level for the logger, which may be inherited from
+     * parents higher in the hierarchy
+     *
+     * @return The effective logging level for this logger
+     */
+    public Level getEffectiveLevel ()
+    {
+        java.util.logging.Logger logger = this;
+        Level                    level = getLevel();
+
+        while (level == null) {
+            logger = logger.getParent();
+
+            if (logger == null) {
+                return null;
+            }
+
+            level = logger.getLevel();
+        }
+
+        return level;
+    }
+
+    //---------------//
+    // isFineEnabled //
+    //---------------//
+    /**
+     * Check if a Debug (Fine) would actually be logged
+     *
+     * @return true if to be logged
+     */
+    public boolean isFineEnabled ()
+    {
+        return isLoggable(Level.FINE);
+    }
+
+    //----------//
+    // setLevel //
+    //----------//
+    /**
+     * Set the logger level, using a level name
+     *
+     * @param levelStr the name of the level (case is irrelevant), such as Fine
+     *                 or INFO
+     */
+    public void setLevel (String levelStr)
+    {
+        setLevel(Level.parse(levelStr.toUpperCase()));
+    }
 
     //-----------//
     // getLogger //
@@ -138,60 +196,6 @@ public class Logger
         return logMbx;
     }
 
-    //-------------------//
-    // getEffectiveLevel //
-    //-------------------//
-    /**
-     * Report the resulting level for the logger, which may be inherited from
-     * parents higher in the hierarchy
-     *
-     * @return The effective logging level for this logger
-     */
-    public Level getEffectiveLevel ()
-    {
-        java.util.logging.Logger logger = this;
-        Level                    level = getLevel();
-
-        while (level == null) {
-            logger = logger.getParent();
-
-            if (logger == null) {
-                return null;
-            }
-
-            level = logger.getLevel();
-        }
-
-        return level;
-    }
-
-    //---------------//
-    // isFineEnabled //
-    //---------------//
-    /**
-     * Check if a Debug (Fine) would actually be logged
-     *
-     * @return true if to be logged
-     */
-    public boolean isFineEnabled ()
-    {
-        return isLoggable(Level.FINE);
-    }
-
-    //----------//
-    // setLevel //
-    //----------//
-    /**
-     * Set the logger level, using a level name
-     *
-     * @param levelStr the name of the level (case is irrelevant), such as Fine
-     *                 or INFO
-     */
-    public void setLevel (String levelStr)
-    {
-        setLevel(Level.parse(levelStr.toUpperCase()));
-    }
-
     //------------------------//
     // setPrintStackOnWarning //
     //------------------------//
@@ -235,8 +239,9 @@ public class Logger
     // logAssert //
     //-----------//
     /**
-     * Assert the provided condition, and stop the application if the condition
-     * is false, since this is supposed to detect a programming error
+     * Assert the provided condition, and stop the application if the
+     * condition is false, since this is supposed to detect a
+     * programming error
      *
      * @param exp the expression to check
      * @param msg the related error message
@@ -284,7 +289,7 @@ public class Logger
     // warning //
     //---------//
     /**
-     * Log a warning with a related exception, then continue
+     * Log a warning with a related exception, then continue.
      *
      * @param msg the (warning) message
      * @param thrown the related exception, whose stack trace will be printed
@@ -304,8 +309,10 @@ public class Logger
     // setGlobalParameters //
     //---------------------//
     /**
-     * This method defines configuration parameters in a programmatic way, so
-     * that only specific loggers if any need to be set in a configuration file
+     * Define configuration parameters in a programmatic way, so that
+     * only specific loggers if any need to be set in a configuration
+     * file.
+     *
      * This file would simply contain lines like:
      *  # omr.step.StepMonitor.level=FINEST
      */
@@ -316,7 +323,7 @@ public class Logger
         topLogger = java.util.logging.Logger.getLogger("");
 
         /** Redirecting stdout and stderr to logging */
-        String redirection = System.getProperty("stdouterr");
+        String redirection = WellKnowns.STD_OUT_ERROR;
 
         if (redirection != null) {
             // initialize logging to go to rolling log file
@@ -375,6 +382,13 @@ public class Logger
             consoleHandler.setFormatter(new LogBasicFormatter()); // Comment out?
             consoleHandler.setLevel(java.util.logging.Level.FINE);
             consoleHandler.setFilter(new LogEmptyMessageFilter());
+
+            try {
+                consoleHandler.setEncoding("UTF8");
+            } catch (Exception ex) {
+                System.err.println(
+                    "Cannot setEncoding to UTF8, exception: " + ex);
+            }
         }
 
         // Handler for GUI log pane

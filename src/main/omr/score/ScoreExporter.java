@@ -12,6 +12,7 @@
 package omr.score;
 
 import omr.Main;
+import omr.WellKnowns;
 
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
@@ -247,16 +248,6 @@ public class ScoreExporter
 
     //~ Methods ----------------------------------------------------------------
 
-    //---------//
-    // preload //
-    //---------//
-    /**
-     * Empty static method, just to trigger class elaboration.
-     */
-    public static void preload ()
-    {
-    }
-
     //-----------------//
     // setMeasureRange //
     //-----------------//
@@ -354,6 +345,16 @@ public class ScoreExporter
             //  Finally, marshal the proxy with what we've got
             Marshalling.marshal(scorePartwise, node, injectSignature);
         }
+    }
+
+    //---------//
+    // preload //
+    //---------//
+    /**
+     * Empty static method, just to trigger class elaboration.
+     */
+    public static void preload ()
+    {
     }
 
     //----------//
@@ -1506,7 +1507,8 @@ public class ScoreExporter
     // visit Score //
     //-------------//
     /**
-     * Allocate/populate everything that directly relates to the score instance.
+     * Allocate/populate everything that directly relates to the score
+     * instance.
      * The rest of processing is delegated to the score children, that is to
      * say pages (TBI), then systems, etc...
      *
@@ -1538,16 +1540,12 @@ public class ScoreExporter
             scorePartwise.setIdentification(identification);
 
             // [Encoding]/Software
-            java.lang.String soft = Main.getToolName();
+            java.lang.String soft = WellKnowns.TOOL_FULL_NAME;
 
             if ((Main.getToolBuild() != null) &&
                 !Main.getToolBuild()
                      .equals("")) {
                 soft += (" " + Main.getToolBuild());
-            } else if ((Main.getToolVersion() != null) &&
-                       !Main.getToolVersion()
-                            .equals("")) {
-                soft += (" " + Main.getToolVersion());
             }
 
             if ((soft != null) && (soft.length() > 0)) {
@@ -2220,42 +2218,6 @@ public class ScoreExporter
         return yOf(point.y, staff);
     }
 
-    //--------//
-    // getDen // A VERIFIER A VERIFIER A VERIFIER A VERIFIER A VERIFIER
-    //--------//
-    private static java.lang.String getDen (Time time)
-    {
-        for (JAXBElement<java.lang.String> elem : time.getBeatsAndBeatType()) {
-            if (elem.getName()
-                    .getLocalPart()
-                    .equals("beat-type")) {
-                return elem.getValue();
-            }
-        }
-
-        logger.severe("No denominator found in " + time);
-
-        return "";
-    }
-
-    //--------//
-    // getNum // A VERIFIER A VERIFIER A VERIFIER A VERIFIER A VERIFIER
-    //--------//
-    private static java.lang.String getNum (Time time)
-    {
-        for (JAXBElement<java.lang.String> elem : time.getBeatsAndBeatType()) {
-            if (elem.getName()
-                    .getLocalPart()
-                    .equals("beats")) {
-                return elem.getValue();
-            }
-        }
-
-        logger.severe("No numerator found in " + time);
-
-        return "";
-    }
-
     //------------------//
     // getArticulations //
     //------------------//
@@ -2282,90 +2244,48 @@ public class ScoreExporter
         return articulations;
     }
 
-    //- Utility Methods --------------------------------------------------------
-
-    //-----------//
-    // isDesired //
-    //-----------//
-    /**
-     * Check whether the provided measure is to be exported
-     *
-     * @param measure the measure to check
-     * @return true is desired
-     */
-    private boolean isDesired (Measure measure)
+    //--------//
+    // getDen // A VERIFIER A VERIFIER A VERIFIER A VERIFIER A VERIFIER
+    //--------//
+    private static java.lang.String getDen (Time time)
     {
-        return (measureRange == null) || // No range : take all of them
-               (measure.isTemporary()) || // A temporary measure for export
-               measureRange.contains(measure.getPageId()); // Part of the range
+        for (JAXBElement<java.lang.String> elem : time.getBeatsAndBeatType()) {
+            if (elem.getName()
+                    .getLocalPart()
+                    .equals("beat-type")) {
+                return elem.getValue();
+            }
+        }
+
+        logger.severe("No denominator found in " + time);
+
+        return "";
     }
 
     //--------------//
-    // getScorePart //
+    // getOrnaments //
     //--------------//
     /**
-     * Generate the proxymusic ScorePart instance that relates to the
-     * Audiveris provided ScorePart.
-     * @param scorePart provided ScorePart
-     * @return the newly built proxymusic ScorePart instance
+     * Report (after creating it if necessary) the ornaments elements
+     * in the notations element of the current note.
+     * @return the note notations ornaments element
      */
-    private proxymusic.ScorePart getScorePart (ScorePart scorePart)
+    private Ornaments getOrnaments ()
     {
-        current.scorePart = scorePart;
-
-        ///logger.info("Processing " + scorePart);
-
-        // Scorepart in partList
-        proxymusic.ScorePart pmScorePart = factory.createScorePart();
-        pmScorePart.setId(scorePart.getPid());
-
-        PartName partName = factory.createPartName();
-        pmScorePart.setPartName(partName);
-        partName.setValue(
-            (scorePart.getName() != null) ? scorePart.getName()
-                        : scorePart.getDefaultName());
-
-        // Score instrument
-        Integer midiProgram = scorePart.getMidiProgram();
-
-        if (midiProgram == null) {
-            midiProgram = scorePart.getDefaultProgram();
+        for (Object obj : getNotations()
+                              .getTiedOrSlurOrTuplet()) {
+            if (obj instanceof Ornaments) {
+                return (Ornaments) obj;
+            }
         }
 
-        ScoreInstrument scoreInstrument = new ScoreInstrument();
-        pmScorePart.getScoreInstrument()
-                   .add(scoreInstrument);
-        scoreInstrument.setId(pmScorePart.getId() + "-I1");
-        scoreInstrument.setInstrumentName(
-            MidiAbstractions.getProgramName(midiProgram));
+        // Need to allocate ornaments
+        Ornaments ornaments = factory.createOrnaments();
+        getNotations()
+            .getTiedOrSlurOrTuplet()
+            .add(ornaments);
 
-        // Midi instrument
-        MidiInstrument midiInstrument = factory.createMidiInstrument();
-        pmScorePart.getMidiInstrument()
-                   .add(midiInstrument);
-        midiInstrument.setId(scoreInstrument);
-        midiInstrument.setMidiChannel(scorePart.getId());
-        midiInstrument.setMidiProgram(midiProgram);
-        midiInstrument.setVolume(new BigDecimal(score.getVolume()));
-
-        // ScorePart in scorePartwise
-        current.pmPart = factory.createScorePartwisePart();
-        scorePartwise.getPart()
-                     .add(current.pmPart);
-        current.pmPart.setId(pmScorePart);
-
-        // Delegate to children the filling of measures
-        if (logger.isFineEnabled()) {
-            logger.fine("Populating " + current.scorePart);
-        }
-
-        isFirst.system = true;
-        slurNumbers.clear(); // Reset slur numbers
-
-        // Browse the whole score hierarchy for this score scorePart
-        score.acceptChildren(this);
-
-        return pmScorePart;
+        return ornaments;
     }
 
     //----------//
@@ -2386,6 +2306,24 @@ public class ScoreExporter
     {
         return left.getFifths()
                    .equals(right.getFifths());
+    }
+
+    //- Utility Methods --------------------------------------------------------
+
+    //-----------//
+    // isDesired //
+    //-----------//
+    /**
+     * Check whether the provided measure is to be exported
+     *
+     * @param measure the measure to check
+     * @return true is desired
+     */
+    private boolean isDesired (Measure measure)
+    {
+        return (measureRange == null) || // No range : take all of them
+               (measure.isTemporary()) || // A temporary measure for export
+               measureRange.contains(measure.getPageId()); // Part of the range
     }
 
     //----------------------//
@@ -2487,30 +2425,90 @@ public class ScoreExporter
         return current.notations;
     }
 
-    //--------------//
-    // getOrnaments //
-    //--------------//
-    /**
-     * Report (after creating it if necessary) the ornaments elements
-     * in the notations element of the current note.
-     * @return the note notations ornaments element
-     */
-    private Ornaments getOrnaments ()
+    //--------//
+    // getNum // A VERIFIER A VERIFIER A VERIFIER A VERIFIER A VERIFIER
+    //--------//
+    private static java.lang.String getNum (Time time)
     {
-        for (Object obj : getNotations()
-                              .getTiedOrSlurOrTuplet()) {
-            if (obj instanceof Ornaments) {
-                return (Ornaments) obj;
+        for (JAXBElement<java.lang.String> elem : time.getBeatsAndBeatType()) {
+            if (elem.getName()
+                    .getLocalPart()
+                    .equals("beats")) {
+                return elem.getValue();
             }
         }
 
-        // Need to allocate ornaments
-        Ornaments ornaments = factory.createOrnaments();
-        getNotations()
-            .getTiedOrSlurOrTuplet()
-            .add(ornaments);
+        logger.severe("No numerator found in " + time);
 
-        return ornaments;
+        return "";
+    }
+
+    //--------------//
+    // getScorePart //
+    //--------------//
+    /**
+     * Generate the proxymusic ScorePart instance that relates to the
+     * Audiveris provided ScorePart.
+     * @param scorePart provided ScorePart
+     * @return the newly built proxymusic ScorePart instance
+     */
+    private proxymusic.ScorePart getScorePart (ScorePart scorePart)
+    {
+        current.scorePart = scorePart;
+
+        ///logger.info("Processing " + scorePart);
+
+        // Scorepart in partList
+        proxymusic.ScorePart pmScorePart = factory.createScorePart();
+        pmScorePart.setId(scorePart.getPid());
+
+        PartName partName = factory.createPartName();
+        pmScorePart.setPartName(partName);
+        partName.setValue(
+            (scorePart.getName() != null) ? scorePart.getName()
+                        : scorePart.getDefaultName());
+
+        // Score instrument
+        Integer midiProgram = scorePart.getMidiProgram();
+
+        if (midiProgram == null) {
+            midiProgram = scorePart.getDefaultProgram();
+        }
+
+        ScoreInstrument scoreInstrument = new ScoreInstrument();
+        pmScorePart.getScoreInstrument()
+                   .add(scoreInstrument);
+        scoreInstrument.setId(pmScorePart.getId() + "-I1");
+        scoreInstrument.setInstrumentName(
+            MidiAbstractions.getProgramName(midiProgram));
+
+        // Midi instrument
+        MidiInstrument midiInstrument = factory.createMidiInstrument();
+        pmScorePart.getMidiInstrument()
+                   .add(midiInstrument);
+        midiInstrument.setId(scoreInstrument);
+        midiInstrument.setMidiChannel(scorePart.getId());
+        midiInstrument.setMidiProgram(midiProgram);
+        midiInstrument.setVolume(new BigDecimal(score.getVolume()));
+
+        // ScorePart in scorePartwise
+        current.pmPart = factory.createScorePartwisePart();
+        scorePartwise.getPart()
+                     .add(current.pmPart);
+        current.pmPart.setId(pmScorePart);
+
+        // Delegate to children the filling of measures
+        if (logger.isFineEnabled()) {
+            logger.fine("Populating " + current.scorePart);
+        }
+
+        isFirst.system = true;
+        slurNumbers.clear(); // Reset slur numbers
+
+        // Browse the whole score hierarchy for this score scorePart
+        score.acceptChildren(this);
+
+        return pmScorePart;
     }
 
     //---------//
@@ -2704,6 +2702,113 @@ public class ScoreExporter
 
     //~ Inner Classes ----------------------------------------------------------
 
+    //---------//
+    // Current //
+    //---------//
+    /** Keep references of all current entities. */
+    private static class Current
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        // Score dependent
+        proxymusic.Work                       pmWork;
+
+        // Part dependent
+        ScorePart                             scorePart;
+        proxymusic.ScorePartwise.Part         pmPart;
+
+        // Page dependent
+        Page                                  page;
+        int                                   pageMeasureIdOffset = 0;
+        Scale                                 scale;
+
+        // System dependent
+        ScoreSystem                           system;
+
+        // Measure dependent
+        Measure                               measure;
+        proxymusic.ScorePartwise.Part.Measure pmMeasure;
+        Voice                                 voice;
+
+        // Note dependent
+        omr.score.entity.Note note;
+        proxymusic.Note       pmNote;
+        proxymusic.Notations  notations;
+        proxymusic.Print      pmPrint;
+        proxymusic.Attributes attributes;
+
+        //~ Methods ------------------------------------------------------------
+
+        // Cleanup at end of measure
+        void endMeasure ()
+        {
+            measure = null;
+            pmMeasure = null;
+            voice = null;
+
+            endNote();
+        }
+
+        // Cleanup at end of note
+        void endNote ()
+        {
+            note = null;
+            pmNote = null;
+            notations = null;
+            pmPrint = null;
+            attributes = null;
+        }
+    }
+
+    //---------//
+    // IsFirst //
+    //---------//
+    /** Composite flag to help drive processing of any entity. */
+    private static class IsFirst
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** We are writing the first score scorePart of the score */
+        boolean scorePart;
+
+        /** We are writing the first page of the score */
+        Boolean page;
+
+        /** We are writing the first system in the current page */
+        boolean system;
+
+        /** We are writing the first measure in current system (in current scorePart) */
+        boolean measure;
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public java.lang.String toString ()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            if (scorePart) {
+                sb.append(" firstScorePart");
+            }
+
+            if (page == null) {
+                sb.append(" noPage");
+            } else if (page) {
+                sb.append(" firstPage");
+            }
+
+            if (system) {
+                sb.append(" firstSystem");
+            }
+
+            if (measure) {
+                sb.append(" firstMeasure");
+            }
+
+            return sb.toString();
+        }
+    }
+
     //---------------//
     // ClefIterators //
     //---------------//
@@ -2811,113 +2916,6 @@ public class ScoreExporter
                     }
                 }
             }
-        }
-    }
-
-    //---------//
-    // Current //
-    //---------//
-    /** Keep references of all current entities. */
-    private static class Current
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        // Score dependent
-        proxymusic.Work                       pmWork;
-
-        // Part dependent
-        ScorePart                             scorePart;
-        proxymusic.ScorePartwise.Part         pmPart;
-
-        // Page dependent
-        Page                                  page;
-        int                                   pageMeasureIdOffset = 0;
-        Scale                                 scale;
-
-        // System dependent
-        ScoreSystem                           system;
-
-        // Measure dependent
-        Measure                               measure;
-        proxymusic.ScorePartwise.Part.Measure pmMeasure;
-        Voice                                 voice;
-
-        // Note dependent
-        omr.score.entity.Note note;
-        proxymusic.Note       pmNote;
-        proxymusic.Notations  notations;
-        proxymusic.Print      pmPrint;
-        proxymusic.Attributes attributes;
-
-        //~ Methods ------------------------------------------------------------
-
-        // Cleanup at end of measure
-        void endMeasure ()
-        {
-            measure = null;
-            pmMeasure = null;
-            voice = null;
-
-            endNote();
-        }
-
-        // Cleanup at end of note
-        void endNote ()
-        {
-            note = null;
-            pmNote = null;
-            notations = null;
-            pmPrint = null;
-            attributes = null;
-        }
-    }
-
-    //---------//
-    // IsFirst //
-    //---------//
-    /** Composite flag to help drive processing of any entity. */
-    private static class IsFirst
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /** We are writing the first score scorePart of the score */
-        boolean scorePart;
-
-        /** We are writing the first page of the score */
-        Boolean page;
-
-        /** We are writing the first system in the current page */
-        boolean system;
-
-        /** We are writing the first measure in current system (in current scorePart) */
-        boolean measure;
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public java.lang.String toString ()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            if (scorePart) {
-                sb.append(" firstScorePart");
-            }
-
-            if (page == null) {
-                sb.append(" noPage");
-            } else if (page) {
-                sb.append(" firstPage");
-            }
-
-            if (system) {
-                sb.append(" firstSystem");
-            }
-
-            if (measure) {
-                sb.append(" firstMeasure");
-            }
-
-            return sb.toString();
         }
     }
 }

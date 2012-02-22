@@ -20,9 +20,8 @@ import omr.glyph.text.tesseract.TesseractOCR;
 
 import omr.log.Logger;
 
-import omr.util.ClassUtil;
-
-import java.io.IOException;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.Set;
@@ -48,29 +47,26 @@ public class Language
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Language.class);
 
-    /** file name */
+    /** Languages file name */
     private static final String LANG_FILE_NAME = "ISO639-3.xml";
 
     /** Map of language code -> language full name */
-    private static SortedMap<String, String> knowns = new TreeMap<String, String>();
+    private static final SortedMap<String, String> codes = new TreeMap<String, String>();
 
     static {
-        try {
-            // Retrieve correspondences between codes and names
-            Properties  langNames = new Properties();
+        File inputFile = new File(WellKnowns.RES_FOLDER, LANG_FILE_NAME);
 
-            // Choose the proper input stream
-            InputStream input = ClassUtil.getProperStream(
-                WellKnowns.CONFIG_FOLDER,
-                LANG_FILE_NAME);
+        try {
+            Properties  langNames = new Properties();
+            InputStream input = new FileInputStream(inputFile);
             langNames.loadFromXML(input);
             input.close();
 
             for (String code : langNames.stringPropertyNames()) {
-                knowns.put(code, langNames.getProperty(code, code));
+                codes.put(code, langNames.getProperty(code, code));
             }
-        } catch (IOException ex) {
-            logger.severe("Error loading config/ISO639-3.xml", ex);
+        } catch (Throwable ex) {
+            logger.severe("Error loading " + inputFile, ex);
         }
     }
 
@@ -134,7 +130,7 @@ public class Language
      */
     public static String nameOf (String code)
     {
-        return knowns.get(code);
+        return codes.get(code);
     }
 
     //~ Inner Classes ----------------------------------------------------------

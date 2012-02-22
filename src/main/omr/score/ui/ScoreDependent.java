@@ -123,8 +123,7 @@ public abstract class ScoreDependent
     // onEvent //
     //---------//
     /**
-     * Notification of sheet selection (and thus related score if any)
-     *
+     * Notification of sheet selection (and thus related score if any).
      * @param event the notified sheet event
      */
     @Implement(EventSubscriber.class)

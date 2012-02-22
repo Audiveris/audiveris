@@ -185,7 +185,6 @@ public class GuiActions
     public boolean isLogDisplayed ()
     {
         return constants.logDisplayed.getValue();
-        
     }
 
     //----------//
@@ -481,7 +480,7 @@ public class GuiActions
             int    iRow = 1;
 
             JPanel logoPanel = new ImagePanel(
-                WellKnowns.CONFIG_FOLDER_NAME + "/Splash.png");
+                new File(WellKnowns.RES_FOLDER, "Splash.png").toString());
             builder.add(logoPanel, cst.xyw(1, iRow, 4));
             iRow += 2;
 
@@ -517,8 +516,9 @@ public class GuiActions
 
             // Manual injection
             resource.injectComponents(dialog);
+            Topic.application.comp.setText(WellKnowns.TOOL_NAME);
             Topic.revision.comp.setText(Main.getToolBuild());
-            Topic.classes.comp.setText(WellKnowns.CLASS_CONTAINER.toString());
+            Topic.classes.comp.setText(" " + WellKnowns.CLASS_CONTAINER);
 
             return dialog;
         }
@@ -570,6 +570,7 @@ public class GuiActions
         {
             //~ Methods --------------------------------------------------------
 
+            @Override
             public void hyperlinkUpdate (HyperlinkEvent event)
             {
                 HyperlinkEvent.EventType type = event.getEventType();

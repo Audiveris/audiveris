@@ -13,11 +13,11 @@
      
      The order of menus in the menu bar are predefined, but the order of items
      within a section depends on this.
-     
-     Version $Id$
      -->
      
 <actions>
+
+<!--    <action domain="PLUGIN" section="10" class="omr.plugin.PluginsManager" method="invokeDefaultPlugin" button="javax.swing.JButton" />-->
     
     <!-- Just as an example -->
     <action domain="DEBUG" section="20" class="omr.ui.GuiActions"         method="dumpEventServices"/>

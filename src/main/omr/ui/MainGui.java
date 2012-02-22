@@ -450,18 +450,6 @@ public class MainGui
 
         // Provide default tool parameters if not already set
 
-        // Tool name
-        if (Main.getToolName() == null) {
-            Main.setToolName(
-                getContext().getResourceMap().getString("Application.id"));
-        }
-
-        // Tool version
-        if (Main.getToolVersion() == null) {
-            Main.setToolVersion(
-                getContext().getResourceMap().getString("Application.version"));
-        }
-
         // Tool build
         if (Main.getToolBuild() == null) {
             Main.setToolBuild(

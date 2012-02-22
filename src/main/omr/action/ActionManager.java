@@ -26,7 +26,6 @@ import omr.ui.util.SeparableMenu;
 import omr.ui.util.SeparableToolBar;
 import omr.ui.util.UIUtilities;
 
-import omr.util.ClassUtil;
 import omr.util.Implement;
 
 import org.bushe.swing.event.EventSubscriber;
@@ -34,8 +33,7 @@ import org.bushe.swing.event.EventSubscriber;
 import org.jdesktop.application.ApplicationAction;
 import org.jdesktop.application.ResourceMap;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -54,7 +52,7 @@ import javax.swing.JToolBar;
 
 /**
  * Class {@code ActionManager} handles the instantiation and dressing
- * of actions, their organization in the menus and the tool bar, and 
+ * of actions, their organization in the menus and the tool bar, and
  * their enabling.
  *
  * @author Hervé Bitteur
@@ -211,32 +209,30 @@ public class ActionManager
     //--------------------//
     /**
      * Load all descriptors as found in system and user configuration
-     * files, either in local config subdirectory or in the resource 
-     * hierarchy.
+     * files.
      */
     public void loadAllDescriptors ()
     {
         // Load classes first for system actions, then for user actions
-        // We consider local folder first, then archive resources if needed
         for (String name : new String[] { "system-actions.xml", "user-actions.xml" }) {
-            // Choose the proper input stream
-            InputStream input = ClassUtil.getProperStream(
-                WellKnowns.CONFIG_FOLDER,
-                name);
+            File file = new File(WellKnowns.SETTINGS_FOLDER, name);
 
-            if (input != null) {
+            if (file.exists()) {
+                InputStream input = null;
+
                 try {
+                    input = new FileInputStream(file);
                     Actions.loadActionsFrom(input);
                 } catch (Exception ex) {
                     logger.warning("Error loading actions from " + name, ex);
                 } finally {
                     try {
                         input.close();
-                    } catch (IOException ignored) {
+                    } catch (Exception ignored) {
                     }
                 }
             } else {
-                logger.warning("No file and no resource found for " + name);
+                logger.severe("File not found " + file);
             }
         }
     }
@@ -269,8 +265,8 @@ public class ActionManager
     // registerAllActions //
     //--------------------//
     /**
-     * Register all actions as listed in the descriptor files, and 
-     * organize them according to the various domains defined. 
+     * Register all actions as listed in the descriptor files, and
+     * organize them according to the various domains defined.
      * There is one pull-down menu generated for each domain found.
      */
     public void registerAllActions ()
@@ -339,8 +335,8 @@ public class ActionManager
     // registerAction //
     //----------------//
     /**
-     * Allocate and dress an instance of the provided class, then 
-     * register the action in the UI structure (menus and buttons) 
+     * Allocate and dress an instance of the provided class, then
+     * register the action in the UI structure (menus and buttons)
      * according to the action descriptor parameters.
      * @param action the provided action class
      * @return the registered and decorated instance of the action class

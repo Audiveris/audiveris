@@ -136,28 +136,6 @@ public class MusicFont
     //------------//
     /**
      * Build an image from the shape definition in MusicFont, using the
-     * intrinsic scaling of this font
-     * @param shape the desired shape
-     * @param decorated true if shape display must use decorations
-     * @return the image built with proper scaling, or null
-     */
-    public BufferedImage buildImage (Shape   shape,
-                                     boolean decorated)
-    {
-        ShapeSymbol symbol = Symbols.getSymbol(shape, decorated);
-
-        if (symbol == null) {
-            return null;
-        } else {
-            return symbol.buildImage(this);
-        }
-    }
-
-    //------------//
-    // buildImage //
-    //------------//
-    /**
-     * Build an image from the shape definition in MusicFont, using the
      * scaling determined by the provided interline value
      * @param shape the desired shape
      * @param interline the related interline value
@@ -184,8 +162,8 @@ public class MusicFont
     {
         if (baseMusicFont.getFamily()
                          .equals("Dialog")) {
-            String msg = "*** " + FONT_NAME + " font not found." +
-                         " Please install " + FONT_NAME + ".ttf ***";
+            String msg = FONT_NAME + " font not found." + " Please install " +
+                         FONT_NAME + ".ttf";
             logger.severe(msg);
 
             if (Main.getGui() != null) {
@@ -197,6 +175,28 @@ public class MusicFont
         }
 
         return true;
+    }
+
+    //------------//
+    // buildImage //
+    //------------//
+    /**
+     * Build an image from the shape definition in MusicFont, using the
+     * intrinsic scaling of this font
+     * @param shape the desired shape
+     * @param decorated true if shape display must use decorations
+     * @return the image built with proper scaling, or null
+     */
+    public BufferedImage buildImage (Shape   shape,
+                                     boolean decorated)
+    {
+        ShapeSymbol symbol = Symbols.getSymbol(shape, decorated);
+
+        if (symbol == null) {
+            return null;
+        } else {
+            return symbol.buildImage(this);
+        }
     }
 
     //--------//

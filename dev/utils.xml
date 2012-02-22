@@ -1,16 +1,16 @@
 <!-- +=====================================================================+ -->
 <!-- |                                                                     | -->
-<!-- |                     b u i l d - u t i l s . x m l                   | -->
+<!-- |                           u t i l s . x m l                         | -->
 <!-- |                                                                     | -->
 <!-- +=====================================================================+ -->
 
-<project name="audiveris-utils" basedir="..">
+<project name="utils" basedir="..">
     
     <description>
-        Just a collection of utility targets
+        Standalone project for a collection of utility targets
     </description>
 
-    <import file="${basedir}/src/build.xml"/>
+    <import file="${basedir}/dev/-prolog.xml"/>
 
     <!-- Just in case these properties are not already set -->
     <property name="backup.dir"    value="m:/backup" />
@@ -32,7 +32,7 @@
         </taskdef>
         
         <jalopy
-            convention="${dev.dir}/java-convention.xml"
+            convention="${dev.dir}/jalopy/java-convention.xml"
             history="file"
             historymethod="adler32"
             loglevel="info"
@@ -93,7 +93,7 @@
             update="yes"
             destfile="${backup.dir}/${name}/${DSTAMP}-${machine.name}-src.zip" >
             <fileset dir="${basedir}"  
-                     includes="build.xml, src/**, config/**, symbols/**, www/**, train/*.def, nb/jp/**"
+                     includes="build.xml, dev/**, src/**, settings/**, eval/**, symbols/**, www/**, train/*.def, nb/jp/**"
                      excludes="${dist.excludes},www/docs/api/**,www/branding/**,nb/jp/dist/**"/>
         </zip>
 

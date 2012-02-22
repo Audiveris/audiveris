@@ -29,13 +29,9 @@ import omr.sheet.SystemInfo;
 
 import omr.util.ClassUtil;
 import omr.util.Predicate;
+import omr.util.WrappedBoolean;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -103,22 +99,77 @@ public abstract class GlyphEvaluator
 
     //~ Methods ----------------------------------------------------------------
 
-    //---------//
-    // getName //
-    //---------//
+    //-----------------------//
+    // getAllowedEvaluations //
+    //-----------------------//
     /**
-     * Report the name of this evaluator.
-     * @return the evaluator declared name
+     * Run the evaluator with the specified glyph as well as specific
+     * checks, and return only the shapes that are not flagged as
+     * forbidden for this glyph.
+     * @param glyph the glyph to be examined
+     * @return the ordered best checked and allowed evaluations
      */
-    public abstract String getName ();
+    public Evaluation[] getAllowedEvaluations (Glyph      glyph,
+                                               SystemInfo system)
+    {
+        List<Evaluation> kept = new ArrayList<Evaluation>();
 
-    //------//
-    // dump //
-    //------//
+        for (Evaluation eval : getSuccessfulEvaluations(glyph, system)) {
+            if (!glyph.isShapeForbidden(eval.shape)) {
+                kept.add(eval);
+            }
+        }
+
+        return kept.toArray(new Evaluation[kept.size()]);
+    }
+
+    //-------------------------//
+    // getAnnotatedEvaluations //
+    //-------------------------//
     /**
-     * Dump the internals of the evaluator.
+     * Use specific checks to annotate the raw evaluations produced by
+     * the evaluator.
+     * @param glyph the glyph to be examined
+     * @return the ordered annotated evaluations
      */
-    public abstract void dump ();
+    public Evaluation[] getAnnotatedEvaluations (Glyph      glyph,
+                                                 SystemInfo system)
+    {
+        double[]     ins = feedInput(glyph);
+        Evaluation[] evals = getRawEvaluations(glyph);
+
+        for (Evaluation eval : evals) {
+            glyphChecker.annotate(system, eval, glyph, ins);
+        }
+
+        return evals;
+    }
+
+    //-------------------//
+    // getRawEvaluations //
+    //-------------------//
+    /**
+     * Run the evaluator with the specified glyph, and return a
+     * sequence of interpretations (ordered from best to  worst) with
+     * no additional check.
+     * @param glyph the glyph to be examined
+     * @return the ordered best evaluations
+     */
+    public abstract Evaluation[] getRawEvaluations (Glyph glyph);
+
+    //-------//
+    // train //
+    //-------//
+    /**
+     * Here we train the evaluator "ab initio", based on the set of
+     * known glyphs accumulated in the previous runs.
+     * @param base the collection of glyphs to retrain the evaluator
+     * @param monitor a monitoring interface
+     * @param mode specify the starting mode of the training session
+     */
+    public abstract void train (Collection<Glyph> base,
+                                Monitor           monitor,
+                                StartingMode      mode);
 
     //-------------//
     // isBigEnough //
@@ -194,119 +245,14 @@ public abstract class GlyphEvaluator
         return ins;
     }
 
-    //-------------------//
-    // getRawEvaluations //
-    //-------------------//
-    /**
-     * Run the evaluator with the specified glyph, and return a
-     * sequence of interpretations (ordered from best to  worst) with
-     * no additional check.
-     * @param glyph the glyph to be examined
-     * @return the ordered best evaluations
-     */
-    public abstract Evaluation[] getRawEvaluations (Glyph glyph);
-
-    //-----------------------//
-    // getAllowedEvaluations //
-    //-----------------------//
-    /**
-     * Run the evaluator with the specified glyph as well as specific
-     * checks, and return only the shapes that are not flagged as
-     * forbidden for this glyph.
-     * @param glyph the glyph to be examined
-     * @return the ordered best checked and allowed evaluations
-     */
-    public Evaluation[] getAllowedEvaluations (Glyph      glyph,
-                                               SystemInfo system)
-    {
-        List<Evaluation> kept = new ArrayList<Evaluation>();
-
-        for (Evaluation eval : getSuccessfulEvaluations(glyph, system)) {
-            if (!glyph.isShapeForbidden(eval.shape)) {
-                kept.add(eval);
-            }
-        }
-
-        return kept.toArray(new Evaluation[kept.size()]);
-    }
-
-    //-------------------------//
-    // getAnnotatedEvaluations //
-    //-------------------------//
-    /**
-     * Use specific checks to annotate the raw evaluations produced by
-     * the evaluator.
-     * @param glyph the glyph to be examined
-     * @return the ordered annotated evaluations
-     */
-    public Evaluation[] getAnnotatedEvaluations (Glyph      glyph,
-                                                 SystemInfo system)
-    {
-        double[]     ins = feedInput(glyph);
-        Evaluation[] evals = getRawEvaluations(glyph);
-
-        for (Evaluation eval : evals) {
-            glyphChecker.annotate(system, eval, glyph, ins);
-        }
-
-        return evals;
-    }
-
     //---------//
-    // marshal //
+    // getName //
     //---------//
     /**
-     * Store the engine in XML format, always as a custom file.
+     * Report the name of this evaluator.
+     * @return the evaluator declared name
      */
-    public void marshal ()
-    {
-        final File   file = getCustomFile();
-        OutputStream os = null;
-
-        try {
-            os = new FileOutputStream(file);
-            marshal(os);
-            logger.info("Engine marshalled to " + file);
-        } catch (FileNotFoundException ex) {
-            logger.warning("Could not find file " + file);
-        } catch (IOException ex) {
-            logger.warning("IO error on file " + file);
-        } catch (JAXBException ex) {
-            logger.warning("Error marshalling engine to " + file);
-        } finally {
-            if (os != null) {
-                try {
-                    os.close();
-                } catch (Exception ignored) {
-                }
-            }
-        }
-    }
-
-    //------//
-    // stop //
-    //------//
-    /**
-     * Stop the on-going training.
-     * By default, this is a no-op
-     */
-    public void stop ()
-    {
-    }
-
-    //-------//
-    // train //
-    //-------//
-    /**
-     * Here we train the evaluator "ab initio", based on the set of
-     * known glyphs accumulated in the previous runs.
-     * @param base the collection of glyphs to retrain the evaluator
-     * @param monitor a monitoring interface
-     * @param mode specify the starting mode of the training session
-     */
-    public abstract void train (Collection<Glyph> base,
-                                Monitor           monitor,
-                                StartingMode      mode);
+    public abstract String getName ();
 
     //--------------------------//
     // getSuccessfulEvaluations //
@@ -328,6 +274,56 @@ public abstract class GlyphEvaluator
         }
 
         return kept.toArray(new Evaluation[kept.size()]);
+    }
+
+    //------//
+    // dump //
+    //------//
+    /**
+     * Dump the internals of the evaluator.
+     */
+    public abstract void dump ();
+
+    //---------//
+    // marshal //
+    //---------//
+    /**
+     * Store the engine in XML format, always as a user file.
+     */
+    public void marshal ()
+    {
+        final File   file = new File(WellKnowns.EVAL_FOLDER, getFileName());
+        OutputStream os = null;
+
+        try {
+            os = new FileOutputStream(file);
+            marshal(os);
+            logger.info("Engine marshalled to " + file);
+        } catch (FileNotFoundException ex) {
+            logger.warning("Could not find file " + file, ex);
+        } catch (IOException ex) {
+            logger.warning("IO error on file " + file, ex);
+        } catch (JAXBException ex) {
+            logger.warning("Error marshalling engine to " + file, ex);
+        } finally {
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (Exception ignored) {
+                }
+            }
+        }
+    }
+
+    //------//
+    // stop //
+    //------//
+    /**
+     * Stop the on-going training.
+     * By default, this is a no-op
+     */
+    public void stop ()
+    {
     }
 
     //------------//
@@ -410,51 +406,6 @@ public abstract class GlyphEvaluator
     protected abstract void marshal (OutputStream os)
         throws FileNotFoundException, IOException, JAXBException;
 
-    //---------------//
-    // getCustomFile //
-    //---------------//
-    /**
-     * Report the custom file used to store or load the internal
-     * evaluator data.
-     * @return the evaluator custom backup file
-     */
-    protected File getCustomFile ()
-    {
-        // The custom file, if any, is located in the configuration folder
-        return new File(WellKnowns.CONFIG_FOLDER, getFileName());
-    }
-
-    //---------------//
-    // getDefaultUrl //
-    //---------------//
-    /**
-     * Report the name of the resource used to retrieve the evaluator
-     * marshalled data from the distribution resource.
-     * @return the data resource name
-     */
-    protected String getDefaultUrl ()
-    {
-        return "/config/" + getFileName();
-    }
-
-    //-----------//
-    // unmarshal //
-    //-----------//
-    /**
-     * Unmarshal the evaluation engine from the most suitable backup,
-     * which is first a custom file, and second the distribution
-     * resource.
-     * @return the engine, or null if failed
-     */
-    protected Object unmarshal ()
-    {
-        InputStream input = ClassUtil.getProperStream(
-            WellKnowns.CONFIG_FOLDER,
-            getFileName());
-
-        return unmarshal(input, getFileName());
-    }
-
     //-----------//
     // unmarshal //
     //-----------//
@@ -467,6 +418,46 @@ public abstract class GlyphEvaluator
      */
     protected abstract Object unmarshal (InputStream is)
         throws JAXBException, IOException;
+
+    //-----------//
+    // unmarshal //
+    //-----------//
+    /**
+     * Unmarshal the evaluation engine from the most suitable backup,
+     * which is first a user file if any, and second the distribution
+     * default file.
+     * @return the unmarshalled engine, or null if failed
+     */
+    protected Object unmarshal ()
+    {
+        File file = new File(WellKnowns.EVAL_FOLDER, getFileName());
+
+        try {
+            InputStream input = new FileInputStream(file);
+
+            return unmarshal(input, getFileName());
+        } catch (FileNotFoundException ex) {
+            logger.severe("File not found " + file, ex);
+
+            return null;
+        } catch (Exception ex) {
+            logger.warning("Error unmarshalling from " + file, ex);
+
+            return null;
+        }
+    }
+
+    //--------------//
+    // boolAsDouble //
+    //--------------//
+    private static double boolAsDouble (boolean b)
+    {
+        if (b) {
+            return 1d;
+        } else {
+            return 0d;
+        }
+    }
 
     //--------//
     // bestOf //
@@ -487,18 +478,6 @@ public abstract class GlyphEvaluator
         }
 
         return null;
-    }
-
-    //--------------//
-    // boolAsDouble //
-    //--------------//
-    private static double boolAsDouble (boolean b)
-    {
-        if (b) {
-            return 1d;
-        } else {
-            return 0d;
-        }
     }
 
     //-----------//

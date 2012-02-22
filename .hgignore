@@ -1,48 +1,41 @@
+# First, use glob syntax -------------------------------------------------------
 syntax: regexp
 
 \.hgignore$
 \.chg\..*$
 \.conflict\~$
 \.log$
+\.exe$
 \.mid$
+\.msi$
+\.msm$
 \.orig$
 \.orig\..*$
 \.rej$
-benches
-bugs
-dewarped
-dewarping
-dist
-excerpts
+benches$
+build$
+dist$
 externals
-jars
-lib
-\./midi
-manifest.mf
-nbproject
-pdf
-print
-project
-scores
-scores-ref
-scripts
-temp
+jars$
+midi$
+nbproject$
+pdf$
+print$
+scores$
+scripts$
+temp$
 tesseract\.log
 www/docs/api
-zong.log
 
+# Now, switch to regexp syntax -------------------------------------------------
 syntax: glob
 
 audiveris.bat
-build/*
-build/**/*
-build.xml
-index.html
-index.html.*
-nbbuild.xml
+#build/*
+#build/**/*
+^build.xml
 # Ignore .jpg and .pdf under the src directory since they are produced via umlet
 # Images handled by conf management should use other suffix (.png for example)
 src/**/*.jpg
 src/**/*.pdf
 train/core/*
-

@@ -12,6 +12,7 @@
 package omr.score;
 
 import omr.Main;
+import omr.WellKnowns;
 
 import omr.log.Logger;
 
@@ -105,8 +106,8 @@ public class ScoreBench
         addProp(INTERRUPTION_KEY, "true");
 
         addProp("date", date.toString());
-        addProp("program", Main.getToolName());
-        addProp("version", Main.getToolVersion());
+        addProp("program", WellKnowns.TOOL_NAME);
+        addProp("version", WellKnowns.TOOL_VERSION);
         addProp("revision", Main.getToolBuild());
         addProp("image", score.getImagePath());
 
@@ -114,17 +115,6 @@ public class ScoreBench
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //----------//
-    // getScore //
-    //----------//
-    /**
-     * @return the score
-     */
-    public Score getScore ()
-    {
-        return score;
-    }
 
     //------------//
     // flushBench //
@@ -136,6 +126,17 @@ public class ScoreBench
     {
         ScoresManager.getInstance()
                      .storeBench(this, null, false);
+    }
+
+    //----------//
+    // getScore //
+    //----------//
+    /**
+     * @return the score
+     */
+    public Score getScore ()
+    {
+        return score;
     }
 
     //--------------------//

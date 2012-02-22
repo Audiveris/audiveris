@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <comment>ISO 639-3 Standard</comment>
+    <entry key="ara">Arabic</entry>
+    <entry key="bul">Bulgarian</entry>
+    <entry key="cat">Catalan</entry>
+    <entry key="ces">Czech</entry>
+    <entry key="chi">Chinese</entry>
+    <entry key="dan">Danish</entry>
+    <entry key="deu">German</entry>
+    <entry key="ell">Greek</entry>
+    <entry key="eng">English</entry>
+    <entry key="fin">Finnish</entry>
+    <entry key="fra">French</entry>
+    <entry key="heb">Hebrew</entry>
+    <entry key="hin">Hindi</entry>
+    <entry key="hun">Hungarian</entry>
+    <entry key="ind">Indonesian</entry>
+    <entry key="ita">Italian</entry>
+    <entry key="jpn">Japanese</entry>
+    <entry key="kor">Korean</entry>
+    <entry key="lav">Latvian</entry>
+    <entry key="lit">Lithuanian</entry>
+    <entry key="nld">Dutch</entry>
+    <entry key="nor">Norwegian</entry>
+    <entry key="pol">Polish</entry>
+    <entry key="por">Portuguese</entry>
+    <entry key="que">Quechua</entry>
+    <entry key="ron">Romanian</entry>
+    <entry key="rus">Russian</entry>
+    <entry key="slk">Slovakian</entry>
+    <entry key="slv">Slovenian</entry>
+    <entry key="spa">Spanish</entry>
+    <entry key="srp">Serbian</entry>
+    <entry key="swe">Swedish</entry>
+    <entry key="tgl">Tagalog</entry>
+    <entry key="tha">Thai</entry>
+    <entry key="tur">Turkish</entry>
+    <entry key="ukr">Ukrainian</entry>
+    <entry key="vie">Vietnamese</entry>
+</properties>

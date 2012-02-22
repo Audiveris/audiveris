@@ -1,18 +1,13 @@
 <!-- +=====================================================================+ -->
 <!-- |                                                                     | -->
-<!-- |                  b u i l d - c o m m o n . x m l                    | -->
-<!-- |                                                                     | -->
-<!-- | abstract: ant build for Audiveris application                       | -->
-<!-- | location: ${basedir}/src/build-common.xml                           | -->
-<!-- | author:   herve.bitteur@laposte.net                                 | -->
+<!-- |                       - c o m m o n . x m l                         | -->
 <!-- |                                                                     | -->
 <!-- +=====================================================================+ -->
 
-<project name="common" basedir="..">
+<project name="-common" basedir="..">
     
     <description>
-        This project gathers all the targets that are common to NetBeans and
-        Emacs / Ant building tasks
+        Subproject for targets common to NetBeans and Emacs/Ant tasks
     </description>
 
     <!-- Needed for ant-contrib tasks -->
@@ -21,12 +16,15 @@
             <pathelement location="${ant-contrib.jar}"/>
         </classpath>
     </taskdef>
+
+    <import file="${basedir}/dev/windows/-execs.xml"/>
+    <import file="${basedir}/dev/windows/-wix.xml"/>
     
     <!-- ===================== -->
     <!--  - F U L L - D I S T  -->
     <!-- ===================== -->
     <target name="-full-dist"
-            depends="clean, jar, -launcher">
+            depends="clean, jar, execs, javadoc">
 <!--         description="Build the whole release distribution." -->
 
         <!-- Special copy for NetBeans -->
@@ -46,9 +44,9 @@
             <!-- Special build.xml file for NetBeans on top dir-->
             <zipfileset dir="${basedir}" includes="build-for-netbeans.xml"/>
         
-            <!-- Launcher -->
+            <!-- Execs -->
             <zipfileset dir="${basedir}"
-                     includes="*.bat"
+                     includes="*.bat, *.exe"
                      excludes="${dist.excludes}"
                      />
         
@@ -81,12 +79,6 @@
                      includes="**"
                      excludes="${dist.excludes}"
                      />
-            
-            <!-- Symbols -->
-            <zipfileset dir="${basedir}/symbols" prefix="symbols"
-                     includes="**"
-                     excludes="${dist.excludes}"
-                     />
 
             <!-- Examples files -->
             <zipfileset dir="${examples.dir}" prefix="examples"
@@ -94,18 +86,17 @@
                      excludes="${dist.excludes}"
                      />
 
-            <!-- Www + javadoc files -->
+            <!-- Www (+ javadoc?) files -->
             <zipfileset dir="${www.dir}" prefix="www"
                      includes="**"
                      excludes="${dist.excludes}"
                      />
 
-            <!-- Sheet Train files -->
-            <zipfileset dir="${sheets.dir}" prefix="train/sheets"
-                        includes="**/*.xml"
+            <!-- Train files -->
+            <zipfileset dir="${train.dir}" prefix="train"
+                        includes="**/*.xml,**/.glyphignore"
                         excludes="${dist.excludes}"
                         />
-
         </zip>
     </target>
     
@@ -275,19 +266,16 @@
 	<echo append="true" file="${jars.dir}/todo.log">*** Need to update ${sig}${line.separator}</echo>
     </target>
 
-    <!-- =========== -->
-    <!--  - I N I T  -->
-    <!-- =========== -->
-    <target name="-init">
-<!--         description="Initialize the environment." -->
+    <!-- ================================= -->
+    <!--  - C O P Y - P R O P E R T I E S  -->
+    <!-- ================================= -->
+    <target name="-copy-properties">
+        <mkdir dir="${build.classes.dir}"/>
 
-        <!-- Create the time stamp -->
-        <tstamp/>
-
-        <available
-            property="junit.jar.present"
-            file="${junit.jar}"
-            />
+        <copy todir="${build.classes.dir}" verbose="$verbose">
+            <fileset dir="${src.dir}" includes="**/*.properties"/>
+            <fileset dir="${plugins.dir}" includes="**/*.properties"/>
+        </copy>
 
     </target>
     
@@ -298,14 +286,9 @@
             depends="uml">
         <!--         description="Generate project documentation." -->
         
-        <!-- Get rid of existing html files -->
-        <!-- without deleting the directory (to keep CVS admin files) -->
+        <!-- Get rid of existing javadoc -->
+        <rmdir dir="${dist.javadoc.dir}" />
         <mkdir dir="${dist.javadoc.dir}" />
-        <delete verbose="${verbose}">
-            <fileset dir="${dist.javadoc.dir}" 
-                     includes="**/*.html" 
-                     />
-        </delete>
 
         <!-- Just in case these properties are not already set -->
         <property name="javadoc.additionalparam" value="" />
@@ -367,112 +350,11 @@
         </javadoc>
 
     </target>
-    
-    <!-- =================== -->
-    <!--  - L A U N C H E R  -->
-    <!-- =================== -->
-    <target name="-launcher"
-            depends="-init">
-<!--        description="Generate the launcher script." -->
-
-        <!-- .bat file for windows -->
-        <echo file="${basedir}/${name}.bat" append="false">@ECHO OFF
-REM ${name}.bat
-setlocal
-java -Xms512M -Xmx512M -splash:config/splash.png -jar dist/${full.name}.jar %1 %2 %3 %4 %5 %6 %7 %8 %9
-endlocal
-        </echo>
-        
-    </target>
-
-    <!-- =========================== -->
-    <!--  - P O S T - J A V A D O C  -->
-    <!-- =========================== -->
-    <target name="-post-javadoc">
-
-        <!-- Remove time stamp in javadoc files, to ease CVS handling -->
-        <!--
-        <echo message="Removing time stamps ..." />
-        -->
-        <!-- Get rid of Generated by javadoc (build 1.6.0) on Wed Jul 11 07:52:22 CEST 2007 -->
-        <!--
-        <replaceregexp replace="- Generated by javadoc -"
-                       match="- Generated by javadoc .*-" >
-            <fileset dir="${dist.javadoc.dir}" 
-                     includes="**/*.html" 
-                     />
-        </replaceregexp>
-        -->
-
-        <!-- Get rid of <META NAME="date" CONTENT="2007-07-10"> -->
-        <!--
-        <replaceregexp replace=""
-                       match='&lt;META NAME="date" CONTENT=.*&gt;' >
-            <fileset dir="${dist.javadoc.dir}" 
-                     includes="**/*.html" 
-                     />
-        </replaceregexp>
-        -->
-
-        
-        <!-- Slightly modify java CVS tag, so as not to be used as html CVS tag -->
-        <!-- Nota: We cannot directly use a litteral regexp, since
-             this very file is also handled by CVS, hence the dynamic
-             value building of the regexp as property m.all !!!  -->
-             <!--
-        <echo message="Trimming Java CVS tags ..." />
-        <property name="m.dollar" value="\$"/>
-        <property name="m.id" value="Id:"/>
-        <property name="m.all" value="${m.dollar}${m.id} (.*) ${m.dollar}"/>
-        <replaceregexp replace="\1"
-                       match="${m.all}" >
-            <fileset dir="${dist.javadoc.dir}" 
-                     includes="**/*.html" 
-                     />
-        </replaceregexp>
-        -->
-                
-    </target>
-
-    <!-- ===================================== -->
-    <!--  - P O S T - P O S T - J A V A D O C  -->
-    <!-- ===================================== -->
-    <target name="-post-post-javadoc">
-        <!-- Copy all doc files where NetBeans expects them to be -->
-
-        <mkdir dir="${nb.javadoc.dir}"/>
-        
-        <copy
-            verbose="${verbose}"
-            todir="${nb.javadoc.dir}">
-            <fileset dir="${dist.javadoc.dir}"  
-                     excludes="**/CVS/*"/>
-        </copy>
-        
-    </target>
 
     <!-- ================= -->
     <!--  - P R E - J A R  -->
     <!-- ================= -->
     <target name="-pre-jar">	
-
-        <!-- Copy config files into a config folder in the classes dir -->
-        <mkdir dir="${build.classes.dir}/config" />
-        <copy
-            verbose="${verbose}"
-            todir="${build.classes.dir}/config">
-            <fileset dir="${config.dir}"
-                     includes="*"/>
-        </copy>
-
-        <!-- Copy symbols files into an symbols folder in the classes dir -->
-        <mkdir dir="${build.classes.dir}/symbols" />
-        <copy
-            verbose="${verbose}"
-            todir="${build.classes.dir}/symbols">
-            <fileset dir="${symbols.dir}"
-                     includes="*.xml"/>
-        </copy>
 
         <!-- Copy icon files into the classes dir -->
         <copy
@@ -481,7 +363,7 @@ endlocal
             <fileset dir="${src.dir}"
                      includes="**/icon*.png"/>
         </copy>
-	
+
         <!-- Purge build/classes folder from documentation items -->
         <delete
             verbose="${verbose}"
@@ -531,31 +413,31 @@ endlocal
     <!--  - P O S T - C O M P I L E  -->
     <!-- =========================== -->
     <target name="-post-compile"
-            depends="jar"/>
+            depends="-copy-properties"/>
 
     <!-- =============== -->
     <!--  - H G - T I P  -->
     <!-- =============== -->
     <target name="-hg-tip"
-	    unless="no.hg.present">
+            unless="no.hg.present">
 	<!-- description="Retrieve Hg tip revision" -->
         
         <taskdef name="hg"
-		 classpathref="externals.classpath"
+                 classpathref="tools.classpath"
                  classname="net.sourceforge.ant4hg.taskdefs.HgTask">           
         </taskdef>
         
         <hg cmd="log" dir="${basedir}">
             <arg value="-rtip"/>
         </hg>
-<!--         <echo message="==========================" /> -->
-<!--         <echo message="revision=|${ant4hg.log.revision}|" /> -->
-<!--         <echo message="changeset=|${ant4hg.log.changeset}|" /> -->
-<!--         <echo message="tag=|${ant4hg.log.tag}|" /> -->
-<!--         <echo message="user=|${ant4hg.log.user}|" /> -->
-<!--         <echo message="date=|${ant4hg.log.date}|" /> -->
-<!--         <echo message="summary=|${ant4hg.log.summary}|" /> -->
+<!--         <echo message="==========================" />
+         <echo message="revision=${ant4hg.log.revision}" />
+         <echo message="changeset=${ant4hg.log.changeset}" />
+         <echo message="tag=${ant4hg.log.tag}" />
+         <echo message="user=${ant4hg.log.user}" />
+         <echo message="date=${ant4hg.log.date}" />
+         <echo message="summary=${ant4hg.log.summary}" />-->
 
     </target>
-    
+
 </project>

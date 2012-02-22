@@ -1,0 +1,179 @@
++------------------------------------------------------------------------------+
+|                                                                              |
+|                       g l o b a l - t r e e . t x t                          |
+|                                                                              |
++------------------------------------------------------------------------------+
+| Documentation about the mapping of Audiveris folders                         |
++------------------------------------------------------------------------------+
+
+
+
+Target Program folders          WellKnowns.PROGRAM_FOLDER
+----------------------
+
+./
+./audiveris.exe
+./audiveris.l4j.ini
+./audiveris-console.exe
+./audiveris-console.l4j.ini
+./audiveris.bat
+
+./dist/
+./dist/audiveris-4.1beta.jar
+./dist/lib/
+./dist/lib/BareBonesBrowserLaunch.jar
+./dist/lib/EventBus-1.2.jar
+./dist/lib/Jama-1.0.2.jar
+./dist/lib/PDFRenderer.jar
+./dist/lib/bsaf-1.9.1.jar
+./dist/lib/clibwrapper_jiio.jar
+./dist/lib/forms-1.0.6.jar
+./dist/lib/iText-5.0.4.jar
+./dist/lib/jai_codec.jar
+./dist/lib/jai_core.jar
+./dist/lib/jai_imageio.jar
+./dist/lib/jcommon-1.0.16.jar
+./dist/lib/jfreechart-1.0.13.jar
+./dist/lib/jlfgr-1_0.jar
+./dist/lib/looks-2.0.1.jar
+./dist/lib/mlibwrapper_jai.jar
+./dist/lib/proxymusic-2.0.jar
+./dist/lib/tesjeract.jar
+
+./dist/lib/playerdata.jar
+./dist/lib/gervill.jar
+./dist/lib/zong.jar
+
+./ocr/                          WellKnowns.OCR_FOLDER
+./ocr/tesjeract.dll
+./ocr/tessdll.dll
+./ocr/tessdata/deu.DangAmbigs
+./ocr/tessdata/deu.freq-dawg
+./ocr/tessdata/deu.inttemp
+./ocr/tessdata/deu.normproto
+./ocr/tessdata/deu.pffmtable
+./ocr/tessdata/deu.unicharset
+./ocr/tessdata/deu.user-words
+./ocr/tessdata/deu.word-dawg
+./ocr/tessdata/etc...
+
+./res/                          WellKnowns.RES_FOLDER
+./res/GPLv2.rtf
+./res/ISO639-3.xml
+./res/icon-256.ico
+./res/splash.bmp
+./res/splash.png
+
+./www/                          WellKnowns.DOC_FOLDER
+./www/index.html
+./www/branding
+./www/docs
+
+Target User config folders      WellKnowns.CONFIG_FOLDER
+--------------------------
+
+./settings/                     WellKnowns.SETTINGS_FOLDER
+./settings/logging.properties
+./settings/run.properties
+./settings/run.default.properties
+./settings/system-actions.xml
+./settings/user-actions.xml
+
+./plugins/                      WellKnowns.PLUGINS_FOLDER
+./plugins/musescore.js
+./plugins/finale.js
+
+Target User data folders        WellKnowns.DATA_FOLDER
+------------------------
+
+./examples/                     WellKnowns.EXAMPLES_FOLDER
+./examples/Dichterliebe01.pdf
+./examples/SchbAvMaSample.pdf
+./examples/Straight_Page_1.png
+./examples/allegretto.png
+./examples/batuque.png
+./examples/carmen-1.png
+./examples/chula.1bit.bmp
+./examples/chula.png
+./examples/cucaracha.png
+./examples/estudio.pngdd
+./examples/hove.png
+./examples/tzigane2.png
+./examples/zizi.png
+
+./eval/                         WellKnowns.EVAL_FOLDER
+./eval/linear-evaluator.xml     
+./eval/neural-network.xml
+
+./train/                        WellKnowns.TRAIN_FOLDER
+./train/core
+./train/samples
+./train/sheets
+./train/symbols
+
+./benches/  [user populated]    WellKnowns.BENCHES_FOLDER
+./midi/     [user populated]    WellKnowns.MIDI_FOLDER
+./print/    [user populated]    WellKnowns.PRINT_FOLDER
+./scripts/  [user populated]    WellKnowns.SCRIPTS_FOLDER
+./scores/   [user populated]    WellKnowns.SCORES_FOLDER
+
+Development only folders
+------------------------
+
+./.hg/
+./.hgignore
+./.hgtags
+
+./build-for-netbeans.xml
+./build.xml
+
+./dev/
+./dev/auto.xml
+./dev/build.default.properties
+./dev/build.properties
+./dev/build.xml
+./dev/-prolog.xml
+./dev/-common.xml
+./dev/utils.xml
+
+./dev/jalopy/
+./dev/jalopy/java-convention.xml
+
+./dev/windows/
+./dev/windows/-execs.xml
+./dev/windows/-wix.xml
+./dev/windows/audiveris.wxs
+./dev/windows/vc.wxs
+
+./dev/material/MusicalSymbols.pdf
+./dev/material/MusicalSymbols.ttf
+./dev/material/global-tree.txt
+
+./dev/tools/ant4hg.jar
+./dev/tools/jcip-annotations.jar
+./dev/tools/WixHeatUser.jar
+
+./dev/externals/BareBonesBrowserLaunch.jar
+./dev/externals/EventBus-1.2.jar
+./dev/externals/Jama-1.0.2.jar
+./dev/externals/PDFRenderer.jar
+./dev/externals/bsaf-1.9.1.jar
+./dev/externals/clibwrapper_jiio.jar
+./dev/externals/forms-1.0.6.jar
+./dev/externals/gervill.jar
+./dev/externals/iText-5.0.4.jar
+./dev/externals/jai_codec.jar
+./dev/externals/jai_core.jar
+./dev/externals/jai_imageio.jar
+./dev/externals/jcommon-1.0.16.jar
+./dev/externals/jfreechart-1.0.13.jar
+./dev/externals/jlfgr-1_0.jar
+./dev/externals/looks-2.0.1.jar
+./dev/externals/mlibwrapper_jai.jar
+./dev/externals/playerdata.jar
+./dev/externals/proxymusic-2.0.jar
+./dev/externals/tesjeract.jar
+./dev/externals/zong.jar
+
+./src/
+./src/...etc...

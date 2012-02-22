@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.log;
 
+import omr.WellKnowns;
+
 import omr.util.ClassUtil;
 
 import java.io.PrintWriter;
@@ -29,9 +31,6 @@ public class LogBasicFormatter
     extends Formatter
 {
     //~ Static fields/initializers ---------------------------------------------
-
-    /** Line separator string.  This is the value of the line.separator */
-    private static String lineSeparator = System.getProperty("line.separator");
 
     /** Standard format */
     private static final String format = "{0,time}";
@@ -103,7 +102,7 @@ public class LogBasicFormatter
         sb.append(record.getLevel().getName());
         sb.append(": ");
         sb.append(message);
-        sb.append(lineSeparator);
+        sb.append(WellKnowns.LINE_SEPARATOR);
 
         if (record.getThrown() != null) {
             StringWriter sw = new StringWriter();

@@ -22,10 +22,6 @@ import omr.score.Score;
 import omr.score.ui.ScoreController;
 import omr.score.ui.ScoreDependent;
 
-import omr.step.Step;
-import omr.step.Stepping;
-import omr.step.Steps;
-
 import omr.ui.util.SeparableMenu;
 
 import omr.util.FileUtil;
@@ -36,12 +32,15 @@ import org.jdesktop.application.Task;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileFilter;
-import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
+import omr.sheet.Sheet;
+import omr.sheet.ui.SheetsController;
 
 /**
  * Class {@code PluginsManager} handles the collection of application
@@ -85,6 +84,9 @@ public class PluginsManager
 
     //~ Instance fields --------------------------------------------------------
 
+    /** The concrete UI menu */
+    private JMenu menu;
+
     /** The sorted collection of registered plugins: ID -> Plugin */
     private final Map<String, Plugin> map = new TreeMap<String, Plugin>();
 
@@ -106,18 +108,20 @@ public class PluginsManager
         // Browse the plugin folder for relevant scripts
         File pluginDir = WellKnowns.PLUGINS_FOLDER;
 
-        for (File file : pluginDir.listFiles(pluginFilter)) {
-            Plugin plugin = new Plugin(file);
-            map.put(plugin.getId(), plugin);
-        }
+        if (pluginDir.exists() && pluginDir.isDirectory()) {
+            for (File file : pluginDir.listFiles(pluginFilter)) {
+                Plugin plugin = new Plugin(file);
+                map.put(plugin.getId(), plugin);
+            }
 
-        // Default plugin, if any is defined
-        for (Plugin plugin : map.values()) {
-            if (plugin.getId()
-                      .equalsIgnoreCase(constants.defaultPlugin.getValue())) {
-                defaultPlugin = plugin;
+            // Default plugin, if any is defined
+            for (Plugin plugin : map.values()) {
+                if (plugin.getId()
+                          .equalsIgnoreCase(constants.defaultPlugin.getValue())) {
+                    defaultPlugin = plugin;
 
-                break;
+                    break;
+                }
             }
         }
     }
@@ -157,6 +161,11 @@ public class PluginsManager
         for (Plugin plugin : map.values()) {
             menu.add(new JMenuItem(new PluginAction(plugin)));
         }
+
+        // Listener to modify attributes on-the-fly
+        menu.addMenuListener(new MyMenuListener());
+
+        this.menu = menu;
 
         return menu;
     }
@@ -200,5 +209,39 @@ public class PluginsManager
         Constant.String defaultPlugin = new Constant.String(
             "musescore",
             "Name of default plugin");
+    }
+
+    //----------------//
+    // MyMenuListener //
+    //----------------//
+    /**
+     * Class {@code MyMenuListener} is triggered when menu is entered.
+     * This is meant to enable menu items only when a sheet is selected.
+     */
+    private class MyMenuListener
+        implements MenuListener
+    {
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void menuCanceled (MenuEvent e)
+        {
+        }
+
+        @Override
+        public void menuDeselected (MenuEvent e)
+        {
+        }
+
+        @Override
+        public void menuSelected (MenuEvent e)
+        {
+            boolean enabled = SheetsController.getCurrentSheet() != null;
+
+            for (int i = 0; i < menu.getItemCount(); i++) {
+                JMenuItem menuItem = menu.getItem(i);
+                menuItem.setEnabled(enabled);
+            }
+        }
     }
 }

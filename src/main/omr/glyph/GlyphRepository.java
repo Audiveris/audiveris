@@ -105,9 +105,6 @@ public class GlyphRepository
         WellKnowns.TRAIN_FOLDER,
         "samples");
 
-    /** Specific subdirectory for icons */
-    private static final File iconsFolder = WellKnowns.SYMBOLS_FOLDER;
-
     /** Specific filter for glyph files */
     private static final FileFilter glyphFilter = new FileFilter() {
         public boolean accept (File file)
@@ -161,21 +158,51 @@ public class GlyphRepository
 
     //~ Methods ----------------------------------------------------------------
 
+    //------------//
+    // fileNameOf //
+    //------------//
+    /**
+     * Report the file name w/o extension of a gName.
+     *
+     * @param gName glyph name, using format "folder/name.number.xml"
+     * or "folder/name.xml"
+     * @return the 'name' or 'name.number' part of the format
+     */
+    public static String fileNameOf (String gName)
+    {
+        int    slash = gName.indexOf("/");
+        String nameWithExt = gName.substring(slash + 1);
+
+        int    lastDot = nameWithExt.lastIndexOf(".");
+
+        if (lastDot != -1) {
+            return nameWithExt.substring(0, lastDot);
+        } else {
+            return nameWithExt;
+        }
+    }
+
     //-------------//
-    // getInstance //
+    // shapeNameOf //
     //-------------//
     /**
-     * Report the single instance of this class, after creating it if
-     * needed.
-     * @return the single instance
+     * Report the shape name of a gName.
+     * @param gName glyph name, using format "folder/name.number.xml" or
+     * "folder/name.xml"
+     * @return the 'name' part of the format
      */
-    public static GlyphRepository getInstance ()
+    public static String shapeNameOf (String gName)
     {
-        if (INSTANCE == null) {
-            INSTANCE = new GlyphRepository();
-        }
+        int    slash = gName.indexOf("/");
+        String nameWithExt = gName.substring(slash + 1);
 
-        return INSTANCE;
+        int    firstDot = nameWithExt.indexOf(".");
+
+        if (firstDot != -1) {
+            return nameWithExt.substring(0, firstDot);
+        } else {
+            return nameWithExt;
+        }
     }
 
     //-------------//
@@ -188,6 +215,26 @@ public class GlyphRepository
     public synchronized void setCoreBase (List<String> base)
     {
         coreBase = base;
+    }
+
+    //-------------//
+    // getCoreBase //
+    //-------------//
+    /**
+     * Return the names of the core collection of glyphs.
+     * @return the core collection of recorded glyphs
+     */
+    public List<String> getCoreBase (Monitor monitor)
+    {
+        if (coreBase == null) {
+            synchronized (this) {
+                if (coreBase == null) {
+                    coreBase = loadCoreBase(monitor);
+                }
+            }
+        }
+
+        return coreBase;
     }
 
     //----------//
@@ -203,7 +250,7 @@ public class GlyphRepository
      * @return the glyph instance if found, null otherwise
      */
     public synchronized Glyph getGlyph (String  gName,
-                           Monitor monitor)
+                                        Monitor monitor)
     {
         // First, try the map of glyphs
         Glyph glyph = glyphsMap.get(gName);
@@ -276,48 +323,29 @@ public class GlyphRepository
         return isIcon(new File(gName));
     }
 
-    //------------//
-    // fileNameOf //
-    //------------//
-    /**
-     * Report the file name w/o extension of a gName.
-     *
-     * @param gName glyph name, using format "folder/name.number.xml"
-     * or "folder/name.xml"
-     * @return the 'name' or 'name.number' part of the format
-     */
-    public static String fileNameOf (String gName)
+    //---------------//
+    // isIconsFolder //
+    //---------------//
+    public boolean isIconsFolder (String folder)
     {
-        int    slash = gName.indexOf("/");
-        String nameWithExt = gName.substring(slash + 1);
-
-        int    lastDot = nameWithExt.lastIndexOf(".");
-
-        if (lastDot != -1) {
-            return nameWithExt.substring(0, lastDot);
-        } else {
-            return nameWithExt;
-        }
+        return folder.equals(WellKnowns.SYMBOLS_FOLDER.getName());
     }
 
     //-------------//
-    // getCoreBase //
+    // getInstance //
     //-------------//
     /**
-     * Return the names of the core collection of glyphs.
-     * @return the core collection of recorded glyphs
+     * Report the single instance of this class, after creating it if
+     * needed.
+     * @return the single instance
      */
-    public List<String> getCoreBase (Monitor monitor)
+    public static GlyphRepository getInstance ()
     {
-        if (coreBase == null) {
-            synchronized (this) {
-                if (coreBase == null) {
-                    coreBase = loadCoreBase(monitor);
-                }
-            }
+        if (INSTANCE == null) {
+            INSTANCE = new GlyphRepository();
         }
 
-        return coreBase;
+        return INSTANCE;
     }
 
     //----------//
@@ -482,37 +510,6 @@ public class GlyphRepository
     {
         wholeBase = null;
         coreBase = null;
-    }
-
-    //-------------//
-    // shapeNameOf //
-    //-------------//
-    /**
-     * Report the shape name of a gName.
-     * @param gName glyph name, using format "folder/name.number.xml" or
-     * "folder/name.xml"
-     * @return the 'name' part of the format
-     */
-    public static String shapeNameOf (String gName)
-    {
-        int    slash = gName.indexOf("/");
-        String nameWithExt = gName.substring(slash + 1);
-
-        int    firstDot = nameWithExt.indexOf(".");
-
-        if (firstDot != -1) {
-            return nameWithExt.substring(0, firstDot);
-        } else {
-            return nameWithExt;
-        }
-    }
-
-    //---------------//
-    // isIconsFolder //
-    //---------------//
-    public boolean isIconsFolder (String folder)
-    {
-        return folder.equals(WellKnowns.SYMBOLS_FOLDER.getName());
     }
 
     //-------------//
@@ -752,7 +749,7 @@ public class GlyphRepository
                 logger.fine("Building symbol glyph " + gName);
             }
 
-            File file = new File(gName);
+            File file = new File(WellKnowns.TRAIN_FOLDER, gName);
 
             if (file.exists()) {
                 try {
@@ -953,7 +950,7 @@ public class GlyphRepository
     private List<String> loadWholeBase (Monitor monitor)
     {
         return loadBase(
-            new File[] { iconsFolder, sheetsFolder, samplesFolder },
+            new File[] { WellKnowns.SYMBOLS_FOLDER, sheetsFolder, samplesFolder },
             monitor);
     }
 

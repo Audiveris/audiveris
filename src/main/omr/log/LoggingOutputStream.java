@@ -5,6 +5,8 @@
 //----------------------------------------------------------------------------//
 package omr.log;
 
+import omr.WellKnowns;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -14,15 +16,14 @@ import java.util.logging.Level;
  * contents to a Logger upon each call to flush().
  * <br/>
  * <a href="http://blogs.oracle.com/nickstephen/entry/java_redirecting_system_out_and">See blog of Nick Stephen</a>
- * 
- * @author Nick Stephen 
+ *
+ * @author Nick Stephen
  */
 public class LoggingOutputStream
     extends ByteArrayOutputStream
 {
     //~ Instance fields --------------------------------------------------------
 
-    private String lineSeparator;
     private Logger logger;
     private Level  level;
 
@@ -39,7 +40,6 @@ public class LoggingOutputStream
         super();
         this.logger = logger;
         this.level = level;
-        lineSeparator = System.getProperty("line.separator");
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -61,7 +61,7 @@ public class LoggingOutputStream
             super.reset();
         }
 
-        if ((record.length() == 0) || record.equals(lineSeparator)) {
+        if ((record.length() == 0) || record.equals(WellKnowns.LINE_SEPARATOR)) {
             // avoid empty records
             return;
         }

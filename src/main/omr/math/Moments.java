@@ -67,7 +67,7 @@ public class Moments
     /**
      * Compute the moments for a set of points whose x and y
      * coordinates are provided, all values being normalized by the
-     * provided unit value.     *
+     * provided unit value.
      * @param x    the array of abscissa values
      * @param y    the array of ordinate values
      * @param dim  the number of points

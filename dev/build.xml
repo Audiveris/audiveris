@@ -3,8 +3,8 @@
 <!-- |                         b u i l d . x m l                           | -->
 <!-- |                                                                     | -->
 <!-- | abstract: Emacs/ant build for Audiveris application                 | -->
-<!-- | location: ${basedir}/src/build.xml                                  | -->
-<!-- | author:   herve.bitteur@laposte.net                                 | -->
+<!-- | location: ${basedir}/dev/build.xml                                  | -->
+<!-- | author:   herve.bitteur@audiveris.org                               | -->
 <!-- |                                                                     | -->
 <!-- +=====================================================================+ -->
 
@@ -13,14 +13,22 @@
     <description>
         Build, test, and run the Audiveris project via Emacs or Ant
 
-	This 'build.xml' file is located in the 'src' subdirectory to be
-	automatically picked up by Emacs or Ant
-
-	Use 'ant -projecthelp' to list public defined targets.
-	Targets whose name begins with '-' are only internal targets.
+	-----------------------------------------------------------------
+        [INSTALLDIR]/
+            build.xml                   -- Entry point for NetBeans
+            dev/
+                build.xml               -- Entry point for Emacs/Ant
+                -prolog.xml             -- Common targets (initial part)
+                -common.xml             -- Common targets (bulk part)
+                utils.xml               -- Standalone utilities
+                windows/                -- Windows specificities
+                    -execs.xml              -- Windows executables
+                    -wix.xml                -- Windows installer
+	-----------------------------------------------------------------
     </description>
 
-    <import file="${basedir}/src/build-init.xml"/>
+    <!-- initial definitions -->
+    <import file="${basedir}/dev/-prolog.xml"/>
     
     <!-- ================================================================ -->
 
@@ -32,11 +40,17 @@
         <pathelement path="${dist.jar}"/>
         <path refid="externals.classpath"/>
     </path>
+        
+    <!-- Build classpath, to build the application -->
+    <path id="build.classpath">
+        <path refid="tools.classpath"/>
+        <path refid="externals.classpath"/>
+    </path>
     
     <!-- Test classpath, to compile and run unit tests from class files -->
     <path id="test.classpath">
-        <path refid="externals.classpath"/>
-	<pathelement location="${junit.jar}"  /> 
+        <path refid="build.classpath"/>
+        <pathelement location="${junit.jar}"  /> 
         <pathelement path="${build.test.classes.dir}"/>
         <pathelement path="${build.classes.dir}"/>
     </path>
@@ -46,7 +60,7 @@
     <!-- ================================================================ -->
 
     <!-- Load internal targets common to Emacs and NetBeans -->
-    <import file="${dev.dir}/build-common.xml"/>
+    <import file="${dev.dir}/-common.xml"/>
     
     <!-- ================= -->
     <!--  - C O M P I L E  -->
@@ -59,26 +73,12 @@
     <!-- ===================== -->
     <target name="-copy-libs">
         <mkdir dir="${dist.dir}/lib"/>
-	
-	<copy todir="${dist.dir}/lib">
-	    <fileset dir="${externals.dir}"/>
-	</copy>
+        
+        <copy todir="${dist.dir}/lib">
+            <fileset dir="${externals.dir}"/>
+        </copy>
 
-    </target>
-
-    <!-- =============================== -->
-    <!--  - C O P Y - R E S O U R C E S  -->
-    <!-- =============================== -->
-    <target name="-copy-resources">
-        <mkdir dir="${build.classes.dir}"/>
-
-	<copy todir="${build.classes.dir}" verbose="$verbose">
-	    <fileset dir="${src.dir}" includes="**/*.properties"/>
-	    <fileset dir="${plugins.dir}" includes="**/*.properties"/>
-	</copy>
-
-    </target>
-	     
+    </target>            
     
     <!-- ======================= -->
     <!--  - D O - C O M P I L E  -->
@@ -92,10 +92,10 @@
         <!-- baseline classes -->
         <javac
             bootclasspath = "${env.java_home}/jre/lib/rt.jar"
-	    includeantruntime = "false"
-	    encoding     = "${build.encoding}"
-	    target       = "${javac.target}"
-            classpathref = "externals.classpath"
+            includeantruntime = "false"
+            encoding     = "${build.encoding}"
+            target       = "${javac.target}"
+            classpathref = "build.classpath"
             debug        = "${build.compile.debug}"
             deprecation  = "${build.compile.deprecation}"
             destdir      = "${build.classes.dir}"
@@ -103,18 +103,18 @@
             source       = "${build.compile.source}"
             srcdir       = "${src.dir}"
             >
- 	    <compilerarg value="-Xlint"/>  
- 	    <compilerarg value="-Xlint:-serial"/>  
- 	    <compilerarg value="-Xlint:-path"/>  
+            <compilerarg value="-Xlint"/>  
+            <compilerarg value="-Xlint:-serial"/>  
+            <compilerarg value="-Xlint:-path"/>  
         </javac>
         
         <!-- plugin classes -->
         <javac
             bootclasspath = "${env.java_home}/jre/lib/rt.jar"
-	    includeantruntime = "false"
-	    encoding     = "${build.encoding}"
-	    target       = "${javac.target}"
-            classpathref = "externals.classpath"
+            includeantruntime = "false"
+            encoding     = "${build.encoding}"
+            target       = "${javac.target}"
+            classpathref = "build.classpath"
             debug        = "${build.compile.debug}"
             deprecation  = "${build.compile.deprecation}"
             destdir      = "${build.classes.dir}"
@@ -122,9 +122,9 @@
             source       = "${build.compile.source}"
             srcdir       = "${plugins.dir}"
             >
-	    <compilerarg value="-Xlint"/> 
-	    <compilerarg value="-Xlint:-serial"/> 
-	    <compilerarg value="-Xlint:-path"/> 
+            <compilerarg value="-Xlint"/> 
+            <compilerarg value="-Xlint:-serial"/> 
+            <compilerarg value="-Xlint:-path"/> 
         </javac>
     </target>
     
@@ -139,9 +139,9 @@
         
         <javac
             bootclasspath = "${env.java_home}/jre/lib/rt.jar"
-	    includeantruntime = "false"
-	    encoding     = "${build.encoding}"
-	    target       = "${javac.target}"
+            includeantruntime = "false"
+            encoding     = "${build.encoding}"
+            target       = "${javac.target}"
             classpathref = "test.classpath"
             debug        = "${build.compile.debug}"
             deprecation  = "${build.compile.deprecation}"
@@ -155,11 +155,6 @@
             <compilerarg value="-Xlint:-path"/>
         </javac>
     </target>
-
-    <!-- =========================== -->
-    <!--  - P O S T - C O M P I L E  -->
-    <!-- =========================== -->
-    <target name="-post-compile" depends="-copy-resources"/>        
     
     <!-- ================================================================ -->
     <!-- =======================  Public Targets  ======================= -->
@@ -169,21 +164,21 @@
     <!--  C L E A N  -->
     <!-- =========== -->
     <target name="clean"
-            depends="-clean-jars"
-	    description="Remove all the generated outputs.">
-	<!-- Remove build folder -->
+            depends="-init, -clean-jars"
+            description="Remove all the generated outputs.">
+        <!-- Remove build folder -->
         <delete verbose="${verbose}" dir="${build.dir}"/>
-	
-	<!-- Remove dist folder -->
+        
+        <!-- Remove dist folder -->
         <delete verbose="${verbose}" dir="${dist.dir}"/>
-	
+        
     </target>
 
     <!-- =================== -->
     <!--  F U L L - D I S T  -->
     <!-- =================== -->
     <target name="full-dist"
- 	    depends="clean, -full-dist"
+            depends="clean, -full-dist"
             description="Build the full distribution">
     </target>
 
@@ -191,7 +186,7 @@
     <!--  F U L L - J A R S  -->
     <!-- =================== -->
     <target name="full-jars"
- 	    depends="-full-jars"
+            depends="-full-jars"
             description="Copy and check the various jars">
     </target>
 
@@ -199,18 +194,16 @@
     <!--  C H E C K - J A R S  -->
     <!-- ===================== -->
     <target name="check-jars"
- 	    depends="-check-jars"
+            depends="-check-jars"
             description="Check the remote jars are up to date">
     </target>
     
-    <!-- ======= -->
-    <!--  J A R  -->
-    <!-- ======= -->
-    <target name="jar"
-        depends="-compile, -pre-jar, -copy-libs, -hg-tip"
-        description="Compile and generate the application jar file.">
+    <!-- =============== -->
+    <!--  - D O - J A R  -->
+    <!-- =============== -->
+    <target name="-do-jar">
 
-	<!-- Prepare the proper string of all companion jar files -->
+        <!-- Prepare the proper string of all companion jar files -->
         <pathconvert pathsep=" " refid="externals.classpath" property="externals.string">
             <chainedmapper>
                 <flattenmapper/>
@@ -218,17 +211,17 @@
             </chainedmapper>
         </pathconvert>
 
-	<!-- Define the property to use as Implementation-Version -->
+        <!-- Define the property to use as Implementation-Version -->
         <condition
-	    property="hg-tip-string"
-	    value="${ant4hg.log.revision}:${ant4hg.log.changeset}"
-	    else="unknown">
+            property="hg-tip-string"
+            value="${ant4hg.log.revision}:${ant4hg.log.changeset}"
+            else="unknown">
             <available file="${hg.dir}"/>
         </condition>
 
         <!-- Put all ${build.classes.dir} into the application jar file -->
         <jar basedir="${build.classes.dir}"
-	     jarfile="${dist.jar}">
+             jarfile="${dist.jar}">
             <manifest>
                 <attribute name="Main-Class"
                            value="${Name}"/>
@@ -240,19 +233,26 @@
                            value="${spec.title}"/>
                 <attribute name="Specification-Version"
                            value="${spec.version}"/>
-		<attribute name="Implementation-Version"
-			   value="${hg-tip-string}"/>
+                <attribute name="Implementation-Version"
+                           value="${hg-tip-string}"/>
             </manifest>
         </jar>
         
     </target>
     
+    <!-- ======= -->
+    <!--  J A R  -->
+    <!-- ======= -->
+    <target name="jar"
+        depends="-compile, -pre-jar, -copy-libs, -hg-tip, -do-jar"
+        description="Compile and generate the application jar file."/>
+    
     <!-- =============== -->
     <!--  J A V A D O C  -->
     <!-- =============== -->
     <target name="javadoc"
-	    depends="-javadoc-build, -post-javadoc, -post-post-javadoc"
-	    description="Generate project documentation."/>
+            depends="-javadoc-build"
+            description="Generate project documentation."/>
     
     <!-- ======= -->
     <!--  R U N  -->
@@ -261,37 +261,37 @@
         depends="jar"
         description="Run the application from its GUI.">
 
-	<!-- Default values -->
-	<property name="run.batch" value=""/>
-	<property name="run.step"  value=""/>
-	<property name="run.sheet" value=""/>
-	<property name="run.script" value=""/>
-	
+        <!-- Default values -->
+        <property name="run.batch" value=""/>
+        <property name="run.step"  value=""/>
+        <property name="run.sheet" value=""/>
+        <property name="run.script" value=""/>
+        
         <java
-	    classname="${Name}"
+            classname="${Name}"
             classpathref="run.classpath"
             failonerror="true"
             fork="true"
             maxmemory="256m">
             
             <!-- Specific JVM arguments, if any -->
-<!--    	    <jvmarg value="-verbose:class"/>  -->
+<!--                <jvmarg value="-verbose:class"/>  -->
 
-	    <!-- For JMX console (no longer needed?) -->
-<!--  	    <sysproperty -->
-<!-- 		key="com.sun.management.jmxremote" -->
-<!-- 		value="true"/> -->
- 	    
+            <!-- For JMX console (no longer needed?) -->
+<!--        <sysproperty -->
+<!--            key="com.sun.management.jmxremote" -->
+<!--            value="true"/> -->
+            
             <!-- Configuration file for logging -->
             <sysproperty
-		key="java.util.logging.config.file"
-                value="${config.dir}/logging.properties"/>
+                key="java.util.logging.config.file"
+                value="${settings.dir}/logging.properties"/>
             
             <!-- Application arguments -->
- 	    <arg line="${run.batch}"/>
- 	    <arg line="${run.step}"/>
- 	    <arg line="${run.sheet}"/>
- 	    <arg line="${run.script}"/>
+            <arg line="${run.batch}"/>
+            <arg line="${run.step}"/>
+            <arg line="${run.sheet}"/>
+            <arg line="${run.script}"/>
         </java>
     </target>
 
@@ -301,46 +301,67 @@
     <target name="test" depends="-compile-tests"
             description="Run all unit tests in batch." >
 
-	<echo message="Performing unit tests ..."/>
+        <echo message="Performing unit tests ..."/>
 
         <delete verbose="${verbose}" dir="${build.test.results.dir}"/>
         <mkdir dir="${build.test.results.dir}"/>
-	
-	<!-- Specific pattern -->
-     	<property name="tests" value="*Test"/>
+        
+        <!-- Specific pattern -->
+        <property name="tests" value="*Test"/>
 
-	<!-- Default pattern -->
-	<property name="tests" value="*Test"/>
-	<echo message="Unit test pattern : ${tests}"/>
-	
+        <!-- Default pattern -->
+        <property name="tests" value="*Test"/>
+        <echo message="Unit test pattern : ${tests}"/>
+        
         <junit
-	    printsummary="yes"
-	    haltonfailure="no" >
+            printsummary="yes"
+            haltonfailure="no" >
             <classpath refid="test.classpath"/>
             <formatter type="plain" usefile="false"/>
             <formatter type="xml"/>
- 	    
+            
             <!-- Configuration file for logging -->
             <sysproperty key="java.util.logging.config.file"
-                value="${config.dir}/logging.properties"/>
+                value="${settings.dir}/logging.properties"/>
 
             <batchtest
-		fork="yes"
-		todir="${build.test.results.dir}">
+                fork="yes"
+                todir="${build.test.results.dir}">
                 <fileset 
-		    dir="${src.test.dir}"
-		    includes="**/${tests}.java"/>
+                    dir="${src.test.dir}"
+                    includes="**/${tests}.java"/>
             </batchtest>
         </junit>
 
-	<echo message="Generating reports of unit tests ..."/>
-	<junitreport todir="${build.test.results.dir}">
-	    <fileset dir="${build.test.results.dir}">
-		<include name="TEST-*.xml"/>
-	    </fileset>
-	    <report format="frames" todir="${build.test.results.dir}/html"/>
-	</junitreport>
-	
+        <echo message="Generating reports of unit tests ..."/>
+        <junitreport todir="${build.test.results.dir}">
+            <fileset dir="${build.test.results.dir}">
+                <include name="TEST-*.xml"/>
+            </fileset>
+            <report format="frames" todir="${build.test.results.dir}/html"/>
+        </junitreport>
+        
     </target>
+
+    <!-- =================================== -->
+    <!--  W I N D O W S - I N S T A L L E R  -->
+    <!-- =================================== -->
+    <target name="windows-installer"
+            depends="jar, execs, -wix.windows-installer"
+            description="Build Windows installer" />
+
+    <!-- =============== -->
+    <!--  I N S T A L L  -->
+    <!-- =============== -->
+    <target name="install"
+	    depends="-wix.install"
+	    description="Install for Windows"/>
+    
+    <!-- =================== -->
+    <!--  U N I N S T A L L  -->
+    <!-- =================== -->
+    <target name="uninstall"
+	    depends="-wix.uninstall"
+	    description="Uninstall for Windows"/>
 
 </project>

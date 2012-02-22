@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.Iterator;
 import java.util.List;
+import omr.WellKnowns;
 
 /**
  * Class {@code ScoresManager} is a singleton which provides
@@ -641,7 +642,7 @@ public class ScoresManager
 
         /** Default directory for saved scores */
         Constant.String defaultExportDirectory = new Constant.String(
-            System.getProperty("user.home"),
+            WellKnowns.DEFAULT_SCORES_FOLDER.toString(),
             "Default directory for saved scores");
 
         /** Should we save bench data to disk */
@@ -651,17 +652,17 @@ public class ScoresManager
 
         /** Default directory for saved benches */
         Constant.String defaultBenchDirectory = new Constant.String(
-            System.getProperty("user.home"),
+            WellKnowns.DEFAULT_BENCHES_FOLDER.toString(),
             "Default directory for saved benches");
 
         /** Default directory for writing Midi files */
         Constant.String defaultMidiDirectory = new Constant.String(
-            System.getProperty("user.home"),
+            WellKnowns.DEFAULT_MIDI_FOLDER.toString(),
             "Default directory for writing Midi files");
 
         /** Default directory for writing sheet PDF files */
         Constant.String defaultPrintDirectory = new Constant.String(
-            System.getProperty("user.home"),
+            WellKnowns.DEFAULT_PRINT_FOLDER.toString(),
             "Default directory for writing sheet PDF files");
 
         /** Should we export our signature? */
@@ -676,12 +677,12 @@ public class ScoresManager
 
         /** Default directory for selection of image files */
         Constant.String defaultInputDirectory = new Constant.String(
-            System.getProperty("user.home"),
+            WellKnowns.EXAMPLES_FOLDER.toString(),
             "Default directory for selection of image files");
 
         /** Default directory for saved dewarped images */
         Constant.String defaultDewarpDirectory = new Constant.String(
-            System.getProperty("user.home"),
+            WellKnowns.EXAMPLES_FOLDER.toString(),
             "Default directory for saved dewarped images");
     }
 }

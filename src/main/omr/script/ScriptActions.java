@@ -12,6 +12,7 @@
 package omr.script;
 
 import omr.Main;
+import omr.WellKnowns;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -257,7 +258,7 @@ public class ScriptActions
 
         /** Default directory for saved scripts */
         Constant.String defaultScriptDirectory = new Constant.String(
-            System.getProperty("user.home"),
+            WellKnowns.DEFAULT_SCRIPTS_FOLDER.toString(),
             "Default directory for saved scripts");
 
         /** User confirmation for closing unsaved script */
