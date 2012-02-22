@@ -49,7 +49,7 @@
     <!--  F U L L - D I S T  -->
     <!-- =================== -->
     <target name="full-dist"
- 	    depends="clean, jar, -full-dist"
+ 	    depends="clean, -full-dist"
             description="Build the full distribution">
     </target>
 

@@ -24,7 +24,7 @@
     <!--  - F U L L - D I S T  -->
     <!-- ===================== -->
     <target name="-full-dist"
-            depends="clean, jar, execs">
+            depends="-hg-tip, jar, execs">
 <!--         description="Build the whole release distribution." -->
 
         <!-- Special copy for NetBeans -->
@@ -39,7 +39,7 @@
         
         <!-- Generate the global zip archive -->
         <zip 
-            destfile="${dist.dir}/${full.name}-full-${DSTAMP}.zip" >
+            destfile="${dist.dir}/${full.name}.${ant4hg.log.revision}-src.zip" >
 
             <!-- Special build.xml file for NetBeans on top dir-->
             <zipfileset dir="${basedir}" includes="build-for-netbeans.xml"/>
