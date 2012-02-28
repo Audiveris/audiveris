@@ -201,7 +201,7 @@
         
         <echo message="buiding ${dev.windows.dir}/gen-user-examples.wxs" />
         <exec executable="java">
-            <arg line="-jar ${tools.dir}/wixheatuser.jar"/>
+            <arg line="-jar ${tools.dir}/wix-heat-user.jar"/>
             <arg value="${examples.dir}"/>
             <arg line="-dr adProductDirId"/>
             <arg line="-cg examples.CID"/>
@@ -211,7 +211,7 @@
         
         <echo message="buiding ${dev.windows.dir}/gen-user-settings.wxs" />
         <exec executable="java">
-            <arg line="-jar ${tools.dir}/wixheatuser.jar"/>
+            <arg line="-jar ${tools.dir}/wix-heat-user.jar"/>
             <arg value="${settings.dir}"/>
             <arg line="-dr adProductDirId"/>
             <arg line="-cg settings.CID"/>
@@ -221,7 +221,7 @@
         
         <echo message="buiding ${dev.windows.dir}/gen-user-eval.wxs" />
         <exec executable="java">
-            <arg line="-jar ${tools.dir}/wixheatuser.jar"/>
+            <arg line="-jar ${tools.dir}/wix-heat-user.jar"/>
             <arg value="${eval.dir}"/>
             <arg line="-dr adProductDirId"/>
             <arg line="-cg eval.CID"/>
@@ -231,7 +231,7 @@
 
         <echo message="buiding ${dev.windows.dir}/gen-user-plugins.wxs" />
         <exec executable="java">
-            <arg line="-jar ${tools.dir}/wixheatuser.jar"/>
+            <arg line="-jar ${tools.dir}/wix-heat-user.jar"/>
             <arg value="${basedir}/plugins"/>
             <arg line="-dr adProductDirId"/>
             <arg line="-cg plugins.CID"/>
@@ -241,7 +241,7 @@
         
         <echo message="buiding ${dev.windows.dir}/gen-user-train.wxs" /> 
         <exec executable="java">
-            <arg line="-jar ${tools.dir}/wixheatuser.jar"/>
+            <arg line="-jar ${tools.dir}/wix-heat-user.jar"/>
             <arg value="${train.dir}"/>
             <arg line="-dr adProductDirId"/>
             <arg line="-cg train.CID"/>

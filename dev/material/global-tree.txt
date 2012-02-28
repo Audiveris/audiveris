@@ -151,8 +151,6 @@ Development only folders
 ./dev/material/global-tree.txt
 
 ./dev/tools/
-./dev/tools/jcip-annotations.jar
-./dev/tools/wixheatuser.jar
 ./dev/tools/ant-contrib-1.0b3.jar
 ./dev/tools/ant-dotnet-1.1.LICENSE.txt
 ./dev/tools/ant-dotnet-1.1.jar
@@ -162,7 +160,7 @@ Development only folders
 ./dev/tools/jcip-annotations.jar
 ./dev/tools/junit-4.7.jar
 ./dev/tools/umlet.jar
-./dev/tools/wixheatuser.jar
+./dev/tools/wix-heat-user.jar
 ./dev/tools/lib/
 ./dev/tools/lib/baselet_batik-awt-util.jar
 ./dev/tools/lib/baselet_batik-svggen.jar
