@@ -283,7 +283,7 @@
             <candleParameter name="myVersion"      value="${impl.version}"/>
             <candleParameter name="myWww"          value="${www.dir}"/>
             
-            <candleParameter name="myVC"           value="${env.COMMONPROGRAMFILES}/Merge Modules/Microsoft_VC90_CRT_x86.msm"/>
+            <candleParameter name="myVC"           value="${env.CommonProgramFiles}/Merge Modules/Microsoft_VC90_CRT_x86.msm"/>
             
             <candleArg line="-out ${dist.dir}\"/>        
             
