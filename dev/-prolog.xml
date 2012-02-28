@@ -41,25 +41,29 @@
     <target name="-init">
 <!--         description="Initialize the environment." -->
 
-        <!-- Create the time stamp -->
-        <tstamp/>
-
 	<!-- Remember if Hg is not present -->
-        <condition property="no.hg.present">
-            <not>
-                <available file="${hg.dir}" />
-            </not>
+        <condition property="hg.present" else="false">
+            <available file="${hg.dir}" />
         </condition>
-
-<!--	<echo>
-	    no.hg.present=${no.hg.present}
-	</echo>-->
-
-	<!-- Remember if Junit is present -->
-        <available
-            property="junit.present"
-            file="${junit.jar}"
-            />
+        <echo message="hg.present=${hg.present}" />
+            
+        <!-- Running on Windows? -->
+        <condition property="is.windows" else="false">
+            <os family="windows"/>
+        </condition>
+        <echo message="is.windows=${is.windows}" />
+        
+        <!-- Running on Mac? -->
+        <condition property="is.mac" else="false">
+            <os family="mac" />
+        </condition>
+        <echo message="is.mac=${is.mac}" />
+        
+        <!-- Running on Unix? -->
+        <condition property="is.unix" else="false">
+            <os family="unix" />
+        </condition>
+        <echo message="is.unix=${is.unix}" />
 
     </target>
     

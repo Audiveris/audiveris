@@ -332,7 +332,8 @@ public class TextBorderPattern
                                      Glyph    compound)
         {
             // Call the OCR?
-            if (TextLine.useOCR()) {
+            if (Language.getOcr()
+                        .isAvailable()) {
                 OcrLine ocrLine = null;
 
                 if (compound.getTextInfo()

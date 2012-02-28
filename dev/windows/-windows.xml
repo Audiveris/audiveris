@@ -1,31 +1,157 @@
 <!-- +=====================================================================+ -->
 <!-- |                                                                     | -->
-<!-- |                          - w i x . x m l                            | -->
+<!-- |                      - w i n d o w s . x m l                        | -->
 <!-- |                                                                     | -->
 <!-- +=====================================================================+ -->
 
-<project name="-wix" basedir="../..">
+<project name="-windows" basedir="../..">
     
     <description>
-        Targets for building Audiveris Windows installer
+        Targets for Windows platform
     </description>
+
+    <property name="msi.name" value="${full.name}.${ant4hg.log.revision}.msi"/>
+
+    <!-- =================================== -->
+    <!--  - L A U N C H 4 J - T A S K D E F  -->
+    <!-- =================================== -->
+    <target name="-launch4j-taskdef"
+            if="${is.windows}">
+        <!-- launch4j task definition -->
+        <taskdef name="launch4j"
+                 classname="net.sf.launch4j.ant.Launch4jTask">
+            <classpath>
+                <fileset dir="${launch4j.dir}" includes="launch4j.jar" />
+                <fileset dir="${launch4j.dir}/lib" includes="xstream.jar" />
+            </classpath>
+        </taskdef>
+    </target>
+
+    <!-- =========== -->
+    <!--  C L E A N  -->
+    <!-- =========== -->
+    <target name="clean"
+            if="${is.windows}">
+	<!-- Remove all the generated outputs for Windows -->
+        <delete verbose="${verbose}">
+            <fileset dir="${basedir}" includes="*.exe, *.bat"/>
+        </delete> 
+    </target>
     
-    <!-- wix task definition (with others) -->
-    <taskdef 
-        resource="org/apache/ant/dotnet/antlib.xml">
-        <classpath>
-            <pathelement location="${dotnet.jar}"/>
-        </classpath>
-    </taskdef>   
+    <!-- =================== -->
+    <!--  U N I N S T A L L  -->
+    <!-- =================== -->
+    <target name="uninstall"
+            depends="-hg-tip"
+            if="${is.windows}">
+	<!-- Uninstall for Windows -->
+        <echo message="Windows uninstallation from ${msi.name}" />
+        <exec executable="msiexec"
+              dir="${dist.dir}">
+            <arg value="/x"/>
+            <arg value="${msi.name}"/>
+        </exec>
+    </target>        
+
+    <!-- =============== -->
+    <!--  I N S T A L L  -->
+    <!-- =============== -->
+    <target name="install"
+            depends="-hg-tip"
+            if="${is.windows}">
+	<!-- Install for Windows -->
+        <echo message="Windows installation from ${msi.name}" />
+        <exec executable="msiexec"
+              dir="${dist.dir}">
+            <arg value="/i"/>
+            <arg value="${msi.name}"/>
+        </exec>
+    </target>
+
+    <!-- =================== -->
+    <!--  I N S T A L L E R  -->
+    <!-- =================== -->
+    <target name="installer"
+            depends="-hg-tip, -wxs-generation, -do-installer, -wix-cleanup"/>
+    <!-- Build Windows installer -->
+
+    <!-- =========== -->
+    <!--  E X E C S  -->
+    <!-- =========== -->
+    <target name="execs"
+            depends="jar, -bat, -exe, -exe-console, -no-windows-execs"/>
+    <!-- Build all Windows executables -->
+
+    <!-- ================================== -->
+    <!--  - N O - W I N D O W S -E X E C S  -->
+    <!-- ================================== -->
+    <target name="-no-windows-execs"
+            unless="${is.windows}">
+        <echo message="Windows execs are generated only from Windows" />
+    </target>
+    
+    <!-- ========= -->
+    <!--  - B A T  -->
+    <!-- ========= -->
+    <target name="-bat"           
+            if="${is.windows}">
+        <!-- .bat file for windows -->
+        <echo file="${basedir}/${name}.bat" append="false">@ECHO OFF
+            REM ${name}.bat
+            setlocal
+            java -Xms512M -Xmx512M -jar dist/${full.name}.jar %1 %2 %3 %4 %5 %6 %7 %8 %9
+            endlocal
+        </echo>
+        
+    </target>
+
+    <!-- ========= -->
+    <!--  - E X E  -->
+    <!-- ========= -->
+    <target name="-exe"           
+            depends="-launch4j-taskdef"
+            if="${is.windows}">                
+                
+	<!-- Build Windows executable without console -->
+        <launch4j>
+            <config headerType="gui"
+                    outfile="${name}.exe"
+                    dontWrapJar="true"
+                    jarPath="dist/${full.name}.jar" >
+                <jre minVersion="${jre.min}"/>
+                <splash file="${res.dir}/splash.bmp"/>
+            </config>
+        </launch4j>	
+    </target>
+
+    <!-- ========================= -->
+    <!--  - E X E - C O N S O L E  -->
+    <!-- ========================= -->
+    <target name="-exe-console"   
+            depends="-launch4j-taskdef"
+            if="${is.windows}">
+
+        <!-- Build Windows executable with console -->
+        <launch4j fileVersion="${impl.version}.${ant4hg.log.revision}">
+            <config headerType="console"
+                    outfile="${name}-console.exe"
+                    dontWrapJar="true"
+                    jarPath="dist/${full.name}.jar" >
+                <jre minVersion="${jre.min}"/>
+            </config>
+        </launch4j>	
+    </target>
     
     <!-- =============================== -->
     <!--  - W X S - G E N E R A T I O N  -->
     <!-- =============================== -->
-    <target name="-wxs-generation">
+    <target name="-wxs-generation"
+            if="${is.windows}">
+	<!-- Harvesting of directories -->
+	
+        <!-- Files for common location -->
         
-        <!-- Harvest files for common location -->
-        
-	<property name="heat.options" value="-nologo -gg -g1 -sfrag" />
+        <property name="heat.options" value="-nologo -gg -g1 -sfrag" />
         
         <echo message="buiding ${dev.windows.dir}/gen-common-lib.wxs" />
         <exec executable="heat">
@@ -71,11 +197,11 @@
             <arg line="-out ${dev.windows.dir}/gen-common-www.wxs"/>
         </exec>
         
-        <!-- Harvest files for user location -->
+        <!-- Files for user location -->
         
         <echo message="buiding ${dev.windows.dir}/gen-user-examples.wxs" />
         <exec executable="java">
-            <arg line="-jar ${tools.dir}/WixHeatUser.jar"/>
+            <arg line="-jar ${tools.dir}/wixheatuser.jar"/>
             <arg value="${examples.dir}"/>
             <arg line="-dr adProductDirId"/>
             <arg line="-cg examples.CID"/>
@@ -85,7 +211,7 @@
         
         <echo message="buiding ${dev.windows.dir}/gen-user-settings.wxs" />
         <exec executable="java">
-            <arg line="-jar ${tools.dir}/WixHeatUser.jar"/>
+            <arg line="-jar ${tools.dir}/wixheatuser.jar"/>
             <arg value="${settings.dir}"/>
             <arg line="-dr adProductDirId"/>
             <arg line="-cg settings.CID"/>
@@ -95,7 +221,7 @@
         
         <echo message="buiding ${dev.windows.dir}/gen-user-eval.wxs" />
         <exec executable="java">
-            <arg line="-jar ${tools.dir}/WixHeatUser.jar"/>
+            <arg line="-jar ${tools.dir}/wixheatuser.jar"/>
             <arg value="${eval.dir}"/>
             <arg line="-dr adProductDirId"/>
             <arg line="-cg eval.CID"/>
@@ -105,7 +231,7 @@
 
         <echo message="buiding ${dev.windows.dir}/gen-user-plugins.wxs" />
         <exec executable="java">
-            <arg line="-jar ${tools.dir}/WixHeatUser.jar"/>
+            <arg line="-jar ${tools.dir}/wixheatuser.jar"/>
             <arg value="${basedir}/plugins"/>
             <arg line="-dr adProductDirId"/>
             <arg line="-cg plugins.CID"/>
@@ -113,22 +239,28 @@
             <arg line="-out ${dev.windows.dir}/gen-user-plugins.wxs"/>
         </exec>
         
-         <echo message="buiding ${dev.windows.dir}/gen-user-train.wxs" /> 
-         <exec executable="java">
-             <arg line="-jar ${tools.dir}/WixHeatUser.jar"/>
-             <arg value="${train.dir}"/>
-             <arg line="-dr adProductDirId"/>
-             <arg line="-cg train.CID"/>
-             <arg line="-var var.myTrain"/> 
-             <arg line="-out ${dev.windows.dir}/gen-user-train.wxs"/>
-         </exec> 
+        <echo message="buiding ${dev.windows.dir}/gen-user-train.wxs" /> 
+        <exec executable="java">
+            <arg line="-jar ${tools.dir}/wixheatuser.jar"/>
+            <arg value="${train.dir}"/>
+            <arg line="-dr adProductDirId"/>
+            <arg line="-cg train.CID"/>
+            <arg line="-var var.myTrain"/> 
+            <arg line="-out ${dev.windows.dir}/gen-user-train.wxs"/>
+        </exec> 
         
     </target>
 
-    <!-- =========================================== -->
-    <!--  - D O - W I N D O W S - I N S T A L L E R  -->
-    <!-- =========================================== -->
-    <target name="-do-windows-installer">
+    <!-- =========================== -->
+    <!--  - D O - I N S T A L L E R  -->
+    <!-- =========================== -->
+    <target name="-do-installer"
+            if="${is.windows}">
+    
+        <!-- wix task definition (et al.) -->
+        <taskdef 
+            resource="org/apache/ant/dotnet/antlib.xml"
+            classpathref="tools.classpath" />
 
         <!-- Compilation -->
         <wix mode="candle"> 
@@ -139,7 +271,7 @@
             <candleParameter name="myEval"         value="${eval.dir}"/>
             <candleParameter name="myExamples"     value="${examples.dir}"/>
             <candleParameter name="myFullName"     value="${full.name}"/>
-            <candleParameter name="myIconSource"   value="${res.dir}/icon-256.ico"/>
+            <candleParameter name="myIconSource"   value="${res.dir}/all-icons-256.ico"/>
             <candleParameter name="myJar"          value="${dist.jar}"/>
             <candleParameter name="myMaterial"     value="${material.dir}"/>
             <candleParameter name="myOcr"          value="${ocr.dir}"/>
@@ -151,7 +283,7 @@
             <candleParameter name="myVersion"      value="${impl.version}"/>
             <candleParameter name="myWww"          value="${www.dir}"/>
             
-            <candleParameter name="myVC"           value="${env.CommonProgramFiles}/Merge Modules/Microsoft_VC90_CRT_x86.msm"/>
+            <candleParameter name="myVC"           value="${env.COMMONPROGRAMFILES}/Merge Modules/Microsoft_VC90_CRT_x86.msm"/>
             
             <candleArg line="-out ${dist.dir}\"/>        
             
@@ -162,7 +294,7 @@
 
         <!-- Link -->
         <wix mode="light"
-             target="${dist.dir}/${full.name}.${ant4hg.log.revision}.msi">
+             target="${dist.dir}/${msi.name}">
             <lightArg line="-ext WixUIExtension" />
             <lightArg line="-dWixUILicenseRtf=${res.dir}/GPLv2.rtf" />
             <lightArg line="-sice:ICE91" />
@@ -176,7 +308,8 @@
     <!-- ========================= -->
     <!--  - W I X - C L E A N U P  -->
     <!-- ========================= -->
-    <target name="-wix-cleanup">
+    <target name="-wix-cleanup"
+            if="${is.windows}">
         
         <!-- Clean up temporary files in dist -->
         <delete verbose="${verbose}"> 
@@ -190,39 +323,4 @@
         
     </target>
 
-    <!-- =================================== -->
-    <!--  W I N D O W S - I N S T A L L E R  -->
-    <!-- =================================== -->
-    <target name="windows-installer"
-            depends="-hg-tip, -wxs-generation, -do-windows-installer, -wix-cleanup"
-            description="Build Windows installer" />
-
-    <!-- =============== -->
-    <!--  I N S T A L L  -->
-    <!-- =============== -->
-    <target name="install"
-	    depends="-hg-tip"
-            description="Install for Windows">
-        <echo message="Launching Windows installation from ${full.name}.${ant4hg.log.revision}.msi" />
-        <exec executable="msiexec"
-              dir="${dist.dir}">
-            <arg value="/i"/>
-            <arg value="${full.name}.${ant4hg.log.revision}.msi"/>
-        </exec>
-    </target>
-    
-    <!-- =================== -->
-    <!--  U N I N S T A L L  -->
-    <!-- =================== -->
-    <target name="uninstall"
-	    depends="-hg-tip"
-            description="Uninstall for Windows">
-        <echo message="Launching Windows uninstallation from ${full.name}.${ant4hg.log.revision}.msi" />
-        <exec executable="msiexec"
-              dir="${dist.dir}">
-            <arg value="/x"/>
-            <arg value="${full.name}.${ant4hg.log.revision}.msi"/>
-        </exec>
-    </target>
-        
 </project>

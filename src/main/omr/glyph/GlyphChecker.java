@@ -39,6 +39,7 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
+import omr.util.HorizontalSide;
 import omr.util.Predicate;
 
 import java.util.ArrayList;
@@ -46,7 +47,6 @@ import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
-import omr.util.HorizontalSide;
 
 /**
  * Class {@code GlyphChecker} gathers additional specific glyph checks,
@@ -621,7 +621,8 @@ public class GlyphChecker
 
                     // Simply check the tuplet character via OCR, if available
                     // Nota: We must avoid multiple OCR calls on the same glyph
-                    if (TextLine.useOCR()) {
+                    if (Language.getOcr()
+                                .isAvailable()) {
                         if (glyph.isTransient()) {
                             glyph = system.registerGlyph(glyph);
                         }
@@ -647,20 +648,22 @@ public class GlyphChecker
 
                         line = textInfo.getOcrLine();
 
-                        String str = line.value;
-                        Shape  shape = eval.shape;
+                        if (line != null) {
+                            String str = line.value;
+                            Shape  shape = eval.shape;
 
-                        if ((shape == TUPLET_THREE) && str.equals("3")) {
-                            return true;
+                            if ((shape == TUPLET_THREE) && str.equals("3")) {
+                                return true;
+                            }
+
+                            if ((shape == TUPLET_SIX) && str.equals("6")) {
+                                return true;
+                            }
+
+                            eval.failure = new Evaluation.Failure("ocr");
+
+                            return false;
                         }
-
-                        if ((shape == TUPLET_SIX) && str.equals("6")) {
-                            return true;
-                        }
-
-                        eval.failure = new Evaluation.Failure("ocr");
-
-                        return false;
                     }
 
                     return true;

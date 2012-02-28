@@ -159,6 +159,57 @@ public class TextLine
 
     //~ Methods ----------------------------------------------------------------
 
+    //-----------//
+    // isCloseTo //
+    //-----------//
+    /**
+     * Check whether the provided glyph is close to this text line (and could
+     * thus be part of it)
+     * @param glyph the provided glyph to isValid wrt this text line
+     * @return true if close enough vertically and horizontally
+     */
+    public boolean isCloseTo (Glyph glyph)
+    {
+        PixelRectangle fatBox = getContourBox();
+        fatBox.grow(maxItemDx, maxItemDy);
+
+        return isCloseTo(glyph, fatBox);
+    }
+
+    //-----------//
+    // isCloseTo //
+    //-----------//
+    /**
+     * Check whether the other text line is close to this text line (and could
+     * thus be merged)
+     * @param other the provided other text line
+     * @return true if close enough vertically and horizontally
+     */
+    public boolean isCloseTo (TextLine other)
+    {
+        PixelRectangle fatBox = getContourBox();
+        fatBox.grow(maxItemDx, 0);
+
+        return fatBox.intersects(other.getContourBox()) &&
+               (Math.abs(other.getY() - this.getY()) <= maxTextLineDy) &&
+               !acrossEntryBarline(other);
+    }
+
+    //----------//
+    // addGlyph //
+    //----------//
+    /**
+     * Add a glyph to this text line
+     * @param glyph the glyph to add
+     * @return true if glyph did not already exist in the glyphs set
+     */
+    public final boolean addGlyph (Glyph glyph)
+    {
+        invalidateCache();
+
+        return glyphs.add(glyph);
+    }
+
     //---------------//
     // getFirstGlyph //
     //---------------//
@@ -252,21 +303,6 @@ public class TextLine
                                         .getMedianLine();
     }
 
-    //----------//
-    // addGlyph //
-    //----------//
-    /**
-     * Add a glyph to this text line
-     * @param glyph the glyph to add
-     * @return true if glyph did not already exist in the glyphs set
-     */
-    public final boolean addGlyph (Glyph glyph)
-    {
-        invalidateCache();
-
-        return glyphs.add(glyph);
-    }
-
     //------------------//
     // extractSentences //
     //------------------//
@@ -313,7 +349,8 @@ public class TextLine
 
         // Use OCR only if no text has been manually defined for the line, and
         // if we have no content or if a new language is being used for OCR
-        if (useOCR() &&
+        if (Language.getOcr()
+                    .isAvailable() &&
             (textInfo.getManualContent() == null) &&
             ((textInfo.getOcrContent() == null) ||
             !language.equals(textInfo.getOcrLanguage()))) {
@@ -324,106 +361,6 @@ public class TextLine
         }
 
         return sentences;
-    }
-
-    //---------//
-    // mergeOf //
-    //---------//
-    /**
-     * Report the glyph built from the merge with the other text line
-     * @param other
-     * @return the resulting glyph
-     */
-    public Glyph mergeOf (TextLine other)
-    {
-        List<Glyph> allGlyphs = new ArrayList<Glyph>(glyphs);
-        allGlyphs.addAll(other.glyphs);
-
-        return system.buildTransientCompound(allGlyphs);
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        StringBuilder sb = new StringBuilder("{TextLine");
-
-        try {
-            sb.append(" y:");
-            getY();
-            sb.append(y);
-        } catch (Exception ex) {
-            sb.append("unknown");
-        }
-
-        sb.append(" ")
-          .append(Glyphs.toString(glyphs));
-
-        if (getFontSize() != null) {
-            sb.append(" size:")
-              .append(getFontSize());
-        }
-
-        if (getTextContent() != null) {
-            sb.append(" content:")
-              .append('"')
-              .append(getTextContent())
-              .append('"');
-        }
-
-        sb.append("}");
-
-        return sb.toString();
-    }
-
-    //--------//
-    // useOCR //
-    //--------//
-    /**
-     * Can we use the OCR companion program?
-     * @return true if the allow access to the OCR program (Tesseract)
-     */
-    public static boolean useOCR ()
-    {
-        return constants.useOCR.getValue();
-    }
-
-    //-----------//
-    // isCloseTo //
-    //-----------//
-    /**
-     * Check whether the provided glyph is close to this text line (and could
-     * thus be part of it)
-     * @param glyph the provided glyph to isValid wrt this text line
-     * @return true if close enough vertically and horizontally
-     */
-    public boolean isCloseTo (Glyph glyph)
-    {
-        PixelRectangle fatBox = getContourBox();
-        fatBox.grow(maxItemDx, maxItemDy);
-
-        return isCloseTo(glyph, fatBox);
-    }
-
-    //-----------//
-    // isCloseTo //
-    //-----------//
-    /**
-     * Check whether the other text line is close to this text line (and could
-     * thus be merged)
-     * @param other the provided other text line
-     * @return true if close enough vertically and horizontally
-     */
-    public boolean isCloseTo (TextLine other)
-    {
-        PixelRectangle fatBox = getContourBox();
-        fatBox.grow(maxItemDx, 0);
-
-        return fatBox.intersects(other.getContourBox()) &&
-               (Math.abs(other.getY() - this.getY()) <= maxTextLineDy) &&
-               !acrossEntryBarline(other);
     }
 
     //---------------//
@@ -513,6 +450,22 @@ public class TextLine
         }
     }
 
+    //---------//
+    // mergeOf //
+    //---------//
+    /**
+     * Report the glyph built from the merge with the other text line
+     * @param other
+     * @return the resulting glyph
+     */
+    public Glyph mergeOf (TextLine other)
+    {
+        List<Glyph> allGlyphs = new ArrayList<Glyph>(glyphs);
+        allGlyphs.addAll(other.glyphs);
+
+        return system.buildTransientCompound(allGlyphs);
+    }
+
     //----------------//
     // splitIntoWords //
     //----------------//
@@ -541,6 +494,42 @@ public class TextLine
                 glyphs.addAll(words);
             }
         }
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder("{TextLine");
+
+        try {
+            sb.append(" y:");
+            getY();
+            sb.append(y);
+        } catch (Exception ex) {
+            sb.append("unknown");
+        }
+
+        sb.append(" ")
+          .append(Glyphs.toString(glyphs));
+
+        if (getFontSize() != null) {
+            sb.append(" size:")
+              .append(getFontSize());
+        }
+
+        if (getTextContent() != null) {
+            sb.append(" content:")
+              .append('"')
+              .append(getTextContent())
+              .append('"');
+        }
+
+        sb.append("}");
+
+        return sb.toString();
     }
 
     //-----------//
@@ -1023,18 +1012,16 @@ public class TextLine
         Scale.Fraction   maxTextLineDy = new Scale.Fraction(
             0.6,
             "Maximum vertical distance between two text line chunks");
-        Constant.Boolean useOCR = new Constant.Boolean(
-            true,
-            "Should we use the OCR feature?");
     }
 
     //-------//
     // Merge //
     //-------//
     /**
-     * This utility class tries to operate a merge of all text line items from
-     *  a first item to a last item inclusive, while checking whether the
-     * resulting compound glyph would be assigned a TEXT shape.
+     * This utility class tries to operate a merge of all text line
+     * items from  a first item to a last item inclusive, while checking
+     * whether the resulting compound glyph would be assigned a TEXT
+     * shape.
      */
     private class Merge
     {

@@ -40,26 +40,8 @@
     <path id="build.classpath">
         <pathelement path="${build.classes.dir}"/>
     </path>
-    
-    <!-- ================================================================ -->
-    <!-- =======================  Public Targets  ======================= -->
-    <!-- ================================================================ -->
 
-    <!-- =================== -->
-    <!--  F U L L - D I S T  -->
-    <!-- =================== -->
-    <target name="full-dist"
- 	    depends="clean, -full-dist"
-            description="Build the full distribution">
-    </target>
-
-    <!-- =================== -->
-    <!--  F U L L - J A R S  -->
-    <!-- =================== -->
-    <target name="full-jars"
- 	    depends="-full-jars"
-            description="Copy and check the various jars">
-    </target>
+    <!-- ===  Public Targets  =============================================== -->
     
     <!-- =============== -->
     <!--  J A V A D O C  -->
@@ -79,17 +61,14 @@
 	<antcall target="audiveris-impl.run" />
     </target>
     
-    <!-- ================================================================ -->
-    <!-- ======================  Internal Targets  ====================== -->
-    <!-- ================================================================ -->
+    <!-- ===  Internal Targets  ============================================= -->
 
     <!-- =============================== -->
     <!--  - J A V A D O C - B R O W S E  -->
     <!-- =============================== -->
     <target name="-javadoc-browse"
 	    if="netbeans.home"
-	    unless="no.javadoc.preview"
-	    depends="init,-common.-javadoc-build">
+	    unless="no.javadoc.preview">
         <nbbrowse file="${dist.javadoc.dir}/index.html"/>
     </target>
 
@@ -99,12 +78,17 @@
     <target name="-pre-jar"
 	    depends="-common.-pre-jar" />
 
-
     <!-- ===================== -->
     <!--  - P O S T - I N I T  -->
     <!-- ===================== -->
     <target name="-post-init"
-	    depends="-common.-hg-tip" />
+	    depends="-prolog.-init, -common.-hg-tip" />
+
+    <!-- ======================= -->
+    <!--  - P O S T - C L E A N  -->
+    <!-- ======================= -->
+    <target name="-post-clean"
+            depends="-windows.clean" />
 
     <!-- === Imports ======================================================== -->
 

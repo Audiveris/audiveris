@@ -60,7 +60,7 @@ Target Program folders          WellKnowns.PROGRAM_FOLDER
 ./res/                          WellKnowns.RES_FOLDER
 ./res/GPLv2.rtf
 ./res/ISO639-3.xml
-./res/icon-256.ico
+./res/all-icons-256.ico
 ./res/splash.bmp
 ./res/splash.png
 
@@ -145,13 +145,36 @@ Development only folders
 ./dev/windows/audiveris.wxs
 ./dev/windows/vc.wxs
 
+./dev/material/
 ./dev/material/MusicalSymbols.pdf
 ./dev/material/MusicalSymbols.ttf
 ./dev/material/global-tree.txt
 
-./dev/tools/ant4hg.jar
+./dev/tools/
 ./dev/tools/jcip-annotations.jar
-./dev/tools/WixHeatUser.jar
+./dev/tools/wixheatuser.jar
+./dev/tools/ant-contrib-1.0b3.jar
+./dev/tools/ant-dotnet-1.1.LICENSE.txt
+./dev/tools/ant-dotnet-1.1.jar
+./dev/tools/ant4hg.jar
+./dev/tools/jalopy-ant.jar
+./dev/tools/jalopy.jar
+./dev/tools/jcip-annotations.jar
+./dev/tools/junit-4.7.jar
+./dev/tools/umlet.jar
+./dev/tools/wixheatuser.jar
+./dev/tools/lib/
+./dev/tools/lib/baselet_batik-awt-util.jar
+./dev/tools/lib/baselet_batik-svggen.jar
+./dev/tools/lib/baselet_batik-util.jar
+./dev/tools/lib/baselet_iText.jar
+./dev/tools/lib/baselet_jlibeps.jar
+./dev/tools/lib/baselet_log4j-1.2.15.jar
+./dev/tools/lib/bcel-5.1.jar
+./dev/tools/lib/commons-logging-1.0.4.jar
+./dev/tools/lib/commons.LICENSE.txt
+./dev/tools/lib/ivy-1.3.1.jar
+./dev/tools/lib/umlet.LICENCES.txt
 
 ./dev/externals/BareBonesBrowserLaunch.jar
 ./dev/externals/EventBus-1.2.jar

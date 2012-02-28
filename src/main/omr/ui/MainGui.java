@@ -85,7 +85,8 @@ import javax.swing.SwingUtilities;
 
 /**
  * Class {@code MainGui} is the Java User Interface, the main class for
- * displaying a score, the related sheet, the message log and the various tools.
+ * displaying a score, the related sheet, the message log and the 
+ * various tools.
  *
  * @author Hervé Bitteur
  */
@@ -137,8 +138,8 @@ public class MainGui
     // MainGui //
     //---------//
     /**
-     * Creates a new {@code MainGui} instance, to handle any user display
-     * and interaction.
+     * Creates a new {@code MainGui} instance, to handle any user 
+     * display and interaction.
      */
     public MainGui ()
     {
@@ -150,8 +151,7 @@ public class MainGui
     // setBoardsPane //
     //---------------//
     /**
-     * Set a new boardspane to the boards holder
-     *
+     * Set a new boardspane to the boards holder.
      * @param boards the boards pane to be shown
      */
     public void setBoardsPane (JComponent boards)
@@ -176,7 +176,7 @@ public class MainGui
     // getGlassPane //
     //--------------//
     /**
-     * Report the main window glassPane, needed for shape drag 'n drop
+     * Report the main window glassPane, needed for shape drag 'n drop.
      * @return the ghost glass pane
      */
     public GhostGlassPane getGlassPane ()
@@ -188,8 +188,7 @@ public class MainGui
     // getInstance //
     //-------------//
     /**
-     * Report the single instance of this application
-     *
+     * Report the single instance of this application.
      * @return the SingleFrameApplication instance
      */
     public static SingleFrameApplication getInstance ()
@@ -201,8 +200,7 @@ public class MainGui
     // getName //
     //---------//
     /**
-     * Report an Observer name
-     *
+     * Report an Observer name.
      * @return observer name
      */
     public String getName ()
@@ -225,7 +223,7 @@ public class MainGui
     // clearLog //
     //----------//
     /**
-     * Erase the content of the log window
+     * Erase the content of the log window.
      */
     public void clearLog ()
     {
@@ -256,8 +254,7 @@ public class MainGui
     // displayError //
     //--------------//
     /**
-     * Allow to display a modal dialog with an error message
-     *
+     * Allow to display a modal dialog with an error message.
      * @param message the error message
      */
     public void displayError (String message)
@@ -273,8 +270,7 @@ public class MainGui
     // displayMessage //
     //----------------//
     /**
-     * Allow to display a modal dialog with an html content
-     *
+     * Allow to display a modal dialog with an html content.
      * @param htmlStr the HTML string
      */
     public void displayMessage (String htmlStr)
@@ -304,8 +300,7 @@ public class MainGui
     // displayWarning //
     //----------------//
     /**
-     * Allow to display a modal dialog with a message
-     *
+     * Allow to display a modal dialog with a message.
      * @param message the warning message
      */
     public void displayWarning (String message)
@@ -333,7 +328,7 @@ public class MainGui
     // notifyLog //
     //-----------//
     /**
-     * Tell that one or several new log records are waiting for display
+     * Tell that one or several new log records are waiting for display.
      */
     public void notifyLog ()
     {
@@ -344,8 +339,7 @@ public class MainGui
     // onEvent //
     //---------//
     /**
-     * Notification of sheet selection, to update frame title
-     *
+     * Notification of sheet selection, to update frame title.
      * @param sheetEvent the event about selected sheet
      */
     @Implement(EventSubscriber.class)
@@ -387,7 +381,7 @@ public class MainGui
     // propertyChange //
     //----------------//
     /**
-     * Called when notified from GuiActions
+     * Called when notified from GuiActions.
      * @param evt the event details
      */
     public void propertyChange (PropertyChangeEvent evt)
@@ -417,7 +411,7 @@ public class MainGui
     // removeBoardsPane //
     //------------------//
     /**
-     * Remove the current boardsScrollPane, if any
+     * Remove the current boardsScrollPane, if any.
      */
     public void removeBoardsPane ()
     {
@@ -428,8 +422,7 @@ public class MainGui
     // showErrorsPane //
     //----------------//
     /**
-     * Show the errors pane
-     *
+     * Show the errors pane.
      * @param errorsPane the errors pane to be shown
      */
     public void showErrorsPane (JComponent errorsPane)
@@ -717,8 +710,8 @@ public class MainGui
     //------------//
     /**
      * A split pane to host the bottom pane which contains the log pane
-     * and potentially an errors pane on the right. We try to remember the last
-     * divider location
+     * and potentially an errors pane on the right.
+     * We try to remember the last divider location
      */
     private static class BottomPane
         extends JSplitPane
@@ -771,8 +764,8 @@ public class MainGui
     // HistoryListener //
     //-----------------//
     /**
-     * Class {@code HistoryListener} is used to reload an image file, when
-     * selected from the history of previous image files.
+     * Class {@code HistoryListener} is used to reload an image file, 
+     * when selected from the history of previous image files.
      */
     private static class HistoryListener
         implements ActionListener

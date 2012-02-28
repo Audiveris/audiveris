@@ -25,20 +25,26 @@ public interface OCR
     //~ Methods ----------------------------------------------------------------
 
     /**
+     * Report whether the OCR engine is available.
+     */
+    boolean isAvailable ();
+
+    /**
      * Report the set of supported language codes
      * @return the set of supported 3-letter codes
      */
     Set<String> getSupportedLanguages ();
 
     /**
-     * Launch the recognition of the provided image, whose language is specified
+     * Launch the recognition of the provided image, whose language is
+     * specified.
      *
-     * @param image the provided textual image
+     * @param image        the provided textual image
      * @param languageCode the code of the (dominant?) language of the text,
      * or null if this language is unknown
-     * @param label an optional label related to the image, null otherwise.
-     * This is meant for debugging the temporary files.
-     * @return a list of OcrLine instances
+     * @param label        an optional label related to the image, null
+     * otherwise. This is meant for debugging the temporary files.
+     * @return a list of OcrLine instances, or null
      */
     List<OcrLine> recognize (BufferedImage image,
                              String        languageCode,

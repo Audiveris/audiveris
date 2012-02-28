@@ -38,4 +38,7 @@ audiveris.bat
 # Images handled by conf management should use other suffix (.png for example)
 src/**/*.jpg
 src/**/*.pdf
+dev/material/*.jpg
 train/core/*
+dev/externals
+dev/tools

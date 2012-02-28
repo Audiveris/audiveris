@@ -13,27 +13,26 @@
     <description>
         Build, test, and run the Audiveris project via Emacs or Ant
 
-	-----------------------------------------------------------------
+        -----------------------------------------------------------------
         [INSTALLDIR]/
-            build.xml                   -- Entry point for NetBeans
-            dev/
-                build.xml               -- Entry point for Emacs/Ant
-                -prolog.xml             -- Common targets (initial part)
-                -common.xml             -- Common targets (bulk part)
-                utils.xml               -- Standalone utilities
+        build.xml                   -- Entry point for NetBeans
+        dev/
+            build.xml               -- Entry point for Emacs/Ant
+            -prolog.xml             -- Common targets (initial part)
+            -common.xml             -- Common targets (bulk part)
+            utils.xml               -- Standalone utilities
                 windows/                -- Windows specificities
-                    -execs.xml              -- Windows executables
-                    -wix.xml                -- Windows installer
-	-----------------------------------------------------------------
+                -windows.xml            -- Execs and installer
+        -----------------------------------------------------------------
     </description>
+    
+    <!-- Create the time stamp -->
+    <tstamp/>
 
     <!-- initial definitions -->
     <import file="${basedir}/dev/-prolog.xml"/>
     
     <!-- ================================================================ -->
-
-    <!-- Load the environment variables -->
-    <property environment="env"/>
         
     <!-- Run classpath, to run the application from the jar file -->
     <path id="run.classpath">
@@ -50,127 +49,24 @@
     <!-- Test classpath, to compile and run unit tests from class files -->
     <path id="test.classpath">
         <path refid="build.classpath"/>
-        <pathelement location="${junit.jar}"  /> 
         <pathelement path="${build.test.classes.dir}"/>
         <pathelement path="${build.classes.dir}"/>
     </path>
     
-    <!-- ================================================================ -->
-    <!-- ======================  Internal Targets  ====================== -->
-    <!-- ================================================================ -->
-
-    <!-- Load internal targets common to Emacs and NetBeans -->
-    <import file="${dev.dir}/-common.xml"/>
-    
-    <!-- ================= -->
-    <!--  - C O M P I L E  -->
-    <!-- ================= -->
-    <target name="-compile"
-        depends="-do-compile, -post-compile"/>
-
-    <!-- ===================== -->
-    <!--  - C O P Y - L I B S  -->
-    <!-- ===================== -->
-    <target name="-copy-libs">
-        <mkdir dir="${dist.dir}/lib"/>
-        
-        <copy todir="${dist.dir}/lib">
-            <fileset dir="${externals.dir}"/>
-        </copy>
-
-    </target>            
-    
-    <!-- ======================= -->
-    <!--  - D O - C O M P I L E  -->
-    <!-- ======================= -->
-    <target name="-do-compile"
-        depends="-init">
-<!--         description="Compile the java code." -->
-
-        <mkdir dir="${build.classes.dir}"/>
-        
-        <!-- baseline classes -->
-        <javac
-            bootclasspath = "${env.java_home}/jre/lib/rt.jar"
-            includeantruntime = "false"
-            encoding     = "${build.encoding}"
-            target       = "${javac.target}"
-            classpathref = "build.classpath"
-            debug        = "${build.compile.debug}"
-            deprecation  = "${build.compile.deprecation}"
-            destdir      = "${build.classes.dir}"
-            listfiles    = "${build.compile.listfiles}"
-            source       = "${build.compile.source}"
-            srcdir       = "${src.dir}"
-            >
-            <compilerarg value="-Xlint"/>  
-            <compilerarg value="-Xlint:-serial"/>  
-            <compilerarg value="-Xlint:-path"/>  
-        </javac>
-        
-        <!-- plugin classes -->
-        <javac
-            bootclasspath = "${env.java_home}/jre/lib/rt.jar"
-            includeantruntime = "false"
-            encoding     = "${build.encoding}"
-            target       = "${javac.target}"
-            classpathref = "build.classpath"
-            debug        = "${build.compile.debug}"
-            deprecation  = "${build.compile.deprecation}"
-            destdir      = "${build.classes.dir}"
-            listfiles    = "${build.compile.listfiles}"
-            source       = "${build.compile.source}"
-            srcdir       = "${plugins.dir}"
-            >
-            <compilerarg value="-Xlint"/> 
-            <compilerarg value="-Xlint:-serial"/> 
-            <compilerarg value="-Xlint:-path"/> 
-        </javac>
-    </target>
-    
-    <!-- ============================= -->
-    <!--  - C O M P I L E - T E S T S  -->
-    <!-- ============================= -->
-    <target name="-compile-tests"
-        depends="-compile">
-<!--         description="Compile the unit tests." -->
-
-        <mkdir dir="${build.test.classes.dir}"/>
-        
-        <javac
-            bootclasspath = "${env.java_home}/jre/lib/rt.jar"
-            includeantruntime = "false"
-            encoding     = "${build.encoding}"
-            target       = "${javac.target}"
-            classpathref = "test.classpath"
-            debug        = "${build.compile.debug}"
-            deprecation  = "${build.compile.deprecation}"
-            destdir      = "${build.test.classes.dir}"
-            listfiles    = "${build.compile.listfiles}"
-            source       = "${build.compile.source}"
-            srcdir       = "${src.test.dir}"
-            >
-            <compilerarg value="-Xlint"/>
-            <compilerarg value="-Xlint:-serial"/>
-            <compilerarg value="-Xlint:-path"/>
-        </javac>
-    </target>
-    
-    <!-- ================================================================ -->
     <!-- =======================  Public Targets  ======================= -->
-    <!-- ================================================================ -->
 
     <!-- =========== -->
     <!--  C L E A N  -->
     <!-- =========== -->
     <target name="clean"
-            depends="-init, -clean-jars"
+            depends="-init, -windows.clean"
             description="Remove all the generated outputs.">
-        <!-- Remove build folder -->
-        <delete verbose="${verbose}" dir="${build.dir}"/>
-        
-        <!-- Remove dist folder -->
-        <delete verbose="${verbose}" dir="${dist.dir}"/>
+
+        <delete verbose="${verbose}" 
+                includeEmptyDirs="true">
+            <fileset dir="${build.dir}" />
+            <fileset dir="${dist.dir}" />
+        </delete>
         
     </target>
 
@@ -178,30 +74,111 @@
     <!--  F U L L - D I S T  -->
     <!-- =================== -->
     <target name="full-dist"
-            depends="clean, -full-dist"
+            depends="clean, windows-execs"
             description="Build the full distribution">
-    </target>
 
-    <!-- =================== -->
-    <!--  F U L L - J A R S  -->
-    <!-- =================== -->
-    <target name="full-jars"
-            depends="-full-jars"
-            description="Copy and check the various jars">
-    </target>
+        <!-- Special copy for NetBeans -->
+        <copy
+            verbose="${verbose}"
+            todir="${basedir}">
+            <fileset dir="${basedir}">
+                <include name="build.xml" />
+            </fileset>
+            <globmapper from="build.xml" to="build-for-netbeans.xml"/>
+        </copy>
+        
+        <!-- Generate the global zip archive -->
+        <zip 
+            destfile="${dist.dir}/${full.name}.${ant4hg.log.revision}-src.zip" >
 
-    <!-- ===================== -->
-    <!--  C H E C K - J A R S  -->
-    <!-- ===================== -->
-    <target name="check-jars"
-            depends="-check-jars"
-            description="Check the remote jars are up to date">
+            <!-- Special build.xml file for NetBeans on top dir-->
+            <zipfileset dir="${basedir}" includes="build-for-netbeans.xml"/>
+        
+            <!-- Execs -->
+            <zipfileset dir="${basedir}"
+                        includes="*.bat, *.exe, *.ini"
+                        excludes="${dist.excludes}"
+                     />
+        
+            <!-- Jar file -->
+            <zipfileset dir="${dist.dir}" prefix="dist"
+                        includes="*.jar"
+                        excludes="${dist.excludes}"
+                     />
+
+            <!-- lib jar files -->
+            <zipfileset dir="${dist.dir}/lib" prefix="dist/lib"
+                        includes="**"
+                        excludes="${dist.excludes}"
+                     />
+
+            <!-- ocr files -->
+            <zipfileset dir="${ocr.dir}" prefix="ocr"
+                        includes="**"
+                        excludes="${dist.excludes}"
+                     />
+        
+            <!-- dev files -->
+            <zipfileset dir="${dev.dir}" prefix="dev"
+                        includes="**"
+                        excludes="${dist.excludes}"
+                     />
+        
+            <!-- res files -->
+            <zipfileset dir="${res.dir}" prefix="res"
+                        includes="**"
+                        excludes="${dist.excludes}"
+                     />
+        
+            <!-- eval files -->
+            <zipfileset dir="${eval.dir}" prefix="eval"
+                        includes="**"
+                        excludes="${dist.excludes}"
+                     />
+        
+            <!-- settings files -->
+            <zipfileset dir="${settings.dir}" prefix="settings"
+                        includes="**"
+                        excludes="${dist.excludes}, **/run.properties"
+                     />
+        
+            <!-- plugins files -->
+            <zipfileset dir="${basedir}/plugins" prefix="plugins"
+                        includes="**"
+                        excludes="${dist.excludes}"
+                     />
+            
+            <!-- Source main and test files -->
+            <zipfileset dir="${basedir}/src" prefix="src"
+                        includes="**"
+                        excludes="${dist.excludes}"
+                     />
+
+            <!-- Examples files -->
+            <zipfileset dir="${examples.dir}" prefix="examples"
+                        includes="**"
+                        excludes="${dist.excludes}"
+                     />
+
+            <!-- Www (+ javadoc?) files -->
+            <zipfileset dir="${www.dir}" prefix="www"
+                        includes="**"
+                        excludes="${dist.excludes}"
+                     />
+
+            <!-- Train files -->
+            <zipfileset dir="${train.dir}" prefix="train"
+                        includes="**/*.xml,**/.glyphignore"
+                        excludes="${dist.excludes}"
+                        />
+        </zip>
     </target>
     
     <!-- =============== -->
     <!--  - D O - J A R  -->
     <!-- =============== -->
-    <target name="-do-jar">
+    <target name="-do-jar"
+            depends="-hg-tip">
 
         <!-- Prepare the proper string of all companion jar files -->
         <pathconvert pathsep=" " refid="externals.classpath" property="externals.string">
@@ -228,7 +205,7 @@
                 <attribute name="Class-Path"
                            value="${externals.string}"/>
                 <attribute name="Built-By"
-                           value="${build.owner}"/>
+                           value="${Company}"/>
                 <attribute name="Specification-Title"
                            value="${spec.title}"/>
                 <attribute name="Specification-Version"
@@ -244,8 +221,8 @@
     <!--  J A R  -->
     <!-- ======= -->
     <target name="jar"
-        depends="-compile, -pre-jar, -copy-libs, -hg-tip, -do-jar"
-        description="Compile and generate the application jar file."/>
+            depends="-init, -compile, -pre-jar, -copy-libs, -do-jar"
+            description="Compile and generate the application jar file."/>
     
     <!-- =============== -->
     <!--  J A V A D O C  -->
@@ -258,8 +235,8 @@
     <!--  R U N  -->
     <!-- ======= -->
     <target name="run"
-        depends="jar"
-        description="Run the application from its GUI.">
+            depends="jar"
+            description="Run the application from its GUI.">
 
         <!-- Default values -->
         <property name="run.batch" value=""/>
@@ -322,7 +299,7 @@
             
             <!-- Configuration file for logging -->
             <sysproperty key="java.util.logging.config.file"
-                value="${settings.dir}/logging.properties"/>
+                         value="${settings.dir}/logging.properties"/>
 
             <batchtest
                 fork="yes"
@@ -343,25 +320,123 @@
         
     </target>
 
+    <!-- =========================== -->
+    <!--  W I N D O W S - E X E C S  -->
+    <!-- =========================== -->
+    <target name="windows-execs"
+            depends="jar, -windows.execs"
+            description="Build Windows executables" />
+
     <!-- =================================== -->
     <!--  W I N D O W S - I N S T A L L E R  -->
     <!-- =================================== -->
     <target name="windows-installer"
-            depends="jar, execs, -wix.windows-installer"
+            depends="windows-execs, -windows.installer"
             description="Build Windows installer" />
 
-    <!-- =============== -->
-    <!--  I N S T A L L  -->
-    <!-- =============== -->
-    <target name="install"
-	    depends="-wix.install"
-	    description="Install for Windows"/>
+    <!-- =============================== -->
+    <!--  W I N D O W S - I N S T A L L  -->
+    <!-- =============================== -->
+    <target name="windows-install"
+            depends="-windows.install"
+            description="Install for Windows"/>
     
-    <!-- =================== -->
-    <!--  U N I N S T A L L  -->
-    <!-- =================== -->
-    <target name="uninstall"
-	    depends="-wix.uninstall"
-	    description="Uninstall for Windows"/>
+    <!-- =================================== -->
+    <!--  W I N D O W S - U N I N S T A L L  -->
+    <!-- =================================== -->
+    <target name="windows-uninstall"
+            depends="-windows.uninstall"
+            description="Uninstall for Windows"/>
 
+    <!-- ======================  Internal Targets  ====================== -->
+
+    <!-- Load internal targets common to Emacs and NetBeans -->
+    <import file="${dev.dir}/-common.xml"/>
+    
+    <!-- ================= -->
+    <!--  - C O M P I L E  -->
+    <!-- ================= -->
+    <target name="-compile">
+	<!--  description="Compile the java code." -->
+
+        <mkdir dir="${build.classes.dir}"/>
+        
+        <!-- baseline classes -->
+        <javac
+            bootclasspath = "${env.JAVA_HOME}/jre/lib/rt.jar"
+            includeantruntime = "false"
+            encoding     = "${build.encoding}"
+            target       = "${javac.target}"
+            classpathref = "build.classpath"
+            debug        = "${build.compile.debug}"
+            deprecation  = "${build.compile.deprecation}"
+            destdir      = "${build.classes.dir}"
+            listfiles    = "${build.compile.listfiles}"
+            source       = "${build.compile.source}"
+            srcdir       = "${src.dir}"
+        >
+            <compilerarg value="-Xlint"/>  
+            <compilerarg value="-Xlint:-serial"/>  
+            <compilerarg value="-Xlint:-path"/>  
+        </javac>
+        
+        <!-- plugin classes -->
+        <javac
+            bootclasspath = "${env.JAVA_HOME}/jre/lib/rt.jar"
+            includeantruntime = "false"
+            encoding     = "${build.encoding}"
+            target       = "${javac.target}"
+            classpathref = "build.classpath"
+            debug        = "${build.compile.debug}"
+            deprecation  = "${build.compile.deprecation}"
+            destdir      = "${build.classes.dir}"
+            listfiles    = "${build.compile.listfiles}"
+            source       = "${build.compile.source}"
+            srcdir       = "${plugins.dir}"
+        >
+            <compilerarg value="-Xlint"/> 
+            <compilerarg value="-Xlint:-serial"/> 
+            <compilerarg value="-Xlint:-path"/> 
+        </javac>
+    </target>
+    
+    <!-- ============================= -->
+    <!--  - C O M P I L E - T E S T S  -->
+    <!-- ============================= -->
+    <target name="-compile-tests"
+            depends="-compile">
+<!--         description="Compile the unit tests." -->
+
+        <mkdir dir="${build.test.classes.dir}"/>
+        
+        <javac
+            bootclasspath = "${env.JAVA_HOME}/jre/lib/rt.jar"
+            includeantruntime = "false"
+            encoding     = "${build.encoding}"
+            target       = "${javac.target}"
+            classpathref = "test.classpath"
+            debug        = "${build.compile.debug}"
+            deprecation  = "${build.compile.deprecation}"
+            destdir      = "${build.test.classes.dir}"
+            listfiles    = "${build.compile.listfiles}"
+            source       = "${build.compile.source}"
+            srcdir       = "${src.test.dir}"
+        >
+            <compilerarg value="-Xlint"/>
+            <compilerarg value="-Xlint:-serial"/>
+            <compilerarg value="-Xlint:-path"/>
+        </javac>
+    </target>
+
+    <!-- ===================== -->
+    <!--  - C O P Y - L I B S  -->
+    <!-- ===================== -->
+    <target name="-copy-libs">
+        <mkdir dir="${dist.dir}/lib"/>
+        
+        <copy todir="${dist.dir}/lib">
+            <fileset dir="${externals.dir}"/>
+        </copy>
+
+    </target>            
 </project>

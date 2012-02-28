@@ -11,308 +11,21 @@
     </description>
 
     <!-- Needed for ant-contrib tasks -->
-    <taskdef resource="net/sf/antcontrib/antlib.xml">
-        <classpath>
-            <pathelement location="${ant-contrib.jar}"/>
-        </classpath>
-    </taskdef>
+    <taskdef resource="net/sf/antcontrib/antlib.xml"
+	     classpathref="tools.classpath" />
 
-    <import file="${basedir}/dev/windows/-execs.xml"/>
-    <import file="${basedir}/dev/windows/-wix.xml"/>
-    
-    <!-- ===================== -->
-    <!--  - F U L L - D I S T  -->
-    <!-- ===================== -->
-    <target name="-full-dist"
-            depends="-hg-tip, jar, execs">
-<!--         description="Build the whole release distribution." -->
-
-        <!-- Special copy for NetBeans -->
-        <copy
-            verbose="${verbose}"
-            todir="${basedir}">
-            <fileset dir="${basedir}">
-                <include name="build.xml" />
-            </fileset>
-            <globmapper from="build.xml" to="build-for-netbeans.xml"/>
-        </copy>
-        
-        <!-- Generate the global zip archive -->
-        <zip 
-            destfile="${dist.dir}/${full.name}.${ant4hg.log.revision}-src.zip" >
-
-            <!-- Special build.xml file for NetBeans on top dir-->
-            <zipfileset dir="${basedir}" includes="build-for-netbeans.xml"/>
-        
-            <!-- Execs -->
-            <zipfileset dir="${basedir}"
-                     includes="*.bat, *.exe, *.ini"
-                     excludes="${dist.excludes}"
-                     />
-        
-            <!-- Jar file -->
-            <zipfileset dir="${dist.dir}" prefix="dist"
-                     includes="*.jar"
-                     excludes="${dist.excludes}"
-                     />
-
-            <!-- lib jar files -->
-            <zipfileset dir="${dist.dir}/lib" prefix="dist/lib"
-                     includes="**"
-                     excludes="${dist.excludes}"
-                     />
-
-            <!-- ocr files -->
-            <zipfileset dir="${ocr.dir}" prefix="ocr"
-                     includes="**"
-                     excludes="${dist.excludes}"
-                     />
-        
-            <!-- dev files -->
-            <zipfileset dir="${dev.dir}" prefix="dev"
-                     includes="**"
-                     excludes="${dist.excludes}"
-                     />
-        
-            <!-- res files -->
-            <zipfileset dir="${res.dir}" prefix="res"
-                     includes="**"
-                     excludes="${dist.excludes}"
-                     />
-        
-            <!-- eval files -->
-            <zipfileset dir="${eval.dir}" prefix="eval"
-                     includes="**"
-                     excludes="${dist.excludes}"
-                     />
-        
-            <!-- settings files -->
-            <zipfileset dir="${settings.dir}" prefix="settings"
-                     includes="**"
-                     excludes="${dist.excludes}, **/run.properties"
-                     />
-        
-            <!-- plugins files -->
-            <zipfileset dir="${basedir}/plugins" prefix="plugins"
-                     includes="**"
-                     excludes="${dist.excludes}"
-                     />
-            
-            <!-- Source main and test files -->
-            <zipfileset dir="${basedir}/src" prefix="src"
-                     includes="**"
-                     excludes="${dist.excludes}"
-                     />
-
-            <!-- Examples files -->
-            <zipfileset dir="${examples.dir}" prefix="examples"
-                     includes="**"
-                     excludes="${dist.excludes}"
-                     />
-
-            <!-- Www (+ javadoc?) files -->
-            <zipfileset dir="${www.dir}" prefix="www"
-                     includes="**"
-                     excludes="${dist.excludes}"
-                     />
-
-            <!-- Train files -->
-            <zipfileset dir="${train.dir}" prefix="train"
-                        includes="**/*.xml,**/.glyphignore"
-                        excludes="${dist.excludes}"
-                        />
-        </zip>
-    </target>
-    
-    <!-- ======================= -->
-    <!--  - C L E A N - J A R S  -->
-    <!-- ======================= -->
-    <target name="-clean-jars">
-<!--         description="Remove all bleeding libraries." -->
-	<delete verbose="${verbose}" dir="${jars.dir}"/>
-    </target>
-    
-    <!-- ===================== -->
-    <!--  - C O P Y - J A R S  -->
-    <!-- ===================== -->
-    <target name="-copy-jars"
-	    depends="-clean-jars, jar">
-	<!-- Copy the jars distribution -->
-	
-        <mkdir dir="${jars.dir}"/>
-        <mkdir dir="${jars.dir}/lib"/>
-
-	<!-- Copy/rename the audiveris jar file -->
-	<copy preservelastmodified="true"
-	      file="${dist.jar}"
-	      tofile="${jars.dir}/audiveris-latest.jar"/>
-
-	<!-- Build the listing of lib (lib.dir) -->
-	<pathconvert pathsep="${line.separator}" property="lib-dir">
-	    <fileset dir="${externals.dir}">
- 		<include name="*.jar"/>
- 	    </fileset>
-	    <chainedmapper>
-		<flattenmapper/>
-	    </chainedmapper>
-	</pathconvert>
- 	<echo file="${jars.dir}/lib.dir">${lib-dir}${line.separator}</echo>
-	
-	<!-- Write down the checksum of each jar file -->
-	<checksum todir="${jars.dir}">
-	    <fileset dir="${jars.dir}">
-		<include name="*.jar"/>
-	    </fileset>
-	</checksum>
-	<checksum todir="${jars.dir}/lib"
-		  totalproperty="lib-md5">
-	    <fileset dir="${externals.dir}">
-		<include name="*.jar"/>
-	    </fileset>
-	</checksum>
-
-	<!-- Plus the total lib checksum -->
-	<echo file="${jars.dir}/lib.MD5">${lib-md5}</echo>
-
-	<!-- The revision information -->
-	<echo file="${jars.dir}/revision.txt">${ant4hg.log.revision}:${ant4hg.log.changeset}</echo>
-	
-    </target>
-      
-    <!-- ===================== -->
-    <!--  - F U L L - J A R S  -->
-    <!-- ===================== -->
-    <target name="-full-jars"
-	    depends="-copy-jars, -check-jars">
-	<!--Build the jars and check the remote Kenai site is uptodate-->
-    </target>
-      
-    <!-- ======================= -->
-    <!--  - C H E C K - J A R S  -->
-    <!-- ======================= -->
-    <target name="-check-jars"
-	    depends="-read-sigs, -print-todo, -tell-ok">
-	<!-- Check the remote Kenai site is uptodate-->
-    </target>
-
-    <target name="-read-sigs">
-	<delete file="${jars.dir}/todo.log"/>
-	
-        <for param="file">
-            <path>
-                <fileset dir="${jars.dir}">
-		    <include name="*.MD5"/>
-		    <include name="*.txt"/>
-		    <include name="*.dir"/>
-		</fileset>
-            </path>
-            <sequential>
-		<antcall>
-		    <param name="sig" value="@{file}"/>
-		    <param name="prefix" value="http://kenai.com/downloads/audiveris/jars/"/>
-		    <target name="-read-sig"/>
-		    <target name="-update-jar"/>
-		</antcall>
-            </sequential>
-        </for>
-        <for param="file">
-            <path>
-                <fileset dir="${jars.dir}/lib"
-			 includes="*.MD5"/>
-            </path>
-            <sequential>
-		<antcall>
-		    <param name="sig" value="@{file}"/>
-		    <param name="prefix" value="http://kenai.com/downloads/audiveris/jars/lib/"/>
-		    <target name="-read-sig"/>
-		    <target name="-update-jar"/>
-		</antcall>
-            </sequential>
-        </for>
-
-	<condition property="todo-present">
-	    <available file="${jars.dir}/todo.log"/>
-	</condition>
-	
-	<!-- Erase the administrative .MD5.remote files -->
-        <delete verbose="${verbose}">
-            <fileset dir="${jars.dir}" 
-                     includes="**/*.MD5.remote" 
-                     />
-        </delete>
-
-    </target>
-
-    <target name="-print-todo"
-	    if="${todo-present}">
-	<loadfile property="log"
-		  srcFile="${jars.dir}/todo.log"/>
-	<echo>Summary:${line.separator}${log}</echo>
-    </target>
-
-    <target name="-tell-ok"
-	    unless="${todo-present}">
-	<echo>Remote site is up to date.</echo>
-    </target>
-    
-    <target name="-read-sig">
-	<!-- Check that the file checksum matches the registered signature -->
-        <pathconvert property="justName">
-	    <path location="${sig}"/>
-            <chainedmapper>
-                <flattenmapper/>
-            </chainedmapper>
-        </pathconvert>
-	<echo>Checking ${justName} ...</echo>
-	
- 	<get src="${prefix}${justName}"
- 	     dest="${sig}.remote"
-	     ignoreerrors="true"/>
-	<loadfile property="md5"
-		  srcFile="${sig}.remote">
-	    <filterchain>
-		<striplinebreaks/>
-	    </filterchain>
-	</loadfile>
-	
-	<condition property="unchanged">
-	    <filesmatch
-		textfile="true"
-		file1="${sig}"
-		file2="${sig}.remote"/>
-	</condition>
-    </target>
-
-    <target name="-update-jar"
-	    unless="unchanged">
-	<!-- The archive on the remote site must be updated -->
-	<echo>*** Need to update ${sig}</echo>
-	<echo append="true" file="${jars.dir}/todo.log">*** Need to update ${sig}${line.separator}</echo>
-    </target>
-
-    <!-- ================================= -->
-    <!--  - C O P Y - P R O P E R T I E S  -->
-    <!-- ================================= -->
-    <target name="-copy-properties">
-        <mkdir dir="${build.classes.dir}"/>
-
-        <copy todir="${build.classes.dir}" verbose="$verbose">
-            <fileset dir="${src.dir}" includes="**/*.properties"/>
-            <fileset dir="${plugins.dir}" includes="**/*.properties"/>
-        </copy>
-
-    </target>
+    <import file="${basedir}/dev/windows/-windows.xml"/>
     
     <!-- ============================= -->
     <!--  - J A V A D O C - B U I L D  -->
     <!-- ============================= -->
     <target name="-javadoc-build"
-            depends="uml">
+            depends="-uml">
         <!--         description="Generate project documentation." -->
         
         <!-- Get rid of existing javadoc -->
-        <rmdir dir="${dist.javadoc.dir}" />
-        <mkdir dir="${dist.javadoc.dir}" />
+        <delete dir="${dist.javadoc.dir}" />
+        <mkdir  dir="${dist.javadoc.dir}" />
 
         <!-- Just in case these properties are not already set -->
         <property name="javadoc.additionalparam" value="" />
@@ -352,7 +65,7 @@
             
             <classpath>
                 <path path="${javac.classpath}"/>
-		<path refid="externals.classpath"/>
+		<path refid="build.classpath"/>
             </classpath>
             <sourcepath>
                 <pathelement location="${src.dir}"/>
@@ -378,7 +91,13 @@
     <!-- ================= -->
     <!--  - P R E - J A R  -->
     <!-- ================= -->
-    <target name="-pre-jar">	
+    <target name="-pre-jar">
+
+        <!-- Copy resource properties to classes -->
+        <copy todir="${build.classes.dir}" verbose="$verbose">
+            <fileset dir="${src.dir}" includes="**/*.properties"/>
+            <fileset dir="${plugins.dir}" includes="**/*.properties"/>
+        </copy>
 
         <!-- Copy icon files into the classes dir -->
         <copy
@@ -399,15 +118,20 @@
 
     </target>
 
-    <!-- ======= -->
-    <!--  U M L  -->
-    <!-- ======= -->
-    <target name="uml"
-            description="Generation of UML drawings with Umlet utility">
+    <!-- ========= -->
+    <!--  - U M L  -->
+    <!-- ========= -->
+    <target name="-uml">
+	<!-- Generation of UML drawings with Umlet utility -->
         
         <for param="file">
             <path>
                 <fileset dir="${src.dir}" includes="**/*.uxf">
+                    <depend targetdir="${src.dir}">
+                        <mapper type="glob" from="*.uxf" to="*.jpg"/>
+                    </depend>
+                </fileset>
+                <fileset dir="${material.dir}" includes="**/*.uxf">
                     <depend targetdir="${src.dir}">
                         <mapper type="glob" from="*.uxf" to="*.jpg"/>
                     </depend>
@@ -419,10 +143,9 @@
                         <echo>Umlet format=@{format} file=@{file}</echo>
                         <java
                             fork="true"
-                            dir="${umlet.dir}"
-                            jar="${umlet.jar}">
-			    <jvmarg value="-Dlog4j.configuration=file:${umlet.dir}/sourcefiles/log4j.properties" />
-                            <arg value="-action=convert" />
+			    classname="com.baselet.control.Main"
+			    classpathref="tools.classpath">
+ 			    <arg value="-action=convert" />
                             <arg value="-format=@{format}" />
                             <arg value="-filename=@{file}" />
                         </java>
@@ -433,23 +156,16 @@
         
     </target>
 
-    <!-- =========================== -->
-    <!--  - P O S T - C O M P I L E  -->
-    <!-- =========================== -->
-    <target name="-post-compile"
-            depends="-copy-properties"/>
-
     <!-- =============== -->
     <!--  - H G - T I P  -->
     <!-- =============== -->
     <target name="-hg-tip"
-            unless="no.hg.present">
+            if="${hg.present}">
 	<!-- description="Retrieve Hg tip revision" -->
         
         <taskdef name="hg"
                  classpathref="tools.classpath"
-                 classname="net.sourceforge.ant4hg.taskdefs.HgTask">           
-        </taskdef>
+                 classname="net.sourceforge.ant4hg.taskdefs.HgTask"/>           
         
         <hg cmd="log" dir="${basedir}">
             <arg value="-rtip"/>

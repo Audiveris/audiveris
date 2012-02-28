@@ -25,11 +25,8 @@
 
         <!-- Jalopy task definition -->
         <taskdef name="jalopy"
-                 classname="de.hunsicker.jalopy.plugin.ant.AntPlugin">
-            <classpath>
-                <fileset dir="${jalopy.dir}" includes="*.jar" />
-            </classpath>
-        </taskdef>
+                 classname="de.hunsicker.jalopy.plugin.ant.AntPlugin"
+		 classpathref="tools.classpath" />
         
         <jalopy
             convention="${dev.dir}/jalopy/java-convention.xml"
