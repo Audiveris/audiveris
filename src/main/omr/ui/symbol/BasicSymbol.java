@@ -35,9 +35,10 @@ import java.util.Arrays;
 import javax.swing.Icon;
 
 /**
- * Class {@code BasicSymbol} is the base for implementing instances of Symbol
- * interface. It does not handle a specific Shape as its subclass ShapeSymbol,
- * but only handles a sequence of MusicFont codes.
+ * Class {@code BasicSymbol} is the base for implementing instances of 
+ * {@link Symbol} interface. 
+ * It does not handle a specific Shape as its subclass ShapeSymbol,but only 
+ * handles a sequence of MusicFont codes.
  *
  * @author Hervé Bitteur
  */
@@ -108,7 +109,7 @@ public class BasicSymbol
     /**
      * Creates a new BasicSymbol object.
      * @param isIcon true for an icon
-     * @param codes the codes for MusicFont characters
+     * @param codes  the codes for MusicFont characters
      */
     public BasicSymbol (boolean isIcon,
                         int... codes)
@@ -121,7 +122,7 @@ public class BasicSymbol
     // BasicSymbol //
     //-------------//
     /**
-     * Creates a new BasicSymbol object, standard size
+     * Creates a new BasicSymbol object, standard size.
      * @param codes the codes for MusicFont characters
      */
     public BasicSymbol (int... codes)
@@ -135,10 +136,11 @@ public class BasicSymbol
     // getIconHeight //
     //---------------//
     /**
-     * Report the icon height
+     * Report the icon height.
      * @return the height of the icon image in pixels
      */
     @Implement(Icon.class)
+    @Override
     public int getIconHeight ()
     {
         return getIcon()
@@ -148,10 +150,7 @@ public class BasicSymbol
     //--------------//
     // getIconImage //
     //--------------//
-    /**
-     * Report the icon image, suitable for icon display
-     * @return the image meant for icon display
-     */
+    @Override
     public BufferedImage getIconImage ()
     {
         return getIcon()
@@ -162,10 +161,11 @@ public class BasicSymbol
     // getIconWidth //
     //--------------//
     /**
-     * Report the width of the icon (used by swing when painting)
+     * Report the width of the icon (used by swing when painting).
      * @return the icon image width in pixels
      */
     @Implement(Icon.class)
+    @Override
     public int getIconWidth ()
     {
         return getIcon()
@@ -175,10 +175,7 @@ public class BasicSymbol
     //-------------//
     // getRefPoint //
     //-------------//
-    /**
-     * Report the symbol reference point if any, otherwise the box center
-     * @return the ref point
-     */
+    @Override
     public PixelPoint getRefPoint (Rectangle box)
     {
         return new PixelPoint(
@@ -197,13 +194,7 @@ public class BasicSymbol
     //------------//
     // buildImage //
     //------------//
-    /**
-     * Build the image that represents the related shape, using the specified
-     * font. The main difficulty is to determine upfront the size of the image
-     * to allocate.
-     * @param font properly scaled font (for interline & zoom)
-     * @return the image built, or null if failed
-     */
+    @Override
     public SymbolImage buildImage (MusicFont font)
     {
         // Params
@@ -233,14 +224,14 @@ public class BasicSymbol
     // paintIcon //
     //-----------//
     /**
-     * Implements Icon interface paintIcon() method
-     *
+     * Implements Icon interface paintIcon() method.
      * @param c containing component
      * @param g graphic context
      * @param x abscissa
      * @param y ordinate
      */
     @Implement(Icon.class)
+    @Override
     public void paintIcon (Component c,
                            Graphics  g,
                            int       x,
@@ -252,14 +243,7 @@ public class BasicSymbol
     //-------------//
     // paintSymbol //
     //-------------//
-    /**
-     * Paint the symbol that represents the related shape, using the specified
-     * font and context, the symbol being aligned at provided location
-     * @param g graphic context
-     * @param location where to paint the shape with provided alignment
-     * @param font properly-scaled font (for interline & zoom)
-     * @param alignment the way the symbol is aligned wrt the location
-     */
+    @Override
     public void paintSymbol (Graphics2D g,
                              MusicFont  font,
                              PixelPoint location,
@@ -288,7 +272,7 @@ public class BasicSymbol
     // getDimension //
     //--------------//
     /**
-     * Report the normalized bounding dimension of the symbol
+     * Report the normalized bounding dimension of the symbol.
      * @return the size of the symbol
      */
     protected PixelDimension getDimension ()
@@ -304,8 +288,8 @@ public class BasicSymbol
     // getDimension //
     //--------------//
     /**
-     * Report what would be the bounding dimension of the symbol, if painted
-     * with the provided font
+     * Report what would be the bounding dimension of the symbol, 
+     * if painted with the provided font.
      * @return the potential size of the painted symbol
      */
     protected PixelDimension getDimension (MusicFont font)
@@ -322,7 +306,7 @@ public class BasicSymbol
     // getHeight //
     //-----------//
     /**
-     * Report the height of the symbol, for a standard interline
+     * Report the height of the symbol, for a standard interline.
      * @return the real image height in pixels
      */
     protected int getHeight ()
@@ -372,7 +356,7 @@ public class BasicSymbol
     // getWidth //
     //----------//
     /**
-     * Report the width of the symbol, for a standard interline
+     * Report the width of the symbol, for a standard interline.
      * @return the real image width in pixels
      */
     protected int getWidth ()
@@ -388,8 +372,8 @@ public class BasicSymbol
     // createIcon //
     //------------//
     /**
-     * To be redefined by each subclass in order to create a icon symbol using
-     * the subclass
+     * To be redefined by each subclass in order to create a icon symbol
+     * using the subclass.
      * @return the icon-sized instance of proper symbol class
      */
     protected BasicSymbol createIcon ()
@@ -425,8 +409,8 @@ public class BasicSymbol
     // layout //
     //--------//
     /**
-     * Report a single layout, based on symbol codes if they exist. This feature
-     * can work only with a single "line" of music codes.
+     * Report a single layout, based on symbol codes if they exist. 
+     * This feature can work only with a single "line" of music codes.
      * @param font the specifically-scaled font to use
      * @return the layout ready to be drawn, or null
      */
@@ -439,10 +423,10 @@ public class BasicSymbol
     // paint //
     //-------//
     /**
-     * Actual painting, to be redefined by subclasses if needed
-     * @param g graphics context
-     * @param p the parameters fed by getParams()
-     * @param location where to paint
+     * Actual painting, to be redefined by subclasses if needed.
+     * @param g         graphics context
+     * @param p         the parameters fed by getParams()
+     * @param location  where to paint
      * @param alignment relative position of provided location wrt symbol
      */
     protected void paint (Graphics2D g,
@@ -484,7 +468,7 @@ public class BasicSymbol
     // shiftedCodesOf //
     //----------------//
     /**
-     * Make sure the codes are above the '0xf000' value
+     * Make sure the codes are above the '0xf000' value.
      * @param codes raw codes
      * @return codes suitable for font display
      */
@@ -509,7 +493,8 @@ public class BasicSymbol
     // Params //
     //--------//
     /**
-     * A set of parameters used for building an image and for painting a symbol
+     * A set of parameters used for building an image and for painting
+     * a symbol.
      */
     protected class Params
     {

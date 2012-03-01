@@ -23,8 +23,8 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 
 /**
- * Class {@code ShapeSymbol} extends the {@link BasicSymbol} with the handling
- * of a related {@link Shape}.
+ * Class {@code ShapeSymbol} extends the {@link BasicSymbol} with the
+ * handling of a related {@link Shape}.
  * A ShapeSymbol thus adds several features:<ul>
  *
  * <li>It can be used for Drag & Drop operations, since it implements the
@@ -67,10 +67,10 @@ public class ShapeSymbol
     //-------------//
     /**
      * Create a ShapeSymbol with the provided shape and codes
-     * @param isIcon true for an icon
-     * @param shape the related shape
+     * @param isIcon    true for an icon
+     * @param shape     the related shape
      * @param decorated true if the symbol uses decoration around the shape
-     * @param codes the codes for MusicFont characters
+     * @param codes     the codes for MusicFont characters
      */
     public ShapeSymbol (boolean isIcon,
                         Shape   shape,
@@ -86,8 +86,8 @@ public class ShapeSymbol
     // ShapeSymbol //
     //-------------//
     /**
-     * Create a non decorated standard ShapeSymbol with the provided shape
-     * and codes
+     * Create a non decorated standard ShapeSymbol with the provided 
+     * shape and codes.
      * @param shape the related shape
      * @param codes the codes for MusicFont characters
      */
@@ -103,6 +103,7 @@ public class ShapeSymbol
     // isDataFlavorSupported //
     //-----------------------//
     @Implement(Transferable.class)
+    @Override
     public boolean isDataFlavorSupported (DataFlavor flavor)
     {
         return flavor == DATA_FLAVOR;
@@ -112,7 +113,8 @@ public class ShapeSymbol
     // isDecorated //
     //-------------//
     /**
-     * Tell whether the image represents the shape with additional decorations
+     * Tell whether the image represents the shape with additional 
+     * decorations.
      * @return true if decorated
      */
     public boolean isDecorated ()
@@ -124,7 +126,7 @@ public class ShapeSymbol
     // getShape //
     //----------//
     /**
-     * Report the shape of the symbol
+     * Report the shape of the symbol.
      * @return the shape
      */
     public Shape getShape ()
@@ -136,6 +138,7 @@ public class ShapeSymbol
     // getTransferData //
     //-----------------//
     @Implement(Transferable.class)
+    @Override
     public Object getTransferData (DataFlavor flavor)
         throws UnsupportedFlavorException, IOException
     {
@@ -150,6 +153,7 @@ public class ShapeSymbol
     // getTransferDataFlavors //
     //------------------------//
     @Implement(Transferable.class)
+    @Override
     public DataFlavor[] getTransferDataFlavors ()
     {
         return new DataFlavor[] { DATA_FLAVOR };

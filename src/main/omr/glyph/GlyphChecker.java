@@ -23,6 +23,8 @@ import omr.glyph.text.TextLine;
 
 import omr.grid.StaffInfo;
 
+import omr.lag.Sections;
+
 import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
@@ -50,9 +52,9 @@ import java.util.List;
 
 /**
  * Class {@code GlyphChecker} gathers additional specific glyph checks,
- * still working on symbols in isolation from other symbols, meant to complement
- * the work done by an evaluator (neural network evaluator or regression
- * evaluator).
+ * still working on symbols in isolation from other symbols, meant to
+ * complement the work done by an evaluator (neural network evaluator
+ * or regression evaluator).
  *
  * <p>Checks are made on the glyph only, the only knowledge about current glyph
  * environment being its staff-based pitch position and the attached stems and
@@ -417,28 +419,6 @@ public class GlyphChecker
                     //                    }
                     return true;
                 }
-
-                //                /**
-                //                 * Check if the candidate glyph can be a beam hook with a
-                //                 * reasonable slope
-                //                 * @param glyph the candidate
-                //                 * @return true if glyph slope is reasonable
-                //                 */
-                //                private boolean validBeamHookSlope (Glyph glyph)
-                //                {
-                //                    try {
-                //                        Stick          stick = (Stick) glyph;
-                //                        double         slope = stick.getAbsoluteLine()
-                //                                                    .getSlope();
-                //
-                //                        PixelRectangle box = glyph.getContourBox();
-                //                        double         maxSlope = (double) box.height / (double) box.width;
-                //
-                //                        return Math.abs(slope) <= maxSlope;
-                //                    } catch (Exception ignored) {
-                //                        return false;
-                //                    }
-                //                }
             };
 
         // Shapes that require a stem on the left side
@@ -793,6 +773,33 @@ public class GlyphChecker
                     double pitch = staff.pitchPositionOf(point);
 
                     return pitch <= -5;
+                }
+            };
+
+        new Checker("Crescendos", CRESCENDO, DECRESCENDO) {
+                public boolean check (SystemInfo system,
+                                      Evaluation eval,
+                                      Glyph      glyph,
+                                      double[]   features)
+                {
+                    // Use moment n12 to differentiate between < & >
+                    double n12 = glyph.getMoments()
+                                      .getN12();
+                    Shape  newShape = (n12 > 0) ? CRESCENDO : DECRESCENDO;
+
+                    if (newShape != eval.shape) {
+                        // For debugging
+                        //                        if (eval.grade >= 0.1) {
+                        //                            logger.info(
+                        //                                system.getLogPrefix() + glyph + " " + eval +
+                        //                                " " + " weight:" + glyph.getWeight() + " " +
+                        //                                glyph.getContourBox() + " corrected as " +
+                        //                                newShape);
+                        //                        }
+                        eval.shape = newShape;
+                    }
+
+                    return true;
                 }
             };
     }

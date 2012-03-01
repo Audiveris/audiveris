@@ -22,6 +22,8 @@ import omr.score.Score;
 import omr.score.ui.ScoreController;
 import omr.score.ui.ScoreDependent;
 
+import omr.sheet.ui.SheetsController;
+
 import omr.ui.util.SeparableMenu;
 
 import omr.util.FileUtil;
@@ -39,8 +41,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
-import omr.sheet.Sheet;
-import omr.sheet.ui.SheetsController;
 
 /**
  * Class {@code PluginsManager} handles the collection of application
@@ -48,6 +48,9 @@ import omr.sheet.ui.SheetsController;
  * Each registered plugin is represented by a menu item.
  * One of these plugins can be set as the default editor plugin and directly
  * launched by the dedicated toolbar button.
+ *
+ * <p>Any file, with the ".js" extension, found in the <code>plugins</code>
+ * folder will lead to the creation of a corresponding Plugin instance.</p>
  *
  * @author Hervé Bitteur
  */

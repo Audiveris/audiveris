@@ -158,51 +158,21 @@ public class GlyphRepository
 
     //~ Methods ----------------------------------------------------------------
 
-    //------------//
-    // fileNameOf //
-    //------------//
-    /**
-     * Report the file name w/o extension of a gName.
-     *
-     * @param gName glyph name, using format "folder/name.number.xml"
-     * or "folder/name.xml"
-     * @return the 'name' or 'name.number' part of the format
-     */
-    public static String fileNameOf (String gName)
-    {
-        int    slash = gName.indexOf("/");
-        String nameWithExt = gName.substring(slash + 1);
-
-        int    lastDot = nameWithExt.lastIndexOf(".");
-
-        if (lastDot != -1) {
-            return nameWithExt.substring(0, lastDot);
-        } else {
-            return nameWithExt;
-        }
-    }
-
     //-------------//
-    // shapeNameOf //
+    // getInstance //
     //-------------//
     /**
-     * Report the shape name of a gName.
-     * @param gName glyph name, using format "folder/name.number.xml" or
-     * "folder/name.xml"
-     * @return the 'name' part of the format
+     * Report the single instance of this class, after creating it if
+     * needed.
+     * @return the single instance
      */
-    public static String shapeNameOf (String gName)
+    public static GlyphRepository getInstance ()
     {
-        int    slash = gName.indexOf("/");
-        String nameWithExt = gName.substring(slash + 1);
-
-        int    firstDot = nameWithExt.indexOf(".");
-
-        if (firstDot != -1) {
-            return nameWithExt.substring(0, firstDot);
-        } else {
-            return nameWithExt;
+        if (INSTANCE == null) {
+            INSTANCE = new GlyphRepository();
         }
+
+        return INSTANCE;
     }
 
     //-------------//
@@ -245,7 +215,7 @@ public class GlyphRepository
      * the corresponding training material.
      * If not already done, the glyph is deserialized from the training file,
      * searching first in the icons area, then the train area.
-     * @param gName the full glyph name (format is: sheetName/Shape.id.xml)
+     * @param gName   the full glyph name (format is: sheetName/Shape.id.xml)
      * @param monitor the monitor, if any, to be kept informed of glyph loading
      * @return the glyph instance if found, null otherwise
      */
@@ -331,23 +301,6 @@ public class GlyphRepository
         return folder.equals(WellKnowns.SYMBOLS_FOLDER.getName());
     }
 
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single instance of this class, after creating it if
-     * needed.
-     * @return the single instance
-     */
-    public static GlyphRepository getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new GlyphRepository();
-        }
-
-        return INSTANCE;
-    }
-
     //----------//
     // isLoaded //
     //----------//
@@ -424,6 +377,30 @@ public class GlyphRepository
         }
 
         return wholeBase;
+    }
+
+    //------------//
+    // fileNameOf //
+    //------------//
+    /**
+     * Report the file name w/o extension of a gName.
+     *
+     * @param gName glyph name, using format "folder/name.number.xml"
+     * or "folder/name.xml"
+     * @return the 'name' or 'name.number' part of the format
+     */
+    public static String fileNameOf (String gName)
+    {
+        int    slash = gName.indexOf("/");
+        String nameWithExt = gName.substring(slash + 1);
+
+        int    lastDot = nameWithExt.lastIndexOf(".");
+
+        if (lastDot != -1) {
+            return nameWithExt.substring(0, lastDot);
+        } else {
+            return nameWithExt;
+        }
     }
 
     //----------------//
@@ -525,6 +502,29 @@ public class GlyphRepository
     {
         glyphsMap.remove(gName);
         refreshBases();
+    }
+
+    //-------------//
+    // shapeNameOf //
+    //-------------//
+    /**
+     * Report the shape name of a gName.
+     * @param gName glyph name, using format "folder/name.number.xml" or
+     * "folder/name.xml"
+     * @return the 'name' part of the format
+     */
+    public static String shapeNameOf (String gName)
+    {
+        int    slash = gName.indexOf("/");
+        String nameWithExt = gName.substring(slash + 1);
+
+        int    firstDot = nameWithExt.indexOf(".");
+
+        if (firstDot != -1) {
+            return nameWithExt.substring(0, firstDot);
+        } else {
+            return nameWithExt;
+        }
     }
 
     //---------//

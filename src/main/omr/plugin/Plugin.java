@@ -35,7 +35,22 @@ import javax.script.ScriptEngineManager;
 /**
  * Class {@code Plugin} describes a plugin instance, encapsulating the
  * relationship with the  underlying javascript file.
- *
+ * 
+ * <p>A plugin is meant to describe the connection between Audiveris and an
+ * external program, which will consume the MusicXML file exported by Audiveris.</p>
+ * 
+ * <p>A plugin is a javascript file, meant to export:
+ * <dl>
+ * <dt>pluginTitle</dt>
+ * <dd>(string) The title to appear in Plugins pull-down menu</dd>
+ * <dt>pluginTip</dt>
+ * <dd>(string) A description text to appear as a user tip in Plugins menu</dd>
+ * <dt>pluginCli</dt>
+ * <dd>(function) A javascript function which returns the precise list of 
+ * arguments used when calling the external program. Note that the actual call
+ * is not made by the javascript code, but by Audiveris itself for an easier
+ * handling of input and output streams.</dd>
+ * </dl>
  * @author Hervé Bitteur
  */
 public class Plugin

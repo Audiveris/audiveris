@@ -56,10 +56,22 @@ public class Moments
 
     //~ Instance fields --------------------------------------------------------
 
-    /** The various moments, implemented as an array of double's */
-    private Double[] k = new Double[size];
+    /** The various moments, implemented as an array of double's. */
+    private final Double[] k = new Double[size];
 
     //~ Constructors -----------------------------------------------------------
+
+    //---------//
+    // Moments //
+    //---------//
+    /**
+     * Creates a new Moments object.
+     * @param that the other Moments to clone
+     */
+    public Moments (Moments that)
+    {
+        System.arraycopy(that.k, 0, this.k, 0, size);
+    }
 
     //---------//
     // Moments //
@@ -174,8 +186,8 @@ public class Moments
         k[4] = n11; // XY covariance
         k[5] = n02; // Y absolute eccentricity
         k[6] = n30; // X signed eccentricity
-        k[7] = n21; //
-        k[8] = n12; //
+        k[7] = n21; // ^ vs. V
+        k[8] = n12; // > vs. <
         k[9] = n03; // Y signed eccentricity
 
         // Assign orthogonals moments (Hu set)
@@ -246,6 +258,18 @@ public class Moments
     public Double getHeight ()
     {
         return k[2];
+    }
+
+    //-----------//
+    // getHeight //
+    //-----------//
+    /**
+     * Report the n12 moment (which relates to xy2)
+     * @return the n12 moment
+     */
+    public Double getN12 ()
+    {
+        return k[8];
     }
 
     //----------//

@@ -9,6 +9,9 @@
     <description>
 	Standalone project for handling the 'jars' folder on Kenai
     </description>
+    
+    <!-- Create the time stamp -->
+    <tstamp/>
 
     <!-- Use jar definition from build.xml -->
     <import file="${basedir}/dev/build.xml"/>

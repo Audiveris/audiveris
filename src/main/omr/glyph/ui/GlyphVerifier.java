@@ -64,7 +64,7 @@ import javax.swing.event.ListSelectionListener;
  * Class {@code GlyphVerifier} provides a user interface to browse
  * through all glyphs samples recorded for evaluator training,
  * to visually check the correctness of their assigned shape,
- * and to remove spurious sample when necessary.
+ * and to remove spurious samples when necessary.
  *
  * <p>One, several or all recorded sheets can be selected.
  *
@@ -72,9 +72,12 @@ import javax.swing.event.ListSelectionListener;
  * selected glyphs can then be browsed in any direction.
  *
  * <p>The current glyph is displayed, with its appearance in a properly
- * translated Nest view, and its characteristics in a dedicated panel. If
- * the user wants to discard the glyph, it can be removed from the repository of
- * training material.
+ * translated Nest view, and its characteristics in a dedicated panel.
+ * If the user wants to discard the glyph, it can be removed from the repository
+ * of training material.
+ * 
+ * <p> TODO: Some uses of JList should be simplified, when we move to Java 7.
+ * They are signalled by //HB comments.
  *
  * @author Hervé Bitteur
  */
@@ -179,9 +182,9 @@ public class GlyphVerifier
     // verify //
     //--------//
     /**
-     * Focus the verifier on a provided collection of glyphs
-     * (typically the glyphs that are not recognized, or mistaken, by
-     * the evaluator).
+     * Focus the verifier on a provided collection of glyphs.
+     * (typically this collection are the glyphs that are not recognized,
+     * or mistaken, by the evaluator)
      * @param glyphNames the names of the specific glyphs to inspect
      */
     public void verify (Collection<String> glyphNames)
@@ -310,9 +313,9 @@ public class GlyphVerifier
     // getActualDir //
     //--------------//
     /**
-     * Report the real directory (either the sheets or samples directory or the
-     * icons directory) that corresponds to a given folder name.
-     * @param folder the folder name, such as 'icons' or 'sheets/batuque' or
+     * Report the real directory  that corresponds to a given folder name.
+     * (either the sheets or samples directory or the symbols directory)
+     * @param folder the folder name, such as 'symbols' or 'sheets/batuque' or
      * 'samples/batuque'
      * @return the concrete directory
      */
@@ -377,6 +380,7 @@ public class GlyphVerifier
 
         // Triggered by load button
         @Implement(ActionListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             model.removeAllElements();
@@ -428,6 +432,7 @@ public class GlyphVerifier
 
         // Triggered by the load button
         @Implement(ActionListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             //HB final List<String> folders = folderSelector.list.getSelectedValuesList();
@@ -551,6 +556,7 @@ public class GlyphVerifier
             // To be informed of mouse (de)selections (not programmatic)
             list.addListSelectionListener(
                 new ListSelectionListener() {
+                        @Override
                         public void valueChanged (ListSelectionEvent e)
                         {
                             updateCardinal(); // Brute force !!!
@@ -560,6 +566,7 @@ public class GlyphVerifier
             // Same action whatever the subclass : select all items
             selectAll.addActionListener(
                 new ActionListener() {
+                        @Override
                         public void actionPerformed (ActionEvent e)
                         {
                             selectAll();
@@ -569,6 +576,7 @@ public class GlyphVerifier
             // Same action whatever the subclass : deselect all items
             cancelAll.addActionListener(
                 new ActionListener() {
+                        @Override
                         public void actionPerformed (ActionEvent e)
                         {
                             list.setSelectedIndices(new int[0]);
@@ -618,6 +626,7 @@ public class GlyphVerifier
         //--------------//
         // stateChanged //
         //--------------//
+        @Override
         public void stateChanged (ChangeEvent e)
         {
             Selector selector = (Selector) e.getSource();
@@ -739,6 +748,7 @@ public class GlyphVerifier
 
         // Triggered by load button
         @Implement(ActionListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             // Populate with shape names found in selected folders

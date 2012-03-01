@@ -110,7 +110,8 @@ public class MusicFont
     // getFont //
     //---------//
     /**
-     * Report the (cached) best font according to the desired interline value
+     * Report the (cached) best font according to the desired interline
+     * value.
      * @param interline the desired (zoomed) interline in pixels
      * @return the font with proper size
      */
@@ -136,8 +137,8 @@ public class MusicFont
     //------------//
     /**
      * Build an image from the shape definition in MusicFont, using the
-     * scaling determined by the provided interline value
-     * @param shape the desired shape
+     * scaling determined by the provided interline value.
+     * @param shape     the desired shape
      * @param interline the related interline value
      * @param decorated true if shape display must use decorations
      * @return the image built with proper scaling, or null
@@ -155,7 +156,7 @@ public class MusicFont
     // checkMusicFont //
     //----------------//
     /**
-     * Check whether we have been able to load the font
+     * Check whether we have been able to load the font.
      * @return true if OK
      */
     public static boolean checkMusicFont ()
@@ -182,8 +183,8 @@ public class MusicFont
     //------------//
     /**
      * Build an image from the shape definition in MusicFont, using the
-     * intrinsic scaling of this font
-     * @param shape the desired shape
+     * intrinsic scaling of this font.
+     * @param shape     the desired shape
      * @param decorated true if shape display must use decorations
      * @return the image built with proper scaling, or null
      */
@@ -203,10 +204,11 @@ public class MusicFont
     // layout //
     //--------//
     /**
-     * Build a TextLayout from a Shape, using its related String of MusicFont
-     * characters, and potentially sized by an AffineTransform
+     * Build a TextLayout from a Shape, using its related String of
+     * MusicFont characters, and potentially sized by an 
+     * AffineTransform instance.
      * @param shape the shape to be drawn with MusicFont chars
-     * @param fat potential affine transformation
+     * @param fat   potential affine transformation
      * @return the (sized) TextLayout ready to be drawn
      */
     public TextLayout layout (Shape           shape,
@@ -229,9 +231,9 @@ public class MusicFont
     // layout //
     //--------//
     /**
-     * Build a TextLayout from a Shape, using its related String of MusicFont
-     * characters, and sized to fit the provided dimension
-     * @param shape the shape to be drawn with MusicFont chars
+     * Build a TextLayout from a Shape, using its related String of
+     * MusicFont characters, and sized to fit the provided dimension.
+     * @param shape     the shape to be drawn with MusicFont chars
      * @param dimension the dim to fit as much as possible
      * @return the adjusted TextLayout ready to be drawn
      */
@@ -251,9 +253,9 @@ public class MusicFont
     // layout //
     //--------//
     /**
-     * Build a TextLayout from a symbol, using its related String of MusicFont
-     * characters, and sized to fit the provided dimension
-     * @param symbol the symbol to be drawn with MusicFont chars
+     * Build a TextLayout from a symbol, using its related String of
+     * MusicFont characters, and sized to fit the provided dimension.
+     * @param symbol    the symbol to be drawn with MusicFont chars
      * @param dimension the dim to fit as much as possible
      * @return the adjusted TextLayout ready to be drawn
      */
@@ -276,8 +278,8 @@ public class MusicFont
     // layout //
     //--------//
     /**
-     * Build a TextLayout from a Shape, using its related String of MusicFont
-     * character codes
+     * Build a TextLayout from a Shape, using its related String of 
+     * MusicFont character codes.
      * @param shape the shape to be drawn with MusicFont chars
      * @return the TextLayout ready to be drawn
      */
@@ -290,7 +292,7 @@ public class MusicFont
     // layout //
     //--------//
     /**
-     * Build a TextLayout from a String of MusicFont character codes
+     * Build a TextLayout from a String of MusicFont character codes.
      * @param codes the MusicFont codes
      * @return the TextLayout ready to be drawn
      */
@@ -303,8 +305,8 @@ public class MusicFont
     // getFontInterline //
     //------------------//
     /**
-     * Report the number of pixels of the interline that corresponds to this
-     * font
+     * Report the number of pixels of the interline that corresponds to
+     * this font.
      * @return the scaled interline for this font
      */
     protected int getFontInterline ()

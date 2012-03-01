@@ -39,6 +39,8 @@ import static omr.selection.SelectionHint.*;
 import omr.selection.SelectionService;
 import omr.selection.UserEvent;
 
+import omr.sheet.Sheet;
+
 import omr.ui.Board;
 import omr.ui.field.LTextField;
 import omr.ui.util.Panel;
@@ -310,7 +312,7 @@ class GlyphBrowser
     private void resetBrowser ()
     {
         // Reset model
-        tNest = new BasicNest("tNest", null);
+        tNest = new NoSigNest("tNest", null);
         htLag = new BasicLag("htLag", Orientation.HORIZONTAL);
         vtLag = new BasicLag("vtLag", Orientation.VERTICAL);
 
@@ -341,237 +343,6 @@ class GlyphBrowser
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        Constant.Boolean confirmDeletions = new Constant.Boolean(
-            true,
-            "Should user confirm each glyph deletion" +
-            " from training material");
-    }
-
-    //-----------//
-    // Navigator //
-    //-----------//
-    /**
-     * Class {@code Navigator} handles the navigation through the
-     * collection of glyphs (names).
-     */
-    private final class Navigator
-        extends Board
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /** Current index in names collection (NO_INDEX if none) */
-        private int nameIndex = NO_INDEX;
-
-        // Navigation actions & buttons
-        LoadAction loadAction = new LoadAction();
-        JButton    load = new JButton(loadAction);
-        JButton    all = new JButton("All");
-        JButton    next = new JButton("Next");
-        JButton    prev = new JButton("Prev");
-        LTextField nameField = new LTextField("", "File where glyph is stored");
-
-        //~ Constructors -------------------------------------------------------
-
-        //-----------//
-        // Navigator //
-        //-----------//
-        Navigator ()
-        {
-            super(Board.SAMPLE, null, null, false, true);
-
-            defineLayout();
-
-            all.addActionListener(
-                new ActionListener() {
-                        public void actionPerformed (ActionEvent e)
-                        {
-                            // Load all (non icon) glyphs
-                            int index = -1;
-
-                            for (String gName : names) {
-                                index++;
-
-                                if (!repository.isIcon(gName)) {
-                                    setIndex(index, GLYPH_INIT);
-                                }
-                            }
-
-                            // Load & point to first icon
-                            setIndex(0, GLYPH_INIT);
-                        }
-                    });
-
-            prev.addActionListener(
-                new ActionListener() {
-                        public void actionPerformed (ActionEvent e)
-                        {
-                            setIndex(nameIndex - 1, GLYPH_INIT); // To prev
-                        }
-                    });
-
-            next.addActionListener(
-                new ActionListener() {
-                        public void actionPerformed (ActionEvent e)
-                        {
-                            setIndex(nameIndex + 1, GLYPH_INIT); // To next
-                        }
-                    });
-
-            load.setToolTipText("Load the selected glyphs");
-            all.setToolTipText("Display all glyphs");
-            prev.setToolTipText("Go to previous glyph");
-            next.setToolTipText("Go to next glyph");
-
-            loadAction.setEnabled(false);
-            all.setEnabled(false);
-            prev.setEnabled(false);
-            next.setEnabled(false);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        //----------//
-        // getIndex //
-        //----------//
-        /**
-         * Report the current glyph index in the names collection.
-         * @return the current index, which may be NO_INDEX
-         */
-        public final int getIndex ()
-        {
-            return nameIndex;
-        }
-
-        //----------//
-        // getGlyph //
-        //----------//
-        public Glyph getGlyph (String gName)
-        {
-            Glyph glyph = repository.getGlyph(gName, null);
-
-            if (glyph == null) {
-                return null;
-            }
-
-            if (glyph.getNest() != tNest) {
-                tNest.addGlyph(glyph);
-
-                Color color = glyph.getShape()
-                                   .getColor();
-
-                for (Section section : glyph.getMembers()) {
-                    Lag lag = section.isVertical() ? vtLag : htLag;
-
-                    lag.addVertex(section); // Trick!
-                    section.setGraph(lag);
-
-                    section.setColor(color);
-                }
-            }
-
-            return glyph;
-        }
-
-        //----------//
-        // setIndex //
-        //----------//
-        /**
-         * Only method allowed to designate a glyph
-         *
-         * @param index index of new current glyph
-         * @param hint related processing hint
-         */
-        public void setIndex (int           index,
-                              SelectionHint hint)
-        {
-            Glyph glyph = null;
-
-            if (index >= 0) {
-                String gName = names.get(index);
-                nameField.setText(gName);
-
-                // Special case for icon : if we point to an icon, we have to
-                // get rid of all other icons (standard glyphs can be kept)
-                // Otherwise, they would all be displayed on top of the other
-                if (repository.isIcon(gName)) {
-                    repository.unloadIconsFrom(names);
-                }
-
-                // Load the desired glyph if needed
-                glyph = getGlyph(gName);
-
-                if (glyph == null) {
-                    return;
-                }
-
-                // Extend view model size if needed
-                Rectangle box = glyph.getContourBox();
-                modelRectangle = modelRectangle.union(box);
-
-                Dimension newSize = modelRectangle.getSize();
-
-                if (!newSize.equals(modelSize)) {
-                    modelSize = newSize;
-                    view.setModelSize(modelSize);
-                }
-            } else {
-                nameField.setText("");
-            }
-
-            nameIndex = index;
-
-            tNest.getGlyphService()
-                 .publish(new GlyphEvent(this, hint, null, glyph));
-
-            // Enable buttons according to glyph selection
-            all.setEnabled(!names.isEmpty());
-            prev.setEnabled(index > 0);
-            next.setEnabled((index >= 0) && (index < (names.size() - 1)));
-        }
-
-        // Just to please the Board interface
-        public void onEvent (UserEvent event)
-        {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        //--------------//
-        // defineLayout //
-        //--------------//
-        private void defineLayout ()
-        {
-            CellConstraints cst = new CellConstraints();
-            FormLayout      layout = Panel.makeFormLayout(4, 3);
-            PanelBuilder    builder = new PanelBuilder(layout, super.getBody());
-            builder.setDefaultDialogBorder();
-
-            int r = 1; // --------------------------------
-            builder.add(load, cst.xy(11, r));
-
-            r += 2; // --------------------------------
-            builder.add(all, cst.xy(3, r));
-            builder.add(prev, cst.xy(7, r));
-            builder.add(next, cst.xy(11, r));
-
-            r += 2; // --------------------------------
-
-            JLabel file = new JLabel("File", SwingConstants.RIGHT);
-            builder.add(file, cst.xy(1, r));
-
-            nameField.getField()
-                     .setHorizontalAlignment(JTextField.LEFT);
-            builder.add(nameField.getField(), cst.xyw(3, r, 9));
-        }
-    }
 
     //-----------------//
     // BasicController //
@@ -628,6 +399,148 @@ class GlyphBrowser
         public void deassignGlyph (Glyph glyph)
         {
             removeGlyph();
+        }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        Constant.Boolean confirmDeletions = new Constant.Boolean(
+            true,
+            "Should user confirm each glyph deletion" +
+            " from training material");
+    }
+
+    //--------//
+    // MyView //
+    //--------//
+    private final class MyView
+        extends NestView
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public MyView (GlyphsController controller)
+        {
+            super(tNest, controller, Arrays.asList(htLag, vtLag));
+            setName("GlyphBrowser-View");
+            subscribe();
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        //---------//
+        // onEvent //
+        //---------//
+        /**
+         * Call-back triggered from (local) selection objects
+         *
+         * @param event the notified event
+         */
+        @Override
+        public void onEvent (UserEvent event)
+        {
+            try {
+                // Ignore RELEASING
+                if (event.movement == MouseMovement.RELEASING) {
+                    return;
+                }
+
+                // Keep normal view behavior (rubber, etc...)
+                super.onEvent(event);
+
+                // Additional tasks
+                if (event instanceof LocationEvent) {
+                    LocationEvent sheetLocation = (LocationEvent) event;
+
+                    if (sheetLocation.hint == SelectionHint.LOCATION_INIT) {
+                        Rectangle rect = sheetLocation.getData();
+
+                        if ((rect != null) &&
+                            (rect.width == 0) &&
+                            (rect.height == 0)) {
+                            // Look for pointed glyph
+                            int index = glyphLookup(rect);
+                            navigator.setIndex(index, sheetLocation.hint);
+                        }
+                    }
+                } else if (event instanceof GlyphEvent) {
+                    GlyphEvent glyphEvent = (GlyphEvent) event;
+
+                    if (glyphEvent.hint == GLYPH_INIT) {
+                        Glyph glyph = glyphEvent.getData();
+
+                        // Display glyph contour
+                        if (glyph != null) {
+                            locationService.publish(
+                                new LocationEvent(
+                                    this,
+                                    glyphEvent.hint,
+                                    null,
+                                    glyph.getContourBox()));
+                        }
+                    }
+                }
+            } catch (Exception ex) {
+                logger.warning(getClass().getName() + " onEvent error", ex);
+            }
+        }
+
+        //-------------//
+        // renderItems //
+        //-------------//
+        @Override
+        public void renderItems (Graphics2D g)
+        {
+            // Mark the current glyph
+            int index = navigator.getIndex();
+
+            if (index >= 0) {
+                String gName = names.get(index);
+                Glyph  glyph = navigator.getGlyph(gName);
+                g.setColor(Color.black);
+                g.setXORMode(Color.darkGray);
+                renderGlyphArea(glyph, g);
+            }
+        }
+
+        //-------------//
+        // glyphLookup //
+        //-------------//
+        /**
+         * Lookup for a glyph that is pointed by rectangle location. This is a
+         * very specific glyph lookup, for which we cannot rely on Nest
+         * usual features. So we simply browse through the collection of glyphs
+         * (names).
+         *
+         * @param rect location (upper left corner)
+         * @return index in names collection if found, NO_INDEX otherwise
+         */
+        private int glyphLookup (Rectangle rect)
+        {
+            int index = -1;
+
+            for (String gName : names) {
+                index++;
+
+                if (repository.isLoaded(gName)) {
+                    Glyph glyph = navigator.getGlyph(gName);
+
+                    if (glyph.getNest() == tNest) {
+                        for (Section section : glyph.getMembers()) {
+                            if (section.contains(rect.x, rect.y)) {
+                                return index;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return NO_INDEX; // Not found
         }
     }
 
@@ -759,131 +672,245 @@ class GlyphBrowser
         }
     }
 
-    //--------//
-    // MyView //
-    //--------//
-    private final class MyView
-        extends NestView
+    //-----------//
+    // Navigator //
+    //-----------//
+    /**
+     * Class {@code Navigator} handles the navigation through the
+     * collection of glyphs (names).
+     */
+    private final class Navigator
+        extends Board
     {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Current index in names collection (NO_INDEX if none) */
+        private int nameIndex = NO_INDEX;
+
+        // Navigation actions & buttons
+        LoadAction loadAction = new LoadAction();
+        JButton    load = new JButton(loadAction);
+        JButton    all = new JButton("All");
+        JButton    next = new JButton("Next");
+        JButton    prev = new JButton("Prev");
+        LTextField nameField = new LTextField("", "File where glyph is stored");
+
         //~ Constructors -------------------------------------------------------
 
-        public MyView (GlyphsController controller)
+        //-----------//
+        // Navigator //
+        //-----------//
+        Navigator ()
         {
-            super(tNest, controller, Arrays.asList(htLag, vtLag));
-            setName("GlyphBrowser-View");
-            subscribe();
+            super(Board.SAMPLE, null, null, false, true);
+
+            defineLayout();
+
+            all.addActionListener(
+                new ActionListener() {
+                        public void actionPerformed (ActionEvent e)
+                        {
+                            // Load all (non icon) glyphs
+                            int index = -1;
+
+                            for (String gName : names) {
+                                index++;
+
+                                if (!repository.isIcon(gName)) {
+                                    setIndex(index, GLYPH_INIT);
+                                }
+                            }
+
+                            // Load & point to first icon
+                            setIndex(0, GLYPH_INIT);
+                        }
+                    });
+
+            prev.addActionListener(
+                new ActionListener() {
+                        public void actionPerformed (ActionEvent e)
+                        {
+                            setIndex(nameIndex - 1, GLYPH_INIT); // To prev
+                        }
+                    });
+
+            next.addActionListener(
+                new ActionListener() {
+                        public void actionPerformed (ActionEvent e)
+                        {
+                            setIndex(nameIndex + 1, GLYPH_INIT); // To next
+                        }
+                    });
+
+            load.setToolTipText("Load the selected glyphs");
+            all.setToolTipText("Display all glyphs");
+            prev.setToolTipText("Go to previous glyph");
+            next.setToolTipText("Go to next glyph");
+
+            loadAction.setEnabled(false);
+            all.setEnabled(false);
+            prev.setEnabled(false);
+            next.setEnabled(false);
         }
 
         //~ Methods ------------------------------------------------------------
 
-        //---------//
-        // onEvent //
-        //---------//
-        /**
-         * Call-back triggered from (local) selection objects
-         *
-         * @param event the notified event
-         */
-        @Override
-        public void onEvent (UserEvent event)
+        //----------//
+        // getGlyph //
+        //----------//
+        public Glyph getGlyph (String gName)
         {
-            try {
-                // Ignore RELEASING
-                if (event.movement == MouseMovement.RELEASING) {
-                    return;
-                }
+            Glyph glyph = repository.getGlyph(gName, null);
 
-                // Keep normal view behavior (rubber, etc...)
-                super.onEvent(event);
-
-                // Additional tasks
-                if (event instanceof LocationEvent) {
-                    LocationEvent sheetLocation = (LocationEvent) event;
-
-                    if (sheetLocation.hint == SelectionHint.LOCATION_INIT) {
-                        Rectangle rect = sheetLocation.getData();
-
-                        if ((rect != null) &&
-                            (rect.width == 0) &&
-                            (rect.height == 0)) {
-                            // Look for pointed glyph
-                            int index = glyphLookup(rect);
-                            navigator.setIndex(index, sheetLocation.hint);
-                        }
-                    }
-                } else if (event instanceof GlyphEvent) {
-                    GlyphEvent glyphEvent = (GlyphEvent) event;
-
-                    if (glyphEvent.hint == GLYPH_INIT) {
-                        Glyph glyph = glyphEvent.getData();
-
-                        // Display glyph contour
-                        if (glyph != null) {
-                            locationService.publish(
-                                new LocationEvent(
-                                    this,
-                                    glyphEvent.hint,
-                                    null,
-                                    glyph.getContourBox()));
-                        }
-                    }
-                }
-            } catch (Exception ex) {
-                logger.warning(getClass().getName() + " onEvent error", ex);
+            if (glyph == null) {
+                return null;
             }
+
+            if (glyph.getNest() != tNest) {
+                tNest.addGlyph(glyph);
+
+                Color color = glyph.getShape()
+                                   .getColor();
+
+                for (Section section : glyph.getMembers()) {
+                    Lag lag = section.isVertical() ? vtLag : htLag;
+
+                    lag.addVertex(section); // Trick!
+                    section.setGraph(lag);
+
+                    section.setColor(color);
+                }
+            }
+
+            return glyph;
         }
 
-        //-------------//
-        // renderItems //
-        //-------------//
-        @Override
-        public void renderItems (Graphics2D g)
+        //----------//
+        // setIndex //
+        //----------//
+        /**
+         * Only method allowed to designate a glyph.
+         * @param index index of new current glyph
+         * @param hint  related processing hint
+         */
+        public void setIndex (int           index,
+                              SelectionHint hint)
         {
-            // Mark the current glyph
-            int index = navigator.getIndex();
+            Glyph glyph = null;
 
             if (index >= 0) {
                 String gName = names.get(index);
-                Glyph  glyph = navigator.getGlyph(gName);
-                g.setColor(Color.black);
-                g.setXORMode(Color.darkGray);
-                renderGlyphArea(glyph, g);
+                nameField.setText(gName);
+
+                // Special case for icon : if we point to an icon, we have to
+                // get rid of all other icons (standard glyphs can be kept)
+                // Otherwise, they would all be displayed on top of the other
+                if (repository.isIcon(gName)) {
+                    repository.unloadIconsFrom(names);
+                }
+
+                // Load the desired glyph if needed
+                glyph = getGlyph(gName);
+
+                if (glyph == null) {
+                    return;
+                }
+
+                // Extend view model size if needed
+                Rectangle box = glyph.getContourBox();
+                modelRectangle = modelRectangle.union(box);
+
+                Dimension newSize = modelRectangle.getSize();
+
+                if (!newSize.equals(modelSize)) {
+                    modelSize = newSize;
+                    view.setModelSize(modelSize);
+                }
+            } else {
+                nameField.setText("");
             }
+
+            nameIndex = index;
+
+            tNest.getGlyphService()
+                 .publish(new GlyphEvent(this, hint, null, glyph));
+
+            // Enable buttons according to glyph selection
+            all.setEnabled(!names.isEmpty());
+            prev.setEnabled(index > 0);
+            next.setEnabled((index >= 0) && (index < (names.size() - 1)));
         }
 
-        //-------------//
-        // glyphLookup //
-        //-------------//
+        //----------//
+        // getIndex //
+        //----------//
         /**
-         * Lookup for a glyph that is pointed by rectangle location. This is a
-         * very specific glyph lookup, for which we cannot rely on Nest
-         * usual features. So we simply browse through the collection of glyphs
-         * (names).
-         *
-         * @param rect location (upper left corner)
-         * @return index in names collection if found, NO_INDEX otherwise
+         * Report the current glyph index in the names collection.
+         * @return the current index, which may be NO_INDEX
          */
-        private int glyphLookup (Rectangle rect)
+        public final int getIndex ()
         {
-            int index = -1;
+            return nameIndex;
+        }
 
-            for (String gName : names) {
-                index++;
+        // Just to please the Board interface
+        public void onEvent (UserEvent event)
+        {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
 
-                if (repository.isLoaded(gName)) {
-                    Glyph glyph = navigator.getGlyph(gName);
+        //--------------//
+        // defineLayout //
+        //--------------//
+        private void defineLayout ()
+        {
+            CellConstraints cst = new CellConstraints();
+            FormLayout      layout = Panel.makeFormLayout(4, 3);
+            PanelBuilder    builder = new PanelBuilder(layout, super.getBody());
+            builder.setDefaultDialogBorder();
 
-                    if (glyph.getNest() == tNest) {
-                        for (Section section : glyph.getMembers()) {
-                            if (section.contains(rect.x, rect.y)) {
-                                return index;
-                            }
-                        }
-                    }
-                }
-            }
+            int r = 1; // --------------------------------
+            builder.add(load, cst.xy(11, r));
 
-            return NO_INDEX; // Not found
+            r += 2; // --------------------------------
+            builder.add(all, cst.xy(3, r));
+            builder.add(prev, cst.xy(7, r));
+            builder.add(next, cst.xy(11, r));
+
+            r += 2; // --------------------------------
+
+            JLabel file = new JLabel("File", SwingConstants.RIGHT);
+            builder.add(file, cst.xy(1, r));
+
+            nameField.getField()
+                     .setHorizontalAlignment(JTextField.LEFT);
+            builder.add(nameField.getField(), cst.xyw(3, r, 9));
+        }
+    }
+
+    //-----------//
+    // NoSigNest //
+    //-----------//
+    /**
+     * A specific glyph nest, with no handling of signature.
+     */
+    private static class NoSigNest
+        extends BasicNest
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public NoSigNest (String name,
+                          Sheet  sheet)
+        {
+            super(name, sheet);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public Glyph getOriginal (GlyphSignature signature)
+        {
+            return null;
         }
     }
 }

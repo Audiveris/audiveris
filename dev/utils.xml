@@ -9,6 +9,9 @@
     <description>
         Standalone project for a collection of utility targets
     </description>
+    
+    <!-- Create the time stamp -->
+    <tstamp/>
 
     <import file="${basedir}/dev/-prolog.xml"/>
 

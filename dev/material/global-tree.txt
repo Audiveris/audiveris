@@ -166,6 +166,7 @@ Development only folders
 ./dev/tools/lib/baselet_batik-svggen.jar
 ./dev/tools/lib/baselet_batik-util.jar
 ./dev/tools/lib/baselet_iText.jar
+./dev/tools/lib/baselet_itextpdf-5.1.3.jar
 ./dev/tools/lib/baselet_jlibeps.jar
 ./dev/tools/lib/baselet_log4j-1.2.15.jar
 ./dev/tools/lib/bcel-5.1.jar
