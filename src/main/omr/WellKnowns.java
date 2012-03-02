@@ -124,6 +124,9 @@ public class WellKnowns
     static {
         /** Adjust logging if needed */
         setLogging();
+
+        /** Disable DirecDraw by default */
+        disableDirectDraw();
     }
 
     //------//
@@ -182,6 +185,23 @@ public class WellKnowns
      */
     public static void ensureLoaded ()
     {
+    }
+
+    //-------------------//
+    // disableDirectDraw //
+    //-------------------//
+    private static void disableDirectDraw ()
+    {
+        // See http://performance.netbeans.org/howto/jvmswitches/
+        // -Dsun.java2d.d3d=false
+        // this switch disables DirectDraw and may solve performance problems
+        // with some HW configurations.
+        final String KEY = "sun.java2d.d3d";
+
+        // Respect user setting if any
+        if (System.getProperty(KEY) == null) {
+            System.setProperty(KEY, "false");
+        }
     }
 
     //-------------------//
@@ -272,28 +292,6 @@ public class WellKnowns
         }
     }
 
-    //------------//
-    // setLogging //
-    //------------//
-    private static void setLogging ()
-    {
-        final String LOGGING_KEY = "java.util.logging.config.file";
-        final String LOGGING_NAME = "logging.properties";
-
-        // Set logging configuration file (if none already defined)
-        if (System.getProperty(LOGGING_KEY) == null) {
-            // Check for a user file
-            File loggingFile = new File(SETTINGS_FOLDER, LOGGING_NAME);
-
-            if (loggingFile.exists()) {
-                System.setProperty(LOGGING_KEY, loggingFile.toString());
-            }
-        }
-
-        /** Set up logger mechanism */
-        Logger.getLogger(WellKnowns.class);
-    }
-
     //------------------//
     // getProgramFolder //
     //------------------//
@@ -317,5 +315,27 @@ public class WellKnowns
         File devFolder = new File(PROGRAM_FOLDER, "src");
 
         return devFolder.exists();
+    }
+
+    //------------//
+    // setLogging //
+    //------------//
+    private static void setLogging ()
+    {
+        final String LOGGING_KEY = "java.util.logging.config.file";
+        final String LOGGING_NAME = "logging.properties";
+
+        // Set logging configuration file (if none already defined)
+        if (System.getProperty(LOGGING_KEY) == null) {
+            // Check for a user file
+            File loggingFile = new File(SETTINGS_FOLDER, LOGGING_NAME);
+
+            if (loggingFile.exists()) {
+                System.setProperty(LOGGING_KEY, loggingFile.toString());
+            }
+        }
+
+        /** Set up logger mechanism */
+        Logger.getLogger(WellKnowns.class);
     }
 }
