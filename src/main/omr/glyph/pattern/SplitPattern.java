@@ -95,6 +95,7 @@ public class SplitPattern
         for (Glyph glyph : system.getGlyphs()) {
             if (!glyph.isActive() ||
                 glyph.isKnown() ||
+                (glyph.getStemNumber() == 0) ||
                 (glyph.getWeight() < minGlyphWeight)) {
                 continue;
             }

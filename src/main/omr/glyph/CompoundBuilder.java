@@ -21,9 +21,11 @@ import omr.sheet.SystemInfo;
 
 import omr.util.Predicate;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -132,6 +134,30 @@ public class CompoundBuilder
         return null;
     }
 
+    //---------------//
+    // buildCompound //
+    //---------------//
+    /**
+     * A basic building, which simply takes all the provided glyphs
+     * and build a persistent compound out of them.
+     * @param parts the glyphs to merge
+     * @return the compound built
+     */
+    public Glyph buildCompound (Collection<Glyph> parts)
+    {
+        if (parts.isEmpty()) {
+            return null;
+        }
+
+        List<Glyph> list = new ArrayList<Glyph>(parts);
+
+        return buildCompound(
+            list.get(0),
+            true,
+            list.subList(1, list.size()),
+            new NoAdapter(system));
+    }
+
     //~ Inner Interfaces -------------------------------------------------------
 
     //-----------------//
@@ -144,6 +170,12 @@ public class CompoundBuilder
     public static interface CompoundAdapter
     {
         //~ Methods ------------------------------------------------------------
+
+        /**
+         * Report the evaluation chosen for the compound.
+         * @return the evaluation (shape + grade) chosen
+         */
+        Evaluation getChosenEvaluation ();
 
         /**
          * Predicate to check whether a given candidate glyph is close
@@ -160,12 +192,6 @@ public class CompoundBuilder
          * @return true if the glyph is suitable for inclusion
          */
         boolean isCandidateSuitable (Glyph glyph);
-
-        /**
-         * Report the evaluation chosen for the compound.
-         * @return the evaluation (shape + grade) chosen
-         */
-        Evaluation getChosenEvaluation ();
 
         /**
          * Predicate to check the validity of the newly built compound.
@@ -237,16 +263,16 @@ public class CompoundBuilder
 
         //~ Methods ------------------------------------------------------------
 
-        public boolean isCandidateClose (Glyph glyph)
-        {
-            // By default, use box intersection
-            return box.intersects(glyph.getContourBox());
-        }
-
         public Evaluation getChosenEvaluation ()
         {
             // By default, use shape and grade from evaluator
             return chosenEvaluation;
+        }
+
+        public boolean isCandidateClose (Glyph glyph)
+        {
+            // By default, use box intersection
+            return box.intersects(glyph.getContourBox());
         }
 
         public PixelRectangle setSeed (Glyph seed)
@@ -268,6 +294,61 @@ public class CompoundBuilder
          * This method is called when seed has just been set.
          */
         protected abstract PixelRectangle computeReferenceBox ();
+    }
+
+    //-----------//
+    // NoAdapter //
+    //-----------//
+    /**
+     * A passthrough fake adapter.
+     */
+    public static class NoAdapter
+        extends AbstractAdapter
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public NoAdapter (SystemInfo system)
+        {
+            super(system, 0);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public Evaluation getChosenEvaluation ()
+        {
+            return new Evaluation(null, Evaluation.ALGORITHM);
+        }
+
+        @Override
+        public boolean isCandidateClose (Glyph glyph)
+        {
+            return true;
+        }
+
+        @Override
+        public boolean isCandidateSuitable (Glyph glyph)
+        {
+            return true;
+        }
+
+        @Override
+        public boolean isCompoundValid (Glyph compound)
+        {
+            return true;
+        }
+
+        @Override
+        public boolean shouldFilterCandidates ()
+        {
+            return false;
+        }
+
+        @Override
+        protected PixelRectangle computeReferenceBox ()
+        {
+            return null;
+        }
     }
 
     //---------------//

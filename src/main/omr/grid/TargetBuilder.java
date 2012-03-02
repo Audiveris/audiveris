@@ -201,7 +201,7 @@ public class TargetBuilder
     /**
      * Render the grid used to dewarp the sheet image
      * @param g the graphic context
-     * @param useSource true to render the source grid, false to render the
+     * @param useSource true to renderAttachments the source grid, false to renderAttachments the
      * destination grid
      */
     public void renderWarpGrid (Graphics g,

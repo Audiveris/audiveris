@@ -65,6 +65,38 @@ public class ViewParameters
         return Holder.INSTANCE;
     }
 
+    //----------------------//
+    // isAttachmentPainting //
+    //----------------------//
+    public boolean isAttachmentPainting ()
+    {
+        return constants.attachmentPainting.getValue();
+    }
+
+    //---------------------//
+    // isLetterBoxPainting //
+    //---------------------//
+    public boolean isLetterBoxPainting ()
+    {
+        return constants.letterBoxPainting.getValue();
+    }
+
+    //----------------//
+    // isLinePainting //
+    //----------------//
+    public boolean isLinePainting ()
+    {
+        return constants.linePainting.getValue();
+    }
+
+    //---------------------------//
+    // isSectionSelectionEnabled //
+    //---------------------------//
+    public boolean isSectionSelectionEnabled ()
+    {
+        return sectionSelectionEnabled;
+    }
+
     //-----------------------//
     // setAttachmentPainting //
     //-----------------------//
@@ -73,14 +105,6 @@ public class ViewParameters
         boolean oldValue = constants.attachmentPainting.getValue();
         constants.attachmentPainting.setValue(value);
         firePropertyChange(ATTACHMENT_PAINTING, oldValue, value);
-    }
-
-    //----------------------//
-    // isAttachmentPainting //
-    //----------------------//
-    public boolean isAttachmentPainting ()
-    {
-        return constants.attachmentPainting.getValue();
     }
 
     //----------------------//
@@ -93,14 +117,6 @@ public class ViewParameters
         firePropertyChange(LETTER_BOX_PAINTING, oldValue, value);
     }
 
-    //---------------------//
-    // isLetterBoxPainting //
-    //---------------------//
-    public boolean isLetterBoxPainting ()
-    {
-        return constants.letterBoxPainting.getValue();
-    }
-
     //-----------------//
     // setLinePainting //
     //-----------------//
@@ -111,14 +127,6 @@ public class ViewParameters
         firePropertyChange(LINE_PAINTING, oldValue, value);
     }
 
-    //----------------//
-    // isLinePainting //
-    //----------------//
-    public boolean isLinePainting ()
-    {
-        return constants.linePainting.getValue();
-    }
-
     //----------------------------//
     // setSectionSelectionEnabled //
     //----------------------------//
@@ -127,14 +135,6 @@ public class ViewParameters
         boolean oldValue = sectionSelectionEnabled;
         sectionSelectionEnabled = value;
         firePropertyChange(SECTION_SELECTION_ENABLED, oldValue, value);
-    }
-
-    //---------------------------//
-    // isSectionSelectionEnabled //
-    //---------------------------//
-    public boolean isSectionSelectionEnabled ()
-    {
-        return sectionSelectionEnabled;
     }
 
     //-------------------//
@@ -187,6 +187,18 @@ public class ViewParameters
         //            "Section mode is " + (isSectionSelectionEnabled() ? "on" : "off"));
     }
 
+    //~ Inner Interfaces -------------------------------------------------------
+
+    //--------//
+    // Holder //
+    //--------//
+    private static interface Holder
+    {
+        //~ Static fields/initializers -----------------------------------------
+
+        public static final ViewParameters INSTANCE = new ViewParameters();
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
     //-----------//
@@ -208,17 +220,7 @@ public class ViewParameters
 
         //
         final Constant.Boolean attachmentPainting = new Constant.Boolean(
-            true,
-            "Should the glyph attachments be painted");
-    }
-
-    //--------//
-    // Holder //
-    //--------//
-    private static interface Holder
-    {
-        //~ Static fields/initializers -----------------------------------------
-
-        public static final ViewParameters INSTANCE = new ViewParameters();
+            false,
+            "Should the staff & glyph attachments be painted");
     }
 }

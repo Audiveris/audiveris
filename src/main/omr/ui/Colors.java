@@ -29,6 +29,9 @@ public class Colors
     /** Annotations */
     public static final Color ANNOTATION = Color.lightGray;
 
+    /** Attachments */
+    public static final Color ATTACHMENT = Color.blue;
+
     /** Filament combs of main interline */
     public static final Color COMB = new Color(220, 200, 150, alpha);
 
@@ -46,9 +49,6 @@ public class Colors
 
     /** Barred evaluation */
     public static final Color EVALUATION_BARRED = Color.pink;
-
-    /** Glyph annotations */
-    public static final Color GLYPH_ANNOTATION = Color.blue;
 
     /** Glyph area */
     public static final Color GLYPH_AREA = Color.black;

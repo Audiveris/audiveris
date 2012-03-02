@@ -238,7 +238,7 @@ public class StaffManager
     }
 
     //--------//
-    // render //
+    // renderAttachments //
     //--------//
     /**
      * Paint all the staff lines
@@ -247,7 +247,7 @@ public class StaffManager
     public void render (Graphics2D g)
     {
         for (StaffInfo staff : staves) {
-            staff.render(g);
+            staff.renderAttachments(g);
         }
     }
 

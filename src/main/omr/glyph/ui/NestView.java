@@ -118,7 +118,7 @@ public class NestView
     // addItemRenderer //
     //-----------------//
     /**
-     * Register an items renderer to render items.
+     * Register an items renderer to renderAttachments items.
      * @param renderer the additional renderer
      */
     public void addItemRenderer (ItemRenderer renderer)
@@ -147,7 +147,7 @@ public class NestView
     }
 
     //--------//
-    // render //
+    // renderAttachments //
     //--------//
     /**
      * Render the nest in the provided Graphics context, which may be
@@ -240,29 +240,8 @@ public class NestView
                     }
                 }
 
-                // Draw attachments, if any, with their key name
-                if (ViewParameters.getInstance()
-                                  .isAttachmentPainting() &&
-                    !glyph.getAttachments()
-                          .isEmpty()) {
-                    Font oldFont = g.getFont();
-                    g.setFont(oldFont.deriveFont(5f));
-
-                    for (Map.Entry<String, java.awt.Shape> entry : glyph.getAttachments()
-                                                                        .entrySet()) {
-                        java.awt.Shape shape = entry.getValue();
-                        g.draw(shape);
-
-                        String    key = entry.getKey();
-                        Rectangle rect = shape.getBounds();
-                        g.drawString(
-                            key,
-                            rect.x + (rect.width / 2),
-                            rect.y + (rect.height / 2));
-                    }
-
-                    g.setFont(oldFont);
-                }
+                // Draw attachments, if any
+                glyph.renderAttachments(g);
             }
 
             g.setStroke(oldStroke);

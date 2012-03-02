@@ -11,21 +11,25 @@
 // </editor-fold>
 package omr.glyph.facets;
 
+import omr.glyph.ui.AttachmentHolder;
+import omr.glyph.ui.BasicAttachmentHolder;
+
 import omr.lag.BasicSection;
 import omr.lag.Section;
 
 import omr.ui.Colors;
 
 import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Class {@code BasicDisplay} is the basic implementation of a display facet
+ * Class {@code BasicDisplay} is the basic implementation of a display
+ * facet.
  *
  * @author Hervé Bitteur
  */
@@ -33,16 +37,10 @@ class BasicDisplay
     extends BasicFacet
     implements GlyphDisplay
 {
-    //~ Static fields/initializers ---------------------------------------------
-
-    // Empty map always returned when there is no attachment
-    protected static Map<String, java.awt.Shape> EMPTY_MAP = Collections.unmodifiableMap(
-        new HashMap<String, java.awt.Shape>());
-
     //~ Instance fields --------------------------------------------------------
 
-    // Map for potential attachments
-    protected Map<String, java.awt.Shape> attachments;
+    /** Potential attachments, lazily allocated */
+    protected AttachmentHolder attachments;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -50,8 +48,7 @@ class BasicDisplay
     // BasicDisplay //
     //--------------//
     /**
-     * Create a new BasicDisplay object
-     *
+     * Create a new BasicDisplay object.
      * @param glyph our glyph
      */
     public BasicDisplay (Glyph glyph)
@@ -61,68 +58,26 @@ class BasicDisplay
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------------//
-    // getAttachments //
-    //----------------//
-    public Map<String, java.awt.Shape> getAttachments ()
-    {
-        if (attachments != null) {
-            return Collections.unmodifiableMap(attachments);
-        } else {
-            return EMPTY_MAP;
-        }
-    }
-
-    //----------//
-    // getColor //
-    //----------//
-    public Color getColor ()
-    {
-        if (glyph.getShape() == null) {
-            return Colors.SHAPE_UNKNOWN;
-        } else {
-            return glyph.getShape()
-                        .getColor();
-        }
-    }
-
-    //----------//
-    // getImage //
-    //----------//
-    public BufferedImage getImage ()
-    {
-        // Determine the bounding box
-        Rectangle     box = glyph.getContourBox();
-        BufferedImage image = new BufferedImage(
-            box.width,
-            box.height,
-            BufferedImage.TYPE_BYTE_GRAY);
-
-        for (Section section : glyph.getMembers()) {
-            section.fillImage(image, box);
-        }
-
-        return image;
-    }
-
     //---------------//
     // addAttachment //
     //---------------//
+    @Override
     public void addAttachment (String         id,
                                java.awt.Shape attachment)
     {
         if (attachment != null) {
             if (attachments == null) {
-                attachments = new HashMap<String, java.awt.Shape>();
+                attachments = new BasicAttachmentHolder();
             }
 
-            attachments.put(id, attachment);
+            attachments.addAttachment(id, attachment);
         }
     }
 
     //----------//
     // colorize //
     //----------//
+    @Override
     public void colorize (Color color)
     {
         colorize(glyph.getMembers(), color);
@@ -131,6 +86,7 @@ class BasicDisplay
     //----------//
     // colorize //
     //----------//
+    @Override
     public void colorize (Collection<Section> sections,
                           Color               color)
     {
@@ -142,6 +98,7 @@ class BasicDisplay
     //-----------//
     // drawAscii //
     //-----------//
+    @Override
     public void drawAscii ()
     {
         System.out.println(glyph.toString());
@@ -156,8 +113,10 @@ class BasicDisplay
         // Allocate the drawing table
         char[][] table = BasicSection.allocateTable(box);
 
-        // Register each glyph & section in turn
-        fill(table, box);
+        // Register each section in turn
+        for (Section section : glyph.getMembers()) {
+            section.fillTable(table, box);
+        }
 
         // Draw the result
         BasicSection.drawTable(table, box);
@@ -174,9 +133,57 @@ class BasicDisplay
         }
     }
 
+    //----------------//
+    // getAttachments //
+    //----------------//
+    @Override
+    public Map<String, java.awt.Shape> getAttachments ()
+    {
+        if (attachments != null) {
+            return attachments.getAttachments();
+        } else {
+            return Collections.emptyMap();
+        }
+    }
+
+    //----------//
+    // getColor //
+    //----------//
+    @Override
+    public Color getColor ()
+    {
+        if (glyph.getShape() == null) {
+            return Colors.SHAPE_UNKNOWN;
+        } else {
+            return glyph.getShape()
+                        .getColor();
+        }
+    }
+
+    //----------//
+    // getImage //
+    //----------//
+    @Override
+    public BufferedImage getImage ()
+    {
+        // Determine the bounding box
+        Rectangle     box = glyph.getContourBox();
+        BufferedImage image = new BufferedImage(
+            box.width,
+            box.height,
+            BufferedImage.TYPE_BYTE_GRAY);
+
+        for (Section section : glyph.getMembers()) {
+            section.fillImage(image, box);
+        }
+
+        return image;
+    }
+
     //------------//
     // recolorize //
     //------------//
+    @Override
     public void recolorize ()
     {
         for (Section section : glyph.getMembers()) {
@@ -184,14 +191,14 @@ class BasicDisplay
         }
     }
 
-    //------//
-    // fill //
-    //------//
-    private void fill (char[][]  table,
-                       Rectangle box)
+    //-------------------//
+    // renderAttachments //
+    //-------------------//
+    @Override
+    public void renderAttachments (Graphics2D g)
     {
-        for (Section section : glyph.getMembers()) {
-            section.fillTable(table, box);
+        if (attachments != null) {
+            attachments.renderAttachments(g);
         }
     }
 }

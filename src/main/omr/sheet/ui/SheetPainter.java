@@ -213,7 +213,7 @@ public class SheetPainter
 
                 // Staff lines
                 for (StaffInfo staff : systemInfo.getStaves()) {
-                    staff.render(g);
+                    staff.renderAttachments(g);
                 }
 
                 // Stems

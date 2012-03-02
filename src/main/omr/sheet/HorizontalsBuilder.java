@@ -1171,7 +1171,7 @@ public class HorizontalsBuilder
     //
     //            // Render the dashes found
     //            for (Dash dash : allDashes) {
-    //                dash.render(g);
+    //                dash.renderAttachments(g);
     //                dash.renderContour(g);
     //            }
     //

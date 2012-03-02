@@ -197,7 +197,7 @@ public abstract class Dash
     }
 
     //--------//
-    // render //
+    // renderAttachments //
     //--------//
     /**
      * Render the dash.

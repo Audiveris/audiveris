@@ -182,7 +182,6 @@ public class PagePhysicalPainter
         g.setColor(defaultColor);
 
         try {
-            //barline.render(g);
             Stroke oldStroke = g.getStroke();
 
             for (Glyph glyph : barline.getGlyphs()) {

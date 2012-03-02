@@ -232,522 +232,6 @@ public class SystemInfo
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------//
-    // setBar //
-    //--------//
-    /**
-     * Assign system barline on the provided side.
-     * @param side proper horizontal side
-     * @param bar the bar to set
-     */
-    public void setBar (HorizontalSide side,
-                        BarInfo        bar)
-    {
-        if (side == HorizontalSide.LEFT) {
-            this.leftBar = bar;
-        } else {
-            this.rightBar = bar;
-        }
-    }
-
-    //--------//
-    // getBar //
-    //--------//
-    /**
-     * Report the system barline on the provided side.
-     * @param side proper horizontal side
-     * @return the system bar on this side, or null
-     */
-    public BarInfo getBar (HorizontalSide side)
-    {
-        if (side == HorizontalSide.LEFT) {
-            return leftBar;
-        } else {
-            return rightBar;
-        }
-    }
-
-    //------------------//
-    // setBarAlignments //
-    //------------------//
-    /**
-     * Record the various bar alignments for this system.
-     * @param barAlignments the barAlignments to set
-     */
-    public void setBarAlignments (List<BarAlignment> barAlignments)
-    {
-        this.barAlignments = barAlignments;
-    }
-
-    //------------------//
-    // getBarAlignments //
-    //------------------//
-    /**
-     * Report the system bar alignments.
-     * @return the barAlignments
-     */
-    public List<BarAlignment> getBarAlignments ()
-    {
-        return barAlignments;
-    }
-
-    //-----------//
-    // getBottom //
-    //-----------//
-    /**
-     * Report the ordinate of the bottom of the system, which is the
-     * ordinate of the last line of the last staff of this system.
-     * @return the system bottom, in pixels
-     */
-    public int getBottom ()
-    {
-        return bottom;
-    }
-
-    //-------------//
-    // setBoundary //
-    //-------------//
-    /**
-     * Define the precise boundary of this system.
-     * @param boundary the (new) boundary
-     */
-    public void setBoundary (SystemBoundary boundary)
-    {
-        this.boundary = boundary;
-    }
-
-    //-------------//
-    // getBoundary //
-    //-------------//
-    /**
-     * Report the precise boundary of this system.
-     * @return the precise system boundary
-     */
-    public SystemBoundary getBoundary ()
-    {
-        return boundary;
-    }
-
-    //-----------//
-    // getBounds //
-    //-----------//
-    /**
-     * Report the rectangular bounds that enclose this system.
-     * @return the system rectangular bounds
-     */
-    public PixelRectangle getBounds ()
-    {
-        if (boundary != null) {
-            return new PixelRectangle(boundary.getBounds());
-        } else {
-            return null;
-        }
-    }
-
-    //-----------//
-    // getDeltaY //
-    //-----------//
-    /**
-     * Report the deltaY of the system, that is the difference in
-     * ordinate between first and last staves of the system.
-     * This deltaY is of course 0 for a one-staff system.
-     *
-     * @return the deltaY value, expressed in pixels
-     */
-    public int getDeltaY ()
-    {
-        return deltaY;
-    }
-
-    //------------//
-    // getEndings //
-    //------------//
-    /**
-     * Report the collection of endings found.
-     * @return the endings collection
-     */
-    public List<Glyph> getEndings ()
-    {
-        return endings;
-    }
-
-    //---------------//
-    // getFirstStaff //
-    //---------------//
-    /**
-     * Report the first staff of the system.
-     * @return the first staff
-     */
-    public StaffInfo getFirstStaff ()
-    {
-        return staves.get(0);
-    }
-
-    //-----------//
-    // getGlyphs //
-    //-----------//
-    /**
-     * Report the unmodifiable collection of glyphs within the system
-     * area.
-     * @return the unmodifiable collection of glyphs
-     */
-    public SortedSet<Glyph> getGlyphs ()
-    {
-        return glyphsView;
-    }
-
-    //-----------------------//
-    // getHorizontalSections //
-    //-----------------------//
-    /**
-     * Report the (unmodifiable) collection of horizontal sections in
-     * the system related area.
-     * @return the area horizontal sections
-     */
-    public Collection<Section> getHorizontalSections ()
-    {
-        return hSectionsView;
-    }
-
-    //-----------------------//
-    // getHorizontalsBuilder //
-    //-----------------------//
-    public HorizontalsBuilder getHorizontalsBuilder ()
-    {
-        return horizontalsBuilder;
-    }
-
-    //-------//
-    // getId //
-    //-------//
-    /**
-     * Report the id (debugging info) of the system info.
-     * @return the id
-     */
-    public int getId ()
-    {
-        return id;
-    }
-
-    //--------------//
-    // getLastStaff //
-    //--------------//
-    /**
-     * @return the lastStaff
-     */
-    public StaffInfo getLastStaff ()
-    {
-        return staves.get(staves.size() - 1);
-    }
-
-    //------------//
-    // getLedgers //
-    //------------//
-    /**
-     * Report non-modifiable view of ledgers found.
-     * @return the ledger collection
-     */
-    public List<Glyph> getLedgers ()
-    {
-        return Collections.unmodifiableList(ledgers);
-    }
-
-    //---------//
-    // getLeft //
-    //---------//
-    /**
-     * Report the left abscissa.
-     * @return the left abscissa value, expressed in pixels
-     */
-    public int getLeft ()
-    {
-        return left;
-    }
-
-    //----------//
-    // setLimit //
-    //----------//
-    /**
-     * Record the system limit on the provided side.
-     * @param side proper horizontal side
-     * @param limit the limit to set
-     */
-    public void setLimit (HorizontalSide side,
-                          Object         limit)
-    {
-        if (side == HorizontalSide.LEFT) {
-            this.leftLimit = limit;
-        } else {
-            this.rightLimit = limit;
-        }
-    }
-
-    //----------//
-    // getLimit //
-    //----------//
-    /**
-     * Report the system limit on the provided side.
-     * @param side proper horizontal side
-     * @return the leftBar
-     */
-    public Object getLimit (HorizontalSide side)
-    {
-        if (side == HorizontalSide.LEFT) {
-            return leftLimit;
-        } else {
-            return rightLimit;
-        }
-    }
-
-    //--------------//
-    // getLogPrefix //
-    //--------------//
-    /**
-     * Report the proper prefix to use when logging a message.
-     * @return the proper prefix
-     */
-    public String getLogPrefix ()
-    {
-        StringBuilder sb = new StringBuilder(sheet.getLogPrefix());
-
-        if (sb.length() > 1) {
-            sb.insert(sb.length() - 1, "S" + id);
-        } else {
-            sb.append("S")
-              .append(id)
-              .append(" ");
-        }
-
-        return sb.toString();
-    }
-
-    //------------------------------//
-    // getMutableHorizontalSections //
-    //------------------------------//
-    /**
-     * Report the (modifiable) collection of horizontal sections in the
-     * system related area.
-     * @return the area vertical sections
-     */
-    public Collection<Section> getMutableHorizontalSections ()
-    {
-        return hSections;
-    }
-
-    //----------------------------//
-    // getMutableVerticalSections //
-    //----------------------------//
-    /**
-     * Report the (modifiable) collection of vertical sections in the
-     * system related area.
-     * @return the area vertical sections
-     */
-    public Collection<Section> getMutableVerticalSections ()
-    {
-        return vSections;
-    }
-
-    //------------------//
-    // getNewSentenceId //
-    //------------------//
-    /**
-     * Report the id for a new sentence.
-     * @return the next id
-     */
-    public int getNewSentenceId ()
-    {
-        return ++sentenceCount;
-    }
-
-    //----------------//
-    // getNoteStaffAt //
-    //----------------//
-    /**
-     * Given a note, retrieve the proper related staff within the
-     * system, using ledgers if any.
-     * @param point the center of the provided note entity
-     * @return the proper note position (staff & pitch)
-     */
-    public NotePosition getNoteStaffAt (PixelPoint point)
-    {
-        StaffManager manager = sheet.getStaffManager();
-        StaffInfo    staff = manager.getStaffAt(point);
-        NotePosition pos = staff.getNotePosition(point);
-
-        if (logger.isFineEnabled()) {
-            logger.fine(point + " -> " + pos);
-        }
-
-        double pitch = pos.getPitchPosition();
-
-        if ((Math.abs(pitch) > 5) && (pos.getLedger() == null)) {
-            // Delta pitch from reference line
-            double    dp = Math.abs(pitch) - 4;
-
-            // Check with the other staff, if any
-            int       index = staves.indexOf(staff);
-            StaffInfo otherStaff = null;
-
-            if ((pitch < 0) && (index > 0)) {
-                otherStaff = staves.get(index - 1);
-            } else if ((pitch > 0) && (index < (staves.size() - 1))) {
-                otherStaff = staves.get(index + 1);
-            }
-
-            if (otherStaff != null) {
-                NotePosition otherPos = otherStaff.getNotePosition(point);
-
-                if (otherPos.getLedger() != null) {
-                    // Delta pitch from closest reference ledger
-                    double otherDp = Math.abs(
-                        otherPos.getPitchPosition() -
-                        otherPos.getLedger().getPitchPosition());
-
-                    if (otherDp < dp) {
-                        if (logger.isFineEnabled()) {
-                            logger.info("   otherPos: " + pos);
-                        }
-
-                        pos = otherPos;
-                    }
-                }
-            }
-        }
-
-        return pos;
-    }
-
-    //----------//
-    // getParts //
-    //----------//
-    /**
-     * Reports the parts of this system.
-     * @return the parts (non-null)
-     */
-    public List<PartInfo> getParts ()
-    {
-        return parts;
-    }
-
-    //----------//
-    // getRight //
-    //----------//
-    /**
-     * Report the abscissa of the end of the system.
-     * @return the right abscissa, expressed in pixels
-     */
-    public int getRight ()
-    {
-        return left + width;
-    }
-
-    //----------------//
-    // getScoreSystem //
-    //----------------//
-    /**
-     * Report the related logical score system.
-     * @return the logical score System counterpart
-     */
-    public ScoreSystem getScoreSystem ()
-    {
-        return scoreSystem;
-    }
-
-    //------------------//
-    // getSlurInspector //
-    //------------------//
-    public SlurInspector getSlurInspector ()
-    {
-        return slurInspector;
-    }
-
-    //------------//
-    // getStaffAt //
-    //------------//
-    /**
-     * Given a point, retrieve the closest staff within the system.
-     * @param point the provided point
-     * @return the "containing" staff
-     */
-    public StaffInfo getStaffAt (Point2D point)
-    {
-        return sheet.getStaffManager()
-                    .getStaffAt(point);
-    }
-
-    //-----------//
-    // setStaves //
-    //-----------//
-    /**
-     * @param staves the range of staves
-     */
-    public void setStaves (List<StaffInfo> staves)
-    {
-        this.staves = staves;
-        updateCoordinates();
-    }
-
-    //-----------//
-    // getStaves //
-    //-----------//
-    /**
-     * Report the list of staves that compose this system.
-     * @return the staves
-     */
-    public List<StaffInfo> getStaves ()
-    {
-        return staves;
-    }
-
-    //------------//
-    // getTenutos //
-    //------------//
-    /**
-     * Report the collection of tenutos found.
-     * @return the tenutos collection
-     */
-    public List<Glyph> getTenutos ()
-    {
-        return tenutos;
-    }
-
-    //--------//
-    // getTop //
-    //--------//
-    /**
-     * Report the ordinate of the top of this system.
-     * @return the top ordinate, expressed in pixels
-     */
-    public int getTop ()
-    {
-        return top;
-    }
-
-    //---------------------//
-    // getVerticalSections //
-    //---------------------//
-    /**
-     * Report the (unmodifiable) collection of vertical sections in
-     * the system related area.
-     * @return the area vertical sections
-     */
-    public Collection<Section> getVerticalSections ()
-    {
-        return vSectionsView;
-    }
-
-    //----------//
-    // getWidth //
-    //----------//
-    /**
-     * Report the width of the system.
-     * @return the width value, expressed in pixels
-     */
-    public int getWidth ()
-    {
-        return width;
-    }
-
     //----------//
     // addGlyph //
     //----------//
@@ -859,6 +343,14 @@ public class SystemInfo
             includeSeed,
             suitables,
             adapter);
+    }
+
+    //---------------//
+    // buildCompound //
+    //---------------//
+    public Glyph buildCompound (Collection<Glyph> parts)
+    {
+        return compoundBuilder.buildCompound(parts);
     }
 
     //------------//
@@ -1067,6 +559,506 @@ public class SystemInfo
     {
         removeInactiveGlyphs();
         retrieveGlyphs();
+    }
+
+    //--------------------//
+    // getCompoundBuilder //
+    //--------------------//
+    /**
+     * @return the compoundBuilder
+     */
+    public CompoundBuilder getCompoundBuilder ()
+    {
+        return compoundBuilder;
+    }
+
+    //-------------------//
+    // updateCoordinates //
+    //-------------------//
+    public final void updateCoordinates ()
+    {
+        StaffInfo firstStaff = getFirstStaff();
+        LineInfo  firstLine = firstStaff.getFirstLine();
+        Point2D   topLeft = firstLine.getEndPoint(LEFT);
+        Point2D   topRight = firstLine.getEndPoint(RIGHT);
+        StaffInfo lastStaff = getLastStaff();
+        LineInfo  lastLine = lastStaff.getLastLine();
+        Point2D   botLeft = lastLine.getEndPoint(LEFT);
+
+        left = (int) Math.rint(topLeft.getX());
+        top = (int) Math.rint(topLeft.getY());
+        width = (int) Math.rint(topRight.getX() - topLeft.getX());
+        deltaY = (int) Math.rint(
+            lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
+        bottom = (int) Math.rint(botLeft.getY());
+    }
+
+    //--------//
+    // getBar //
+    //--------//
+    /**
+     * Report the system barline on the provided side.
+     * @param side proper horizontal side
+     * @return the system bar on this side, or null
+     */
+    public BarInfo getBar (HorizontalSide side)
+    {
+        if (side == HorizontalSide.LEFT) {
+            return leftBar;
+        } else {
+            return rightBar;
+        }
+    }
+
+    //------------------//
+    // getBarAlignments //
+    //------------------//
+    /**
+     * Report the system bar alignments.
+     * @return the barAlignments
+     */
+    public List<BarAlignment> getBarAlignments ()
+    {
+        return barAlignments;
+    }
+
+    //-----------//
+    // getBottom //
+    //-----------//
+    /**
+     * Report the ordinate of the bottom of the system, which is the
+     * ordinate of the last line of the last staff of this system.
+     * @return the system bottom, in pixels
+     */
+    public int getBottom ()
+    {
+        return bottom;
+    }
+
+    //-------------//
+    // getBoundary //
+    //-------------//
+    /**
+     * Report the precise boundary of this system.
+     * @return the precise system boundary
+     */
+    public SystemBoundary getBoundary ()
+    {
+        return boundary;
+    }
+
+    //-----------//
+    // getBounds //
+    //-----------//
+    /**
+     * Report the rectangular bounds that enclose this system.
+     * @return the system rectangular bounds
+     */
+    public PixelRectangle getBounds ()
+    {
+        if (boundary != null) {
+            return new PixelRectangle(boundary.getBounds());
+        } else {
+            return null;
+        }
+    }
+
+    //-----------//
+    // getDeltaY //
+    //-----------//
+    /**
+     * Report the deltaY of the system, that is the difference in
+     * ordinate between first and last staves of the system.
+     * This deltaY is of course 0 for a one-staff system.
+     *
+     * @return the deltaY value, expressed in pixels
+     */
+    public int getDeltaY ()
+    {
+        return deltaY;
+    }
+
+    //------------//
+    // getEndings //
+    //------------//
+    /**
+     * Report the collection of endings found.
+     * @return the endings collection
+     */
+    public List<Glyph> getEndings ()
+    {
+        return endings;
+    }
+
+    //---------------//
+    // getFirstStaff //
+    //---------------//
+    /**
+     * Report the first staff of the system.
+     * @return the first staff
+     */
+    public StaffInfo getFirstStaff ()
+    {
+        return staves.get(0);
+    }
+
+    //-----------//
+    // getGlyphs //
+    //-----------//
+    /**
+     * Report the unmodifiable collection of glyphs within the system
+     * area.
+     * @return the unmodifiable collection of glyphs
+     */
+    public SortedSet<Glyph> getGlyphs ()
+    {
+        return glyphsView;
+    }
+
+    //-----------------------//
+    // getHorizontalSections //
+    //-----------------------//
+    /**
+     * Report the (unmodifiable) collection of horizontal sections in
+     * the system related area.
+     * @return the area horizontal sections
+     */
+    public Collection<Section> getHorizontalSections ()
+    {
+        return hSectionsView;
+    }
+
+    //-----------------------//
+    // getHorizontalsBuilder //
+    //-----------------------//
+    public HorizontalsBuilder getHorizontalsBuilder ()
+    {
+        return horizontalsBuilder;
+    }
+
+    //-------//
+    // getId //
+    //-------//
+    /**
+     * Report the id (debugging info) of the system info.
+     * @return the id
+     */
+    public int getId ()
+    {
+        return id;
+    }
+
+    //--------------//
+    // getLastStaff //
+    //--------------//
+    /**
+     * @return the lastStaff
+     */
+    public StaffInfo getLastStaff ()
+    {
+        return staves.get(staves.size() - 1);
+    }
+
+    //------------//
+    // getLedgers //
+    //------------//
+    /**
+     * Report non-modifiable view of ledgers found.
+     * @return the ledger collection
+     */
+    public List<Glyph> getLedgers ()
+    {
+        return Collections.unmodifiableList(ledgers);
+    }
+
+    //---------//
+    // getLeft //
+    //---------//
+    /**
+     * Report the left abscissa.
+     * @return the left abscissa value, expressed in pixels
+     */
+    public int getLeft ()
+    {
+        return left;
+    }
+
+    //----------//
+    // getLimit //
+    //----------//
+    /**
+     * Report the system limit on the provided side.
+     * @param side proper horizontal side
+     * @return the leftBar
+     */
+    public Object getLimit (HorizontalSide side)
+    {
+        if (side == HorizontalSide.LEFT) {
+            return leftLimit;
+        } else {
+            return rightLimit;
+        }
+    }
+
+    //--------------//
+    // getLogPrefix //
+    //--------------//
+    /**
+     * Report the proper prefix to use when logging a message.
+     * @return the proper prefix
+     */
+    public String getLogPrefix ()
+    {
+        StringBuilder sb = new StringBuilder(sheet.getLogPrefix());
+
+        if (sb.length() > 1) {
+            sb.insert(sb.length() - 1, "S" + id);
+        } else {
+            sb.append("S")
+              .append(id)
+              .append(" ");
+        }
+
+        return sb.toString();
+    }
+
+    //------------------------------//
+    // getMutableHorizontalSections //
+    //------------------------------//
+    /**
+     * Report the (modifiable) collection of horizontal sections in the
+     * system related area.
+     * @return the area vertical sections
+     */
+    public Collection<Section> getMutableHorizontalSections ()
+    {
+        return hSections;
+    }
+
+    //----------------------------//
+    // getMutableVerticalSections //
+    //----------------------------//
+    /**
+     * Report the (modifiable) collection of vertical sections in the
+     * system related area.
+     * @return the area vertical sections
+     */
+    public Collection<Section> getMutableVerticalSections ()
+    {
+        return vSections;
+    }
+
+    //------------------//
+    // getNewSentenceId //
+    //------------------//
+    /**
+     * Report the id for a new sentence.
+     * @return the next id
+     */
+    public int getNewSentenceId ()
+    {
+        return ++sentenceCount;
+    }
+
+    //----------------//
+    // getNoteStaffAt //
+    //----------------//
+    /**
+     * Given a note, retrieve the proper related staff within the
+     * system, using ledgers if any.
+     * @param point the center of the provided note entity
+     * @return the proper note position (staff & pitch)
+     */
+    public NotePosition getNoteStaffAt (PixelPoint point)
+    {
+        StaffManager manager = sheet.getStaffManager();
+        StaffInfo    staff = manager.getStaffAt(point);
+        NotePosition pos = staff.getNotePosition(point);
+
+        if (logger.isFineEnabled()) {
+            logger.fine(point + " -> " + pos);
+        }
+
+        double pitch = pos.getPitchPosition();
+
+        if ((Math.abs(pitch) > 5) && (pos.getLedger() == null)) {
+            // Delta pitch from reference line
+            double    dp = Math.abs(pitch) - 4;
+
+            // Check with the other staff, if any
+            int       index = staves.indexOf(staff);
+            StaffInfo otherStaff = null;
+
+            if ((pitch < 0) && (index > 0)) {
+                otherStaff = staves.get(index - 1);
+            } else if ((pitch > 0) && (index < (staves.size() - 1))) {
+                otherStaff = staves.get(index + 1);
+            }
+
+            if (otherStaff != null) {
+                NotePosition otherPos = otherStaff.getNotePosition(point);
+
+                if (otherPos.getLedger() != null) {
+                    // Delta pitch from closest reference ledger
+                    double otherDp = Math.abs(
+                        otherPos.getPitchPosition() -
+                        otherPos.getLedger().getPitchPosition());
+
+                    if (otherDp < dp) {
+                        if (logger.isFineEnabled()) {
+                            logger.info("   otherPos: " + pos);
+                        }
+
+                        pos = otherPos;
+                    }
+                }
+            }
+        }
+
+        return pos;
+    }
+
+    //----------//
+    // getParts //
+    //----------//
+    /**
+     * Reports the parts of this system.
+     * @return the parts (non-null)
+     */
+    public List<PartInfo> getParts ()
+    {
+        return parts;
+    }
+
+    //----------//
+    // getRight //
+    //----------//
+    /**
+     * Report the abscissa of the end of the system.
+     * @return the right abscissa, expressed in pixels
+     */
+    public int getRight ()
+    {
+        return left + width;
+    }
+
+    //----------------//
+    // getScoreSystem //
+    //----------------//
+    /**
+     * Report the related logical score system.
+     * @return the logical score System counterpart
+     */
+    public ScoreSystem getScoreSystem ()
+    {
+        return scoreSystem;
+    }
+
+    //--------------//
+    // getSentences //
+    //--------------//
+    /**
+     * Report the various sentences retrieved in this system.
+     * @return the (perhaps empty) collection of sentences found
+     */
+    public Set<Sentence> getSentences ()
+    {
+        return sentences;
+    }
+
+    //----------//
+    // getSheet //
+    //----------//
+    /**
+     * Report the sheet this system belongs to.
+     * @return the containing sheet
+     */
+    public Sheet getSheet ()
+    {
+        return sheet;
+    }
+
+    //------------------//
+    // getSlurInspector //
+    //------------------//
+    public SlurInspector getSlurInspector ()
+    {
+        return slurInspector;
+    }
+
+    //------------//
+    // getStaffAt //
+    //------------//
+    /**
+     * Given a point, retrieve the closest staff within the system.
+     * @param point the provided point
+     * @return the "containing" staff
+     */
+    public StaffInfo getStaffAt (Point2D point)
+    {
+        return sheet.getStaffManager()
+                    .getStaffAt(point);
+    }
+
+    //-----------//
+    // getStaves //
+    //-----------//
+    /**
+     * Report the list of staves that compose this system.
+     * @return the staves
+     */
+    public List<StaffInfo> getStaves ()
+    {
+        return staves;
+    }
+
+    //------------//
+    // getTenutos //
+    //------------//
+    /**
+     * Report the collection of tenutos found.
+     * @return the tenutos collection
+     */
+    public List<Glyph> getTenutos ()
+    {
+        return tenutos;
+    }
+
+    //--------//
+    // getTop //
+    //--------//
+    /**
+     * Report the ordinate of the top of this system.
+     * @return the top ordinate, expressed in pixels
+     */
+    public int getTop ()
+    {
+        return top;
+    }
+
+    //---------------------//
+    // getVerticalSections //
+    //---------------------//
+    /**
+     * Report the (unmodifiable) collection of vertical sections in
+     * the system related area.
+     * @return the area vertical sections
+     */
+    public Collection<Section> getVerticalSections ()
+    {
+        return vSectionsView;
+    }
+
+    //----------//
+    // getWidth //
+    //----------//
+    /**
+     * Report the width of the system.
+     * @return the width value, expressed in pixels
+     */
+    public int getWidth ()
+    {
+        return width;
     }
 
     //---------------//
@@ -1326,6 +1318,78 @@ public class SystemInfo
         return selected;
     }
 
+    //--------//
+    // setBar //
+    //--------//
+    /**
+     * Assign system barline on the provided side.
+     * @param side proper horizontal side
+     * @param bar the bar to set
+     */
+    public void setBar (HorizontalSide side,
+                        BarInfo        bar)
+    {
+        if (side == HorizontalSide.LEFT) {
+            this.leftBar = bar;
+        } else {
+            this.rightBar = bar;
+        }
+    }
+
+    //------------------//
+    // setBarAlignments //
+    //------------------//
+    /**
+     * Record the various bar alignments for this system.
+     * @param barAlignments the barAlignments to set
+     */
+    public void setBarAlignments (List<BarAlignment> barAlignments)
+    {
+        this.barAlignments = barAlignments;
+    }
+
+    //-------------//
+    // setBoundary //
+    //-------------//
+    /**
+     * Define the precise boundary of this system.
+     * @param boundary the (new) boundary
+     */
+    public void setBoundary (SystemBoundary boundary)
+    {
+        this.boundary = boundary;
+    }
+
+    //----------//
+    // setLimit //
+    //----------//
+    /**
+     * Record the system limit on the provided side.
+     * @param side proper horizontal side
+     * @param limit the limit to set
+     */
+    public void setLimit (HorizontalSide side,
+                          Object         limit)
+    {
+        if (side == HorizontalSide.LEFT) {
+            this.leftLimit = limit;
+        } else {
+            this.rightLimit = limit;
+        }
+    }
+
+    //-----------//
+    // setStaves //
+    //-----------//
+    /**
+     * @param staves the range of staves
+     */
+    public void setStaves (List<StaffInfo> staves)
+    {
+        this.staves = staves;
+        updateCoordinates();
+    }
+
     //-----------//
     // stemBoxOf //
     //-----------//
@@ -1413,30 +1477,6 @@ public class SystemInfo
         return sb.toString();
     }
 
-    //--------------//
-    // getSentences //
-    //--------------//
-    /**
-     * Report the various sentences retrieved in this system.
-     * @return the (perhaps empty) collection of sentences found
-     */
-    public Set<Sentence> getSentences ()
-    {
-        return sentences;
-    }
-
-    //----------//
-    // getSheet //
-    //----------//
-    /**
-     * Report the sheet this system belongs to.
-     * @return the containing sheet
-     */
-    public Sheet getSheet ()
-    {
-        return sheet;
-    }
-
     //----------------//
     // translateFinal //
     //----------------//
@@ -1472,37 +1512,5 @@ public class SystemInfo
     public Glyph trimSlur (Glyph slur)
     {
         return slurInspector.trimSlur(slur);
-    }
-
-    //-------------------//
-    // updateCoordinates //
-    //-------------------//
-    public final void updateCoordinates ()
-    {
-        StaffInfo firstStaff = getFirstStaff();
-        LineInfo  firstLine = firstStaff.getFirstLine();
-        Point2D   topLeft = firstLine.getEndPoint(LEFT);
-        Point2D   topRight = firstLine.getEndPoint(RIGHT);
-        StaffInfo lastStaff = getLastStaff();
-        LineInfo  lastLine = lastStaff.getLastLine();
-        Point2D   botLeft = lastLine.getEndPoint(LEFT);
-
-        left = (int) Math.rint(topLeft.getX());
-        top = (int) Math.rint(topLeft.getY());
-        width = (int) Math.rint(topRight.getX() - topLeft.getX());
-        deltaY = (int) Math.rint(
-            lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
-        bottom = (int) Math.rint(botLeft.getY());
-    }
-
-    //--------------------//
-    // getCompoundBuilder //
-    //--------------------//
-    /**
-     * @return the compoundBuilder
-     */
-    public CompoundBuilder getCompoundBuilder ()
-    {
-        return compoundBuilder;
     }
 }

@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.glyph.facets;
 
-import omr.glyph.Shape;
-
 import omr.lag.Lag;
 import omr.lag.Section;
 
@@ -24,7 +22,7 @@ import omr.util.HorizontalSide;
 import omr.util.Predicate;
 
 import java.awt.Rectangle;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -71,6 +69,31 @@ class BasicEnvironment
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //---------------------//
+    // copyStemInformation //
+    //---------------------//
+    public void copyStemInformation (Glyph other)
+    {
+        for (HorizontalSide side : HorizontalSide.values()) {
+            setStem(other.getStem(side), side);
+        }
+
+        setStemNumber(other.getStemNumber());
+    }
+
+    //------//
+    // dump //
+    //------//
+    @Override
+    public void dump ()
+    {
+        System.out.println("   stemNumber=" + getStemNumber());
+        System.out.println("   leftStem=" + getStem(HorizontalSide.LEFT));
+        System.out.println("   rightStem=" + getStem(HorizontalSide.RIGHT));
+        System.out.println("   pitchPosition=" + getPitchPosition());
+        System.out.println("   withLedger=" + isWithLedger());
+    }
 
     //--------------------//
     // getAlienPixelsFrom //
@@ -124,6 +147,51 @@ class BasicEnvironment
         return count;
     }
 
+    //-----------------------//
+    // getConnectedNeighbors //
+    //-----------------------//
+    @Override
+    public Set<Glyph> getConnectedNeighbors ()
+    {
+        Set<Section> sections = glyph.getMembers();
+
+        // Retrieve sections connected to this glyph
+        Set<Section> connectedSections = new HashSet<Section>();
+
+        for (Section section : sections) {
+            for (Section s : section.getSources()) {
+                if (!sections.contains(s)) {
+                    connectedSections.add(s);
+                }
+            }
+
+            for (Section s : section.getTargets()) {
+                if (!sections.contains(s)) {
+                    connectedSections.add(s);
+                }
+            }
+
+            for (Section s : section.getOppositeSections()) {
+                if (!sections.contains(s)) {
+                    connectedSections.add(s);
+                }
+            }
+        }
+
+        // Retrieve their containing glyphs
+        Set<Glyph> connectedGlyphs = new HashSet<Glyph>();
+
+        for (Section s : connectedSections) {
+            Glyph g = s.getGlyph();
+
+            if (g != null) {
+                connectedGlyphs.add(g);
+            }
+        }
+
+        return connectedGlyphs;
+    }
+
     //--------------//
     // getFirstStem //
     //--------------//
@@ -141,32 +209,11 @@ class BasicEnvironment
     }
 
     //------------------//
-    // setPitchPosition //
-    //------------------//
-    public void setPitchPosition (double pitchPosition)
-    {
-        this.pitchPosition = pitchPosition;
-    }
-
-    //------------------//
     // getPitchPosition //
     //------------------//
     public double getPitchPosition ()
     {
         return pitchPosition;
-    }
-
-    //---------//
-    // setStem //
-    //---------//
-    public void setStem (Glyph          stem,
-                         HorizontalSide side)
-    {
-        if (side == HorizontalSide.LEFT) {
-            leftStem = stem;
-        } else {
-            rightStem = stem;
-        }
     }
 
     //---------//
@@ -179,14 +226,6 @@ class BasicEnvironment
         } else {
             return rightStem;
         }
-    }
-
-    //---------------//
-    // setStemNumber //
-    //---------------//
-    public void setStemNumber (int stemNumber)
-    {
-        this.stemNumber = stemNumber;
     }
 
     //---------------//
@@ -245,14 +284,6 @@ class BasicEnvironment
         }
     }
 
-    //---------------//
-    // setWithLedger //
-    //---------------//
-    public void setWithLedger (boolean withLedger)
-    {
-        this.withLedger = withLedger;
-    }
-
     //--------------//
     // isWithLedger //
     //--------------//
@@ -261,28 +292,40 @@ class BasicEnvironment
         return withLedger;
     }
 
-    //---------------------//
-    // copyStemInformation //
-    //---------------------//
-    public void copyStemInformation (Glyph other)
+    //------------------//
+    // setPitchPosition //
+    //------------------//
+    public void setPitchPosition (double pitchPosition)
     {
-        for (HorizontalSide side : HorizontalSide.values()) {
-            setStem(other.getStem(side), side);
-        }
-
-        setStemNumber(other.getStemNumber());
+        this.pitchPosition = pitchPosition;
     }
 
-    //------//
-    // dump //
-    //------//
-    @Override
-    public void dump ()
+    //---------//
+    // setStem //
+    //---------//
+    public void setStem (Glyph          stem,
+                         HorizontalSide side)
     {
-        System.out.println("   stemNumber=" + getStemNumber());
-        System.out.println("   leftStem=" + getStem(HorizontalSide.LEFT));
-        System.out.println("   rightStem=" + getStem(HorizontalSide.RIGHT));
-        System.out.println("   pitchPosition=" + getPitchPosition());
-        System.out.println("   withLedger=" + isWithLedger());
+        if (side == HorizontalSide.LEFT) {
+            leftStem = stem;
+        } else {
+            rightStem = stem;
+        }
+    }
+
+    //---------------//
+    // setStemNumber //
+    //---------------//
+    public void setStemNumber (int stemNumber)
+    {
+        this.stemNumber = stemNumber;
+    }
+
+    //---------------//
+    // setWithLedger //
+    //---------------//
+    public void setWithLedger (boolean withLedger)
+    {
+        this.withLedger = withLedger;
     }
 }

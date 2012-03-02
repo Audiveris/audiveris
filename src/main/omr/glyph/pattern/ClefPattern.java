@@ -27,9 +27,6 @@ import omr.grid.StaffInfo;
 import omr.log.Logger;
 
 import omr.score.common.PixelRectangle;
-import omr.score.entity.Barline;
-import omr.score.entity.ScoreSystem;
-import omr.score.entity.SystemPart;
 
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
@@ -38,11 +35,7 @@ import omr.util.HorizontalSide;
 import omr.util.Implement;
 import omr.util.Predicate;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Class {@code ClefPattern} verifies all the initial clefs of a
@@ -126,9 +119,8 @@ public class ClefPattern
     @Override
     public int runPattern ()
     {
-        int         successNb = 0;
-        ScoreSystem scoreSystem = system.getScoreSystem();
-        int         staffId = 0;
+        int successNb = 0;
+        int staffId = 0;
 
         for (StaffInfo staff : system.getStaves()) {
             staffId++;
@@ -145,20 +137,8 @@ public class ClefPattern
                 (clefWidth / 2) - xOffset,
                 (staff.getHeight() / 2) - yOffset);
 
-            // Draw the box, for visual debug
-            SystemPart part = scoreSystem.getPartAt(inner.getCenter());
-            Barline    barline = part.getStartingBarline();
-            Glyph      line = null;
-
-            if (barline != null) {
-                line = Glyphs.firstOf(
-                    barline.getGlyphs(),
-                    Barline.linePredicate);
-
-                if (line != null) {
-                    line.addAttachment("ci" + staffId, inner);
-                }
-            }
+            // Remember the box, for visual debug
+            staff.addAttachment("  ci", inner);
 
             // We must find a clef out of these glyphs
             Collection<Glyph> glyphs = system.lookupIntersectedGlyphs(inner);
@@ -167,7 +147,35 @@ public class ClefPattern
                 logger.fine(staffId + Glyphs.toString(" int", glyphs));
             }
 
-            if (checkClef(glyphs, line, staffId)) {
+            // We assume than there can't be any alien among them, so we should 
+            // rebuild the larger glyph which the alien had wrongly segmented
+            Set<Glyph> impacted = new HashSet<Glyph>();
+
+            for (Glyph glyph : glyphs) {
+                if (glyph.getShape() == Shape.COMBINING_STEM) {
+                    if (logger.isFineEnabled()) {
+                        logger.info("Clef: Removed stem#" + glyph.getId());
+                    }
+
+                    impacted.addAll(glyph.getConnectedNeighbors());
+                    impacted.add(glyph);
+                }
+            }
+
+            if (!impacted.isEmpty()) {
+                // Rebuild the larger glyph
+                Glyph larger = system.buildCompound(impacted);
+
+                if (logger.isFineEnabled()) {
+                    logger.info(
+                        "Rebuilt stem-segmented glyph#" + larger.getId());
+                }
+
+                // Recompute the set of intersected glyphs
+                glyphs = system.lookupIntersectedGlyphs(inner);
+            }
+
+            if (checkClef(glyphs, staff)) {
                 successNb++;
             }
         }
@@ -181,11 +189,11 @@ public class ClefPattern
     /**
      * Try to recognize a clef in the compound of the provided glyphs.
      * @param glyphs the parts of a clef candidate
+     * @param staff  the containing staff
      * @return true if successful
      */
     private boolean checkClef (Collection<Glyph> glyphs,
-                               Glyph             line,
-                               int               staffId)
+                               StaffInfo         staff)
     {
         if (glyphs.isEmpty()) {
             return false;
@@ -231,16 +239,12 @@ public class ClefPattern
                     vote.shape + " built from " + Glyphs.toString(glyphs));
             }
 
-            // If there was a (false) stem in the glyphs, we should rebuild
-            // the larger glyph(s) which the stem had wrongly segmented
-
             // Look for larger stuff
             PixelRectangle outer = compound.getContourBox();
             outer.grow(xMargin, yMargin);
 
-            if (line != null) {
-                line.addAttachment("co" + staffId, outer);
-            }
+            // Remember the box, for visual debug
+            staff.addAttachment("co", outer);
 
             List<Glyph> outerGlyphs = system.lookupIntersectedGlyphs(outer);
             outerGlyphs.removeAll(glyphs);
@@ -306,18 +310,28 @@ public class ClefPattern
         Scale.Fraction     clefWidth = new Scale.Fraction(
             3d,
             "Width of a clef");
+
+        //
         Scale.Fraction     xOffset = new Scale.Fraction(
             0.2d,
             "Clef horizontal offset since left bar");
+
+        //
         Scale.Fraction     yOffset = new Scale.Fraction(
             0d,
             "Clef vertical offset since staff line");
+
+        //
         Scale.Fraction     xMargin = new Scale.Fraction(
             0d,
             "Clef horizontal outer margin");
+
+        //
         Scale.Fraction     yMargin = new Scale.Fraction(
             0.5d,
             "Clef vertical outer margin");
+
+        //
         Scale.AreaFraction minWeight = new Scale.AreaFraction(
             0.1,
             "Minimum normalized weight to be added to a clef");

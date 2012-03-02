@@ -22,8 +22,8 @@ import omr.util.Predicate;
 import java.util.Set;
 
 /**
- * Interface {@code GlyphEnvironment} defines the facet in charge of 
- * the surrounding environment of a glyph, in terms of staff-based 
+ * Interface {@code GlyphEnvironment} defines the facet in charge of
+ * the surrounding environment of a glyph, in terms of staff-based
  * pitch position, of presence of stem or ledgers, etc.
  *
  * @author Hervé Bitteur
@@ -32,6 +32,12 @@ interface GlyphEnvironment
     extends GlyphFacet
 {
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * Forward stem-related information from the provided glyph
+     * @param glyph the glyph whose stem information has to be used
+     */
+    void copyStemInformation (Glyph glyph);
 
     /**
      * Report the number of alien pixels, from the provided lag, found
@@ -46,16 +52,16 @@ interface GlyphEnvironment
                             Predicate<Section> predicate);
 
     /**
+     * Report the set of glyphs that are connected to this one
+     * @return the set of neighboring glyphs, connected through their sections
+     */
+    Set<Glyph> getConnectedNeighbors ();
+
+    /**
      * Report the first stem attached (left then right), if any
      * @return first stem found, or null
      */
     Glyph getFirstStem ();
-
-    /**
-     * Setter for the pitch position, with respect to containing staff
-     * @param pitchPosition the pitch position wrt the staff
-     */
-    void setPitchPosition (double pitchPosition);
 
     /**
      * Report the pitchPosition feature (position relative to the staff)
@@ -64,23 +70,10 @@ interface GlyphEnvironment
     double getPitchPosition ();
 
     /**
-     * Assign the stem on the provided side
-     * @param stem stem glyph
-     */
-    void setStem (Glyph          stem,
-                  HorizontalSide side);
-
-    /**
      * Report the stem attached on the provided side, if any
      * @return stem on provided side, or null
      */
     Glyph getStem (HorizontalSide side);
-
-    /**
-     * Remember the number of stems near by
-     * @param stemNumber the number of stems
-     */
-    void setStemNumber (int stemNumber);
 
     /**
      * Report the number of stems the glyph is close to
@@ -111,20 +104,33 @@ interface GlyphEnvironment
                            Set<Glyph>       bads);
 
     /**
-     * Remember info about ledger nearby
-     * @param withLedger true is there is such ledger
-     */
-    void setWithLedger (boolean withLedger);
-
-    /**
      * Report whether the glyph touches a ledger
      * @return true if there is a close ledger
      */
     boolean isWithLedger ();
 
     /**
-     * Forward stem-related information from the provided glyph
-     * @param glyph the glyph whose stem information has to be used
+     * Setter for the pitch position, with respect to containing staff
+     * @param pitchPosition the pitch position wrt the staff
      */
-    void copyStemInformation (Glyph glyph);
+    void setPitchPosition (double pitchPosition);
+
+    /**
+     * Assign the stem on the provided side
+     * @param stem stem glyph
+     */
+    void setStem (Glyph          stem,
+                  HorizontalSide side);
+
+    /**
+     * Remember the number of stems near by
+     * @param stemNumber the number of stems
+     */
+    void setStemNumber (int stemNumber);
+
+    /**
+     * Remember info about ledger nearby
+     * @param withLedger true is there is such ledger
+     */
+    void setWithLedger (boolean withLedger);
 }

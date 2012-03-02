@@ -12,6 +12,8 @@
 package omr.grid;
 
 import omr.glyph.facets.Glyph;
+import omr.glyph.ui.AttachmentHolder;
+import omr.glyph.ui.BasicAttachmentHolder;
 
 import omr.log.Logger;
 
@@ -34,6 +36,7 @@ import omr.util.VerticalSide;
 import static omr.util.VerticalSide.*;
 
 import java.awt.Graphics2D;
+import java.awt.Shape;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -57,6 +60,7 @@ import java.util.TreeSet;
  * @author Hervé Bitteur
  */
 public class StaffInfo
+    implements AttachmentHolder
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -104,6 +108,9 @@ public class StaffInfo
     /** Corresponding staff entity in the score hierarchy */
     private Staff scoreStaff;
 
+    /** Potential attachments */
+    private AttachmentHolder attachments = new BasicAttachmentHolder();
+
     //~ Constructors -----------------------------------------------------------
 
     //-----------//
@@ -132,21 +139,58 @@ public class StaffInfo
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------------//
-    // setAbscissa //
-    //-------------//
-    /**
-     * Set the staff abscissa of the provided side.
-     * @param side provided side
-     * @param val abscissa of staff end
-     */
-    public void setAbscissa (HorizontalSide side,
-                             double         val)
+    //---------------//
+    // addAttachment //
+    //---------------//
+    @Override
+    public void addAttachment (String id,
+                               Shape  attachment)
     {
-        if (side == HorizontalSide.LEFT) {
-            left = val;
-        } else {
-            right = val;
+        attachments.addAttachment(id, attachment);
+    }
+
+    //-----------//
+    // addLedger //
+    //-----------//
+    /**
+     * Add a ledger to the staff collection (which is lazily created)
+     * @param ledger the ledger to add
+     */
+    public void addLedger (Ledger ledger)
+    {
+        if (ledger == null) {
+            throw new IllegalArgumentException("Cannot register a null ledger");
+        }
+
+        int               pitch = ledger.getLineIndex();
+        SortedSet<Ledger> ledgerSet = ledgerMap.get(pitch);
+
+        if (ledgerSet == null) {
+            ledgerSet = new TreeSet(Dash.abscissaComparator);
+            ledgerMap.put(pitch, ledgerSet);
+        }
+
+        ledgerSet.add(ledger);
+        scoreStaff.getSystem()
+                  .getInfo()
+                  .addToLedgersCollection(ledger);
+    }
+
+    //------//
+    // dump //
+    //------//
+    /**
+     * A utility meant for debugging.
+     */
+    public void dump ()
+    {
+        System.out.println(
+            "StaffInfo" + getId() + " left=" + left + " right=" + right);
+
+        int i = 0;
+
+        for (LineInfo line : lines) {
+            System.out.println(" LineInfo" + i++ + " " + line.toString());
         }
     }
 
@@ -200,22 +244,13 @@ public class StaffInfo
                    .getBounds2D();
     }
 
-    //--------//
-    // setBar //
-    //--------//
-    /**
-     * Set a barline on the provided side
-     * @param side proper horizontal side
-     * @param bar the bar to set
-     */
-    public void setBar (HorizontalSide side,
-                        BarInfo        bar)
+    //----------------//
+    // getAttachments //
+    //----------------//
+    @Override
+    public Map<String, Shape> getAttachments ()
     {
-        if (side == HorizontalSide.LEFT) {
-            this.leftBar = bar;
-        } else {
-            this.rightBar = bar;
-        }
+        return attachments.getAttachments();
     }
 
     //--------//
@@ -239,7 +274,8 @@ public class StaffInfo
     // getClosestLedger //
     //------------------//
     /**
-     * Report the closest ledger, if any, between provided point and staff
+     * Report the closest ledger (if any) between provided point and
+     * this staff.
      * @param point the provided point
      * @return the closest ledger found, or null
      */
@@ -316,7 +352,7 @@ public class StaffInfo
     // getClosestLine //
     //----------------//
     /**
-     * Report the staff line which is closest to the provided point
+     * Report the staff line which is closest to the provided point.
      * @param point the provided point
      * @return the closest line found
      */
@@ -443,24 +479,6 @@ public class StaffInfo
         return ledgerMap.get(lineIndex);
     }
 
-    //----------//
-    // setLimit //
-    //----------//
-    /**
-     * Define the limit of the staff area, on the provided vertical side.
-     * @param side proper vertical side
-     * @param limit assigned limit
-     */
-    public void setLimit (VerticalSide side,
-                          GeoPath      limit)
-    {
-        if (side == TOP) {
-            topLimit = limit;
-        } else {
-            bottomLimit = limit;
-        }
-    }
-
     //-------------//
     // getLimitAtX //
     //-------------//
@@ -571,18 +589,6 @@ public class StaffInfo
     }
 
     //---------------//
-    // setScoreStaff //
-    //---------------//
-    /**
-     * Remember the related score staff entity.
-     * @param scoreStaff the corresponding scoreStaff to set
-     */
-    public void setScoreStaff (Staff scoreStaff)
-    {
-        this.scoreStaff = scoreStaff;
-    }
-
-    //---------------//
     // getScoreStaff //
     //---------------//
     /**
@@ -615,56 +621,11 @@ public class StaffInfo
         }
     }
 
-    //-----------//
-    // addLedger //
-    //-----------//
-    /**
-     * Add a ledger to the staff collection (which is lazily created)
-     * @param ledger the ledger to add
-     */
-    public void addLedger (Ledger ledger)
-    {
-        if (ledger == null) {
-            throw new IllegalArgumentException("Cannot register a null ledger");
-        }
-
-        int               pitch = ledger.getLineIndex();
-        SortedSet<Ledger> ledgerSet = ledgerMap.get(pitch);
-
-        if (ledgerSet == null) {
-            ledgerSet = new TreeSet(Dash.abscissaComparator);
-            ledgerMap.put(pitch, ledgerSet);
-        }
-
-        ledgerSet.add(ledger);
-        scoreStaff.getSystem()
-                  .getInfo()
-                  .addToLedgersCollection(ledger);
-    }
-
-    //------//
-    // dump //
-    //------//
-    /**
-     * A utility meant for debugging
-     */
-    public void dump ()
-    {
-        System.out.println(
-            "StaffInfo" + getId() + " left=" + left + " right=" + right);
-
-        int i = 0;
-
-        for (LineInfo line : lines) {
-            System.out.println(" LineInfo" + i++ + " " + line.toString());
-        }
-    }
-
     //--------------//
     // intersection //
     //--------------//
     /**
-     * Report the approximate point where a provided vertical stick 
+     * Report the approximate point where a provided vertical stick
      * crosses this staff.
      * @param stick the rather vertical stick
      * @return the crossing point
@@ -729,11 +690,89 @@ public class StaffInfo
                     line.render(g);
                 }
 
+                // Draw attachments if any
+                renderAttachments(g);
+
                 return true;
             }
         }
 
         return false;
+    }
+
+    //-------------------//
+    // renderAttachments //
+    //-------------------//
+    @Override
+    public void renderAttachments (Graphics2D g)
+    {
+        attachments.renderAttachments(g);
+    }
+
+    //-------------//
+    // setAbscissa //
+    //-------------//
+    /**
+     * Set the staff abscissa of the provided side.
+     * @param side provided side
+     * @param val abscissa of staff end
+     */
+    public void setAbscissa (HorizontalSide side,
+                             double         val)
+    {
+        if (side == HorizontalSide.LEFT) {
+            left = val;
+        } else {
+            right = val;
+        }
+    }
+
+    //--------//
+    // setBar //
+    //--------//
+    /**
+     * Set a barline on the provided side
+     * @param side proper horizontal side
+     * @param bar the bar to set
+     */
+    public void setBar (HorizontalSide side,
+                        BarInfo        bar)
+    {
+        if (side == HorizontalSide.LEFT) {
+            this.leftBar = bar;
+        } else {
+            this.rightBar = bar;
+        }
+    }
+
+    //----------//
+    // setLimit //
+    //----------//
+    /**
+     * Define the limit of the staff area, on the provided vertical side.
+     * @param side proper vertical side
+     * @param limit assigned limit
+     */
+    public void setLimit (VerticalSide side,
+                          GeoPath      limit)
+    {
+        if (side == TOP) {
+            topLimit = limit;
+        } else {
+            bottomLimit = limit;
+        }
+    }
+
+    //---------------//
+    // setScoreStaff //
+    //---------------//
+    /**
+     * Remember the related score staff entity.
+     * @param scoreStaff the corresponding scoreStaff to set
+     */
+    public void setScoreStaff (Staff scoreStaff)
+    {
+        this.scoreStaff = scoreStaff;
     }
 
     //----------//

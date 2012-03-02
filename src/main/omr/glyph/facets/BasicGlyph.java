@@ -170,442 +170,6 @@ public class BasicGlyph
 
     //~ Methods ----------------------------------------------------------------
 
-    public boolean isActive ()
-    {
-        return composition.isActive();
-    }
-
-    public int getAlienPixelsFrom (Lag                lag,
-                                   PixelRectangle     absRoi,
-                                   Predicate<Section> predicate)
-    {
-        return environment.getAlienPixelsFrom(lag, absRoi, predicate);
-    }
-
-    public SystemInfo getAlienSystem (SystemInfo system)
-    {
-        return composition.getAlienSystem(system);
-    }
-
-    public Glyph getAncestor ()
-    {
-        return composition.getAncestor();
-    }
-
-    public PixelPoint getAreaCenter ()
-    {
-        return geometry.getAreaCenter();
-    }
-
-    public double getAspect (Orientation orientation)
-    {
-        return alignment.getAspect(orientation);
-    }
-
-    public Map<String, java.awt.Shape> getAttachments ()
-    {
-        return display.getAttachments();
-    }
-
-    public boolean isBar ()
-    {
-        return recognition.isBar();
-    }
-
-    public PixelPoint getCentroid ()
-    {
-        return geometry.getCentroid();
-    }
-
-    public void setCircle (Circle circle)
-    {
-        geometry.setCircle(circle);
-    }
-
-    public Circle getCircle ()
-    {
-        return geometry.getCircle();
-    }
-
-    public boolean isClef ()
-    {
-        return recognition.isClef();
-    }
-
-    public Color getColor ()
-    {
-        return display.getColor();
-    }
-
-    public void setContourBox (PixelRectangle contourBox)
-    {
-        geometry.setContourBox(contourBox);
-    }
-
-    public PixelRectangle getContourBox ()
-    {
-        return geometry.getContourBox();
-    }
-
-    public double getDensity ()
-    {
-        return geometry.getDensity();
-    }
-
-    public void setEndingPoints (Point2D pStart,
-                                 Point2D pStop)
-    {
-        alignment.setEndingPoints(pStart, pStop);
-    }
-
-    public void setEvaluation (Evaluation evaluation)
-    {
-        recognition.setEvaluation(evaluation);
-    }
-
-    public Evaluation getEvaluation ()
-    {
-        return recognition.getEvaluation();
-    }
-
-    public Section getFirstSection ()
-    {
-        return composition.getFirstSection();
-    }
-
-    public Glyph getFirstStem ()
-    {
-        return environment.getFirstStem();
-    }
-
-    public int getFirstStuck ()
-    {
-        return alignment.getFirstStuck();
-    }
-
-    public double getGrade ()
-    {
-        return recognition.getGrade();
-    }
-
-    public void setId (int id)
-    {
-        administration.setId(id);
-    }
-
-    public int getId ()
-    {
-        return administration.getId();
-    }
-
-    public BufferedImage getImage ()
-    {
-        return display.getImage();
-    }
-
-    public int getInterline ()
-    {
-        return geometry.getInterline();
-    }
-
-    public double getInvertedSlope ()
-    {
-        return alignment.getInvertedSlope();
-    }
-
-    public boolean isKnown ()
-    {
-        return recognition.isKnown();
-    }
-
-    public int getLastStuck ()
-    {
-        return alignment.getLastStuck();
-    }
-
-    public int getLength (Orientation orientation)
-    {
-        return alignment.getLength(orientation);
-    }
-
-    public Line getLine ()
-    {
-        return alignment.getLine();
-    }
-
-    public PixelPoint getLocation ()
-    {
-        return geometry.getLocation();
-    }
-
-    public boolean isManualShape ()
-    {
-        return recognition.isManualShape();
-    }
-
-    public double getMeanDistance ()
-    {
-        return alignment.getMeanDistance();
-    }
-
-    public double getMeanThickness (Orientation orientation)
-    {
-        return alignment.getMeanThickness(orientation);
-    }
-
-    public SortedSet<Section> getMembers ()
-    {
-        return composition.getMembers();
-    }
-
-    public int getMidPos (Orientation orientation)
-    {
-        return alignment.getMidPos(orientation);
-    }
-
-    public Moments getMoments ()
-    {
-        return geometry.getMoments();
-    }
-
-    public void setNest (Nest nest)
-    {
-        administration.setNest(nest);
-    }
-
-    public Nest getNest ()
-    {
-        return administration.getNest();
-    }
-
-    public double getNormalizedHeight ()
-    {
-        return geometry.getNormalizedHeight();
-    }
-
-    public double getNormalizedWeight ()
-    {
-        return geometry.getNormalizedWeight();
-    }
-
-    public double getNormalizedWidth ()
-    {
-        return geometry.getNormalizedWidth();
-    }
-
-    public void setPartOf (Glyph compound)
-    {
-        composition.setPartOf(compound);
-    }
-
-    public Glyph getPartOf ()
-    {
-        return composition.getPartOf();
-    }
-
-    public void setPitchPosition (double pitchPosition)
-    {
-        environment.setPitchPosition(pitchPosition);
-    }
-
-    public double getPitchPosition ()
-    {
-        return environment.getPitchPosition();
-    }
-
-    public double getPositionAt (double      coord,
-                                 Orientation orientation)
-    {
-        return alignment.getPositionAt(coord, orientation);
-    }
-
-    public Point2D getRectangleCentroid (PixelRectangle absRoi)
-    {
-        return alignment.getRectangleCentroid(absRoi);
-    }
-
-    public void setResult (Result result)
-    {
-        composition.setResult(result);
-    }
-
-    public Result getResult ()
-    {
-        return composition.getResult();
-    }
-
-    public void setShape (Shape  shape,
-                          double grade)
-    {
-        recognition.setShape(shape, grade);
-    }
-
-    public void setShape (Shape shape)
-    {
-        recognition.setShape(shape);
-    }
-
-    public Shape getShape ()
-    {
-        return recognition.getShape();
-    }
-
-    public boolean isShapeForbidden (Shape shape)
-    {
-        return recognition.isShapeForbidden(shape);
-    }
-
-    public GlyphSignature getSignature ()
-    {
-        return geometry.getSignature();
-    }
-
-    public double getSlope ()
-    {
-        return alignment.getSlope();
-    }
-
-    public Point2D getStartPoint (Orientation orientation)
-    {
-        return alignment.getStartPoint(orientation);
-    }
-
-    public void setStem (Glyph          stem,
-                         HorizontalSide side)
-    {
-        environment.setStem(stem, side);
-    }
-
-    public Glyph getStem (HorizontalSide side)
-    {
-        return environment.getStem(side);
-    }
-
-    public boolean isStem ()
-    {
-        return recognition.isStem();
-    }
-
-    public void setStemNumber (int stemNumber)
-    {
-        environment.setStemNumber(stemNumber);
-    }
-
-    public int getStemNumber ()
-    {
-        return environment.getStemNumber();
-    }
-
-    public Point2D getStopPoint (Orientation orientation)
-    {
-        return alignment.getStopPoint(orientation);
-    }
-
-    public boolean isSuccessful ()
-    {
-        return composition.isSuccessful();
-    }
-
-    public void getSymbolsAfter (Predicate<Glyph> predicate,
-                                 Set<Glyph>       goods,
-                                 Set<Glyph>       bads)
-    {
-        environment.getSymbolsAfter(predicate, goods, bads);
-    }
-
-    public void getSymbolsBefore (Predicate<Glyph> predicate,
-                                  Set<Glyph>       goods,
-                                  Set<Glyph>       bads)
-    {
-        environment.getSymbolsBefore(predicate, goods, bads);
-    }
-
-    public boolean isText ()
-    {
-        return recognition.isText();
-    }
-
-    public TextInfo getTextInfo ()
-    {
-        return recognition.getTextInfo();
-    }
-
-    public int getThickness (Orientation orientation)
-    {
-        return alignment.getThickness(orientation);
-    }
-
-    public double getThicknessAt (double      coord,
-                                  Orientation orientation)
-    {
-        return alignment.getThicknessAt(coord, orientation);
-    }
-
-    public void setTimeRational (TimeRational timeRational)
-    {
-        recognition.setTimeRational(timeRational);
-    }
-
-    public TimeRational getTimeRational ()
-    {
-        return recognition.getTimeRational();
-    }
-
-    public boolean isTransient ()
-    {
-        return administration.isTransient();
-    }
-
-    public boolean isTranslated ()
-    {
-        return translation.isTranslated();
-    }
-
-    public void setTranslation (Object entity)
-    {
-        translation.setTranslation(entity);
-    }
-
-    public Collection<Object> getTranslations ()
-    {
-        return translation.getTranslations();
-    }
-
-    public void setVip ()
-    {
-        administration.setVip();
-    }
-
-    public boolean isVip ()
-    {
-        return administration.isVip();
-    }
-
-    public boolean isVirtual ()
-    {
-        return administration.isVirtual();
-    }
-
-    public int getWeight ()
-    {
-        return geometry.getWeight();
-    }
-
-    public boolean isWellKnown ()
-    {
-        return recognition.isWellKnown();
-    }
-
-    public void setWithLedger (boolean withLedger)
-    {
-        environment.setWithLedger(withLedger);
-    }
-
-    public boolean isWithLedger ()
-    {
-        return environment.isWithLedger();
-    }
-
     public void addAttachment (String         id,
                                java.awt.Shape attachment)
     {
@@ -684,6 +248,285 @@ public class BasicGlyph
         recognition.forbidShape(shape);
     }
 
+    public int getAlienPixelsFrom (Lag                lag,
+                                   PixelRectangle     absRoi,
+                                   Predicate<Section> predicate)
+    {
+        return environment.getAlienPixelsFrom(lag, absRoi, predicate);
+    }
+
+    public SystemInfo getAlienSystem (SystemInfo system)
+    {
+        return composition.getAlienSystem(system);
+    }
+
+    public Glyph getAncestor ()
+    {
+        return composition.getAncestor();
+    }
+
+    public PixelPoint getAreaCenter ()
+    {
+        return geometry.getAreaCenter();
+    }
+
+    public double getAspect (Orientation orientation)
+    {
+        return alignment.getAspect(orientation);
+    }
+
+    public Map<String, java.awt.Shape> getAttachments ()
+    {
+        return display.getAttachments();
+    }
+
+    public PixelPoint getCentroid ()
+    {
+        return geometry.getCentroid();
+    }
+
+    public Circle getCircle ()
+    {
+        return geometry.getCircle();
+    }
+
+    public Color getColor ()
+    {
+        return display.getColor();
+    }
+
+    @Override
+    public Set<Glyph> getConnectedNeighbors ()
+    {
+        return environment.getConnectedNeighbors();
+    }
+
+    public PixelRectangle getContourBox ()
+    {
+        return geometry.getContourBox();
+    }
+
+    public double getDensity ()
+    {
+        return geometry.getDensity();
+    }
+
+    public Evaluation getEvaluation ()
+    {
+        return recognition.getEvaluation();
+    }
+
+    public Section getFirstSection ()
+    {
+        return composition.getFirstSection();
+    }
+
+    public Glyph getFirstStem ()
+    {
+        return environment.getFirstStem();
+    }
+
+    public int getFirstStuck ()
+    {
+        return alignment.getFirstStuck();
+    }
+
+    public double getGrade ()
+    {
+        return recognition.getGrade();
+    }
+
+    public int getId ()
+    {
+        return administration.getId();
+    }
+
+    public BufferedImage getImage ()
+    {
+        return display.getImage();
+    }
+
+    public int getInterline ()
+    {
+        return geometry.getInterline();
+    }
+
+    public double getInvertedSlope ()
+    {
+        return alignment.getInvertedSlope();
+    }
+
+    public int getLastStuck ()
+    {
+        return alignment.getLastStuck();
+    }
+
+    public int getLength (Orientation orientation)
+    {
+        return alignment.getLength(orientation);
+    }
+
+    public Line getLine ()
+    {
+        return alignment.getLine();
+    }
+
+    public PixelPoint getLocation ()
+    {
+        return geometry.getLocation();
+    }
+
+    public double getMeanDistance ()
+    {
+        return alignment.getMeanDistance();
+    }
+
+    public double getMeanThickness (Orientation orientation)
+    {
+        return alignment.getMeanThickness(orientation);
+    }
+
+    public SortedSet<Section> getMembers ()
+    {
+        return composition.getMembers();
+    }
+
+    public int getMidPos (Orientation orientation)
+    {
+        return alignment.getMidPos(orientation);
+    }
+
+    public Moments getMoments ()
+    {
+        return geometry.getMoments();
+    }
+
+    public Nest getNest ()
+    {
+        return administration.getNest();
+    }
+
+    public double getNormalizedHeight ()
+    {
+        return geometry.getNormalizedHeight();
+    }
+
+    public double getNormalizedWeight ()
+    {
+        return geometry.getNormalizedWeight();
+    }
+
+    public double getNormalizedWidth ()
+    {
+        return geometry.getNormalizedWidth();
+    }
+
+    public Glyph getPartOf ()
+    {
+        return composition.getPartOf();
+    }
+
+    public double getPitchPosition ()
+    {
+        return environment.getPitchPosition();
+    }
+
+    public double getPositionAt (double      coord,
+                                 Orientation orientation)
+    {
+        return alignment.getPositionAt(coord, orientation);
+    }
+
+    public Point2D getRectangleCentroid (PixelRectangle absRoi)
+    {
+        return alignment.getRectangleCentroid(absRoi);
+    }
+
+    public Result getResult ()
+    {
+        return composition.getResult();
+    }
+
+    public Shape getShape ()
+    {
+        return recognition.getShape();
+    }
+
+    public GlyphSignature getSignature ()
+    {
+        return geometry.getSignature();
+    }
+
+    public double getSlope ()
+    {
+        return alignment.getSlope();
+    }
+
+    public Point2D getStartPoint (Orientation orientation)
+    {
+        return alignment.getStartPoint(orientation);
+    }
+
+    public Glyph getStem (HorizontalSide side)
+    {
+        return environment.getStem(side);
+    }
+
+    public int getStemNumber ()
+    {
+        return environment.getStemNumber();
+    }
+
+    public Point2D getStopPoint (Orientation orientation)
+    {
+        return alignment.getStopPoint(orientation);
+    }
+
+    public void getSymbolsAfter (Predicate<Glyph> predicate,
+                                 Set<Glyph>       goods,
+                                 Set<Glyph>       bads)
+    {
+        environment.getSymbolsAfter(predicate, goods, bads);
+    }
+
+    public void getSymbolsBefore (Predicate<Glyph> predicate,
+                                  Set<Glyph>       goods,
+                                  Set<Glyph>       bads)
+    {
+        environment.getSymbolsBefore(predicate, goods, bads);
+    }
+
+    public TextInfo getTextInfo ()
+    {
+        return recognition.getTextInfo();
+    }
+
+    public int getThickness (Orientation orientation)
+    {
+        return alignment.getThickness(orientation);
+    }
+
+    public double getThicknessAt (double      coord,
+                                  Orientation orientation)
+    {
+        return alignment.getThicknessAt(coord, orientation);
+    }
+
+    public TimeRational getTimeRational ()
+    {
+        return recognition.getTimeRational();
+    }
+
+    public Collection<Object> getTranslations ()
+    {
+        return translation.getTranslations();
+    }
+
+    public int getWeight ()
+    {
+        return geometry.getWeight();
+    }
+
     public void include (Glyph that)
     {
         composition.include(that);
@@ -704,6 +547,81 @@ public class BasicGlyph
         }
     }
 
+    public boolean isActive ()
+    {
+        return composition.isActive();
+    }
+
+    public boolean isBar ()
+    {
+        return recognition.isBar();
+    }
+
+    public boolean isClef ()
+    {
+        return recognition.isClef();
+    }
+
+    public boolean isKnown ()
+    {
+        return recognition.isKnown();
+    }
+
+    public boolean isManualShape ()
+    {
+        return recognition.isManualShape();
+    }
+
+    public boolean isShapeForbidden (Shape shape)
+    {
+        return recognition.isShapeForbidden(shape);
+    }
+
+    public boolean isStem ()
+    {
+        return recognition.isStem();
+    }
+
+    public boolean isSuccessful ()
+    {
+        return composition.isSuccessful();
+    }
+
+    public boolean isText ()
+    {
+        return recognition.isText();
+    }
+
+    public boolean isTransient ()
+    {
+        return administration.isTransient();
+    }
+
+    public boolean isTranslated ()
+    {
+        return translation.isTranslated();
+    }
+
+    public boolean isVip ()
+    {
+        return administration.isVip();
+    }
+
+    public boolean isVirtual ()
+    {
+        return administration.isVirtual();
+    }
+
+    public boolean isWellKnown ()
+    {
+        return recognition.isWellKnown();
+    }
+
+    public boolean isWithLedger ()
+    {
+        return environment.isWithLedger();
+    }
+
     public void linkAllSections ()
     {
         composition.linkAllSections();
@@ -714,6 +632,11 @@ public class BasicGlyph
         display.recolorize();
     }
 
+    public void renderAttachments (Graphics2D g)
+    {
+        display.renderAttachments(g);
+    }
+
     public void renderLine (Graphics2D g)
     {
         alignment.renderLine(g);
@@ -722,6 +645,94 @@ public class BasicGlyph
     public void resetEvaluation ()
     {
         recognition.resetEvaluation();
+    }
+
+    public void setCircle (Circle circle)
+    {
+        geometry.setCircle(circle);
+    }
+
+    public void setContourBox (PixelRectangle contourBox)
+    {
+        geometry.setContourBox(contourBox);
+    }
+
+    public void setEndingPoints (Point2D pStart,
+                                 Point2D pStop)
+    {
+        alignment.setEndingPoints(pStart, pStop);
+    }
+
+    public void setEvaluation (Evaluation evaluation)
+    {
+        recognition.setEvaluation(evaluation);
+    }
+
+    public void setId (int id)
+    {
+        administration.setId(id);
+    }
+
+    public void setNest (Nest nest)
+    {
+        administration.setNest(nest);
+    }
+
+    public void setPartOf (Glyph compound)
+    {
+        composition.setPartOf(compound);
+    }
+
+    public void setPitchPosition (double pitchPosition)
+    {
+        environment.setPitchPosition(pitchPosition);
+    }
+
+    public void setResult (Result result)
+    {
+        composition.setResult(result);
+    }
+
+    public void setShape (Shape  shape,
+                          double grade)
+    {
+        recognition.setShape(shape, grade);
+    }
+
+    public void setShape (Shape shape)
+    {
+        recognition.setShape(shape);
+    }
+
+    public void setStem (Glyph          stem,
+                         HorizontalSide side)
+    {
+        environment.setStem(stem, side);
+    }
+
+    public void setStemNumber (int stemNumber)
+    {
+        environment.setStemNumber(stemNumber);
+    }
+
+    public void setTimeRational (TimeRational timeRational)
+    {
+        recognition.setTimeRational(timeRational);
+    }
+
+    public void setTranslation (Object entity)
+    {
+        translation.setTranslation(entity);
+    }
+
+    public void setVip ()
+    {
+        administration.setVip();
+    }
+
+    public void setWithLedger (boolean withLedger)
+    {
+        environment.setWithLedger(withLedger);
     }
 
     //----------//
@@ -747,6 +758,7 @@ public class BasicGlyph
     //-----------//
     // translate //
     //-----------//
+    @Override
     public void translate (PixelPoint vector)
     {
         geometry.translate(vector);
