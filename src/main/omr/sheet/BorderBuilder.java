@@ -180,114 +180,6 @@ public class BorderBuilder
         }
     }
 
-    //--------------//
-    // getRawBorder //
-    //--------------//
-    /**
-     * Build a broken line as the "middle" between top & bottom limits
-     * @return the (raw) border
-     */
-    private BrokenLine getRawBorder ()
-    {
-        // Smoothens the border, but may lead to impossible borders
-        topLimit.grow(xMargin, 0);
-        botLimit.grow(xMargin, 0);
-
-        //
-        BrokenLine line = new BrokenLine();
-        int        yPrev = -1;
-        int        xPrev = -1;
-
-        for (int x = 0, xMax = sheet.getWidth(); x <= xMax; x++) {
-            int top = topLimit.getY(x, -1);
-            int bot = botLimit.getY(x, +1);
-
-            if (top > bot) {
-                logger.warning("Border closed at x: " + x);
-            }
-
-            int y = (top + bot) / 2;
-
-            if (x == xMax) {
-                // Very last point
-                line.addPoint(new Point(x, y));
-            } else if (y != yPrev) {
-                if (x > (xPrev + 1)) {
-                    line.addPoint(new Point(x - 1, yPrev));
-                }
-
-                line.addPoint(new Point(x, y));
-                xPrev = x;
-                yPrev = y;
-            }
-        }
-
-        if (logger.isFineEnabled()) {
-            logger.fine("Raw border: " + line);
-        }
-
-        return line;
-    }
-
-    //------------------//
-    // getRefinedBorder //
-    //------------------//
-    /**
-     * Refine the raw border as much as possible
-     * @param line the initial (raw) border
-     * @return the refined border
-     */
-    private BrokenLine getRefinedBorder (BrokenLine line)
-    {
-        // 1/Start with left point
-        // 2/Try to skip the following points until a limit is intersected
-        // 3/Backup to previous point and keep it
-        // 4/Goto 2/
-        // Complete with right side
-        int lastIndex = 0;
-
-        Removal: 
-        while (true) {
-            Point lastPoint = line.getPoint(lastIndex);
-
-            for (int index = lastIndex + 1; index < line.size(); index++) {
-                Point pt = line.getPoint(index);
-
-                if (topLimit.intersects(lastPoint, pt) ||
-                    botLimit.intersects(lastPoint, pt)) {
-                    // Backup 
-                    for (int i = lastIndex + 1, iBreak = index - 1; i < iBreak;
-                         i++) {
-                        Point p = line.getPoint(lastIndex + 1);
-                        line.removePoint(p);
-
-                        if (logger.isFineEnabled()) {
-                            logger.fine("Removed " + p);
-                        }
-                    }
-
-                    lastIndex++;
-
-                    continue Removal;
-                }
-            }
-
-            break;
-        }
-
-        for (int i = lastIndex + 1, iBreak = line.size() - 1; i < iBreak;
-             i++) {
-            Point p = line.getPoint(lastIndex + 1);
-            line.removePoint(p);
-        }
-
-        logger.info(
-            sheet.getLogPrefix() + "Smart S" + prevSystem.getId() + "-S" +
-            system.getId() + " system border: " + line);
-
-        return line;
-    }
-
     //-----------------//
     // assignFreeBlobs //
     //-----------------//
@@ -458,6 +350,116 @@ public class BorderBuilder
         limit.boxes.add(new LineRect(x1, y1, sheet.getWidth(), y2, dir));
 
         return limit;
+    }
+
+    //--------------//
+    // getRawBorder //
+    //--------------//
+    /**
+     * Build a broken line as the "middle" between top & bottom limits
+     * @return the (raw) border
+     */
+    private BrokenLine getRawBorder ()
+    {
+        // Smoothens the border, but may lead to impossible borders
+        topLimit.grow(xMargin, 0);
+        botLimit.grow(xMargin, 0);
+
+        //
+        BrokenLine line = new BrokenLine();
+        int        yPrev = -1;
+        int        xPrev = -1;
+
+        for (int x = 0, xMax = sheet.getWidth(); x <= xMax; x++) {
+            int top = topLimit.getY(x, -1);
+            int bot = botLimit.getY(x, +1);
+
+            if (top > bot) {
+                logger.warning("Border closed at x: " + x);
+            }
+
+            int y = (top + bot) / 2;
+
+            if (x == xMax) {
+                // Very last point
+                line.addPoint(new Point(x, y));
+            } else if (y != yPrev) {
+                if (x > (xPrev + 1)) {
+                    line.addPoint(new Point(x - 1, yPrev));
+                }
+
+                line.addPoint(new Point(x, y));
+                xPrev = x;
+                yPrev = y;
+            }
+        }
+
+        if (logger.isFineEnabled()) {
+            logger.fine("Raw border: " + line);
+        }
+
+        return line;
+    }
+
+    //------------------//
+    // getRefinedBorder //
+    //------------------//
+    /**
+     * Refine the raw border as much as possible
+     * @param line the initial (raw) border
+     * @return the refined border
+     */
+    private BrokenLine getRefinedBorder (BrokenLine line)
+    {
+        // 1/Start with left point
+        // 2/Try to skip the following points until a limit is intersected
+        // 3/Backup to previous point and keep it
+        // 4/Goto 2/
+        // Complete with right side
+        int lastIndex = 0;
+
+        Removal: 
+        while (true) {
+            Point lastPoint = line.getPoint(lastIndex);
+
+            for (int index = lastIndex + 1; index < line.size(); index++) {
+                Point pt = line.getPoint(index);
+
+                if (topLimit.intersects(lastPoint, pt) ||
+                    botLimit.intersects(lastPoint, pt)) {
+                    // Backup 
+                    for (int i = lastIndex + 1, iBreak = index - 1; i < iBreak;
+                         i++) {
+                        Point p = line.getPoint(lastIndex + 1);
+                        line.removePoint(p);
+
+                        if (logger.isFineEnabled()) {
+                            logger.fine("Removed " + p);
+                        }
+                    }
+
+                    lastIndex++;
+
+                    continue Removal;
+                }
+            }
+
+            break;
+        }
+
+        for (int i = lastIndex + 1, iBreak = line.size() - 1; i < iBreak;
+             i++) {
+            Point p = line.getPoint(lastIndex + 1);
+            line.removePoint(p);
+        }
+
+        if (logger.isFineEnabled()) {
+            logger.info(
+                sheet.getLogPrefix() + "Smart S" + prevSystem.getId() + "-S" +
+                system.getId() + " system border: " + line);
+        }
+
+        return line;
     }
 
     //~ Inner Classes ----------------------------------------------------------

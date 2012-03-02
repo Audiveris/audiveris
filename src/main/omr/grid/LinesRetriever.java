@@ -457,22 +457,6 @@ public class LinesRetriever
         }
     }
 
-    //----------------//
-    // setVipSections //
-    //----------------//
-    private void setVipSections ()
-    {
-        // Debug sections VIPs
-        for (int id : params.vipSections) {
-            Section sect = hLag.getVertexById(id);
-
-            if (sect != null) {
-                sect.setVip();
-                logger.info("Horizontal vip section: " + sect);
-            }
-        }
-    }
-
     //-------------//
     // buildStaves //
     //-------------//
@@ -874,6 +858,22 @@ public class LinesRetriever
         return slopes / topCount;
     }
 
+    //----------------//
+    // setVipSections //
+    //----------------//
+    private void setVipSections ()
+    {
+        // Debug sections VIPs
+        for (int id : params.vipSections) {
+            Section sect = hLag.getVertexById(id);
+
+            if (sect != null) {
+                sect.setVip();
+                logger.info("Horizontal vip section: " + sect);
+            }
+        }
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
     //-----------//
@@ -1030,9 +1030,10 @@ public class LinesRetriever
             maxLengthRatioShort = constants.maxLengthRatioShort.getValue();
             topRatioForSlope = constants.topRatioForSlope.getValue();
             maxStickerGap = scale.toPixelsDouble(constants.maxStickerGap);
-            maxStickerExtension = scale.toPixels(constants.maxStickerExtension);
             maxThinStickerWeight = scale.toPixels(
                 constants.maxThinStickerWeight);
+            maxStickerExtension = (int) Math.ceil(
+                scale.toPixelsDouble(constants.maxStickerExtension));
 
             // VIPs
             vipSections = decodeIds(constants.horizontalVipSections.getValue());

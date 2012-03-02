@@ -15,8 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code FilamentComb} describe a series of y values corresponding to
- * horizontal filaments rather regularly separated
+ * Class {@code FilamentComb} describe a series of y values 
+ * corresponding to horizontal filaments rather regularly separated.
  *
  * @author Hervé Bitteur
  */
@@ -55,11 +55,27 @@ public class FilamentComb
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------//
+    // append //
+    //--------//
+    /**
+     * Append a filament to the series.
+     * @param filament the filament to append
+     * @param y        the filament ordinate at x abscissa
+     */
+    public void append (LineFilament filament,
+                        double       y)
+    {
+        filaments.add(filament);
+        ys.add(y);
+        filament.addComb(col, this); // Link back Fil -> Comb
+    }
+
     //----------//
     // getCount //
     //----------//
     /**
-     * Report the number of filaments in this series
+     * Report the number of filaments in this series.
      * @return the count
      */
     public int getCount ()
@@ -101,15 +117,12 @@ public class FilamentComb
         return -1;
     }
 
-    //--------------//
-    // setProcessed //
-    //--------------//
-    /**
-     * @param processed the processed to set
-     */
-    public void setProcessed (boolean processed)
+    //------//
+    // getY //
+    //------//
+    public double getY (int index)
     {
-        this.processed = processed;
+        return ys.get(index);
     }
 
     //-------------//
@@ -123,28 +136,15 @@ public class FilamentComb
         return processed;
     }
 
-    //------//
-    // getY //
-    //------//
-    public double getY (int index)
-    {
-        return ys.get(index);
-    }
-
-    //--------//
-    // append //
-    //--------//
+    //--------------//
+    // setProcessed //
+    //--------------//
     /**
-     * Append a filament to the series
-     * @param filament the filament to append
-     * @param y the filament ordinate at x abscissa
+     * @param processed the processed to set
      */
-    public void append (LineFilament filament,
-                        double       y)
+    public void setProcessed (boolean processed)
     {
-        filaments.add(filament);
-        ys.add(y);
-        filament.addComb(col, this); // Link back Fil -> Comb
+        this.processed = processed;
     }
 
     //----------//
@@ -169,7 +169,7 @@ public class FilamentComb
             sb.append(" F#")
               .append(fil.getId())
               .append("@")
-              .append(y);
+              .append((float) y);
         }
 
         sb.append("}");

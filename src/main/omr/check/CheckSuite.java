@@ -270,7 +270,7 @@ public class CheckSuite<C extends Checkable>
 
             if (debug) {
                 sb.append(
-                    String.format("%15s :%5.2f", check.getName(), result.value));
+                    String.format("%15s:%5.2f", check.getName(), result.value));
             }
 
             if (result.flag == Check.RED) {

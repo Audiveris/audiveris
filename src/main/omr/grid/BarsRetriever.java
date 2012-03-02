@@ -184,7 +184,7 @@ public class BarsRetriever
     // renderItems //
     //-------------//
     /**
-     * Render the filaments, their ending tangents, their patterns
+     * Render the filaments, their ending tangents, their patterns.
      * @param g graphics context
      */
     public void renderItems (Graphics2D g)
@@ -241,7 +241,8 @@ public class BarsRetriever
     // retrieveMeasureBars //
     //---------------------//
     /**
-     * Use long vertical sections to retrieve the barlines that define measures.
+     * Use long vertical sections to retrieve the barlines that define
+     * measures.
      * We first filter the bar candidates in a less rough manner now that we
      * have precise values for staff lines coordinates.
      * Then, we use consistency checks within the same system, where measure bar
@@ -324,11 +325,86 @@ public class BarsRetriever
     }
 
     //------------------//
+    // adjustStaffLines //
+    //------------------//
+    /**
+     * Staff by staff, align the lines endings with the system limits,
+     * and check the intermediate line points.
+     * Package access meant for LinesRetriever companion.
+     * @param system the system to process
+     */
+    void adjustStaffLines (SystemInfo system)
+    {
+        for (StaffInfo staff : system.getStaves()) {
+            if (logger.isFineEnabled()) {
+                logger.info(staff.toString());
+            }
+
+            // Adjust left and right endings of each line in the staff
+            for (LineInfo l : staff.getLines()) {
+                FilamentLine line = (FilamentLine) l;
+                line.setEndingPoints(
+                    getLineEnding(system, staff, line, LEFT),
+                    getLineEnding(system, staff, line, RIGHT));
+            }
+
+            // Insert line intermediate points, if so needed
+            List<LineFilament> fils = new ArrayList<LineFilament>();
+
+            for (LineInfo l : staff.getLines()) {
+                FilamentLine line = (FilamentLine) l;
+                fils.add(line.fil);
+            }
+
+            for (LineInfo l : staff.getLines()) {
+                FilamentLine line = (FilamentLine) l;
+                line.fil.fillHoles(fils);
+            }
+        }
+    }
+
+    //------------------//
+    // adjustSystemBars //
+    //------------------//
+    /**
+     * Adjust start and stop points of system side bars.
+     */
+    void adjustSystemBars ()
+    {
+        for (SystemInfo system : systemManager.getSystems()) {
+            try {
+                for (HorizontalSide side : HorizontalSide.values()) {
+                    Object limit = system.getLimit(side);
+
+                    if (limit != null) {
+                        StaffInfo firstStaff = system.getFirstStaff();
+                        Point2D   pStart = firstStaff.getFirstLine()
+                                                     .getEndPoint(side);
+                        StaffInfo lastStaff = system.getLastStaff();
+                        Point2D   pStop = lastStaff.getLastLine()
+                                                   .getEndPoint(side);
+
+                        // Dirty programming, sorry
+                        if (limit instanceof Filament) {
+                            ((Filament) limit).setEndingPoints(pStart, pStop);
+                        }
+                    }
+                }
+            } catch (Exception ex) {
+                logger.warning(
+                    "BarsRetriever cannot adjust side bars of system#" +
+                    system.getId(),
+                    ex);
+            }
+        }
+    }
+
+    //------------------//
     // getBarlineGlyphs //
     //------------------//
     /**
      * Report the set of all sticks that are actually part of the staff
-     * bar lines (left or right side)
+     * bar lines (left or right side).
      * @return the collection of used barline sticks
      */
     Set<Glyph> getBarlineGlyphs ()
@@ -373,120 +449,11 @@ public class BarsRetriever
         return false;
     }
 
-    //------------------//
-    // adjustStaffLines //
-    //------------------//
-    /**
-     * Staff by staff, align the lines endings with the system limits, and
-     * check the intermediate line points.
-     * Package access meant for LinesRetriever companion.
-     * @param system the system to process
-     */
-    void adjustStaffLines (SystemInfo system)
-    {
-        for (StaffInfo staff : system.getStaves()) {
-            if (logger.isFineEnabled()) {
-                logger.info(staff.toString());
-            }
-
-            // Adjust left and right endings of each line in the staff
-            for (LineInfo l : staff.getLines()) {
-                FilamentLine line = (FilamentLine) l;
-                line.setEndingPoints(
-                    getLineEnding(system, staff, line, LEFT),
-                    getLineEnding(system, staff, line, RIGHT));
-            }
-
-            // Insert line intermediate points, if so needed
-            List<LineFilament> fils = new ArrayList<LineFilament>();
-
-            for (LineInfo l : staff.getLines()) {
-                FilamentLine line = (FilamentLine) l;
-                fils.add(line.fil);
-            }
-
-            for (LineInfo l : staff.getLines()) {
-                FilamentLine line = (FilamentLine) l;
-                line.fil.fillHoles(fils);
-            }
-        }
-    }
-
-    //------------------//
-    // adjustSystemBars //
-    //------------------//
-    /**
-     * Adjust start and stop points of system side bars
-     */
-    void adjustSystemBars ()
-    {
-        for (SystemInfo system : systemManager.getSystems()) {
-            try {
-                for (HorizontalSide side : HorizontalSide.values()) {
-                    Object limit = system.getLimit(side);
-
-                    if (limit != null) {
-                        StaffInfo firstStaff = system.getFirstStaff();
-                        Point2D   pStart = firstStaff.getFirstLine()
-                                                     .getEndPoint(side);
-                        StaffInfo lastStaff = system.getLastStaff();
-                        Point2D   pStop = lastStaff.getLastLine()
-                                                   .getEndPoint(side);
-
-                        // Dirty programming, sorry
-                        if (limit instanceof Filament) {
-                            ((Filament) limit).setEndingPoints(pStart, pStop);
-                        }
-                    }
-                }
-            } catch (Exception ex) {
-                logger.warning(
-                    "BarsRetriever cannot adjust side bars of system#" +
-                    system.getId(),
-                    ex);
-            }
-        }
-    }
-
-    //---------------//
-    // getLineEnding //
-    //---------------//
-    /**
-     * Report the precise point where a given line should end
-     * @param staff containing staff
-     * @param line the line at hand
-     * @param side the desired ending
-     * @return the computed ending point
-     */
-    private Point2D getLineEnding (SystemInfo     system,
-                                   StaffInfo      staff,
-                                   LineInfo       line,
-                                   HorizontalSide side)
-    {
-        double  slope = staff.getEndingSlope(side);
-        Object  limit = system.getLimit(side);
-        Point2D linePt = line.getEndPoint(side);
-        double  staffX = staff.getAbscissa(side);
-        double  y = linePt.getY() - ((linePt.getX() - staffX) * slope);
-        double  x;
-
-        // Dirty programming, sorry
-        if (limit instanceof Filament) {
-            x = ((Filament) limit).getPositionAt(y, VERTICAL);
-        } else if (limit instanceof Line) {
-            x = ((Line) limit).xAtY(y);
-        } else {
-            throw new RuntimeException("Illegal system limit: " + limit);
-        }
-
-        return new Point2D.Double(x, y);
-    }
-
     //-------------//
     // adjustSides //
     //-------------//
     /**
-     * Adjust precise sides for systems, staves & lines
+     * Adjust precise sides for systems, staves & lines.
      */
     private void adjustSides ()
     {
@@ -519,8 +486,8 @@ public class BarsRetriever
     // adjustSystemLimit //
     //-------------------//
     /**
-     * Adjust the limit on the desired side of the provided system and store the
-     * chosen limit (whatever it is) in the system itself.
+     * Adjust the limit on the desired side of the provided system and
+     * store the chosen limit (whatever it is) in the system itself.
      * @param system the system to process
      * @param side the desired side
      * @see SystemInfo#getLimit(HorizontalSide)
@@ -635,7 +602,7 @@ public class BarsRetriever
     // buildVerticalFilaments //
     //------------------------//
     /**
-     * With vertical lag sections, build vertical filaments
+     * With vertical lag sections, build vertical filaments.
      * @throws Exception
      */
     private void buildVerticalFilaments ()
@@ -664,7 +631,7 @@ public class BarsRetriever
     // canConnectSystems //
     //-------------------//
     /**
-     * Try to merge the two provided systems into a single one
+     * Try to merge the two provided systems into a single one.
      * @param prevSystem the system above
      * @param nextSystem the system below
      * @return true if left bars have been merged
@@ -763,7 +730,7 @@ public class BarsRetriever
                             1 + systems.indexOf(nextSystem)));
                 }
             }
-        } else {
+        } else if (nextBar != null) {
             // case: NoBar - Bar
             Point2D nextPoint = null;
 
@@ -805,10 +772,6 @@ public class BarsRetriever
     {
         List<StaffInfo> staves = system.getStaves();
         int             staffCount = staves.size();
-
-        if (staffCount <= 1) {
-            return; // We cannot check consistency
-        }
 
         // Bar alignments for the system
         List<BarAlignment> alignments = null;
@@ -915,7 +878,7 @@ public class BarsRetriever
     // createSystems //
     //---------------//
     /**
-     * Build the frame of each system
+     * Build the frame of each system.
      * @param tops the starting staff id for each system
      * @return the sequence of system physical frames
      */
@@ -953,10 +916,10 @@ public class BarsRetriever
     // extendStaffAbscissa //
     //---------------------//
     /**
-     * Determine a not-too-bad abscissa for staff end, extending the abscissa
-     * beyond the bar limit if staff lines so require.
+     * Determine a not-too-bad abscissa for staff end, extending the
+     * abscissa beyond the bar limit if staff lines so require.
      * @param staff the staff to process
-     * @param side the desired side
+     * @param side  the desired side
      * @return the staff abscissa
      */
     private double extendStaffAbscissa (StaffInfo      staff,
@@ -1007,6 +970,40 @@ public class BarsRetriever
         return staff.getAbscissa(side);
     }
 
+    //---------------//
+    // getLineEnding //
+    //---------------//
+    /**
+     * Report the precise point where a given line should end.
+     * @param staff containing staff
+     * @param line  the line at hand
+     * @param side  the desired ending
+     * @return the computed ending point
+     */
+    private Point2D getLineEnding (SystemInfo     system,
+                                   StaffInfo      staff,
+                                   LineInfo       line,
+                                   HorizontalSide side)
+    {
+        double  slope = staff.getEndingSlope(side);
+        Object  limit = system.getLimit(side);
+        Point2D linePt = line.getEndPoint(side);
+        double  staffX = staff.getAbscissa(side);
+        double  y = linePt.getY() - ((linePt.getX() - staffX) * slope);
+        double  x;
+
+        // Dirty programming, sorry
+        if (limit instanceof Filament) {
+            x = ((Filament) limit).getPositionAt(y, VERTICAL);
+        } else if (limit instanceof Line) {
+            x = ((Line) limit).xAtY(y);
+        } else {
+            throw new RuntimeException("Illegal system limit: " + limit);
+        }
+
+        return new Point2D.Double(x, y);
+    }
+
     //--------------//
     // mergeSystems //
     //--------------//
@@ -1038,8 +1035,8 @@ public class BarsRetriever
     // populateStaffSticks //
     //---------------------//
     /**
-     * Retrieve the sticks that intersect each staff, the results being kept as
-     * sequences of staff intersections in barSticks structure.
+     * Retrieve the sticks that intersect each staff, the results being
+     * kept as sequences of staff intersections in barSticks structure.
      */
     private void populateStaffSticks ()
     {
@@ -1113,8 +1110,8 @@ public class BarsRetriever
     // recheckBarCandidates //
     //----------------------//
     /**
-     * Have a closer look at so-called bars, now that the grid of staves has
-     * been fully defined, to get rid of spurious bar line sticks.
+     * Have a closer look at so-called bars, now that the grid of staves
+     * has been fully defined, to get rid of spurious bar line sticks.
      */
     private void recheckBarCandidates ()
     {
@@ -1156,12 +1153,16 @@ public class BarsRetriever
     // refineBarsEndings //
     //-------------------//
     /**
-     * Now that we have reliable bar lines, refine their ending points to the
-     * staff lines
+     * If we have reliable bar lines, refine their ending points to the
+     * staff lines.
      * @param system  the system to process
      */
     private void refineBarsEndings (SystemInfo system)
     {
+        if (system.getBarAlignments() == null) {
+            return;
+        }
+
         List<StaffInfo> staves = system.getStaves();
 
         for (BarAlignment alignment : system.getBarAlignments()) {
@@ -1203,7 +1204,7 @@ public class BarsRetriever
     // retrieveBarCandidates //
     //-----------------------//
     /**
-     * Retrieve initial barline candidates
+     * Retrieve initial barline candidates.
      * @return the collection of candidates barlines
      * @throws Exception
      */
@@ -1246,7 +1247,8 @@ public class BarsRetriever
     // retrievePartTops //
     //------------------//
     /**
-     * Retrieve, for each staff, the staff that starts its containing part.
+     * Retrieve, for each staff, the staff that starts its containing 
+     * part.
      * @return the (id of) part-starting staff for each staff
      */
     private Integer[] retrievePartTops ()
@@ -1313,10 +1315,10 @@ public class BarsRetriever
     // retrieveStaffBar //
     //------------------//
     /**
-     * Retrieve the (perhaps multi-bar) complete side bar, if any, of a given
-     * staff and record it within the staff
+     * Retrieve the (perhaps multi-bar) complete side bar, if any, of a
+     * given staff and record it within the staff.
      * @param staff the given staff
-     * @param side proper horizontal side
+     * @param side  proper horizontal side
      */
     private void retrieveStaffBar (StaffInfo      staff,
                                    HorizontalSide side)
@@ -1396,7 +1398,7 @@ public class BarsRetriever
     // retrieveStaffSideBars //
     //-----------------------//
     /**
-     * Retrieve staffs left bar (which define systems) and right bar
+     * Retrieve staffs left bar (which define systems) and right bar.
      */
     private void retrieveStaffSideBars ()
     {
@@ -1411,10 +1413,10 @@ public class BarsRetriever
     // retrieveSystemBar //
     //-------------------//
     /**
-     * Merge bar sticks across staves of the same system, as long as they can be
-     * connected even indirectly via other sticks
+     * Merge bar sticks across staves of the same system, as long as
+     * they can be connected even indirectly via other sticks.
      * @param system the system to process
-     * @param side the side to process
+     * @param side   the side to process
      * @return the bar info for the system side, or null if no consistency
      * could be ensured
      */
@@ -1503,7 +1505,7 @@ public class BarsRetriever
     // retrieveSystemTops //
     //--------------------//
     /**
-     * Retrieve for each staff the staff that starts its containing system
+     * Retrieve for each staff the staff that starts its containing system.
      * @return the (id of) system-starting staff for each staff
      */
     private Integer[] retrieveSystemTops ()
@@ -1515,17 +1517,23 @@ public class BarsRetriever
             int     bot = staff.getId();
             BarInfo bar = staff.getBar(LEFT);
 
-            for (Glyph stick : bar.getSticksAncestors()) {
-                Point2D   start = stick.getStartPoint(VERTICAL);
-                StaffInfo topStaff = staffManager.getStaffAt(start);
-                int       top = topStaff.getId();
+            if (bar != null) {
+                // We have a starting bar line
+                for (Glyph stick : bar.getSticksAncestors()) {
+                    Point2D   start = stick.getStartPoint(VERTICAL);
+                    StaffInfo topStaff = staffManager.getStaffAt(start);
+                    int       top = topStaff.getId();
 
-                for (int id = top; id <= bot; id++) {
-                    if ((systemTops[id - 1] == null) ||
-                        (top < systemTops[id - 1])) {
-                        systemTops[id - 1] = top;
+                    for (int id = top; id <= bot; id++) {
+                        if ((systemTops[id - 1] == null) ||
+                            (top < systemTops[id - 1])) {
+                            systemTops[id - 1] = top;
+                        }
                     }
                 }
+            } else {
+                // We have no starting bar line, so staff = part = system
+                systemTops[bot - 1] = bot;
             }
         }
 
@@ -1536,7 +1544,7 @@ public class BarsRetriever
     // tryRangeConnection //
     //--------------------//
     /**
-     * Try to connect all systems in the provided range
+     * Try to connect all systems in the provided range.
      * @param range sublist of systems
      * @return true if OK
      */
@@ -1718,7 +1726,8 @@ public class BarsRetriever
     // Parameters //
     //------------//
     /**
-     * Class {@code Parameters} gathers all constants related to vertical frames
+     * Class {@code Parameters} gathers all constants related to 
+     * vertical frames.
      */
     private static class Parameters
     {
@@ -1772,7 +1781,6 @@ public class BarsRetriever
 
         /**
          * Creates a new Parameters object.
-         *
          * @param scale the scaling factor
          */
         public Parameters (Scale scale)

@@ -64,6 +64,7 @@ public class ClefPattern
 
     /** Specific predicate to filter clef shapes */
     private static final Predicate<Shape> clefShapePredicate = new Predicate<Shape>() {
+        @Override
         public boolean check (Shape shape)
         {
             return ShapeRange.Clefs.contains(shape);
@@ -72,6 +73,7 @@ public class ClefPattern
 
     /** Specific predicate to filter clef glyphs */
     private static final Predicate<Glyph> clefGlyphPredicate = new Predicate<Glyph>() {
+        @Override
         public boolean check (Glyph glyph)
         {
             return glyph.isClef();
@@ -121,6 +123,7 @@ public class ClefPattern
      * @return the number of clefs rebuilt
      */
     @Implement(GlyphPattern.class)
+    @Override
     public int runPattern ()
     {
         int         successNb = 0;
@@ -176,7 +179,7 @@ public class ClefPattern
     // checkClef //
     //-----------//
     /**
-     * Try to recognize a clef in the compound of the provided glyphs
+     * Try to recognize a clef in the compound of the provided glyphs.
      * @param glyphs the parts of a clef candidate
      * @return true if successful
      */
@@ -228,6 +231,10 @@ public class ClefPattern
                     vote.shape + " built from " + Glyphs.toString(glyphs));
             }
 
+            // If there was a (false) stem in the glyphs, we should rebuild
+            // the larger glyph(s) which the stem had wrongly segmented
+
+            // Look for larger stuff
             PixelRectangle outer = compound.getContourBox();
             outer.grow(xMargin, yMargin);
 

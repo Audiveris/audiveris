@@ -79,7 +79,6 @@ public class Page
     //------//
     /**
      * Creates a new Page object.
-     *
      * @param score the containing score
      */
     public Page (Score         score,
@@ -102,22 +101,92 @@ public class Page
     //~ Methods ----------------------------------------------------------------
 
     //-------------------//
-    // setDeltaMeasureId //
+    // getMinSlotSpacing //
     //-------------------//
     /**
-     * Assign the progression of measure IDs within this page
-     * @param deltaMeasureId the deltaMeasureId to set
+     * Report the minimum acceptable spacing between slots.
+     * @return the minimum spacing (in interline fraction)
      */
-    public void setDeltaMeasureId (Integer deltaMeasureId)
+    public static Scale.Fraction getMinSlotSpacing ()
     {
-        this.deltaMeasureId = deltaMeasureId;
+        return constants.minSlotSpacing;
+    }
+
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
+    //---------------------//
+    // computeMeasureCount //
+    //---------------------//
+    /**
+     * Compute the number of (vertical) measures in the page.
+     */
+    public void computeMeasureCount ()
+    {
+        int count = 0;
+
+        for (TreeNode sn : getSystems()) {
+            ScoreSystem system = (ScoreSystem) sn;
+            count += system.getFirstPart()
+                           .getMeasures()
+                           .size();
+        }
+
+        measureCount = count;
+    }
+
+    //-------------------//
+    // dumpMeasureCounts //
+    //-------------------//
+    /**
+     * Log the detailed number of measures in the score.
+     */
+    public void dumpMeasureCounts ()
+    {
+        int           count = 0;
+        StringBuilder sb = new StringBuilder();
+
+        for (TreeNode node : getSystems()) {
+            ScoreSystem sys = (ScoreSystem) node;
+            SystemPart  part = sys.getLastPart();
+
+            if (sb.length() > 0) {
+                sb.append(", ");
+            }
+
+            sb.append(part.getMeasures().size())
+              .append(" in S#")
+              .append(sys.getId());
+            count += part.getMeasures()
+                         .size();
+        }
+
+        StringBuilder msg = new StringBuilder();
+        msg.append(count);
+        msg.append(" raw measure");
+
+        if (count > 1) {
+            msg.append('s');
+        }
+
+        msg.append(": [")
+           .append(sb)
+           .append("]");
+
+        logger.info(sheet.getLogPrefix() + msg.toString());
     }
 
     //-------------------//
     // getDeltaMeasureId //
     //-------------------//
     /**
-     * Report the progression of measure IDs within this page
+     * Report the progression of measure IDs within this page.
      * @return the deltaMeasureId
      */
     public Integer getDeltaMeasureId ()
@@ -129,12 +198,28 @@ public class Page
     // getDimension //
     //--------------//
     /**
-     * Report the dimension of the sheet/page
+     * Report the dimension of the sheet/page.
      * @return the page/sheet dimension in pixels
      */
     public PixelDimension getDimension ()
     {
         return sheet.getDimension();
+    }
+
+    //----------------//
+    // getFirstSystem //
+    //----------------//
+    /**
+     * Report the first system in the page.
+     * @return the first system
+     */
+    public ScoreSystem getFirstSystem ()
+    {
+        if (children.isEmpty()) {
+            return null;
+        } else {
+            return (ScoreSystem) children.get(0);
+        }
     }
 
     //-------//
@@ -159,66 +244,11 @@ public class Page
         return index;
     }
 
-    //--------------------//
-    // getMeanStaffHeight //
-    //--------------------//
-    /**
-     * Report the mean staff height based on page interline. This should be
-     * refined per system, if not per staff
-     * @return the page-based average value of staff heights
-     */
-    public int getMeanStaffHeight ()
-    {
-        return (Score.LINE_NB - 1) * scale.getInterline();
-    }
-
-    //-----------------//
-    // getMeasureCount //
-    //-----------------//
-    /**
-     * Report the number of (vertical) measures in this page
-     * @return the number of page measures
-     */
-    public int getMeasureCount ()
-    {
-        return measureCount;
-    }
-
-    //-------------------//
-    // getMinSlotSpacing //
-    //-------------------//
-    /**
-     * Report the minimum acceptable spacing between slots
-     * @return the minimum spacing (in interline fraction)
-     */
-    public static Scale.Fraction getMinSlotSpacing ()
-    {
-        return constants.minSlotSpacing;
-    }
-
-    //----------------//
-    // getFirstSystem //
-    //----------------//
-    /**
-     * Report the first system in the page
-     *
-     * @return the first system
-     */
-    public ScoreSystem getFirstSystem ()
-    {
-        if (children.isEmpty()) {
-            return null;
-        } else {
-            return (ScoreSystem) children.get(0);
-        }
-    }
-
     //---------------//
     // getLastSystem //
     //---------------//
     /**
-     * Report the last system in the page
-     *
+     * Report the last system in the page.
      * @return the last system
      */
     public ScoreSystem getLastSystem ()
@@ -230,25 +260,36 @@ public class Page
         }
     }
 
-    //-------------//
-    // setPartList //
-    //-------------//
+    //--------------------//
+    // getMeanStaffHeight //
+    //--------------------//
     /**
-     * Assign a part list valid for the page
-     *
-     * @param partList the list of parts
+     * Report the mean staff height based on page interline.
+     * This should be refined per system, if not per staff
+     * @return the page-based average value of staff heights
      */
-    public void setPartList (List<ScorePart> partList)
+    public int getMeanStaffHeight ()
     {
-        this.partList = partList;
+        return (Score.LINE_NB - 1) * scale.getInterline();
+    }
+
+    //-----------------//
+    // getMeasureCount //
+    //-----------------//
+    /**
+     * Report the number of (vertical) measures in this page.
+     * @return the number of page measures
+     */
+    public int getMeasureCount ()
+    {
+        return measureCount;
     }
 
     //-------------//
     // getPartList //
     //-------------//
     /**
-     * Report the global list of parts
-     *
+     * Report the global list of parts.
      * @return partList the list of parts
      */
     public List<ScorePart> getPartList ()
@@ -261,7 +302,6 @@ public class Page
     //---------------------//
     /**
      * Report the preceding page of this one within the score.
-     *
      * @return the preceding page, or null if none
      */
     public Page getPrecedingInScore ()
@@ -270,23 +310,10 @@ public class Page
     }
 
     //----------//
-    // setScale //
-    //----------//
-    /**
-     * Assign proper scale for this page
-     * @param scale the general scale for the page
-     */
-    public void setScale (Scale scale)
-    {
-        this.scale = scale;
-    }
-
-    //----------//
     // getScale //
     //----------//
     /**
-     * Report the scale of the page
-     *
+     * Report the scale of the page.
      * @return the page scale (basically: number of pixels for main interline)
      */
     @Override
@@ -296,25 +323,10 @@ public class Page
     }
 
     //----------//
-    // setSheet //
-    //----------//
-
-    /**
-     * Register the name of the corresponding sheet entity
-     *
-     * @param sheet the related sheet entity
-     */
-    public void setSheet (Sheet sheet)
-    {
-        this.sheet = sheet;
-    }
-
-    //----------//
     // getSheet //
     //----------//
     /**
-     * Report the related sheet entity
-     *
+     * Report the related sheet entity.
      * @return the related sheet, or null if none
      */
     public Sheet getSheet ()
@@ -326,7 +338,7 @@ public class Page
     // getSystemById //
     //---------------//
     /**
-     * Report the system for which id is provided
+     * Report the system for which id is provided.
      * @param id id of desired system
      * @return the desired system
      */
@@ -340,8 +352,7 @@ public class Page
     // getSystems //
     //------------//
     /**
-     * Report the collection of systems in that score
-     *
+     * Report the collection of systems in that score.
      * @return the systems
      */
     public List<TreeNode> getSystems ()
@@ -349,81 +360,11 @@ public class Page
         return getChildren();
     }
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
-    //---------------------//
-    // computeMeasureCount //
-    //---------------------//
-    /**
-     * Compute the number of (vertical) measures in the page
-     */
-    public void computeMeasureCount ()
-    {
-        int count = 0;
-
-        for (TreeNode sn : getSystems()) {
-            ScoreSystem system = (ScoreSystem) sn;
-            count += system.getFirstPart()
-                           .getMeasures()
-                           .size();
-        }
-
-        measureCount = count;
-    }
-
-    //-------------------//
-    // dumpMeasureCounts //
-    //-------------------//
-    /**
-     * Log the detailed number of measures in the score
-     */
-    public void dumpMeasureCounts ()
-    {
-        int           count = 0;
-        StringBuilder sb = new StringBuilder();
-
-        for (TreeNode node : getSystems()) {
-            ScoreSystem sys = (ScoreSystem) node;
-            SystemPart  part = sys.getLastPart();
-
-            if (sb.length() > 0) {
-                sb.append(", ");
-            }
-
-            sb.append(part.getMeasures().size())
-              .append(" in System#")
-              .append(sys.getId());
-            count += part.getMeasures()
-                         .size();
-        }
-
-        StringBuilder prefix = new StringBuilder();
-        prefix.append(count);
-        prefix.append(" raw measure");
-
-        if (count > 1) {
-            prefix.append('s');
-        }
-
-        prefix.append(": [")
-              .append(sb)
-              .append("]");
-
-        logger.info(sheet.getLogPrefix() + prefix.toString());
-    }
-
     //--------------//
     // resetSystems //
     //--------------//
     /**
-     * Reset the systems collection of a score entity
+     * Reset the systems collection of a score entity.
      */
     public void resetSystems ()
     {
@@ -437,14 +378,61 @@ public class Page
         }
     }
 
+    //-------------------//
+    // setDeltaMeasureId //
+    //-------------------//
+    /**
+     * Assign the progression of measure IDs within this page.
+     * @param deltaMeasureId the deltaMeasureId to set
+     */
+    public void setDeltaMeasureId (Integer deltaMeasureId)
+    {
+        this.deltaMeasureId = deltaMeasureId;
+    }
+
+    //-------------//
+    // setPartList //
+    //-------------//
+    /**
+     * Assign a part list valid for the page.
+     * @param partList the list of parts
+     */
+    public void setPartList (List<ScorePart> partList)
+    {
+        this.partList = partList;
+    }
+
+    //----------//
+    // setScale //
+    //----------//
+    /**
+     * Assign proper scale for this page.
+     * @param scale the general scale for the page
+     */
+    public void setScale (Scale scale)
+    {
+        this.scale = scale;
+    }
+
+    //----------//
+    // setSheet //
+    //----------//
+
+    /**
+     * Register the name of the corresponding sheet entity.
+     * @param sheet the related sheet entity
+     */
+    public void setSheet (Sheet sheet)
+    {
+        this.sheet = sheet;
+    }
+
     //----------//
     // systemAt //
     //----------//
     /**
-     * Retrieve which system contains the provided point
-     *
+     * Retrieve which system contains the provided point.
      * @param point the point in the <b>SHEET</b> display
-     *
      * @return the nearest system.
      */
     public ScoreSystem systemAt (PixelPoint point)

@@ -73,118 +73,6 @@ public class StaffManager
 
     //~ Methods ----------------------------------------------------------------
 
-    //---------------//
-    // getFirstStaff //
-    //---------------//
-    public StaffInfo getFirstStaff ()
-    {
-        if (staves.isEmpty()) {
-            return null;
-        } else {
-            return staves.get(0);
-        }
-    }
-
-    //------------//
-    // getIndexOf //
-    //------------//
-    ///TODO @Deprecated
-    public int getIndexOf (StaffInfo staff)
-    {
-        return staves.indexOf(staff);
-    }
-
-    //----------//
-    // getRange //
-    //----------//
-    /**
-     * Report a view on the range of staves from first to last (both inclusive)
-     * @param first the first staff of the range
-     * @param last the last staff of the range
-     * @return a view on this range
-     */
-    public List<StaffInfo> getRange (StaffInfo first,
-                                     StaffInfo last)
-    {
-        return staves.subList(getIndexOf(first), getIndexOf(last) + 1);
-    }
-
-    //----------//
-    // getStaff //
-    //----------//
-    ///TODO @Deprecated
-    public StaffInfo getStaff (int index)
-    {
-        return staves.get(index);
-    }
-
-    //------------//
-    // getStaffAt //
-    //------------//
-    /**
-     * Report the staff whose area contains the provided point
-     * @param point the provided point
-     * @return the nearest staff, or null if none found
-     */
-    public StaffInfo getStaffAt (Point2D point)
-    {
-        for (StaffInfo staff : staves) {
-            Rectangle2D box = staff.getAreaBounds();
-
-            if (point.getY() > box.getMaxY()) {
-                continue;
-            }
-
-            if (point.getY() < box.getMinY()) {
-                break;
-            }
-
-            if (staff.getArea()
-                     .contains(point)) {
-                return staff;
-            }
-        }
-
-        return null;
-    }
-
-    //---------------//
-    // getStaffCount //
-    //---------------//
-    /**
-     * Report the total number of staves, whatever their containing systems
-     * @return the count of staves
-     */
-    public int getStaffCount ()
-    {
-        return staves.size();
-    }
-
-    //-----------//
-    // setStaves //
-    //-----------//
-    /**
-     * Assign the whole sequence of staves
-     * @param staves  the (new) staves
-     */
-    public void setStaves (Collection<StaffInfo> staves)
-    {
-        reset();
-        this.staves.addAll(staves);
-    }
-
-    //-----------//
-    // getStaves //
-    //-----------//
-    /**
-     * Report an unmodifiable view (perhaps empty) of list of current staves
-     * @return a view on staves
-     */
-    public List<StaffInfo> getStaves ()
-    {
-        return Collections.unmodifiableList(staves);
-    }
-
     //----------//
     // addStaff //
     //----------//
@@ -248,6 +136,107 @@ public class StaffManager
             new GeoPath(new Line2D.Double(0, height, width, height)));
     }
 
+    //---------------//
+    // getFirstStaff //
+    //---------------//
+    public StaffInfo getFirstStaff ()
+    {
+        if (staves.isEmpty()) {
+            return null;
+        } else {
+            return staves.get(0);
+        }
+    }
+
+    //------------//
+    // getIndexOf //
+    //------------//
+    ///TODO @Deprecated
+    public int getIndexOf (StaffInfo staff)
+    {
+        return staves.indexOf(staff);
+    }
+
+    //----------//
+    // getRange //
+    //----------//
+    /**
+     * Report a view on the range of staves from first to last (both inclusive)
+     * @param first the first staff of the range
+     * @param last the last staff of the range
+     * @return a view on this range
+     */
+    public List<StaffInfo> getRange (StaffInfo first,
+                                     StaffInfo last)
+    {
+        return staves.subList(getIndexOf(first), getIndexOf(last) + 1);
+    }
+
+    //----------//
+    // getStaff //
+    //----------//
+    ///TODO @Deprecated
+    public StaffInfo getStaff (int index)
+    {
+        return staves.get(index);
+    }
+
+    //------------//
+    // getStaffAt //
+    //------------//
+    /**
+     * Report the staff whose area contains the provided point
+     * @param point the provided point
+     * @return the nearest staff, or null if none found
+     */
+    public StaffInfo getStaffAt (Point2D point)
+    {
+        for (StaffInfo staff : staves) {
+            Rectangle2D box = staff.getAreaBounds();
+
+            if (point.getY() > box.getMaxY()) {
+                continue;
+            }
+
+            if (point.getY() < box.getMinY()) {
+                // Point above page top, use first staff
+                return staff;
+            }
+
+            if (staff.getArea()
+                     .contains(point)) {
+                return staff;
+            }
+        }
+
+        // Point below page bottom, use last staff
+        return staves.get(staves.size() - 1);
+    }
+
+    //---------------//
+    // getStaffCount //
+    //---------------//
+    /**
+     * Report the total number of staves, whatever their containing systems
+     * @return the count of staves
+     */
+    public int getStaffCount ()
+    {
+        return staves.size();
+    }
+
+    //-----------//
+    // getStaves //
+    //-----------//
+    /**
+     * Report an unmodifiable view (perhaps empty) of list of current staves
+     * @return a view on staves
+     */
+    public List<StaffInfo> getStaves ()
+    {
+        return Collections.unmodifiableList(staves);
+    }
+
     //--------//
     // render //
     //--------//
@@ -271,6 +260,19 @@ public class StaffManager
     public void reset ()
     {
         staves.clear();
+    }
+
+    //-----------//
+    // setStaves //
+    //-----------//
+    /**
+     * Assign the whole sequence of staves
+     * @param staves  the (new) staves
+     */
+    public void setStaves (Collection<StaffInfo> staves)
+    {
+        reset();
+        this.staves.addAll(staves);
     }
 
     //~ Inner Classes ----------------------------------------------------------

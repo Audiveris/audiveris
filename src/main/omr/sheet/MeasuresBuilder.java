@@ -40,8 +40,9 @@ import java.util.List;
 
 /**
  * Class {@code MeasuresBuilder} is in charge, at system info level, of
- * building measures from the bar sticks found. At this moment, the only glyphs
- * in the system collection are the barline candidates.
+ * building measures from the bar sticks found.
+ * At this moment, the only glyphs in the system collection are the barline
+ * candidates.
  *
  * <p>Each instance of this class is meant to be called by a single thread,
  * dedicated to the processing of one system. So this class does not need to be
@@ -61,8 +62,8 @@ public class MeasuresBuilder
     private static final Logger logger = Logger.getLogger(
         MeasuresBuilder.class);
 
-    /** Failure, since bar goes higher or lower than the system area */
-    private static final FailureResult NOT_WITHIN_SYSTEM = new FailureResult(
+    // Failures
+    private static final FailureResult        NOT_WITHIN_SYSTEM = new FailureResult(
         "Bar-NotWithinSystem");
     private static final FailureResult        NOT_STAFF_ALIGNED = new FailureResult(
         "Bar-NotStaffAligned");
@@ -94,7 +95,6 @@ public class MeasuresBuilder
     //-----------------//
     /**
      * Creates a new MeasuresBuilder object.
-     *
      * @param system the dedicated system
      */
     public MeasuresBuilder (SystemInfo system)
@@ -111,7 +111,7 @@ public class MeasuresBuilder
     // buildMeasures //
     //---------------//
     /**
-     * Based on barlines found, build, check and cleanup score measures
+     * Based on barlines found, build, check and cleanup score measures.
      */
     public void buildMeasures ()
     {
@@ -156,9 +156,10 @@ public class MeasuresBuilder
     // allocateMeasures //
     //------------------//
     /**
-     * Bar lines are first sorted according to their abscissa, then we run
-     * additional checks on each bar line, since we now know its enclosing
-     * system. If OK, then we add the corresponding measures in their parts.
+     * Bar lines are first sorted according to their abscissa, then we
+     * run additional checks on each bar line, since we now know its
+     * enclosing system.
+     * If OK, then we add the corresponding measures in their parts.
      */
     private void allocateMeasures ()
     {
@@ -230,8 +231,8 @@ public class MeasuresBuilder
     // checkEndingBar //
     //----------------//
     /**
-     * Use ending bar line if any, to adjust the right abscissa of the system
-     * and its staves.
+     * Use ending bar line if any, to adjust the right abscissa of the
+     * system and its staves.
      */
     private void checkEndingBar ()
     {
@@ -303,8 +304,8 @@ public class MeasuresBuilder
     // mergeBarlines //
     //---------------//
     /**
-     * Check whether two close bar lines are not in fact double lines (with
-     * variants)
+     * Check whether two close bar lines are not in fact double lines
+     * (with variants).
      */
     private void mergeBarlines ()
     {
@@ -368,9 +369,10 @@ public class MeasuresBuilder
     // removeStartingMeasure //
     //-----------------------//
     /**
-     * We associate measures only with their ending bar line(s), so the starting
-     * bar of a staff does not end a measure, we thus have to remove the measure
-     * that we first had associated with it.
+     * We associate measures only with their ending bar line(s),
+     * so the starting bar of a staff does not end a measure,
+     * we thus have to remove the measure that we first had associated
+     * with it.
      */
     private void removeStartingMeasure ()
     {
@@ -455,20 +457,21 @@ public class MeasuresBuilder
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** Maximum horizontal translate in bars between staves in a system */
         Scale.Fraction maxAlignShiftDx = new Scale.Fraction(
             0.5,
             "Maximum horizontal shift in bars between staves in a system");
 
-        /** Maximum horizontal distance between the two bars of a double bar */
+        //
         Scale.Fraction maxDoubleBarDx = new Scale.Fraction(
             2.0,
             "Maximum horizontal distance between the two bars of a double bar");
 
-        /** Minimum width for a measure */
+        //
         Scale.Fraction minMeasureWidth = new Scale.Fraction(
             2.0,
             "Minimum width for a measure");
+
+        //
         Scale.Fraction maxBarOffset = new Scale.Fraction(
             1.0,
             "Vertical offset used to detect that a bar extends past a staff");
