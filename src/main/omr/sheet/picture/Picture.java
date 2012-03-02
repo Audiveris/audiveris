@@ -52,23 +52,17 @@ import javax.media.jai.PlanarImage;
 import javax.media.jai.RenderedImageAdapter;
 
 /**
- * Class {@code Picture} encapsulates an image, allowing modifications and
- * rendering. Its current implementation is based on JAI (Java Advanced
- * Imaging).
+ * Class {@code Picture} encapsulates an image, allowing modifications
+ * and rendering.
+ * Its current implementation is based on JAI (Java Advanced Imaging).
  *
  * <p> Operations allow : <ul>
- *
  * <li> To <b>store</b> the current image to a file </li>
- *
  * <li> To <b>render</b> the (original) image in a graphic context </li>
- *
  * <li> To report current image <b>dimension</b> parameters </li>
- *
  * <li> To <b>rotate</b> the image </li>
- *
  * <li> To <b>read</b> or to <b>write</b> a pixel knowing its location in the
  * current image </li>
- *
  * </ul> </p>
  *
  * @author Hervé Bitteur
@@ -119,8 +113,8 @@ public class Picture
     private int grayFactor = 1;
 
     /**
-     * The implicit (maximum) value for foreground pixels, as determined by the
-     * picture itself. Null if undetermined.
+     * The implicit (maximum) value for foreground pixels, as determined
+     * by the picture itself, null if undetermined.
      */
     private Integer implicitForeground;
 
@@ -134,8 +128,7 @@ public class Picture
     //---------//
     /**
      * Build a picture instance from a given image.
-     *
-     * @param image the provided image
+     * @param image        the provided image
      * @param levelService service where pixel events are to be written
      * @throws ImageFormatException
      */
@@ -149,12 +142,69 @@ public class Picture
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------//
+    // invert //
+    //--------//
+    public static PlanarImage invert (RenderedImage image)
+    {
+        return JAI.create(
+            "Invert",
+            new ParameterBlock().addSource(image).add(null),
+            null);
+    }
+
+    //----------//
+    // setPixel //
+    //----------//
+    /**
+     * Write a pixel at the provided location, in the currently writable
+     * data buffer.
+     * @param pt  pixel coordinates
+     * @param val pixel value
+     */
+    public final void setPixel (Point pt,
+                                int   val)
+    {
+        int[] pixel = new int[1];
+
+        if (grayFactor == 1) {
+            pixel[0] = val;
+        } else {
+            pixel[0] = (val - (grayFactor / 2)) / grayFactor;
+        }
+
+        raster.setPixel(pt.x, pt.y, pixel);
+    }
+
+    //----------//
+    // getPixel //
+    //----------//
+    /**
+     * Report the pixel element read at location (x, y) in the picture.
+     * @param x abscissa value
+     * @param y ordinate value
+     * @return the pixel value
+     */
+    @Implement(PixelSource.class)
+    @Override
+    public final int getPixel (int x,
+                               int y)
+    {
+        int[] pixel = raster.getPixel(x, y, (int[]) null); // Allocates pixel!
+
+        if (grayFactor == 1) {
+            // Speed up the normal case
+            return pixel[0];
+        } else {
+            return (grayFactor / 2) + (grayFactor * pixel[0]);
+        }
+    }
+
     //--------------//
     // getDimension //
     //--------------//
     /**
-     * Report (a copy of) the dimension in pixels of the current image
-     *
+     * Report (a copy of) the dimension in pixels of the current image.
      * @return the image dimension
      */
     public PixelDimension getDimension ()
@@ -167,10 +217,10 @@ public class Picture
     //-----------//
     /**
      * Report the picture height in pixels.
-     *
      * @return the height value
      */
     @Implement(PixelSource.class)
+    @Override
     public int getHeight ()
     {
         return dimension.height;
@@ -193,6 +243,7 @@ public class Picture
     // setMaxForeground //
     //------------------//
     @Implement(PixelSource.class)
+    @Override
     public void setMaxForeground (int level)
     {
         this.maxForeground = level;
@@ -202,6 +253,7 @@ public class Picture
     // getMaxForeground //
     //------------------//
     @Implement(PixelSource.class)
+    @Override
     public int getMaxForeground ()
     {
         if (maxForeground != null) {
@@ -215,8 +267,7 @@ public class Picture
     // getName //
     //---------//
     /**
-     * Report the name for this Observer
-     *
+     * Report the name for this Observer.
      * @return Observer name
      */
     public String getName ()
@@ -224,61 +275,11 @@ public class Picture
         return "Picture";
     }
 
-    //----------//
-    // setPixel //
-    //----------//
-    /**
-     * Write a pixel at the provided location, in the currently writable data
-     * buffer
-     *
-     * @param pt  pixel coordinates
-     * @param val pixel value
-     */
-    public final void setPixel (Point pt,
-                                int   val)
-    {
-        int[] pixel = new int[1];
-
-        if (grayFactor == 1) {
-            pixel[0] = val;
-        } else {
-            pixel[0] = (val - (grayFactor / 2)) / grayFactor;
-        }
-
-        raster.setPixel(pt.x, pt.y, pixel);
-    }
-
-    //----------//
-    // getPixel //
-    //----------//
-    /**
-     * Report the pixel element, as read at location (x, y) in the picture.
-     *
-     * @param x abscissa value
-     * @param y ordinate value
-     *
-     * @return the pixel value
-     */
-    @Implement(PixelSource.class)
-    public final int getPixel (int x,
-                               int y)
-    {
-        int[] pixel = raster.getPixel(x, y, (int[]) null); // Allocates pixel!
-
-        if (grayFactor == 1) {
-            // Speed up the normal case
-            return pixel[0];
-        } else {
-            return (grayFactor / 2) + (grayFactor * pixel[0]);
-        }
-    }
-
     //-----------//
     // isRotated //
     //-----------//
     /**
      * Predicate to report whether the picture has been rotated.
-     *
      * @return true if rotated
      */
     public boolean isRotated ()
@@ -290,12 +291,12 @@ public class Picture
     // getWidth //
     //----------//
     /**
-     * Report the current width of the picture image. Note that it may have been
-     * modified by a rotation.
-     *
+     * Report the current width of the picture image.
+     * Note that it may have been modified by a rotation.
      * @return the current width value, in pixels.
      */
     @Implement(PixelSource.class)
+    @Override
     public int getWidth ()
     {
         return dimension.width;
@@ -305,7 +306,7 @@ public class Picture
     // close //
     //-------//
     /**
-     * Release the resources linked to the picture image
+     * Release the resources linked to the picture image.
      */
     public void close ()
     {
@@ -318,9 +319,8 @@ public class Picture
     // dumpRectangle //
     //---------------//
     /**
-     * Debugging routine, that prints a basic representation of a rectangular
-     * portion of the picture.
-     *
+     * Debugging routine, that prints a basic representation of a
+     * rectangular portion of the picture.
      * @param title an optional title for this image dump
      * @param xMin  x first coord
      * @param xMax  x last coord
@@ -377,24 +377,12 @@ public class Picture
     }
 
     //--------//
-    // invert //
-    //--------//
-    public static PlanarImage invert (RenderedImage image)
-    {
-        return JAI.create(
-            "Invert",
-            new ParameterBlock().addSource(image).add(null),
-            null);
-    }
-
-    //--------//
     // update //
     //--------//
     /**
-     * Call-back triggered when sheet location has been modified.  Based on
-     * sheet location, we forward the pixel gray level to whoever is interested
-     * in it.
-     *
+     * Call-back triggered when sheet location has been modified.
+     * Based on sheet location, we forward the pixel gray level to whoever is
+     * interested in it.
      * @param event the (sheet) location event
      */
     @Implement(EventSubscriber.class)
@@ -435,7 +423,6 @@ public class Picture
     //--------//
     /**
      * Paint the picture image in the provided graphic context.
-     *
      * @param g the Graphics context
      */
     public void render (Graphics g)
@@ -450,7 +437,6 @@ public class Picture
     /**
      * Rotate the image according to the provided angle.
      * <p>Experience with JAI shows that we must use bytes rather than bits
-     *
      * @param theta the desired rotation angle, in radians, positive for
      * clockwise, negative for counter-clockwise
      * @throws ImageFormatException
@@ -525,17 +511,6 @@ public class Picture
         return getName();
     }
 
-    //----------//
-    // setImage //
-    //----------//
-    private void setImage (RenderedImage renderedImage)
-        throws ImageFormatException
-    {
-        image = PlanarImage.wrapRenderedImage(renderedImage);
-
-        checkImage();
-    }
-
     //------------//
     // RGBAToGray //
     //------------//
@@ -553,18 +528,59 @@ public class Picture
     //-----------//
     private static PlanarImage RGBToGray (PlanarImage image)
     {
-        logger.fine("Converting RGB image to gray ...");
+        logger.info("Converting RGB image to gray ...");
 
-        double[][]  matrix = {
-                                 { 0.114d, 0.587d, 0.299d, 0.0d }
-                             };
+        if (constants.useMaxChannelForColorToGray.isSet()) {
+            // We use the max value among the RGB channels
+            int            width = image.getWidth();
+            int            height = image.getHeight();
+            BufferedImage  im = new BufferedImage(
+                width,
+                height,
+                BufferedImage.TYPE_BYTE_GRAY);
+            WritableRaster raster = im.getRaster();
+            Raster         source = image.getData();
+            int[]          levels = new int[3];
+            int            maxLevel;
 
-        PlanarImage result = JAI.create(
-            "bandcombine",
-            new ParameterBlock().addSource(image).add(matrix),
-            null);
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    source.getPixel(x, y, levels);
+                    maxLevel = 0;
 
-        return result;
+                    for (int level : levels) {
+                        if (maxLevel < level) {
+                            maxLevel = level;
+                        }
+                    }
+
+                    raster.setSample(x, y, 0, maxLevel);
+                }
+            }
+
+            return PlanarImage.wrapRenderedImage(im);
+        } else {
+            // We use luminance value based on standard RGB combination
+            double[][] matrix = {
+                                    { 0.114d, 0.587d, 0.299d, 0.0d }
+                                };
+
+            return JAI.create(
+                "bandcombine",
+                new ParameterBlock().addSource(image).add(matrix),
+                null);
+        }
+    }
+
+    //----------//
+    // setImage //
+    //----------//
+    private void setImage (RenderedImage renderedImage)
+        throws ImageFormatException
+    {
+        image = PlanarImage.wrapRenderedImage(renderedImage);
+
+        checkImage();
     }
 
     //--------------//
@@ -636,9 +652,8 @@ public class Picture
     // checkImageFormat //
     //------------------//
     /**
-     * Check if the image format (and especially its color model) is properly
-     * handled by Audiveris.
-     *
+     * Check if the image format (and especially its color model) is
+     * properly handled by Audiveris.
      * @throws ImageFormatException is the format is not supported
      */
     private void checkImageFormat ()
@@ -739,8 +754,15 @@ public class Picture
     {
         //~ Instance fields ----------------------------------------------------
 
+        Constant.Boolean useMaxChannelForColorToGray = new Constant.Boolean(
+            true,
+            "Should we use max channel rather than standard luminance in " +
+            "RGAtoGray transform");
+
+        //
         Constant.Ratio binaryToGrayscaleSubsampling = new Constant.Ratio(
             1,
-            "Subsampling ratio between 0 and 1, or 1 for no subsampling (memory intensive)");
+            "Subsampling ratio between 0 and 1, or 1 for no subsampling " +
+            "(memory intensive)");
     }
 }

@@ -307,8 +307,7 @@
 <enable>true</enable>
 <enum>false</enum>
 <interface>true</interface>
-<method>true<bean>true</bean>
-</method>
+<method>true</method>
 <order>static|enum|field|initializer|constructor|method|interface|class|annotation</order>
 <variable>false</variable>
 </declaration>
