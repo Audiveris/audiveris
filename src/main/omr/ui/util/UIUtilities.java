@@ -69,53 +69,12 @@ public class UIUtilities
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------------------//
-    // setAbsoluteStroke //
-    //-------------------//
-    /**
-     * Whatever the current scaling of a graphic context, set the stroke to the
-     * desired absolute width, and return the saved stroke for later restore.
-     * @param g the current graphics context
-     * @param width the absolute stroke width desired
-     * @return the previous stroke
-     */
-    public static Stroke setAbsoluteStroke (Graphics g,
-                                            float    width)
-    {
-        Graphics2D      g2 = (Graphics2D) g;
-        AffineTransform AT = g2.getTransform();
-        double          ratio = AT.getScaleX();
-        Stroke          oldStroke = g2.getStroke();
-        Stroke          stroke = new BasicStroke(width / (float) ratio);
-        g2.setStroke(stroke);
-
-        return oldStroke;
-    }
-
-    //---------------//
-    // getToolBorder //
-    //---------------//
-    /**
-     * Report a standard tool border entity, which is a raised bevel border
-     *
-     * @return the standard tool border
-     */
-    public static Border getToolBorder ()
-    {
-        if (toolBorder == null) {
-            toolBorder = BorderFactory.createRaisedBevelBorder();
-        }
-
-        return toolBorder;
-    }
-
     //------------------//
     // directoryChooser //
     //------------------//
     /**
-     * Let the user select a directory
-     *
-     * @param parent the parent component for the dialog
+     * Let the user select a directory.
+     * @param parent   the parent component for the dialog
      * @param startDir the default directory
      * @return the chosen directory, or null
      */
@@ -149,10 +108,9 @@ public class UIUtilities
     // enableActions //
     //---------------//
     /**
-     * Given a list of actions, set all these actions (whether they descend
-     * from AbstractAction or AbstractButton) enabled or not, according to
-     * the bool parameter provided.
-     *
+     * Given a list of actions, set all these actions (whether they
+     * derive from AbstractAction or AbstractButton) enabled or not,
+     * according to the bool parameter provided.
      * @param actions list of actions to enable/disable as a whole
      * @param bool    true for enable, false for disable
      */
@@ -176,13 +134,12 @@ public class UIUtilities
     // fileChooser //
     //-------------//
     /**
-     * A replacement for standard JFileChooser, to allow better look & feel
-     * on the MAc platform.
-     *
-     * @param save true for a SAVE dialog, false for a LOAD dialog
-     * @param parent the parent component for the dialog
+     * A replacement for standard JFileChooser, to allow better
+     * look & feel on the Mac platform.
+     * @param save      true for a SAVE dialog, false for a LOAD dialog
+     * @param parent    the parent component for the dialog
      * @param startFile default file, or just default directory, or null
-     * @param filter a filter to by applied on files
+     * @param filter    a filter to by applied on files
      * @return the selected file, or null
      */
     public static File fileChooser (boolean       save,
@@ -269,11 +226,53 @@ public class UIUtilities
         return file;
     }
 
+    //---------------//
+    // getToolBorder //
+    //---------------//
+    /**
+     * Report a standard tool border entity, which is a raised bevel
+     * border.
+     * @return the standard tool border
+     */
+    public static Border getToolBorder ()
+    {
+        if (toolBorder == null) {
+            toolBorder = BorderFactory.createRaisedBevelBorder();
+        }
+
+        return toolBorder;
+    }
+
+    //-------------------//
+    // setAbsoluteStroke //
+    //-------------------//
+    /**
+     * Whatever the current scaling of a graphic context, set the stroke
+     * to theesired absolute width, and return the saved stroke for
+     * later restore.
+     * @param g     the current graphics context
+     * @param width the absolute stroke width desired
+     * @return the previous stroke
+     */
+    public static Stroke setAbsoluteStroke (Graphics g,
+                                            float    width)
+    {
+        Graphics2D      g2 = (Graphics2D) g;
+        AffineTransform AT = g2.getTransform();
+        double          ratio = AT.getScaleX();
+        Stroke          oldStroke = g2.getStroke();
+        Stroke          stroke = new BasicStroke(width / (float) ratio);
+        g2.setStroke(stroke);
+
+        return oldStroke;
+    }
+
     //-----------------//
     // suppressBorders //
     //-----------------//
     /**
-     * Browse the whole hierarchy of components and nullify their borders
+     * Browse the whole hierarchy of components and nullify their
+     * borders.
      */
     public static void suppressBorders (Container container)
     {
@@ -290,7 +289,8 @@ public class UIUtilities
     // suppressBorders //
     //-----------------//
     /**
-     * Nullify the border of this JComponent, as well as its subcomponents
+     * Nullify the border of this JComponent, as well as its
+     * subcomponents.
      */
     public static void suppressBorders (JComponent comp)
     {

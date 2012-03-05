@@ -175,13 +175,13 @@ Development only folders
 ./dev/tools/lib/ivy-1.3.1.jar
 ./dev/tools/lib/umlet.LICENCES.txt
 
+./dev/externals/
 ./dev/externals/BareBonesBrowserLaunch.jar
 ./dev/externals/EventBus-1.2.jar
 ./dev/externals/Jama-1.0.2.jar
 ./dev/externals/PDFRenderer.jar
 ./dev/externals/bsaf-1.9.1.jar
 ./dev/externals/clibwrapper_jiio.jar
-./dev/externals/forms-1.0.6.jar
 ./dev/externals/gervill.jar
 ./dev/externals/iText-5.0.4.jar
 ./dev/externals/jai_codec.jar
@@ -189,8 +189,10 @@ Development only folders
 ./dev/externals/jai_imageio.jar
 ./dev/externals/jcommon-1.0.16.jar
 ./dev/externals/jfreechart-1.0.13.jar
+./dev/externals/jgoodies-common-1.3.0.jar
+./dev/externals/jgoodies-forms-1.5.0.jar
+./dev/externals/jgoodies-looks-2.5.0.jar
 ./dev/externals/jlfgr-1_0.jar
-./dev/externals/looks-2.0.1.jar
 ./dev/externals/mlibwrapper_jai.jar
 ./dev/externals/playerdata.jar
 ./dev/externals/proxymusic-2.0.jar

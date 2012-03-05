@@ -1,5 +1,4 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
+//------------------                                                          //
 //                               M a i n G u i                                //
 //                                                                            //
 //----------------------------------------------------------------------------//
@@ -51,6 +50,11 @@ import omr.util.JaiLoader;
 import omr.util.OmrExecutors;
 import omr.util.WeakPropertyChangeListener;
 
+import com.jgoodies.looks.BorderStyle;
+import com.jgoodies.looks.HeaderStyle;
+import com.jgoodies.looks.Options;
+import com.jgoodies.looks.plastic.PlasticLookAndFeel;
+
 import org.bushe.swing.event.EventSubscriber;
 
 import org.jdesktop.application.Application;
@@ -68,24 +72,11 @@ import java.io.File;
 import java.util.EventObject;
 import java.util.concurrent.Callable;
 
-import javax.swing.Action;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JEditorPane;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JToolBar;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 /**
  * Class {@code MainGui} is the Java User Interface, the main class for
- * displaying a score, the related sheet, the message log and the 
+ * displaying a score, the related sheet, the message log and the
  * various tools.
  *
  * @author Hervé Bitteur
@@ -138,7 +129,7 @@ public class MainGui
     // MainGui //
     //---------//
     /**
-     * Creates a new {@code MainGui} instance, to handle any user 
+     * Creates a new {@code MainGui} instance, to handle any user
      * display and interaction.
      */
     public MainGui ()
@@ -147,75 +138,14 @@ public class MainGui
 
     //~ Methods ----------------------------------------------------------------
 
-    //---------------//
-    // setBoardsPane //
-    //---------------//
-    /**
-     * Set a new boardspane to the boards holder.
-     * @param boards the boards pane to be shown
-     */
-    public void setBoardsPane (JComponent boards)
-    {
-        boardsScrollPane.setBoards(boards);
-    }
-
-    //----------//
-    // getFrame //
-    //----------//
-    /**
-     * Report the concrete frame
-     *
-     * @return the ui frame
-     */
-    public JFrame getFrame ()
-    {
-        return frame;
-    }
-
-    //--------------//
-    // getGlassPane //
-    //--------------//
-    /**
-     * Report the main window glassPane, needed for shape drag 'n drop.
-     * @return the ghost glass pane
-     */
-    public GhostGlassPane getGlassPane ()
-    {
-        return glassPane;
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single instance of this application.
-     * @return the SingleFrameApplication instance
-     */
-    public static SingleFrameApplication getInstance ()
-    {
-        return (SingleFrameApplication) Application.getInstance();
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * Report an Observer name.
-     * @return observer name
-     */
-    public String getName ()
-    {
-        return "MainGui";
-    }
-
     //--------------//
     // addOnToolBar //
     //--------------//
     public JButton addOnToolBar (Action action)
     {
         JButton button = toolBar.add(action);
-        button.setBorder(UIUtilities.getToolBorder());
 
+        ///button.setBorder(UIUtilities.getToolBorder());
         return button;
     }
 
@@ -234,8 +164,7 @@ public class MainGui
     // displayConfirmation //
     //---------------------//
     /**
-     * Allow to display a confirmation dialog with a message
-     *
+     * Allow to display a confirmation dialog with a message.
      * @param message the message asking for confirmation
      * @return true if confirmed, false otherwise
      */
@@ -312,11 +241,59 @@ public class MainGui
             JOptionPane.WARNING_MESSAGE);
     }
 
+    //----------//
+    // getFrame //
+    //----------//
+    /**
+     * Report the concrete frame.
+     * @return the ui frame
+     */
+    public JFrame getFrame ()
+    {
+        return frame;
+    }
+
+    //--------------//
+    // getGlassPane //
+    //--------------//
+    /**
+     * Report the main window glassPane, needed for shape drag 'n drop.
+     * @return the ghost glass pane
+     */
+    public GhostGlassPane getGlassPane ()
+    {
+        return glassPane;
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of this application.
+     * @return the SingleFrameApplication instance
+     */
+    public static SingleFrameApplication getInstance ()
+    {
+        return (SingleFrameApplication) Application.getInstance();
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * Report an Observer name.
+     * @return observer name
+     */
+    public String getName ()
+    {
+        return "MainGui";
+    }
+
     //----------------//
     // hideErrorsPane //
     //----------------//
     /**
-     * Remove the specific component the errors pane
+     * Remove the specific component the errors pane.
      * @param component the component to remove (or null if we don't care)
      */
     public void hideErrorsPane (JComponent component)
@@ -418,6 +395,18 @@ public class MainGui
         boardsScrollPane.setBoards(null);
     }
 
+    //---------------//
+    // setBoardsPane //
+    //---------------//
+    /**
+     * Set a new boardspane to the boards holder.
+     * @param boards the boards pane to be shown
+     */
+    public void setBoardsPane (JComponent boards)
+    {
+        boardsScrollPane.setBoards(boards);
+    }
+
     //----------------//
     // showErrorsPane //
     //----------------//
@@ -467,6 +456,12 @@ public class MainGui
         if (logger.isFineEnabled()) {
             logger.fine("MainGui. ready");
         }
+
+        // Tool bar adjustments
+        toolBar.putClientProperty(Options.HEADER_STYLE_KEY, HeaderStyle.BOTH);
+        toolBar.putClientProperty(
+            PlasticLookAndFeel.BORDER_STYLE_KEY,
+            BorderStyle.SEPARATOR);
 
         // Weakly listen to some GUI Actions parameters
         PropertyChangeListener weak = new WeakPropertyChangeListener(this);
@@ -680,7 +675,9 @@ public class MainGui
         mgr.registerAllActions();
         toolBar = mgr.getToolBar();
 
+        // Menu bar 
         JMenuBar menuBar = mgr.getMenuBar();
+        menuBar.putClientProperty(Options.HEADER_STYLE_KEY, HeaderStyle.BOTH);
         frame.setJMenuBar(menuBar);
 
         // Mac Application menu
@@ -691,18 +688,54 @@ public class MainGui
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
+    //------------------//
+    // BoardsScrollPane //
+    //------------------//
+    /**
+     * Just a scrollPane to host the pane of user boards, trying to offer
+     * enough room for the boards.
+     */
+    private class BoardsScrollPane
+        extends JScrollPane
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Methods ------------------------------------------------------------
 
-        /** Flag for the preloading of costly packages in the background */
-        private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
-            true,
-            "Should we preload costly packages in the background?");
+        public void adjustRoom ()
+        {
+            Component view = getViewport()
+                                 .getView();
+
+            if (view != null) {
+                int boardsWidth = view.getBounds().width;
+
+                if (boardsWidth != 0) {
+                    int horiWidth = horiSplitPane.getBounds().width;
+                    horiSplitPane.setDividerLocation(
+                        horiWidth - boardsWidth -
+                        horiSplitPane.getDividerSize());
+                    repaint();
+                }
+            }
+        }
+
+        public void setBoards (JComponent boards)
+        {
+            setViewportView(boards);
+            revalidate();
+
+            if ((boards != null) &&
+                GuiActions.getInstance()
+                          .isBoardsDisplayed()) {
+                // Make sure we have enough room
+                SwingUtilities.invokeLater(
+                    new Runnable() {
+                            public void run ()
+                            {
+                                adjustRoom();
+                            }
+                        });
+            }
+        }
     }
 
     //------------//
@@ -760,11 +793,25 @@ public class MainGui
         }
     }
 
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Flag for the preloading of costly packages in the background */
+        private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
+            true,
+            "Should we preload costly packages in the background?");
+    }
+
     //-----------------//
     // HistoryListener //
     //-----------------//
     /**
-     * Class {@code HistoryListener} is used to reload an image file, 
+     * Class {@code HistoryListener} is used to reload an image file,
      * when selected from the history of previous image files.
      */
     private static class HistoryListener
@@ -777,56 +824,6 @@ public class MainGui
         {
             File file = new File(e.getActionCommand());
             new OpenTask(file).execute();
-        }
-    }
-
-    //------------------//
-    // BoardsScrollPane //
-    //------------------//
-    /**
-     * Just a scrollPane to host the pane of user boards, trying to offer
-     * enough room for the boards.
-     */
-    private class BoardsScrollPane
-        extends JScrollPane
-    {
-        //~ Methods ------------------------------------------------------------
-
-        public void setBoards (JComponent boards)
-        {
-            setViewportView(boards);
-            revalidate();
-
-            if ((boards != null) &&
-                GuiActions.getInstance()
-                          .isBoardsDisplayed()) {
-                // Make sure we have enough room
-                SwingUtilities.invokeLater(
-                    new Runnable() {
-                            public void run ()
-                            {
-                                adjustRoom();
-                            }
-                        });
-            }
-        }
-
-        public void adjustRoom ()
-        {
-            Component view = getViewport()
-                                 .getView();
-
-            if (view != null) {
-                int boardsWidth = view.getBounds().width;
-
-                if (boardsWidth != 0) {
-                    int horiWidth = horiSplitPane.getBounds().width;
-                    horiSplitPane.setDividerLocation(
-                        horiWidth - boardsWidth -
-                        horiSplitPane.getDividerSize());
-                    repaint();
-                }
-            }
         }
     }
 }
