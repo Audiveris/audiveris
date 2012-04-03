@@ -407,7 +407,8 @@ public class GlyphsBuilder
      * @param side the desired side for the box
      * @return the proper stem side box
      */
-    public PixelRectangle stemBoxOf (Glyph stem, HorizontalSide side)
+    public PixelRectangle stemBoxOf (Glyph          stem,
+                                     HorizontalSide side)
     {
         PixelRectangle box = stem.getContourBox();
         int            width = box.width;

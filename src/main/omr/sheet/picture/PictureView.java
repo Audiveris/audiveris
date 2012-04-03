@@ -22,7 +22,6 @@ import omr.ui.Colors;
 import omr.ui.view.RubberPanel;
 import omr.ui.view.ScrollView;
 
-import omr.util.Implement;
 import omr.util.WeakPropertyChangeListener;
 
 import java.awt.Color;
@@ -86,7 +85,7 @@ public class PictureView
     //----------------//
     // propertyChange //
     //----------------//
-    @Implement(PropertyChangeListener.class)
+    @Override
     public void propertyChange (PropertyChangeEvent evt)
     {
         view.repaint();

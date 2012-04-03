@@ -58,20 +58,6 @@ public class LIntegerField
     //~ Methods ----------------------------------------------------------------
 
     //----------//
-    // setValue //
-    //----------//
-    /**
-     * Modify the current field
-     *
-     * @param val the integer value to be used
-     */
-    public void setValue (int val)
-    {
-        getField()
-            .setText(Integer.toString(val));
-    }
-
-    //----------//
     // getValue //
     //----------//
     /**
@@ -91,5 +77,19 @@ public class LIntegerField
         } else {
             return Integer.parseInt(str);
         }
+    }
+
+    //----------//
+    // setValue //
+    //----------//
+    /**
+     * Modify the current field
+     *
+     * @param val the integer value to be used
+     */
+    public void setValue (int val)
+    {
+        getField()
+            .setText(Integer.toString(val));
     }
 }

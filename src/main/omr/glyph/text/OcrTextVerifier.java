@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.glyph.text;
 
-import omr.ui.symbol.TextFont;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -22,6 +21,8 @@ import omr.log.Logger;
 
 import omr.score.common.PixelRectangle;
 
+import omr.ui.symbol.TextFont;
+
 import omr.util.WrappedBoolean;
 import omr.util.XmlUtilities;
 
@@ -31,9 +32,9 @@ import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code OcrTextVerifier} gathers a set of tests to check whether a text
- * content as provided by the Ocr engine looks consistent with the original
- * glyph.
+ * Class {@code OcrTextVerifier} gathers a set of tests to check 
+ * whether a text content as provided by the Ocr engine looks consistent
+ * with the original glyph.
  *
  * @author Hervé Bitteur
  */

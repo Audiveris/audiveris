@@ -22,7 +22,6 @@ import omr.glyph.text.OcrLine;
 import omr.glyph.text.OcrTextVerifier;
 import omr.glyph.text.TextBlob;
 import omr.glyph.text.TextInfo;
-import omr.glyph.text.TextLine;
 
 import omr.grid.LineInfo;
 import omr.grid.StaffInfo;
@@ -45,11 +44,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code TextBorderPattern} directly uses OCR on specific regions around
- * staves of a given system to retrieve text-shaped glyphs.
+ * Class {@code TextBorderPattern} directly uses OCR on specific
+ * regions around staves of a given system to retrieve text-shaped
+ * glyphs.
  * <ol>
- * <li>We define near-rectangular zones above and below staves, and on left and
- * right sides of the system.</li>
+ * <li>We define near-rectangular zones above and below systems, and on left
+ * and right sides of the system.</li>
  * <li>For each zone, all contained glyphs are filtered and gathered into blobs
  * (each blob being likely to contain one sentence).</li>
  * <li>NOTA: By-passing the neural network,each blob is directly handed to the
@@ -79,9 +79,6 @@ public class TextBorderPattern
 
     // Scale dependent constants
     private final int maxFontSize;
-
-    // Debug: A counter on tests submitted to OCR
-    private int testCount = 0;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -179,13 +176,8 @@ public class TextBorderPattern
     private OcrLine callOCR (Glyph  compound,
                              String language)
     {
-        List<OcrLine> lines = Language.getOcr()
-                                      .recognize(
-            compound.getImage(),
-            language,
-            "gS" + system.getId() + "t" + (++testCount) + ".");
-
-        ///OCR logger.warning("TextBorderPattern OCR " + compound + " " + lines);
+        List<OcrLine> lines = compound.getTextInfo()
+                                      .recognizeGlyph(language);
 
         // Debug
         if (logger.isFineEnabled()) {
@@ -225,12 +217,7 @@ public class TextBorderPattern
             return null;
         }
 
-        OcrLine ocrLine = lines.get(0);
-
-        // Convert ocrLine from glyph-based to absolute coordinates
-        ocrLine.translate(
-            compound.getContourBox().x,
-            compound.getContourBox().y);
+        OcrLine        ocrLine = lines.get(0);
 
         String         value = ocrLine.value;
         float          fontSize = ocrLine.fontSize;
@@ -292,21 +279,26 @@ public class TextBorderPattern
     {
         //~ Instance fields ----------------------------------------------------
 
-        Scale.Fraction maxFontSize = new Scale.Fraction(
+        Scale.Fraction   maxFontSize = new Scale.Fraction(
             1.8,
             "Maximum value for text font size");
-        Constant.Ratio minAspect = new Constant.Ratio(
+        Constant.Ratio   minAspect = new Constant.Ratio(
             1.0,
             "Minimum aspect of chars (height / width)");
-        Constant.Ratio maxAspect = new Constant.Ratio(
+        Constant.Ratio   maxAspect = new Constant.Ratio(
             3.0,
             "Maximum aspect of chars (height / width)");
-        Scale.Fraction staffMarginAbove = new Scale.Fraction(
+        Scale.Fraction   staffMarginAbove = new Scale.Fraction(
             1.0,
-            "Minimum distance avove staff");
-        Scale.Fraction staffMarginBelow = new Scale.Fraction(
+            "Minimum distance above staff");
+        Scale.Fraction   staffMarginBelow = new Scale.Fraction(
             3.0,
             "Minimum distance below staff");
+
+        //
+        Evaluation.Grade maxGrade = new Evaluation.Grade(
+            80.0,
+            "Maximum grade for calling known glyphs into question");
     }
 
     //----------//
@@ -328,13 +320,18 @@ public class TextBorderPattern
         //-----------//
         // checkBlob //
         //-----------//
+        @Override
         protected boolean checkBlob (TextBlob blob,
                                      Glyph    compound)
         {
             // Call the OCR?
             if (Language.getOcr()
                         .isAvailable()) {
-                OcrLine ocrLine = null;
+                OcrLine ocrLine;
+
+                if (compound.isTransient()) {
+                    compound = system.registerGlyph(compound);
+                }
 
                 if (compound.getTextInfo()
                             .getContent() == null) {
@@ -394,6 +391,11 @@ public class TextBorderPattern
         {
             // Common checks
             if (!super.checkCandidate(glyph)) {
+                return false;
+            }
+
+            if (glyph.isKnown() &&
+                (glyph.getEvaluation().grade > constants.maxGrade.getValue())) {
                 return false;
             }
 

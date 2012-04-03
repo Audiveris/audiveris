@@ -349,15 +349,15 @@ public class PageMenu
 
         //~ Methods ------------------------------------------------------------
 
-        public JMenu getMenu ()
-        {
-            return menu;
-        }
-
         public void actionPerformed (ActionEvent e)
         {
             // Default action is to open the menu
             assert false;
+        }
+
+        public JMenu getMenu ()
+        {
+            return menu;
         }
 
         @Override
@@ -483,15 +483,15 @@ public class PageMenu
 
         //~ Methods ------------------------------------------------------------
 
-        public JMenu getMenu ()
-        {
-            return menu;
-        }
-
         public void actionPerformed (ActionEvent e)
         {
             // Default action is to open the menu
             assert false;
+        }
+
+        public JMenu getMenu ()
+        {
+            return menu;
         }
 
         @Override

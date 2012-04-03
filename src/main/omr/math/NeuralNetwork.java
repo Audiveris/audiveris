@@ -175,94 +175,6 @@ public class NeuralNetwork
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------//
-    // setEpochs //
-    //-----------//
-    /**
-     * set the number of iterations for training the network with a given input
-     * @param epochs number of iterations
-     */
-    public void setEpochs (int epochs)
-    {
-        this.epochs = epochs;
-    }
-
-    //---------------//
-    // getHiddenSize //
-    //---------------//
-    /**
-     * Report the number of cells in the hidden layer
-     *
-     * @return the size of the hidden layer
-     */
-    public int getHiddenSize ()
-    {
-        return hiddenSize;
-    }
-
-    //--------------//
-    // getInputSize //
-    //--------------//
-    /**
-     * Report the number of cells in the input layer
-     *
-     * @return the size of input layer
-     */
-    public int getInputSize ()
-    {
-        return inputSize;
-    }
-
-    //-----------------//
-    // setLearningRate //
-    //-----------------//
-    /**
-     * Set the learning rate
-     * @param learningRate the learning rate to use for each iteration
-     * (typically in the 0.0 .. 1.0 range)
-     */
-    public void setLearningRate (double learningRate)
-    {
-        this.learningRate = learningRate;
-    }
-
-    //-------------//
-    // setMaxError //
-    //-------------//
-    /**
-     * Set the maximum error level
-     * @param maxError maximum error
-     */
-    public void setMaxError (double maxError)
-    {
-        this.maxError = maxError;
-    }
-
-    //-------------//
-    // setMomentum //
-    //-------------//
-    /**
-     * Set the momentum value
-     * @param momentum the fraction of previous move to be reported on the next
-     * correction
-     */
-    public void setMomentum (double momentum)
-    {
-        this.momentum = momentum;
-    }
-
-    //---------------//
-    // getOutputSize //
-    //---------------//
-    /**
-     * Report the size of the output layer
-     * @return the number of cells in the output layer
-     */
-    public int getOutputSize ()
-    {
-        return outputSize;
-    }
-
     //--------//
     // backup //
     //--------//
@@ -277,30 +189,6 @@ public class NeuralNetwork
         logger.fine("Network memory backup");
 
         return new Backup(hiddenWeights, outputWeights);
-    }
-
-    //-----------//
-    // unmarshal //
-    //-----------//
-    /**
-     * Unmarshal the provided XML stream to allocate the corresponding
-     * NeuralNetwork
-     *
-     * @param in the input stream that contains the network definition in XML
-     * format. The stream is not closed by this method
-     *
-     * @return the allocated network.
-     * @exception JAXBException raised when unmarshalling goes wrong
-     */
-    public static NeuralNetwork unmarshal (InputStream in)
-        throws JAXBException
-    {
-        Unmarshaller  um = getJaxbContext()
-                               .createUnmarshaller();
-        NeuralNetwork nn = (NeuralNetwork) um.unmarshal(in);
-        logger.fine("Network unmarshalled");
-
-        return nn;
     }
 
     //------//
@@ -333,6 +221,44 @@ public class NeuralNetwork
         dumpMatrix(outputWeights);
         System.out.print("Outputs : " + outputSize);
         System.out.println(" cells\n");
+    }
+
+    //---------------//
+    // getHiddenSize //
+    //---------------//
+    /**
+     * Report the number of cells in the hidden layer
+     *
+     * @return the size of the hidden layer
+     */
+    public int getHiddenSize ()
+    {
+        return hiddenSize;
+    }
+
+    //--------------//
+    // getInputSize //
+    //--------------//
+    /**
+     * Report the number of cells in the input layer
+     *
+     * @return the size of input layer
+     */
+    public int getInputSize ()
+    {
+        return inputSize;
+    }
+
+    //---------------//
+    // getOutputSize //
+    //---------------//
+    /**
+     * Report the size of the output layer
+     * @return the number of cells in the output layer
+     */
+    public int getOutputSize ()
+    {
+        return outputSize;
     }
 
     //---------//
@@ -431,6 +357,56 @@ public class NeuralNetwork
         forward(hiddens, outputWeights, outputs);
 
         return outputs;
+    }
+
+    //-----------//
+    // setEpochs //
+    //-----------//
+    /**
+     * set the number of iterations for training the network with a given input
+     * @param epochs number of iterations
+     */
+    public void setEpochs (int epochs)
+    {
+        this.epochs = epochs;
+    }
+
+    //-----------------//
+    // setLearningRate //
+    //-----------------//
+    /**
+     * Set the learning rate
+     * @param learningRate the learning rate to use for each iteration
+     * (typically in the 0.0 .. 1.0 range)
+     */
+    public void setLearningRate (double learningRate)
+    {
+        this.learningRate = learningRate;
+    }
+
+    //-------------//
+    // setMaxError //
+    //-------------//
+    /**
+     * Set the maximum error level
+     * @param maxError maximum error
+     */
+    public void setMaxError (double maxError)
+    {
+        this.maxError = maxError;
+    }
+
+    //-------------//
+    // setMomentum //
+    //-------------//
+    /**
+     * Set the momentum value
+     * @param momentum the fraction of previous move to be reported on the next
+     * correction
+     */
+    public void setMomentum (double momentum)
+    {
+        this.momentum = momentum;
     }
 
     //------//
@@ -621,18 +597,28 @@ public class NeuralNetwork
         return mse;
     }
 
-    //----------------//
-    // getJaxbContext //
-    //----------------//
-    private static JAXBContext getJaxbContext ()
+    //-----------//
+    // unmarshal //
+    //-----------//
+    /**
+     * Unmarshal the provided XML stream to allocate the corresponding
+     * NeuralNetwork
+     *
+     * @param in the input stream that contains the network definition in XML
+     * format. The stream is not closed by this method
+     *
+     * @return the allocated network.
+     * @exception JAXBException raised when unmarshalling goes wrong
+     */
+    public static NeuralNetwork unmarshal (InputStream in)
         throws JAXBException
     {
-        // Lazy creation
-        if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(NeuralNetwork.class);
-        }
+        Unmarshaller  um = getJaxbContext()
+                               .createUnmarshaller();
+        NeuralNetwork nn = (NeuralNetwork) um.unmarshal(in);
+        logger.fine("Network unmarshalled");
 
-        return jaxbContext;
+        return nn;
     }
 
     //-------------//
@@ -688,6 +674,20 @@ public class NeuralNetwork
         }
 
         return matrix;
+    }
+
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private static JAXBContext getJaxbContext ()
+        throws JAXBException
+    {
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(NeuralNetwork.class);
+        }
+
+        return jaxbContext;
     }
 
     //------------//
@@ -776,16 +776,15 @@ public class NeuralNetwork
     //---------//
     /**
      * Interface {@code Monitor} allows to plug a monitor to a Neural
-     * Network instance, and inform the monitor about the progress of the
-     * training.
+     * Network instance, and inform the monitor about the progress of
+     * the training activity.
      */
     public static interface Monitor
     {
         //~ Methods ------------------------------------------------------------
 
         /**
-         * Entry called at end of each epoch during the training phase
-         *
+         * Entry called at end of each epoch during the training phase.
          * @param epochIndex the sequential index of completed epoch
          * @param mse the remaining mean square error
          */
@@ -793,9 +792,8 @@ public class NeuralNetwork
                          double mse);
 
         /**
-         * Entry called at the beginning of the training phase, to allow initial
-         * snap shots for example.
-         *
+         * Entry called at the beginning of the training phase, to allow
+         * initial snap shots for example.
          * @param epochIndex the sequential index (0)
          * @param mse the starting mean square error
          * */
@@ -809,11 +807,12 @@ public class NeuralNetwork
     // Backup //
     //--------//
     /**
-     * Class {@code Backup} is an opaque class that encapsulates a snapshot
-     * of a NeuralNetwork internal memory (its weights). A Backup instance can
-     * only be obtained through the use of {@link #backup} method of a
-     * NeuralNetwork. A Backup instance is the needed parameter for a
-     * NeuralNetwork {@link #restore} action.
+     * Class {@code Backup} is an opaque class that encapsulates a
+     * snapshot of a NeuralNetwork internal memory (its weights).
+     * A Backup instance can only be obtained through the use of {@link #backup}
+     * method of a NeuralNetwork.
+     * A Backup instance is the needed parameter for a NeuralNetwork {@link
+     * #restore} action.
      */
     public static class Backup
     {

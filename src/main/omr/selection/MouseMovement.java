@@ -23,7 +23,7 @@ package omr.selection;
  */
 public enum MouseMovement {
     /**
-     * User presses the mouse button down or, by extension, manually 
+     * User presses the mouse button down or, by extension, manually
      * enters the location data in a dedicated board.
      */
     PRESSING,

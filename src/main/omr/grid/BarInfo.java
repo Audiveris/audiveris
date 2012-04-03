@@ -61,14 +61,6 @@ public class BarInfo
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------//
-    // setSticks //
-    //-----------//
-    public final void setSticks (Collection<?extends Glyph> sticks)
-    {
-        this.sticks = new ArrayList<Glyph>(sticks); // Copy
-    }
-
     //--------------------//
     // getSticksAncestors //
     //--------------------//
@@ -81,6 +73,14 @@ public class BarInfo
         }
 
         return list;
+    }
+
+    //-----------//
+    // setSticks //
+    //-----------//
+    public final void setSticks (Collection<?extends Glyph> sticks)
+    {
+        this.sticks = new ArrayList<Glyph>(sticks); // Copy
     }
 
     //----------//

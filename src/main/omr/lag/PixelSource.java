@@ -36,13 +36,6 @@ public interface PixelSource
     int getHeight ();
 
     /**
-     * Assign a new maximum value for foreground (black) pixels
-     *
-     * @param level the new maximum foreground pixel value
-     */
-    void setMaxForeground (int level);
-
-    /**
      * Since foreground is made of rather black pixels (level close to 0), this
      * method reports the maximum value for a pixel to be considered as
      * foreground.
@@ -69,4 +62,11 @@ public interface PixelSource
      * @return the source width
      */
     int getWidth ();
+
+    /**
+     * Assign a new maximum value for foreground (black) pixels
+     *
+     * @param level the new maximum foreground pixel value
+     */
+    void setMaxForeground (int level);
 }

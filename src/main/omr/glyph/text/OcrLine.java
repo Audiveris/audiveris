@@ -11,8 +11,9 @@
 // </editor-fold>
 package omr.glyph.text;
 
-import omr.ui.symbol.TextFont;
 import omr.score.common.PixelRectangle;
+
+import omr.ui.symbol.TextFont;
 
 import java.awt.Font;
 import java.awt.Rectangle;
@@ -63,6 +64,16 @@ public class OcrLine
 
     //~ Methods ----------------------------------------------------------------
 
+    //------//
+    // dump //
+    //------//
+    public void dump ()
+    {
+        for (OcrChar ch : chars) {
+            System.out.println(ch.toString());
+        }
+    }
+
     //----------//
     // getChars //
     //----------//
@@ -109,16 +120,6 @@ public class OcrLine
     public boolean isFontSizeValid ()
     {
         return fontSize != null;
-    }
-
-    //------//
-    // dump //
-    //------//
-    public void dump ()
-    {
-        for (OcrChar ch : chars) {
-            System.out.println(ch.toString());
-        }
     }
 
     //----------//

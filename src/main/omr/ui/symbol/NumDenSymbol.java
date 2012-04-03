@@ -96,6 +96,15 @@ public class NumDenSymbol
 
     //~ Methods ----------------------------------------------------------------
 
+    //------------//
+    // createIcon //
+    //------------//
+    @Override
+    protected ShapeSymbol createIcon ()
+    {
+        return new NumDenSymbol(true, shape, decorated, numCodes, denCodes);
+    }
+
     //-----------//
     // getParams //
     //-----------//
@@ -112,15 +121,6 @@ public class NumDenSymbol
             (int) Math.rint(Math.max(numRect.getHeight(), denRect.getHeight())));
 
         return p;
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new NumDenSymbol(true, shape, decorated, numCodes, denCodes);
     }
 
     //-------//

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="NOTEHEAD_VOID" interline="18" id="1257">
+    <stem-number>1</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>0.056338028169014086</pitch-position>
+    <section orientation="VERTICAL" first-pos="1574" id="2965">
+        <run start="2141" level="130" length="7"/>
+        <run start="2140" level="75" length="10"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="1576" id="2968">
+        <run start="2138" level="112" length="8"/>
+        <run start="2137" level="93" length="7"/>
+        <run start="2136" level="59" length="6"/>
+        <run start="2135" level="52" length="7"/>
+        <run start="2135" level="3" length="6"/>
+        <run start="2134" level="23" length="7"/>
+        <run start="2134" level="3" length="6"/>
+        <run start="2133" level="38" length="7"/>
+        <run start="2133" level="13" length="6"/>
+        <run start="2133" level="32" length="6"/>
+        <run start="2132" level="45" length="6"/>
+        <run start="2132" level="34" length="5"/>
+        <run start="2132" level="49" length="5"/>
+        <run start="2132" level="69" length="5"/>
+        <run start="2132" level="49" length="4"/>
+        <run start="2132" level="74" length="4"/>
+        <run start="2133" level="50" length="3"/>
+        <run start="2133" level="52" length="3"/>
+        <run start="2133" level="49" length="3"/>
+        <run start="2134" level="23" length="3"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="1576" id="2969">
+        <run start="2147" level="60" length="3"/>
+        <run start="2148" level="81" length="3"/>
+        <run start="2149" level="6" length="2"/>
+        <run start="2149" level="64" length="3"/>
+        <run start="2149" level="46" length="3"/>
+        <run start="2148" level="71" length="4"/>
+        <run start="2148" level="38" length="4"/>
+        <run start="2148" level="24" length="4"/>
+        <run start="2147" level="32" length="5"/>
+        <run start="2146" level="51" length="6"/>
+        <run start="2146" level="33" length="6"/>
+        <run start="2145" level="49" length="7"/>
+        <run start="2145" level="7" length="6"/>
+        <run start="2144" level="31" length="7"/>
+        <run start="2142" level="50" length="8"/>
+        <run start="2142" level="46" length="8"/>
+        <run start="2142" level="34" length="7"/>
+        <run start="2142" level="39" length="6"/>
+        <run start="2142" level="49" length="5"/>
+        <run start="2142" level="78" length="4"/>
+    </section>
+</glyph>

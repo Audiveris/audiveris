@@ -67,6 +67,19 @@ public abstract class AbstractGhostDropListener<A>
         // Empty by default
     }
 
+    //---------------//
+    // getLocalPoint //
+    //---------------//
+    /**
+     * Report the local point wrt the listener component of a screen-based point
+     * @param screenPoint the screen-based point
+     * @return the component-based point
+     */
+    protected Point getLocalPoint (ScreenPoint screenPoint)
+    {
+        return screenPoint.getLocalPoint(component);
+    }
+
     //------------//
     // isInTarget //
     //------------//
@@ -85,18 +98,5 @@ public abstract class AbstractGhostDropListener<A>
             component.getHeight());
 
         return bounds.contains(localPoint);
-    }
-
-    //---------------//
-    // getLocalPoint //
-    //---------------//
-    /**
-     * Report the local point wrt the listener component of a screen-based point
-     * @param screenPoint the screen-based point
-     * @return the component-based point
-     */
-    protected Point getLocalPoint (ScreenPoint screenPoint)
-    {
-        return screenPoint.getLocalPoint(component);
     }
 }

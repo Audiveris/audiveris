@@ -74,7 +74,7 @@ public class Scale
     // Scale //
     //-------//
     /**
-     * Create a degenerated scale entity, meant for computing 
+     * Create a degenerated scale entity, meant for computing
      * scale-dependent parameters.
      * @param interline the score interline value.
      */
@@ -454,15 +454,15 @@ public class Scale
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public void setValue (double val)
-        {
-            setTuple(java.lang.Double.toString(val), new DoubleValue(val));
-        }
-
-        @Override
         public DoubleValue getWrappedValue ()
         {
             return (DoubleValue) getCachedValue();
+        }
+
+        @Override
+        public void setValue (double val)
+        {
+            setTuple(java.lang.Double.toString(val), new DoubleValue(val));
         }
 
         @Override
@@ -506,15 +506,15 @@ public class Scale
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public void setValue (double val)
-        {
-            setTuple(java.lang.Double.toString(val), new DoubleValue(val));
-        }
-
-        @Override
         public DoubleValue getWrappedValue ()
         {
             return (DoubleValue) getCachedValue();
+        }
+
+        @Override
+        public void setValue (double val)
+        {
+            setTuple(java.lang.Double.toString(val), new DoubleValue(val));
         }
 
         @Override

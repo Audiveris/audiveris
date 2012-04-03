@@ -62,14 +62,6 @@ public interface GlyphAlignment
     double getAspect (Orientation orientation);
 
     /**
-     * Force the locations of start point and stop points.
-     * @param pStart new start point
-     * @param pStop new stop point
-     */
-    void setEndingPoints (Point2D pStart,
-                          Point2D pStop);
-
-    /**
      * Compute the number of pixels stuck on first side of the glyph.
      * @return the number of pixels
      */
@@ -180,4 +172,12 @@ public interface GlyphAlignment
      * @param g the graphic context
      */
     void renderLine (Graphics2D g);
+
+    /**
+     * Force the locations of start point and stop points.
+     * @param pStart new start point
+     * @param pStop new stop point
+     */
+    void setEndingPoints (Point2D pStart,
+                          Point2D pStop);
 }

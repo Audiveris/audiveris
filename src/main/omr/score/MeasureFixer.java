@@ -249,48 +249,6 @@ public class MeasureFixer
         return false;
     }
 
-    //---------//
-    // isEmpty //
-    //---------//
-    /**
-     * Check for an empty measure: perhaps clef and key sig, but no note or rest
-     * @return true if so
-     */
-    private boolean isEmpty ()
-    {
-        return verticals.get(0)
-                        .getActualDuration()
-                        .equals(Rational.ZERO);
-    }
-
-    //-------//
-    // setId //
-    //-------//
-    private void setId (int     id,
-                        boolean isSecondHalf)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("-> id=" + id + (isSecondHalf ? " SH" : ""));
-        }
-
-        for (Measure measure : verticals) {
-            measure.setPageId(id, isSecondHalf);
-        }
-
-        // Side effect: remember the numeric value as last id
-        lastId = id;
-    }
-
-    //-------------//
-    // setImplicit //
-    //-------------//
-    private void setImplicit ()
-    {
-        for (Measure measure : verticals) {
-            measure.setImplicit();
-        }
-    }
-
     //-----------------------//
     // getMeasureTermination //
     //-----------------------//
@@ -321,6 +279,20 @@ public class MeasureFixer
         }
 
         return termination;
+    }
+
+    //---------//
+    // isEmpty //
+    //---------//
+    /**
+     * Check for an empty measure: perhaps clef and key sig, but no note or rest
+     * @return true if so
+     */
+    private boolean isEmpty ()
+    {
+        return verticals.get(0)
+                        .getActualDuration()
+                        .equals(Rational.ZERO);
     }
 
     //----------//
@@ -439,6 +411,34 @@ public class MeasureFixer
                     it.remove();
                 }
             }
+        }
+    }
+
+    //-------//
+    // setId //
+    //-------//
+    private void setId (int     id,
+                        boolean isSecondHalf)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("-> id=" + id + (isSecondHalf ? " SH" : ""));
+        }
+
+        for (Measure measure : verticals) {
+            measure.setPageId(id, isSecondHalf);
+        }
+
+        // Side effect: remember the numeric value as last id
+        lastId = id;
+    }
+
+    //-------------//
+    // setImplicit //
+    //-------------//
+    private void setImplicit ()
+    {
+        for (Measure measure : verticals) {
+            measure.setImplicit();
         }
     }
 

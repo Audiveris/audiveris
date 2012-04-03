@@ -44,17 +44,17 @@ public class LIntegerSpinner
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------//
-    // setValue //
-    //----------//
+    //-------------------//
+    // addChangeListener //
+    //-------------------//
     /**
-     * Modify the content of the spinner
+     * Add a change listener to the spinner
      *
-     * @param value
+     * @param listener
      */
-    public void setValue (Integer value)
+    public void addChangeListener (ChangeListener listener)
     {
-        spinner.setValue(value);
+        spinner.addChangeListener(listener);
     }
 
     //----------//
@@ -70,17 +70,17 @@ public class LIntegerSpinner
         return (Integer) spinner.getValue();
     }
 
-    //-------------------//
-    // addChangeListener //
-    //-------------------//
+    //----------//
+    // setValue //
+    //----------//
     /**
-     * Add a change listener to the spinner
+     * Modify the content of the spinner
      *
-     * @param listener
+     * @param value
      */
-    public void addChangeListener (ChangeListener listener)
+    public void setValue (Integer value)
     {
-        spinner.addChangeListener(listener);
+        spinner.setValue(value);
     }
 
     //----------//

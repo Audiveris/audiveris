@@ -18,8 +18,6 @@ import omr.selection.SheetEvent;
 
 import omr.sheet.Sheet;
 
-import omr.util.Implement;
-
 import org.bushe.swing.event.EventSubscriber;
 
 import org.jdesktop.application.AbstractBean;
@@ -65,20 +63,6 @@ public abstract class SheetDependent
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------------------//
-    // setSheetAvailable //
-    //-------------------//
-    /**
-     * Setter for sheetAvailable property
-     * @param sheetAvailable the new property value
-     */
-    public void setSheetAvailable (boolean sheetAvailable)
-    {
-        boolean oldValue = this.sheetAvailable;
-        this.sheetAvailable = sheetAvailable;
-        firePropertyChange(SHEET_AVAILABLE, oldValue, this.sheetAvailable);
-    }
-
     //------------------//
     // isSheetAvailable //
     //------------------//
@@ -99,7 +83,7 @@ public abstract class SheetDependent
      *
      * @param event the notified sheet event
      */
-    @Implement(EventSubscriber.class)
+    @Override
     public void onEvent (SheetEvent event)
     {
         try {
@@ -113,5 +97,19 @@ public abstract class SheetDependent
         } catch (Exception ex) {
             logger.warning(getClass().getName() + " onEvent error", ex);
         }
+    }
+
+    //-------------------//
+    // setSheetAvailable //
+    //-------------------//
+    /**
+     * Setter for sheetAvailable property
+     * @param sheetAvailable the new property value
+     */
+    public void setSheetAvailable (boolean sheetAvailable)
+    {
+        boolean oldValue = this.sheetAvailable;
+        this.sheetAvailable = sheetAvailable;
+        firePropertyChange(SHEET_AVAILABLE, oldValue, this.sheetAvailable);
     }
 }

@@ -95,14 +95,13 @@ public class Staff
 
     //~ Methods ----------------------------------------------------------------
 
-    public void setDummy (boolean dummy)
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
     {
-        this.dummy = dummy;
-    }
-
-    public boolean isDummy ()
-    {
-        return dummy;
+        return visitor.visit(this);
     }
 
     //-----------//
@@ -155,23 +154,6 @@ public class Staff
     }
 
     //----------//
-    // setWidth //
-    //----------//
-    /**
-     * Set the staff width.
-     * @param width width of the staff
-     */
-    public void setWidth (int width)
-    {
-        PixelRectangle newBox = getBox();
-        reset();
-
-        newBox.width = width;
-        setBox(newBox);
-        getCenter();
-    }
-
-    //----------//
     // getWidth //
     //----------//
     /**
@@ -183,13 +165,9 @@ public class Staff
         return getBox().width;
     }
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
+    public boolean isDummy ()
     {
-        return visitor.visit(this);
+        return dummy;
     }
 
     //-----------------//
@@ -214,6 +192,28 @@ public class Staff
                             .getInterline();
 
         return (int) Math.rint(((pitchPosition + 4) * interline) / 2.0);
+    }
+
+    public void setDummy (boolean dummy)
+    {
+        this.dummy = dummy;
+    }
+
+    //----------//
+    // setWidth //
+    //----------//
+    /**
+     * Set the staff width.
+     * @param width width of the staff
+     */
+    public void setWidth (int width)
+    {
+        PixelRectangle newBox = getBox();
+        reset();
+
+        newBox.width = width;
+        setBox(newBox);
+        getCenter();
     }
 
     //----------//

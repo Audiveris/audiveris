@@ -13,9 +13,9 @@ package omr.glyph.ui.panel;
 
 import omr.glyph.Evaluation;
 import omr.glyph.GlyphEvaluator;
+import omr.glyph.GlyphRepository;
 import omr.glyph.Grades;
 import omr.glyph.facets.Glyph;
-import omr.glyph.GlyphRepository;
 import omr.glyph.ui.GlyphVerifier;
 
 import omr.log.Logger;
@@ -24,14 +24,11 @@ import omr.ui.field.LDoubleField;
 import omr.ui.field.LIntegerField;
 import omr.ui.util.Panel;
 
-import omr.util.Implement;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -47,8 +44,9 @@ import javax.swing.JProgressBar;
 
 /**
  * Class {@code ValidationPanel} handles the validation of an evaluator
- * against the selected population of glyphs (either the whole base or the core
- * base). It is a dedicated companion of class {@link GlyphTrainer}.
+ * against the selected population of glyphs (either the whole base or
+ * the core base).
+ * It is a dedicated companion of class {@link GlyphTrainer}.
  *
  * @author Hervé Bitteur
  */
@@ -128,7 +126,6 @@ class ValidationPanel
 
     /**
      * Creates a new ValidationPanel object.
-     *
      * @param task the current training activity
      * @param standardWidth standard width for fields & buttons
      * @param evaluator the evaluator to validate
@@ -158,8 +155,7 @@ class ValidationPanel
     // getComponent //
     //--------------//
     /**
-     * Give access to the encapsulated swing component
-     *
+     * Give access to the encapsulated swing component.
      * @return the user panel
      */
     public JComponent getComponent ()
@@ -171,14 +167,14 @@ class ValidationPanel
     // update //
     //--------//
     /**
-     * A degenerated version, just to disable by default the verification
-     * actions whenever a new task activity is notified. These actions are then
-     * re-enabled only at the end of the validation run.
+     * A degenerated version, just to disable by default the
+     * verification actions whenever a new task activity is notified.
+     * These actions are then re-enabled only at the end of the validation run.
      *
      * @param obs not used
      * @param unused not used
      */
-    @Implement(Observer.class)
+    @Override
     public void update (Observable obs,
                         Object     unused)
     {
@@ -273,20 +269,21 @@ class ValidationPanel
             Glyph glyph = repository.getGlyph(gName, selectionPanel);
 
             if (glyph != null) {
-                Evaluation vote = evaluator.topRawVote(
+                Evaluation vote = evaluator.rawVote(
                     glyph,
                     Grades.validationMinGrade,
                     null);
 
                 if (vote == null) {
                     negatives.add(gName);
-                    System.out.printf("%-35s: Not recognized%n", gName);
-                } else if (vote.shape.getPhysicalShape() == glyph.getShape()) {
+                    System.out.printf("%-35s not recognized%n", gName);
+                } else if (vote.shape.getPhysicalShape() == glyph.getShape()
+                                                                 .getPhysicalShape()) {
                     positives++;
                 } else {
                     falsePositives.add(gName);
                     System.out.printf(
-                        "%-35s: Mistaken as %s%n",
+                        "%-35s mistaken for %s%n",
                         gName,
                         vote.shape.getPhysicalShape());
                 }
@@ -325,7 +322,7 @@ class ValidationPanel
 
         //~ Methods ------------------------------------------------------------
 
-        @Implement(ActionListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             GlyphVerifier.getInstance()
@@ -350,7 +347,7 @@ class ValidationPanel
 
         //~ Methods ------------------------------------------------------------
 
-        @Implement(ActionListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             GlyphVerifier.getInstance()
@@ -375,11 +372,12 @@ class ValidationPanel
 
         //~ Methods ------------------------------------------------------------
 
-        @Implement(ActionListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             executor.execute(
                 new Runnable() {
+                        @Override
                         public void run ()
                         {
                             setEnabled(false);

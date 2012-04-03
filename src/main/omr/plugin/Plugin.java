@@ -35,10 +35,10 @@ import javax.script.ScriptEngineManager;
 /**
  * Class {@code Plugin} describes a plugin instance, encapsulating the
  * relationship with the  underlying javascript file.
- * 
+ *
  * <p>A plugin is meant to describe the connection between Audiveris and an
  * external program, which will consume the MusicXML file exported by Audiveris.</p>
- * 
+ *
  * <p>A plugin is a javascript file, meant to export:
  * <dl>
  * <dt>pluginTitle</dt>
@@ -46,7 +46,7 @@ import javax.script.ScriptEngineManager;
  * <dt>pluginTip</dt>
  * <dd>(string) A description text to appear as a user tip in Plugins menu</dd>
  * <dt>pluginCli</dt>
- * <dd>(function) A javascript function which returns the precise list of 
+ * <dd>(function) A javascript function which returns the precise list of
  * arguments used when calling the external program. Note that the actual call
  * is not made by the javascript code, but by Audiveris itself for an easier
  * handling of input and output streams.</dd>
@@ -233,6 +233,7 @@ public class Plugin
         //~ Methods ------------------------------------------------------------
 
         @Override
+        @SuppressWarnings("unchecked")
         protected Void doInBackground ()
             throws InterruptedException
         {
@@ -267,7 +268,8 @@ public class Plugin
                 Object    obj = inv.invokeFunction(
                     "pluginCli",
                     exportFile.getAbsolutePath());
-                args = (List<String>) obj;
+
+                args = (List<String>) obj; // Unchecked by compiler
 
                 if (logger.isFineEnabled()) {
                     logger.info(Plugin.this + " command args: " + args);

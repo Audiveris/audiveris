@@ -43,7 +43,7 @@ public class ActionDescriptor
     /**
      * Which UI section should host this action.
      * Any value is OK, but items with the same section value will be gathered
-     * together in the menu, while different sections will be separated by a 
+     * together in the menu, while different sections will be separated by a
      * menu separator
      */
     @XmlAttribute(name = "section")

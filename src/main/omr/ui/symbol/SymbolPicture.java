@@ -15,8 +15,6 @@ import omr.lag.PixelSource;
 
 import omr.log.Logger;
 
-import omr.util.Implement;
-
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
@@ -72,7 +70,7 @@ public class SymbolPicture
     //-----------//
     // getHeight //
     //-----------//
-    @Implement(PixelSource.class)
+    @Override
     public final int getHeight ()
     {
         return height;
@@ -81,7 +79,7 @@ public class SymbolPicture
     //------------------//
     // getMaxForeground //
     //------------------//
-    @Implement(PixelSource.class)
+    @Override
     public final int getMaxForeground ()
     {
         return maxForeground;
@@ -90,7 +88,7 @@ public class SymbolPicture
     //----------//
     // getPixel //
     //----------//
-    @Implement(PixelSource.class)
+    @Override
     public final int getPixel (int x,
                                int y)
     {
@@ -106,7 +104,7 @@ public class SymbolPicture
     //----------//
     // getWidth //
     //----------//
-    @Implement(PixelSource.class)
+    @Override
     public final int getWidth ()
     {
         return width;
@@ -115,7 +113,7 @@ public class SymbolPicture
     //------------------//
     // setMaxForeground //
     //------------------//
-    @Implement(PixelSource.class)
+    @Override
     public void setMaxForeground (int level)
     {
         this.maxForeground = level;

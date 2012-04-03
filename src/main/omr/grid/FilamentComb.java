@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code FilamentComb} describe a series of y values 
+ * Class {@code FilamentComb} describe a series of y values
  * corresponding to horizontal filaments rather regularly separated.
  *
  * @author Hervé Bitteur

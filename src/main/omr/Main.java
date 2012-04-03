@@ -98,6 +98,91 @@ public class Main
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------//
+    // doMain //
+    //--------//
+    /**
+     * Specific starting method for the application.
+     * @param args command line parameters
+     * @see omr.CLI the possible command line parameters
+     */
+    public static void doMain (String[] args)
+    {
+        // Initialize tool parameters
+        initialize();
+
+        // Process CLI arguments
+        process(args);
+
+        // Locale to be used in the whole application ?
+        checkLocale();
+
+        if (!parameters.batchMode) {
+            // For interactive mode
+            if (logger.isFineEnabled()) {
+                logger.fine("Main. Launching MainGui");
+            }
+
+            Application.launch(MainGui.class, args);
+        } else {
+            // For batch mode
+
+            // Remember if at least one task has failed
+            boolean failure = false;
+
+            // Check MusicFont is loaded
+            MusicFont.checkMusicFont();
+
+            // Launch the required tasks, if any
+            List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
+            tasks.addAll(getFilesTasks());
+            tasks.addAll(getScriptsTasks());
+
+            if (!tasks.isEmpty()) {
+                try {
+                    logger.info("Submitting " + tasks.size() + " task(s)");
+
+                    List<Future<Void>> futures = OmrExecutors.getCachedLowExecutor()
+                                                             .invokeAll(
+                        tasks,
+                        constants.processTimeOut.getValue(),
+                        TimeUnit.SECONDS);
+                    logger.info("Checking " + tasks.size() + " task(s)");
+
+                    // Check for time-out
+                    for (Future<Void> future : futures) {
+                        try {
+                            future.get();
+                        } catch (Exception ex) {
+                            logger.warning("Future exception", ex);
+                            failure = true;
+                        }
+                    }
+                } catch (Exception ex) {
+                    logger.warning("Error in processing tasks", ex);
+                    failure = true;
+                }
+            }
+
+            // At this point all tasks have completed (normally or not)
+            // So shutdown immediately the executors
+            logger.info("SHUTTING DOWN ...");
+            OmrExecutors.shutdown(true);
+
+            // Store latest constant values on disk?
+            if (constants.persistBatchCliConstants.getValue()) {
+                ConstantManager.getInstance()
+                               .storeResource();
+            }
+
+            // Stop the JVM with failure status?
+            if (failure) {
+                logger.warning("Exit with failure status");
+                System.exit(-1);
+            }
+        }
+    }
+
     //--------------//
     // getBenchPath //
     //--------------//
@@ -196,18 +281,6 @@ public class Main
         }
 
         return tasks;
-    }
-
-    //--------//
-    // setGui //
-    //--------//
-    /**
-     * Register the GUI (done by the GUI itself when it is ready)
-     * @param gui the MainGui instance
-     */
-    public static void setGui (MainGui gui)
-    {
-        Main.gui = gui;
     }
 
     //--------//
@@ -316,14 +389,6 @@ public class Main
     }
 
     //--------------//
-    // setToolBuild //
-    //--------------//
-    public static void setToolBuild (String toolBuild)
-    {
-        Main.toolBuild = toolBuild;
-    }
-
-    //--------------//
     // getToolBuild //
     //--------------//
     /**
@@ -337,88 +402,23 @@ public class Main
     }
 
     //--------//
-    // doMain //
+    // setGui //
     //--------//
     /**
-     * Specific starting method for the application.
-     * @param args command line parameters
-     * @see omr.CLI the possible command line parameters
+     * Register the GUI (done by the GUI itself when it is ready)
+     * @param gui the MainGui instance
      */
-    public static void doMain (String[] args)
+    public static void setGui (MainGui gui)
     {
-        // Initialize tool parameters
-        initialize();
+        Main.gui = gui;
+    }
 
-        // Process CLI arguments
-        process(args);
-
-        // Locale to be used in the whole application ?
-        checkLocale();
-
-        if (!parameters.batchMode) {
-            // For interactive mode
-            if (logger.isFineEnabled()) {
-                logger.fine("Main. Launching MainGui");
-            }
-
-            Application.launch(MainGui.class, args);
-        } else {
-            // For batch mode
-
-            // Remember if at least one task has failed
-            boolean failure = false;
-
-            // Check MusicFont is loaded
-            MusicFont.checkMusicFont();
-
-            // Launch the required tasks, if any
-            List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
-            tasks.addAll(getFilesTasks());
-            tasks.addAll(getScriptsTasks());
-
-            if (!tasks.isEmpty()) {
-                try {
-                    logger.info("Submitting " + tasks.size() + " task(s)");
-
-                    List<Future<Void>> futures = OmrExecutors.getCachedLowExecutor()
-                                                             .invokeAll(
-                        tasks,
-                        constants.processTimeOut.getValue(),
-                        TimeUnit.SECONDS);
-                    logger.info("Checking " + tasks.size() + " task(s)");
-
-                    // Check for time-out
-                    for (Future<Void> future : futures) {
-                        try {
-                            future.get();
-                        } catch (Exception ex) {
-                            logger.warning("Future exception", ex);
-                            failure = true;
-                        }
-                    }
-                } catch (Exception ex) {
-                    logger.warning("Error in processing tasks", ex);
-                    failure = true;
-                }
-            }
-
-            // At this point all tasks have completed (normally or not)
-            // So shutdown immediately the executors
-            logger.info("SHUTTING DOWN ...");
-            OmrExecutors.shutdown(true);
-
-            // Store latest constant values on disk?
-            if (constants.persistBatchCliConstants.getValue()) {
-                ConstantManager.getInstance()
-                               .storeResource();
-            }
-
-            // Stop the JVM with failure status?
-            if (failure) {
-                logger.warning("Exit with failure status");
-                System.exit(-1);
-            }
-        }
+    //--------------//
+    // setToolBuild //
+    //--------------//
+    public static void setToolBuild (String toolBuild)
+    {
+        Main.toolBuild = toolBuild;
     }
 
     //-------------//

@@ -218,29 +218,6 @@ public class Ellipse
         return minor;
     }
 
-    //-------//
-    // print //
-    //-------//
-    protected static void print (Matrix m,
-                                 String title)
-    {
-        if (title != null) {
-            System.out.println(title);
-        }
-
-        for (int row = 0; row < m.getRowDimension(); row++) {
-            System.out.print("    ");
-
-            for (int col = 0; col < m.getColumnDimension(); col++) {
-                System.out.print(String.format("%15g  ", m.get(row, col)));
-            }
-
-            System.out.println();
-        }
-
-        System.out.println();
-    }
-
     //---------------------//
     // computeAngleAndAxes //
     //---------------------//
@@ -599,5 +576,28 @@ public class Ellipse
         }
 
         ///System.out.println("distance: " + distance);
+    }
+
+    //-------//
+    // print //
+    //-------//
+    protected static void print (Matrix m,
+                                 String title)
+    {
+        if (title != null) {
+            System.out.println(title);
+        }
+
+        for (int row = 0; row < m.getRowDimension(); row++) {
+            System.out.print("    ");
+
+            for (int col = 0; col < m.getColumnDimension(); col++) {
+                System.out.print(String.format("%15g  ", m.get(row, col)));
+            }
+
+            System.out.println();
+        }
+
+        System.out.println();
     }
 }

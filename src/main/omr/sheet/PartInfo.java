@@ -12,6 +12,7 @@
 package omr.sheet;
 
 import omr.grid.StaffInfo;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,19 +41,19 @@ public class PartInfo
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------//
-    // getStaves //
-    //-----------//
-    public List<StaffInfo> getStaves ()
-    {
-        return staves;
-    }
-
     //----------//
     // addStaff //
     //----------//
     public void addStaff (StaffInfo staffInfo)
     {
         staves.add(staffInfo);
+    }
+
+    //-----------//
+    // getStaves //
+    //-----------//
+    public List<StaffInfo> getStaves ()
+    {
+        return staves;
     }
 }

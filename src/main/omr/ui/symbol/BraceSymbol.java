@@ -55,6 +55,15 @@ public class BraceSymbol
 
     //~ Methods ----------------------------------------------------------------
 
+    //------------//
+    // createIcon //
+    //------------//
+    @Override
+    protected ShapeSymbol createIcon ()
+    {
+        return new BraceSymbol(true);
+    }
+
     //-----------//
     // getParams //
     //-----------//
@@ -73,15 +82,6 @@ public class BraceSymbol
             (int) Math.ceil(2 * r.getHeight()));
 
         return p;
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new BraceSymbol(true);
     }
 
     //-------//

@@ -23,7 +23,7 @@ import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code BackToBackSymbol} displays a BACK_TO_BACK_REPEAT_SIGN
+ * Class {@code BackToBackSymbol} displays a BACK_TO_BACK_REPEAT_SIGN.
  *
  * @author Hervé Bitteur
  */
@@ -47,8 +47,8 @@ public class BackToBackSymbol
     // The THIN_BARLINE symbol
     private final ShapeSymbol thinSymbol = Symbols.getSymbol(THIN_BARLINE);
 
-    // The REPEAT_DOTS symbol
-    private final ShapeSymbol dotsSymbol = Symbols.getSymbol(REPEAT_DOTS);
+    // The REPEAT_DOT_PAIR symbol
+    private final ShapeSymbol dotsSymbol = Symbols.getSymbol(REPEAT_DOT_PAIR);
 
     //~ Constructors -----------------------------------------------------------
 
@@ -66,6 +66,15 @@ public class BackToBackSymbol
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //------------//
+    // createIcon //
+    //------------//
+    @Override
+    protected ShapeSymbol createIcon ()
+    {
+        return new BackToBackSymbol(true);
+    }
 
     //-----------//
     // getParams //
@@ -86,15 +95,6 @@ public class BackToBackSymbol
             (int) Math.ceil(rightRect.getHeight()));
 
         return p;
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new BackToBackSymbol(true);
     }
 
     //-------//

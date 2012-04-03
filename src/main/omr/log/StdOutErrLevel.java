@@ -17,7 +17,7 @@ import java.util.logging.Level;
  *
  * <br/>
  * <a href="http://blogs.oracle.com/nickstephen/entry/java_redirecting_system_out_and">See blog of Nick Stephen</a>
- * 
+ *
  * @author Nick Stephen
  *
  */

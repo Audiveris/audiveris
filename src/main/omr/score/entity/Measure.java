@@ -132,16 +132,240 @@ public class Measure
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------------------//
-    // setActualDuration //
-    //-------------------//
-    /**
-     * Register in this measure its actual duration.
-     * @param actualDuration the duration value
-     */
-    public void setActualDuration (Rational actualDuration)
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
     {
-        this.actualDuration = actualDuration;
+        return visitor.visit(this);
+    }
+
+    //----------//
+    // addChild //
+    //----------//
+    /**
+     * Override normal behavior, so that a given child is stored in its
+     * proper type collection (clef to clef list, etc...).
+     * @param node the child to insert into the measure
+     */
+    @Override
+    public void addChild (TreeNode node)
+    {
+        // Special children lists
+        if (node instanceof Clef) {
+            clefs.addChild(node);
+        } else if (node instanceof TimeSignature) {
+            timesigs.addChild(node);
+        } else if (node instanceof KeySignature) {
+            keysigs.addChild(node);
+        } else if (node instanceof Beam) {
+            beams.addChild(node);
+        } else if (node instanceof Chord) {
+            chords.addChild(node);
+        } else {
+            super.addChild(node);
+        }
+
+        // Side effect for barline
+        if (node instanceof Barline) {
+            barline = (Barline) node; // Ending barline
+        }
+    }
+
+    //----------//
+    // addGroup //
+    //----------//
+    /**
+     * Add a beam goup to this measure.
+     * @param group a beam group to add
+     */
+    public void addGroup (BeamGroup group)
+    {
+        beamGroups.add(group);
+    }
+
+    //----------//
+    // addVoice //
+    //----------//
+    public void addVoice (Voice voice)
+    {
+        voices.add(voice);
+    }
+
+    //-------------//
+    // buildVoices //
+    //-------------//
+    /**
+     * Browse the slots and chords, in order to compute the various
+     * voices and start times.
+     */
+    public void buildVoices ()
+    {
+        // Debug
+        if (logger.isFineEnabled()) {
+            printChords("Initial chords for ");
+        }
+
+        // The 'activeChords' collection gathers the chords that are "active"
+        // (not terminated) at the time slot being considered. Initially, it
+        // contains just the whole chords.
+        List<Chord> activeChords = new ArrayList<Chord>(getWholeChords());
+        Collections.sort(activeChords);
+
+        // Create voices for whole chords
+        for (Chord chord : activeChords) {
+            chord.setStartTime(Rational.ZERO);
+            Voice.createWholeVoice(chord);
+        }
+
+        // Process slot after slot, if any
+        try {
+            for (Slot slot : getSlots()) {
+                slot.buildVoices(activeChords);
+            }
+        } catch (Exception ex) {
+            logger.warning(
+                "Error building voices in measure " + getPageId(),
+                ex);
+        }
+
+        // Debug
+        if (logger.isFineEnabled()) {
+            printVoices("Final voices for ");
+        }
+    }
+
+    //---------------//
+    // checkDuration //
+    //---------------//
+    /**
+     * Check the duration as computed in this measure from its
+     * contained voices, compared to its theoretical duration.
+     */
+    public void checkDuration ()
+    {
+        // Check duration of each voice
+        for (Voice voice : voices) {
+            voice.checkDuration();
+        }
+    }
+
+    //-----------------//
+    // checkTiedChords //
+    //-----------------//
+    /**
+     * Check ties for all chords of this measure.
+     */
+    public void checkTiedChords ()
+    {
+        // Use a copy of chords collection, to avoid concurrent modifications
+        for (TreeNode cn : chords.getChildrenCopy()) {
+            Chord chord = (Chord) cn;
+            chord.checkTies();
+        }
+    }
+
+    //-------------//
+    // cleanupNode //
+    //-------------//
+    /**
+     * Get rid of all nodes of this measure, except the barlines.
+     */
+    public void cleanupNode ()
+    {
+        // Remove all direct children except barlines
+        for (Iterator it = children.iterator(); it.hasNext();) {
+            VisitableNode node = (VisitableNode) it.next();
+
+            if (!(node instanceof Barline)) {
+                it.remove();
+            }
+        }
+
+        // Invalidate data
+        expectedDuration = null;
+        excess = null;
+        implicit = false;
+        setFirstHalf(false);
+        /// = 0;
+
+        // (Re)Allocate specific children lists
+        clefs = new Container(this, "Clefs");
+        keysigs = new Container(this, "KeySigs");
+        timesigs = new Container(this, "TimeSigs");
+        chords = new Container(this, "Chords");
+        beams = new Container(this, "Beams");
+
+        //        dynamics = new DynamicList(this);
+        //        lyriclines = new LyricList(this);
+        //        texts = new TextList(this);
+
+        // Should this be a MeasureNode ??? TODO
+        slots = new TreeSet<Slot>();
+        beamGroups = new ArrayList<BeamGroup>();
+        wholeChords = new ArrayList<Chord>();
+        voices = new ArrayList<Voice>();
+    }
+
+    //-----------------------//
+    // createTemporaryBefore //
+    //-----------------------//
+    /**
+     * Create a temporary initial measure to be exported right before
+     * this measure, just to set up global parameters (clef, time, key).
+     * @return the created dummy measure
+     */
+    public Measure createTemporaryBefore ()
+    {
+        Measure dummyMeasure = new Measure(null);
+        dummyMeasure.setTemporary(true);
+        dummyMeasure.setDummy(true);
+
+        // Populate the dummy measure, staff per staff
+        SystemPart part = this.getPart();
+
+        for (TreeNode sn : part.getStaves()) {
+            Staff      staff = (Staff) sn;
+            int        right = getLeftX(); // Right of dummy = Left of current
+            int        midY = (staff.getTopLeft().y + (staff.getHeight() / 2)) -
+                              getSystem()
+                                  .getTopLeft().y;
+            PixelPoint staffPoint = new PixelPoint(right, midY);
+
+            // Clef?
+            Clef clef = getClefBefore(staffPoint, staff);
+
+            if (clef != null) {
+                new Clef(
+                    dummyMeasure,
+                    staff,
+                    clef.getShape(),
+                    new PixelPoint(right - 40, midY),
+                    clef.getPitchPosition(),
+                    null); // No glyph
+            }
+
+            // Key?
+            KeySignature key = getKeyBefore(staffPoint, staff);
+
+            if (key != null) {
+                key.createDummyCopy(
+                    dummyMeasure,
+                    new PixelPoint(right - 30, midY));
+            }
+
+            // Time?
+            TimeSignature time = getCurrentTimeSignature();
+
+            if (time != null) {
+                time.createDummyCopy(
+                    dummyMeasure,
+                    new PixelPoint(right - 20, midY));
+            }
+        }
+
+        return dummyMeasure;
     }
 
     //-------------------//
@@ -435,19 +659,7 @@ public class Measure
      */
     public Chord getClosestChordAbove (PixelPoint point)
     {
-        Chord bestChord = null;
-        int   bestDx = Integer.MAX_VALUE;
-
-        for (Chord chord : getChordsAbove(point)) {
-            int dx = Math.abs(chord.getHeadLocation().x - point.x);
-
-            if (dx < bestDx) {
-                bestDx = dx;
-                bestChord = chord;
-            }
-        }
-
-        return bestChord;
+        return getClosestChord(getChordsAbove(point), point);
     }
 
     //----------------------//
@@ -461,19 +673,7 @@ public class Measure
      */
     public Chord getClosestChordBelow (PixelPoint point)
     {
-        Chord bestChord = null;
-        int   bestDx = Integer.MAX_VALUE;
-
-        for (Chord chord : getChordsBelow(point)) {
-            int dx = Math.abs(chord.getHeadLocation().x - point.x);
-
-            if (dx < bestDx) {
-                bestDx = dx;
-                bestChord = chord;
-            }
-        }
-
-        return bestChord;
+        return getClosestChord(getChordsBelow(point), point);
     }
 
     //----------------//
@@ -500,6 +700,34 @@ public class Measure
         }
 
         return bestSlot;
+    }
+
+    //---------------------------//
+    // getClosestWholeChordAbove //
+    //---------------------------//
+    /**
+     * Report the whole chord above the provided point which has the
+     * closest abscissa to the provided point.
+     * @param point the reference point
+     * @return the abscissa-wise closest chord among the chords below, if any.
+     */
+    public Chord getClosestWholeChordAbove (PixelPoint point)
+    {
+        return getClosestChord(getWholeChordsAbove(point), point);
+    }
+
+    //---------------------------//
+    // getClosestWholeChordBelow //
+    //---------------------------//
+    /**
+     * Report the whole chord below the provided point which has the
+     * closest abscissa to the provided point.
+     * @param point the reference point
+     * @return the abscissa-wise closest chord among the chords below, if any.
+     */
+    public Chord getClosestWholeChordBelow (PixelPoint point)
+    {
+        return getClosestChord(getWholeChordsBelow(point), point);
     }
 
     //-------------------------//
@@ -568,22 +796,6 @@ public class Measure
         return chord;
     }
 
-    //----------//
-    // setDummy //
-    //----------//
-    public void setDummy (boolean dummy)
-    {
-        this.dummy = dummy;
-    }
-
-    //---------//
-    // isDummy //
-    //---------//
-    public boolean isDummy ()
-    {
-        return dummy;
-    }
-
     //---------------//
     // getEventChord //
     //---------------//
@@ -601,7 +813,7 @@ public class Measure
             // Choose the y-closest staff
             Staff     staff = getPart()
                                   .getStaffAt(point);
-            
+
             // Are we below or above the staff?
             StaffInfo staffInfo = staff.getInfo();
             double    pitch = staffInfo.pitchPositionOf(point);
@@ -617,18 +829,6 @@ public class Measure
     }
 
     //-----------//
-    // setExcess //
-    //-----------//
-    /**
-     * Assign an excess duration for this measure.
-     * @param excess the duration in excess
-     */
-    public void setExcess (Rational excess)
-    {
-        this.excess = excess;
-    }
-
-    //-----------//
     // getExcess //
     //-----------//
     /**
@@ -638,14 +838,6 @@ public class Measure
     public Rational getExcess ()
     {
         return excess;
-    }
-
-    //---------------------//
-    // setExpectedDuration //
-    //---------------------//
-    public void setExpectedDuration (Rational expectedDuration)
-    {
-        this.expectedDuration = expectedDuration;
     }
 
     //---------------------//
@@ -681,28 +873,6 @@ public class Measure
         } catch (NullPointerException npe) {
             throw new InvalidTimeSignature();
         }
-    }
-
-    //--------------//
-    // setFirstHalf //
-    //--------------//
-    /**
-     * @param firstHalf the firstHalf to set
-     */
-    public void setFirstHalf (boolean firstHalf)
-    {
-        this.firstHalf = firstHalf;
-    }
-
-    //-------------//
-    // isFirstHalf //
-    //-------------//
-    /**
-     * @return the firstHalf
-     */
-    public boolean isFirstHalf ()
-    {
-        return firstHalf;
     }
 
     //---------------------//
@@ -788,29 +958,6 @@ public class Measure
     public int getIdValue ()
     {
         return (id == null) ? 0 : id.value;
-    }
-
-    //-------------//
-    // setImplicit //
-    //-------------//
-    /**
-     * Flag this measure as implicit.
-     */
-    public void setImplicit ()
-    {
-        implicit = true;
-    }
-
-    //------------//
-    // isImplicit //
-    //------------//
-    /**
-     * Report whether this measure is implicit.
-     * @return true if measure is implicit
-     */
-    public boolean isImplicit ()
-    {
-        return implicit;
     }
 
     //------------------//
@@ -978,16 +1125,6 @@ public class Measure
     }
 
     //----------//
-    // setLeftX //
-    //----------//
-    public void setLeftX (int val)
-    {
-        PixelRectangle newBox = getBox();
-        newBox.width = val;
-        setBox(newBox);
-    }
-
-    //----------//
     // getLeftX //
     //----------//
     /**
@@ -1031,32 +1168,6 @@ public class Measure
         }
 
         return null; // No clef previously defined
-    }
-
-    //-----------//
-    // setPageId //
-    //-----------//
-    /**
-     * Assign the proper page-based id to this measure.
-     * @param id the proper page-based measure id value
-     * @param secondHalf true if the measure is the second half of a repeat
-     */
-    public void setPageId (int     id,
-                           boolean secondHalf)
-    {
-        this.id = new MeasureId.PageBased(this, id, secondHalf);
-    }
-
-    //-----------//
-    // setPageId //
-    //-----------//
-    /**
-     * Assign the proper page-based id to this measure.
-     * @param pageId the page-based id
-     */
-    public void setPageId (MeasureId.PageBased pageId)
-    {
-        this.id = new MeasureId.PageBased(this, pageId);
     }
 
     //-----------//
@@ -1153,22 +1264,6 @@ public class Measure
                      .getId();
     }
 
-    //--------------//
-    // setTemporary //
-    //--------------//
-    public void setTemporary (boolean temporary)
-    {
-        this.temporary = temporary;
-    }
-
-    //-------------//
-    // isTemporary //
-    //-------------//
-    public boolean isTemporary ()
-    {
-        return temporary;
-    }
-
     //----------------//
     // getTimeSigList //
     //----------------//
@@ -1252,6 +1347,56 @@ public class Measure
         return wholeChords;
     }
 
+    //---------------------//
+    // getWholeChordsAbove //
+    //---------------------//
+    /**
+     * Report the collection of whole chords located in the
+     * staff above the provided point.
+     * @param point the provided point
+     * @return the (perhaps empty) collection of chords
+     */
+    public Collection<Chord> getWholeChordsAbove (PixelPoint point)
+    {
+        Staff             desiredStaff = getSystem()
+                                             .getStaffAbove(point);
+        Collection<Chord> found = new ArrayList<Chord>();
+
+        for (Chord chord : getWholeChords()) {
+            if ((chord.getStaff() == desiredStaff) &&
+                (chord.getHeadLocation().y < point.y)) {
+                found.add(chord);
+            }
+        }
+
+        return found;
+    }
+
+    //---------------------//
+    // getWholeChordsBelow //
+    //---------------------//
+    /**
+     * Report the collection of whole chords located in the
+     * staff below the provided point.
+     * @param point the provided point
+     * @return the (perhaps empty) collection of whole chords
+     */
+    public Collection<Chord> getWholeChordsBelow (PixelPoint point)
+    {
+        Staff             desiredStaff = getSystem()
+                                             .getStaffBelow(point);
+        Collection<Chord> found = new ArrayList<Chord>();
+
+        for (Chord chord : getWholeChords()) {
+            if ((chord.getStaff() == desiredStaff) &&
+                (chord.getHeadLocation().y > point.y)) {
+                found.add(chord);
+            }
+        }
+
+        return found;
+    }
+
     //----------//
     // getWidth //
     //----------//
@@ -1268,240 +1413,43 @@ public class Measure
         }
     }
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
+    //---------//
+    // isDummy //
+    //---------//
+    public boolean isDummy ()
     {
-        return visitor.visit(this);
-    }
-
-    //----------//
-    // addChild //
-    //----------//
-    /**
-     * Override normal behavior, so that a given child is stored in its
-     * proper type collection (clef to clef list, etc...).
-     * @param node the child to insert into the measure
-     */
-    @Override
-    public void addChild (TreeNode node)
-    {
-        // Special children lists
-        if (node instanceof Clef) {
-            clefs.addChild(node);
-        } else if (node instanceof TimeSignature) {
-            timesigs.addChild(node);
-        } else if (node instanceof KeySignature) {
-            keysigs.addChild(node);
-        } else if (node instanceof Beam) {
-            beams.addChild(node);
-        } else if (node instanceof Chord) {
-            chords.addChild(node);
-        } else {
-            super.addChild(node);
-        }
-
-        // Side effect for barline
-        if (node instanceof Barline) {
-            barline = (Barline) node; // Ending barline
-        }
-    }
-
-    //----------//
-    // addGroup //
-    //----------//
-    /**
-     * Add a beam goup to this measure.
-     * @param group a beam group to add
-     */
-    public void addGroup (BeamGroup group)
-    {
-        beamGroups.add(group);
-    }
-
-    //----------//
-    // addVoice //
-    //----------//
-    public void addVoice (Voice voice)
-    {
-        voices.add(voice);
+        return dummy;
     }
 
     //-------------//
-    // buildVoices //
+    // isFirstHalf //
     //-------------//
     /**
-     * Browse the slots and chords, in order to compute the various
-     * voices and start times.
+     * @return the firstHalf
      */
-    public void buildVoices ()
+    public boolean isFirstHalf ()
     {
-        // Debug
-        if (logger.isFineEnabled()) {
-            printChords("Initial chords for ");
-        }
-
-        // The 'activeChords' collection gathers the chords that are "active"
-        // (not terminated) at the time slot being considered. Initially, it
-        // contains just the whole chords.
-        List<Chord> activeChords = new ArrayList<Chord>(getWholeChords());
-        Collections.sort(activeChords);
-
-        // Create voices for whole chords
-        for (Chord chord : activeChords) {
-            chord.setStartTime(Rational.ZERO);
-            Voice.createWholeVoice(chord);
-        }
-
-        // Process slot after slot, if any
-        try {
-            for (Slot slot : getSlots()) {
-                slot.buildVoices(activeChords);
-            }
-        } catch (Exception ex) {
-            logger.warning(
-                "Error building voices in measure " + getPageId(),
-                ex);
-        }
-
-        // Debug
-        if (logger.isFineEnabled()) {
-            printVoices("Final voices for ");
-        }
+        return firstHalf;
     }
 
-    //---------------//
-    // checkDuration //
-    //---------------//
+    //------------//
+    // isImplicit //
+    //------------//
     /**
-     * Check the duration as computed in this measure from its
-     * contained voices, compared to its theoretical duration.
+     * Report whether this measure is implicit.
+     * @return true if measure is implicit
      */
-    public void checkDuration ()
+    public boolean isImplicit ()
     {
-        // Check duration of each voice
-        for (Voice voice : voices) {
-            voice.checkDuration();
-        }
-    }
-
-    //-----------------//
-    // checkTiedChords //
-    //-----------------//
-    /**
-     * Check ties for all chords of this measure.
-     */
-    public void checkTiedChords ()
-    {
-        // Use a copy of chords collection, to avoid concurrent modifications
-        for (TreeNode cn : chords.getChildrenCopy()) {
-            Chord chord = (Chord) cn;
-            chord.checkTies();
-        }
+        return implicit;
     }
 
     //-------------//
-    // cleanupNode //
+    // isTemporary //
     //-------------//
-    /**
-     * Get rid of all nodes of this measure, except the barlines.
-     */
-    public void cleanupNode ()
+    public boolean isTemporary ()
     {
-        // Remove all direct children except barlines
-        for (Iterator it = children.iterator(); it.hasNext();) {
-            VisitableNode node = (VisitableNode) it.next();
-
-            if (!(node instanceof Barline)) {
-                it.remove();
-            }
-        }
-
-        // Invalidate data
-        expectedDuration = null;
-        excess = null;
-        implicit = false;
-        setFirstHalf(false);
-        /// = 0;
-
-        // (Re)Allocate specific children lists
-        clefs = new Container(this, "Clefs");
-        keysigs = new Container(this, "KeySigs");
-        timesigs = new Container(this, "TimeSigs");
-        chords = new Container(this, "Chords");
-        beams = new Container(this, "Beams");
-
-        //        dynamics = new DynamicList(this);
-        //        lyriclines = new LyricList(this);
-        //        texts = new TextList(this);
-
-        // Should this be a MeasureNode ??? TODO
-        slots = new TreeSet<Slot>();
-        beamGroups = new ArrayList<BeamGroup>();
-        wholeChords = new ArrayList<Chord>();
-        voices = new ArrayList<Voice>();
-    }
-
-    //-----------------------//
-    // createTemporaryBefore //
-    //-----------------------//
-    /**
-     * Create a temporary initial measure to be exported right before
-     * this measure, just to set up global parameters (clef, time, key).
-     * @return the created dummy measure
-     */
-    public Measure createTemporaryBefore ()
-    {
-        Measure dummyMeasure = new Measure(null);
-        dummyMeasure.setTemporary(true);
-        dummyMeasure.setDummy(true);
-
-        // Populate the dummy measure, staff per staff
-        SystemPart part = this.getPart();
-
-        for (TreeNode sn : part.getStaves()) {
-            Staff      staff = (Staff) sn;
-            int        right = getLeftX(); // Right of dummy = Left of current
-            int        midY = (staff.getTopLeft().y + (staff.getHeight() / 2)) -
-                              getSystem()
-                                  .getTopLeft().y;
-            PixelPoint staffPoint = new PixelPoint(right, midY);
-
-            // Clef?
-            Clef clef = getClefBefore(staffPoint, staff);
-
-            if (clef != null) {
-                new Clef(
-                    dummyMeasure,
-                    staff,
-                    clef.getShape(),
-                    new PixelPoint(right - 40, midY),
-                    clef.getPitchPosition(),
-                    null); // No glyph
-            }
-
-            // Key?
-            KeySignature key = getKeyBefore(staffPoint, staff);
-
-            if (key != null) {
-                key.createDummyCopy(
-                    dummyMeasure,
-                    new PixelPoint(right - 30, midY));
-            }
-
-            // Time?
-            TimeSignature time = getCurrentTimeSignature();
-
-            if (time != null) {
-                time.createDummyCopy(
-                    dummyMeasure,
-                    new PixelPoint(right - 20, midY));
-            }
-        }
-
-        return dummyMeasure;
+        return temporary;
     }
 
     //----------------//
@@ -1643,6 +1591,112 @@ public class Measure
         if (barline != null) {
             barline.reset();
         }
+    }
+
+    //-------------------//
+    // setActualDuration //
+    //-------------------//
+    /**
+     * Register in this measure its actual duration.
+     * @param actualDuration the duration value
+     */
+    public void setActualDuration (Rational actualDuration)
+    {
+        this.actualDuration = actualDuration;
+    }
+
+    //----------//
+    // setDummy //
+    //----------//
+    public void setDummy (boolean dummy)
+    {
+        this.dummy = dummy;
+    }
+
+    //-----------//
+    // setExcess //
+    //-----------//
+    /**
+     * Assign an excess duration for this measure.
+     * @param excess the duration in excess
+     */
+    public void setExcess (Rational excess)
+    {
+        this.excess = excess;
+    }
+
+    //---------------------//
+    // setExpectedDuration //
+    //---------------------//
+    public void setExpectedDuration (Rational expectedDuration)
+    {
+        this.expectedDuration = expectedDuration;
+    }
+
+    //--------------//
+    // setFirstHalf //
+    //--------------//
+    /**
+     * @param firstHalf the firstHalf to set
+     */
+    public void setFirstHalf (boolean firstHalf)
+    {
+        this.firstHalf = firstHalf;
+    }
+
+    //-------------//
+    // setImplicit //
+    //-------------//
+    /**
+     * Flag this measure as implicit.
+     */
+    public void setImplicit ()
+    {
+        implicit = true;
+    }
+
+    //----------//
+    // setLeftX //
+    //----------//
+    public void setLeftX (int val)
+    {
+        PixelRectangle newBox = getBox();
+        newBox.width = val;
+        setBox(newBox);
+    }
+
+    //-----------//
+    // setPageId //
+    //-----------//
+    /**
+     * Assign the proper page-based id to this measure.
+     * @param id the proper page-based measure id value
+     * @param secondHalf true if the measure is the second half of a repeat
+     */
+    public void setPageId (int     id,
+                           boolean secondHalf)
+    {
+        this.id = new MeasureId.PageBased(this, id, secondHalf);
+    }
+
+    //-----------//
+    // setPageId //
+    //-----------//
+    /**
+     * Assign the proper page-based id to this measure.
+     * @param pageId the page-based id
+     */
+    public void setPageId (MeasureId.PageBased pageId)
+    {
+        this.id = new MeasureId.PageBased(this, pageId);
+    }
+
+    //--------------//
+    // setTemporary //
+    //--------------//
+    public void setTemporary (boolean temporary)
+    {
+        this.temporary = temporary;
     }
 
     //---------//

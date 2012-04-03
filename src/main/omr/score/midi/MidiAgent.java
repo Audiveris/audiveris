@@ -54,7 +54,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
  * <p>This class now delegates to the Zong! player the actual play / pause /
  * stop actions with a few other Midi-related actions. The purpose of the
  * {@link #play} method is just to launch the player on the current score.
- * 
+ *
  * <p>There is no public constructor for this class. The (single) instance
  * must be obtained through the {@link MidiAgentFactory} class.
  *
@@ -176,29 +176,6 @@ public class MidiAgent
     }
 
     //----------//
-    // setScore //
-    //----------//
-    /**
-     * Assign a score to the Midi Agent
-     *
-     * @param score the new current score (perhaps null)
-     */
-    public void setScore (Score score)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("MidiAgent setScore");
-        }
-
-        if (this.score != score) {
-            reset();
-            this.score = score;
-
-            MidiActions.getInstance()
-                       .updateActions();
-        }
-    }
-
-    //----------//
     // getScore //
     //----------//
     /**
@@ -267,6 +244,29 @@ public class MidiAgent
         }
     }
 
+    //----------//
+    // setScore //
+    //----------//
+    /**
+     * Assign a score to the Midi Agent
+     *
+     * @param score the new current score (perhaps null)
+     */
+    public void setScore (Score score)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("MidiAgent setScore");
+        }
+
+        if (this.score != score) {
+            reset();
+            this.score = score;
+
+            MidiActions.getInstance()
+                       .updateActions();
+        }
+    }
+
     //-------//
     // write //
     //-------//
@@ -327,9 +327,9 @@ public class MidiAgent
         /*
          *
          * So here are the functions you need for Audiveris:
-                                                           1) call com.xenoage.zong.musicxml.MusicXMLDocument.read(org.w3c.dom.Document doc)
+                                                             1) call com.xenoage.zong.musicxml.MusicXMLDocument.read(org.w3c.dom.Document doc)
          * to get an instance of a MusicXMLDocument out of your DOM document
-                                                           2) handle this document to
+                                                             2) handle this document to
          * com.xenoage.zong.player.gui.Controller.loadScore(MxlScorePartwise doc, boolean ignoreErrors)
          * (set ignoreErrors to true, of course)
          */

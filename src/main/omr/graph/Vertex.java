@@ -32,22 +32,38 @@ public interface Vertex<D extends Digraph, V extends Vertex<D, V>>
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * Assign the containing graph of this vertex
-     * @param graph The hosting graph
+     * Create an edge between this vertex and the target vertax
+     * @param target arrival vertex
      */
-    public void setGraph (D graph);
+    public void addTarget (V target);
+
+    /**
+     * Add a related view of this vertex
+     * @param view the view to be linked
+     */
+    public void addView (VertexView view);
+
+    /**
+     * Get rid of all views for this vertex
+     */
+    public void clearViews ();
+
+    /**
+     * Delete this vertex. This implies also the removal of all its incoming and
+     * outgoing edges.
+     */
+    public void delete ();
+
+    /**
+     * Prints on standard output a detailed information about this vertex.
+     */
+    public void dump ();
 
     /**
      * Report the containing graph of this vertex
      * @return the containing graph
      */
     public D getGraph ();
-
-    /**
-     * Assign a new Id (for expert use only)
-     * @param id The assigned id
-     */
-    public void setId (int id);
 
     /**
      * Report the unique Id (within the containing graph) of this vertex
@@ -93,34 +109,6 @@ public interface Vertex<D extends Digraph, V extends Vertex<D, V>>
     public int getViewsCount ();
 
     /**
-     * Create an edge between this vertex and the target vertax
-     * @param target arrival vertex
-     */
-    public void addTarget (V target);
-
-    /**
-     * Add a related view of this vertex
-     * @param view the view to be linked
-     */
-    public void addView (VertexView view);
-
-    /**
-     * Get rid of all views for this vertex
-     */
-    public void clearViews ();
-
-    /**
-     * Delete this vertex. This implies also the removal of all its incoming and
-     * outgoing edges.
-     */
-    public void delete ();
-
-    /**
-     * Prints on standard output a detailed information about this vertex.
-     */
-    public void dump ();
-
-    /**
      * Remove an edge between this vertex and a target vertex
      *
      * @param target arrival vertex
@@ -128,4 +116,16 @@ public interface Vertex<D extends Digraph, V extends Vertex<D, V>>
      */
     public void removeTarget (V       target,
                               boolean strict);
+
+    /**
+     * Assign the containing graph of this vertex
+     * @param graph The hosting graph
+     */
+    public void setGraph (D graph);
+
+    /**
+     * Assign a new Id (for expert use only)
+     * @param id The assigned id
+     */
+    public void setId (int id);
 }

@@ -23,7 +23,6 @@ import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
 import omr.util.HorizontalSide;
-import omr.util.Implement;
 import omr.util.Navigable;
 import omr.util.Vip;
 
@@ -150,6 +149,61 @@ public class BeamItem
 
     //~ Methods ----------------------------------------------------------------
 
+    //----------//
+    // populate //
+    //----------//
+    /**
+     * Populate a BeamItem with this glyph, or a series of BeamItem's
+     * if the glyph is a beam pack.
+     * @param glyph glyph of the beam, or beam pack
+     * @param measure the containing measure
+     */
+    public static void populate (Glyph   glyph,
+                                 Measure measure)
+    {
+        createPack(measure, glyph);
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    /**
+     * Convenient method, to build a string with just the ids of the
+     * items collection.
+     * @param items the collection of beam items
+     * @return the string built
+     */
+    public static String toString (Collection<?extends BeamItem> items)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(" items[");
+
+        for (BeamItem item : items) {
+            sb.append("#")
+              .append(item.glyph.getId());
+        }
+
+        sb.append("]");
+
+        return sb.toString();
+    }
+
+    //-----------//
+    // compareTo //
+    //-----------//
+    /**
+     * Compare (horizontally) to another BeamItem, by delegating to
+     * the underlying glyph.
+     * @param other the other BeamItem instance
+     * @return -1, 0 or 1
+     */
+    @Override
+    public int compareTo (BeamItem other)
+    {
+        // Delegate to underlying glyph
+        return Glyph.abscissaComparator.compare(glyph, other.glyph);
+    }
+
     //-----------//
     // getCenter //
     //-----------//
@@ -179,18 +233,6 @@ public class BeamItem
     public Glyph getGlyph ()
     {
         return glyph;
-    }
-
-    //--------//
-    // isHook //
-    //--------//
-    /**
-     * Check whether the item is a beam hook.
-     * @return true if beam hook, false otherwise
-     */
-    public boolean isHook ()
-    {
-        return glyph.getShape() == Shape.BEAM_HOOK;
     }
 
     //---------//
@@ -241,67 +283,16 @@ public class BeamItem
         return glyph.getStem(side);
     }
 
-    //-----------//
-    // compareTo //
-    //-----------//
-    /**
-     * Compare (horizontally) to another BeamItem, by delegating to
-     * the underlying glyph.
-     * @param other the other BeamItem instance
-     * @return -1, 0 or 1
-     */
-    @Implement(Comparable.class)
-    public int compareTo (BeamItem other)
-    {
-        // Delegate to underlying glyph
-        return Glyph.abscissaComparator.compare(glyph, other.glyph);
-    }
-
-    //----------//
-    // populate //
-    //----------//
-    /**
-     * Populate a BeamItem with this glyph, or a series of BeamItem's
-     * if the glyph is a beam pack.
-     * @param glyph glyph of the beam, or beam pack
-     * @param measure the containing measure
-     */
-    public static void populate (Glyph   glyph,
-                                 Measure measure)
-    {
-        createPack(measure, glyph);
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * Convenient method, to build a string with just the ids of the
-     * items collection.
-     * @param items the collection of beam items
-     * @return the string built
-     */
-    public static String toString (Collection<?extends BeamItem> items)
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append(" items[");
-
-        for (BeamItem item : items) {
-            sb.append("#")
-              .append(item.glyph.getId());
-        }
-
-        sb.append("]");
-
-        return sb.toString();
-    }
-
     //--------//
-    // setVip //
+    // isHook //
     //--------//
-    public void setVip ()
+    /**
+     * Check whether the item is a beam hook.
+     * @return true if beam hook, false otherwise
+     */
+    public boolean isHook ()
     {
-        vip = true;
+        return glyph.getShape() == Shape.BEAM_HOOK;
     }
 
     //-------//
@@ -310,6 +301,14 @@ public class BeamItem
     public boolean isVip ()
     {
         return vip;
+    }
+
+    //--------//
+    // setVip //
+    //--------//
+    public void setVip ()
+    {
+        vip = true;
     }
 
     //----------//

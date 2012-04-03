@@ -119,6 +119,59 @@ public class KeySignatureVerifier
         logger.fine("\n======================================================");
     }
 
+    //-------------//
+    // checkKeySig //
+    //-------------//
+    private Glyph checkKeySig (Collection<Glyph>  glyphs,
+                               final KeySignature bestKey)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                "Merging " + Glyphs.toString(glyphs) + " for shape " +
+                bestKey.getShape());
+        }
+
+        SystemInfo systemInfo = system.getInfo();
+        Glyphs.purgeManuals(glyphs);
+
+        if (glyphs.isEmpty()) {
+            return null;
+        }
+
+        Glyph      compound = systemInfo.buildTransientCompound(glyphs);
+
+        // Check if a proper key sig appears in the top evaluations
+        Evaluation vote = GlyphNetwork.getInstance()
+                                      .rawVote(
+            compound,
+            Grades.keySigMinGrade,
+            new Predicate<Shape>() {
+                    public boolean check (Shape shape)
+                    {
+                        return shape == bestKey.getShape();
+                    }
+                });
+
+        if (vote != null) {
+            // We now have a key sig!
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    vote.shape + " built from " + Glyphs.toString(glyphs));
+            }
+
+            compound = systemInfo.addGlyph(compound);
+            compound.setShape(vote.shape, Evaluation.ALGORITHM);
+
+            return compound;
+        } else {
+            logger.info(
+                "Could not find " + bestKey.getShape() + " in " +
+                Glyphs.toString(glyphs));
+
+            return null;
+        }
+    }
+
     //------------------//
     // getContextString //
     //------------------//
@@ -152,59 +205,6 @@ public class KeySignatureVerifier
         logger.severe("Illegal systemStaffIndex: " + staffIndex);
 
         return null;
-    }
-
-    //-------------//
-    // checkKeySig //
-    //-------------//
-    private Glyph checkKeySig (Collection<Glyph>  glyphs,
-                               final KeySignature bestKey)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "Merging " + Glyphs.toString(glyphs) + " for shape " +
-                bestKey.getShape());
-        }
-
-        SystemInfo systemInfo = system.getInfo();
-        Glyphs.purgeManuals(glyphs);
-
-        if (glyphs.isEmpty()) {
-            return null;
-        }
-
-        Glyph      compound = systemInfo.buildTransientCompound(glyphs);
-
-        // Check if a proper key sig appears in the top evaluations
-        Evaluation vote = GlyphNetwork.getInstance()
-                                      .topRawVote(
-            compound,
-            Grades.keySigMinGrade,
-            new Predicate<Shape>() {
-                    public boolean check (Shape shape)
-                    {
-                        return shape == bestKey.getShape();
-                    }
-                });
-
-        if (vote != null) {
-            // We now have a key sig!
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    vote.shape + " built from " + Glyphs.toString(glyphs));
-            }
-
-            compound = systemInfo.addGlyph(compound);
-            compound.setShape(vote.shape, Evaluation.ALGORITHM);
-
-            return compound;
-        } else {
-            logger.info(
-                "Could not find " + bestKey.getShape() + " in " +
-                Glyphs.toString(glyphs));
-
-            return null;
-        }
     }
 
     //-------------//

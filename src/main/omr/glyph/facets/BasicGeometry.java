@@ -19,8 +19,12 @@ import omr.lag.Section;
 import omr.log.Logger;
 
 import omr.math.Circle;
-import omr.math.Moments;
 import omr.math.PointsCollector;
+
+import omr.moments.ARTMoments;
+import omr.moments.BasicARTExtractor;
+import omr.moments.BasicARTMoments;
+import omr.moments.GeometricMoments;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -52,13 +56,16 @@ class BasicGeometry
     /** Total weight of this glyph */
     private Integer weight;
 
-    /** Computed moments of this glyph */
-    private Moments moments;
+    /** Computed ART Moments of this glyph */
+    private ARTMoments artMoments;
 
-    /**  Mass center coordinates */
+    /** Computed geometric Moments of this glyph */
+    private GeometricMoments geometricMoments;
+
+    /** Mass center coordinates */
     private PixelPoint centroid;
 
-    /**  Box center coordinates */
+    /** Box center coordinates */
     private PixelPoint center;
 
     /** Absolute display box */
@@ -76,9 +83,8 @@ class BasicGeometry
     // BasicGeometry //
     //---------------//
     /**
-     * Create a new BasicGeometry object
-     *
-     * @param glyph our glyph
+     * Create a new BasicGeometry object.
+     * @param glyph     our glyph
      * @param interline the interline scaling value
      */
     public BasicGeometry (Glyph glyph,
@@ -90,9 +96,40 @@ class BasicGeometry
 
     //~ Methods ----------------------------------------------------------------
 
+    //------//
+    // dump //
+    //------//
+    @Override
+    public void dump ()
+    {
+        System.out.println("   centroid=" + getCentroid());
+        System.out.println("   contourBox=" + getContourBox());
+        System.out.println("   interline=" + getInterline());
+        System.out.println("   location=" + getLocation());
+        System.out.println("   geoMoments=" + getGeometricMoments());
+        System.out.println("   artMoments=" + getARTMoments());
+        System.out.println("   signature=" + getSignature());
+        System.out.println("   weight=" + getWeight());
+        System.out.println("   circle=" + circle);
+    }
+
+    //---------------//
+    // getARTMoments //
+    //---------------//
+    @Override
+    public ARTMoments getARTMoments ()
+    {
+        if (artMoments == null) {
+            computeARTMoments();
+        }
+
+        return artMoments;
+    }
+
     //---------------//
     // getAreaCenter //
     //---------------//
+    @Override
     public PixelPoint getAreaCenter ()
     {
         if (center == null) {
@@ -108,10 +145,11 @@ class BasicGeometry
     //-------------//
     // getCentroid //
     //-------------//
+    @Override
     public PixelPoint getCentroid ()
     {
         if (centroid == null) {
-            centroid = getMoments()
+            centroid = getGeometricMoments()
                            .getCentroid();
         }
 
@@ -119,32 +157,18 @@ class BasicGeometry
     }
 
     //-----------//
-    // setCircle //
-    //-----------//
-    public void setCircle (Circle circle)
-    {
-        this.circle = circle;
-    }
-
-    //-----------//
     // getCircle //
     //-----------//
+    @Override
     public Circle getCircle ()
     {
         return circle;
     }
 
     //---------------//
-    // setContourBox //
-    //---------------//
-    public void setContourBox (PixelRectangle contourBox)
-    {
-        this.contourBox = contourBox;
-    }
-
-    //---------------//
     // getContourBox //
     //---------------//
+    @Override
     public PixelRectangle getContourBox ()
     {
         if (contourBox == null) {
@@ -171,6 +195,7 @@ class BasicGeometry
     //------------//
     // getDensity //
     //------------//
+    @Override
     public double getDensity ()
     {
         Rectangle rect = getContourBox();
@@ -179,9 +204,23 @@ class BasicGeometry
         return (double) getWeight() / (double) surface;
     }
 
+    //---------------------//
+    // getGeometricMoments //
+    //---------------------//
+    @Override
+    public GeometricMoments getGeometricMoments ()
+    {
+        if (geometricMoments == null) {
+            computeGeometricMoments();
+        }
+
+        return geometricMoments;
+    }
+
     //--------------//
     // getInterline //
     //--------------//
+    @Override
     public int getInterline ()
     {
         return interline;
@@ -190,6 +229,7 @@ class BasicGeometry
     //-------------//
     // getLocation //
     //-------------//
+    @Override
     public PixelPoint getLocation ()
     {
         Shape shape = glyph.getShape();
@@ -216,53 +256,57 @@ class BasicGeometry
         return getAreaCenter();
     }
 
-    //------------//
-    // getMoments //
-    //------------//
-    public Moments getMoments ()
-    {
-        if (moments == null) {
-            computeMoments();
-        }
-
-        return moments;
-    }
-
     //---------------------//
     // getNormalizedHeight //
     //---------------------//
+    @Override
     public double getNormalizedHeight ()
     {
-        return getMoments()
+        return getGeometricMoments()
                    .getHeight();
     }
 
     //---------------------//
     // getNormalizedWeight //
     //---------------------//
+    @Override
     public double getNormalizedWeight ()
     {
-        return getMoments()
+        return getGeometricMoments()
                    .getWeight();
     }
 
     //--------------------//
     // getNormalizedWidth //
     //--------------------//
+    @Override
     public double getNormalizedWidth ()
     {
-        return getMoments()
+        return getGeometricMoments()
                    .getWidth();
+    }
+
+    //--------------------//
+    // getPointsCollector //
+    //--------------------//
+    @Override
+    public PointsCollector getPointsCollector ()
+    {
+        // Cumulate point from member sections
+        PointsCollector collector = new PointsCollector(null, getWeight());
+
+        // Append all points, whatever section orientation
+        for (Section section : glyph.getMembers()) {
+            section.cumulate(collector);
+        }
+
+        return collector;
     }
 
     //--------------//
     // getSignature //
     //--------------//
-    /**
-     * Report a signature that should allow to detect glyph identity
-     *
-     * @return the glyph signature
-     */
+    @Override
     public GlyphSignature getSignature ()
     {
         if (signature == null) {
@@ -275,6 +319,7 @@ class BasicGeometry
     //-----------//
     // getWeight //
     //-----------//
+    @Override
     public int getWeight ()
     {
         if (weight == null) {
@@ -288,61 +333,15 @@ class BasicGeometry
         return weight;
     }
 
-    //----------------//
-    // computeMoments //
-    //----------------//
-    /**
-     * Compute all the moments for this glyph, knowing that it can be
-     * a mix of vertical sections and horizontal sections.
-     */
-    public void computeMoments ()
-    {
-        // First cumulate point from member sections
-        PointsCollector collector = new PointsCollector(null, getWeight());
-
-        // Append all points, whatever section orientation
-        for (Section section : glyph.getMembers()) {
-            section.cumulate(collector);
-        }
-
-        // Then compute the moments with this collector
-        try {
-            moments = new Moments(
-                collector.getXValues(),
-                collector.getYValues(),
-                collector.getSize(),
-                getInterline());
-        } catch (Exception ex) {
-            logger.warning(
-                "Glyph #" + glyph.getId() +
-                " Cannot compute moments with unit set to 0");
-        }
-    }
-
-    //------//
-    // dump //
-    //------//
-    @Override
-    public void dump ()
-    {
-        System.out.println("   centroid=" + getCentroid());
-        System.out.println("   contourBox=" + getContourBox());
-        System.out.println("   interline=" + getInterline());
-        System.out.println("   location=" + getLocation());
-        System.out.println("   moments=" + getMoments());
-        System.out.println("   signature=" + getSignature());
-        System.out.println("   weight=" + getWeight());
-        System.out.println("   circle=" + circle);
-    }
-
     //------------//
     // intersects //
     //------------//
+    @Override
     public boolean intersects (PixelRectangle rectangle)
     {
         // First make a rough test
         if (rectangle.intersects(glyph.getContourBox())) {
-            // Make sure at least one section intersects the rectangle
+            // Then make sure at least one section intersects the rectangle
             for (Section section : glyph.getMembers()) {
                 if (rectangle.intersects(section.getContourBox())) {
                     return true;
@@ -362,15 +361,34 @@ class BasicGeometry
         center = null;
         centroid = null;
         contourBox = null;
-        moments = null;
+        geometricMoments = null;
         signature = null;
         weight = null;
         circle = null;
     }
 
     //-----------//
+    // setCircle //
+    //-----------//
+    @Override
+    public void setCircle (Circle circle)
+    {
+        this.circle = circle;
+    }
+
+    //---------------//
+    // setContourBox //
+    //---------------//
+    @Override
+    public void setContourBox (PixelRectangle contourBox)
+    {
+        this.contourBox = contourBox;
+    }
+
+    //-----------//
     // translate //
     //-----------//
+    @Override
     public void translate (PixelPoint vector)
     {
         for (Section section : glyph.getMembers()) {
@@ -378,5 +396,46 @@ class BasicGeometry
         }
 
         glyph.invalidateCache();
+    }
+
+    //-------------------//
+    // computeARTMoments //
+    //-------------------//
+    private void computeARTMoments ()
+    {
+        // Retrieve glyph foreground points
+        PointsCollector collector = glyph.getPointsCollector();
+
+        // Then compute the ART moments with this collector
+        artMoments = new BasicARTMoments();
+
+        BasicARTExtractor extractor = new BasicARTExtractor();
+        extractor.setDescriptor(artMoments);
+        extractor.extract(
+            collector.getXValues(),
+            collector.getYValues(),
+            collector.getSize());
+    }
+
+    //-------------------------//
+    // computeGeometricMoments //
+    //-------------------------//
+    private void computeGeometricMoments ()
+    {
+        // Retrieve glyph foreground points
+        PointsCollector collector = glyph.getPointsCollector();
+
+        // Then compute the geometric moments with this collector
+        try {
+            geometricMoments = new GeometricMoments(
+                collector.getXValues(),
+                collector.getYValues(),
+                collector.getSize(),
+                getInterline());
+        } catch (Exception ex) {
+            logger.warning(
+                "Glyph #" + glyph.getId() +
+                " Cannot compute moments with unit set to 0");
+        }
     }
 }

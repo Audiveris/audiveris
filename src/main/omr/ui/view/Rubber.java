@@ -178,71 +178,6 @@ public class Rubber
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------//
-    // getCenter //
-    //-----------//
-    /**
-     * Return the center of the model rectangle as defined by the
-     * rubber. This is a dezoomed point, should the component have a
-     * related zoom.
-     *
-     * @return the model center point
-     */
-    public Point getCenter ()
-    {
-        Point pt = null;
-
-        if (rect != null) {
-            pt = new Point(
-                rect.x + (rect.width / 2),
-                rect.y + (rect.height / 2));
-        }
-
-        return pt;
-    }
-
-    //-----------------//
-    // setMouseMonitor //
-    //-----------------//
-    /**
-     * Define the interface of callback to be notified of mouse events
-     *
-     * @param mouseMonitor the entity to be notified
-     */
-    public void setMouseMonitor (MouseMonitor mouseMonitor)
-    {
-        this.mouseMonitor = mouseMonitor;
-    }
-
-    //--------------//
-    // getRectangle //
-    //--------------//
-    /**
-     * Return the model rectangle defined by the rubber.  This is a
-     * dezoomed rectangle, should the component have a related zoom.
-     *
-     * @return the model rectangle
-     */
-    public Rectangle getRectangle ()
-    {
-        return rect;
-    }
-
-    //---------//
-    // setZoom //
-    //---------//
-    /**
-     * Allows to specify that a zoom is attached to the displayed
-     * component, and thus the reported rectangle or center must be
-     * dezoomed on the fly.
-     *
-     * @param zoom the component related zoom
-     */
-    public void setZoom (Zoom zoom)
-    {
-        this.zoom = zoom;
-    }
-
     //------------------//
     // connectComponent //
     //------------------//
@@ -287,6 +222,43 @@ public class Rubber
             component.removeMouseMotionListener(this);
             component.removeMouseWheelListener(this);
         }
+    }
+
+    //-----------//
+    // getCenter //
+    //-----------//
+    /**
+     * Return the center of the model rectangle as defined by the
+     * rubber. This is a dezoomed point, should the component have a
+     * related zoom.
+     *
+     * @return the model center point
+     */
+    public Point getCenter ()
+    {
+        Point pt = null;
+
+        if (rect != null) {
+            pt = new Point(
+                rect.x + (rect.width / 2),
+                rect.y + (rect.height / 2));
+        }
+
+        return pt;
+    }
+
+    //--------------//
+    // getRectangle //
+    //--------------//
+    /**
+     * Return the model rectangle defined by the rubber.  This is a
+     * dezoomed rectangle, should the component have a related zoom.
+     *
+     * @return the model rectangle
+     */
+    public Rectangle getRectangle ()
+    {
+        return rect;
     }
 
     //--------------//
@@ -584,6 +556,34 @@ public class Rubber
         //        }
     }
 
+    //-----------------//
+    // setMouseMonitor //
+    //-----------------//
+    /**
+     * Define the interface of callback to be notified of mouse events
+     *
+     * @param mouseMonitor the entity to be notified
+     */
+    public void setMouseMonitor (MouseMonitor mouseMonitor)
+    {
+        this.mouseMonitor = mouseMonitor;
+    }
+
+    //---------//
+    // setZoom //
+    //---------//
+    /**
+     * Allows to specify that a zoom is attached to the displayed
+     * component, and thus the reported rectangle or center must be
+     * dezoomed on the fly.
+     *
+     * @param zoom the component related zoom
+     */
+    public void setZoom (Zoom zoom)
+    {
+        this.zoom = zoom;
+    }
+
     //----------//
     // toString //
     //----------//
@@ -591,32 +591,6 @@ public class Rubber
     public String toString ()
     {
         return "{Rubber #" + id + " " + rect + "}";
-    }
-
-    //-----------//
-    // setCursor //
-    //-----------//
-    private void setCursor (MouseEvent e)
-    {
-        if (isDragWanted(e)) {
-            e.getComponent()
-             .setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
-        } else if (isAdditionWanted(e)) {
-            e.getComponent()
-             .setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
-        } else if (isContextWanted(e)) {
-            e.getComponent()
-             .setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        } else if (isRubberWanted(e)) {
-            e.getComponent()
-             .setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
-        } else if (isRezoomWanted(e)) {
-            e.getComponent()
-             .setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
-        } else {
-            e.getComponent()
-             .setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        }
     }
 
     //-- private access ---------------------------------------------------
@@ -713,6 +687,32 @@ public class Rubber
             return zoom.scaled(val);
         } else {
             return val;
+        }
+    }
+
+    //-----------//
+    // setCursor //
+    //-----------//
+    private void setCursor (MouseEvent e)
+    {
+        if (isDragWanted(e)) {
+            e.getComponent()
+             .setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+        } else if (isAdditionWanted(e)) {
+            e.getComponent()
+             .setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+        } else if (isContextWanted(e)) {
+            e.getComponent()
+             .setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        } else if (isRubberWanted(e)) {
+            e.getComponent()
+             .setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
+        } else if (isRezoomWanted(e)) {
+            e.getComponent()
+             .setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
+        } else {
+            e.getComponent()
+             .setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
     }
 

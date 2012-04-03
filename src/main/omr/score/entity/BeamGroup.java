@@ -92,6 +92,126 @@ public class BeamGroup
     //~ Methods ----------------------------------------------------------------
 
     //----------//
+    // populate //
+    //----------//
+    /**
+     * Populate all the BeamGroup instances for a given measure.
+     * @param measure the containing measure
+     */
+    public static void populate (Measure measure)
+    {
+        // Link beams to chords
+        for (TreeNode node : measure.getBeams()) {
+            Beam beam = (Beam) node;
+            beam.linkChords();
+        }
+
+        // Build beam groups for this measure
+        for (TreeNode node : measure.getBeams()) {
+            Beam beam = (Beam) node;
+            beam.determineGroup();
+        }
+
+        // Separate illegal beam groups
+        BeamGroup.SplitOrder split;
+
+        int                  loopNb = constants.maxSplitLoops.getValue();
+
+        while ((split = checkBeamGroups(measure)) != null) {
+            if (--loopNb < 0) {
+                measure.addError("Loop detected in BeamGroup split");
+
+                break;
+            }
+
+            split.group.splitGroup(split);
+        }
+
+        // Dump results
+        if (logger.isFineEnabled()) {
+            logger.fine(measure.getContextString());
+
+            for (BeamGroup group : measure.getBeamGroups()) {
+                logger.fine("   " + group);
+            }
+        }
+
+        // Close the connections between chords/stems and beams
+        for (TreeNode node : measure.getBeams()) {
+            Beam beam = (Beam) node;
+            beam.closeConnections();
+        }
+
+        // Harmonize the slopes of all beams within each beam group
+        for (BeamGroup group : measure.getBeamGroups()) {
+            group.align();
+        }
+    }
+
+    //---------//
+    // addBeam //
+    //---------//
+    /**
+     * Include a beam as part of this group.
+     * @param beam the beam to include
+     */
+    public void addBeam (Beam beam)
+    {
+        if (!beams.add(beam)) {
+            beam.addError(beam + " already in " + this);
+        }
+
+        if (beam.isVip()) {
+            setVip();
+        }
+
+        if (isVip() || logger.isFineEnabled()) {
+            logger.info(
+                measure.getContextString() + " Added " + beam + " to " + this);
+        }
+    }
+
+    //-------------------//
+    // computeStartTimes //
+    //-------------------//
+    /**
+     * Compute start times for all chords of this beam group,
+     * assuming the first chord of the group already has its
+     * startTime set.
+     */
+    public void computeStartTimes ()
+    {
+        Chord prevChord = null;
+
+        for (Chord chord : getChords()) {
+            if (prevChord != null) {
+                try {
+                    // Here we must check for interleaved rest
+                    Note rest = Chord.lookupRest(prevChord, chord);
+
+                    if (rest != null) {
+                        rest.getChord()
+                            .setStartTime(prevChord.getEndTime());
+                        chord.setStartTime(rest.getChord().getEndTime());
+                    } else {
+                        chord.setStartTime(prevChord.getEndTime());
+                    }
+                } catch (Exception ex) {
+                    chord.addError(
+                        "Cannot compute chord time based on previous chord");
+                }
+            } else {
+                if (chord.getStartTime() == null) {
+                    chord.addError(
+                        "Computing beam group times with first chord not set");
+                }
+            }
+
+            prevChord = chord;
+        }
+    }
+
+    //----------//
     // getBeams //
     //----------//
     /**
@@ -196,14 +316,6 @@ public class BeamGroup
         return 0;
     }
 
-    //--------//
-    // setVip //
-    //--------//
-    public void setVip ()
-    {
-        vip = true;
-    }
-
     //-------//
     // isVip //
     //-------//
@@ -212,124 +324,27 @@ public class BeamGroup
         return vip;
     }
 
-    //---------//
-    // addBeam //
-    //---------//
+    //------------//
+    // removeBeam //
+    //------------//
     /**
-     * Include a beam as part of this group.
-     * @param beam the beam to include
+     * Remove a beam from this group (in order to assign the beam to
+     * another group).
+     * @param beam the beam to remove
      */
-    public void addBeam (Beam beam)
+    public void removeBeam (Beam beam)
     {
-        if (!beams.add(beam)) {
-            beam.addError(beam + " already in " + this);
-        }
-
-        if (beam.isVip()) {
-            setVip();
-        }
-
-        if (isVip() || logger.isFineEnabled()) {
-            logger.info(
-                measure.getContextString() + " Added " + beam + " to " + this);
+        if (!beams.remove(beam)) {
+            beam.addError(beam + " not found in " + this);
         }
     }
 
-    //-------------------//
-    // computeStartTimes //
-    //-------------------//
-    /**
-     * Compute start times for all chords of this beam group,
-     * assuming the first chord of the group already has its
-     * startTime set.
-     */
-    public void computeStartTimes ()
+    //--------//
+    // setVip //
+    //--------//
+    public void setVip ()
     {
-        Chord prevChord = null;
-
-        for (Chord chord : getChords()) {
-            if (prevChord != null) {
-                try {
-                    // Here we must check for interleaved rest
-                    Note rest = Chord.lookupRest(prevChord, chord);
-
-                    if (rest != null) {
-                        rest.getChord()
-                            .setStartTime(prevChord.getEndTime());
-                        chord.setStartTime(rest.getChord().getEndTime());
-                    } else {
-                        chord.setStartTime(prevChord.getEndTime());
-                    }
-                } catch (Exception ex) {
-                    chord.addError(
-                        "Cannot compute chord time based on previous chord");
-                }
-            } else {
-                if (chord.getStartTime() == null) {
-                    chord.addError(
-                        "Computing beam group times with first chord not set");
-                }
-            }
-
-            prevChord = chord;
-        }
-    }
-
-    //----------//
-    // populate //
-    //----------//
-    /**
-     * Populate all the BeamGroup instances for a given measure.
-     * @param measure the containing measure
-     */
-    public static void populate (Measure measure)
-    {
-        // Link beams to chords
-        for (TreeNode node : measure.getBeams()) {
-            Beam beam = (Beam) node;
-            beam.linkChords();
-        }
-
-        // Build beam groups for this measure
-        for (TreeNode node : measure.getBeams()) {
-            Beam beam = (Beam) node;
-            beam.determineGroup();
-        }
-
-        // Separate illegal beam groups
-        BeamGroup.SplitOrder split;
-
-        int                  loopNb = constants.maxSplitLoops.getValue();
-
-        while ((split = checkBeamGroups(measure)) != null) {
-            if (--loopNb < 0) {
-                measure.addError("Loop detected in BeamGroup split");
-
-                break;
-            }
-
-            split.group.splitGroup(split);
-        }
-
-        // Dump results
-        if (logger.isFineEnabled()) {
-            logger.fine(measure.getContextString());
-
-            for (BeamGroup group : measure.getBeamGroups()) {
-                logger.fine("   " + group);
-            }
-        }
-
-        // Close the connections between chords/stems and beams
-        for (TreeNode node : measure.getBeams()) {
-            Beam beam = (Beam) node;
-            beam.closeConnections();
-        }
-
-        // Harmonize the slopes of all beams within each beam group
-        for (BeamGroup group : measure.getBeamGroups()) {
-            group.align();
-        }
+        vip = true;
     }
 
     //----------//
@@ -372,21 +387,6 @@ public class BeamGroup
         }
     }
 
-    //------------//
-    // removeBeam //
-    //------------//
-    /**
-     * Remove a beam from this group (in order to assign the beam to
-     * another group).
-     * @param beam the beam to remove
-     */
-    public void removeBeam (Beam beam)
-    {
-        if (!beams.remove(beam)) {
-            beam.addError(beam + " not found in " + this);
-        }
-    }
-
     //----------//
     // toString //
     //----------//
@@ -408,28 +408,6 @@ public class BeamGroup
           .append("}");
 
         return sb.toString();
-    }
-
-    //-----------------//
-    // checkBeamGroups //
-    //-----------------//
-    /**
-     * Check all the BeamGroup instances of the given measure, to find
-     * the first split if any to perform.
-     * @param measure the given measure
-     * @return the first split parameters, or null if everything is OK
-     */
-    private static SplitOrder checkBeamGroups (Measure measure)
-    {
-        for (BeamGroup group : measure.getBeamGroups()) {
-            SplitOrder split = group.checkGroup();
-
-            if (split != null) {
-                return split;
-            }
-        }
-
-        return null;
     }
 
     //-------//
@@ -473,6 +451,28 @@ public class BeamGroup
                 right.y = (int) Math.rint(yMid + (dy / 2));
             }
         }
+    }
+
+    //-----------------//
+    // checkBeamGroups //
+    //-----------------//
+    /**
+     * Check all the BeamGroup instances of the given measure, to find
+     * the first split if any to perform.
+     * @param measure the given measure
+     * @return the first split parameters, or null if everything is OK
+     */
+    private static SplitOrder checkBeamGroups (Measure measure)
+    {
+        for (BeamGroup group : measure.getBeamGroups()) {
+            SplitOrder split = group.checkGroup();
+
+            if (split != null) {
+                return split;
+            }
+        }
+
+        return null;
     }
 
     //------------//

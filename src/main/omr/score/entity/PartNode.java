@@ -68,6 +68,30 @@ public abstract class PartNode
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
+    //----------//
+    // addGlyph //
+    //----------//
+    /**
+     * Insert a glyph into the collection of underlying glyphs
+     * @param glyph the glyph to insert
+     */
+    public void addGlyph (Glyph glyph)
+    {
+        glyphs.add(glyph);
+
+        // Invalidate
+        reset();
+    }
+
     //------------------//
     // getContextString //
     //------------------//
@@ -114,14 +138,6 @@ public abstract class PartNode
     }
 
     //-------------------//
-    // setReferencePoint //
-    //-------------------//
-    public void setReferencePoint (PixelPoint referencePoint)
-    {
-        this.referencePoint = referencePoint;
-    }
-
-    //-------------------//
     // getReferencePoint //
     //-------------------//
     /**
@@ -141,19 +157,6 @@ public abstract class PartNode
     }
 
     //----------//
-    // setStaff //
-    //----------//
-    /**
-     * Assign the related staff
-     *
-     * @param staff the related staff
-     */
-    public void setStaff (Staff staff)
-    {
-        this.staff = staff;
-    }
-
-    //----------//
     // getStaff //
     //----------//
     /**
@@ -166,28 +169,25 @@ public abstract class PartNode
         return staff;
     }
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
+    //-------------------//
+    // setReferencePoint //
+    //-------------------//
+    public void setReferencePoint (PixelPoint referencePoint)
     {
-        return visitor.visit(this);
+        this.referencePoint = referencePoint;
     }
 
     //----------//
-    // addGlyph //
+    // setStaff //
     //----------//
     /**
-     * Insert a glyph into the collection of underlying glyphs
-     * @param glyph the glyph to insert
+     * Assign the related staff
+     *
+     * @param staff the related staff
      */
-    public void addGlyph (Glyph glyph)
+    public void setStaff (Staff staff)
     {
-        glyphs.add(glyph);
-
-        // Invalidate
-        reset();
+        this.staff = staff;
     }
 
     //------------//

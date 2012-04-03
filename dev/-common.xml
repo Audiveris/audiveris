@@ -80,7 +80,7 @@
                  title="Driving Packages"/>
              <group packages="omr.action:omr.glyph.ui:omr.lag.ui:omr.ui:omr.ui.*:omr.glyph.ui.*:omr.plugin:omr.score.ui:omr.sheet.ui"
                  title="User interface Packages"/>
-             <group packages="omr.run:omr.graph:omr.lag*:omr.stick*:omr.sheet.picture"
+             <group packages="omr.run:omr.graph:omr.lag*:omr.stick*:omr.sheet.picture:omr.moments"
                  title="Geometry Packages"/>
              <group packages="omr.check:omr.constant:omr.log:omr.math:omr.selection:omr.util"
                  title="Utility Packages"/>

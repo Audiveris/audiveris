@@ -233,8 +233,8 @@ public class SplitPattern
             Evaluation vote = GlyphNetwork.getInstance()
                                           .vote(
                 chunk,
-                Grades.partMinGrade,
-                system);
+                system,
+                Grades.partMinGrade);
 
             if ((vote == null) || invalidShapes.contains(vote.shape)) {
                 if (master.isVip() || logger.isFineEnabled()) {

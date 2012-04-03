@@ -88,19 +88,6 @@ public class LogPane
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------------//
-    // getComponent //
-    //--------------//
-    /**
-     * Give access to the real component
-     *
-     * @return the concrete component
-     */
-    public JComponent getComponent ()
-    {
-        return component;
-    }
-
     //----------//
     // clearLog //
     //----------//
@@ -112,6 +99,19 @@ public class LogPane
         logArea.setText("");
         logArea.setCaretPosition(0);
         component.repaint();
+    }
+
+    //--------------//
+    // getComponent //
+    //--------------//
+    /**
+     * Give access to the real component
+     *
+     * @return the concrete component
+     */
+    public JComponent getComponent ()
+    {
+        return component;
     }
 
     //-----------//

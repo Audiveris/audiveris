@@ -83,6 +83,46 @@ public class LyricsLine
 
     //~ Methods ----------------------------------------------------------------
 
+    //----------//
+    // populate //
+    //----------//
+    /**
+     * Populate a Lyrics line with this lyrics item
+     *
+     * @param item the lyrics item to host in a lyrics line
+     * @param part the containing system part
+     */
+    public static void populate (LyricsItem item,
+                                 SystemPart part)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("Populating LyricsLine with " + item);
+        }
+
+        // First look for a suitable lyrics line
+        for (TreeNode node : part.getLyrics()) {
+            LyricsLine line = (LyricsLine) node;
+
+            if (line.isAlignedWith(item.getReferencePoint())) {
+                line.addItem(item);
+
+                if (logger.isFineEnabled()) {
+                    logger.fine("Added " + item + " into " + line);
+                }
+
+                return;
+            }
+        }
+
+        // No compatible line, create a brand new one
+        LyricsLine line = new LyricsLine(part);
+        line.addItem(item);
+
+        if (logger.isFineEnabled()) {
+            logger.fine("Created new " + line);
+        }
+    }
+
     //------------------//
     // getFollowingLine //
     //------------------//
@@ -109,14 +149,6 @@ public class LyricsLine
         }
 
         return nextLine;
-    }
-
-    //-------//
-    // setId //
-    //-------//
-    public void setId (int id)
-    {
-        this.id = id;
     }
 
     //-------//
@@ -174,46 +206,6 @@ public class LyricsLine
         return y;
     }
 
-    //----------//
-    // populate //
-    //----------//
-    /**
-     * Populate a Lyrics line with this lyrics item
-     *
-     * @param item the lyrics item to host in a lyrics line
-     * @param part the containing system part
-     */
-    public static void populate (LyricsItem item,
-                                 SystemPart part)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("Populating LyricsLine with " + item);
-        }
-
-        // First look for a suitable lyrics line
-        for (TreeNode node : part.getLyrics()) {
-            LyricsLine line = (LyricsLine) node;
-
-            if (line.isAlignedWith(item.getReferencePoint())) {
-                line.addItem(item);
-
-                if (logger.isFineEnabled()) {
-                    logger.fine("Added " + item + " into " + line);
-                }
-
-                return;
-            }
-        }
-
-        // No compatible line, create a brand new one
-        LyricsLine line = new LyricsLine(part);
-        line.addItem(item);
-
-        if (logger.isFineEnabled()) {
-            logger.fine("Created new " + line);
-        }
-    }
-
     //----------------------//
     // refineLyricSyllables //
     //----------------------//
@@ -255,6 +247,14 @@ public class LyricsLine
         }
     }
 
+    //-------//
+    // setId //
+    //-------//
+    public void setId (int id)
+    {
+        this.id = id;
+    }
+
     //----------//
     // toString //
     //----------//
@@ -284,6 +284,19 @@ public class LyricsLine
         }
     }
 
+    //---------//
+    // addItem //
+    //---------//
+    private void addItem (LyricsItem item)
+    {
+        items.add(item);
+        item.setLyricLine(this);
+
+        // Force recomputation of line mean ordinate
+        y = null;
+        getY();
+    }
+
     //---------------//
     // isAlignedWith //
     //---------------//
@@ -297,19 +310,6 @@ public class LyricsLine
     {
         return Math.abs(sysPt.y - getY()) <= getScale()
                                                  .toPixels(constants.maxItemDy);
-    }
-
-    //---------//
-    // addItem //
-    //---------//
-    private void addItem (LyricsItem item)
-    {
-        items.add(item);
-        item.setLyricLine(this);
-
-        // Force recomputation of line mean ordinate
-        y = null;
-        getY();
     }
 
     //~ Inner Classes ----------------------------------------------------------

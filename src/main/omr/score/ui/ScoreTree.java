@@ -26,7 +26,6 @@ import omr.ui.MainGui;
 import omr.util.Dumper;
 import omr.util.Dumping.PackageRelevance;
 import omr.util.Dumping.Relevance;
-import omr.util.Implement;
 import omr.util.Navigable;
 
 import org.jdesktop.application.ResourceMap;
@@ -163,6 +162,17 @@ public class ScoreTree
 
     //~ Methods ----------------------------------------------------------------
 
+    //-------//
+    // close //
+    //-------//
+    public void close ()
+    {
+        if (frame != null) {
+            frame.dispose();
+            frame = null;
+        }
+    }
+
     //----------//
     // getFrame //
     //----------//
@@ -207,17 +217,6 @@ public class ScoreTree
         return frame;
     }
 
-    //-------//
-    // close //
-    //-------//
-    public void close ()
-    {
-        if (frame != null) {
-            frame.dispose();
-            frame = null;
-        }
-    }
-
     //---------//
     // refresh //
     //---------//
@@ -245,6 +244,62 @@ public class ScoreTree
             "Should we hide empty dummy containers");
     }
 
+    //-----------------//
+    // NamedCollection //
+    //-----------------//
+    private static class NamedCollection
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        private final String     name;
+        private final Collection collection;
+
+        //~ Constructors -------------------------------------------------------
+
+        public NamedCollection (String     name,
+                                Collection collection)
+        {
+            this.name = name;
+            this.collection = collection;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public String toString ()
+        {
+            return name;
+        }
+    }
+
+    //-----------//
+    // NamedData //
+    //-----------//
+    private static class NamedData
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        private final String name;
+        private final Object data;
+
+        //~ Constructors -------------------------------------------------------
+
+        public NamedData (String name,
+                          Object data)
+        {
+            this.name = name;
+            this.data = data;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public String toString ()
+        {
+            return name + ":" + data;
+        }
+    }
+
     //-------//
     // Model //
     //-------//
@@ -269,10 +324,21 @@ public class ScoreTree
 
         //~ Methods ------------------------------------------------------------
 
+        //----------------------//
+        // addTreeModelListener //
+        //----------------------//
+        @Override
+        public void addTreeModelListener (TreeModelListener listener)
+        {
+            if ((listener != null) && !listeners.contains(listener)) {
+                listeners.add(listener);
+            }
+        }
+
         //----------//
         // getChild //
         //----------//
-        @Implement(TreeModel.class)
+        @Override
         public Object getChild (Object parent,
                                 int    index)
         {
@@ -283,7 +349,7 @@ public class ScoreTree
         //---------------//
         // getChildCount //
         //---------------//
-        @Implement(TreeModel.class)
+        @Override
         public int getChildCount (Object parent)
         {
             return getRelevantChildren(parent)
@@ -293,7 +359,7 @@ public class ScoreTree
         //-----------------//
         // getIndexOfChild //
         //-----------------//
-        @Implement(TreeModel.class)
+        @Override
         public int getIndexOfChild (Object parent,
                                     Object child)
         {
@@ -312,10 +378,19 @@ public class ScoreTree
                 "'" + child + "' not child of '" + parent + "'");
         }
 
+        //---------//
+        // getRoot //
+        //---------//
+        @Override
+        public Object getRoot ()
+        {
+            return score;
+        }
+
         //--------//
         // isLeaf //
         //--------//
-        @Implement(TreeModel.class)
+        @Override
         public boolean isLeaf (Object node)
         {
             // Determines whether the icon shows up to the left.
@@ -326,26 +401,6 @@ public class ScoreTree
             }
 
             return getChildCount(node) == 0;
-        }
-
-        //---------//
-        // getRoot //
-        //---------//
-        @Implement(TreeModel.class)
-        public Object getRoot ()
-        {
-            return score;
-        }
-
-        //----------------------//
-        // addTreeModelListener //
-        //----------------------//
-        @Implement(TreeModel.class)
-        public void addTreeModelListener (TreeModelListener listener)
-        {
-            if ((listener != null) && !listeners.contains(listener)) {
-                listeners.add(listener);
-            }
         }
 
         //------------//
@@ -379,7 +434,7 @@ public class ScoreTree
         //-------------------------//
         // removeTreeModelListener //
         //-------------------------//
-        @Implement(TreeModel.class)
+        @Override
         public void removeTreeModelListener (TreeModelListener listener)
         {
             if (listener != null) {
@@ -390,30 +445,13 @@ public class ScoreTree
         //---------------------//
         // valueForPathChanged //
         //---------------------//
-        @Implement(TreeModel.class)
+        @Override
         public void valueForPathChanged (TreePath path,
                                          Object   newValue)
         {
             // Null. We won't be making changes in the GUI.  If we did, we would
             // ensure the new value was really new and then fire a
             // TreeNodesChanged event.
-        }
-
-        //------------//
-        // isRelevant //
-        //------------//
-        private boolean isRelevant (Object node)
-        {
-            //            return !isLeaf(node);
-
-            // We display dummy containers only when they are not empty
-            if (constants.hideEmptyDummies.getValue() &&
-                (node instanceof NamedCollection ||
-                (node instanceof Container))) {
-                return getChildCount(node) > 0;
-            } else {
-                return true;
-            }
         }
 
         //---------------------//
@@ -559,61 +597,22 @@ public class ScoreTree
 
             return relevants;
         }
-    }
 
-    //-----------------//
-    // NamedCollection //
-    //-----------------//
-    private static class NamedCollection
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        private final String     name;
-        private final Collection collection;
-
-        //~ Constructors -------------------------------------------------------
-
-        public NamedCollection (String     name,
-                                Collection collection)
+        //------------//
+        // isRelevant //
+        //------------//
+        private boolean isRelevant (Object node)
         {
-            this.name = name;
-            this.collection = collection;
-        }
+            //            return !isLeaf(node);
 
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public String toString ()
-        {
-            return name;
-        }
-    }
-
-    //-----------//
-    // NamedData //
-    //-----------//
-    private static class NamedData
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        private final String name;
-        private final Object data;
-
-        //~ Constructors -------------------------------------------------------
-
-        public NamedData (String name,
-                          Object data)
-        {
-            this.name = name;
-            this.data = data;
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public String toString ()
-        {
-            return name + ":" + data;
+            // We display dummy containers only when they are not empty
+            if (constants.hideEmptyDummies.getValue() &&
+                (node instanceof NamedCollection ||
+                (node instanceof Container))) {
+                return getChildCount(node) > 0;
+            } else {
+                return true;
+            }
         }
     }
 

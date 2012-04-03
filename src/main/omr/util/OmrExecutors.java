@@ -191,92 +191,26 @@ public class OmrExecutors
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //------//
-    // Pool //
-    //------//
-    private abstract static class Pool
+    //------------//
+    // CachedLows //
+    //------------//
+    /** Cached pool with low priority */
+    private static class CachedLows
+        extends Pool
     {
-        //~ Instance fields ----------------------------------------------------
-
-        /** The underlying pool of threads */
-        protected ExecutorService pool;
-
         //~ Methods ------------------------------------------------------------
 
-        /** Name the pool */
-        public abstract String getName ();
-
-        /** Is the pool active? */
-        public synchronized boolean isActive ()
+        public String getName ()
         {
-            return (pool != null) && !pool.isShutdown();
+            return "cachedLow";
         }
 
-        /** Get the pool ready to use */
-        public synchronized ExecutorService getPool ()
+        @Override
+        protected ExecutorService createPool ()
         {
-            if (!creationAllowed) {
-                logger.info("No longer allowed to create pool: " + getName());
-
-                throw new ProcessingCancellationException("Executor closed");
-            }
-
-            if (!isActive()) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("Creating pool: " + getName());
-                }
-
-                pool = createPool();
-            }
-
-            return pool;
+            return Executors.newCachedThreadPool(
+                new Factory(getName(), Thread.MIN_PRIORITY, 0));
         }
-
-        /** Terminate the pool */
-        public synchronized void close (boolean immediately)
-        {
-            if (!isActive()) {
-                return;
-            }
-
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "Closing pool " + getName() +
-                    (immediately ? " immediately" : ""));
-            }
-
-            if (!immediately) {
-                pool.shutdown(); // Disable new tasks from being submitted
-
-                try {
-                    // Wait a while for existing tasks to terminate
-                    if (!pool.awaitTermination(
-                        constants.graceDelay.getValue(),
-                        TimeUnit.SECONDS)) {
-                        // Cancel currently executing tasks
-                        pool.shutdownNow();
-                        logger.warning(
-                            "Pool " + getName() + " did not terminate");
-                    }
-                } catch (InterruptedException ie) {
-                    // (Re-)Cancel if current thread also got interrupted
-                    pool.shutdownNow();
-                    // Preserve interrupt status
-                    Thread.currentThread()
-                          .interrupt();
-                }
-            } else {
-                // Cancel currently executing tasks
-                pool.shutdownNow();
-            }
-
-            if (logger.isFineEnabled()) {
-                logger.fine("Pool " + getName() + " closed.");
-            }
-        }
-
-        /** Needed to create the concrete pool */
-        protected abstract ExecutorService createPool ();
     }
 
     //-----------//
@@ -301,28 +235,6 @@ public class OmrExecutors
             "seconds",
             60, //15,
             "Time to wait for terminating tasks");
-    }
-
-    //------------//
-    // CachedLows //
-    //------------//
-    /** Cached pool with low priority */
-    private static class CachedLows
-        extends Pool
-    {
-        //~ Methods ------------------------------------------------------------
-
-        public String getName ()
-        {
-            return "cachedLow";
-        }
-
-        @Override
-        protected ExecutorService createPool ()
-        {
-            return Executors.newCachedThreadPool(
-                new Factory(getName(), Thread.MIN_PRIORITY, 0));
-        }
     }
 
     //---------//
@@ -356,7 +268,7 @@ public class OmrExecutors
 
         //~ Methods ------------------------------------------------------------
 
-        @Implement(ThreadFactory.class)
+        @Override
         public Thread newThread (Runnable r)
         {
             Thread t = new Thread(group, r, getOneThreadName(), stackSize);
@@ -448,5 +360,93 @@ public class OmrExecutors
                 1,
                 new Factory(getName(), Thread.NORM_PRIORITY, 10000000L));
         }
+    }
+
+    //------//
+    // Pool //
+    //------//
+    private abstract static class Pool
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** The underlying pool of threads */
+        protected ExecutorService pool;
+
+        //~ Methods ------------------------------------------------------------
+
+        /** Terminate the pool */
+        public synchronized void close (boolean immediately)
+        {
+            if (!isActive()) {
+                return;
+            }
+
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "Closing pool " + getName() +
+                    (immediately ? " immediately" : ""));
+            }
+
+            if (!immediately) {
+                pool.shutdown(); // Disable new tasks from being submitted
+
+                try {
+                    // Wait a while for existing tasks to terminate
+                    if (!pool.awaitTermination(
+                        constants.graceDelay.getValue(),
+                        TimeUnit.SECONDS)) {
+                        // Cancel currently executing tasks
+                        pool.shutdownNow();
+                        logger.warning(
+                            "Pool " + getName() + " did not terminate");
+                    }
+                } catch (InterruptedException ie) {
+                    // (Re-)Cancel if current thread also got interrupted
+                    pool.shutdownNow();
+                    // Preserve interrupt status
+                    Thread.currentThread()
+                          .interrupt();
+                }
+            } else {
+                // Cancel currently executing tasks
+                pool.shutdownNow();
+            }
+
+            if (logger.isFineEnabled()) {
+                logger.fine("Pool " + getName() + " closed.");
+            }
+        }
+
+        /** Name the pool */
+        public abstract String getName ();
+
+        /** Get the pool ready to use */
+        public synchronized ExecutorService getPool ()
+        {
+            if (!creationAllowed) {
+                logger.info("No longer allowed to create pool: " + getName());
+
+                throw new ProcessingCancellationException("Executor closed");
+            }
+
+            if (!isActive()) {
+                if (logger.isFineEnabled()) {
+                    logger.fine("Creating pool: " + getName());
+                }
+
+                pool = createPool();
+            }
+
+            return pool;
+        }
+
+        /** Is the pool active? */
+        public synchronized boolean isActive ()
+        {
+            return (pool != null) && !pool.isShutdown();
+        }
+
+        /** Needed to create the concrete pool */
+        protected abstract ExecutorService createPool ();
     }
 }

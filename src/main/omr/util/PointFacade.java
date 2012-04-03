@@ -75,6 +75,22 @@ public class PointFacade
     }
 
     //------//
+    // getX //
+    //------//
+    public int getX ()
+    {
+        return point.x;
+    }
+
+    //------//
+    // getY //
+    //------//
+    public int getY ()
+    {
+        return point.y;
+    }
+
+    //------//
     // setX //
     //------//
     @XmlAttribute
@@ -88,14 +104,6 @@ public class PointFacade
     }
 
     //------//
-    // getX //
-    //------//
-    public int getX ()
-    {
-        return point.x;
-    }
-
-    //------//
     // setY //
     //------//
     @XmlAttribute
@@ -106,13 +114,5 @@ public class PointFacade
         }
 
         point.y = y;
-    }
-
-    //------//
-    // getY //
-    //------//
-    public int getY ()
-    {
-        return point.y;
     }
 }

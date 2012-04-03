@@ -26,8 +26,6 @@ import omr.ui.util.SeparableMenu;
 import omr.ui.util.SeparableToolBar;
 import omr.ui.util.UIUtilities;
 
-import omr.util.Implement;
-
 import org.bushe.swing.event.EventSubscriber;
 
 import org.jdesktop.application.ApplicationAction;
@@ -106,22 +104,6 @@ public class ActionManager
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single action manager instance.
-     * @return the unique instance of this class
-     */
-    public static ActionManager getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new ActionManager();
-        }
-
-        return INSTANCE;
-    }
-
     //-------------------//
     // getActionInstance //
     //-------------------//
@@ -139,6 +121,22 @@ public class ActionManager
                                      .getActionMap(instance);
 
         return (ApplicationAction) actionMap.get(methodName);
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single action manager instance.
+     * @return the unique instance of this class
+     */
+    public static ActionManager getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new ActionManager();
+        }
+
+        return INSTANCE;
     }
 
     //---------//
@@ -244,7 +242,7 @@ public class ActionManager
      * Notification of sheet selection, to update frame title.
      * @param sheetEvent the event about sheet selection
      */
-    @Implement(EventSubscriber.class)
+    @Override
     public void onEvent (SheetEvent sheetEvent)
     {
         try {

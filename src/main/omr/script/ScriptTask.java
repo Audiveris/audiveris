@@ -56,6 +56,34 @@ public abstract class ScriptTask
 
     //~ Methods ----------------------------------------------------------------
 
+    //-----//
+    // run //
+    //-----//
+    /**
+     * Run this task synchronously (prolog + core + epilog)
+     * This is meant to be called by the script engine, to ensure that every
+     * task is completed before the next is run.
+     * This method is final, subclasses should define core() and potentially
+     * customize prolog() and epilog().
+     *
+     * @param sheet the sheet to run this task against
+     * @exception Exception
+     */
+    public final void run (Sheet sheet)
+        throws Exception
+    {
+        prolog(sheet);
+        core(sheet);
+        epilog(sheet);
+
+        // Record the task instance in the current script?
+        if (isRecordable()) {
+            sheet.getScore()
+                 .getScript()
+                 .addTask(this);
+        }
+    }
+
     //------//
     // core //
     //------//
@@ -117,34 +145,6 @@ public abstract class ScriptTask
     public void prolog (Sheet sheet)
     {
         // Empty by default
-    }
-
-    //-----//
-    // run //
-    //-----//
-    /**
-     * Run this task synchronously (prolog + core + epilog)
-     * This is meant to be called by the script engine, to ensure that every
-     * task is completed before the next is run.
-     * This method is final, subclasses should define core() and potentially
-     * customize prolog() and epilog().
-     *
-     * @param sheet the sheet to run this task against
-     * @exception Exception
-     */
-    public final void run (Sheet sheet)
-        throws Exception
-    {
-        prolog(sheet);
-        core(sheet);
-        epilog(sheet);
-
-        // Record the task instance in the current script?
-        if (isRecordable()) {
-            sheet.getScore()
-                 .getScript()
-                 .addTask(this);
-        }
     }
 
     //----------//

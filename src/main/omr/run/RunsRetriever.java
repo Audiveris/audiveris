@@ -224,34 +224,6 @@ public class RunsRetriever
     {
         //~ Methods ------------------------------------------------------------
 
-        //--------//
-        // isFore //
-        //--------//
-        /**
-         * This method is used to check if the gray level corresponds to a
-         * foreground pixel.
-         *
-         * @param level pixel level of gray
-         *
-         * @return true if pixel is foreground, false otherwise
-         */
-        boolean isFore (int level);
-
-        //----------//
-        // getLevel //
-        //----------//
-        /**
-         * This method is used to report the gray level of the pixel read at
-         * location (coord, pos).
-         *
-         * @param coord x for horizontal runs, y for vertical runs
-         * @param pos   y for horizontal runs, x for vertical runs
-         *
-         * @return the pixel gray value (from 0 for black up to 255 for white)
-         */
-        int getLevel (int coord,
-                      int pos);
-
         //---------//
         // backRun //
         //---------//
@@ -282,6 +254,34 @@ public class RunsRetriever
                       int pos,
                       int length,
                       int cumul);
+
+        //----------//
+        // getLevel //
+        //----------//
+        /**
+         * This method is used to report the gray level of the pixel read at
+         * location (coord, pos).
+         *
+         * @param coord x for horizontal runs, y for vertical runs
+         * @param pos   y for horizontal runs, x for vertical runs
+         *
+         * @return the pixel gray value (from 0 for black up to 255 for white)
+         */
+        int getLevel (int coord,
+                      int pos);
+
+        //--------//
+        // isFore //
+        //--------//
+        /**
+         * This method is used to check if the gray level corresponds to a
+         * foreground pixel.
+         *
+         * @param level pixel level of gray
+         *
+         * @return true if pixel is foreground, false otherwise
+         */
+        boolean isFore (int level);
 
         //-----------//
         // terminate //

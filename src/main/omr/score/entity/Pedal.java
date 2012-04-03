@@ -38,10 +38,10 @@ public class Pedal
      * @param chord the chord related to the mark, if any
      * @param glyph the underlying glyph
      */
-    public Pedal (Measure     measure,
+    public Pedal (Measure    measure,
                   PixelPoint point,
-                  Chord       chord,
-                  Glyph       glyph)
+                  Chord      chord,
+                  Glyph      glyph)
     {
         super(
             measure,
@@ -53,15 +53,6 @@ public class Pedal
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
     //----------//
     // populate //
     //----------//
@@ -72,11 +63,20 @@ public class Pedal
      * @param measure measure where the mark is located
      * @param point location for the mark
      */
-    public static void populate (Glyph       glyph,
-                                 Measure     measure,
+    public static void populate (Glyph      glyph,
+                                 Measure    measure,
                                  PixelPoint point)
     {
         glyph.setTranslation(
             new Pedal(measure, point, findChord(measure, point), glyph));
+    }
+
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
     }
 }

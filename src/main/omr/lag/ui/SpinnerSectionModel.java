@@ -17,8 +17,6 @@ import omr.log.Logger;
 
 import omr.ui.field.SpinnerUtilities;
 
-import omr.util.Implement;
-
 import javax.swing.AbstractSpinnerModel;
 import javax.swing.SpinnerModel;
 
@@ -80,7 +78,7 @@ public class SpinnerSectionModel
      *
      * @return the next legal section id or null if one doesn't exist
      */
-    @Implement(SpinnerModel.class)
+    @Override
     public Object getNextValue ()
     {
         final int cur = currentId.intValue();
@@ -106,7 +104,7 @@ public class SpinnerSectionModel
      *
      * @return the previous legal value or null if one doesn't exist
      */
-    @Implement(SpinnerModel.class)
+    @Override
     public Object getPreviousValue ()
     {
         final int cur = currentId.intValue();
@@ -123,6 +121,24 @@ public class SpinnerSectionModel
     }
 
     //----------//
+    // getValue //
+    //----------//
+    /**
+     * The <i>current element</i> of the sequence.
+     *
+     * @return the current spinner value.
+     */
+    @Override
+    public Object getValue ()
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("getValue currentId=" + currentId);
+        }
+
+        return currentId;
+    }
+
+    //----------//
     // setValue //
     //----------//
     /**
@@ -132,7 +148,7 @@ public class SpinnerSectionModel
      * @param value the value to set
      * @exception IllegalArgumentException if {@code value} isn't allowed
      */
-    @Implement(SpinnerModel.class)
+    @Override
     public void setValue (Object value)
     {
         if (logger.isFineEnabled()) {
@@ -147,23 +163,5 @@ public class SpinnerSectionModel
         } else {
             logger.warning("Invalid section id: " + id);
         }
-    }
-
-    //----------//
-    // getValue //
-    //----------//
-    /**
-     * The <i>current element</i> of the sequence.
-     *
-     * @return the current spinner value.
-     */
-    @Implement(SpinnerModel.class)
-    public Object getValue ()
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("getValue currentId=" + currentId);
-        }
-
-        return currentId;
     }
 }

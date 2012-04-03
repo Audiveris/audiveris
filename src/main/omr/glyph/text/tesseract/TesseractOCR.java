@@ -26,7 +26,6 @@ import omr.log.Logger;
 import omr.score.common.PixelRectangle;
 
 import omr.util.ClassUtil;
-import omr.util.Implement;
 import omr.util.OmrExecutors;
 import omr.util.WrappedBoolean;
 import omr.util.XmlUtilities;
@@ -78,6 +77,9 @@ public class TesseractOCR
     /** Permanent flag to avoid endless error messages */
     private boolean userWarned = false;
 
+    /** Debugging, to assign a serial number to each image */
+    private int serial = 0;
+
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -85,18 +87,13 @@ public class TesseractOCR
      */
     private TesseractOCR ()
     {
+        // Debug
+        if (constants.keepImages.isSet()) {
+            WellKnowns.TEMP_FOLDER.mkdir();
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //-------------//
-    // isAvailable //
-    //-------------//
-    @Override
-    public synchronized boolean isAvailable ()
-    {
-        return constants.useOCR.getValue() && retrieverInstalled();
-    }
 
     //-------------//
     // getInstance //
@@ -116,7 +113,6 @@ public class TesseractOCR
     /**
      * {@inheritDoc}
      */
-    @Implement(OCR.class)
     @Override
     public Set<String> getSupportedLanguages ()
     {
@@ -131,13 +127,18 @@ public class TesseractOCR
         return Collections.emptySet();
     }
 
+    //-------------//
+    // isAvailable //
+    //-------------//
+    @Override
+    public synchronized boolean isAvailable ()
+    {
+        return constants.useOCR.getValue() && retrieverInstalled();
+    }
+
     //-----------//
     // recognize //
     //-----------//
-    /**
-     * {@inheritDoc}
-     */
-    @Implement(OCR.class)
     @Override
     public synchronized List<OcrLine> recognize (BufferedImage image,
                                                  final String  languageCode,
@@ -148,11 +149,15 @@ public class TesseractOCR
             return null;
         }
 
-        // DEBUG: This is meant to keep a copy of all images sent to Tesseract
-        if (false) {
+        // Keep a copy of all images sent to Tesseract?
+        if (constants.keepImages.isSet()) {
             try {
                 String format = "png";
-                File   file = new File(label + format);
+                String name = String.format("%03d-", ++serial) +
+                              ((label != null) ? label : "");
+                File   file = new File(
+                    WellKnowns.TEMP_FOLDER,
+                    name + "." + format);
 
                 if (!ImageIO.write(image, format, file)) {
                     logger.warning("No writer for format " + format);
@@ -167,6 +172,7 @@ public class TesseractOCR
 
             // Delegate the processing to the specific OCR thread
             Callable<List<OcrLine>> task = new Callable<List<OcrLine>>() {
+                @Override
                 public List<OcrLine> call ()
                     throws Exception
                 {
@@ -184,79 +190,84 @@ public class TesseractOCR
             return OmrExecutors.getOcrExecutor()
                                .submit(task)
                                .get();
-        } catch (Throwable ex) {
+        } catch (Exception ex) {
             logger.warning("Error in OCR recognize", ex);
 
             return null;
         }
     }
 
-    //----------//
-    // getLines //
-    //----------//
-    private List<OcrLine> getLines (EANYCodeChar[] chars,
-                                    String         label)
+    //-----------//
+    // dumpChars //
+    //-----------//
+    /**
+     * Dump the raw char descriptions as read from Tesseract
+     * @param chars the sequence of raw char descriptions
+     * @param the optional label
+     */
+    private static void dumpChars (EANYCodeChar[] chars,
+                                   String         label)
     {
-        if (logger.isFineEnabled()) {
-            dumpChars(chars, label);
-        }
+        System.out.println(
+            "-- " + ((label != null) ? label : "") + " Raw Tesseract output:");
+        System.out.println(
+            "char     code  left right   top   bot  font  conf  size blanks   format");
 
-        List<OcrLine> lines = new ArrayList<OcrLine>();
-        List<OcrChar> lineChars = new ArrayList<OcrChar>();
-        int           lastPointSize = -1;
-
-        try {
-            for (int index = 0; index < chars.length; index++) {
-                EANYCodeChar ch = chars[index];
-
-                // Compute the number of bytes for this UTF8 sequence
-                int byteCount = utf8ByteCount(ch.char_code);
-                lineChars.add(buildCharDesc(chars, index, byteCount));
-
-                // Let's move to the very last byte of the sequence
-                // To use its formatting data
-                index += (byteCount - 1);
-                ch = chars[index];
-                lastPointSize = ch.point_size;
-
-                // End of line?
-                if (isNewLine(ch)) {
-                    lines.add(new OcrLine(lastPointSize, lineChars, null));
-                    lineChars.clear();
-                }
-            }
-
-            // Debugging: we've found nothing
-            if (lines.isEmpty()) {
-                dumpChars(chars, label);
-            }
-
-            // TODO: (is this useful?) Just in case we've missed the end
-            if (!lineChars.isEmpty()) {
-                lines.add(new OcrLine(lastPointSize, lineChars, null));
-            }
-
-            return lines;
-        } catch (Exception ex) {
-            logger.warning("Error decoding tesseract output", ex);
-            dumpChars(chars, label);
-
-            return null;
+        for (EANYCodeChar ch : chars) {
+            System.out.println(
+                String.format(
+                    "%3s %5d=%2Xh %5d %5d %5d %5d %5d %5d %5d %5d %5d=%2Xh",
+                    String.copyValueOf(Character.toChars(ch.char_code)),
+                    ch.char_code,
+                    ch.char_code,
+                    ch.left,
+                    ch.right,
+                    ch.top,
+                    ch.bottom,
+                    ch.font_index,
+                    ch.confidence,
+                    ch.point_size,
+                    ch.blanks,
+                    ch.formatting,
+                    ch.formatting));
         }
     }
 
-    //-----------//
-    // isNewLine //
-    //-----------//
+    //---------------//
+    // utf8ByteCount //
+    //---------------//
     /**
-     * Report whether this char is the last one of a line
-     * @param ch the char descriptor
-     * @return true if end of line
+     * Return the number of bytes of this UTF8 sequence
+     * @param code the char code of the first byte of the sequence
+     * @return the number of bytes for this sequence (or 0 if the byte is not
+     * a sequence starting byte)
      */
-    private static boolean isNewLine (EANYCodeChar ch)
+    private static int utf8ByteCount (int code)
     {
-        return ((ch.formatting & 0x40) != 0) // newLine
-                ||((ch.formatting & 0x80) != 0); // newPara
+        // Unicode          Byte1    Byte2    Byte3    Byte4
+        // -------          -----    -----    -----    -----
+        // U+0000-U+007F    0xxxxxxx
+        // U+0080-U+07FF    110yyyxx 10xxxxxx
+        // U+0800-U+FFFF    1110yyyy 10yyyyxx 10xxxxxx
+        // U+10000-U+10FFFF 11110zzz 10zzyyyy 10yyyyxx 10xxxxxx
+        if ((code & 0x80) == 0x00) {
+            return 1;
+        }
+
+        if ((code & 0xE0) == 0xC0) {
+            return 2;
+        }
+
+        if ((code & 0xF0) == 0xE0) {
+            return 3;
+        }
+
+        if ((code & 0xF8) == 0xF0) {
+            return 4;
+        }
+
+        // This is not a legal sequence start
+        return 0;
     }
 
     //---------------//
@@ -322,42 +333,6 @@ public class TesseractOCR
         return new OcrChar(str, box, ch.point_size, ch.blanks);
     }
 
-    //-----------//
-    // dumpChars //
-    //-----------//
-    /**
-     * Dump the raw char descriptions as read from Tesseract
-     * @param chars the sequence of raw char descriptions
-     * @param the optional label
-     */
-    private static void dumpChars (EANYCodeChar[] chars,
-                                   String         label)
-    {
-        System.out.println(
-            "-- " + ((label != null) ? label : "") + " Raw Tesseract output:");
-        System.out.println(
-            "char     code  left right   top   bot  font  conf  size blanks   format");
-
-        for (EANYCodeChar ch : chars) {
-            System.out.println(
-                String.format(
-                    "%3s %5d=%2Xh %5d %5d %5d %5d %5d %5d %5d %5d %5d=%2Xh",
-                    String.copyValueOf(Character.toChars(ch.char_code)),
-                    ch.char_code,
-                    ch.char_code,
-                    ch.left,
-                    ch.right,
-                    ch.top,
-                    ch.bottom,
-                    ch.font_index,
-                    ch.confidence,
-                    ch.point_size,
-                    ch.blanks,
-                    ch.formatting,
-                    ch.formatting));
-        }
-    }
-
     //-------------------//
     // imageToTiffBuffer //
     //-------------------//
@@ -385,6 +360,74 @@ public class TesseractOCR
         buf.put(baos.toByteArray());
 
         return buf;
+    }
+
+    //-----------//
+    // isNewLine //
+    //-----------//
+    /**
+     * Report whether this char is the last one of a line
+     * @param ch the char descriptor
+     * @return true if end of line
+     */
+    private static boolean isNewLine (EANYCodeChar ch)
+    {
+        return ((ch.formatting & 0x40) != 0) // newLine
+                ||((ch.formatting & 0x80) != 0); // newPara
+    }
+
+    //----------//
+    // getLines //
+    //----------//
+    private List<OcrLine> getLines (EANYCodeChar[] chars,
+                                    String         label)
+    {
+        if (logger.isFineEnabled()) {
+            dumpChars(chars, label);
+        }
+
+        List<OcrLine> lines = new ArrayList<OcrLine>();
+        List<OcrChar> lineChars = new ArrayList<OcrChar>();
+        int           lastPointSize = -1;
+
+        try {
+            for (int index = 0; index < chars.length; index++) {
+                EANYCodeChar ch = chars[index];
+
+                // Compute the number of bytes for this UTF8 sequence
+                int byteCount = utf8ByteCount(ch.char_code);
+                lineChars.add(buildCharDesc(chars, index, byteCount));
+
+                // Let's move to the very last byte of the sequence
+                // To use its formatting data
+                index += (byteCount - 1);
+                ch = chars[index];
+                lastPointSize = ch.point_size;
+
+                // End of line?
+                if (isNewLine(ch)) {
+                    lines.add(new OcrLine(lastPointSize, lineChars, null));
+                    lineChars.clear();
+                }
+            }
+
+            // Debugging: we've found nothing
+            if (lines.isEmpty()) {
+                dumpChars(chars, label);
+            }
+
+            // TODO: (is this useful?) Just in case we've missed the end
+            if (!lineChars.isEmpty()) {
+                lines.add(new OcrLine(lastPointSize, lineChars, null));
+            }
+
+            return lines;
+        } catch (Exception ex) {
+            logger.warning("Error decoding tesseract output", ex);
+            dumpChars(chars, label);
+
+            return null;
+        }
     }
 
     //--------------------//
@@ -445,43 +488,6 @@ public class TesseractOCR
         return true;
     }
 
-    //---------------//
-    // utf8ByteCount //
-    //---------------//
-    /**
-     * Return the number of bytes of this UTF8 sequence
-     * @param code the char code of the first byte of the sequence
-     * @return the number of bytes for this sequence (or 0 if the byte is not
-     * a sequence starting byte)
-     */
-    private static int utf8ByteCount (int code)
-    {
-        // Unicode          Byte1    Byte2    Byte3    Byte4
-        // -------          -----    -----    -----    -----
-        // U+0000-U+007F    0xxxxxxx
-        // U+0080-U+07FF    110yyyxx 10xxxxxx
-        // U+0800-U+FFFF    1110yyyy 10yyyyxx 10xxxxxx
-        // U+10000-U+10FFFF 11110zzz 10zzyyyy 10yyyyxx 10xxxxxx
-        if ((code & 0x80) == 0x00) {
-            return 1;
-        }
-
-        if ((code & 0xE0) == 0xC0) {
-            return 2;
-        }
-
-        if ((code & 0xF0) == 0xE0) {
-            return 3;
-        }
-
-        if ((code & 0xF8) == 0xF0) {
-            return 4;
-        }
-
-        // This is not a legal sequence start
-        return 0;
-    }
-
     //~ Inner Classes ----------------------------------------------------------
 
     //-----------//
@@ -495,5 +501,8 @@ public class TesseractOCR
         Constant.Boolean useOCR = new Constant.Boolean(
             true,
             "Should we use the OCR feature?");
+        Constant.Boolean keepImages = new Constant.Boolean(
+            false,
+            "Should we keep the images sent to Tesseract?");
     }
 }

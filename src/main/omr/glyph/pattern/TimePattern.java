@@ -17,7 +17,7 @@ import omr.glyph.CompoundBuilder;
 import omr.glyph.Evaluation;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
-import omr.glyph.ShapeRange;
+import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
@@ -29,8 +29,6 @@ import omr.score.common.PixelRectangle;
 
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
-
-import omr.util.Implement;
 
 import java.util.EnumSet;
 
@@ -70,13 +68,13 @@ public class TimePattern
      * Check that each staff begins with a time
      * @return the number of times rebuilt
      */
-    @Implement(GlyphPattern.class)
+    @Override
     public int runPattern ()
     {
         int successNb = 0;
 
         for (Glyph glyph : system.getGlyphs()) {
-            if (!ShapeRange.Times.contains(glyph.getShape()) ||
+            if (!ShapeSet.Times.contains(glyph.getShape()) ||
                 glyph.isManualShape()) {
                 continue;
             }
@@ -89,7 +87,7 @@ public class TimePattern
                 new TimeSigAdapter(
                     system,
                     Grades.timeMinGrade,
-                    ShapeRange.FullTimes));
+                    ShapeSet.FullTimes));
 
             if (compound != null) {
                 successNb++;
@@ -137,17 +135,6 @@ public class TimePattern
 
         //~ Methods ------------------------------------------------------------
 
-        public boolean isCandidateSuitable (Glyph glyph)
-        {
-            return !glyph.isManualShape();
-        }
-
-        @Override
-        public Evaluation getChosenEvaluation ()
-        {
-            return new Evaluation(chosenEvaluation.shape, Evaluation.ALGORITHM);
-        }
-
         public PixelRectangle computeReferenceBox ()
         {
             // Retrieve environment (staff)
@@ -169,6 +156,17 @@ public class TimePattern
             seed.addAttachment("t", rect);
 
             return rect;
+        }
+
+        @Override
+        public Evaluation getChosenEvaluation ()
+        {
+            return new Evaluation(chosenEvaluation.shape, Evaluation.ALGORITHM);
+        }
+
+        public boolean isCandidateSuitable (Glyph glyph)
+        {
+            return !glyph.isManualShape();
         }
     }
 }

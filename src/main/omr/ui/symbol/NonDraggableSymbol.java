@@ -65,6 +65,15 @@ public class NonDraggableSymbol
 
     //~ Methods ----------------------------------------------------------------
 
+    //------------//
+    // createIcon //
+    //------------//
+    @Override
+    protected ShapeSymbol createIcon ()
+    {
+        return new NonDraggableSymbol(true, codes);
+    }
+
     //-----------//
     // getParams //
     //-----------//
@@ -82,15 +91,6 @@ public class NonDraggableSymbol
             (int) Math.ceil(r.getHeight()));
 
         return p;
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new NonDraggableSymbol(true, codes);
     }
 
     //-------//

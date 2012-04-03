@@ -13,7 +13,6 @@ package omr.lag;
 
 import omr.run.Run;
 
-
 /**
  * Class {@code JunctionRatioPolicy} defines a junction policy based on the
  * ratio between the length of the candidate run and the mean length of the
@@ -59,7 +58,7 @@ public class JunctionRatioPolicy
     // consistentRun //
     //---------------//
     /**
-     * Check whether the Run is consistent with the provided Section, 
+     * Check whether the Run is consistent with the provided Section,
      * according to this junction policy, based on run length and mean
      * section run length.
      * @param run the Run candidate

@@ -59,9 +59,9 @@ public class Dynamics
         sigs.put(Shape.DYNAMICS_F, "f");
         sigs.put(Shape.DYNAMICS_FF, "ff");
         sigs.put(Shape.DYNAMICS_FFF, "fff");
-        sigs.put(Shape.DYNAMICS_FFFF, "ffff");
-        sigs.put(Shape.DYNAMICS_FFFFF, "fffff");
-        sigs.put(Shape.DYNAMICS_FFFFFF, "ffffff");
+        //        sigs.put(Shape.DYNAMICS_FFFF, "ffff");
+        //        sigs.put(Shape.DYNAMICS_FFFFF, "fffff");
+        //        sigs.put(Shape.DYNAMICS_FFFFFF, "ffffff");
         sigs.put(Shape.DYNAMICS_FP, "fp");
         sigs.put(Shape.DYNAMICS_FZ, "fz");
         sigs.put(Shape.DYNAMICS_MF, "mf");
@@ -69,9 +69,9 @@ public class Dynamics
         sigs.put(Shape.DYNAMICS_P, "p");
         sigs.put(Shape.DYNAMICS_PP, "pp");
         sigs.put(Shape.DYNAMICS_PPP, "ppp");
-        sigs.put(Shape.DYNAMICS_PPPP, "pppp");
-        sigs.put(Shape.DYNAMICS_PPPPP, "ppppp");
-        sigs.put(Shape.DYNAMICS_PPPPPP, "pppppp");
+        //        sigs.put(Shape.DYNAMICS_PPPP, "pppp");
+        //        sigs.put(Shape.DYNAMICS_PPPPP, "ppppp");
+        //        sigs.put(Shape.DYNAMICS_PPPPPP, "pppppp");
         sigs.put(Shape.DYNAMICS_RF, "rf");
         sigs.put(Shape.DYNAMICS_RFZ, "rfz");
         sigs.put(Shape.DYNAMICS_SF, "sf");
@@ -88,9 +88,9 @@ public class Dynamics
         shapes.put("f", Shape.DYNAMICS_F);
         shapes.put("ff", Shape.DYNAMICS_FF);
         shapes.put("fff", Shape.DYNAMICS_FFF);
-        shapes.put("ffff", Shape.DYNAMICS_FFFF);
-        shapes.put("fffff", Shape.DYNAMICS_FFFFF);
-        shapes.put("ffffff", Shape.DYNAMICS_FFFFFF);
+        //        shapes.put("ffff", Shape.DYNAMICS_FFFF);
+        //        shapes.put("fffff", Shape.DYNAMICS_FFFFF);
+        //        shapes.put("ffffff", Shape.DYNAMICS_FFFFFF);
         shapes.put("fp", Shape.DYNAMICS_FP);
         shapes.put("fz", Shape.DYNAMICS_FZ);
         shapes.put("mf", Shape.DYNAMICS_MF);
@@ -98,9 +98,9 @@ public class Dynamics
         shapes.put("p", Shape.DYNAMICS_P);
         shapes.put("pp", Shape.DYNAMICS_PP);
         shapes.put("ppp", Shape.DYNAMICS_PPP);
-        shapes.put("pppp", Shape.DYNAMICS_PPPP);
-        shapes.put("ppppp", Shape.DYNAMICS_PPPPP);
-        shapes.put("pppppp", Shape.DYNAMICS_PPPPPP);
+        //        shapes.put("pppp", Shape.DYNAMICS_PPPP);
+        //        shapes.put("ppppp", Shape.DYNAMICS_PPPPP);
+        //        shapes.put("pppppp", Shape.DYNAMICS_PPPPPP);
         shapes.put("rf", Shape.DYNAMICS_RF);
         shapes.put("rfz", Shape.DYNAMICS_RFZ);
         shapes.put("sf", Shape.DYNAMICS_SF);
@@ -116,7 +116,7 @@ public class Dynamics
     static {
         //        sounds.put(Shape.DYNAMICS_FFFFFF, "ffffff");
         //        sounds.put(Shape.DYNAMICS_FFFFF, "fffff");
-        sounds.put(Shape.DYNAMICS_FFFF, 166);
+        //        sounds.put(Shape.DYNAMICS_FFFF, 166);
         sounds.put(Shape.DYNAMICS_FFF, 144);
         sounds.put(Shape.DYNAMICS_FF, 122);
         sounds.put(Shape.DYNAMICS_F, 100);
@@ -128,8 +128,8 @@ public class Dynamics
         sounds.put(Shape.DYNAMICS_P, 67);
         sounds.put(Shape.DYNAMICS_PP, 56);
         sounds.put(Shape.DYNAMICS_PPP, 45);
-        sounds.put(Shape.DYNAMICS_PPPP, 34);
 
+        //        sounds.put(Shape.DYNAMICS_PPPP, 34);
         //        sounds.put(Shape.DYNAMICS_PPPPP, "ppppp");
         //        sounds.put(Shape.DYNAMICS_PPPPPP, "pppppp");
         //        sounds.put(Shape.DYNAMICS_RF, "rf");
@@ -167,13 +167,18 @@ public class Dynamics
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
+    //---------------//
+    // getSoundLevel //
+    //---------------//
+    public Integer getSoundLevel ()
     {
-        return visitor.visit(this);
+        Shape shape = getShape();
+
+        if (shape != null) {
+            return sounds.get(shape);
+        } else {
+            return null;
+        }
     }
 
     //----------//
@@ -208,18 +213,13 @@ public class Dynamics
             new Dynamics(measure, point, findChord(measure, point), glyph));
     }
 
-    //---------------//
-    // getSoundLevel //
-    //---------------//
-    public Integer getSoundLevel ()
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
     {
-        Shape shape = getShape();
-
-        if (shape != null) {
-            return sounds.get(shape);
-        } else {
-            return null;
-        }
+        return visitor.visit(this);
     }
 
     //---------------//

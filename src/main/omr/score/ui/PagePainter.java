@@ -902,19 +902,6 @@ public abstract class PagePainter
      */
     protected abstract PixelPoint noteLocation (Note note);
 
-    //-----------------//
-    // getKeySigItemDx //
-    //-----------------//
-    /**
-     * Report the theoretical abscissa gap between items of one key signature
-     * (the individual sharp or flat signs)
-     * @return the theoretical dx between items
-     */
-    protected int getKeySigItemDx ()
-    {
-        return scale.toPixels(constants.keySigItemDx);
-    }
-
     //-------------//
     // basicLayout //
     //-------------//
@@ -933,6 +920,19 @@ public abstract class PagePainter
                                  : basicFont.deriveFont(fat);
 
         return new TextLayout(str, font, frc);
+    }
+
+    //-----------------//
+    // getKeySigItemDx //
+    //-----------------//
+    /**
+     * Report the theoretical abscissa gap between items of one key signature
+     * (the individual sharp or flat signs)
+     * @return the theoretical dx between items
+     */
+    protected int getKeySigItemDx ()
+    {
+        return scale.toPixels(constants.keySigItemDx);
     }
 
     //----------------//

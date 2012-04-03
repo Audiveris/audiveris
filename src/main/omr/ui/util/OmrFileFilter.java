@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.ui.util;
 
-import omr.util.Implement;
-
 import java.io.File;
 import java.io.FilenameFilter;
 
@@ -90,19 +88,6 @@ public class OmrFileFilter
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------------//
-    // getDescription //
-    //----------------//
-    /**
-     * Report the filter description
-     *
-     * @return the description of this filter
-     */
-    public String getDescription ()
-    {
-        return description;
-    }
-
     //--------//
     // accept //
     //--------//
@@ -142,10 +127,23 @@ public class OmrFileFilter
      * @return  {@code true} if and only if the name should be
      * included in the file list; {@code false} otherwise.
      */
-    @Implement(FilenameFilter.class)
+    @Override
     public boolean accept (File   dir,
                            String name)
     {
         return accept(new File(dir, name));
+    }
+
+    //----------------//
+    // getDescription //
+    //----------------//
+    /**
+     * Report the filter description
+     *
+     * @return the description of this filter
+     */
+    public String getDescription ()
+    {
+        return description;
     }
 }

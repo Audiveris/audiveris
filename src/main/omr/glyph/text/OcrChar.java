@@ -14,7 +14,8 @@ package omr.glyph.text;
 import omr.score.common.PixelRectangle;
 
 /**
- * Class {@code OcrChar} manages information about a OCR-decoded character
+ * Class {@code OcrChar} manages information about a OCR-decoded
+ * character.
  *
  * @author Hervé Bitteur
  */
@@ -72,14 +73,6 @@ public class OcrChar
         return new PixelRectangle(box);
     }
 
-    //--------//
-    // isDash //
-    //--------//
-    public boolean isDash ()
-    {
-        return content.equals("-");
-    }
-
     //-----------------//
     // hasSpacesBefore //
     //-----------------//
@@ -92,6 +85,14 @@ public class OcrChar
     public boolean hasSpacesBefore ()
     {
         return (blanks > 0) || isDash();
+    }
+
+    //--------//
+    // isDash //
+    //--------//
+    public boolean isDash ()
+    {
+        return content.equals("-");
     }
 
     //----------//

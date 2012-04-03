@@ -35,7 +35,6 @@ import omr.ui.view.RubberPanel;
 import omr.ui.view.ScrollView;
 import omr.ui.view.Zoom;
 
-import omr.util.Implement;
 import omr.util.WeakPropertyChangeListener;
 
 import org.bushe.swing.event.EventService;
@@ -177,60 +176,6 @@ public class SheetAssembly
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------------//
-    // getComponent //
-    //--------------//
-    /**
-     * Report the UI component.
-     * @return the concrete component
-     */
-    public JComponent getComponent ()
-    {
-        return component;
-    }
-
-    //-----------------//
-    // getSelectedView //
-    //-----------------//
-    /**
-     * Report the tabbed view currently selected.
-     * @return the current tabbed view
-     */
-    public ScrollView getSelectedView ()
-    {
-        ViewTab currentTab = getCurrentViewTab();
-
-        if (currentTab != null) {
-            return currentTab.scrollView;
-        } else {
-            return null;
-        }
-    }
-
-    //----------//
-    // getSheet //
-    //----------//
-    /**
-     * Report the sheet this assembly is related to.
-     * @return the related sheet
-     */
-    public Sheet getSheet ()
-    {
-        return sheet;
-    }
-
-    //--------------//
-    // setZoomRatio //
-    //--------------//
-    /**
-     * Modify the ratio of the global zoom for all views of the sheet.
-     * @param ratio the new display ratio
-     */
-    public void setZoomRatio (double ratio)
-    {
-        zoom.setRatio(ratio);
-    }
-
     //----------//
     // addBoard //
     //----------//
@@ -366,6 +311,48 @@ public class SheetAssembly
             .hideErrorsPane(sheet.getErrorsEditor().getComponent());
     }
 
+    //--------------//
+    // getComponent //
+    //--------------//
+    /**
+     * Report the UI component.
+     * @return the concrete component
+     */
+    public JComponent getComponent ()
+    {
+        return component;
+    }
+
+    //-----------------//
+    // getSelectedView //
+    //-----------------//
+    /**
+     * Report the tabbed view currently selected.
+     * @return the current tabbed view
+     */
+    public ScrollView getSelectedView ()
+    {
+        ViewTab currentTab = getCurrentViewTab();
+
+        if (currentTab != null) {
+            return currentTab.scrollView;
+        } else {
+            return null;
+        }
+    }
+
+    //----------//
+    // getSheet //
+    //----------//
+    /**
+     * Report the sheet this assembly is related to.
+     * @return the related sheet
+     */
+    public Sheet getSheet ()
+    {
+        return sheet;
+    }
+
     //----------------//
     // propertyChange //
     //----------------//
@@ -376,7 +363,7 @@ public class SheetAssembly
      * into/from the assembly display.
      * @param evt unused
      */
-    @Implement(PropertyChangeListener.class)
+    @Override
     public void propertyChange (PropertyChangeEvent evt)
     {
         assemblySelected();
@@ -411,6 +398,18 @@ public class SheetAssembly
     }
 
     //--------------//
+    // setZoomRatio //
+    //--------------//
+    /**
+     * Modify the ratio of the global zoom for all views of the sheet.
+     * @param ratio the new display ratio
+     */
+    public void setZoomRatio (double ratio)
+    {
+        zoom.setRatio(ratio);
+    }
+
+    //--------------//
     // stateChanged //
     //--------------//
     /**
@@ -418,7 +417,7 @@ public class SheetAssembly
      * in the SheetAssembly (or when a tab is removed).
      * @param e the originating change event (not used)
      */
-    @Implement(ChangeListener.class)
+    @Override
     public void stateChanged (ChangeEvent e)
     {
         ViewTab currentTab = getCurrentViewTab();
@@ -440,6 +439,41 @@ public class SheetAssembly
         }
 
         previousTab = currentTab;
+    }
+
+    //--------------//
+    // defineLayout //
+    //--------------//
+    /**
+     * Define the layout of this assembly.
+     */
+    private void defineLayout ()
+    {
+        component.setLayout(new BorderLayout());
+        component.setNoInsets();
+        component.add(slider, BorderLayout.WEST);
+        component.add(viewsPane, BorderLayout.CENTER);
+    }
+
+    //---------------//
+    // displayBoards //
+    //---------------//
+    /**
+     * Make the boards pane visible (for this sheet & view).
+     */
+    private void displayBoards ()
+    {
+        // Make sure the view tab is ready
+        JScrollPane comp = (JScrollPane) viewsPane.getSelectedComponent();
+
+        if (comp != null) {
+            // Retrieve the proper boards pane, if any
+            ViewTab tab = tabs.get(comp);
+
+            if (tab != null) {
+                tab.displayBoards();
+            }
+        }
     }
 
     //-------------------//
@@ -491,41 +525,6 @@ public class SheetAssembly
         }
 
         return null;
-    }
-
-    //--------------//
-    // defineLayout //
-    //--------------//
-    /**
-     * Define the layout of this assembly.
-     */
-    private void defineLayout ()
-    {
-        component.setLayout(new BorderLayout());
-        component.setNoInsets();
-        component.add(slider, BorderLayout.WEST);
-        component.add(viewsPane, BorderLayout.CENTER);
-    }
-
-    //---------------//
-    // displayBoards //
-    //---------------//
-    /**
-     * Make the boards pane visible (for this sheet & view).
-     */
-    private void displayBoards ()
-    {
-        // Make sure the view tab is ready
-        JScrollPane comp = (JScrollPane) viewsPane.getSelectedComponent();
-
-        if (comp != null) {
-            // Retrieve the proper boards pane, if any
-            ViewTab tab = tabs.get(comp);
-
-            if (tab != null) {
-                tab.displayBoards();
-            }
-        }
     }
 
     //~ Inner Classes ----------------------------------------------------------

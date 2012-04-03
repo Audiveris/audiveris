@@ -60,15 +60,17 @@ public abstract class AbstractTreeTableModel
 
     //~ Methods ----------------------------------------------------------------
 
+    //----------------------//
+    // addTreeModelListener //
+    //----------------------//
     /**
-     * By default, make the column with the Tree in it the only editable one.
-     * Making this column editable causes the JTable to forward mouse and
-     * keyboard events in the Tree column to the underlying JTree.
+     * DOCUMENT ME!
+     *
+     * @param l DOCUMENT ME!
      */
-    public boolean isCellEditable (Object node,
-                                   int    column)
+    public void addTreeModelListener (TreeModelListener l)
     {
-        return getColumnClass(column) == TreeTableModel.class;
+        listenerList.add(TreeModelListener.class, l);
     }
 
     //----------------//
@@ -111,6 +113,30 @@ public abstract class AbstractTreeTableModel
         return -1;
     }
 
+    //---------//
+    // getRoot //
+    //---------//
+    /**
+     * DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    public Object getRoot ()
+    {
+        return root;
+    }
+
+    /**
+     * By default, make the column with the Tree in it the only editable one.
+     * Making this column editable causes the JTable to forward mouse and
+     * keyboard events in the Tree column to the underlying JTree.
+     */
+    public boolean isCellEditable (Object node,
+                                   int    column)
+    {
+        return getColumnClass(column) == TreeTableModel.class;
+    }
+
     //--------//
     // isLeaf //
     //--------//
@@ -126,17 +152,17 @@ public abstract class AbstractTreeTableModel
         return getChildCount(node) == 0;
     }
 
-    //---------//
-    // getRoot //
-    //---------//
+    //-------------------------//
+    // removeTreeModelListener //
+    //-------------------------//
     /**
      * DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @param l DOCUMENT ME!
      */
-    public Object getRoot ()
+    public void removeTreeModelListener (TreeModelListener l)
     {
-        return root;
+        listenerList.remove(TreeModelListener.class, l);
     }
 
     //------------//
@@ -153,32 +179,6 @@ public abstract class AbstractTreeTableModel
                             Object node,
                             int    column)
     {
-    }
-
-    //----------------------//
-    // addTreeModelListener //
-    //----------------------//
-    /**
-     * DOCUMENT ME!
-     *
-     * @param l DOCUMENT ME!
-     */
-    public void addTreeModelListener (TreeModelListener l)
-    {
-        listenerList.add(TreeModelListener.class, l);
-    }
-
-    //-------------------------//
-    // removeTreeModelListener //
-    //-------------------------//
-    /**
-     * DOCUMENT ME!
-     *
-     * @param l DOCUMENT ME!
-     */
-    public void removeTreeModelListener (TreeModelListener l)
-    {
-        listenerList.remove(TreeModelListener.class, l);
     }
 
     //---------------------//

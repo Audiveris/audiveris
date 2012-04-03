@@ -56,6 +56,15 @@ public class SlurSymbol
 
     //~ Methods ----------------------------------------------------------------
 
+    //------------//
+    // createIcon //
+    //------------//
+    @Override
+    protected ShapeSymbol createIcon ()
+    {
+        return new SlurSymbol(true);
+    }
+
     //-----------//
     // getParams //
     //-----------//
@@ -67,15 +76,6 @@ public class SlurSymbol
         p.rect = new Rectangle(2 * il, (4 * il) / 3);
 
         return p;
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new SlurSymbol(true);
     }
 
     //-------//

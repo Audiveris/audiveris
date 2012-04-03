@@ -34,8 +34,6 @@ import omr.sheet.ui.SheetsController;
 
 import omr.step.StepException;
 
-import omr.util.Implement;
-
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartFrame;
 import org.jfree.chart.JFreeChart;
@@ -226,41 +224,13 @@ public class ScaleBuilder
         }
     }
 
-    //---------//
-    // getPeak //
-    //---------//
-    private PeakEntry<Double> getPeak (Histogram histo,
-                                       double    spreadRatio,
-                                       int       index)
-    {
-        PeakEntry<Double>       peak = null;
-
-        // Find peak(s) using quorum threshold
-        List<PeakEntry<Double>> peaks = histo.getDoublePeaks(
-            histo.getQuorumValue(quorumRatio));
-
-        if (index < peaks.size()) {
-            peak = peaks.get(index);
-
-            // Refine peak using spread threshold
-            peaks = histo.getDoublePeaks(
-                histo.getQuorumValue(peak.getValue() * spreadRatio));
-
-            if (index < peaks.size()) {
-                peak = peaks.get(index);
-            }
-        }
-
-        return peak;
-    }
-
     //-------------//
     // checkStaves //
     //-------------//
     /**
-     * Check we have foreground and background run peaks, with significant
-     * percentage of runs population, otherwise we are not looking at staves
-     * and the picture represents something else.
+     * Check we have foreground and background run peaks, with
+     * significant percentage of runs population, otherwise we are not
+     * looking at staves and the picture represents something else.
      * @throws StepException if processing must stop on this sheet
      */
     private void checkStaves ()
@@ -359,6 +329,34 @@ public class ScaleBuilder
         }
     }
 
+    //---------//
+    // getPeak //
+    //---------//
+    private PeakEntry<Double> getPeak (Histogram histo,
+                                       double    spreadRatio,
+                                       int       index)
+    {
+        PeakEntry<Double>       peak = null;
+
+        // Find peak(s) using quorum threshold
+        List<PeakEntry<Double>> peaks = histo.getDoublePeaks(
+            histo.getQuorumValue(quorumRatio));
+
+        if (index < peaks.size()) {
+            peak = peaks.get(index);
+
+            // Refine peak using spread threshold
+            peaks = histo.getDoublePeaks(
+                histo.getQuorumValue(peak.getValue() * spreadRatio));
+
+            if (index < peaks.size()) {
+                peak = peaks.get(index);
+            }
+        }
+
+        return peak;
+    }
+
     //--------------//
     // makeDecision //
     //--------------//
@@ -450,45 +448,6 @@ public class ScaleBuilder
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        final Constant.Integer minResolution = new Constant.Integer(
-            "Pixels",
-            11,
-            "Minimum resolution, expressed as number of pixels per interline");
-
-        //
-        final Constant.Ratio quorumRatio = new Constant.Ratio(
-            0.1,
-            "Absolute ratio of total pixels for peak acceptance");
-
-        //
-        final Constant.Ratio foreSpreadRatio = new Constant.Ratio(
-            0.15,
-            "Relative ratio of best count for foreground spread reading");
-
-        //
-        final Constant.Ratio backSpreadRatio = new Constant.Ratio(
-            0.3,
-            "Relative ratio of best count for background spread reading");
-
-        //
-        final Constant.Ratio spreadFactor = new Constant.Ratio(
-            1.0,
-            "Factor applied on line thickness spread");
-
-        //
-        final Constant.Ratio minBeamLineRatio = new Constant.Ratio(
-            2.0,
-            "Minimum ratio between beam thickness and line thickness");
-    }
-
     //---------//
     // Adapter //          
     //---------//
@@ -534,31 +493,10 @@ public class ScaleBuilder
 
         //~ Methods ------------------------------------------------------------
 
-        //--------//
-        // isFore //
-        //--------//
-        @Implement(RunsRetriever.Adapter.class)
-        public boolean isFore (int level)
-        {
-            // Assuming black=0, white=255
-            return level <= maxForeground;
-        }
-
-        //----------//
-        // getLevel //
-        //----------//
-        @Implement(RunsRetriever.Adapter.class)
-        public int getLevel (int coord,
-                             int pos)
-        {
-            // Swap pos & coord since we work on vertical runs
-            return picture.getPixel(pos, coord);
-        }
-
         //---------//
         // backRun //
         //---------//
-        @Implement(RunsRetriever.Adapter.class)
+        @Override
         public void backRun (int w,
                              int h,
                              int length)
@@ -569,7 +507,7 @@ public class ScaleBuilder
         //---------//
         // foreRun //
         //---------//
-        @Implement(RunsRetriever.Adapter.class)
+        @Override
         public void foreRun (int w,
                              int h,
                              int length,
@@ -578,10 +516,31 @@ public class ScaleBuilder
             fore[length]++;
         }
 
+        //----------//
+        // getLevel //
+        //----------//
+        @Override
+        public int getLevel (int coord,
+                             int pos)
+        {
+            // Swap pos & coord since we work on vertical runs
+            return picture.getPixel(pos, coord);
+        }
+
+        //--------//
+        // isFore //
+        //--------//
+        @Override
+        public boolean isFore (int level)
+        {
+            // Assuming black=0, white=255
+            return level <= maxForeground;
+        }
+
         //-----------//
         // terminate //
         //-----------//
-        @Implement(RunsRetriever.Adapter.class)
+        @Override
         public void terminate ()
         {
             if (logger.isFineEnabled()) {
@@ -634,6 +593,45 @@ public class ScaleBuilder
 
             return histo;
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final Constant.Integer minResolution = new Constant.Integer(
+            "Pixels",
+            11,
+            "Minimum resolution, expressed as number of pixels per interline");
+
+        //
+        final Constant.Ratio quorumRatio = new Constant.Ratio(
+            0.1,
+            "Absolute ratio of total pixels for peak acceptance");
+
+        //
+        final Constant.Ratio foreSpreadRatio = new Constant.Ratio(
+            0.15,
+            "Relative ratio of best count for foreground spread reading");
+
+        //
+        final Constant.Ratio backSpreadRatio = new Constant.Ratio(
+            0.3,
+            "Relative ratio of best count for background spread reading");
+
+        //
+        final Constant.Ratio spreadFactor = new Constant.Ratio(
+            1.0,
+            "Factor applied on line thickness spread");
+
+        //
+        final Constant.Ratio minBeamLineRatio = new Constant.Ratio(
+            2.0,
+            "Minimum ratio between beam thickness and line thickness");
     }
 
     //---------//

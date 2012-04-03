@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="NOTEHEAD_VOID" interline="13" id="1616">
+    <stem-number>1</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-3.183673469387755</pitch-position>
+    <section orientation="VERTICAL" first-pos="2858" id="9407">
+        <run start="3171" level="100" length="9"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2859" id="9424">
+        <run start="3170" level="13" length="4"/>
+        <run start="3167" level="86" length="7"/>
+        <run start="3167" level="76" length="6"/>
+        <run start="3167" level="78" length="5"/>
+        <run start="3167" level="101" length="5"/>
+        <run start="3167" level="104" length="4"/>
+        <run start="3167" level="137" length="4"/>
+        <run start="3167" level="143" length="3"/>
+        <run start="3167" level="176" length="3"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2859" id="9425">
+        <run start="3179" level="192" length="1"/>
+        <run start="3179" level="192" length="1"/>
+        <run start="3178" level="192" length="2"/>
+        <run start="3177" level="185" length="3"/>
+        <run start="3177" level="145" length="3"/>
+        <run start="3176" level="141" length="4"/>
+        <run start="3176" level="108" length="4"/>
+        <run start="3175" level="105" length="5"/>
+        <run start="3175" level="53" length="4"/>
+        <run start="3174" level="55" length="5"/>
+        <run start="3173" level="49" length="5"/>
+        <run start="3172" level="53" length="5"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2870" id="9450">
+        <run start="3169" level="171" length="1"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2871" id="9459">
+        <run start="3167" level="83" length="9"/>
+        <run start="3167" level="136" length="7"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2873" id="9472">
+        <run start="3167" level="192" length="2"/>
+    </section>
+</glyph>

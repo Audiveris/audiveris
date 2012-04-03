@@ -65,6 +65,15 @@ public class TextSymbol
 
     //~ Methods ----------------------------------------------------------------
 
+    //------------//
+    // createIcon //
+    //------------//
+    @Override
+    protected ShapeSymbol createIcon ()
+    {
+        return new TextSymbol(true, shape, str);
+    }
+
     //-----------//
     // getParams //
     //-----------//
@@ -83,14 +92,5 @@ public class TextSymbol
             (int) Math.ceil(r.getHeight()));
 
         return p;
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new TextSymbol(true, shape, str);
     }
 }

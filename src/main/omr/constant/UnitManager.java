@@ -100,31 +100,6 @@ public class UnitManager
         return INSTANCE;
     }
 
-    //---------//
-    // getNode //
-    //---------//
-    /**
-     * Retrieves a node object, knowing its path name.
-     * @param path fully qualified node name
-     * @return the node object, or null if not found
-     */
-    public Node getNode (String path)
-    {
-        return mapOfNodes.get(path);
-    }
-
-    //---------//
-    // getRoot //
-    //---------//
-    /**
-     * Return the PackageNode at the root of the node hierarchy.
-     * @return the root PackageNode
-     */
-    public PackageNode getRoot ()
-    {
-        return root;
-    }
-
     //-----------//
     // addLogger //
     //-----------//
@@ -265,6 +240,31 @@ public class UnitManager
                 }
             }
         }
+    }
+
+    //---------//
+    // getNode //
+    //---------//
+    /**
+     * Retrieves a node object, knowing its path name.
+     * @param path fully qualified node name
+     * @return the node object, or null if not found
+     */
+    public Node getNode (String path)
+    {
+        return mapOfNodes.get(path);
+    }
+
+    //---------//
+    // getRoot //
+    //---------//
+    /**
+     * Return the PackageNode at the root of the node hierarchy.
+     * @return the root PackageNode
+     */
+    public PackageNode getRoot ()
+    {
+        return root;
     }
 
     //--------------//

@@ -43,10 +43,10 @@ public abstract class AbstractNotation
      * @param chord the related chord
      * @param glyph the underlying glyph
      */
-    public AbstractNotation (Measure     measure,
+    public AbstractNotation (Measure    measure,
                              PixelPoint point,
-                             Chord       chord,
-                             Glyph       glyph)
+                             Chord      chord,
+                             Glyph      glyph)
     {
         super(measure, true, point, chord, glyph);
 

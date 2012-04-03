@@ -23,8 +23,6 @@ import omr.ui.Board;
 import omr.ui.field.LIntegerField;
 import omr.ui.util.Panel;
 
-import omr.util.Implement;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -148,7 +146,7 @@ public class RunBoard
      *
      * @param event the notified event
      */
-    @Implement(EventSubscriber.class)
+    @Override
     public void onEvent (UserEvent event)
     {
         try {

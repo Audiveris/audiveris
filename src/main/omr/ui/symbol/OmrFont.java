@@ -74,6 +74,38 @@ public abstract class OmrFont
 
     //~ Methods ----------------------------------------------------------------
 
+    //-------//
+    // paint //
+    //-------//
+    /**
+     * This is the general paint method for drawing a symbol layout, at a
+     * specified location, using a specified alignment
+     * @param g the graphics environment
+     * @param layout what: the symbol, perhaps transformed
+     * @param location where: the precise location in the display
+     * @param alignment how: the way the symbol is aligned wrt the location
+     */
+    public static void paint (Graphics2D g,
+                              TextLayout layout,
+                              PixelPoint location,
+                              Alignment  alignment)
+    {
+        try {
+            // Compute symbol origin
+            Rectangle2D bounds = layout.getBounds();
+            Point2D     toTextOrigin = alignment.toTextOrigin(bounds);
+            Point2D     origin = new Point2D.Double(
+                location.x + toTextOrigin.getX(),
+                location.y + toTextOrigin.getY());
+
+            // Draw the symbol
+            layout.draw(g, (float) origin.getX(), (float) origin.getY());
+        } catch (ConcurrentModificationException ignored) {
+        } catch (Exception ex) {
+            logger.warning("Cannot paint at " + location, ex);
+        }
+    }
+
     //--------//
     // layout //
     //--------//
@@ -116,37 +148,5 @@ public abstract class OmrFont
     public TextLayout layout (BasicSymbol symbol)
     {
         return layout(symbol.getString(), null);
-    }
-
-    //-------//
-    // paint //
-    //-------//
-    /**
-     * This is the general paint method for drawing a symbol layout, at a
-     * specified location, using a specified alignment
-     * @param g the graphics environment
-     * @param layout what: the symbol, perhaps transformed
-     * @param location where: the precise location in the display
-     * @param alignment how: the way the symbol is aligned wrt the location
-     */
-    public static void paint (Graphics2D g,
-                              TextLayout layout,
-                              PixelPoint location,
-                              Alignment  alignment)
-    {
-        try {
-            // Compute symbol origin
-            Rectangle2D bounds = layout.getBounds();
-            Point2D     toTextOrigin = alignment.toTextOrigin(bounds);
-            Point2D     origin = new Point2D.Double(
-                location.x + toTextOrigin.getX(),
-                location.y + toTextOrigin.getY());
-
-            // Draw the symbol
-            layout.draw(g, (float) origin.getX(), (float) origin.getY());
-        } catch (ConcurrentModificationException ignored) {
-        } catch (Exception ex) {
-            logger.warning("Cannot paint at " + location, ex);
-        }
     }
 }

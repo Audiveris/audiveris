@@ -103,133 +103,42 @@ public class Beam
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------//
-    // getChords //
-    //-----------//
-    /**
-     * Report the sequence of chords that are linked by this beam.
-     * @return the sorted set of linked chords
-     */
-    public SortedSet<Chord> getChords ()
-    {
-        return chords;
-    }
-
     //----------//
-    // getGroup //
+    // populate //
     //----------//
     /**
-     * Report the containing group.
-     * @return the containing group, if already set, or null
+     * Populate a (or create a brand new) beam with this glyph.
+     * @param item a beam item
+     * @param measure the containing measure
      */
-    public BeamGroup getGroup ()
+    public static void populate (BeamItem item,
+                                 Measure  measure)
     {
-        return group;
-    }
+        ///logger.info("Populating " + glyph);
+        Beam beam = null;
 
-    //--------//
-    // isHook //
-    //--------//
-    public boolean isHook ()
-    {
-        return items.first()
-                    .isHook();
-    }
+        // Browse existing beams, to check if this glyph can be appended
+        for (TreeNode node : measure.getBeams()) {
+            Beam b = (Beam) node;
 
-    //-------//
-    // getId //
-    //-------//
-    /**
-     * Report the unique id of the beam within its containing measure.
-     * @return the beam id, starting from 1
-     */
-    public int getId ()
-    {
-        return id;
-    }
+            if (b.isCompatibleWith(item)) {
+                beam = b;
 
-    //----------//
-    // getItems //
-    //----------//
-    /**
-     * Report the ordered sequence of items (one or several BeamItem
-     * instances of BEAM shape, or one glyph of BEAM_HOOK shape) that
-     * compose this beam.
-     * @return the ordered set of beam items
-     */
-    public SortedSet<BeamItem> getItems ()
-    {
-        return items;
-    }
-
-    //----------//
-    // getLevel //
-    //----------//
-    /**
-     * Report the level of this beam within the containing BeamGroup,
-     * starting from 1.
-     * @return the beam level in its group
-     */
-    public int getLevel ()
-    {
-        return getGroup()
-                   .getLevel(this);
-    }
-
-    //---------//
-    // getLine //
-    //---------//
-    /**
-     * Report the line equation defined by the beam.
-     * @return the line equation
-     */
-    public Line getLine ()
-    {
-        if ((line == null) && !items.isEmpty()) {
-            line = new BasicLine();
-
-            // Take left side of first item, and right side of last item
-            left = getPoint(LEFT);
-            line.includePoint(left.x, left.y);
-            right = getPoint(RIGHT);
-            line.includePoint(right.x, right.y);
+                break;
+            }
         }
 
-        return line;
-    }
-
-    //----------//
-    // getPoint //
-    //----------//
-    /**
-     * Report the point that define the desired edge of the beam.
-     * @return the PixelPoint coordinates of the point on desired side
-     */
-    public PixelPoint getPoint (HorizontalSide side)
-    {
-        if (side == LEFT) {
-            return items.first()
-                        .getPoint(LEFT);
-        } else {
-            return items.last()
-                        .getPoint(RIGHT);
+        // If not, create a brand new beam entity
+        if (beam == null) {
+            beam = new Beam(measure);
         }
-    }
 
-    //--------//
-    // setVip //
-    //--------//
-    public void setVip ()
-    {
-        vip = true;
-    }
+        beam.addItem(item);
 
-    //-------//
-    // isVip //
-    //-------//
-    public boolean isVip ()
-    {
-        return vip;
+        ////glyph.addTranslation(item);
+        if (logger.isFineEnabled()) {
+            logger.fine(beam.getContextString() + " " + beam);
+        }
     }
 
     //--------//
@@ -396,6 +305,127 @@ public class Beam
         Main.dumping.dump(this);
     }
 
+    //-----------//
+    // getChords //
+    //-----------//
+    /**
+     * Report the sequence of chords that are linked by this beam.
+     * @return the sorted set of linked chords
+     */
+    public SortedSet<Chord> getChords ()
+    {
+        return chords;
+    }
+
+    //----------//
+    // getGroup //
+    //----------//
+    /**
+     * Report the containing group.
+     * @return the containing group, if already set, or null
+     */
+    public BeamGroup getGroup ()
+    {
+        return group;
+    }
+
+    //-------//
+    // getId //
+    //-------//
+    /**
+     * Report the unique id of the beam within its containing measure.
+     * @return the beam id, starting from 1
+     */
+    public int getId ()
+    {
+        return id;
+    }
+
+    //----------//
+    // getItems //
+    //----------//
+    /**
+     * Report the ordered sequence of items (one or several BeamItem
+     * instances of BEAM shape, or one glyph of BEAM_HOOK shape) that
+     * compose this beam.
+     * @return the ordered set of beam items
+     */
+    public SortedSet<BeamItem> getItems ()
+    {
+        return items;
+    }
+
+    //----------//
+    // getLevel //
+    //----------//
+    /**
+     * Report the level of this beam within the containing BeamGroup,
+     * starting from 1.
+     * @return the beam level in its group
+     */
+    public int getLevel ()
+    {
+        return getGroup()
+                   .getLevel(this);
+    }
+
+    //---------//
+    // getLine //
+    //---------//
+    /**
+     * Report the line equation defined by the beam.
+     * @return the line equation
+     */
+    public Line getLine ()
+    {
+        if ((line == null) && !items.isEmpty()) {
+            line = new BasicLine();
+
+            // Take left side of first item, and right side of last item
+            left = getPoint(LEFT);
+            line.includePoint(left.x, left.y);
+            right = getPoint(RIGHT);
+            line.includePoint(right.x, right.y);
+        }
+
+        return line;
+    }
+
+    //----------//
+    // getPoint //
+    //----------//
+    /**
+     * Report the point that define the desired edge of the beam.
+     * @return the PixelPoint coordinates of the point on desired side
+     */
+    public PixelPoint getPoint (HorizontalSide side)
+    {
+        if (side == LEFT) {
+            return items.first()
+                        .getPoint(LEFT);
+        } else {
+            return items.last()
+                        .getPoint(RIGHT);
+        }
+    }
+
+    //--------//
+    // isHook //
+    //--------//
+    public boolean isHook ()
+    {
+        return items.first()
+                    .isHook();
+    }
+
+    //-------//
+    // isVip //
+    //-------//
+    public boolean isVip ()
+    {
+        return vip;
+    }
+
     //------------//
     // linkChords //
     //------------//
@@ -415,44 +445,6 @@ public class Beam
         }
     }
 
-    //----------//
-    // populate //
-    //----------//
-    /**
-     * Populate a (or create a brand new) beam with this glyph.
-     * @param item a beam item
-     * @param measure the containing measure
-     */
-    public static void populate (BeamItem item,
-                                 Measure  measure)
-    {
-        ///logger.info("Populating " + glyph);
-        Beam beam = null;
-
-        // Browse existing beams, to check if this glyph can be appended
-        for (TreeNode node : measure.getBeams()) {
-            Beam b = (Beam) node;
-
-            if (b.isCompatibleWith(item)) {
-                beam = b;
-
-                break;
-            }
-        }
-
-        // If not, create a brand new beam entity
-        if (beam == null) {
-            beam = new Beam(measure);
-        }
-
-        beam.addItem(item);
-
-        ////glyph.addTranslation(item);
-        if (logger.isFineEnabled()) {
-            logger.fine(beam.getContextString() + " " + beam);
-        }
-    }
-
     //-------------//
     // removeChord //
     //-------------//
@@ -463,6 +455,14 @@ public class Beam
     public void removeChord (Chord chord)
     {
         chords.remove(chord);
+    }
+
+    //--------//
+    // setVip //
+    //--------//
+    public void setVip ()
+    {
+        vip = true;
     }
 
     //-------------//
@@ -590,6 +590,29 @@ public class Beam
         right = null;
     }
 
+    //---------//
+    // addItem //
+    //---------//
+    /**
+     * Insert a (BEAM/BEAM_HOOK) item as a component of this beam.
+     * @param item the beam item to insert
+     */
+    private void addItem (BeamItem item)
+    {
+        items.add(item);
+        reset();
+
+        if (item.isVip()) {
+            setVip();
+        }
+
+        if (isVip() || logger.isFineEnabled()) {
+            logger.info(
+                getMeasure().getContextString() + " Added " + item + " to " +
+                this);
+        }
+    }
+
     //------------------//
     // isCompatibleWith //
     //------------------//
@@ -640,29 +663,6 @@ public class Beam
         }
 
         return false;
-    }
-
-    //---------//
-    // addItem //
-    //---------//
-    /**
-     * Insert a (BEAM/BEAM_HOOK) item as a component of this beam.
-     * @param item the beam item to insert
-     */
-    private void addItem (BeamItem item)
-    {
-        items.add(item);
-        reset();
-
-        if (item.isVip()) {
-            setVip();
-        }
-
-        if (isVip() || logger.isFineEnabled()) {
-            logger.info(
-                getMeasure().getContextString() + " Added " + item + " to " +
-                this);
-        }
     }
 
     //------------------//

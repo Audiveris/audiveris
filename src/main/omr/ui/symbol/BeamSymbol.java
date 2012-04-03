@@ -24,7 +24,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code BeamSymbol} implements decorated beam symbols
+ * Class {@code BeamSymbol} implements decorated beam symbols.
  * (non-decorated beams are painted using polygons rather than symbols)
  *
  * @author Hervé Bitteur
@@ -48,8 +48,7 @@ public class BeamSymbol
     // BeamSymbol //
     //------------//
     /**
-     * Create a BeamSymbol
-     *
+     * Create a BeamSymbol.
      * @param beamCount the number of beams
      * @param shape the precise shape
      */
@@ -63,8 +62,7 @@ public class BeamSymbol
     // BeamSymbol //
     //------------//
     /**
-     * Create a BeamSymbol
-     *
+     * Create a BeamSymbol.
      * @param beamCount the number of beams
      * @param isIcon true for an icon
      * @param shape the precise shape
@@ -78,6 +76,15 @@ public class BeamSymbol
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //------------//
+    // createIcon //
+    //------------//
+    @Override
+    protected ShapeSymbol createIcon ()
+    {
+        return new BeamSymbol(beamCount, true, shape);
+    }
 
     //-----------//
     // getParams //
@@ -99,15 +106,6 @@ public class BeamSymbol
             (int) Math.ceil(qRect.getHeight() + p.quarterDy));
 
         return p;
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new BeamSymbol(beamCount, true, shape);
     }
 
     //-------//

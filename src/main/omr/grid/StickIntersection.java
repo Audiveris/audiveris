@@ -93,20 +93,15 @@ public class StickIntersection
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------//
-    // compareTo //
-    //-----------//
-    /** For sorting sticks on abscissa, for a given staff */
-    public int compareTo (StickIntersection that)
+    //------------------//
+    // getStickAncestor //
+    //------------------//
+    /**
+     * @return the stick, in fact its ancestor
+     */
+    public Glyph getStickAncestor ()
     {
-        int dx = Double.compare(x, that.x);
-
-        if (dx != 0) {
-            return dx;
-        } else {
-            // Just to disambiguate
-            return Double.compare(y, that.y);
-        }
+        return stick.getAncestor();
     }
 
     //----------//
@@ -124,15 +119,20 @@ public class StickIntersection
         return sticks;
     }
 
-    //------------------//
-    // getStickAncestor //
-    //------------------//
-    /**
-     * @return the stick, in fact its ancestor
-     */
-    public Glyph getStickAncestor ()
+    //-----------//
+    // compareTo //
+    //-----------//
+    /** For sorting sticks on abscissa, for a given staff */
+    public int compareTo (StickIntersection that)
     {
-        return stick.getAncestor();
+        int dx = Double.compare(x, that.x);
+
+        if (dx != 0) {
+            return dx;
+        } else {
+            // Just to disambiguate
+            return Double.compare(y, that.y);
+        }
     }
 
     //----------//

@@ -71,98 +71,6 @@ public class CheckSuite<C extends Checkable>
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------//
-    // getChecks //
-    //-----------//
-    /**
-     * Report the collection of checks that compose this suite
-     *
-     * @return the collection of checks
-     */
-    public List<Check<C>> getChecks ()
-    {
-        return checks;
-    }
-
-    //---------//
-    // setName //
-    //---------//
-    /**
-     * Assings a new name to the check suite
-     *
-     * @param name the new name
-     */
-    public void setName (String name)
-    {
-        this.name = name;
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * Report the name of this suite
-     *
-     * @return suite name
-     */
-    public String getName ()
-    {
-        return name;
-    }
-
-    //--------------//
-    // setThreshold //
-    //--------------//
-    /**
-     * Allows to assign a new threshold for the suite
-     *
-     * @param threshold the new minimum result
-     */
-    public void setThreshold (double threshold)
-    {
-        this.threshold = threshold;
-    }
-
-    //--------------//
-    // getThreshold //
-    //--------------//
-    /**
-     * Report the assigned threshold
-     *
-     * @return the assigned minimum result
-     */
-    public double getThreshold ()
-    {
-        return threshold;
-    }
-
-    //----------------//
-    // getTotalWeight //
-    //----------------//
-    /**
-     * Report the sum of all individual checks
-     *
-     * @return the total weight of the checks in the suite
-     */
-    public double getTotalWeight ()
-    {
-        return totalWeight;
-    }
-
-    //------------//
-    // getWeights //
-    //------------//
-    /**
-     * Report the weights of the checks (collection parallel to the suite
-     * checks)
-     *
-     * @return the collection of checks weights
-     */
-    public List<Double> getWeights ()
-    {
-        return weights;
-    }
-
     //-----//
     // add //
     //-----//
@@ -236,6 +144,72 @@ public class CheckSuite<C extends Checkable>
                 check.getLow(),
                 check.getHigh());
         }
+    }
+
+    //-----------//
+    // getChecks //
+    //-----------//
+    /**
+     * Report the collection of checks that compose this suite
+     *
+     * @return the collection of checks
+     */
+    public List<Check<C>> getChecks ()
+    {
+        return checks;
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * Report the name of this suite
+     *
+     * @return suite name
+     */
+    public String getName ()
+    {
+        return name;
+    }
+
+    //--------------//
+    // getThreshold //
+    //--------------//
+    /**
+     * Report the assigned threshold
+     *
+     * @return the assigned minimum result
+     */
+    public double getThreshold ()
+    {
+        return threshold;
+    }
+
+    //----------------//
+    // getTotalWeight //
+    //----------------//
+    /**
+     * Report the sum of all individual checks
+     *
+     * @return the total weight of the checks in the suite
+     */
+    public double getTotalWeight ()
+    {
+        return totalWeight;
+    }
+
+    //------------//
+    // getWeights //
+    //------------//
+    /**
+     * Report the weights of the checks (collection parallel to the suite
+     * checks)
+     *
+     * @return the collection of checks weights
+     */
+    public List<Double> getWeights ()
+    {
+        return weights;
     }
 
     //------//
@@ -334,6 +308,32 @@ public class CheckSuite<C extends Checkable>
 
         // Final grade
         return grade / totalWeight;
+    }
+
+    //---------//
+    // setName //
+    //---------//
+    /**
+     * Assings a new name to the check suite
+     *
+     * @param name the new name
+     */
+    public void setName (String name)
+    {
+        this.name = name;
+    }
+
+    //--------------//
+    // setThreshold //
+    //--------------//
+    /**
+     * Allows to assign a new threshold for the suite
+     *
+     * @param threshold the new minimum result
+     */
+    public void setThreshold (double threshold)
+    {
+        this.threshold = threshold;
     }
 
     //--------------//

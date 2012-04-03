@@ -17,8 +17,6 @@ import omr.score.common.PixelDimension;
 import omr.score.common.PixelPoint;
 import static omr.ui.symbol.Alignment.*;
 
-import omr.util.Implement;
-
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -32,12 +30,10 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 
-import javax.swing.Icon;
-
 /**
- * Class {@code BasicSymbol} is the base for implementing instances of 
- * {@link Symbol} interface. 
- * It does not handle a specific Shape as its subclass ShapeSymbol,but only 
+ * Class {@code BasicSymbol} is the base for implementing instances of
+ * {@link Symbol} interface.
+ * It does not handle a specific Shape as its subclass ShapeSymbol,but only
  * handles a sequence of MusicFont codes.
  *
  * @author Hervé Bitteur
@@ -139,7 +135,6 @@ public class BasicSymbol
      * Report the icon height.
      * @return the height of the icon image in pixels
      */
-    @Implement(Icon.class)
     @Override
     public int getIconHeight ()
     {
@@ -164,23 +159,11 @@ public class BasicSymbol
      * Report the width of the icon (used by swing when painting).
      * @return the icon image width in pixels
      */
-    @Implement(Icon.class)
     @Override
     public int getIconWidth ()
     {
         return getIcon()
                    .getWidth();
-    }
-
-    //-------------//
-    // getRefPoint //
-    //-------------//
-    @Override
-    public PixelPoint getRefPoint (Rectangle box)
-    {
-        return new PixelPoint(
-            box.x + (box.width / 2),
-            box.y + (box.height / 2));
     }
 
     //-----------//
@@ -220,6 +203,17 @@ public class BasicSymbol
         return img;
     }
 
+    //-------------//
+    // getRefPoint //
+    //-------------//
+    @Override
+    public PixelPoint getRefPoint (Rectangle box)
+    {
+        return new PixelPoint(
+            box.x + (box.width / 2),
+            box.y + (box.height / 2));
+    }
+
     //-----------//
     // paintIcon //
     //-----------//
@@ -230,7 +224,6 @@ public class BasicSymbol
      * @param x abscissa
      * @param y ordinate
      */
-    @Implement(Icon.class)
     @Override
     public void paintIcon (Component c,
                            Graphics  g,
@@ -268,6 +261,19 @@ public class BasicSymbol
         return sb.toString();
     }
 
+    //------------//
+    // createIcon //
+    //------------//
+    /**
+     * To be redefined by each subclass in order to create a icon symbol
+     * using the subclass.
+     * @return the icon-sized instance of proper symbol class
+     */
+    protected BasicSymbol createIcon ()
+    {
+        return new BasicSymbol(true, codes);
+    }
+
     //--------------//
     // getDimension //
     //--------------//
@@ -288,7 +294,7 @@ public class BasicSymbol
     // getDimension //
     //--------------//
     /**
-     * Report what would be the bounding dimension of the symbol, 
+     * Report what would be the bounding dimension of the symbol,
      * if painted with the provided font.
      * @return the potential size of the painted symbol
      */
@@ -368,19 +374,6 @@ public class BasicSymbol
         return dimension.width;
     }
 
-    //------------//
-    // createIcon //
-    //------------//
-    /**
-     * To be redefined by each subclass in order to create a icon symbol
-     * using the subclass.
-     * @return the icon-sized instance of proper symbol class
-     */
-    protected BasicSymbol createIcon ()
-    {
-        return new BasicSymbol(true, codes);
-    }
-
     //-----------------//
     // internalsString //
     //-----------------//
@@ -409,7 +402,7 @@ public class BasicSymbol
     // layout //
     //--------//
     /**
-     * Report a single layout, based on symbol codes if they exist. 
+     * Report a single layout, based on symbol codes if they exist.
      * This feature can work only with a single "line" of music codes.
      * @param font the specifically-scaled font to use
      * @return the layout ready to be drawn, or null
@@ -437,6 +430,17 @@ public class BasicSymbol
         OmrFont.paint(g, p.layout, location, alignment);
     }
 
+    //--------------//
+    // computeImage //
+    //--------------//
+    private void computeImage ()
+    {
+        image = buildImage(
+            isIcon ? MusicFont.iconMusicFont : MusicFont.baseMusicFont);
+
+        dimension = new PixelDimension(image.getWidth(), image.getHeight());
+    }
+
     //---------//
     // getIcon //
     //---------//
@@ -451,17 +455,6 @@ public class BasicSymbol
 
             return icon;
         }
-    }
-
-    //--------------//
-    // computeImage //
-    //--------------//
-    private void computeImage ()
-    {
-        image = buildImage(
-            isIcon ? MusicFont.iconMusicFont : MusicFont.baseMusicFont);
-
-        dimension = new PixelDimension(image.getWidth(), image.getHeight());
     }
 
     //----------------//

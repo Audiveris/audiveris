@@ -51,8 +51,16 @@ public class FlagsDownSymbol
         this.fn = flagCount;
     }
 
-
     //~ Methods ----------------------------------------------------------------
+
+    //------------//
+    // createIcon //
+    //------------//
+    @Override
+    protected ShapeSymbol createIcon ()
+    {
+        return new FlagsDownSymbol(fn, true, shape);
+    }
 
     //-----------//
     // getParams //
@@ -70,15 +78,6 @@ public class FlagsDownSymbol
             ((fn % 2) * (int) Math.ceil(p.rect1.getHeight())));
 
         return p;
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new FlagsDownSymbol(fn, true, shape);
     }
 
     //------------//

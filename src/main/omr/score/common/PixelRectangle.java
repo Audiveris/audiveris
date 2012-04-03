@@ -17,7 +17,7 @@ import java.awt.Rectangle;
  * Class {@code PixelRectangle} is a simple Rectangle that is meant to
  * represent an absolute rectangle in a sheet, with its components specified in
  * pixels, so the name.
- * 
+ *
  * <p>Oriented rectangles (those which depend on orientation) should not use
  * PixelRectangle but plain generic {@link Rectangle} class.</p>
  *

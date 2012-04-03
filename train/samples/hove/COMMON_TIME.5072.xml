@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph id="5072" interline="20" shape="COMMON_TIME">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>4.2603872079073613E-4</pitch-position>
+    <section first-pos="292" orientation="VERTICAL" id="231">
+        <run length="8" level="0" start="464"/>
+    </section>
+    <section first-pos="293" orientation="VERTICAL" id="234">
+        <run length="16" level="0" start="460"/>
+        <run length="22" level="0" start="457"/>
+        <run length="26" level="0" start="455"/>
+        <run length="29" level="0" start="453"/>
+        <run length="31" level="0" start="452"/>
+    </section>
+    <section first-pos="298" orientation="VERTICAL" id="250">
+        <run length="35" level="0" start="450"/>
+        <run length="45" level="0" start="445"/>
+        <run length="45" level="0" start="445"/>
+    </section>
+    <section first-pos="301" orientation="VERTICAL" id="257">
+        <run length="16" level="0" start="445"/>
+        <run length="12" level="0" start="445"/>
+        <run length="10" level="0" start="445"/>
+    </section>
+    <section first-pos="301" orientation="VERTICAL" id="258">
+        <run length="13" level="0" start="477"/>
+    </section>
+    <section first-pos="302" orientation="VERTICAL" id="259">
+        <run length="9" level="0" start="481"/>
+        <run length="7" level="0" start="483"/>
+    </section>
+    <section first-pos="304" orientation="VERTICAL" id="261">
+        <run length="8" level="0" start="445"/>
+    </section>
+    <section first-pos="484" orientation="HORIZONTAL" id="2108">
+        <run length="1" level="0" start="304"/>
+        <run length="3" level="0" start="304"/>
+    </section>
+    <section first-pos="449" orientation="HORIZONTAL" id="1759">
+        <run length="2" level="0" start="305"/>
+        <run length="1" level="0" start="305"/>
+    </section>
+    <section first-pos="459" orientation="HORIZONTAL" id="1808">
+        <run length="1" level="0" start="310"/>
+        <run length="1" level="0" start="310"/>
+        <run length="1" level="0" start="310"/>
+        <run length="1" level="0" start="310"/>
+    </section>
+    <section first-pos="311" orientation="VERTICAL" id="262">
+        <run length="12" level="0" start="457"/>
+        <run length="13" level="0" start="456"/>
+        <run length="14" level="0" start="455"/>
+        <run length="15" level="0" start="454"/>
+    </section>
+    <section first-pos="484" orientation="HORIZONTAL" id="2109">
+        <run length="1" level="0" start="314"/>
+        <run length="2" level="0" start="313"/>
+    </section>
+    <section first-pos="315" orientation="VERTICAL" id="267">
+        <run length="24" level="0" start="445"/>
+        <run length="24" level="0" start="445"/>
+        <run length="24" level="0" start="445"/>
+        <run length="24" level="0" start="445"/>
+        <run length="18" level="0" start="451"/>
+        <run length="17" level="0" start="452"/>
+    </section>
+    <section first-pos="315" orientation="VERTICAL" id="268">
+        <run length="7" level="0" start="483"/>
+        <run length="7" level="0" start="482"/>
+    </section>
+    <section first-pos="317" orientation="VERTICAL" id="273">
+        <run length="11" level="0" start="479"/>
+        <run length="8" level="0" start="477"/>
+    </section>
+    <section first-pos="477" orientation="HORIZONTAL" id="2001">
+        <run length="2" level="0" start="319"/>
+        <run length="2" level="0" start="319"/>
+        <run length="2" level="0" start="319"/>
+        <run length="2" level="0" start="319"/>
+        <run length="2" level="0" start="319"/>
+        <run length="1" level="0" start="319"/>
+    </section>
+    <section first-pos="321" orientation="VERTICAL" id="285">
+        <run length="10" level="0" start="454"/>
+    </section>
+    <section first-pos="457" orientation="HORIZONTAL" id="1790">
+        <run length="1" level="0" start="322"/>
+        <run length="1" level="0" start="322"/>
+        <run length="1" level="0" start="322"/>
+        <run length="1" level="0" start="322"/>
+        <run length="1" level="0" start="322"/>
+    </section>
+</glyph>

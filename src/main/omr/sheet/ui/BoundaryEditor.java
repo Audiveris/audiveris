@@ -94,22 +94,6 @@ public class BoundaryEditor
 
     //~ Methods ----------------------------------------------------------------
 
-    //---------//
-    // getMenu //
-    //---------//
-    public JMenu getMenu ()
-    {
-        return menu;
-    }
-
-    //------------------//
-    // isSessionOngoing //
-    //------------------//
-    public boolean isSessionOngoing ()
-    {
-        return sessionOngoing;
-    }
-
     //------------//
     // updateMenu //
     //------------//
@@ -118,6 +102,14 @@ public class BoundaryEditor
         for (DynAction action : dynActions) {
             action.update();
         }
+    }
+
+    //---------//
+    // getMenu //
+    //---------//
+    public JMenu getMenu ()
+    {
+        return menu;
     }
 
     //-----------------//
@@ -199,6 +191,14 @@ public class BoundaryEditor
                 }
             }
         }
+    }
+
+    //------------------//
+    // isSessionOngoing //
+    //------------------//
+    public boolean isSessionOngoing ()
+    {
+        return sessionOngoing;
     }
 
     //------------------//

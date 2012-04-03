@@ -18,7 +18,7 @@ import omr.glyph.Evaluation;
 import omr.glyph.Glyphs;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
-import omr.glyph.ShapeRange;
+import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
@@ -139,7 +139,7 @@ public class TimeSignatureRetriever
                     new TimeSigAdapter(
                         system.getInfo(),
                         Grades.timeMinGrade,
-                        ShapeRange.FullTimes,
+                        ShapeSet.FullTimes,
                         staff,
                         center));
 
@@ -300,17 +300,6 @@ public class TimeSignatureRetriever
 
         //~ Methods ------------------------------------------------------------
 
-        public boolean isCandidateSuitable (Glyph glyph)
-        {
-            return !glyph.isManualShape();
-        }
-
-        @Override
-        public Evaluation getChosenEvaluation ()
-        {
-            return new Evaluation(chosenEvaluation.shape, Evaluation.ALGORITHM);
-        }
-
         public PixelRectangle computeReferenceBox ()
         {
             StaffInfo      staffInfo = staff.getInfo();
@@ -341,6 +330,17 @@ public class TimeSignatureRetriever
             }
 
             return newBox;
+        }
+
+        @Override
+        public Evaluation getChosenEvaluation ()
+        {
+            return new Evaluation(chosenEvaluation.shape, Evaluation.ALGORITHM);
+        }
+
+        public boolean isCandidateSuitable (Glyph glyph)
+        {
+            return !glyph.isManualShape();
         }
     }
 }

@@ -100,18 +100,6 @@ public class Page
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------------------//
-    // getMinSlotSpacing //
-    //-------------------//
-    /**
-     * Report the minimum acceptable spacing between slots.
-     * @return the minimum spacing (in interline fraction)
-     */
-    public static Scale.Fraction getMinSlotSpacing ()
-    {
-        return constants.minSlotSpacing;
-    }
-
     //--------//
     // accept //
     //--------//
@@ -283,6 +271,18 @@ public class Page
     public int getMeasureCount ()
     {
         return measureCount;
+    }
+
+    //-------------------//
+    // getMinSlotSpacing //
+    //-------------------//
+    /**
+     * Report the minimum acceptable spacing between slots.
+     * @return the minimum spacing (in interline fraction)
+     */
+    public static Scale.Fraction getMinSlotSpacing ()
+    {
+        return constants.minSlotSpacing;
     }
 
     //-------------//

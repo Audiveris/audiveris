@@ -20,8 +20,6 @@ import omr.log.Logger;
 
 import omr.ui.MainGui;
 
-import omr.util.Implement;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -75,9 +73,6 @@ import javax.swing.event.ListSelectionListener;
  * translated Nest view, and its characteristics in a dedicated panel.
  * If the user wants to discard the glyph, it can be removed from the repository
  * of training material.
- * 
- * <p> TODO: Some uses of JList should be simplified, when we move to Java 7.
- * They are signalled by //HB comments.
  *
  * @author Hervé Bitteur
  */
@@ -219,6 +214,19 @@ public class GlyphVerifier
         glyphBrowser.loadGlyphNames();
     }
 
+    //-----------------//
+    // deleteGlyphName //
+    //-----------------//
+    /**
+     * Remove a glyph name from the current selection.
+     * @param gName the glyph name to remove
+     */
+    void deleteGlyphName (String gName)
+    {
+        // Remove entry from glyph list
+        glyphSelector.model.removeElement(gName);
+    }
+
     //---------------//
     // getGlyphCount //
     //---------------//
@@ -240,21 +248,7 @@ public class GlyphVerifier
      */
     List<String> getGlyphNames ()
     {
-        //HB return glyphSelector.list.getSelectedValuesList();
-        return stringListOf(glyphSelector.list.getSelectedValues());
-    }
-
-    //-----------------//
-    // deleteGlyphName //
-    //-----------------//
-    /**
-     * Remove a glyph name from the current selection.
-     * @param gName the glyph name to remove
-     */
-    void deleteGlyphName (String gName)
-    {
-        // Remove entry from glyph list
-        glyphSelector.model.removeElement(gName);
+        return glyphSelector.list.getSelectedValuesList();
     }
 
     //---------//
@@ -269,44 +263,6 @@ public class GlyphVerifier
         } else {
             return "";
         }
-    }
-
-    //-------------//
-    // shapeListOf //
-    //-------------//
-    /**
-     * //HB To be removed ASAP
-     * @param objects
-     * @return
-     */
-    private static List<Shape> shapeListOf (Object[] objects)
-    {
-        List<Shape> shapes = new ArrayList<Shape>(objects.length);
-
-        for (Object obj : objects) {
-            shapes.add((Shape) obj);
-        }
-
-        return shapes;
-    }
-
-    //--------------//
-    // stringListOf //
-    //--------------//
-    /**
-     * //HB To be removed ASAP
-     * @param objects
-     * @return
-     */
-    private static List<String> stringListOf (Object[] objects)
-    {
-        List<String> strings = new ArrayList<String>(objects.length);
-
-        for (Object obj : objects) {
-            strings.add((String) obj);
-        }
-
-        return strings;
     }
 
     //--------------//
@@ -379,7 +335,6 @@ public class GlyphVerifier
         //~ Methods ------------------------------------------------------------
 
         // Triggered by load button
-        @Implement(ActionListener.class)
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -431,17 +386,11 @@ public class GlyphVerifier
         //~ Methods ------------------------------------------------------------
 
         // Triggered by the load button
-        @Implement(ActionListener.class)
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            //HB final List<String> folders = folderSelector.list.getSelectedValuesList();
-            final List<String> folders = stringListOf(
-                folderSelector.list.getSelectedValues());
-
-            //HB final List<Shape>  shapes = shapeSelector.list.getSelectedValuesList();
-            final List<Shape> shapes = shapeListOf(
-                shapeSelector.list.getSelectedValues());
+            final List<String> folders = folderSelector.list.getSelectedValuesList();
+            final List<Shape>  shapes = shapeSelector.list.getSelectedValuesList();
 
             // Debug
             if (logger.isFineEnabled()) {
@@ -516,16 +465,15 @@ public class GlyphVerifier
         private ChangeEvent changeEvent;
 
         // Buttons
-        protected JButton                load = new JButton("Load");
-        protected JButton                selectAll = new JButton("Select All");
-        protected JButton                cancelAll = new JButton("Cancel All");
+        protected JButton                   load = new JButton("Load");
+        protected JButton                   selectAll = new JButton(
+            "Select All");
+        protected JButton                   cancelAll = new JButton(
+            "Cancel All");
 
         // List of items, with its model
-        //HB protected final DefaultListModel<E> model = new DefaultListModel<E>();
-        protected final DefaultListModel model = new DefaultListModel();
-
-        //HB protected JList<E>                  list = new JList<E>(model);
-        protected JList       list = new JList(model);
+        protected final DefaultListModel<E> model = new DefaultListModel<E>();
+        protected JList<E>                  list = new JList<E>(model);
 
         // ScrollPane around the list
         protected JScrollPane scrollPane = new JScrollPane(list);
@@ -672,7 +620,7 @@ public class GlyphVerifier
     //-------------------//
     private class ShapeCellRenderer
         extends JLabel
-        implements ListCellRenderer
+        implements ListCellRenderer<Shape>
     {
         //~ Constructors -------------------------------------------------------
 
@@ -688,8 +636,7 @@ public class GlyphVerifier
          * to the selected value and returns the label, set up
          * to display the text and image.
          */
-
-        //HB @Override
+        @Override
         public Component getListCellRendererComponent (JList   list,
                                                        Shape   shape,
                                                        int     index,
@@ -709,22 +656,6 @@ public class GlyphVerifier
             setIcon(shape.getDecoratedSymbol());
 
             return this;
-        }
-
-        //HB TO BE REMOVED for JKK7
-        @Override
-        public Component getListCellRendererComponent (JList   list,
-                                                       Object  shape,
-                                                       int     index,
-                                                       boolean isSelected,
-                                                       boolean cellHasFocus)
-        {
-            return getListCellRendererComponent(
-                list,
-                (Shape) shape,
-                index,
-                isSelected,
-                cellHasFocus);
         }
     }
 
@@ -747,14 +678,11 @@ public class GlyphVerifier
         //~ Methods ------------------------------------------------------------
 
         // Triggered by load button
-        @Implement(ActionListener.class)
         @Override
         public void actionPerformed (ActionEvent e)
         {
             // Populate with shape names found in selected folders
-            //HB List<String> folders = folderSelector.list.getSelectedValuesList();
-            List<String> folders = stringListOf(
-                folderSelector.list.getSelectedValues());
+            List<String> folders = folderSelector.list.getSelectedValuesList();
 
             if (folders.isEmpty()) {
                 logger.warning("No folders selected in Folder Selector");

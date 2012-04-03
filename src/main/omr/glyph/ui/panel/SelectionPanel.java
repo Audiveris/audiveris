@@ -14,19 +14,17 @@ package omr.glyph.ui.panel;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.GlyphEvaluator;
+import omr.glyph.EvaluationEngine;
 import omr.glyph.GlyphRegression;
+import omr.glyph.GlyphRepository;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
-import omr.glyph.GlyphRepository;
 import static omr.glyph.ui.panel.GlyphTrainer.Task.Activity.*;
 
 import omr.log.Logger;
 
 import omr.ui.field.LIntegerField;
 import omr.ui.util.Panel;
-
-import omr.util.Implement;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -194,6 +192,21 @@ class SelectionPanel
         return component;
     }
 
+    //-------------//
+    // loadedGlyph //
+    //-------------//
+    /**
+     * Call-back when a glyph has just been loaded
+     *
+     * @param gName the normalized glyph name
+     */
+    @Override
+    public void loadedGlyph (String gName)
+    {
+        nbLoadedFiles.setValue(++nbLoaded);
+        progressBar.setValue(nbLoaded);
+    }
+
     //-------------------//
     // setSelectedGlyphs //
     //-------------------//
@@ -202,7 +215,7 @@ class SelectionPanel
      *
      * @param selected number of selected glyphs
      */
-    @Implement(GlyphRepository.Monitor.class)
+    @Override
     public void setSelectedGlyphs (int selected)
     {
         nbSelectedFiles.setValue(selected);
@@ -216,26 +229,11 @@ class SelectionPanel
      *
      * @param total the total number of glyphs available
      */
-    @Implement(GlyphRepository.Monitor.class)
+    @Override
     public void setTotalGlyphs (int total)
     {
         totalFiles.setValue(total);
         progressBar.setMaximum(total);
-    }
-
-    //-------------//
-    // loadedGlyph //
-    //-------------//
-    /**
-     * Call-back when a glyph has just been loaded
-     *
-     * @param gName the normalized glyph name
-     */
-    @Implement(GlyphRepository.Monitor.class)
-    public void loadedGlyph (String gName)
-    {
-        nbLoadedFiles.setValue(++nbLoaded);
-        progressBar.setValue(nbLoaded);
     }
 
     //--------//
@@ -247,7 +245,7 @@ class SelectionPanel
      * @param obs the new current task activity
      * @param unused not used
      */
-    @Implement(Observer.class)
+    @Override
     public void update (Observable obs,
                         Object     unused)
     {
@@ -296,7 +294,7 @@ class SelectionPanel
         }
 
         // Quickly train the regression evaluator (on the whole base)
-        regression.train(glyphs, null, GlyphEvaluator.StartingMode.SCRATCH);
+        regression.train(glyphs, null, EvaluationEngine.StartingMode.SCRATCH);
 
         // Measure all glyphs of each shape
         Map<Shape, List<NotedGlyph>> palmares = new HashMap<Shape, List<NotedGlyph>>();
@@ -493,7 +491,7 @@ class SelectionPanel
 
         //~ Methods ------------------------------------------------------------
 
-        @Implement(ActionListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             List<String> gNames = getBase(trainingPanel.useWhole());
@@ -535,7 +533,7 @@ class SelectionPanel
         // Purpose is just to read and remember the data from the various
         // input fields. Triggered when user presses Enter in one of these
         // fields.
-        @Implement(ActionListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             inputParams();
@@ -561,7 +559,7 @@ class SelectionPanel
 
         //~ Methods ------------------------------------------------------------
 
-        @Implement(ActionListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             repository.refreshBases();
@@ -586,7 +584,7 @@ class SelectionPanel
 
         //~ Methods ------------------------------------------------------------
 
-        @Implement(ActionListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             executor.execute(

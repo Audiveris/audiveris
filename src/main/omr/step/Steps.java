@@ -257,6 +257,15 @@ public class Steps
         //~ Methods ------------------------------------------------------------
 
         /**
+         * Retrieve the current constant value
+         * @return the current Step value
+         */
+        public Step getValue ()
+        {
+            return (Step) getCachedValue();
+        }
+
+        /**
          * Set a new value to the constant
          * @param val the new Step value
          */
@@ -269,15 +278,6 @@ public class Steps
         public void setValue (java.lang.String string)
         {
             setValue(decode(string));
-        }
-
-        /**
-         * Retrieve the current constant value
-         * @return the current Step value
-         */
-        public Step getValue ()
-        {
-            return (Step) getCachedValue();
         }
 
         @Override

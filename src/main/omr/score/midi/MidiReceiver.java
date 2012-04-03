@@ -27,7 +27,6 @@ import omr.sheet.ui.SheetsController;
 
 import omr.step.Steps;
 
-import omr.util.Implement;
 import omr.util.TreeNode;
 
 import com.xenoage.util.math.Fraction;
@@ -79,7 +78,7 @@ public class MidiReceiver
     //---------------//
     // playbackAtEnd //
     //---------------//
-    @Implement(PlaybackListener.class)
+    @Override
     public void playbackAtEnd ()
     {
         if (logger.isFineEnabled()) {
@@ -93,7 +92,7 @@ public class MidiReceiver
     //--------------//
     // playbackAtMP //
     //--------------//
-    @Implement(PlaybackListener.class)
+    @Override
     public void playbackAtMP (MP position)
     {
         if (logger.isFineEnabled()) {
@@ -106,7 +105,7 @@ public class MidiReceiver
     //-----------------//
     // playbackStopped //
     //-----------------//
-    @Implement(PlaybackListener.class)
+    @Override
     public void playbackStopped (MP position)
     {
         if (logger.isFineEnabled()) {

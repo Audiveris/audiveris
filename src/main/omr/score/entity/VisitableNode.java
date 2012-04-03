@@ -16,7 +16,6 @@ import omr.log.Logger;
 import omr.score.visitor.ScoreVisitor;
 import omr.score.visitor.Visitable;
 
-import omr.util.Implement;
 import omr.util.TreeNode;
 
 /**
@@ -64,7 +63,7 @@ public abstract class VisitableNode
      * @return false if children should not be (automatically) visited,
      * true otherwise (which should be the default).
      */
-    @Implement(Visitable.class)
+    @Override
     public boolean accept (ScoreVisitor visitor)
     {
         return visitor.visit(this);

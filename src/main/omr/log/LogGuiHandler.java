@@ -53,7 +53,7 @@ public class LogGuiHandler
     // close //
     //-------//
     /**
-     * Called when the handler must be closed. 
+     * Called when the handler must be closed.
      * It's a void routine for the time being.
      */
     @Override
@@ -65,7 +65,7 @@ public class LogGuiHandler
     // flush //
     //-------//
     /**
-     * Flush any buffered output. 
+     * Flush any buffered output.
      * It's a void routine for the time being.
      */
     @Override

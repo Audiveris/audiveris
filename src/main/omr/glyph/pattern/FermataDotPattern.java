@@ -45,8 +45,8 @@ public class FermataDotPattern
 
     /** Dot avatars */
     private static final List<Shape> dots = Arrays.asList(
-        Shape.DOT,
-        Shape.COMBINING_AUGMENTATION_DOT,
+        Shape.DOT_set,
+        Shape.AUGMENTATION_DOT,
         Shape.STACCATO);
 
     //~ Constructors -----------------------------------------------------------
@@ -112,8 +112,8 @@ public class FermataDotPattern
                 Evaluation eval = GlyphNetwork.getInstance()
                                               .vote(
                     compound,
-                    Grades.noMinGrade,
-                    system);
+                    system,
+                    Grades.noMinGrade);
 
                 if (eval != null) {
                     // Assign and insert into system & nest environments

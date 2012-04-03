@@ -64,6 +64,15 @@ public class SlantedSymbol
 
     //~ Methods ----------------------------------------------------------------
 
+    //------------//
+    // createIcon //
+    //------------//
+    @Override
+    protected ShapeSymbol createIcon ()
+    {
+        return new SlantedSymbol(true, shape, codes);
+    }
+
     //-----------//
     // getParams //
     //-----------//
@@ -127,15 +136,6 @@ public class SlantedSymbol
         return p;
     }
 
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new SlantedSymbol(true, shape, codes);
-    }
-
     //-------//
     // paint //
     //-------//
@@ -151,9 +151,9 @@ public class SlantedSymbol
             BASELINE_LEFT,
             p.rect,
             location);
-        
+
         // Precise abscissa
-        float      x = loc.x;
+        float x = loc.x;
 
         for (int i = 0; i < p.layouts.length; i++) {
             SmartLayout smart = p.layouts[i];
@@ -176,22 +176,6 @@ public class SlantedSymbol
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //--------//
-    // Params //
-    //--------//
-    protected class MyParams
-        extends Params
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        // layout not used
-
-        // rect for global image
-
-        // Sequence of layouts
-        SmartLayout[] layouts;
-    }
-
     //-------------//
     // SmartLayout //
     //-------------//
@@ -213,5 +197,21 @@ public class SlantedSymbol
             this.layout = layout;
             this.dx = dx;
         }
+    }
+
+    //--------//
+    // Params //
+    //--------//
+    protected class MyParams
+        extends Params
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        // layout not used
+
+        // rect for global image
+
+        // Sequence of layouts
+        SmartLayout[] layouts;
     }
 }

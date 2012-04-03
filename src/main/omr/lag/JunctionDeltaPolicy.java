@@ -13,7 +13,6 @@ package omr.lag;
 
 import omr.run.Run;
 
-
 /**
  * Class {@code JunctionDeltaPolicy} defines a junction policy based
  * on the delta between the length of the candidate run and the length

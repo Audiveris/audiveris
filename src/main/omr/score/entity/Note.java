@@ -17,7 +17,7 @@ import omr.glyph.Evaluation;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
-import omr.glyph.ShapeRange;
+import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -202,7 +202,7 @@ public class Note
         this.packIndex = 0;
 
         // Rest?
-        isRest = ShapeRange.Rests.contains(shape);
+        isRest = ShapeSet.Rests.contains(shape);
 
         // Staff
         setStaff(staff);
@@ -257,7 +257,7 @@ public class Note
                                       .getInterline();
 
         // Rest?
-        isRest = ShapeRange.Rests.contains(glyph.getShape());
+        isRest = ShapeSet.Rests.contains(glyph.getShape());
 
         // Location center
         setCenter(center);
@@ -277,314 +277,6 @@ public class Note
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //----------------//
-    // getActualShape //
-    //----------------//
-    public static Shape getActualShape (Shape base,
-                                        int   card)
-    {
-        switch (card) {
-        case 3 :
-
-            switch (base) {
-            case VOID_NOTEHEAD :
-                return VOID_NOTEHEAD_3;
-
-            case NOTEHEAD_BLACK :
-                return NOTEHEAD_BLACK_3;
-
-            case WHOLE_NOTE :
-                return WHOLE_NOTE_3;
-
-            default :
-                return null;
-            }
-
-        case 2 :
-
-            switch (base) {
-            case VOID_NOTEHEAD :
-                return VOID_NOTEHEAD_2;
-
-            case NOTEHEAD_BLACK :
-                return NOTEHEAD_BLACK_2;
-
-            case WHOLE_NOTE :
-                return WHOLE_NOTE_2;
-
-            default :
-                return null;
-            }
-
-        case 1 :
-            return base;
-
-        default :
-            return null;
-        }
-    }
-
-    //---------//
-    // setDots //
-    //---------//
-    /**
-     * Define the number of augmentation dots that impact this chord
-     *
-     * @param first the glyph of first dot
-     * @param second the glyph of second dot (if any)
-     */
-    public void setDots (Glyph first,
-                         Glyph second)
-    {
-        firstDot = first;
-        secondDot = second;
-    }
-
-    //-------------//
-    // getFirstDot //
-    //-------------//
-    /**
-     * Report the first augmentation dot, if any
-     * @return first dot or null
-     */
-    public Glyph getFirstDot ()
-    {
-        return firstDot;
-    }
-
-    //-----------------//
-    // getMirroredNote //
-    //-----------------//
-    /**
-     * If any, report the note that is the mirror of this one.
-     * This happens when the same note head is "shared" by 2 chords (because the
-     * note head is shared by 2 stems or by 1 stem leading to 2 beam groups).
-     * @return the mirrored note, or null if none.
-     */
-    public Note getMirroredNote ()
-    {
-        // We use the underlying glyph which keeps the link to translated notes
-        Collection<Glyph> glyphs = getGlyphs();
-
-        if (glyphs.isEmpty()) {
-            return null;
-        }
-
-        Glyph glyph = glyphs.iterator()
-                            .next();
-
-        for (Object obj : glyph.getTranslations()) {
-            if ((obj != this) && obj instanceof Note) {
-                Note that = (Note) obj;
-
-                if (that.getPitchPosition() == this.getPitchPosition()) {
-                    return that;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    //--------------------//
-    // getPackCardinality //
-    //--------------------//
-    public int getPackCardinality ()
-    {
-        return packCard;
-    }
-
-    //--------------//
-    // getSecondDot //
-    //--------------//
-    /**
-     * Report the second augmentation dot, if any
-     * @return second dot or null
-     */
-    public Glyph getSecondDot ()
-    {
-        return secondDot;
-    }
-
-    //-----------------//
-    // createWholeRest //
-    //-----------------//
-    public static Note createWholeRest (Staff      staff,
-                                        Chord      chord,
-                                        PixelPoint center)
-    {
-        return new Note(staff, chord, Shape.WHOLE_REST, -1.5, center);
-    }
-
-    //------------------//
-    // getPitchPosition //
-    //------------------//
-    /**
-     * Report the pith position of the note within the containing staff
-     *
-     * @return staff-based pitch position
-     */
-    public double getPitchPosition ()
-    {
-        return pitchPosition;
-    }
-
-    //--------//
-    // isRest //
-    //--------//
-    /**
-     * Check whether this note is a rest (vs a 'real' note)
-     *
-     * @return true if a rest, false otherwise
-     */
-    public boolean isRest ()
-    {
-        return isRest;
-    }
-
-    //----------//
-    // getShape //
-    //----------//
-    /**
-     * Report the shape of the note
-     *
-     * @return the note shape
-     */
-    public Shape getShape ()
-    {
-        return shape;
-    }
-
-    //----------//
-    // getSlurs //
-    //----------//
-    /**
-     * Report the collection of slurs that start or stop at this note
-     *
-     * @return a perhaps empty collection of slurs
-     */
-    public List<Slur> getSlurs ()
-    {
-        return slurs;
-    }
-
-    //---------//
-    // getStep //
-    //---------//
-    /**
-     * Report the note step (within the octave)
-     *
-     * @return the note step
-     */
-    public Note.Step getStep ()
-    {
-        if (step == null) {
-            step = Clef.noteStepOf(
-                getMeasure().getClefBefore(getCenter(), getStaff()),
-                (int) Math.rint(getPitchPosition()));
-        }
-
-        return step;
-    }
-
-    //--------------//
-    // getSyllables //
-    //--------------//
-    public SortedSet<LyricsItem> getSyllables ()
-    {
-        return syllables;
-    }
-
-    //-----------------//
-    // getTypeDuration //
-    //-----------------//
-    /**
-     * Report the duration indicated by the shape of the note head (regardless
-     * of any beam, flag, dot or tuplet)
-     *
-     * @param shape the shape of the note head
-     * @return the corresponding duration
-     */
-    public static Rational getTypeDuration (Shape shape)
-    {
-        switch (baseShapeOf(shape)) {
-        case LONG_REST : // 4 measures
-            return new Rational(4, 1);
-
-        case BREVE_REST : // 2 measures
-        case BREVE :
-            return new Rational(2, 1);
-
-        case WHOLE_REST : // 1 measure
-        case WHOLE_NOTE :
-            return Rational.ONE;
-
-        case HALF_REST :
-        case VOID_NOTEHEAD :
-            return new Rational(1, 2);
-
-        case QUARTER_REST :
-        case OLD_QUARTER_REST :
-        case NOTEHEAD_BLACK :
-            return QUARTER_DURATION;
-
-        case EIGHTH_REST :
-            return new Rational(1, 8);
-
-        case SIXTEENTH_REST :
-            return new Rational(1, 16);
-
-        case THIRTY_SECOND_REST :
-            return new Rational(1, 32);
-
-        case SIXTY_FOURTH_REST :
-            return new Rational(1, 64);
-
-        case ONE_HUNDRED_TWENTY_EIGHTH_REST :
-            return new Rational(1, 128);
-
-        default :
-            // Error
-            logger.severe("Illegal note type " + shape);
-
-            return Rational.ZERO;
-        }
-    }
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
-    //---------//
-    // addSlur //
-    //---------//
-    /**
-     * Add a slur in the collection of slurs connected to this note
-     *
-     * @param slur the slur to connect
-     */
-    public void addSlur (Slur slur)
-    {
-        slurs.add(slur);
-    }
-
-    //-------------//
-    // addSyllable //
-    //-------------//
-    public void addSyllable (LyricsItem item)
-    {
-        if (syllables == null) {
-            syllables = new TreeSet<LyricsItem>(LyricsItem.numberComparator);
-        }
-
-        syllables.add(item);
-    }
 
     //------------//
     // createPack //
@@ -631,6 +323,150 @@ public class Note
         }
     }
 
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
+    //---------//
+    // addSlur //
+    //---------//
+    /**
+     * Add a slur in the collection of slurs connected to this note
+     *
+     * @param slur the slur to connect
+     */
+    public void addSlur (Slur slur)
+    {
+        slurs.add(slur);
+    }
+
+    //-------------//
+    // addSyllable //
+    //-------------//
+    public void addSyllable (LyricsItem item)
+    {
+        if (syllables == null) {
+            syllables = new TreeSet<LyricsItem>(LyricsItem.numberComparator);
+        }
+
+        syllables.add(item);
+    }
+
+    //-----------------//
+    // createWholeRest //
+    //-----------------//
+    public static Note createWholeRest (Staff      staff,
+                                        Chord      chord,
+                                        PixelPoint center)
+    {
+        return new Note(staff, chord, Shape.WHOLE_REST, -1.5, center);
+    }
+
+    //--------------------//
+    // populateAccidental //
+    //--------------------//
+    /**
+     * Process the potential impact of an accidental glyph within the containing
+     * measure
+     *
+     * @param glyph the underlying glyph of the accidental
+     * @param measure the containing measure
+     * @param accidCenter the center of the glyph
+     */
+    public static void populateAccidental (Glyph      glyph,
+                                           Measure    measure,
+                                           PixelPoint accidCenter)
+    {
+        final Scale     scale = measure.getScale();
+        final int       minDx = scale.toPixels(constants.minAccidDx);
+        final int       maxDx = scale.toPixels(constants.maxAccidDx);
+        final int       maxDy = scale.toPixels(constants.maxAccidDy);
+        final Set<Note> candidates = new HashSet<Note>();
+
+        // An accidental impacts the note right after (even if mirrored)
+        ChordLoop: 
+        for (TreeNode node : measure.getChords()) {
+            final Chord chord = (Chord) node;
+
+            for (TreeNode n : chord.getNotes()) {
+                final Note note = (Note) n;
+
+                if (!note.isRest()) {
+                    final PixelPoint noteRef = note.getCenterLeft();
+                    final PixelPoint toNote = new PixelPoint(
+                        noteRef.x - accidCenter.x,
+                        noteRef.y - accidCenter.y);
+
+                    if (logger.isFineEnabled()) {
+                        logger.fine(measure.getContextString() + " " + toNote);
+                    }
+
+                    if (toNote.x > (2 * maxDx)) {
+                        break ChordLoop; // Other chords/notes will be too far
+                    }
+
+                    if ((toNote.x >= minDx) &&
+                        (toNote.x <= maxDx) &&
+                        (Math.abs(toNote.y) <= maxDy)) {
+                        candidates.add(note);
+                    }
+                }
+            }
+        }
+
+        if (logger.isFineEnabled()) {
+            logger.info(candidates.size() + " Candidates=" + candidates);
+        }
+
+        // Select the best note candidate, the one whose ordinate is closest
+        if (!candidates.isEmpty()) {
+            int  bestDy = Integer.MAX_VALUE;
+            Note bestNote = null;
+            glyph.clearTranslations();
+
+            for (Note note : candidates) {
+                int dy = Math.abs(note.getCenter().y - accidCenter.y);
+
+                if (dy < bestDy) {
+                    bestDy = dy;
+                    bestNote = note;
+                }
+            }
+
+            bestNote.accidental = glyph;
+            glyph.addTranslation(bestNote);
+
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    bestNote.getContextString() + " accidental " +
+                    glyph.getShape() + " at " + bestNote.getCenter());
+            }
+
+            // Apply also to mirrored note if any
+            Note mirrored = bestNote.getMirroredNote();
+
+            if (mirrored != null) {
+                mirrored.accidental = glyph;
+                glyph.addTranslation(mirrored);
+
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        mirrored.getContextString() + " accidental " +
+                        glyph.getShape() + " at " + mirrored.getCenter() +
+                        " (mirrored)");
+                }
+            }
+        } else {
+            // Deassign the glyph
+            glyph.setShape(null, Evaluation.ALGORITHM);
+        }
+    }
+
     //---------------//
     // getAccidental //
     //---------------//
@@ -642,6 +478,53 @@ public class Note
     public Glyph getAccidental ()
     {
         return accidental;
+    }
+
+    //----------------//
+    // getActualShape //
+    //----------------//
+    public static Shape getActualShape (Shape base,
+                                        int   card)
+    {
+        switch (card) {
+        case 3 :
+
+            switch (base) {
+            case NOTEHEAD_VOID :
+                return NOTEHEAD_VOID_3;
+
+            case NOTEHEAD_BLACK :
+                return NOTEHEAD_BLACK_3;
+
+            case WHOLE_NOTE :
+                return WHOLE_NOTE_3;
+
+            default :
+                return null;
+            }
+
+        case 2 :
+
+            switch (base) {
+            case NOTEHEAD_VOID :
+                return NOTEHEAD_VOID_2;
+
+            case NOTEHEAD_BLACK :
+                return NOTEHEAD_BLACK_2;
+
+            case WHOLE_NOTE :
+                return WHOLE_NOTE_2;
+
+            default :
+                return null;
+            }
+
+        case 1 :
+            return base;
+
+        default :
+            return null;
+        }
     }
 
     //----------//
@@ -802,6 +685,107 @@ public class Note
     }
 
     //-----------------//
+    // getTypeDuration //
+    //-----------------//
+    /**
+     * Report the duration indicated by the shape of the note head (regardless
+     * of any beam, flag, dot or tuplet)
+     *
+     * @param shape the shape of the note head
+     * @return the corresponding duration
+     */
+    public static Rational getTypeDuration (Shape shape)
+    {
+        switch (baseShapeOf(shape)) {
+        case LONG_REST : // 4 measures
+            return new Rational(4, 1);
+
+        case BREVE_REST : // 2 measures
+        case BREVE :
+            return new Rational(2, 1);
+
+        case WHOLE_REST : // 1 measure
+        case WHOLE_NOTE :
+            return Rational.ONE;
+
+        case HALF_REST :
+        case NOTEHEAD_VOID :
+            return new Rational(1, 2);
+
+        case QUARTER_REST :
+        case NOTEHEAD_BLACK :
+            return QUARTER_DURATION;
+
+        case EIGHTH_REST :
+            return new Rational(1, 8);
+
+        case ONE_16TH_REST :
+            return new Rational(1, 16);
+
+        case ONE_32ND_REST :
+            return new Rational(1, 32);
+
+        case ONE_64TH_REST :
+            return new Rational(1, 64);
+
+        case ONE_128TH_REST :
+            return new Rational(1, 128);
+
+        default :
+            // Error
+            logger.severe("Illegal note type " + shape);
+
+            return Rational.ZERO;
+        }
+    }
+
+    //-------------//
+    // getFirstDot //
+    //-------------//
+    /**
+     * Report the first augmentation dot, if any
+     * @return first dot or null
+     */
+    public Glyph getFirstDot ()
+    {
+        return firstDot;
+    }
+
+    //-----------------//
+    // getMirroredNote //
+    //-----------------//
+    /**
+     * If any, report the note that is the mirror of this one.
+     * This happens when the same note head is "shared" by 2 chords (because the
+     * note head is shared by 2 stems or by 1 stem leading to 2 beam groups).
+     * @return the mirrored note, or null if none.
+     */
+    public Note getMirroredNote ()
+    {
+        // We use the underlying glyph which keeps the link to translated notes
+        Collection<Glyph> glyphs = getGlyphs();
+
+        if (glyphs.isEmpty()) {
+            return null;
+        }
+
+        Glyph glyph = glyphs.iterator()
+                            .next();
+
+        for (Object obj : glyph.getTranslations()) {
+            if ((obj != this) && obj instanceof Note) {
+                Note that = (Note) obj;
+
+                if (that.getPitchPosition() == this.getPitchPosition()) {
+                    return that;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    //-----------------//
     // getNoteDuration //
     //-----------------//
     /**
@@ -831,7 +815,7 @@ public class Note
                  * In the case of the beam/flag side of the mirror, strictly
                  * speaking, the note head should be considered as black.
                  **/
-                if ((shape == VOID_NOTEHEAD) && (getMirroredNote() != null)) {
+                if ((shape == NOTEHEAD_VOID) && (getMirroredNote() != null)) {
                     dur = getTypeDuration(NOTEHEAD_BLACK);
                 }
 
@@ -865,6 +849,105 @@ public class Note
         return octave;
     }
 
+    //--------------------//
+    // getPackCardinality //
+    //--------------------//
+    public int getPackCardinality ()
+    {
+        return packCard;
+    }
+
+    //------------------//
+    // getPitchPosition //
+    //------------------//
+    /**
+     * Report the pith position of the note within the containing staff
+     *
+     * @return staff-based pitch position
+     */
+    public double getPitchPosition ()
+    {
+        return pitchPosition;
+    }
+
+    //--------------//
+    // getSecondDot //
+    //--------------//
+    /**
+     * Report the second augmentation dot, if any
+     * @return second dot or null
+     */
+    public Glyph getSecondDot ()
+    {
+        return secondDot;
+    }
+
+    //----------//
+    // getShape //
+    //----------//
+    /**
+     * Report the shape of the note
+     *
+     * @return the note shape
+     */
+    public Shape getShape ()
+    {
+        return shape;
+    }
+
+    //----------//
+    // getSlurs //
+    //----------//
+    /**
+     * Report the collection of slurs that start or stop at this note
+     *
+     * @return a perhaps empty collection of slurs
+     */
+    public List<Slur> getSlurs ()
+    {
+        return slurs;
+    }
+
+    //---------//
+    // getStep //
+    //---------//
+    /**
+     * Report the note step (within the octave)
+     *
+     * @return the note step
+     */
+    public Note.Step getStep ()
+    {
+        if (step == null) {
+            step = Clef.noteStepOf(
+                getMeasure().getClefBefore(getCenter(), getStaff()),
+                (int) Math.rint(getPitchPosition()));
+        }
+
+        return step;
+    }
+
+    //--------------//
+    // getSyllables //
+    //--------------//
+    public SortedSet<LyricsItem> getSyllables ()
+    {
+        return syllables;
+    }
+
+    //--------//
+    // isRest //
+    //--------//
+    /**
+     * Check whether this note is a rest (vs a 'real' note)
+     *
+     * @return true if a rest, false otherwise
+     */
+    public boolean isRest ()
+    {
+        return isRest;
+    }
+
     //--------//
     // moveTo //
     //--------//
@@ -889,104 +972,20 @@ public class Note
         }
     }
 
-    //--------------------//
-    // populateAccidental //
-    //--------------------//
+    //---------//
+    // setDots //
+    //---------//
     /**
-     * Process the potential impact of an accidental glyph within the containing
-     * measure
+     * Define the number of augmentation dots that impact this chord
      *
-     * @param glyph the underlying glyph of the accidental
-     * @param measure the containing measure
-     * @param accidCenter the center of the glyph
+     * @param first the glyph of first dot
+     * @param second the glyph of second dot (if any)
      */
-    public static void populateAccidental (Glyph      glyph,
-                                           Measure    measure,
-                                           PixelPoint accidCenter)
+    public void setDots (Glyph first,
+                         Glyph second)
     {
-        final Scale     scale = measure.getScale();
-        final int       minDx = scale.toPixels(constants.minAccidDx);
-        final int       maxDx = scale.toPixels(constants.maxAccidDx);
-        final int       maxDy = scale.toPixels(constants.maxAccidDy);
-        final Set<Note> candidates = new HashSet<Note>();
-
-        // An accidental impacts the note right after (even if mirrored)
-        ChordLoop: 
-        for (TreeNode node : measure.getChords()) {
-            final Chord chord = (Chord) node;
-
-            for (TreeNode n : chord.getNotes()) {
-                final Note note = (Note) n;
-
-                if (!note.isRest()) {
-                    final PixelPoint noteRef = note.getCenterLeft();
-                    final PixelPoint toNote = new PixelPoint(
-                        noteRef.x - accidCenter.x,
-                        noteRef.y - accidCenter.y);
-
-                    if (logger.isFineEnabled()) {
-                        logger.fine(measure.getContextString() + " " + toNote);
-                    }
-
-                    if (toNote.x > (2 * maxDx)) {
-                        break ChordLoop; // Other chords/notes will be too far
-                    }
-
-                    if ((toNote.x >= minDx) &&
-                        (toNote.x <= maxDx) &&
-                        (Math.abs(toNote.y) <= maxDy)) {
-                        candidates.add(note);
-                    }
-                }
-            }
-        }
-
-        if (logger.isFineEnabled()) {
-            logger.info(candidates.size() + " Candidates=" + candidates);
-        }
-
-        // Select the best note candidate, the one whose ordinate is closest
-        if (!candidates.isEmpty()) {
-            int  bestDy = Integer.MAX_VALUE;
-            Note bestNote = null;
-            glyph.clearTranslations();
-
-            for (Note note : candidates) {
-                int dy = Math.abs(note.getCenter().y - accidCenter.y);
-
-                if (dy < bestDy) {
-                    bestDy = dy;
-                    bestNote = note;
-                }
-            }
-
-            bestNote.accidental = glyph;
-            glyph.addTranslation(bestNote);
-
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    bestNote.getContextString() + " accidental " +
-                    glyph.getShape() + " at " + bestNote.getCenter());
-            }
-
-            // Apply also to mirrored note if any
-            Note mirrored = bestNote.getMirroredNote();
-
-            if (mirrored != null) {
-                mirrored.accidental = glyph;
-                glyph.addTranslation(mirrored);
-
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        mirrored.getContextString() + " accidental " +
-                        glyph.getShape() + " at " + mirrored.getCenter() +
-                        " (mirrored)");
-                }
-            }
-        } else {
-            // Deassign the glyph
-            glyph.setShape(null, Evaluation.ALGORITHM);
-        }
+        firstDot = first;
+        secondDot = second;
     }
 
     //----------//
@@ -1038,6 +1037,32 @@ public class Note
         return sb.toString();
     }
 
+    //-------------//
+    // baseShapeOf //
+    //-------------//
+    private static Shape baseShapeOf (Shape shape)
+    {
+        switch (shape) {
+        case NOTEHEAD_BLACK :
+        case NOTEHEAD_BLACK_2 :
+        case NOTEHEAD_BLACK_3 :
+            return Shape.NOTEHEAD_BLACK;
+
+        case NOTEHEAD_VOID :
+        case NOTEHEAD_VOID_2 :
+        case NOTEHEAD_VOID_3 :
+            return Shape.NOTEHEAD_VOID;
+
+        case WHOLE_NOTE :
+        case WHOLE_NOTE_2 :
+        case WHOLE_NOTE_3 :
+            return Shape.WHOLE_NOTE;
+
+        default :
+            return shape;
+        }
+    }
+
     //------------//
     // getItemBox //
     //------------//
@@ -1054,7 +1079,7 @@ public class Note
         final PixelRectangle box = glyph.getContourBox();
 
         // For true notes use centroid y, for rests use area center y
-        if (ShapeRange.Rests.contains(shape)) {
+        if (ShapeSet.Rests.contains(shape)) {
             return glyph.getContourBox();
         } else {
             final PixelPoint centroid = glyph.getCentroid();
@@ -1086,44 +1111,18 @@ public class Note
             box.y + (box.height / 2));
     }
 
-    //-------------//
-    // baseShapeOf //
-    //-------------//
-    private static Shape baseShapeOf (Shape shape)
-    {
-        switch (shape) {
-        case NOTEHEAD_BLACK :
-        case NOTEHEAD_BLACK_2 :
-        case NOTEHEAD_BLACK_3 :
-            return Shape.NOTEHEAD_BLACK;
-
-        case VOID_NOTEHEAD :
-        case VOID_NOTEHEAD_2 :
-        case VOID_NOTEHEAD_3 :
-            return Shape.VOID_NOTEHEAD;
-
-        case WHOLE_NOTE :
-        case WHOLE_NOTE_2 :
-        case WHOLE_NOTE_3 :
-            return Shape.WHOLE_NOTE;
-
-        default :
-            return shape;
-        }
-    }
-
     //------------//
     // packCardOf //
     //------------//
     private static int packCardOf (Shape shape)
     {
         switch (shape) {
-        case VOID_NOTEHEAD_3 :
+        case NOTEHEAD_VOID_3 :
         case NOTEHEAD_BLACK_3 :
         case WHOLE_NOTE_3 :
             return 3;
 
-        case VOID_NOTEHEAD_2 :
+        case NOTEHEAD_VOID_2 :
         case NOTEHEAD_BLACK_2 :
         case WHOLE_NOTE_2 :
             return 2;

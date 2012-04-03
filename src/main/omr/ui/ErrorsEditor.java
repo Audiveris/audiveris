@@ -44,9 +44,9 @@ import javax.swing.event.ListSelectionListener;
 
 /**
  * Class {@code ErrorsEditor} handles the set of error messages
- * recorded during the translation from sheet to score, allowing the user
- * to interactively browse the errors and go to the related locations in
- * the sheet and score views.
+ * recorded during the translation from sheet to score, allowing the
+ * user to interactively browse the errors and go to the related
+ * locations in the sheet and score views.
  *
  * @author Hervé Bitteur
  */
@@ -63,7 +63,7 @@ public class ErrorsEditor
     private final Sheet sheet;
 
     /** The list of displayed errors */
-    private final JList list;
+    private final JList<Record> list;
 
     /** The scrolling area */
     private final JScrollPane scrollPane;
@@ -75,7 +75,7 @@ public class ErrorsEditor
     private final SortedSet<Record> recordSet = new TreeSet<Record>();
 
     /** Facade model for the JList */
-    private final DefaultListModel model = new DefaultListModel();
+    private final DefaultListModel<Record> model = new DefaultListModel<Record>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -83,14 +83,13 @@ public class ErrorsEditor
     // ErrorsEditor //
     //--------------//
     /**
-     * Create an instance of ErrorsEditor (one per sheet / score)
-     *
+     * Create an instance of ErrorsEditor (one per sheet / score).
      * @param sheet the related sheet
      */
     public ErrorsEditor (Sheet sheet)
     {
         this.sheet = sheet;
-        list = new JList(model);
+        list = new JList<Record>(model);
         scrollPane = new JScrollPane(list);
         list.addListSelectionListener(listener);
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -98,24 +97,11 @@ public class ErrorsEditor
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------------//
-    // getComponent //
-    //--------------//
-    /**
-     * Give access to the real component
-     *
-     * @return the concrete component
-     */
-    public JComponent getComponent ()
-    {
-        return scrollPane;
-    }
-
     //----------//
     // addError //
     //----------//
     /**
-     * Record an error within a SystemNode entity
+     * Record an error within a SystemNode entity.
      * @param node the node in the score hierarchy
      * @param text the message text
      */
@@ -129,8 +115,8 @@ public class ErrorsEditor
     // addError //
     //----------//
     /**
-     * Record an error within a SystemNode entity, and related to a specific
-     * glyph
+     * Record an error within a SystemNode entity, and related to a
+     * specific glyph.
      * @param node the containing node in score hierarchy
      * @param glyph the related glyph
      * @param text the message text
@@ -143,6 +129,7 @@ public class ErrorsEditor
         SwingUtilities.invokeLater(
             new Runnable() {
                     // This part is run on swing thread
+                    @Override
                     public void run ()
                     {
                         if (recordSet.add(new Record(step, node, glyph, text))) {
@@ -161,13 +148,14 @@ public class ErrorsEditor
     // clear //
     //-------//
     /**
-     * Remove all errors from the editor (Not used?)
+     * Remove all errors from the editor. (Not used?)
      */
     public void clear ()
     {
         SwingUtilities.invokeLater(
             new Runnable() {
                     // This part is run on swing thread
+                    @Override
                     public void run ()
                     {
                         recordSet.clear();
@@ -180,7 +168,7 @@ public class ErrorsEditor
     // clearStep //
     //-----------//
     /**
-     * Clear all messages related to the provided step
+     * Clear all messages related to the provided step.
      * @param step the step we are interested in
      */
     public void clearStep (final Step step)
@@ -188,6 +176,7 @@ public class ErrorsEditor
         SwingUtilities.invokeLater(
             new Runnable() {
                     // This part is run on swing thread
+                    @Override
                     public void run ()
                     {
                         for (Iterator<Record> it = recordSet.iterator();
@@ -213,8 +202,9 @@ public class ErrorsEditor
     // clearSystem //
     //-------------//
     /**
-     * Clear all messages related to the provided system id (we use system id
-     * rather than system, since a system may be reallocated by SystemsBuilder)
+     * Clear all messages related to the provided system id.
+     * (we use system id rather than system, since a system may be reallocated
+     * by SystemsBuilder)
      * @param step the step we are interested in
      * @param systemId the id of system to clear
      */
@@ -224,6 +214,7 @@ public class ErrorsEditor
         SwingUtilities.invokeLater(
             new Runnable() {
                     // This part is run on swing thread
+                    @Override
                     public void run ()
                     {
                         for (Iterator<Record> it = recordSet.iterator();
@@ -247,12 +238,24 @@ public class ErrorsEditor
                 });
     }
 
+    //--------------//
+    // getComponent //
+    //--------------//
+    /**
+     * Give access to the real component.
+     * @return the concrete component
+     */
+    public JComponent getComponent ()
+    {
+        return scrollPane;
+    }
+
     //----------------//
     // getCurrentStep //
     //----------------//
     /**
-     * Retrieve the step being performed on the system the provided node belongs
-     * to
+     * Retrieve the step being performed on the system the provided node
+     * belongs to.
      * @param node the SystemNode the error relates to
      * @return the step being done
      */
@@ -263,84 +266,23 @@ public class ErrorsEditor
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //--------//
-    // Record //
-    //--------//
-    /**
-     * A structure to hold the various pieces of an error message
-     */
-    private static class Record
-        implements Comparable<Record>
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        final Step       step;
-        final SystemNode node;
-        final Glyph      glyph;
-        final String     text;
-
-        //~ Constructors -------------------------------------------------------
-
-        public Record (Step       step,
-                       SystemNode node,
-                       Glyph      glyph,
-                       String     text)
-        {
-            this.step = step;
-            this.node = node;
-            this.glyph = glyph;
-            this.text = text;
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        public int compareTo (Record other)
-        {
-            // Very basic indeed !!!
-            return toString()
-                       .compareTo(other.toString());
-        }
-
-        @Override
-        public String toString ()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.append(node.getContextString());
-
-            sb.append(" [");
-
-            if (glyph != null) {
-                sb.append("Glyph #")
-                  .append(glyph.getId());
-            }
-
-            sb.append("]");
-
-            sb.append(" ")
-              .append(step);
-
-            sb.append(" ")
-              .append(text);
-
-            return sb.toString();
-        }
-    }
-
     //------------//
     // MyListener //
     //------------//
     /**
-     * A specific listener to handle user selection in the list of errors
+     * A specific listener to handle user selection in the list of
+     * errors.
      */
     private class MyListener
         implements ListSelectionListener
     {
         //~ Methods ------------------------------------------------------------
 
+        @Override
         public void valueChanged (ListSelectionEvent e)
         {
             if ((e.getSource() == list) && !e.getValueIsAdjusting()) {
-                Record record = (Record) list.getSelectedValue();
+                Record record = list.getSelectedValue();
 
                 if (record != null) {
                     if (logger.isFineEnabled()) {
@@ -393,6 +335,70 @@ public class ErrorsEditor
                     }
                 }
             }
+        }
+    }
+
+    //--------//
+    // Record //
+    //--------//
+    /**
+     * A structure to hold the various pieces of an error message.
+     */
+    private static class Record
+        implements Comparable<Record>
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final Step       step;
+        final SystemNode node;
+        final Glyph      glyph;
+        final String     text;
+
+        //~ Constructors -------------------------------------------------------
+
+        public Record (Step       step,
+                       SystemNode node,
+                       Glyph      glyph,
+                       String     text)
+        {
+            this.step = step;
+            this.node = node;
+            this.glyph = glyph;
+            this.text = text;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public int compareTo (Record other)
+        {
+            // Very basic indeed !!!
+            return toString()
+                       .compareTo(other.toString());
+        }
+
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append(node.getContextString());
+
+            sb.append(" [");
+
+            if (glyph != null) {
+                sb.append("Glyph #")
+                  .append(glyph.getId());
+            }
+
+            sb.append("]");
+
+            sb.append(" ")
+              .append(step);
+
+            sb.append(" ")
+              .append(text);
+
+            return sb.toString();
         }
     }
 }

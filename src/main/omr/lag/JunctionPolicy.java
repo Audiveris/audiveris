@@ -13,11 +13,10 @@ package omr.lag;
 
 import omr.run.Run;
 
-
 /**
- * Interface {@code JunctionPolicy} encapsulates the policy that 
+ * Interface {@code JunctionPolicy} encapsulates the policy that
  * decides if a run can extend a given section.
- * If not, the run is part of a new section, linked to the previous one by a 
+ * If not, the run is part of a new section, linked to the previous one by a
  * junction.
  *
  * @author Hervé Bitteur
@@ -30,7 +29,7 @@ public interface JunctionPolicy
     // consistentRun //
     //---------------//
     /**
-     * Check if provided run is consistent with the section defined 
+     * Check if provided run is consistent with the section defined
      * so far.
      * @param run     the candidate run for section extension
      * @param section the to-be extended section

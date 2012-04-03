@@ -72,7 +72,7 @@ public interface Glyph
         }
     };
 
-    /** For comparing glyphs according to their absolute abscissa, 
+    /** For comparing glyphs according to their absolute abscissa,
      * then ordinate, then id */
     public static final Comparator<Glyph> abscissaComparator = new Comparator<Glyph>() {
         public int compare (Glyph o1,
@@ -106,7 +106,7 @@ public interface Glyph
         }
     };
 
-    /** For comparing glyphs according to their absolute ordinate, 
+    /** For comparing glyphs according to their absolute ordinate,
      * then abscissa, then id */
     public static final Comparator<Glyph> ordinateComparator = new Comparator<Glyph>() {
         public int compare (Glyph o1,

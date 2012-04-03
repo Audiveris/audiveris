@@ -108,6 +108,95 @@ public class ScoreSystem
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
+    //-------------------------//
+    // connectPageInitialSlurs //
+    //-------------------------//
+    /**
+     * For this system, retrieve the connections between the (orphan) slurs at
+     * the beginning of this page and the (orphan) slurs at the end of the
+     * previous page.
+     */
+    public void connectPageInitialSlurs ()
+    {
+        // Safer: check we are the very first system in page
+        if (getChildIndex() != 0) {
+            throw new IllegalArgumentException(
+                "connectSlursAcrossPages called for non-first system");
+        }
+
+        // If very first page, we are done
+        if (getPage()
+                .getChildIndex() == 0) {
+            return;
+        }
+
+        ScoreSystem precedingSystem = getPage()
+                                          .getPrecedingInScore()
+                                          .getLastSystem();
+
+        if (precedingSystem != null) {
+            // Examine every part in sequence
+            for (TreeNode pNode : getParts()) {
+                SystemPart part = (SystemPart) pNode;
+
+                // Find out the proper preceding part (across pages)
+                SystemPart precedingPart = precedingSystem.getPart(
+                    part.getId());
+
+                // Ending orphans in preceding system/part (if such part exists)
+                part.connectSlursWith(precedingPart);
+            }
+        }
+    }
+
+    //---------------------------//
+    // connectSystemInitialSlurs //
+    //---------------------------//
+    /**
+     * Retrieve the connections between the (orphan) slurs at the beginning of
+     * this system and the (orphan) slurs at the end of the previous system
+     */
+    public void connectSystemInitialSlurs ()
+    {
+        if (getPreviousSibling() != null) {
+            // Examine every part in sequence
+            for (TreeNode pNode : getParts()) {
+                SystemPart part = (SystemPart) pNode;
+                // Ending orphans in preceding system/part (if such part exists)
+                part.connectSlursWith(part.getPrecedingInPage());
+            }
+        }
+    }
+
+    //------------------//
+    // fillMissingParts //
+    //------------------//
+    /**
+     * Check for missing parts in this system, and if needed create dummy parts
+     * filled with whole rests
+     */
+    public void fillMissingParts ()
+    {
+        // Check we have all the defined parts in this system
+        for (ScorePart scorePart : getPage()
+                                       .getPartList()) {
+            if (getPart(scorePart.getId()) == null) {
+                getFirstRealPart()
+                    .createDummyPart(scorePart.getId());
+                Collections.sort(getParts(), SystemPart.idComparator);
+            }
+        }
+    }
+
     //--------------//
     // getDimension //
     //--------------//
@@ -197,20 +286,6 @@ public class ScoreSystem
     {
         return (SystemPart) getParts()
                                 .get(getParts().size() - 1);
-    }
-
-    //----------------//
-    // isLeftOfStaves //
-    //----------------//
-    /**
-     * Report whether the provided system point is on the left side of the
-     * staves (on left of the starting barline)
-     * @param sysPt the system point to check
-     * @return true if on left
-     */
-    public boolean isLeftOfStaves (PixelPoint sysPt)
-    {
-        return sysPt.x < topLeft.x;
     }
 
     //---------//
@@ -421,6 +496,31 @@ public class ScoreSystem
         return topLeft;
     }
 
+    //----------------//
+    // isLeftOfStaves //
+    //----------------//
+    /**
+     * Report whether the provided system point is on the left side of the
+     * staves (on left of the starting barline)
+     * @param sysPt the system point to check
+     * @return true if on left
+     */
+    public boolean isLeftOfStaves (PixelPoint sysPt)
+    {
+        return sysPt.x < topLeft.x;
+    }
+
+    //----------------------//
+    // refineLyricSyllables //
+    //----------------------//
+    public void refineLyricSyllables ()
+    {
+        for (TreeNode node : getParts()) {
+            SystemPart part = (SystemPart) node;
+            part.refineLyricSyllables();
+        }
+    }
+
     //----------//
     // setWidth //
     //----------//
@@ -436,106 +536,6 @@ public class ScoreSystem
         newBox.width = unitWidth;
         setBox(newBox);
         getCenter();
-    }
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
-    //-------------------------//
-    // connectPageInitialSlurs //
-    //-------------------------//
-    /**
-     * For this system, retrieve the connections between the (orphan) slurs at
-     * the beginning of this page and the (orphan) slurs at the end of the
-     * previous page.
-     */
-    public void connectPageInitialSlurs ()
-    {
-        // Safer: check we are the very first system in page
-        if (getChildIndex() != 0) {
-            throw new IllegalArgumentException(
-                "connectSlursAcrossPages called for non-first system");
-        }
-
-        // If very first page, we are done
-        if (getPage()
-                .getChildIndex() == 0) {
-            return;
-        }
-
-        ScoreSystem precedingSystem = getPage()
-                                          .getPrecedingInScore()
-                                          .getLastSystem();
-
-        if (precedingSystem != null) {
-            // Examine every part in sequence
-            for (TreeNode pNode : getParts()) {
-                SystemPart part = (SystemPart) pNode;
-
-                // Find out the proper preceding part (across pages)
-                SystemPart precedingPart = precedingSystem.getPart(
-                    part.getId());
-
-                // Ending orphans in preceding system/part (if such part exists)
-                part.connectSlursWith(precedingPart);
-            }
-        }
-    }
-
-    //---------------------------//
-    // connectSystemInitialSlurs //
-    //---------------------------//
-    /**
-     * Retrieve the connections between the (orphan) slurs at the beginning of
-     * this system and the (orphan) slurs at the end of the previous system
-     */
-    public void connectSystemInitialSlurs ()
-    {
-        if (getPreviousSibling() != null) {
-            // Examine every part in sequence
-            for (TreeNode pNode : getParts()) {
-                SystemPart part = (SystemPart) pNode;
-                // Ending orphans in preceding system/part (if such part exists)
-                part.connectSlursWith(part.getPrecedingInPage());
-            }
-        }
-    }
-
-    //------------------//
-    // fillMissingParts //
-    //------------------//
-    /**
-     * Check for missing parts in this system, and if needed create dummy parts
-     * filled with whole rests
-     */
-    public void fillMissingParts ()
-    {
-        // Check we have all the defined parts in this system
-        for (ScorePart scorePart : getPage()
-                                       .getPartList()) {
-            if (getPart(scorePart.getId()) == null) {
-                getFirstRealPart()
-                    .createDummyPart(scorePart.getId());
-                Collections.sort(getParts(), SystemPart.idComparator);
-            }
-        }
-    }
-
-    //----------------------//
-    // refineLyricSyllables //
-    //----------------------//
-    public void refineLyricSyllables ()
-    {
-        for (TreeNode node : getParts()) {
-            SystemPart part = (SystemPart) node;
-            part.refineLyricSyllables();
-        }
     }
 
     //----------//

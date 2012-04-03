@@ -12,14 +12,12 @@
 package omr.glyph.ui;
 
 import omr.glyph.Shape;
-import omr.glyph.ShapeRange;
+import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 import omr.glyph.text.TextInfo;
 import omr.glyph.text.TextRole;
 
 import omr.log.Logger;
-
-import omr.math.Moments;
 
 import omr.score.entity.Text.CreatorText.CreatorType;
 import omr.score.entity.TimeRational;
@@ -32,13 +30,10 @@ import omr.selection.UserEvent;
 
 import omr.sheet.ui.SheetsController;
 
-import omr.ui.Board;
 import omr.ui.field.LComboBox;
 import omr.ui.field.LDoubleField;
 import omr.ui.field.LIntegerField;
 import omr.ui.field.LTextField;
-
-import omr.util.Implement;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -51,15 +46,15 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 
 /**
- * Class {@code SymbolGlyphBoard} defines an extended glyph board, with
- * characteristics (pitch position, stem number, etc) that are specific to a
- * symbol, and an additional symbol glyph spinner : <ul>
- *
- * <li>A <b>symbolSpinner</b> to browse through all glyphs that are considered
- * as symbols, that is built from aggregation of contiguous sections, or by
- * combination of other symbols. Glyphs whose shape is set to {@link
- * omr.glyph.Shape#NOISE}, that is too small glyphs, are not included in this
- * spinner.</ul>
+ * Class {@code SymbolGlyphBoard} defines an extended glyph board,
+ * with characteristics (pitch position, stem number, etc) that are
+ * specific to a symbol, and an additional symbol glyph spinner:
+ * <ul>
+ * <li>A <b>symbolSpinner</b> to browse through all glyphs that are
+ * considered as symbols, that is built from aggregation of contiguous
+ * sections, or by combination of other symbols.
+ * Glyphs whose shape is set to {@link omr.glyph.Shape#NOISE}, that is too
+ * small glyphs, are not included in this spinner.</ul>
  *
  * <h4>Layout of an instance of SymbolGlyphBoard:<br/>
  *    <img src="doc-files/SymbolGlyphBoard.png"/>
@@ -85,10 +80,10 @@ public class SymbolGlyphBoard
     private LIntegerField timeDen;
 
     /** ComboBox for text role */
-    private LComboBox roleCombo;
+    private LComboBox<TextRole> roleCombo;
 
     /** ComboBox for text role type */
-    private LComboBox typeCombo;
+    private LComboBox<CreatorType> typeCombo;
 
     /** Input/Output : textual content */
     protected LTextField textField;
@@ -157,14 +152,14 @@ public class SymbolGlyphBoard
 
         // Additional combo for text role
         paramAction = new ParamAction();
-        roleCombo = new LComboBox(
+        roleCombo = new LComboBox<TextRole>(
             "Role",
             "Role of the Text",
             TextRole.values());
         roleCombo.addActionListener(paramAction);
 
         // Additional combo for text type
-        typeCombo = new LComboBox(
+        typeCombo = new LComboBox<CreatorType>(
             "Type",
             "Type of the Text",
             CreatorType.values());
@@ -223,10 +218,9 @@ public class SymbolGlyphBoard
                     ledger.setText(Boolean.toString(glyph.isWithLedger()));
                     stems.setValue(glyph.getStemNumber());
 
-                    Moments moments = glyph.getMoments();
-                    weight.setValue(moments.getWeight()); // Normalized
-                    width.setValue(moments.getWidth());
-                    height.setValue(moments.getHeight());
+                    weight.setValue(glyph.getNormalizedWeight());
+                    width.setValue(glyph.getNormalizedWidth());
+                    height.setValue(glyph.getNormalizedHeight());
                 } else {
                     ledger.setText("");
                     pitchPosition.setText("");
@@ -278,7 +272,7 @@ public class SymbolGlyphBoard
 
                 // Time Signature info
                 if (timeNum != null) {
-                    if (ShapeRange.Times.contains(shape)) {
+                    if (ShapeSet.Times.contains(shape)) {
                         timeNum.setVisible(true);
                         timeDen.setVisible(true);
 
@@ -325,17 +319,6 @@ public class SymbolGlyphBoard
         int r = 1; // --------------------------------
                    // Glyph ---
 
-        //        r += 2; // --------------------------------
-        //                // Spinners
-        //
-        //        if (useSpinners) {
-        //            builder.addLabel("Id", cst.xy(1, r));
-        //            builder.add(globalSpinner, cst.xy(3, r));
-        //
-        //            //
-        //            //            builder.addLabel("Known", cst.xy(5, r));
-        //            //            builder.add(knownSpinner, cst.xy(7, r));
-        //        }
         r += 2; // --------------------------------
                 // shape
 
@@ -409,7 +392,7 @@ public class SymbolGlyphBoard
 
         // Method run whenever user presses Return/Enter in one of the parameter
         // fields
-        @Implement(ActionListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             // Discard irrelevant action events

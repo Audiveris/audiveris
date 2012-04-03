@@ -248,16 +248,14 @@ public class ScoreExporter
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------------//
-    // setMeasureRange //
-    //-----------------//
+    //---------//
+    // preload //
+    //---------//
     /**
-     * Set a specific range of measures to export.
-     * @param measureRange the range of desired measures
+     * Empty static method, just to trigger class elaboration.
      */
-    public void setMeasureRange (MeasureRange measureRange)
+    public static void preload ()
     {
-        this.measureRange = measureRange;
     }
 
     //--------------------//
@@ -347,14 +345,16 @@ public class ScoreExporter
         }
     }
 
-    //---------//
-    // preload //
-    //---------//
+    //-----------------//
+    // setMeasureRange //
+    //-----------------//
     /**
-     * Empty static method, just to trigger class elaboration.
+     * Set a specific range of measures to export.
+     * @param measureRange the range of desired measures
      */
-    public static void preload ()
+    public void setMeasureRange (MeasureRange measureRange)
     {
+        this.measureRange = measureRange;
     }
 
     //----------//
@@ -1263,7 +1263,7 @@ public class ScoreExporter
                               .getBeams()
                               .size();
 
-                if ((fbn > 0) && (note.getShape() == VOID_NOTEHEAD)) {
+                if ((fbn > 0) && (note.getShape() == NOTEHEAD_VOID)) {
                     // Indicate that the head should not be filled
                     //   <notehead filled="no">normal</notehead>
                     Notehead notehead = factory.createNotehead();
@@ -2218,6 +2218,133 @@ public class ScoreExporter
         return yOf(point.y, staff);
     }
 
+    //----------//
+    // areEqual //
+    //----------//
+    private static boolean areEqual (Time left,
+                                     Time right)
+    {
+        return (getNum(left).equals(getNum(right))) &&
+               (getDen(left).equals(getDen(right)));
+    }
+
+    //----------//
+    // areEqual //
+    //----------//
+    private static boolean areEqual (Key left,
+                                     Key right)
+    {
+        return left.getFifths()
+                   .equals(right.getFifths());
+    }
+
+    //-----------//
+    // buildClef //
+    //-----------//
+    private proxymusic.Clef buildClef (Clef clef)
+    {
+        proxymusic.Clef pmClef = factory.createClef();
+
+        // Staff number (only for multi-staff parts)
+        if (current.scorePart.isMultiStaff()) {
+            pmClef.setNumber(new BigInteger("" + (clef.getStaff().getId())));
+        }
+
+        // Line (General computation that could be overridden by more
+        // specific shape test below)
+        pmClef.setLine(
+            new BigInteger(
+                "" + (3 - (int) Math.rint(clef.getPitchPosition() / 2.0))));
+
+        Shape shape = clef.getShape();
+
+        switch (shape) {
+        case G_CLEF :
+            pmClef.setSign(ClefSign.G);
+
+            break;
+
+        case G_CLEF_8VA :
+            pmClef.setSign(ClefSign.G);
+            pmClef.setClefOctaveChange(new BigInteger("1"));
+
+            break;
+
+        case G_CLEF_8VB :
+            pmClef.setSign(ClefSign.G);
+            pmClef.setClefOctaveChange(new BigInteger("-1"));
+
+            break;
+
+        case C_CLEF :
+            pmClef.setSign(ClefSign.C);
+
+            break;
+
+        case F_CLEF :
+            pmClef.setSign(ClefSign.F);
+
+            break;
+
+        case F_CLEF_8VA :
+            pmClef.setSign(ClefSign.F);
+            pmClef.setClefOctaveChange(new BigInteger("1"));
+
+            break;
+
+        case F_CLEF_8VB :
+            pmClef.setSign(ClefSign.F);
+            pmClef.setClefOctaveChange(new BigInteger("-1"));
+
+            break;
+
+        case PERCUSSION_CLEF :
+            pmClef.setSign(ClefSign.PERCUSSION);
+
+            break;
+
+        default :
+        }
+
+        return pmClef;
+    }
+
+    //--------//
+    // getDen // A VERIFIER A VERIFIER A VERIFIER A VERIFIER A VERIFIER
+    //--------//
+    private static java.lang.String getDen (Time time)
+    {
+        for (JAXBElement<java.lang.String> elem : time.getBeatsAndBeatType()) {
+            if (elem.getName()
+                    .getLocalPart()
+                    .equals("beat-type")) {
+                return elem.getValue();
+            }
+        }
+
+        logger.severe("No denominator found in " + time);
+
+        return "";
+    }
+
+    //--------//
+    // getNum // A VERIFIER A VERIFIER A VERIFIER A VERIFIER A VERIFIER
+    //--------//
+    private static java.lang.String getNum (Time time)
+    {
+        for (JAXBElement<java.lang.String> elem : time.getBeatsAndBeatType()) {
+            if (elem.getName()
+                    .getLocalPart()
+                    .equals("beats")) {
+                return elem.getValue();
+            }
+        }
+
+        logger.severe("No numerator found in " + time);
+
+        return "";
+    }
+
     //------------------//
     // getArticulations //
     //------------------//
@@ -2244,22 +2371,43 @@ public class ScoreExporter
         return articulations;
     }
 
-    //--------//
-    // getDen // A VERIFIER A VERIFIER A VERIFIER A VERIFIER A VERIFIER
-    //--------//
-    private static java.lang.String getDen (Time time)
+    //----------------------//
+    // getMeasureAttributes //
+    //----------------------//
+    /**
+     * Report (after creating it if necessary) the measure attributes
+     * element.
+     * @return the measure attributes element
+     */
+    private Attributes getMeasureAttributes ()
     {
-        for (JAXBElement<java.lang.String> elem : time.getBeatsAndBeatType()) {
-            if (elem.getName()
-                    .getLocalPart()
-                    .equals("beat-type")) {
-                return elem.getValue();
-            }
+        if (current.attributes == null) {
+            current.attributes = new Attributes();
+            current.pmMeasure.getNoteOrBackupOrForward()
+                             .add(current.attributes);
         }
 
-        logger.severe("No denominator found in " + time);
+        return current.attributes;
+    }
 
-        return "";
+    //--------------//
+    // getNotations //
+    //--------------//
+    /**
+     * Report (after creating it if necessary) the notations element
+     * of the current note.
+     * @return the note notations element
+     */
+    private Notations getNotations ()
+    {
+        // Notations allocated?
+        if (current.notations == null) {
+            current.notations = factory.createNotations();
+            current.pmNote.getNotations()
+                          .add(current.notations);
+        }
+
+        return current.notations;
     }
 
     //--------------//
@@ -2286,161 +2434,6 @@ public class ScoreExporter
             .add(ornaments);
 
         return ornaments;
-    }
-
-    //----------//
-    // areEqual //
-    //----------//
-    private static boolean areEqual (Time left,
-                                     Time right)
-    {
-        return (getNum(left).equals(getNum(right))) &&
-               (getDen(left).equals(getDen(right)));
-    }
-
-    //----------//
-    // areEqual //
-    //----------//
-    private static boolean areEqual (Key left,
-                                     Key right)
-    {
-        return left.getFifths()
-                   .equals(right.getFifths());
-    }
-
-    //- Utility Methods --------------------------------------------------------
-
-    //-----------//
-    // isDesired //
-    //-----------//
-    /**
-     * Check whether the provided measure is to be exported
-     *
-     * @param measure the measure to check
-     * @return true is desired
-     */
-    private boolean isDesired (Measure measure)
-    {
-        return (measureRange == null) || // No range : take all of them
-               (measure.isTemporary()) || // A temporary measure for export
-               measureRange.contains(measure.getPageId()); // Part of the range
-    }
-
-    //----------------------//
-    // getMeasureAttributes //
-    //----------------------//
-    /**
-     * Report (after creating it if necessary) the measure attributes
-     * element.
-     * @return the measure attributes element
-     */
-    private Attributes getMeasureAttributes ()
-    {
-        if (current.attributes == null) {
-            current.attributes = new Attributes();
-            current.pmMeasure.getNoteOrBackupOrForward()
-                             .add(current.attributes);
-        }
-
-        return current.attributes;
-    }
-
-    //-----------//
-    // isNewClef //
-    //-----------//
-    /**
-     * Make sure we have a NEW clef, not already assigned.
-     * We have to go back (on the same staff) in current measure, then in
-     * previous measures, then in same staff in previous systems, until we find
-     * a previous clef.
-     * And we compare the two shapes.
-     * @param clef the potentially new clef
-     * @return true if this clef is really new
-     */
-    private boolean isNewClef (Clef clef)
-    {
-        if (current.measure.isDummy()) {
-            return true;
-        }
-
-        // Perhaps another clef before this one ?
-        Clef previousClef = current.measure.getClefBefore(
-            new PixelPoint(clef.getCenter().x - 1, clef.getCenter().y),
-            clef.getStaff());
-
-        if (previousClef != null) {
-            return previousClef.getShape() != clef.getShape();
-        }
-
-        return true; // Since no previous clef found
-    }
-
-    //-------------------//
-    // isNewKeySignature //
-    //-------------------//
-    /**
-     * Make sure we have a NEW key, not already assigned.
-     * We have to go back in current measure, then in current staff, then in
-     * same staff in previous systems, until we find a previous key.
-     * And we compare the two shapes.
-     * @param key the potentially new key
-     * @return true if this key is really new
-     */
-    private boolean isNewKeySignature (KeySignature key)
-    {
-        if (current.measure.isDummy()) {
-            return true;
-        }
-
-        // Perhaps another key before this one ?
-        KeySignature previousKey = current.measure.getKeyBefore(
-            key.getCenter(),
-            key.getStaff());
-
-        if (previousKey != null) {
-            return !previousKey.getKey()
-                               .equals(key.getKey());
-        }
-
-        return true; // Since no previous key found
-    }
-
-    //--------------//
-    // getNotations //
-    //--------------//
-    /**
-     * Report (after creating it if necessary) the notations element
-     * of the current note.
-     * @return the note notations element
-     */
-    private Notations getNotations ()
-    {
-        // Notations allocated?
-        if (current.notations == null) {
-            current.notations = factory.createNotations();
-            current.pmNote.getNotations()
-                          .add(current.notations);
-        }
-
-        return current.notations;
-    }
-
-    //--------//
-    // getNum // A VERIFIER A VERIFIER A VERIFIER A VERIFIER A VERIFIER
-    //--------//
-    private static java.lang.String getNum (Time time)
-    {
-        for (JAXBElement<java.lang.String> elem : time.getBeatsAndBeatType()) {
-            if (elem.getName()
-                    .getLocalPart()
-                    .equals("beats")) {
-                return elem.getValue();
-            }
-        }
-
-        logger.severe("No numerator found in " + time);
-
-        return "";
     }
 
     //--------------//
@@ -2522,77 +2515,6 @@ public class ScoreExporter
         }
 
         return current.pmWork;
-    }
-
-    //-----------//
-    // buildClef //
-    //-----------//
-    private proxymusic.Clef buildClef (Clef clef)
-    {
-        proxymusic.Clef pmClef = factory.createClef();
-
-        // Staff number (only for multi-staff parts)
-        if (current.scorePart.isMultiStaff()) {
-            pmClef.setNumber(new BigInteger("" + (clef.getStaff().getId())));
-        }
-
-        // Line (General computation that could be overridden by more
-        // specific shape test below)
-        pmClef.setLine(
-            new BigInteger(
-                "" + (3 - (int) Math.rint(clef.getPitchPosition() / 2.0))));
-
-        Shape shape = clef.getShape();
-
-        switch (shape) {
-        case G_CLEF :
-            pmClef.setSign(ClefSign.G);
-
-            break;
-
-        case G_CLEF_OTTAVA_ALTA :
-            pmClef.setSign(ClefSign.G);
-            pmClef.setClefOctaveChange(new BigInteger("1"));
-
-            break;
-
-        case G_CLEF_OTTAVA_BASSA :
-            pmClef.setSign(ClefSign.G);
-            pmClef.setClefOctaveChange(new BigInteger("-1"));
-
-            break;
-
-        case C_CLEF :
-            pmClef.setSign(ClefSign.C);
-
-            break;
-
-        case F_CLEF :
-            pmClef.setSign(ClefSign.F);
-
-            break;
-
-        case F_CLEF_OTTAVA_ALTA :
-            pmClef.setSign(ClefSign.F);
-            pmClef.setClefOctaveChange(new BigInteger("1"));
-
-            break;
-
-        case F_CLEF_OTTAVA_BASSA :
-            pmClef.setSign(ClefSign.F);
-            pmClef.setClefOctaveChange(new BigInteger("-1"));
-
-            break;
-
-        case PERCUSSION_CLEF :
-            pmClef.setSign(ClefSign.PERCUSSION);
-
-            break;
-
-        default :
-        }
-
-        return pmClef;
     }
 
     //--------------//
@@ -2700,114 +2622,85 @@ public class ScoreExporter
         }
     }
 
+    //- Utility Methods --------------------------------------------------------
+
+    //-----------//
+    // isDesired //
+    //-----------//
+    /**
+     * Check whether the provided measure is to be exported
+     *
+     * @param measure the measure to check
+     * @return true is desired
+     */
+    private boolean isDesired (Measure measure)
+    {
+        return (measureRange == null) || // No range : take all of them
+               (measure.isTemporary()) || // A temporary measure for export
+               measureRange.contains(measure.getPageId()); // Part of the range
+    }
+
+    //-----------//
+    // isNewClef //
+    //-----------//
+    /**
+     * Make sure we have a NEW clef, not already assigned.
+     * We have to go back (on the same staff) in current measure, then in
+     * previous measures, then in same staff in previous systems, until we find
+     * a previous clef.
+     * And we compare the two shapes.
+     * @param clef the potentially new clef
+     * @return true if this clef is really new
+     */
+    private boolean isNewClef (Clef clef)
+    {
+        if (current.measure.isDummy()) {
+            return true;
+        }
+
+        // Perhaps another clef before this one ?
+        Clef previousClef = current.measure.getClefBefore(
+            new PixelPoint(clef.getCenter().x - 1, clef.getCenter().y),
+            clef.getStaff());
+
+        if (previousClef != null) {
+            return previousClef.getShape() != clef.getShape();
+        }
+
+        return true; // Since no previous clef found
+    }
+
+    //-------------------//
+    // isNewKeySignature //
+    //-------------------//
+    /**
+     * Make sure we have a NEW key, not already assigned.
+     * We have to go back in current measure, then in current staff, then in
+     * same staff in previous systems, until we find a previous key.
+     * And we compare the two shapes.
+     * @param key the potentially new key
+     * @return true if this key is really new
+     */
+    private boolean isNewKeySignature (KeySignature key)
+    {
+        if (current.measure.isDummy()) {
+            return true;
+        }
+
+        // Perhaps another key before this one ?
+        KeySignature previousKey = current.measure.getKeyBefore(
+            key.getCenter(),
+            key.getStaff());
+
+        if (previousKey != null) {
+            return !previousKey.getKey()
+                               .equals(key.getKey());
+        }
+
+        return true; // Since no previous key found
+    }
+
     //~ Inner Classes ----------------------------------------------------------
-
-    //---------//
-    // Current //
-    //---------//
-    /** Keep references of all current entities. */
-    private static class Current
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        // Score dependent
-        proxymusic.Work                       pmWork;
-
-        // Part dependent
-        ScorePart                             scorePart;
-        proxymusic.ScorePartwise.Part         pmPart;
-
-        // Page dependent
-        Page                                  page;
-        int                                   pageMeasureIdOffset = 0;
-        Scale                                 scale;
-
-        // System dependent
-        ScoreSystem                           system;
-
-        // Measure dependent
-        Measure                               measure;
-        proxymusic.ScorePartwise.Part.Measure pmMeasure;
-        Voice                                 voice;
-
-        // Note dependent
-        omr.score.entity.Note note;
-        proxymusic.Note       pmNote;
-        proxymusic.Notations  notations;
-        proxymusic.Print      pmPrint;
-        proxymusic.Attributes attributes;
-
-        //~ Methods ------------------------------------------------------------
-
-        // Cleanup at end of measure
-        void endMeasure ()
-        {
-            measure = null;
-            pmMeasure = null;
-            voice = null;
-
-            endNote();
-        }
-
-        // Cleanup at end of note
-        void endNote ()
-        {
-            note = null;
-            pmNote = null;
-            notations = null;
-            pmPrint = null;
-            attributes = null;
-        }
-    }
-
-    //---------//
-    // IsFirst //
-    //---------//
-    /** Composite flag to help drive processing of any entity. */
-    private static class IsFirst
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /** We are writing the first score scorePart of the score */
-        boolean scorePart;
-
-        /** We are writing the first page of the score */
-        Boolean page;
-
-        /** We are writing the first system in the current page */
-        boolean system;
-
-        /** We are writing the first measure in current system (in current scorePart) */
-        boolean measure;
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public java.lang.String toString ()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            if (scorePart) {
-                sb.append(" firstScorePart");
-            }
-
-            if (page == null) {
-                sb.append(" noPage");
-            } else if (page) {
-                sb.append(" firstPage");
-            }
-
-            if (system) {
-                sb.append(" firstSystem");
-            }
-
-            if (measure) {
-                sb.append(" firstMeasure");
-            }
-
-            return sb.toString();
-        }
-    }
 
     //---------------//
     // ClefIterators //
@@ -2916,6 +2809,113 @@ public class ScoreExporter
                     }
                 }
             }
+        }
+    }
+
+    //---------//
+    // Current //
+    //---------//
+    /** Keep references of all current entities. */
+    private static class Current
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        // Score dependent
+        proxymusic.Work                       pmWork;
+
+        // Part dependent
+        ScorePart                             scorePart;
+        proxymusic.ScorePartwise.Part         pmPart;
+
+        // Page dependent
+        Page                                  page;
+        int                                   pageMeasureIdOffset = 0;
+        Scale                                 scale;
+
+        // System dependent
+        ScoreSystem                           system;
+
+        // Measure dependent
+        Measure                               measure;
+        proxymusic.ScorePartwise.Part.Measure pmMeasure;
+        Voice                                 voice;
+
+        // Note dependent
+        omr.score.entity.Note note;
+        proxymusic.Note       pmNote;
+        proxymusic.Notations  notations;
+        proxymusic.Print      pmPrint;
+        proxymusic.Attributes attributes;
+
+        //~ Methods ------------------------------------------------------------
+
+        // Cleanup at end of measure
+        void endMeasure ()
+        {
+            measure = null;
+            pmMeasure = null;
+            voice = null;
+
+            endNote();
+        }
+
+        // Cleanup at end of note
+        void endNote ()
+        {
+            note = null;
+            pmNote = null;
+            notations = null;
+            pmPrint = null;
+            attributes = null;
+        }
+    }
+
+    //---------//
+    // IsFirst //
+    //---------//
+    /** Composite flag to help drive processing of any entity. */
+    private static class IsFirst
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** We are writing the first score scorePart of the score */
+        boolean scorePart;
+
+        /** We are writing the first page of the score */
+        Boolean page;
+
+        /** We are writing the first system in the current page */
+        boolean system;
+
+        /** We are writing the first measure in current system (in current scorePart) */
+        boolean measure;
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public java.lang.String toString ()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            if (scorePart) {
+                sb.append(" firstScorePart");
+            }
+
+            if (page == null) {
+                sb.append(" noPage");
+            } else if (page) {
+                sb.append(" firstPage");
+            }
+
+            if (system) {
+                sb.append(" firstSystem");
+            }
+
+            if (measure) {
+                sb.append(" firstMeasure");
+            }
+
+            return sb.toString();
         }
     }
 }

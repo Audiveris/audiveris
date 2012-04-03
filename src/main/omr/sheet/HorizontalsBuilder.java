@@ -52,7 +52,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code HorizontalsBuilder} is in charge of retrieving 
+ * Class {@code HorizontalsBuilder} is in charge of retrieving
  * horizontal dashes (ledgers, legato signs and endings) in a system.
  *
  * <p>Nota: Endings and legato signs are currently disabled.
@@ -165,25 +165,6 @@ public class HorizontalsBuilder
     //~ Methods ----------------------------------------------------------------
 
     //---------------//
-    // getController //
-    //---------------//
-    /**
-     * @return the controller
-     */
-    public GlyphsController getController ()
-    {
-        return controller;
-    }
-
-    //--------------//
-    // isFullLedger //
-    //--------------//
-    public boolean isFullLedger (Glyph glyph)
-    {
-        return glyph.getLength(HORIZONTAL) >= minFullLedgerLength;
-    }
-
-    //---------------//
     // addCheckBoard //
     //---------------//
     public void addCheckBoard ()
@@ -218,7 +199,7 @@ public class HorizontalsBuilder
     // buildInfo //
     //-----------//
     /**
-     * Run the Horizontals step, searching all horizontal sticks for 
+     * Run the Horizontals step, searching all horizontal sticks for
      * typical things like ledgers, endings and legato signs.
      *
      * @throws StepException raised if process gets stopped
@@ -249,22 +230,250 @@ public class HorizontalsBuilder
         }
     }
 
-    //----------------------//
-    // getCandidateSections //
-    //----------------------//
-    private List<Section> getCandidateSections (Collection<Section> allSections)
+    //---------------//
+    // getController //
+    //---------------//
+    /**
+     * @return the controller
+     */
+    public GlyphsController getController ()
     {
-        List<Section> keptSections = new ArrayList<Section>();
+        return controller;
+    }
 
-        for (Section section : allSections) {
-            if ((section.getGlyph() == null) ||
-                !section.getGlyph()
-                        .isWellKnown()) {
-                keptSections.add(section);
-            }
+    //--------------//
+    // isFullLedger //
+    //--------------//
+    public boolean isFullLedger (Glyph glyph)
+    {
+        return glyph.getLength(HORIZONTAL) >= minFullLedgerLength;
+    }
+
+    //----------//
+    // feedback //
+    //----------//
+    private void feedback ()
+    {
+        int           nl = system.getLedgers()
+                                 .size();
+        int           nt = tenutos.size();
+        int           ne = endings.size();
+
+        // A bit tedious
+        StringBuilder sb = new StringBuilder();
+        sb.append("S#")
+          .append(system.getId());
+        sb.append(" ");
+
+        if (nl > 0) {
+            sb.append(nl)
+              .append(" ledger")
+              .append((nl > 1) ? "s" : "");
+        } else if (logger.isFineEnabled()) {
+            sb.append("No ledger");
         }
 
-        return keptSections;
+        if (nt > 0) {
+            if (sb.length() > 0) {
+                sb.append(", ");
+            }
+
+            sb.append(nt)
+              .append(" tenuto")
+              .append((nt > 1) ? "s" : "");
+        } else if (logger.isFineEnabled()) {
+            sb.append("No tenuto");
+        }
+
+        if (ne > 0) {
+            if (sb.length() > 0) {
+                sb.append(", ");
+            }
+
+            sb.append(ne)
+              .append(" ending")
+              .append((ne > 1) ? "s" : "");
+        } else if (logger.isFineEnabled()) {
+            sb.append("No ending");
+        }
+
+        if (logger.isFineEnabled()) {
+            logger.fine(sheet.getLogPrefix() + sb.toString());
+        }
+    }
+
+    //---------------//
+    // filterLedgers //
+    //---------------//
+    /**
+     * Use smart tests on ledger candidates.
+     * Starting from each staff, check one interline higher (and lower) for
+     * candidates, etc.
+     */
+    private void filterLedgers ()
+    {
+        for (StaffInfo staff : system.getStaves()) {
+            if (logger.isFineEnabled()) {
+                logger.fine("Staff#" + staff.getId());
+            }
+
+            // Above staff
+            for (int i = -1;; i--) {
+                int count = lookupLine(i, staff.getFirstLine());
+
+                if (count == 0) {
+                    break;
+                }
+            }
+
+            // Below staff
+            for (int i = 1;; i++) {
+                int count = lookupLine(i, staff.getLastLine());
+
+                if (count == 0) {
+                    break;
+                }
+            }
+        }
+    }
+
+    //    //------------------//
+    //    // getAliensAtStart //
+    //    //------------------//
+    //    /**
+    //     * Count alien pixels in the following rectangle...
+    //     * <pre>
+    //     * +-------+
+    //     * |       |
+    //     * +=======+==================================+
+    //     * |       |
+    //     * +-------+
+    //     * </pre>
+    //     *
+    //     * @param glyph the glyph at stake
+    //     * @param halfHeight half rectangle size along stick thickness
+    //     * @param width rectangle size along stick length
+    //     * @return the number of alien pixels found
+    //     */
+    //    private int getAliensAtStart (Glyph glyph,
+    //                                  int   halfHeight,
+    //                                  int   width)
+    //    {
+    //        Point2D        start = glyph.getStartPoint();
+    //        PixelRectangle roi = new PixelRectangle(
+    //            (int) Math.rint(start.getX()),
+    //            (int) Math.rint(start.getY() - halfHeight),
+    //            width,
+    //            2 * halfHeight);
+    //            glyph.addAttachment("ll", roi);
+    //        
+    //        int            count = 0;
+    //        count += glyph.getAlienPixelsFrom(sheet.getHorizontalLag(), roi, null);
+    //        count += glyph.getAlienPixelsFrom(sheet.getVerticalLag(), roi, null);
+    //
+    //        return count;
+    //    }
+    //
+    //    //-----------------//
+    //    // getAliensAtStop //
+    //    //-----------------//
+    //    /**
+    //     * Count alien pixels in the following rectangle...
+    //     * <pre>
+    //     *                                    +-------+
+    //     *                                    |       |
+    //     * +==================================+=======+
+    //     *                                    |       |
+    //     *                                    +-------+
+    //     * </pre>
+    //     *
+    //     * @param glyph the glyph at stake
+    //     * @param halfHeight half rectangle size along stick thickness
+    //     * @param width rectangle size along stick length
+    //     * @return the number of alien pixels found
+    //     */
+    //    private int getAliensAtStop (Glyph glyph,
+    //                                 int   halfHeight,
+    //                                 int   width)
+    //    {
+    //        Point2D        stop = glyph.getStopPoint();
+    //        PixelRectangle roi = new PixelRectangle(
+    //            (int) Math.rint(stop.getX() - width),
+    //            (int) Math.rint(stop.getY() - halfHeight),
+    //            width,
+    //            2 * halfHeight);
+    //            glyph.addAttachment("lr", roi);
+    //        int            count = 0;
+    //        count += glyph.getAlienPixelsFrom(sheet.getHorizontalLag(), roi, null);
+    //        count += glyph.getAlienPixelsFrom(sheet.getVerticalLag(), roi, null);
+    //
+    //        return count;
+    //    }
+
+    //--------------------//
+    // getCandidateGlyphs //
+    //--------------------//
+    private List<Glyph> getCandidateGlyphs (List<Section> sections)
+        throws Exception
+    {
+        // Use filament factory
+        FilamentsFactory factory = new FilamentsFactory(
+            scale,
+            sheet.getNest(),
+            HORIZONTAL,
+            Filament.class);
+        // Adjust factory parameters
+        factory.setMaxCoordGap(constants.maxCoordGap);
+        factory.setMaxExpansionSpace(constants.maxExpansionSpace);
+        factory.setMaxFilamentThickness(constants.maxFilamentThickness);
+        factory.setMaxGapSlope(constants.maxGapSlope.getValue());
+        factory.setMaxInvolvingLength(constants.maxInvolvingLength);
+        factory.setMaxOverlapDeltaPos(constants.maxOverlapDeltaPos);
+        factory.setMaxPosGap(constants.maxPosGap);
+        factory.setMaxPosGapForSlope(constants.maxPosGapForSlope);
+        factory.setMaxSectionThickness(constants.maxSectionThickness);
+        factory.setMaxSpace(constants.maxSpace);
+        factory.setMinCoreSectionLength(constants.minCoreSectionLength);
+        factory.setMinSectionAspect(constants.minSectionAspect.getValue());
+
+        ///factory.dump();
+
+        // Reset the "fat" attribute of the sections, since this depends on
+        // max thickness parameters
+        for (Section section : sections) {
+            section.resetFat();
+            section.setGlyph(null);
+        }
+
+        return factory.retrieveFilaments(sections, true);
+    }
+
+    //---------------//
+    // staffDistance //
+    //---------------//
+    private static double staffDistance (Sheet sheet,
+                                         Glyph stick)
+    {
+        // Compute the (algebraic) distance from the stick to the nearest
+        // staff. Distance is negative if the stick is within the staff,
+        // positive outside.
+        final Point2D   mid = new Point2D.Double(
+            (stick.getStartPoint(HORIZONTAL)
+                  .getX() + stick.getStopPoint(HORIZONTAL)
+                                 .getX()) / 2,
+            (stick.getStartPoint(HORIZONTAL)
+                  .getY() + stick.getStopPoint(HORIZONTAL)
+                                 .getY()) / 2);
+        final StaffInfo staff = sheet.getStaffManager()
+                                     .getStaffAt(mid);
+        final double    top = staff.getFirstLine()
+                                   .yAt(mid.getX());
+        final double    bottom = staff.getLastLine()
+                                      .yAt(mid.getX());
+        final double    dist = Math.max(top - mid.getY(), mid.getY() - bottom);
+
+        return sheet.getScale()
+                    .pixelsToFrac(dist);
     }
 
     //------------------//
@@ -471,231 +680,22 @@ public class HorizontalsBuilder
         }
     }
 
-    //---------------//
-    // staffDistance //
-    //---------------//
-    private static double staffDistance (Sheet sheet,
-                                         Glyph stick)
+    //----------------------//
+    // getCandidateSections //
+    //----------------------//
+    private List<Section> getCandidateSections (Collection<Section> allSections)
     {
-        // Compute the (algebraic) distance from the stick to the nearest
-        // staff. Distance is negative if the stick is within the staff,
-        // positive outside.
-        final Point2D   mid = new Point2D.Double(
-            (stick.getStartPoint(HORIZONTAL)
-                  .getX() + stick.getStopPoint(HORIZONTAL)
-                                 .getX()) / 2,
-            (stick.getStartPoint(HORIZONTAL)
-                  .getY() + stick.getStopPoint(HORIZONTAL)
-                                 .getY()) / 2);
-        final StaffInfo staff = sheet.getStaffManager()
-                                     .getStaffAt(mid);
-        final double    top = staff.getFirstLine()
-                                   .yAt(mid.getX());
-        final double    bottom = staff.getLastLine()
-                                      .yAt(mid.getX());
-        final double    dist = Math.max(top - mid.getY(), mid.getY() - bottom);
+        List<Section> keptSections = new ArrayList<Section>();
 
-        return sheet.getScale()
-                    .pixelsToFrac(dist);
-    }
-
-    //    //------------------//
-    //    // getAliensAtStart //
-    //    //------------------//
-    //    /**
-    //     * Count alien pixels in the following rectangle...
-    //     * <pre>
-    //     * +-------+
-    //     * |       |
-    //     * +=======+==================================+
-    //     * |       |
-    //     * +-------+
-    //     * </pre>
-    //     *
-    //     * @param glyph the glyph at stake
-    //     * @param halfHeight half rectangle size along stick thickness
-    //     * @param width rectangle size along stick length
-    //     * @return the number of alien pixels found
-    //     */
-    //    private int getAliensAtStart (Glyph glyph,
-    //                                  int   halfHeight,
-    //                                  int   width)
-    //    {
-    //        Point2D        start = glyph.getStartPoint();
-    //        PixelRectangle roi = new PixelRectangle(
-    //            (int) Math.rint(start.getX()),
-    //            (int) Math.rint(start.getY() - halfHeight),
-    //            width,
-    //            2 * halfHeight);
-    //            glyph.addAttachment("ll", roi);
-    //        
-    //        int            count = 0;
-    //        count += glyph.getAlienPixelsFrom(sheet.getHorizontalLag(), roi, null);
-    //        count += glyph.getAlienPixelsFrom(sheet.getVerticalLag(), roi, null);
-    //
-    //        return count;
-    //    }
-    //
-    //    //-----------------//
-    //    // getAliensAtStop //
-    //    //-----------------//
-    //    /**
-    //     * Count alien pixels in the following rectangle...
-    //     * <pre>
-    //     *                                    +-------+
-    //     *                                    |       |
-    //     * +==================================+=======+
-    //     *                                    |       |
-    //     *                                    +-------+
-    //     * </pre>
-    //     *
-    //     * @param glyph the glyph at stake
-    //     * @param halfHeight half rectangle size along stick thickness
-    //     * @param width rectangle size along stick length
-    //     * @return the number of alien pixels found
-    //     */
-    //    private int getAliensAtStop (Glyph glyph,
-    //                                 int   halfHeight,
-    //                                 int   width)
-    //    {
-    //        Point2D        stop = glyph.getStopPoint();
-    //        PixelRectangle roi = new PixelRectangle(
-    //            (int) Math.rint(stop.getX() - width),
-    //            (int) Math.rint(stop.getY() - halfHeight),
-    //            width,
-    //            2 * halfHeight);
-    //            glyph.addAttachment("lr", roi);
-    //        int            count = 0;
-    //        count += glyph.getAlienPixelsFrom(sheet.getHorizontalLag(), roi, null);
-    //        count += glyph.getAlienPixelsFrom(sheet.getVerticalLag(), roi, null);
-    //
-    //        return count;
-    //    }
-
-    //--------------------//
-    // getCandidateGlyphs //
-    //--------------------//
-    private List<Glyph> getCandidateGlyphs (List<Section> sections)
-        throws Exception
-    {
-        // Use filament factory
-        FilamentsFactory factory = new FilamentsFactory(
-            scale,
-            sheet.getNest(),
-            HORIZONTAL,
-            Filament.class);
-        // Adjust factory parameters
-        factory.setMaxCoordGap(constants.maxCoordGap);
-        factory.setMaxExpansionSpace(constants.maxExpansionSpace);
-        factory.setMaxFilamentThickness(constants.maxFilamentThickness);
-        factory.setMaxGapSlope(constants.maxGapSlope.getValue());
-        factory.setMaxInvolvingLength(constants.maxInvolvingLength);
-        factory.setMaxOverlapDeltaPos(constants.maxOverlapDeltaPos);
-        factory.setMaxPosGap(constants.maxPosGap);
-        factory.setMaxPosGapForSlope(constants.maxPosGapForSlope);
-        factory.setMaxSectionThickness(constants.maxSectionThickness);
-        factory.setMaxSpace(constants.maxSpace);
-        factory.setMinCoreSectionLength(constants.minCoreSectionLength);
-        factory.setMinSectionAspect(constants.minSectionAspect.getValue());
-
-        ///factory.dump();
-
-        // Reset the "fat" attribute of the sections, since this depends on
-        // max thickness parameters
-        for (Section section : sections) {
-            section.resetFat();
-            section.setGlyph(null);
-        }
-
-        return factory.retrieveFilaments(sections, true);
-    }
-
-    //----------//
-    // feedback //
-    //----------//
-    private void feedback ()
-    {
-        int           nl = system.getLedgers()
-                                 .size();
-        int           nt = tenutos.size();
-        int           ne = endings.size();
-
-        // A bit tedious
-        StringBuilder sb = new StringBuilder();
-        sb.append("S#")
-          .append(system.getId());
-        sb.append(" ");
-
-        if (nl > 0) {
-            sb.append(nl)
-              .append(" ledger")
-              .append((nl > 1) ? "s" : "");
-        } else if (logger.isFineEnabled()) {
-            sb.append("No ledger");
-        }
-
-        if (nt > 0) {
-            if (sb.length() > 0) {
-                sb.append(", ");
-            }
-
-            sb.append(nt)
-              .append(" tenuto")
-              .append((nt > 1) ? "s" : "");
-        } else if (logger.isFineEnabled()) {
-            sb.append("No tenuto");
-        }
-
-        if (ne > 0) {
-            if (sb.length() > 0) {
-                sb.append(", ");
-            }
-
-            sb.append(ne)
-              .append(" ending")
-              .append((ne > 1) ? "s" : "");
-        } else if (logger.isFineEnabled()) {
-            sb.append("No ending");
-        }
-
-        if (logger.isFineEnabled()) {
-            logger.fine(sheet.getLogPrefix() + sb.toString());
-        }
-    }
-
-    //---------------//
-    // filterLedgers //
-    //---------------//
-    /**
-     * Use smart tests on ledger candidates.
-     * Starting from each staff, check one interline higher (and lower) for
-     * candidates, etc.
-     */
-    private void filterLedgers ()
-    {
-        for (StaffInfo staff : system.getStaves()) {
-            if (logger.isFineEnabled()) {
-                logger.fine("Staff#" + staff.getId());
-            }
-
-            // Above staff
-            for (int i = -1;; i--) {
-                int count = lookupLine(i, staff.getFirstLine());
-
-                if (count == 0) {
-                    break;
-                }
-            }
-
-            // Below staff
-            for (int i = 1;; i++) {
-                int count = lookupLine(i, staff.getLastLine());
-
-                if (count == 0) {
-                    break;
-                }
+        for (Section section : allSections) {
+            if ((section.getGlyph() == null) ||
+                !section.getGlyph()
+                        .isWellKnown()) {
+                keptSections.add(section);
             }
         }
+
+        return keptSections;
     }
 
     //------------//
@@ -1073,6 +1073,67 @@ public class HorizontalsBuilder
         }
     }
 
+    //--------------------//
+    // LastAdjacencyCheck //
+    //--------------------//
+    private static class LastAdjacencyCheck
+        extends Check<Glyph>
+    {
+        //~ Constructors -------------------------------------------------------
+
+        protected LastAdjacencyCheck ()
+        {
+            super(
+                "BottomAdj",
+                "Check that stick is open on bottom side",
+                constants.maxAdjacencyLow,
+                constants.maxAdjacencyHigh,
+                false,
+                TOO_ADJA);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        // Retrieve the adjacency value
+        protected double getValue (Glyph stick)
+        {
+            int length = stick.getLength(HORIZONTAL);
+
+            return (double) stick.getLastStuck() / (double) length;
+        }
+    }
+
+    //-----------------//
+    // MinDensityCheck //
+    //-----------------//
+    private static class MinDensityCheck
+        extends Check<Glyph>
+    {
+        //~ Constructors -------------------------------------------------------
+
+        protected MinDensityCheck ()
+        {
+            super(
+                "MinDensity",
+                "Check that stick fills its bounding rectangle",
+                constants.minDensityLow,
+                constants.minDensityHigh,
+                true,
+                TOO_HOLLOW);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        // Retrieve the density
+        protected double getValue (Glyph stick)
+        {
+            Rectangle rect = stick.getContourBox();
+            double    area = rect.width * rect.height;
+
+            return (double) stick.getWeight() / area;
+        }
+    }
+
     //    //--------//
     //    // MyView //
     //    //--------//
@@ -1234,6 +1295,11 @@ public class HorizontalsBuilder
 
         //~ Methods ------------------------------------------------------------
 
+        public boolean isVip ()
+        {
+            return stick.isVip();
+        }
+
         public void setResult (Result result)
         {
             stick.setResult(result);
@@ -1244,45 +1310,10 @@ public class HorizontalsBuilder
             stick.setVip();
         }
 
-        public boolean isVip ()
-        {
-            return stick.isVip();
-        }
-
         @Override
         public String toString ()
         {
             return "stick#" + stick.getId();
-        }
-    }
-
-    //--------------------//
-    // LastAdjacencyCheck //
-    //--------------------//
-    private static class LastAdjacencyCheck
-        extends Check<Glyph>
-    {
-        //~ Constructors -------------------------------------------------------
-
-        protected LastAdjacencyCheck ()
-        {
-            super(
-                "BottomAdj",
-                "Check that stick is open on bottom side",
-                constants.maxAdjacencyLow,
-                constants.maxAdjacencyHigh,
-                false,
-                TOO_ADJA);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        // Retrieve the adjacency value
-        protected double getValue (Glyph stick)
-        {
-            int length = stick.getLength(HORIZONTAL);
-
-            return (double) stick.getLastStuck() / (double) length;
         }
     }
 
@@ -1424,37 +1455,6 @@ public class HorizontalsBuilder
         {
             return sheet.getScale()
                         .pixelsToFrac(stick.getThickness(HORIZONTAL));
-        }
-    }
-
-    //-----------------//
-    // MinDensityCheck //
-    //-----------------//
-    private static class MinDensityCheck
-        extends Check<Glyph>
-    {
-        //~ Constructors -------------------------------------------------------
-
-        protected MinDensityCheck ()
-        {
-            super(
-                "MinDensity",
-                "Check that stick fills its bounding rectangle",
-                constants.minDensityLow,
-                constants.minDensityHigh,
-                true,
-                TOO_HOLLOW);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        // Retrieve the density
-        protected double getValue (Glyph stick)
-        {
-            Rectangle rect = stick.getContourBox();
-            double    area = rect.width * rect.height;
-
-            return (double) stick.getWeight() / area;
         }
     }
 

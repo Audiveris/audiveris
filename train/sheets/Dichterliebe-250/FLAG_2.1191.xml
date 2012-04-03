@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="FLAG_2" interline="19" id="1191">
+    <stem-number>1</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-5.405405405405405</pitch-position>
+    <section orientation="VERTICAL" first-pos="1248" id="2029">
+        <run start="2507" level="15" length="12"/>
+        <run start="2509" level="30" length="11"/>
+        <run start="2510" level="32" length="10"/>
+        <run start="2511" level="36" length="9"/>
+        <run start="2512" level="23" length="8"/>
+        <run start="2513" level="47" length="8"/>
+        <run start="2514" level="37" length="7"/>
+        <run start="2515" level="49" length="7"/>
+        <run start="2516" level="34" length="6"/>
+        <run start="2517" level="43" length="6"/>
+        <run start="2518" level="50" length="6"/>
+        <run start="2518" level="47" length="6"/>
+        <run start="2519" level="51" length="6"/>
+        <run start="2520" level="47" length="6"/>
+        <run start="2521" level="70" length="7"/>
+        <run start="2522" level="51" length="7"/>
+        <run start="2524" level="58" length="7"/>
+        <run start="2525" level="87" length="9"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="1248" id="2030">
+        <run start="2523" level="16" length="11"/>
+        <run start="2524" level="40" length="11"/>
+        <run start="2525" level="31" length="10"/>
+        <run start="2527" level="30" length="9"/>
+        <run start="2528" level="13" length="8"/>
+        <run start="2529" level="37" length="8"/>
+        <run start="2530" level="49" length="8"/>
+        <run start="2531" level="46" length="7"/>
+        <run start="2532" level="34" length="6"/>
+        <run start="2533" level="56" length="5"/>
+        <run start="2535" level="51" length="4"/>
+        <run start="2536" level="61" length="4"/>
+        <run start="2537" level="31" length="4"/>
+        <run start="2537" level="45" length="4"/>
+        <run start="2539" level="61" length="2"/>
+        <run start="2540" level="192" length="1"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="1262" id="2063">
+        <run start="2542" level="200" length="1"/>
+        <run start="2542" level="159" length="4"/>
+        <run start="2541" level="127" length="8"/>
+        <run start="2544" level="109" length="8"/>
+        <run start="2547" level="110" length="10"/>
+        <run start="2550" level="91" length="10"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="1265" id="2069">
+        <run start="2540" level="180" length="1"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="1266" id="2071">
+        <run start="2527" level="82" length="15"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="1267" id="2072">
+        <run start="2530" level="130" length="9"/>
+    </section>
+</glyph>

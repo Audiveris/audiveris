@@ -71,6 +71,15 @@ public abstract class MeasureNode
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
     //------------------//
     // getContextString //
     //------------------//
@@ -106,14 +115,5 @@ public abstract class MeasureNode
         }
 
         return null;
-    }
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
     }
 }

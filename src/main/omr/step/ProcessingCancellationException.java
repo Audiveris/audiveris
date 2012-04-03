@@ -9,8 +9,8 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-
 package omr.step;
+
 
 /**
  * Class {@code ProcessingCancellationException} describes the exception raised

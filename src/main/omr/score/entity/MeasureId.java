@@ -229,6 +229,41 @@ public abstract class MeasureId
 
         //~ Methods ------------------------------------------------------------
 
+        //----------//
+        // contains //
+        //----------//
+        /**
+         * Checks whether the provided page-based measure id is within the
+         * measure range
+         *
+         * @param pageBasedId the page-based measure id  to check
+         * @return true if id is within the range, false otherwise
+         */
+        public boolean contains (PageBased pageBasedId)
+        {
+            ScoreBased scoreBasedId = new ScoreBased(pageBasedId);
+
+            return (scoreBasedId.compareTo(firstId) >= 0) &&
+                   (scoreBasedId.compareTo(lastId) <= 0);
+        }
+
+        //--------//
+        // equals //
+        //--------//
+        @Override
+        public boolean equals (Object obj)
+        {
+            if (!(obj instanceof MeasureRange)) {
+                return false;
+            } else {
+                MeasureRange that = (MeasureRange) obj;
+
+                return (this.score == that.score) &&
+                       this.firstId.equals(that.firstId) &&
+                       this.lastId.equals(that.lastId);
+            }
+        }
+
         //------------//
         // getFirstId //
         //------------//
@@ -266,41 +301,6 @@ public abstract class MeasureId
         public ScoreBased getLastId ()
         {
             return lastId;
-        }
-
-        //----------//
-        // contains //
-        //----------//
-        /**
-         * Checks whether the provided page-based measure id is within the
-         * measure range
-         *
-         * @param pageBasedId the page-based measure id  to check
-         * @return true if id is within the range, false otherwise
-         */
-        public boolean contains (PageBased pageBasedId)
-        {
-            ScoreBased scoreBasedId = new ScoreBased(pageBasedId);
-
-            return (scoreBasedId.compareTo(firstId) >= 0) &&
-                   (scoreBasedId.compareTo(lastId) <= 0);
-        }
-
-        //--------//
-        // equals //
-        //--------//
-        @Override
-        public boolean equals (Object obj)
-        {
-            if (!(obj instanceof MeasureRange)) {
-                return false;
-            } else {
-                MeasureRange that = (MeasureRange) obj;
-
-                return (this.score == that.score) &&
-                       this.firstId.equals(that.firstId) &&
-                       this.lastId.equals(that.lastId);
-            }
         }
 
         //----------//
@@ -366,6 +366,23 @@ public abstract class MeasureId
 
         //~ Methods ------------------------------------------------------------
 
+        //--------//
+        // equals //
+        //--------//
+        @Override
+        public boolean equals (Object obj)
+        {
+            if (!(obj instanceof PageBased)) {
+                return false;
+            }
+
+            PageBased that = (PageBased) obj;
+
+            return (this.measure == that.measure) &&
+                   (this.value == that.value) &&
+                   (this.secondHalf == that.secondHalf);
+        }
+
         //---------------//
         // getScoreIndex //
         //---------------//
@@ -399,23 +416,6 @@ public abstract class MeasureId
             return 0; // To keep the compiler happy
         }
 
-        //--------//
-        // equals //
-        //--------//
-        @Override
-        public boolean equals (Object obj)
-        {
-            if (!(obj instanceof PageBased)) {
-                return false;
-            }
-
-            PageBased that = (PageBased) obj;
-
-            return (this.measure == that.measure) &&
-                   (this.value == that.value) &&
-                   (this.secondHalf == that.secondHalf);
-        }
-
         //----------//
         // hashCode //
         //----------//
@@ -431,7 +431,7 @@ public abstract class MeasureId
         // toScoreString //
         //---------------//
         /**
-         * Present the score-based display (even though the stored 
+         * Present the score-based display (even though the stored
          * value is page-based)
          * @return [X]absId
          */

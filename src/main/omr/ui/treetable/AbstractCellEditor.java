@@ -32,34 +32,6 @@ public class AbstractCellEditor
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------------//
-    // isCellEditable //
-    //----------------//
-    /**
-     * DOCUMENT ME!
-     *
-     * @param e DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public boolean isCellEditable (EventObject e)
-    {
-        return true;
-    }
-
-    //--------------------//
-    // getCellEditorValue //
-    //--------------------//
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public Object getCellEditorValue ()
-    {
-        return null;
-    }
-
     //-----------------------//
     // addCellEditorListener //
     //-----------------------//
@@ -81,6 +53,34 @@ public class AbstractCellEditor
      */
     public void cancelCellEditing ()
     {
+    }
+
+    //--------------------//
+    // getCellEditorValue //
+    //--------------------//
+    /**
+     * DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    public Object getCellEditorValue ()
+    {
+        return null;
+    }
+
+    //----------------//
+    // isCellEditable //
+    //----------------//
+    /**
+     * DOCUMENT ME!
+     *
+     * @param e DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    public boolean isCellEditable (EventObject e)
+    {
+        return true;
     }
 
     //--------------------------//

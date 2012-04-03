@@ -243,17 +243,6 @@ public class SymbolRipper
 
     //~ Methods ----------------------------------------------------------------
 
-    //------//
-    // main //
-    //------//
-    /**
-     * Command line entry point, no arguments are used today.
-     */
-    public static void main (String... args)
-    {
-        new SymbolRipper();
-    }
-
     //----------//
     // getFrame //
     //----------//
@@ -267,74 +256,15 @@ public class SymbolRipper
         return frame;
     }
 
-    //---------------//
-    // getParamPanel //
-    //---------------//
-    private JPanel getParamPanel ()
+    //------//
+    // main //
+    //------//
+    /**
+     * Command line entry point, no arguments are used today.
+     */
+    public static void main (String... args)
     {
-        FormLayout   layout = Panel.makeFormLayout(13, 2);
-
-        PanelBuilder builder = new PanelBuilder(layout, new Panel());
-        builder.setDefaultDialogBorder();
-
-        CellConstraints cst = new CellConstraints();
-
-        int             r = 1; // --------------------------------
-        builder.addSeparator("Font", cst.xyw(1, r, 7));
-
-        r += 2; // --------------------------------
-        builder.add(fontName.getLabel(), cst.xy(1, r));
-        builder.add(fontName.getSpinner(), cst.xyw(3, r, 5));
-
-        r += 2; // --------------------------------
-        builder.addLabel("Base", cst.xy(1, r));
-        builder.add(fontBase, cst.xy(3, r));
-
-        builder.add(fontSize.getLabel(), cst.xy(5, r));
-        builder.add(fontSize.getSpinner(), cst.xy(7, r));
-
-        r += 2; // --------------------------------
-        builder.add(pointCode.getLabel(), cst.xy(1, r));
-        builder.add(pointCode.getSpinner(), cst.xy(3, r));
-
-        builder.add(hexaCode.getLabel(), cst.xy(5, r));
-        builder.add(hexaCode.getField(), cst.xy(7, r));
-
-        r += 2; // --------------------------------
-        builder.addSeparator("Drawing", cst.xyw(1, r, 7));
-
-        r += 2; // --------------------------------
-        builder.add(xOffset.getLabel(), cst.xy(1, r));
-        builder.add(xOffset.getSpinner(), cst.xy(3, r));
-
-        builder.add(width.getLabel(), cst.xy(5, r));
-        builder.add(width.getSpinner(), cst.xy(7, r));
-
-        r += 2; // --------------------------------
-        builder.add(yOffset.getLabel(), cst.xy(1, r));
-        builder.add(yOffset.getSpinner(), cst.xy(3, r));
-
-        builder.add(height.getLabel(), cst.xy(5, r));
-        builder.add(height.getSpinner(), cst.xy(7, r));
-
-        r += 2; // --------------------------------
-        builder.addSeparator("Symbol", cst.xyw(1, r, 7));
-
-        r += 2; // --------------------------------
-        builder.add(xSym.getLabel(), cst.xy(1, r));
-        builder.add(xSym.getField(), cst.xy(3, r));
-
-        builder.add(wSym.getLabel(), cst.xy(5, r));
-        builder.add(wSym.getField(), cst.xy(7, r));
-
-        r += 2; // --------------------------------
-        builder.add(ySym.getLabel(), cst.xy(1, r));
-        builder.add(ySym.getField(), cst.xy(3, r));
-
-        builder.add(hSym.getLabel(), cst.xy(5, r));
-        builder.add(hSym.getField(), cst.xy(7, r));
-
-        return builder.getPanel();
+        new SymbolRipper();
     }
 
     //------------//
@@ -406,6 +336,76 @@ public class SymbolRipper
 
         JScrollPane scrollPane = new JScrollPane(drawing);
         pane.add(scrollPane, BorderLayout.CENTER);
+    }
+
+    //---------------//
+    // getParamPanel //
+    //---------------//
+    private JPanel getParamPanel ()
+    {
+        FormLayout   layout = Panel.makeFormLayout(13, 2);
+
+        PanelBuilder builder = new PanelBuilder(layout, new Panel());
+        builder.setDefaultDialogBorder();
+
+        CellConstraints cst = new CellConstraints();
+
+        int             r = 1; // --------------------------------
+        builder.addSeparator("Font", cst.xyw(1, r, 7));
+
+        r += 2; // --------------------------------
+        builder.add(fontName.getLabel(), cst.xy(1, r));
+        builder.add(fontName.getSpinner(), cst.xyw(3, r, 5));
+
+        r += 2; // --------------------------------
+        builder.addLabel("Base", cst.xy(1, r));
+        builder.add(fontBase, cst.xy(3, r));
+
+        builder.add(fontSize.getLabel(), cst.xy(5, r));
+        builder.add(fontSize.getSpinner(), cst.xy(7, r));
+
+        r += 2; // --------------------------------
+        builder.add(pointCode.getLabel(), cst.xy(1, r));
+        builder.add(pointCode.getSpinner(), cst.xy(3, r));
+
+        builder.add(hexaCode.getLabel(), cst.xy(5, r));
+        builder.add(hexaCode.getField(), cst.xy(7, r));
+
+        r += 2; // --------------------------------
+        builder.addSeparator("Drawing", cst.xyw(1, r, 7));
+
+        r += 2; // --------------------------------
+        builder.add(xOffset.getLabel(), cst.xy(1, r));
+        builder.add(xOffset.getSpinner(), cst.xy(3, r));
+
+        builder.add(width.getLabel(), cst.xy(5, r));
+        builder.add(width.getSpinner(), cst.xy(7, r));
+
+        r += 2; // --------------------------------
+        builder.add(yOffset.getLabel(), cst.xy(1, r));
+        builder.add(yOffset.getSpinner(), cst.xy(3, r));
+
+        builder.add(height.getLabel(), cst.xy(5, r));
+        builder.add(height.getSpinner(), cst.xy(7, r));
+
+        r += 2; // --------------------------------
+        builder.addSeparator("Symbol", cst.xyw(1, r, 7));
+
+        r += 2; // --------------------------------
+        builder.add(xSym.getLabel(), cst.xy(1, r));
+        builder.add(xSym.getField(), cst.xy(3, r));
+
+        builder.add(wSym.getLabel(), cst.xy(5, r));
+        builder.add(wSym.getField(), cst.xy(7, r));
+
+        r += 2; // --------------------------------
+        builder.add(ySym.getLabel(), cst.xy(1, r));
+        builder.add(ySym.getField(), cst.xy(3, r));
+
+        builder.add(hSym.getLabel(), cst.xy(5, r));
+        builder.add(hSym.getField(), cst.xy(7, r));
+
+        return builder.getPanel();
     }
 
     //---------------//

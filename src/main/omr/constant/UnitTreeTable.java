@@ -62,7 +62,7 @@ public class UnitTreeTable
     private TableCellRenderer loggerRenderer = new LoggerRenderer();
     private TableCellRenderer valueRenderer = new ValueRenderer();
     private TableCellRenderer pixelRenderer = new PixelRenderer();
-    private JComboBox         loggerCombo = new JComboBox();
+    private JComboBox<String> loggerCombo = new JComboBox<String>();
     private TableCellEditor   loggerEditor = new DefaultCellEditor(loggerCombo);
 
     //~ Constructors -----------------------------------------------------------
@@ -211,6 +211,28 @@ public class UnitTreeTable
         }
     }
 
+    //--------------------//
+    // scrollRowToVisible //
+    //--------------------//
+    /**
+     * Scroll so that the provided row gets visible
+     * @param row the provided row
+     */
+    public void scrollRowToVisible (int row)
+    {
+        final int height = tree.getRowHeight();
+        Rectangle rect = new Rectangle(0, row * height, 0, 0);
+
+        if (getParent() instanceof JComponent) {
+            JComponent comp = (JComponent) getParent();
+            rect.grow(0, comp.getHeight() / 2);
+        } else {
+            rect.grow(0, height);
+        }
+
+        scrollRectToVisible(rect);
+    }
+
     //-------------------//
     // setNodesSelection //
     //-------------------//
@@ -257,26 +279,23 @@ public class UnitTreeTable
         return rows;
     }
 
-    //--------------------//
-    // scrollRowToVisible //
-    //--------------------//
+    //---------------//
+    // adjustColumns //
+    //---------------//
     /**
-     * Scroll so that the provided row gets visible
-     * @param row the provided row
+     * Allows to adjust the related columnModel, for each and every column
+     *
+     * @param cModel the proper table column model
      */
-    public void scrollRowToVisible (int row)
+    private void adjustColumns ()
     {
-        final int height = tree.getRowHeight();
-        Rectangle rect = new Rectangle(0, row * height, 0, 0);
+        TableColumnModel cModel = getColumnModel();
 
-        if (getParent() instanceof JComponent) {
-            JComponent comp = (JComponent) getParent();
-            rect.grow(0, comp.getHeight() / 2);
-        } else {
-            rect.grow(0, height);
+        // Columns widths
+        for (UnitModel.Column c : UnitModel.Column.values()) {
+            cModel.getColumn(c.ordinal())
+                  .setPreferredWidth(c.width);
         }
-
-        scrollRectToVisible(rect);
     }
 
     //---------//
@@ -303,25 +322,6 @@ public class UnitTreeTable
         }
 
         return new TreePath(objects.toArray());
-    }
-
-    //---------------//
-    // adjustColumns //
-    //---------------//
-    /**
-     * Allows to adjust the related columnModel, for each and every column
-     *
-     * @param cModel the proper table column model
-     */
-    private void adjustColumns ()
-    {
-        TableColumnModel cModel = getColumnModel();
-
-        // Columns widths
-        for (UnitModel.Column c : UnitModel.Column.values()) {
-            cModel.getColumn(c.ordinal())
-                  .setPreferredWidth(c.width);
-        }
     }
 
     //------------//

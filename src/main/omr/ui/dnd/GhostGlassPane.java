@@ -78,6 +78,29 @@ public class GhostGlassPane
 
     //~ Methods ----------------------------------------------------------------
 
+    //----------------//
+    // paintComponent //
+    //----------------//
+    @Override
+    public void paintComponent (Graphics g)
+    {
+        if ((draggedImage == null) || (localPoint == null)) {
+            return;
+        }
+
+        Graphics2D g2 = (Graphics2D) g;
+
+        // Use composition with display underneath
+        if (!overTarget) {
+            g2.setComposite(nonTargetComposite);
+        } else {
+            g2.setComposite(targetComposite);
+        }
+
+        Rectangle rect = getImageBounds(localPoint);
+        g2.drawImage(draggedImage, null, rect.x, rect.y);
+    }
+
     //---------//
     // setImage //
     //---------//
@@ -144,29 +167,6 @@ public class GhostGlassPane
     public void setPoint (ScreenPoint screenPoint)
     {
         setPoint(screenPoint.getLocalPoint(this));
-    }
-
-    //----------------//
-    // paintComponent //
-    //----------------//
-    @Override
-    public void paintComponent (Graphics g)
-    {
-        if ((draggedImage == null) || (localPoint == null)) {
-            return;
-        }
-
-        Graphics2D g2 = (Graphics2D) g;
-
-        // Use composition with display underneath
-        if (!overTarget) {
-            g2.setComposite(nonTargetComposite);
-        } else {
-            g2.setComposite(targetComposite);
-        }
-
-        Rectangle rect = getImageBounds(localPoint);
-        g2.drawImage(draggedImage, null, rect.x, rect.y);
     }
 
     //----------------//

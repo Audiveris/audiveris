@@ -19,8 +19,8 @@ import omr.log.Logger;
 import java.util.EnumMap;
 
 /**
- * Class {@code Symbols} manages all {@link ShapeSymbol} instances, both
- * for the simple symbols and for the few decorated symbols.
+ * Class {@code Symbols} manages all {@link ShapeSymbol} instances,
+ * both for the simple symbols and for a few decorated symbols.
  *
  * @author Hervé Bitteur
  */
@@ -70,24 +70,24 @@ public class Symbols
     /** Symbol for a user mark */
     public static final BasicSymbol SYMBOL_MARK = new BasicSymbol(205);
 
-    /** Symbol for COMBINING_FLAG_1 */
+    /** Symbol for FLAG_1 */
     public static final ShapeSymbol SYMBOL_FLAG_1 = new ShapeSymbol(
-        COMBINING_FLAG_1,
+        FLAG_1,
         106);
 
-    /** Symbol for COMBINING_FLAG_2 */
+    /** Symbol for FLAG_2 */
     public static final ShapeSymbol SYMBOL_FLAG_2 = new ShapeSymbol(
-        COMBINING_FLAG_2,
+        FLAG_2,
         107);
 
-    /** Symbol for COMBINING_FLAG_1_UP */
+    /** Symbol for FLAG_1_UP */
     public static final ShapeSymbol SYMBOL_FLAG_1_UP = new ShapeSymbol(
-        COMBINING_FLAG_1_UP,
+        FLAG_1_UP,
         74);
 
-    /** Symbol for COMBINING_FLAG_2_UP */
+    /** Symbol for FLAG_2_UP */
     public static final ShapeSymbol SYMBOL_FLAG_2_UP = new ShapeSymbol(
-        COMBINING_FLAG_2_UP,
+        FLAG_2_UP,
         75);
 
     static {
@@ -110,9 +110,8 @@ public class Symbols
     // getSymbol //
     //-----------//
     /**
-     * Return a symbol from its definition in MusicFont
-     *
-     * @param shape the symbol related shape
+     * Return a symbol from its definition in MusicFont.
+     * @param shape     the symbol related shape
      * @param decorated true for a decorated symbol, false for a simple one
      * @return the desired symbol, or null if none found
      */
@@ -134,8 +133,7 @@ public class Symbols
     // getSymbol //
     //-----------//
     /**
-     * Return a simple symbol from its definition in MusicFont
-     *
+     * Return a simple symbol from its definition in MusicFont.
      * @param shape the symbol shape
      * @return the desired symbol, or null if none
      */
@@ -148,7 +146,7 @@ public class Symbols
     // assignDecoratedSymbols //
     //------------------------//
     /**
-     * Populate the 'dec' map: Shape -> decorated Symbol
+     * Populate the 'dec' map: Shape -> decorated Symbol.
      */
     private static void assignDecoratedSymbols ()
     {
@@ -161,7 +159,7 @@ public class Symbols
         dec.put(BREVE_REST, new RestSymbol(BREVE_REST, true, 227));
         dec.put(CHARACTER, new TextSymbol(CHARACTER, "a"));
         dec.put(CLUTTER, new TextSymbol(CLUTTER, "?"));
-        dec.put(COMBINING_STEM, new StemSymbol());
+        dec.put(STEM, new StemSymbol());
         dec.put(CRESCENDO, new CrescendoSymbol(false, CRESCENDO));
         dec.put(DECRESCENDO, new DecrescendoSymbol(false, DECRESCENDO));
         dec.put(ENDING, new EndingSymbol());
@@ -177,7 +175,7 @@ public class Symbols
     // assignSymbols //
     //---------------//
     /**
-     * Populate the 'sym' map: Shape -> (simple) Symbol
+     * Populate the 'sym' map: Shape -> (simple) Symbol.
      * These symbols are draggable
      */
     private static void assignSymbols ()
@@ -191,14 +189,19 @@ public class Symbols
         map(NOTEHEAD_BLACK, 207);
         map(TIME_ZERO, 48);
         map(EIGHTH_REST, 228);
-        map(REPEAT_DOTS, 123);
         map(RIGHT_REPEAT_SIGN, 125);
         map(THICK_BARLINE, 91);
         map(THIN_BARLINE, 108);
-        map(TURN, 84);
-        map(WHOLE_OR_HALF_REST, 238);
+        map(WHOLE_REST, 238);
+        map(HALF_REST, 238);
+        map(REPEAT_DOT_PAIR, 123);
 
         // Other instances, in any order
+        map(DOT_set, 46);
+        map(AUGMENTATION_DOT, 46);
+        map(STACCATO, 46);
+        map(REPEAT_DOT, 46);
+
         map(ACCENT, 62);
         map(ARPEGGIATO, 103);
         sym.put(BACK_TO_BACK_REPEAT_SIGN, new BackToBackSymbol(false));
@@ -207,25 +210,30 @@ public class Symbols
         sym.put(BREVE_REST, new RestSymbol(BREVE_REST, false, 227));
         map(CAESURA, 34);
         map(CODA, 222);
-        map(COMBINING_AUGMENTATION_DOT, 46);
-        flagsDown(1, COMBINING_FLAG_1);
-        flagsUp(1, COMBINING_FLAG_1_UP);
-        flagsDown(2, COMBINING_FLAG_2);
-        flagsUp(2, COMBINING_FLAG_2_UP);
-        flagsDown(3, COMBINING_FLAG_3);
-        flagsUp(3, COMBINING_FLAG_3_UP);
-        flagsDown(4, COMBINING_FLAG_4);
-        flagsUp(4, COMBINING_FLAG_4_UP);
-        flagsDown(5, COMBINING_FLAG_5);
-        flagsUp(5, COMBINING_FLAG_5_UP);
-        //        COMBINING_STEM?
+
+        sym.put(FLAG_1_set, new FlagsDownSymbol(1, false, FLAG_1_set));
+        sym.put(FLAG_2_set, new FlagsDownSymbol(2, false, FLAG_2_set));
+        sym.put(FLAG_3_set, new FlagsDownSymbol(3, false, FLAG_3_set));
+        sym.put(FLAG_4_set, new FlagsDownSymbol(4, false, FLAG_4_set));
+        sym.put(FLAG_5_set, new FlagsDownSymbol(5, false, FLAG_5_set));
+        flagsDown(1, FLAG_1);
+        flagsUp(1, FLAG_1_UP);
+        flagsDown(2, FLAG_2);
+        flagsUp(2, FLAG_2_UP);
+        flagsDown(3, FLAG_3);
+        flagsUp(3, FLAG_3_UP);
+        flagsDown(4, FLAG_4);
+        flagsUp(4, FLAG_4_UP);
+        flagsDown(5, FLAG_5);
+        flagsUp(5, FLAG_5_UP);
+
+        //        STEM?
         map(COMMON_TIME, 99);
         sym.put(CUSTOM_TIME_SIGNATURE, new CustomNumDenSymbol());
         map(CUT_TIME, 67);
         map(C_CLEF, 66);
         map(DAL_SEGNO, 100);
         map(DA_CAPO, 68);
-        map(DOT, 46);
         sym.put(DOUBLE_BARLINE, new DoubleBarlineSymbol(false));
         sym.put(DOUBLE_FLAT, new FlatSymbol(DOUBLE_FLAT, 186));
         map(DOUBLE_SHARP, 220);
@@ -233,18 +241,18 @@ public class Symbols
         map(DYNAMICS_CHAR_R, 243);
         map(DYNAMICS_CHAR_S, 115);
         map(DYNAMICS_CHAR_Z, 122);
-        slanted(DYNAMICS_FFFF, 236, 102);
-        slanted(DYNAMICS_FFFFF, 236, 196);
-        slanted(DYNAMICS_FFFFFF, 236, 236);
+        //        slanted(DYNAMICS_FFFF, 236, 102);
+        //        slanted(DYNAMICS_FFFFF, 236, 196);
+        //        slanted(DYNAMICS_FFFFFF, 236, 236);
         slanted(DYNAMICS_FP, 102, 112);
         map(DYNAMICS_MF, 70);
         map(DYNAMICS_MP, 80);
         map(DYNAMICS_P, 112);
         map(DYNAMICS_PP, 185);
         map(DYNAMICS_PPP, 184);
-        slanted(DYNAMICS_PPPP, 184, 112);
-        slanted(DYNAMICS_PPPPP, 184, 185);
-        slanted(DYNAMICS_PPPPPP, 184, 184);
+        //        slanted(DYNAMICS_PPPP, 184, 112);
+        //        slanted(DYNAMICS_PPPPP, 184, 185);
+        //        slanted(DYNAMICS_PPPPPP, 184, 184);
         slanted(DYNAMICS_RF, 243, 102);
         slanted(DYNAMICS_RFZ, 243, 102, 122);
         slanted(DYNAMICS_SFFZ, 83, 90);
@@ -254,29 +262,24 @@ public class Symbols
 
         //        map(ENDING_HORIZONTAL);
         //        map(ENDING_VERTICAL);
+        map(FERMATA_set, 85);
         map(FERMATA, 85);
         map(FERMATA_BELOW, 117);
         map(FINAL_BARLINE, 211);
         sym.put(FLAT, new FlatSymbol(FLAT, 98));
         map(F_CLEF, 63);
         small(F_CLEF_SMALL, 63);
-        ottava(true, F_CLEF_OTTAVA_ALTA, 63);
-        ottava(false, F_CLEF_OTTAVA_BASSA, 63);
-        map(GRACE_NOTE_NO_SLASH, 59);
+        ottava(true, F_CLEF_8VA, 63);
+        ottava(false, F_CLEF_8VB, 63);
+        map(GRACE_NOTE, 59);
         map(GRACE_NOTE_SLASH, 201);
         map(G_CLEF, 38);
         small(G_CLEF_SMALL, 38);
-        ottava(true, G_CLEF_OTTAVA_ALTA, 38);
-        ottava(false, G_CLEF_OTTAVA_BASSA, 38);
+        ottava(true, G_CLEF_8VA, 38);
+        ottava(false, G_CLEF_8VB, 38);
+        sym.put(HW_REST_set, new RestSymbol(HALF_REST, false, 238));
         sym.put(HALF_REST, new RestSymbol(HALF_REST, false, 238));
         map(INVERTED_MORDENT, 77);
-        sym.put(
-            INVERTED_TURN,
-            new TransformedSymbol(
-                false,
-                INVERTED_TURN,
-                TURN,
-                ShapeSymbol.verticalFlip));
         flatKey(-1, KEY_FLAT_1);
         flatKey(-2, KEY_FLAT_2);
         flatKey(-3, KEY_FLAT_3);
@@ -300,14 +303,14 @@ public class Symbols
         heads(2, NOTEHEAD_BLACK_2, 207);
         heads(3, NOTEHEAD_BLACK_3, 207);
         //        map(NO_LEGAL_TIME);
-        sym.put(
-            OLD_QUARTER_REST,
-            new TransformedSymbol(
-                false,
-                OLD_QUARTER_REST,
-                EIGHTH_REST,
-                ShapeSymbol.horizontalFlip));
-        map(ONE_HUNDRED_TWENTY_EIGHTH_REST, 229);
+        //        sym.put(
+        //            OLD_QUARTER_REST,
+        //            new TransformedSymbol(
+        //                false,
+        //                OLD_QUARTER_REST,
+        //                EIGHTH_REST,
+        //                ShapeSymbol.horizontalFlip));
+        map(ONE_128TH_REST, 229);
         map(OTTAVA_ALTA, 195);
         map(OTTAVA_BASSA, 215);
         //        map(PART_DEFINING_BARLINE);
@@ -318,15 +321,14 @@ public class Symbols
         map(REVERSE_FINAL_BARLINE, 210);
         map(SEGNO, 37);
         map(SHARP, 35);
-        map(SIXTEENTH_REST, 197);
-        map(SIXTY_FOURTH_REST, 244);
+        map(ONE_16TH_REST, 197);
+        map(ONE_64TH_REST, 244);
         //  SLUR?
         map(STACCATISSIMO, 174);
-        map(STACCATO, 46);
         map(STRONG_ACCENT, 94);
         //  STRUCTURE (for training?)
         map(TENUTO, 45);
-        map(THIRTY_SECOND_REST, 168);
+        map(ONE_32ND_REST, 168);
         map(TIME_EIGHT, 56);
         map(TIME_FIVE, 53);
         map(TIME_FOUR, 52);
@@ -334,6 +336,7 @@ public class Symbols
         map(TIME_NINE, 57);
         map(TIME_ONE, 49);
         map(TIME_SEVEN, 55);
+        map(TIME_69_set, 54);
         map(TIME_SIX, 54);
         map(TIME_SIXTEEN, 49, 54);
         numDen(TIME_SIX_EIGHT, 6, 8);
@@ -346,6 +349,16 @@ public class Symbols
         map(TR, 96);
         map(TUPLET_SIX, 164);
         map(TUPLET_THREE, 163);
+
+        map(TURN_set, 84);
+        map(TURN, 84);
+        sym.put(
+            INVERTED_TURN,
+            new TransformedSymbol(
+                false,
+                INVERTED_TURN,
+                TURN,
+                ShapeSymbol.verticalFlip));
         sym.put(TURN_SLASH, new TurnSlashSymbol(false));
         sym.put(
             TURN_UP,
@@ -354,13 +367,15 @@ public class Symbols
                 TURN_UP,
                 TURN,
                 ShapeSymbol.quadrantRotateOne));
-        heads(1, VOID_NOTEHEAD, 250);
-        heads(2, VOID_NOTEHEAD_2, 250);
-        heads(3, VOID_NOTEHEAD_3, 250);
+
+        heads(1, NOTEHEAD_VOID, 250);
+        heads(2, NOTEHEAD_VOID_2, 250);
+        heads(3, NOTEHEAD_VOID_3, 250);
         heads(1, WHOLE_NOTE, 119);
         heads(2, WHOLE_NOTE_2, 119);
         heads(3, WHOLE_NOTE_3, 119);
         sym.put(WHOLE_REST, new RestSymbol(WHOLE_REST, false, 183));
+        sym.put(WEDGE_set, new CrescendoSymbol(false, CRESCENDO));
     }
 
     //- Convenient methods -----------------------------------------------------

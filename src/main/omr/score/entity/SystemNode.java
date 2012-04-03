@@ -75,6 +75,59 @@ public abstract class SystemNode
     //~ Methods ----------------------------------------------------------------
 
     //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
+    //----------//
+    // addError //
+    //----------//
+    /**
+     * Register a system-based error in the ErrorsWindow
+     * @param text the error message
+     */
+    public void addError (String text)
+    {
+        addError(null, text);
+    }
+
+    //----------//
+    // addError //
+    //----------//
+    /**
+     * Register a system-based error in the ErrorsWindow, with the related glyph
+     * @param glyph the related glyph
+     * @param text the error message
+     */
+    public void addError (Glyph  glyph,
+                          String text)
+    {
+        if ((getPage() != null) && (getPage()
+                                        .getSheet() != null)) {
+            getPage()
+                .getSheet()
+                .addError(this, glyph, text);
+        }
+    }
+
+    //--------------------//
+    // computeGlyphCenter //
+    //--------------------//
+    /**
+     * Compute the bounding center of a glyph
+     * @param glyph the glyph
+     * @return the glyph center
+     */
+    public PixelPoint computeGlyphCenter (Glyph glyph)
+    {
+        return computeGlyphsCenter(Collections.singleton(glyph));
+    }
+
+    //--------//
     // getBox //
     //--------//
     /**
@@ -157,83 +210,6 @@ public abstract class SystemNode
     public ScoreSystem getSystem ()
     {
         return system;
-    }
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
-    //----------//
-    // addError //
-    //----------//
-    /**
-     * Register a system-based error in the ErrorsWindow
-     * @param text the error message
-     */
-    public void addError (String text)
-    {
-        addError(null, text);
-    }
-
-    //----------//
-    // addError //
-    //----------//
-    /**
-     * Register a system-based error in the ErrorsWindow, with the related glyph
-     * @param glyph the related glyph
-     * @param text the error message
-     */
-    public void addError (Glyph  glyph,
-                          String text)
-    {
-        if ((getPage() != null) && (getPage()
-                                        .getSheet() != null)) {
-            getPage()
-                .getSheet()
-                .addError(this, glyph, text);
-        }
-    }
-
-    //--------------------//
-    // computeGlyphCenter //
-    //--------------------//
-    /**
-     * Compute the bounding center of a glyph
-     * @param glyph the glyph
-     * @return the glyph center
-     */
-    public PixelPoint computeGlyphCenter (Glyph glyph)
-    {
-        return computeGlyphsCenter(Collections.singleton(glyph));
-    }
-
-    //--------//
-    // setBox //
-    //--------//
-    /**
-     * Assign the bounding box
-     * @param box the bounding box
-     */
-    protected void setBox (PixelRectangle box)
-    {
-        this.box = box;
-    }
-
-    //-----------//
-    // setCenter //
-    //-----------//
-    /**
-     * Remember the center of this system node
-     * @param center the system-based center of the system node
-     */
-    protected void setCenter (PixelPoint center)
-    {
-        this.center = center;
     }
 
     //------------//
@@ -321,5 +297,29 @@ public abstract class SystemNode
     {
         box = null;
         center = null;
+    }
+
+    //--------//
+    // setBox //
+    //--------//
+    /**
+     * Assign the bounding box
+     * @param box the bounding box
+     */
+    protected void setBox (PixelRectangle box)
+    {
+        this.box = box;
+    }
+
+    //-----------//
+    // setCenter //
+    //-----------//
+    /**
+     * Remember the center of this system node
+     * @param center the system-based center of the system node
+     */
+    protected void setCenter (PixelPoint center)
+    {
+        this.center = center;
     }
 }

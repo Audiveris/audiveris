@@ -12,6 +12,7 @@
 package omr.glyph.text;
 
 import omr.glyph.Evaluation;
+import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 import omr.glyph.pattern.GlyphPattern;
@@ -20,14 +21,12 @@ import omr.log.Logger;
 
 import omr.sheet.SystemInfo;
 
-import omr.util.Implement;
-
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code SentencePattern} gathers text-shaped glyphs found within
- * a system into proper sentences.
+ * Class {@code SentencePattern} gathers text-shaped glyphs found
+ * within a system into proper sentences.
  *
  * @author Hervé Bitteur
  */
@@ -42,8 +41,8 @@ public class SentencePattern
 
     //~ Instance fields --------------------------------------------------------
 
-    /** The text lines built within this system */
-    private List<TextLine> textLines;
+    /** The physical lines built within this system */
+    private List<Sentence> physicals;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -52,7 +51,6 @@ public class SentencePattern
     //-----------------//
     /**
      * Creates a new SentencePattern object.
-     *
      * @param system The dedicated system
      */
     public SentencePattern (SystemInfo system)
@@ -66,25 +64,31 @@ public class SentencePattern
     // runPattern //
     //------------//
     /**
-     * Aggregate the various text glyphs into horizontal sentences
+     * Aggregate the various text glyphs into sentences.
      * @return the number of recognized textual items
      */
-    @Implement(GlyphPattern.class)
+    @Override
     public int runPattern ()
     {
         int modifs = 0;
-        textLines = new ArrayList<TextLine>();
+        physicals = new ArrayList<Sentence>();
+
+        // Isolated characters
+        List<Glyph> chars = new ArrayList<Glyph>();
 
         for (Glyph glyph : system.getGlyphs()) {
+            // Focus on true text, excluding isolated characters for now
             if (glyph.isText()) {
-                if (feedLine(glyph)) {
+                if (glyph.getShape() == Shape.CHARACTER) {
+                    chars.add(glyph);
+                } else if (feedLine(glyph)) {
                     modifs++;
                 }
             }
         }
 
-        // Extend the text line skeletons
-        for (TextLine line : textLines) {
+        // Extend the sentence skeletons
+        for (Sentence line : physicals) {
             // Make sure the various text items do not overlap
             line.mergeEnclosedTexts();
 
@@ -103,11 +107,30 @@ public class SentencePattern
 
         system.resetSentences();
 
-        for (TextLine line : textLines) {
+        for (Sentence line : physicals) {
             system.getSentences()
-                  .addAll(line.extractSentences(language));
+                  .addAll(line.extractLogicals(language));
         }
 
+        // Make each isolated character as a stand-alone text line
+        if (logger.isFineEnabled()) {
+            logger.info(
+                "S#" + system.getId() +
+                Glyphs.toString(" Initial chars: ", chars));
+        }
+
+        for (Glyph ch : chars) {
+            // Check whether the char is still isolated
+            if (ch.isActive()) {
+                Sentence line = new Sentence(system, ch);
+                system.getSentences()
+                      .addAll(line.extractLogicals(language));
+            }
+        }
+
+        // Extend lyrics line portions aggressively
+        
+        
         // Special handling of lyrics items
         // We split the underlying long glyph into word glyphs
         for (Sentence sentence : system.getSentences()) {
@@ -123,16 +146,16 @@ public class SentencePattern
     // feedLine //
     //----------//
     /**
-     * Populate a TextLine with this text glyph, either by aggregating the glyph
-     * to an existing TextLine or by creating a new TextLine instance.
-     *
+     * Populate a Sentence with this text glyph, either by aggregating
+     * the glyph to an existing Sentence or by creating a new Sentence
+     * instance.
      * @param glyph the text item to host in a sentence
-     * @return true if a TextLine has been modified or created
+     * @return true if a Sentence has been modified or created
      */
     private boolean feedLine (Glyph glyph)
     {
         // First look for an existing sentence that could host the item
-        for (TextLine line : textLines) {
+        for (Sentence line : physicals) {
             if (line.isCloseTo(glyph)) {
                 if (logger.isFineEnabled()) {
                     logger.fine(
@@ -144,8 +167,8 @@ public class SentencePattern
         }
 
         // No compatible text line found, so create a brand new one
-        TextLine line = new TextLine(system, glyph);
-        textLines.add(line);
+        Sentence line = new Sentence(system, glyph);
+        physicals.add(line);
 
         if (logger.isFineEnabled()) {
             logger.fine("Created new " + line);
@@ -158,7 +181,7 @@ public class SentencePattern
     // mergeLines //
     //------------//
     /**
-     * Merge the text lines that are very close to each other.
+     * Merge the lines that are very close to each other.
      */
     private void mergeLines ()
     {
@@ -168,10 +191,10 @@ public class SentencePattern
             finished = true;
 
             oneLoop: 
-            for (TextLine one : textLines) {
-                for (TextLine two : textLines.subList(
-                    textLines.indexOf(one) + 1,
-                    textLines.size())) {
+            for (Sentence one : physicals) {
+                for (Sentence two : physicals.subList(
+                    physicals.indexOf(one) + 1,
+                    physicals.size())) {
                     if (one.isCloseTo(two)) {
                         // Check the resulting text is not black-listed
                         Glyph compound = one.mergeOf(two);
@@ -179,18 +202,18 @@ public class SentencePattern
                         if (!compound.isShapeForbidden(Shape.TEXT)) {
                             compound.setShape(Shape.TEXT, Evaluation.ALGORITHM);
 
-                            TextLine s = new TextLine(system, compound);
-                            textLines.add(s);
+                            Sentence s = new Sentence(system, compound);
+                            physicals.add(s);
 
                             if (logger.isFineEnabled()) {
                                 logger.fine(
-                                    " TextLine " + " merging " + one + " & " +
+                                    " Sentence " + " merging " + one + " & " +
                                     two);
                             }
 
                             finished = false;
-                            textLines.remove(one);
-                            textLines.remove(two);
+                            physicals.remove(one);
+                            physicals.remove(two);
 
                             break oneLoop;
                         }

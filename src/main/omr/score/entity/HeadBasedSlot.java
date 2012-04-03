@@ -50,6 +50,26 @@ public class HeadBasedSlot
 
     //~ Methods ----------------------------------------------------------------
 
+    //----------//
+    // addGlyph //
+    //----------//
+    /**
+     * Insert a glyph (supposedly from a chord) into this slot,
+     * invalidating the internal computed data.
+     * @param glyph the glyph to insert
+     */
+    @Override
+    public void addGlyph (Glyph glyph)
+    {
+        super.addGlyph(glyph);
+
+        PixelPoint sysPt = glyph.getLocation();
+        xPop.includeValue(sysPt.x);
+        yPop.includeValue(sysPt.y);
+
+        refPoint = null;
+    }
+
     //------//
     // getX //
     //------//
@@ -68,25 +88,5 @@ public class HeadBasedSlot
         }
 
         return refPoint.x;
-    }
-
-    //----------//
-    // addGlyph //
-    //----------//
-    /**
-     * Insert a glyph (supposedly from a chord) into this slot, 
-     * invalidating the internal computed data.
-     * @param glyph the glyph to insert
-     */
-    @Override
-    public void addGlyph (Glyph glyph)
-    {
-        super.addGlyph(glyph);
-
-        PixelPoint sysPt = glyph.getLocation();
-        xPop.includeValue(sysPt.x);
-        yPop.includeValue(sysPt.y);
-
-        refPoint = null;
     }
 }

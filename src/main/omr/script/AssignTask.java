@@ -96,30 +96,6 @@ public class AssignTask
 
     //~ Methods ----------------------------------------------------------------
 
-    //------------------//
-    // getAssignedShape //
-    //------------------//
-    /**
-     * Report the assigned shape (for an assignment impact)
-     * @return the assignedShape (null for a deassignment)
-     */
-    public Shape getAssignedShape ()
-    {
-        return shape;
-    }
-
-    //------------//
-    // isCompound //
-    //------------//
-    /**
-     * Report whether the assignment is a compound
-     * @return true for a compound assignment, false otherwise
-     */
-    public boolean isCompound ()
-    {
-        return compound;
-    }
-
     //------//
     // core //
     //------//
@@ -149,6 +125,30 @@ public class AssignTask
             sheet,
             getImpactedSystems(sheet),
             false);
+    }
+
+    //------------------//
+    // getAssignedShape //
+    //------------------//
+    /**
+     * Report the assigned shape (for an assignment impact)
+     * @return the assignedShape (null for a deassignment)
+     */
+    public Shape getAssignedShape ()
+    {
+        return shape;
+    }
+
+    //------------//
+    // isCompound //
+    //------------//
+    /**
+     * Report whether the assignment is a compound
+     * @return true for a compound assignment, false otherwise
+     */
+    public boolean isCompound ()
+    {
+        return compound;
     }
 
     //-----------------//

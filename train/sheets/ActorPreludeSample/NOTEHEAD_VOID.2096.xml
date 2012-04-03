@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="NOTEHEAD_VOID" interline="13" id="2096">
+    <stem-number>1</stem-number>
+    <with-ledger>true</with-ledger>
+    <pitch-position>-7.333333333333333</pitch-position>
+    <section orientation="VERTICAL" first-pos="2537" id="8209">
+        <run start="446" level="38" length="10"/>
+        <run start="445" level="108" length="8"/>
+        <run start="445" level="95" length="7"/>
+        <run start="445" level="99" length="6"/>
+        <run start="445" level="120" length="6"/>
+        <run start="445" level="126" length="5"/>
+        <run start="445" level="144" length="4"/>
+        <run start="445" level="165" length="4"/>
+        <run start="445" level="192" length="3"/>
+        <run start="445" level="192" length="1"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2540" id="8264">
+        <run start="457" level="192" length="1"/>
+        <run start="456" level="192" length="2"/>
+        <run start="455" level="160" length="3"/>
+        <run start="455" level="129" length="3"/>
+        <run start="454" level="121" length="4"/>
+        <run start="454" level="97" length="4"/>
+        <run start="453" level="91" length="5"/>
+        <run start="452" level="93" length="6"/>
+        <run start="452" level="42" length="5"/>
+        <run start="451" level="50" length="5"/>
+        <run start="450" level="53" length="5"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2550" id="8328">
+        <run start="447" level="112" length="1"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2551" id="8338">
+        <run start="446" level="54" length="7"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2552" id="8356">
+        <run start="445" level="192" length="2"/>
+        <run start="444" level="192" length="2"/>
+        <run start="444" level="192" length="1"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2552" id="8357">
+        <run start="448" level="191" length="1"/>
+    </section>
+</glyph>

@@ -54,6 +54,25 @@ public class Population
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------------//
+    // excludeValue //
+    //--------------//
+    /**
+     * Remove a measurement from the cumulated values
+     *
+     * @param val the measure value to remove
+     */
+    public void excludeValue (double val)
+    {
+        if (n < 1) {
+            throw new RuntimeException("Population is empty");
+        }
+
+        n -= 1;
+        s -= val;
+        s2 -= (val * val);
+    }
+
     //----------------//
     // getCardinality //
     //----------------//
@@ -112,25 +131,6 @@ public class Population
         }
 
         return Math.max(0d, (s2 - ((s * s) / (double) n)) / (double) (n - 1));
-    }
-
-    //--------------//
-    // excludeValue //
-    //--------------//
-    /**
-     * Remove a measurement from the cumulated values
-     *
-     * @param val the measure value to remove
-     */
-    public void excludeValue (double val)
-    {
-        if (n < 1) {
-            throw new RuntimeException("Population is empty");
-        }
-
-        n -= 1;
-        s -= val;
-        s2 -= (val * val);
     }
 
     //-------------------//

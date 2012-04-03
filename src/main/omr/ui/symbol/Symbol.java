@@ -36,8 +36,8 @@ import javax.swing.Icon;
  * <li>It may also be used to convey the <b>reference point</b> of that shape.
  * Most shapes have no reference point, and thus we use their area center,
  * which is the center of their bounding box.
- * However, a few shapes (e.g. clefs to precisely position them  on the staff) 
- * need a very precise reference center (actually the y ordinate) which is 
+ * However, a few shapes (e.g. clefs to precisely position them  on the staff)
+ * need a very precise reference center (actually the y ordinate) which is
  * somewhat different from the area center. See {@link #getRefPoint}.</li>
  *
  * @author Hervé Bitteur
@@ -62,26 +62,26 @@ public interface Symbol
                              Alignment  alignment);
 
     /**
+     * Build the image that represents the related shape, using the
+     * scaled font.
+     * The main difficulty is to determine up-front the size of the image to
+     * allocate.
+     * @param font properly-scaled font (for interline & zoom)
+     * @return the image built, or null if failed
+     */
+    SymbolImage buildImage (MusicFont font);
+
+    /**
      * Report the icon image, suitable for icon display.
      * @return the image meant for icon display
      */
     BufferedImage getIconImage ();
 
     /**
-     * Report the symbol reference point, which is usually the area 
+     * Report the symbol reference point, which is usually the area
      * center, but somewhat different for some symbols (such as flats).
      * @param area the contour box of the entity (symbol or glyph)
      * @return the reference point
      */
     PixelPoint getRefPoint (Rectangle area);
-
-    /**
-     * Build the image that represents the related shape, using the 
-     * scaled font. 
-     * The main difficulty is to determine up-front the size of the image to 
-     * allocate.
-     * @param font properly-scaled font (for interline & zoom)
-     * @return the image built, or null if failed
-     */
-    SymbolImage buildImage (MusicFont font);
 }

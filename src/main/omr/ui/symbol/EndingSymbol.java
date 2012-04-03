@@ -55,6 +55,15 @@ public class EndingSymbol
 
     //~ Methods ----------------------------------------------------------------
 
+    //------------//
+    // createIcon //
+    //------------//
+    @Override
+    protected ShapeSymbol createIcon ()
+    {
+        return new EndingSymbol(true);
+    }
+
     //-----------//
     // getParams //
     //-----------//
@@ -66,15 +75,6 @@ public class EndingSymbol
         p.rect = new Rectangle(4 * il, il);
 
         return p;
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new EndingSymbol(true);
     }
 
     //-------//

@@ -34,7 +34,8 @@ import java.util.Map;
 
 /**
  * Class {@code Barline} encapsulates a logical bar line, that may be
- * composed of several physical components : repeat dots, thin and thick bars.
+ * composed of several physical components : repeat dots, thin and
+ * thick bars.
  *
  * @author Hervé Bitteur
  */
@@ -48,6 +49,7 @@ public class Barline
 
     /** Predicate to detect a barline glyph (not a repeat dot) */
     public static final Predicate<Glyph> linePredicate = new Predicate<Glyph>() {
+        @Override
         public boolean check (Glyph glyph)
         {
             Shape shape = glyph.getShape();
@@ -83,6 +85,30 @@ public class Barline
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
+    //------------//
+    // forceShape //
+    //------------//
+    /**
+     * Normally, shape should be inferred from the signature of stick
+     * combination that compose the bar line, so this method is provided only
+     * for the (rare) cases when we want to force the bar line shape.
+     *
+     * @param shape the forced shape
+     */
+    public void forceShape (Shape shape)
+    {
+        this.shape = shape;
+    }
 
     //----------//
     // getLeftX //
@@ -156,30 +182,6 @@ public class Barline
         }
 
         return shape;
-    }
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
-    //------------//
-    // forceShape //
-    //------------//
-    /**
-     * Normally, shape should be inferred from the signature of stick
-     * combination that compose the bar line, so this method is provided only
-     * for the (rare) cases when we want to force the bar line shape.
-     *
-     * @param shape the forced shape
-     */
-    public void forceShape (Shape shape)
-    {
-        this.shape = shape;
     }
 
     //----------------//
@@ -364,8 +366,8 @@ public class Barline
         case BACK_TO_BACK_REPEAT_SIGN :
             return "ONKNO";
 
-        case DOT :
-        case REPEAT_DOTS :
+        case DOT_set :
+        case REPEAT_DOT :
             return "O"; // Capital o (not zero)
 
         default :
@@ -400,7 +402,7 @@ public class Barline
 
                 if (chars != null) {
                     if (chars.equals("O")) {
-                        // DOT
+                        // DOT_set
                         Staff staff = system.getStaffAt(glyph.getLocation());
 
                         if (staff != staffRef) {

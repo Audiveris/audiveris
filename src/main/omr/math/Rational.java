@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.math;
 
-import omr.util.Implement;
-
 import java.math.BigInteger;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -106,6 +104,33 @@ public class Rational
     //~ Methods ----------------------------------------------------------------
 
     //-----//
+    // gcd //
+    //-----//
+    public static Rational gcd (Rational a,
+                                Rational b)
+    {
+        if (a.num == 0) {
+            return b;
+        } else {
+            return new Rational(1, GCD.lcm(a.den, b.den));
+        }
+    }
+
+    //-----//
+    // gcd //
+    //-----//
+    public static Rational gcd (Rational... vals)
+    {
+        Rational s = Rational.ZERO;
+
+        for (Rational val : vals) {
+            s = gcd(s, val);
+        }
+
+        return s;
+    }
+
+    //-----//
     // abs //
     //-----//
     /**
@@ -125,7 +150,7 @@ public class Rational
      * @param that the other rational instance
      * @return -1,0,1 if this <,==,> that respectively
      */
-    @Implement(Comparable.class)
+    @Override
     public int compareTo (Rational that)
     {
         int a = this.num * that.den;
@@ -191,33 +216,6 @@ public class Rational
         } else {
             return compareTo((Rational) obj) == 0;
         }
-    }
-
-    //-----//
-    // gcd //
-    //-----//
-    public static Rational gcd (Rational a,
-                                Rational b)
-    {
-        if (a.num == 0) {
-            return b;
-        } else {
-            return new Rational(1, GCD.lcm(a.den, b.den));
-        }
-    }
-
-    //-----//
-    // gcd //
-    //-----//
-    public static Rational gcd (Rational... vals)
-    {
-        Rational s = Rational.ZERO;
-
-        for (Rational val : vals) {
-            s = gcd(s, val);
-        }
-
-        return s;
     }
 
     //----------//

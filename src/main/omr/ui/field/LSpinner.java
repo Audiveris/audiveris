@@ -64,6 +64,19 @@ public class LSpinner
 
     //~ Methods ----------------------------------------------------------------
 
+    //-------------------//
+    // addChangeListener //
+    //-------------------//
+    /**
+     * Add a change listener to the spinner
+     *
+     * @param listener
+     */
+    public void addChangeListener (ChangeListener listener)
+    {
+        spinner.addChangeListener(listener);
+    }
+
     //----------//
     // getLabel //
     //----------//
@@ -75,19 +88,6 @@ public class LSpinner
     public JLabel getLabel ()
     {
         return label;
-    }
-
-    //----------//
-    // setModel //
-    //----------//
-    /**
-     * Set the data model for the spinner
-     *
-     * @param model the new data model
-     */
-    public void setModel (SpinnerModel model)
-    {
-        spinner.setModel(model);
     }
 
     //------------//
@@ -103,16 +103,16 @@ public class LSpinner
         return spinner;
     }
 
-    //-------------------//
-    // addChangeListener //
-    //-------------------//
+    //----------//
+    // setModel //
+    //----------//
     /**
-     * Add a change listener to the spinner
+     * Set the data model for the spinner
      *
-     * @param listener
+     * @param model the new data model
      */
-    public void addChangeListener (ChangeListener listener)
+    public void setModel (SpinnerModel model)
     {
-        spinner.addChangeListener(listener);
+        spinner.setModel(model);
     }
 }

@@ -236,7 +236,7 @@ public class Options
                                   .trim();
 
         Set<Object> matches = UnitManager.getInstance()
-                                             .searchUnits(searchString);
+                                         .searchUnits(searchString);
         rows = unitTreeTable.setNodesSelection(matches);
 
         if (rows == null) {

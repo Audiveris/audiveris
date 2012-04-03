@@ -12,6 +12,7 @@
 package omr.sheet;
 
 import omr.glyph.facets.Glyph;
+
 import omr.grid.StaffInfo;
 
 /**
@@ -33,7 +34,8 @@ public class Ending
      * @param stick the underlying stick
      * @param staff the related staff
      */
-    public Ending (Glyph stick, StaffInfo staff)
+    public Ending (Glyph     stick,
+                   StaffInfo staff)
     {
         super(stick, staff);
     }

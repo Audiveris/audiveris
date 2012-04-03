@@ -24,8 +24,6 @@ import omr.log.Logger;
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
-import omr.util.Implement;
-
 /**
  * Class {@code LeftOverPattern} processes the significant glyphs
  * which have been left over.
@@ -65,7 +63,7 @@ public class LeftOverPattern
     //------------//
     // runPattern //
     //------------//
-    @Implement(GlyphPattern.class)
+    @Override
     public int runPattern ()
     {
         int                  successNb = 0;
@@ -81,8 +79,8 @@ public class LeftOverPattern
 
             Evaluation vote = evaluator.vote(
                 glyph,
-                Grades.leftOverMinGrade,
-                system);
+                system,
+                Grades.leftOverMinGrade);
 
             if (vote != null) {
                 glyph = system.addGlyph(glyph);

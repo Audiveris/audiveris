@@ -24,11 +24,15 @@ public interface Line
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * Check if line is horizontal ('a' coeff is null)
-     *
-     * @return true if horizontal
+     * Compute the orthogonal distance between the line and the
+     * provided point.
+     * Note that the distance may be negative.
+     * @param x the point abscissa
+     * @param y the point ordinate
+     * @return the algebraic orthogonal distance
      */
-    boolean isHorizontal ();
+    double distanceOf (double x,
+                       double y);
 
     /**
      * Return -b/a, from a*x + b*y +c
@@ -59,23 +63,6 @@ public interface Line
     double getSlope ();
 
     /**
-     * Check if line is vertical ('b' coeff is null).
-     * @return true if vertical
-     */
-    boolean isVertical ();
-
-    /**
-     * Compute the orthogonal distance between the line and the
-     * provided point.
-     * Note that the distance may be negative.
-     * @param x the point abscissa
-     * @param y the point ordinate
-     * @return the algebraic orthogonal distance
-     */
-    double distanceOf (double x,
-                       double y);
-
-    /**
      * Add the whole population of another line, which results in
      * merging this other line with the line at hand.
      * @param other the other line
@@ -90,6 +77,19 @@ public interface Line
      */
     void includePoint (double x,
                        double y);
+
+    /**
+     * Check if line is horizontal ('a' coeff is null)
+     *
+     * @return true if horizontal
+     */
+    boolean isHorizontal ();
+
+    /**
+     * Check if line is vertical ('b' coeff is null).
+     * @return true if vertical
+     */
+    boolean isVertical ();
 
     /**
      * Remove the whole population of points.

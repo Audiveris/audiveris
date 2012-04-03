@@ -66,27 +66,6 @@ public interface Step
 
     //~ Methods ----------------------------------------------------------------
 
-    /** Report a description of the step */
-    public String getDescription ();
-
-    /** Check whether this step has been done for the specified sheet */
-    public boolean isDone (Sheet sheet);
-
-    /** Is the step mandatory? */
-    public boolean isMandatory ();
-
-    /** Name of the step */
-    public String getName ();
-
-    /** Is the step repeatable at will? */
-    public boolean isRedoable ();
-
-    /** Does the step need to be performed at score level only? */
-    public boolean isScoreLevel ();
-
-    /** Related short tab */
-    public String getTab ();
-
     /** Make the related user interface visible for this step */
     public void displayUI (Sheet sheet);
 
@@ -102,6 +81,27 @@ public interface Step
 
     /** Flag this step as done */
     public void done (Sheet sheet);
+
+    /** Report a description of the step */
+    public String getDescription ();
+
+    /** Name of the step */
+    public String getName ();
+
+    /** Related short tab */
+    public String getTab ();
+
+    /** Check whether this step has been done for the specified sheet */
+    public boolean isDone (Sheet sheet);
+
+    /** Is the step mandatory? */
+    public boolean isMandatory ();
+
+    /** Is the step repeatable at will? */
+    public boolean isRedoable ();
+
+    /** Does the step need to be performed at score level only? */
+    public boolean isScoreLevel ();
 
     /** A detailed description */
     public String toLongString ();

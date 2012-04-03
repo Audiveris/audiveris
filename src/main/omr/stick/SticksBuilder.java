@@ -186,114 +186,34 @@ public class SticksBuilder
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------------//
-    // isDiscarded //
-    //-------------//
-    /**
-     * Checks whether a given section has been discarded
-     *
-     * @param section the section to check
-     *
-     * @return true if actually discarded
-     */
-    public static boolean isDiscarded (Section section)
+    //------------//
+    // canConnect //
+    //------------//
+    public boolean canConnect (Glyph one,
+                               Glyph two,
+                               int   maxDeltaCoord,
+                               int   maxDeltaPos)
     {
-        StickRelation relation = section.getRelation();
+        Point2D oneStart = orientation.oriented(one.getStartPoint(orientation));
+        Point2D oneStop = orientation.oriented(one.getStopPoint(orientation));
+        Point2D twoStart = orientation.oriented(two.getStartPoint(orientation));
+        Point2D twoStop = orientation.oriented(two.getStopPoint(orientation));
 
-        return (relation != null) && (relation.role == DISCARDED);
-    }
+        if (Math.abs(oneStop.getX() - twoStart.getX()) <= maxDeltaCoord) {
+            // Case: this ... that
+            if (Math.abs(twoStart.getY() - oneStop.getY()) <= maxDeltaPos) {
+                return true;
+            }
+        }
 
-    //------------------//
-    // setExpectedSlope //
-    //------------------//
-    public void setExpectedSlope (double value)
-    {
-        params.expectedSlope = value;
-    }
+        if (Math.abs(twoStop.getX() - oneStart.getX()) <= maxDeltaCoord) {
+            // Case: that ... this
+            if (Math.abs(twoStop.getY() - oneStart.getY()) <= maxDeltaPos) {
+                return true;
+            }
+        }
 
-    //-----------------//
-    // setMaxAdjacency //
-    //-----------------//
-    public void setMaxAdjacency (double value)
-    {
-        params.maxAdjacency = value;
-    }
-
-    //------------------//
-    // setMaxDeltaCoord //
-    //------------------//
-    public void setMaxDeltaCoord (Scale.Fraction frac)
-    {
-        params.maxDeltaCoord = scale.toPixels(frac);
-    }
-
-    //----------------//
-    // setMaxDeltaPos //
-    //----------------//
-    public void setMaxDeltaPos (Scale.Fraction frac)
-    {
-        params.maxDeltaPos = scale.toPixels(frac);
-    }
-
-    //-----------------//
-    // setMaxThickness //
-    //-----------------//
-    public void setMaxThickness (Scale.Fraction frac)
-    {
-        params.maxThickness = scale.toPixels(frac);
-    }
-
-    //-----------------//
-    // setMaxThickness //
-    //-----------------//
-    public void setMaxThickness (Scale.LineFraction lFrac)
-    {
-        params.maxThickness = scale.toPixels(lFrac);
-    }
-
-    //------------------//
-    // setMinCoreLength //
-    //------------------//
-    public void setMinCoreLength (Scale.Fraction frac)
-    {
-        setMinCoreLength(scale.toPixels(frac));
-    }
-
-    //------------------//
-    // setMinCoreLength //
-    //------------------//
-    public void setMinCoreLength (int value)
-    {
-        params.minCoreLength = value;
-    }
-
-    //---------------------//
-    // setMinSectionAspect //
-    //---------------------//
-    public void setMinSectionAspect (double value)
-    {
-        params.minSectionAspect = value;
-    }
-
-    //----------------//
-    // setSlopeMargin //
-    //----------------//
-    public void setSlopeMargin (double value)
-    {
-        params.slopeMargin = value;
-    }
-
-    //-----------//
-    // getSticks //
-    //-----------//
-    /**
-     * Returns the collection of sticks found in this area
-     *
-     * @return the sticks found
-     */
-    public List<Glyph> getSticks ()
-    {
-        return sticks;
+        return false;
     }
 
     //--------------//
@@ -447,6 +367,36 @@ public class SticksBuilder
         }
     }
 
+    //-----------//
+    // getSticks //
+    //-----------//
+    /**
+     * Returns the collection of sticks found in this area
+     *
+     * @return the sticks found
+     */
+    public List<Glyph> getSticks ()
+    {
+        return sticks;
+    }
+
+    //-------------//
+    // isDiscarded //
+    //-------------//
+    /**
+     * Checks whether a given section has been discarded
+     *
+     * @param section the section to check
+     *
+     * @return true if actually discarded
+     */
+    public static boolean isDiscarded (Section section)
+    {
+        StickRelation relation = section.getRelation();
+
+        return (relation != null) && (relation.role == DISCARDED);
+    }
+
     //-------//
     // reset //
     //-------//
@@ -456,36 +406,6 @@ public class SticksBuilder
     public static void reset ()
     {
         globalId = 0;
-    }
-
-    //------------//
-    // canConnect //
-    //------------//
-    public boolean canConnect (Glyph one,
-                               Glyph two,
-                               int   maxDeltaCoord,
-                               int   maxDeltaPos)
-    {
-        Point2D oneStart = orientation.oriented(one.getStartPoint(orientation));
-        Point2D oneStop = orientation.oriented(one.getStopPoint(orientation));
-        Point2D twoStart = orientation.oriented(two.getStartPoint(orientation));
-        Point2D twoStop = orientation.oriented(two.getStopPoint(orientation));
-
-        if (Math.abs(oneStop.getX() - twoStart.getX()) <= maxDeltaCoord) {
-            // Case: this ... that
-            if (Math.abs(twoStart.getY() - oneStop.getY()) <= maxDeltaPos) {
-                return true;
-            }
-        }
-
-        if (Math.abs(twoStop.getX() - oneStart.getX()) <= maxDeltaCoord) {
-            // Case: that ... this
-            if (Math.abs(twoStop.getY() - oneStart.getY()) <= maxDeltaPos) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     //----------------//
@@ -514,6 +434,86 @@ public class SticksBuilder
         }
 
         return sticks;
+    }
+
+    //------------------//
+    // setExpectedSlope //
+    //------------------//
+    public void setExpectedSlope (double value)
+    {
+        params.expectedSlope = value;
+    }
+
+    //-----------------//
+    // setMaxAdjacency //
+    //-----------------//
+    public void setMaxAdjacency (double value)
+    {
+        params.maxAdjacency = value;
+    }
+
+    //------------------//
+    // setMaxDeltaCoord //
+    //------------------//
+    public void setMaxDeltaCoord (Scale.Fraction frac)
+    {
+        params.maxDeltaCoord = scale.toPixels(frac);
+    }
+
+    //----------------//
+    // setMaxDeltaPos //
+    //----------------//
+    public void setMaxDeltaPos (Scale.Fraction frac)
+    {
+        params.maxDeltaPos = scale.toPixels(frac);
+    }
+
+    //-----------------//
+    // setMaxThickness //
+    //-----------------//
+    public void setMaxThickness (Scale.Fraction frac)
+    {
+        params.maxThickness = scale.toPixels(frac);
+    }
+
+    //-----------------//
+    // setMaxThickness //
+    //-----------------//
+    public void setMaxThickness (Scale.LineFraction lFrac)
+    {
+        params.maxThickness = scale.toPixels(lFrac);
+    }
+
+    //------------------//
+    // setMinCoreLength //
+    //------------------//
+    public void setMinCoreLength (Scale.Fraction frac)
+    {
+        setMinCoreLength(scale.toPixels(frac));
+    }
+
+    //------------------//
+    // setMinCoreLength //
+    //------------------//
+    public void setMinCoreLength (int value)
+    {
+        params.minCoreLength = value;
+    }
+
+    //---------------------//
+    // setMinSectionAspect //
+    //---------------------//
+    public void setMinSectionAspect (double value)
+    {
+        params.minSectionAspect = value;
+    }
+
+    //----------------//
+    // setSlopeMargin //
+    //----------------//
+    public void setSlopeMargin (double value)
+    {
+        params.slopeMargin = value;
     }
 
     //-------//
@@ -603,84 +603,6 @@ public class SticksBuilder
                 "merged " + removals.size() + " sticks in " +
                 (System.currentTimeMillis() - startTime) + " ms");
         }
-    }
-
-    //---------//
-    // isClose //
-    //---------//
-    /**
-     * Check that the section would not thicken too much the stick being built,
-     * and whose members are passed as parameter
-     *
-     * @param members      the members to compute distance to
-     * @param section      the section to check
-     * @param maxThickness the maximum resulting stick thickness
-     *
-     * @return true if OK
-     */
-    private boolean isClose (Collection<Section> members,
-                             Section             section,
-                             int                 maxThickness)
-    {
-        // Just to speed up
-        final int start = section.getStartCoord();
-        final int stop = section.getStopCoord();
-        final int firstPos = section.getFirstPos();
-        final int lastPos = section.getLastPos();
-
-        // Check real stick thickness so far
-        for (Section sct : members) {
-            // Check overlap in abscissa with section at hand
-            if (Math.max(start, sct.getStartCoord()) <= Math.min(
-                stop,
-                sct.getStopCoord())) {
-                // Check global thickness
-                int thick;
-
-                if (sct.getFirstPos() > firstPos) {
-                    thick = sct.getLastPos() - firstPos + 1;
-                } else {
-                    thick = lastPos - sct.getFirstPos() + 1;
-                }
-
-                if (thick > maxThickness) {
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            "Too thick real line (" + thick + ") " + section);
-                    }
-
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    //--------//
-    // isFree //
-    //--------//
-    private boolean isFree (Section section)
-    {
-        StickRelation relation = section.getRelation();
-
-        return (relation == null) || (relation.role == null);
-    }
-
-    //------------//
-    // isTooThick //
-    //------------//
-    /**
-     * Check whether the given section is too thick (thicker than the allowed
-     * maxThickness).
-     *
-     * @param section the section to check
-     *
-     * @return true if section is too thick
-     */
-    private boolean isTooThick (Section section)
-    {
-        return section.getRunCount() > params.maxThickness;
     }
 
     //-----------//
@@ -856,6 +778,84 @@ public class SticksBuilder
             relation.role = DISCARDED;
             section.setGlyph(null);
         }
+    }
+
+    //---------//
+    // isClose //
+    //---------//
+    /**
+     * Check that the section would not thicken too much the stick being built,
+     * and whose members are passed as parameter
+     *
+     * @param members      the members to compute distance to
+     * @param section      the section to check
+     * @param maxThickness the maximum resulting stick thickness
+     *
+     * @return true if OK
+     */
+    private boolean isClose (Collection<Section> members,
+                             Section             section,
+                             int                 maxThickness)
+    {
+        // Just to speed up
+        final int start = section.getStartCoord();
+        final int stop = section.getStopCoord();
+        final int firstPos = section.getFirstPos();
+        final int lastPos = section.getLastPos();
+
+        // Check real stick thickness so far
+        for (Section sct : members) {
+            // Check overlap in abscissa with section at hand
+            if (Math.max(start, sct.getStartCoord()) <= Math.min(
+                stop,
+                sct.getStopCoord())) {
+                // Check global thickness
+                int thick;
+
+                if (sct.getFirstPos() > firstPos) {
+                    thick = sct.getLastPos() - firstPos + 1;
+                } else {
+                    thick = lastPos - sct.getFirstPos() + 1;
+                }
+
+                if (thick > maxThickness) {
+                    if (logger.isFineEnabled()) {
+                        logger.fine(
+                            "Too thick real line (" + thick + ") " + section);
+                    }
+
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    //--------//
+    // isFree //
+    //--------//
+    private boolean isFree (Section section)
+    {
+        StickRelation relation = section.getRelation();
+
+        return (relation == null) || (relation.role == null);
+    }
+
+    //------------//
+    // isTooThick //
+    //------------//
+    /**
+     * Check whether the given section is too thick (thicker than the allowed
+     * maxThickness).
+     *
+     * @param section the section to check
+     *
+     * @return true if section is too thick
+     */
+    private boolean isTooThick (Section section)
+    {
+        return section.getRunCount() > params.maxThickness;
     }
 
     //------//

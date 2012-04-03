@@ -17,7 +17,7 @@ import omr.glyph.CompoundBuilder;
 import omr.glyph.Evaluation;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
-import omr.glyph.ShapeRange;
+import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
@@ -69,8 +69,8 @@ public class LedgerPattern
     static {
         //        ledgerNeighbors.add(Shape.GRACE_NOTE_SLASH);
         //        ledgerNeighbors.add(Shape.GRACE_NOTE_NO_SLASH);
-        ledgerNeighbors.addAll(ShapeRange.Notes.getShapes());
-        ledgerNeighbors.addAll(ShapeRange.NoteHeads.getShapes());
+        ledgerNeighbors.addAll(ShapeSet.Notes.getShapes());
+        ledgerNeighbors.addAll(ShapeSet.NoteHeads.getShapes());
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -201,8 +201,7 @@ public class LedgerPattern
         for (Glyph glyph : neighborGlyphs) {
             Shape shape = glyph.getShape();
 
-            if ((shape == Shape.COMBINING_STEM) ||
-                ledgerNeighbors.contains(shape)) {
+            if ((shape == Shape.STEM) || ledgerNeighbors.contains(shape)) {
                 return false;
             }
         }
@@ -263,17 +262,6 @@ public class LedgerPattern
 
         //~ Methods ------------------------------------------------------------
 
-        public boolean isCandidateSuitable (Glyph glyph)
-        {
-            return !ledgerGlyphs.contains(glyph);
-        }
-
-        @Override
-        public Evaluation getChosenEvaluation ()
-        {
-            return new Evaluation(chosenEvaluation.shape, Evaluation.ALGORITHM);
-        }
-
         public PixelRectangle computeReferenceBox ()
         {
             Point2D        stop = seed.getStopPoint(Orientation.HORIZONTAL);
@@ -286,6 +274,17 @@ public class LedgerPattern
             seed.addAttachment("-", rect);
 
             return rect;
+        }
+
+        @Override
+        public Evaluation getChosenEvaluation ()
+        {
+            return new Evaluation(chosenEvaluation.shape, Evaluation.ALGORITHM);
+        }
+
+        public boolean isCandidateSuitable (Glyph glyph)
+        {
+            return !ledgerGlyphs.contains(glyph);
         }
     }
 }

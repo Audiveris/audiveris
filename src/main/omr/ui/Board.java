@@ -170,67 +170,6 @@ public abstract class Board
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------//
-    // setParent //
-    //-----------//
-    public void setParent (BoardsPane parent)
-    {
-        this.parent = parent;
-    }
-
-    //-------------//
-    // setSelected //
-    //-------------//
-    /**
-     * Select or not this board in its containing BoardsPane.
-     * @param bool true for selected
-     */
-    public void setSelected (boolean bool)
-    {
-        selected = bool;
-
-        if (parent != null) {
-            parent.update();
-        }
-    }
-
-    //------------//
-    // isSelected //
-    //------------//
-    /**
-     * Report whether this board is currently selected.
-     * @return true if selected
-     */
-    public boolean isSelected ()
-    {
-        return selected;
-    }
-
-    //------------//
-    // setVisible //
-    //------------//
-    /**
-     * Make this board visible or not.
-     * @param bool true for visible
-     */
-    public void setVisible (boolean bool)
-    {
-        component.setVisible(bool);
-    }
-
-    //-----------//
-    // compareTo //
-    //-----------//
-    /**
-     * Allow to sort boards according to their preferred display position.
-     * @param that the other board to compare to
-     * @return comparison result
-     */
-    public int compareTo (Board that)
-    {
-        return Integer.signum(this.position - that.position);
-    }
-
     //-------------//
     // emptyFields //
     //-------------//
@@ -247,28 +186,17 @@ public abstract class Board
         }
     }
 
-    //--------------//
-    // getComponent //
-    //--------------//
+    //-----------//
+    // compareTo //
+    //-----------//
     /**
-     * Report the UI component.
-     * @return the concrete component
+     * Allow to sort boards according to their preferred display position.
+     * @param that the other board to compare to
+     * @return comparison result
      */
-    public JPanel getComponent ()
+    public int compareTo (Board that)
     {
-        return component;
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * Report the name for this board instance.
-     * @return an instance name
-     */
-    public String getName ()
-    {
-        return name;
+        return Integer.signum(this.position - that.position);
     }
 
     //---------//
@@ -308,6 +236,78 @@ public abstract class Board
                 selectionService.unsubscribe(eventClass, this);
             }
         }
+    }
+
+    //--------------//
+    // getComponent //
+    //--------------//
+    /**
+     * Report the UI component.
+     * @return the concrete component
+     */
+    public JPanel getComponent ()
+    {
+        return component;
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * Report the name for this board instance.
+     * @return an instance name
+     */
+    public String getName ()
+    {
+        return name;
+    }
+
+    //------------//
+    // isSelected //
+    //------------//
+    /**
+     * Report whether this board is currently selected.
+     * @return true if selected
+     */
+    public boolean isSelected ()
+    {
+        return selected;
+    }
+
+    //-----------//
+    // setParent //
+    //-----------//
+    public void setParent (BoardsPane parent)
+    {
+        this.parent = parent;
+    }
+
+    //-------------//
+    // setSelected //
+    //-------------//
+    /**
+     * Select or not this board in its containing BoardsPane.
+     * @param bool true for selected
+     */
+    public void setSelected (boolean bool)
+    {
+        selected = bool;
+
+        if (parent != null) {
+            parent.update();
+        }
+    }
+
+    //------------//
+    // setVisible //
+    //------------//
+    /**
+     * Make this board visible or not.
+     * @param bool true for visible
+     */
+    public void setVisible (boolean bool)
+    {
+        component.setVisible(bool);
     }
 
     //----------//

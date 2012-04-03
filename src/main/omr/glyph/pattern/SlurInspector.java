@@ -18,7 +18,7 @@ import omr.glyph.CompoundBuilder;
 import omr.glyph.Evaluation;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
-import omr.glyph.ShapeRange;
+import omr.glyph.ShapeSet;
 import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
 
@@ -41,7 +41,6 @@ import omr.sheet.SystemInfo;
 
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
-import omr.util.Implement;
 import omr.util.Wrapper;
 
 import java.awt.geom.CubicCurve2D;
@@ -138,27 +137,6 @@ public class SlurInspector
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------//
-    // getCircle //
-    //-----------//
-    /**
-     * Report the circle which best approximates the pixels of a given
-     * glyph.
-     * @param glyph The glyph to fit the circle on
-     * @return The best circle possible
-     */
-    public Circle getCircle (Glyph glyph)
-    {
-        Circle circle = glyph.getCircle();
-
-        if (circle == null) {
-            circle = computeCircle(glyph.getMembers());
-            glyph.setCircle(circle);
-        }
-
-        return circle;
-    }
-
     //---------------//
     // computeCircle //
     //---------------//
@@ -228,6 +206,27 @@ public class SlurInspector
         return circle;
     }
 
+    //-----------//
+    // getCircle //
+    //-----------//
+    /**
+     * Report the circle which best approximates the pixels of a given
+     * glyph.
+     * @param glyph The glyph to fit the circle on
+     * @return The best circle possible
+     */
+    public Circle getCircle (Glyph glyph)
+    {
+        Circle circle = glyph.getCircle();
+
+        if (circle == null) {
+            circle = computeCircle(glyph.getMembers());
+            glyph.setCircle(circle);
+        }
+
+        return circle;
+    }
+
     //------------//
     // runPattern //
     //------------//
@@ -247,7 +246,7 @@ public class SlurInspector
      *          + buildFinalSlur()
      * </pre>
      */
-    @Implement(GlyphPattern.class)
+    @Override
     public int runPattern ()
     {
         // Make a list of all slur glyphs to be checked in this system
@@ -438,115 +437,6 @@ public class SlurInspector
 
             return null;
         }
-    }
-
-    //---------------//
-    // getInvalidity //
-    //---------------//
-    /**
-     * Check validity of a collection of sections as a slur.
-     * @param sections the provided sections
-     * @param resulting circle if already known
-     * @return null if OK, otherwise the cause of invalidity
-     */
-    private Object getInvalidity (Collection<Section> sections,
-                                  Circle              circle)
-    {
-        if (circle == null) {
-            circle = computeCircle(sections);
-        }
-
-        // Check distance to circle
-        double dist = circle.getDistance();
-
-        if (dist > maxCircleDistance) {
-            return "distance " + (float) dist + " vs " + maxCircleDistance;
-        }
-
-        // Check curve is computable
-        if (circle.getCurve() == null) {
-            return "no curve";
-        }
-
-        // Check radius 
-        double radius = circle.getRadius();
-
-        if (radius < minCircleRadius) {
-            return "small radius " + (float) radius + " vs " + minCircleRadius;
-        }
-
-        if (radius > maxCircleRadius) {
-            return "large radius " + (float) radius + " vs " + maxCircleRadius;
-        }
-
-        //        // Check curve bounds are rather close to slur box
-        //        Rectangle curveBox = circle.getCurve()
-        //                                   .getBounds();
-        //
-        //        double    heightRatio = (double) curveBox.height / contourBox.height;
-        //
-        //        if (heightRatio > constants.maxHeightRatio.getValue()) {
-        //            if (logger.isFineEnabled()) {
-        //                logger.info(
-        //                    "Too high ratio: " + (float) heightRatio +
-        //                    " for curve box " + curveBox);
-        //            }
-        //
-        //            return false;
-        //        }
-        return null;
-    }
-
-    //-------------------//
-    // getSlurPointNearX //
-    //-------------------//
-    /**
-     * Retrieve the best slur point near the provided abscissa.
-     * @param x the provided abscissa
-     * @param sections the slur sections
-     * @param box the slur bounding box
-     * @return the best approximating point
-     */
-    private Point2D getSlurPointNearX (int                          x,
-                                       Collection<?extends Section> sections,
-                                       PixelRectangle               box)
-    {
-        PixelRectangle roi = new PixelRectangle(x, box.y, 0, box.height);
-        Barycenter     bary;
-
-        do {
-            bary = new Barycenter();
-            roi.grow(1, 0);
-
-            for (Section section : sections) {
-                section.cumulate(bary, roi);
-            }
-        } while (bary.getWeight() == 0);
-
-        return new Point2D.Double(bary.getX(), bary.getY());
-    }
-
-    //---------//
-    // isValid //
-    //---------//
-    /**
-     * Check validity of a glyph as a slur.
-     * @param glyph the glyph to check
-     * @return true if valid
-     */
-    private boolean isValid (Glyph slur)
-    {
-        Object cause = getInvalidity(slur.getMembers(), slur.getCircle());
-
-        if (slur.isVip()) {
-            if (cause != null) {
-                logger.info("Invalid slur #" + slur.getId() + " : " + cause);
-            } else {
-                logger.info("Valid slur #" + slur.getId());
-            }
-        }
-
-        return cause == null;
     }
 
     //----------------//
@@ -974,6 +864,115 @@ public class SlurInspector
         return seedSection;
     }
 
+    //---------------//
+    // getInvalidity //
+    //---------------//
+    /**
+     * Check validity of a collection of sections as a slur.
+     * @param sections the provided sections
+     * @param resulting circle if already known
+     * @return null if OK, otherwise the cause of invalidity
+     */
+    private Object getInvalidity (Collection<Section> sections,
+                                  Circle              circle)
+    {
+        if (circle == null) {
+            circle = computeCircle(sections);
+        }
+
+        // Check distance to circle
+        double dist = circle.getDistance();
+
+        if (dist > maxCircleDistance) {
+            return "distance " + (float) dist + " vs " + maxCircleDistance;
+        }
+
+        // Check curve is computable
+        if (circle.getCurve() == null) {
+            return "no curve";
+        }
+
+        // Check radius 
+        double radius = circle.getRadius();
+
+        if (radius < minCircleRadius) {
+            return "small radius " + (float) radius + " vs " + minCircleRadius;
+        }
+
+        if (radius > maxCircleRadius) {
+            return "large radius " + (float) radius + " vs " + maxCircleRadius;
+        }
+
+        //        // Check curve bounds are rather close to slur box
+        //        Rectangle curveBox = circle.getCurve()
+        //                                   .getBounds();
+        //
+        //        double    heightRatio = (double) curveBox.height / contourBox.height;
+        //
+        //        if (heightRatio > constants.maxHeightRatio.getValue()) {
+        //            if (logger.isFineEnabled()) {
+        //                logger.info(
+        //                    "Too high ratio: " + (float) heightRatio +
+        //                    " for curve box " + curveBox);
+        //            }
+        //
+        //            return false;
+        //        }
+        return null;
+    }
+
+    //-------------------//
+    // getSlurPointNearX //
+    //-------------------//
+    /**
+     * Retrieve the best slur point near the provided abscissa.
+     * @param x the provided abscissa
+     * @param sections the slur sections
+     * @param box the slur bounding box
+     * @return the best approximating point
+     */
+    private Point2D getSlurPointNearX (int                          x,
+                                       Collection<?extends Section> sections,
+                                       PixelRectangle               box)
+    {
+        PixelRectangle roi = new PixelRectangle(x, box.y, 0, box.height);
+        Barycenter     bary;
+
+        do {
+            bary = new Barycenter();
+            roi.grow(1, 0);
+
+            for (Section section : sections) {
+                section.cumulate(bary, roi);
+            }
+        } while (bary.getWeight() == 0);
+
+        return new Point2D.Double(bary.getX(), bary.getY());
+    }
+
+    //---------//
+    // isValid //
+    //---------//
+    /**
+     * Check validity of a glyph as a slur.
+     * @param glyph the glyph to check
+     * @return true if valid
+     */
+    private boolean isValid (Glyph slur)
+    {
+        Object cause = getInvalidity(slur.getMembers(), slur.getCircle());
+
+        if (slur.isVip()) {
+            if (cause != null) {
+                logger.info("Invalid slur #" + slur.getId() + " : " + cause);
+            } else {
+                logger.info("Valid slur #" + slur.getId());
+            }
+        }
+
+        return cause == null;
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
     //-----------//
@@ -1124,144 +1123,12 @@ public class SlurInspector
 
         //~ Methods ------------------------------------------------------------
 
-        @Implement(CompoundBuilder.CompoundAdapter.class)
-        public boolean isCandidateSuitable (Glyph glyph)
-        {
-            if (!glyph.isActive()) {
-                return false; // Safer
-            }
-
-            // Check mean thickness
-            double thickness = Math.min(
-                glyph.getMeanThickness(VERTICAL),
-                glyph.getMeanThickness(HORIZONTAL));
-
-            if (thickness > maxChunkThickness) {
-                return false;
-            }
-
-            // Check minimum weight
-            if (glyph.getWeight() < minExtensionWeight) {
-                return false;
-            }
-
-            // Check shape
-            if (!glyph.isKnown()) {
-                return true;
-            }
-
-            Shape shape = glyph.getShape();
-
-            if ((shape == Shape.SLUR) && !glyph.isManualShape()) {
-                return true;
-            }
-
-            return (!glyph.isManualShape() && (shape == Shape.CLUTTER)) ||
-                   (glyph.getGrade() <= Grades.compoundPartMaxGrade);
-        }
-
-        @Implement(CompoundBuilder.CompoundAdapter.class)
-        public boolean isCompoundValid (Glyph compound)
-        {
-            if (isValid(compound)) {
-                chosenEvaluation = new Evaluation(
-                    Shape.SLUR,
-                    Evaluation.ALGORITHM);
-
-                return true;
-            }
-
-            return false;
-        }
-
-        public boolean isSectionClose (Section section)
-        {
-            return box.intersects(section.getContourBox());
-        }
-
-        public boolean isSectionSuitable (Section section)
-        {
-            Glyph glyph = section.getGlyph();
-
-            if ((glyph != null) && !glyph.isActive()) {
-                return false; // Safer
-            }
-
-            // Check meanthickness
-            double thickness = Math.min(
-                section.getMeanThickness(VERTICAL),
-                section.getMeanThickness(HORIZONTAL));
-
-            if (thickness > maxChunkThickness) {
-                return false;
-            }
-
-            if ((glyph == null) || !glyph.isKnown()) {
-                // Check section weight
-                if (section.getWeight() >= minExtensionWeight) {
-                    return true;
-                } else {
-                    return false;
-                }
-            }
-
-            Shape shape = glyph.getShape();
-
-            if (ShapeRange.Barlines.contains(shape) || (shape == Shape.SLUR)) {
-                return false;
-            }
-
-            if (glyph.isManualShape()) {
-                return false;
-            }
-
-            // Check shape grade
-            if (glyph.getGrade() > Grades.compoundPartMaxGrade) {
-                return false;
-            }
-
-            return true;
-        }
-
-        @Override
-        public PixelRectangle setSeed (Glyph seed)
-        {
-            box = null;
-
-            // Side-effect: compute underlying circle & curve
-            circle = getCircle(seed);
-
-            if (circle.getRadius()
-                      .isInfinite()) {
-                throw new NoSlurCurveException();
-            }
-
-            curve = circle.getCurve();
-
-            if (curve == null) {
-                throw new NoSlurCurveException();
-            } else {
-                seed.addAttachment("^", curve);
-            }
-
-            return super.setSeed(seed);
-        }
-
-        /**
-         * Remember the desired extension side.
-         * @param side the desired side
-         */
-        public void setSide (HorizontalSide side)
-        {
-            this.side = side;
-        }
-
         /**
          * Compute the extension box on the provided side.
          * @return the extension box
          * @see #setSide
          */
-        @Implement(CompoundBuilder.CompoundAdapter.class)
+        @Override
         public PixelRectangle computeReferenceBox ()
         {
             PixelRectangle seedBox = seed.getContourBox();
@@ -1353,6 +1220,138 @@ public class SlurInspector
             seed.addAttachment(((side == LEFT) ? "e^" : "^e"), rect);
 
             return rect;
+        }
+
+        @Override
+        public boolean isCandidateSuitable (Glyph glyph)
+        {
+            if (!glyph.isActive()) {
+                return false; // Safer
+            }
+
+            // Check mean thickness
+            double thickness = Math.min(
+                glyph.getMeanThickness(VERTICAL),
+                glyph.getMeanThickness(HORIZONTAL));
+
+            if (thickness > maxChunkThickness) {
+                return false;
+            }
+
+            // Check minimum weight
+            if (glyph.getWeight() < minExtensionWeight) {
+                return false;
+            }
+
+            // Check shape
+            if (!glyph.isKnown()) {
+                return true;
+            }
+
+            Shape shape = glyph.getShape();
+
+            if ((shape == Shape.SLUR) && !glyph.isManualShape()) {
+                return true;
+            }
+
+            return (!glyph.isManualShape() && (shape == Shape.CLUTTER)) ||
+                   (glyph.getGrade() <= Grades.compoundPartMaxGrade);
+        }
+
+        @Override
+        public boolean isCompoundValid (Glyph compound)
+        {
+            if (isValid(compound)) {
+                chosenEvaluation = new Evaluation(
+                    Shape.SLUR,
+                    Evaluation.ALGORITHM);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public boolean isSectionClose (Section section)
+        {
+            return box.intersects(section.getContourBox());
+        }
+
+        public boolean isSectionSuitable (Section section)
+        {
+            Glyph glyph = section.getGlyph();
+
+            if ((glyph != null) && !glyph.isActive()) {
+                return false; // Safer
+            }
+
+            // Check meanthickness
+            double thickness = Math.min(
+                section.getMeanThickness(VERTICAL),
+                section.getMeanThickness(HORIZONTAL));
+
+            if (thickness > maxChunkThickness) {
+                return false;
+            }
+
+            if ((glyph == null) || !glyph.isKnown()) {
+                // Check section weight
+                if (section.getWeight() >= minExtensionWeight) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            Shape shape = glyph.getShape();
+
+            if (ShapeSet.Barlines.contains(shape) || (shape == Shape.SLUR)) {
+                return false;
+            }
+
+            if (glyph.isManualShape()) {
+                return false;
+            }
+
+            // Check shape grade
+            if (glyph.getGrade() > Grades.compoundPartMaxGrade) {
+                return false;
+            }
+
+            return true;
+        }
+
+        @Override
+        public PixelRectangle setSeed (Glyph seed)
+        {
+            box = null;
+
+            // Side-effect: compute underlying circle & curve
+            circle = getCircle(seed);
+
+            if (circle.getRadius()
+                      .isInfinite()) {
+                throw new NoSlurCurveException();
+            }
+
+            curve = circle.getCurve();
+
+            if (curve == null) {
+                throw new NoSlurCurveException();
+            } else {
+                seed.addAttachment("^", curve);
+            }
+
+            return super.setSeed(seed);
+        }
+
+        /**
+         * Remember the desired extension side.
+         * @param side the desired side
+         */
+        public void setSide (HorizontalSide side)
+        {
+            this.side = side;
         }
 
         /**

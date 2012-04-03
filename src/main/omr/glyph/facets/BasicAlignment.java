@@ -92,25 +92,6 @@ public class BasicAlignment
         }
     }
 
-    //-----------------//
-    // setEndingPoints //
-    //-----------------//
-    public void setEndingPoints (Point2D pStart,
-                                 Point2D pStop)
-    {
-        glyph.invalidateCache();
-        this.startPoint = pStart;
-        this.stopPoint = pStop;
-
-        computeLine();
-
-        // Enlarge contour box if needed
-        PixelRectangle box = glyph.getContourBox();
-        box.add(pStart);
-        box.add(pStop);
-        glyph.setContourBox(box);
-    }
-
     //---------------//
     // getFirstStuck //
     //---------------//
@@ -248,18 +229,6 @@ public class BasicAlignment
         }
     }
 
-    //---------------//
-    // getProbeWidth //
-    //---------------//
-    /**
-     * Report the width of the window used to determine filament ordinate
-     * @return the scale-independent probe width
-     */
-    public static Scale.Fraction getProbeWidth ()
-    {
-        return constants.probeWidth;
-    }
-
     //----------------------//
     // getRectangleCentroid //
     //----------------------//
@@ -282,21 +251,6 @@ public class BasicAlignment
         } else {
             return null;
         }
-    }
-
-    //----------//
-    // getSlope //
-    //----------//
-    public double getSlope ()
-    {
-        if (slope == null) {
-            checkLine();
-
-            slope = (stopPoint.getY() - startPoint.getY()) / (stopPoint.getX() -
-                                                             startPoint.getX());
-        }
-
-        return slope;
     }
 
     //---------------//
@@ -361,13 +315,16 @@ public class BasicAlignment
         }
     }
 
-    //----------------//
-    // getThicknessAt //
-    //----------------//
-    public double getThicknessAt (double      coord,
-                                  Orientation orientation)
+    //---------------//
+    // getProbeWidth //
+    //---------------//
+    /**
+     * Report the width of the window used to determine filament ordinate
+     * @return the scale-independent probe width
+     */
+    public static Scale.Fraction getProbeWidth ()
     {
-        return Glyphs.getThicknessAt(coord, orientation, glyph);
+        return constants.probeWidth;
     }
 
     //------//
@@ -383,6 +340,30 @@ public class BasicAlignment
         System.out.println("   stop=" + stopPoint);
         System.out.println("   line=" + getLine());
         System.out.println("   dist=" + getMeanDistance());
+    }
+
+    //----------//
+    // getSlope //
+    //----------//
+    public double getSlope ()
+    {
+        if (slope == null) {
+            checkLine();
+
+            slope = (stopPoint.getY() - startPoint.getY()) / (stopPoint.getX() -
+                                                             startPoint.getX());
+        }
+
+        return slope;
+    }
+
+    //----------------//
+    // getThicknessAt //
+    //----------------//
+    public double getThicknessAt (double      coord,
+                                  Orientation orientation)
+    {
+        return Glyphs.getThicknessAt(coord, orientation, glyph);
     }
 
     //-----------------//
@@ -413,6 +394,25 @@ public class BasicAlignment
             (int) Math.rint(startPoint.getY()),
             (int) Math.rint(stopPoint.getX()),
             (int) Math.rint(stopPoint.getY()));
+    }
+
+    //-----------------//
+    // setEndingPoints //
+    //-----------------//
+    public void setEndingPoints (Point2D pStart,
+                                 Point2D pStop)
+    {
+        glyph.invalidateCache();
+        this.startPoint = pStart;
+        this.stopPoint = pStop;
+
+        computeLine();
+
+        // Enlarge contour box if needed
+        PixelRectangle box = glyph.getContourBox();
+        box.add(pStart);
+        box.add(pStop);
+        glyph.setContourBox(box);
     }
 
     //-----------//

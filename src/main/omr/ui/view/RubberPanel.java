@@ -27,7 +27,6 @@ import omr.selection.UserEvent;
 import omr.ui.PixelCount;
 
 import omr.util.ClassUtil;
-import omr.util.Implement;
 
 import org.bushe.swing.event.EventSubscriber;
 
@@ -129,6 +128,238 @@ public class RubberPanel
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------------//
+    // contextAdded //
+    //--------------//
+    @Override
+    public void contextAdded (Point         pt,
+                              MouseMovement movement)
+    {
+        setFocusLocation(new Rectangle(pt), movement, LOCATION_ADD);
+    }
+
+    //-----------------//
+    // contextSelected //
+    //-----------------//
+    @Override
+    public void contextSelected (Point         pt,
+                                 MouseMovement movement)
+    {
+        // Nothing by default
+    }
+
+    //-----------//
+    // setRubber //
+    //-----------//
+    /**
+     * Allows to provide the rubber instance, only after this RubberPanel
+     * has been built. This can be used to solve circular elaboration problems.
+     *
+     * @param rubber the rubber instance to be used
+     */
+    public final void setRubber (Rubber rubber)
+    {
+        this.rubber = rubber;
+
+        rubber.setZoom(zoom);
+        rubber.connectComponent(this);
+        rubber.setMouseMonitor(this);
+    }
+
+    //---------//
+    // setZoom //
+    //---------//
+    /**
+     * Assign a zoom to this panel
+     *
+     * @param zoom the zoom assigned
+     */
+    public final void setZoom (final Zoom zoom)
+    {
+        // Clean up if needed
+        unsetZoom(this.zoom);
+
+        this.zoom = zoom;
+
+        if (zoom != null) {
+            // Add a listener on this zoom
+            zoom.addChangeListener(this);
+        }
+    }
+
+    //--------------//
+    // getModelSize //
+    //--------------//
+    /**
+     * Report the size of the model object, that is the unscaled size.
+     *
+     * @return the original size
+     */
+    public Dimension getModelSize ()
+    {
+        if (modelSize != null) {
+            return new Dimension(modelSize);
+        } else {
+            return null;
+        }
+    }
+
+    //----------------//
+    // getPanelCenter //
+    //----------------//
+    /**
+     * Retrieve the current center of the display, and report its
+     * corresponding model location.
+     *
+     * @return the unscaled coordinates of the panel center
+     */
+    public Point getPanelCenter ()
+    {
+        Rectangle vr = getVisibleRect();
+        Point     pt = new Point(
+            zoom.unscaled(vr.x + (vr.width / 2)),
+            zoom.unscaled(vr.y + (vr.height / 2)));
+
+        if (logger.isFineEnabled()) {
+            logger.fine("getPanelCenter=" + pt);
+        }
+
+        return pt;
+    }
+
+    //----------------------//
+    // getSelectedRectangle //
+    //----------------------//
+    /**
+     * Report the rectangle currently selected, or null
+     * @return the absolute rectangle selected
+     */
+    public Rectangle getSelectedRectangle ()
+    {
+        if (locationService == null) {
+            logger.severe("No locationService for " + this);
+
+            return null;
+        }
+
+        LocationEvent locationEvent = (LocationEvent) locationService.getLastEvent(
+            LocationEvent.class);
+
+        return (locationEvent != null) ? locationEvent.getData() : null;
+    }
+
+    //---------//
+    // getZoom //
+    //---------//
+    /**
+     * Return the current zoom
+     *
+     * @return the used zoom
+     */
+    public Zoom getZoom ()
+    {
+        return zoom;
+    }
+
+    //---------//
+    // onEvent //
+    //---------//
+    /**
+     * Notification of a location selection  (pixel or score)
+     *
+     * @param event the location event
+     */
+    @Override
+    public void onEvent (UserEvent event)
+    {
+        try {
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
+                return;
+            }
+
+            if (logger.isFineEnabled()) {
+                logger.fine(getClass().getName() + " onEvent " + event);
+            }
+
+            if (event instanceof LocationEvent) {
+                // Location => move view focus on this location w/ markers
+                LocationEvent locationEvent = (LocationEvent) event;
+                showFocusLocation(locationEvent.getData(), false);
+            }
+        } catch (Exception ex) {
+            logger.warning(getClass().getName() + " onEvent error", ex);
+        }
+    }
+
+    //------------//
+    // pointAdded //
+    //------------//
+    @Override
+    public void pointAdded (Point         pt,
+                            MouseMovement movement)
+    {
+        setFocusLocation(new Rectangle(pt), movement, LOCATION_ADD);
+    }
+
+    //---------------//
+    // pointSelected //
+    //---------------//
+    @Override
+    public void pointSelected (Point         pt,
+                               MouseMovement movement)
+    {
+        setFocusLocation(new Rectangle(pt), movement, LOCATION_INIT);
+    }
+
+    //---------//
+    // publish //
+    //---------//
+    public void publish (LocationEvent locationEvent)
+    {
+        locationService.publish(locationEvent);
+    }
+
+    //-------------------//
+    // rectangleSelected //
+    //-------------------//
+    @Override
+    public void rectangleSelected (Rectangle     rect,
+                                   MouseMovement movement)
+    {
+        setFocusLocation(rect, movement, LOCATION_INIT);
+    }
+
+    //-----------------//
+    // rectangleZoomed //
+    //-----------------//
+    @Override
+    public void rectangleZoomed (final Rectangle rect,
+                                 MouseMovement   movement)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine(getClass().getName() + " rectangleZoomed " + rect);
+        }
+
+        if (rect != null) {
+            // First focus on center of the specified rectangle
+            setFocusLocation(rect, movement, LOCATION_INIT);
+            showFocusLocation(rect, true);
+
+            // Then, adjust zoom ratio to fit the rectangle size
+            SwingUtilities.invokeLater(
+                new Runnable() {
+                        public void run ()
+                        {
+                            Rectangle vr = getVisibleRect();
+                            double    zoomX = (double) vr.width / (double) rect.width;
+                            double    zoomY = (double) vr.height / (double) rect.height;
+                            zoom.setRatio(Math.min(zoomX, zoomY));
+                        }
+                    });
+        }
+    }
+
     //--------------------//
     // setLocationService //
     //--------------------//
@@ -174,238 +405,6 @@ public class RubberPanel
     public void setModelSize (Dimension modelSize)
     {
         this.modelSize = new Dimension(modelSize);
-    }
-
-    //--------------//
-    // getModelSize //
-    //--------------//
-    /**
-     * Report the size of the model object, that is the unscaled size.
-     *
-     * @return the original size
-     */
-    public Dimension getModelSize ()
-    {
-        if (modelSize != null) {
-            return new Dimension(modelSize);
-        } else {
-            return null;
-        }
-    }
-
-    //----------------//
-    // getPanelCenter //
-    //----------------//
-    /**
-     * Retrieve the current center of the display, and report its
-     * corresponding model location.
-     *
-     * @return the unscaled coordinates of the panel center
-     */
-    public Point getPanelCenter ()
-    {
-        Rectangle vr = getVisibleRect();
-        Point     pt = new Point(
-            zoom.unscaled(vr.x + (vr.width / 2)),
-            zoom.unscaled(vr.y + (vr.height / 2)));
-
-        if (logger.isFineEnabled()) {
-            logger.fine("getPanelCenter=" + pt);
-        }
-
-        return pt;
-    }
-
-    //-----------//
-    // setRubber //
-    //-----------//
-    /**
-     * Allows to provide the rubber instance, only after this RubberPanel
-     * has been built. This can be used to solve circular elaboration problems.
-     *
-     * @param rubber the rubber instance to be used
-     */
-    public final void setRubber (Rubber rubber)
-    {
-        this.rubber = rubber;
-
-        rubber.setZoom(zoom);
-        rubber.connectComponent(this);
-        rubber.setMouseMonitor(this);
-    }
-
-    //----------------------//
-    // getSelectedRectangle //
-    //----------------------//
-    /**
-     * Report the rectangle currently selected, or null
-     * @return the absolute rectangle selected
-     */
-    public Rectangle getSelectedRectangle ()
-    {
-        if (locationService == null) {
-            logger.severe("No locationService for " + this);
-
-            return null;
-        }
-
-        LocationEvent locationEvent = (LocationEvent) locationService.getLastEvent(
-            LocationEvent.class);
-
-        return (locationEvent != null) ? locationEvent.getData() : null;
-    }
-
-    //---------//
-    // setZoom //
-    //---------//
-    /**
-     * Assign a zoom to this panel
-     *
-     * @param zoom the zoom assigned
-     */
-    public final void setZoom (final Zoom zoom)
-    {
-        // Clean up if needed
-        unsetZoom(this.zoom);
-
-        this.zoom = zoom;
-
-        if (zoom != null) {
-            // Add a listener on this zoom
-            zoom.addChangeListener(this);
-        }
-    }
-
-    //---------//
-    // getZoom //
-    //---------//
-    /**
-     * Return the current zoom
-     *
-     * @return the used zoom
-     */
-    public Zoom getZoom ()
-    {
-        return zoom;
-    }
-
-    //--------------//
-    // contextAdded //
-    //--------------//
-    @Implement(MouseMonitor.class)
-    public void contextAdded (Point         pt,
-                              MouseMovement movement)
-    {
-        setFocusLocation(new Rectangle(pt), movement, LOCATION_ADD);
-    }
-
-    //-----------------//
-    // contextSelected //
-    //-----------------//
-    @Implement(MouseMonitor.class)
-    public void contextSelected (Point         pt,
-                                 MouseMovement movement)
-    {
-        // Nothing by default
-    }
-
-    //---------//
-    // onEvent //
-    //---------//
-    /**
-     * Notification of a location selection  (pixel or score)
-     *
-     * @param event the location event
-     */
-    @Implement(EventSubscriber.class)
-    public void onEvent (UserEvent event)
-    {
-        try {
-            // Ignore RELEASING
-            if (event.movement == MouseMovement.RELEASING) {
-                return;
-            }
-
-            if (logger.isFineEnabled()) {
-                logger.fine(getClass().getName() + " onEvent " + event);
-            }
-
-            if (event instanceof LocationEvent) {
-                // Location => move view focus on this location w/ markers
-                LocationEvent locationEvent = (LocationEvent) event;
-                showFocusLocation(locationEvent.getData(), false);
-            }
-        } catch (Exception ex) {
-            logger.warning(getClass().getName() + " onEvent error", ex);
-        }
-    }
-
-    //------------//
-    // pointAdded //
-    //------------//
-    @Implement(MouseMonitor.class)
-    public void pointAdded (Point         pt,
-                            MouseMovement movement)
-    {
-        setFocusLocation(new Rectangle(pt), movement, LOCATION_ADD);
-    }
-
-    //---------------//
-    // pointSelected //
-    //---------------//
-    @Implement(MouseMonitor.class)
-    public void pointSelected (Point         pt,
-                               MouseMovement movement)
-    {
-        setFocusLocation(new Rectangle(pt), movement, LOCATION_INIT);
-    }
-
-    //---------//
-    // publish //
-    //---------//
-    public void publish (LocationEvent locationEvent)
-    {
-        locationService.publish(locationEvent);
-    }
-
-    //-------------------//
-    // rectangleSelected //
-    //-------------------//
-    @Implement(MouseMonitor.class)
-    public void rectangleSelected (Rectangle     rect,
-                                   MouseMovement movement)
-    {
-        setFocusLocation(rect, movement, LOCATION_INIT);
-    }
-
-    //-----------------//
-    // rectangleZoomed //
-    //-----------------//
-    @Implement(MouseMonitor.class)
-    public void rectangleZoomed (final Rectangle rect,
-                                 MouseMovement   movement)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine(getClass().getName() + " rectangleZoomed " + rect);
-        }
-
-        if (rect != null) {
-            // First focus on center of the specified rectangle
-            setFocusLocation(rect, movement, LOCATION_INIT);
-            showFocusLocation(rect, true);
-
-            // Then, adjust zoom ratio to fit the rectangle size
-            SwingUtilities.invokeLater(
-                new Runnable() {
-                        public void run ()
-                        {
-                            Rectangle vr = getVisibleRect();
-                            double    zoomX = (double) vr.width / (double) rect.width;
-                            double    zoomY = (double) vr.height / (double) rect.height;
-                            zoom.setRatio(Math.min(zoomX, zoomY));
-                        }
-                    });
-        }
     }
 
     //-------------------//
@@ -474,7 +473,7 @@ public class RubberPanel
      *
      * @param e the zoom event
      */
-    @Implement(ChangeListener.class)
+    @Override
     public void stateChanged (ChangeEvent e)
     {
         // Force a redisplay?
@@ -561,38 +560,6 @@ public class RubberPanel
         }
     }
 
-    //------------------//
-    // setFocusLocation //
-    //------------------//
-    /**
-     * Modifies the location information. This method simply posts the
-     * location information on the proper Service object, provided that
-     * such object has been previously injected (by means of the method
-     * {@link #setLocationService}.
-     *
-     * @param rect the location information
-     * @param movement the button movement
-     * @param hint the related selection hint
-     */
-    protected void setFocusLocation (Rectangle     rect,
-                                     MouseMovement movement,
-                                     SelectionHint hint)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("setFocusLocation rect=" + rect + " hint=" + hint);
-        }
-
-        // Publish the new user-selected location
-        if (locationService != null) {
-            locationService.publish(
-                new LocationEvent(
-                    this,
-                    hint,
-                    movement,
-                    new PixelRectangle(rect)));
-        }
-    }
-
     //----------------//
     // paintComponent //
     //----------------//
@@ -647,6 +614,38 @@ public class RubberPanel
     protected void render (Graphics2D g)
     {
         // Empty by default
+    }
+
+    //------------------//
+    // setFocusLocation //
+    //------------------//
+    /**
+     * Modifies the location information. This method simply posts the
+     * location information on the proper Service object, provided that
+     * such object has been previously injected (by means of the method
+     * {@link #setLocationService}.
+     *
+     * @param rect the location information
+     * @param movement the button movement
+     * @param hint the related selection hint
+     */
+    protected void setFocusLocation (Rectangle     rect,
+                                     MouseMovement movement,
+                                     SelectionHint hint)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("setFocusLocation rect=" + rect + " hint=" + hint);
+        }
+
+        // Publish the new user-selected location
+        if (locationService != null) {
+            locationService.publish(
+                new LocationEvent(
+                    this,
+                    hint,
+                    movement,
+                    new PixelRectangle(rect)));
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------

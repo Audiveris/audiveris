@@ -34,7 +34,6 @@ import static omr.ui.field.SpinnerUtilities.*;
 import omr.ui.util.Panel;
 
 import omr.util.BasicTask;
-import omr.util.Implement;
 import omr.util.Predicate;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -304,7 +303,7 @@ public class GlyphBoard
      * @param e the change event, this allows to retrieve the originating
      *          spinner
      */
-    @Implement(ChangeListener.class)
+    @Override
     public void stateChanged (ChangeEvent e)
     {
         JSpinner spinner = (JSpinner) e.getSource();
@@ -499,7 +498,7 @@ public class GlyphBoard
         //~ Methods ------------------------------------------------------------
 
         @SuppressWarnings("unchecked")
-        @Implement(ChangeListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             List<Class> classes = Arrays.asList(eventClasses);

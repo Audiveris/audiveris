@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="DOT_set" interline="21" id="541">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-1.0823529411764705</pitch-position>
+    <section orientation="VERTICAL" first-pos="603" id="1431">
+        <run start="1507" level="77" length="6"/>
+        <run start="1506" level="43" length="9"/>
+        <run start="1505" level="30" length="10"/>
+        <run start="1505" level="26" length="10"/>
+        <run start="1504" level="27" length="11"/>
+        <run start="1504" level="24" length="11"/>
+        <run start="1504" level="24" length="11"/>
+        <run start="1505" level="25" length="10"/>
+        <run start="1505" level="26" length="9"/>
+        <run start="1506" level="31" length="7"/>
+        <run start="1507" level="130" length="5"/>
+        <run start="1509" level="220" length="2"/>
+    </section>
+</glyph>

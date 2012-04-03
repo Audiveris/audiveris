@@ -67,6 +67,21 @@ public class SeparableToolBar
 
     //~ Methods ----------------------------------------------------------------
 
+    //----------------//
+    // purgeSeparator //
+    //----------------//
+    /**
+     * Remove any potential orphan separator at the end of the tool bar
+     */
+    public static void purgeSeparator (JToolBar toolBar)
+    {
+        int count = toolBar.getComponentCount();
+
+        if (toolBar.getComponent(count - 1) instanceof JSeparator) {
+            toolBar.remove(count - 1);
+        }
+    }
+
     //--------------//
     // addSeparator //
     //--------------//
@@ -80,21 +95,6 @@ public class SeparableToolBar
 
         if ((count > 0) && !(getComponent(count - 1) instanceof JSeparator)) {
             super.addSeparator();
-        }
-    }
-
-    //----------------//
-    // purgeSeparator //
-    //----------------//
-    /**
-     * Remove any potential orphan separator at the end of the tool bar
-     */
-    public static void purgeSeparator (JToolBar toolBar)
-    {
-        int count = toolBar.getComponentCount();
-
-        if (toolBar.getComponent(count - 1) instanceof JSeparator) {
-            toolBar.remove(count - 1);
         }
     }
 }

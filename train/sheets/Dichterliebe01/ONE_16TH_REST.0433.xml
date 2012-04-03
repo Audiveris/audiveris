@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="ONE_16TH_REST" interline="18" id="433">
+    <stem-number>0</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>0.4444444444444444</pitch-position>
+    <section orientation="VERTICAL" first-pos="628" id="1315">
+        <run start="1033" level="136" length="5"/>
+        <run start="1032" level="28" length="8"/>
+        <run start="1031" level="16" length="10"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="631" id="1324">
+        <run start="1030" level="56" length="15"/>
+        <run start="1030" level="43" length="15"/>
+        <run start="1029" level="45" length="16"/>
+        <run start="1029" level="42" length="16"/>
+        <run start="1029" level="43" length="16"/>
+        <run start="1029" level="51" length="16"/>
+        <run start="1030" level="52" length="15"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="633" id="1326">
+        <run start="1014" level="89" length="6"/>
+        <run start="1013" level="8" length="8"/>
+        <run start="1012" level="4" length="10"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="636" id="1334">
+        <run start="1011" level="49" length="15"/>
+        <run start="1011" level="39" length="15"/>
+        <run start="1010" level="48" length="16"/>
+        <run start="1008" level="62" length="18"/>
+        <run start="1008" level="63" length="18"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="637" id="1339">
+        <run start="1059" level="187" length="4"/>
+        <run start="1056" level="123" length="7"/>
+        <run start="1053" level="92" length="10"/>
+        <run start="1051" level="44" length="8"/>
+        <run start="1047" level="70" length="9"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="638" id="1343">
+        <run start="1031" level="12" length="10"/>
+        <run start="1033" level="72" length="8"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="640" id="1353">
+        <run start="1037" level="7" length="3"/>
+        <run start="1036" level="76" length="4"/>
+        <run start="1036" level="28" length="3"/>
+        <run start="1035" level="39" length="3"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="641" id="1358">
+        <run start="1008" level="192" length="2"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="641" id="1359">
+        <run start="1011" level="41" length="15"/>
+        <run start="1011" level="57" length="15"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="641" id="1360">
+        <run start="1044" level="192" length="2"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="642" id="1370">
+        <run start="1044" level="85" length="8"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="643" id="1377">
+        <run start="1013" level="9" length="9"/>
+        <run start="1015" level="91" length="7"/>
+        <run start="1018" level="16" length="3"/>
+        <run start="1018" level="37" length="3"/>
+        <run start="1017" level="28" length="3"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="643" id="1378">
+        <run start="1040" level="161" length="5"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="643" id="1379">
+        <run start="1046" level="100" length="2"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="644" id="1383">
+        <run start="1034" level="65" length="11"/>
+        <run start="1032" level="50" length="9"/>
+        <run start="1026" level="98" length="11"/>
+        <run start="1026" level="94" length="7"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="648" id="1393">
+        <run start="1016" level="121" length="13"/>
+        <run start="1015" level="66" length="12"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="650" id="1400">
+        <run start="1014" level="38" length="7"/>
+        <run start="1013" level="106" length="5"/>
+    </section>
+</glyph>

@@ -109,92 +109,6 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------//
-    // setGraph //
-    //----------//
-    /**
-     * (package access from graph)
-     */
-    public void setGraph (D graph)
-    {
-        this.graph = graph;
-    }
-
-    //----------//
-    // getGraph //
-    //----------//
-    public D getGraph ()
-    {
-        return graph;
-    }
-
-    //-------//
-    // setId //
-    //-------//
-    @XmlAttribute
-    public void setId (int id)
-    {
-        this.id = id;
-    }
-
-    //-------//
-    // getId //
-    //-------//
-    public int getId ()
-    {
-        return id;
-    }
-
-    //-------------//
-    // getInDegree //
-    //-------------//
-    public int getInDegree ()
-    {
-        return sources.size();
-    }
-
-    //--------------//
-    // getOutDegree //
-    //--------------//
-    public int getOutDegree ()
-    {
-        return targets.size();
-    }
-
-    //------------//
-    // getSources //
-    //------------//
-    public List<V> getSources ()
-    {
-        return sources;
-    }
-
-    //------------//
-    // getTargets //
-    //------------//
-    public List<V> getTargets ()
-    {
-        return targets;
-    }
-
-    //---------//
-    // getView //
-    //---------//
-    public VertexView getView (int index)
-    {
-        return getViews()
-                   .get(index);
-    }
-
-    //---------------//
-    // getViewsCount //
-    //---------------//
-    public int getViewsCount ()
-    {
-        return getViews()
-                   .size();
-    }
-
     //-----------//
     // addTarget //
     //-----------//
@@ -292,6 +206,72 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
         }
     }
 
+    //----------//
+    // getGraph //
+    //----------//
+    public D getGraph ()
+    {
+        return graph;
+    }
+
+    //-------//
+    // getId //
+    //-------//
+    public int getId ()
+    {
+        return id;
+    }
+
+    //-------------//
+    // getInDegree //
+    //-------------//
+    public int getInDegree ()
+    {
+        return sources.size();
+    }
+
+    //--------------//
+    // getOutDegree //
+    //--------------//
+    public int getOutDegree ()
+    {
+        return targets.size();
+    }
+
+    //------------//
+    // getSources //
+    //------------//
+    public List<V> getSources ()
+    {
+        return sources;
+    }
+
+    //------------//
+    // getTargets //
+    //------------//
+    public List<V> getTargets ()
+    {
+        return targets;
+    }
+
+    //---------//
+    // getView //
+    //---------//
+    public VertexView getView (int index)
+    {
+        return getViews()
+                   .get(index);
+    }
+
+    //---------------//
+    // getViewsCount //
+    //---------------//
+    public int getViewsCount ()
+    {
+        return getViews()
+                   .size();
+    }
+
     //--------------//
     // removeTarget //
     //--------------//
@@ -316,6 +296,26 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
                 "Attempting to remove non-existing edge between " + this +
                 " and " + target);
         }
+    }
+
+    //----------//
+    // setGraph //
+    //----------//
+    /**
+     * (package access from graph)
+     */
+    public void setGraph (D graph)
+    {
+        this.graph = graph;
+    }
+
+    //-------//
+    // setId //
+    //-------//
+    @XmlAttribute
+    public void setId (int id)
+    {
+        this.id = id;
     }
 
     //----------//

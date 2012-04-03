@@ -205,8 +205,8 @@ public class PagePhysicalPainter
                     glyph.renderLine(g);
 
                     g.setClip(oldClip);
-                } else if ((shape == REPEAT_DOTS) || (shape == DOT)) {
-                    paint(DOT, glyph.getCentroid());
+                } else if ((shape == REPEAT_DOT) || (shape == DOT_set)) {
+                    paint(DOT_set, glyph.getCentroid());
                 }
             }
 
@@ -328,11 +328,11 @@ public class PagePhysicalPainter
 
             // Augmentation dots ?
             if (note.getFirstDot() != null) {
-                paint(DOT, note.getFirstDot().getAreaCenter());
+                paint(DOT_set, note.getFirstDot().getAreaCenter());
             }
 
             if (note.getSecondDot() != null) {
-                paint(DOT, note.getSecondDot().getAreaCenter());
+                paint(DOT_set, note.getSecondDot().getAreaCenter());
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {

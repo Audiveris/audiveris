@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.glyph.ui;
 
-import omr.glyph.ShapeRange;
+import omr.glyph.ShapeSet;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -75,8 +75,8 @@ public class BarMenu
         public JMenuItem getMenuItem ()
         {
             JMenu menu = new JMenu(this);
-            ShapeRange.addRangeItems(
-                ShapeRange.Barlines,
+            ShapeSet.addSetShapes(
+                ShapeSet.Barlines,
                 menu,
                 new AssignListener(false));
 
@@ -93,8 +93,8 @@ public class BarMenu
         public JMenuItem getMenuItem ()
         {
             JMenu menu = new JMenu(this);
-            ShapeRange.addRangeItems(
-                ShapeRange.Barlines,
+            ShapeSet.addSetShapes(
+                ShapeSet.Barlines,
                 menu,
                 new AssignListener(true));
 

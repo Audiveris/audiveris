@@ -77,151 +77,6 @@ public abstract class TreeNode
 
     //~ Methods ----------------------------------------------------------------
 
-    //---------------//
-    // getChildIndex //
-    //---------------//
-    /**
-     * Report the index (counted from 0) of this node within the children
-     * sequence of its parent
-     * @return the child index (or -1 if there is no parent)
-     */
-    public int getChildIndex ()
-    {
-        if (parent != null) {
-            return parent.children.indexOf(this);
-        } else {
-            return -1;
-        }
-    }
-
-    //-------------//
-    // getChildren //
-    //-------------//
-    /**
-     * Report the list of (direct) children
-     *
-     * @return the children
-     */
-    public List<TreeNode> getChildren ()
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("getChildren of " + this);
-        }
-
-        return children;
-    }
-
-    //-------------//
-    // getChildren //
-    //-------------//
-    /**
-     * Report the list of (direct) children
-     *
-     * @return the children
-     */
-    @SuppressWarnings("unchecked")
-    public synchronized List<TreeNode> getChildrenCopy ()
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("getChildrenCopy of " + this);
-        }
-
-        return new ArrayList(children);
-    }
-
-    //-------------------//
-    // setChildrenParent //
-    //-------------------//
-    /**
-     * Register this node as the parent of all its children
-     */
-    public void setChildrenParent ()
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("setChildrenParent of " + this);
-        }
-
-        // Make all children point to this node as parent
-        for (TreeNode node : children) {
-            node.setParent(this);
-            node.setChildrenParent(); // Recursively
-        }
-    }
-
-    //----------------//
-    // getNextSibling //
-    //----------------//
-    /**
-     * Report the next node in the children of this node parent
-     *
-     *
-     * @return the next sibling node, or null if none
-     */
-    public TreeNode getNextSibling ()
-    {
-        if (parent != null) {
-            int index = parent.children.indexOf(this);
-
-            if (index < (parent.children.size() - 1)) {
-                return parent.children.get(index + 1);
-            }
-        }
-
-        return null;
-    }
-
-    //-----------//
-    // setParent //
-    //-----------//
-    /**
-     * Modify the link to the parent of this node
-     *
-     * @param parent the (new) parent
-     */
-    public void setParent (TreeNode parent)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("setParent parent=" + parent + " for " + this);
-        }
-
-        this.parent = parent;
-    }
-
-    //-----------//
-    // getParent //
-    //-----------//
-    /**
-     * Report the parent of this node
-     *
-     * @return the node just higher in the tree, or null if none
-     */
-    public TreeNode getParent ()
-    {
-        return parent;
-    }
-
-    //--------------------//
-    // getPreviousSibling //
-    //--------------------//
-    /**
-     * Report the previous node in the children of this node parent
-     *
-     *
-     * @return the previous sibling node, or null if none
-     */
-    public TreeNode getPreviousSibling ()
-    {
-        if (parent != null) {
-            int index = parent.children.indexOf(this);
-
-            if (index > 0) {
-                return parent.children.get(index - 1);
-            }
-        }
-
-        return null;
-    }
-
     //----------//
     // addChild //
     //----------//
@@ -299,5 +154,150 @@ public abstract class TreeNode
         Main.dumping.dump(this, level);
 
         return true; // Let computation continue down the tree
+    }
+
+    //---------------//
+    // getChildIndex //
+    //---------------//
+    /**
+     * Report the index (counted from 0) of this node within the children
+     * sequence of its parent
+     * @return the child index (or -1 if there is no parent)
+     */
+    public int getChildIndex ()
+    {
+        if (parent != null) {
+            return parent.children.indexOf(this);
+        } else {
+            return -1;
+        }
+    }
+
+    //-------------//
+    // getChildren //
+    //-------------//
+    /**
+     * Report the list of (direct) children
+     *
+     * @return the children
+     */
+    public List<TreeNode> getChildren ()
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("getChildren of " + this);
+        }
+
+        return children;
+    }
+
+    //-------------//
+    // getChildren //
+    //-------------//
+    /**
+     * Report the list of (direct) children
+     *
+     * @return the children
+     */
+    @SuppressWarnings("unchecked")
+    public synchronized List<TreeNode> getChildrenCopy ()
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("getChildrenCopy of " + this);
+        }
+
+        return new ArrayList(children);
+    }
+
+    //----------------//
+    // getNextSibling //
+    //----------------//
+    /**
+     * Report the next node in the children of this node parent
+     *
+     *
+     * @return the next sibling node, or null if none
+     */
+    public TreeNode getNextSibling ()
+    {
+        if (parent != null) {
+            int index = parent.children.indexOf(this);
+
+            if (index < (parent.children.size() - 1)) {
+                return parent.children.get(index + 1);
+            }
+        }
+
+        return null;
+    }
+
+    //-----------//
+    // getParent //
+    //-----------//
+    /**
+     * Report the parent of this node
+     *
+     * @return the node just higher in the tree, or null if none
+     */
+    public TreeNode getParent ()
+    {
+        return parent;
+    }
+
+    //--------------------//
+    // getPreviousSibling //
+    //--------------------//
+    /**
+     * Report the previous node in the children of this node parent
+     *
+     *
+     * @return the previous sibling node, or null if none
+     */
+    public TreeNode getPreviousSibling ()
+    {
+        if (parent != null) {
+            int index = parent.children.indexOf(this);
+
+            if (index > 0) {
+                return parent.children.get(index - 1);
+            }
+        }
+
+        return null;
+    }
+
+    //-------------------//
+    // setChildrenParent //
+    //-------------------//
+    /**
+     * Register this node as the parent of all its children
+     */
+    public void setChildrenParent ()
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("setChildrenParent of " + this);
+        }
+
+        // Make all children point to this node as parent
+        for (TreeNode node : children) {
+            node.setParent(this);
+            node.setChildrenParent(); // Recursively
+        }
+    }
+
+    //-----------//
+    // setParent //
+    //-----------//
+    /**
+     * Modify the link to the parent of this node
+     *
+     * @param parent the (new) parent
+     */
+    public void setParent (TreeNode parent)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("setParent parent=" + parent + " for " + this);
+        }
+
+        this.parent = parent;
     }
 }

@@ -35,7 +35,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code BrokenLine} handles the broken line defined by a 
+ * Class {@code BrokenLine} handles the broken line defined by a
  * sequence of points which can be modified at any time.
  *
  * <p>This class make use of several distance parameters, presented here from
@@ -129,175 +129,20 @@ public class BrokenLine
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------------------------//
-    // getDefaultColinearDistance //
-    //----------------------------//
+    //-------------//
+    // resetPoints //
+    //-------------//
     /**
-     * Report the default colinear distance.
-     * This value can be overridden for the current BrokenLine instance, through
-     * method {@link #setColinearDistance}.
-     * @return the (default) maximum distance, specified in pixels
+     * Replace the current line points with the provided ones.
+     * @param points the new collection of points
      */
-    public static int getDefaultColinearDistance ()
+    public final void resetPoints (Collection<Point> points)
     {
-        return constants.colinearDistance.getValue();
-    }
-
-    //----------------------------//
-    // getDefaultDraggingDistance //
-    //----------------------------//
-    /**
-     * Report the default dragging distance.
-     * @return the (default) dragging distance, specified in pixels
-     */
-    public static int getDefaultDraggingDistance ()
-    {
-        return constants.draggingDistance.getValue();
-    }
-
-    //--------------------------//
-    // getDefaultStickyDistance //
-    //--------------------------//
-    /**
-     * Report the default sticky distance.
-     * This value can be overridden for the current BrokenLine instance, through
-     * method {@link #setStickyDistance}.
-     * @return the (default) maximum distance, specified in pixels
-     */
-    public static int getDefaultStickyDistance ()
-    {
-        return constants.stickyDistance.getValue();
-    }
-
-    //------------//
-    // isColinear //
-    //------------//
-    /**
-     * Check whether the specified point is colinear (within 
-     * colinearDistance) with the previous and the following points in
-     * the sequence.
-     * @param point the point to check
-     * @return true if the 3 points are colinear or nearly so
-     */
-    public boolean isColinear (Point point)
-    {
-        int index = points.indexOf(point);
-
-        if ((index > 0) && (index < (points.size() - 1))) {
-            Line2D.Double line = new Line2D.Double(
-                getPoint(index - 1),
-                getPoint(index + 1));
-            double        dist = line.ptLineDist(point);
-
-            return dist <= colinearDistance;
-        } else {
-            return false;
+        if (points != null) {
+            Collection<Point> newPoints = new ArrayList<Point>(points);
+            this.points.clear();
+            this.points.addAll(newPoints);
         }
-    }
-
-    //---------------------//
-    // setColinearDistance //
-    //---------------------//
-    /**
-     * Set the colinear distance for all methods that need this margin
-     * value.
-     * @param colinearDistance the new value, specified in pixels
-     */
-    public void setColinearDistance (int colinearDistance)
-    {
-        this.colinearDistance = colinearDistance;
-    }
-
-    //---------------------//
-    // getColinearDistance //
-    //---------------------//
-    /**
-     * Report the maximum distance (from a segment for colinearity).
-     * @return the maximum distance, specified in pixels
-     */
-    public int getColinearDistance ()
-    {
-        return colinearDistance;
-    }
-
-    //----------//
-    // getPoint //
-    //----------//
-    /**
-     * Report the point at 'index' position in current sequence.
-     * @param index the desired index
-     * @return the desired point
-     */
-    public Point getPoint (int index)
-    {
-        return points.get(index);
-    }
-
-    //-----------//
-    // getPoints //
-    //-----------//
-    /**
-     * Report current sequence (meant for debugging).
-     * @return an unmodifiable view (perhaps empty) of list of current points
-     */
-    public List<Point> getPoints ()
-    {
-        return Collections.unmodifiableList(points);
-    }
-
-    //-------------------//
-    // getSequenceString //
-    //-------------------//
-    /**
-     * Report a string which summarizes the current sequence of points.
-     * @return a string of the sequence points
-     */
-    public String getSequenceString ()
-    {
-        StringBuilder sb = new StringBuilder("[");
-        boolean       started = false;
-
-        for (Point p : getPoints()) {
-            if (started) {
-                sb.append(' ');
-            }
-
-            sb.append('(')
-              .append(p.x)
-              .append(',')
-              .append(p.y)
-              .append(')');
-            started = true;
-        }
-
-        sb.append("]");
-
-        return sb.toString();
-    }
-
-    //-------------------//
-    // setStickyDistance //
-    //-------------------//
-    /**
-     * Set the sticky distance for all methods that need this margin 
-     * value.
-     * @param stickyDistance the new value, specified in pixels
-     */
-    public void setStickyDistance (int stickyDistance)
-    {
-        this.stickyDistance = stickyDistance;
-    }
-
-    //-------------------//
-    // getStickyDistance //
-    //-------------------//
-    /**
-     * Report the maximum distance (from a point, from a segment).
-     * @return the maximum distance, specified in pixels
-     */
-    public int getStickyDistance ()
-    {
-        return stickyDistance;
     }
 
     //----------//
@@ -380,6 +225,125 @@ public class BrokenLine
         }
     }
 
+    //---------------------//
+    // getColinearDistance //
+    //---------------------//
+    /**
+     * Report the maximum distance (from a segment for colinearity).
+     * @return the maximum distance, specified in pixels
+     */
+    public int getColinearDistance ()
+    {
+        return colinearDistance;
+    }
+
+    //----------------------------//
+    // getDefaultColinearDistance //
+    //----------------------------//
+    /**
+     * Report the default colinear distance.
+     * This value can be overridden for the current BrokenLine instance, through
+     * method {@link #setColinearDistance}.
+     * @return the (default) maximum distance, specified in pixels
+     */
+    public static int getDefaultColinearDistance ()
+    {
+        return constants.colinearDistance.getValue();
+    }
+
+    //----------------------------//
+    // getDefaultDraggingDistance //
+    //----------------------------//
+    /**
+     * Report the default dragging distance.
+     * @return the (default) dragging distance, specified in pixels
+     */
+    public static int getDefaultDraggingDistance ()
+    {
+        return constants.draggingDistance.getValue();
+    }
+
+    //--------------------------//
+    // getDefaultStickyDistance //
+    //--------------------------//
+    /**
+     * Report the default sticky distance.
+     * This value can be overridden for the current BrokenLine instance, through
+     * method {@link #setStickyDistance}.
+     * @return the (default) maximum distance, specified in pixels
+     */
+    public static int getDefaultStickyDistance ()
+    {
+        return constants.stickyDistance.getValue();
+    }
+
+    //----------//
+    // getPoint //
+    //----------//
+    /**
+     * Report the point at 'index' position in current sequence.
+     * @param index the desired index
+     * @return the desired point
+     */
+    public Point getPoint (int index)
+    {
+        return points.get(index);
+    }
+
+    //-----------//
+    // getPoints //
+    //-----------//
+    /**
+     * Report current sequence (meant for debugging).
+     * @return an unmodifiable view (perhaps empty) of list of current points
+     */
+    public List<Point> getPoints ()
+    {
+        return Collections.unmodifiableList(points);
+    }
+
+    //-------------------//
+    // getSequenceString //
+    //-------------------//
+    /**
+     * Report a string which summarizes the current sequence of points.
+     * @return a string of the sequence points
+     */
+    public String getSequenceString ()
+    {
+        StringBuilder sb = new StringBuilder("[");
+        boolean       started = false;
+
+        for (Point p : getPoints()) {
+            if (started) {
+                sb.append(' ');
+            }
+
+            sb.append('(')
+              .append(p.x)
+              .append(',')
+              .append(p.y)
+              .append(')');
+            started = true;
+        }
+
+        sb.append("]");
+
+        return sb.toString();
+    }
+
+    //-------------------//
+    // getStickyDistance //
+    //-------------------//
+    /**
+     * Report the maximum distance (from a point, from a segment).
+     * @return the maximum distance, specified in pixels
+     */
+    public int getStickyDistance ()
+    {
+        return stickyDistance;
+    }
+
     //---------//
     // indexOf //
     //---------//
@@ -427,6 +391,32 @@ public class BrokenLine
         }
     }
 
+    //------------//
+    // isColinear //
+    //------------//
+    /**
+     * Check whether the specified point is colinear (within
+     * colinearDistance) with the previous and the following points in
+     * the sequence.
+     * @param point the point to check
+     * @return true if the 3 points are colinear or nearly so
+     */
+    public boolean isColinear (Point point)
+    {
+        int index = points.indexOf(point);
+
+        if ((index > 0) && (index < (points.size() - 1))) {
+            Line2D.Double line = new Line2D.Double(
+                getPoint(index - 1),
+                getPoint(index + 1));
+            double        dist = line.ptLineDist(point);
+
+            return dist <= colinearDistance;
+        } else {
+            return false;
+        }
+    }
+
     //-------------//
     // removePoint //
     //-------------//
@@ -439,20 +429,30 @@ public class BrokenLine
         points.remove(point);
     }
 
-    //-------------//
-    // resetPoints //
-    //-------------//
+    //---------------------//
+    // setColinearDistance //
+    //---------------------//
     /**
-     * Replace the current line points with the provided ones.
-     * @param points the new collection of points
+     * Set the colinear distance for all methods that need this margin
+     * value.
+     * @param colinearDistance the new value, specified in pixels
      */
-    public final void resetPoints (Collection<Point> points)
+    public void setColinearDistance (int colinearDistance)
     {
-        if (points != null) {
-            Collection<Point> newPoints = new ArrayList<Point>(points);
-            this.points.clear();
-            this.points.addAll(newPoints);
-        }
+        this.colinearDistance = colinearDistance;
+    }
+
+    //-------------------//
+    // setStickyDistance //
+    //-------------------//
+    /**
+     * Set the sticky distance for all methods that need this margin
+     * value.
+     * @param stickyDistance the new value, specified in pixels
+     */
+    public void setStickyDistance (int stickyDistance)
+    {
+        this.stickyDistance = stickyDistance;
     }
 
     //------//
@@ -481,7 +481,7 @@ public class BrokenLine
     //----------------//
     /**
      * Called after all the properties (except IDREF) are unmarshalled
-     * for this object, but before this object is set to the parent 
+     * for this object, but before this object is set to the parent
      * object.
      */
     @SuppressWarnings("unused")

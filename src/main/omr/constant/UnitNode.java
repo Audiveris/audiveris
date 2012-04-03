@@ -48,18 +48,6 @@ public class UnitNode
     //~ Methods ----------------------------------------------------------------
 
     //----------------//
-    // setConstantSet //
-    //----------------//
-    /**
-     * Assigns the provided ConstantSet to this enclosing unit.
-     * @param set the ConstantSet to be assigned
-     */
-    public void setConstantSet (ConstantSet set)
-    {
-        this.set = set;
-    }
-
-    //----------------//
     // getConstantSet //
     //----------------//
     /**
@@ -72,18 +60,6 @@ public class UnitNode
     }
 
     //-----------//
-    // setLogger //
-    //-----------//
-    /**
-     * Assigns the provided Logger to the unit.
-     * @param logger the Logger instance
-     */
-    public void setLogger (Logger logger)
-    {
-        this.logger = logger;
-    }
-
-    //-----------//
     // getLogger //
     //-----------//
     /**
@@ -93,5 +69,29 @@ public class UnitNode
     public Logger getLogger ()
     {
         return logger;
+    }
+
+    //----------------//
+    // setConstantSet //
+    //----------------//
+    /**
+     * Assigns the provided ConstantSet to this enclosing unit.
+     * @param set the ConstantSet to be assigned
+     */
+    public void setConstantSet (ConstantSet set)
+    {
+        this.set = set;
+    }
+
+    //-----------//
+    // setLogger //
+    //-----------//
+    /**
+     * Assigns the provided Logger to the unit.
+     * @param logger the Logger instance
+     */
+    public void setLogger (Logger logger)
+    {
+        this.logger = logger;
     }
 }

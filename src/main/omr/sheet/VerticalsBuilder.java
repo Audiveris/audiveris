@@ -40,7 +40,6 @@ import omr.step.StepException;
 import omr.stick.SectionsSource;
 import omr.stick.SticksBuilder;
 
-import omr.util.Implement;
 import omr.util.Predicate;
 
 import java.awt.Rectangle;
@@ -246,7 +245,7 @@ public class VerticalsBuilder
                 continue;
             }
 
-            if (!stick.isShapeForbidden(Shape.COMBINING_STEM)) {
+            if (!stick.isShapeForbidden(Shape.STEM)) {
                 // Run the various Checks
                 double res = suite.pass(stick);
 
@@ -256,7 +255,7 @@ public class VerticalsBuilder
 
                 if (res >= minResult) {
                     stick.setResult(STEM);
-                    stick.setShape(Shape.COMBINING_STEM);
+                    stick.setShape(Shape.STEM);
                     stemNb++;
                 } else {
                     stick.setResult(TOO_LIMITED);
@@ -387,7 +386,7 @@ public class VerticalsBuilder
         //~ Methods ------------------------------------------------------------
 
         // Retrieve the adjacency value
-        @Implement(Check.class)
+        @Override
         protected double getValue (Glyph stick)
         {
             return (double) stick.getFirstStuck() / stick.getLength(VERTICAL);
@@ -416,39 +415,30 @@ public class VerticalsBuilder
         //~ Methods ------------------------------------------------------------
 
         // Retrieve the adjacency value
-        @Implement(Check.class)
+        @Override
         protected double getValue (Glyph stick)
         {
             return (double) stick.getLastStuck() / stick.getLength(VERTICAL);
         }
     }
 
-    //----------------//
-    // MinAspectCheck //
-    //----------------//
-    private static class MinAspectCheck
-        extends Check<Glyph>
+    //--------------------//
+    // MySectionPredicate //
+    //--------------------//
+    private static class MySectionPredicate
+        implements Predicate<Section>
     {
-        //~ Constructors -------------------------------------------------------
-
-        protected MinAspectCheck ()
-        {
-            super(
-                "MinAspect",
-                "Check that stick aspect (length/thickness) is high enough",
-                constants.minStemAspectLow,
-                constants.minStemAspectHigh,
-                true,
-                TOO_FAT);
-        }
-
         //~ Methods ------------------------------------------------------------
 
-        // Retrieve the ratio length / thickness
-        @Implement(Check.class)
-        protected double getValue (Glyph stick)
+        public boolean check (Section section)
         {
-            return stick.getAspect(VERTICAL);
+            // We process section for which glyph is null
+            // or GLYPH_PART, NO_LEGAL_TIME, NOISE, STRUCTURE
+            boolean result = (section.getGlyph() == null) ||
+                             !section.getGlyph()
+                                     .isWellKnown();
+
+            return result;
         }
     }
 
@@ -479,12 +469,41 @@ public class VerticalsBuilder
         //~ Methods ------------------------------------------------------------
 
         // Retrieve the stick abscissa
-        @Implement(Check.class)
+        @Override
         protected double getValue (Glyph stick)
         {
             int x = stick.getMidPos(Orientation.VERTICAL);
 
             return scale.pixelsToFrac(x - system.getLeft());
+        }
+    }
+
+    //----------------//
+    // MinAspectCheck //
+    //----------------//
+    private static class MinAspectCheck
+        extends Check<Glyph>
+    {
+        //~ Constructors -------------------------------------------------------
+
+        protected MinAspectCheck ()
+        {
+            super(
+                "MinAspect",
+                "Check that stick aspect (length/thickness) is high enough",
+                constants.minStemAspectLow,
+                constants.minStemAspectHigh,
+                true,
+                TOO_FAT);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        // Retrieve the ratio length / thickness
+        @Override
+        protected double getValue (Glyph stick)
+        {
+            return stick.getAspect(VERTICAL);
         }
     }
 
@@ -510,7 +529,7 @@ public class VerticalsBuilder
         //~ Methods ------------------------------------------------------------
 
         // Retrieve the density
-        @Implement(Check.class)
+        @Override
         protected double getValue (Glyph stick)
         {
             Rectangle rect = stick.getContourBox();
@@ -544,30 +563,10 @@ public class VerticalsBuilder
         //~ Methods ------------------------------------------------------------
 
         // Retrieve the length data
-        @Implement(Check.class)
+        @Override
         protected double getValue (Glyph stick)
         {
             return scale.pixelsToFrac(stick.getLength(VERTICAL));
-        }
-    }
-
-    //--------------------//
-    // MySectionPredicate //
-    //--------------------//
-    private static class MySectionPredicate
-        implements Predicate<Section>
-    {
-        //~ Methods ------------------------------------------------------------
-
-        public boolean check (Section section)
-        {
-            // We process section for which glyph is null
-            // or GLYPH_PART, NO_LEGAL_TIME, NOISE, STRUCTURE
-            boolean result = (section.getGlyph() == null) ||
-                             !section.getGlyph()
-                                     .isWellKnown();
-
-            return result;
         }
     }
 
@@ -598,7 +597,7 @@ public class VerticalsBuilder
         //~ Methods ------------------------------------------------------------
 
         // Retrieve the stick abscissa
-        @Implement(Check.class)
+        @Override
         protected double getValue (Glyph stick)
         {
             return scale.pixelsToFrac(

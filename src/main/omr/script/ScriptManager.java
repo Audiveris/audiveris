@@ -135,7 +135,7 @@ public class ScriptManager
         return jaxbContext;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Interfaces -------------------------------------------------------
 
     //--------//
     // Holder //

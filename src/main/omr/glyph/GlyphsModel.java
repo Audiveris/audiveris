@@ -66,11 +66,10 @@ public class GlyphsModel
     // GlyphsModel //
     //-------------//
     /**
-     * Create an instance of GlyphsModel, with its underlying glyph lag
-     *
+     * Create an instance of GlyphsModel, with its underlying glyph lag.
      * @param sheet the related sheet (can be null)
-     * @param nest the related nest (cannot be null)
-     * @param step the step after which update should be perform (can be null)
+     * @param nest  the related nest (cannot be null)
+     * @param step  the step after which update should be perform (can be null)
      */
     public GlyphsModel (Sheet sheet,
                         Nest  nest,
@@ -92,96 +91,15 @@ public class GlyphsModel
     //~ Methods ----------------------------------------------------------------
 
     //--------------//
-    // getGlyphById //
-    //--------------//
-    /**
-     * Retrieve a glyph, knowing its id
-     *
-     * @param id the glyph id
-     * @return the glyph found, or null if not
-     */
-    public Glyph getGlyphById (int id)
-    {
-        return nest.getGlyph(id);
-    }
-
-    //----------------//
-    // setLatestShape //
-    //----------------//
-    /**
-     * Assign the latest useful shape
-     *
-     * @param shape the current / latest shape
-     */
-    public void setLatestShape (Shape shape)
-    {
-        if (shape != Shape.GLYPH_PART) {
-            latestShape = shape;
-        }
-    }
-
-    //----------------//
-    // getLatestShape //
-    //----------------//
-    /**
-     * Report the latest non null shape that was assigned, or null if none
-     *
-     * @return latest shape assigned, or null if none
-     */
-    public Shape getLatestShape ()
-    {
-        return latestShape;
-    }
-
-    //---------//
-    // getNest //
-    //---------//
-    /**
-     * Report the underlying glyph nest
-     * @return the related glyph nest
-     */
-    public Nest getNest ()
-    {
-        return nest;
-    }
-
-    //----------------//
-    // getRelatedStep //
-    //----------------//
-    /**
-     * Report the step this GlyphsModel is used for, so that we know from which
-     * step updates must be propagated (we have to update the steps that follow
-     * this one)
-     * @return the step related to this glyphs model
-     */
-    public Step getRelatedStep ()
-    {
-        return step;
-    }
-
-    //----------//
-    // getSheet //
-    //----------//
-    /**
-     * Report the model underlying sheet
-     * @return the underlying sheet instance
-     */
-    public Sheet getSheet ()
-    {
-        return sheet;
-    }
-
-    //--------------//
     // assignGlyphs //
     //--------------//
     /**
      * Assign a shape to the selected collection of glyphs.
-     *
-     * @param glyphs the collection of glyphs to be assigned
-     * @param shape the shape to be assigned
+     * @param glyphs   the collection of glyphs to be assigned
+     * @param shape    the shape to be assigned
      * @param compound flag to build one compound, rather than assign each
-     *                 individual glyph
-     * @param grade the grade we have wrt the assigned shape
+     * individual glyph
+     * @param grade    the grade we have wrt the assigned shape
      */
     public void assignGlyphs (Collection<Glyph> glyphs,
                               Shape             shape,
@@ -224,10 +142,9 @@ public class GlyphsModel
     //----------------//
     /**
      * Assign a shape to the selected collection of sections.
-     *
      * @param sections the collection of sections to be aggregated as a glyph
-     * @param shape the shape to be assigned
-     * @param grade the grade we have wrt the assigned shape
+     * @param shape    the shape to be assigned
+     * @param grade    the grade we have wrt the assigned shape
      * @return the newly built glyph
      */
     public Glyph assignSections (Collection<Section> sections,
@@ -248,7 +165,6 @@ public class GlyphsModel
     //----------------//
     /**
      * De-Assign a collection of glyphs.
-     *
      * @param glyphs the collection of glyphs to be de-assigned
      */
     public void deassignGlyphs (Collection<Glyph> glyphs)
@@ -268,12 +184,90 @@ public class GlyphsModel
         }
     }
 
+    //--------------//
+    // getGlyphById //
+    //--------------//
+    /**
+     * Retrieve a glyph, knowing its id.
+     * @param id the glyph id
+     * @return the glyph found, or null if not
+     */
+    public Glyph getGlyphById (int id)
+    {
+        return nest.getGlyph(id);
+    }
+
+    //----------------//
+    // getLatestShape //
+    //----------------//
+    /**
+     * Report the latest non null shape that was assigned, or null if
+     * none.
+     * @return latest shape assigned, or null if none
+     */
+    public Shape getLatestShape ()
+    {
+        return latestShape;
+    }
+
+    //---------//
+    // getNest //
+    //---------//
+    /**
+     * Report the underlying glyph nest.
+     * @return the related glyph nest
+     */
+    public Nest getNest ()
+    {
+        return nest;
+    }
+
+    //----------------//
+    // getRelatedStep //
+    //----------------//
+    /**
+     * Report the step this GlyphsModel is used for, so that we know 
+     * from which step updates must be propagated.
+     * (we have to update the steps that follow this one)
+     * @return the step related to this glyphs model
+     */
+    public Step getRelatedStep ()
+    {
+        return step;
+    }
+
+    //----------//
+    // getSheet //
+    //----------//
+    /**
+     * Report the model underlying sheet.
+     * @return the underlying sheet instance
+     */
+    public Sheet getSheet ()
+    {
+        return sheet;
+    }
+
+    //----------------//
+    // setLatestShape //
+    //----------------//
+    /**
+     * Assign the latest useful shape.
+     * @param shape the current / latest shape
+     */
+    public void setLatestShape (Shape shape)
+    {
+        if (shape != Shape.GLYPH_PART) {
+            latestShape = shape;
+        }
+    }
+
     //-------------//
     // assignGlyph //
     //-------------//
     /**
-     * Assign a Shape to a glyph, inserting the glyph to its containing system
-     * and nest if it is still transient.
+     * Assign a Shape to a glyph, inserting the glyph to its containing
+     * system and nest if it is still transient.
      * @param glyph the glyph to be assigned
      * @param shape the assigned shape, which may be null
      * @param grade the grade about shape
@@ -318,12 +312,16 @@ public class GlyphsModel
             (Main.getGui() != null) &&
             ScoreActions.getInstance()
                         .isManualPersisted()) {
-            GlyphChecker.getInstance()
-                        .relax(
-                shape,
-                glyph,
-                GlyphEvaluator.feedInput(glyph),
-                sheet);
+            // Record the glyph description to disk
+            GlyphRepository.getInstance()
+                           .recordOneGlyph(glyph, sheet);
+
+            //            GlyphChecker.getInstance()
+            //                        .relax(
+            //                shape,
+            //                glyph,
+            //                ShapeDescription.features(glyph),
+            //                sheet);
         }
 
         return glyph;
@@ -333,8 +331,7 @@ public class GlyphsModel
     // deassignGlyph //
     //---------------//
     /**
-     * Deassign the shape of a glyph
-     *
+     * Deassign the shape of a glyph.
      * @param glyph the glyph to deassign
      */
     protected void deassignGlyph (Glyph glyph)

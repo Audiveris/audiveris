@@ -184,101 +184,29 @@ public class Slur
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------//
-    // getCurve //
-    //----------//
-    /**
-     * Report the curve of the slur.
-     * @return the curve to draw
-     */
-    public CubicCurve2D getCurve ()
-    {
-        return curve;
-    }
-
-    //-------//
-    // getId //
-    //-------//
-    /**
-     * Report the slur id (as the id of the underlying glyph).
-     * @return the id of the underlying glyph
-     */
-    public int getId ()
-    {
-        return glyph.getId();
-    }
-
-    //------------------//
-    // getLeftExtension //
-    //------------------//
-    /**
-     * Report the slur (if any) at the end of previous system that could
-     * be considered as an extension of this slur.
-     * @return the connected slur on left, or null if none
-     */
-    public Slur getLeftExtension ()
-    {
-        return leftExtension;
-    }
-
-    //-------------------//
-    // getRightExtension //
-    //-------------------//
-    /**
-     * Report the slur (if any) at the beginning of next system that
-     * could be considered as an extension of this slur.
-     * @return the connected slur on right, or null if none
-     */
-    public Slur getRightExtension ()
-    {
-        return rightExtension;
-    }
-
-    //-------//
-    // isTie //
-    //-------//
-    /**
-     * Report whether this slur is actually a tie (a slur between
-     * similar notes).
-     * @return true if is a Tie, false otherwise
-     */
-    public boolean isTie ()
-    {
-        return tie;
-    }
-
-    //----------//
-    // addError //
-    //----------//
+    //--------//
+    // accept //
+    //--------//
     @Override
-    public void addError (String text)
+    public boolean accept (ScoreVisitor visitor)
     {
-        super.addError(glyph, text);
+        return visitor.visit(this);
     }
 
     //-----------//
-    // connectTo //
+    // canExtend //
     //-----------//
     /**
-     * Make the connection with another slur in the previous system.
-     * @param prevSlur slur at the end of previous system
+     * Check whether this slur can extend the prevSlur of the preceding
+     * system.
+     * @param prevSlur the slur candidate in the preceding system
+     * @return true if connection is possible
      */
-    public void connectTo (Slur prevSlur)
+    public boolean canExtend (Slur prevSlur)
     {
-        // Cross-extensions
-        this.leftExtension = prevSlur;
-        prevSlur.rightExtension = this;
-
-        // Tie?
-        boolean isATie = haveSameHeight(prevSlur.leftNote, this.rightNote);
-        prevSlur.tie = isATie;
-        this.tie = isATie;
-
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                (isATie ? "Tie" : "Slur") + " connection #" +
-                prevSlur.glyph.getId() + " -> #" + this.glyph.getId());
-        }
+        return (this.leftExtension == null) &&
+               (prevSlur.rightExtension == null) &&
+               this.isCompatibleWith(prevSlur);
     }
 
     //----------//
@@ -419,16 +347,75 @@ public class Slur
         }
     }
 
-    //---------//
-    // isBelow //
-    //---------//
-    /**
-     * Report whether the placement of this slur is below the embraced notes.
-     * @return true if below, false if above
-     */
-    public boolean isBelow ()
+    //----------//
+    // addError //
+    //----------//
+    @Override
+    public void addError (String text)
     {
-        return below;
+        super.addError(glyph, text);
+    }
+
+    //-----------//
+    // connectTo //
+    //-----------//
+    /**
+     * Make the connection with another slur in the previous system.
+     * @param prevSlur slur at the end of previous system
+     */
+    public void connectTo (Slur prevSlur)
+    {
+        // Cross-extensions
+        this.leftExtension = prevSlur;
+        prevSlur.rightExtension = this;
+
+        // Tie?
+        boolean isATie = haveSameHeight(prevSlur.leftNote, this.rightNote);
+        prevSlur.tie = isATie;
+        this.tie = isATie;
+
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                (isATie ? "Tie" : "Slur") + " connection #" +
+                prevSlur.glyph.getId() + " -> #" + this.glyph.getId());
+        }
+    }
+
+    //----------//
+    // getCurve //
+    //----------//
+    /**
+     * Report the curve of the slur.
+     * @return the curve to draw
+     */
+    public CubicCurve2D getCurve ()
+    {
+        return curve;
+    }
+
+    //-------//
+    // getId //
+    //-------//
+    /**
+     * Report the slur id (as the id of the underlying glyph).
+     * @return the id of the underlying glyph
+     */
+    public int getId ()
+    {
+        return glyph.getId();
+    }
+
+    //------------------//
+    // getLeftExtension //
+    //------------------//
+    /**
+     * Report the slur (if any) at the end of previous system that could
+     * be considered as an extension of this slur.
+     * @return the connected slur on left, or null if none
+     */
+    public Slur getLeftExtension ()
+    {
+        return leftExtension;
     }
 
     //-------------//
@@ -443,6 +430,19 @@ public class Slur
         return leftNote;
     }
 
+    //-------------------//
+    // getRightExtension //
+    //-------------------//
+    /**
+     * Report the slur (if any) at the beginning of next system that
+     * could be considered as an extension of this slur.
+     * @return the connected slur on right, or null if none
+     */
+    public Slur getRightExtension ()
+    {
+        return rightExtension;
+    }
+
     //--------------//
     // getRightNote //
     //--------------//
@@ -455,29 +455,29 @@ public class Slur
         return rightNote;
     }
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
+    //---------//
+    // isBelow //
+    //---------//
+    /**
+     * Report whether the placement of this slur is below the embraced notes.
+     * @return true if below, false if above
+     */
+    public boolean isBelow ()
     {
-        return visitor.visit(this);
+        return below;
     }
 
-    //-----------//
-    // canExtend //
-    //-----------//
+    //-------//
+    // isTie //
+    //-------//
     /**
-     * Check whether this slur can extend the prevSlur of the preceding
-     * system.
-     * @param prevSlur the slur candidate in the preceding system
-     * @return true if connection is possible
+     * Report whether this slur is actually a tie (a slur between
+     * similar notes).
+     * @return true if is a Tie, false otherwise
      */
-    public boolean canExtend (Slur prevSlur)
+    public boolean isTie ()
     {
-        return (this.leftExtension == null) &&
-               (prevSlur.rightExtension == null) &&
-               this.isCompatibleWith(prevSlur);
+        return tie;
     }
 
     //--------------------//
@@ -570,87 +570,6 @@ public class Slur
         return sb.toString();
     }
 
-    //---------//
-    // isBelow //
-    //---------//
-    /**
-     * Report whether the provided curve is below the notes (turned
-     * upwards) or above the notes (turned downwards).
-     * @param curve the provided curve to check
-     * @return true if below, false if above
-     */
-    private static boolean isBelow (CubicCurve2D curve)
-    {
-        // Determine arc orientation (above or below)
-        final double DX = curve.getX2() - curve.getX1();
-        final double DY = curve.getY2() - curve.getY1();
-        final double power = (curve.getCtrlX1() * DY) -
-                             (curve.getCtrlY1() * DX) - (curve.getX1() * DY) +
-                             (curve.getY1() * DX);
-
-        return power < 0;
-    }
-
-    //------------------//
-    // isCompatibleWith //
-    //------------------//
-    /**
-     * Check whether two slurs to-be-connected are roughly compatible
-     * with each other (same staff id, and pitch positions not too
-     * different).
-     * @param prevSlur the previous slur
-     * @return true if found compatible
-     */
-    private boolean isCompatibleWith (Slur prevSlur)
-    {
-        // Retrieve prev staff, using the left point of the prev slur
-        Staff prevStaff = prevSlur.getPart()
-                                  .getStaffAt(
-            new PixelPoint(
-                (int) prevSlur.curve.getX1(),
-                (int) prevSlur.curve.getY1()));
-
-        // Retrieve staff, using the right point of the slur
-        Staff staff = getPart()
-                          .getStaffAt(
-            new PixelPoint((int) curve.getX2(), (int) curve.getY2()));
-
-        if (prevStaff.getId() != staff.getId()) {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "prevSlur#" + prevSlur.getId() + " prevStaff:" +
-                    prevStaff.getId() + " slur#" + this.getId() + " staff:" +
-                    staff.getId() + " different staff id");
-            }
-
-            return false;
-        }
-
-        // Retrieve prev position, using the right point of the prev slur
-        double     prevPp = prevStaff.pitchPositionOf(
-            new PixelPoint(
-                (int) prevSlur.curve.getX2(),
-                (int) prevSlur.curve.getY2()));
-
-        // Retrieve position, using the left point of the slur
-        PixelPoint pt = new PixelPoint(
-            (int) curve.getX1(),
-            (int) curve.getY1());
-        double     pp = staff.pitchPositionOf(pt);
-
-        // Compare staves and pitch positions (very roughly)
-        double  deltaPitch = pp - prevPp;
-        boolean res = Math.abs(deltaPitch) <= (constants.maxDeltaY.getValue() * 2);
-
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "prevSlur#" + prevSlur.getId() + " slur#" + this.getId() +
-                " deltaPitch:" + deltaPitch + " res:" + res);
-        }
-
-        return res;
-    }
-
     //-------------//
     // filterNodes //
     //-------------//
@@ -711,6 +630,27 @@ public class Slur
                (n1.getOctave() == n2.getOctave());
 
         // TODO: what about alteration, if we have not processed them yet ???
+    }
+
+    //---------//
+    // isBelow //
+    //---------//
+    /**
+     * Report whether the provided curve is below the notes (turned
+     * upwards) or above the notes (turned downwards).
+     * @param curve the provided curve to check
+     * @return true if below, false if above
+     */
+    private static boolean isBelow (CubicCurve2D curve)
+    {
+        // Determine arc orientation (above or below)
+        final double DX = curve.getX2() - curve.getX1();
+        final double DY = curve.getY2() - curve.getY1();
+        final double power = (curve.getCtrlX1() * DY) -
+                             (curve.getCtrlY1() * DX) - (curve.getX1() * DY) +
+                             (curve.getY1() * DX);
+
+        return power < 0;
     }
 
     //-----------------------//
@@ -805,6 +745,66 @@ public class Slur
         return below;
     }
 
+    //------------------//
+    // isCompatibleWith //
+    //------------------//
+    /**
+     * Check whether two slurs to-be-connected are roughly compatible
+     * with each other (same staff id, and pitch positions not too
+     * different).
+     * @param prevSlur the previous slur
+     * @return true if found compatible
+     */
+    private boolean isCompatibleWith (Slur prevSlur)
+    {
+        // Retrieve prev staff, using the left point of the prev slur
+        Staff prevStaff = prevSlur.getPart()
+                                  .getStaffAt(
+            new PixelPoint(
+                (int) prevSlur.curve.getX1(),
+                (int) prevSlur.curve.getY1()));
+
+        // Retrieve staff, using the right point of the slur
+        Staff staff = getPart()
+                          .getStaffAt(
+            new PixelPoint((int) curve.getX2(), (int) curve.getY2()));
+
+        if (prevStaff.getId() != staff.getId()) {
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "prevSlur#" + prevSlur.getId() + " prevStaff:" +
+                    prevStaff.getId() + " slur#" + this.getId() + " staff:" +
+                    staff.getId() + " different staff id");
+            }
+
+            return false;
+        }
+
+        // Retrieve prev position, using the right point of the prev slur
+        double     prevPp = prevStaff.pitchPositionOf(
+            new PixelPoint(
+                (int) prevSlur.curve.getX2(),
+                (int) prevSlur.curve.getY2()));
+
+        // Retrieve position, using the left point of the slur
+        PixelPoint pt = new PixelPoint(
+            (int) curve.getX1(),
+            (int) curve.getY1());
+        double     pp = staff.pitchPositionOf(pt);
+
+        // Compare staves and pitch positions (very roughly)
+        double  deltaPitch = pp - prevPp;
+        boolean res = Math.abs(deltaPitch) <= (constants.maxDeltaY.getValue() * 2);
+
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                "prevSlur#" + prevSlur.getId() + " slur#" + this.getId() +
+                " deltaPitch:" + deltaPitch + " res:" + res);
+        }
+
+        return res;
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
     //-----------//
@@ -834,40 +834,6 @@ public class Slur
         Scale.Fraction maxDeltaY = new Scale.Fraction(
             4,
             "Maximum difference in vertical position between connecting slurs");
-    }
-
-    //-----//
-    // End //
-    //-----//
-    /**
-     *  Note information on one end of a slur.
-     */
-    private static class End
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        // The precise note embraced by the slur on this side
-        final Note note;
-
-        // The related chord stem direction
-        final int stemDir;
-
-        //~ Constructors -------------------------------------------------------
-
-        public End (MeasureNode node)
-        {
-            if (node instanceof Note) {
-                note = (Note) node;
-            } else {
-                Chord chord = (Chord) node;
-                // Take the last note (closest to the tail)
-                note = (Note) chord.getNotes()
-                                   .get(chord.getNotes().size() - 1);
-            }
-
-            stemDir = note.getChord()
-                          .getStemDir();
-        }
     }
 
     //----------------//
@@ -903,6 +869,40 @@ public class Slur
                             ? ((Chord) n2).getTailLocation() : n2.getCenter();
 
             return Double.compare(p1.distance(ref), p2.distance(ref));
+        }
+    }
+
+    //-----//
+    // End //
+    //-----//
+    /**
+     *  Note information on one end of a slur.
+     */
+    private static class End
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        // The precise note embraced by the slur on this side
+        final Note note;
+
+        // The related chord stem direction
+        final int stemDir;
+
+        //~ Constructors -------------------------------------------------------
+
+        public End (MeasureNode node)
+        {
+            if (node instanceof Note) {
+                note = (Note) node;
+            } else {
+                Chord chord = (Chord) node;
+                // Take the last note (closest to the tail)
+                note = (Note) chord.getNotes()
+                                   .get(chord.getNotes().size() - 1);
+            }
+
+            stemDir = note.getChord()
+                          .getStemDir();
         }
     }
 }

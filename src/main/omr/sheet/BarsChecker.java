@@ -46,7 +46,6 @@ import omr.selection.UserEvent;
 
 import omr.sheet.BarsChecker.BarCheckSuite;
 import static omr.util.HorizontalSide.*;
-import omr.util.Implement;
 import omr.util.Predicate;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -173,30 +172,6 @@ public class BarsChecker
 
     //~ Methods ----------------------------------------------------------------
 
-    //---------------//
-    // getCheckBoard //
-    //---------------//
-    public CheckBoard getCheckBoard ()
-    {
-        return new BarCheckBoard(
-            getSuite(),
-            sheet.getNest().getGlyphService(),
-            new Class[] { GlyphEvent.class });
-    }
-
-    //----------//
-    // getSuite //
-    //----------//
-    /**
-     * Report the suite currently defined.
-     * (used by package mate SystemsBuilder)
-     * @return the check suite
-     */
-    public CheckSuite<GlyphContext> getSuite ()
-    {
-        return suite;
-    }
-
     //-----------------//
     // checkCandidates //
     //-----------------//
@@ -272,6 +247,30 @@ public class BarsChecker
         }
     }
 
+    //---------------//
+    // getCheckBoard //
+    //---------------//
+    public CheckBoard getCheckBoard ()
+    {
+        return new BarCheckBoard(
+            getSuite(),
+            sheet.getNest().getGlyphService(),
+            new Class[] { GlyphEvent.class });
+    }
+
+    //----------//
+    // getSuite //
+    //----------//
+    /**
+     * Report the suite currently defined.
+     * (used by package mate SystemsBuilder)
+     * @return the check suite
+     */
+    public CheckSuite<GlyphContext> getSuite ()
+    {
+        return suite;
+    }
+
     //------------------//
     // getAlienPixelsIn //
     //------------------//
@@ -300,6 +299,28 @@ public class BarsChecker
         return total;
     }
 
+    //-------------------//
+    // initializeContext //
+    //-------------------//
+    private void initializeContext (GlyphContext context)
+    {
+        Glyph     stick = context.stick;
+        StaffInfo startStaff = staffManager.getStaffAt(
+            stick.getStartPoint(VERTICAL));
+        StaffInfo stopStaff = staffManager.getStaffAt(
+            stick.getStopPoint(VERTICAL));
+
+        // Remember top & bottom areas
+        context.topArea = staffManager.getIndexOf(startStaff);
+        context.bottomArea = staffManager.getIndexOf(stopStaff);
+
+        // Check whether this stick embraces more than one staff
+        context.isPartDefining = context.topArea != context.bottomArea;
+
+        // Remember if this is a thick stick
+        context.isThick = isThickBar(stick);
+    }
+
     //------------//
     // isThickBar //
     //------------//
@@ -321,28 +342,6 @@ public class BarsChecker
                 Orientation.VERTICAL));
 
         return meanWidth > maxThinWidth;
-    }
-
-    //-------------------//
-    // initializeContext //
-    //-------------------//
-    private void initializeContext (GlyphContext context)
-    {
-        Glyph     stick = context.stick;
-        StaffInfo startStaff = staffManager.getStaffAt(
-            stick.getStartPoint(VERTICAL));
-        StaffInfo stopStaff = staffManager.getStaffAt(
-            stick.getStopPoint(VERTICAL));
-
-        // Remember top & bottom areas
-        context.topArea = staffManager.getIndexOf(startStaff);
-        context.bottomArea = staffManager.getIndexOf(stopStaff);
-
-        // Check whether this stick embraces more than one staff
-        context.isPartDefining = context.topArea != context.bottomArea;
-
-        // Remember if this is a thick stick
-        context.isThick = isThickBar(stick);
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -469,7 +468,12 @@ public class BarsChecker
 
         //~ Methods ------------------------------------------------------------
 
-        @Implement(Checkable.class)
+        public boolean isVip ()
+        {
+            return stick.isVip();
+        }
+
+        @Override
         public void setResult (Result result)
         {
             stick.setResult(result);
@@ -480,16 +484,274 @@ public class BarsChecker
             stick.setVip();
         }
 
-        public boolean isVip ()
-        {
-            return stick.isVip();
-        }
-
         @Override
         public String toString ()
         {
             return "stick#" + stick.getId();
         }
+    }
+
+    //-----------//
+    // LongCheck //
+    //-----------//
+    /**
+     * This kind of check allows to force the result in certain circumstances
+     */
+    private abstract class LongCheck
+        extends Check<GlyphContext>
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public LongCheck (String          name,
+                          String          description,
+                          Constant.Double low,
+                          Constant.Double high,
+                          boolean         covariant,
+                          FailureResult   redResult)
+        {
+            super(name, description, low, high, covariant, redResult);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public CheckResult pass (GlyphContext context,
+                                 CheckResult  result,
+                                 boolean      update)
+        {
+            if (rough && context.isPartDefining) {
+                // Since this stick is a long one, embracing several staves,
+                // this check is not relevant
+                result.value = getValue(context); // For possible side-effect
+                result.flag = GREEN;
+
+                return result;
+            } else {
+                return super.pass(context, result, update);
+            }
+        }
+    }
+
+    //----------------------//
+    // BottomLeftChunkCheck //
+    //----------------------//
+    /**
+     * Check for lack of chunk on lower left side of the bar stick
+     */
+    private class BottomLeftChunkCheck
+        extends ChunkCheck
+    {
+        //~ Constructors -------------------------------------------------------
+
+        protected BottomLeftChunkCheck ()
+        {
+            super(
+                "BLChunk",
+                "Check there is no big chunk stuck on lower left side of stick",
+                BOTTOM_LEFT_CHUNK);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        protected PixelRectangle getBox (Glyph stick)
+        {
+            Point2D        bottom = stick.getStopPoint(VERTICAL);
+            PixelRectangle box = new PixelRectangle(
+                (int) Math.rint(bottom.getX() - nWidth),
+                (int) Math.rint(bottom.getY() - (1.5 * nHeight)),
+                nWidth,
+                2 * nHeight);
+            stick.addAttachment("bl", box);
+
+            return box;
+        }
+    }
+
+    //-----------------------//
+    // BottomRightChunkCheck //
+    //-----------------------//
+    /**
+     * Check for lack of chunk on lower right side of the bar stick
+     */
+    private class BottomRightChunkCheck
+        extends ChunkCheck
+    {
+        //~ Constructors -------------------------------------------------------
+
+        protected BottomRightChunkCheck ()
+        {
+            super(
+                "BRChunk",
+                "Check there is no big chunk stuck on lower right side of stick",
+                BOTTOM_RIGHT_CHUNK);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        protected PixelRectangle getBox (Glyph stick)
+        {
+            Point2D        bottom = stick.getStopPoint(VERTICAL);
+            PixelRectangle box = new PixelRectangle(
+                (int) Math.rint(bottom.getX()),
+                (int) Math.rint(bottom.getY() - (1.5 * nHeight)),
+                nWidth,
+                2 * nHeight);
+            stick.addAttachment("br", box);
+
+            return box;
+        }
+    }
+
+    //------------//
+    // ChunkCheck //
+    //------------//
+    private abstract class ChunkCheck
+        extends Check<GlyphContext>
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        // Width for chunk window
+        protected final int nWidth;
+
+        // Height for chunk window
+        protected final int nHeight;
+
+        //~ Constructors -------------------------------------------------------
+
+        protected ChunkCheck (String        name,
+                              String        description,
+                              FailureResult redResult)
+        {
+            super(
+                name,
+                description,
+                constants.chunkRatioLow,
+                constants.chunkRatioHigh,
+                false,
+                redResult);
+
+            // Adjust chunk window according to system scale
+            nWidth = scale.toPixels(constants.chunkWidth);
+            nHeight = scale.toPixels(constants.chunkHalfHeight);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        protected abstract PixelRectangle getBox (Glyph stick);
+
+        @Override
+        protected double getValue (GlyphContext context)
+        {
+            Glyph          stick = context.stick;
+            PixelRectangle box = getBox(stick);
+
+            int            aliens = getAlienPixelsIn(stick, box);
+            int            area = box.width * box.height;
+
+            // Normalize the ratio with stick length
+            double ratio = (1000 * aliens) / ((double) area * stick.getLength(
+                Orientation.VERTICAL));
+
+            if (logger.isFineEnabled()) {
+                logger.fine(
+                    "Glyph#" + stick.getId() + " " + getName() + " aliens:" +
+                    aliens + " area:" + area + " ratio:" + (float) ratio);
+            }
+
+            return ratio;
+        }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        Scale.Fraction  chunkWidth = new Scale.Fraction(
+            0.3,
+            "Width of box to look for chunks");
+        Scale.Fraction  chunkHalfHeight = new Scale.Fraction(
+            0.5,
+            "Half height of box to look for chunks");
+        Constant.Ratio  chunkRatioHigh = new Constant.Ratio(
+            1.8,
+            "High Minimum ratio of alien pixels to detect chunks");
+        Constant.Ratio  chunkRatioLow = new Constant.Ratio(
+            1.0,
+            "Low Minimum ratio of alien pixels to detect chunks");
+        Scale.Fraction  maxStaffShiftDyHigh = new Scale.Fraction(
+            0.4,
+            "High Maximum vertical distance between a bar edge and the staff line");
+        Scale.Fraction  maxStaffShiftDyHighRough = new Scale.Fraction(
+            4.0,
+            "Rough high Maximum vertical distance between a bar edge and the staff line");
+        Scale.Fraction  maxStaffShiftDyLow = new Scale.Fraction(
+            0.22,
+            "Low Maximum vertical distance between a bar edge and the staff line");
+        Scale.Fraction  maxStaffShiftDyLowRough = new Scale.Fraction(
+            2.0,
+            "Rough low Maximum vertical distance between a bar edge and the staff line");
+        Scale.Fraction  maxStaffDHeightHigh = new Scale.Fraction(
+            0.4,
+            "High Maximum difference between a bar length and min staff height");
+        Scale.Fraction  maxStaffDHeightHighRough = new Scale.Fraction(
+            1,
+            "Rough high Maximum difference between a bar length and min staff height");
+        Scale.Fraction  maxStaffDHeightLow = new Scale.Fraction(
+            0.2,
+            "Low Maximum difference between a bar length and min staff height");
+        Scale.Fraction  maxStaffDHeightLowRough = new Scale.Fraction(
+            0.5,
+            "Rough low Maximum difference between a bar length and min staff height");
+        Scale.Fraction  minStaffDxHigh = new Scale.Fraction(
+            0,
+            "High Minimum horizontal distance between a bar and a staff edge");
+        Scale.Fraction  minStaffDxHighRough = new Scale.Fraction(
+            -3,
+            "Rough high Minimum horizontal distance between a bar and a staff edge");
+        Scale.Fraction  minStaffDxLow = new Scale.Fraction(
+            -1,
+            "Low Minimum horizontal distance between a bar and a staff edge");
+        Scale.Fraction  minStaffDxLowRough = new Scale.Fraction(
+            -5,
+            "Rough low Minimum horizontal distance between a bar and a staff edge");
+        Constant.Double maxSlopeLow = new Constant.Double(
+            "slope",
+            0.1,
+            "Low maximum difference with global slope");
+        Constant.Double maxSlopeHigh = new Constant.Double(
+            "slope",
+            0.2,
+            "High maximum difference with global slope");
+        Scale.Fraction  minRadiusLow = new Scale.Fraction(
+            25,
+            "Low minimum radius");
+        Scale.Fraction  minRadiusHigh = new Scale.Fraction(
+            60,
+            "High minimum radius");
+        Scale.Fraction  maxThinWidth = new Scale.Fraction(
+            0.3,
+            "Maximum width of a normal bar, versus a thick bar");
+        Check.Grade     minCheckResult = new Check.Grade(
+            0.50,
+            "Minimum result for suite of check");
+        Constant.Ratio  minStaffCountForLongBar = new Constant.Ratio(
+            2,
+            "Minimum length for long bars, stated in number of staff heights");
+        Constant.Ratio  booleanThreshold = new Constant.Ratio(
+            0.5,
+            "* DO NOT EDIT * - switch between true & false for a boolean");
+
+        //
+        Constant.Double maxCoTangentForCheck = new Constant.Double(
+            "cotangent",
+            0.1,
+            "Maximum cotangent for checking a barline candidate");
     }
 
     //-------------//
@@ -515,7 +777,7 @@ public class BarsChecker
 
         // Make sure that at least top or bottom are staff anchors, and that
         // both are staff anchors in the case of thick bars.
-        @Implement(Check.class)
+        @Override
         protected double getValue (GlyphContext context)
         {
             if (rough) {
@@ -620,7 +882,7 @@ public class BarsChecker
         //~ Methods ------------------------------------------------------------
 
         // Retrieve the distance with proper staff border
-        @Implement(Check.class)
+        @Override
         protected double getValue (GlyphContext context)
         {
             Glyph     stick = context.stick;
@@ -655,228 +917,6 @@ public class BarsChecker
         }
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        Scale.Fraction  chunkWidth = new Scale.Fraction(
-            0.3,
-            "Width of box to look for chunks");
-        Scale.Fraction  chunkHalfHeight = new Scale.Fraction(
-            0.5,
-            "Half height of box to look for chunks");
-        Constant.Ratio  chunkRatioHigh = new Constant.Ratio(
-            1.8,
-            "High Minimum ratio of alien pixels to detect chunks");
-        Constant.Ratio  chunkRatioLow = new Constant.Ratio(
-            1.0,
-            "Low Minimum ratio of alien pixels to detect chunks");
-        Scale.Fraction  maxStaffShiftDyHigh = new Scale.Fraction(
-            0.4,
-            "High Maximum vertical distance between a bar edge and the staff line");
-        Scale.Fraction  maxStaffShiftDyHighRough = new Scale.Fraction(
-            4.0,
-            "Rough high Maximum vertical distance between a bar edge and the staff line");
-        Scale.Fraction  maxStaffShiftDyLow = new Scale.Fraction(
-            0.22,
-            "Low Maximum vertical distance between a bar edge and the staff line");
-        Scale.Fraction  maxStaffShiftDyLowRough = new Scale.Fraction(
-            2.0,
-            "Rough low Maximum vertical distance between a bar edge and the staff line");
-        Scale.Fraction  maxStaffDHeightHigh = new Scale.Fraction(
-            0.4,
-            "High Maximum difference between a bar length and min staff height");
-        Scale.Fraction  maxStaffDHeightHighRough = new Scale.Fraction(
-            1,
-            "Rough high Maximum difference between a bar length and min staff height");
-        Scale.Fraction  maxStaffDHeightLow = new Scale.Fraction(
-            0.2,
-            "Low Maximum difference between a bar length and min staff height");
-        Scale.Fraction  maxStaffDHeightLowRough = new Scale.Fraction(
-            0.5,
-            "Rough low Maximum difference between a bar length and min staff height");
-        Scale.Fraction  minStaffDxHigh = new Scale.Fraction(
-            0,
-            "High Minimum horizontal distance between a bar and a staff edge");
-        Scale.Fraction  minStaffDxHighRough = new Scale.Fraction(
-            -3,
-            "Rough high Minimum horizontal distance between a bar and a staff edge");
-        Scale.Fraction  minStaffDxLow = new Scale.Fraction(
-            -1,
-            "Low Minimum horizontal distance between a bar and a staff edge");
-        Scale.Fraction  minStaffDxLowRough = new Scale.Fraction(
-            -5,
-            "Rough low Minimum horizontal distance between a bar and a staff edge");
-        Constant.Double maxSlopeLow = new Constant.Double(
-            "slope",
-            0.1,
-            "Low maximum difference with global slope");
-        Constant.Double maxSlopeHigh = new Constant.Double(
-            "slope",
-            0.2,
-            "High maximum difference with global slope");
-        Scale.Fraction  minRadiusLow = new Scale.Fraction(
-            25,
-            "Low minimum radius");
-        Scale.Fraction  minRadiusHigh = new Scale.Fraction(
-            60,
-            "High minimum radius");
-        Scale.Fraction  maxThinWidth = new Scale.Fraction(
-            0.3,
-            "Maximum width of a normal bar, versus a thick bar");
-        Check.Grade     minCheckResult = new Check.Grade(
-            0.50,
-            "Minimum result for suite of check");
-        Constant.Ratio  minStaffCountForLongBar = new Constant.Ratio(
-            2,
-            "Minimum length for long bars, stated in number of staff heights");
-        Constant.Ratio  booleanThreshold = new Constant.Ratio(
-            0.5,
-            "* DO NOT EDIT * - switch between true & false for a boolean");
-
-        //
-        Constant.Double maxCoTangentForCheck = new Constant.Double(
-            "cotangent",
-            0.1,
-            "Maximum cotangent for checking a barline candidate");
-    }
-
-    //------------//
-    // ChunkCheck //
-    //------------//
-    private abstract class ChunkCheck
-        extends Check<GlyphContext>
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        // Width for chunk window
-        protected final int nWidth;
-
-        // Height for chunk window
-        protected final int nHeight;
-
-        //~ Constructors -------------------------------------------------------
-
-        protected ChunkCheck (String        name,
-                              String        description,
-                              FailureResult redResult)
-        {
-            super(
-                name,
-                description,
-                constants.chunkRatioLow,
-                constants.chunkRatioHigh,
-                false,
-                redResult);
-
-            // Adjust chunk window according to system scale
-            nWidth = scale.toPixels(constants.chunkWidth);
-            nHeight = scale.toPixels(constants.chunkHalfHeight);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        protected abstract PixelRectangle getBox (Glyph stick);
-
-        @Implement(Check.class)
-        protected double getValue (GlyphContext context)
-        {
-            Glyph          stick = context.stick;
-            PixelRectangle box = getBox(stick);
-
-            int            aliens = getAlienPixelsIn(stick, box);
-            int            area = box.width * box.height;
-
-            // Normalize the ratio with stick length
-            double ratio = (1000 * aliens) / ((double) area * stick.getLength(
-                Orientation.VERTICAL));
-
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "Glyph#" + stick.getId() + " " + getName() + " aliens:" +
-                    aliens + " area:" + area + " ratio:" + (float) ratio);
-            }
-
-            return ratio;
-        }
-    }
-
-    //----------------------//
-    // BottomLeftChunkCheck //
-    //----------------------//
-    /**
-     * Check for lack of chunk on lower left side of the bar stick
-     */
-    private class BottomLeftChunkCheck
-        extends ChunkCheck
-    {
-        //~ Constructors -------------------------------------------------------
-
-        protected BottomLeftChunkCheck ()
-        {
-            super(
-                "BLChunk",
-                "Check there is no big chunk stuck on lower left side of stick",
-                BOTTOM_LEFT_CHUNK);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        protected PixelRectangle getBox (Glyph stick)
-        {
-            Point2D        bottom = stick.getStopPoint(VERTICAL);
-            PixelRectangle box = new PixelRectangle(
-                (int) Math.rint(bottom.getX() - nWidth),
-                (int) Math.rint(bottom.getY() - (1.5 * nHeight)),
-                nWidth,
-                2 * nHeight);
-            stick.addAttachment("bl", box);
-
-            return box;
-        }
-    }
-
-    //-----------------------//
-    // BottomRightChunkCheck //
-    //-----------------------//
-    /**
-     * Check for lack of chunk on lower right side of the bar stick
-     */
-    private class BottomRightChunkCheck
-        extends ChunkCheck
-    {
-        //~ Constructors -------------------------------------------------------
-
-        protected BottomRightChunkCheck ()
-        {
-            super(
-                "BRChunk",
-                "Check there is no big chunk stuck on lower right side of stick",
-                BOTTOM_RIGHT_CHUNK);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        protected PixelRectangle getBox (Glyph stick)
-        {
-            Point2D        bottom = stick.getStopPoint(VERTICAL);
-            PixelRectangle box = new PixelRectangle(
-                (int) Math.rint(bottom.getX()),
-                (int) Math.rint(bottom.getY() - (1.5 * nHeight)),
-                nWidth,
-                2 * nHeight);
-            stick.addAttachment("br", box);
-
-            return box;
-        }
-    }
-
     //-----------------//
     // HeightDiffCheck //
     //-----------------//
@@ -901,7 +941,7 @@ public class BarsChecker
         //~ Methods ------------------------------------------------------------
 
         // Retrieve the length data
-        @Implement(Check.class)
+        @Override
         protected double getValue (GlyphContext context)
         {
             Glyph stick = context.stick;
@@ -941,7 +981,7 @@ public class BarsChecker
         //~ Methods ------------------------------------------------------------
 
         // Retrieve the stick abscissa
-        @Implement(Check.class)
+        @Override
         protected double getValue (GlyphContext context)
         {
             Glyph  stick = context.stick;
@@ -962,47 +1002,6 @@ public class BarsChecker
 
             return sheet.getScale()
                         .pixelsToFrac(dist);
-        }
-    }
-
-    //-----------//
-    // LongCheck //
-    //-----------//
-    /**
-     * This kind of check allows to force the result in certain circumstances
-     */
-    private abstract class LongCheck
-        extends Check<GlyphContext>
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public LongCheck (String          name,
-                          String          description,
-                          Constant.Double low,
-                          Constant.Double high,
-                          boolean         covariant,
-                          FailureResult   redResult)
-        {
-            super(name, description, low, high, covariant, redResult);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public CheckResult pass (GlyphContext context,
-                                 CheckResult  result,
-                                 boolean      update)
-        {
-            if (rough && context.isPartDefining) {
-                // Since this stick is a long one, embracing several staves,
-                // this check is not relevant
-                result.value = getValue(context); // For possible side-effect
-                result.flag = GREEN;
-
-                return result;
-            } else {
-                return super.pass(context, result, update);
-            }
         }
     }
 
@@ -1028,7 +1027,7 @@ public class BarsChecker
         //~ Methods ------------------------------------------------------------
 
         // Retrieve a measure of x variance
-        @Implement(Check.class)
+        @Override
         protected double getValue (GlyphContext context)
         {
             Glyph stick = context.stick;
@@ -1066,7 +1065,7 @@ public class BarsChecker
         //~ Methods ------------------------------------------------------------
 
         // Retrieve the stick abscissa
-        @Implement(Check.class)
+        @Override
         protected double getValue (GlyphContext context)
         {
             Glyph  stick = context.stick;
@@ -1115,7 +1114,7 @@ public class BarsChecker
         //~ Methods ------------------------------------------------------------
 
         // Retrieve the distance with proper staff border
-        @Implement(Check.class)
+        @Override
         protected double getValue (GlyphContext context)
         {
             Glyph     stick = context.stick;
@@ -1244,7 +1243,7 @@ public class BarsChecker
         //~ Methods ------------------------------------------------------------
 
         // Retrieve the difference between stick slope and global slope
-        @Implement(Check.class)
+        @Override
         protected double getValue (GlyphContext context)
         {
             Glyph   stick = context.stick;

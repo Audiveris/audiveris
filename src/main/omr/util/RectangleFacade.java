@@ -63,15 +63,6 @@ public class RectangleFacade
     //~ Methods ----------------------------------------------------------------
 
     //-----------//
-    // setHeight //
-    //-----------//
-    @XmlElement
-    public void setHeight (int height)
-    {
-        rectangle.height = height;
-    }
-
-    //-----------//
     // getHeight //
     //-----------//
     public int getHeight ()
@@ -93,20 +84,45 @@ public class RectangleFacade
     }
 
     //----------//
+    // getWidth //
+    //----------//
+    public int getWidth ()
+    {
+        return rectangle.width;
+    }
+
+    //------//
+    // getX //
+    //------//
+    public int getX ()
+    {
+        return rectangle.x;
+    }
+
+    //------//
+    // getY //
+    //------//
+    public int getY ()
+    {
+        return rectangle.y;
+    }
+
+    //-----------//
+    // setHeight //
+    //-----------//
+    @XmlElement
+    public void setHeight (int height)
+    {
+        rectangle.height = height;
+    }
+
+    //----------//
     // setWidth //
     //----------//
     @XmlElement
     public void setWidth (int width)
     {
         rectangle.width = width;
-    }
-
-    //----------//
-    // getWidth //
-    //----------//
-    public int getWidth ()
-    {
-        return rectangle.width;
     }
 
     //------//
@@ -119,27 +135,11 @@ public class RectangleFacade
     }
 
     //------//
-    // getX //
-    //------//
-    public int getX ()
-    {
-        return rectangle.x;
-    }
-
-    //------//
     // setY //
     //------//
     @XmlElement
     public void setY (int y)
     {
         rectangle.y = y;
-    }
-
-    //------//
-    // getY //
-    //------//
-    public int getY ()
-    {
-        return rectangle.y;
     }
 }

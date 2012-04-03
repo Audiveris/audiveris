@@ -47,10 +47,10 @@ public abstract class AbstractDirection
      * @param chord the related chord if any
      * @param glyph the underlying glyph
      */
-    public AbstractDirection (Measure     measure,
+    public AbstractDirection (Measure    measure,
                               PixelPoint referencePoint,
-                              Chord       chord,
-                              Glyph       glyph)
+                              Chord      chord,
+                              Glyph      glyph)
     {
         this(measure, true, referencePoint, chord, glyph);
     }
@@ -63,11 +63,11 @@ public abstract class AbstractDirection
      * @param chord the related chord if any
      * @param glyph the underlying glyph
      */
-    public AbstractDirection (Measure     measure,
-                              boolean     isStart,
+    public AbstractDirection (Measure    measure,
+                              boolean    isStart,
                               PixelPoint referencePoint,
-                              Chord       chord,
-                              Glyph       glyph)
+                              Chord      chord,
+                              Glyph      glyph)
     {
         super(measure, isStart, referencePoint, chord, glyph);
 

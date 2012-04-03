@@ -13,7 +13,6 @@ package omr.stick;
 
 import omr.lag.Section;
 
-import omr.util.Implement;
 import omr.util.Predicate;
 
 /**
@@ -40,7 +39,7 @@ public class UnknownSectionPredicate
 
     //~ Methods ----------------------------------------------------------------
 
-    @Implement(Predicate.class)
+    @Override
     public boolean check (Section section)
     {
         // Check if this section is not already assigned to a recognized glyph

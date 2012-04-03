@@ -29,11 +29,9 @@ import omr.score.ui.PaintingParameters;
 import omr.ui.util.UIUtilities;
 import omr.ui.view.RubberPanel;
 
-import omr.util.Implement;
 import omr.util.WeakPropertyChangeListener;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Stroke;
@@ -41,7 +39,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -106,14 +103,6 @@ public class NestView
 
     //~ Methods ----------------------------------------------------------------
 
-    //---------------//
-    // getController //
-    //---------------//
-    public GlyphsController getController ()
-    {
-        return controller;
-    }
-
     //-----------------//
     // addItemRenderer //
     //-----------------//
@@ -126,10 +115,17 @@ public class NestView
         itemRenderers.add(renderer);
     }
 
+    //---------------//
+    // getController //
+    //---------------//
+    public GlyphsController getController ()
+    {
+        return controller;
+    }
+
     //----------------//
     // propertyChange //
     //----------------//
-    @Implement(PropertyChangeListener.class)
     @Override
     public void propertyChange (PropertyChangeEvent evt)
     {
@@ -147,7 +143,7 @@ public class NestView
     }
 
     //--------//
-    // renderAttachments //
+    // render //
     //--------//
     /**
      * Render the nest in the provided Graphics context, which may be

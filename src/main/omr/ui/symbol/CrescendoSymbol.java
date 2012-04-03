@@ -22,7 +22,7 @@ import java.awt.Rectangle;
 import java.awt.Stroke;
 
 /**
- * Class {@code CrescendoSymbol} displays a crescendo symbol: <
+ * Class {@code CrescendoSymbol} displays a crescendo symbol: "<" .
  */
 public class CrescendoSymbol
     extends ShapeSymbol
@@ -34,7 +34,6 @@ public class CrescendoSymbol
     //-----------------//
     /**
      * Creates a new CrescendoSymbol object.
-     *
      * @param isIcon true for an icon
      * @param shape the related shape
      */
@@ -45,6 +44,15 @@ public class CrescendoSymbol
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //------------//
+    // createIcon //
+    //------------//
+    @Override
+    protected ShapeSymbol createIcon ()
+    {
+        return new CrescendoSymbol(true, shape);
+    }
 
     //-----------//
     // getParams //
@@ -66,15 +74,6 @@ public class CrescendoSymbol
         return p;
     }
 
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new CrescendoSymbol(true, shape);
-    }
-
     //-------//
     // paint //
     //-------//
@@ -84,7 +83,7 @@ public class CrescendoSymbol
                           PixelPoint location,
                           Alignment  alignment)
     {
-        MyParams    p = (MyParams) params;
+        MyParams   p = (MyParams) params;
         PixelPoint loc = alignment.translatedPoint(
             MIDDLE_LEFT,
             p.rect,

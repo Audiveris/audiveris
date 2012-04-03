@@ -41,9 +41,8 @@ public class LField<C extends JComponent>
     //--------//
     /**
      * Creates a new LField object.
-     *
      * @param label the string to be used as label text
-     * @param tip the related tool tip text
+     * @param tip   the related tool tip text
      * @param field the field instance
      */
     public LField (String label,
@@ -61,24 +60,11 @@ public class LField<C extends JComponent>
 
     //~ Methods ----------------------------------------------------------------
 
-    //------------//
-    // setEnabled //
-    //------------//
-    /**
-     * Enable or disable the whole label + field structure
-     * @param bool true for enable, false for disable
-     */
-    public void setEnabled (boolean bool)
-    {
-        label.setEnabled(bool);
-        field.setEnabled(bool);
-    }
-
     //----------//
     // getField //
     //----------//
     /**
-     * Getter for the field
+     * Getter for the field.
      * @return the field
      */
     public C getField ()
@@ -90,7 +76,7 @@ public class LField<C extends JComponent>
     // getLabel //
     //----------//
     /**
-     * Getter for the label
+     * Getter for the label.
      * @return the label
      */
     public JLabel getLabel ()
@@ -99,10 +85,23 @@ public class LField<C extends JComponent>
     }
 
     //------------//
+    // setEnabled //
+    //------------//
+    /**
+     * Enable or disable the whole label + field structure.
+     * @param bool true for enable, false for disable
+     */
+    public void setEnabled (boolean bool)
+    {
+        label.setEnabled(bool);
+        field.setEnabled(bool);
+    }
+
+    //------------//
     // setVisible //
     //------------//
     /**
-     * Make the whole label + field structure visible or not
+     * Make the whole label + field structure visible or not.
      * @param bool true for visible, false for non visible
      */
     public void setVisible (boolean bool)

@@ -31,8 +31,11 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Class {@code TextGreedyPattern} tries to build long series of unassigned
- * glyphs and checks them for TEXT shape via the neural network.
+ * Class {@code TextGreedyPattern} tries to build long series of
+ * unassigned glyphs and checks them for TEXT shape via the evaluator.
+ * 
+ * TODO: This pattern performs no geometric check between glyphs of a blob,
+ * so very distant glyphs can be OCR'ed as a single text glyph!
  *
  * @author Hervé Bitteur
  */
@@ -124,7 +127,7 @@ public class TextGreedyPattern
             // Check whether this series could be a text
             Collection<Glyph> neighbors = blob.getGlyphs();
 
-            Evaluation        vote = evaluator.vote(compound, minGrade, system);
+            Evaluation        vote = evaluator.vote(compound, system, minGrade);
             logger.fine(
                 "Checking" + Glyphs.toString(" ", neighbors) + ":" + vote);
 

@@ -72,17 +72,12 @@ public class PaintingParameters
         return Holder.INSTANCE;
     }
 
-    //-----------------------//
-    // setAnnotationPainting //
-    //-----------------------//
-    public void setAnnotationPainting (boolean value)
+    //------------------//
+    // getPaintingLayer //
+    //------------------//
+    public PaintingLayer getPaintingLayer ()
     {
-        boolean oldValue = constants.annotationPainting.getValue();
-        constants.annotationPainting.setValue(value);
-        firePropertyChange(
-            ANNOTATION_PAINTING,
-            oldValue,
-            constants.annotationPainting.getValue());
+        return paintingLayer;
     }
 
     //----------------------//
@@ -102,19 +97,6 @@ public class PaintingParameters
                (getPaintingLayer() == PaintingLayer.INPUT_OUTPUT);
     }
 
-    //-----------------//
-    // setMarkPainting //
-    //-----------------//
-    public void setMarkPainting (boolean value)
-    {
-        boolean oldValue = constants.markPainting.getValue();
-        constants.markPainting.setValue(value);
-        firePropertyChange(
-            MARK_PAINTING,
-            oldValue,
-            constants.markPainting.getValue());
-    }
-
     //----------------//
     // isMarkPainting //
     //----------------//
@@ -132,6 +114,49 @@ public class PaintingParameters
                (getPaintingLayer() == PaintingLayer.INPUT_OUTPUT);
     }
 
+    //----------------//
+    // isSlotPainting //
+    //----------------//
+    public boolean isSlotPainting ()
+    {
+        return constants.slotPainting.getValue();
+    }
+
+    //-----------------//
+    // isVoicePainting //
+    //-----------------//
+    public boolean isVoicePainting ()
+    {
+        // return constants.voicePainting.getValue();
+        return voicePainting;
+    }
+
+    //-----------------------//
+    // setAnnotationPainting //
+    //-----------------------//
+    public void setAnnotationPainting (boolean value)
+    {
+        boolean oldValue = constants.annotationPainting.getValue();
+        constants.annotationPainting.setValue(value);
+        firePropertyChange(
+            ANNOTATION_PAINTING,
+            oldValue,
+            constants.annotationPainting.getValue());
+    }
+
+    //-----------------//
+    // setMarkPainting //
+    //-----------------//
+    public void setMarkPainting (boolean value)
+    {
+        boolean oldValue = constants.markPainting.getValue();
+        constants.markPainting.setValue(value);
+        firePropertyChange(
+            MARK_PAINTING,
+            oldValue,
+            constants.markPainting.getValue());
+    }
+
     //------------------//
     // setPaintingLayer //
     //------------------//
@@ -141,14 +166,6 @@ public class PaintingParameters
         /// constants.paintingLayer.setValue(value); // For persistency
         paintingLayer = value;
         firePropertyChange(LAYER_PAINTING, oldValue, getPaintingLayer());
-    }
-
-    //------------------//
-    // getPaintingLayer //
-    //------------------//
-    public PaintingLayer getPaintingLayer ()
-    {
-        return paintingLayer;
     }
 
     //-----------------//
@@ -162,14 +179,6 @@ public class PaintingParameters
             SLOT_PAINTING,
             oldValue,
             constants.slotPainting.getValue());
-    }
-
-    //----------------//
-    // isSlotPainting //
-    //----------------//
-    public boolean isSlotPainting ()
-    {
-        return constants.slotPainting.getValue();
     }
 
     //------------------//
@@ -186,15 +195,6 @@ public class PaintingParameters
         boolean oldValue = voicePainting;
         voicePainting = value;
         firePropertyChange(VOICE_PAINTING, oldValue, voicePainting);
-    }
-
-    //-----------------//
-    // isVoicePainting //
-    //-----------------//
-    public boolean isVoicePainting ()
-    {
-        // return constants.voicePainting.getValue();
-        return voicePainting;
     }
 
     //--------------//
@@ -261,6 +261,18 @@ public class PaintingParameters
     {
     }
 
+    //~ Inner Interfaces -------------------------------------------------------
+
+    //--------//
+    // Holder //
+    //--------//
+    private static interface Holder
+    {
+        //~ Static fields/initializers -----------------------------------------
+
+        public static final PaintingParameters INSTANCE = new PaintingParameters();
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
     //-----------//
@@ -295,15 +307,5 @@ public class PaintingParameters
         //        final Constant.Boolean voicePainting = new Constant.Boolean(
         //            false,
         //            "Should the voices be painted");
-    }
-
-    //--------//
-    // Holder //
-    //--------//
-    private static interface Holder
-    {
-        //~ Static fields/initializers -----------------------------------------
-
-        public static final PaintingParameters INSTANCE = new PaintingParameters();
     }
 }

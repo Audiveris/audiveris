@@ -73,6 +73,15 @@ public class HeadFlagsDownSymbol
 
     //~ Methods ----------------------------------------------------------------
 
+    //------------//
+    // createIcon //
+    //------------//
+    @Override
+    protected ShapeSymbol createIcon ()
+    {
+        return new HeadFlagsDownSymbol(fn, true, shape);
+    }
+
     //-----------//
     // getParams //
     //-----------//
@@ -96,15 +105,6 @@ public class HeadFlagsDownSymbol
         p.dy = flagsHeight;
 
         return p;
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new HeadFlagsDownSymbol(fn, true, shape);
     }
 
     //-------//

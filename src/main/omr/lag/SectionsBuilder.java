@@ -183,14 +183,6 @@ public class SectionsBuilder
         return createSections(table);
     }
 
-    //------------//
-    // isFinished //
-    //------------//
-    private boolean isFinished (Section section)
-    {
-        return section.getId() < 0;
-    }
-
     //-----------------//
     // continueSection //
     //-----------------//
@@ -223,6 +215,14 @@ public class SectionsBuilder
     private void finish (Section section)
     {
         section.setId(-section.getId());
+    }
+
+    //------------//
+    // isFinished //
+    //------------//
+    private boolean isFinished (Section section)
+    {
+        return section.getId() < 0;
     }
 
     //-----------------//

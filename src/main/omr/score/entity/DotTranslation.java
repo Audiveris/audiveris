@@ -77,7 +77,7 @@ public class DotTranslation
 
         // Keep specific shape only if manually assigned
         if (!glyph.isManualShape()) {
-            glyph.setShape(DOT);
+            glyph.setShape(DOT_set);
         }
 
         Shape                   shape = glyph.getShape();
@@ -87,7 +87,7 @@ public class DotTranslation
 
         // Try the various possibilities
         for (Trial trial : trials) {
-            if ((shape == DOT) || (shape == trial.targetShape)) {
+            if ((shape == DOT_set) || (shape == trial.targetShape)) {
                 Trial.Result result = trial.process(glyph, measure, dotCenter);
 
                 if (result != null) {
@@ -122,149 +122,6 @@ public class DotTranslation
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /**
-         * Maximum dx between note and augmentation dot
-         */
-        Scale.Fraction maxAugmentationDotDx = new Scale.Fraction(
-            1.7d,
-            "Maximum dx between note and augmentation dot");
-
-        /**
-         * Maximum absolute dy between note and augmentation dot
-         */
-        Scale.Fraction maxAugmentationDotDy = new Scale.Fraction(
-            1d,
-            "Maximum absolute dy between note and augmentation dot");
-
-        /**
-         * Maximum dx between two augmentation dots
-         */
-        Scale.Fraction maxAugmentationDoubleDotsDx = new Scale.Fraction(
-            1.5d,
-            "Maximum dx between two augmentation dots");
-
-        /**
-         * Maximum absolute dy between two augmentation dots
-         */
-        Scale.Fraction maxAugmentationDoubleDotsDy = new Scale.Fraction(
-            0.2d,
-            "Maximum absolute dy between two augmentation dots");
-
-        /**
-         * Margin for vertical position of a dot againt a repeat barline
-         */
-        Scale.Fraction maxRepeatDotDy = new Scale.Fraction(
-            0.5d,
-            "Margin for vertical position of a dot againt a repeat barline");
-
-        /**
-         * Maximum dx between dot and edge of repeat barline
-         */
-        Scale.Fraction maxRepeatDotDx = new Scale.Fraction(
-            1.5d,
-            "Maximum dx between dot and edge of repeat barline");
-
-        /**
-         * Maximum absolute dy between note and staccato dot
-         */
-        Scale.Fraction maxStaccatoDotDy = new Scale.Fraction(
-            6d,
-            "Maximum absolute dy between note and staccato dot");
-
-        /**
-         * Maximum dx between note and staccato dot
-         */
-        Scale.Fraction maxStaccatoDotDx = new Scale.Fraction(
-            0.75d,
-            "Maximum dx between note and staccato dot");
-    }
-
-    //-------//
-    // Trial //
-    //-------//
-    private abstract static class Trial
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        public final Shape targetShape;
-
-        //~ Constructors -------------------------------------------------------
-
-        public Trial (Shape targetShape)
-        {
-            this.targetShape = targetShape;
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        public Shape getTargetShape ()
-        {
-            return targetShape;
-        }
-
-        abstract Result process (Glyph      glyph,
-                                 Measure    measure,
-                                 PixelPoint dotCenter);
-
-        //~ Inner Classes ------------------------------------------------------
-
-        /**
-         * Remember information about possible assignment of a dot
-         */
-        public abstract class Result
-            implements Comparable<Result>
-        {
-            //~ Instance fields ------------------------------------------------
-
-            /* The measured distance to the related entity */
-            final double dist;
-
-            //~ Constructors ---------------------------------------------------
-
-            public Result (double dist)
-            {
-                this.dist = dist;
-            }
-
-            //~ Methods --------------------------------------------------------
-
-            public abstract void commit (Glyph      glyph,
-                                         Measure    measure,
-                                         PixelPoint dotCenter);
-
-            public Shape getTargetShape ()
-            {
-                return targetShape;
-            }
-
-            public int compareTo (Result other)
-            {
-                return Double.compare(this.dist, other.dist);
-            }
-
-            @Override
-            public String toString ()
-            {
-                return "{" + getClass()
-                                 .getSimpleName() + " dist:" + (float) dist +
-                       " " + internals() + "}";
-            }
-
-            protected String internals ()
-            {
-                return "";
-            }
-        }
-    }
-
     //-------------------//
     // AugmentationTrial //
     //-------------------//
@@ -278,7 +135,7 @@ public class DotTranslation
 
         public AugmentationTrial ()
         {
-            super(COMBINING_AUGMENTATION_DOT);
+            super(AUGMENTATION_DOT);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -421,8 +278,8 @@ public class DotTranslation
                     }
 
                     if (!g.isTranslated() &&
-                        ((g.getShape() == DOT) ||
-                        (g.getShape() == COMBINING_AUGMENTATION_DOT))) {
+                        ((g.getShape() == DOT_set) ||
+                        (g.getShape() == AUGMENTATION_DOT))) {
                         // Check relative position
                         PixelPoint gCenter = g.getLocation();
                         int        dx = gCenter.x - dotCenter.x;
@@ -467,7 +324,7 @@ public class DotTranslation
 
         public RepeatTrial ()
         {
-            super(REPEAT_DOTS);
+            super(REPEAT_DOT);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -679,5 +536,148 @@ public class DotTranslation
                 return "chord:" + chord;
             }
         }
+    }
+
+    //-------//
+    // Trial //
+    //-------//
+    private abstract static class Trial
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        public final Shape targetShape;
+
+        //~ Constructors -------------------------------------------------------
+
+        public Trial (Shape targetShape)
+        {
+            this.targetShape = targetShape;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        public Shape getTargetShape ()
+        {
+            return targetShape;
+        }
+
+        abstract Result process (Glyph      glyph,
+                                 Measure    measure,
+                                 PixelPoint dotCenter);
+
+        //~ Inner Classes ------------------------------------------------------
+
+        /**
+         * Remember information about possible assignment of a dot
+         */
+        public abstract class Result
+            implements Comparable<Result>
+        {
+            //~ Instance fields ------------------------------------------------
+
+            /* The measured distance to the related entity */
+            final double dist;
+
+            //~ Constructors ---------------------------------------------------
+
+            public Result (double dist)
+            {
+                this.dist = dist;
+            }
+
+            //~ Methods --------------------------------------------------------
+
+            public abstract void commit (Glyph      glyph,
+                                         Measure    measure,
+                                         PixelPoint dotCenter);
+
+            public int compareTo (Result other)
+            {
+                return Double.compare(this.dist, other.dist);
+            }
+
+            public Shape getTargetShape ()
+            {
+                return targetShape;
+            }
+
+            @Override
+            public String toString ()
+            {
+                return "{" + getClass()
+                                 .getSimpleName() + " dist:" + (float) dist +
+                       " " + internals() + "}";
+            }
+
+            protected String internals ()
+            {
+                return "";
+            }
+        }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /**
+         * Maximum dx between note and augmentation dot
+         */
+        Scale.Fraction maxAugmentationDotDx = new Scale.Fraction(
+            1.7d,
+            "Maximum dx between note and augmentation dot");
+
+        /**
+         * Maximum absolute dy between note and augmentation dot
+         */
+        Scale.Fraction maxAugmentationDotDy = new Scale.Fraction(
+            1d,
+            "Maximum absolute dy between note and augmentation dot");
+
+        /**
+         * Maximum dx between two augmentation dots
+         */
+        Scale.Fraction maxAugmentationDoubleDotsDx = new Scale.Fraction(
+            1.5d,
+            "Maximum dx between two augmentation dots");
+
+        /**
+         * Maximum absolute dy between two augmentation dots
+         */
+        Scale.Fraction maxAugmentationDoubleDotsDy = new Scale.Fraction(
+            0.2d,
+            "Maximum absolute dy between two augmentation dots");
+
+        /**
+         * Margin for vertical position of a dot againt a repeat barline
+         */
+        Scale.Fraction maxRepeatDotDy = new Scale.Fraction(
+            0.5d,
+            "Margin for vertical position of a dot againt a repeat barline");
+
+        /**
+         * Maximum dx between dot and edge of repeat barline
+         */
+        Scale.Fraction maxRepeatDotDx = new Scale.Fraction(
+            1.5d,
+            "Maximum dx between dot and edge of repeat barline");
+
+        /**
+         * Maximum absolute dy between note and staccato dot
+         */
+        Scale.Fraction maxStaccatoDotDy = new Scale.Fraction(
+            6d,
+            "Maximum absolute dy between note and staccato dot");
+
+        /**
+         * Maximum dx between note and staccato dot
+         */
+        Scale.Fraction maxStaccatoDotDx = new Scale.Fraction(
+            0.75d,
+            "Maximum dx between note and staccato dot");
     }
 }

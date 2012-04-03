@@ -80,15 +80,6 @@ public class Tuplet
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
     //----------//
     // populate //
     //----------//
@@ -152,6 +143,15 @@ public class Tuplet
         }
     }
 
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
     //-----------------//
     // internalsString //
     //-----------------//
@@ -159,6 +159,31 @@ public class Tuplet
     protected String internalsString ()
     {
         return super.internalsString() + " " + lastChord;
+    }
+
+    //---------------//
+    // expectedCount //
+    //---------------//
+    /**
+     * Report the number of basic items governed by the tuplet
+     * A given chord may represent several basic items (chords of base duration)
+     * @param shape the tuplet shape
+     * @return 3 or 6
+     */
+    private static int expectedCount (Shape shape)
+    {
+        switch (shape) {
+        case TUPLET_THREE :
+            return 3;
+
+        case TUPLET_SIX :
+            return 6;
+
+        default :
+            logger.severe("Incorrect tuplet shape");
+
+            return 0;
+        }
     }
 
     //-------------------//
@@ -284,31 +309,6 @@ public class Tuplet
             logger.severe("Incorrect tuplet glyph shape");
 
             return null;
-        }
-    }
-
-    //---------------//
-    // expectedCount //
-    //---------------//
-    /**
-     * Report the number of basic items governed by the tuplet
-     * A given chord may represent several basic items (chords of base duration)
-     * @param shape the tuplet shape
-     * @return 3 or 6
-     */
-    private static int expectedCount (Shape shape)
-    {
-        switch (shape) {
-        case TUPLET_THREE :
-            return 3;
-
-        case TUPLET_SIX :
-            return 6;
-
-        default :
-            logger.severe("Incorrect tuplet shape");
-
-            return 0;
         }
     }
 
@@ -444,41 +444,6 @@ public class Tuplet
 
         //~ Methods ------------------------------------------------------------
 
-        public SortedSet<Chord> getChords ()
-        {
-            return chords;
-        }
-
-        public boolean isOk ()
-        {
-            return status == Status.OK;
-        }
-
-        public boolean isOutside ()
-        {
-            return status == Status.OUTSIDE;
-        }
-
-        public String getStatusMessage ()
-        {
-            if (logger.isFineEnabled()) {
-                dump();
-            }
-
-            return status.label + " sequence in " + glyph.getShape() + " " +
-                   total + " vs " + expectedTotal;
-        }
-
-        public boolean isTooLong ()
-        {
-            return status == Status.TOO_LONG;
-        }
-
-        public Rational getTotal ()
-        {
-            return total;
-        }
-
         public void dump ()
         {
             StringBuilder sb = new StringBuilder();
@@ -506,6 +471,26 @@ public class Tuplet
             }
 
             logger.fine(sb.toString());
+        }
+
+        public SortedSet<Chord> getChords ()
+        {
+            return chords;
+        }
+
+        public String getStatusMessage ()
+        {
+            if (logger.isFineEnabled()) {
+                dump();
+            }
+
+            return status.label + " sequence in " + glyph.getShape() + " " +
+                   total + " vs " + expectedTotal;
+        }
+
+        public Rational getTotal ()
+        {
+            return total;
         }
 
         /** Include a chord into the collection */
@@ -541,6 +526,21 @@ public class Tuplet
             for (Chord chord : newChords) {
                 include(chord);
             }
+        }
+
+        public boolean isOk ()
+        {
+            return status == Status.OK;
+        }
+
+        public boolean isOutside ()
+        {
+            return status == Status.OUTSIDE;
+        }
+
+        public boolean isTooLong ()
+        {
+            return status == Status.TOO_LONG;
         }
 
         /** Check whether the tuplet sign lies between the chords abscissae */

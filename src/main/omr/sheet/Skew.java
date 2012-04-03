@@ -82,6 +82,21 @@ public class Skew
     //~ Methods ----------------------------------------------------------------
 
     //----------//
+    // deskewed //
+    //----------//
+    /**
+     * Apply rotation OPPOSITE to the measured global angle and use the new
+     * sheet origin
+     *
+     * @param point the initial (skewed) point
+     * @return the deskewed point
+     */
+    public Point2D deskewed (Point2D point)
+    {
+        return at.transform(point, null);
+    }
+
+    //----------//
     // getAngle //
     //----------//
     /**
@@ -125,21 +140,6 @@ public class Skew
     public double getSlope ()
     {
         return slope;
-    }
-
-    //----------//
-    // deskewed //
-    //----------//
-    /**
-     * Apply rotation OPPOSITE to the measured global angle and use the new
-     * sheet origin
-     *
-     * @param point the initial (skewed) point
-     * @return the deskewed point
-     */
-    public Point2D deskewed (Point2D point)
-    {
-        return at.transform(point, null);
     }
 
     //----------//

@@ -66,11 +66,11 @@ public abstract class MeasureElement
      * @param chord the related chord, if any
      * @param glyph the underlying glyph
      */
-    public MeasureElement (Measure     measure,
-                           boolean     start,
+    public MeasureElement (Measure    measure,
+                           boolean    start,
                            PixelPoint referencePoint,
-                           Chord       chord,
-                           Glyph       glyph)
+                           Chord      chord,
+                           Glyph      glyph)
     {
         super(measure);
 
@@ -183,19 +183,10 @@ public abstract class MeasureElement
         return sb.toString();
     }
 
-    //--------------//
-    // computeShape //
-    //--------------//
-    protected Shape computeShape ()
-    {
-        return getGlyph()
-                   .getShape();
-    }
-
     //-----------//
     // findChord //
     //-----------//
-    protected static Chord findChord (Measure     measure,
+    protected static Chord findChord (Measure    measure,
                                       PixelPoint point)
     {
         // Shift on abscissa (because of left side of note heads)
@@ -204,6 +195,15 @@ public abstract class MeasureElement
                         .toPixels(constants.slotShift);
 
         return measure.getEventChord(new PixelPoint(point.x + dx, point.y));
+    }
+
+    //--------------//
+    // computeShape //
+    //--------------//
+    protected Shape computeShape ()
+    {
+        return getGlyph()
+                   .getShape();
     }
 
     //-----------------//

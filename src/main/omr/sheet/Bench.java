@@ -46,6 +46,14 @@ public abstract class Bench
 
     //~ Methods ----------------------------------------------------------------
 
+    //------------//
+    // flushBench //
+    //------------//
+    /**
+     * Flush the current content of bench to disk
+     */
+    protected abstract void flushBench ();
+
     //---------//
     // addProp //
     //---------//
@@ -75,14 +83,6 @@ public abstract class Bench
             logger.fine("addProp key:" + key + " value:" + value);
         }
     }
-
-    //------------//
-    // flushBench //
-    //------------//
-    /**
-     * Flush the current content of bench to disk
-     */
-    protected abstract void flushBench ();
 
     //-------//
     // keyOf //

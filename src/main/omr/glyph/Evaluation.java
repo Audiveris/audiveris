@@ -20,7 +20,7 @@ import omr.constant.Constant;
  * @author Hervé Bitteur
  */
 public class Evaluation
-implements Comparable<Evaluation>
+    implements Comparable<Evaluation>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -63,6 +63,27 @@ implements Comparable<Evaluation>
 
     //~ Methods ----------------------------------------------------------------
 
+    //-----------//
+    // compareTo //
+    //-----------//
+    /**
+     * To sort from best to worst.
+     * @param that the other evaluation instance
+     * @return -1,0 or +1
+     */
+    public int compareTo (Evaluation that)
+    {
+        if (this.grade > that.grade) {
+            return -1;
+        }
+
+        if (this.grade < that.grade) {
+            return +1;
+        }
+
+        return 0;
+    }
+
     //----------//
     // toString //
     //----------//
@@ -89,26 +110,6 @@ implements Comparable<Evaluation>
         sb.append(")");
 
         return sb.toString();
-    }
-
-    //-----------//
-    // compareTo //
-    //-----------//
-    /**
-     * To sort from best to worst.
-     * @param that the other evaluation instance
-     * @return -1,0 or +1
-     */
-    public int compareTo(Evaluation that) {
-        if (this.grade > that.grade) {
-                return -1;
-            }
-
-            if (this.grade < that.grade) {
-                return +1;
-            }
-
-            return 0;
     }
 
     //~ Inner Classes ----------------------------------------------------------

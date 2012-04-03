@@ -13,7 +13,7 @@ package omr.util;
 
 
 /**
- * Enum {@code HorizontalSide} is meant to ease programmatic use of left and 
+ * Enum {@code HorizontalSide} is meant to ease programmatic use of left and
  * right sides of staves, lines, etc...
  *
  * @author Hervé Bitteur

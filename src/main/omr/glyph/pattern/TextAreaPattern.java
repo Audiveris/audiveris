@@ -21,8 +21,6 @@ import omr.run.Orientation;
 
 import omr.sheet.SystemInfo;
 
-import omr.util.Implement;
-
 /**
  * Class {@code TextAreaPattern} subdivides a system into sub-areas to
  * find out TEXT glyphs, as detected by the neural network evaluation.
@@ -63,7 +61,7 @@ public class TextAreaPattern
      * glyphs that could represent text portions in the system at hand
      * @return the number of text glyphs built
      */
-    @Implement(GlyphPattern.class)
+    @Override
     public int runPattern ()
     {
         // Create a TextArea on the whole system

@@ -195,31 +195,6 @@ public class ClustersRetriever
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------------//
-    // getClusters //
-    //-------------//
-    /**
-     * Report the sequence of clusters detected by this retriever using its
-     * provided interline value.
-     * @return the sequence of interline-based clusters
-     */
-    public List<LineCluster> getClusters ()
-    {
-        return clusters;
-    }
-
-    //--------------//
-    // getInterline //
-    //--------------//
-    /**
-     * Report the value of the interline this retriever is based upon
-     * @return the interline value
-     */
-    public int getInterline ()
-    {
-        return interline;
-    }
-
     //-----------//
     // buildInfo //
     //-----------//
@@ -250,6 +225,31 @@ public class ClustersRetriever
             interline);
 
         return discardedFilaments;
+    }
+
+    //-------------//
+    // getClusters //
+    //-------------//
+    /**
+     * Report the sequence of clusters detected by this retriever using its
+     * provided interline value.
+     * @return the sequence of interline-based clusters
+     */
+    public List<LineCluster> getClusters ()
+    {
+        return clusters;
+    }
+
+    //--------------//
+    // getInterline //
+    //--------------//
+    /**
+     * Report the value of the interline this retriever is based upon
+     * @return the interline value
+     */
+    public int getInterline ()
+    {
+        return interline;
     }
 
     //--------------------//

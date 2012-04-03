@@ -36,10 +36,10 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class {@code AbstractBlobPattern} is the basis for text patterns that use
- * underlying {@link TextBlob} instances. The goal is to work on glyphs and to
- * retrieve new TEXT-shaped glyphs, which will later be gathered into
- * {@link omr.glyph.text.Sentence} instances.
+ * Class {@code AbstractBlobPattern} is the basis for text patterns
+ * that use underlying {@link TextBlob} instances.
+ * The goal is to work on glyphs and to retrieve new TEXT-shaped glyphs, which
+ * will later be gathered into {@link omr.glyph.text.Sentence} instances.
  *
  * <p>Typical sequence:<ol>
  * <li> Define a set of regions within the system</li>
@@ -88,8 +88,7 @@ public abstract class AbstractBlobPattern
     //---------------------//
     /**
      * Creates a new AbstractBlobPattern object.
-     *
-     * @param name Unique name for this pattern
+     * @param name   Unique name for this pattern
      * @param system The related system
      */
     public AbstractBlobPattern (String     name,
@@ -118,6 +117,14 @@ public abstract class AbstractBlobPattern
 
         return successCount;
     }
+
+    //--------------//
+    // buildRegions //
+    //--------------//
+    /**
+     * Define the sequence of regions to process.
+     */
+    protected abstract List<Region> buildRegions ();
 
     //--------------//
     // buildPolygon //
@@ -153,14 +160,6 @@ public abstract class AbstractBlobPattern
         return buildPolygon(Arrays.asList(points));
     }
 
-    //--------------//
-    // buildRegions //
-    //--------------//
-    /**
-     * Define the sequence of regions to process
-     */
-    protected abstract List<Region> buildRegions ();
-
     //~ Inner Classes ----------------------------------------------------------
 
     //--------//
@@ -182,8 +181,9 @@ public abstract class AbstractBlobPattern
         /** Blobs not impacted by remaining glyphs (too far on right) */
         protected List<TextBlob> completedBlobs = new ArrayList<TextBlob>();
 
-        /** To filter the candidates (already limited to the region)  */
+        /** To filter the candidates (already limited to the region) */
         protected Predicate<Glyph> additionalFilter = new Predicate<Glyph>() {
+            @Override
             public boolean check (Glyph glyph)
             {
                 return checkCandidate(glyph);
@@ -198,7 +198,7 @@ public abstract class AbstractBlobPattern
         //--------//
         /**
          * Create a region.
-         * @param name a name for this region
+         * @param name    a name for this region
          * @param polygon the limits within the system (a null polygon will be
          * a pass-through for all system glyphs)
          */
@@ -291,7 +291,8 @@ public abstract class AbstractBlobPattern
         // retrieveGlyphs //
         //----------------//
         /**
-         * Retrieve among the system glyphs, the ones that belong to this region
+         * Retrieve among the system glyphs, the ones that belong to 
+         * this region.
          * @param filter predicate to filter the glyphs candidate
          * @return the set of system glyphs within the region
          */
@@ -304,6 +305,7 @@ public abstract class AbstractBlobPattern
                 Glyphs.lookupGlyphs(
                     system.getGlyphs(),
                     new Predicate<Glyph>() {
+                            @Override
                             public boolean check (Glyph glyph)
                             {
                                 return ((polygon == null) ||
@@ -316,35 +318,12 @@ public abstract class AbstractBlobPattern
             return glyphs;
         }
 
-        //---------//
-        // isSmall //
-        //---------//
-        /**
-         * Check whether a glyph is considered as small
-         * @param glyph the glyph to check
-         * @return true if small
-         */
-        protected boolean isSmall (Glyph glyph)
-        {
-            // Test on weight
-            if (glyph.getWeight() < minBlobWeight) {
-                return true;
-            }
-
-            // Test on height
-            if (glyph.getContourBox().height < minGlyphHeight) {
-                return true;
-            }
-
-            return false;
-        }
-
         //-----------//
         // checkBlob //
         //-----------//
         /**
          * Check whether the constructed blob is actually a line of text
-         * @param blob the blob to check
+         * @param blob     the blob to check
          * @param compound the resulting allowed glyph
          * @return true if OK
          */
@@ -380,6 +359,29 @@ public abstract class AbstractBlobPattern
             return true;
         }
 
+        //---------//
+        // isSmall //
+        //---------//
+        /**
+         * Check whether a glyph is considered as small
+         * @param glyph the glyph to check
+         * @return true if small
+         */
+        protected boolean isSmall (Glyph glyph)
+        {
+            // Test on weight
+            if (glyph.getWeight() < minBlobWeight) {
+                return true;
+            }
+
+            // Test on height
+            if (glyph.getContourBox().height < minGlyphHeight) {
+                return true;
+            }
+
+            return false;
+        }
+
         //-------------------//
         // insertSmallGlyphs //
         //-------------------//
@@ -387,7 +389,7 @@ public abstract class AbstractBlobPattern
          * Re-insert the small glyphs that had been left aside when initially
          * building the blobs.
          * @param smallGlyphs the small glyphs to insert
-         * @param blobs the collection of blobs to update
+         * @param blobs       the collection of blobs to update
          */
         private void insertSmallGlyphs (List<Glyph>    smallGlyphs,
                                         List<TextBlob> blobs)

@@ -14,7 +14,6 @@ package omr.constant;
 import omr.log.Logger;
 
 import omr.util.DoubleValue;
-import omr.util.Implement;
 
 import net.jcip.annotations.ThreadSafe;
 
@@ -142,23 +141,6 @@ public abstract class Constant
         return description;
     }
 
-    //------------//
-    // isModified //
-    //------------//
-    /**
-     * Checks whether the current value is different from the original one.
-     * NOTA_BENE: The test is made on string literal, which may result in false
-     * modification signals, simply because the string for example contains an
-     * additional space
-     *
-     * @return The modification status
-     */
-    public boolean isModified ()
-    {
-        return !getCurrentString()
-                    .equals(initialString);
-    }
-
     //---------//
     // getName //
     //---------//
@@ -234,6 +216,23 @@ public abstract class Constant
         return sourceString;
     }
 
+    //------------//
+    // isModified //
+    //------------//
+    /**
+     * Checks whether the current value is different from the original one.
+     * NOTA_BENE: The test is made on string literal, which may result in false
+     * modification signals, simply because the string for example contains an
+     * additional space
+     *
+     * @return The modification status
+     */
+    public boolean isModified ()
+    {
+        return !getCurrentString()
+                    .equals(initialString);
+    }
+
     //---------------//
     // isSourceValue //
     //---------------//
@@ -248,17 +247,28 @@ public abstract class Constant
                    .equals(sourceString);
     }
 
-    //----------//
-    // setValue //
-    //----------//
+    //--------//
+    // remove //
+    //--------//
     /**
-     * Modify the current value of the constant; this abstract method is
-     * actually defined in each subclass, to enforce validation of the provided
-     * string with respect to the target constant type.
-     *
-     * @param string the new value, as a string to be checked
+     * Remove a given constant from memory
      */
-    public abstract void setValue (java.lang.String string);
+    public void remove ()
+    {
+        ConstantManager.getInstance()
+                       .removeConstant(this);
+    }
+
+    //-------//
+    // reset //
+    //-------//
+    /**
+     * Forget any modification made, and reset to the initial value.
+     */
+    public void reset ()
+    {
+        setTuple(initialString, decode(initialString));
+    }
 
     //---------//
     // setUnit //
@@ -306,28 +316,17 @@ public abstract class Constant
         }
     }
 
-    //--------//
-    // remove //
-    //--------//
+    //----------//
+    // setValue //
+    //----------//
     /**
-     * Remove a given constant from memory
+     * Modify the current value of the constant; this abstract method is
+     * actually defined in each subclass, to enforce validation of the provided
+     * string with respect to the target constant type.
+     *
+     * @param string the new value, as a string to be checked
      */
-    public void remove ()
-    {
-        ConstantManager.getInstance()
-                       .removeConstant(this);
-    }
-
-    //-------//
-    // reset //
-    //-------//
-    /**
-     * Forget any modification made, and reset to the initial value.
-     */
-    public void reset ()
-    {
-        setTuple(initialString, decode(initialString));
-    }
+    public abstract void setValue (java.lang.String string);
 
     //------------------//
     // toDetailedString //
@@ -448,21 +447,6 @@ public abstract class Constant
         return "???";
     }
 
-    //----------//
-    // getTuple //
-    //----------//
-    /**
-     * Report the current tuple data, which may imply to trigger the assignment
-     * of qualified name to the constant, in order to get property data
-     * @return the current tuple data
-     */
-    private Tuple getTuple ()
-    {
-        checkInitialized();
-
-        return tuple.get();
-    }
-
     //------------------//
     // checkInitialized //
     //------------------//
@@ -487,6 +471,21 @@ public abstract class Constant
                 "*** " + Thread.currentThread().getName() +
                 " checkInitialized loop:" + i);
         }
+    }
+
+    //----------//
+    // getTuple //
+    //----------//
+    /**
+     * Report the current tuple data, which may imply to trigger the assignment
+     * of qualified name to the constant, in order to get property data
+     * @return the current tuple data
+     */
+    private Tuple getTuple ()
+    {
+        checkInitialized();
+
+        return tuple.get();
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -541,6 +540,16 @@ public abstract class Constant
         //~ Methods ------------------------------------------------------------
 
         /**
+         * Retrieve the current constant value
+         *
+         * @return the current (boolean) value
+         */
+        public boolean getValue ()
+        {
+            return ((java.lang.Boolean) getCachedValue()).booleanValue();
+        }
+
+        /**
          * Convenient method to access this boolean value
          * @return true if set, false otherwise
          */
@@ -555,7 +564,7 @@ public abstract class Constant
          *
          * @param string the boolean value as a string
          */
-        @Implement(Constant.class)
+        @Override
         public void setValue (java.lang.String string)
         {
             setValue(java.lang.Boolean.valueOf(string).booleanValue());
@@ -569,16 +578,6 @@ public abstract class Constant
         public void setValue (boolean val)
         {
             setTuple(java.lang.Boolean.toString(val), val);
-        }
-
-        /**
-         * Retrieve the current constant value
-         *
-         * @return the current (boolean) value
-         */
-        public boolean getValue ()
-        {
-            return ((java.lang.Boolean) getCachedValue()).booleanValue();
         }
 
         @Override
@@ -642,38 +641,6 @@ public abstract class Constant
 
         //~ Methods ------------------------------------------------------------
 
-        /**
-         * Allows to set a new int RGB value (passed as a string) to this
-         * constant. The string validity is actually checked.
-         *
-         * @param string the int value as a string
-         */
-        @Implement(Constant.class)
-        public void setValue (java.lang.String string)
-        {
-            setValue(java.awt.Color.decode(string));
-        }
-
-        /**
-         * Set a new value to the constant
-         *
-         * @param val the new Color value
-         */
-        public void setValue (java.awt.Color val)
-        {
-            setTuple(encodeColor(val), val);
-        }
-
-        /**
-         * Retrieve the current constant value
-         *
-         * @return the current (Color) value
-         */
-        public java.awt.Color getValue ()
-        {
-            return (java.awt.Color) getCachedValue();
-        }
-
         //-------------//
         // decodeColor //
         //-------------//
@@ -692,6 +659,38 @@ public abstract class Constant
                 color.getRed(),
                 color.getGreen(),
                 color.getBlue());
+        }
+
+        /**
+         * Retrieve the current constant value
+         *
+         * @return the current (Color) value
+         */
+        public java.awt.Color getValue ()
+        {
+            return (java.awt.Color) getCachedValue();
+        }
+
+        /**
+         * Allows to set a new int RGB value (passed as a string) to this
+         * constant. The string validity is actually checked.
+         *
+         * @param string the int value as a string
+         */
+        @Override
+        public void setValue (java.lang.String string)
+        {
+            setValue(java.awt.Color.decode(string));
+        }
+
+        /**
+         * Set a new value to the constant
+         *
+         * @param val the new Color value
+         */
+        public void setValue (java.awt.Color val)
+        {
+            setTuple(encodeColor(val), val);
         }
 
         @Override
@@ -724,6 +723,17 @@ public abstract class Constant
 
         //~ Methods ------------------------------------------------------------
 
+        public double getValue ()
+        {
+            return ((DoubleValue) getCachedValue()).doubleValue();
+        }
+
+        public DoubleValue getWrappedValue ()
+        {
+            // Return a copy
+            return new DoubleValue(getValue());
+        }
+
         public void setValue (double val)
         {
             setTuple(java.lang.Double.toString(val), new DoubleValue(val));
@@ -738,17 +748,6 @@ public abstract class Constant
         public void setValue (java.lang.String string)
         {
             setValue(decode(string));
-        }
-
-        public double getValue ()
-        {
-            return ((DoubleValue) getCachedValue()).doubleValue();
-        }
-
-        public DoubleValue getWrappedValue ()
-        {
-            // Return a copy
-            return new DoubleValue(getValue());
         }
 
         @Override
@@ -789,12 +788,22 @@ public abstract class Constant
         //~ Methods ------------------------------------------------------------
 
         /**
+         * Retrieve the current constant value
+         *
+         * @return the current (int) value
+         */
+        public int getValue ()
+        {
+            return (java.lang.Integer) getCachedValue();
+        }
+
+        /**
          * Allows to set a new int value (passed as a string) to this
          * constant. The string validity is actually checked.
          *
          * @param string the int value as a string
          */
-        @Implement(Constant.class)
+        @Override
         public void setValue (java.lang.String string)
         {
             setValue(java.lang.Integer.valueOf(string).intValue());
@@ -808,16 +817,6 @@ public abstract class Constant
         public void setValue (int val)
         {
             setTuple(java.lang.Integer.toString(val), val);
-        }
-
-        /**
-         * Retrieve the current constant value
-         *
-         * @return the current (int) value
-         */
-        public int getValue ()
-        {
-            return (java.lang.Integer) getCachedValue();
         }
 
         @Override
@@ -894,17 +893,6 @@ public abstract class Constant
         //~ Methods ------------------------------------------------------------
 
         /**
-         * Set a new string value to the constant
-         *
-         * @param val the new (string) value
-         */
-        @Implement(Constant.class)
-        public void setValue (java.lang.String val)
-        {
-            setTuple(val, val);
-        }
-
-        /**
          * Retrieve the current constant value. Actually this is synonymous with
          * currentString()
          *
@@ -913,6 +901,17 @@ public abstract class Constant
         public java.lang.String getValue ()
         {
             return (java.lang.String) getCachedValue();
+        }
+
+        /**
+         * Set a new string value to the constant
+         *
+         * @param val the new (string) value
+         */
+        @Override
+        public void setValue (java.lang.String val)
+        {
+            setTuple(val, val);
         }
 
         @Override

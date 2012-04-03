@@ -53,6 +53,18 @@ public class FilamentLine
 
     //~ Methods ----------------------------------------------------------------
 
+    //-----//
+    // add //
+    //-----//
+    public final void add (LineFilament fil)
+    {
+        if (this.fil == null) {
+            this.fil = fil;
+        } else {
+            this.fil.include(fil);
+        }
+    }
+
     //---------------//
     // getContourBox //
     //---------------//
@@ -71,15 +83,6 @@ public class FilamentLine
         } else {
             return getStopPoint();
         }
-    }
-
-    //-----------------//
-    // setEndingPoints //
-    //-----------------//
-    public void setEndingPoints (Point2D pStart,
-                                 Point2D pStop)
-    {
-        fil.setEndingPoints(pStart, pStop);
     }
 
     //-------------//
@@ -162,6 +165,14 @@ public class FilamentLine
         return fil.slopeAt(getStopPoint().getX(), Orientation.HORIZONTAL);
     }
 
+    //---------//
+    // include //
+    //---------//
+    public void include (FilamentLine that)
+    {
+        add(that.fil);
+    }
+
     //---------------//
     // isWithinRange //
     //---------------//
@@ -175,26 +186,6 @@ public class FilamentLine
         return (x >= getStartPoint()
                          .getX()) && (x <= getStopPoint()
                                                .getX());
-    }
-
-    //-----//
-    // add //
-    //-----//
-    public final void add (LineFilament fil)
-    {
-        if (this.fil == null) {
-            this.fil = fil;
-        } else {
-            this.fil.include(fil);
-        }
-    }
-
-    //---------//
-    // include //
-    //---------//
-    public void include (FilamentLine that)
-    {
-        add(that.fil);
     }
 
     //--------//
@@ -215,6 +206,15 @@ public class FilamentLine
     public void render (Graphics2D g)
     {
         fil.renderLine(g);
+    }
+
+    //-----------------//
+    // setEndingPoints //
+    //-----------------//
+    public void setEndingPoints (Point2D pStart,
+                                 Point2D pStop)
+    {
+        fil.setEndingPoints(pStart, pStop);
     }
 
     //----------//

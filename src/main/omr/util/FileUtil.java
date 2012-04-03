@@ -41,59 +41,6 @@ public class FileUtil
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------------//
-    // getExtension //
-    //--------------//
-    /**
-     * From a file "path/name.ext", return the ".ext" part.
-     *
-     * <P><b>Nota</b>, the dot character is part of the extension, since we
-     * could have the following cases: <ul>
-     *
-     * <li> "path/name.ext" -> ".ext"
-     *
-     * <li> "path/name."  -> "." (just the dot)
-     *
-     * <li> "path/name" -> "" (the empty string) </ul>
-     *
-     * @param file the File to process
-     *
-     * @return the extension, which may be ""
-     */
-    public static String getExtension (File file)
-    {
-        String name = file.getName();
-        int    i = name.lastIndexOf('.');
-
-        if (i >= 0) {
-            return name.substring(i);
-        } else {
-            return "";
-        }
-    }
-
-    //----------------------//
-    // getNameSansExtension //
-    //----------------------//
-    /**
-     * From a file "path/name.ext", return the "name"
-     *
-     * @param file
-     *
-     * @return just the name, w/o path and extension
-     */
-    public static String getNameSansExtension (File file)
-    {
-        String name = file.getName();
-        int    i = name.lastIndexOf('.');
-
-        if (i >= 0) {
-            return name.substring(0, i);
-        } else {
-            return name;
-        }
-    }
-
     //------//
     // copy //
     //------//
@@ -150,6 +97,59 @@ public class FileUtil
             if (!file.delete()) {
                 logger.warning("Could not delete file " + file);
             }
+        }
+    }
+
+    //--------------//
+    // getExtension //
+    //--------------//
+    /**
+     * From a file "path/name.ext", return the ".ext" part.
+     *
+     * <P><b>Nota</b>, the dot character is part of the extension, since we
+     * could have the following cases: <ul>
+     *
+     * <li> "path/name.ext" -> ".ext"
+     *
+     * <li> "path/name."  -> "." (just the dot)
+     *
+     * <li> "path/name" -> "" (the empty string) </ul>
+     *
+     * @param file the File to process
+     *
+     * @return the extension, which may be ""
+     */
+    public static String getExtension (File file)
+    {
+        String name = file.getName();
+        int    i = name.lastIndexOf('.');
+
+        if (i >= 0) {
+            return name.substring(i);
+        } else {
+            return "";
+        }
+    }
+
+    //----------------------//
+    // getNameSansExtension //
+    //----------------------//
+    /**
+     * From a file "path/name.ext", return the "name"
+     *
+     * @param file
+     *
+     * @return just the name, w/o path and extension
+     */
+    public static String getNameSansExtension (File file)
+    {
+        String name = file.getName();
+        int    i = name.lastIndexOf('.');
+
+        if (i >= 0) {
+            return name.substring(0, i);
+        } else {
+            return name;
         }
     }
 }

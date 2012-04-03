@@ -47,31 +47,6 @@ class BasicTranslation
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------------//
-    // isTranslated //
-    //--------------//
-    public boolean isTranslated ()
-    {
-        return !translations.isEmpty();
-    }
-
-    //----------------//
-    // setTranslation //
-    //----------------//
-    public void setTranslation (Object entity)
-    {
-        translations.clear();
-        addTranslation(entity);
-    }
-
-    //-----------------//
-    // getTranslations //
-    //-----------------//
-    public Collection<Object> getTranslations ()
-    {
-        return translations;
-    }
-
     //----------------//
     // addTranslation //
     //----------------//
@@ -98,11 +73,36 @@ class BasicTranslation
     }
 
     //-----------------//
+    // getTranslations //
+    //-----------------//
+    public Collection<Object> getTranslations ()
+    {
+        return translations;
+    }
+
+    //-----------------//
     // invalidateCache //
     //-----------------//
     @Override
     public void invalidateCache ()
     {
         clearTranslations();
+    }
+
+    //--------------//
+    // isTranslated //
+    //--------------//
+    public boolean isTranslated ()
+    {
+        return !translations.isEmpty();
+    }
+
+    //----------------//
+    // setTranslation //
+    //----------------//
+    public void setTranslation (Object entity)
+    {
+        translations.clear();
+        addTranslation(entity);
     }
 }

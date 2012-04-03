@@ -58,6 +58,19 @@ public class PackageNode
     //~ Methods ----------------------------------------------------------------
 
     //----------//
+    // addChild //
+    //----------//
+    /**
+     * Add a child to the package children
+     *
+     * @param obj the child to add (sub-package or ConstantSet)
+     */
+    public void addChild (Node obj)
+    {
+        children.add(obj);
+    }
+
+    //----------//
     // getChild //
     //----------//
     /**
@@ -83,18 +96,5 @@ public class PackageNode
     public int getChildCount ()
     {
         return children.size();
-    }
-
-    //----------//
-    // addChild //
-    //----------//
-    /**
-     * Add a child to the package children
-     *
-     * @param obj the child to add (sub-package or ConstantSet)
-     */
-    public void addChild (Node obj)
-    {
-        children.add(obj);
     }
 }

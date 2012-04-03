@@ -122,6 +122,18 @@ public class JTreeTable
     }
 
     /**
+     * Returns the tree that is being shared between the model.
+     */
+
+    //---------//
+    // getTree //
+    //---------//
+    public JTree getTree ()
+    {
+        return tree;
+    }
+
+    /**
      * Overridden to pass the new rowHeight to the tree.
      */
 
@@ -136,18 +148,6 @@ public class JTreeTable
         if ((tree != null) && (tree.getRowHeight() != rowHeight)) {
             tree.setRowHeight(getRowHeight());
         }
-    }
-
-    /**
-     * Returns the tree that is being shared between the model.
-     */
-
-    //---------//
-    // getTree //
-    //---------//
-    public JTree getTree ()
-    {
-        return tree;
     }
 
     /**
@@ -190,6 +190,15 @@ public class JTreeTable
         implements TableCellEditor
     {
         //~ Methods ------------------------------------------------------------
+
+        public Component getTableCellEditorComponent (JTable  table,
+                                                      Object  value,
+                                                      boolean isSelected,
+                                                      int     r,
+                                                      int     c)
+        {
+            return tree;
+        }
 
         /**
          * Overridden to return false, and if the event is a mouse event it is
@@ -238,15 +247,6 @@ public class JTreeTable
 
             return false;
         }
-
-        public Component getTableCellEditorComponent (JTable  table,
-                                                      Object  value,
-                                                      boolean isSelected,
-                                                      int     r,
-                                                      int     c)
-        {
-            return tree;
-        }
     }
 
     //-----------------------//
@@ -274,35 +274,6 @@ public class JTreeTable
         }
 
         //~ Methods ------------------------------------------------------------
-
-        /**
-         * This is overridden to set the height to match that of the JTable.
-         */
-        @Override
-        public void setBounds (int x,
-                               int y,
-                               int w,
-                               int h)
-        {
-            super.setBounds(x, 0, w, JTreeTable.this.getHeight());
-        }
-
-        /**
-         * Sets the row height of the tree, and forwards the row height to the
-         * table.
-         */
-        @Override
-        public void setRowHeight (int rowHeight)
-        {
-            if (rowHeight > 0) {
-                super.setRowHeight(rowHeight);
-
-                if ((JTreeTable.this != null) &&
-                    (JTreeTable.this.getRowHeight() != rowHeight)) {
-                    JTreeTable.this.setRowHeight(getRowHeight());
-                }
-            }
-        }
 
         /**
          * TreeCellRenderer method. Overridden to update the visible row.
@@ -334,6 +305,35 @@ public class JTreeTable
         {
             g.translate(0, -visibleRow * getRowHeight());
             super.paint(g);
+        }
+
+        /**
+         * This is overridden to set the height to match that of the JTable.
+         */
+        @Override
+        public void setBounds (int x,
+                               int y,
+                               int w,
+                               int h)
+        {
+            super.setBounds(x, 0, w, JTreeTable.this.getHeight());
+        }
+
+        /**
+         * Sets the row height of the tree, and forwards the row height to the
+         * table.
+         */
+        @Override
+        public void setRowHeight (int rowHeight)
+        {
+            if (rowHeight > 0) {
+                super.setRowHeight(rowHeight);
+
+                if ((JTreeTable.this != null) &&
+                    (JTreeTable.this.getRowHeight() != rowHeight)) {
+                    JTreeTable.this.setRowHeight(getRowHeight());
+                }
+            }
         }
 
         /**

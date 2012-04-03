@@ -45,7 +45,6 @@ import omr.ui.util.ModelessOptionPane;
 import omr.ui.util.SeparableMenu;
 import omr.ui.util.UIUtilities;
 
-import omr.util.Implement;
 import omr.util.JaiLoader;
 import omr.util.OmrExecutors;
 import omr.util.WeakPropertyChangeListener;
@@ -137,6 +136,18 @@ public class MainGui
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of this application.
+     * @return the SingleFrameApplication instance
+     */
+    public static SingleFrameApplication getInstance ()
+    {
+        return (SingleFrameApplication) Application.getInstance();
+    }
 
     //--------------//
     // addOnToolBar //
@@ -265,18 +276,6 @@ public class MainGui
         return glassPane;
     }
 
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single instance of this application.
-     * @return the SingleFrameApplication instance
-     */
-    public static SingleFrameApplication getInstance ()
-    {
-        return (SingleFrameApplication) Application.getInstance();
-    }
-
     //---------//
     // getName //
     //---------//
@@ -319,7 +318,7 @@ public class MainGui
      * Notification of sheet selection, to update frame title.
      * @param sheetEvent the event about selected sheet
      */
-    @Implement(EventSubscriber.class)
+    @Override
     public void onEvent (SheetEvent sheetEvent)
     {
         try {
@@ -688,54 +687,18 @@ public class MainGui
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //------------------//
-    // BoardsScrollPane //
-    //------------------//
-    /**
-     * Just a scrollPane to host the pane of user boards, trying to offer
-     * enough room for the boards.
-     */
-    private class BoardsScrollPane
-        extends JScrollPane
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Instance fields ----------------------------------------------------
 
-        public void adjustRoom ()
-        {
-            Component view = getViewport()
-                                 .getView();
-
-            if (view != null) {
-                int boardsWidth = view.getBounds().width;
-
-                if (boardsWidth != 0) {
-                    int horiWidth = horiSplitPane.getBounds().width;
-                    horiSplitPane.setDividerLocation(
-                        horiWidth - boardsWidth -
-                        horiSplitPane.getDividerSize());
-                    repaint();
-                }
-            }
-        }
-
-        public void setBoards (JComponent boards)
-        {
-            setViewportView(boards);
-            revalidate();
-
-            if ((boards != null) &&
-                GuiActions.getInstance()
-                          .isBoardsDisplayed()) {
-                // Make sure we have enough room
-                SwingUtilities.invokeLater(
-                    new Runnable() {
-                            public void run ()
-                            {
-                                adjustRoom();
-                            }
-                        });
-            }
-        }
+        /** Flag for the preloading of costly packages in the background */
+        private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
+            true,
+            "Should we preload costly packages in the background?");
     }
 
     //------------//
@@ -793,20 +756,6 @@ public class MainGui
         }
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /** Flag for the preloading of costly packages in the background */
-        private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
-            true,
-            "Should we preload costly packages in the background?");
-    }
-
     //-----------------//
     // HistoryListener //
     //-----------------//
@@ -819,11 +768,61 @@ public class MainGui
     {
         //~ Methods ------------------------------------------------------------
 
-        @Implement(ActionListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             File file = new File(e.getActionCommand());
             new OpenTask(file).execute();
+        }
+    }
+
+    //------------------//
+    // BoardsScrollPane //
+    //------------------//
+    /**
+     * Just a scrollPane to host the pane of user boards, trying to offer
+     * enough room for the boards.
+     */
+    private class BoardsScrollPane
+        extends JScrollPane
+    {
+        //~ Methods ------------------------------------------------------------
+
+        public void adjustRoom ()
+        {
+            Component view = getViewport()
+                                 .getView();
+
+            if (view != null) {
+                int boardsWidth = view.getBounds().width;
+
+                if (boardsWidth != 0) {
+                    int horiWidth = horiSplitPane.getBounds().width;
+                    horiSplitPane.setDividerLocation(
+                        horiWidth - boardsWidth -
+                        horiSplitPane.getDividerSize());
+                    repaint();
+                }
+            }
+        }
+
+        public void setBoards (JComponent boards)
+        {
+            setViewportView(boards);
+            revalidate();
+
+            if ((boards != null) &&
+                GuiActions.getInstance()
+                          .isBoardsDisplayed()) {
+                // Make sure we have enough room
+                SwingUtilities.invokeLater(
+                    new Runnable() {
+                            public void run ()
+                            {
+                                adjustRoom();
+                            }
+                        });
+            }
         }
     }
 }

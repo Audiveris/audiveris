@@ -117,373 +117,6 @@ public class SystemPart
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------//
-    // setBrace //
-    //----------//
-    /**
-     * @param brace the brace to set
-     */
-    public void setBrace (Glyph brace)
-    {
-        this.brace = brace;
-    }
-
-    //----------//
-    // getBrace //
-    //----------//
-    /**
-     * @return the brace
-     */
-    public Glyph getBrace ()
-    {
-        return brace;
-    }
-
-    //----------//
-    // setDummy //
-    //----------//
-    public void setDummy (boolean dummy)
-    {
-        this.dummy = dummy;
-    }
-
-    //---------//
-    // isDummy //
-    //---------//
-    public boolean isDummy ()
-    {
-        return dummy;
-    }
-
-    //-----------------//
-    // getFirstMeasure //
-    //-----------------//
-    /**
-     * Report the first measure in this system part.
-     * @return the first measure entity
-     */
-    public Measure getFirstMeasure ()
-    {
-        return (Measure) getMeasures()
-                             .get(0);
-    }
-
-    //---------------//
-    // getFirstStaff //
-    //---------------//
-    /**
-     * Report the first staff in this system part.
-     * @return the first staff entity
-     */
-    public Staff getFirstStaff ()
-    {
-        return (Staff) getStaves()
-                           .get(0);
-    }
-
-    //--------------//
-    // getFollowing //
-    //--------------//
-    public SystemPart getFollowing ()
-    {
-        ScoreSystem nextSystem = (ScoreSystem) getSystem()
-                                                   .getNextSibling();
-
-        if (nextSystem != null) {
-            return nextSystem.getPart(id);
-        } else {
-            return null;
-        }
-    }
-
-    //-------//
-    // setId //
-    //-------//
-    /**
-     * Set the part id within the containing system, starting at 1.
-     * @param id the id value
-     */
-    public void setId (int id)
-    {
-        this.id = id;
-    }
-
-    //-------//
-    // getId //
-    //-------//
-    /**
-     * Report the part id within the containing system, starting at 1.
-     * @return the part id
-     */
-    public int getId ()
-    {
-        return id;
-    }
-
-    //----------------//
-    // getLastMeasure //
-    //----------------//
-    /**
-     * Report the last measure in the system part.
-     * @return the last measure entity
-     */
-    public Measure getLastMeasure ()
-    {
-        List<TreeNode> meas = getMeasures();
-
-        if (!meas.isEmpty()) {
-            return (Measure) meas.get(meas.size() - 1);
-        } else {
-            return null;
-        }
-    }
-
-    //--------------//
-    // getLastStaff //
-    //--------------//
-    /**
-     * Report the last staff in this system part.
-     * @return the last staff entity
-     */
-    public Staff getLastStaff ()
-    {
-        return (Staff) getStaves()
-                           .get(getStaves().size() - 1);
-    }
-
-    //-----------//
-    // getLyrics //
-    //-----------//
-    /**
-     * Report the collection of lyrics.
-     * @return the lyrics list, which may be empty but not null
-     */
-    public List<TreeNode> getLyrics ()
-    {
-        return lyrics.getChildren();
-    }
-
-    //--------------//
-    // getMeasureAt //
-    //--------------//
-    /**
-     * Report the measure that contains a given point (assumed to be in
-     * the containing system part).
-     * @param point page-based coordinates of the given point
-     * @return the containing measure
-     */
-    public Measure getMeasureAt (PixelPoint point)
-    {
-        Measure measure = null;
-
-        for (TreeNode node : getMeasures()) {
-            measure = (Measure) node;
-
-            Barline barline = measure.getBarline();
-
-            if ((barline == null) || (point.x <= barline.getRightX())) {
-                return measure;
-            }
-        }
-
-        return measure;
-    }
-
-    //-------------//
-    // getMeasures //
-    //-------------//
-    /**
-     * Report the collection of measures.
-     * @return the measure list, which may be empty but not null
-     */
-    public List<TreeNode> getMeasures ()
-    {
-        return measures.getChildren();
-    }
-
-    //---------//
-    // setName //
-    //---------//
-    /**
-     * @param name the name to set
-     */
-    public void setName (String name)
-    {
-        this.name = name;
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * @return the name
-     */
-    public String getName ()
-    {
-        return name;
-    }
-
-    //--------------------//
-    // getPrecedingInPage //
-    //--------------------//
-    /**
-     * Report the corresponding part (if any) in the previous system.
-     * Even if there is a previous system, there may be no part that corresponds
-     * to this one.
-     * @return the corresponding part, or null
-     */
-    public SystemPart getPrecedingInPage ()
-    {
-        ScoreSystem prevSystem = (ScoreSystem) getSystem()
-                                                   .getPreviousSibling();
-
-        if (prevSystem != null) {
-            return prevSystem.getPart(id);
-        } else {
-            return null;
-        }
-    }
-
-    //--------------//
-    // setScorePart //
-    //--------------//
-    public void setScorePart (ScorePart scorePart)
-    {
-        this.scorePart = scorePart;
-    }
-
-    //--------------//
-    // getScorePart //
-    //--------------//
-    public ScorePart getScorePart ()
-    {
-        return scorePart;
-    }
-
-    //----------//
-    // getSlurs //
-    //----------//
-    /**
-     * Report the collection of slurs.
-     * @return the slur list, which may be empty but not null
-     */
-    public List<TreeNode> getSlurs ()
-    {
-        return slurs.getChildren();
-    }
-
-    //----------//
-    // getSlurs //
-    //----------//
-    /**
-     * Report the collection of slurs for which the provided predicate
-     * is true.
-     * @param predicate the check to run
-     * @return the collection of selected slurs, which may be empty
-     */
-    public List<Slur> getSlurs (Predicate<Slur> predicate)
-    {
-        List<Slur> selectedSlurs = new ArrayList<Slur>();
-
-        for (TreeNode sNode : getSlurs()) {
-            Slur slur = (Slur) sNode;
-
-            if (predicate.check(slur)) {
-                selectedSlurs.add(slur);
-            }
-        }
-
-        return selectedSlurs;
-    }
-
-    //------------//
-    // getStaffAt //
-    //------------//
-    /**
-     * Report the staff nearest (in ordinate) to a provided page point
-     * within the part staves.
-     * @param point the provided page point
-     * @return the nearest staff, within the part staves
-     */
-    public Staff getStaffAt (PixelPoint point)
-    {
-        Staff staff = getSystem()
-                          .getInfo()
-                          .getStaffAt(point)
-                          .getScoreStaff();
-
-        if (staves.getChildren()
-                  .contains(staff)) {
-            return staff;
-        }
-
-        if (staff.getInfo()
-                 .getId() < getFirstStaff()
-                                .getInfo()
-                                .getId()) {
-            return getFirstStaff();
-        } else {
-            return getLastStaff();
-        }
-    }
-
-    //--------------------//
-    // setStartingBarline //
-    //--------------------//
-    /**
-     * Set the barline that starts the part.
-     * @param startingBarline the starting barline
-     */
-    public void setStartingBarline (Barline startingBarline)
-    {
-        this.startingBarline = startingBarline;
-    }
-
-    //--------------------//
-    // getStartingBarline //
-    //--------------------//
-    /**
-     * Get the barline that starts the part.
-     * @return barline the starting bar line (which may be null)
-     */
-    public Barline getStartingBarline ()
-    {
-        return startingBarline;
-    }
-
-    //-----------//
-    // getStaves //
-    //-----------//
-    /**
-     * Report the ordered list of staves that belong to this system part.
-     * @return the list of staves
-     */
-    public List<TreeNode> getStaves ()
-    {
-        return (staves == null) ? null : staves.getChildren();
-    }
-
-    //-----------//
-    // getSystem //
-    //-----------//
-    /**
-     * Report the containing system.
-     * @return the containing system
-     */
-    @Override
-    public ScoreSystem getSystem ()
-    {
-        return (ScoreSystem) getParent();
-    }
-
-    //----------//
-    // getTexts //
-    //----------//
-    public List<TreeNode> getTexts ()
-    {
-        return texts.getChildren();
-    }
-
     //--------//
     // accept //
     //--------//
@@ -740,6 +373,311 @@ public class SystemPart
         return dummyPart;
     }
 
+    //----------//
+    // getBrace //
+    //----------//
+    /**
+     * @return the brace
+     */
+    public Glyph getBrace ()
+    {
+        return brace;
+    }
+
+    //-----------------//
+    // getFirstMeasure //
+    //-----------------//
+    /**
+     * Report the first measure in this system part.
+     * @return the first measure entity
+     */
+    public Measure getFirstMeasure ()
+    {
+        return (Measure) getMeasures()
+                             .get(0);
+    }
+
+    //---------------//
+    // getFirstStaff //
+    //---------------//
+    /**
+     * Report the first staff in this system part.
+     * @return the first staff entity
+     */
+    public Staff getFirstStaff ()
+    {
+        return (Staff) getStaves()
+                           .get(0);
+    }
+
+    //--------------//
+    // getFollowing //
+    //--------------//
+    public SystemPart getFollowing ()
+    {
+        ScoreSystem nextSystem = (ScoreSystem) getSystem()
+                                                   .getNextSibling();
+
+        if (nextSystem != null) {
+            return nextSystem.getPart(id);
+        } else {
+            return null;
+        }
+    }
+
+    //-------//
+    // getId //
+    //-------//
+    /**
+     * Report the part id within the containing system, starting at 1.
+     * @return the part id
+     */
+    public int getId ()
+    {
+        return id;
+    }
+
+    //----------------//
+    // getLastMeasure //
+    //----------------//
+    /**
+     * Report the last measure in the system part.
+     * @return the last measure entity
+     */
+    public Measure getLastMeasure ()
+    {
+        List<TreeNode> meas = getMeasures();
+
+        if (!meas.isEmpty()) {
+            return (Measure) meas.get(meas.size() - 1);
+        } else {
+            return null;
+        }
+    }
+
+    //--------------//
+    // getLastStaff //
+    //--------------//
+    /**
+     * Report the last staff in this system part.
+     * @return the last staff entity
+     */
+    public Staff getLastStaff ()
+    {
+        return (Staff) getStaves()
+                           .get(getStaves().size() - 1);
+    }
+
+    //-----------//
+    // getLyrics //
+    //-----------//
+    /**
+     * Report the collection of lyrics.
+     * @return the lyrics list, which may be empty but not null
+     */
+    public List<TreeNode> getLyrics ()
+    {
+        return lyrics.getChildren();
+    }
+
+    //--------------//
+    // getMeasureAt //
+    //--------------//
+    /**
+     * Report the measure that contains a given point (assumed to be in
+     * the containing system part).
+     * @param point page-based coordinates of the given point
+     * @return the containing measure
+     */
+    public Measure getMeasureAt (PixelPoint point)
+    {
+        Measure measure = null;
+
+        for (TreeNode node : getMeasures()) {
+            measure = (Measure) node;
+
+            Barline barline = measure.getBarline();
+
+            if ((barline == null) || (point.x <= barline.getRightX())) {
+                return measure;
+            }
+        }
+
+        return measure;
+    }
+
+    //-------------//
+    // getMeasures //
+    //-------------//
+    /**
+     * Report the collection of measures.
+     * @return the measure list, which may be empty but not null
+     */
+    public List<TreeNode> getMeasures ()
+    {
+        return measures.getChildren();
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * @return the name
+     */
+    public String getName ()
+    {
+        return name;
+    }
+
+    //--------------------//
+    // getPrecedingInPage //
+    //--------------------//
+    /**
+     * Report the corresponding part (if any) in the previous system.
+     * Even if there is a previous system, there may be no part that corresponds
+     * to this one.
+     * @return the corresponding part, or null
+     */
+    public SystemPart getPrecedingInPage ()
+    {
+        ScoreSystem prevSystem = (ScoreSystem) getSystem()
+                                                   .getPreviousSibling();
+
+        if (prevSystem != null) {
+            return prevSystem.getPart(id);
+        } else {
+            return null;
+        }
+    }
+
+    //--------------//
+    // getScorePart //
+    //--------------//
+    public ScorePart getScorePart ()
+    {
+        return scorePart;
+    }
+
+    //----------//
+    // getSlurs //
+    //----------//
+    /**
+     * Report the collection of slurs.
+     * @return the slur list, which may be empty but not null
+     */
+    public List<TreeNode> getSlurs ()
+    {
+        return slurs.getChildren();
+    }
+
+    //----------//
+    // getSlurs //
+    //----------//
+    /**
+     * Report the collection of slurs for which the provided predicate
+     * is true.
+     * @param predicate the check to run
+     * @return the collection of selected slurs, which may be empty
+     */
+    public List<Slur> getSlurs (Predicate<Slur> predicate)
+    {
+        List<Slur> selectedSlurs = new ArrayList<Slur>();
+
+        for (TreeNode sNode : getSlurs()) {
+            Slur slur = (Slur) sNode;
+
+            if (predicate.check(slur)) {
+                selectedSlurs.add(slur);
+            }
+        }
+
+        return selectedSlurs;
+    }
+
+    //------------//
+    // getStaffAt //
+    //------------//
+    /**
+     * Report the staff nearest (in ordinate) to a provided page point
+     * within the part staves.
+     * @param point the provided page point
+     * @return the nearest staff, within the part staves
+     */
+    public Staff getStaffAt (PixelPoint point)
+    {
+        Staff staff = getSystem()
+                          .getInfo()
+                          .getStaffAt(point)
+                          .getScoreStaff();
+
+        if (staves.getChildren()
+                  .contains(staff)) {
+            return staff;
+        }
+
+        if (staff.getInfo()
+                 .getId() < getFirstStaff()
+                                .getInfo()
+                                .getId()) {
+            return getFirstStaff();
+        } else {
+            return getLastStaff();
+        }
+    }
+
+    //--------------------//
+    // getStartingBarline //
+    //--------------------//
+    /**
+     * Get the barline that starts the part.
+     * @return barline the starting bar line (which may be null)
+     */
+    public Barline getStartingBarline ()
+    {
+        return startingBarline;
+    }
+
+    //-----------//
+    // getStaves //
+    //-----------//
+    /**
+     * Report the ordered list of staves that belong to this system part.
+     * @return the list of staves
+     */
+    public List<TreeNode> getStaves ()
+    {
+        return (staves == null) ? null : staves.getChildren();
+    }
+
+    //-----------//
+    // getSystem //
+    //-----------//
+    /**
+     * Report the containing system.
+     * @return the containing system
+     */
+    @Override
+    public ScoreSystem getSystem ()
+    {
+        return (ScoreSystem) getParent();
+    }
+
+    //----------//
+    // getTexts //
+    //----------//
+    public List<TreeNode> getTexts ()
+    {
+        return texts.getChildren();
+    }
+
+    //---------//
+    // isDummy //
+    //---------//
+    public boolean isDummy ()
+    {
+        return dummy;
+    }
+
     //--------------//
     // mapSyllables //
     //--------------//
@@ -811,6 +749,68 @@ public class SystemPart
         // Ending orphans in preceding system/part (if such part exists)
         SystemPart precedingPart = getPrecedingInPage();
         connectSlursWith(precedingPart);
+    }
+
+    //----------//
+    // setBrace //
+    //----------//
+    /**
+     * @param brace the brace to set
+     */
+    public void setBrace (Glyph brace)
+    {
+        this.brace = brace;
+    }
+
+    //----------//
+    // setDummy //
+    //----------//
+    public void setDummy (boolean dummy)
+    {
+        this.dummy = dummy;
+    }
+
+    //-------//
+    // setId //
+    //-------//
+    /**
+     * Set the part id within the containing system, starting at 1.
+     * @param id the id value
+     */
+    public void setId (int id)
+    {
+        this.id = id;
+    }
+
+    //---------//
+    // setName //
+    //---------//
+    /**
+     * @param name the name to set
+     */
+    public void setName (String name)
+    {
+        this.name = name;
+    }
+
+    //--------------//
+    // setScorePart //
+    //--------------//
+    public void setScorePart (ScorePart scorePart)
+    {
+        this.scorePart = scorePart;
+    }
+
+    //--------------------//
+    // setStartingBarline //
+    //--------------------//
+    /**
+     * Set the barline that starts the part.
+     * @param startingBarline the starting barline
+     */
+    public void setStartingBarline (Barline startingBarline)
+    {
+        this.startingBarline = startingBarline;
     }
 
     //----------//

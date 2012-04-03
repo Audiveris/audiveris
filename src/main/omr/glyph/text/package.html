@@ -1,11 +1,10 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html>
     <head>
-        <!-- $Id$ -->
         <title>
             Package omr.glyph.text
         </title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     </head>
     <body>
         <p>
@@ -13,77 +12,61 @@
         </p>
 
         <h2>
-            General processing
+            General model
         </h2>
         <p>
-            <img src="doc-files/TextProcessing.jpg" alt="TextProcessing"
-                 title="Sequence of text processing" />
+            <img src="doc-files/Text.jpg" alt="Text"
+                 title="Text data model" />
         </p>
         <h2>
             How textual glyphs are handled
         </h2>
         <h3>
-
-            Glyphs selection
+            Detection of text-shaped glyphs
         </h3>
         <p>
             The general idea is to come up with glyphs that are very likely to
             correspond to real text. Such glyphs are assigned a textual Shape,
             that is either the Shape TEXT or the Shape CHARACTER. Glyph
-            candidates come from 3 sources:
+            candidates come from several sources:
         </p>
         <ul>
-            <li>Standard glyph creation by section aggregation or glyph
-            aggregation. This bottom-up strategy is implemented in {@link
-            omr.glyph.GlyphsBuilder#retrieveGlyphs}
+            <li>{@link omr.glyph.GlyphsBuilder#retrieveGlyphs} implements 
+                standard glyph creation by section aggregation or glyph
+                aggregation in a bottom-up strategy.
             </li>
-            <li>Specific area division, starting from rectangular area at
-            system level, then subdivision along horizontal and vertical axes.
-            This top-down strategy is implemented in the {@link
-            omr.glyph.text.TextArea} class.
+            <li>{@link omr.glyph.pattern.TextGreedyPattern} tries to grow 
+                existing text-shaped glyphs by adding neighbors.
+            </li>
+            <li>{@link omr.glyph.pattern.TextAreaPattern} implements specific 
+                area division, starting from rectangular area at
+                system level, then subdividing along horizontal and vertical 
+                axes, in a  top-down strategy.
             </li>
             <li>Individual glyph assignment by user manual interaction.
             </li>
-
         </ul>
         <h3>
-            Glyphs processing
+            Use of OCR tool
         </h3>
-        <p>
-            The special processing for textual glyphs is triggered during the
-            PATTERNS step, which among other patterns, calls the {@link
-            omr.glyph.text.TextInspector#runPattern} method.
-        </p>
-        <p>
-            Working at a system level, this method does the following:
-        </p>
-
-        <ol>
-            <li>Retrieve additional textual glyphs (see the area division, as
-            described above),
+        <ul>
+            <li>{@link omr.glyph.GlyphChecker} uses OCR content-based 
+                verification of tuplet-shaped glyphs (TUPLET_SIX and 
+                TUPLET_THREE).
             </li>
-            <li>Retrieve alignments of textual glyphs into instances of {@link
-            omr.glyph.text.Sentence}
-                <ol>
-                    <li>Make sure no textual glyphs overlap (see {@link
-                    omr.glyph.text.Sentence#mergeEnclosedTexts})
-                    </li>
-                    <li>Try to aggregate non-textual glyphs that may exist on
-                    the line (see {@link
-                    omr.glyph.text.Sentence#includeAliens})
-                    </li>
-                    <li>Merge sentences close to each other via {@link
-                    omr.glyph.text.TextInspector#mergeSentences}.
-                    </li>
-
-                    <li>Finally, try to recognize each retrieved sentence
-                    through {@link omr.glyph.text.Sentence#recognize} which
-                    uses the OCR feature provided by the Tesseract tool.
-                    </li>
-                </ol>
+            <li>{@link omr.glyph.pattern.TextBorderPattern} inpects the regions
+                around any system (above, below, left and right) and tries to
+                detect blobs that can be gathered as text-shaped glyphs.
+                Note that Glyph evaluator is bypassed, and that OCR is used to
+                validate glyph candidates.
             </li>
-            <li>Process each Sentence in sequence:
+            <li>{@link omr.glyph.text.SentencePattern} gathers lines of text
+                shaped glyphs, expanded with alien glyphs if any, then calls
+                OCR of these "physical" lines. The resulting OcrLines are then
+                used to create as many "logical" sentences, which will be 
+                finally translated to score entities during the {@link 
+                omr.score.SystemTranslator}.
             </li>
-        </ol>
+        </ul>
     </body>
 </html>

@@ -200,18 +200,6 @@ public class GlyphTrainer
         getInstance();
     }
 
-    //-------------//
-    // getInstance //
-    //-------------//
-    private static GlyphTrainer getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new GlyphTrainer();
-        }
-
-        return INSTANCE;
-    }
-
     //-------------------//
     // createGlobalPanel //
     //-------------------//
@@ -240,6 +228,18 @@ public class GlyphTrainer
         builder.add(regressionPanel.getComponent(), cst.xy(1, r));
 
         return builder.getPanel();
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    private static GlyphTrainer getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new GlyphTrainer();
+        }
+
+        return INSTANCE;
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -280,6 +280,19 @@ public class GlyphTrainer
         //~ Methods ------------------------------------------------------------
 
         //-------------//
+        // getActivity //
+        //-------------//
+        /**
+         * Report the current training activity
+         *
+         * @return current activity
+         */
+        public Activity getActivity ()
+        {
+            return activity;
+        }
+
+        //-------------//
         // setActivity //
         //-------------//
         /**
@@ -292,19 +305,6 @@ public class GlyphTrainer
             this.activity = activity;
             setChanged();
             notifyObservers();
-        }
-
-        //-------------//
-        // getActivity //
-        //-------------//
-        /**
-         * Report the current training activity
-         *
-         * @return current activity
-         */
-        public Activity getActivity ()
-        {
-            return activity;
         }
     }
 }

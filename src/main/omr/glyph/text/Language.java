@@ -76,18 +76,6 @@ public class Language
     //~ Methods ----------------------------------------------------------------
 
     //--------------------//
-    // setDefaultLanguage //
-    //--------------------//
-    /**
-     * Assign the new global default language code
-     * @param code global default language code
-     */
-    public static void setDefaultLanguage (String code)
-    {
-        constants.defaultLanguageCode.setValue(code);
-    }
-
-    //--------------------//
     // getDefaultLanguage //
     //--------------------//
     /**
@@ -131,6 +119,18 @@ public class Language
     public static String nameOf (String code)
     {
         return codes.get(code);
+    }
+
+    //--------------------//
+    // setDefaultLanguage //
+    //--------------------//
+    /**
+     * Assign the new global default language code
+     * @param code global default language code
+     */
+    public static void setDefaultLanguage (String code)
+    {
+        constants.defaultLanguageCode.setValue(code);
     }
 
     //~ Inner Classes ----------------------------------------------------------

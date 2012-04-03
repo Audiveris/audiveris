@@ -53,39 +53,6 @@ public class BarAlignment
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------------//
-    // getFilledCount //
-    //----------------//
-    /**
-     * Report the number of intersections found for this bar alignment
-     * @return the percentage filled
-     */
-    public int getFilledCount ()
-    {
-        int cells = 0;
-
-        for (StickIntersection inter : inters) {
-            if (inter != null) {
-                cells++;
-            }
-        }
-
-        return cells;
-    }
-
-    //------------------//
-    // getIntersections //
-    //------------------//
-    /**
-     * Report the array of intersections found, one cell per staff.
-     * @return the intersections found (with null array cells for missing
-     * intersections)
-     */
-    public StickIntersection[] getIntersections ()
-    {
-        return inters;
-    }
-
     //----------//
     // addInter //
     //----------//
@@ -130,6 +97,39 @@ public class BarAlignment
 
         // Could not measure anything
         return null;
+    }
+
+    //----------------//
+    // getFilledCount //
+    //----------------//
+    /**
+     * Report the number of intersections found for this bar alignment
+     * @return the percentage filled
+     */
+    public int getFilledCount ()
+    {
+        int cells = 0;
+
+        for (StickIntersection inter : inters) {
+            if (inter != null) {
+                cells++;
+            }
+        }
+
+        return cells;
+    }
+
+    //------------------//
+    // getIntersections //
+    //------------------//
+    /**
+     * Report the array of intersections found, one cell per staff.
+     * @return the intersections found (with null array cells for missing
+     * intersections)
+     */
+    public StickIntersection[] getIntersections ()
+    {
+        return inters;
     }
 
     //----------//

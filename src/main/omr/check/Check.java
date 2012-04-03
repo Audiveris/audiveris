@@ -116,19 +116,6 @@ public abstract class Check<C extends Checkable>
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------------//
-    // isCovariant //
-    //-------------//
-    /**
-     * Report the covariant flag
-     *
-     * @return the value of covariant flag
-     */
-    public boolean isCovariant ()
-    {
-        return covariant;
-    }
-
     //----------------//
     // getDescription //
     //----------------//
@@ -194,24 +181,6 @@ public abstract class Check<C extends Checkable>
         return low;
     }
 
-    //------------//
-    // setLowHigh //
-    //------------//
-    /**
-     * Allows to set the pair of low and high value. They are set in one shot to
-     * allow the sanity check of 'low' less than or equal to 'high'
-     *
-     * @param low the new low value
-     * @param high the new high value
-     */
-    public void setLowHigh (Constant.Double low,
-                            Constant.Double high)
-    {
-        this.low = low;
-        this.high = high;
-        verifyRange();
-    }
-
     //---------//
     // getName //
     //---------//
@@ -223,6 +192,19 @@ public abstract class Check<C extends Checkable>
     public String getName ()
     {
         return name;
+    }
+
+    //-------------//
+    // isCovariant //
+    //-------------//
+    /**
+     * Report the covariant flag
+     *
+     * @return the value of covariant flag
+     */
+    public boolean isCovariant ()
+    {
+        return covariant;
     }
 
     //------//
@@ -278,6 +260,24 @@ public abstract class Check<C extends Checkable>
         }
 
         return result;
+    }
+
+    //------------//
+    // setLowHigh //
+    //------------//
+    /**
+     * Allows to set the pair of low and high value. They are set in one shot to
+     * allow the sanity check of 'low' less than or equal to 'high'
+     *
+     * @param low the new low value
+     * @param high the new high value
+     */
+    public void setLowHigh (Constant.Double low,
+                            Constant.Double high)
+    {
+        this.low = low;
+        this.high = high;
+        verifyRange();
     }
 
     //----------//

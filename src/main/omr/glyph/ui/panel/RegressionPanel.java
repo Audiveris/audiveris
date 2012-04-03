@@ -20,7 +20,7 @@ import javax.swing.JButton;
 
 /**
  * Class {@code RegressionPanel} is the user interface that handles the
- * training of the linear evaluator. It is a dedicated companion of class
+ * training of the linear engine. It is a dedicated companion of class
  * {@link GlyphTrainer}.
  *
  * @author Hervé Bitteur

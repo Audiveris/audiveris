@@ -13,7 +13,7 @@ package omr.glyph.pattern;
 
 import omr.glyph.Grades;
 import omr.glyph.Shape;
-import omr.glyph.ShapeRange;
+import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -110,7 +110,7 @@ public class BeamHookPattern
                     if ((g.getStem(side) == stem)) {
                         Shape shape = g.getShape();
 
-                        if (ShapeRange.Beams.contains(shape) &&
+                        if (ShapeSet.Beams.contains(shape) &&
                             (shape != Shape.BEAM_HOOK)) {
                             if (hook.isVip() || logger.isFineEnabled()) {
                                 logger.info(

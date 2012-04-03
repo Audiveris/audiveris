@@ -398,7 +398,7 @@ public class CompoundBuilder
         {
             // Check if a desired shape appears in the top raw evaluations
             final Evaluation vote = GlyphNetwork.getInstance()
-                                                .topRawVote(
+                                                .rawVote(
                 compound,
                 minGrade,
                 predicate);
@@ -445,10 +445,10 @@ public class CompoundBuilder
         {
             // Check if a desired shape appears in the top evaluations
             final Evaluation vote = GlyphNetwork.getInstance()
-                                                .topVote(
+                                                .vote(
                 compound,
-                minGrade,
                 system,
+                minGrade,
                 predicate);
 
             if (vote != null) {

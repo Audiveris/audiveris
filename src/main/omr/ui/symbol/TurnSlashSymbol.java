@@ -50,6 +50,15 @@ public class TurnSlashSymbol
 
     //~ Methods ----------------------------------------------------------------
 
+    //------------//
+    // createIcon //
+    //------------//
+    @Override
+    protected ShapeSymbol createIcon ()
+    {
+        return new TurnSlashSymbol(true);
+    }
+
     //-----------//
     // getParams //
     //-----------//
@@ -67,15 +76,6 @@ public class TurnSlashSymbol
         p.stroke = new BasicStroke(Math.max(1f, p.rect.width / 20f));
 
         return p;
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new TurnSlashSymbol(true);
     }
 
     //-------//

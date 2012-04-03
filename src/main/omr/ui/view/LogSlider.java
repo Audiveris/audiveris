@@ -120,19 +120,6 @@ public class LogSlider
     //~ Methods ----------------------------------------------------------------
 
     //----------------//
-    // setDoubleValue //
-    //----------------//
-    /**
-     * Use the provided value, to set the slider internal position.
-     *
-     * @param d a {@code double} value, such as 32 or 0.125.
-     */
-    public void setDoubleValue (double d)
-    {
-        super.setValue(logOf(d));
-    }
-
-    //----------------//
     // getDoubleValue //
     //----------------//
     /**
@@ -144,6 +131,19 @@ public class LogSlider
     public double getDoubleValue ()
     {
         return expOf(super.getValue());
+    }
+
+    //----------------//
+    // setDoubleValue //
+    //----------------//
+    /**
+     * Use the provided value, to set the slider internal position.
+     *
+     * @param d a {@code double} value, such as 32 or 0.125.
+     */
+    public void setDoubleValue (double d)
+    {
+        super.setValue(logOf(d));
     }
 
     //---------------------//

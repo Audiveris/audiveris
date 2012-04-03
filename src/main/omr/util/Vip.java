@@ -24,13 +24,13 @@ public interface Vip
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * (Debug) Flag this object as VIP
-     */
-    void setVip ();
-
-    /**
      * (Debug) Report whether this object is flagged as VIP
      * @return true if VIP
      */
     boolean isVip ();
+
+    /**
+     * (Debug) Flag this object as VIP
+     */
+    void setVip ();
 }

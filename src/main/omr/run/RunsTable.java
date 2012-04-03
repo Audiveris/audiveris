@@ -24,7 +24,6 @@ import omr.selection.RunEvent;
 import omr.selection.SelectionHint;
 import omr.selection.SelectionService;
 
-import omr.util.Implement;
 import omr.util.Predicate;
 
 import org.bushe.swing.event.EventSubscriber;
@@ -110,292 +109,6 @@ public class RunsTable
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------------//
-    // getDimension //
-    //--------------//
-    /**
-     * Report the absolute dimension of the table, width along x axis and height
-     * along the y axis.
-     * @return the absolute dimension
-     */
-    public Dimension getDimension ()
-    {
-        return new Dimension(dimension);
-    }
-
-    //-----------//
-    // getHeight //
-    //-----------//
-    @Implement(PixelSource.class)
-    public int getHeight ()
-    {
-        return dimension.height;
-    }
-
-    //--------------------//
-    // setLocationService //
-    //--------------------//
-    public void setLocationService (SelectionService locationService)
-    {
-        for (Class eventClass : eventsRead) {
-            locationService.subscribeStrongly(eventClass, this);
-        }
-    }
-
-    //------------------//
-    // setMaxForeground //
-    //------------------//
-    @Implement(PixelSource.class)
-    public void setMaxForeground (int level)
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    //------------------//
-    // getMaxForeground //
-    //------------------//
-    @Implement(PixelSource.class)
-    public int getMaxForeground ()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * @return the name
-     */
-    public String getName ()
-    {
-        return name;
-    }
-
-    //----------------//
-    // getOrientation //
-    //----------------//
-    /**
-     * @return the orientation of the runs
-     */
-    @Implement(Oriented.class)
-    public Orientation getOrientation ()
-    {
-        return orientation;
-    }
-
-    //-------------//
-    // getRunCount //
-    //-------------//
-    /**
-     * Count and return the total number of runs in this table
-     * @return the run count
-     */
-    public int getRunCount ()
-    {
-        int runCount = 0;
-
-        for (List<Run> seq : runs) {
-            for (Run run : seq) {
-                runCount += run.getLength();
-            }
-        }
-
-        return runCount;
-    }
-
-    //---------------//
-    // getRunService //
-    //---------------//
-    /**
-     * Report the table run selection service
-     * @return the run selection service
-     */
-    public SelectionService getRunService ()
-    {
-        return runService;
-    }
-
-    //-------------//
-    // getSequence //
-    //-------------//
-    /**
-     * Report the sequence of runs at a given index
-     * @param index the desired index
-     * @return the MODIFIABLE sequence of rows
-     */
-    public final List<Run> getSequence (int index)
-    {
-        return runs.get(index);
-    }
-
-    //---------//
-    // getSize //
-    //---------//
-    /**
-     * Report the number of sequences of runs in the table
-     * @return the table size (in terms of sequences)
-     */
-    public final int getSize ()
-    {
-        return runs.size();
-    }
-
-    //-----------//
-    // getBuffer //
-    //-----------//
-    /**
-     * Fill a rectangular buffer with the runs
-     * @return the filled buffer
-     */
-    public PixelsBuffer getBuffer ()
-    {
-        // Prepare output buffer
-        PixelsBuffer buffer = new PixelsBuffer(dimension);
-
-        switch (orientation) {
-        case HORIZONTAL :
-
-            for (int row = 0; row < getSize(); row++) {
-                List<Run> seq = getSequence(row);
-
-                for (Run run : seq) {
-                    for (int c = run.getStart(); c <= run.getStop(); c++) {
-                        buffer.setPixel(c, row, (char) 0);
-                    }
-                }
-            }
-
-            break;
-
-        case VERTICAL :
-
-            for (int row = 0; row < getSize(); row++) {
-                List<Run> seq = getSequence(row);
-
-                for (Run run : seq) {
-                    for (int col = run.getStart(); col <= run.getStop();
-                         col++) {
-                        buffer.setPixel(row, col, (char) 0);
-                    }
-                }
-            }
-
-            break;
-        }
-
-        return buffer;
-    }
-
-    //-------------//
-    // isIdentical //
-    //-------------//
-    /**
-     * Field by field comparison (TODO: used by unit tests only!)
-     * @param that the other RunsTable to compare with
-     * @return true if identical
-     */
-    public boolean isIdentical (RunsTable that)
-    {
-        // Check null entities
-        if (that == null) {
-            return false;
-        }
-
-        if ((this.orientation == that.orientation) &&
-            this.dimension.equals(that.dimension) &&
-            this.name.equals(that.name)) {
-            // Check runs
-            for (int row = 0; row < getSize(); row++) {
-                List<Run> thisSeq = getSequence(row);
-                List<Run> thatSeq = that.getSequence(row);
-
-                if (thisSeq.size() != thatSeq.size()) {
-                    return false;
-                }
-
-                for (int iRun = 0; iRun < thisSeq.size(); iRun++) {
-                    Run thisRun = thisSeq.get(iRun);
-                    Run thatRun = thatSeq.get(iRun);
-
-                    if (!thisRun.isIdentical(thatRun)) {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    //----------//
-    // getPixel //
-    //----------//
-    /**
-     * {@inheritDoc}
-     *
-     * <br><b>Beware</b>, this implementation is not efficient enough for bulk
-     * operations. For such needs, a much more efficient way is to first
-     * retrieve a full buffer, via {@link #getBuffer()} method, then use this
-     * temporary buffer as the {@link PixelSource} instead of this table.
-     * @param x absolute abscissa
-     * @param y absolute ordinate
-     * @return the pixel gray level
-     */
-    @Implement(PixelSource.class)
-    public final int getPixel (int x,
-                               int y)
-    {
-        Run run = getRunAt(x, y);
-
-        return (run != null) ? run.getLevel() : BACKGROUND;
-    }
-
-    //----------//
-    // getRunAt //
-    //----------//
-    /**
-     * Report the run found at given coordinates, if any.
-     *
-     * @param x absolute abscissa
-     * @param y absolute ordinate
-     * @return  the run found, or null otherwise
-     */
-    public final Run getRunAt (int x,
-                               int y)
-    {
-        Point oPt = orientation.oriented(new PixelPoint(x, y));
-
-        // Protection
-        if ((oPt.y < 0) || (oPt.y >= runs.size())) {
-            return null;
-        }
-
-        List<Run> seq = getSequence(oPt.y);
-
-        for (Run run : seq) {
-            if (run.getStart() > oPt.x) {
-                return null;
-            }
-
-            if (run.getStop() >= oPt.x) {
-                return run;
-            }
-        }
-
-        return null;
-    }
-
-    //----------//
-    // getWidth //
-    //----------//
-    @Implement(PixelSource.class)
-    public int getWidth ()
-    {
-        return dimension.width;
-    }
-
     //-------//
     // clone //
     //-------//
@@ -476,6 +189,230 @@ public class RunsTable
         out.println('+');
     }
 
+    //----------//
+    // getPixel //
+    //----------//
+    /**
+     * {@inheritDoc}
+     *
+     * <br><b>Beware</b>, this implementation is not efficient enough for bulk
+     * operations. For such needs, a much more efficient way is to first
+     * retrieve a full buffer, via {@link #getBuffer()} method, then use this
+     * temporary buffer as the {@link PixelSource} instead of this table.
+     * @param x absolute abscissa
+     * @param y absolute ordinate
+     * @return the pixel gray level
+     */
+    @Override
+    public final int getPixel (int x,
+                               int y)
+    {
+        Run run = getRunAt(x, y);
+
+        return (run != null) ? run.getLevel() : BACKGROUND;
+    }
+
+    //----------//
+    // getRunAt //
+    //----------//
+    /**
+     * Report the run found at given coordinates, if any.
+     *
+     * @param x absolute abscissa
+     * @param y absolute ordinate
+     * @return  the run found, or null otherwise
+     */
+    public final Run getRunAt (int x,
+                               int y)
+    {
+        Point oPt = orientation.oriented(new PixelPoint(x, y));
+
+        // Protection
+        if ((oPt.y < 0) || (oPt.y >= runs.size())) {
+            return null;
+        }
+
+        List<Run> seq = getSequence(oPt.y);
+
+        for (Run run : seq) {
+            if (run.getStart() > oPt.x) {
+                return null;
+            }
+
+            if (run.getStop() >= oPt.x) {
+                return run;
+            }
+        }
+
+        return null;
+    }
+
+    //-----------//
+    // getBuffer //
+    //-----------//
+    /**
+     * Fill a rectangular buffer with the runs
+     * @return the filled buffer
+     */
+    public PixelsBuffer getBuffer ()
+    {
+        // Prepare output buffer
+        PixelsBuffer buffer = new PixelsBuffer(dimension);
+
+        switch (orientation) {
+        case HORIZONTAL :
+
+            for (int row = 0; row < getSize(); row++) {
+                List<Run> seq = getSequence(row);
+
+                for (Run run : seq) {
+                    for (int c = run.getStart(); c <= run.getStop(); c++) {
+                        buffer.setPixel(c, row, (char) 0);
+                    }
+                }
+            }
+
+            break;
+
+        case VERTICAL :
+
+            for (int row = 0; row < getSize(); row++) {
+                List<Run> seq = getSequence(row);
+
+                for (Run run : seq) {
+                    for (int col = run.getStart(); col <= run.getStop();
+                         col++) {
+                        buffer.setPixel(row, col, (char) 0);
+                    }
+                }
+            }
+
+            break;
+        }
+
+        return buffer;
+    }
+
+    //-------------//
+    // getSequence //
+    //-------------//
+    /**
+     * Report the sequence of runs at a given index
+     * @param index the desired index
+     * @return the MODIFIABLE sequence of rows
+     */
+    public final List<Run> getSequence (int index)
+    {
+        return runs.get(index);
+    }
+
+    //---------//
+    // getSize //
+    //---------//
+    /**
+     * Report the number of sequences of runs in the table
+     * @return the table size (in terms of sequences)
+     */
+    public final int getSize ()
+    {
+        return runs.size();
+    }
+
+    //--------------//
+    // getDimension //
+    //--------------//
+    /**
+     * Report the absolute dimension of the table, width along x axis and height
+     * along the y axis.
+     * @return the absolute dimension
+     */
+    public Dimension getDimension ()
+    {
+        return new Dimension(dimension);
+    }
+
+    //-----------//
+    // getHeight //
+    //-----------//
+    @Override
+    public int getHeight ()
+    {
+        return dimension.height;
+    }
+
+    //------------------//
+    // getMaxForeground //
+    //------------------//
+    @Override
+    public int getMaxForeground ()
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * @return the name
+     */
+    public String getName ()
+    {
+        return name;
+    }
+
+    //----------------//
+    // getOrientation //
+    //----------------//
+    /**
+     * @return the orientation of the runs
+     */
+    @Override
+    public Orientation getOrientation ()
+    {
+        return orientation;
+    }
+
+    //-------------//
+    // getRunCount //
+    //-------------//
+    /**
+     * Count and return the total number of runs in this table
+     * @return the run count
+     */
+    public int getRunCount ()
+    {
+        int runCount = 0;
+
+        for (List<Run> seq : runs) {
+            for (Run run : seq) {
+                runCount += run.getLength();
+            }
+        }
+
+        return runCount;
+    }
+
+    //---------------//
+    // getRunService //
+    //---------------//
+    /**
+     * Report the table run selection service
+     * @return the run selection service
+     */
+    public SelectionService getRunService ()
+    {
+        return runService;
+    }
+
+    //----------//
+    // getWidth //
+    //----------//
+    @Override
+    public int getWidth ()
+    {
+        return dimension.width;
+    }
+
     //---------//
     // include //
     //---------//
@@ -518,6 +455,49 @@ public class RunsTable
 
                 thisSeq.add(iRun, thatRun);
             }
+        }
+    }
+
+    //-------------//
+    // isIdentical //
+    //-------------//
+    /**
+     * Field by field comparison (TODO: used by unit tests only!)
+     * @param that the other RunsTable to compare with
+     * @return true if identical
+     */
+    public boolean isIdentical (RunsTable that)
+    {
+        // Check null entities
+        if (that == null) {
+            return false;
+        }
+
+        if ((this.orientation == that.orientation) &&
+            this.dimension.equals(that.dimension) &&
+            this.name.equals(that.name)) {
+            // Check runs
+            for (int row = 0; row < getSize(); row++) {
+                List<Run> thisSeq = getSequence(row);
+                List<Run> thatSeq = that.getSequence(row);
+
+                if (thisSeq.size() != thatSeq.size()) {
+                    return false;
+                }
+
+                for (int iRun = 0; iRun < thisSeq.size(); iRun++) {
+                    Run thisRun = thisSeq.get(iRun);
+                    Run thatRun = thatSeq.get(iRun);
+
+                    if (!thisRun.isIdentical(thatRun)) {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -654,6 +634,25 @@ public class RunsTable
             throw new RuntimeException(
                 this + " Cannot find " + run + " at pos " + pos);
         }
+    }
+
+    //--------------------//
+    // setLocationService //
+    //--------------------//
+    public void setLocationService (SelectionService locationService)
+    {
+        for (Class eventClass : eventsRead) {
+            locationService.subscribeStrongly(eventClass, this);
+        }
+    }
+
+    //------------------//
+    // setMaxForeground //
+    //------------------//
+    @Override
+    public void setMaxForeground (int level)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     //----------//

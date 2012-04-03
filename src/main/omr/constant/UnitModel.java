@@ -154,38 +154,6 @@ public class UnitModel
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------------//
-    // isCellEditable //
-    //----------------//
-    /**
-     * Predicate on cell being editable
-     *
-     * @param node the related tree node
-     * @param column the related table column
-     *
-     * @return true if editable
-     */
-    @Override
-    public boolean isCellEditable (Object node,
-                                   int    column)
-    {
-        Column col = Column.values()[column];
-
-        if (col == Column.LOGMOD) {
-            if (node instanceof Constant) {
-                Constant constant = (Constant) node;
-
-                return Boolean.valueOf(constant.isModified());
-            } else if (node instanceof UnitNode) {
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            return col.editable;
-        }
-    }
-
     //----------//
     // getChild //
     //----------//
@@ -302,95 +270,6 @@ public class UnitModel
     public String getColumnName (int column)
     {
         return Column.values()[column].header;
-    }
-
-    //--------//
-    // isLeaf //
-    //--------//
-    /**
-     * Returns {@code true</code> if <code>node} is a leaf.
-     *
-     * @param node a node in the tree, obtained from this data source
-     *
-     * @return true if {@code node} is a leaf
-     */
-    @Override
-    public boolean isLeaf (Object node)
-    {
-        if (node instanceof Constant) {
-            return true;
-        }
-
-        if (node instanceof UnitNode) {
-            UnitNode unit = (UnitNode) node;
-
-            return (unit.getConstantSet() == null);
-        }
-
-        return false; // By default
-    }
-
-    //------------//
-    // setValueAt //
-    //------------//
-    /**
-     * Assign a value to a cell
-     *
-     * @param value the value to assign
-     * @param node the target node
-     * @param col the related column
-     */
-    @Override
-    public void setValueAt (Object value,
-                            Object node,
-                            int    col)
-    {
-        if (node instanceof UnitNode) {
-            UnitNode unit = (UnitNode) node;
-            Logger   logger = unit.getLogger();
-
-            if (logger != null) {
-                logger.setLevel((String) value);
-            }
-        } else if (node instanceof Constant) {
-            Constant constant = (Constant) node;
-            Column   column = Column.values()[col];
-
-            switch (column) {
-            case VALUE :
-
-                try {
-                    constant.setValue(value.toString());
-
-                    // Forward modif to the modif status column and to the pixel
-                    // column (brute force!)
-                    fireTreeNodesChanged(
-                        this,
-                        new Object[] { getRoot() },
-                        null,
-                        null);
-                } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(
-                        null,
-                        "Illegal number format");
-                }
-
-                break;
-
-            case LOGMOD :
-
-                if (!((Boolean) value).booleanValue()) {
-                    constant.reset();
-                    fireTreeNodesChanged(
-                        this,
-                        new Object[] { getRoot() },
-                        null,
-                        null);
-                }
-
-                break;
-            }
-        }
     }
 
     //------------//
@@ -518,5 +397,126 @@ public class UnitModel
         }
 
         return null; // For the compiler
+    }
+
+    //----------------//
+    // isCellEditable //
+    //----------------//
+    /**
+     * Predicate on cell being editable
+     *
+     * @param node the related tree node
+     * @param column the related table column
+     *
+     * @return true if editable
+     */
+    @Override
+    public boolean isCellEditable (Object node,
+                                   int    column)
+    {
+        Column col = Column.values()[column];
+
+        if (col == Column.LOGMOD) {
+            if (node instanceof Constant) {
+                Constant constant = (Constant) node;
+
+                return Boolean.valueOf(constant.isModified());
+            } else if (node instanceof UnitNode) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return col.editable;
+        }
+    }
+
+    //--------//
+    // isLeaf //
+    //--------//
+    /**
+     * Returns {@code true</code> if <code>node} is a leaf.
+     *
+     * @param node a node in the tree, obtained from this data source
+     *
+     * @return true if {@code node} is a leaf
+     */
+    @Override
+    public boolean isLeaf (Object node)
+    {
+        if (node instanceof Constant) {
+            return true;
+        }
+
+        if (node instanceof UnitNode) {
+            UnitNode unit = (UnitNode) node;
+
+            return (unit.getConstantSet() == null);
+        }
+
+        return false; // By default
+    }
+
+    //------------//
+    // setValueAt //
+    //------------//
+    /**
+     * Assign a value to a cell
+     *
+     * @param value the value to assign
+     * @param node the target node
+     * @param col the related column
+     */
+    @Override
+    public void setValueAt (Object value,
+                            Object node,
+                            int    col)
+    {
+        if (node instanceof UnitNode) {
+            UnitNode unit = (UnitNode) node;
+            Logger   logger = unit.getLogger();
+
+            if (logger != null) {
+                logger.setLevel((String) value);
+            }
+        } else if (node instanceof Constant) {
+            Constant constant = (Constant) node;
+            Column   column = Column.values()[col];
+
+            switch (column) {
+            case VALUE :
+
+                try {
+                    constant.setValue(value.toString());
+
+                    // Forward modif to the modif status column and to the pixel
+                    // column (brute force!)
+                    fireTreeNodesChanged(
+                        this,
+                        new Object[] { getRoot() },
+                        null,
+                        null);
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(
+                        null,
+                        "Illegal number format");
+                }
+
+                break;
+
+            case LOGMOD :
+
+                if (!((Boolean) value).booleanValue()) {
+                    constant.reset();
+                    fireTreeNodesChanged(
+                        this,
+                        new Object[] { getRoot() },
+                        null,
+                        null);
+                }
+
+                break;
+            }
+        }
     }
 }

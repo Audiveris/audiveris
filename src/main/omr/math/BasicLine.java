@@ -12,8 +12,6 @@
 package omr.math;
 
 import omr.log.Logger;
-
-import omr.util.Implement;
 import static java.lang.Math.*;
 
 /**
@@ -151,21 +149,22 @@ public class BasicLine
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------------//
-    // isHorizontal //
-    //--------------//
-    @Implement(Line.class)
-    public boolean isHorizontal ()
+    //------------//
+    // distanceOf //
+    //------------//
+    @Override
+    public double distanceOf (double x,
+                              double y)
     {
         checkLineParameters();
 
-        return a == 0d;
+        return (a * x) + (b * y) + c;
     }
 
     //------------------//
     // getInvertedSlope //
     //------------------//
-    @Implement(Line.class)
+    @Override
     public double getInvertedSlope ()
     {
         checkLineParameters();
@@ -176,7 +175,7 @@ public class BasicLine
     //-----------------//
     // getMeanDistance //
     //-----------------//
-    @Implement(Line.class)
+    @Override
     public double getMeanDistance ()
     {
         // Check we have at least 2 points
@@ -197,7 +196,7 @@ public class BasicLine
     //-------------------//
     // getNumberOfPoints //
     //-------------------//
-    @Implement(Line.class)
+    @Override
     public int getNumberOfPoints ()
     {
         return n;
@@ -206,7 +205,7 @@ public class BasicLine
     //----------//
     // getSlope //
     //----------//
-    @Implement(Line.class)
+    @Override
     public double getSlope ()
     {
         checkLineParameters();
@@ -214,33 +213,10 @@ public class BasicLine
         return -a / b;
     }
 
-    //------------//
-    // isVertical //
-    //------------//
-    @Implement(Line.class)
-    public boolean isVertical ()
-    {
-        checkLineParameters();
-
-        return b == 0d;
-    }
-
-    //------------//
-    // distanceOf //
-    //------------//
-    @Implement(Line.class)
-    public double distanceOf (double x,
-                              double y)
-    {
-        checkLineParameters();
-
-        return (a * x) + (b * y) + c;
-    }
-
     //-------------//
     // includeLine //
     //-------------//
-    @Implement(Line.class)
+    @Override
     public Line includeLine (Line other)
     {
         if (other instanceof BasicLine) {
@@ -263,7 +239,7 @@ public class BasicLine
     //--------------//
     // includePoint //
     //--------------//
-    @Implement(Line.class)
+    @Override
     public void includePoint (double x,
                               double y)
     {
@@ -281,10 +257,32 @@ public class BasicLine
         dirty = true;
     }
 
+    //--------------//
+    // isHorizontal //
+    //--------------//
+    @Override
+    public boolean isHorizontal ()
+    {
+        checkLineParameters();
+
+        return a == 0d;
+    }
+
+    //------------//
+    // isVertical //
+    //------------//
+    @Override
+    public boolean isVertical ()
+    {
+        checkLineParameters();
+
+        return b == 0d;
+    }
+
     //-------//
     // reset //
     //-------//
-    @Implement(Line.class)
+    @Override
     public void reset ()
     {
         a = b = c = Double.NaN;
@@ -366,7 +364,7 @@ public class BasicLine
     //------//
     // xAtY //
     //------//
-    @Implement(Line.class)
+    @Override
     public double xAtY (double y)
     {
         if (n == 1) {
@@ -385,7 +383,7 @@ public class BasicLine
     //------//
     // xAtY //
     //------//
-    @Implement(Line.class)
+    @Override
     public int xAtY (int y)
     {
         return (int) rint(xAtY((double) y));
@@ -394,7 +392,7 @@ public class BasicLine
     //------//
     // yAtX //
     //------//
-    @Implement(Line.class)
+    @Override
     public double yAtX (double x)
     {
         if (n == 1) {
@@ -413,7 +411,7 @@ public class BasicLine
     //------//
     // yAtX //
     //------//
-    @Implement(Line.class)
+    @Override
     public int yAtX (int x)
     {
         return (int) rint(yAtX((double) x));

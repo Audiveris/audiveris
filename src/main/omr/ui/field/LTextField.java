@@ -71,20 +71,6 @@ public class LTextField
     //~ Methods ----------------------------------------------------------------
 
     //---------//
-    // setText //
-    //---------//
-    /**
-     * Modify the content of the field
-     *
-     * @param text
-     */
-    public void setText (String text)
-    {
-        getField()
-            .setText(text);
-    }
-
-    //---------//
     // getText //
     //---------//
     /**
@@ -96,5 +82,19 @@ public class LTextField
     {
         return getField()
                    .getText();
+    }
+
+    //---------//
+    // setText //
+    //---------//
+    /**
+     * Modify the content of the field
+     *
+     * @param text
+     */
+    public void setText (String text)
+    {
+        getField()
+            .setText(text);
     }
 }

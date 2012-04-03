@@ -17,7 +17,6 @@ import omr.glyph.facets.Glyph;
 import omr.log.Logger;
 import static omr.ui.field.SpinnerUtilities.*;
 
-import omr.util.Implement;
 import omr.util.Predicate;
 
 import javax.swing.AbstractSpinnerModel;
@@ -101,7 +100,7 @@ public class SpinnerGlyphModel
      *
      * @return the next legal glyph id or null if one doesn't exist
      */
-    @Implement(SpinnerModel.class)
+    @Override
     public Object getNextValue ()
     {
         final int cur = currentId.intValue();
@@ -147,7 +146,7 @@ public class SpinnerGlyphModel
      *
      * @return the previous legal value or null if one doesn't exist
      */
-    @Implement(SpinnerModel.class)
+    @Override
     public Object getPreviousValue ()
     {
         Glyph     prevGlyph = null;
@@ -177,6 +176,24 @@ public class SpinnerGlyphModel
     }
 
     //----------//
+    // getValue //
+    //----------//
+    /**
+     * The <i>current element</i> of the sequence.
+     *
+     * @return the current spinner value.
+     */
+    @Override
+    public Object getValue ()
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("getValue currentId=" + currentId);
+        }
+
+        return currentId;
+    }
+
+    //----------//
     // setValue //
     //----------//
     /**
@@ -186,7 +203,7 @@ public class SpinnerGlyphModel
      * @param value the value to set
      * @exception IllegalArgumentException if {@code value} isn't allowed
      */
-    @Implement(SpinnerModel.class)
+    @Override
     public void setValue (Object value)
     {
         if (logger.isFineEnabled()) {
@@ -217,23 +234,5 @@ public class SpinnerGlyphModel
         } else {
             logger.warning("Invalid glyph id: " + id);
         }
-    }
-
-    //----------//
-    // getValue //
-    //----------//
-    /**
-     * The <i>current element</i> of the sequence.
-     *
-     * @return the current spinner value.
-     */
-    @Implement(SpinnerModel.class)
-    public Object getValue ()
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("getValue currentId=" + currentId);
-        }
-
-        return currentId;
     }
 }

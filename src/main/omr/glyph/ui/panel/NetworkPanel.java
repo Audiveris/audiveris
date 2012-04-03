@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.glyph.ui.panel;
 
+import omr.glyph.EvaluationEngine;
 import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.ui.panel.TrainingPanel.DumpAction;
@@ -22,8 +23,6 @@ import omr.math.NeuralNetwork;
 import omr.ui.field.LDoubleField;
 import omr.ui.field.LIntegerField;
 import omr.ui.field.LTextField;
-
-import omr.util.Implement;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -43,7 +42,7 @@ import javax.swing.event.ChangeListener;
 
 /**
  * Class {@code NetworkPanel} is the user interface that handles the
- * training of the neural network evaluator. It is a dedicated companion of
+ * training of the neural network engine. It is a dedicated companion of
  * class {@link GlyphTrainer}.
  *
  * @author Hervé Bitteur
@@ -191,11 +190,11 @@ class NetworkPanel
 
         trainAction = new NetworkTrainAction(
             "Re-Train",
-            GlyphEvaluator.StartingMode.SCRATCH,
+            EvaluationEngine.StartingMode.SCRATCH,
             /* confirmationRequired => */ true);
         incrementalTrainAction = new NetworkTrainAction(
             "Inc-Train",
-            GlyphEvaluator.StartingMode.INCREMENTAL,
+            EvaluationEngine.StartingMode.INCREMENTAL,
             /* confirmationRequired => */ false);
 
         defineSpecificLayout();
@@ -203,19 +202,6 @@ class NetworkPanel
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //--------------//
-    // getBestError //
-    //--------------//
-    /**
-     * Report the best remaining error so far
-     *
-     * @return the best error so far
-     */
-    public double getBestError ()
-    {
-        return bestMse;
-    }
 
     //------------//
     // epochEnded //
@@ -234,7 +220,7 @@ class NetworkPanel
             bestMse = mse;
 
             // Take a snap
-            GlyphNetwork  glyphNetwork = (GlyphNetwork) evaluator;
+            GlyphNetwork  glyphNetwork = (GlyphNetwork) engine;
             NeuralNetwork network = glyphNetwork.getNetwork();
             bestSnap = network.backup();
             snap = true;
@@ -279,6 +265,19 @@ class NetworkPanel
                 });
     }
 
+    //--------------//
+    // getBestError //
+    //--------------//
+    /**
+     * Report the best remaining error so far
+     *
+     * @return the best error so far
+     */
+    public double getBestError ()
+    {
+        return bestMse;
+    }
+
     //-----------------//
     // trainingStarted //
     //-----------------//
@@ -288,7 +287,7 @@ class NetworkPanel
     {
         // This part is run on trainer thread
         final int     index = epochIndex + 1;
-        NeuralNetwork network = ((GlyphNetwork) evaluator).getNetwork();
+        NeuralNetwork network = ((GlyphNetwork) engine).getNetwork();
         bestSnap = network.backup();
         bestMse = mse;
 
@@ -322,7 +321,6 @@ class NetworkPanel
      * @param obs the task object
      * @param unused not used
      */
-    @Implement(Observer.class)
     @Override
     public void update (Observable obs,
                         Object     unused)
@@ -431,7 +429,7 @@ class NetworkPanel
     //---------------//
     private void displayParams ()
     {
-        GlyphNetwork network = (GlyphNetwork) evaluator;
+        GlyphNetwork network = (GlyphNetwork) engine;
         listEpochs.setValue(network.getListEpochs());
         learningRate.setValue(network.getLearningRate());
         momentum.setValue(network.getMomentum());
@@ -443,7 +441,7 @@ class NetworkPanel
     //-------------//
     private void inputParams ()
     {
-        GlyphNetwork network = (GlyphNetwork) evaluator;
+        GlyphNetwork network = (GlyphNetwork) engine;
         network.setListEpochs(listEpochs.getValue());
         network.setLearningRate(learningRate.getValue());
         network.setMomentum(momentum.getValue());
@@ -469,10 +467,10 @@ class NetworkPanel
 
         //~ Methods ------------------------------------------------------------
 
-        @Implement(ActionListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
-            GlyphNetwork  glyphNetwork = (GlyphNetwork) evaluator;
+            GlyphNetwork  glyphNetwork = (GlyphNetwork) engine;
             NeuralNetwork network = glyphNetwork.getNetwork();
             network.restore(bestSnap);
             logger.info("Network remaining error : " + (float) bestMse);
@@ -499,7 +497,7 @@ class NetworkPanel
 
         //~ Methods ------------------------------------------------------------
 
-        @Implement(ActionListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             // Ask user confirmation if needed
@@ -513,7 +511,7 @@ class NetworkPanel
                 }
             }
 
-            GlyphNetwork  glyphNetwork = (GlyphNetwork) evaluator;
+            GlyphNetwork  glyphNetwork = (GlyphNetwork) engine;
             NeuralNetwork network = glyphNetwork.getNetwork();
             network.restore(lastSnap);
             logger.info("Network remaining error : " + (float) lastMse);
@@ -533,9 +531,9 @@ class NetworkPanel
     {
         //~ Constructors -------------------------------------------------------
 
-        public NetworkTrainAction (String                      title,
-                                   GlyphEvaluator.StartingMode mode,
-                                   boolean                     confirmationRequired)
+        public NetworkTrainAction (String                        title,
+                                   EvaluationEngine.StartingMode mode,
+                                   boolean                       confirmationRequired)
         {
             super(title);
             this.mode = mode;
@@ -552,7 +550,7 @@ class NetworkPanel
         {
             super.train();
 
-            NeuralNetwork network = ((GlyphNetwork) evaluator).getNetwork();
+            NeuralNetwork network = ((GlyphNetwork) engine).getNetwork();
             lastSnap = network.backup();
 
             // By default, keep the better between best recorded and last
@@ -575,7 +573,7 @@ class NetworkPanel
         // Purpose is just to read and remember the data from the various
         // input fields. Triggered when user presses Enter in one of these
         // fields.
-        @Implement(ActionListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             inputParams();
@@ -598,10 +596,10 @@ class NetworkPanel
 
         //~ Methods ------------------------------------------------------------
 
-        @Implement(ActionListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
-            evaluator.stop();
+            engine.stop();
         }
     }
 }

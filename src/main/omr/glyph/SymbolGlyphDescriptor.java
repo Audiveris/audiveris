@@ -243,15 +243,6 @@ public class SymbolGlyphDescriptor
     }
 
     //----------------//
-    // setXmlRefPoint //
-    //----------------//
-    @XmlElement(name = "ref-point")
-    private void setXmlRefPoint (PointFacade xp)
-    {
-        refPoint = xp.getPoint();
-    }
-
-    //----------------//
     // getXmlRefPoint //
     //----------------//
     private PointFacade getXmlRefPoint ()
@@ -273,5 +264,14 @@ public class SymbolGlyphDescriptor
                               .createUnmarshaller();
 
         return um.unmarshal(is);
+    }
+
+    //----------------//
+    // setXmlRefPoint //
+    //----------------//
+    @XmlElement(name = "ref-point")
+    private void setXmlRefPoint (PointFacade xp)
+    {
+        refPoint = xp.getPoint();
     }
 }

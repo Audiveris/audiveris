@@ -55,6 +55,23 @@ public class Peak
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------//
+    // extend //
+    //--------//
+    /**
+     * Continues a peak, extending its ordinate range, and perhaps its max value
+     * if this projection is the highest one since the beginning of the peak.
+     *
+     * @param y   ordinate of this peak horizontal slice
+     * @param val number of pixels cumulated at 'y' ordinate
+     */
+    public void extend (int y,
+                        int val)
+    {
+        yBottom = y;
+        max = Math.max(max, val);
+    }
+
     //-----------//
     // getBottom //
     //-----------//
@@ -92,23 +109,6 @@ public class Peak
     public int getTop ()
     {
         return yTop;
-    }
-
-    //--------//
-    // extend //
-    //--------//
-    /**
-     * Continues a peak, extending its ordinate range, and perhaps its max value
-     * if this projection is the highest one since the beginning of the peak.
-     *
-     * @param y   ordinate of this peak horizontal slice
-     * @param val number of pixels cumulated at 'y' ordinate
-     */
-    public void extend (int y,
-                        int val)
-    {
-        yBottom = y;
-        max = Math.max(max, val);
     }
 
     //----------//

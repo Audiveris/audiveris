@@ -59,9 +59,10 @@ public class PatternsChecker
         new CaesuraPattern(system),
                        
         new BeamHookPattern(system),
+                       
 
         // Refresh ...
-        new RefreshPattern(system), 
+        new RefreshPattern(system),
                        
         new DoubleBeamPattern(system),
                        
@@ -96,9 +97,9 @@ public class PatternsChecker
         new TextGreedyPattern(system), // Glyphs -> Text
         new TextAreaPattern(system), //   Glyphs -> Text
         new SentencePattern(system), // Text -> sentences
-                                     //
-                                     ///new ArticulationPattern(system),
-        
+
+        ///new ArticulationPattern(system),
+
         ///new SegmentationPattern(system),
         new LeftOverPattern(system)
                    };

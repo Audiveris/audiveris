@@ -71,10 +71,100 @@ public class Run
     /** Meant for XML unmarshalling only */
     private Run ()
     {
-        this(0,0,0);
+        this(0, 0, 0);
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-----------//
+    // getLength //
+    //-----------//
+    /**
+     * Report the length of the run in pixels
+     *
+     * @return this length
+     */
+    public final int getLength ()
+    {
+        return length;
+    }
+
+    //----------//
+    // getLevel //
+    //----------//
+    /**
+     * Return the mean gray level of the run
+     *
+     * @return the average value of gray level along this run
+     */
+    public final int getLevel ()
+    {
+        return level;
+    }
+
+    //------------//
+    // getSection //
+    //------------//
+    /**
+     * Report the section that contains this run
+     * @return the containing section, or null if none
+     */
+    public Section getSection ()
+    {
+        return section;
+    }
+
+    //----------//
+    // getStart //
+    //----------//
+    /**
+     * Report the starting coordinate of the run (x for horizontal, y for
+     * vertical)
+     *
+     * @return the start coordinate
+     */
+    public final int getStart ()
+    {
+        return start;
+    }
+
+    //---------//
+    // getStop //
+    //---------//
+    /**
+     * Return the coordinate of the stop for a run.  This is the bottom ordinate
+     * for a vertical run, or the right abscissa for a horizontal run.
+     *
+     * @return the stop coordinate
+     */
+    public final int getStop ()
+    {
+        return (start + length) - 1;
+    }
+
+    //------------//
+    // setSection //
+    //------------//
+    /**
+     * Records the containing section
+     * @param section the section to set
+     */
+    public void setSection (Section section)
+    {
+        this.section = section;
+    }
+
+    //-----------//
+    // translate //
+    //-----------//
+    /**
+     * Apply a delta-coordinate translation to this run
+     * @param dc the (coordinate) translation
+     */
+    public final void translate (int dc)
+    {
+        start += dc;
+    }
 
     //-----------------//
     // getCommonLength //
@@ -108,60 +198,6 @@ public class Run
                (this.level == that.level);
     }
 
-    //-----------//
-    // getLength //
-    //-----------//
-    /**
-     * Report the length of the run in pixels
-     *
-     * @return this length
-     */
-    public final int getLength ()
-    {
-        return length;
-    }
-
-    //----------//
-    // getLevel //
-    //----------//
-    /**
-     * Return the mean gray level of the run
-     *
-     * @return the average value of gray level along this run
-     */
-    public final int getLevel ()
-    {
-        return level;
-    }
-
-    //----------//
-    // getStart //
-    //----------//
-    /**
-     * Report the starting coordinate of the run (x for horizontal, y for
-     * vertical)
-     *
-     * @return the start coordinate
-     */
-    public final int getStart ()
-    {
-        return start;
-    }
-
-    //---------//
-    // getStop //
-    //---------//
-    /**
-     * Return the coordinate of the stop for a run.  This is the bottom ordinate
-     * for a vertical run, or the right abscissa for a horizontal run.
-     *
-     * @return the stop coordinate
-     */
-    public final int getStop ()
-    {
-        return (start + length) - 1;
-    }
-
     //----------//
     // toString //
     //----------//
@@ -184,41 +220,5 @@ public class Run
         sb.append("}");
 
         return sb.toString();
-    }
-
-    //-----------//
-    // translate //
-    //-----------//
-    /**
-     * Apply a delta-coordinate translation to this run
-     * @param dc the (coordinate) translation
-     */
-    public final void translate (int dc)
-    {
-        start += dc;
-    }
-
-    //------------//
-    // setSection //
-    //------------//
-    /**
-     * Records the containing section
-     * @param section the section to set
-     */
-    public void setSection (Section section)
-    {
-        this.section = section;
-    }
-
-    //------------//
-    // getSection //
-    //------------//
-    /**
-     * Report the section that contains this run
-     * @return the containing section, or null if none
-     */
-    public Section getSection ()
-    {
-        return section;
     }
 }

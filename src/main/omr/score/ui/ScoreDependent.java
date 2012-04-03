@@ -21,10 +21,6 @@ import omr.sheet.ui.SheetDependent;
 
 import omr.step.Steps;
 
-import omr.util.Implement;
-
-import org.bushe.swing.event.EventSubscriber;
-
 /**
  * Class {@code ScoreDependent} handles the dependency on score
  * availability
@@ -67,20 +63,6 @@ public abstract class ScoreDependent
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------------------//
-    // setScoreAvailable //
-    //-------------------//
-    /**
-     * Setter for scoreAvailable property
-     * @param scoreAvailable the new property value
-     */
-    public void setScoreAvailable (boolean scoreAvailable)
-    {
-        boolean oldValue = this.scoreAvailable;
-        this.scoreAvailable = scoreAvailable;
-        firePropertyChange(SCORE_AVAILABLE, oldValue, this.scoreAvailable);
-    }
-
     //------------------//
     // isScoreAvailable //
     //------------------//
@@ -91,20 +73,6 @@ public abstract class ScoreDependent
     public boolean isScoreAvailable ()
     {
         return scoreAvailable;
-    }
-
-    //----------------//
-    // setScoreMerged //
-    //----------------//
-    /**
-     * Setter for scoreMerged property
-     * @param scoreMerged the new property value
-     */
-    public void setScoreMerged (boolean scoreMerged)
-    {
-        boolean oldValue = this.scoreMerged;
-        this.scoreMerged = scoreMerged;
-        firePropertyChange(SCORE_MERGED, oldValue, this.scoreMerged);
     }
 
     //---------------//
@@ -126,7 +94,6 @@ public abstract class ScoreDependent
      * Notification of sheet selection (and thus related score if any).
      * @param event the notified sheet event
      */
-    @Implement(EventSubscriber.class)
     @Override
     public void onEvent (SheetEvent event)
     {
@@ -145,5 +112,33 @@ public abstract class ScoreDependent
         } catch (Exception ex) {
             logger.warning(getClass().getName() + " onEvent error", ex);
         }
+    }
+
+    //-------------------//
+    // setScoreAvailable //
+    //-------------------//
+    /**
+     * Setter for scoreAvailable property
+     * @param scoreAvailable the new property value
+     */
+    public void setScoreAvailable (boolean scoreAvailable)
+    {
+        boolean oldValue = this.scoreAvailable;
+        this.scoreAvailable = scoreAvailable;
+        firePropertyChange(SCORE_AVAILABLE, oldValue, this.scoreAvailable);
+    }
+
+    //----------------//
+    // setScoreMerged //
+    //----------------//
+    /**
+     * Setter for scoreMerged property
+     * @param scoreMerged the new property value
+     */
+    public void setScoreMerged (boolean scoreMerged)
+    {
+        boolean oldValue = this.scoreMerged;
+        this.scoreMerged = scoreMerged;
+        firePropertyChange(SCORE_MERGED, oldValue, this.scoreMerged);
     }
 }

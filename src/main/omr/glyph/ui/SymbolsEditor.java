@@ -61,8 +61,6 @@ import omr.ui.Colors;
 import omr.ui.PixelCount;
 import omr.ui.view.ScrollView;
 
-import omr.util.Implement;
-
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -146,7 +144,7 @@ public class SymbolsEditor
             sheet,
             symbolsController,
             new ActionListener() {
-                    @Implement(ActionListener.class)
+                    @Override
                     public void actionPerformed (ActionEvent e)
                     {
                         //TODO /////////////////view.colorizeAllGlyphs();
@@ -213,7 +211,7 @@ public class SymbolsEditor
     //----------------//
     // propertyChange //
     //----------------//
-    @Implement(PropertyChangeListener.class)
+    @Override
     public void propertyChange (PropertyChangeEvent evt)
     {
         view.repaint();

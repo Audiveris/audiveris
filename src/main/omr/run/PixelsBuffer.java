@@ -13,8 +13,6 @@ package omr.run;
 
 import omr.lag.PixelSource;
 
-import omr.util.Implement;
-
 import java.awt.Dimension;
 import java.util.Arrays;
 
@@ -63,26 +61,45 @@ public class PixelsBuffer
     //-----------//
     // getHeight //
     //-----------//
-    @Implement(PixelSource.class)
+    @Override
     public int getHeight ()
     {
         return height;
     }
 
     //------------------//
-    // setMaxForeground //
+    // getMaxForeground //
     //------------------//
-    @Implement(PixelSource.class)
-    public void setMaxForeground (int level)
+    @Override
+    public int getMaxForeground ()
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    //----------//
+    // getPixel //
+    //----------//
+    @Override
+    public int getPixel (int x,
+                         int y)
+    {
+        return buffer[(y * width) + x];
+    }
+
+    //----------//
+    // getWidth //
+    //----------//
+    @Override
+    public int getWidth ()
+    {
+        return width;
+    }
+
     //------------------//
-    // getMaxForeground //
+    // setMaxForeground //
     //------------------//
-    @Implement(PixelSource.class)
-    public int getMaxForeground ()
+    @Override
+    public void setMaxForeground (int level)
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -95,24 +112,5 @@ public class PixelsBuffer
                           char val)
     {
         buffer[(y * width) + x] = val;
-    }
-
-    //----------//
-    // getPixel //
-    //----------//
-    @Implement(PixelSource.class)
-    public int getPixel (int x,
-                         int y)
-    {
-        return buffer[(y * width) + x];
-    }
-
-    //----------//
-    // getWidth //
-    //----------//
-    @Implement(PixelSource.class)
-    public int getWidth ()
-    {
-        return width;
     }
 }

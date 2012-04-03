@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="NOTEHEAD_VOID" interline="18" id="1633">
+    <stem-number>1</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>3.111111111111111</pitch-position>
+    <section orientation="VERTICAL" first-pos="2087" id="3763">
+        <run start="2836" level="136" length="5"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2087" id="3764">
+        <run start="2842" level="200" length="2"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2088" id="3766">
+        <run start="2833" level="61" length="11"/>
+        <run start="2831" level="90" length="13"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2090" id="3776">
+        <run start="2830" level="38" length="7"/>
+        <run start="2829" level="36" length="7"/>
+        <run start="2828" level="35" length="7"/>
+        <run start="2827" level="74" length="8"/>
+        <run start="2826" level="87" length="8"/>
+        <run start="2826" level="89" length="7"/>
+        <run start="2826" level="108" length="7"/>
+        <run start="2826" level="108" length="6"/>
+        <run start="2826" level="133" length="6"/>
+        <run start="2826" level="137" length="5"/>
+        <run start="2826" level="152" length="4"/>
+        <run start="2826" level="175" length="4"/>
+        <run start="2826" level="200" length="3"/>
+        <run start="2826" level="200" length="2"/>
+        <run start="2826" level="200" length="1"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2090" id="3777">
+        <run start="2841" level="88" length="1"/>
+        <run start="2841" level="187" length="1"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2093" id="3786">
+        <run start="2841" level="200" length="3"/>
+        <run start="2841" level="181" length="3"/>
+        <run start="2841" level="147" length="3"/>
+        <run start="2840" level="147" length="4"/>
+        <run start="2840" level="113" length="4"/>
+        <run start="2839" level="113" length="5"/>
+        <run start="2839" level="87" length="5"/>
+        <run start="2838" level="90" length="6"/>
+        <run start="2838" level="71" length="6"/>
+        <run start="2837" level="71" length="7"/>
+        <run start="2837" level="58" length="7"/>
+        <run start="2836" level="56" length="8"/>
+        <run start="2835" level="67" length="9"/>
+        <run start="2835" level="9" length="6"/>
+        <run start="2834" level="12" length="6"/>
+        <run start="2832" level="42" length="7"/>
+    </section>
+</glyph>

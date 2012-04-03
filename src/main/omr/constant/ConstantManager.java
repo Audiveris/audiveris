@@ -212,45 +212,6 @@ public class ConstantManager
         return INSTANCE;
     }
 
-    //----------------------------//
-    // getUnusedDefaultProperties //
-    //----------------------------//
-    /**
-     * Report the collection of DEFAULT properties that do not relate to
-     * any known application Constant.
-     * @return the potential old stuff in DEFAULT properties
-     */
-    public Collection<String> getUnusedDefaultProperties ()
-    {
-        return defaultHolder.getUnusedKeys();
-    }
-
-    //-------------------------//
-    // getUnusedUserProperties //
-    //-------------------------//
-    /**
-     * Report the collection of USER properties that do not relate to
-     * any known application Constant.
-     * @return the potential old stuff in USER properties
-     */
-    public Collection<String> getUnusedUserProperties ()
-    {
-        return userHolder.getUnusedKeys();
-    }
-
-    //-----------------------------//
-    // getUselessDefaultProperties //
-    //-----------------------------//
-    /**
-     * Report the collection of used DEFAULT properties but whose
-     * content is equal to the source value (and are thus useless).
-     * @return the useless items in DEFAULT properties
-     */
-    public Collection<String> getUselessDefaultProperties ()
-    {
-        return defaultHolder.getUselessKeys();
-    }
-
     //-------------//
     // addConstant //
     //-------------//
@@ -289,6 +250,45 @@ public class ConstantManager
 
         // Fallback on using default/user value
         return userHolder.getProperty(qName);
+    }
+
+    //----------------------------//
+    // getUnusedDefaultProperties //
+    //----------------------------//
+    /**
+     * Report the collection of DEFAULT properties that do not relate to
+     * any known application Constant.
+     * @return the potential old stuff in DEFAULT properties
+     */
+    public Collection<String> getUnusedDefaultProperties ()
+    {
+        return defaultHolder.getUnusedKeys();
+    }
+
+    //-------------------------//
+    // getUnusedUserProperties //
+    //-------------------------//
+    /**
+     * Report the collection of USER properties that do not relate to
+     * any known application Constant.
+     * @return the potential old stuff in USER properties
+     */
+    public Collection<String> getUnusedUserProperties ()
+    {
+        return userHolder.getUnusedKeys();
+    }
+
+    //-----------------------------//
+    // getUselessDefaultProperties //
+    //-----------------------------//
+    /**
+     * Report the collection of used DEFAULT properties but whose
+     * content is equal to the source value (and are thus useless).
+     * @return the useless items in DEFAULT properties
+     */
+    public Collection<String> getUselessDefaultProperties ()
+    {
+        return defaultHolder.getUselessKeys();
     }
 
     //----------------//

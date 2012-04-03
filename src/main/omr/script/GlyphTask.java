@@ -101,6 +101,19 @@ public abstract class GlyphTask
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------//
+    // epilog //
+    //--------//
+    @Override
+    public void epilog (Sheet sheet)
+    {
+        Stepping.reprocessSheet(
+            Steps.valueOf(Steps.SYMBOLS),
+            sheet,
+            getImpactedSystems(sheet),
+            false);
+    }
+
     //--------------------//
     // getImpactedSystems //
     //--------------------//
@@ -130,19 +143,6 @@ public abstract class GlyphTask
         return glyphs;
     }
 
-    //--------//
-    // epilog //
-    //--------//
-    @Override
-    public void epilog (Sheet sheet)
-    {
-        Stepping.reprocessSheet(
-            Steps.valueOf(Steps.SYMBOLS),
-            sheet,
-            getImpactedSystems(sheet),
-            false);
-    }
-
     //------------------//
     // impactAllSystems //
     //------------------//
@@ -170,15 +170,6 @@ public abstract class GlyphTask
 
         initialSystems = retrieveCurrentImpact(sheet);
     }
-
-    //----------------//
-    // retrieveGlyphs //
-    //----------------//
-    /**
-     * This method is in charge of retrieving the glyphs to be handled, using
-     * either their composing sections ids or their shape and locations.
-     */
-    protected abstract void retrieveGlyphs ();
 
     //-----------------//
     // internalsString //
@@ -245,4 +236,13 @@ public abstract class GlyphTask
 
         return impactedSystems;
     }
+
+    //----------------//
+    // retrieveGlyphs //
+    //----------------//
+    /**
+     * This method is in charge of retrieving the glyphs to be handled, using
+     * either their composing sections ids or their shape and locations.
+     */
+    protected abstract void retrieveGlyphs ();
 }

@@ -85,6 +85,19 @@ public class SystemBoundary
 
     //~ Methods ----------------------------------------------------------------
 
+    //----------//
+    // contains //
+    //----------//
+    /**
+     * Check whether the provided point lies within the SystemBoundary
+     * @param point the provided point
+     * @return true if the provided point lies within the SystemBoundary
+     */
+    public boolean contains (Point point)
+    {
+        return polygon.contains(point);
+    }
+
     //-----------//
     // getBounds //
     //-----------//
@@ -120,19 +133,6 @@ public class SystemBoundary
     public Collection<BrokenLine> getLimits ()
     {
         return limits.values();
-    }
-
-    //----------//
-    // contains //
-    //----------//
-    /**
-     * Check whether the provided point lies within the SystemBoundary
-     * @param point the provided point
-     * @return true if the provided point lies within the SystemBoundary
-     */
-    public boolean contains (Point point)
-    {
-        return polygon.contains(point);
     }
 
     //--------//

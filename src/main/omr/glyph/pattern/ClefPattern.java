@@ -19,7 +19,7 @@ import omr.glyph.Glyphs;
 import omr.glyph.Grades;
 import omr.glyph.Nest;
 import omr.glyph.Shape;
-import omr.glyph.ShapeRange;
+import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
@@ -32,7 +32,6 @@ import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
 import omr.util.HorizontalSide;
-import omr.util.Implement;
 import omr.util.Predicate;
 
 import java.util.*;
@@ -60,7 +59,7 @@ public class ClefPattern
         @Override
         public boolean check (Shape shape)
         {
-            return ShapeRange.Clefs.contains(shape);
+            return ShapeSet.Clefs.contains(shape);
         }
     };
 
@@ -115,7 +114,6 @@ public class ClefPattern
      * Check that each staff begins with a clef.
      * @return the number of clefs rebuilt
      */
-    @Implement(GlyphPattern.class)
     @Override
     public int runPattern ()
     {
@@ -152,7 +150,7 @@ public class ClefPattern
             Set<Glyph> impacted = new HashSet<Glyph>();
 
             for (Glyph glyph : glyphs) {
-                if (glyph.getShape() == Shape.COMBINING_STEM) {
+                if (glyph.getShape() == Shape.STEM) {
                     if (logger.isFineEnabled()) {
                         logger.info("Clef: Removed stem#" + glyph.getId());
                     }
@@ -224,10 +222,10 @@ public class ClefPattern
 
         // Check if a clef appears in the top evaluations
         Evaluation vote = GlyphNetwork.getInstance()
-                                      .topVote(
+                                      .vote(
             compound,
-            Grades.clefMinGrade,
             system,
+            Grades.clefMinGrade,
             clefShapePredicate);
 
         if ((vote != null) &&
@@ -265,10 +263,10 @@ public class ClefPattern
                 Glyph            newCompound = system.buildTransientCompound(
                     Arrays.asList(compound, g));
                 final Evaluation newVote = GlyphNetwork.getInstance()
-                                                       .topVote(
+                                                       .vote(
                     newCompound,
-                    Grades.clefMinGrade,
                     system,
+                    Grades.clefMinGrade,
                     clefShapePredicate);
 
                 if ((newVote != null) && (newVote.grade > vote.grade)) {

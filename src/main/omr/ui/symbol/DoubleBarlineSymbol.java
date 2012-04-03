@@ -56,6 +56,15 @@ public class DoubleBarlineSymbol
 
     //~ Methods ----------------------------------------------------------------
 
+    //------------//
+    // createIcon //
+    //------------//
+    @Override
+    protected ShapeSymbol createIcon ()
+    {
+        return new DoubleBarlineSymbol(true);
+    }
+
     //-----------//
     // getParams //
     //-----------//
@@ -72,15 +81,6 @@ public class DoubleBarlineSymbol
             (int) Math.ceil(thinRect.getHeight()));
 
         return p;
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new DoubleBarlineSymbol(true);
     }
 
     //-------//

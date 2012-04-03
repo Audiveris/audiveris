@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph id="1422" interline="22" shape="NOTEHEAD_VOID">
+    <stem-number>1</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>2.896551724137931</pitch-position>
+        <section orientation="VERTICAL" id="3409" first-pos="1080">
+            <run start="621" length="8" level="45"/>
+            <run start="620" length="8" level="34"/>
+            <run start="616" length="11" level="79"/>
+            <run start="616" length="10" level="75"/>
+            <run start="616" length="10" level="80"/>
+            <run start="616" length="9" level="82"/>
+            <run start="616" length="8" level="92"/>
+            <run start="616" length="8" level="101"/>
+            <run start="616" length="7" level="106"/>
+            <run start="616" length="7" level="115"/>
+            <run start="616" length="6" level="123"/>
+            <run start="616" length="6" level="135"/>
+            <run start="616" length="5" level="148"/>
+            <run start="616" length="5" level="162"/>
+            <run start="616" length="5" level="162"/>
+            <run start="616" length="5" level="163"/>
+            <run start="616" length="5" level="163"/>
+            <run start="616" length="5" level="163"/>
+            <run start="616" length="5" level="134"/>
+            <run start="616" length="6" level="112"/>
+            <run start="616" length="7" level="125"/>
+        </section>
+        <section orientation="VERTICAL" id="3433" first-pos="1101">
+            <run start="620" length="14" level="55"/>
+            <run start="621" length="11" level="76"/>
+        </section>
+        <section orientation="VERTICAL" id="3417" first-pos="1085">
+            <run start="638" length="1" level="200"/>
+            <run start="637" length="2" level="200"/>
+            <run start="636" length="3" level="200"/>
+            <run start="636" length="3" level="200"/>
+            <run start="635" length="4" level="184"/>
+            <run start="634" length="5" level="151"/>
+            <run start="634" length="5" level="130"/>
+            <run start="633" length="6" level="125"/>
+            <run start="632" length="7" level="107"/>
+            <run start="632" length="7" level="93"/>
+            <run start="631" length="8" level="93"/>
+            <run start="631" length="8" level="81"/>
+            <run start="630" length="8" level="68"/>
+            <run start="629" length="8" level="43"/>
+            <run start="628" length="8" level="17"/>
+            <run start="626" length="10" level="51"/>
+        </section>
+        <section orientation="VERTICAL" id="3436" first-pos="1103">
+            <run start="623" length="6" level="167"/>
+        </section>
+</glyph>

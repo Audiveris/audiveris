@@ -37,24 +37,15 @@ public class Segno
      * @param chord the chord related to the mark, if any
      * @param glyph the underlying glyph
      */
-    public Segno (Measure     measure,
+    public Segno (Measure    measure,
                   PixelPoint point,
-                  Chord       chord,
-                  Glyph       glyph)
+                  Chord      chord,
+                  Glyph      glyph)
     {
         super(measure, point, chord, glyph);
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
 
     //----------//
     // populate //
@@ -66,8 +57,8 @@ public class Segno
      * @param measure measure where the mark is located
      * @param point location for the mark
      */
-    public static void populate (Glyph       glyph,
-                                 Measure     measure,
+    public static void populate (Glyph      glyph,
+                                 Measure    measure,
                                  PixelPoint point)
     {
         Slot slot = measure.getClosestSlot(point);
@@ -76,5 +67,14 @@ public class Segno
             glyph.setTranslation(
                 new Segno(measure, point, slot.getChordBelow(point), glyph));
         }
+    }
+
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
     }
 }

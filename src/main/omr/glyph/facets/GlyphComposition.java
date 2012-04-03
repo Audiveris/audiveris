@@ -55,71 +55,16 @@ public interface GlyphComposition
     public Glyph getAncestor ();
 
     /**
-     * Record the link from this glyph as part of a larger compound.
-     * @param compound the containing compound
-     */
-    public void setPartOf (Glyph compound);
-
-    /**
      * Report the containing compound, if any.
      * @return compound the containing compound if any
      */
     public Glyph getPartOf ();
 
-//    /**
-//     * Record the parts that compose this compound glyph.
-//     * @param parts the contained parts
-//     */
-//    public void setParts (Collection<?extends Glyph> parts);
-//
-//    /**
-//     * Report the parts, if any, that compose this compound.
-//     * @return the set of glyphs, perhaps empty, but never null
-//     */
-//    public Set<Glyph> getParts ();
-
     /**
-     * Tests whether this glyph is active (all its member sections point to it).
-     * @return true if glyph is active, false otherwise
+     * Record the link from this glyph as part of a larger compound.
+     * @param compound the containing compound
      */
-    boolean isActive ();
-
-    /**
-     * Check whether all the glyph sections belong to the same system.
-     * @param system the supposed containing system
-     * @return the alien system found, or null if OK
-     */
-    SystemInfo getAlienSystem (SystemInfo system);
-
-    /**
-     * Report the first section in the ordered collection of glyph members.
-     * @return the first section of the glyph
-     */
-    Section getFirstSection ();
-
-    /**
-     * Report the set of member sections.
-     * @return member sections
-     */
-    SortedSet<Section> getMembers ();
-
-    /**
-     * Record the analysis result in the glyph itself.
-     * @param result the assigned result
-     */
-    void setResult (Result result);
-
-    /**
-     * Report the result found during analysis of this glyph.
-     * @return the analysis result
-     */
-    Result getResult ();
-
-    /**
-     * Convenient method to check whether the glyph is successfully recognized.
-     * @return true if the glyph is successfully recognized
-     */
-    boolean isSuccessful ();
+    public void setPartOf (Glyph compound);
 
     /**
      * Add a section as a member of this glyph.
@@ -145,14 +90,69 @@ public interface GlyphComposition
     void cutSections ();
 
     /**
+     * Check whether all the glyph sections belong to the same system.
+     * @param system the supposed containing system
+     * @return the alien system found, or null if OK
+     */
+    SystemInfo getAlienSystem (SystemInfo system);
+
+    /**
+     * Report the first section in the ordered collection of glyph members.
+     * @return the first section of the glyph
+     */
+    Section getFirstSection ();
+
+    /**
+     * Report the set of member sections.
+     * @return member sections
+     */
+    SortedSet<Section> getMembers ();
+
+    /**
+     * Report the result found during analysis of this glyph.
+     * @return the analysis result
+     */
+    Result getResult ();
+
+    /**
      * Include a whole other glyph into this one, and make its sections point
      * into this one.
      * @param that the filament or basic glyph to swallow
      */
     void include (Glyph that);
 
+    //    /**
+    //     * Record the parts that compose this compound glyph.
+    //     * @param parts the contained parts
+    //     */
+    //    public void setParts (Collection<?extends Glyph> parts);
+    //
+    //    /**
+    //     * Report the parts, if any, that compose this compound.
+    //     * @return the set of glyphs, perhaps empty, but never null
+    //     */
+    //    public Set<Glyph> getParts ();
+
+    /**
+     * Tests whether this glyph is active (all its member sections point to it).
+     * @return true if glyph is active, false otherwise
+     */
+    boolean isActive ();
+
+    /**
+     * Convenient method to check whether the glyph is successfully recognized.
+     * @return true if the glyph is successfully recognized
+     */
+    boolean isSuccessful ();
+
     /**
      * Make all the glyph's sections point back to this glyph
      */
     void linkAllSections ();
+
+    /**
+     * Record the analysis result in the glyph itself.
+     * @param result the assigned result
+     */
+    void setResult (Result result);
 }

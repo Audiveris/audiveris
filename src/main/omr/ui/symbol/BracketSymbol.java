@@ -55,6 +55,15 @@ public class BracketSymbol
 
     //~ Methods ----------------------------------------------------------------
 
+    //------------//
+    // createIcon //
+    //------------//
+    @Override
+    protected ShapeSymbol createIcon ()
+    {
+        return new BracketSymbol(true);
+    }
+
     //-----------//
     // getParams //
     //-----------//
@@ -78,15 +87,6 @@ public class BracketSymbol
                 lowerRect.getHeight()));
 
         return p;
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new BracketSymbol(true);
     }
 
     //-------//

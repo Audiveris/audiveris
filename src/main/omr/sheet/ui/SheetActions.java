@@ -77,23 +77,6 @@ public class SheetActions
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the singleton
-     *
-     * @return the unique instance of this class
-     */
-    public static synchronized SheetActions getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new SheetActions();
-        }
-
-        return INSTANCE;
-    }
-
     //------------//
     // closeScore //
     //------------//
@@ -109,6 +92,23 @@ public class SheetActions
         if (score != null) {
             score.close();
         }
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the singleton
+     *
+     * @return the unique instance of this class
+     */
+    public static synchronized SheetActions getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new SheetActions();
+        }
+
+        return INSTANCE;
     }
 
     //---------------//

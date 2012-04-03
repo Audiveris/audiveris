@@ -154,77 +154,6 @@ public class LyricsItem
     //~ Methods ----------------------------------------------------------------
 
     //--------//
-    // getBox //
-    //--------//
-    @Override
-    public PixelRectangle getBox ()
-    {
-        return seed.getContourBox();
-    }
-
-    //------------//
-    // getContent //
-    //------------//
-    /**
-     * Report the current string value of this text (just the lyrics item)
-     * @return the string value of this text
-     */
-    @Override
-    public String getContent ()
-    {
-        return content;
-    }
-
-    //-------------//
-    // setItemKind //
-    //-------------//
-    public void setItemKind (ItemKind itemKind)
-    {
-        this.itemKind = itemKind;
-    }
-
-    //-------------//
-    // getItemKind //
-    //-------------//
-    public ItemKind getItemKind ()
-    {
-        return itemKind;
-    }
-
-    //---------------//
-    // getLyricsLine //
-    //---------------//
-    public LyricsLine getLyricsLine ()
-    {
-        return lyricsLine;
-    }
-
-    //-----------------//
-    // setSyllabicType //
-    //-----------------//
-    public void setSyllabicType (SyllabicType syllabicType)
-    {
-        this.syllabicType = syllabicType;
-    }
-
-    //-----------------//
-    // getSyllabicType //
-    //-----------------//
-    public SyllabicType getSyllabicType ()
-    {
-        return syllabicType;
-    }
-
-    //----------//
-    // getWidth //
-    //----------//
-    @Override
-    public int getWidth ()
-    {
-        return width;
-    }
-
-    //--------//
     // accept //
     //--------//
     @Override
@@ -266,6 +195,61 @@ public class LyricsItem
                 syllabicType = SyllabicType.SINGLE;
             }
         }
+    }
+
+    //--------//
+    // getBox //
+    //--------//
+    @Override
+    public PixelRectangle getBox ()
+    {
+        return seed.getContourBox();
+    }
+
+    //------------//
+    // getContent //
+    //------------//
+    /**
+     * Report the current string value of this text (just the lyrics item)
+     * @return the string value of this text
+     */
+    @Override
+    public String getContent ()
+    {
+        return content;
+    }
+
+    //-------------//
+    // getItemKind //
+    //-------------//
+    public ItemKind getItemKind ()
+    {
+        return itemKind;
+    }
+
+    //---------------//
+    // getLyricsLine //
+    //---------------//
+    public LyricsLine getLyricsLine ()
+    {
+        return lyricsLine;
+    }
+
+    //-----------------//
+    // getSyllabicType //
+    //-----------------//
+    public SyllabicType getSyllabicType ()
+    {
+        return syllabicType;
+    }
+
+    //----------//
+    // getWidth //
+    //----------//
+    @Override
+    public int getWidth ()
+    {
+        return width;
     }
 
     //-----------//
@@ -328,6 +312,22 @@ public class LyricsItem
         }
 
         addError(seed, "Could not find note for " + this);
+    }
+
+    //-------------//
+    // setItemKind //
+    //-------------//
+    public void setItemKind (ItemKind itemKind)
+    {
+        this.itemKind = itemKind;
+    }
+
+    //-----------------//
+    // setSyllabicType //
+    //-----------------//
+    public void setSyllabicType (SyllabicType syllabicType)
+    {
+        this.syllabicType = syllabicType;
     }
 
     //-----------------------//

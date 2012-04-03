@@ -16,7 +16,7 @@ import omr.constant.ConstantSet;
 import omr.glyph.Evaluation;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
-import omr.glyph.ShapeRange;
+import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
@@ -81,7 +81,7 @@ public class ArticulationPattern
         int nb = 0;
 
         for (Glyph glyph : system.getGlyphs()) {
-            if (!ShapeRange.Articulations.contains(glyph.getShape()) ||
+            if (!ShapeSet.Articulations.contains(glyph.getShape()) ||
                 glyph.isManualShape()) {
                 continue;
             }
@@ -104,9 +104,9 @@ public class ArticulationPattern
                         {
                             Shape shape = entity.getShape();
 
-                            return ShapeRange.NoteHeads.contains(shape) ||
-                                   ShapeRange.Notes.contains(shape) ||
-                                   ShapeRange.Rests.contains(shape);
+                            return ShapeSet.NoteHeads.contains(shape) ||
+                                   ShapeSet.Notes.contains(shape) ||
+                                   ShapeSet.Rests.contains(shape);
                         }
                     });
 

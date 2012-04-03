@@ -13,7 +13,6 @@ package omr.score.entity;
 
 import omr.glyph.facets.Glyph;
 import omr.glyph.text.Sentence;
-import omr.ui.symbol.TextFont;
 import omr.glyph.text.TextRole;
 
 import omr.log.Logger;
@@ -21,6 +20,8 @@ import omr.log.Logger;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.visitor.ScoreVisitor;
+
+import omr.ui.symbol.TextFont;
 
 import java.awt.Font;
 
@@ -93,7 +94,7 @@ public abstract class Text
         this.sentence = sentence;
         setReferencePoint(location);
 
-        setBox(sentence.getSystemContour());
+        setBox(sentence.getContourBox());
 
         // Proper font ?
         if (sentence.getFontSize() != null) {
@@ -112,48 +113,26 @@ public abstract class Text
 
     //~ Methods ----------------------------------------------------------------
 
-    //------------//
-    // getContent //
-    //------------//
-    /**
-     * Report the current string value of this text
-     * @return the string value of this text
-     */
-    public String getContent ()
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
     {
-        String str = sentence.getTextContent();
-
-        if (str == null) {
-            str = sentence.getContentFromGlyphs();
-        }
-
-        return str;
+        return visitor.visit(this);
     }
 
-    //-------------------//
-    // getLyricsFontSize //
-    //-------------------//
+    //---------//
+    // getFont //
+    //---------//
     /**
-     * Report the font size to be exported for the lyrics
+     * Report the font to render this text
      *
-     * @return the exported lyrics font size
+     * @return the font to render this text
      */
-    public static int getLyricsFontSize ()
+    public Font getFont ()
     {
-        return TextFont.baseTextFont.getSize();
-    }
-
-    //-------------//
-    // getFontSize //
-    //-------------//
-    /**
-     * Report the font size to be exported for this text
-     *
-     * @return the exported font size
-     */
-    public float getFontSize ()
-    {
-        return font.getSize2D();
+        return font;
     }
 
     //---------------//
@@ -169,37 +148,29 @@ public abstract class Text
     }
 
     //-------------//
-    // getSentence //
+    // getFontSize //
     //-------------//
     /**
-     * Report the sentence that relates to this text
-     * @return the related sentence
-     */
-    public Sentence getSentence ()
-    {
-        return sentence;
-    }
-
-    //----------//
-    // getWidth //
-    //----------//
-    /**
-     * Report the width of this text
+     * Report the font size to be exported for this text
      *
-     * @return the text width
+     * @return the exported font size
      */
-    public int getWidth ()
+    public float getFontSize ()
     {
-        return getBox().width;
+        return font.getSize2D();
     }
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
+    //-------------------//
+    // getLyricsFontSize //
+    //-------------------//
+    /**
+     * Report the font size to be exported for the lyrics
+     *
+     * @return the exported lyrics font size
+     */
+    public static int getLyricsFontSize ()
     {
-        return visitor.visit(this);
+        return TextFont.baseTextFont.getSize();
     }
 
     //----------//
@@ -310,17 +281,47 @@ public abstract class Text
         }
     }
 
-    //---------//
-    // getFont //
-    //---------//
+    //------------//
+    // getContent //
+    //------------//
     /**
-     * Report the font to render this text
-     *
-     * @return the font to render this text
+     * Report the current string value of this text
+     * @return the string value of this text
      */
-    public Font getFont ()
+    public String getContent ()
     {
-        return font;
+        String str = sentence.getTextContent();
+
+        if (str == null) {
+            str = sentence.getContentFromGlyphs();
+        }
+
+        return str;
+    }
+
+    //-------------//
+    // getSentence //
+    //-------------//
+    /**
+     * Report the sentence that relates to this text
+     * @return the related sentence
+     */
+    public Sentence getSentence ()
+    {
+        return sentence;
+    }
+
+    //----------//
+    // getWidth //
+    //----------//
+    /**
+     * Report the width of this text
+     *
+     * @return the text width
+     */
+    public int getWidth ()
+    {
+        return getBox().width;
     }
 
     //----------//
@@ -418,14 +419,14 @@ public abstract class Text
 
         //~ Methods ------------------------------------------------------------
 
-        public void setCreatorType (CreatorType creatorType)
-        {
-            this.creatorType = creatorType;
-        }
-
         public CreatorType getCreatorType ()
         {
             return creatorType;
+        }
+
+        public void setCreatorType (CreatorType creatorType)
+        {
+            this.creatorType = creatorType;
         }
 
         @Override

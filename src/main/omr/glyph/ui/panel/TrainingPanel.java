@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.glyph.ui.panel;
 
-import omr.glyph.GlyphEvaluator;
+import omr.glyph.*;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.GlyphRepository;
 import omr.glyph.Shape;
@@ -24,8 +24,6 @@ import omr.log.Logger;
 import omr.math.NeuralNetwork;
 
 import omr.ui.util.Panel;
-
-import omr.util.Implement;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -51,16 +49,17 @@ import javax.swing.JRadioButton;
 import javax.swing.SwingWorker;
 
 /**
- * Class {@code TrainingPanel} is a panel dedicated to the training of an
- * evaluator. It is used through its subclasses {@link NetworkPanel} and
- * {@link RegressionPanel} to train the neural network evaluator and the linear
- * evaluator respectively. It is a dedicated companion of class
- * {@link GlyphTrainer}.
+ * Class {@code TrainingPanel} is a panel dedicated to the training of
+ * an evaluation engine.
+ * It is used through its subclasses {@link NetworkPanel} and {@link
+ * RegressionPanel} to train the neural network engine and the linear
+ * engine respectively. It is a dedicated companion of class {@link
+ * GlyphTrainer}.
  *
  * @author Hervé Bitteur
  */
 class TrainingPanel
-    implements GlyphEvaluator.Monitor, Observer
+    implements EvaluationEngine.Monitor, Observer
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -72,15 +71,15 @@ class TrainingPanel
     /** The swing component */
     protected final Panel component;
 
-    /** Current activity (selecting the population, or training the evaluator on
-       the selected population */
+    /** Current activity (selecting the population, or training the engine on
+     * the selected population */
     protected final GlyphTrainer.Task task;
 
     /** User action to launch the training */
     protected TrainAction trainAction;
 
-    /** The underlying evaluator to be trained */
-    protected GlyphEvaluator evaluator;
+    /** The underlying engine to be trained */
+    protected EvaluationEngine engine;
 
     /** User progress bar to visualize the training process */
     protected JProgressBar progressBar = new JProgressBar();
@@ -109,7 +108,7 @@ class TrainingPanel
     /** UI panel dealing with repository selection */
     private final SelectionPanel selectionPanel;
 
-    /** The Neural Network evaluator */
+    /** The Neural Network engine */
     private GlyphNetwork network = GlyphNetwork.getInstance();
 
     //~ Constructors -----------------------------------------------------------
@@ -120,19 +119,20 @@ class TrainingPanel
     /**
      * Creates a new TrainingPanel object.
      *
-     * @param task the current training task
-     * @param standardWidth standard width for fields & buttons
-     * @param evaluator the underlying evaluator to train
+     * @param task           the current training task
+     * @param standardWidth  standard width for fields & buttons
+     * @param engine         the underlying engine to train
      * @param selectionPanel user panel for glyphs selection
-     * @param totalRows total number of display rows, interlines not counted
+     * @param totalRows      total number of display rows, interlines not
+     *                       counted
      */
     public TrainingPanel (GlyphTrainer.Task task,
                           String            standardWidth,
-                          GlyphEvaluator    evaluator,
+                          EvaluationEngine  engine,
                           SelectionPanel    selectionPanel,
                           int               totalRows)
     {
-        this.evaluator = evaluator;
+        this.engine = engine;
         this.task = task;
         this.selectionPanel = selectionPanel;
 
@@ -154,6 +154,12 @@ class TrainingPanel
 
     //~ Methods ----------------------------------------------------------------
 
+    @Override
+    public void epochEnded (int    epochIndex,
+                            double mse)
+    {
+    }
+
     //--------------//
     // getComponent //
     //--------------//
@@ -167,18 +173,10 @@ class TrainingPanel
         return component;
     }
 
-    @Implement(NeuralNetwork.Monitor.class)
-    public void epochEnded (int    epochIndex,
-                            double mse)
-    {
-    }
-
-    @Implement(GlyphEvaluator.Monitor.class)
     public void glyphProcessed (final Glyph glyph)
     {
     }
 
-    @Implement(NeuralNetwork.Monitor.class)
     public void trainingStarted (final int    epochIndex,
                                  final double mse)
     {
@@ -191,10 +189,10 @@ class TrainingPanel
      * Method triggered by new task activity : the train action is enabled only
      * when no activity is going on.
      *
-     * @param obs the task object
+     * @param obs    the task object
      * @param unused not used
      */
-    @Implement(Observer.class)
+    @Override
     public void update (Observable obs,
                         Object     unused)
     {
@@ -251,7 +249,7 @@ class TrainingPanel
 
         // Evaluator Title & Progress Bar
         int    r = 1; // ----------------------------
-        String title = evaluator.getName() + " Training";
+        String title = engine.getName() + " Training";
         builder.addSeparator(title, cst.xyw(1, r, 7));
         builder.add(progressBar, cst.xyw(9, r, 7));
 
@@ -285,14 +283,17 @@ class TrainingPanel
             Shape shape = glyph.getShape();
 
             try {
-                if (shape.isTrainable()) {
-                    present[shape.ordinal()] = true;
+                Shape physicalShape = shape.getPhysicalShape();
+
+                if (physicalShape.isTrainable()) {
+                    present[physicalShape.ordinal()] = true;
                 } else {
-                    logger.warning("Removing non trainable shape:" + shape);
+                    logger.warning(
+                        "Removing non trainable shape:" + physicalShape);
                     it.remove();
                 }
             } catch (Exception ex) {
-                logger.warning("Removing weird shape: " + shape);
+                logger.warning("Removing weird shape: " + shape, ex);
                 it.remove();
             }
         }
@@ -321,10 +322,10 @@ class TrainingPanel
 
         //~ Methods ------------------------------------------------------------
 
-        @Implement(ActionListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
-            evaluator.dump();
+            engine.dump();
         }
     }
 
@@ -337,8 +338,8 @@ class TrainingPanel
         //~ Instance fields ----------------------------------------------------
 
         // Specific training starting mode
-        protected GlyphEvaluator.StartingMode mode = GlyphEvaluator.StartingMode.SCRATCH;
-        protected boolean                     confirmationRequired = true;
+        protected EvaluationEngine.StartingMode mode = EvaluationEngine.StartingMode.SCRATCH;
+        protected boolean                       confirmationRequired = true;
 
         //~ Constructors -------------------------------------------------------
 
@@ -349,7 +350,7 @@ class TrainingPanel
 
         //~ Methods ------------------------------------------------------------
 
-        @Implement(ActionListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             // Ask user confirmation
@@ -395,7 +396,11 @@ class TrainingPanel
                 Glyph glyph = repository.getGlyph(gName, selectionPanel);
 
                 if (glyph != null) {
-                    glyphs.add(glyph);
+                    if (glyph.getShape() != null) {
+                        glyphs.add(glyph);
+                    } else {
+                        logger.warning("Cannot infer shape from " + gName);
+                    }
                 } else {
                     logger.warning("Cannot get glyph " + gName);
                 }
@@ -405,7 +410,7 @@ class TrainingPanel
             // present in the training population
             checkPopulation(glyphs);
 
-            evaluator.train(glyphs, TrainingPanel.this, mode);
+            engine.train(glyphs, TrainingPanel.this, mode);
 
             task.setActivity(INACTIVE);
         }
@@ -448,7 +453,7 @@ class TrainingPanel
 
         //~ Methods ------------------------------------------------------------
 
-        @Implement(ActionListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             useWhole = false;
@@ -493,7 +498,7 @@ class TrainingPanel
 
         //~ Methods ------------------------------------------------------------
 
-        @Implement(ActionListener.class)
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             useWhole = true;

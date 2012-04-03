@@ -61,10 +61,19 @@ public class StemSymbol
      */
     protected StemSymbol (boolean isIcon)
     {
-        super(isIcon, Shape.COMBINING_STEM, true); // Decorated
+        super(isIcon, Shape.STEM, true); // Decorated
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //------------//
+    // createIcon //
+    //------------//
+    @Override
+    protected ShapeSymbol createIcon ()
+    {
+        return new StemSymbol(true);
+    }
 
     //-----------//
     // getParams //
@@ -86,15 +95,6 @@ public class StemSymbol
             (int) Math.ceil(qRect.getHeight()));
 
         return p;
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new StemSymbol(true);
     }
 
     //-------//

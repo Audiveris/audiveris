@@ -46,6 +46,11 @@ public class SymbolsModel
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(SymbolsModel.class);
 
+    //~ Instance fields --------------------------------------------------------
+
+    /** Standard evaluator */
+    private GlyphEvaluator evaluator = GlyphNetwork.getInstance();
+
     //~ Constructors -----------------------------------------------------------
 
     //--------------//
@@ -131,7 +136,7 @@ public class SymbolsModel
     {
         /**
          * To remove a stem, several infos need to be modified : shape from
-         * COMBINING_STEM to null, result from STEM to null, and the Stem must
+         * STEM to null, result from STEM to null, and the Stem must
          * be removed from system list of stems.
          *
          * The stem glyph must be removed (as well as all other non-recognized
@@ -175,7 +180,7 @@ public class SymbolsModel
 
         // Processing depends on shape at hand
         switch (glyph.getShape()) {
-        case COMBINING_STEM :
+        case STEM :
 
             if (logger.isFineEnabled()) {
                 logger.fine("Deassigning a Stem as glyph " + glyph.getId());
@@ -254,7 +259,7 @@ public class SymbolsModel
 
         // Test on glyph weight (noise-like)
         // To prevent to assign a non-noise shape to a noise glyph
-        if ((shape == Shape.NOISE) || GlyphEvaluator.isBigEnough(glyph)) {
+        if ((shape == Shape.NOISE) || evaluator.isBigEnough(glyph)) {
             // Force a recomputation of glyph parameters
             // (since environment may have changed since the time they
             // have been computed)

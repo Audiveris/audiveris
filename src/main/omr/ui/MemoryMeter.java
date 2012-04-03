@@ -98,19 +98,6 @@ public class MemoryMeter
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------------//
-    // getComponent //
-    //--------------//
-    /**
-     * Report the UI component
-     *
-     * @return the concrete component
-     */
-    public JComponent getComponent ()
-    {
-        return component;
-    }
-
     //----------------//
     // collectGarbage //
     //----------------//
@@ -132,6 +119,19 @@ public class MemoryMeter
     public void displayMemory ()
     {
         SwingUtilities.invokeLater(displayer);
+    }
+
+    //--------------//
+    // getComponent //
+    //--------------//
+    /**
+     * Report the UI component
+     *
+     * @return the concrete component
+     */
+    public JComponent getComponent ()
+    {
+        return component;
     }
 
     //------//

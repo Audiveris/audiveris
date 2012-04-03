@@ -67,6 +67,57 @@ public class MusicXML
 
     //~ Methods ----------------------------------------------------------------
 
+    //------------------//
+    // accidentalTextOf //
+    //------------------//
+    public static AccidentalText accidentalTextOf (Shape shape)
+    {
+        ///sharp, natural, flat, double-sharp, sharp-sharp, flat-flat
+        // But no double-flat ???
+        if (shape == Shape.DOUBLE_FLAT) {
+            return AccidentalText.FLAT_FLAT;
+        } else {
+            return AccidentalText.valueOf(shape.toString());
+        }
+    }
+
+    //------------//
+    // barStyleOf //
+    //------------//
+    /**
+     * Report the MusicXML bar style for a recognized Barline shape
+     *
+     * @param shape the barline shape
+     * @return the bar style
+     */
+    public static BarStyle barStyleOf (Shape shape)
+    {
+        //      Bar-style contains style information. Choices are
+        //      regular, dotted, dashed, heavy, light-light,
+        //      light-heavy, heavy-light, heavy-heavy, and none.
+        switch (shape) {
+        case THIN_BARLINE :
+        case PART_DEFINING_BARLINE :
+            return BarStyle.REGULAR; //"light" ???
+
+        case DOUBLE_BARLINE :
+            return BarStyle.LIGHT_LIGHT;
+
+        case FINAL_BARLINE :
+        case RIGHT_REPEAT_SIGN :
+            return BarStyle.LIGHT_HEAVY;
+
+        case REVERSE_FINAL_BARLINE :
+        case LEFT_REPEAT_SIGN :
+            return BarStyle.HEAVY_LIGHT;
+
+        case BACK_TO_BACK_REPEAT_SIGN :
+            return BarStyle.HEAVY_HEAVY; //"heavy-heavy"; ???
+        }
+
+        return BarStyle.NONE; // TO BE CHECKED ???
+    }
+
     //-----------------------//
     // getArticulationObject //
     //-----------------------//
@@ -81,7 +132,7 @@ public class MusicXML
         EmptyPlacement ep = factory.createEmptyPlacement();
 
         switch (shape) {
-        case DOT :
+        case DOT_set :
         case STACCATO :
             return factory.createArticulationsStaccato(ep);
 
@@ -135,15 +186,14 @@ public class MusicXML
         case DYNAMICS_FFF :
             return factory.createDynamicsFff(empty);
 
-        case DYNAMICS_FFFF :
-            return factory.createDynamicsFfff(empty);
-
-        case DYNAMICS_FFFFF :
-            return factory.createDynamicsFffff(empty);
-
-        case DYNAMICS_FFFFFF :
-            return factory.createDynamicsFfffff(empty);
-
+        //        case DYNAMICS_FFFF :
+        //            return factory.createDynamicsFfff(empty);
+        //
+        //        case DYNAMICS_FFFFF :
+        //            return factory.createDynamicsFffff(empty);
+        //
+        //        case DYNAMICS_FFFFFF :
+        //            return factory.createDynamicsFfffff(empty);
         case DYNAMICS_FP :
             return factory.createDynamicsFp(empty);
 
@@ -165,15 +215,14 @@ public class MusicXML
         case DYNAMICS_PPP :
             return factory.createDynamicsPpp(empty);
 
-        case DYNAMICS_PPPP :
-            return factory.createDynamicsPppp(empty);
-
-        case DYNAMICS_PPPPP :
-            return factory.createDynamicsPpppp(empty);
-
-        case DYNAMICS_PPPPPP :
-            return factory.createDynamicsPppppp(empty);
-
+        //        case DYNAMICS_PPPP :
+        //            return factory.createDynamicsPppp(empty);
+        //
+        //        case DYNAMICS_PPPPP :
+        //            return factory.createDynamicsPpppp(empty);
+        //
+        //        case DYNAMICS_PPPPPP :
+        //            return factory.createDynamicsPppppp(empty);
         case DYNAMICS_RF :
             return factory.createDynamicsRf(empty);
 
@@ -260,57 +309,6 @@ public class MusicXML
     public static Syllabic getSyllabic (LyricsItem.SyllabicType type)
     {
         return Syllabic.valueOf(type.toString());
-    }
-
-    //------------------//
-    // accidentalTextOf //
-    //------------------//
-    public static AccidentalText accidentalTextOf (Shape shape)
-    {
-        ///sharp, natural, flat, double-sharp, sharp-sharp, flat-flat
-        // But no double-flat ???
-        if (shape == Shape.DOUBLE_FLAT) {
-            return AccidentalText.FLAT_FLAT;
-        } else {
-            return AccidentalText.valueOf(shape.toString());
-        }
-    }
-
-    //------------//
-    // barStyleOf //
-    //------------//
-    /**
-     * Report the MusicXML bar style for a recognized Barline shape
-     *
-     * @param shape the barline shape
-     * @return the bar style
-     */
-    public static BarStyle barStyleOf (Shape shape)
-    {
-        //      Bar-style contains style information. Choices are
-        //      regular, dotted, dashed, heavy, light-light,
-        //      light-heavy, heavy-light, heavy-heavy, and none.
-        switch (shape) {
-        case THIN_BARLINE :
-        case PART_DEFINING_BARLINE :
-            return BarStyle.REGULAR; //"light" ???
-
-        case DOUBLE_BARLINE :
-            return BarStyle.LIGHT_LIGHT;
-
-        case FINAL_BARLINE :
-        case RIGHT_REPEAT_SIGN :
-            return BarStyle.LIGHT_HEAVY;
-
-        case REVERSE_FINAL_BARLINE :
-        case LEFT_REPEAT_SIGN :
-            return BarStyle.HEAVY_LIGHT;
-
-        case BACK_TO_BACK_REPEAT_SIGN :
-            return BarStyle.HEAVY_HEAVY; //"heavy-heavy"; ???
-        }
-
-        return BarStyle.NONE; // TO BE CHECKED ???
     }
 
     //--------//

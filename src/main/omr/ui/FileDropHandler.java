@@ -53,33 +53,6 @@ public class FileDropHandler
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------------//
-    // setDefaultStep //
-    //----------------//
-    /**
-     * Assign the new default step on DnD
-     * @param step the new default step
-     */
-    public static void setDefaultStep (Step step)
-    {
-        if (step != getDefaultStep()) {
-            logger.info("Default drop step is now " + step);
-            constants.defaultStep.setValue(step);
-        }
-    }
-
-    //----------------//
-    // getDefaultStep //
-    //----------------//
-    /**
-     * Report the current default step on DnD
-     * @return the current default step
-     */
-    public static Step getDefaultStep ()
-    {
-        return constants.defaultStep.getValue();
-    }
-
     //-----------//
     // canImport //
     //-----------//
@@ -112,6 +85,18 @@ public class FileDropHandler
 
         /* COPY isn't supported, so reject the transfer */
         return false;
+    }
+
+    //----------------//
+    // getDefaultStep //
+    //----------------//
+    /**
+     * Report the current default step on DnD
+     * @return the current default step
+     */
+    public static Step getDefaultStep ()
+    {
+        return constants.defaultStep.getValue();
     }
 
     //------------//
@@ -150,6 +135,21 @@ public class FileDropHandler
         }
 
         return true;
+    }
+
+    //----------------//
+    // setDefaultStep //
+    //----------------//
+    /**
+     * Assign the new default step on DnD
+     * @param step the new default step
+     */
+    public static void setDefaultStep (Step step)
+    {
+        if (step != getDefaultStep()) {
+            logger.info("Default drop step is now " + step);
+            constants.defaultStep.setValue(step);
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------

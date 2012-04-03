@@ -12,7 +12,7 @@
 package omr.glyph.ui;
 
 import omr.glyph.Shape;
-import omr.glyph.ShapeRange;
+import omr.glyph.ShapeSet;
 
 import java.util.EnumSet;
 
@@ -32,7 +32,7 @@ public class DashMenu
     //~ Static fields/initializers ---------------------------------------------
 
     /** A specific shape range, meant just for ending and ledger shapes */
-    private static final ShapeRange Dashes = new ShapeRange(
+    private static final ShapeSet Dashes = new ShapeSet(
         null,
         EnumSet.of(Shape.LEDGER, Shape.ENDING_HORIZONTAL));
 
@@ -84,7 +84,7 @@ public class DashMenu
         public JMenuItem getMenuItem ()
         {
             JMenu menu = new JMenu(this);
-            ShapeRange.addRangeItems(Dashes, menu, new AssignListener(false));
+            ShapeSet.addSetShapes(Dashes, menu, new AssignListener(false));
 
             return menu;
         }
@@ -99,7 +99,7 @@ public class DashMenu
         public JMenuItem getMenuItem ()
         {
             JMenu menu = new JMenu(this);
-            ShapeRange.addRangeItems(Dashes, menu, new AssignListener(true));
+            ShapeSet.addSetShapes(Dashes, menu, new AssignListener(true));
 
             return menu;
         }

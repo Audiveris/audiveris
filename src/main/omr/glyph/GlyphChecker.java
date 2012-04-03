@@ -14,18 +14,17 @@ package omr.glyph;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 import static omr.glyph.Shape.*;
-import static omr.glyph.ShapeRange.*;
+import static omr.glyph.ShapeSet.*;
 import omr.glyph.facets.Glyph;
 import omr.glyph.text.Language;
 import omr.glyph.text.OcrLine;
 import omr.glyph.text.TextInfo;
-import omr.glyph.text.TextLine;
 
 import omr.grid.StaffInfo;
 
-import omr.lag.Sections;
-
 import omr.log.Logger;
+
+import omr.run.Orientation;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -44,11 +43,7 @@ import omr.sheet.SystemInfo;
 import omr.util.HorizontalSide;
 import omr.util.Predicate;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 
 /**
  * Class {@code GlyphChecker} gathers additional specific glyph checks,
@@ -56,14 +51,16 @@ import java.util.List;
  * complement the work done by an evaluator (neural network evaluator
  * or regression evaluator).
  *
+ * <p>Typically, physical shapes (the *_set shape names) must be mapped to
+ * the right logical shapes using proper additional tests.</p>
+ *
  * <p>Checks are made on the glyph only, the only knowledge about current glyph
  * environment being its staff-based pitch position and the attached stems and
- * ledgers.
+ * ledgers.</p>
  *
- * <p>Check made in relation with other symbols are not handled here (because
+ * <p>Checks made in relation with other symbols are not handled here (because
  * the other symbols may not have been recognized yet). Such more elaborated
- * checks are the purpose of the patterns step with
- * {@link omr.glyph.pattern.PatternsChecker}.
+ * checks are the purpose of {@link omr.glyph.pattern.PatternsChecker}.</p>
  *
  * @author Hervé Bitteur
  */
@@ -98,27 +95,18 @@ public class GlyphChecker
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------------//
-    // getInstance //
-    //-------------//
-    public static GlyphChecker getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new GlyphChecker();
-        }
-
-        return INSTANCE;
-    }
-
     //----------//
     // annotate //
     //----------//
     /**
-     * Run a series of checks on the provided glyph, according to the candidate
-     * shape, and annotate the evaluation accordingly
-     * @param system the containing system
-     * @param eval the evaluation to populate
-     * @param glyph the glyph to check for a shape
+     * Run a series of checks on the provided glyph, based on the
+     * candidate shape, and annotate the evaluation accordingly.
+     * This annotation can even change the shape itself, thus allowing a move
+     * from physical shape (such as WEDGE_set) to proper logical shape
+     * (CRESCENDO or DECRESCENDO).
+     * @param system   the containing system
+     * @param eval     the evaluation to populate
+     * @param glyph    the glyph to check for a shape
      * @param features the glyph features
      */
     public void annotate (SystemInfo system,
@@ -130,6 +118,10 @@ public class GlyphChecker
             return;
         }
 
+        //        if (glyph.isVip()) {
+        //            logger.info("Checking " + glyph);
+        //        }
+        //
         Collection<Checker> checks = checkerMap.get(eval.shape);
 
         if (checks == null) {
@@ -150,17 +142,29 @@ public class GlyphChecker
         }
     }
 
+    //-------------//
+    // getInstance //
+    //-------------//
+    public static GlyphChecker getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new GlyphChecker();
+        }
+
+        return INSTANCE;
+    }
+
     //-------//
     // relax //
     //-------//
     /**
      * Take into account the fact that the provided glyph has been
-     * (certainly manually) assigned the provided shape. So update the tests
-     * internals accordingly.
-     * @param shape the assigned shape
-     * @param glyph the glyph at hand
+     * (certainly manually) assigned the provided shape.
+     * So update the tests internals accordingly.
+     * @param shape    the assigned shape
+     * @param glyph    the glyph at hand
      * @param features the glyph features
-     * @param sheet the containing sheet
+     * @param sheet    the containing sheet
      */
     public void relax (Shape    shape,
                        Glyph    glyph,
@@ -182,9 +186,9 @@ public class GlyphChecker
     // addChecker //
     //------------//
     /**
-     * Add a checker to a series of shapes
+     * Add a checker to a series of shapes.
      * @param checker the checker to add
-     * @param shapes the shape(s) to which the check applies
+     * @param shapes  the shape(s) to which the check applies
      */
     private void addChecker (Checker  checker,
                              Shape... shapes)
@@ -205,15 +209,56 @@ public class GlyphChecker
     // addChecker //
     //------------//
     /**
-     * Add a checker to a series of shape ranges
-     * @param checker the checker to add
+     * Add a checker to a series of shape ranges.
+     * @param checker     the checker to add
      * @param shapeRanges the shape range(s) to which the check applies
      */
-    private void addChecker (Checker       checker,
-                             ShapeRange... shapeRanges)
+    private void addChecker (Checker     checker,
+                             ShapeSet... shapeRanges)
     {
-        for (ShapeRange range : shapeRanges) {
+        for (ShapeSet range : shapeRanges) {
             addChecker(checker, range.getShapes().toArray(new Shape[0]));
+        }
+    }
+
+    //--------------//
+    // correctShape //
+    //--------------//
+    private boolean correctShape (SystemInfo system,
+                                  Glyph      glyph,
+                                  Evaluation eval,
+                                  Shape      newShape)
+    {
+        //        if (eval.shape != newShape) {
+        //            logger.info(
+        //                "G#" + glyph.getId() + " " + eval.shape + " -> " + newShape);
+        //        }
+        eval.shape = newShape;
+
+        return true;
+    }
+
+    //------------//
+    // logLogical //
+    //------------//
+    /**
+     * Meant for debugging the mapping from physical to logical shape.
+     * @param system related system
+     * @param glyph the glyph at hand
+     * @param eval the physical evaluation
+     * @param newShape the chosen logical shape
+     */
+    private void logLogical (SystemInfo system,
+                             Glyph      glyph,
+                             Evaluation eval,
+                             Shape      newShape)
+    {
+        // For debugging only
+        if (eval.grade >= 0.1) {
+            logger.info(
+                system.getLogPrefix() + glyph + " " + eval + " " + " weight:" +
+                glyph.getWeight() + " " + glyph.getContourBox() +
+                " corrected as " + newShape);
         }
     }
 
@@ -221,48 +266,49 @@ public class GlyphChecker
     // registerChecks //
     //----------------//
     /**
-     * Populate the checkers map
+     * Populate the checkers map.
      */
     private void registerChecks ()
     {
-        // General constraint check on weight, width, height
-        new Checker("Constraint", allSymbols) {
-                public boolean check (SystemInfo system,
-                                      Evaluation eval,
-                                      Glyph      glyph,
-                                      double[]   features)
-                {
-                    if (!constants.applyConstraintsCheck.getValue()) {
-                        return true;
-                    }
-
-                    // Apply registered parameters constraints
-                    return GlyphRegression.getInstance()
-                                          .constraintsMatched(features, eval);
-                }
-
+        //        // General constraint check on weight, width, height
+        //        new Checker("Constraint", allPhysicalShapes) {
+        //                @Override
+        //                public boolean check (SystemInfo system,
+        //                                      Evaluation eval,
+        //                                      Glyph      glyph,
+        //                                      double[]   features)
+        //                {
+        //                    if (!constants.applyConstraintsCheck.getValue()) {
+        //                        return true;
+        //                    }
+        //
+        //                    // Apply registered parameters constraints
+        //                    return GlyphRegression.getInstance()
+        //                                          .constraintsMatched(features, eval);
+        //                }
+        //
+        //                @Override
+        //                public void relax (Shape    shape,
+        //                                   Glyph    glyph,
+        //                                   double[] features,
+        //                                   Sheet    sheet)
+        //                {
+        //                    // Here relax the constraints if so needed
+        //                    boolean extended = GlyphRegression.getInstance()
+        //                                                      .includeSample(
+        //                        features,
+        //                        shape);
+        //                    logger.info(
+        //                        "Constraints " + (extended ? "extended" : "included") +
+        //                        " for glyph#" + glyph.getId() + " as " + shape);
+        //
+        //                    // Record the glyph description to disk
+        //                    GlyphRepository.getInstance()
+        //                                   .recordOneGlyph(glyph, sheet);
+        //                }
+        //            };
+        new Checker("NotWithinWidth", allPhysicalShapes) {
                 @Override
-                public void relax (Shape    shape,
-                                   Glyph    glyph,
-                                   double[] features,
-                                   Sheet    sheet)
-                {
-                    // Here relax the constraints if so needed
-                    boolean extended = GlyphRegression.getInstance()
-                                                      .includeSample(
-                        features,
-                        shape);
-                    logger.info(
-                        "Constraints " + (extended ? "extended" : "included") +
-                        " for glyph#" + glyph.getId() + " as " + shape);
-
-                    // Record the glyph description to disk
-                    GlyphRepository.getInstance()
-                                   .recordOneGlyph(glyph, sheet);
-                }
-            };
-
-        new Checker("NotWithinWidth", allSymbols) {
                 public boolean check (SystemInfo system,
                                       Evaluation eval,
                                       Glyph      glyph,
@@ -290,7 +336,8 @@ public class GlyphChecker
                 }
             };
 
-        new Checker("MeasureRest", WHOLE_OR_HALF_REST) {
+        new Checker("MeasureRest", HW_REST_set) {
+                @Override
                 public boolean check (SystemInfo system,
                                       Evaluation eval,
                                       Glyph      glyph,
@@ -315,6 +362,7 @@ public class GlyphChecker
             };
 
         new Checker("NotWithinStaffHeight", Clefs) {
+                @Override
                 public boolean check (SystemInfo system,
                                       Evaluation eval,
                                       Glyph      glyph,
@@ -326,6 +374,7 @@ public class GlyphChecker
             };
 
         new Checker("WithinStaffHeight", Dynamics) {
+                @Override
                 public boolean check (SystemInfo system,
                                       Evaluation eval,
                                       Glyph      glyph,
@@ -337,6 +386,7 @@ public class GlyphChecker
             };
 
         new Checker("TooFarFromLeftBar", Keys) {
+                @Override
                 public boolean check (SystemInfo system,
                                       Evaluation eval,
                                       Glyph      glyph,
@@ -372,10 +422,11 @@ public class GlyphChecker
                 private Predicate<Glyph> stemPredicate = new Predicate<Glyph>() {
                     public boolean check (Glyph entity)
                     {
-                        return entity.getShape() == Shape.COMBINING_STEM;
+                        return entity.getShape() == Shape.STEM;
                     }
                 };
 
+                @Override
                 public boolean check (SystemInfo system,
                                       Evaluation eval,
                                       Glyph      glyph,
@@ -399,6 +450,7 @@ public class GlyphChecker
             };
 
         new Checker("Hook", BEAM_HOOK) {
+                @Override
                 public boolean check (SystemInfo system,
                                       Evaluation eval,
                                       Glyph      glyph,
@@ -421,8 +473,54 @@ public class GlyphChecker
                 }
             };
 
+        new Checker("Beams", shapesOf(BEAM, BEAM_2, BEAM_3)) {
+                @Override
+                public boolean check (SystemInfo system,
+                                      Evaluation eval,
+                                      Glyph      glyph,
+                                      double[]   features)
+                {
+                    Integer singleThickness = system.getScoreSystem()
+                                                    .getScale()
+                                                    .getMainBeam();
+
+                    if (singleThickness != null) {
+                        // Check we have thickness consistent with the number of 
+                        // beams (since we know single beam thickness)
+                        double meanThickness = glyph.getMeanThickness(
+                            Orientation.HORIZONTAL);
+
+                        int    nb = (int) Math.rint(
+                            meanThickness / singleThickness);
+
+                        switch (nb) {
+                        case 1 :
+                            return correctShape(system, glyph, eval, BEAM);
+
+                        case 2 :
+                            return correctShape(system, glyph, eval, BEAM_2);
+
+                        case 3 :
+                            return correctShape(system, glyph, eval, BEAM_3);
+
+                        default :
+                            ///logger.warning("Bad beam #" + glyph.getId() + " nb:" + nb);
+                            eval.failure = new Evaluation.Failure(
+                                "beamThickness");
+
+                            return false;
+                        }
+                    } else {
+                        return true;
+                    }
+                }
+            };
+
         // Shapes that require a stem on the left side
-        new Checker("noLeftStem", Flags) {
+        new Checker(
+            "noLeftStem",
+            shapesOf(FlagSets, shapesOf(Flags.getShapes()))) {
+                @Override
                 public boolean check (SystemInfo system,
                                       Evaluation eval,
                                       Glyph      glyph,
@@ -434,6 +532,7 @@ public class GlyphChecker
 
         // Shapes that require a stem nearby
         new Checker("noStem", StemSymbols) {
+                @Override
                 public boolean check (SystemInfo system,
                                       Evaluation eval,
                                       Glyph      glyph,
@@ -444,6 +543,7 @@ public class GlyphChecker
             };
 
         new Checker("Text", TEXT, CHARACTER) {
+                @Override
                 public boolean check (SystemInfo system,
                                       Evaluation eval,
                                       Glyph      glyph,
@@ -518,6 +618,7 @@ public class GlyphChecker
             };
 
         new Checker("FullTimeSig", FullTimes) {
+                @Override
                 public boolean check (SystemInfo system,
                                       Evaluation eval,
                                       Glyph      glyph,
@@ -544,7 +645,8 @@ public class GlyphChecker
                 }
             };
 
-        new Checker("PartialTimeSig", PartialTimes) {
+        new Checker("PartialTimeSig", TIME_69_set, PartialTimes) {
+                @Override
                 public boolean check (SystemInfo system,
                                       Evaluation eval,
                                       Glyph      glyph,
@@ -565,6 +667,7 @@ public class GlyphChecker
             };
 
         new Checker("StaffDist", Notes, NoteHeads, Rests, Dynamics) {
+                @Override
                 public boolean check (SystemInfo system,
                                       Evaluation eval,
                                       Glyph      glyph,
@@ -576,6 +679,7 @@ public class GlyphChecker
             };
 
         new Checker("BelowStaff", Pedals) {
+                @Override
                 public boolean check (SystemInfo system,
                                       Evaluation eval,
                                       Glyph      glyph,
@@ -587,6 +691,7 @@ public class GlyphChecker
             };
 
         new Checker("Tuplet", Tuplets) {
+                @Override
                 public boolean check (SystemInfo system,
                                       Evaluation eval,
                                       Glyph      glyph,
@@ -608,21 +713,18 @@ public class GlyphChecker
                         }
 
                         TextInfo textInfo = glyph.getTextInfo();
-                        OcrLine  line = null;
+                        OcrLine  line;
 
                         if (textInfo.getOcrContent() == null) {
-                            List<OcrLine> lines = Language.getOcr()
-                                                          .recognize(
-                                glyph.getImage(),
-                                null,
-                                "g" + glyph.getId() + ".");
+                            String        language = system.getScoreSystem()
+                                                           .getScore()
+                                                           .getLanguage();
+                            List<OcrLine> lines = textInfo.recognizeGlyph(
+                                language);
 
-                            ///OCR logger.warning("GlyphChecker OCR " + glyph + " " + lines);
                             if ((lines != null) && !lines.isEmpty()) {
                                 line = lines.get(0);
-                                textInfo.setOcrInfo(
-                                    Language.getDefaultLanguage(),
-                                    line);
+                                textInfo.setOcrInfo(language, line);
                             }
                         }
 
@@ -632,12 +734,20 @@ public class GlyphChecker
                             String str = line.value;
                             Shape  shape = eval.shape;
 
-                            if ((shape == TUPLET_THREE) && str.equals("3")) {
-                                return true;
+                            if (shape == TUPLET_THREE) {
+                                if (str.equals("3")) {
+                                    return true;
+                                }
+
+                                //eval.shape = CHARACTER;
                             }
 
-                            if ((shape == TUPLET_SIX) && str.equals("6")) {
-                                return true;
+                            if (shape == TUPLET_SIX) {
+                                if (str.equals("6")) {
+                                    return true;
+                                }
+
+                                //eval.shape = CHARACTER;
                             }
 
                             eval.failure = new Evaluation.Failure("ocr");
@@ -651,6 +761,7 @@ public class GlyphChecker
             };
 
         new Checker("LongRest", LONG_REST) {
+                @Override
                 public boolean check (SystemInfo system,
                                       Evaluation eval,
                                       Glyph      glyph,
@@ -668,6 +779,7 @@ public class GlyphChecker
             };
 
         new Checker("Breve", BREVE_REST) {
+                @Override
                 public boolean check (SystemInfo system,
                                       Evaluation eval,
                                       Glyph      glyph,
@@ -685,6 +797,7 @@ public class GlyphChecker
             };
 
         new Checker("Braces", BRACE, BRACKET) {
+                @Override
                 public boolean check (SystemInfo system,
                                       Evaluation eval,
                                       Glyph      glyph,
@@ -735,6 +848,7 @@ public class GlyphChecker
             };
 
         new Checker("WholeSansLedgers", WHOLE_NOTE) {
+                @Override
                 public boolean check (SystemInfo system,
                                       Evaluation eval,
                                       Glyph      glyph,
@@ -757,6 +871,7 @@ public class GlyphChecker
             };
 
         new Checker("SystemTop", DAL_SEGNO, DA_CAPO, SEGNO, CODA, BREATH_MARK) {
+                @Override
                 public boolean check (SystemInfo system,
                                       Evaluation eval,
                                       Glyph      glyph,
@@ -776,28 +891,132 @@ public class GlyphChecker
                 }
             };
 
-        new Checker("Crescendos", CRESCENDO, DECRESCENDO) {
+        new Checker("Fermata_set", FERMATA_set) {
+                @Override
+                public boolean check (SystemInfo system,
+                                      Evaluation eval,
+                                      Glyph      glyph,
+                                      double[]   features)
+                {
+                    // Use moment n21 to differentiate between V & ^
+                    // TBD: We could use pitch position as well?
+                    double n21 = glyph.getGeometricMoments()
+                                      .getN21();
+                    Shape  newShape = (n21 > 0) ? FERMATA : FERMATA_BELOW;
+
+                    ///logLogical(system, glyph, eval, newShape);
+                    eval.shape = newShape;
+
+                    return true;
+                }
+            };
+
+        new Checker("FLAG_*_set", FlagSets) {
+                @Override
+                public boolean check (SystemInfo system,
+                                      Evaluation eval,
+                                      Glyph      glyph,
+                                      double[]   features)
+                {
+                    Shape   newShape = null;
+                    boolean covar = glyph.getGeometricMoments()
+                                         .getN11() > 0;
+
+                    switch (eval.shape) {
+                    case FLAG_1_set :
+                        newShape = covar ? FLAG_1 : FLAG_1_UP;
+
+                        break;
+
+                    case FLAG_2_set :
+                        newShape = covar ? FLAG_2 : FLAG_2_UP;
+
+                        break;
+
+                    case FLAG_3_set :
+                        newShape = covar ? FLAG_3 : FLAG_3_UP;
+
+                        break;
+
+                    case FLAG_4_set :
+                        newShape = covar ? FLAG_4 : FLAG_4_UP;
+
+                        break;
+
+                    case FLAG_5_set :
+                        newShape = covar ? FLAG_5 : FLAG_5_UP;
+
+                        break;
+                    }
+
+                    ///logLogical(system, glyph, eval, newShape);
+                    eval.shape = newShape;
+
+                    return true;
+                }
+            };
+
+        new Checker("TIME_69_set", TIME_69_set) {
+                @Override
+                public boolean check (SystemInfo system,
+                                      Evaluation eval,
+                                      Glyph      glyph,
+                                      double[]   features)
+                {
+                    // Use moment n12 to differentiate between <(6) & >(9)
+                    double n12 = glyph.getGeometricMoments()
+                                      .getN12();
+                    Shape  newShape = (n12 > 0) ? TIME_NINE : TIME_SIX;
+                    ///logLogical(system, glyph, eval, newShape);
+                    eval.shape = newShape;
+
+                    return true;
+                }
+            };
+
+        new Checker("TURN_set", TURN_set) {
+                @Override
+                public boolean check (SystemInfo system,
+                                      Evaluation eval,
+                                      Glyph      glyph,
+                                      double[]   features)
+                {
+                    Shape  newShape;
+
+                    // Use aspect to detect turn_up
+                    double aspect = glyph.getAspect(Orientation.VERTICAL);
+
+                    if (aspect > 1) {
+                        newShape = TURN_UP;
+                    } else {
+                        // Use xy covariance
+                        boolean covar = glyph.getGeometricMoments()
+                                             .getN11() > 0;
+
+                        newShape = covar ? TURN : INVERTED_TURN;
+                    }
+
+                    ///logLogical(system, glyph, eval, newShape);
+                    eval.shape = newShape;
+
+                    return true;
+                }
+            };
+
+        new Checker("Wedge_set", WEDGE_set) {
+                @Override
                 public boolean check (SystemInfo system,
                                       Evaluation eval,
                                       Glyph      glyph,
                                       double[]   features)
                 {
                     // Use moment n12 to differentiate between < & >
-                    double n12 = glyph.getMoments()
+                    double n12 = glyph.getGeometricMoments()
                                       .getN12();
                     Shape  newShape = (n12 > 0) ? CRESCENDO : DECRESCENDO;
 
-                    if (newShape != eval.shape) {
-                        // For debugging
-                        //                        if (eval.grade >= 0.1) {
-                        //                            logger.info(
-                        //                                system.getLogPrefix() + glyph + " " + eval +
-                        //                                " " + " weight:" + glyph.getWeight() + " " +
-                        //                                glyph.getContourBox() + " corrected as " +
-                        //                                newShape);
-                        //                        }
-                        eval.shape = newShape;
-                    }
+                    ///logLogical(system, glyph, eval, newShape);
+                    eval.shape = newShape;
 
                     return true;
                 }
@@ -805,76 +1024,6 @@ public class GlyphChecker
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
-    //---------//
-    // Checker //
-    //---------//
-    /**
-     * A checker runs a specific check for a given glyph wrt a collection of
-     * potential shapes
-     */
-    private abstract class Checker
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /** Unique name for this check */
-        public final String name;
-
-        //~ Constructors -------------------------------------------------------
-
-        public Checker (String   name,
-                        Shape... shapes)
-        {
-            this.name = name;
-            addChecker(this, shapes);
-        }
-
-        public Checker (String         name,
-                        EnumSet<Shape> shapes)
-        {
-            this.name = name;
-            addChecker(this, shapes.toArray(new Shape[0]));
-        }
-
-        public Checker (String        name,
-                        ShapeRange... shapeRanges)
-        {
-            this.name = name;
-            addChecker(this, shapeRanges);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        /**
-         * Run the specific test
-         * @param eval the partially-filled evaluation (eval.shape is an input,
-         * eval.grade and eval.failure are outputs)
-         * @param glyph the glyph at hand
-         * @param features the glyph features
-         * @return true if OK, false otherwise
-         */
-        public abstract boolean check (SystemInfo system,
-                                       Evaluation eval,
-                                       Glyph      glyph,
-                                       double[]   features);
-
-        /**
-         * Take into account the fact that the provided glyph has been
-         * (certainly manually) assigned the provided shape. So update the test
-         * internals accordingly.
-         * @param shape the assigned shape
-         * @param glyph the glyph at hand
-         * @param features the glyph features
-         * @param sheet the containing sheet
-         */
-        public void relax (Shape    shape,
-                           Glyph    glyph,
-                           double[] features,
-                           Sheet    sheet)
-        {
-            // Void by default
-        }
-    }
 
     //-----------//
     // Constants //
@@ -914,5 +1063,107 @@ public class GlyphChecker
         Scale.Fraction   maxKeyXOffset = new Scale.Fraction(
             2,
             "Maximum horizontal offset for a key since clef or measure start");
+    }
+
+    //---------//
+    // Checker //
+    //---------//
+    /**
+     * A checker runs a specific check for a given glyph with respect to
+     * a collection of potential shapes.
+     */
+    private abstract class Checker
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Unique name for this check */
+        public final String name;
+
+        //~ Constructors -------------------------------------------------------
+
+        public Checker (String   name,
+                        Shape... shapes)
+        {
+            this.name = name;
+            addChecker(this, shapes);
+        }
+
+        public Checker (String            name,
+                        Collection<Shape> shapes)
+        {
+            this.name = name;
+            addChecker(this, shapes.toArray(new Shape[0]));
+        }
+
+        public Checker (String      name,
+                        ShapeSet... shapeSets)
+        {
+            this.name = name;
+            addChecker(this, shapeSets);
+        }
+
+        public Checker (String            name,
+                        Shape             shape,
+                        Collection<Shape> collection)
+        {
+            this.name = name;
+
+            List<Shape> all = new ArrayList<Shape>();
+            all.add(shape);
+
+            all.addAll(collection);
+
+            addChecker(this, all.toArray(new Shape[0]));
+        }
+
+        public Checker (String name,
+                        Shape  shape)
+        {
+            this.name = name;
+
+            List<Shape> all = new ArrayList<Shape>();
+            all.add(shape);
+
+            addChecker(this, all.toArray(new Shape[0]));
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        /**
+         * Run the specific test.
+         * @param eval     the partially-filled evaluation (eval.shape is an
+         *                 input,
+         * eval.grade and eval.failure are outputs)
+         * @param glyph    the glyph at hand
+         * @param features the glyph features
+         * @return true if OK, false otherwise
+         */
+        public abstract boolean check (SystemInfo system,
+                                       Evaluation eval,
+                                       Glyph      glyph,
+                                       double[]   features);
+
+        /**
+         * Take into account the fact that the provided glyph has been
+         * (certainly manually) assigned the provided shape.
+         * So update the test internals accordingly.
+         * @param shape    the assigned shape
+         * @param glyph    the glyph at hand
+         * @param features the glyph features
+         * @param sheet    the containing sheet
+         */
+        public void relax (Shape    shape,
+                           Glyph    glyph,
+                           double[] features,
+                           Sheet    sheet)
+        {
+            // Void by default
+        }
+
+        @Override
+        public String toString ()
+        {
+            return name;
+        }
     }
 }

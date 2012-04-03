@@ -402,6 +402,9 @@ public class PartConnection
     {
         //~ Methods ------------------------------------------------------------
 
+        /** Create a related result instance consistent with this type */
+        public Result createResult ();
+
         /** Report the abbreviation, if any, that relates to this part */
         public String getAbbreviation ();
 
@@ -416,9 +419,6 @@ public class PartConnection
 
         /** Report the underlying object */
         public Object getUnderlyingObject ();
-
-        /** Create a related result instance consistent with this type */
-        public Result createResult ();
     }
 
     //--------//
@@ -434,23 +434,14 @@ public class PartConnection
     {
         //~ Methods ------------------------------------------------------------
 
-        /** Assign an abbreviation to the part */
-        public void setAbbreviation (String abbreviation);
-
         /** Report the part abbreviation, if any */
         public String getAbbreviation ();
 
         /** Report the candidate object used to build this result */
         public Candidate getCandidate ();
 
-        /** Assign an unique id to the part */
-        public void setId (int id);
-
         /** Report the part id */
         public int getId ();
-
-        /** Assign a name to the part */
-        public void setName (String name);
 
         /** Report the part name */
         public String getName ();
@@ -460,6 +451,15 @@ public class PartConnection
 
         /** Report the actual underlying instance */
         public Object getUnderlyingObject ();
+
+        /** Assign an abbreviation to the part */
+        public void setAbbreviation (String abbreviation);
+
+        /** Assign an unique id to the part */
+        public void setId (int id);
+
+        /** Assign a name to the part */
+        public void setName (String name);
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -483,14 +483,14 @@ public class PartConnection
 
         //~ Methods ------------------------------------------------------------
 
-        public Candidate getCandidate ()
-        {
-            return candidate;
-        }
-
         public int compareTo (Result other)
         {
             return Integer.signum(getId() - other.getId());
+        }
+
+        public Candidate getCandidate ()
+        {
+            return candidate;
         }
 
         @Override
@@ -549,6 +549,29 @@ public class PartConnection
         }
 
         //~ Methods ------------------------------------------------------------
+
+        public PMScorePartResult createResult ()
+        {
+            // Create a brand new score part for this candidate
+            // Id is irrelevant for the time being
+
+            /** Factory for proxymusic entities */
+            proxymusic.ObjectFactory factory = new proxymusic.ObjectFactory();
+
+            PMScorePartResult result = new PMScorePartResult(
+                this,
+                getStaffCount(),
+                factory.createScorePart());
+
+            result.setName(getName());
+            result.setAbbreviation(getAbbreviation());
+
+            if (logger.isFineEnabled()) {
+                logger.fine("Created " + result + " from " + this);
+            }
+
+            return result;
+        }
 
         public String getAbbreviation ()
         {
@@ -624,29 +647,6 @@ public class PartConnection
             return scorePart;
         }
 
-        public PMScorePartResult createResult ()
-        {
-            // Create a brand new score part for this candidate
-            // Id is irrelevant for the time being
-
-            /** Factory for proxymusic entities */
-            proxymusic.ObjectFactory factory = new proxymusic.ObjectFactory();
-
-            PMScorePartResult result = new PMScorePartResult(
-                this,
-                getStaffCount(),
-                factory.createScorePart());
-
-            result.setName(getName());
-            result.setAbbreviation(getAbbreviation());
-
-            if (logger.isFineEnabled()) {
-                logger.fine("Created " + result + " from " + this);
-            }
-
-            return result;
-        }
-
         @Override
         public String toString ()
         {
@@ -698,14 +698,6 @@ public class PartConnection
 
         //~ Methods ------------------------------------------------------------
 
-        public void setAbbreviation (String abbreviation)
-        {
-            proxymusic.ObjectFactory factory = new proxymusic.ObjectFactory();
-            PartName                 partName = factory.createPartName();
-            scorePart.setPartAbbreviation(partName);
-            partName.setValue(abbreviation);
-        }
-
         public String getAbbreviation ()
         {
             PartName partName = scorePart.getPartAbbreviation();
@@ -717,23 +709,9 @@ public class PartConnection
             }
         }
 
-        public void setId (int id)
-        {
-            this.id = id;
-            scorePart.setId("P" + id);
-        }
-
         public int getId ()
         {
             return id;
-        }
-
-        public void setName (String name)
-        {
-            proxymusic.ObjectFactory factory = new proxymusic.ObjectFactory();
-            proxymusic.PartName      partName = factory.createPartName();
-            scorePart.setPartName(partName);
-            partName.setValue(name);
         }
 
         public String getName ()
@@ -755,6 +733,28 @@ public class PartConnection
         public proxymusic.ScorePart getUnderlyingObject ()
         {
             return scorePart;
+        }
+
+        public void setAbbreviation (String abbreviation)
+        {
+            proxymusic.ObjectFactory factory = new proxymusic.ObjectFactory();
+            PartName                 partName = factory.createPartName();
+            scorePart.setPartAbbreviation(partName);
+            partName.setValue(abbreviation);
+        }
+
+        public void setId (int id)
+        {
+            this.id = id;
+            scorePart.setId("P" + id);
+        }
+
+        public void setName (String name)
+        {
+            proxymusic.ObjectFactory factory = new proxymusic.ObjectFactory();
+            proxymusic.PartName      partName = factory.createPartName();
+            scorePart.setPartName(partName);
+            partName.setValue(name);
         }
     }
 
@@ -783,6 +783,23 @@ public class PartConnection
 
         //~ Methods ------------------------------------------------------------
 
+        public ScorePartResult createResult ()
+        {
+            // Create a brand new score part for this candidate
+            // Id is irrelevant for the time being
+            ScorePartResult result = new ScorePartResult(
+                this,
+                new ScorePart(0, getStaffCount()));
+            result.setName(getName());
+            result.setAbbreviation(getAbbreviation());
+
+            if (logger.isFineEnabled()) {
+                logger.fine("Created " + result + " from " + this);
+            }
+
+            return result;
+        }
+
         public String getAbbreviation ()
         {
             return scorePart.getAbbreviation();
@@ -806,23 +823,6 @@ public class PartConnection
         public Object getUnderlyingObject ()
         {
             return scorePart;
-        }
-
-        public ScorePartResult createResult ()
-        {
-            // Create a brand new score part for this candidate
-            // Id is irrelevant for the time being
-            ScorePartResult result = new ScorePartResult(
-                this,
-                new ScorePart(0, getStaffCount()));
-            result.setName(getName());
-            result.setAbbreviation(getAbbreviation());
-
-            if (logger.isFineEnabled()) {
-                logger.fine("Created " + result + " from " + this);
-            }
-
-            return result;
         }
 
         @Override
@@ -872,29 +872,14 @@ public class PartConnection
 
         //~ Methods ------------------------------------------------------------
 
-        public void setAbbreviation (String abbreviation)
-        {
-            scorePart.setAbbreviation(abbreviation);
-        }
-
         public String getAbbreviation ()
         {
             return scorePart.getAbbreviation();
         }
 
-        public void setId (int id)
-        {
-            scorePart.setId(id);
-        }
-
         public int getId ()
         {
             return scorePart.getId();
-        }
-
-        public void setName (String name)
-        {
-            scorePart.setName(name);
         }
 
         public String getName ()
@@ -910,6 +895,21 @@ public class PartConnection
         public ScorePart getUnderlyingObject ()
         {
             return scorePart;
+        }
+
+        public void setAbbreviation (String abbreviation)
+        {
+            scorePart.setAbbreviation(abbreviation);
+        }
+
+        public void setId (int id)
+        {
+            scorePart.setId(id);
+        }
+
+        public void setName (String name)
+        {
+            scorePart.setName(name);
         }
     }
 
@@ -934,6 +934,23 @@ public class PartConnection
         }
 
         //~ Methods ------------------------------------------------------------
+
+        public ScorePartResult createResult ()
+        {
+            // Create a brand new score part for this candidate
+            // Id is irrelevant for the time being
+            ScorePartResult result = new ScorePartResult(
+                this,
+                new ScorePart(0, getStaffCount()));
+            result.setName(getName());
+            result.setAbbreviation(getAbbreviation());
+
+            if (logger.isFineEnabled()) {
+                logger.fine("Created " + result + " from " + this);
+            }
+
+            return result;
+        }
 
         public String getAbbreviation ()
         {
@@ -960,23 +977,6 @@ public class PartConnection
         public Object getUnderlyingObject ()
         {
             return systemPart;
-        }
-
-        public ScorePartResult createResult ()
-        {
-            // Create a brand new score part for this candidate
-            // Id is irrelevant for the time being
-            ScorePartResult result = new ScorePartResult(
-                this,
-                new ScorePart(0, getStaffCount()));
-            result.setName(getName());
-            result.setAbbreviation(getAbbreviation());
-
-            if (logger.isFineEnabled()) {
-                logger.fine("Created " + result + " from " + this);
-            }
-
-            return result;
         }
 
         @Override

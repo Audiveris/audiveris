@@ -50,12 +50,17 @@ class BasicAdministration
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------//
-    // setId //
-    //-------//
-    public void setId (int id)
+    //------//
+    // dump //
+    //------//
+    @Override
+    public void dump ()
     {
-        this.id = id;
+        System.out.println(
+            glyph.getClass().getName() + "@" +
+            Integer.toHexString(glyph.hashCode()));
+        System.out.println("   id=" + getId());
+        System.out.println("   nest=" + getNest());
     }
 
     //-------//
@@ -64,14 +69,6 @@ class BasicAdministration
     public int getId ()
     {
         return id;
-    }
-
-    //---------//
-    // setNest //
-    //---------//
-    public void setNest (Nest nest)
-    {
-        this.nest = nest;
     }
 
     //---------//
@@ -90,14 +87,6 @@ class BasicAdministration
         return id == 0;
     }
 
-    //--------//
-    // setVip //
-    //--------//
-    public void setVip ()
-    {
-        vip = true;
-    }
-
     //-------//
     // isVip //
     //-------//
@@ -114,16 +103,27 @@ class BasicAdministration
         return false;
     }
 
-    //------//
-    // dump //
-    //------//
-    @Override
-    public void dump ()
+    //-------//
+    // setId //
+    //-------//
+    public void setId (int id)
     {
-        System.out.println(
-            glyph.getClass().getName() + "@" +
-            Integer.toHexString(glyph.hashCode()));
-        System.out.println("   id=" + getId());
-        System.out.println("   nest=" + getNest());
+        this.id = id;
+    }
+
+    //---------//
+    // setNest //
+    //---------//
+    public void setNest (Nest nest)
+    {
+        this.nest = nest;
+    }
+
+    //--------//
+    // setVip //
+    //--------//
+    public void setVip ()
+    {
+        vip = true;
     }
 }

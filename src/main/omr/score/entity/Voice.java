@@ -106,18 +106,78 @@ public class Voice
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------//
-    // isFree //
-    //--------//
+    //---------------//
+    // checkDuration //
+    //---------------//
     /**
-     * Report whether the voice is available at this slot.
-     * @param slot the specific slot for which we consider this voice
-     * @return true if free
+     * Check the duration of the voice, compared to measure expected
+     * duration.
      */
-    public boolean isFree (Slot slot)
+    public void checkDuration ()
     {
-        return ((getWholeChord() == null) &&
-               (slotTable.get(slot.getId()) == null));
+        // Make all forward stuff explicit & visible
+        try {
+            if (isWhole()) {
+                setTermination(null); // we can't tell anything
+            } else {
+                Rational timeCounter = Rational.ZERO;
+
+                for (ChordInfo info : slotTable.values()) {
+                    if (info.getStatus() == Status.BEGIN) {
+                        Chord chord = info.getChord();
+                        Slot  slot = chord.getSlot();
+
+                        // Need a forward before this chord ?
+                        if (timeCounter.compareTo(slot.getStartTime()) < 0) {
+                            insertForward(
+                                slot.getStartTime().minus(timeCounter),
+                                Mark.Position.BEFORE,
+                                chord);
+                            timeCounter = slot.getStartTime();
+                        }
+
+                        timeCounter = timeCounter.plus(chord.getDuration());
+                    }
+                }
+
+                // Need an ending forward ?
+                Rational delta = timeCounter.minus(
+                    measure.getExpectedDuration());
+                setTermination(delta);
+
+                if (delta.compareTo(Rational.ZERO) < 0) {
+                    // Insert a forward mark
+                    insertForward(
+                        delta.opposite(),
+                        Mark.Position.AFTER,
+                        getLastChord());
+                } else if (delta.compareTo(Rational.ZERO) > 0) {
+                    // Flag the measure as too long
+                    measure.addError(
+                        "Voice #" + getId() + " too long for " + delta);
+                    measure.setExcess(delta);
+                }
+            }
+        } catch (Exception ex) {
+            // User has been informed
+        }
+    }
+
+    //------------------//
+    // createWholeVoice //
+    //------------------//
+    /**
+     * Factory method to create a voice made of just one whole/multi
+     * rest.
+     * @param wholeChord the whole/multi rest chord
+     * @return the created voice instance
+     */
+    public static Voice createWholeVoice (Chord wholeChord)
+    {
+        Voice voice = new Voice(wholeChord);
+        voice.wholeChord = wholeChord;
+
+        return voice;
     }
 
     //-------//
@@ -136,7 +196,7 @@ public class Voice
     // getInferredTimeSignature //
     //--------------------------//
     /**
-     * Report the time signature value that can be inferred from the 
+     * Report the time signature value that can be inferred from the
      * content of this voice.
      * @return the "intrinsic" time signature rational value for this voice,
      * or null
@@ -259,7 +319,7 @@ public class Voice
     // getPreviousChord //
     //------------------//
     /**
-     * Starting from a provided chord in this voice, report the 
+     * Starting from a provided chord in this voice, report the
      * previous chord, if any, within that voice.
      * @param chord the provided chord
      * @return the chord right before, or null
@@ -279,31 +339,6 @@ public class Voice
         }
 
         return prevChord;
-    }
-
-    //-------------//
-    // setSlotInfo //
-    //-------------//
-    /**
-     * Define the chord information for the specified slot.
-     * @param slot the specified slot
-     * @param chordInfo the precise chord information, or null to free the slot
-     */
-    public void setSlotInfo (Slot      slot,
-                             ChordInfo chordInfo)
-    {
-        if (isWhole()) {
-            logger.severe("You cannot insert a slot in a whole-only voice");
-
-            return;
-        }
-
-        slotTable.put(slot.getId(), chordInfo);
-        updateSlotTable();
-
-        if (logger.isFineEnabled()) {
-            logger.fine("setSlotInfo slot#" + slot.getId() + " " + this);
-        }
     }
 
     //-------------//
@@ -331,18 +366,6 @@ public class Voice
         return termination;
     }
 
-    //---------//
-    // isWhole //
-    //---------//
-    /**
-     * Report whether this voice is made of a whole/multi rest.
-     * @return true if made of a whole/multi rest
-     */
-    public boolean isWhole ()
-    {
-        return wholeChord != null;
-    }
-
     //---------------//
     // getWholeChord //
     //---------------//
@@ -355,77 +378,54 @@ public class Voice
         return wholeChord;
     }
 
-    //------------------//
-    // createWholeVoice //
-    //------------------//
+    //--------//
+    // isFree //
+    //--------//
     /**
-     * Factory method to create a voice made of just one whole/multi
-     * rest.
-     * @param wholeChord the whole/multi rest chord
-     * @return the created voice instance
+     * Report whether the voice is available at this slot.
+     * @param slot the specific slot for which we consider this voice
+     * @return true if free
      */
-    public static Voice createWholeVoice (Chord wholeChord)
+    public boolean isFree (Slot slot)
     {
-        Voice voice = new Voice(wholeChord);
-        voice.wholeChord = wholeChord;
-
-        return voice;
+        return ((getWholeChord() == null) &&
+               (slotTable.get(slot.getId()) == null));
     }
 
-    //---------------//
-    // checkDuration //
-    //---------------//
+    //---------//
+    // isWhole //
+    //---------//
     /**
-     * Check the duration of the voice, compared to measure expected 
-     * duration.
+     * Report whether this voice is made of a whole/multi rest.
+     * @return true if made of a whole/multi rest
      */
-    public void checkDuration ()
+    public boolean isWhole ()
     {
-        // Make all forward stuff explicit & visible
-        try {
-            if (isWhole()) {
-                setTermination(null); // we can't tell anything
-            } else {
-                Rational timeCounter = Rational.ZERO;
+        return wholeChord != null;
+    }
 
-                for (ChordInfo info : slotTable.values()) {
-                    if (info.getStatus() == Status.BEGIN) {
-                        Chord chord = info.getChord();
-                        Slot  slot = chord.getSlot();
+    //-------------//
+    // setSlotInfo //
+    //-------------//
+    /**
+     * Define the chord information for the specified slot.
+     * @param slot the specified slot
+     * @param chordInfo the precise chord information, or null to free the slot
+     */
+    public void setSlotInfo (Slot      slot,
+                             ChordInfo chordInfo)
+    {
+        if (isWhole()) {
+            logger.severe("You cannot insert a slot in a whole-only voice");
 
-                        // Need a forward before this chord ?
-                        if (timeCounter.compareTo(slot.getStartTime()) < 0) {
-                            insertForward(
-                                slot.getStartTime().minus(timeCounter),
-                                Mark.Position.BEFORE,
-                                chord);
-                            timeCounter = slot.getStartTime();
-                        }
+            return;
+        }
 
-                        timeCounter = timeCounter.plus(chord.getDuration());
-                    }
-                }
+        slotTable.put(slot.getId(), chordInfo);
+        updateSlotTable();
 
-                // Need an ending forward ?
-                Rational delta = timeCounter.minus(
-                    measure.getExpectedDuration());
-                setTermination(delta);
-
-                if (delta.compareTo(Rational.ZERO) < 0) {
-                    // Insert a forward mark
-                    insertForward(
-                        delta.opposite(),
-                        Mark.Position.AFTER,
-                        getLastChord());
-                } else if (delta.compareTo(Rational.ZERO) > 0) {
-                    // Flag the measure as too long
-                    measure.addError(
-                        "Voice #" + getId() + " too long for " + delta);
-                    measure.setExcess(delta);
-                }
-            }
-        } catch (Exception ex) {
-            // User has been informed
+        if (logger.isFineEnabled()) {
+            logger.fine("setSlotInfo slot#" + slot.getId() + " " + this);
         }
     }
 
@@ -525,14 +525,6 @@ public class Voice
         }
     }
 
-    //----------------//
-    // setTermination //
-    //----------------//
-    private void setTermination (Rational termination)
-    {
-        this.termination = termination;
-    }
-
     //---------------//
     // insertForward //
     //---------------//
@@ -560,11 +552,19 @@ public class Voice
         chord.addMark(mark);
     }
 
+    //----------------//
+    // setTermination //
+    //----------------//
+    private void setTermination (Rational termination)
+    {
+        this.termination = termination;
+    }
+
     //-----------//
     // timeSigOf //
     //-----------//
     /**
-     * Based on the number of common groups, derive the proper time 
+     * Based on the number of common groups, derive the proper time
      * rational value.
      * @param count the number of groups
      * @param common the common time duration of each group

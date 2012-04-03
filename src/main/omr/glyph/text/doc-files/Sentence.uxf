@@ -1,24 +1,166 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><umlet_diagram><help_text>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="11.4">
+  <help_text>
 fontsize=14
 
 	// My own comments
-</help_text><element><type>com.umlet.element.base.Class</type><coordinates><x>180</x><y>10</y><w>80</w><h>80</h></coordinates><panel_attributes>Sentence
+</help_text>
+  <zoom_level>10</zoom_level>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>180</x>
+      <y>20</y>
+      <w>80</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>*Sentence*
+bg=#ffffaa
 --
 location
-type</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Class</type><coordinates><x>10</x><y>100</y><w>100</w><h>30</h></coordinates><panel_attributes>SystemInfo
-</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Class</type><coordinates><x>180</x><y>170</y><w>80</w><h>80</h></coordinates><panel_attributes>Glyph
+type</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>10</x>
+      <y>110</y>
+      <w>100</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>*SystemInfo*
+bg=#aaffff
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>180</x>
+      <y>180</y>
+      <w>80</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>*Glyph*
+bg=#aaffff
 --
-shape</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>240</x><y>0</y><w>100</w><h>40</h></coordinates><panel_attributes>lt=&lt;-
-m1=0..1</panel_attributes><additional_attributes>80;20;20;20</additional_attributes></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>350</x><y>50</y><w>40</w><h>140</h></coordinates><panel_attributes>lt=-&gt;
-m2=0..1</panel_attributes><additional_attributes>20;120;20;20</additional_attributes></element><element><type>com.umlet.element.base.Class</type><coordinates><x>320</x><y>10</y><w>110</w><h>60</h></coordinates><panel_attributes>TextArea
+shape</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>360</x>
+      <y>50</y>
+      <w>50</w>
+      <h>150</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+m1=0..1</panel_attributes>
+    <additional_attributes>30;130;30;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>340</x>
+      <y>20</y>
+      <w>110</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>*TextArea*
+bg=#ffffaa
 --
 baseline
-xHeight</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>90</x><y>100</y><w>110</w><h>100</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;-&gt;
-r2={x-sorted}</panel_attributes><additional_attributes>20;20;90;80</additional_attributes></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>189</x><y>70</y><w>63</w><h>120</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;-
+xHeight</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>80</x>
+      <y>110</y>
+      <w>120</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;-&gt;
+r2={x-sorted}</panel_attributes>
+    <additional_attributes>30;30;100;70</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>170</x>
+      <y>70</y>
+      <w>76</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;-&gt;
 r2=items
-m2={x-sorted}</panel_attributes><additional_attributes>31;20;31;100</additional_attributes></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>90</x><y>0</y><w>110</w><h>130</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes><additional_attributes>20;110;90;20</additional_attributes></element><element><type>com.umlet.element.base.Class</type><coordinates><x>320</x><y>170</y><w>110</w><h>80</h></coordinates><panel_attributes>TextInfo
+m2={x-sorted}</panel_attributes>
+    <additional_attributes>41;30;41;110</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>80</x>
+      <y>0</y>
+      <w>120</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>30;110;100;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>340</x>
+      <y>180</y>
+      <w>110</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>*TextInfo*
+bg=#ffffaa
 --
 manualContent
 ocrContent
-pseudoContent</panel_attributes><additional_attributes/></element><element><type>com.umlet.element.base.Relation</type><coordinates><x>240</x><y>160</y><w>100</w><h>40</h></coordinates><panel_attributes>lt=-&gt;
-m2=0..1</panel_attributes><additional_attributes>20;20;80;20</additional_attributes></element></umlet_diagram>
+pseudoContent</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>230</x>
+      <y>160</y>
+      <w>130</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=-
+m1=0..1</panel_attributes>
+    <additional_attributes>30;30;110;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>230</x>
+      <y>0</y>
+      <w>130</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+m1=0..1</panel_attributes>
+    <additional_attributes>30;30;110;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>230</x>
+      <y>70</y>
+      <w>130</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+m1=1</panel_attributes>
+    <additional_attributes>110;110;30;30</additional_attributes>
+  </element>
+</diagram>

@@ -32,6 +32,16 @@ public class IntegerHistogram
 
     //~ Methods ----------------------------------------------------------------
 
+    //-------//
+    // clear //
+    //-------//
+    @Override
+    public void clear ()
+    {
+        super.clear();
+        derivatives = null;
+    }
+
     //----------------//
     // getDerivatives //
     //----------------//
@@ -68,16 +78,6 @@ public class IntegerHistogram
         }
 
         return derivatives;
-    }
-
-    //-------//
-    // clear //
-    //-------//
-    @Override
-    public void clear ()
-    {
-        super.clear();
-        derivatives = null;
     }
 
     //---------------//

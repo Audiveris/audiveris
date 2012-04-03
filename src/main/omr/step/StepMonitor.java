@@ -21,8 +21,6 @@ import omr.log.Logger;
 
 import omr.ui.util.UIUtilities;
 
-import omr.util.Implement;
-
 import java.awt.Graphics;
 
 import javax.swing.JProgressBar;
@@ -102,39 +100,10 @@ public class StepMonitor
     {
         SwingUtilities.invokeLater(
             new Runnable() {
-                    @Implement(Runnable.class)
+                    @Override
                     public void run ()
                     {
                         bar.setString(msg);
-                    }
-                });
-    }
-
-    //---------//
-    // animate //
-    //---------//
-    /**
-     * Sets the progress bar to show a percentage a certain amount above
-     * the previous percentage value (or above 0 if the bar had been
-     * indeterminate).
-     * This method is called on every message logged (see LogStepMonitorHandler)
-     */
-    void animate ()
-    {
-        SwingUtilities.invokeLater(
-            new Runnable() {
-                    @Implement(Runnable.class)
-                    public void run ()
-                    {
-                        int old = bar.getValue();
-
-                        if (old > bar.getMinimum()) {
-                            int diff = bar.getMaximum() - old;
-                            int increment = (int) Math.round(
-                                diff * constants.ratio.getValue());
-                            bar.setIndeterminate(false);
-                            bar.setValue(old + increment);
-                        }
                     }
                 });
     }
@@ -164,6 +133,35 @@ public class StepMonitor
         }
     }
 
+    //---------//
+    // animate //
+    //---------//
+    /**
+     * Sets the progress bar to show a percentage a certain amount above
+     * the previous percentage value (or above 0 if the bar had been
+     * indeterminate).
+     * This method is called on every message logged (see LogStepMonitorHandler)
+     */
+    void animate ()
+    {
+        SwingUtilities.invokeLater(
+            new Runnable() {
+                    @Override
+                    public void run ()
+                    {
+                        int old = bar.getValue();
+
+                        if (old > bar.getMinimum()) {
+                            int diff = bar.getMaximum() - old;
+                            int increment = (int) Math.round(
+                                diff * constants.ratio.getValue());
+                            bar.setIndeterminate(false);
+                            bar.setValue(old + increment);
+                        }
+                    }
+                });
+    }
+
     //--------//
     // setBar //
     //--------//
@@ -175,7 +173,7 @@ public class StepMonitor
     {
         SwingUtilities.invokeLater(
             new Runnable() {
-                    @Implement(Runnable.class)
+                    @Override
                     public void run ()
                     {
                         bar.setIndeterminate(false);

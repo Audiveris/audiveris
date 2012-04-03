@@ -83,15 +83,17 @@ public class ScorePart
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------------//
-    // setAbbreviation //
-    //-----------------//
+    //-------//
+    // getId //
+    //-------//
     /**
-     * @param abbreviation the abbreviation to set
+     * Set the id of this part
+     *
+     * @param id the distinguished part id
      */
-    public void setAbbreviation (String abbreviation)
+    public final void setId (int id)
     {
-        this.abbreviation = abbreviation;
+        this.id = id;
     }
 
     //-----------------//
@@ -147,19 +149,6 @@ public class ScorePart
     // getId //
     //-------//
     /**
-     * Set the id of this part
-     *
-     * @param id the distinguished part id
-     */
-    public final void setId (int id)
-    {
-        this.id = id;
-    }
-
-    //-------//
-    // getId //
-    //-------//
-    /**
      * Report the id of this part
      *
      * @return the part id
@@ -170,45 +159,11 @@ public class ScorePart
     }
 
     //----------------//
-    // setMidiProgram //
-    //----------------//
-    public void setMidiProgram (Integer midiProgram)
-    {
-        this.midiProgram = midiProgram;
-    }
-
-    //----------------//
     // getMidiProgram //
     //----------------//
     public Integer getMidiProgram ()
     {
         return midiProgram;
-    }
-
-    //--------------//
-    // isMultiStaff //
-    //--------------//
-    /**
-     * Report whether there are more than a single staff in this part
-     *
-     * @return true if this part is multi-staff
-     */
-    public boolean isMultiStaff ()
-    {
-        return staffCount > 1;
-    }
-
-    //---------//
-    // setName //
-    //---------//
-    /**
-     * Assign a name to this part
-     *
-     * @param name the new part name
-     */
-    public void setName (String name)
-    {
-        this.name = name;
     }
 
     //---------//
@@ -246,6 +201,51 @@ public class ScorePart
     public int getStaffCount ()
     {
         return staffCount;
+    }
+
+    //--------------//
+    // isMultiStaff //
+    //--------------//
+    /**
+     * Report whether there are more than a single staff in this part
+     *
+     * @return true if this part is multi-staff
+     */
+    public boolean isMultiStaff ()
+    {
+        return staffCount > 1;
+    }
+
+    //-----------------//
+    // setAbbreviation //
+    //-----------------//
+    /**
+     * @param abbreviation the abbreviation to set
+     */
+    public void setAbbreviation (String abbreviation)
+    {
+        this.abbreviation = abbreviation;
+    }
+
+    //----------------//
+    // setMidiProgram //
+    //----------------//
+    public void setMidiProgram (Integer midiProgram)
+    {
+        this.midiProgram = midiProgram;
+    }
+
+    //---------//
+    // setName //
+    //---------//
+    /**
+     * Assign a name to this part
+     *
+     * @param name the new part name
+     */
+    public void setName (String name)
+    {
+        this.name = name;
     }
 
     //----------//

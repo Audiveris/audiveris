@@ -55,6 +55,15 @@ public class HeadsSymbol
 
     //~ Methods ----------------------------------------------------------------
 
+    //------------//
+    // createIcon //
+    //------------//
+    @Override
+    protected ShapeSymbol createIcon ()
+    {
+        return new HeadsSymbol(count, true, shape, codes);
+    }
+
     //-----------//
     // getParams //
     //-----------//
@@ -71,15 +80,6 @@ public class HeadsSymbol
             ((count * p.dy) + (int) Math.rint(r.getHeight())) - p.dy);
 
         return p;
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new HeadsSymbol(count, true, shape, codes);
     }
 
     //-------//

@@ -13,7 +13,6 @@ package omr.lag;
 
 import omr.run.Run;
 
-
 /**
  * Class {@code JunctionAllPolicy} defines a junction policy which imposes
  * no condition on run consistency, thus taking all runs considered.

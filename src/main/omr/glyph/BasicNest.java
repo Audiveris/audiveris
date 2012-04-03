@@ -159,6 +159,51 @@ public class BasicNest
 
     //~ Methods ----------------------------------------------------------------
 
+    //----------//
+    // addGlyph //
+    //----------//
+    public Glyph addGlyph (Glyph glyph)
+    {
+        glyph = registerGlyph(glyph);
+
+        // Make absolutely all its sections point back to it
+        glyph.linkAllSections();
+
+        if (glyph.isVip()) {
+            logger.info("Glyph#" + glyph.getId() + " added");
+        }
+
+        return glyph;
+    }
+
+    //------//
+    // dump //
+    //------//
+    @Override
+    public void dump (String title)
+    {
+        if (title != null) {
+            System.out.println(title);
+        }
+
+        // Dump of active glyphs
+        System.out.println(
+            "\nActive glyphs (" + getActiveGlyphs().size() + ") :");
+
+        for (Glyph glyph : getActiveGlyphs()) {
+            System.out.println(glyph.toString());
+        }
+
+        // Dump of inactive glyphs
+        Collection<Glyph> inactives = new ArrayList<Glyph>(getAllGlyphs());
+        inactives.removeAll(getActiveGlyphs());
+        System.out.println("\nInactive glyphs (" + inactives.size() + ") :");
+
+        for (Glyph glyph : inactives) {
+            System.out.println(glyph.toString());
+        }
+    }
+
     //-----------------//
     // getActiveGlyphs //
     //-----------------//
@@ -323,73 +368,12 @@ public class BasicNest
                                 .getSelection(GlyphSetEvent.class);
     }
 
-    //-------------//
-    // setServices //
-    //-------------//
-    public void setServices (SelectionService locationService)
-    {
-        this.locationService = locationService;
-
-        for (Class eventClass : locEventsRead) {
-            locationService.subscribeStrongly(eventClass, this);
-        }
-
-        for (Class eventClass : glyEventsRead) {
-            glyphService.subscribeStrongly(eventClass, this);
-        }
-    }
-
     //-------//
     // isVip //
     //-------//
     public boolean isVip (Glyph glyph)
     {
         return params.vipGlyphs.contains(glyph.getId());
-    }
-
-    //----------//
-    // addGlyph //
-    //----------//
-    public Glyph addGlyph (Glyph glyph)
-    {
-        glyph = registerGlyph(glyph);
-
-        // Make absolutely all its sections point back to it
-        glyph.linkAllSections();
-
-        if (glyph.isVip()) {
-            logger.info("Glyph#" + glyph.getId() + " added");
-        }
-
-        return glyph;
-    }
-
-    //------//
-    // dump //
-    //------//
-    @Override
-    public void dump (String title)
-    {
-        if (title != null) {
-            System.out.println(title);
-        }
-
-        // Dump of active glyphs
-        System.out.println(
-            "\nActive glyphs (" + getActiveGlyphs().size() + ") :");
-
-        for (Glyph glyph : getActiveGlyphs()) {
-            System.out.println(glyph.toString());
-        }
-
-        // Dump of inactive glyphs
-        Collection<Glyph> inactives = new ArrayList<Glyph>(getAllGlyphs());
-        inactives.removeAll(getActiveGlyphs());
-        System.out.println("\nInactive glyphs (" + inactives.size() + ") :");
-
-        for (Glyph glyph : inactives) {
-            System.out.println(glyph.toString());
-        }
     }
 
     //--------------//
@@ -534,6 +518,22 @@ public class BasicNest
         allGlyphs.remove(glyph.getId(), glyph);
         virtualGlyphs.remove(glyph);
         activeGlyphs = null;
+    }
+
+    //-------------//
+    // setServices //
+    //-------------//
+    public void setServices (SelectionService locationService)
+    {
+        this.locationService = locationService;
+
+        for (Class eventClass : locEventsRead) {
+            locationService.subscribeStrongly(eventClass, this);
+        }
+
+        for (Class eventClass : glyEventsRead) {
+            glyphService.subscribeStrongly(eventClass, this);
+        }
     }
 
     //----------//

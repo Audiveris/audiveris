@@ -76,19 +76,20 @@ public class LinearEvaluator
 
     //~ Instance fields --------------------------------------------------------
 
-    /** A descriptor for each input parameter*/
+    /** A descriptor for each input parameter. */
     @XmlElementWrapper(name = "defaults")
     @XmlElement(name = "parameter")
     private final Parameter[] parameters;
 
-    /** A descriptor for each output category */
+    /** A descriptor for each output category. */
     @XmlJavaTypeAdapter(CategoryMapAdapter.class)
     @XmlElement(name = "categories")
     private final SortedMap<String, Category> categories;
 
     /**
      * Flag to indicate that some data has changed since unmarshalling
-     * and that engine internals are to be marshalled to disk before exiting.
+     * and that engine internals must be marshalled to disk before
+     * exiting.
      */
     private boolean dataModified = false;
 
@@ -127,8 +128,7 @@ public class LinearEvaluator
     // getInputSize //
     //--------------//
     /**
-     * Report the number of parameters in the input patterns
-     *
+     * Report the number of parameters in the input patterns.
      * @return the count of pattern parameters
      */
     public final int getInputSize ()
@@ -140,10 +140,9 @@ public class LinearEvaluator
     // categoryDistance //
     //------------------//
     /**
-     * Measure the "distance" information between a given pattern and (the mean
-     * pattern of) a category
-     *
-     * @param pattern the value for each parameter of the pattern to evaluate
+     * Measure the "distance" information between a given pattern and
+     * (the mean pattern of) a category.
+     * @param pattern    the value for each parameter of the pattern to evaluate
      * @param categoryId the category id to measure distance from
      * @return the measured distance
      */
@@ -181,10 +180,10 @@ public class LinearEvaluator
     // dumpDistance //
     //--------------//
     /**
-     * Print out the "distance" information between a given pattern and a
-     * category. It's a sort of debug information.
-     *
-     * @param pattern the pattern at hand
+     * Print out the "distance" information between a given pattern and
+     * a category.
+     * It's a sort of debug information.
+     * @param pattern  the pattern at hand
      * @param category the category to measure distance from
      */
     public void dumpDistance (double[] pattern,
@@ -194,11 +193,86 @@ public class LinearEvaluator
                   .dumpDistance(pattern, parameters);
     }
 
+    //------------//
+    // getMaximum //
+    //------------//
+    /**
+     * Get the constraint test on maximum for a parameter of the
+     * provided category.
+     * @param paramIndex the impacted parameter
+     * @param categoryId the targeted category
+     * @return the current maximum value (null if test is disabled)
+     */
+    public Double getMaximum (int    paramIndex,
+                              String categoryId)
+    {
+        return getCategoryParam(paramIndex, categoryId).max;
+    }
+
+    //------------//
+    // getMinimum //
+    //------------//
+    /**
+     * Get the constraint test on minimum for a parameter of the
+     * provided category.
+     * @param paramIndex the impacted parameter
+     * @param categoryId the targeted category
+     * @return the current minimum value (null if test is disabled)
+     */
+    public Double getMinimum (int    paramIndex,
+                              String categoryId)
+    {
+        return getCategoryParam(paramIndex, categoryId).min;
+    }
+
+    //---------------//
+    // includeSample //
+    //---------------//
+    /**
+     * Include a new sample (on top of unmarshalled data).
+     * We use this to widen the min/max constraints, and also to increase
+     * the population and thus the categories training status.
+     * @param params     the parameters
+     * @param categoryId the targeted category
+     * @return true if some min/max bound has changed
+     */
+    public boolean includeSample (double[] params,
+                                  String   categoryId)
+    {
+        // Check category label
+        Category category = categories.get(categoryId);
+
+        if (category == null) {
+            throw new IllegalArgumentException(
+                "Unknown category: " + categoryId);
+        }
+
+        boolean extended = category.include(params);
+
+        // Update categories parameters accordingly
+        computeCategoriesParams();
+
+        dataModified = true;
+
+        return extended;
+    }
+
+    //----------------//
+    // isDataModified //
+    //----------------//
+    /**
+     * @return true if some data has been modified since unmarshalling
+     */
+    public boolean isDataModified ()
+    {
+        return dataModified;
+    }
+
     //---------//
     // marshal //
     //---------//
     /**
-     * Marshal the LinearEvaluator to its XML file
+     * Marshal the LinearEvaluator to its XML file.
      * @param os the XML output stream, which is not closed by this method
      * @exception JAXBException raised when marshalling goes wrong
      */
@@ -216,8 +290,7 @@ public class LinearEvaluator
     // patternDistance //
     //-----------------//
     /**
-     * Measure the "distance" information between two patterns
-     *
+     * Measure the "distance" information between two patterns.
      * @param one the first pattern
      * @param two the second pattern
      * @return the measured distance between them
@@ -250,8 +323,7 @@ public class LinearEvaluator
     // train //
     //-------//
     /**
-     * Perform the training of the evaluator
-     *
+     * Perform the training of the evaluator.
      * @param samples a collection of samples (category + pattern)
      */
     public void train (Collection<Sample> samples)
@@ -295,11 +367,9 @@ public class LinearEvaluator
     //-----------//
     /**
      * Unmarshal the provided XML stream to allocate the corresponding
-     * LinearEvaluator
-     *
+     * LinearEvaluator.
      * @param in the input stream that contains the evaluator definition in XML
      * format. The stream is not closed by this method
-     *
      * @return the allocated network.
      * @exception JAXBException raised when unmarshalling goes wrong
      */
@@ -318,81 +388,6 @@ public class LinearEvaluator
     }
 
     //----------------//
-    // isDataModified //
-    //----------------//
-    /**
-     * @return true if some data has been modified since unmarshalling
-     */
-    public boolean isDataModified ()
-    {
-        return dataModified;
-    }
-
-    //------------//
-    // getMaximum //
-    //------------//
-    /**
-     * Get the constraint test on maximum for a parameter of the provided
-     * category
-     * @param paramIndex the impacted parameter
-     * @param categoryId the targeted category
-     * @return the current maximum value (null if test is disabled)
-     */
-    public Double getMaximum (int    paramIndex,
-                              String categoryId)
-    {
-        return getCategoryParam(paramIndex, categoryId).max;
-    }
-
-    //------------//
-    // getMinimum //
-    //------------//
-    /**
-     * Get the constraint test on minimum for a parameter of the provided
-     * category
-     * @param paramIndex the impacted parameter
-     * @param categoryId the targeted category
-     * @return the current minimum value (null if test is disabled)
-     */
-    public Double getMinimum (int    paramIndex,
-                              String categoryId)
-    {
-        return getCategoryParam(paramIndex, categoryId).min;
-    }
-
-    //---------------//
-    // includeSample //
-    //---------------//
-    /**
-     * Include a new sample (on top of unmarshalled data).
-     * We use this to widen the min/max constraints, and also to increase
-     * the population and thus the categories training status.
-     * @param params the parameters
-     * @param categoryId the targeted category
-     * @return true if some min/max bound has changed
-     */
-    public boolean includeSample (double[] params,
-                                  String   categoryId)
-    {
-        // Check category label
-        Category category = categories.get(categoryId);
-
-        if (category == null) {
-            throw new IllegalArgumentException(
-                "Unknown category: " + categoryId);
-        }
-
-        boolean extended = category.include(params);
-
-        // Update categories parameters accordingly
-        computeCategoriesParams();
-
-        dataModified = true;
-
-        return extended;
-    }
-
-    //----------------//
     // getJaxbContext //
     //----------------//
     private static JAXBContext getJaxbContext ()
@@ -404,23 +399,6 @@ public class LinearEvaluator
         }
 
         return jaxbContext;
-    }
-
-    //------------------//
-    // getCategoryParam //
-    //------------------//
-    private CategoryParam getCategoryParam (int    paramIndex,
-                                            String categoryId)
-    {
-        // Check category label
-        Category category = categories.get(categoryId);
-
-        if (category == null) {
-            throw new IllegalArgumentException(
-                "Unknown category: " + categoryId);
-        }
-
-        return category.params[paramIndex];
     }
 
     //----------------//
@@ -485,14 +463,31 @@ public class LinearEvaluator
         }
     }
 
+    //------------------//
+    // getCategoryParam //
+    //------------------//
+    private CategoryParam getCategoryParam (int    paramIndex,
+                                            String categoryId)
+    {
+        // Check category label
+        Category category = categories.get(categoryId);
+
+        if (category == null) {
+            throw new IllegalArgumentException(
+                "Unknown category: " + categoryId);
+        }
+
+        return category.params[paramIndex];
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
     //--------//
     // Sample //
     //--------//
     /**
-     * Meant to host one sample for training, representing pattern values for a
-     * given category
+     * Meant to host one sample for training, representing pattern
+     * values for a given category.
      */
     public static class Sample
     {
@@ -534,7 +529,7 @@ public class LinearEvaluator
     // Printer //
     //---------//
     /**
-     * Printouts meant for analysis of behavior of LinearEvaluator
+     * Printouts meant for analysis of behavior of LinearEvaluator.
      */
     public class Printer
     {
@@ -619,7 +614,7 @@ public class LinearEvaluator
     // Category //
     //----------//
     /**
-     * Meant to encapsulate the regression data for one category
+     * Meant to encapsulate the regression data for one category.
      */
     private static class Category
     {
@@ -638,7 +633,7 @@ public class LinearEvaluator
         /**
          * Creates a new Category object.
          *
-         * @param id the category id
+         * @param id         the category id
          * @param parameters the sequence of parameter descriptors
          */
         public Category (String      id,
@@ -662,19 +657,6 @@ public class LinearEvaluator
         }
 
         //~ Methods ------------------------------------------------------------
-
-        public int getCardinality ()
-        {
-            return params[0].population.getCardinality();
-        }
-
-        /**
-         * @return the id
-         */
-        public String getId ()
-        {
-            return id;
-        }
 
         public void compute ()
         {
@@ -724,7 +706,8 @@ public class LinearEvaluator
         {
             if ((pattern == null) || (pattern.length != params.length)) {
                 throw new IllegalArgumentException(
-                    "dumpDistance. Pattern array is null or non compatible in length ");
+                    "dumpDistance." +
+                    " Pattern array is null or non compatible in length ");
             }
 
             if (getCardinality() >= 2) {
@@ -752,6 +735,19 @@ public class LinearEvaluator
             }
         }
 
+        public int getCardinality ()
+        {
+            return params[0].population.getCardinality();
+        }
+
+        /**
+         * @return the id
+         */
+        public String getId ()
+        {
+            return id;
+        }
+
         /** Include data from the provided pattern into category descriptor */
         public synchronized boolean include (double[] pattern)
         {
@@ -759,7 +755,8 @@ public class LinearEvaluator
 
             if ((pattern == null) || (pattern.length != params.length)) {
                 throw new IllegalArgumentException(
-                    "include. Pattern array is null or non compatible in length ");
+                    "include." +
+                    " Pattern array is null or non compatible in length ");
             }
 
             for (int p = 0; p < params.length; p++) {
@@ -776,7 +773,7 @@ public class LinearEvaluator
     // CategoryMapAdapter //
     //--------------------//
     /**
-     * Meant for JAXB support of a map
+     * Meant for JAXB support of a map.
      */
     private static class CategoryMapAdapter
         extends XmlAdapter<Category[], Map<String, Category>>
@@ -823,8 +820,8 @@ public class LinearEvaluator
     // CategoryParam //
     //---------------//
     /**
-     * Meant to encapsulate the regression data for one parameter in the context
-     * of a category
+     * Meant to encapsulate the regression data for one parameter in
+     * the context of a category.
      */
     private static class CategoryParam
     {
@@ -964,7 +961,7 @@ public class LinearEvaluator
         }
 
         /**
-         * Include a new value for this category parameter
+         * Include a new value for this category parameter.
          * @param val the new value
          * @return true if any of the min/max bounds has changed
          */
@@ -1011,7 +1008,7 @@ public class LinearEvaluator
 
         /**
          * Report the weighted square delta of a value vs param mean value
-         * @param val the observed value
+         * @param val       the observed value
          * @param stdWeight the standard average weight
          * @return the weighted square delta
          */
@@ -1028,7 +1025,7 @@ public class LinearEvaluator
         }
 
         /**
-         * Report the proper value to be used for parameter weight
+         * Report the proper value to be used for parameter weight.
          * @param stdWeight the standard average weight
          * @return the proper weight value
          */
@@ -1054,7 +1051,7 @@ public class LinearEvaluator
     // Parameter //
     //-----------//
     /**
-     * Description of an input parameter for the LinearEvaluator
+     * Description of an input parameter for the LinearEvaluator.
      */
     private static class Parameter
     {
@@ -1073,7 +1070,6 @@ public class LinearEvaluator
 
         /**
          * Creates a new Parameter object.
-         *
          * @param name the unique name for this parameter
          */
         public Parameter (String name)

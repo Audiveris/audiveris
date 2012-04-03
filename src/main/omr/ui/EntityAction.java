@@ -13,8 +13,6 @@ package omr.ui;
 
 import omr.ui.util.UIUtilities;
 
-import omr.util.Implement;
-
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -143,7 +141,7 @@ public class EntityAction
     //-----------------//
     // actionPerformed //
     //-----------------//
-    @Implement(ActionListener.class)
+    @Override
     public void actionPerformed (ActionEvent e)
     {
         if (delegate != null) {

@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.run;
 
+
 /**
  * Interface {@code Oriented} flags an entity as having some orientation.
  *

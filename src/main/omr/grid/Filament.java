@@ -104,51 +104,6 @@ public class Filament
 
     //~ Methods ----------------------------------------------------------------
 
-    //------------------//
-    // getMeanCurvature //
-    //------------------//
-    public double getMeanCurvature ()
-    {
-        return getAlignment()
-                   .getMeanCurvature();
-    }
-
-    //----------------//
-    // setRefDistance //
-    //----------------//
-    /**
-     * Remember the filament distance to reference axis
-     * @param refDist the orthogonal distance to reference axis
-     */
-    public void setRefDistance (int refDist)
-    {
-        this.refDist = refDist;
-    }
-
-    //----------------//
-    // getRefDistance //
-    //----------------//
-    /**
-     * Report the orthogonal distance from the filament to the reference axis
-     * @return distance from axis that takes global slope into acount
-     */
-    public Integer getRefDistance ()
-    {
-        return refDist;
-    }
-
-    //----------//
-    // getScale //
-    //----------//
-    /**
-     * Report the scale that governs this filament.
-     * @return the related scale
-     */
-    public Scale getScale ()
-    {
-        return scale;
-    }
-
     //------------//
     // addSection //
     //------------//
@@ -175,6 +130,39 @@ public class Filament
     {
         Main.dumping.dump(this);
         Main.dumping.dump(getAlignment());
+    }
+
+    //------------------//
+    // getMeanCurvature //
+    //------------------//
+    public double getMeanCurvature ()
+    {
+        return getAlignment()
+                   .getMeanCurvature();
+    }
+
+    //----------------//
+    // getRefDistance //
+    //----------------//
+    /**
+     * Report the orthogonal distance from the filament to the reference axis
+     * @return distance from axis that takes global slope into acount
+     */
+    public Integer getRefDistance ()
+    {
+        return refDist;
+    }
+
+    //----------//
+    // getScale //
+    //----------//
+    /**
+     * Report the scale that governs this filament.
+     * @return the related scale
+     */
+    public Scale getScale ()
+    {
+        return scale;
     }
 
     //-----------------//
@@ -215,6 +203,18 @@ public class Filament
     {
         return getAlignment()
                    .getPositionAt(coord, orientation);
+    }
+
+    //----------------//
+    // setRefDistance //
+    //----------------//
+    /**
+     * Remember the filament distance to reference axis
+     * @param refDist the orthogonal distance to reference axis
+     */
+    public void setRefDistance (int refDist)
+    {
+        this.refDist = refDist;
     }
 
     //---------//

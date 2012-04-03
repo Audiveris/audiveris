@@ -35,8 +35,6 @@ import omr.ui.Board;
 import omr.ui.Colors;
 import omr.ui.util.Panel;
 
-import omr.util.Implement;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.FormFactory;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -48,6 +46,7 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -100,12 +99,6 @@ class EvaluationBoard
     /** Pane for detailed info display about the glyph evaluation */
     private final Selector selector;
 
-    /** Numeric result of whole sheet test */
-    private JLabel testPercent;
-
-    /** Percentage result of whole sheet test */
-    private JLabel testResult;
-
     /** Do we use GlyphChecker annotations? */
     private boolean useAnnotations;
 
@@ -133,7 +126,7 @@ class EvaluationBoard
      * Create an evaluation board with one neural network evaluator
      * and the ability to force glyph shape.
      * @param glyphController the related glyph controller
-     * @param sheet the related sheet, or null
+     * @param sheet           the related sheet, or null
      */
     public EvaluationBoard (Sheet            sheet,
                             GlyphsController glyphController,
@@ -167,21 +160,37 @@ class EvaluationBoard
     public void evaluate (Glyph glyph)
     {
         if ((glyph == null) ||
-            (glyph.getShape() == Shape.COMBINING_STEM) ||
+            (glyph.getShape() == Shape.STEM) ||
             glyph.isBar()) {
             // Blank the output
             selector.setEvals(null, null);
         } else {
-            if (useAnnotations) {
-                SystemInfo system = sheet.getSystemOf(glyph);
+            if (evaluator != null) {
+                if (useAnnotations) {
+                    SystemInfo system = sheet.getSystemOf(glyph);
 
-                if (system != null) {
+                    if (system != null) {
+                        selector.setEvals(
+                            evaluator.evaluate(
+                                glyph,
+                                system,
+                                selector.evalCount(),
+                                constants.minGrade.getValue(),
+                                EnumSet.of(GlyphEvaluator.Condition.CHECKED),
+                                null),
+                            glyph);
+                    }
+                } else {
                     selector.setEvals(
-                        evaluator.getAnnotatedEvaluations(glyph, system),
+                        evaluator.evaluate(
+                            glyph,
+                            null,
+                            selector.evalCount(),
+                            constants.minGrade.getValue(),
+                            GlyphEvaluator.NO_CONDITIONS,
+                            null),
                         glyph);
                 }
-            } else {
-                selector.setEvals(evaluator.getRawEvaluations(glyph), glyph);
             }
         }
     }
@@ -193,7 +202,7 @@ class EvaluationBoard
      * Call-back triggered when Glyph Selection has been modified.
      * @param event the (Glyph) Selection
      */
-    @Implement(EventSubscriber.class)
+    @Override
     public void onEvent (UserEvent event)
     {
         try {
@@ -317,6 +326,28 @@ class EvaluationBoard
 
         //~ Methods ------------------------------------------------------------
 
+        // Triggered by button
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            // Assign current glyph with selected shape
+            if (glyphsController != null) {
+                Glyph glyph = glyphsController.getNest()
+                                              .getSelectedGlyph();
+
+                if (glyph != null) {
+                    String str = button.getText();
+                    Shape  shape = Shape.valueOf(str);
+
+                    // Actually assign the shape
+                    glyphsController.asyncAssignGlyphs(
+                        Glyphs.sortedSet(glyph),
+                        shape,
+                        false);
+                }
+            }
+        }
+
         public void setEval (Evaluation eval,
                              boolean    barred,
                              boolean    enabled)
@@ -374,28 +405,6 @@ class EvaluationBoard
                 comp.setVisible(false);
             }
         }
-
-        // Triggered by button
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            // Assign current glyph with selected shape
-            if (glyphsController != null) {
-                Glyph glyph = glyphsController.getNest()
-                                              .getSelectedGlyph();
-
-                if (glyph != null) {
-                    String str = button.getText();
-                    Shape  shape = Shape.valueOf(str);
-
-                    // Actually assign the shape
-                    glyphsController.asyncAssignGlyphs(
-                        Glyphs.sortedSet(glyph),
-                        shape,
-                        false);
-                }
-            }
-        }
     }
 
     //----------//
@@ -406,15 +415,13 @@ class EvaluationBoard
         //~ Instance fields ----------------------------------------------------
 
         // A collection of EvalButton's
-        List<EvalButton> buttons;
+        final List<EvalButton> buttons = new ArrayList<EvalButton>();
 
         //~ Constructors -------------------------------------------------------
 
         public Selector ()
         {
-            buttons = new ArrayList<EvalButton>();
-
-            for (int i = 0; i < constants.visibleButtons.getValue(); i++) {
+            for (int i = 0; i < evalCount(); i++) {
                 buttons.add(new EvalButton());
             }
 
@@ -423,18 +430,29 @@ class EvaluationBoard
 
         //~ Methods ------------------------------------------------------------
 
+        //-----------//
+        // evalCount //
+        //-----------//
+        /**
+         * Report the number of displayed evaluations
+         * @return the number of eval buttons
+         */
+        public final int evalCount ()
+        {
+            return constants.visibleButtons.getValue();
+        }
+
         //----------//
         // setEvals //
         //----------//
         /**
          * Display the evaluations with some text highlighting.
-         * Only relevant evaluations are displayed.
-         * @param evals the ordered list of <b>all</b>evaluations from best to
-         *              worst
+         * Only first evalCount evaluations are displayed.
+         * @param evals top evaluations sorted from best to worst
          * @param glyph evaluated glyph, to check forbidden shapes if any
          */
-        public void setEvals (Evaluation[] evals,
-                              Glyph        glyph)
+        public final void setEvals (Evaluation[] evals,
+                                    Glyph        glyph)
         {
             // Special case to empty the selector
             if (evals == null) {
@@ -447,7 +465,7 @@ class EvaluationBoard
 
             boolean enabled = !glyph.isVirtual();
             double  minGrade = constants.minGrade.getValue();
-            int     iBound = Math.min(buttons.size(), evals.length);
+            int     iBound = Math.min(evalCount(), evals.length);
             int     i;
 
             for (i = 0; i < iBound; i++) {
@@ -467,7 +485,7 @@ class EvaluationBoard
             }
 
             // Zero the remaining buttons
-            for (; i < buttons.size(); i++) {
+            for (; i < evalCount(); i++) {
                 buttons.get(i)
                        .setEval(null, false, false);
             }

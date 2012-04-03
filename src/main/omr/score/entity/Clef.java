@@ -122,62 +122,6 @@ public class Clef
 
     //~ Methods ----------------------------------------------------------------
 
-    //------------//
-    // noteStepOf //
-    //------------//
-    /**
-     * Report the note step that corresponds to a note in the provided pitch
-     * position, using the current clef if any, otherwise using the default clef
-     * (G_CLEF)
-     * @param clef the provided current clef
-     * @param pitchPosition the pitch position of the provided note
-     * @return the corresponding note step
-     */
-    public static Note.Step noteStepOf (Clef clef,
-                                        int  pitchPosition)
-    {
-        if (clef == null) {
-            return defaultClef.noteStepOf(pitchPosition);
-        } else {
-            return clef.noteStepOf(pitchPosition);
-        }
-    }
-
-    //------------------//
-    // getPitchPosition //
-    //------------------//
-    /**
-     * Report the vertical position of this clef within the staff
-     *
-     * @return the pitch position
-     */
-    public int getPitchPosition ()
-    {
-        return pitchPosition;
-    }
-
-    //----------//
-    // getShape //
-    //----------//
-    /**
-     * Report the precise shape of this clef
-     *
-     * @return the clef shape
-     */
-    public Shape getShape ()
-    {
-        return shape;
-    }
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
     //----------//
     // octaveOf //
     //----------//
@@ -220,8 +164,8 @@ public class Clef
         switch (shape) {
         case G_CLEF :
         case G_CLEF_SMALL :
-        case G_CLEF_OTTAVA_ALTA :
-        case G_CLEF_OTTAVA_BASSA :
+        case G_CLEF_8VA :
+        case G_CLEF_8VB :
             glyph.setTranslation(
                 new Clef(measure, staff, shape, center, 2, glyph));
 
@@ -239,8 +183,8 @@ public class Clef
 
         case F_CLEF :
         case F_CLEF_SMALL :
-        case F_CLEF_OTTAVA_ALTA :
-        case F_CLEF_OTTAVA_BASSA :
+        case F_CLEF_8VA :
+        case F_CLEF_8VB :
             glyph.setTranslation(
                 new Clef(measure, staff, shape, center, -2, glyph));
 
@@ -256,6 +200,62 @@ public class Clef
             measure.addError(glyph, "No implementation yet for " + shape);
 
             return false;
+        }
+    }
+
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
+    //------------------//
+    // getPitchPosition //
+    //------------------//
+    /**
+     * Report the vertical position of this clef within the staff
+     *
+     * @return the pitch position
+     */
+    public int getPitchPosition ()
+    {
+        return pitchPosition;
+    }
+
+    //----------//
+    // getShape //
+    //----------//
+    /**
+     * Report the precise shape of this clef
+     *
+     * @return the clef shape
+     */
+    public Shape getShape ()
+    {
+        return shape;
+    }
+
+    //------------//
+    // noteStepOf //
+    //------------//
+    /**
+     * Report the note step that corresponds to a note in the provided pitch
+     * position, using the current clef if any, otherwise using the default clef
+     * (G_CLEF)
+     * @param clef the provided current clef
+     * @param pitchPosition the pitch position of the provided note
+     * @return the corresponding note step
+     */
+    public static Note.Step noteStepOf (Clef clef,
+                                        int  pitchPosition)
+    {
+        if (clef == null) {
+            return defaultClef.noteStepOf(pitchPosition);
+        } else {
+            return clef.noteStepOf(pitchPosition);
         }
     }
 
@@ -295,8 +295,8 @@ public class Clef
         switch (shape) {
         case G_CLEF :
         case G_CLEF_SMALL :
-        case G_CLEF_OTTAVA_ALTA :
-        case G_CLEF_OTTAVA_BASSA :
+        case G_CLEF_8VA :
+        case G_CLEF_8VB :
             return Note.Step.values()[(71 - pitchPosition) % 7];
 
         case C_CLEF :
@@ -307,8 +307,8 @@ public class Clef
 
         case F_CLEF :
         case F_CLEF_SMALL :
-        case F_CLEF_OTTAVA_ALTA :
-        case F_CLEF_OTTAVA_BASSA :
+        case F_CLEF_8VA :
+        case F_CLEF_8VB :
             return Note.Step.values()[(73 - pitchPosition) % 7];
 
         case PERCUSSION_CLEF :
@@ -337,10 +337,10 @@ public class Clef
         case G_CLEF_SMALL :
             return (34 - pitchPosition) / 7;
 
-        case G_CLEF_OTTAVA_ALTA :
+        case G_CLEF_8VA :
             return ((34 - pitchPosition) / 7) + 1;
 
-        case G_CLEF_OTTAVA_BASSA :
+        case G_CLEF_8VB :
             return ((34 - pitchPosition) / 7) - 1;
 
         case C_CLEF :
@@ -353,10 +353,10 @@ public class Clef
         case F_CLEF_SMALL :
             return (22 - pitchPosition) / 7;
 
-        case F_CLEF_OTTAVA_ALTA :
+        case F_CLEF_8VA :
             return ((22 - pitchPosition) / 7) + 1;
 
-        case F_CLEF_OTTAVA_BASSA :
+        case F_CLEF_8VB :
             return ((22 - pitchPosition) / 7) - 1;
 
         case PERCUSSION_CLEF :

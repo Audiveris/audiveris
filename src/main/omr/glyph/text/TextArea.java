@@ -178,84 +178,6 @@ public class TextArea
         return baseline;
     }
 
-    //--------------//
-    // getHistogram //
-    //--------------//
-    /**
-     * Get the histogram for this area, in the specified orientation
-     * @param orientation specific orientation desired for the histogram
-     * @return the histogram of projected pixels
-     */
-    public Histogram<Integer> getHistogram (Orientation orientation)
-    {
-        if (sheet == null) {
-            logger.warning("No sheet");
-        }
-
-        Nest nest = sheet.getNest();
-
-        if (orientation.isVertical()) {
-            if (verticalHistogram == null) {
-                Set<Glyph> glyphs = nest.lookupIntersectedGlyphs(
-                    roi.getAbsoluteContour());
-                verticalHistogram = roi.getGlyphHistogram(orientation, glyphs);
-            }
-
-            return verticalHistogram;
-        } else {
-            if (horizontalHistogram == null) {
-                Set<Glyph> glyphs = nest.lookupIntersectedGlyphs(
-                    roi.getAbsoluteContour());
-                horizontalHistogram = roi.getGlyphHistogram(
-                    orientation,
-                    glyphs);
-            }
-
-            return horizontalHistogram;
-        }
-    }
-
-    //--------------//
-    // getHistogram //
-    //--------------//
-    /**
-     * Get the histogram for a glyph in this area, in the specified orientation
-     * @param orientation specific orientation desired for the histogram
-     * @param glyph the provided glyph if any, otherwise the whole area
-     * @return the histogram of projected pixels
-     */
-    public Histogram<Integer> getHistogram (Orientation orientation,
-                                            Glyph       glyph)
-    {
-        Histogram<Integer> histo = null;
-
-        if (glyph == null) {
-            histo = getHistogram(orientation);
-        } else {
-            histo = roi.getSectionHistogram(orientation, glyph.getMembers());
-        }
-
-        // Cache the result
-        if (orientation.isVertical()) {
-            verticalHistogram = histo;
-        } else {
-            horizontalHistogram = histo;
-        }
-
-        return histo;
-    }
-
-    //--------------//
-    // getHistogram //
-    //--------------//
-    /** Get the histogram for this area, using the area default orientation
-     * @return the area histogram in its default direction
-     */
-    public Histogram<Integer> getHistogram ()
-    {
-        return getHistogram(orientation);
-    }
-
     //------------------//
     // getMaxHistoValue //
     //------------------//
@@ -285,18 +207,6 @@ public class TextArea
     }
 
     //------------//
-    // isTextLeaf //
-    //------------//
-    /**
-     * Report whether this area is actually a text glyph
-     * @return true if area is a text glyph
-     */
-    public boolean isTextLeaf ()
-    {
-        return textLeaf;
-    }
-
-    //------------//
     // getTopline //
     //------------//
     /**
@@ -310,6 +220,18 @@ public class TextArea
         }
 
         return topline;
+    }
+
+    //------------//
+    // isTextLeaf //
+    //------------//
+    /**
+     * Report whether this area is actually a text glyph
+     * @return true if area is a text glyph
+     */
+    public boolean isTextLeaf ()
+    {
+        return textLeaf;
     }
 
     //-----------//
@@ -380,116 +302,6 @@ public class TextArea
         sb.append("}");
 
         return sb.toString();
-    }
-
-    //-------------//
-    // getSubareas //
-    //-------------//
-    /**
-     * Report the collection of subareas, perhaps empty but not null
-     * @return the collection of subareas
-     */
-    private List<TextArea> getSubareas ()
-    {
-        if (subareas == null) {
-            subareas = new ArrayList<TextArea>();
-        }
-
-        return subareas;
-    }
-
-    //-------------//
-    // setTextLeaf //
-    //-------------//
-    private void setTextLeaf (boolean textLeaf)
-    {
-        this.textLeaf = textLeaf;
-    }
-
-    //---------------//
-    // isTextualArea //
-    //---------------//
-    /**
-     * Check whether the content of this area can be recognized as a single text
-     * compound, and if so, actually assign the shape to the underlying glyph
-     * (either the only glyph in the area, or the compound glyph newly built for
-     * this purpose)
-     * @return true if check is positive
-     */
-    private boolean isTextualArea ()
-    {
-        logger.fine(this + " isTextualArea");
-
-        // We cannot evaluate glyphs that do not belong to a system
-        if (system == null) {
-            return false;
-        }
-
-        // Retrieve glyphs in the provided rectangular area
-        Set<Glyph> glyphs = sheet.getNest()
-                                 .lookupGlyphs(roi.getAbsoluteContour());
-
-        // A system is not exactly a rectangular area
-        // So some further glyph filtering is needed
-        for (Iterator<Glyph> it = glyphs.iterator(); it.hasNext();) {
-            Glyph glyph = it.next();
-
-            if (sheet.getSystemOf(glyph) != system) {
-                it.remove();
-            }
-        }
-
-        // Purge the glyph collection of unwanted glyphs
-        for (Iterator<Glyph> it = glyphs.iterator(); it.hasNext();) {
-            Glyph glyph = it.next();
-
-            // Glyph for which TEXT is forbidden
-            if (glyph.isShapeForbidden(Shape.TEXT)) {
-                it.remove();
-            }
-
-            // TODO: Glyph already member of a sentence ???
-        }
-
-        if (glyphs.isEmpty()) {
-            if (logger.isFineEnabled()) {
-                logger.fine("No glyph found");
-            }
-
-            return false;
-        }
-
-        Glyph glyph;
-
-        if (glyphs.size() > 1) {
-            glyph = system.buildTransientCompound(glyphs);
-        } else {
-            glyph = glyphs.iterator()
-                          .next();
-        }
-
-        // First, use the glyph evaluator
-        GlyphEvaluator evaluator = GlyphNetwork.getInstance();
-        Evaluation     vote = evaluator.vote(
-            glyph,
-            Grades.textMinGrade,
-            system);
-
-        if (vote != null) {
-            if (logger.isFineEnabled()) {
-                logger.info(
-                    "Vote: " + vote.toString() +
-                    Glyphs.toString(" for", glyphs));
-            }
-
-            if (vote.shape.isText()) {
-                createText(glyph, vote);
-
-                return true;
-            }
-        }
-
-        return false;
     }
 
     //--------------//
@@ -598,6 +410,165 @@ public class TextArea
         }
     }
 
+    //--------------//
+    // getHistogram //
+    //--------------//
+    /**
+     * Get the histogram for this area, in the specified orientation
+     * @param orientation specific orientation desired for the histogram
+     * @return the histogram of projected pixels
+     */
+    private Histogram<Integer> getHistogram (Orientation orientation)
+    {
+        if (sheet == null) {
+            logger.warning("No sheet");
+        }
+
+        Nest nest = sheet.getNest();
+
+        if (orientation.isVertical()) {
+            if (verticalHistogram == null) {
+                Set<Glyph> glyphs = nest.lookupIntersectedGlyphs(
+                    roi.getAbsoluteContour());
+                verticalHistogram = roi.getGlyphHistogram(orientation, glyphs);
+            }
+
+            return verticalHistogram;
+        } else {
+            if (horizontalHistogram == null) {
+                Set<Glyph> glyphs = nest.lookupIntersectedGlyphs(
+                    roi.getAbsoluteContour());
+                horizontalHistogram = roi.getGlyphHistogram(
+                    orientation,
+                    glyphs);
+            }
+
+            return horizontalHistogram;
+        }
+    }
+
+    //--------------//
+    // getHistogram //
+    //--------------//
+    /** Get the histogram for this area, using the area default orientation
+     * @return the area histogram in its default direction
+     */
+    private Histogram<Integer> getHistogram ()
+    {
+        return getHistogram(orientation);
+    }
+
+    //-------------//
+    // getSubareas //
+    //-------------//
+    /**
+     * Report the collection of subareas, perhaps empty but not null
+     * @return the collection of subareas
+     */
+    private List<TextArea> getSubareas ()
+    {
+        if (subareas == null) {
+            subareas = new ArrayList<TextArea>();
+        }
+
+        return subareas;
+    }
+
+    //---------------//
+    // isTextualArea //
+    //---------------//
+    /**
+     * Check whether the content of this area can be recognized as a
+     * single text compound, and if so, actually assign the shape to the
+     * underlying glyph.
+     * (either the only glyph in the area, or the compound glyph newly built for
+     * this purpose)
+     * @return true if check is positive
+     */
+    private boolean isTextualArea ()
+    {
+        logger.fine(this + " isTextualArea");
+
+        // We cannot evaluate glyphs that do not belong to a system
+        if (system == null) {
+            return false;
+        }
+
+        // Retrieve glyphs in the provided rectangular area
+        Set<Glyph> glyphs = sheet.getNest()
+                                 .lookupGlyphs(roi.getAbsoluteContour());
+
+        // A system is not exactly a rectangular area
+        // So some further glyph filtering is needed
+        for (Iterator<Glyph> it = glyphs.iterator(); it.hasNext();) {
+            Glyph glyph = it.next();
+
+            if (sheet.getSystemOf(glyph) != system) {
+                it.remove();
+            }
+        }
+
+        // Purge the glyph collection of unwanted glyphs
+        for (Iterator<Glyph> it = glyphs.iterator(); it.hasNext();) {
+            Glyph glyph = it.next();
+
+            // Glyph for which TEXT is forbidden
+            if (glyph.isShapeForbidden(Shape.TEXT)) {
+                it.remove();
+            }
+
+            // TODO: Glyph already member of a sentence ???
+        }
+
+        if (glyphs.isEmpty()) {
+            if (logger.isFineEnabled()) {
+                logger.fine("No glyph found");
+            }
+
+            return false;
+        }
+
+        Glyph glyph;
+
+        if (glyphs.size() > 1) {
+            glyph = system.buildTransientCompound(glyphs);
+        } else {
+            glyph = glyphs.iterator()
+                          .next();
+        }
+
+        // First, use the glyph evaluator
+        GlyphEvaluator evaluator = GlyphNetwork.getInstance();
+        Evaluation     vote = evaluator.vote(
+            glyph,
+            system,
+            Grades.textMinGrade);
+
+        if (vote != null) {
+            if (logger.isFineEnabled()) {
+                logger.info(
+                    "Vote: " + vote.toString() +
+                    Glyphs.toString(" for", glyphs));
+            }
+
+            if (vote.shape.isText()) {
+                createText(glyph, vote);
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    //-------------//
+    // setTextLeaf //
+    //-------------//
+    private void setTextLeaf (boolean textLeaf)
+    {
+        this.textLeaf = textLeaf;
+    }
+
     //-----------//
     // splitArea //
     //-----------//
@@ -615,7 +586,6 @@ public class TextArea
         Histogram<Integer> histo = getHistogram();
         int                children = 0;
         Scale              scale = sheet.getScale();
-        boolean            spacing = true;
         Integer            packetStart = null;
         int                packetEnd = 0;
 

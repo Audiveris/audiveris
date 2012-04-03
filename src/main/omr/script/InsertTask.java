@@ -106,18 +106,6 @@ public class InsertTask
 
     //~ Methods ----------------------------------------------------------------
 
-    //------------------//
-    // getInsertedShape //
-    //------------------//
-    /**
-     * Report the inserted shape.
-     * @return the insertedShape
-     */
-    public Shape getInsertedShape ()
-    {
-        return shape;
-    }
-
     //------//
     // core //
     //------//
@@ -149,6 +137,18 @@ public class InsertTask
                 SelectionHint.GLYPH_INIT,
                 MouseMovement.PRESSING,
                 glyphs));
+    }
+
+    //------------------//
+    // getInsertedShape //
+    //------------------//
+    /**
+     * Report the inserted shape.
+     * @return the insertedShape
+     */
+    public Shape getInsertedShape ()
+    {
+        return shape;
     }
 
     //-----------------//
@@ -208,7 +208,7 @@ public class InsertTask
     // retrieveGlyphs //
     //----------------//
     /**
-     * Here, we have to build virtual glyphs, based on the desired 
+     * Here, we have to build virtual glyphs, based on the desired
      * shape and the locations.
      */
     @Override

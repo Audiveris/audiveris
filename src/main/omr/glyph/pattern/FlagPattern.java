@@ -14,7 +14,7 @@ package omr.glyph.pattern;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Shape;
-import omr.glyph.ShapeRange;
+import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -68,7 +68,7 @@ public class FlagPattern
         int nb = 0;
 
         for (Glyph flag : system.getGlyphs()) {
-            if (!ShapeRange.Flags.contains(flag.getShape()) ||
+            if (!ShapeSet.Flags.contains(flag.getShape()) ||
                 flag.isManualShape()) {
                 continue;
             }
@@ -98,7 +98,7 @@ public class FlagPattern
                 // We are looking for head (or some similar large stuff)
                 Shape shape = g.getShape();
 
-                if (ShapeRange.NoteHeads.contains(shape) ||
+                if (ShapeSet.NoteHeads.contains(shape) ||
                     ((shape == null) &&
                     (g.getNormalizedWeight() >= constants.minStuffWeight.getValue()))) {
                     if (flag.isVip() || logger.isFineEnabled()) {

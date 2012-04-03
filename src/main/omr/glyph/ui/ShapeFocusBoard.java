@@ -16,7 +16,8 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphRegression;
 import omr.glyph.Shape;
-import omr.glyph.ShapeRange;
+import omr.glyph.ShapeDescription;
+import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -34,8 +35,6 @@ import omr.ui.Board;
 import omr.ui.field.SpinnerUtilities;
 import static omr.ui.field.SpinnerUtilities.*;
 import omr.ui.util.Panel;
-
-import omr.util.Implement;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -104,7 +103,7 @@ public class ShapeFocusBoard
 
     //~ Instance fields --------------------------------------------------------
 
-    private final Sheet sheet;
+    private final Sheet       sheet;
 
     /** Browser on the collection of glyphs */
     private Browser browser = new Browser();
@@ -113,7 +112,8 @@ public class ShapeFocusBoard
     private JButton selectButton = new JButton();
 
     /** Filter for known / unknown symbol display */
-    private JComboBox filterButton = new JComboBox(Filter.values());
+    private JComboBox<Filter> filterButton = new JComboBox<Filter>(
+        Filter.values());
 
     /** Popup menu to allow shape selection */
     private JPopupMenu pm = new JPopupMenu();
@@ -175,7 +175,7 @@ public class ShapeFocusBoard
                     }
                 });
         pm.add(noFocus);
-        ShapeRange.addShapeItems(
+        ShapeSet.addAllShapes(
             pm,
             new ActionListener() {
                     public void actionPerformed (ActionEvent e)
@@ -192,6 +192,53 @@ public class ShapeFocusBoard
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-------------//
+    // isDisplayed //
+    //-------------//
+    /**
+     * Report whether the glyph at hand is to be displayed, according to the
+     * current filter
+     * @param glyph the glyph at hande
+     * @return true if to be displayed
+     */
+    public boolean isDisplayed (Glyph glyph)
+    {
+        switch ((Filter) filterButton.getSelectedItem()) {
+        case KNOWN :
+            return glyph.isKnown();
+
+        case UNKNOWN :
+            return !glyph.isKnown();
+
+        case TRANSLATED :
+            return glyph.isKnown() && glyph.isTranslated();
+
+        case UNTRANSLATED :
+            return glyph.isKnown() && !glyph.isTranslated();
+
+        default :
+        case ALL :
+            return true;
+        }
+    }
+
+    //---------//
+    // onEvent //
+    //---------//
+    /**
+     * Notification about selection objects
+     * We used to use it on a just modified glyph, to set the new shape focus
+     * But this conflicts with the ability to browse a collection of similar
+     * glyphs and assign them on the fly
+     *
+     * @param event the notified event
+     */
+    @Override
+    public void onEvent (UserEvent event)
+    {
+        // Empty
+    }
 
     //-----------------//
     // setCurrentShape //
@@ -228,36 +275,6 @@ public class ShapeFocusBoard
         browser.refresh();
     }
 
-    //-------------//
-    // isDisplayed //
-    //-------------//
-    /**
-     * Report whether the glyph at hand is to be displayed, according to the
-     * current filter
-     * @param glyph the glyph at hande
-     * @return true if to be displayed
-     */
-    public boolean isDisplayed (Glyph glyph)
-    {
-        switch ((Filter) filterButton.getSelectedItem()) {
-        case KNOWN :
-            return glyph.isKnown();
-
-        case UNKNOWN :
-            return !glyph.isKnown();
-
-        case TRANSLATED :
-            return glyph.isKnown() && glyph.isTranslated();
-
-        case UNTRANSLATED :
-            return glyph.isKnown() && !glyph.isTranslated();
-
-        default :
-        case ALL :
-            return true;
-        }
-    }
-
     //-----------------//
     // setSimilarGlyph //
     //-----------------//
@@ -272,7 +289,7 @@ public class ShapeFocusBoard
 
         if (example != null) {
             GlyphRegression  evaluator = GlyphRegression.getInstance();
-            double[]         pattern = GlyphRegression.feedInput(example);
+            double[]         pattern = ShapeDescription.features(example);
             List<DistIdPair> pairs = new ArrayList<DistIdPair>();
 
             // Retrieve the glyphs similar to the example
@@ -298,7 +315,7 @@ public class ShapeFocusBoard
                 for (DistIdPair pair : pairs) {
                     Glyph    glyph = sheet.getVerticalsController()
                                           .getGlyphById(pair.id);
-                    double[] gPat = GlyphRegression.feedInput(glyph);
+                    double[] gPat = ShapeDescription.features(glyph);
                     Shape    shape = glyph.getShape();
                     System.out.printf(
                         "%18s",
@@ -322,23 +339,6 @@ public class ShapeFocusBoard
         }
 
         browser.refresh();
-    }
-
-    //---------//
-    // onEvent //
-    //---------//
-    /**
-     * Notification about selection objects
-     * We used to use it on a just modified glyph, to set the new shape focus
-     * But this conflicts with the ability to browse a collection of similar
-     * glyphs and assign them on the fly
-     *
-     * @param event the notified event
-     */
-    @Implement(EventSubscriber.class)
-    public void onEvent (UserEvent event)
-    {
-        // Empty
     }
 
     //--------------//
@@ -373,46 +373,17 @@ public class ShapeFocusBoard
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //------------//
-    // DistIdPair //
-    //------------//
-    /**
-     * Needed to sort glyphs id according to their distance
-     */
-    private static class DistIdPair
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
     {
-        //~ Static fields/initializers -----------------------------------------
-
-        private static final Comparator<DistIdPair> distComparator = new Comparator<DistIdPair>() {
-            public int compare (DistIdPair o1,
-                                DistIdPair o2)
-            {
-                return Double.compare(o1.dist, o2.dist);
-            }
-        };
-
-
         //~ Instance fields ----------------------------------------------------
 
-        final double dist;
-        final int    id;
-
-        //~ Constructors -------------------------------------------------------
-
-        public DistIdPair (double dist,
-                           int    id)
-        {
-            this.dist = dist;
-            this.id = id;
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public String toString ()
-        {
-            return "dist:" + dist + " glyph#" + id;
-        }
+        Constant.Boolean printDistances = new Constant.Boolean(
+            false,
+            "Should we print out distance details when looking for similar glyphs?");
     }
 
     //---------//
@@ -481,7 +452,7 @@ public class ShapeFocusBoard
         //--------------//
         // stateChanged //
         //--------------//
-        @Implement(ChangeListener.class)
+        @Override
         public void stateChanged (ChangeEvent e)
         {
             int id = (Integer) spinner.getValue();
@@ -497,16 +468,45 @@ public class ShapeFocusBoard
         }
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
+    //------------//
+    // DistIdPair //
+    //------------//
+    /**
+     * Needed to sort glyphs id according to their distance
+     */
+    private static class DistIdPair
     {
+        //~ Static fields/initializers -----------------------------------------
+
+        private static final Comparator<DistIdPair> distComparator = new Comparator<DistIdPair>() {
+            public int compare (DistIdPair o1,
+                                DistIdPair o2)
+            {
+                return Double.compare(o1.dist, o2.dist);
+            }
+        };
+
+
         //~ Instance fields ----------------------------------------------------
 
-        Constant.Boolean printDistances = new Constant.Boolean(
-            false,
-            "Should we print out distance details when looking for similar glyphs?");
+        final double dist;
+        final int    id;
+
+        //~ Constructors -------------------------------------------------------
+
+        public DistIdPair (double dist,
+                           int    id)
+        {
+            this.dist = dist;
+            this.id = id;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public String toString ()
+        {
+            return "dist:" + dist + " glyph#" + id;
+        }
     }
 }

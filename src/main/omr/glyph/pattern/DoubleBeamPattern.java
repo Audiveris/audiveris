@@ -108,8 +108,8 @@ public class DoubleBeamPattern
                 Evaluation eval = GlyphNetwork.getInstance()
                                               .vote(
                     compound,
-                    Grades.noMinGrade,
-                    system);
+                    system,
+                    Grades.noMinGrade);
 
                 if (eval != null) {
                     // Assign and insert into system & lag environments

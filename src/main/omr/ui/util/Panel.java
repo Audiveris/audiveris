@@ -111,44 +111,6 @@ public class Panel
         return constants.fieldWidth.getValue();
     }
 
-    //-----------//
-    // setInsets //
-    //-----------//
-    /**
-     * Set the panel insets (in number of pixels) on the four directions
-     *
-     * @param top inset on top side
-     * @param left inset on the left side
-     * @param bottom inset on the bottom side
-     * @param right inset on the right side
-     */
-    public void setInsets (int top,
-                           int left,
-                           int bottom,
-                           int right)
-    {
-        insets = new Insets(top, left, bottom, right);
-    }
-
-    //-----------//
-    // getInsets //
-    //-----------//
-    /**
-     * By this way, Swing will paint the component with its specific inset
-     * values
-     *
-     * @return the panel insets
-     */
-    @Override
-    public Insets getInsets ()
-    {
-        if (insets != null) {
-            return insets;
-        } else {
-            return getDefaultInsets();
-        }
-    }
-
     /**
      * Selector to the default label - field interval
      *
@@ -167,17 +129,6 @@ public class Panel
     public static String getLabelWidth ()
     {
         return constants.labelWidth.getValue();
-    }
-
-    //-------------//
-    // setNoInsets //
-    //-------------//
-    /**
-     * A convenient method to set all 4 insets values to zero
-     */
-    public void setNoInsets ()
-    {
-        insets = new Insets(0, 0, 0, 0);
     }
 
     /**
@@ -274,6 +225,55 @@ public class Panel
         }
 
         return new FormLayout(sbc.toString(), sbr.toString());
+    }
+
+    //-----------//
+    // getInsets //
+    //-----------//
+    /**
+     * By this way, Swing will paint the component with its specific inset
+     * values
+     *
+     * @return the panel insets
+     */
+    @Override
+    public Insets getInsets ()
+    {
+        if (insets != null) {
+            return insets;
+        } else {
+            return getDefaultInsets();
+        }
+    }
+
+    //-----------//
+    // setInsets //
+    //-----------//
+    /**
+     * Set the panel insets (in number of pixels) on the four directions
+     *
+     * @param top inset on top side
+     * @param left inset on the left side
+     * @param bottom inset on the bottom side
+     * @param right inset on the right side
+     */
+    public void setInsets (int top,
+                           int left,
+                           int bottom,
+                           int right)
+    {
+        insets = new Insets(top, left, bottom, right);
+    }
+
+    //-------------//
+    // setNoInsets //
+    //-------------//
+    /**
+     * A convenient method to set all 4 insets values to zero
+     */
+    public void setNoInsets ()
+    {
+        insets = new Insets(0, 0, 0, 0);
     }
 
     //----------------//

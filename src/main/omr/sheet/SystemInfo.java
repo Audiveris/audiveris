@@ -561,38 +561,6 @@ public class SystemInfo
         retrieveGlyphs();
     }
 
-    //--------------------//
-    // getCompoundBuilder //
-    //--------------------//
-    /**
-     * @return the compoundBuilder
-     */
-    public CompoundBuilder getCompoundBuilder ()
-    {
-        return compoundBuilder;
-    }
-
-    //-------------------//
-    // updateCoordinates //
-    //-------------------//
-    public final void updateCoordinates ()
-    {
-        StaffInfo firstStaff = getFirstStaff();
-        LineInfo  firstLine = firstStaff.getFirstLine();
-        Point2D   topLeft = firstLine.getEndPoint(LEFT);
-        Point2D   topRight = firstLine.getEndPoint(RIGHT);
-        StaffInfo lastStaff = getLastStaff();
-        LineInfo  lastLine = lastStaff.getLastLine();
-        Point2D   botLeft = lastLine.getEndPoint(LEFT);
-
-        left = (int) Math.rint(topLeft.getX());
-        top = (int) Math.rint(topLeft.getY());
-        width = (int) Math.rint(topRight.getX() - topLeft.getX());
-        deltaY = (int) Math.rint(
-            lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
-        bottom = (int) Math.rint(botLeft.getY());
-    }
-
     //--------//
     // getBar //
     //--------//
@@ -661,6 +629,17 @@ public class SystemInfo
         } else {
             return null;
         }
+    }
+
+    //--------------------//
+    // getCompoundBuilder //
+    //--------------------//
+    /**
+     * @return the compoundBuilder
+     */
+    public CompoundBuilder getCompoundBuilder ()
+    {
+        return compoundBuilder;
     }
 
     //-----------//
@@ -858,6 +837,27 @@ public class SystemInfo
     public int getNewSentenceId ()
     {
         return ++sentenceCount;
+    }
+
+    //-------------------//
+    // updateCoordinates //
+    //-------------------//
+    public final void updateCoordinates ()
+    {
+        StaffInfo firstStaff = getFirstStaff();
+        LineInfo  firstLine = firstStaff.getFirstLine();
+        Point2D   topLeft = firstLine.getEndPoint(LEFT);
+        Point2D   topRight = firstLine.getEndPoint(RIGHT);
+        StaffInfo lastStaff = getLastStaff();
+        LineInfo  lastLine = lastStaff.getLastLine();
+        Point2D   botLeft = lastLine.getEndPoint(LEFT);
+
+        left = (int) Math.rint(topLeft.getX());
+        top = (int) Math.rint(topLeft.getY());
+        width = (int) Math.rint(topRight.getX() - topLeft.getX());
+        deltaY = (int) Math.rint(
+            lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
+        bottom = (int) Math.rint(botLeft.getY());
     }
 
     //----------------//

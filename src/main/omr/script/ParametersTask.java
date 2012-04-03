@@ -89,72 +89,6 @@ public class ParametersTask
 
     //~ Methods ----------------------------------------------------------------
 
-    //---------------//
-    // setForeground //
-    //---------------//
-    /**
-     * @param foreground the maximum pixel value for foreground
-     */
-    public void setForeground (int foreground)
-    {
-        this.foreground = foreground;
-    }
-
-    //-------------//
-    // setLanguage //
-    //-------------//
-    /**
-     * @param language the language code to set
-     */
-    public void setLanguage (String language)
-    {
-        this.language = language;
-    }
-
-    //---------------//
-    // setSlotMargin //
-    //---------------//
-    /**
-     * @param slotMargin the new Slot horizontal margin
-     */
-    public void setSlotMargin (double slotMargin)
-    {
-        this.slotMargin = slotMargin;
-    }
-
-    //---------------//
-    // setSlotPolicy //
-    //---------------//
-    /**
-     * @param slotPolicy the new Slot Policy
-     */
-    public void setSlotPolicy (SlotPolicy slotPolicy)
-    {
-        this.slotPolicy = slotPolicy;
-    }
-
-    //----------//
-    // setTempo //
-    //----------//
-    /**
-     * @param tempo the tempo to set
-     */
-    public void setTempo (int tempo)
-    {
-        this.tempo = tempo;
-    }
-
-    //-----------//
-    // setVolume //
-    //-----------//
-    /**
-     * @param volume the volume to set
-     */
-    public void setVolume (int volume)
-    {
-        this.volume = volume;
-    }
-
     //---------//
     // addPart //
     //---------//
@@ -301,6 +235,72 @@ public class ParametersTask
         }
 
         super.epilog(sheet);
+    }
+
+    //---------------//
+    // setForeground //
+    //---------------//
+    /**
+     * @param foreground the maximum pixel value for foreground
+     */
+    public void setForeground (int foreground)
+    {
+        this.foreground = foreground;
+    }
+
+    //-------------//
+    // setLanguage //
+    //-------------//
+    /**
+     * @param language the language code to set
+     */
+    public void setLanguage (String language)
+    {
+        this.language = language;
+    }
+
+    //---------------//
+    // setSlotMargin //
+    //---------------//
+    /**
+     * @param slotMargin the new Slot horizontal margin
+     */
+    public void setSlotMargin (double slotMargin)
+    {
+        this.slotMargin = slotMargin;
+    }
+
+    //---------------//
+    // setSlotPolicy //
+    //---------------//
+    /**
+     * @param slotPolicy the new Slot Policy
+     */
+    public void setSlotPolicy (SlotPolicy slotPolicy)
+    {
+        this.slotPolicy = slotPolicy;
+    }
+
+    //----------//
+    // setTempo //
+    //----------//
+    /**
+     * @param tempo the tempo to set
+     */
+    public void setTempo (int tempo)
+    {
+        this.tempo = tempo;
+    }
+
+    //-----------//
+    // setVolume //
+    //-----------//
+    /**
+     * @param volume the volume to set
+     */
+    public void setVolume (int volume)
+    {
+        this.volume = volume;
     }
 
     //-----------------//

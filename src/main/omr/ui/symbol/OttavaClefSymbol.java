@@ -57,15 +57,6 @@ public class OttavaClefSymbol
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------//
-    // getParams //
-    //-----------//
-    @Override
-    protected Params getParams (MusicFont font)
-    {
-        return new MyParams(font);
-    }
-
     //------------//
     // createIcon //
     //------------//
@@ -73,6 +64,15 @@ public class OttavaClefSymbol
     protected ShapeSymbol createIcon ()
     {
         return new OttavaClefSymbol(isAlta, true, shape, codes);
+    }
+
+    //-----------//
+    // getParams //
+    //-----------//
+    @Override
+    protected Params getParams (MusicFont font)
+    {
+        return new MyParams(font);
     }
 
     //-------//

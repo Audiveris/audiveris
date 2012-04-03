@@ -32,7 +32,7 @@ public class StemBasedSlot
      * @param measure the containing measure
      * @param refPoint the slot reference point
      */
-    public StemBasedSlot (Measure     measure,
+    public StemBasedSlot (Measure    measure,
                           PixelPoint refPoint)
     {
         super(measure);

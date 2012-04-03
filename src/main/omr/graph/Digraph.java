@@ -37,6 +37,26 @@ public interface Digraph<D extends Digraph<D, V>, V extends Vertex>
     //~ Methods ----------------------------------------------------------------
 
     /**
+     * (package access from {@link Vertex}) to add a vertex in the graph, the
+     * vertex is being assigned a unique id by the graph.
+     * Made public just for access from glyph Verifier
+     * @param vertex the newly created vertex
+     */
+    void addVertex (V vertex);
+
+    /**
+     * Create a new vertex in the graph, using the provided vertex class
+     * @return the vertex created
+     */
+    V createVertex ();
+
+    /**
+     * A dump of the graph content, vertex by vertex
+     * @param title The title to be printed before the dump, or null
+     */
+    void dump (String title);
+
+    /**
      * Give access to the last id assigned to a vertex in this graph. This may
      * be greater than the number of vertices currently in the graph, because of
      * potential deletion of vertices (a Vertex Id is never reused).
@@ -76,26 +96,6 @@ public interface Digraph<D extends Digraph<D, V>, V extends Vertex>
      * @return the unmodifiable collection of views
      */
     Collection<DigraphView> getViews ();
-
-    /**
-     * (package access from {@link Vertex}) to add a vertex in the graph, the
-     * vertex is being assigned a unique id by the graph.
-     * Made public just for access from glyph Verifier
-     * @param vertex the newly created vertex
-     */
-    void addVertex (V vertex);
-
-    /**
-     * Create a new vertex in the graph, using the provided vertex class
-     * @return the vertex created
-     */
-    V createVertex ();
-
-    /**
-     * A dump of the graph content, vertex by vertex
-     * @param title The title to be printed before the dump, or null
-     */
-    void dump (String title);
 
     /**
      * (package access from Vertex) to remove the vertex from the graph, the

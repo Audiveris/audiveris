@@ -106,32 +106,6 @@ public class MusicFont
 
     //~ Methods ----------------------------------------------------------------
 
-    //---------//
-    // getFont //
-    //---------//
-    /**
-     * Report the (cached) best font according to the desired interline
-     * value.
-     * @param interline the desired (zoomed) interline in pixels
-     * @return the font with proper size
-     */
-    public static MusicFont getFont (int interline)
-    {
-        MusicFont font = sizeMap.get(interline);
-
-        if (font == null) {
-            font = new MusicFont(4 * interline, interline);
-
-            if (logger.isFineEnabled()) {
-                logger.fine("Adding music font for interline " + interline);
-            }
-
-            sizeMap.put(interline, font);
-        }
-
-        return font;
-    }
-
     //------------//
     // buildImage //
     //------------//
@@ -150,6 +124,28 @@ public class MusicFont
         MusicFont font = getFont(interline);
 
         return font.buildImage(shape, decorated);
+    }
+
+    //------------//
+    // buildImage //
+    //------------//
+    /**
+     * Build an image from the shape definition in MusicFont, using the
+     * intrinsic scaling of this font.
+     * @param shape     the desired shape
+     * @param decorated true if shape display must use decorations
+     * @return the image built with proper scaling, or null
+     */
+    public BufferedImage buildImage (Shape   shape,
+                                     boolean decorated)
+    {
+        ShapeSymbol symbol = Symbols.getSymbol(shape, decorated);
+
+        if (symbol == null) {
+            return null;
+        } else {
+            return symbol.buildImage(this);
+        }
     }
 
     //----------------//
@@ -178,26 +174,30 @@ public class MusicFont
         return true;
     }
 
-    //------------//
-    // buildImage //
-    //------------//
+    //---------//
+    // getFont //
+    //---------//
     /**
-     * Build an image from the shape definition in MusicFont, using the
-     * intrinsic scaling of this font.
-     * @param shape     the desired shape
-     * @param decorated true if shape display must use decorations
-     * @return the image built with proper scaling, or null
+     * Report the (cached) best font according to the desired interline
+     * value.
+     * @param interline the desired (zoomed) interline in pixels
+     * @return the font with proper size
      */
-    public BufferedImage buildImage (Shape   shape,
-                                     boolean decorated)
+    public static MusicFont getFont (int interline)
     {
-        ShapeSymbol symbol = Symbols.getSymbol(shape, decorated);
+        MusicFont font = sizeMap.get(interline);
 
-        if (symbol == null) {
-            return null;
-        } else {
-            return symbol.buildImage(this);
+        if (font == null) {
+            font = new MusicFont(4 * interline, interline);
+
+            if (logger.isFineEnabled()) {
+                logger.fine("Adding music font for interline " + interline);
+            }
+
+            sizeMap.put(interline, font);
         }
+
+        return font;
     }
 
     //--------//
@@ -205,7 +205,7 @@ public class MusicFont
     //--------//
     /**
      * Build a TextLayout from a Shape, using its related String of
-     * MusicFont characters, and potentially sized by an 
+     * MusicFont characters, and potentially sized by an
      * AffineTransform instance.
      * @param shape the shape to be drawn with MusicFont chars
      * @param fat   potential affine transformation
@@ -278,7 +278,7 @@ public class MusicFont
     // layout //
     //--------//
     /**
-     * Build a TextLayout from a Shape, using its related String of 
+     * Build a TextLayout from a Shape, using its related String of
      * MusicFont character codes.
      * @param shape the shape to be drawn with MusicFont chars
      * @return the TextLayout ready to be drawn

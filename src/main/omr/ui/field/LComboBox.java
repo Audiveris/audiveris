@@ -20,10 +20,12 @@ import javax.swing.JComboBox;
  * JComboBox, a "Labelled Combo", where the label describes
  * the dynamic content of the combo.
  *
+ * @param <E> type of combo entity
+ *
  * @author Hervé Bitteur
  */
-public class LComboBox
-    extends LField<JComboBox>
+public class LComboBox<E>
+    extends LField<JComboBox<E>>
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -38,44 +40,44 @@ public class LComboBox
      * @param tip the related tool tip text
      * @param items the items handled by the combo
      */
-    public LComboBox (String   label,
-                      String   tip,
-                      Object[] items)
+    public LComboBox (String label,
+                      String tip,
+                      E[]    items)
     {
-        super(label, tip, new JComboBox(items));
+        super(label, tip, new JComboBox<E>(items));
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //-----------------//
-    // setSelectedItem //
-    //-----------------//
-    public void setSelectedItem (Object object)
-    {
-        getField()
-            .setSelectedItem(object);
-    }
-
-    //-----------------//
-    // getSelectedItem //
-    //-----------------//
-    public Object getSelectedItem ()
-    {
-        return getField()
-                   .getSelectedItem();
-    }
 
     //-------------------//
     // addActionListener //
     //-------------------//
     /**
-     * Add an action listener to the combo
-     *
+     * Add an action listener to the combo.
      * @param listener
      */
     public void addActionListener (ActionListener listener)
     {
         getField()
             .addActionListener(listener);
+    }
+
+    //-----------------//
+    // getSelectedItem //
+    //-----------------//
+    @SuppressWarnings("unchecked")
+    public E getSelectedItem ()
+    {
+        return (E) getField()
+                       .getSelectedItem();
+    }
+
+    //-----------------//
+    // setSelectedItem //
+    //-----------------//
+    public void setSelectedItem (E item)
+    {
+        getField()
+            .setSelectedItem(item);
     }
 }

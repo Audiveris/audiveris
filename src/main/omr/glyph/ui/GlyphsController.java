@@ -16,7 +16,7 @@ import omr.glyph.Glyphs;
 import omr.glyph.GlyphsModel;
 import omr.glyph.Nest;
 import omr.glyph.Shape;
-import omr.glyph.ShapeRange;
+import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -77,7 +77,7 @@ public class GlyphsController
     // GlyphsController //
     //------------------//
     /**
-     * Create an instance of GlyphsController, with its underlying 
+     * Create an instance of GlyphsController, with its underlying
      * GlyphsModel instance.
      * @param model the related glyphs model
      */
@@ -89,6 +89,66 @@ public class GlyphsController
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //-------------------//
+    // asyncAssignGlyphs //
+    //-------------------//
+    /**
+     * Asynchronouly assign a shape to the selected collection of glyphs and
+     * record this action in the script
+     *
+     * @param glyphs the collection of glyphs to be assigned
+     * @param shape the shape to be assigned
+     * @param compound flag to build one compound, rather than assign each
+     *                 individual glyph
+     * @return the task that carries out the processing
+     */
+    public Task asyncAssignGlyphs (Collection<Glyph> glyphs,
+                                   Shape             shape,
+                                   boolean           compound)
+    {
+        // Safety check: we cannot alter virtual glyphs
+        for (Glyph glyph : glyphs) {
+            if (glyph.isVirtual()) {
+                logger.warning("Cannot alter VirtualGlyph#" + glyph.getId());
+
+                return null;
+            }
+        }
+
+        if (ShapeSet.Barlines.contains(shape) ||
+            Glyphs.containsBarline(glyphs)) {
+            // Special case for barlines
+            return new BarlineTask(sheet, shape, compound, glyphs).launch(
+                sheet);
+        } else {
+            // Normal symbol processing
+            return new AssignTask(sheet, shape, compound, glyphs).launch(sheet);
+        }
+    }
+
+    //---------------------//
+    // asyncDeassignGlyphs //
+    //---------------------//
+    /**
+     * Asynchronously de-Assign a collection of glyphs and record this action
+     * in the script
+     *
+     * @param glyphs the collection of glyphs to be de-assigned
+     * @return the task that carries out the processing
+     */
+    public Task asyncDeassignGlyphs (Collection<Glyph> glyphs)
+    {
+        return asyncAssignGlyphs(glyphs, null, false);
+    }
+
+    //--------------------------//
+    // asyncDeleteVirtualGlyphs //
+    //--------------------------//
+    public Task asyncDeleteVirtualGlyphs (Collection<Glyph> glyphs)
+    {
+        return new DeleteTask(sheet, glyphs).launch(sheet);
+    }
 
     //--------------//
     // getGlyphById //
@@ -102,19 +162,6 @@ public class GlyphsController
     public Glyph getGlyphById (int id)
     {
         return model.getGlyphById(id);
-    }
-
-    //----------------//
-    // setLatestShape //
-    //----------------//
-    /**
-     * Assign the latest shape
-     *
-     * @param shape the latest shape
-     */
-    public void setLatestShapeAssigned (Shape shape)
-    {
-        model.setLatestShape(shape);
     }
 
     //----------------//
@@ -169,64 +216,17 @@ public class GlyphsController
         return model.getNest();
     }
 
-    //-------------------//
-    // asyncAssignGlyphs //
-    //-------------------//
+    //----------------//
+    // setLatestShape //
+    //----------------//
     /**
-     * Asynchronouly assign a shape to the selected collection of glyphs and
-     * record this action in the script
+     * Assign the latest shape
      *
-     * @param glyphs the collection of glyphs to be assigned
-     * @param shape the shape to be assigned
-     * @param compound flag to build one compound, rather than assign each
-     *                 individual glyph
-     * @return the task that carries out the processing
+     * @param shape the latest shape
      */
-    public Task asyncAssignGlyphs (Collection<Glyph> glyphs,
-                                   Shape             shape,
-                                   boolean           compound)
+    public void setLatestShapeAssigned (Shape shape)
     {
-        // Safety check: we cannot alter virtual glyphs
-        for (Glyph glyph : glyphs) {
-            if (glyph.isVirtual()) {
-                logger.warning("Cannot alter VirtualGlyph#" + glyph.getId());
-
-                return null;
-            }
-        }
-
-        if (ShapeRange.Barlines.contains(shape) ||
-            Glyphs.containsBarline(glyphs)) {
-            // Special case for barlines
-            return new BarlineTask(sheet, shape, compound, glyphs).launch(
-                sheet);
-        } else {
-            // Normal symbol processing
-            return new AssignTask(sheet, shape, compound, glyphs).launch(sheet);
-        }
-    }
-
-    //---------------------//
-    // asyncDeassignGlyphs //
-    //---------------------//
-    /**
-     * Asynchronously de-Assign a collection of glyphs and record this action
-     * in the script
-     *
-     * @param glyphs the collection of glyphs to be de-assigned
-     * @return the task that carries out the processing
-     */
-    public Task asyncDeassignGlyphs (Collection<Glyph> glyphs)
-    {
-        return asyncAssignGlyphs(glyphs, null, false);
-    }
-
-    //--------------------------//
-    // asyncDeleteVirtualGlyphs //
-    //--------------------------//
-    public Task asyncDeleteVirtualGlyphs (Collection<Glyph> glyphs)
-    {
-        return new DeleteTask(sheet, glyphs).launch(sheet);
+        model.setLatestShape(shape);
     }
 
     //------------//

@@ -22,7 +22,6 @@ import omr.step.LogStepMonitorHandler;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.logging.ConsoleHandler;
@@ -45,7 +44,7 @@ import java.util.logging.LogRecord;
  * <li>FINE</li>
  * <li>FINER</li>
  * <li>FINEST (lowest value)</li>
- *</ol>
+ * </ol>
  *
  * @author Hervé Bitteur
  */
@@ -82,9 +81,8 @@ public class Logger
     // getEffectiveLevel //
     //-------------------//
     /**
-     * Report the resulting level for the logger, which may be inherited from
-     * parents higher in the hierarchy
-     *
+     * Report the resulting level for the logger, which may be
+     * inherited from parents higher in the hierarchy.
      * @return The effective logging level for this logger
      */
     public Level getEffectiveLevel ()
@@ -105,39 +103,12 @@ public class Logger
         return level;
     }
 
-    //---------------//
-    // isFineEnabled //
-    //---------------//
-    /**
-     * Check if a Debug (Fine) would actually be logged
-     *
-     * @return true if to be logged
-     */
-    public boolean isFineEnabled ()
-    {
-        return isLoggable(Level.FINE);
-    }
-
-    //----------//
-    // setLevel //
-    //----------//
-    /**
-     * Set the logger level, using a level name
-     *
-     * @param levelStr the name of the level (case is irrelevant), such as Fine
-     *                 or INFO
-     */
-    public void setLevel (String levelStr)
-    {
-        setLevel(Level.parse(levelStr.toUpperCase()));
-    }
-
     //-----------//
     // getLogger //
     //-----------//
     /**
-     * Report (and possibly create) the logger related to the provided class
-     *
+     * Report (and possibly create) the logger related to the provided
+     * class.
      * @param cl the related class
      * @return the logger
      */
@@ -150,9 +121,8 @@ public class Logger
     // getLogger //
     //-----------//
     /**
-     * Report (and possibly create) the logger related to the provided name
-     * (usually the full class name)
-     *
+     * Report (and possibly create) the logger related to the provided
+     * name (usually the full class name).
      * @param name the logger name
      * @return the logger found or created
      */
@@ -183,8 +153,8 @@ public class Logger
     // getMailbox //
     //------------//
     /**
-     * Report the mailbox used as a buffer for log messages before they get
-     * displayed by a GUI
+     * Report the mailbox used as a buffer for log messages before they
+     * get displayed by a GUI.
      * @return the GUI mailbox
      */
     public static synchronized BlockingQueue<LogRecord> getMailbox ()
@@ -196,12 +166,16 @@ public class Logger
         return logMbx;
     }
 
-    //------------------------//
-    // setPrintStackOnWarning //
-    //------------------------//
-    public static void setPrintStackOnWarning (boolean val)
+    //---------------//
+    // isFineEnabled //
+    //---------------//
+    /**
+     * Check if a Debug (Fine) would actually be logged.
+     * @return true if to be logged
+     */
+    public boolean isFineEnabled ()
     {
-        constants.printStackOnWarning.setValue(val);
+        return isLoggable(Level.FINE);
     }
 
     //-----------------------//
@@ -212,13 +186,52 @@ public class Logger
         return constants.printStackOnWarning.getValue();
     }
 
+    //-----------//
+    // logAssert //
+    //-----------//
+    /**
+     * Assert the provided condition, and stop the application if the
+     * condition is false, since this is supposed to detect a
+     * programming error.
+     * @param exp the expression to check
+     * @param msg the related error message
+     */
+    public void logAssert (boolean exp,
+                           String  msg)
+    {
+        if (!exp) {
+            severe(msg);
+        }
+    }
+
+    //----------//
+    // setLevel //
+    //----------//
+    /**
+     * Set the logger level, using a level name.
+     * @param levelStr the name of the level (case is irrelevant), such as Fine
+     * or INFO
+     */
+    public void setLevel (String levelStr)
+    {
+        setLevel(Level.parse(levelStr.toUpperCase()));
+    }
+
+    //------------------------//
+    // setPrintStackOnWarning //
+    //------------------------//
+    public static void setPrintStackOnWarning (boolean val)
+    {
+        constants.printStackOnWarning.setValue(val);
+    }
+
     //-----//
     // log //
     //-----//
     /**
-     * Overridden version, just to insert the name of the calling thread
+     * Overridden version, to insert the name of the calling thread.
      * @param level A message level identifier
-     * @param msg The string message
+     * @param msg   The string message
      */
     @Override
     public void log (Level  level,
@@ -235,31 +248,11 @@ public class Logger
         super.log(level, sb.toString());
     }
 
-    //-----------//
-    // logAssert //
-    //-----------//
-    /**
-     * Assert the provided condition, and stop the application if the
-     * condition is false, since this is supposed to detect a
-     * programming error
-     *
-     * @param exp the expression to check
-     * @param msg the related error message
-     */
-    public void logAssert (boolean exp,
-                           String  msg)
-    {
-        if (!exp) {
-            severe(msg);
-        }
-    }
-
     //--------//
     // severe //
     //--------//
     /**
-     * Log the provided message and stop
-     *
+     * Log the provided message and stop.
      * @param msg the (severe) message
      */
     @Override
@@ -273,9 +266,8 @@ public class Logger
     // severe //
     //--------//
     /**
-     * Log the provided message and exception, then stop the application
-     *
-     * @param msg the (severe) message
+     * Log the provided message and exception and stop the application.
+     * @param msg    the (severe) message
      * @param thrown the exception
      */
     public void severe (String    msg,
@@ -290,10 +282,9 @@ public class Logger
     //---------//
     /**
      * Log a warning with a related exception, then continue.
-     *
-     * @param msg the (warning) message
+     * @param msg    the (warning) message
      * @param thrown the related exception, whose stack trace will be printed
-     *               only if the constant flag 'printStackTraces' is set.
+     * only if the constant flag 'printStackTraces' is set.
      */
     public void warning (String    msg,
                          Throwable thrown)
@@ -309,12 +300,10 @@ public class Logger
     // setGlobalParameters //
     //---------------------//
     /**
-     * Define configuration parameters in a programmatic way, so that
-     * only specific loggers if any need to be set in a configuration
-     * file.
-     *
+     * Set configuration parameters in a programmatic way, so that only
+     * specific loggers if any need to be set in a configuration file.
      * This file would simply contain lines like:
-     *  # omr.step.StepMonitor.level=FINEST
+     * # omr.step.StepMonitor.level=FINEST
      */
     private static void setGlobalParameters ()
     {
@@ -380,7 +369,7 @@ public class Logger
             }
 
             consoleHandler.setFormatter(new LogBasicFormatter()); // Comment out?
-            consoleHandler.setLevel(java.util.logging.Level.FINE);
+            consoleHandler.setLevel(java.util.logging.Level.FINEST);
             consoleHandler.setFilter(new LogEmptyMessageFilter());
 
             try {

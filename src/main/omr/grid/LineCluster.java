@@ -113,6 +113,21 @@ public class LineCluster
 
     //~ Methods ----------------------------------------------------------------
 
+    //---------//
+    // destroy //
+    //---------//
+    /**
+     * Remove the link back from filaments to this cluster.
+     */
+    public void destroy ()
+    {
+        for (FilamentLine line : lines.values()) {
+            line.fil.setCluster(null, 0);
+            line.fil.getCombs()
+                    .clear();
+        }
+    }
+
     //-------------//
     // getAncestor //
     //-------------//
@@ -393,50 +408,6 @@ public class LineCluster
         return trueLength;
     }
 
-    //    //-----------//
-    //    // Constants //
-    //    //-----------//
-    //    private static final class Constants
-    //        extends ConstantSet
-    //    {
-    //        //~ Instance fields ----------------------------------------------------
-    //
-    //        final Constant.Ratio minTrueLength = new Constant.Ratio(
-    //            0.4,
-    //            "Minimum true length ratio to keep a line in a cluster");
-    //    }
-
-    //--------//
-    // setVip //
-    //--------//
-    public void setVip ()
-    {
-        vip = true;
-    }
-
-    //-------//
-    // isVip //
-    //-------//
-    public boolean isVip ()
-    {
-        return vip;
-    }
-
-    //---------//
-    // destroy //
-    //---------//
-    /**
-     * Remove the link back from filaments to this cluster.
-     */
-    public void destroy ()
-    {
-        for (FilamentLine line : lines.values()) {
-            line.fil.setCluster(null, 0);
-            line.fil.getCombs()
-                    .clear();
-        }
-    }
-
     //------------------------//
     // includeFilamentByIndex //
     //------------------------//
@@ -499,6 +470,14 @@ public class LineCluster
         return false; // Should not happen
     }
 
+    //-------//
+    // isVip //
+    //-------//
+    public boolean isVip ()
+    {
+        return vip;
+    }
+
     //-----------//
     // mergeWith //
     //-----------//
@@ -546,6 +525,27 @@ public class LineCluster
         }
 
         invalidateCache();
+    }
+
+    //    //-----------//
+    //    // Constants //
+    //    //-----------//
+    //    private static final class Constants
+    //        extends ConstantSet
+    //    {
+    //        //~ Instance fields ----------------------------------------------------
+    //
+    //        final Constant.Ratio minTrueLength = new Constant.Ratio(
+    //            0.4,
+    //            "Minimum true length ratio to keep a line in a cluster");
+    //    }
+
+    //--------//
+    // setVip //
+    //--------//
+    public void setVip ()
+    {
+        vip = true;
     }
 
     //----------//

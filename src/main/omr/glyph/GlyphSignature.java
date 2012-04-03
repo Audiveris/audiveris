@@ -13,9 +13,7 @@ package omr.glyph;
 
 import omr.glyph.facets.Glyph;
 
-import omr.math.Moments;
-
-import omr.util.Implement;
+import omr.moments.GeometricMoments;
 
 /**
  * Class {@code GlyphSignature} is used to implement a map of glyphs,
@@ -34,7 +32,7 @@ public class GlyphSignature
     private final int weight;
 
     /** Glyph normalized moments */
-    private Moments moments;
+    private GeometricMoments moments;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -48,7 +46,7 @@ public class GlyphSignature
     public GlyphSignature (Glyph glyph)
     {
         weight = glyph.getWeight();
-        moments = new Moments(glyph.getMoments());
+        moments = new GeometricMoments(glyph.getGeometricMoments());
     }
 
     //----------------//
@@ -66,17 +64,9 @@ public class GlyphSignature
     //~ Methods ----------------------------------------------------------------
 
     //-----------//
-    // getWeight //
-    //-----------//
-    public int getWeight ()
-    {
-        return weight;
-    }
-
-    //-----------//
     // compareTo //
     //-----------//
-    @Implement(Comparable.class)
+    @Override
     public int compareTo (GlyphSignature other)
     {
         if (weight < other.weight) {
@@ -114,6 +104,14 @@ public class GlyphSignature
         } else {
             return false;
         }
+    }
+
+    //-----------//
+    // getWeight //
+    //-----------//
+    public int getWeight ()
+    {
+        return weight;
     }
 
     //----------//

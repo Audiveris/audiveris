@@ -38,8 +38,7 @@ public class Fermata
     // Fermata //
     //---------//
     /**
-     * Creates a new instance of Fermata event
-     *
+     * Creates a new instance of Fermata event.
      * @param measure measure that contains this mark
      * @param point location of mark
      * @param chord the chord related to the mark
@@ -55,21 +54,11 @@ public class Fermata
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
     //----------//
     // populate //
     //----------//
     /**
-     * Used by SystemTranslator to allocate the fermata marks
-     *
+     * Used by SystemTranslator to allocate the fermata marks.
      * @param glyph underlying glyph
      * @param measure measure where the mark is located
      * @param point location for the mark
@@ -79,23 +68,40 @@ public class Fermata
                                  PixelPoint point)
     {
         // A Fermata relates to the note on the same time slot
-        // With placement depending on fermata upright / inverted
-        // Beware of whole rests for which there is no related slot
+        // With placement depending on fermata upright / inverted.
+        // Beware of whole rests which are handled separately.
         //
-        // TODO: Fermata is said to apply to barline as well, but this feature is
-        // not yet implemented
+        // TODO: Fermata is said to apply to barline as well, but this feature 
+        // is not yet implemented.
         Chord chord;
 
         if (glyph.getShape() == Shape.FERMATA) {
             // Look for a chord below
             chord = measure.getClosestChordBelow(point);
+
+            if (chord == null) {
+                chord = measure.getClosestWholeChordBelow(point);
+            }
         } else {
             // Look for a chord above
             chord = measure.getClosestChordAbove(point);
+
+            if (chord == null) {
+                chord = measure.getClosestWholeChordAbove(point);
+            }
         }
 
         if (chord != null) {
             glyph.setTranslation(new Fermata(measure, point, chord, glyph));
         }
+    }
+
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
     }
 }

@@ -31,9 +31,6 @@ import omr.ui.util.OmrFileFilter;
 import omr.ui.util.UIUtilities;
 
 import omr.util.BasicTask;
-import omr.util.Implement;
-
-import org.bushe.swing.event.EventSubscriber;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
@@ -86,16 +83,6 @@ public class MidiActions
         return Holder.INSTANCE;
     }
 
-    //------------------//
-    // setMidiAvailable //
-    //------------------//
-    public void setMidiAvailable (boolean midiPlayable)
-    {
-        boolean oldValue = this.midiPlayable;
-        this.midiPlayable = midiPlayable;
-        firePropertyChange(MIDI_AVAILABLE, oldValue, this.midiPlayable);
-    }
-
     //-----------------//
     // isMidiAvailable //
     //-----------------//
@@ -112,7 +99,6 @@ public class MidiActions
      *
      * @param event the notified sheet event
      */
-    @Implement(EventSubscriber.class)
     @Override
     public void onEvent (SheetEvent event)
     {
@@ -152,6 +138,16 @@ public class MidiActions
         }
 
         return null;
+    }
+
+    //------------------//
+    // setMidiAvailable //
+    //------------------//
+    public void setMidiAvailable (boolean midiPlayable)
+    {
+        boolean oldValue = this.midiPlayable;
+        this.midiPlayable = midiPlayable;
+        firePropertyChange(MIDI_AVAILABLE, oldValue, this.midiPlayable);
     }
 
     //---------------//
@@ -256,6 +252,18 @@ public class MidiActions
         }
     }
 
+    //~ Inner Interfaces -------------------------------------------------------
+
+    //--------//
+    // Holder //
+    //--------//
+    private static interface Holder
+    {
+        //~ Static fields/initializers -----------------------------------------
+
+        public static final MidiActions INSTANCE = new MidiActions();
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
     //----------//
@@ -349,15 +357,5 @@ public class MidiActions
 
             return null;
         }
-    }
-
-    //--------//
-    // Holder //
-    //--------//
-    private static interface Holder
-    {
-        //~ Static fields/initializers -----------------------------------------
-
-        public static final MidiActions INSTANCE = new MidiActions();
     }
 }

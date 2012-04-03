@@ -89,6 +89,77 @@ public class ScrollView
 
     //~ Methods ----------------------------------------------------------------
 
+    //-----------//
+    // fitHeight //
+    //-----------//
+    /**
+     * Define the zoom ratio so that the full height of the model can be
+     * visible.  We force the zoom ratio to stand within the range of the
+     * slider.
+     */
+    public void fitHeight ()
+    {
+        Rectangle vr = view.getVisibleRect();
+        Dimension dim = view.getModelSize();
+
+        if (logger.isFineEnabled()) {
+            logger.fine("fitHeight vr=" + vr + " dim=" + dim);
+        }
+
+        setZoomRatio((double) (vr.height) / (double) dim.height);
+    }
+
+    //----------//
+    // fitWhole //
+    //----------//
+    /**
+     * Define the zoom ratio so that the full model can be visible.  We
+     * force the zoom ratio to stand within the range of the slider.
+     */
+    public void fitWhole ()
+    {
+        Rectangle vr = view.getVisibleRect();
+        Dimension dim = view.getModelSize();
+
+        if (logger.isFineEnabled()) {
+            logger.fine("fitWhole vr=" + vr + " dim=" + dim);
+        }
+
+        setZoomRatio(
+            Math.min(
+                (double) (vr.width) / (double) dim.width,
+                (double) (vr.height) / (double) dim.height));
+    }
+
+    //----------//
+    // fitWidth //
+    //----------//
+    /**
+     * Define the zoom ratio so that the full width of the model can be
+     * visible.  We force the zoom ratio to stand within the range of the
+     * slider.
+     *
+     * @return true if we have been able to fit the display width, false
+     *         otherwise which happens when the display width is zero
+     */
+    public boolean fitWidth ()
+    {
+        Rectangle vr = view.getVisibleRect();
+        Dimension dim = view.getModelSize();
+
+        if (logger.isFineEnabled()) {
+            logger.fine("fitWidth vr=" + vr + " dim=" + dim);
+        }
+
+        if ((vr.width > 0) && (dim.width > 0)) {
+            setZoomRatio((double) (vr.width) / (double) dim.width);
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     //--------------//
     // getComponent //
     //--------------//
@@ -165,6 +236,19 @@ public class ScrollView
     }
 
     //---------//
+    // getView //
+    //---------//
+    /**
+     * Report the view displayed in the view pane
+     *
+     * @return the view
+     */
+    public RubberPanel getView ()
+    {
+        return view;
+    }
+
+    //---------//
     // setView //
     //---------//
     /**
@@ -179,19 +263,6 @@ public class ScrollView
 
         // At the end, to avoid too early setting of the zoom ratio
         this.view = view;
-    }
-
-    //---------//
-    // getView //
-    //---------//
-    /**
-     * Report the view displayed in the view pane
-     *
-     * @return the view
-     */
-    public RubberPanel getView ()
-    {
-        return view;
     }
 
     //--------------//
@@ -214,77 +285,6 @@ public class ScrollView
                 .setRatio(zoomRatio);
         } else {
             logger.warning("setZoomRatio. No zoom assigned");
-        }
-    }
-
-    //-----------//
-    // fitHeight //
-    //-----------//
-    /**
-     * Define the zoom ratio so that the full height of the model can be
-     * visible.  We force the zoom ratio to stand within the range of the
-     * slider.
-     */
-    public void fitHeight ()
-    {
-        Rectangle vr = view.getVisibleRect();
-        Dimension dim = view.getModelSize();
-
-        if (logger.isFineEnabled()) {
-            logger.fine("fitHeight vr=" + vr + " dim=" + dim);
-        }
-
-        setZoomRatio((double) (vr.height) / (double) dim.height);
-    }
-
-    //----------//
-    // fitWhole //
-    //----------//
-    /**
-     * Define the zoom ratio so that the full model can be visible.  We
-     * force the zoom ratio to stand within the range of the slider.
-     */
-    public void fitWhole ()
-    {
-        Rectangle vr = view.getVisibleRect();
-        Dimension dim = view.getModelSize();
-
-        if (logger.isFineEnabled()) {
-            logger.fine("fitWhole vr=" + vr + " dim=" + dim);
-        }
-
-        setZoomRatio(
-            Math.min(
-                (double) (vr.width) / (double) dim.width,
-                (double) (vr.height) / (double) dim.height));
-    }
-
-    //----------//
-    // fitWidth //
-    //----------//
-    /**
-     * Define the zoom ratio so that the full width of the model can be
-     * visible.  We force the zoom ratio to stand within the range of the
-     * slider.
-     *
-     * @return true if we have been able to fit the display width, false
-     *         otherwise which happens when the display width is zero
-     */
-    public boolean fitWidth ()
-    {
-        Rectangle vr = view.getVisibleRect();
-        Dimension dim = view.getModelSize();
-
-        if (logger.isFineEnabled()) {
-            logger.fine("fitWidth vr=" + vr + " dim=" + dim);
-        }
-
-        if ((vr.width > 0) && (dim.width > 0)) {
-            setZoomRatio((double) (vr.width) / (double) dim.width);
-
-            return true;
-        } else {
-            return false;
         }
     }
 

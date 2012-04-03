@@ -108,43 +108,6 @@ public class BoardsPane
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------------//
-    // getComponent //
-    //--------------//
-    /**
-     * Report the UI component.
-     * @return the concrete component
-     */
-    public JComponent getComponent ()
-    {
-        return component;
-    }
-
-    //---------//
-    // setName //
-    //---------//
-    /**
-     * Assign the unique name for this boards pane.
-     * @param name the assigned name
-     */
-    public void setName (String name)
-    {
-        this.name = name;
-        component.setName(name);
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * Report the unique name for this boards pane.
-     * @return the declared name
-     */
-    public String getName ()
-    {
-        return name;
-    }
-
     //----------//
     // addBoard //
     //----------//
@@ -196,6 +159,30 @@ public class BoardsPane
         }
     }
 
+    //--------------//
+    // getComponent //
+    //--------------//
+    /**
+     * Report the UI component.
+     * @return the concrete component
+     */
+    public JComponent getComponent ()
+    {
+        return component;
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * Report the unique name for this boards pane.
+     * @return the declared name
+     */
+    public String getName ()
+    {
+        return name;
+    }
+
     //-------------//
     // removeBoard //
     //-------------//
@@ -207,6 +194,19 @@ public class BoardsPane
     {
         boards.remove(board);
         update();
+    }
+
+    //---------//
+    // setName //
+    //---------//
+    /**
+     * Assign the unique name for this boards pane.
+     * @param name the assigned name
+     */
+    public void setName (String name)
+    {
+        this.name = name;
+        component.setName(name);
     }
 
     //----------//
@@ -261,21 +261,6 @@ public class BoardsPane
         component.repaint();
     }
 
-    //----------//
-    // getBoard //
-    //----------//
-    private Board getBoard (String title)
-    {
-        for (Board b : boards) {
-            if (b.getName()
-                 .equals(title)) {
-                return b;
-            }
-        }
-
-        return null;
-    }
-
     //--------------//
     // defineLayout //
     //--------------//
@@ -324,6 +309,21 @@ public class BoardsPane
         boardsPanel.setBorder(null);
 
         return boardsPanel;
+    }
+
+    //----------//
+    // getBoard //
+    //----------//
+    private Board getBoard (String title)
+    {
+        for (Board b : boards) {
+            if (b.getName()
+                 .equals(title)) {
+                return b;
+            }
+        }
+
+        return null;
     }
 
     //~ Inner Classes ----------------------------------------------------------

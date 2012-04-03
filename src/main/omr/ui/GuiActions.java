@@ -103,90 +103,6 @@ public class GuiActions
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------------------//
-    // setBoardsDisplayed //
-    //--------------------//
-    public void setBoardsDisplayed (boolean value)
-    {
-        boolean oldValue = constants.boardsDisplayed.getValue();
-        constants.boardsDisplayed.setValue(value);
-        firePropertyChange(BOARDS_DISPLAYED, oldValue, value);
-    }
-
-    //-------------------//
-    // isBoardsDisplayed //
-    //-------------------//
-    public boolean isBoardsDisplayed ()
-    {
-        return constants.boardsDisplayed.getValue();
-    }
-
-    //--------------------//
-    // isBrowserSupported //
-    //--------------------//
-    /**
-     * Report whether the underlying platform can launch a browser
-     * @return true if it can
-     */
-    public boolean isBrowserSupported ()
-    {
-        return WebBrowser.getBrowser()
-                         .isSupported();
-    }
-
-    //--------------------//
-    // setErrorsDisplayed //
-    //--------------------//
-    public void setErrorsDisplayed (boolean value)
-    {
-        boolean oldValue = constants.errorsDisplayed.getValue();
-        constants.errorsDisplayed.setValue(value);
-        firePropertyChange(ERRORS_DISPLAYED, oldValue, value);
-    }
-
-    //-------------------//
-    // isErrorsDisplayed //
-    //-------------------//
-    public boolean isErrorsDisplayed ()
-    {
-        return constants.errorsDisplayed.getValue();
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the singleton
-     *
-     * @return the unique instance of this class
-     */
-    public static synchronized GuiActions getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new GuiActions();
-        }
-
-        return INSTANCE;
-    }
-
-    //-----------------//
-    // setLogDisplayed //
-    //-----------------//
-    public void setLogDisplayed (boolean value)
-    {
-        boolean oldValue = constants.logDisplayed.getValue();
-        constants.logDisplayed.setValue(value);
-        firePropertyChange(LOG_DISPLAYED, oldValue, value);
-    }
-
-    //----------------//
-    // isLogDisplayed //
-    //----------------//
-    public boolean isLogDisplayed ()
-    {
-        return constants.logDisplayed.getValue();
-    }
-
     //----------//
     // clearLog //
     //----------//
@@ -257,6 +173,60 @@ public class GuiActions
                .exit();
     }
 
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the singleton
+     *
+     * @return the unique instance of this class
+     */
+    public static synchronized GuiActions getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new GuiActions();
+        }
+
+        return INSTANCE;
+    }
+
+    //-------------------//
+    // isBoardsDisplayed //
+    //-------------------//
+    public boolean isBoardsDisplayed ()
+    {
+        return constants.boardsDisplayed.getValue();
+    }
+
+    //--------------------//
+    // isBrowserSupported //
+    //--------------------//
+    /**
+     * Report whether the underlying platform can launch a browser
+     * @return true if it can
+     */
+    public boolean isBrowserSupported ()
+    {
+        return WebBrowser.getBrowser()
+                         .isSupported();
+    }
+
+    //-------------------//
+    // isErrorsDisplayed //
+    //-------------------//
+    public boolean isErrorsDisplayed ()
+    {
+        return constants.errorsDisplayed.getValue();
+    }
+
+    //----------------//
+    // isLogDisplayed //
+    //----------------//
+    public boolean isLogDisplayed ()
+    {
+        return constants.logDisplayed.getValue();
+    }
+
     //---------------//
     // launchTrainer //
     //---------------//
@@ -270,6 +240,36 @@ public class GuiActions
     public void launchTrainer (ActionEvent e)
     {
         GlyphTrainer.launch();
+    }
+
+    //--------------------//
+    // setBoardsDisplayed //
+    //--------------------//
+    public void setBoardsDisplayed (boolean value)
+    {
+        boolean oldValue = constants.boardsDisplayed.getValue();
+        constants.boardsDisplayed.setValue(value);
+        firePropertyChange(BOARDS_DISPLAYED, oldValue, value);
+    }
+
+    //--------------------//
+    // setErrorsDisplayed //
+    //--------------------//
+    public void setErrorsDisplayed (boolean value)
+    {
+        boolean oldValue = constants.errorsDisplayed.getValue();
+        constants.errorsDisplayed.setValue(value);
+        firePropertyChange(ERRORS_DISPLAYED, oldValue, value);
+    }
+
+    //-----------------//
+    // setLogDisplayed //
+    //-----------------//
+    public void setLogDisplayed (boolean value)
+    {
+        boolean oldValue = constants.logDisplayed.getValue();
+        constants.logDisplayed.setValue(value);
+        firePropertyChange(LOG_DISPLAYED, oldValue, value);
     }
 
     //-----------//

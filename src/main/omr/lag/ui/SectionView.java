@@ -28,10 +28,11 @@ public interface SectionView
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * Allow to modify the display color of a given section.
-     * @param color the new color
+     * Report the default color. This is the permanent default, which is used
+     * when the color is reset by {@link #resetColor}
+     * @return the section default color
      */
-    public void setColor (Color color);
+    public Color getDefaultColor ();
 
     /**
      * Report whether a default color has been assigned
@@ -40,20 +41,7 @@ public interface SectionView
     public boolean isColorized ();
 
     /**
-     * Set the default color.
-     * @param color the default color for this section
-     */
-    public void setDefaultColor (Color color);
-
-    /**
-     * Report the default color. This is the permanent default, which is used
-     * when the color is reset by {@link #resetColor}
-     * @return the section default color
-     */
-    public Color getDefaultColor ();
-
-    /**
-     * Render the section using the provided graphics object, while 
+     * Render the section using the provided graphics object, while
      * showing that the section has been selected.
      * @param g the graphics environment (which may be applying transformation
      * such as scale)
@@ -66,4 +54,16 @@ public interface SectionView
      * Allow to reset to default the display color of a given section
      */
     public void resetColor ();
+
+    /**
+     * Allow to modify the display color of a given section.
+     * @param color the new color
+     */
+    public void setColor (Color color);
+
+    /**
+     * Set the default color.
+     * @param color the default color for this section
+     */
+    public void setDefaultColor (Color color);
 }

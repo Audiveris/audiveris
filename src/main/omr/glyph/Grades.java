@@ -31,7 +31,7 @@ public class Grades
 
     /** <b>Maximum</b> grade for a glyph before being merged in a compound */
     public static final double compoundPartMaxGrade = constants.compoundPartMaxGrade.getValue();
-    
+
     // Minimum values
     //---------------
 

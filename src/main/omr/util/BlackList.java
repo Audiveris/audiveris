@@ -28,10 +28,10 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class {@code BlackList} handles the mechanism of excluding certain 
- * files and subdirectories in a directory, according to the presence 
- * and content of a specific black-list in this directory. 
- * 
+ * Class {@code BlackList} handles the mechanism of excluding certain
+ * files and subdirectories in a directory, according to the presence
+ * and content of a specific black-list in this directory.
+ *
  * <b>Nota</b>: The scope of this blacklist is just the directory that contains
  * the black-list file, not its subdirectories if any.
  *
@@ -83,19 +83,6 @@ public class BlackList
 
     //~ Methods ----------------------------------------------------------------
 
-    //---------//
-    // isLegal //
-    //---------//
-    /**
-     * Check whether a file is legal (not blacklisted).
-     * @param file the file to check
-     * @return true if legal
-     */
-    public boolean isLegal (File file)
-    {
-        return !file.equals(blackFile) && !bl.contains(file.getName());
-    }
-
     //-----//
     // add //
     //-----//
@@ -112,6 +99,19 @@ public class BlackList
             bl.add(name);
             store();
         }
+    }
+
+    //---------//
+    // isLegal //
+    //---------//
+    /**
+     * Check whether a file is legal (not blacklisted).
+     * @param file the file to check
+     * @return true if legal
+     */
+    public boolean isLegal (File file)
+    {
+        return !file.equals(blackFile) && !bl.contains(file.getName());
     }
 
     //-----------//

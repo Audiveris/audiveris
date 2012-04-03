@@ -83,84 +83,6 @@ public abstract class AbstractStep
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------------//
-    // getDescription //
-    //----------------//
-    /**
-     * Report a description of the step
-     * @return a short description
-     */
-    public String getDescription ()
-    {
-        return description;
-    }
-
-    //--------//
-    // isDone //
-    //--------//
-    /**
-     * Check whether this task has been done
-     * @return true if started/done, false otherwise
-     */
-    public boolean isDone (Sheet sheet)
-    {
-        return sheet.isDone(this);
-    }
-
-    //-------------//
-    // isMandatory //
-    //-------------//
-    /** Is the step mandatory? */
-    public boolean isMandatory ()
-    {
-        return mandatory == Step.Mandatory.MANDATORY;
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    /** Name of the step */
-    public String getName ()
-    {
-        return name;
-    }
-
-    //------------//
-    // isRedoable //
-    //------------//
-    /** Is the step repeatable at will? */
-    public boolean isRedoable ()
-    {
-        return redoable == Step.Redoable.REDOABLE;
-    }
-
-    //--------------//
-    // isScoreLevel //
-    //--------------//
-    public boolean isScoreLevel ()
-    {
-        return level == Step.Level.SCORE_LEVEL;
-    }
-
-    //-----------//
-    // isStarted //
-    //-----------//
-    /**
-     * Check whether this task has started
-     * @return true if started, false otherwise
-     */
-    public boolean isStarted (Sheet sheet,
-                              Score score)
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    /** Related short tab label */
-    public String getTab ()
-    {
-        return label;
-    }
-
     //-----------//
     // displayUI //
     //-----------//
@@ -204,6 +126,84 @@ public abstract class AbstractStep
     public void done (Sheet sheet)
     {
         sheet.done(this);
+    }
+
+    //----------------//
+    // getDescription //
+    //----------------//
+    /**
+     * Report a description of the step
+     * @return a short description
+     */
+    public String getDescription ()
+    {
+        return description;
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /** Name of the step */
+    public String getName ()
+    {
+        return name;
+    }
+
+    /** Related short tab label */
+    public String getTab ()
+    {
+        return label;
+    }
+
+    //--------//
+    // isDone //
+    //--------//
+    /**
+     * Check whether this task has been done
+     * @return true if started/done, false otherwise
+     */
+    public boolean isDone (Sheet sheet)
+    {
+        return sheet.isDone(this);
+    }
+
+    //-------------//
+    // isMandatory //
+    //-------------//
+    /** Is the step mandatory? */
+    public boolean isMandatory ()
+    {
+        return mandatory == Step.Mandatory.MANDATORY;
+    }
+
+    //------------//
+    // isRedoable //
+    //------------//
+    /** Is the step repeatable at will? */
+    public boolean isRedoable ()
+    {
+        return redoable == Step.Redoable.REDOABLE;
+    }
+
+    //--------------//
+    // isScoreLevel //
+    //--------------//
+    public boolean isScoreLevel ()
+    {
+        return level == Step.Level.SCORE_LEVEL;
+    }
+
+    //-----------//
+    // isStarted //
+    //-----------//
+    /**
+     * Check whether this task has started
+     * @return true if started, false otherwise
+     */
+    public boolean isStarted (Sheet sheet,
+                              Score score)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     //---------//

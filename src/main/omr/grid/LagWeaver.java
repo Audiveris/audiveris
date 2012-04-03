@@ -162,18 +162,6 @@ public class LagWeaver
         ///watch.print();
     }
 
-    //------------//
-    // getHeading //
-    //------------//
-    private Heading getHeading (Point prevPt,
-                                Point pt)
-    {
-        int dx = Integer.signum(pt.x - prevPt.x);
-        int dy = Integer.signum(pt.y - prevPt.y);
-
-        return headings[1 + dy][1 + dx];
-    }
-
     //---------------//
     // addPointAbove //
     //---------------//
@@ -319,6 +307,18 @@ public class LagWeaver
                 "lSect#" + lSect.getId() + " checks:" + pointsBelow.size() +
                 Sections.toString(" targets", lSect.getTargets()));
         }
+    }
+
+    //------------//
+    // getHeading //
+    //------------//
+    private Heading getHeading (Point prevPt,
+                                Point pt)
+    {
+        int dx = Integer.signum(pt.x - prevPt.x);
+        int dy = Integer.signum(pt.y - prevPt.y);
+
+        return headings[1 + dy][1 + dx];
     }
 
     //--------------//

@@ -248,44 +248,105 @@ public class Sheet
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------------------//
-    // setDefaultHistoRatio //
-    //----------------------//
+    //------//
+    // done //
+    //------//
     /**
-     * Set the default value of histogram threhold for staff detection
-     * @param histoRatio the default ratio of maximum histogram value
+     * Remember that the provided step has been done on the sheet
+     * @param step the provided step
      */
-    public static void setDefaultHistoRatio (double histoRatio)
+    public final void done (Step step)
     {
-        constants.defaultStaffThreshold.setValue(histoRatio);
+        doneSteps.add(step);
     }
 
-    //----------------------//
-    // getDefaultHistoRatio //
-    //----------------------//
+    //----------//
+    // addError //
+    //----------//
     /**
-     * Report the default value of histogram threhold for staff detection
-     * @return the default ratio of maximum histogram value
+     * Register an error in the sheet ErrorsWindow
+     * @param container the immediate container for the error location
+     * @param glyph the related glyph if any
+     * @param text the error message
      */
-    public static double getDefaultHistoRatio ()
+    public void addError (SystemNode container,
+                          Glyph      glyph,
+                          String     text)
     {
-        return constants.defaultStaffThreshold.getValue();
+        if (Main.getGui() != null) {
+            getErrorsEditor()
+                .addError(container, glyph, text);
+        }
     }
 
-    //-------------------------//
-    // setDefaultMaxForeground //
-    //-------------------------//
-    public static void setDefaultMaxForeground (int level)
+    //    //----------//
+    //    // colorize //
+    //    //----------//
+    //    /**
+    //     * Set proper colors for sections of all recognized items so far, using the
+    //     * provided color
+    //     *
+    //     * @param lag       the lag to be colorized
+    //     * @param viewIndex the provided lag view index
+    //     * @param color     the color to use
+    //     */
+    //    public void colorize (Color color)
+    //    {
+    //        if (score != null) {
+    //            // Colorization of all known score items
+    //            score.accept(new ScoreColorizer(color));
+    //        } else {
+    //            // Nothing to colorize ? TODO
+    //        }
+    //    }
+
+    //----------------------------------//
+    // createSymbolsControllerAndEditor //
+    //----------------------------------//
+    public void createSymbolsControllerAndEditor ()
     {
-        constants.maxForegroundGrayLevel.setValue(level);
+        SymbolsModel model = new SymbolsModel(this);
+        symbolsController = new SymbolsController(model);
+
+        if (Main.getGui() != null) {
+            symbolsEditor = new SymbolsEditor(this, symbolsController);
+        }
     }
 
-    //-------------------------//
-    // getDefaultMaxForeground //
-    //-------------------------//
-    public static int getDefaultMaxForeground ()
+    //----------------------//
+    // createSystemsBuilder //
+    //----------------------//
+    public void createSystemsBuilder ()
     {
-        return constants.maxForegroundGrayLevel.getValue();
+        page.resetSystems();
+        systemsBuilder = new SystemsBuilder(this);
+    }
+
+    //---------------------------//
+    // createVerticalsController //
+    //---------------------------//
+    public void createVerticalsController ()
+    {
+        verticalsController = new VerticalsController(this);
+    }
+
+    //-----------------//
+    // dumpSystemInfos //
+    //-----------------//
+    /**
+     * Utility method, to dump all sheet systems
+     */
+    public void dumpSystemInfos ()
+    {
+        System.out.println("--- SystemInfos ---");
+
+        int i = 0;
+
+        for (SystemInfo system : getSystems()) {
+            Main.dumping.dump(system, "#" + i++);
+        }
+
+        System.out.println("--- SystemInfos end ---");
     }
 
     //-----------------//
@@ -302,19 +363,6 @@ public class Sheet
     }
 
     //-------------//
-    // setAssembly //
-    //-------------//
-    /**
-     * Remember the link to the related sheet display assembly
-     *
-     * @param assembly the related sheet assembly
-     */
-    public void setAssembly (SheetAssembly assembly)
-    {
-        this.assembly = assembly;
-    }
-
-    //-------------//
     // getAssembly //
     //-------------//
     /**
@@ -325,17 +373,6 @@ public class Sheet
     public SheetAssembly getAssembly ()
     {
         return assembly;
-    }
-
-    //----------------//
-    // setBarsChecker //
-    //----------------//
-    /**
-     * @param barsChecker the barsChecker
-     */
-    public void setBarsChecker (BarsChecker barsChecker)
-    {
-        this.barsChecker = barsChecker;
     }
 
     //----------------//
@@ -362,17 +399,6 @@ public class Sheet
     }
 
     //-------------------//
-    // setBoundaryEditor //
-    //-------------------//
-    /**
-     * @param boundaryEditor the boundaryEditor to set
-     */
-    public void setBoundaryEditor (BoundaryEditor boundaryEditor)
-    {
-        this.boundaryEditor = boundaryEditor;
-    }
-
-    //-------------------//
     // getBoundaryEditor //
     //-------------------//
     /**
@@ -381,14 +407,6 @@ public class Sheet
     public BoundaryEditor getBoundaryEditor ()
     {
         return boundaryEditor;
-    }
-
-    //----------------//
-    // setCurrentStep //
-    //----------------//
-    public void setCurrentStep (Step step)
-    {
-        currentStep = step;
     }
 
     //----------------//
@@ -403,6 +421,26 @@ public class Sheet
         return currentStep;
     }
 
+    //----------------------//
+    // getDefaultHistoRatio //
+    //----------------------//
+    /**
+     * Report the default value of histogram threhold for staff detection
+     * @return the default ratio of maximum histogram value
+     */
+    public static double getDefaultHistoRatio ()
+    {
+        return constants.defaultStaffThreshold.getValue();
+    }
+
+    //-------------------------//
+    // getDefaultMaxForeground //
+    //-------------------------//
+    public static int getDefaultMaxForeground ()
+    {
+        return constants.maxForegroundGrayLevel.getValue();
+    }
+
     //--------------//
     // getDimension //
     //--------------//
@@ -414,19 +452,6 @@ public class Sheet
     public PixelDimension getDimension ()
     {
         return picture.getDimension();
-    }
-
-    //--------//
-    // isDone //
-    //--------//
-    /**
-     * Report whether the specified step has been performed onn this sheet
-     * @param step the step to check
-     * @return true if already performed
-     */
-    public boolean isDone (Step step)
-    {
-        return doneSteps.contains(step);
     }
 
     //-----------------//
@@ -451,18 +476,6 @@ public class Sheet
     }
 
     //---------------//
-    // setHistoRatio //
-    //---------------//
-    /**
-     * Set the sheet value of histogram threhold for staff detection
-     * @param histoRatio the ratio of maximum histogram value
-     */
-    public void setHistoRatio (double histoRatio)
-    {
-        this.histoRatio = histoRatio;
-    }
-
-    //---------------//
     // getHistoRatio //
     //---------------//
     /**
@@ -480,57 +493,6 @@ public class Sheet
         return histoRatio;
     }
 
-    //----------//
-    // setImage //
-    //----------//
-    public final void setImage (RenderedImage image)
-        throws StepException
-    {
-        // Reset most of all members
-        reset();
-
-        try {
-            picture = new Picture(image, locationService);
-
-            if (picture.getImplicitForeground() == null) {
-                picture.setMaxForeground(getMaxForeground());
-            }
-
-            setPicture(picture);
-            getBench()
-                .recordImageDimension(picture.getWidth(), picture.getHeight());
-
-            done(Steps.valueOf(Steps.LOAD));
-        } catch (ImageFormatException ex) {
-            String msg = "Unsupported image format in file " +
-                         getScore()
-                             .getImagePath() + "\n" + ex.getMessage();
-
-            if (Main.getGui() != null) {
-                Main.getGui()
-                    .displayWarning(msg);
-            } else {
-                logger.warning(msg);
-            }
-
-            throw new StepException(ex);
-        }
-    }
-
-    //------------------//
-    // setHorizontalLag //
-    //------------------//
-    /**
-     * Assign the current horizontal lag for the sheet
-     *
-     * @param hLag the horizontal lag at hand
-     */
-    public void setHorizontalLag (Lag hLag)
-    {
-        this.hLag = hLag;
-        hLag.setServices(locationService, nest.getGlyphService());
-    }
-
     //------------------//
     // getHorizontalLag //
     //------------------//
@@ -542,19 +504,6 @@ public class Sheet
     public Lag getHorizontalLag ()
     {
         return hLag;
-    }
-
-    //----------------//
-    // setHorizontals //
-    //----------------//
-    /**
-     * Set horizontals system by system
-     *
-     * @param horizontals the horizontals found
-     */
-    public void setHorizontals (Horizontals horizontals)
-    {
-        this.horizontals = horizontals;
     }
 
     //----------------//
@@ -623,18 +572,6 @@ public class Sheet
     }
 
     //---------------------//
-    // setLongSectionMaxId //
-    //---------------------//
-    /**
-     * Remember the id of the last long horizontal section
-     * @param id the id of the last long horizontal section
-     */
-    public void setLongSectionMaxId (int id)
-    {
-        lastLongHSectionId = id;
-    }
-
-    //---------------------//
     // getLongSectionMaxId //
     //---------------------//
     /**
@@ -644,14 +581,6 @@ public class Sheet
     public int getLongSectionMaxId ()
     {
         return lastLongHSectionId;
-    }
-
-    //------------------//
-    // setMaxForeground //
-    //------------------//
-    public void setMaxForeground (int level)
-    {
-        this.maxForeground = level;
     }
 
     //------------------//
@@ -678,18 +607,6 @@ public class Sheet
         return nest;
     }
 
-    //--------------//
-    // isOnPatterns //
-    //--------------//
-    /**
-     * Check whether current step is SYMBOLS.
-     * @return true if on SYMBOLS
-     */
-    public boolean isOnPatterns ()
-    {
-        return Stepping.getLatestStep(this) == Steps.valueOf(Steps.SYMBOLS);
-    }
-
     //---------//
     // getPage //
     //---------//
@@ -712,22 +629,6 @@ public class Sheet
     public Picture getPicture ()
     {
         return picture;
-    }
-
-    //----------//
-    // setScale //
-    //----------//
-    /**
-     * Link scale information to this sheet
-     *
-     * @param scale the computed (or read from score file) scale
-     * @throws StepException
-     */
-    public void setScale (Scale scale)
-        throws StepException
-    {
-        this.scale = scale;
-        page.setScale(scale);
     }
 
     //----------//
@@ -792,26 +693,6 @@ public class Sheet
     }
 
     //---------//
-    // setSkew //
-    //---------//
-    /**
-     * Link skew information to this sheet
-     *
-     * @param skew the skew information
-     */
-    public void setSkew (Skew skew)
-    {
-        this.skew = skew;
-
-        // Update displayed image if any
-        if (getPicture()
-                .isRotated() && (Main.getGui() != null)) {
-            assembly.getComponent()
-                    .repaint();
-        }
-    }
-
-    //---------//
     // getSkew //
     //---------//
     /**
@@ -864,17 +745,6 @@ public class Sheet
     public SymbolsEditor getSymbolsEditor ()
     {
         return symbolsEditor;
-    }
-
-    //---------------------//
-    // setSystemBoundaries //
-    //---------------------//
-    /**
-     * Set the flag about systems boundaries.
-     */
-    public void setSystemBoundaries ()
-    {
-        hasSystemBoundaries = true;
     }
 
     //---------------//
@@ -1113,17 +983,6 @@ public class Sheet
     }
 
     //------------------//
-    // setTargetBuilder //
-    //------------------//
-    /**
-     * @param targetBuilder the targetBuilder to set
-     */
-    public void setTargetBuilder (TargetBuilder targetBuilder)
-    {
-        this.targetBuilder = targetBuilder;
-    }
-
-    //------------------//
     // getTargetBuilder //
     //------------------//
     /**
@@ -1132,23 +991,6 @@ public class Sheet
     public TargetBuilder getTargetBuilder ()
     {
         return targetBuilder;
-    }
-
-    //----------------//
-    // setVerticalLag //
-    //----------------//
-    /**
-     * Assign the current vertical lag for the sheet
-     * @param vLag the current vertical lag
-     * @return the previous vLag, or null
-     */
-    public Lag setVerticalLag (Lag vLag)
-    {
-        Lag old = this.vLag;
-        this.vLag = vLag;
-        vLag.setServices(locationService, nest.getGlyphService());
-
-        return old;
     }
 
     //----------------//
@@ -1184,107 +1026,6 @@ public class Sheet
         return picture.getWidth();
     }
 
-    //----------//
-    // addError //
-    //----------//
-    /**
-     * Register an error in the sheet ErrorsWindow
-     * @param container the immediate container for the error location
-     * @param glyph the related glyph if any
-     * @param text the error message
-     */
-    public void addError (SystemNode container,
-                          Glyph      glyph,
-                          String     text)
-    {
-        if (Main.getGui() != null) {
-            getErrorsEditor()
-                .addError(container, glyph, text);
-        }
-    }
-
-    //    //----------//
-    //    // colorize //
-    //    //----------//
-    //    /**
-    //     * Set proper colors for sections of all recognized items so far, using the
-    //     * provided color
-    //     *
-    //     * @param lag       the lag to be colorized
-    //     * @param viewIndex the provided lag view index
-    //     * @param color     the color to use
-    //     */
-    //    public void colorize (Color color)
-    //    {
-    //        if (score != null) {
-    //            // Colorization of all known score items
-    //            score.accept(new ScoreColorizer(color));
-    //        } else {
-    //            // Nothing to colorize ? TODO
-    //        }
-    //    }
-
-    //----------------------------------//
-    // createSymbolsControllerAndEditor //
-    //----------------------------------//
-    public void createSymbolsControllerAndEditor ()
-    {
-        SymbolsModel model = new SymbolsModel(this);
-        symbolsController = new SymbolsController(model);
-
-        if (Main.getGui() != null) {
-            symbolsEditor = new SymbolsEditor(this, symbolsController);
-        }
-    }
-
-    //----------------------//
-    // createSystemsBuilder //
-    //----------------------//
-    public void createSystemsBuilder ()
-    {
-        page.resetSystems();
-        systemsBuilder = new SystemsBuilder(this);
-    }
-
-    //---------------------------//
-    // createVerticalsController //
-    //---------------------------//
-    public void createVerticalsController ()
-    {
-        verticalsController = new VerticalsController(this);
-    }
-
-    //------//
-    // done //
-    //------//
-    /**
-     * Remember that the provided step has been done on the sheet
-     * @param step the provided step
-     */
-    public final void done (Step step)
-    {
-        doneSteps.add(step);
-    }
-
-    //-----------------//
-    // dumpSystemInfos //
-    //-----------------//
-    /**
-     * Utility method, to dump all sheet systems
-     */
-    public void dumpSystemInfos ()
-    {
-        System.out.println("--- SystemInfos ---");
-
-        int i = 0;
-
-        for (SystemInfo system : getSystems()) {
-            Main.dumping.dump(system, "#" + i++);
-        }
-
-        System.out.println("--- SystemInfos end ---");
-    }
-
     //---------------//
     // hasHistoRatio //
     //---------------//
@@ -1315,6 +1056,31 @@ public class Sheet
     public boolean hasSystemBoundaries ()
     {
         return hasSystemBoundaries;
+    }
+
+    //--------//
+    // isDone //
+    //--------//
+    /**
+     * Report whether the specified step has been performed onn this sheet
+     * @param step the step to check
+     * @return true if already performed
+     */
+    public boolean isDone (Step step)
+    {
+        return doneSteps.contains(step);
+    }
+
+    //--------------//
+    // isOnPatterns //
+    //--------------//
+    /**
+     * Check whether current step is SYMBOLS.
+     * @return true if on SYMBOLS
+     */
+    public boolean isOnPatterns ()
+    {
+        return Stepping.getLatestStep(this) == Steps.valueOf(Steps.SYMBOLS);
     }
 
     //--------//
@@ -1349,6 +1115,240 @@ public class Sheet
                              .isEmpty()) {
             score.close();
         }
+    }
+
+    //-------------//
+    // setAssembly //
+    //-------------//
+    /**
+     * Remember the link to the related sheet display assembly
+     *
+     * @param assembly the related sheet assembly
+     */
+    public void setAssembly (SheetAssembly assembly)
+    {
+        this.assembly = assembly;
+    }
+
+    //----------------//
+    // setBarsChecker //
+    //----------------//
+    /**
+     * @param barsChecker the barsChecker
+     */
+    public void setBarsChecker (BarsChecker barsChecker)
+    {
+        this.barsChecker = barsChecker;
+    }
+
+    //-------------------//
+    // setBoundaryEditor //
+    //-------------------//
+    /**
+     * @param boundaryEditor the boundaryEditor to set
+     */
+    public void setBoundaryEditor (BoundaryEditor boundaryEditor)
+    {
+        this.boundaryEditor = boundaryEditor;
+    }
+
+    //----------------//
+    // setCurrentStep //
+    //----------------//
+    public void setCurrentStep (Step step)
+    {
+        currentStep = step;
+    }
+
+    //----------------------//
+    // setDefaultHistoRatio //
+    //----------------------//
+    /**
+     * Set the default value of histogram threhold for staff detection
+     * @param histoRatio the default ratio of maximum histogram value
+     */
+    public static void setDefaultHistoRatio (double histoRatio)
+    {
+        constants.defaultStaffThreshold.setValue(histoRatio);
+    }
+
+    //-------------------------//
+    // setDefaultMaxForeground //
+    //-------------------------//
+    public static void setDefaultMaxForeground (int level)
+    {
+        constants.maxForegroundGrayLevel.setValue(level);
+    }
+
+    //---------------//
+    // setHistoRatio //
+    //---------------//
+    /**
+     * Set the sheet value of histogram threhold for staff detection
+     * @param histoRatio the ratio of maximum histogram value
+     */
+    public void setHistoRatio (double histoRatio)
+    {
+        this.histoRatio = histoRatio;
+    }
+
+    //------------------//
+    // setHorizontalLag //
+    //------------------//
+    /**
+     * Assign the current horizontal lag for the sheet
+     *
+     * @param hLag the horizontal lag at hand
+     */
+    public void setHorizontalLag (Lag hLag)
+    {
+        this.hLag = hLag;
+        hLag.setServices(locationService, nest.getGlyphService());
+    }
+
+    //----------------//
+    // setHorizontals //
+    //----------------//
+    /**
+     * Set horizontals system by system
+     *
+     * @param horizontals the horizontals found
+     */
+    public void setHorizontals (Horizontals horizontals)
+    {
+        this.horizontals = horizontals;
+    }
+
+    //----------//
+    // setImage //
+    //----------//
+    public final void setImage (RenderedImage image)
+        throws StepException
+    {
+        // Reset most of all members
+        reset();
+
+        try {
+            picture = new Picture(image, locationService);
+
+            if (picture.getImplicitForeground() == null) {
+                picture.setMaxForeground(getMaxForeground());
+            }
+
+            setPicture(picture);
+            getBench()
+                .recordImageDimension(picture.getWidth(), picture.getHeight());
+
+            done(Steps.valueOf(Steps.LOAD));
+        } catch (ImageFormatException ex) {
+            String msg = "Unsupported image format in file " +
+                         getScore()
+                             .getImagePath() + "\n" + ex.getMessage();
+
+            if (Main.getGui() != null) {
+                Main.getGui()
+                    .displayWarning(msg);
+            } else {
+                logger.warning(msg);
+            }
+
+            throw new StepException(ex);
+        }
+    }
+
+    //---------------------//
+    // setLongSectionMaxId //
+    //---------------------//
+    /**
+     * Remember the id of the last long horizontal section
+     * @param id the id of the last long horizontal section
+     */
+    public void setLongSectionMaxId (int id)
+    {
+        lastLongHSectionId = id;
+    }
+
+    //------------------//
+    // setMaxForeground //
+    //------------------//
+    public void setMaxForeground (int level)
+    {
+        this.maxForeground = level;
+    }
+
+    //----------//
+    // setScale //
+    //----------//
+    /**
+     * Link scale information to this sheet
+     *
+     * @param scale the computed (or read from score file) scale
+     * @throws StepException
+     */
+    public void setScale (Scale scale)
+        throws StepException
+    {
+        this.scale = scale;
+        page.setScale(scale);
+    }
+
+    //---------//
+    // setSkew //
+    //---------//
+    /**
+     * Link skew information to this sheet
+     *
+     * @param skew the skew information
+     */
+    public void setSkew (Skew skew)
+    {
+        this.skew = skew;
+
+        // Update displayed image if any
+        if (getPicture()
+                .isRotated() && (Main.getGui() != null)) {
+            assembly.getComponent()
+                    .repaint();
+        }
+    }
+
+    //---------------------//
+    // setSystemBoundaries //
+    //---------------------//
+    /**
+     * Set the flag about systems boundaries.
+     */
+    public void setSystemBoundaries ()
+    {
+        hasSystemBoundaries = true;
+    }
+
+    //------------------//
+    // setTargetBuilder //
+    //------------------//
+    /**
+     * @param targetBuilder the targetBuilder to set
+     */
+    public void setTargetBuilder (TargetBuilder targetBuilder)
+    {
+        this.targetBuilder = targetBuilder;
+    }
+
+    //----------------//
+    // setVerticalLag //
+    //----------------//
+    /**
+     * Assign the current vertical lag for the sheet
+     * @param vLag the current vertical lag
+     * @return the previous vLag, or null
+     */
+    public Lag setVerticalLag (Lag vLag)
+    {
+        Lag old = this.vLag;
+        this.vLag = vLag;
+        vLag.setServices(locationService, nest.getGlyphService());
+
+        return old;
     }
 
     //----------------//
@@ -1483,29 +1483,6 @@ public class Sheet
         return "{Sheet " + page.getId() + "}";
     }
 
-    //------------//
-    // setPicture //
-    //------------//
-    /**
-     * Set the picture of this sheet, that is the image to be processed.
-     * @param picture the related picture
-     */
-    private void setPicture (Picture picture)
-    {
-        this.picture = picture;
-
-        locationService.subscribeStrongly(LocationEvent.class, picture);
-
-        // Display sheet picture if not batch mode
-        if (Main.getGui() != null) {
-            PictureView pictureView = new PictureView(Sheet.this);
-            assembly.addViewTab(
-                Step.PICTURE_TAB,
-                pictureView,
-                new BoardsPane(new PixelBoard(Sheet.this)));
-        }
-    }
-
     //-------//
     // reset //
     //-------//
@@ -1529,6 +1506,29 @@ public class Sheet
         currentStep = null;
         doneSteps = new HashSet<Step>();
         systemManager.reset();
+    }
+
+    //------------//
+    // setPicture //
+    //------------//
+    /**
+     * Set the picture of this sheet, that is the image to be processed.
+     * @param picture the related picture
+     */
+    private void setPicture (Picture picture)
+    {
+        this.picture = picture;
+
+        locationService.subscribeStrongly(LocationEvent.class, picture);
+
+        // Display sheet picture if not batch mode
+        if (Main.getGui() != null) {
+            PictureView pictureView = new PictureView(Sheet.this);
+            assembly.addViewTab(
+                Step.PICTURE_TAB,
+                pictureView,
+                new BoardsPane(new PixelBoard(Sheet.this)));
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------

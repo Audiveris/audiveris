@@ -67,6 +67,19 @@ public interface Nest
     //~ Methods ----------------------------------------------------------------
 
     /**
+     * Register a glyph and make sure all its member sections point back to it.
+     * @param glyph the glyph to add to the nest
+     * @return the actual glyph (already existing or brand new)
+     */
+    Glyph addGlyph (Glyph glyph);
+
+    /**
+     * Print out major internal info about this glyph nest.
+     * @param title a specific title to be used for the dump
+     */
+    void dump (String title);
+
+    /**
      * Export the unmodifiable collection of active glyphs of the nest.
      * @return the collection of glyphs for which at least a section is assigned
      */
@@ -84,6 +97,12 @@ public interface Nest
      * @return the glyph found, or null otherwise
      */
     Glyph getGlyph (Integer id);
+
+    /**
+     * Report the nest selection service
+     * @return the nest selection service (Glyph, GlyphSet, GlyphId)
+     */
+    SelectionService getGlyphService ();
 
     /**
      * Get the histogram for a glyph in this area, in the specified orientation
@@ -116,12 +135,6 @@ public interface Nest
     Glyph getOriginal (GlyphSignature signature);
 
     /**
-     * Report the nest selection service
-     * @return the nest selection service (Glyph, GlyphSet, GlyphId)
-     */
-    SelectionService getGlyphService ();
-
-    /**
      * Report the glyph currently selected, if any
      * @return the current glyph, or null
      */
@@ -134,39 +147,11 @@ public interface Nest
     Set<Glyph> getSelectedGlyphSet ();
 
     /**
-     * Inject dependency on location service, and trigger subscriptions
-     * @param locationService the location service
-     */
-    void setServices (SelectionService locationService);
-
-    /**
      * Check whether the provided glyph is among the VIP ones
      * @param glyph the glyph (ID) to check
      * @return true if this is a vip glyph
      */
     boolean isVip (Glyph glyph);
-
-    /**
-     * Register a glyph and make sure all its member sections point back to it.
-     * @param glyph the glyph to add to the nest
-     * @return the actual glyph (already existing or brand new)
-     */
-    Glyph addGlyph (Glyph glyph);
-
-    /**
-     * Simply register a glyph in the graph, making sure we do not duplicate
-     * any existing glyph (a glyph being really defined by the set of its member
-     * sections)
-     * @param glyph the glyph to add to the nest
-     * @return the actual glyph (already existing or brand new)
-     */
-    Glyph registerGlyph (Glyph glyph);
-
-    /**
-     * Print out major internal info about this glyph nest.
-     * @param title a specific title to be used for the dump
-     */
-    void dump (String title);
 
     /**
      * Look up for <b>all</b> active glyphs contained in a provided rectangle
@@ -199,8 +184,23 @@ public interface Nest
                      Glyph   glyph);
 
     /**
+     * Simply register a glyph in the graph, making sure we do not duplicate
+     * any existing glyph (a glyph being really defined by the set of its member
+     * sections)
+     * @param glyph the glyph to add to the nest
+     * @return the actual glyph (already existing or brand new)
+     */
+    Glyph registerGlyph (Glyph glyph);
+
+    /**
      * Remove the provided virtual glyph
      * @param glyph the virtual glyph to remove
      */
     void removeVirtualGlyph (VirtualGlyph glyph);
+
+    /**
+     * Inject dependency on location service, and trigger subscriptions
+     * @param locationService the location service
+     */
+    void setServices (SelectionService locationService);
 }

@@ -66,15 +66,6 @@ public class Arpeggiate
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
     //----------//
     // populate //
     //----------//
@@ -91,13 +82,14 @@ public class Arpeggiate
     {
         // A Arpeggiate relates to ALL the embraced note(s)
         // We look on the right
-        int            dx = measure.getScale()
-                                   .toPixels(constants.areaDx);
-        PixelPoint     shiftedPoint = new PixelPoint(point.x + dx, point.y);
-        Slot           slot = measure.getClosestSlot(shiftedPoint);
+        int        dx = measure.getScale()
+                               .toPixels(constants.areaDx);
+        PixelPoint shiftedPoint = new PixelPoint(point.x + dx, point.y);
+        Slot       slot = measure.getClosestSlot(shiftedPoint);
 
         if (slot == null) {
             measure.addError(glyph, "Suspicious arpeggiate without slots");
+
             return;
         }
 
@@ -126,6 +118,15 @@ public class Arpeggiate
         } else {
             measure.addError(glyph, "Arpeggiate without embraced notes");
         }
+    }
+
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
     }
 
     //~ Inner Classes ----------------------------------------------------------

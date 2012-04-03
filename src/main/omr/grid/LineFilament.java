@@ -58,59 +58,6 @@ public class LineFilament
 
     //~ Methods ----------------------------------------------------------------
 
-    //------------//
-    // setCluster //
-    //------------//
-    /**
-     * Assign this filament to a line cluster
-     * @param cluster the containing cluster
-     * @param pos the relative line position within the cluster
-     */
-    public void setCluster (LineCluster cluster,
-                            int         pos)
-    {
-        this.cluster = cluster;
-        clusterPos = pos;
-    }
-
-    //------------//
-    // getCluster //
-    //------------//
-    /**
-     * Report the line cluster, if any, this filament is part of
-     * @return the containing cluster, or null
-     */
-    public LineCluster getCluster ()
-    {
-        return cluster;
-    }
-
-    //---------------//
-    // getClusterPos //
-    //---------------//
-    /**
-     * @return the clusterPos
-     */
-    public int getClusterPos ()
-    {
-        return clusterPos;
-    }
-
-    //----------//
-    // getCombs //
-    //----------//
-    /**
-     * @return the combs
-     */
-    public SortedMap<Integer, FilamentComb> getCombs ()
-    {
-        if (combs != null) {
-            return combs;
-        } else {
-            return new TreeMap<Integer, FilamentComb>();
-        }
-    }
-
     //---------//
     // addComb //
     //---------//
@@ -156,6 +103,44 @@ public class LineFilament
             .fillHoles(clusterPos, fils);
     }
 
+    //------------//
+    // getCluster //
+    //------------//
+    /**
+     * Report the line cluster, if any, this filament is part of
+     * @return the containing cluster, or null
+     */
+    public LineCluster getCluster ()
+    {
+        return cluster;
+    }
+
+    //---------------//
+    // getClusterPos //
+    //---------------//
+    /**
+     * @return the clusterPos
+     */
+    public int getClusterPos ()
+    {
+        return clusterPos;
+    }
+
+    //----------//
+    // getCombs //
+    //----------//
+    /**
+     * @return the combs
+     */
+    public SortedMap<Integer, FilamentComb> getCombs ()
+    {
+        if (combs != null) {
+            return combs;
+        } else {
+            return new TreeMap<Integer, FilamentComb>();
+        }
+    }
+
     //---------//
     // include //
     //---------//
@@ -169,6 +154,21 @@ public class LineFilament
 
         that.cluster = this.cluster;
         that.clusterPos = this.clusterPos;
+    }
+
+    //------------//
+    // setCluster //
+    //------------//
+    /**
+     * Assign this filament to a line cluster
+     * @param cluster the containing cluster
+     * @param pos the relative line position within the cluster
+     */
+    public void setCluster (LineCluster cluster,
+                            int         pos)
+    {
+        this.cluster = cluster;
+        clusterPos = pos;
     }
 
     //--------------//

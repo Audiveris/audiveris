@@ -133,90 +133,6 @@ public class Zoom
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------//
-    // setRatio //
-    //----------//
-    /**
-     * Change the display zoom ratio. Nota, if the zoom is coupled with a
-     * slider, this slider has the final word concerning the precise zoom
-     * value, since the slider uses integer (or fractional) values.
-     *
-     * @param ratio the new ratio
-     */
-    public void setRatio (double ratio)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("setRatio ratio=" + ratio);
-        }
-
-        // Propagate to slider (useful to keep slider in sync when ratio is
-        // set programmatically)
-        if (slider != null) {
-            slider.setDoubleValue(ratio);
-        } else {
-            forceRatio(ratio);
-        }
-    }
-
-    //----------//
-    // getRatio //
-    //----------//
-    /**
-     * Return the current zoom ratio. Ratio is defined as display / source.
-     *
-     * @return the ratio
-     */
-    public double getRatio ()
-    {
-        return ratio;
-    }
-
-    //-----------//
-    // setSlider //
-    //-----------//
-    /**
-     * Define a related logarithmic slider, as a UI to adjust the zoom
-     * value
-     *
-     * @param slider the related slider UI
-     */
-    public void setSlider (final LogSlider slider)
-    {
-        this.slider = slider;
-
-        if (logger.isFineEnabled()) {
-            logger.fine("setSlider");
-        }
-
-        if (slider != null) {
-            slider.setDoubleValue(ratio);
-
-            slider.addChangeListener(
-                new ChangeListener() {
-                        public void stateChanged (ChangeEvent e)
-                        {
-                            // Forward the new zoom ratio
-                            if (constants.continuousSliderReading.getValue() ||
-                                !slider.getValueIsAdjusting()) {
-                                double newRatio = slider.getDoubleValue();
-
-                                if (logger.isFineEnabled()) {
-                                    logger.fine(
-                                        "Slider firing zoom newRatio=" +
-                                        newRatio);
-                                }
-
-                                // Stop condition to avoid endless loop between
-                                // slider and zoom
-                                if (Math.abs(newRatio - ratio) > .001) {
-                                    forceRatio(newRatio);
-                                }
-                            }
-                        }
-                    });
-        }
-    }
-
     //-------------------//
     // addChangeListener //
     //-------------------//
@@ -256,6 +172,19 @@ public class Zoom
 
             listener.stateChanged(changeEvent);
         }
+    }
+
+    //----------//
+    // getRatio //
+    //----------//
+    /**
+     * Return the current zoom ratio. Ratio is defined as display / source.
+     *
+     * @return the ratio
+     */
+    public double getRatio ()
+    {
+        return ratio;
     }
 
     //----------------------//
@@ -365,6 +294,77 @@ public class Zoom
         scale(r);
 
         return r;
+    }
+
+    //----------//
+    // setRatio //
+    //----------//
+    /**
+     * Change the display zoom ratio. Nota, if the zoom is coupled with a
+     * slider, this slider has the final word concerning the precise zoom
+     * value, since the slider uses integer (or fractional) values.
+     *
+     * @param ratio the new ratio
+     */
+    public void setRatio (double ratio)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("setRatio ratio=" + ratio);
+        }
+
+        // Propagate to slider (useful to keep slider in sync when ratio is
+        // set programmatically)
+        if (slider != null) {
+            slider.setDoubleValue(ratio);
+        } else {
+            forceRatio(ratio);
+        }
+    }
+
+    //-----------//
+    // setSlider //
+    //-----------//
+    /**
+     * Define a related logarithmic slider, as a UI to adjust the zoom
+     * value
+     *
+     * @param slider the related slider UI
+     */
+    public void setSlider (final LogSlider slider)
+    {
+        this.slider = slider;
+
+        if (logger.isFineEnabled()) {
+            logger.fine("setSlider");
+        }
+
+        if (slider != null) {
+            slider.setDoubleValue(ratio);
+
+            slider.addChangeListener(
+                new ChangeListener() {
+                        public void stateChanged (ChangeEvent e)
+                        {
+                            // Forward the new zoom ratio
+                            if (constants.continuousSliderReading.getValue() ||
+                                !slider.getValueIsAdjusting()) {
+                                double newRatio = slider.getDoubleValue();
+
+                                if (logger.isFineEnabled()) {
+                                    logger.fine(
+                                        "Slider firing zoom newRatio=" +
+                                        newRatio);
+                                }
+
+                                // Stop condition to avoid endless loop between
+                                // slider and zoom
+                                if (Math.abs(newRatio - ratio) > .001) {
+                                    forceRatio(newRatio);
+                                }
+                            }
+                        }
+                    });
+        }
     }
 
     //----------//

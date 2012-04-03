@@ -25,6 +25,23 @@ interface GlyphTranslation
     //~ Methods ----------------------------------------------------------------
 
     /**
+     * Add a score entity as a translation for this glyph
+     * @param entity the counterpart of this glyph on the score side
+     */
+    void addTranslation (Object entity);
+
+    /**
+     * Remove all the links to score entities
+     */
+    void clearTranslations ();
+
+    /**
+     * Report the collection of score entities this glyph contributes to
+     * @return the collection of entities that are translations of this glyph
+     */
+    Collection<Object> getTranslations ();
+
+    /**
      * Report whether this glyph is translated to a score entity
      * @return true if this glyph is translated to score
      */
@@ -35,21 +52,4 @@ interface GlyphTranslation
      * @param entity the score entity that is a translation of this glyph
      */
     void setTranslation (Object entity);
-
-    /**
-     * Report the collection of score entities this glyph contributes to
-     * @return the collection of entities that are translations of this glyph
-     */
-    Collection<Object> getTranslations ();
-
-    /**
-     * Add a score entity as a translation for this glyph
-     * @param entity the counterpart of this glyph on the score side
-     */
-    void addTranslation (Object entity);
-
-    /**
-     * Remove all the links to score entities
-     */
-    void clearTranslations ();
 }

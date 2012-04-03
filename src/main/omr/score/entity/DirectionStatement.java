@@ -52,7 +52,7 @@ public class DirectionStatement
      * @param text the sentence text
      */
     public DirectionStatement (Measure            measure,
-                               PixelPoint        referencePoint,
+                               PixelPoint         referencePoint,
                                Chord              chord,
                                Sentence           sentence,
                                Text.DirectionText text)
@@ -63,14 +63,6 @@ public class DirectionStatement
 
     //~ Methods ----------------------------------------------------------------
 
-    //---------//
-    // getText //
-    //---------//
-    public Text.DirectionText getText ()
-    {
-        return text;
-    }
-
     //--------//
     // accept //
     //--------//
@@ -78,6 +70,14 @@ public class DirectionStatement
     public boolean accept (ScoreVisitor visitor)
     {
         return visitor.visit(this);
+    }
+
+    //---------//
+    // getText //
+    //---------//
+    public Text.DirectionText getText ()
+    {
+        return text;
     }
 
     //-----------------------//

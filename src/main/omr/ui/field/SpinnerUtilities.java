@@ -37,6 +37,39 @@ public class SpinnerUtilities
 
     //~ Methods ----------------------------------------------------------------
 
+    //----------------//
+    // fixIntegerList //
+    //----------------//
+    /**
+     * Workaround for a swing bug : when the user enters an illegal value, the
+     * text is forced to the last value.
+     *
+     * @param spinner the spinner to update
+     */
+    public static void fixIntegerList (final JSpinner spinner)
+    {
+        JSpinner.DefaultEditor editor;
+        editor = (JSpinner.DefaultEditor) spinner.getEditor();
+
+        final JFormattedTextField ftf = editor.getTextField();
+        ftf.getInputMap()
+           .put(KeyStroke.getKeyStroke("ENTER"), "enterAction");
+        ftf.getActionMap()
+           .put(
+            "enterAction",
+            new AbstractAction() {
+                    public void actionPerformed (ActionEvent e)
+                    {
+                        try {
+                            spinner.setValue(Integer.parseInt(ftf.getText()));
+                        } catch (Exception ex) {
+                            // Reset to last value
+                            ftf.setText(ftf.getValue().toString());
+                        }
+                    }
+                });
+    }
+
     //-------------//
     // setEditable //
     //-------------//
@@ -91,38 +124,5 @@ public class SpinnerUtilities
         editor = (JSpinner.DefaultEditor) spinner.getEditor();
         editor.getTextField()
               .setHorizontalAlignment(JTextField.RIGHT);
-    }
-
-    //----------------//
-    // fixIntegerList //
-    //----------------//
-    /**
-     * Workaround for a swing bug : when the user enters an illegal value, the
-     * text is forced to the last value.
-     *
-     * @param spinner the spinner to update
-     */
-    public static void fixIntegerList (final JSpinner spinner)
-    {
-        JSpinner.DefaultEditor editor;
-        editor = (JSpinner.DefaultEditor) spinner.getEditor();
-
-        final JFormattedTextField ftf = editor.getTextField();
-        ftf.getInputMap()
-           .put(KeyStroke.getKeyStroke("ENTER"), "enterAction");
-        ftf.getActionMap()
-           .put(
-            "enterAction",
-            new AbstractAction() {
-                    public void actionPerformed (ActionEvent e)
-                    {
-                        try {
-                            spinner.setValue(Integer.parseInt(ftf.getText()));
-                        } catch (Exception ex) {
-                            // Reset to last value
-                            ftf.setText(ftf.getValue().toString());
-                        }
-                    }
-                });
     }
 }

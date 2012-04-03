@@ -70,6 +70,29 @@ public class SelectionService
 
     //~ Methods ----------------------------------------------------------------
 
+    //-----------------//
+    // dumpSubscribers //
+    //-----------------//
+    public void dumpSubscribers ()
+    {
+        logger.info(toString() + " subscriber:");
+
+        for (Class eventClass : allowedEvents) {
+            List subscribers = getSubscribers(eventClass);
+
+            if (!subscribers.isEmpty()) {
+                UserEvent last = (UserEvent) getLastEvent(eventClass);
+                logger.info(
+                    "-- " + eventClass.getSimpleName() + ": " +
+                    subscribers.size() + ((last != null) ? (" " + last) : ""));
+
+                for (Object obj : subscribers) {
+                    logger.info("      " + obj);
+                }
+            }
+        }
+    }
+
     //---------//
     // getName //
     //---------//
@@ -94,29 +117,6 @@ public class SelectionService
             return null;
         } else {
             return event.getData();
-        }
-    }
-
-    //-----------------//
-    // dumpSubscribers //
-    //-----------------//
-    public void dumpSubscribers ()
-    {
-        logger.info(toString() + " subscriber:");
-
-        for (Class eventClass : allowedEvents) {
-            List subscribers = getSubscribers(eventClass);
-
-            if (!subscribers.isEmpty()) {
-                UserEvent last = (UserEvent) getLastEvent(eventClass);
-                logger.info(
-                    "-- " + eventClass.getSimpleName() + ": " +
-                    subscribers.size() + ((last != null) ? (" " + last) : ""));
-
-                for (Object obj : subscribers) {
-                    logger.info("      " + obj);
-                }
-            }
         }
     }
 

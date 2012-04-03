@@ -12,6 +12,7 @@
 package omr.score;
 
 import omr.Main;
+import omr.WellKnowns;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -37,7 +38,6 @@ import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.Iterator;
 import java.util.List;
-import omr.WellKnowns;
 
 /**
  * Class {@code ScoresManager} is a singleton which provides
@@ -112,185 +112,6 @@ public class ScoresManager
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //----------------------//
-    // getDefaultExportFile //
-    //----------------------//
-    /**
-     * Report the file to which the score would be written by default.
-     * @param folder the target folder if any
-     * @param score the score to export
-     * @return the default file
-     */
-    public File getDefaultExportFile (File  folder,
-                                      Score score)
-    {
-        if (score.getExportFile() != null) {
-            return score.getExportFile();
-        }
-
-        String child = score.getRadix() + SCORE_EXTENSION;
-
-        if (folder != null) {
-            return new File(folder, child);
-        } else {
-            return new File(constants.defaultExportDirectory.getValue(), child);
-        }
-    }
-
-    //--------------------------//
-    // setDefaultInputDirectory //
-    //--------------------------//
-    /**
-     * Remember the directory where images should be found.
-     * @param directory the latest image directory
-     */
-    public void setDefaultInputDirectory (String directory)
-    {
-        constants.defaultInputDirectory.setValue(directory);
-    }
-
-    //--------------------------//
-    // getDefaultInputDirectory //
-    //--------------------------//
-    /**
-     * Report the directory where images should be found.
-     * @return the latest image directory
-     */
-    public String getDefaultInputDirectory ()
-    {
-        return constants.defaultInputDirectory.getValue();
-    }
-
-    //--------------------//
-    // getDefaultMidiFile //
-    //--------------------//
-    /**
-     * Report the file to which the MIDI data would be written by default.
-     * @param folder the target folder if any
-     * @param score the score to export
-     * @return the default file
-     */
-    public File getDefaultMidiFile (File  folder,
-                                    Score score)
-    {
-        if (score.getMidiFile() != null) {
-            return score.getMidiFile();
-        }
-
-        String child = score.getRadix() + MidiAbstractions.MIDI_EXTENSION;
-
-        if (folder != null) {
-            return new File(folder, child);
-        } else {
-            return new File(constants.defaultMidiDirectory.getValue(), child);
-        }
-    }
-
-    //---------------------//
-    // getDefaultPrintFile //
-    //---------------------//
-    /**
-     * Report the file to which the sheet PDF data would be written by default.
-     * @param folder the target folder if any
-     * @param score the score to export
-     * @return the default file
-     */
-    public File getDefaultPrintFile (File  folder,
-                                     Score score)
-    {
-        if (score.getPrintFile() != null) {
-            return score.getPrintFile();
-        }
-
-        String child = score.getRadix() + ".sheet.pdf";
-
-        if (folder != null) {
-            return new File(folder, child);
-        } else {
-            return new File(constants.defaultPrintDirectory.getValue(), child);
-        }
-    }
-
-    //------------//
-    // getHistory //
-    //------------//
-    /**
-     * Get access to the list of previously handled images.
-     * @return the history set of image files
-     */
-    public NameSet getHistory ()
-    {
-        if (history == null) {
-            history = new NameSet(
-                "Images History",
-                constants.imagesHistory,
-                10);
-        }
-
-        return history;
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single instance of this class.
-     * @return the single instance
-     */
-    public static ScoresManager getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new ScoresManager();
-        }
-
-        return INSTANCE;
-    }
-
-    //---------------------//
-    // getDefaultBenchFile //
-    //---------------------//
-    /**
-     * Report the file to which the bench data would be written by default.
-     * @param folder the target folder if any
-     * @param score the score to export
-     * @return the default file
-     */
-    public File getDefaultBenchFile (File  folder,
-                                     Score score)
-    {
-        String child = score.getRadix() + BENCH_EXTENSION;
-
-        if (folder != null) {
-            return new File(folder, child);
-        } else {
-            return new File(constants.defaultBenchDirectory.getValue(), child);
-        }
-    }
-
-    //---------------------------//
-    // getDefaultDewarpDirectory //
-    //---------------------------//
-    /**
-     * Report the directory to which dewarped images would be saved by default.
-     * @return the default file
-     */
-    public File getDefaultDewarpDirectory ()
-    {
-        return new File(constants.defaultDewarpDirectory.getValue());
-    }
-
-    //--------------//
-    // isMultiScore //
-    //--------------//
-    /**
-     * Report whether we are handling more than one score.
-     * @return true if more than one score
-     */
-    public static boolean isMultiScore ()
-    {
-        return getInstance().instances.size() > 1;
-    }
 
     //-------------//
     // addInstance //
@@ -389,6 +210,173 @@ public class ScoresManager
         }
     }
 
+    //---------------------//
+    // getDefaultBenchFile //
+    //---------------------//
+    /**
+     * Report the file to which the bench data would be written by default.
+     * @param folder the target folder if any
+     * @param score the score to export
+     * @return the default file
+     */
+    public File getDefaultBenchFile (File  folder,
+                                     Score score)
+    {
+        String child = score.getRadix() + BENCH_EXTENSION;
+
+        if (folder != null) {
+            return new File(folder, child);
+        } else {
+            return new File(constants.defaultBenchDirectory.getValue(), child);
+        }
+    }
+
+    //---------------------------//
+    // getDefaultDewarpDirectory //
+    //---------------------------//
+    /**
+     * Report the directory to which dewarped images would be saved by default.
+     * @return the default file
+     */
+    public File getDefaultDewarpDirectory ()
+    {
+        return new File(constants.defaultDewarpDirectory.getValue());
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of this class.
+     * @return the single instance
+     */
+    public static ScoresManager getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new ScoresManager();
+        }
+
+        return INSTANCE;
+    }
+
+    //--------------//
+    // isMultiScore //
+    //--------------//
+    /**
+     * Report whether we are handling more than one score.
+     * @return true if more than one score
+     */
+    public static boolean isMultiScore ()
+    {
+        return getInstance().instances.size() > 1;
+    }
+
+    //----------------------//
+    // getDefaultExportFile //
+    //----------------------//
+    /**
+     * Report the file to which the score would be written by default.
+     * @param folder the target folder if any
+     * @param score the score to export
+     * @return the default file
+     */
+    public File getDefaultExportFile (File  folder,
+                                      Score score)
+    {
+        if (score.getExportFile() != null) {
+            return score.getExportFile();
+        }
+
+        String child = score.getRadix() + SCORE_EXTENSION;
+
+        if (folder != null) {
+            return new File(folder, child);
+        } else {
+            return new File(constants.defaultExportDirectory.getValue(), child);
+        }
+    }
+
+    //--------------------------//
+    // getDefaultInputDirectory //
+    //--------------------------//
+    /**
+     * Report the directory where images should be found.
+     * @return the latest image directory
+     */
+    public String getDefaultInputDirectory ()
+    {
+        return constants.defaultInputDirectory.getValue();
+    }
+
+    //--------------------//
+    // getDefaultMidiFile //
+    //--------------------//
+    /**
+     * Report the file to which the MIDI data would be written by default.
+     * @param folder the target folder if any
+     * @param score the score to export
+     * @return the default file
+     */
+    public File getDefaultMidiFile (File  folder,
+                                    Score score)
+    {
+        if (score.getMidiFile() != null) {
+            return score.getMidiFile();
+        }
+
+        String child = score.getRadix() + MidiAbstractions.MIDI_EXTENSION;
+
+        if (folder != null) {
+            return new File(folder, child);
+        } else {
+            return new File(constants.defaultMidiDirectory.getValue(), child);
+        }
+    }
+
+    //---------------------//
+    // getDefaultPrintFile //
+    //---------------------//
+    /**
+     * Report the file to which the sheet PDF data would be written by default.
+     * @param folder the target folder if any
+     * @param score the score to export
+     * @return the default file
+     */
+    public File getDefaultPrintFile (File  folder,
+                                     Score score)
+    {
+        if (score.getPrintFile() != null) {
+            return score.getPrintFile();
+        }
+
+        String child = score.getRadix() + ".sheet.pdf";
+
+        if (folder != null) {
+            return new File(folder, child);
+        } else {
+            return new File(constants.defaultPrintDirectory.getValue(), child);
+        }
+    }
+
+    //------------//
+    // getHistory //
+    //------------//
+    /**
+     * Get access to the list of previously handled images.
+     * @return the history set of image files
+     */
+    public NameSet getHistory ()
+    {
+        if (history == null) {
+            history = new NameSet(
+                "Images History",
+                constants.imagesHistory,
+                10);
+        }
+
+        return history;
+    }
+
     //-----------//
     // midiClose //
     //-----------//
@@ -475,6 +463,18 @@ public class ScoresManager
         }
 
         instances.remove(score);
+    }
+
+    //--------------------------//
+    // setDefaultInputDirectory //
+    //--------------------------//
+    /**
+     * Remember the directory where images should be found.
+     * @param directory the latest image directory
+     */
+    public void setDefaultInputDirectory (String directory)
+    {
+        constants.defaultInputDirectory.setValue(directory);
     }
 
     //------------//
@@ -573,6 +573,27 @@ public class ScoresManager
         }
     }
 
+    //----------------//
+    // closeAllScores //
+    //----------------//
+    /**
+     * Close all score instances.
+     */
+    private void closeAllScores ()
+    {
+        int count = 0;
+
+        // NB: Use a COPY of instances, to avoid concurrent modification
+        for (Score score : new ArrayList<Score>(instances)) {
+            score.close();
+            count++;
+        }
+
+        if (logger.isFineEnabled()) {
+            logger.fine(count + " score(s) closed");
+        }
+    }
+
     //---------------//
     // getActualFile //
     //---------------//
@@ -606,27 +627,6 @@ public class ScoresManager
             logger.warning("Cannot getCanonicalPath", ex);
 
             return null;
-        }
-    }
-
-    //----------------//
-    // closeAllScores //
-    //----------------//
-    /**
-     * Close all score instances.
-     */
-    private void closeAllScores ()
-    {
-        int count = 0;
-
-        // NB: Use a COPY of instances, to avoid concurrent modification
-        for (Score score : new ArrayList<Score>(instances)) {
-            score.close();
-            count++;
-        }
-
-        if (logger.isFineEnabled()) {
-            logger.fine(count + " score(s) closed");
         }
     }
 

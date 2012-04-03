@@ -21,14 +21,15 @@ import omr.log.Logger;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.SystemPart;
 
+import omr.selection.GlyphEvent;
+import omr.selection.SelectionService;
+
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.util.TreeNode;
 
 import java.util.Iterator;
-import omr.selection.GlyphEvent;
-import omr.selection.SelectionService;
 
 /**
  * Class {@code SymbolsStep} builds symbols glyphs and
@@ -87,7 +88,6 @@ public class SymbolsStep
         if (glyphEvent != null) {
             service.publish(glyphEvent);
         }
-
     }
 
     //----------//

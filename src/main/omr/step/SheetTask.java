@@ -58,17 +58,6 @@ public abstract class SheetTask
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------//
-    // displayUI //
-    //-----------//
-    /**
-     * Make the related user interface visible for this step
-     */
-    public void displayUI ()
-    {
-        // Void by default
-    }
-
     //------//
     // doit //
     //------//
@@ -80,28 +69,15 @@ public abstract class SheetTask
     public abstract void doit (Collection<SystemInfo> systems)
         throws StepException;
 
-    //--------//
-    // isDone //
-    //--------//
-    /**
-     * Check whether this task has been done
-     * @return true if started/done, false otherwise
-     */
-    public boolean isDone ()
-    {
-        return stepDone;
-    }
-
     //-----------//
-    // isStarted //
+    // displayUI //
     //-----------//
     /**
-     * Check whether this task has started
-     * @return true if started, false otherwise
+     * Make the related user interface visible for this step
      */
-    public boolean isStarted ()
+    public void displayUI ()
     {
-        return stepStarted;
+        // Void by default
     }
 
     //--------//
@@ -133,6 +109,30 @@ public abstract class SheetTask
         }
 
         stepDone = true;
+    }
+
+    //--------//
+    // isDone //
+    //--------//
+    /**
+     * Check whether this task has been done
+     * @return true if started/done, false otherwise
+     */
+    public boolean isDone ()
+    {
+        return stepDone;
+    }
+
+    //-----------//
+    // isStarted //
+    //-----------//
+    /**
+     * Check whether this task has started
+     * @return true if started, false otherwise
+     */
+    public boolean isStarted ()
+    {
+        return stepStarted;
     }
 
     //---------//

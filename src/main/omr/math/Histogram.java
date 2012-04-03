@@ -25,7 +25,7 @@ import java.util.TreeMap;
 
 /**
  * Class {@code Histogram} is an histogram implementation which handles
- * integer counts in buckets, the buckets identities being values of 
+ * integer counts in buckets, the buckets identities being values of
  * type K.
  *
  * @param <K> the precise type for histogram buckets
@@ -108,6 +108,63 @@ public class Histogram<K extends Number>
 
     //~ Methods ----------------------------------------------------------------
 
+    //-----------//
+    // bucketSet //
+    //-----------//
+    public Set<K> bucketSet ()
+    {
+        return map.keySet();
+    }
+
+    //-------//
+    // clear //
+    //-------//
+    public void clear ()
+    {
+        map.clear();
+        totalCount = 0;
+    }
+
+    //------------//
+    // dataString //
+    //------------//
+    public String dataString ()
+    {
+        StringBuilder sb = new StringBuilder("[");
+
+        boolean       first = true;
+
+        for (Map.Entry<K, Integer> entry : entrySet()) {
+            sb.append(
+                String.format(
+                    "%s%s:%d",
+                    first ? "" : " ",
+                    entry.getKey().toString(),
+                    entry.getValue()));
+            first = false;
+        }
+
+        sb.append("]");
+
+        return sb.toString();
+    }
+
+    //----------//
+    // entrySet //
+    //----------//
+    public Set<Map.Entry<K, Integer>> entrySet ()
+    {
+        return map.entrySet();
+    }
+
+    //-------------//
+    // firstBucket //
+    //-------------//
+    public K firstBucket ()
+    {
+        return map.firstKey();
+    }
+
     //----------//
     // getCount //
     //----------//
@@ -131,7 +188,7 @@ public class Histogram<K extends Number>
     // getPeaks //
     //----------//
     /**
-     * Report the sequence of bucket peaks whose count is equal to or 
+     * Report the sequence of bucket peaks whose count is equal to or
      * greater than the specified minCount value.
      * @param minCount the desired minimum count value
      * @return the (perhaps empty but not null) sequence of peaks of buckets
@@ -211,7 +268,9 @@ public class Histogram<K extends Number>
                     if (growing) {
                         // End of a local max
                         maxima.add(
-                            new MaxEntry<K>(prevKey, prevValue / (double) totalCount));
+                            new MaxEntry<K>(
+                                prevKey,
+                                prevValue / (double) totalCount));
                     }
 
                     growing = false;
@@ -381,63 +440,6 @@ public class Histogram<K extends Number>
     public int getTotalCount ()
     {
         return totalCount;
-    }
-
-    //-----------//
-    // bucketSet //
-    //-----------//
-    public Set<K> bucketSet ()
-    {
-        return map.keySet();
-    }
-
-    //-------//
-    // clear //
-    //-------//
-    public void clear ()
-    {
-        map.clear();
-        totalCount = 0;
-    }
-
-    //------------//
-    // dataString //
-    //------------//
-    public String dataString ()
-    {
-        StringBuilder sb = new StringBuilder("[");
-
-        boolean       first = true;
-
-        for (Map.Entry<K, Integer> entry : entrySet()) {
-            sb.append(
-                String.format(
-                    "%s%s:%d",
-                    first ? "" : " ",
-                    entry.getKey().toString(),
-                    entry.getValue()));
-            first = false;
-        }
-
-        sb.append("]");
-
-        return sb.toString();
-    }
-
-    //----------//
-    // entrySet //
-    //----------//
-    public Set<Map.Entry<K, Integer>> entrySet ()
-    {
-        return map.entrySet();
-    }
-
-    //-------------//
-    // firstBucket //
-    //-------------//
-    public K firstBucket ()
-    {
-        return map.firstKey();
     }
 
     //---------------//

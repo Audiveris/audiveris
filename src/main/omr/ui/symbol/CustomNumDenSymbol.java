@@ -55,6 +55,15 @@ public class CustomNumDenSymbol
 
     //~ Methods ----------------------------------------------------------------
 
+    //------------//
+    // createIcon //
+    //------------//
+    @Override
+    protected ShapeSymbol createIcon ()
+    {
+        return new CustomNumDenSymbol(true);
+    }
+
     //-----------//
     // getParams //
     //-----------//
@@ -72,15 +81,6 @@ public class CustomNumDenSymbol
             (int) Math.ceil(p.nLayout.getBounds().getHeight() * 2.2));
 
         return p;
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new CustomNumDenSymbol(true);
     }
 
     //-------//

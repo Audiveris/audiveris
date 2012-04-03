@@ -50,7 +50,6 @@ import omr.ui.view.ScrollView;
 import omr.ui.view.Zoom;
 
 import omr.util.BlackList;
-import omr.util.Implement;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -208,7 +207,7 @@ class GlyphBrowser
      * Called when a new selection has been made in GlyphVerifier companion.
      * @param e not used
      */
-    @Implement(ChangeListener.class)
+    @Override
     public void stateChanged (ChangeEvent e)
     {
         int selNb = verifier.getGlyphCount();
@@ -416,6 +415,134 @@ class GlyphBrowser
             " from training material");
     }
 
+    //----------------//
+    // DeassignAction //
+    //----------------//
+    private class DeassignAction
+        extends AbstractAction
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public DeassignAction ()
+        {
+            super("Remove");
+            putValue(
+                Action.SHORT_DESCRIPTION,
+                "Remove that glyph from training material");
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            removeGlyph();
+        }
+    }
+
+    //---------//
+    // Display //
+    //---------//
+    private class Display
+        extends JPanel
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        LogSlider  slider;
+        Rubber     rubber;
+        ScrollView slv;
+        Zoom       zoom;
+
+        //~ Constructors -------------------------------------------------------
+
+        public Display ()
+        {
+            view = new MyView(controller);
+            view.setLocationService(locationService);
+            view.subscribe();
+            modelRectangle = new Rectangle();
+            modelSize = new Dimension(0, 0);
+            slider = new LogSlider(2, 5, LogSlider.VERTICAL, -3, 4, 0);
+            zoom = new Zoom(slider, 1); // Default ratio set to 1
+            rubber = new Rubber(view, zoom);
+            rubber.setMouseMonitor(view);
+            view.setZoom(zoom);
+            view.setRubber(rubber);
+            slv = new ScrollView(view);
+
+            // Layout
+            setLayout(new BorderLayout());
+            add(slider, BorderLayout.WEST);
+            add(slv.getComponent(), BorderLayout.CENTER);
+        }
+    }
+
+    //------------//
+    // LoadAction //
+    //------------//
+    private class LoadAction
+        extends AbstractAction
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public LoadAction ()
+        {
+            super("Load");
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            // Get a (shrinkable, to allow deletions) list of glyph names
+            names = verifier.getGlyphNames();
+
+            // Reset lag & display
+            resetBrowser();
+
+            // Set navigator on first glyph, if any
+            if (!names.isEmpty()) {
+                navigator.setIndex(0, GLYPH_INIT);
+            } else {
+                if (e != null) {
+                    logger.warning("No glyphs selected in Glyph Selector");
+                }
+
+                navigator.all.setEnabled(false);
+                navigator.prev.setEnabled(false);
+                navigator.next.setEnabled(false);
+            }
+        }
+    }
+
+    //--------------//
+    // MyGlyphBoard //
+    //--------------//
+    private class MyGlyphBoard
+        extends SymbolGlyphBoard
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public MyGlyphBoard (GlyphsController controller)
+        {
+            super(controller, true);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public Action getDeassignAction ()
+        {
+            if (deassignAction == null) {
+                deassignAction = new DeassignAction();
+            }
+
+            return deassignAction;
+        }
+    }
+
     //--------//
     // MyView //
     //--------//
@@ -544,134 +671,6 @@ class GlyphBrowser
         }
     }
 
-    //----------------//
-    // DeassignAction //
-    //----------------//
-    private class DeassignAction
-        extends AbstractAction
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public DeassignAction ()
-        {
-            super("Remove");
-            putValue(
-                Action.SHORT_DESCRIPTION,
-                "Remove that glyph from training material");
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @SuppressWarnings("unchecked")
-        @Implement(ChangeListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            removeGlyph();
-        }
-    }
-
-    //---------//
-    // Display //
-    //---------//
-    private class Display
-        extends JPanel
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        LogSlider  slider;
-        Rubber     rubber;
-        ScrollView slv;
-        Zoom       zoom;
-
-        //~ Constructors -------------------------------------------------------
-
-        public Display ()
-        {
-            view = new MyView(controller);
-            view.setLocationService(locationService);
-            view.subscribe();
-            modelRectangle = new Rectangle();
-            modelSize = new Dimension(0, 0);
-            slider = new LogSlider(2, 5, LogSlider.VERTICAL, -3, 4, 0);
-            zoom = new Zoom(slider, 1); // Default ratio set to 1
-            rubber = new Rubber(view, zoom);
-            rubber.setMouseMonitor(view);
-            view.setZoom(zoom);
-            view.setRubber(rubber);
-            slv = new ScrollView(view);
-
-            // Layout
-            setLayout(new BorderLayout());
-            add(slider, BorderLayout.WEST);
-            add(slv.getComponent(), BorderLayout.CENTER);
-        }
-    }
-
-    //------------//
-    // LoadAction //
-    //------------//
-    private class LoadAction
-        extends AbstractAction
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public LoadAction ()
-        {
-            super("Load");
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Implement(ActionListener.class)
-        public void actionPerformed (ActionEvent e)
-        {
-            // Get a (shrinkable, to allow deletions) list of glyph names
-            names = verifier.getGlyphNames();
-
-            // Reset lag & display
-            resetBrowser();
-
-            // Set navigator on first glyph, if any
-            if (!names.isEmpty()) {
-                navigator.setIndex(0, GLYPH_INIT);
-            } else {
-                if (e != null) {
-                    logger.warning("No glyphs selected in Glyph Selector");
-                }
-
-                navigator.all.setEnabled(false);
-                navigator.prev.setEnabled(false);
-                navigator.next.setEnabled(false);
-            }
-        }
-    }
-
-    //--------------//
-    // MyGlyphBoard //
-    //--------------//
-    private class MyGlyphBoard
-        extends SymbolGlyphBoard
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public MyGlyphBoard (GlyphsController controller)
-        {
-            super(controller, true);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public Action getDeassignAction ()
-        {
-            if (deassignAction == null) {
-                deassignAction = new DeassignAction();
-            }
-
-            return deassignAction;
-        }
-    }
-
     //-----------//
     // Navigator //
     //-----------//
@@ -786,6 +785,24 @@ class GlyphBrowser
         }
 
         //----------//
+        // getIndex //
+        //----------//
+        /**
+         * Report the current glyph index in the names collection.
+         * @return the current index, which may be NO_INDEX
+         */
+        public final int getIndex ()
+        {
+            return nameIndex;
+        }
+
+        // Just to please the Board interface
+        public void onEvent (UserEvent event)
+        {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        //----------//
         // setIndex //
         //----------//
         /**
@@ -839,24 +856,6 @@ class GlyphBrowser
             all.setEnabled(!names.isEmpty());
             prev.setEnabled(index > 0);
             next.setEnabled((index >= 0) && (index < (names.size() - 1)));
-        }
-
-        //----------//
-        // getIndex //
-        //----------//
-        /**
-         * Report the current glyph index in the names collection.
-         * @return the current index, which may be NO_INDEX
-         */
-        public final int getIndex ()
-        {
-            return nameIndex;
-        }
-
-        // Just to please the Board interface
-        public void onEvent (UserEvent event)
-        {
-            throw new UnsupportedOperationException("Not supported yet.");
         }
 
         //--------------//

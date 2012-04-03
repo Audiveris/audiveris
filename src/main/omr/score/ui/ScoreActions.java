@@ -35,7 +35,6 @@ import omr.ui.util.OmrFileFilter;
 import omr.ui.util.UIUtilities;
 
 import omr.util.BasicTask;
-import omr.util.Implement;
 import omr.util.WrappedBoolean;
 
 import org.jdesktop.application.Action;
@@ -97,20 +96,17 @@ public class ScoreActions
     //~ Methods ----------------------------------------------------------------
 
     //-------------//
-    // getInstance //
+    // browseScore //
     //-------------//
     /**
-     * Report the singleton
-     *
-     * @return the unique instance of this class
+     * Launch the tree display of the current score.
+     * @param e
      */
-    public static synchronized ScoreActions getInstance ()
+    @Action(enabledProperty = SCORE_AVAILABLE)
+    public void browseScore (ActionEvent e)
     {
-        if (INSTANCE == null) {
-            INSTANCE = new ScoreActions();
-        }
-
-        return INSTANCE;
+        MainGui.getInstance()
+               .show(ScoreController.getCurrentScore().getBrowserFrame());
     }
 
     //-----------------//
@@ -130,56 +126,6 @@ public class ScoreActions
         } else {
             return fillParametersWithDefaults(score);
         }
-    }
-
-    //--------------------//
-    // setManualPersisted //
-    //--------------------//
-    public void setManualPersisted (boolean value)
-    {
-        boolean oldValue = this.manualPersisted;
-        this.manualPersisted = value;
-        firePropertyChange(MANUAL_PERSISTED, oldValue, value);
-    }
-
-    //-------------------//
-    // isManualPersisted //
-    //-------------------//
-    public boolean isManualPersisted ()
-    {
-        return manualPersisted;
-    }
-
-    //-------------------//
-    // setRebuildAllowed //
-    //-------------------//
-    public void setRebuildAllowed (boolean value)
-    {
-        boolean oldValue = this.rebuildAllowed;
-        this.rebuildAllowed = value;
-        firePropertyChange(REBUILD_ALLOWED, oldValue, value);
-    }
-
-    //------------------//
-    // isRebuildAllowed //
-    //------------------//
-    public boolean isRebuildAllowed ()
-    {
-        return rebuildAllowed;
-    }
-
-    //-------------//
-    // browseScore //
-    //-------------//
-    /**
-     * Launch the tree display of the current score.
-     * @param e
-     */
-    @Action(enabledProperty = SCORE_AVAILABLE)
-    public void browseScore (ActionEvent e)
-    {
-        MainGui.getInstance()
-               .show(ScoreController.getCurrentScore().getBrowserFrame());
     }
 
     //------------------//
@@ -224,6 +170,39 @@ public class ScoreActions
                        .dump();
     }
 
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the singleton
+     *
+     * @return the unique instance of this class
+     */
+    public static synchronized ScoreActions getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new ScoreActions();
+        }
+
+        return INSTANCE;
+    }
+
+    //-------------------//
+    // isManualPersisted //
+    //-------------------//
+    public boolean isManualPersisted ()
+    {
+        return manualPersisted;
+    }
+
+    //------------------//
+    // isRebuildAllowed //
+    //------------------//
+    public boolean isRebuildAllowed ()
+    {
+        return rebuildAllowed;
+    }
+
     //--------------//
     // rebuildScore //
     //--------------//
@@ -236,6 +215,26 @@ public class ScoreActions
     public Task rebuildScore (ActionEvent e)
     {
         return new RebuildTask();
+    }
+
+    //--------------------//
+    // setManualPersisted //
+    //--------------------//
+    public void setManualPersisted (boolean value)
+    {
+        boolean oldValue = this.manualPersisted;
+        this.manualPersisted = value;
+        firePropertyChange(MANUAL_PERSISTED, oldValue, value);
+    }
+
+    //-------------------//
+    // setRebuildAllowed //
+    //-------------------//
+    public void setRebuildAllowed (boolean value)
+    {
+        boolean oldValue = this.rebuildAllowed;
+        this.rebuildAllowed = value;
+        firePropertyChange(REBUILD_ALLOWED, oldValue, value);
     }
 
     //------------//
@@ -449,7 +448,7 @@ public class ScoreActions
 
         optionPane.addPropertyChangeListener(
             new PropertyChangeListener() {
-                    @Implement(PropertyChangeListener.class)
+                    @Override
                     public void propertyChange (PropertyChangeEvent e)
                     {
                         String prop = e.getPropertyName();

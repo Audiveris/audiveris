@@ -58,18 +58,18 @@
     <target name="global-replace"
         description="Modify token of every source file">
 
-	<!--
-        <replace encoding="utf8" dir="${train.dir}">
-            <replacetoken>section </replacetoken>
-            <replacevalue>section orientation="VERTICAL" </replacevalue>
+	
+<!--        <replace encoding="utf8" dir="${train.dir}">
+            <replacetoken>"DOT"</replacetoken>
+            <replacevalue>"DOT_set"</replacevalue>
             <include name="**/*.xml"/>
-        </replace>
-	     -->
+        </replace>-->
+	     
 
 	<replaceregexp
 	    encoding="utf8"
-	    match="&lt;code&gt;(.*)&lt;/code&gt;"
-	    replace="{@code \1}"
+	    match="import omr.util.Implement;"
+	    replace=""
 	    flags="g"
 	    byline="true">
 	    <fileset dir="${src.dir}">

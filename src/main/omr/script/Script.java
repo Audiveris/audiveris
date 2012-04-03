@@ -109,31 +109,6 @@ public class Script
 
     //~ Methods ----------------------------------------------------------------
 
-    //------------//
-    // isModified //
-    //------------//
-    /**
-     * Has the script been modified (wrt its backup on disk)?
-     * @return the modified
-     */
-    public boolean isModified ()
-    {
-        return modified;
-    }
-
-    //----------//
-    // getScore //
-    //----------//
-    /**
-     * Report the score this script is linked to
-     *
-     * @return the score concerned
-     */
-    public Score getScore ()
-    {
-        return score;
-    }
-
     //---------//
     // addTask //
     //---------//
@@ -165,6 +140,31 @@ public class Script
         for (ScriptTask task : tasks) {
             logger.info(task.toString());
         }
+    }
+
+    //----------//
+    // getScore //
+    //----------//
+    /**
+     * Report the score this script is linked to
+     *
+     * @return the score concerned
+     */
+    public Score getScore ()
+    {
+        return score;
+    }
+
+    //------------//
+    // isModified //
+    //------------//
+    /**
+     * Has the script been modified (wrt its backup on disk)?
+     * @return the modified
+     */
+    public boolean isModified ()
+    {
+        return modified;
     }
 
     //-----//

@@ -20,8 +20,6 @@ import omr.log.Logger;
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
-import omr.util.Implement;
-
 /**
  * Class {@code HiddenSlurPattern} processes the significant glyphs
  * which have not been assigned a shape, looking for a slur inside.
@@ -59,7 +57,7 @@ public class HiddenSlurPattern
     //------------//
     // runPattern //
     //------------//
-    @Implement(GlyphPattern.class)
+    @Override
     public int runPattern ()
     {
         SlurInspector inspector = system.getSlurInspector();

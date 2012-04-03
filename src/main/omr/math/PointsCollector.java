@@ -68,28 +68,27 @@ public class PointsCollector
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------//
-    // getSize //
-    //----------//
+    //----------------//
+    // ensureCapacity //
+    //----------------//
     /**
-     * Report the current number of points collected.
-     * @return the current number of points
+     * Increases the capacity of this instance.
+     * @param minCapacity the desired minimum capacity
      */
-    public final int getSize ()
+    public void ensureCapacity (int minCapacity)
     {
-        return size;
-    }
+        int oldCapacity = xx.length;
 
-    //--------//
-    // getRoi //
-    //--------//
-    /**
-     * Report the absolute region of interest for this collector
-     * @return the related ROI if any, null otherwise
-     */
-    public PixelRectangle getRoi ()
-    {
-        return roi;
+        if (minCapacity > oldCapacity) {
+            int newCapacity = ((oldCapacity * 3) / 2) + 1;
+
+            if (newCapacity < minCapacity) {
+                newCapacity = minCapacity;
+            }
+
+            xx = Arrays.copyOf(xx, newCapacity);
+            yy = Arrays.copyOf(yy, newCapacity);
+        }
     }
 
     //------------//
@@ -133,6 +132,30 @@ public class PointsCollector
         size++;
     }
 
+    //--------//
+    // getRoi //
+    //--------//
+    /**
+     * Report the absolute region of interest for this collector
+     * @return the related ROI if any, null otherwise
+     */
+    public PixelRectangle getRoi ()
+    {
+        return roi;
+    }
+
+    //----------//
+    // getSize //
+    //----------//
+    /**
+     * Report the current number of points collected.
+     * @return the current number of points
+     */
+    public final int getSize ()
+    {
+        return size;
+    }
+
     //----------//
     // toString //
     //----------//
@@ -149,28 +172,5 @@ public class PointsCollector
         sb.append("}");
 
         return sb.toString();
-    }
-
-    //----------------//
-    // ensureCapacity //
-    //----------------//
-    /**
-     * Increases the capacity of this instance.
-     * @param minCapacity the desired minimum capacity
-     */
-    public void ensureCapacity (int minCapacity)
-    {
-        int oldCapacity = xx.length;
-
-        if (minCapacity > oldCapacity) {
-            int newCapacity = ((oldCapacity * 3) / 2) + 1;
-
-            if (newCapacity < minCapacity) {
-                newCapacity = minCapacity;
-            }
-
-            xx = Arrays.copyOf(xx, newCapacity);
-            yy = Arrays.copyOf(yy, newCapacity);
-        }
     }
 }

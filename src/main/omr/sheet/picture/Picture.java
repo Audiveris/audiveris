@@ -25,7 +25,6 @@ import omr.selection.MouseMovement;
 import omr.selection.PixelLevelEvent;
 import omr.selection.SelectionService;
 
-import omr.util.Implement;
 import omr.util.JaiLoader;
 
 import org.bushe.swing.event.EventSubscriber;
@@ -142,166 +141,6 @@ public class Picture
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------//
-    // invert //
-    //--------//
-    public static PlanarImage invert (RenderedImage image)
-    {
-        return JAI.create(
-            "Invert",
-            new ParameterBlock().addSource(image).add(null),
-            null);
-    }
-
-    //----------//
-    // setPixel //
-    //----------//
-    /**
-     * Write a pixel at the provided location, in the currently writable
-     * data buffer.
-     * @param pt  pixel coordinates
-     * @param val pixel value
-     */
-    public final void setPixel (Point pt,
-                                int   val)
-    {
-        int[] pixel = new int[1];
-
-        if (grayFactor == 1) {
-            pixel[0] = val;
-        } else {
-            pixel[0] = (val - (grayFactor / 2)) / grayFactor;
-        }
-
-        raster.setPixel(pt.x, pt.y, pixel);
-    }
-
-    //----------//
-    // getPixel //
-    //----------//
-    /**
-     * Report the pixel element read at location (x, y) in the picture.
-     * @param x abscissa value
-     * @param y ordinate value
-     * @return the pixel value
-     */
-    @Implement(PixelSource.class)
-    @Override
-    public final int getPixel (int x,
-                               int y)
-    {
-        int[] pixel = raster.getPixel(x, y, (int[]) null); // Allocates pixel!
-
-        if (grayFactor == 1) {
-            // Speed up the normal case
-            return pixel[0];
-        } else {
-            return (grayFactor / 2) + (grayFactor * pixel[0]);
-        }
-    }
-
-    //--------------//
-    // getDimension //
-    //--------------//
-    /**
-     * Report (a copy of) the dimension in pixels of the current image.
-     * @return the image dimension
-     */
-    public PixelDimension getDimension ()
-    {
-        return new PixelDimension(dimension.width, dimension.height);
-    }
-
-    //-----------//
-    // getHeight //
-    //-----------//
-    /**
-     * Report the picture height in pixels.
-     * @return the height value
-     */
-    @Implement(PixelSource.class)
-    @Override
-    public int getHeight ()
-    {
-        return dimension.height;
-    }
-
-    public RenderedImage getImage ()
-    {
-        return image;
-    }
-
-    //-----------------------//
-    // getImplicitForeground //
-    //-----------------------//
-    public Integer getImplicitForeground ()
-    {
-        return implicitForeground;
-    }
-
-    //------------------//
-    // setMaxForeground //
-    //------------------//
-    @Implement(PixelSource.class)
-    @Override
-    public void setMaxForeground (int level)
-    {
-        this.maxForeground = level;
-    }
-
-    //------------------//
-    // getMaxForeground //
-    //------------------//
-    @Implement(PixelSource.class)
-    @Override
-    public int getMaxForeground ()
-    {
-        if (maxForeground != null) {
-            return maxForeground;
-        } else {
-            return implicitForeground;
-        }
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * Report the name for this Observer.
-     * @return Observer name
-     */
-    public String getName ()
-    {
-        return "Picture";
-    }
-
-    //-----------//
-    // isRotated //
-    //-----------//
-    /**
-     * Predicate to report whether the picture has been rotated.
-     * @return true if rotated
-     */
-    public boolean isRotated ()
-    {
-        return rotated;
-    }
-
-    //----------//
-    // getWidth //
-    //----------//
-    /**
-     * Report the current width of the picture image.
-     * Note that it may have been modified by a rotation.
-     * @return the current width value, in pixels.
-     */
-    @Implement(PixelSource.class)
-    @Override
-    public int getWidth ()
-    {
-        return dimension.width;
-    }
-
     //-------//
     // close //
     //-------//
@@ -376,6 +215,118 @@ public class Picture
         System.out.println();
     }
 
+    //--------------//
+    // getDimension //
+    //--------------//
+    /**
+     * Report (a copy of) the dimension in pixels of the current image.
+     * @return the image dimension
+     */
+    public PixelDimension getDimension ()
+    {
+        return new PixelDimension(dimension.width, dimension.height);
+    }
+
+    //-----------//
+    // getHeight //
+    //-----------//
+    /**
+     * Report the picture height in pixels.
+     * @return the height value
+     */
+    @Override
+    public int getHeight ()
+    {
+        return dimension.height;
+    }
+
+    public RenderedImage getImage ()
+    {
+        return image;
+    }
+
+    //-----------------------//
+    // getImplicitForeground //
+    //-----------------------//
+    public Integer getImplicitForeground ()
+    {
+        return implicitForeground;
+    }
+
+    //------------------//
+    // getMaxForeground //
+    //------------------//
+    @Override
+    public int getMaxForeground ()
+    {
+        if (maxForeground != null) {
+            return maxForeground;
+        } else {
+            return implicitForeground;
+        }
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * Report the name for this Observer.
+     * @return Observer name
+     */
+    public String getName ()
+    {
+        return "Picture";
+    }
+
+    //----------//
+    // getPixel //
+    //----------//
+    /**
+     * Report the pixel element read at location (x, y) in the picture.
+     * @param x abscissa value
+     * @param y ordinate value
+     * @return the pixel value
+     */
+    @Override
+    public final int getPixel (int x,
+                               int y)
+    {
+        int[] pixel = raster.getPixel(x, y, (int[]) null); // Allocates pixel!
+
+        if (grayFactor == 1) {
+            // Speed up the normal case
+            return pixel[0];
+        } else {
+            return (grayFactor / 2) + (grayFactor * pixel[0]);
+        }
+    }
+
+    //----------//
+    // getWidth //
+    //----------//
+    /**
+     * Report the current width of the picture image.
+     * Note that it may have been modified by a rotation.
+     * @return the current width value, in pixels.
+     */
+    @Override
+    public int getWidth ()
+    {
+        return dimension.width;
+    }
+
+    //-----------//
+    // isRotated //
+    //-----------//
+    /**
+     * Predicate to report whether the picture has been rotated.
+     * @return true if rotated
+     */
+    public boolean isRotated ()
+    {
+        return rotated;
+    }
+
     //--------//
     // update //
     //--------//
@@ -385,7 +336,7 @@ public class Picture
      * interested in it.
      * @param event the (sheet) location event
      */
-    @Implement(EventSubscriber.class)
+    @Override
     public void onEvent (LocationEvent event)
     {
         try {
@@ -502,6 +453,49 @@ public class Picture
         logger.info("Image rotated " + getWidth() + " x " + getHeight());
     }
 
+    //------------------//
+    // setMaxForeground //
+    //------------------//
+    @Override
+    public void setMaxForeground (int level)
+    {
+        this.maxForeground = level;
+    }
+
+    //----------//
+    // setPixel //
+    //----------//
+    /**
+     * Write a pixel at the provided location, in the currently writable
+     * data buffer.
+     * @param pt  pixel coordinates
+     * @param val pixel value
+     */
+    public final void setPixel (Point pt,
+                                int   val)
+    {
+        int[] pixel = new int[1];
+
+        if (grayFactor == 1) {
+            pixel[0] = val;
+        } else {
+            pixel[0] = (val - (grayFactor / 2)) / grayFactor;
+        }
+
+        raster.setPixel(pt.x, pt.y, pixel);
+    }
+
+    //--------//
+    // invert //
+    //--------//
+    public static PlanarImage invert (RenderedImage image)
+    {
+        return JAI.create(
+            "Invert",
+            new ParameterBlock().addSource(image).add(null),
+            null);
+    }
+
     //----------//
     // toString //
     //----------//
@@ -570,17 +564,6 @@ public class Picture
                 new ParameterBlock().addSource(image).add(matrix),
                 null);
         }
-    }
-
-    //----------//
-    // setImage //
-    //----------//
-    private void setImage (RenderedImage renderedImage)
-        throws ImageFormatException
-    {
-        image = PlanarImage.wrapRenderedImage(renderedImage);
-
-        checkImage();
     }
 
     //--------------//
@@ -695,6 +678,17 @@ public class Picture
         logger.info(
             "minX:" + image.getMinX() + " minY:" + image.getMinY() + " maxX:" +
             image.getMaxX() + " maxY:" + image.getMaxY());
+    }
+
+    //----------//
+    // setImage //
+    //----------//
+    private void setImage (RenderedImage renderedImage)
+        throws ImageFormatException
+    {
+        image = PlanarImage.wrapRenderedImage(renderedImage);
+
+        checkImage();
     }
 
     //--------------//

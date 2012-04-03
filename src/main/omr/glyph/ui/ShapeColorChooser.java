@@ -12,13 +12,11 @@
 package omr.glyph.ui;
 
 import omr.glyph.Shape;
-import omr.glyph.ShapeRange;
+import omr.glyph.ShapeSet;
 
 import omr.log.Logger;
 
 import omr.ui.MainGui;
-
-import omr.util.Implement;
 
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
@@ -159,7 +157,7 @@ public class ShapeColorChooser
      * Triggered when color selection in the color chooser has changed.
      * @param e not used
      */
-    @Implement(ChangeListener.class)
+    @Override
     public void stateChanged (ChangeEvent e)
     {
         chosenColor = colorChooser.getColor();
@@ -210,7 +208,7 @@ public class ShapeColorChooser
     {
         //~ Instance fields ----------------------------------------------------
 
-        public ShapeRange      current;
+        public ShapeSet        current;
         private SelectAction   select = new SelectAction();
         private JButton        selectButton = new JButton(select);
         private PasteAction    paste = new PasteAction();
@@ -219,7 +217,7 @@ public class ShapeColorChooser
             public void actionPerformed (ActionEvent e)
             {
                 JMenuItem source = (JMenuItem) e.getSource();
-                current = ShapeRange.valueOf(source.getText());
+                current = ShapeSet.valueOf(source.getText());
 
                 if (current != null) {
                     banner.setText(current.getName());
@@ -277,7 +275,7 @@ public class ShapeColorChooser
         private void buildRangesMenu ()
         {
             menu.removeAll();
-            ShapeRange.addAllRangeItems(menu, selectionListener);
+            ShapeSet.addAllShapeSets(menu, selectionListener);
         }
 
         //~ Inner Classes ------------------------------------------------------
@@ -389,6 +387,12 @@ public class ShapeColorChooser
 
         //~ Methods ------------------------------------------------------------
 
+        // When color chooser selection has been made
+        public void colorChanged ()
+        {
+            updateActions();
+        }
+
         // When a new range has been selected
         public void setRange ()
         {
@@ -405,12 +409,6 @@ public class ShapeColorChooser
             paste.setEnabled(false);
         }
 
-        // When color chooser selection has been made
-        public void colorChanged ()
-        {
-            updateActions();
-        }
-
         protected void refreshBanner ()
         {
             if (current != null) {
@@ -423,7 +421,7 @@ public class ShapeColorChooser
             menu.removeAll();
 
             // Add all shapes within current range
-            ShapeRange.addRangeItems(ranges.current, menu, selectionListener);
+            ShapeSet.addSetShapes(ranges.current, menu, selectionListener);
         }
 
         private void prepareDefaultOption ()

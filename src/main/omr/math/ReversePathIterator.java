@@ -228,6 +228,76 @@ public class ReversePathIterator
     //~ Methods ----------------------------------------------------------------
 
     /**
+     * Returns the coordinates and type of the current path segment in
+     * the iteration.
+     * The return value is the path-segment type:
+     * SEG_MOVETO, SEG_LINETO, SEG_QUADTO, SEG_CUBICTO, or SEG_CLOSE.
+     * A double array of length 6 must be passed in and can be used to
+     * store the coordinates of the point(s).
+     * Each point is stored as a pair of double x,y coordinates.
+     * SEG_MOVETO and SEG_LINETO types returns one point,
+     * SEG_QUADTO returns two points,
+     * SEG_CUBICTO returns 3 points
+     * and SEG_CLOSE does not return any points.
+     *
+     * @param coords an array that holds the data returned from
+     *               this method
+     * @return the path-segment type of the current path segment.
+     * @see #SEG_MOVETO
+     * @see #SEG_LINETO
+     * @see #SEG_QUADTO
+     * @see #SEG_CUBICTO
+     * @see #SEG_CLOSE
+     */
+    public int currentSegment (double[] coords)
+    {
+        final int segmentType = segmentTypes[segmentIndex];
+        final int copy = coordinatesForSegmentType(segmentType);
+
+        if (copy > 0) {
+            System.arraycopy(coordinates, coordIndex, coords, 0, copy);
+        }
+
+        return segmentType;
+    }
+
+    /**
+     * Returns the coordinates and type of the current path segment in
+     * the iteration.
+     * The return value is the path-segment type:
+     * SEG_MOVETO, SEG_LINETO, SEG_QUADTO, SEG_CUBICTO, or SEG_CLOSE.
+     * A float array of length 6 must be passed in and can be used to
+     * store the coordinates of the point(s).
+     * Each point is stored as a pair of float x,y coordinates.
+     * SEG_MOVETO and SEG_LINETO types returns one point,
+     * SEG_QUADTO returns two points,
+     * SEG_CUBICTO returns 3 points
+     * and SEG_CLOSE does not return any points.
+     *
+     * @param coords an array that holds the data returned from
+     *               this method
+     * @return the path-segment type of the current path segment.
+     * @see #SEG_MOVETO
+     * @see #SEG_LINETO
+     * @see #SEG_QUADTO
+     * @see #SEG_CUBICTO
+     * @see #SEG_CLOSE
+     */
+    public int currentSegment (float[] coords)
+    {
+        final int segmentType = segmentTypes[segmentIndex];
+        final int copy = coordinatesForSegmentType(segmentType);
+
+        if (copy > 0) {
+            for (int c = 0; c < copy; ++c) {
+                coords[c] = (float) coordinates[coordIndex + c];
+            }
+        }
+
+        return segmentType;
+    }
+
+    /**
      *  Get a reverse path iterator for a shape, keeping the shape's winding rule.
      *  @param shape shape for which a reverse path iterator is needed
      *  @return reverse path iterator
@@ -334,17 +404,6 @@ public class ReversePathIterator
     }
 
     /**
-     * Tests if the iteration is complete.
-     *
-     * @return {@code true} if all the segments have
-     *         been read; {@code false} otherwise.
-     */
-    public boolean isDone ()
-    {
-        return segmentIndex >= segmentTypes.length;
-    }
-
-    /**
      * Returns the winding rule for determining the interior of the
      * path. This just returns the winding rule of the original path,
      * which may or may not be what is wanted.
@@ -359,73 +418,14 @@ public class ReversePathIterator
     }
 
     /**
-     * Returns the coordinates and type of the current path segment in
-     * the iteration.
-     * The return value is the path-segment type:
-     * SEG_MOVETO, SEG_LINETO, SEG_QUADTO, SEG_CUBICTO, or SEG_CLOSE.
-     * A double array of length 6 must be passed in and can be used to
-     * store the coordinates of the point(s).
-     * Each point is stored as a pair of double x,y coordinates.
-     * SEG_MOVETO and SEG_LINETO types returns one point,
-     * SEG_QUADTO returns two points,
-     * SEG_CUBICTO returns 3 points
-     * and SEG_CLOSE does not return any points.
+     * Tests if the iteration is complete.
      *
-     * @param coords an array that holds the data returned from
-     *               this method
-     * @return the path-segment type of the current path segment.
-     * @see #SEG_MOVETO
-     * @see #SEG_LINETO
-     * @see #SEG_QUADTO
-     * @see #SEG_CUBICTO
-     * @see #SEG_CLOSE
+     * @return {@code true} if all the segments have
+     *         been read; {@code false} otherwise.
      */
-    public int currentSegment (double[] coords)
+    public boolean isDone ()
     {
-        final int segmentType = segmentTypes[segmentIndex];
-        final int copy = coordinatesForSegmentType(segmentType);
-
-        if (copy > 0) {
-            System.arraycopy(coordinates, coordIndex, coords, 0, copy);
-        }
-
-        return segmentType;
-    }
-
-    /**
-     * Returns the coordinates and type of the current path segment in
-     * the iteration.
-     * The return value is the path-segment type:
-     * SEG_MOVETO, SEG_LINETO, SEG_QUADTO, SEG_CUBICTO, or SEG_CLOSE.
-     * A float array of length 6 must be passed in and can be used to
-     * store the coordinates of the point(s).
-     * Each point is stored as a pair of float x,y coordinates.
-     * SEG_MOVETO and SEG_LINETO types returns one point,
-     * SEG_QUADTO returns two points,
-     * SEG_CUBICTO returns 3 points
-     * and SEG_CLOSE does not return any points.
-     *
-     * @param coords an array that holds the data returned from
-     *               this method
-     * @return the path-segment type of the current path segment.
-     * @see #SEG_MOVETO
-     * @see #SEG_LINETO
-     * @see #SEG_QUADTO
-     * @see #SEG_CUBICTO
-     * @see #SEG_CLOSE
-     */
-    public int currentSegment (float[] coords)
-    {
-        final int segmentType = segmentTypes[segmentIndex];
-        final int copy = coordinatesForSegmentType(segmentType);
-
-        if (copy > 0) {
-            for (int c = 0; c < copy; ++c) {
-                coords[c] = (float) coordinates[coordIndex + c];
-            }
-        }
-
-        return segmentType;
+        return segmentIndex >= segmentTypes.length;
     }
 
     /**

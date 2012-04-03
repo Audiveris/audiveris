@@ -165,6 +165,18 @@ public class ScoreXmlReduction
 
     //~ Methods ----------------------------------------------------------------
 
+    //-------------//
+    // getStatuses //
+    //-------------//
+    /**
+     * Report for each input fragment the final processing status
+     * @return a map (fragment ID -> processing status)
+     */
+    public Map<Integer, Status> getStatuses ()
+    {
+        return statuses;
+    }
+
     //------//
     // main //
     //------//
@@ -243,18 +255,6 @@ public class ScoreXmlReduction
         }
     }
 
-    //-------------//
-    // getStatuses //
-    //-------------//
-    /**
-     * Report for each input fragment the final processing status
-     * @return a map (fragment ID -> processing status)
-     */
-    public Map<Integer, Status> getStatuses ()
-    {
-        return statuses;
-    }
-
     //--------//
     // reduce //
     //--------//
@@ -294,28 +294,88 @@ public class ScoreXmlReduction
         return buildOutput(globalPartwise);
     }
 
-    //----------//
-    // getPrint //
-    //----------//
+    //-----------//
+    // readFiles //
+    //-----------//
     /**
-     * Retrieve the Print element in the object list, even if we need to create
-     * a new one and insert it to the list
-     * @param noteOrBackupOrForward the list to search (and update)
-     * @return the print element (old or brand new)
+     * Simply read the files raw content into strings in memory
+     * @param files the collection of files to read
+     * @return the collection of raw XML fragments
      */
-    private Print getPrint (List<Object> noteOrBackupOrForward)
+    private static SortedMap<Integer, String> readFiles (SortedMap<Integer, File> files)
     {
-        for (Object obj : noteOrBackupOrForward) {
-            if (obj instanceof Print) {
-                return (Print) obj;
+        watch.start("Reading input files");
+
+        SortedMap<Integer, String> fragments = new TreeMap<Integer, String>();
+
+        for (Map.Entry<Integer, File> entry : files.entrySet()) {
+            BufferedReader input;
+            File           file = entry.getValue();
+
+            try {
+                input = new BufferedReader(new FileReader(file));
+            } catch (FileNotFoundException ex) {
+                System.err.println(ex + " " + file);
+
+                continue;
+            }
+
+            StringBuilder fragment = new StringBuilder();
+            String        line;
+
+            try {
+                while ((line = input.readLine()) != null) {
+                    fragment.append(line)
+                            .append("\n");
+                }
+            } catch (IOException ex) {
+                System.err.println(ex + " " + file);
+
+                continue;
+            }
+
+            fragments.put(entry.getKey(), fragment.toString());
+        }
+
+        return fragments;
+    }
+
+    //-------------//
+    // selectFiles //
+    //-------------//
+    /**
+     * Retrieve the map of files whose names match the provided filter
+     * @param dir path to folder where files are to be read
+     * @param prefix prefix of desired file names
+     * @param suffix suffix of desired file names
+     * @return the sorted map of matching files, indexed by their number
+     */
+    private static SortedMap<Integer, File> selectFiles (File   dir,
+                                                         String prefix,
+                                                         String suffix)
+    {
+        SortedMap<Integer, File> map = new TreeMap<Integer, File>();
+        MyFilenameFilter         filter = new MyFilenameFilter(prefix, suffix);
+        File[]                   files = dir.listFiles(filter);
+
+        if (files == null) {
+            logger.warning("Cannot read folder " + dir);
+
+            return null;
+        }
+
+        File template = new File(dir, prefix + "*" + suffix);
+        logger.info("Looking for " + template);
+
+        if (files.length == 0) {
+            logger.warning("No file matching " + template);
+        } else {
+            for (File file : files) {
+                map.put(filter.getFileNumber(file.getName()), file);
             }
         }
 
-        // Not found, let's create and insert one
-        Print print = factory.createPrint();
-        noteOrBackupOrForward.add(print);
-
-        return print;
+        return map;
     }
 
     //-----------//
@@ -688,6 +748,30 @@ public class ScoreXmlReduction
         }
     }
 
+    //----------//
+    // getPrint //
+    //----------//
+    /**
+     * Retrieve the Print element in the object list, even if we need to create
+     * a new one and insert it to the list
+     * @param noteOrBackupOrForward the list to search (and update)
+     * @return the print element (old or brand new)
+     */
+    private Print getPrint (List<Object> noteOrBackupOrForward)
+    {
+        for (Object obj : noteOrBackupOrForward) {
+            if (obj instanceof Print) {
+                return (Print) obj;
+            }
+        }
+
+        // Not found, let's create and insert one
+        Print print = factory.createPrint();
+        noteOrBackupOrForward.add(print);
+
+        return print;
+    }
+
     //-----------------//
     // insertPageIndex //
     //-----------------//
@@ -767,90 +851,6 @@ public class ScoreXmlReduction
             String    partId = "P" + ++partIndex;
             scorePart.setId(partId);
         }
-    }
-
-    //-----------//
-    // readFiles //
-    //-----------//
-    /**
-     * Simply read the files raw content into strings in memory
-     * @param files the collection of files to read
-     * @return the collection of raw XML fragments
-     */
-    private static SortedMap<Integer, String> readFiles (SortedMap<Integer, File> files)
-    {
-        watch.start("Reading input files");
-
-        SortedMap<Integer, String> fragments = new TreeMap<Integer, String>();
-
-        for (Map.Entry<Integer, File> entry : files.entrySet()) {
-            BufferedReader input;
-            File           file = entry.getValue();
-
-            try {
-                input = new BufferedReader(new FileReader(file));
-            } catch (FileNotFoundException ex) {
-                System.err.println(ex + " " + file);
-
-                continue;
-            }
-
-            StringBuilder fragment = new StringBuilder();
-            String        line;
-
-            try {
-                while ((line = input.readLine()) != null) {
-                    fragment.append(line)
-                            .append("\n");
-                }
-            } catch (IOException ex) {
-                System.err.println(ex + " " + file);
-
-                continue;
-            }
-
-            fragments.put(entry.getKey(), fragment.toString());
-        }
-
-        return fragments;
-    }
-
-    //-------------//
-    // selectFiles //
-    //-------------//
-    /**
-     * Retrieve the map of files whose names match the provided filter
-     * @param dir path to folder where files are to be read
-     * @param prefix prefix of desired file names
-     * @param suffix suffix of desired file names
-     * @return the sorted map of matching files, indexed by their number
-     */
-    private static SortedMap<Integer, File> selectFiles (File   dir,
-                                                         String prefix,
-                                                         String suffix)
-    {
-        SortedMap<Integer, File> map = new TreeMap<Integer, File>();
-        MyFilenameFilter         filter = new MyFilenameFilter(prefix, suffix);
-        File[]                   files = dir.listFiles(filter);
-
-        if (files == null) {
-            logger.warning("Cannot read folder " + dir);
-
-            return null;
-        }
-
-        File template = new File(dir, prefix + "*" + suffix);
-        logger.info("Looking for " + template);
-
-        if (files.length == 0) {
-            logger.warning("No file matching " + template);
-        } else {
-            for (File file : files) {
-                map.put(filter.getFileNumber(file.getName()), file);
-            }
-        }
-
-        return map;
     }
 
     //----------//
@@ -962,6 +962,24 @@ public class ScoreXmlReduction
 
         //~ Methods ------------------------------------------------------------
 
+        public boolean accept (File   dir,
+                               String name)
+        {
+            ///logger.info("dir: " + dir + " name: " + name);
+            if (!name.startsWith(prefix)) {
+                return false;
+            }
+
+            if (!name.endsWith(suffix)) {
+                return false;
+            }
+
+            // Check we can decode a number in this portion of the name
+            Integer num = getFileNumber(name);
+
+            return num != null;
+        }
+
         public Integer getFileNumber (String name)
         {
             String numStr = name.substring(
@@ -983,24 +1001,6 @@ public class ScoreXmlReduction
 
                 return null;
             }
-        }
-
-        public boolean accept (File   dir,
-                               String name)
-        {
-            ///logger.info("dir: " + dir + " name: " + name);
-            if (!name.startsWith(prefix)) {
-                return false;
-            }
-
-            if (!name.endsWith(suffix)) {
-                return false;
-            }
-
-            // Check we can decode a number in this portion of the name
-            Integer num = getFileNumber(name);
-
-            return num != null;
         }
     }
 }

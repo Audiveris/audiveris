@@ -13,7 +13,7 @@ package omr.glyph.facets;
 
 import omr.glyph.Evaluation;
 import omr.glyph.Shape;
-import omr.glyph.ShapeRange;
+import omr.glyph.ShapeSet;
 import omr.glyph.text.TextInfo;
 
 import omr.log.Logger;
@@ -24,8 +24,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Class {@code BasicRecognition} is the basic implementation of a recognition
- * facet
+ * Class {@code BasicRecognition} is the basic implementation of a
+ * recognition facet.
  *
  * @author Hervé Bitteur
  */
@@ -60,7 +60,6 @@ class BasicRecognition
     //------------------//
     /**
      * Creates a new BasicRecognition object.
-     *
      * @param glyph our glyph
      */
     public BasicRecognition (Glyph glyph)
@@ -70,33 +69,49 @@ class BasicRecognition
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------//
-    // isBar //
-    //-------//
-    public boolean isBar ()
+    //------------//
+    // allowShape //
+    //------------//
+    @Override
+    public void allowShape (Shape shape)
     {
-        return ShapeRange.Barlines.contains(getShape());
+        if (forbiddenShapes != null) {
+            forbiddenShapes.remove(shape);
+        }
     }
 
-    //--------//
-    // isClef //
-    //--------//
-    public boolean isClef ()
+    //------//
+    // dump //
+    //------//
+    @Override
+    public void dump ()
     {
-        return ShapeRange.Clefs.contains(getShape());
+        System.out.println("   evaluation=" + evaluation);
+        System.out.println(
+            "   physical=" +
+            ((getShape() != null) ? getShape().getPhysicalShape() : null));
+        System.out.println("   forbiddenShapes=" + forbiddenShapes);
+        System.out.println("   textInfo=" + textInfo);
+        System.out.println("   rational=" + timeRational);
     }
 
-    //---------------//
-    // setEvaluation //
-    //---------------//
-    public void setEvaluation (Evaluation evaluation)
+    //-------------//
+    // forbidShape //
+    //-------------//
+    @Override
+    public void forbidShape (Shape shape)
     {
-        setShape(evaluation.shape, evaluation.grade);
+        if (forbiddenShapes == null) {
+            forbiddenShapes = new HashSet<Shape>();
+        }
+
+        forbiddenShapes.add(shape);
     }
 
     //---------------//
     // getEvaluation //
     //---------------//
+    @Override
     public Evaluation getEvaluation ()
     {
         return evaluation;
@@ -105,6 +120,7 @@ class BasicRecognition
     //----------//
     // getGrade //
     //----------//
+    @Override
     public double getGrade ()
     {
         if (evaluation != null) {
@@ -115,9 +131,63 @@ class BasicRecognition
         }
     }
 
+    //----------//
+    // getShape //
+    //----------//
+    @Override
+    public Shape getShape ()
+    {
+        if (evaluation != null) {
+            return evaluation.shape;
+        } else {
+            return null;
+        }
+    }
+
+    //-------------//
+    // getTextInfo //
+    //-------------//
+    @Override
+    public TextInfo getTextInfo ()
+    {
+        if (textInfo == null) {
+            textInfo = new TextInfo(glyph);
+        }
+
+        return textInfo;
+    }
+
+    //-----------------//
+    // getTimeRational //
+    //-----------------//
+    @Override
+    public TimeRational getTimeRational ()
+    {
+        return timeRational;
+    }
+
+    //-------//
+    // isBar //
+    //-------//
+    @Override
+    public boolean isBar ()
+    {
+        return ShapeSet.Barlines.contains(getShape());
+    }
+
+    //--------//
+    // isClef //
+    //--------//
+    @Override
+    public boolean isClef ()
+    {
+        return ShapeSet.Clefs.contains(getShape());
+    }
+
     //---------//
     // isKnown //
     //---------//
+    @Override
     public boolean isKnown ()
     {
         Shape shape = getShape();
@@ -128,14 +198,74 @@ class BasicRecognition
     //---------------//
     // isManualShape //
     //---------------//
+    @Override
     public boolean isManualShape ()
     {
         return getGrade() == Evaluation.MANUAL;
     }
 
+    //------------------//
+    // isShapeForbidden //
+    //------------------//
+    @Override
+    public boolean isShapeForbidden (Shape shape)
+    {
+        return (forbiddenShapes != null) && forbiddenShapes.contains(shape);
+    }
+
+    //--------//
+    // isStem //
+    //--------//
+    @Override
+    public boolean isStem ()
+    {
+        return getShape() == Shape.STEM;
+    }
+
+    //--------//
+    // isText //
+    //--------//
+    @Override
+    public boolean isText ()
+    {
+        Shape shape = getShape();
+
+        return (shape != null) && shape.isText();
+    }
+
+    //-------------//
+    // isWellKnown //
+    //-------------//
+    @Override
+    public boolean isWellKnown ()
+    {
+        Shape shape = getShape();
+
+        return (shape != null) && shape.isWellKnown();
+    }
+
+    //-----------------//
+    // resetEvaluation //
+    //-----------------//
+    @Override
+    public void resetEvaluation ()
+    {
+        evaluation = null;
+    }
+
+    //---------------//
+    // setEvaluation //
+    //---------------//
+    @Override
+    public void setEvaluation (Evaluation evaluation)
+    {
+        setShape(evaluation.shape, evaluation.grade);
+    }
+
     //----------//
     // setShape //
     //----------//
+    @Override
     public void setShape (Shape shape)
     {
         setShape(shape, Evaluation.ALGORITHM);
@@ -144,6 +274,7 @@ class BasicRecognition
     //----------//
     // setShape //
     //----------//
+    @Override
     public void setShape (Shape  shape,
                           double grade)
     {
@@ -175,128 +306,12 @@ class BasicRecognition
         }
     }
 
-    //----------//
-    // getShape //
-    //----------//
-    public Shape getShape ()
-    {
-        if (evaluation != null) {
-            return evaluation.shape;
-        } else {
-            return null;
-        }
-    }
-
-    //------------------//
-    // isShapeForbidden //
-    //------------------//
-    public boolean isShapeForbidden (Shape shape)
-    {
-        return (forbiddenShapes != null) && forbiddenShapes.contains(shape);
-    }
-
-    //--------//
-    // isStem //
-    //--------//
-    public boolean isStem ()
-    {
-        return getShape() == Shape.COMBINING_STEM;
-    }
-
-    //--------//
-    // isText //
-    //--------//
-    public boolean isText ()
-    {
-        Shape shape = getShape();
-
-        return (shape != null) && shape.isText();
-    }
-
-    //-------------//
-    // getTextInfo //
-    //-------------//
-    public TextInfo getTextInfo ()
-    {
-        if (textInfo == null) {
-            textInfo = new TextInfo(glyph);
-        }
-
-        return textInfo;
-    }
-
     //-----------------//
     // setTimeRational //
     //-----------------//
+    @Override
     public void setTimeRational (TimeRational timeRational)
     {
         this.timeRational = timeRational;
-    }
-
-    //-----------------//
-    // getTimeRational //
-    //-----------------//
-    public TimeRational getTimeRational ()
-    {
-        return timeRational;
-    }
-
-    //-------------//
-    // isWellKnown //
-    //-------------//
-    public boolean isWellKnown ()
-    {
-        Shape shape = getShape();
-
-        return (shape != null) && shape.isWellKnown();
-    }
-
-    //------------//
-    // allowShape //
-    //------------//
-    /**
-     * Remove the provided shape from the collection of forbidden shaped, if any
-     * @param shape the shape to allow
-     */
-    public void allowShape (Shape shape)
-    {
-        if (forbiddenShapes != null) {
-            forbiddenShapes.remove(shape);
-        }
-    }
-
-    //------//
-    // dump //
-    //------//
-    @Override
-    public void dump ()
-    {
-        System.out.println("   evaluation=" + evaluation);
-        System.out.println(
-            "   physical=" +
-            ((getShape() != null) ? getShape().getPhysicalShape() : null));
-        System.out.println("   forbiddenShapes=" + forbiddenShapes);
-        System.out.println("   textInfo=" + textInfo);
-        System.out.println("   rational=" + timeRational);
-    }
-
-    //-------------//
-    // forbidShape //
-    //-------------//
-    public void forbidShape (Shape shape)
-    {
-        if (forbiddenShapes == null) {
-            forbiddenShapes = new HashSet<Shape>();
-        }
-
-        forbiddenShapes.add(shape);
-    }
-
-    //-----------------//
-    // resetEvaluation //
-    //-----------------//
-    public void resetEvaluation ()
-    {
-        evaluation = null;
     }
 }

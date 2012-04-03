@@ -67,14 +67,6 @@ public class TimeRational
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------//
-    // getValue //
-    //----------//
-    public Rational getValue ()
-    {
-        return new Rational(num, den);
-    }
-
     //--------//
     // equals //
     //--------//
@@ -88,6 +80,14 @@ public class TimeRational
 
             return (this.num == that.num) && (this.den == that.den);
         }
+    }
+
+    //----------//
+    // getValue //
+    //----------//
+    public Rational getValue ()
+    {
+        return new Rational(num, den);
     }
 
     //----------//

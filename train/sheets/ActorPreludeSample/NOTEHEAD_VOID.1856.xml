@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<glyph shape="NOTEHEAD_VOID" interline="13" id="1856">
+    <stem-number>1</stem-number>
+    <with-ledger>true</with-ledger>
+    <pitch-position>-7.1020408163265305</pitch-position>
+    <section orientation="VERTICAL" first-pos="2857" id="9371">
+        <run start="286" level="71" length="8"/>
+        <run start="285" level="70" length="7"/>
+        <run start="283" level="48" length="5"/>
+        <run start="283" level="5" length="4"/>
+        <run start="282" level="40" length="5"/>
+        <run start="282" level="9" length="4"/>
+        <run start="281" level="57" length="5"/>
+        <run start="281" level="26" length="4"/>
+        <run start="281" level="1" length="3"/>
+        <run start="281" level="35" length="3"/>
+        <run start="281" level="0" length="2"/>
+        <run start="281" level="28" length="2"/>
+        <run start="281" level="52" length="2"/>
+        <run start="281" level="62" length="2"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2860" id="9426">
+        <run start="293" level="192" length="1"/>
+        <run start="291" level="185" length="3"/>
+        <run start="291" level="159" length="3"/>
+        <run start="291" level="131" length="3"/>
+        <run start="290" level="130" length="4"/>
+        <run start="290" level="99" length="4"/>
+        <run start="289" level="97" length="5"/>
+        <run start="288" level="95" length="6"/>
+        <run start="288" level="69" length="6"/>
+        <run start="287" level="69" length="6"/>
+        <run start="286" level="50" length="5"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2871" id="9452">
+        <run start="282" level="57" length="8"/>
+    </section>
+    <section orientation="VERTICAL" first-pos="2872" id="9468">
+        <run start="283" level="95" length="4"/>
+    </section>
+</glyph>

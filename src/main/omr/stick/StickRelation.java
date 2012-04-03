@@ -53,20 +53,6 @@ public class StickRelation
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------------//
-    // isCandidate //
-    //-------------//
-    /**
-     * Checks whether the section is a good candidate to be a member of a stick
-     *
-     * @return the result of the test
-     */
-    public boolean isCandidate ()
-    {
-        return (role != null) &&
-               (role.ordinal() < SectionRole.BORDER.ordinal());
-    }
-
     //----------//
     // getColor //
     //----------//
@@ -83,6 +69,20 @@ public class StickRelation
         } else {
             return null;
         }
+    }
+
+    //-------------//
+    // isCandidate //
+    //-------------//
+    /**
+     * Checks whether the section is a good candidate to be a member of a stick
+     *
+     * @return the result of the test
+     */
+    public boolean isCandidate ()
+    {
+        return (role != null) &&
+               (role.ordinal() < SectionRole.BORDER.ordinal());
     }
 
     //-----------//

@@ -23,8 +23,6 @@ import omr.score.common.PixelRectangle;
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
-import omr.util.Implement;
-
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -48,13 +46,13 @@ public class GlyphInspector
 
     /** Shapes acceptable for a part candidate */
     private static final EnumSet<Shape> partShapes = EnumSet.of(
-        Shape.DOT,
+        Shape.DOT_set,
         Shape.NOISE,
         Shape.CLUTTER,
         Shape.STACCATISSIMO,
-        Shape.VOID_NOTEHEAD,
-        Shape.COMBINING_FLAG_1,
-        Shape.COMBINING_FLAG_1_UP);
+        Shape.NOTEHEAD_VOID,
+        Shape.FLAG_1,
+        Shape.FLAG_1_UP);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -93,7 +91,7 @@ public class GlyphInspector
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.getShape() == null) {
                 // Get vote
-                Evaluation vote = evaluator.vote(glyph, minGrade, system);
+                Evaluation vote = evaluator.vote(glyph, system, minGrade);
 
                 if ((vote != null) && !glyph.isShapeForbidden(vote.shape)) {
                     glyph.setEvaluation(vote);
@@ -195,7 +193,26 @@ public class GlyphInspector
 
         //~ Methods ------------------------------------------------------------
 
-        @Implement(CompoundAdapter.class)
+        @Override
+        public PixelRectangle computeReferenceBox ()
+        {
+            if (seed == null) {
+                throw new NullPointerException(
+                    "Compound seed has not been set");
+            }
+
+            PixelRectangle newBox = seed.getContourBox();
+
+            Scale          scale = system.getScoreSystem()
+                                         .getScale();
+            int            boxWiden = scale.toPixels(
+                GlyphInspector.constants.boxWiden);
+            newBox.grow(boxWiden, boxWiden);
+
+            return newBox;
+        }
+
+        @Override
         public boolean isCandidateSuitable (Glyph glyph)
         {
             Shape shape = glyph.getShape();
@@ -203,7 +220,7 @@ public class GlyphInspector
             //            boolean ok = glyph.isActive() && (shape != Shape.LEDGER) &&
             //                         (!glyph.isKnown() ||
             //                         (!glyph.isManualShape() &&
-            //                         ((shape == Shape.DOT) || (shape == Shape.NOISE) ||
+            //                         ((shape == Shape.DOT_set) || (shape == Shape.NOISE) ||
             //                         (shape == Shape.CLUTTER) ||
             //                         (shape == Shape.STRUCTURE) ||
             //                         (shape == Shape.STACCATISSIMO) ||
@@ -227,11 +244,11 @@ public class GlyphInspector
             }
         }
 
-        @Implement(CompoundAdapter.class)
+        @Override
         public boolean isCompoundValid (Glyph compound)
         {
             Evaluation eval = GlyphNetwork.getInstance()
-                                          .vote(compound, minGrade, system);
+                                          .vote(compound, system, minGrade);
 
             if ((eval != null) &&
                 eval.shape.isWellKnown() &&
@@ -243,25 +260,6 @@ public class GlyphInspector
             } else {
                 return false;
             }
-        }
-
-        @Implement(CompoundAdapter.class)
-        public PixelRectangle computeReferenceBox ()
-        {
-            if (seed == null) {
-                throw new NullPointerException(
-                    "Compound seed has not been set");
-            }
-
-            PixelRectangle newBox = seed.getContourBox();
-
-            Scale          scale = system.getScoreSystem()
-                                         .getScale();
-            int            boxWiden = scale.toPixels(
-                GlyphInspector.constants.boxWiden);
-            newBox.grow(boxWiden, boxWiden);
-
-            return newBox;
         }
     }
 

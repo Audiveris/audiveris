@@ -113,17 +113,6 @@ public class FortePattern
 
         //~ Methods ------------------------------------------------------------
 
-        public boolean isCandidateSuitable (Glyph glyph)
-        {
-            return true;
-        }
-
-        @Override
-        public Evaluation getChosenEvaluation ()
-        {
-            return new Evaluation(chosenEvaluation.shape, Evaluation.ALGORITHM);
-        }
-
         public PixelRectangle computeReferenceBox ()
         {
             PixelRectangle rect = seed.getContourBox();
@@ -135,6 +124,17 @@ public class FortePattern
             seed.addAttachment("fl", leftBox);
 
             return rect;
+        }
+
+        @Override
+        public Evaluation getChosenEvaluation ()
+        {
+            return new Evaluation(chosenEvaluation.shape, Evaluation.ALGORITHM);
+        }
+
+        public boolean isCandidateSuitable (Glyph glyph)
+        {
+            return true;
         }
     }
 }

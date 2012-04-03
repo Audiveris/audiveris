@@ -27,12 +27,6 @@ interface GlyphAdministration
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * Assign a unique ID to the glyph
-     * @param id the unique id
-     */
-    void setId (int id);
-
-    /**
      * Report the unique glyph id within its containing nest
      * @return the glyph id
      */
@@ -45,12 +39,6 @@ interface GlyphAdministration
     Nest getNest ();
 
     /**
-     * The setter for glyph nest. To be used with care
-     * @param nest the containing nest
-     */
-    void setNest (Nest nest);
-
-    /**
      * Test whether the glyph is transient (not yet inserted into the nest)
      * @return true if transient
      */
@@ -61,4 +49,16 @@ interface GlyphAdministration
      * @return true if virtual
      */
     boolean isVirtual ();
+
+    /**
+     * Assign a unique ID to the glyph
+     * @param id the unique id
+     */
+    void setId (int id);
+
+    /**
+     * The setter for glyph nest. To be used with care
+     * @param nest the containing nest
+     */
+    void setNest (Nest nest);
 }

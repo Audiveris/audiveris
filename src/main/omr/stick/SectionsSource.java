@@ -80,22 +80,6 @@ public class SectionsSource
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------//
-    // isInArea //
-    //----------//
-    /**
-     * Check whether a given section lies entirely within the scanned area
-     *
-     * @param section The section to be checked
-     *
-     * @return The boolean result of the test
-     */
-    public boolean isInArea (Section section)
-    {
-        // Default behavior : no filtering
-        return true;
-    }
-
     //--------//
     // backup //
     //--------//
@@ -131,6 +115,22 @@ public class SectionsSource
         }
 
         return false;
+    }
+
+    //----------//
+    // isInArea //
+    //----------//
+    /**
+     * Check whether a given section lies entirely within the scanned area
+     *
+     * @param section The section to be checked
+     *
+     * @return The boolean result of the test
+     */
+    public boolean isInArea (Section section)
+    {
+        // Default behavior : no filtering
+        return true;
     }
 
     //------//

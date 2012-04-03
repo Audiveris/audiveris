@@ -73,6 +73,18 @@ public class SystemManager
 
     //~ Methods ----------------------------------------------------------------
 
+    //-----------//
+    // addSystem //
+    //-----------//
+    /**
+     * Append one system to the current collection
+     * @param system the system to add
+     */
+    public void addSystem (SystemInfo system)
+    {
+        systems.add(system);
+    }
+
     //----------------//
     // getFirstSystem //
     //----------------//
@@ -92,17 +104,6 @@ public class SystemManager
     public int getIndexOf (SystemInfo system)
     {
         return systems.indexOf(system);
-    }
-
-    //-------------//
-    // setPartTops //
-    //-------------//
-    /**
-     * @param partTops the partTops to set
-     */
-    public void setPartTops (Integer[] partTops)
-    {
-        this.partTops = partTops;
     }
 
     //-------------//
@@ -183,17 +184,6 @@ public class SystemManager
     }
 
     //---------------//
-    // setSystemTops //
-    //---------------//
-    /**
-     * @param systemTops the systemTops to set
-     */
-    public void setSystemTops (Integer[] systemTops)
-    {
-        this.systemTops = systemTops;
-    }
-
-    //---------------//
     // getSystemTops //
     //---------------//
     /**
@@ -202,19 +192,6 @@ public class SystemManager
     public Integer[] getSystemTops ()
     {
         return systemTops;
-    }
-
-    //------------//
-    // setSystems //
-    //------------//
-    /**
-     * Assign the whole sequence of systems
-     * @param systems  the (new) systems
-     */
-    public void setSystems (Collection<SystemInfo> systems)
-    {
-        reset();
-        this.systems.addAll(systems);
     }
 
     //------------//
@@ -227,18 +204,6 @@ public class SystemManager
     public List<SystemInfo> getSystems ()
     {
         return Collections.unmodifiableList(systems);
-    }
-
-    //-----------//
-    // addSystem //
-    //-----------//
-    /**
-     * Append one system to the current collection
-     * @param system the system to add
-     */
-    public void addSystem (SystemInfo system)
-    {
-        systems.add(system);
     }
 
     //    //--------------------//
@@ -315,6 +280,41 @@ public class SystemManager
     public void reset ()
     {
         systems.clear();
+    }
+
+    //-------------//
+    // setPartTops //
+    //-------------//
+    /**
+     * @param partTops the partTops to set
+     */
+    public void setPartTops (Integer[] partTops)
+    {
+        this.partTops = partTops;
+    }
+
+    //---------------//
+    // setSystemTops //
+    //---------------//
+    /**
+     * @param systemTops the systemTops to set
+     */
+    public void setSystemTops (Integer[] systemTops)
+    {
+        this.systemTops = systemTops;
+    }
+
+    //------------//
+    // setSystems //
+    //------------//
+    /**
+     * Assign the whole sequence of systems
+     * @param systems  the (new) systems
+     */
+    public void setSystems (Collection<SystemInfo> systems)
+    {
+        reset();
+        this.systems.addAll(systems);
     }
 
     //~ Inner Classes ----------------------------------------------------------

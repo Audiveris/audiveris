@@ -38,12 +38,10 @@ import static omr.selection.SelectionHint.*;
 import omr.selection.SelectionService;
 import omr.selection.UserEvent;
 
-import omr.util.Implement;
 import omr.util.Predicate;
 
 import org.bushe.swing.event.EventSubscriber;
 
-import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -129,126 +127,10 @@ public class BasicLag
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------------//
-    // getSections //
-    //-------------//
-    public final Collection<Section> getSections ()
-    {
-        return getVertices();
-    }
-
-    //----------------//
-    // getOrientation //
-    //----------------//
-    @Implement(Oriented.class)
-    public Orientation getOrientation ()
-    {
-        return orientation;
-    }
-
-    //----------//
-    // getRunAt //
-    //----------//
-    public final Run getRunAt (int x,
-                               int y)
-    {
-        return runsTable.getRunAt(x, y);
-    }
-
-    //---------------//
-    // getRunService //
-    //---------------//
-    public SelectionService getRunService ()
-    {
-        return runsTable.getRunService();
-    }
-
-    //---------//
-    // setRuns //
-    //---------//
-    public void setRuns (RunsTable runsTable)
-    {
-        if (this.runsTable != null) {
-            throw new RuntimeException("Attempt to overwrite lag runs table");
-        } else {
-            this.runsTable = runsTable;
-        }
-    }
-
-    //---------//
-    // getRuns //
-    //---------//
-    public RunsTable getRuns ()
-    {
-        return runsTable;
-    }
-
-    //-------------------//
-    // getSectionService //
-    //-------------------//
-    public SelectionService getSectionService ()
-    {
-        return lagService;
-    }
-
-    //--------------------//
-    // getSelectedSection //
-    //--------------------//
-    public Section getSelectedSection ()
-    {
-        return (Section) getSectionService()
-                             .getSelection(SectionEvent.class);
-    }
-
-    //-----------------------//
-    // getSelectedSectionSet //
-    //-----------------------//
-    public Set<Section> getSelectedSectionSet ()
-    {
-        return (Set<Section>) getSectionService()
-                                  .getSelection(SectionSetEvent.class);
-    }
-
-    //-------------//
-    // setServices //
-    //-------------//
-    public void setServices (SelectionService locationService,
-                             SelectionService sceneService)
-    {
-        this.locationService = locationService;
-        this.glyphService = sceneService;
-
-        runsTable.setLocationService(locationService);
-
-        for (Class eventClass : locEventsRead) {
-            locationService.subscribeStrongly(eventClass, this);
-        }
-
-        for (Class eventClass : runEventsRead) {
-            getRunService()
-                .subscribeStrongly(eventClass, this);
-        }
-
-        for (Class eventClass : sctEventsRead) {
-            lagService.subscribeStrongly(eventClass, this);
-        }
-    }
-
-    //------------//
-    // isVertical //
-    //------------//
-    /**
-     * Predicate on lag orientation
-     * @return true if vertical, false if horizontal
-     */
-    public boolean isVertical ()
-    {
-        return orientation.isVertical();
-    }
-
     //---------//
     // addRuns //
     //---------//
+    @Override
     public void addRuns (RunsTable runsTable)
     {
         if (this.runsTable == null) {
@@ -262,6 +144,7 @@ public class BasicLag
     //---------------//
     // createSection //
     //---------------//
+    @Override
     public Section createSection (int firstPos,
                                   Run firstRun)
     {
@@ -276,9 +159,98 @@ public class BasicLag
         return section;
     }
 
+    //----------------//
+    // getOrientation //
+    //----------------//
+    @Override
+    public Orientation getOrientation ()
+    {
+        return orientation;
+    }
+
+    //----------//
+    // getRunAt //
+    //----------//
+    @Override
+    public final Run getRunAt (int x,
+                               int y)
+    {
+        return runsTable.getRunAt(x, y);
+    }
+
+    //---------------//
+    // getRunService //
+    //---------------//
+    @Override
+    public SelectionService getRunService ()
+    {
+        return runsTable.getRunService();
+    }
+
+    //---------//
+    // getRuns //
+    //---------//
+    @Override
+    public RunsTable getRuns ()
+    {
+        return runsTable;
+    }
+
+    //-------------------//
+    // getSectionService //
+    //-------------------//
+    @Override
+    public SelectionService getSectionService ()
+    {
+        return lagService;
+    }
+
+    //-------------//
+    // getSections //
+    //-------------//
+    @Override
+    public final Collection<Section> getSections ()
+    {
+        return getVertices();
+    }
+
+    //--------------------//
+    // getSelectedSection //
+    //--------------------//
+    @Override
+    public Section getSelectedSection ()
+    {
+        return (Section) getSectionService()
+                             .getSelection(SectionEvent.class);
+    }
+
+    //-----------------------//
+    // getSelectedSectionSet //
+    //-----------------------//
+    @Override
+    @SuppressWarnings("unchecked")
+    public Set<Section> getSelectedSectionSet ()
+    {
+        return (Set<Section>) getSectionService()
+                                  .getSelection(SectionSetEvent.class);
+    }
+
+    //------------//
+    // isVertical //
+    //------------//
+    /**
+     * Predicate on lag orientation
+     * @return true if vertical, false if horizontal
+     */
+    public boolean isVertical ()
+    {
+        return orientation.isVertical();
+    }
+
     //---------------------------//
     // lookupIntersectedSections //
     //---------------------------//
+    @Override
     public Set<Section> lookupIntersectedSections (PixelRectangle rect)
     {
         return Sections.lookupIntersectedSections(rect, getSections());
@@ -287,6 +259,7 @@ public class BasicLag
     //----------------//
     // lookupSections //
     //----------------//
+    @Override
     public Set<Section> lookupSections (PixelRectangle rect)
     {
         return Sections.lookupSections(rect, getSections());
@@ -295,6 +268,7 @@ public class BasicLag
     //---------//
     // onEvent //
     //---------//
+    @Override
     public void onEvent (UserEvent event)
     {
         try {
@@ -358,6 +332,7 @@ public class BasicLag
     //---------------//
     // purgeSections //
     //---------------//
+    @Override
     public List<Section> purgeSections (Predicate<Section> predicate)
     {
         // List of sections to be purged (to avoid concurrent modifications)
@@ -389,6 +364,45 @@ public class BasicLag
 
         // Return the sections purged
         return purges;
+    }
+
+    //---------//
+    // setRuns //
+    //---------//
+    @Override
+    public void setRuns (RunsTable runsTable)
+    {
+        if (this.runsTable != null) {
+            throw new RuntimeException("Attempt to overwrite lag runs table");
+        } else {
+            this.runsTable = runsTable;
+        }
+    }
+
+    //-------------//
+    // setServices //
+    //-------------//
+    @Override
+    public void setServices (SelectionService locationService,
+                             SelectionService sceneService)
+    {
+        this.locationService = locationService;
+        this.glyphService = sceneService;
+
+        runsTable.setLocationService(locationService);
+
+        for (Class eventClass : locEventsRead) {
+            locationService.subscribeStrongly(eventClass, this);
+        }
+
+        for (Class eventClass : runEventsRead) {
+            getRunService()
+                .subscribeStrongly(eventClass, this);
+        }
+
+        for (Class eventClass : sctEventsRead) {
+            lagService.subscribeStrongly(eventClass, this);
+        }
     }
 
     //-----------------//

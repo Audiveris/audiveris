@@ -110,19 +110,6 @@ public abstract class Dash
         return box;
     }
 
-    //-----------//
-    // getDashOf //
-    //-----------//
-    /**
-     * Report whether this dash is based on the provided glyph
-     * @param glyph the provided glyph
-     * @return true if they are related
-     */
-    public boolean isDashOf (Glyph glyph)
-    {
-        return this.stick == glyph;
-    }
-
     //---------//
     // getLine //
     //---------//
@@ -140,23 +127,6 @@ public abstract class Dash
         }
 
         return line;
-    }
-
-    //------------//
-    // setPatches //
-    //------------//
-    /**
-     * Remember the set of patches
-     * @param patches the patches to remember
-     */
-    public void setPatches (Collection<Section> patches)
-    {
-        if (this.getPatches() != patches) {
-            this.getPatches()
-                .clear();
-            this.getPatches()
-                .addAll(patches);
-        }
     }
 
     //------------//
@@ -194,6 +164,19 @@ public abstract class Dash
     public Glyph getStick ()
     {
         return stick;
+    }
+
+    //-----------//
+    // getDashOf //
+    //-----------//
+    /**
+     * Report whether this dash is based on the provided glyph
+     * @param glyph the provided glyph
+     * @return true if they are related
+     */
+    public boolean isDashOf (Glyph glyph)
+    {
+        return this.stick == glyph;
     }
 
     //--------//
@@ -240,6 +223,23 @@ public abstract class Dash
             return true;
         } else {
             return false;
+        }
+    }
+
+    //------------//
+    // setPatches //
+    //------------//
+    /**
+     * Remember the set of patches
+     * @param patches the patches to remember
+     */
+    public void setPatches (Collection<Section> patches)
+    {
+        if (this.getPatches() != patches) {
+            this.getPatches()
+                .clear();
+            this.getPatches()
+                .addAll(patches);
         }
     }
 

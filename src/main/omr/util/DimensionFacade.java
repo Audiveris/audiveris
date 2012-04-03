@@ -75,20 +75,28 @@ public class DimensionFacade
     }
 
     //-----------//
+    // getHeight //
+    //-----------//
+    public int getHeight ()
+    {
+        return dimension.height;
+    }
+
+    //----------//
+    // getWidth //
+    //----------//
+    public int getWidth ()
+    {
+        return dimension.width;
+    }
+
+    //-----------//
     // setHeight //
     //-----------//
     @XmlElement
     public void setHeight (int height)
     {
         dimension.height = height;
-    }
-
-    //-----------//
-    // getHeight //
-    //-----------//
-    public int getHeight ()
-    {
-        return dimension.height;
     }
 
     //----------//
@@ -98,13 +106,5 @@ public class DimensionFacade
     public void setWidth (int width)
     {
         dimension.width = width;
-    }
-
-    //----------//
-    // getWidth //
-    //----------//
-    public int getWidth ()
-    {
-        return dimension.width;
     }
 }

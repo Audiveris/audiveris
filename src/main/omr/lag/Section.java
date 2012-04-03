@@ -115,19 +115,77 @@ public interface Section
     //~ Methods ----------------------------------------------------------------
 
     /**
+     * Register the adjacency of a section from the other orientation.
+     * @param otherSection the other section to remember
+     */
+    public void addOppositeSection (Section otherSection);
+
+    /**
+     * Extend a section with the given run.
+     * This new run is assumed to be contiguous to the current last run of the
+     * section, no check is performed.
+     * @param run the new last run
+     */
+    public void append (Run run);
+
+    /**
+     * Compute the various cached parameters from scratch.
+     */
+    public void computeParameters ();
+
+    /**
+     * Predicate to check whether the given absolute point is located
+     * inside the section.
+     * @param x absolute abscissa
+     * @param y absolute ordinate
+     * @return true if absolute point(x,y) is contained in the section
+     */
+    public boolean contains (int x,
+                             int y);
+
+    /**
+     * Cumulate in the provided absolute Barycenter the section pixels
+     * that are contained in the provided roi PixelRectangle.
+     * If the roi is null, all pixels are cumulated into the barycenter.
+     * @param barycenter the absolute point to populate
+     * @param absRoi the absolute rectangle of interest
+     */
+    public void cumulate (Barycenter     barycenter,
+                          PixelRectangle absRoi);
+
+    /**
+     * Cumulate all points that compose the runs of the section, into
+     * the provided <b>absolute</b> collector.
+     * @param collector the absolute points collector to populate
+     */
+    public void cumulate (PointsCollector collector);
+
+    /**
+     * Draws a basic representation of the section, using ascii chars.
+     */
+    public void drawAscii ();
+
+    /**
+     * Build an image with the pixels of this section.
+     * @param im the image to populate with this section
+     * @param box absolute bounding box (used as image coordinates reference)
+     */
+    public void fillImage (BufferedImage im,
+                           Rectangle     box);
+
+    /**
+     * Draws the section, into the provided table.
+     */
+    public void fillTable (char[][]  table,
+                           Rectangle box);
+
+    /**
      * Return the <b>absolute</b> line which best approximates the
      * section.
      * @return the absolute fitted line
      * @see #getOrientedLine()
      */
     public Line getAbsoluteLine ();
-
-    /**
-     * Check that the section at hand is a candidate section not yet
-     * aggregated to a recognized stick.
-     * @return true if aggregable (but not yet aggregated)
-     */
-    public boolean isAggregable ();
 
     /**
      * Report the section area absolute center.
@@ -156,19 +214,6 @@ public interface Section
     public PixelRectangle getContourBox ();
 
     /**
-     * Record the current "fatness" value of this section.
-     * @param fat the fat flag
-     */
-    public void setFat (boolean fat);
-
-    /**
-     * Report whether this section is "fat", according to the current
-     * criteria and desired orientation.
-     * @return the fat flag, if any
-     */
-    public Boolean isFat ();
-
-    /**
      * Return the adjacency ratio on the incoming junctions.
      * This is computed as the ratio to the length of the first run, of the
      * sum of run overlapping lengths of the incoming junctions. In other
@@ -186,13 +231,6 @@ public interface Section
      * @see #getLastAdjacency
      */
     public double getFirstAdjacency ();
-
-    /**
-     * Set the position of the first run of the section.
-     * @param firstPos position of the first run, abscissa for a vertical run,
-     *                 ordinate for a horizontal run.
-     */
-    public void setFirstPos (int firstPos);
 
     /**
      * Return the position (x for vertical runs, y for horizontal runs)
@@ -214,29 +252,10 @@ public interface Section
     public int getForeWeight ();
 
     /**
-     * Assign the containing glyph, if any.
-     * @param glyph the containing glyph, perhaps null
-     */
-    public void setGlyph (Glyph glyph);
-
-    /**
      * Report the glyph the section belongs to, if any.
      * @return the glyph, which may be null
      */
     public Glyph getGlyph ();
-
-    /**
-     * Checks whether the section is already a member of a glyph.
-     * @return the result of the test
-     */
-    public boolean isGlyphMember ();
-
-    /**
-     * Check that the section at hand is a member section, aggregated
-     * to a known glyph.
-     * @return true if member of a known glyph
-     */
-    public boolean isKnown ();
 
     /**
      * Return the adjacency ratio at the end of the section at hand.
@@ -331,18 +350,6 @@ public interface Section
     public Polygon getPolygon ();
 
     /**
-     * Set a flag to be used at caller's will.
-     * @param processed the processed to set
-     */
-    public void setProcessed (boolean processed);
-
-    /**
-     * Report whether this section has been "processed".
-     * @return the processed
-     */
-    public boolean isProcessed ();
-
-    /**
      * Report the absolute centroid of the section pixels found in the
      * provided absolute region of interest.
      * @param absRoi the absolute rectangle that defines the region of interest
@@ -380,12 +387,6 @@ public interface Section
     public int getStopCoord ();
 
     /**
-     * Assign a containing system.
-     * @param system the system to set
-     */
-    public void setSystem (SystemInfo system);
-
-    /**
      * Report the containing system.
      * @return the system (may be null)
      */
@@ -399,82 +400,11 @@ public interface Section
     public int getThickness (Orientation orientation);
 
     /**
-     * Reports whether this section is organized in vertical runs.
-     * @return true if vertical, false otherwise
-     */
-    public boolean isVertical ();
-
-    /**
      * Return the total weight of the section, which is the sum of the
      * weight (length) of all runs.
      * @return the section weight
      */
     public int getWeight ();
-
-    /**
-     * Register the adjacency of a section from the other orientation.
-     * @param otherSection the other section to remember
-     */
-    public void addOppositeSection (Section otherSection);
-
-    /**
-     * Extend a section with the given run.
-     * This new run is assumed to be contiguous to the current last run of the
-     * section, no check is performed.
-     * @param run the new last run
-     */
-    public void append (Run run);
-
-    /**
-     * Compute the various cached parameters from scratch.
-     */
-    public void computeParameters ();
-
-    /**
-     * Predicate to check whether the given absolute point is located
-     * inside the section.
-     * @param x absolute abscissa
-     * @param y absolute ordinate
-     * @return true if absolute point(x,y) is contained in the section
-     */
-    public boolean contains (int x,
-                             int y);
-
-    /**
-     * Cumulate in the provided absolute Barycenter the section pixels
-     * that are contained in the provided roi PixelRectangle.
-     * If the roi is null, all pixels are cumulated into the barycenter.
-     * @param barycenter the absolute point to populate
-     * @param absRoi the absolute rectangle of interest
-     */
-    public void cumulate (Barycenter     barycenter,
-                          PixelRectangle absRoi);
-
-    /**
-     * Cumulate all points that compose the runs of the section, into
-     * the provided <b>absolute</b> collector.
-     * @param collector the absolute points collector to populate
-     */
-    public void cumulate (PointsCollector collector);
-
-    /**
-     * Draws a basic representation of the section, using ascii chars.
-     */
-    public void drawAscii ();
-
-    /**
-     * Build an image with the pixels of this section.
-     * @param im the image to populate with this section
-     * @param box absolute bounding box (used as image coordinates reference)
-     */
-    public void fillImage (BufferedImage im,
-                           Rectangle     box);
-
-    /**
-     * Draws the section, into the provided table.
-     */
-    public void fillTable (char[][]  table,
-                           Rectangle box);
 
     /**
      * Return the next sibling section, both linked by source of
@@ -489,6 +419,45 @@ public interface Section
      * @return the previous sibling or null
      */
     public Section inPreviousSibling ();
+
+    /**
+     * Check that the section at hand is a candidate section not yet
+     * aggregated to a recognized stick.
+     * @return true if aggregable (but not yet aggregated)
+     */
+    public boolean isAggregable ();
+
+    /**
+     * Report whether this section is "fat", according to the current
+     * criteria and desired orientation.
+     * @return the fat flag, if any
+     */
+    public Boolean isFat ();
+
+    /**
+     * Checks whether the section is already a member of a glyph.
+     * @return the result of the test
+     */
+    public boolean isGlyphMember ();
+
+    /**
+     * Check that the section at hand is a member section, aggregated
+     * to a known glyph.
+     * @return true if member of a known glyph
+     */
+    public boolean isKnown ();
+
+    /**
+     * Report whether this section has been "processed".
+     * @return the processed
+     */
+    public boolean isProcessed ();
+
+    /**
+     * Reports whether this section is organized in vertical runs.
+     * @return true if vertical, false otherwise
+     */
+    public boolean isVertical ();
 
     /**
      * Merge this section with the other provided section, which is not
@@ -525,6 +494,37 @@ public interface Section
      * Nullify the fat sticky attribute.
      */
     public void resetFat ();
+
+    /**
+     * Record the current "fatness" value of this section.
+     * @param fat the fat flag
+     */
+    public void setFat (boolean fat);
+
+    /**
+     * Set the position of the first run of the section.
+     * @param firstPos position of the first run, abscissa for a vertical run,
+     *                 ordinate for a horizontal run.
+     */
+    public void setFirstPos (int firstPos);
+
+    /**
+     * Assign the containing glyph, if any.
+     * @param glyph the containing glyph, perhaps null
+     */
+    public void setGlyph (Glyph glyph);
+
+    /**
+     * Set a flag to be used at caller's will.
+     * @param processed the processed to set
+     */
+    public void setProcessed (boolean processed);
+
+    /**
+     * Assign a containing system.
+     * @param system the system to set
+     */
+    public void setSystem (SystemInfo system);
 
     /**
      * Apply an absolute translation vector to this section.

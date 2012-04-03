@@ -97,19 +97,19 @@ public class StepTask
     }
 
     //---------//
+    // getStep // Meant for JAXB
+    //---------//
+    private String getStep ()
+    {
+        return step.getName();
+    }
+
+    //---------//
     // setStep // Meant for JAXB
     //---------//
     @XmlAttribute(name = "name")
     private void setStep (String name)
     {
         step = Steps.valueOf(name.toUpperCase());
-    }
-
-    //---------//
-    // getStep // Meant for JAXB
-    //---------//
-    private String getStep ()
-    {
-        return step.getName();
     }
 }

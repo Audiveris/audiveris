@@ -24,8 +24,6 @@ import omr.selection.SheetEvent;
 
 import omr.sheet.Sheet;
 
-import omr.util.Implement;
-
 import org.bushe.swing.event.EventSubscriber;
 
 import org.jdesktop.application.Action;
@@ -106,64 +104,6 @@ public class SheetsController
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //-----------------//
-    // getCurrentSheet //
-    //-----------------//
-    /**
-     * A convenient static method to directly report the currently
-     * selected sheet, if any.
-     * @return the selected sheet, or null
-     */
-    public static Sheet getCurrentSheet ()
-    {
-        return getInstance()
-                   .getSelectedSheet();
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single instance of this class.
-     * @return the single instance
-     */
-    public static SheetsController getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new SheetsController();
-        }
-
-        return INSTANCE;
-    }
-
-    //--------------//
-    // getComponent //
-    //--------------//
-    /**
-     * Give access to the real pane (to insert in proper UI hierarchy).
-     * @return the concrete component
-     */
-    public JComponent getComponent ()
-    {
-        return tabbedPane;
-    }
-
-    //------------------//
-    // getSelectedSheet //
-    //------------------//
-    /**
-     * Convenient method to directly access currently selected sheet,
-     * if any.
-     * @return the selected sheet, which may be null (if no sheet is selected)
-     */
-    public Sheet getSelectedSheet ()
-    {
-        SheetEvent sheetEvent = (SheetEvent) sheetService.getLastEvent(
-            SheetEvent.class);
-
-        return (sheetEvent != null) ? sheetEvent.getData() : null;
-    }
 
     //----------------//
     // callAboutSheet //
@@ -271,6 +211,64 @@ public class SheetsController
              .dumpSubscribers();
     }
 
+    //--------------//
+    // getComponent //
+    //--------------//
+    /**
+     * Give access to the real pane (to insert in proper UI hierarchy).
+     * @return the concrete component
+     */
+    public JComponent getComponent ()
+    {
+        return tabbedPane;
+    }
+
+    //-----------------//
+    // getCurrentSheet //
+    //-----------------//
+    /**
+     * A convenient static method to directly report the currently
+     * selected sheet, if any.
+     * @return the selected sheet, or null
+     */
+    public static Sheet getCurrentSheet ()
+    {
+        return getInstance()
+                   .getSelectedSheet();
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of this class.
+     * @return the single instance
+     */
+    public static SheetsController getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new SheetsController();
+        }
+
+        return INSTANCE;
+    }
+
+    //------------------//
+    // getSelectedSheet //
+    //------------------//
+    /**
+     * Convenient method to directly access currently selected sheet,
+     * if any.
+     * @return the selected sheet, which may be null (if no sheet is selected)
+     */
+    public Sheet getSelectedSheet ()
+    {
+        SheetEvent sheetEvent = (SheetEvent) sheetService.getLastEvent(
+            SheetEvent.class);
+
+        return (sheetEvent != null) ? sheetEvent.getData() : null;
+    }
+
     //----------------//
     // removeAssembly //
     //----------------//
@@ -360,7 +358,7 @@ public class SheetsController
      * <p> Set the state (enabled or disabled) of all menu items that depend on
      * status of current sheet.
      */
-    @Implement(ChangeListener.class)
+    @Override
     public synchronized void stateChanged (ChangeEvent e)
     {
         if (e.getSource() == tabbedPane) {

@@ -18,7 +18,7 @@ import omr.glyph.CompoundBuilder;
 import omr.glyph.CompoundBuilder.CompoundAdapter;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
-import omr.glyph.ShapeRange;
+import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
@@ -30,8 +30,6 @@ import omr.score.common.PixelRectangle;
 
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
-
-import omr.util.Implement;
 
 /**
  * Class {@code BassPattern} checks for segmented bass clefs, in the
@@ -69,7 +67,7 @@ public class BassPattern
     //------------//
     // runPattern //
     //------------//
-    @Implement(GlyphPattern.class)
+    @Override
     public int runPattern ()
     {
         int             successNb = 0;
@@ -85,7 +83,7 @@ public class BassPattern
 
         for (Glyph top : system.getGlyphs()) {
             // Look for top dot
-            if ((top.getShape() != Shape.DOT) ||
+            if ((top.getShape() != Shape.DOT_set) ||
                 (Math.abs(top.getPitchPosition() - -3) > maxBassDotPitchDy)) {
                 continue;
             }
@@ -95,7 +93,7 @@ public class BassPattern
 
             // Look for bottom dot right underneath, and in the same staff
             for (Glyph bot : system.getGlyphs()) {
-                if ((bot.getShape() != Shape.DOT) ||
+                if ((bot.getShape() != Shape.DOT_set) ||
                     (Math.abs(bot.getPitchPosition() - -1) > maxBassDotPitchDy)) {
                     continue;
                 }
@@ -145,17 +143,10 @@ public class BassPattern
         public BassAdapter (SystemInfo system,
                             double     minGrade)
         {
-            super(system, minGrade, ShapeRange.BassClefs);
+            super(system, minGrade, ShapeSet.BassClefs);
         }
 
         //~ Methods ------------------------------------------------------------
-
-        @Override
-        public boolean isCandidateSuitable (Glyph glyph)
-        {
-            return !glyph.isManualShape() ||
-                   ShapeRange.BassClefs.contains(glyph.getShape());
-        }
 
         @Override
         public PixelRectangle computeReferenceBox ()
@@ -172,6 +163,13 @@ public class BassPattern
                     pixRect.y + (3 * scale.getInterline())));
 
             return pixRect;
+        }
+
+        @Override
+        public boolean isCandidateSuitable (Glyph glyph)
+        {
+            return !glyph.isManualShape() ||
+                   ShapeSet.BassClefs.contains(glyph.getShape());
         }
     }
 

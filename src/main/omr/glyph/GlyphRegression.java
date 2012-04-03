@@ -39,13 +39,13 @@ import javax.swing.JOptionPane;
 import javax.xml.bind.JAXBException;
 
 /**
- * Class {@code GlyphRegression} is a glyph evaluator that encapsulates a
- * {@link LinearEvaluator} working on glyph parameters.
+ * Class {@code GlyphRegression} is a glyph evaluator that encapsulates
+ * a {@link LinearEvaluator} working on glyph parameters.
  *
  * @author Hervé Bitteur
  */
 public class GlyphRegression
-    extends GlyphEvaluator
+    extends AbstractEvaluationEngine
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -86,7 +86,7 @@ public class GlyphRegression
 
         // Basic check
         if (engine != null) {
-            if (engine.getInputSize() != paramCount) {
+            if (engine.getInputSize() != ShapeDescription.length()) {
                 final String msg = "Linear Evaluator data is obsolete," +
                                    " it must be retrained from scratch";
                 logger.warning(msg);
@@ -99,12 +99,12 @@ public class GlyphRegression
         if (engine == null) {
             // Get a brand new one (not trained)
             logger.info("Creating a brand new LinearEvaluator");
-            engine = new LinearEvaluator(getParameterLabels());
+            engine = new LinearEvaluator(ShapeDescription.getParameterLabels());
         } else {
             defineConstraints();
 
             // debug
-            //            for (Shape shape : ShapeRange.allSymbols) {
+            //            for (Shape shape : ShapeSet.allPhysicalShapes) {
             //                dumpOneShapeConstraints(shape);
             //            }
         }
@@ -133,17 +133,6 @@ public class GlyphRegression
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------//
-    // getEngine //
-    //-----------//
-    /**
-     * @return the engine
-     */
-    public LinearEvaluator getEngine ()
-    {
-        return engine;
-    }
-
     //-------------//
     // getInstance //
     //-------------//
@@ -156,139 +145,24 @@ public class GlyphRegression
     public static GlyphRegression getInstance ()
     {
         if (INSTANCE == null) {
-            INSTANCE = new GlyphRegression();
+            synchronized (GlyphRegression.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new GlyphRegression();
+                }
+            }
         }
 
         return INSTANCE;
-    }
-
-    //------------//
-    // setMaximum //
-    //------------//
-    /**
-     * Set the constraint test on maximum for a parameter of the provided
-     * shape
-     * @param paramIndex the impacted parameter
-     * @param shape the targeted shape
-     * @param val the new maximum value (null for disabling the test)
-     */
-    public void setMaximum (int    paramIndex,
-                            Shape  shape,
-                            Double val)
-    {
-        doGetRange(paramIndex, shape).max = val;
-    }
-
-    //------------//
-    // getMaximum //
-    //------------//
-    /**
-     * Get the constraint test on maximum for a parameter of the provided
-     * shape
-     * @param paramIndex the impacted parameter
-     * @param shape the targeted shape
-     * @return the current maximum value (null if test is disabled)
-     */
-    public Double getMaximum (int   paramIndex,
-                              Shape shape)
-    {
-        Range[] ranges = constraintMap.get(shape);
-
-        if (ranges == null) {
-            return null;
-        }
-
-        Range range = ranges[paramIndex];
-
-        return (range != null) ? range.max : null;
-    }
-
-    //------------//
-    // setMinimum //
-    //------------//
-    /**
-     * Set the constraint test on minimum for a parameter of the provided
-     * shape
-     * @param paramIndex the impacted parameter
-     * @param shape the targeted shape
-     * @param val the new minimum value (null for disabling the test)
-     */
-    public void setMinimum (int    paramIndex,
-                            Shape  shape,
-                            Double val)
-    {
-        doGetRange(paramIndex, shape).min = val;
-    }
-
-    //------------//
-    // getMinimum //
-    //------------//
-    /**
-     * Get the constraint test on minimum for a parameter of the provided
-     * shape
-     * @param paramIndex the impacted parameter
-     * @param shape the targeted shape
-     * @return the current minimum value (null if test is disabled)
-     */
-    public Double getMinimum (int   paramIndex,
-                              Shape shape)
-    {
-        Range[] ranges = constraintMap.get(shape);
-
-        if (ranges == null) {
-            return null;
-        }
-
-        Range range = ranges[paramIndex];
-
-        return (range != null) ? range.min : null;
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    @Override
-    public String getName ()
-    {
-        return "Regression";
-    }
-
-    //-------------------//
-    // getRawEvaluations //
-    //-------------------//
-    @Override
-    public Evaluation[] getRawEvaluations (Glyph glyph)
-    {
-        // If too small, it's just NOISE
-        if (!isBigEnough(glyph)) {
-            return noiseEvaluations;
-        } else {
-            double[]     ins = feedInput(glyph);
-            Evaluation[] evals = new Evaluation[shapeCount];
-            Shape[]      values = Shape.values();
-
-            for (int s = 0; s < shapeCount; s++) {
-                Shape shape = values[s];
-                evals[s] = new Evaluation(
-                    shape,
-                    1d / measureDistance(ins, shape));
-            }
-
-            // Order the evals from best to worst
-            Arrays.sort(evals);
-
-            return evals;
-        }
     }
 
     //--------------------//
     // constraintsMatched //
     //--------------------//
     /**
-     * Check that all the (non-disabled) constraints matched between a given
-     * glyph and a shape
+     * Check that all the (non-disabled) constraints matched between a
+     * given glyph and a shape
      * @param params the glyph features
-     * @param eval the evaluation context to update
+     * @param eval   the evaluation context to update
      * @return true if matched, false otherwise
      */
     public boolean constraintsMatched (double[]   params,
@@ -337,7 +211,7 @@ public class GlyphRegression
     {
         System.out.print("Constraints for " + shape + ": ");
 
-        String[] labels = getParameterLabels();
+        String[] labels = ShapeDescription.getParameterLabels();
         Range[]  ranges = constraintMap.get(shape);
 
         if (ranges == null) {
@@ -345,7 +219,7 @@ public class GlyphRegression
         } else {
             System.out.println();
 
-            for (int p = 0; p < paramCount; p++) {
+            for (int p = 0; p < ShapeDescription.length(); p++) {
                 StringBuilder sb = new StringBuilder();
                 Range         range = ranges[p];
 
@@ -372,14 +246,82 @@ public class GlyphRegression
         }
     }
 
+    //-----------//
+    // getEngine //
+    //-----------//
+    /**
+     * @return the engine
+     */
+    public LinearEvaluator getEngine ()
+    {
+        return engine;
+    }
+
+    //------------//
+    // getMaximum //
+    //------------//
+    /**
+     * Get the constraint test on maximum for a parameter of the
+     * provided shape.
+     * @param paramIndex the impacted parameter
+     * @param shape      the targeted shape
+     * @return the current maximum value (null if test is disabled)
+     */
+    public Double getMaximum (int   paramIndex,
+                              Shape shape)
+    {
+        Range[] ranges = constraintMap.get(shape);
+
+        if (ranges == null) {
+            return null;
+        }
+
+        Range range = ranges[paramIndex];
+
+        return (range != null) ? range.max : null;
+    }
+
+    //------------//
+    // getMinimum //
+    //------------//
+    /**
+     * Get the constraint test on minimum for a parameter of the
+     * provided shape.
+     * @param paramIndex the impacted parameter
+     * @param shape      the targeted shape
+     * @return the current minimum value (null if test is disabled)
+     */
+    public Double getMinimum (int   paramIndex,
+                              Shape shape)
+    {
+        Range[] ranges = constraintMap.get(shape);
+
+        if (ranges == null) {
+            return null;
+        }
+
+        Range range = ranges[paramIndex];
+
+        return (range != null) ? range.min : null;
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    @Override
+    public String getName ()
+    {
+        return "Regression";
+    }
+
     //---------------//
     // includeSample //
     //---------------//
     /**
-     * Take into account the observed parameters for the provided shape, and
-     * relax the related constraints if needed
+     * Take into account the observed parameters for the provided shape,
+     * and relax the related constraints if needed.
      * @param params the observed input parameters
-     * @param shape the provided shape
+     * @param shape  the provided shape
      * @return true if constraints have been extended
      */
     public boolean includeSample (double[] params,
@@ -400,8 +342,8 @@ public class GlyphRegression
     // measureDistance //
     //-----------------//
     /**
-     * Measure the "distance" information between a given glyph and a shape.
-     *
+     * Measure the "distance" information between a given glyph and a
+     * shape.
      * @param glyph the glyph at hand
      * @param shape the shape to measure distance from
      * @return the measured distance
@@ -409,16 +351,18 @@ public class GlyphRegression
     public double measureDistance (Glyph glyph,
                                    Shape shape)
     {
-        return engine.categoryDistance(feedInput(glyph), shape.toString());
+        return engine.categoryDistance(
+            ShapeDescription.features(glyph),
+            shape.toString());
     }
 
     //-----------------//
     // measureDistance //
     //-----------------//
     /**
-     * Measure the "distance" information between a given glyph and a shape.
-     *
-     * @param ins the input parameters
+     * Measure the "distance" information between a given glyph and a
+     * shape.
+     * @param ins   the input parameters
      * @param shape the shape to measure distance from
      * @return the measured distance
      */
@@ -432,8 +376,7 @@ public class GlyphRegression
     // measureDistance //
     //-----------------//
     /**
-     * Measure the "distance" information between two glyphs
-     *
+     * Measure the "distance" information between two glyphs.
      * @param one the first glyph
      * @param two the second glyph
      * @return the measured distance
@@ -441,35 +384,67 @@ public class GlyphRegression
     public double measureDistance (Glyph one,
                                    Glyph two)
     {
-        return measureDistance(one, feedInput(two));
+        return measureDistance(one, ShapeDescription.features(two));
     }
 
     //-----------------//
     // measureDistance //
     //-----------------//
     /**
-     * Measure the "distance" information between a glyph and an array of
-     * parameters (generally fed from another glyph)
-     *
+     * Measure the "distance" information between a glyph and an array
+     * of parameters (generally fed from another glyph).
      * @param glyph the given glyph
-     * @param ins the array (size = paramCount) of parameters
+     * @param ins   the array (size = paramCount) of parameters
      * @return the measured distance
      */
     public double measureDistance (Glyph    glyph,
                                    double[] ins)
     {
-        return engine.patternDistance(feedInput(glyph), ins);
+        return engine.patternDistance(ShapeDescription.features(glyph), ins);
+    }
+
+    //------------//
+    // setMaximum //
+    //------------//
+    /**
+     * Set the constraint test on maximum for a parameter of the
+     * provided shape.
+     * @param paramIndex the impacted parameter
+     * @param shape      the targeted shape
+     * @param val        the new maximum value (null for disabling the test)
+     */
+    public void setMaximum (int    paramIndex,
+                            Shape  shape,
+                            Double val)
+    {
+        doGetRange(paramIndex, shape).max = val;
+    }
+
+    //------------//
+    // setMinimum //
+    //------------//
+    /**
+     * Set the constraint test on minimum for a parameter of the
+     * provided shape.
+     * @param paramIndex the impacted parameter
+     * @param shape      the targeted shape
+     * @param val        the new minimum value (null for disabling the test)
+     */
+    public void setMinimum (int    paramIndex,
+                            Shape  shape,
+                            Double val)
+    {
+        doGetRange(paramIndex, shape).min = val;
     }
 
     //-------//
     // train //
     //-------//
     /**
-     * Launch the training of the evaluator
-     *
-     * @param base the collection of glyphs used for training
+     * Launch the training of the evaluator.
+     * @param base    the collection of glyphs used for training
      * @param monitor a monitoring entity
-     * @param mode incremental or scratch mode
+     * @param mode    incremental or scratch mode
      */
     @Override
     public void train (Collection<Glyph> base,
@@ -488,7 +463,9 @@ public class GlyphRegression
         for (Glyph glyph : base) {
             try {
                 Shape  shape = glyph.getShape();
-                Sample sample = new Sample(shape.toString(), feedInput(glyph));
+                Sample sample = new Sample(
+                    shape.toString(),
+                    ShapeDescription.features(glyph));
                 samples.add(sample);
             } catch (Exception ex) {
                 logger.warning(
@@ -512,6 +489,34 @@ public class GlyphRegression
     protected String getFileName ()
     {
         return BACKUP_FILE_NAME;
+    }
+
+    //-------------------//
+    // getRawEvaluations //
+    //-------------------//
+    @Override
+    protected Evaluation[] getRawEvaluations (Glyph glyph)
+    {
+        // If too small, it's just NOISE
+        if (!isBigEnough(glyph)) {
+            return noiseEvaluations;
+        } else {
+            double[]     ins = ShapeDescription.features(glyph);
+            Evaluation[] evals = new Evaluation[shapeCount];
+            Shape[]      values = Shape.values();
+
+            for (int s = 0; s < shapeCount; s++) {
+                Shape shape = values[s];
+                evals[s] = new Evaluation(
+                    shape,
+                    1d / measureDistance(ins, shape));
+            }
+
+            // Order the evals from best to worst
+            Arrays.sort(evals);
+
+            return evals;
+        }
     }
 
     //---------//
@@ -538,12 +543,12 @@ public class GlyphRegression
     // defineConstraints //
     //-------------------//
     /**
-     * Here we customize the linear evaluator to our specific needs, by removing
-     * some constraint checks and relaxing others.
+     * Here we customize the linear evaluator to our specific needs,
+     * by removing some constraint checks and relaxing others.
      */
     private void defineConstraints ()
     {
-        for (Shape shape : ShapeRange.allSymbols) {
+        for (Shape shape : ShapeSet.allPhysicalShapes) {
             defineOneShapeConstraints(shape);
         }
     }
@@ -552,14 +557,14 @@ public class GlyphRegression
     // defineOneShapeConstraints //
     //---------------------------//
     /**
-     * Here we customize the constraints to our specific needs, by removing
-     * some constraint checks and relaxing others.
+     * Here we customize the constraints to our specific needs, by
+     * removing some constraint checks and relaxing others.
      * @param shape the shape at hand
      */
     private void defineOneShapeConstraints (Shape shape)
     {
         // First, use LinearEvaluator observed constraints
-        for (int p = 0; p < paramCount; p++) {
+        for (int p = 0; p < ShapeDescription.length(); p++) {
             setMinimum(p, shape, engine.getMinimum(p, shape.name()));
             setMaximum(p, shape, engine.getMaximum(p, shape.name()));
         }
@@ -570,7 +575,7 @@ public class GlyphRegression
         double maxFactor = constants.factorForMaxima.getValue();
 
         for (String label : Arrays.asList("weight", "width", "height")) {
-            int    p = GlyphEvaluator.getParameterIndex(label);
+            int    p = ShapeDescription.getParameterIndex(label);
             Double val = getMinimum(p, shape);
 
             if (val != null) {
@@ -603,7 +608,7 @@ public class GlyphRegression
             "n12",
             "n03",
             "aspect")) {
-            int p = GlyphEvaluator.getParameterIndex(label);
+            int p = ShapeDescription.getParameterIndex(label);
             setMinimum(p, shape, null);
             setMaximum(p, shape, null);
         }
@@ -688,7 +693,7 @@ public class GlyphRegression
     private void disableMaximum (Shape  shape,
                                  String paramLabel)
     {
-        setMaximum(GlyphEvaluator.getParameterIndex(paramLabel), shape, null);
+        setMaximum(ShapeDescription.getParameterIndex(paramLabel), shape, null);
     }
 
     //----------------//
@@ -697,17 +702,17 @@ public class GlyphRegression
     private void disableMinimum (Shape  shape,
                                  String paramLabel)
     {
-        setMinimum(GlyphEvaluator.getParameterIndex(paramLabel), shape, null);
+        setMinimum(ShapeDescription.getParameterIndex(paramLabel), shape, null);
     }
 
     //------------//
     // doGetRange //
     //------------//
     /**
-     * Retrieve (and create if necessary) the range entity that corresponds to
-     * parameter of paramIndex for the provided shape
+     * Retrieve (and create if necessary) the range entity that
+     * corresponds to parameter of paramIndex for the provided shape.
      * @param paramIndex parameter reference
-     * @param shape provided shape
+     * @param shape      provided shape
      * @return the desired range entity
      */
     private Range doGetRange (int   paramIndex,
@@ -716,7 +721,7 @@ public class GlyphRegression
         Range[] ranges = constraintMap.get(shape);
 
         if (ranges == null) {
-            ranges = new Range[paramCount];
+            ranges = new Range[ShapeDescription.length()];
             constraintMap.put(shape, ranges);
         }
 
@@ -733,24 +738,24 @@ public class GlyphRegression
     // firstMisMatched //
     //-----------------//
     /**
-     * Perform a basic check on max / min bounds, if any, for each parameter
-     * value of the provided pattern
+     * Perform a basic check on max / min bounds, if any, for each
+     * parameter value of the provided pattern.
      * @param pattern the collection of parameters to check with respect to
      * targeted shape
-     * @param shape the targeted shape
+     * @param shape   the targeted shape
      * @return the name of the first failing check, null otherwise
      */
     private String firstMisMatched (double[] pattern,
                                     Shape    shape)
     {
-        String[] labels = getParameterLabels();
+        String[] labels = ShapeDescription.getParameterLabels();
         Range[]  ranges = constraintMap.get(shape);
 
         if (ranges == null) {
             return null; // No test => OK
         }
 
-        for (int p = 0; p < paramCount; p++) {
+        for (int p = 0; p < ShapeDescription.length(); p++) {
             String label = labels[p];
             double val = pattern[p];
             Range  range = ranges[p];

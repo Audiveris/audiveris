@@ -62,6 +62,43 @@ public class NaturalSpline
 
     //~ Methods ----------------------------------------------------------------
 
+    public double distanceOf (double x,
+                              double y)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public double getInvertedSlope ()
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public double getMeanDistance ()
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public int getNumberOfPoints ()
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public double getSlope ()
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public Line includeLine (Line other)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void includePoint (double x,
+                              double y)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
     //-------------//
     // interpolate //
     //-------------//
@@ -167,44 +204,7 @@ public class NaturalSpline
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public double getInvertedSlope ()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public double getMeanDistance ()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public int getNumberOfPoints ()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public double getSlope ()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     public boolean isVertical ()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public double distanceOf (double x,
-                              double y)
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public Line includeLine (Line other)
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void includePoint (double x,
-                              double y)
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }

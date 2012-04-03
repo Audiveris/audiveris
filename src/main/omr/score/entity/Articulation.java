@@ -82,6 +82,15 @@ public class Articulation
 
     //~ Methods ----------------------------------------------------------------
 
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
     //----------//
     // populate //
     //----------//
@@ -123,15 +132,6 @@ public class Articulation
         }
 
         glyph.setShape(null, Evaluation.ALGORITHM);
-    }
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
     }
 
     //~ Inner Classes ----------------------------------------------------------

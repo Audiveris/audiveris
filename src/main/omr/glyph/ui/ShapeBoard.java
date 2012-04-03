@@ -18,7 +18,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
-import omr.glyph.ShapeRange;
+import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -92,26 +92,26 @@ public class ShapeBoard
     /**
      * To force the height of the various shape panels (just a dirty hack)
      */
-    private static final Map<ShapeRange, Integer> heights = new HashMap<ShapeRange, Integer>();
+    private static final Map<ShapeSet, Integer> heights = new HashMap<ShapeSet, Integer>();
 
     static {
-        heights.put(ShapeRange.Accidentals, 40);
-        heights.put(ShapeRange.Articulations, 60);
-        heights.put(ShapeRange.Barlines, 100);
-        heights.put(ShapeRange.Beams, 60);
-        heights.put(ShapeRange.Clefs, 140);
-        heights.put(ShapeRange.Dynamics, 220);
-        heights.put(ShapeRange.Flags, 130);
-        heights.put(ShapeRange.Keys, 220);
-        heights.put(ShapeRange.NoteHeads, 40);
-        heights.put(ShapeRange.Markers, 120);
-        heights.put(ShapeRange.Notes, 40);
-        heights.put(ShapeRange.Ornaments, 80);
-        heights.put(ShapeRange.Rests, 120);
-        heights.put(ShapeRange.Times, 130);
-        heights.put(ShapeRange.Others, 90);
-        heights.put(ShapeRange.Physicals, 40);
-        heights.put(ShapeRange.Logicals, 40);
+        heights.put(ShapeSet.Accidentals, 40);
+        heights.put(ShapeSet.Articulations, 60);
+        heights.put(ShapeSet.Barlines, 100);
+        heights.put(ShapeSet.Beams, 60);
+        heights.put(ShapeSet.Clefs, 140);
+        heights.put(ShapeSet.Dynamics, 220);
+        heights.put(ShapeSet.Flags, 130);
+        heights.put(ShapeSet.Keys, 220);
+        heights.put(ShapeSet.NoteHeads, 40);
+        heights.put(ShapeSet.Markers, 120);
+        heights.put(ShapeSet.Notes, 40);
+        heights.put(ShapeSet.Ornaments, 80);
+        heights.put(ShapeSet.Rests, 120);
+        heights.put(ShapeSet.Times, 130);
+        heights.put(ShapeSet.Others, 90);
+        heights.put(ShapeSet.Physicals, 40);
+        heights.put(ShapeSet.Logicals, 40);
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -123,8 +123,8 @@ public class ShapeBoard
     private final SymbolsController symbolsController;
 
     /**
-     * Method called when a range is selected: the panel of ranges is replaced
-     * by the panel of shapes that compose the selected range.
+     * Method called when a range is selected: the panel of ranges is
+     * replaced by the panel of shapes that compose the selected range.
      */
     private ActionListener rangeListener = new ActionListener() {
         public void actionPerformed (ActionEvent e)
@@ -134,8 +134,8 @@ public class ShapeBoard
                 .remove(rangesPanel);
 
             // Replace by proper panel of range shapes
-            String     rangeName = ((JButton) e.getSource()).getName();
-            ShapeRange range = ShapeRange.getRange(rangeName);
+            String   rangeName = ((JButton) e.getSource()).getName();
+            ShapeSet range = ShapeSet.getShapeSet(rangeName);
             shapesPanel = shapesPanels.get(range);
 
             if (shapesPanel == null) {
@@ -156,8 +156,9 @@ public class ShapeBoard
     };
 
     /**
-     * Method called when a panel of shapes is closed: the panel is replaced
-     * by the panel of ranges to allow the selection of another range.
+     * Method called when a panel of shapes is closed: the panel is
+     * replaced by the panel of ranges to allow the selection of another
+     * range.
      */
     private ActionListener closeListener = new ActionListener() {
         public void actionPerformed (ActionEvent e)
@@ -180,7 +181,7 @@ public class ShapeBoard
     };
 
     /**
-     * Method called when a shape button is clicked
+     * Method called when a shape button is clicked.
      */
     private MouseListener mouseListener = new MouseAdapter() {
         // Ability to use the button for direct assignment via double-click
@@ -208,7 +209,7 @@ public class ShapeBoard
     private final Panel rangesPanel;
 
     /** Map of shape panels */
-    private final Map<ShapeRange, Panel> shapesPanels = new HashMap<ShapeRange, Panel>();
+    private final Map<ShapeSet, Panel> shapesPanels = new HashMap<ShapeSet, Panel>();
 
     /** Current panel of shapes */
     private Panel shapesPanel;
@@ -259,7 +260,7 @@ public class ShapeBoard
     // onEvent //
     //---------//
     /**
-     * Unused in this board
+     * Unused in this board.
      * @param event unused
      */
     public void onEvent (UserEvent event)
@@ -267,28 +268,11 @@ public class ShapeBoard
         // Empty
     }
 
-    //--------------//
-    // getIconImage //
-    //--------------//
-    /**
-     * Get the image to draw as an icon for the provided shape
-     * @param shape the provided shape
-     * @return an image properly sized for an icon
-     */
-    private BufferedImage getIconImage (Shape shape)
-    {
-        ShapeSymbol symbol = (shape == Shape.BEAM_HOOK)
-                             ? shape.getPhysicalShape()
-                                    .getSymbol() : shape.getDecoratedSymbol();
-
-        return symbol.getIconImage();
-    }
-
     //-------------------//
     // defineRangesPanel //
     //-------------------//
     /**
-     * Define the global panel of ranges
+     * Define the global panel of ranges.
      * @return the global panel of ranges
      */
     private Panel defineRangesPanel ()
@@ -301,7 +285,7 @@ public class ShapeBoard
         layout.setAlignment(FlowLayout.LEADING);
         panel.setLayout(layout);
 
-        for (ShapeRange range : ShapeRange.getRanges()) {
+        for (ShapeSet range : ShapeSet.getShapeSets()) {
             Shape rep = range.getRep();
 
             if (rep != null) {
@@ -322,11 +306,11 @@ public class ShapeBoard
     // defineShapesPanel //
     //-------------------//
     /**
-     * Define the panel of shapes for a given range
+     * Define the panel of shapes for a given range.
      * @param range the given range of shapes
      * @return the panel of shapes for the provided range
      */
-    private Panel defineShapesPanel (ShapeRange range)
+    private Panel defineShapesPanel (ShapeSet range)
     {
         Panel panel = new Panel();
         panel.setNoInsets();
@@ -355,6 +339,23 @@ public class ShapeBoard
         return panel;
     }
 
+    //--------------//
+    // getIconImage //
+    //--------------//
+    /**
+     * Get the image to draw as an icon for the provided shape.
+     * @param shape the provided shape
+     * @return an image properly sized for an icon
+     */
+    private BufferedImage getIconImage (Shape shape)
+    {
+        ShapeSymbol symbol = (shape == Shape.BEAM_HOOK)
+                             ? shape.getPhysicalShape()
+                                    .getSymbol() : shape.getDecoratedSymbol();
+
+        return symbol.getIconImage();
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
     //-----------//
@@ -374,7 +375,7 @@ public class ShapeBoard
     // ShapeButton //
     //-------------//
     /**
-     * A button dedicated to a shape
+     * A button dedicated to a shape.
      */
     private static class ShapeButton
         extends JButton
@@ -400,7 +401,7 @@ public class ShapeBoard
     // MyDropAdapter //
     //---------------//
     /**
-     * DnD adapter called when mouse is pressed and released
+     * DnD adapter called when mouse is pressed and released.
      */
     private class MyDropAdapter
         extends GhostDropAdapter<Shape>
@@ -442,7 +443,7 @@ public class ShapeBoard
     // MyDropListener //
     //----------------//
     /**
-     * Listener called when DnD shape is dropped
+     * Listener called when DnD shape is dropped.
      */
     private class MyDropListener
         extends AbstractGhostDropListener<Shape>
@@ -514,9 +515,9 @@ public class ShapeBoard
         //~ Methods ------------------------------------------------------------
 
         /**
-         * In this specific implementation, we update the size of the shape
-         * image according to the interline scale and to the display zoom of the
-         * droppable target underneath
+         * In this specific implementation, we update the size of the
+         * shape image according to the interline scale and to the
+         * display zoom of the droppable target underneath.
          * @param e the mouse event
          */
         @Override

@@ -65,6 +65,15 @@ public class TransformedSymbol
 
     //~ Methods ----------------------------------------------------------------
 
+    //------------//
+    // createIcon //
+    //------------//
+    @Override
+    protected ShapeSymbol createIcon ()
+    {
+        return new TransformedSymbol(true, shape, baseShape, at);
+    }
+
     //-----------//
     // getParams //
     //-----------//
@@ -81,15 +90,6 @@ public class TransformedSymbol
             (int) Math.ceil(r.getHeight()));
 
         return p;
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new TransformedSymbol(true, shape, baseShape, at);
     }
 
     //-------//

@@ -81,23 +81,6 @@ public class CheckBoard<C extends Checkable>
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------//
-    // setSuite //
-    //----------//
-    /**
-     * Assign a (new) suite to the check board.
-     * @param suite the (new) check suite to be used
-     */
-    public synchronized void setSuite (CheckSuite<C> suite)
-    {
-        final boolean toBuild = checkPanel.getComponent() == null;
-        checkPanel.setSuite(suite);
-
-        if (toBuild) {
-            defineLayout(suite.getName());
-        }
-    }
-
     //--------//
     // update //
     //--------//
@@ -118,6 +101,23 @@ public class CheckBoard<C extends Checkable>
             tellObject((C) event.getData()); // Compiler warning
         } catch (Exception ex) {
             logger.warning(getClass().getName() + " onEvent error", ex);
+        }
+    }
+
+    //----------//
+    // setSuite //
+    //----------//
+    /**
+     * Assign a (new) suite to the check board.
+     * @param suite the (new) check suite to be used
+     */
+    public synchronized void setSuite (CheckSuite<C> suite)
+    {
+        final boolean toBuild = checkPanel.getComponent() == null;
+        checkPanel.setSuite(suite);
+
+        if (toBuild) {
+            defineLayout(suite.getName());
         }
     }
 

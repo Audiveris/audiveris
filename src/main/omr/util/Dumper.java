@@ -299,7 +299,7 @@ public class Dumper
 
         //~ Instance fields ----------------------------------------------------
 
-        private final String       title;
+        private final String        title;
         private final StringBuilder prefix;
 
         //~ Constructors -------------------------------------------------------

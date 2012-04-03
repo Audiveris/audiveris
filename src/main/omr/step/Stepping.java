@@ -66,50 +66,6 @@ public class Stepping
 
     //~ Methods ----------------------------------------------------------------
 
-    //------------------------//
-    // getLatestMandatoryStep //
-    //------------------------//
-    /**
-     * Report the latest mandatory step done so far with the related sheet
-     * @return the latest mandatory step done, or null
-     */
-    public static Step getLatestMandatoryStep (Sheet sheet)
-    {
-        Step latest = null;
-
-        for (Step step : Steps.values()) {
-            if (step.isMandatory() && step.isDone(sheet)) {
-                latest = step;
-            } else {
-                break;
-            }
-        }
-
-        return latest;
-    }
-
-    //---------------//
-    // getLatestStep //
-    //---------------//
-    /**
-     * Report the latest step done so far with the related sheet
-     * @return the latest step done, or null
-     */
-    public static Step getLatestStep (Sheet sheet)
-    {
-        for (ListIterator<Step> it = Steps.values()
-                                          .listIterator(Steps.values().size());
-             it.hasPrevious();) {
-            Step step = it.previous();
-
-            if (step.isDone(sheet)) {
-                return step;
-            }
-        }
-
-        return null;
-    }
-
     //---------------//
     // createMonitor //
     //---------------//
@@ -164,6 +120,50 @@ public class Stepping
         // Record this in sheet->score bench
         sheet.getBench()
              .recordStep(step, duration);
+    }
+
+    //------------------------//
+    // getLatestMandatoryStep //
+    //------------------------//
+    /**
+     * Report the latest mandatory step done so far with the related sheet
+     * @return the latest mandatory step done, or null
+     */
+    public static Step getLatestMandatoryStep (Sheet sheet)
+    {
+        Step latest = null;
+
+        for (Step step : Steps.values()) {
+            if (step.isMandatory() && step.isDone(sheet)) {
+                latest = step;
+            } else {
+                break;
+            }
+        }
+
+        return latest;
+    }
+
+    //---------------//
+    // getLatestStep //
+    //---------------//
+    /**
+     * Report the latest step done so far with the related sheet
+     * @return the latest step done, or null
+     */
+    public static Step getLatestStep (Sheet sheet)
+    {
+        for (ListIterator<Step> it = Steps.values()
+                                          .listIterator(Steps.values().size());
+             it.hasPrevious();) {
+            Step step = it.previous();
+
+            if (step.isDone(sheet)) {
+                return step;
+            }
+        }
+
+        return null;
     }
 
     //-----------------//

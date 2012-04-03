@@ -77,120 +77,6 @@ class BasicComposition
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------//
-    // isActive //
-    //----------//
-    public boolean isActive ()
-    {
-        if (glyph.getShape() == Shape.GLYPH_PART) {
-            return false;
-        }
-
-        for (Section section : members) {
-            if (section.getGlyph() != glyph) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    //----------------//
-    // getAlienSystem //
-    //----------------//
-    public SystemInfo getAlienSystem (SystemInfo system)
-    {
-        // Direct members
-        for (Section section : members) {
-            if (section.getSystem() != system) {
-                return section.getSystem();
-            }
-        }
-
-        //
-        //        // Parts if any, recursively
-        //        for (Glyph part : getParts()) {
-        //            SystemInfo alien = part.getAlienSystem(system);
-        //
-        //            if (alien != null) {
-        //                return alien;
-        //            }
-        //        }
-
-        // No other system found
-        return null;
-    }
-
-    //-------------//
-    // getAncestor //
-    //-------------//
-    public Glyph getAncestor ()
-    {
-        Glyph glyph = this.glyph;
-
-        while (glyph.getPartOf() != null) {
-            glyph = glyph.getPartOf();
-        }
-
-        return glyph;
-    }
-
-    //-----------------//
-    // getFirstSection //
-    //-----------------//
-    public Section getFirstSection ()
-    {
-        return members.first();
-    }
-
-    //------------//
-    // getMembers //
-    //------------//
-    public SortedSet<Section> getMembers ()
-    {
-        return members;
-    }
-
-    //-----------//
-    // setPartOf //
-    //-----------//
-    public void setPartOf (Glyph compound)
-    {
-        partOf = compound;
-    }
-
-    //-----------//
-    // getPartOf //
-    //-----------//
-    public Glyph getPartOf ()
-    {
-        return partOf;
-    }
-
-    //-----------//
-    // setResult //
-    //-----------//
-    public void setResult (Result result)
-    {
-        this.result = result;
-    }
-
-    //-----------//
-    // getResult //
-    //-----------//
-    public Result getResult ()
-    {
-        return result;
-    }
-
-    //--------------//
-    // isSuccessful //
-    //--------------//
-    public boolean isSuccessful ()
-    {
-        return result instanceof SuccessResult;
-    }
-
     //------------//
     // addSection //
     //------------//
@@ -267,6 +153,78 @@ class BasicComposition
         System.out.println("   result=" + getResult());
     }
 
+    //----------------//
+    // getAlienSystem //
+    //----------------//
+    public SystemInfo getAlienSystem (SystemInfo system)
+    {
+        // Direct members
+        for (Section section : members) {
+            if (section.getSystem() != system) {
+                return section.getSystem();
+            }
+        }
+
+        //
+        //        // Parts if any, recursively
+        //        for (Glyph part : getParts()) {
+        //            SystemInfo alien = part.getAlienSystem(system);
+        //
+        //            if (alien != null) {
+        //                return alien;
+        //            }
+        //        }
+
+        // No other system found
+        return null;
+    }
+
+    //-------------//
+    // getAncestor //
+    //-------------//
+    public Glyph getAncestor ()
+    {
+        Glyph glyph = this.glyph;
+
+        while (glyph.getPartOf() != null) {
+            glyph = glyph.getPartOf();
+        }
+
+        return glyph;
+    }
+
+    //-----------------//
+    // getFirstSection //
+    //-----------------//
+    public Section getFirstSection ()
+    {
+        return members.first();
+    }
+
+    //------------//
+    // getMembers //
+    //------------//
+    public SortedSet<Section> getMembers ()
+    {
+        return members;
+    }
+
+    //-----------//
+    // getPartOf //
+    //-----------//
+    public Glyph getPartOf ()
+    {
+        return partOf;
+    }
+
+    //-----------//
+    // getResult //
+    //-----------//
+    public Result getResult ()
+    {
+        return result;
+    }
+
     //---------//
     // include //
     //---------//
@@ -279,6 +237,32 @@ class BasicComposition
         that.setPartOf(glyph);
     }
 
+    //----------//
+    // isActive //
+    //----------//
+    public boolean isActive ()
+    {
+        if (glyph.getShape() == Shape.GLYPH_PART) {
+            return false;
+        }
+
+        for (Section section : members) {
+            if (section.getGlyph() != glyph) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    //--------------//
+    // isSuccessful //
+    //--------------//
+    public boolean isSuccessful ()
+    {
+        return result instanceof SuccessResult;
+    }
+
     //-----------------//
     // linkAllSections //
     //-----------------//
@@ -287,6 +271,22 @@ class BasicComposition
         for (Section section : getMembers()) {
             section.setGlyph(glyph);
         }
+    }
+
+    //-----------//
+    // setPartOf //
+    //-----------//
+    public void setPartOf (Glyph compound)
+    {
+        partOf = compound;
+    }
+
+    //-----------//
+    // setResult //
+    //-----------//
+    public void setResult (Result result)
+    {
+        this.result = result;
     }
 
     //-----------//

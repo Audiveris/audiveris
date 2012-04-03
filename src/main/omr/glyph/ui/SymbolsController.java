@@ -78,19 +78,6 @@ public class SymbolsController
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------//
-    // getModel //
-    //----------//
-    /**
-     * Report the underlying model
-     * @return the underlying glyphs model
-     */
-    @Override
-    public SymbolsModel getModel ()
-    {
-        return (SymbolsModel) model;
-    }
-
     //----------------------//
     // asyncAssignRationals //
     //----------------------//
@@ -191,6 +178,19 @@ public class SymbolsController
     public Task asyncTrimSlurs (Collection<Glyph> glyphs)
     {
         return new SlurTask(sheet, glyphs).launch(sheet);
+    }
+
+    //----------//
+    // getModel //
+    //----------//
+    /**
+     * Report the underlying model
+     * @return the underlying glyphs model
+     */
+    @Override
+    public SymbolsModel getModel ()
+    {
+        return (SymbolsModel) model;
     }
 
     //------------------//

@@ -56,6 +56,24 @@ public class VirtualGlyph
     //~ Methods ----------------------------------------------------------------
 
     //----------//
+    // colorize //
+    //----------//
+    @Override
+    public void colorize (Color color)
+    {
+        // Nothing to colorize
+    }
+
+    //----------//
+    // colorize //
+    //----------//
+    @Override
+    public void colorize (Collection<Section> sections,
+                          Color               color)
+    {
+    }
+
+    //----------//
     // isActive //
     //----------//
     /**
@@ -75,23 +93,5 @@ public class VirtualGlyph
     public boolean isVirtual ()
     {
         return true;
-    }
-
-    //----------//
-    // colorize //
-    //----------//
-    @Override
-    public void colorize (Color color)
-    {
-        // Nothing to colorize
-    }
-
-    //----------//
-    // colorize //
-    //----------//
-    @Override
-    public void colorize (Collection<Section> sections,
-                          Color               color)
-    {
     }
 }

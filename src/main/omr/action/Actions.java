@@ -145,7 +145,7 @@ public class Actions
     // getSections //
     //-------------//
     /**
-     * Report the whole collection of sections, the predefined ones 
+     * Report the whole collection of sections, the predefined ones
      * and the added ones.
      * @return the collection of sections
      */

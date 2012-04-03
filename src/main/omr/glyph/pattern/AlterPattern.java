@@ -17,7 +17,7 @@ import omr.glyph.CompoundBuilder;
 import omr.glyph.Evaluation;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
-import omr.glyph.ShapeRange;
+import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -28,7 +28,6 @@ import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
 import omr.util.HorizontalSide;
-import omr.util.Implement;
 
 import java.util.EnumSet;
 import java.util.SortedSet;
@@ -100,7 +99,7 @@ public class AlterPattern
      * Check the neighborhood of all short stems.
      * @return the number of cases fixed
      */
-    @Implement(GlyphPattern.class)
+    @Override
     public int runPattern ()
     {
         int successNb = 0; // Success counter
@@ -212,8 +211,8 @@ public class AlterPattern
                     }
                 } else {
                     // Restore stem shapes
-                    glyph.setShape(Shape.COMBINING_STEM);
-                    other.setShape(Shape.COMBINING_STEM);
+                    glyph.setShape(Shape.STEM);
+                    other.setShape(Shape.STEM);
                 }
             }
         }
@@ -241,8 +240,7 @@ public class AlterPattern
                 // Retrieve "deassigned" stem if any
                 Glyph stem = glyph.getStem(side);
 
-                if ((stem != null) &&
-                    (stem.getShape() != Shape.COMBINING_STEM)) {
+                if ((stem != null) && (stem.getShape() != Shape.STEM)) {
                     impacted.add(glyph);
                 }
             }
@@ -257,7 +255,7 @@ public class AlterPattern
             // Re-compute glyph features
             system.computeGlyphFeatures(glyph);
 
-            if (ShapeRange.StemSymbols.contains(glyph.getShape())) {
+            if (ShapeSet.StemSymbols.contains(glyph.getShape())) {
                 glyph.setShape(null); // TODO: a bit too simple?
             }
         }
@@ -301,7 +299,7 @@ public class AlterPattern
                 }
             } else {
                 // Restore stem shapes
-                glyph.setShape(Shape.COMBINING_STEM);
+                glyph.setShape(Shape.STEM);
             }
         }
 
@@ -404,12 +402,6 @@ public class AlterPattern
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public boolean isCandidateSuitable (Glyph glyph)
-        {
-            return !glyph.isManualShape();
-        }
-
-        @Override
         public PixelRectangle computeReferenceBox ()
         {
             final PixelRectangle stemBox = seed.getContourBox();
@@ -419,6 +411,12 @@ public class AlterPattern
                 (stemBox.y + stemBox.height) - flatHeadHeight,
                 flatHeadWidth,
                 flatHeadHeight);
+        }
+
+        @Override
+        public boolean isCandidateSuitable (Glyph glyph)
+        {
+            return !glyph.isManualShape();
         }
     }
 

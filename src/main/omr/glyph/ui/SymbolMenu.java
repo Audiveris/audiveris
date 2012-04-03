@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.Set;
 
 /**
- * Class {@code SymbolMenu} defines the menu menu which is linked to 
+ * Class {@code SymbolMenu} defines the menu menu which is linked to
  * the current selection of either one or several glyphs.
  *
  * @author Hervé Bitteur
@@ -109,8 +109,8 @@ public class SymbolMenu
         // Display all glyphs of the same shape
         register(0, new ShapeAction());
 
-        // Display all glyphs similar to the curent glyph
-        register(0, new SimilarAction());
+        // Display all glyphs similar to the current glyph
+        ///register(0, new SimilarAction());
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -119,7 +119,7 @@ public class SymbolMenu
     // DumpTextAction //
     //----------------//
     /**
-     * Dump the text information of each glyph in the selected 
+     * Dump the text information of each glyph in the selected
      * collection of glyphs.
      */
     private class DumpTextAction
@@ -207,8 +207,8 @@ public class SymbolMenu
                 SystemInfo system = sheet.getSystemOf(glyph);
                 Evaluation vote = evaluator.vote(
                     glyph,
-                    Grades.symbolMinGrade,
-                    system);
+                    system,
+                    Grades.symbolMinGrade);
 
                 if (vote != null) {
                     proposedGlyph = glyph;
@@ -372,7 +372,7 @@ public class SymbolMenu
     // StemSegmentAction //
     //-------------------//
     /**
-     * Perform a segmentation on the selected glyphs, into stems and 
+     * Perform a segmentation on the selected glyphs, into stems and
      * leaves.
      */
     private class StemSegmentAction

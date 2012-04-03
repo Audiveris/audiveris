@@ -73,28 +73,6 @@ public class Wedge
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------//
-    // getSpread //
-    //-----------//
-    /**
-     * Report the vertical spread of the wedge
-     *
-     * @return vertical spread in units
-     */
-    public int getSpread ()
-    {
-        return spread;
-    }
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
     //----------//
     // populate //
     //----------//
@@ -134,5 +112,27 @@ public class Wedge
                 endingPoint,
                 findChord(endingMeasure, endingPoint),
                 glyph));
+    }
+
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
+    //-----------//
+    // getSpread //
+    //-----------//
+    /**
+     * Report the vertical spread of the wedge
+     *
+     * @return vertical spread in units
+     */
+    public int getSpread ()
+    {
+        return spread;
     }
 }

@@ -80,60 +80,6 @@ public class BasicDigraph<D extends Digraph<D, V>, V extends Vertex>
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------------//
-    // getLastVertexId //
-    //-----------------//
-    public int getLastVertexId ()
-    {
-        return globalVertexId.get();
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    public String getName ()
-    {
-        return name;
-    }
-
-    //---------------//
-    // getVertexById //
-    //---------------//
-    public V getVertexById (int id)
-    {
-        V vertex = vertices.get(id);
-
-        if (vertex != null) {
-            return vertex;
-        } else {
-            return oldVertices.get(id);
-        }
-    }
-
-    //----------------//
-    // getVertexCount //
-    //----------------//
-    public int getVertexCount ()
-    {
-        return vertices.size();
-    }
-
-    //-------------//
-    // getVertices //
-    //-------------//
-    public Collection<V> getVertices ()
-    {
-        return Collections.unmodifiableCollection(vertices.values());
-    }
-
-    //----------//
-    // getViews //
-    //----------//
-    public Collection<DigraphView> getViews ()
-    {
-        return Collections.unmodifiableCollection(views);
-    }
-
     //-----------//
     // addVertex //
     //-----------//
@@ -186,6 +132,60 @@ public class BasicDigraph<D extends Digraph<D, V>, V extends Vertex>
         for (V vertex : getVertices()) {
             vertex.dump();
         }
+    }
+
+    //-----------------//
+    // getLastVertexId //
+    //-----------------//
+    public int getLastVertexId ()
+    {
+        return globalVertexId.get();
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    public String getName ()
+    {
+        return name;
+    }
+
+    //---------------//
+    // getVertexById //
+    //---------------//
+    public V getVertexById (int id)
+    {
+        V vertex = vertices.get(id);
+
+        if (vertex != null) {
+            return vertex;
+        } else {
+            return oldVertices.get(id);
+        }
+    }
+
+    //----------------//
+    // getVertexCount //
+    //----------------//
+    public int getVertexCount ()
+    {
+        return vertices.size();
+    }
+
+    //-------------//
+    // getVertices //
+    //-------------//
+    public Collection<V> getVertices ()
+    {
+        return Collections.unmodifiableCollection(vertices.values());
+    }
+
+    //----------//
+    // getViews //
+    //----------//
+    public Collection<DigraphView> getViews ()
+    {
+        return Collections.unmodifiableCollection(views);
     }
 
     //--------------//

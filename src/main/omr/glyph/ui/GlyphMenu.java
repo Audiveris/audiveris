@@ -13,7 +13,7 @@ package omr.glyph.ui;
 
 import omr.glyph.Nest;
 import omr.glyph.Shape;
-import omr.glyph.ShapeRange;
+import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -154,7 +154,7 @@ public abstract class GlyphMenu
                 if (glyph.isKnown()) {
                     knownNb++;
 
-                    if (glyph.getShape() == Shape.COMBINING_STEM) {
+                    if (glyph.getShape() == Shape.STEM) {
                         stemNb++;
                     }
                 }
@@ -324,19 +324,19 @@ public abstract class GlyphMenu
 
         //~ Methods ------------------------------------------------------------
 
-        @Override
-        public JMenuItem getMenuItem ()
-        {
-            JMenu menu = new JMenu(this);
-            ShapeRange.addShapeItems(menu, new AssignListener(true));
-
-            return menu;
-        }
-
         public void actionPerformed (ActionEvent e)
         {
             // Default action is to open the menu
             assert false;
+        }
+
+        @Override
+        public JMenuItem getMenuItem ()
+        {
+            JMenu menu = new JMenu(this);
+            ShapeSet.addAllShapes(menu, new AssignListener(true));
+
+            return menu;
         }
 
         @Override
@@ -409,6 +409,56 @@ public abstract class GlyphMenu
         }
     }
 
+    //------------//
+    // DumpAction //
+    //------------//
+    /**
+     * Dump each glyph in the selected collection of glyphs
+     */
+    protected class DumpAction
+        extends DynAction
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public DumpAction ()
+        {
+            super(40);
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        public void actionPerformed (ActionEvent e)
+        {
+            for (Glyph glyph : nest.getSelectedGlyphSet()) {
+                glyph.dump();
+            }
+        }
+
+        @Override
+        public void update ()
+        {
+            if (glyphNb > 0) {
+                setEnabled(true);
+
+                StringBuilder sb = new StringBuilder();
+                sb.append("Dump ")
+                  .append(glyphNb)
+                  .append(" glyph");
+
+                if (glyphNb > 1) {
+                    sb.append("s");
+                }
+
+                putValue(NAME, sb.toString());
+                putValue(SHORT_DESCRIPTION, "Dump selected glyphs");
+            } else {
+                setEnabled(false);
+                putValue(NAME, "Dump");
+                putValue(SHORT_DESCRIPTION, "No glyph to dump");
+            }
+        }
+    }
+
     //-----------//
     // DynAction //
     //-----------//
@@ -466,19 +516,19 @@ public abstract class GlyphMenu
 
         //~ Methods ------------------------------------------------------------
 
-        @Override
-        public JMenuItem getMenuItem ()
-        {
-            JMenu menu = new JMenu(this);
-            ShapeRange.addShapeItems(menu, new AssignListener(false));
-
-            return menu;
-        }
-
         public void actionPerformed (ActionEvent e)
         {
             // Default action is to open the menu
             assert false;
+        }
+
+        @Override
+        public JMenuItem getMenuItem ()
+        {
+            JMenu menu = new JMenu(this);
+            ShapeSet.addAllShapes(menu, new AssignListener(false));
+
+            return menu;
         }
 
         @Override
@@ -596,56 +646,6 @@ public abstract class GlyphMenu
                 setEnabled(false);
                 putValue(NAME, "Deassign");
                 putValue(SHORT_DESCRIPTION, "No glyph to deassign");
-            }
-        }
-    }
-
-    //------------//
-    // DumpAction //
-    //------------//
-    /**
-     * Dump each glyph in the selected collection of glyphs
-     */
-    protected class DumpAction
-        extends DynAction
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public DumpAction ()
-        {
-            super(40);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        public void actionPerformed (ActionEvent e)
-        {
-            for (Glyph glyph : nest.getSelectedGlyphSet()) {
-                glyph.dump();
-            }
-        }
-
-        @Override
-        public void update ()
-        {
-            if (glyphNb > 0) {
-                setEnabled(true);
-
-                StringBuilder sb = new StringBuilder();
-                sb.append("Dump ")
-                  .append(glyphNb)
-                  .append(" glyph");
-
-                if (glyphNb > 1) {
-                    sb.append("s");
-                }
-
-                putValue(NAME, sb.toString());
-                putValue(SHORT_DESCRIPTION, "Dump selected glyphs");
-            } else {
-                setEnabled(false);
-                putValue(NAME, "Dump");
-                putValue(SHORT_DESCRIPTION, "No glyph to dump");
             }
         }
     }

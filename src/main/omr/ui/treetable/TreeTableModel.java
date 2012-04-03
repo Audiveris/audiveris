@@ -45,13 +45,6 @@ public interface TreeTableModel
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * Indicates whether the the value for node {@code node}, at column
-     * number {@code column} is editable.
-     */
-    public boolean isCellEditable (Object node,
-                                   int    column);
-
-    /**
      * Returns the type for column number {@code column}.
      */
     public Class getColumnClass (int column);
@@ -67,17 +60,24 @@ public interface TreeTableModel
     public String getColumnName (int column);
 
     /**
+     * Returns the value to be displayed for node {@code node}, at column
+     * number {@code column}.
+     */
+    public Object getValueAt (Object node,
+                              int    column);
+
+    /**
+     * Indicates whether the the value for node {@code node}, at column
+     * number {@code column} is editable.
+     */
+    public boolean isCellEditable (Object node,
+                                   int    column);
+
+    /**
      * Sets the value for node {@code node}, at column number
      * {@code column}.
      */
     public void setValueAt (Object aValue,
                             Object node,
                             int    column);
-
-    /**
-     * Returns the value to be displayed for node {@code node}, at column
-     * number {@code column}.
-     */
-    public Object getValueAt (Object node,
-                              int    column);
 }

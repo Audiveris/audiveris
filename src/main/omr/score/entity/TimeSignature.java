@@ -17,7 +17,7 @@ import omr.glyph.Evaluation;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
-import omr.glyph.ShapeRange;
+import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -58,7 +58,7 @@ public class TimeSignature
         Shape.class);
 
     static {
-        for (Shape s : ShapeRange.FullTimes) {
+        for (Shape s : ShapeSet.FullTimes) {
             if (s != CUSTOM_TIME_SIGNATURE) {
                 TimeRational nd = rationalOf(s);
 
@@ -76,7 +76,7 @@ public class TimeSignature
 
     static {
         // Predefined
-        for (Shape s : ShapeRange.FullTimes) {
+        for (Shape s : ShapeSet.FullTimes) {
             TimeRational nd = rationals.get(s);
 
             if (nd != null) {
@@ -171,224 +171,6 @@ public class TimeSignature
 
     //~ Methods ----------------------------------------------------------------
 
-    //--------------//
-    // isAcceptable //
-    //--------------//
-    /**
-     * Check whether the provided value is a rather common time signature
-     * @param timeRational
-     * @return true if the provided sig is acceptable
-     */
-    public static boolean isAcceptable (TimeRational timeRational)
-    {
-        if (predefinedShape(timeRational) != null) {
-            return true;
-        }
-
-        // Check other acceptable rational values
-        return acceptables.contains(timeRational);
-    }
-
-    //----------------//
-    // getDenominator //
-    //----------------//
-    /**
-     * Report the bottom part of the time signature
-     *
-     * @return the bottom part
-     * @throws InvalidTimeSignature
-     */
-    public Integer getDenominator ()
-        throws InvalidTimeSignature
-    {
-        if (timeRational == null) {
-            if (shape == NO_LEGAL_TIME) {
-                throw new InvalidTimeSignature();
-            } else {
-                computeTimeRational();
-            }
-        }
-
-        if (timeRational != null) {
-            return timeRational.den;
-        } else {
-            return null;
-        }
-    }
-
-    //----------------------//
-    // getDenominatorShapes //
-    //----------------------//
-    /**
-     * Report the sequence of shapes that depict the denominator
-     * @return for example: [1, 6] if denominator is 16
-     */
-    public List<Shape> getDenominatorShapes ()
-    {
-        try {
-            return getShapes(getDenominator());
-        } catch (InvalidTimeSignature ex) {
-            return Collections.emptyList();
-        }
-    }
-
-    //---------//
-    // isDummy //
-    //---------//
-    /**
-     * Report whether this time signature has been built artificially
-     * @return true if artificial
-     */
-    public boolean isDummy ()
-    {
-        return isDummy;
-    }
-
-    //----------//
-    // isManual //
-    //----------//
-    /**
-     * Report whether this time signature is based on manual assignment
-     * @return true if manually assigned
-     */
-    public boolean isManual ()
-    {
-        return Glyphs.containsManual(getGlyphs());
-    }
-
-    //--------------//
-    // getNumerator //
-    //--------------//
-    /**
-     * Report the top part of the time signature
-     *
-     * @return the top part
-     * @throws InvalidTimeSignature
-     */
-    public Integer getNumerator ()
-        throws InvalidTimeSignature
-    {
-        if (timeRational == null) {
-            if (shape == NO_LEGAL_TIME) {
-                throw new InvalidTimeSignature();
-            } else {
-                computeTimeRational();
-            }
-        }
-
-        if (timeRational != null) {
-            return timeRational.num;
-        } else {
-            return null;
-        }
-    }
-
-    //--------------------//
-    // getNumeratorShapes //
-    //--------------------//
-    /**
-     * Report the sequence of shapes that depict the numerator
-     * @return for example: [1, 2] if numerator is 12
-     */
-    public List<Shape> getNumeratorShapes ()
-    {
-        try {
-            return getShapes(getNumerator());
-        } catch (InvalidTimeSignature ex) {
-            return Collections.emptyList();
-        }
-    }
-
-    //-------------//
-    // setTimeRational //
-    //-------------//
-    /**
-     * Force this time signature to align to the provided rational value
-     * @param timeRational the forced value
-     */
-    public void setRational (TimeRational timeRational)
-    {
-        this.timeRational = timeRational;
-        shape = predefinedShape();
-    }
-
-    //----------//
-    // getShape //
-    //----------//
-    /**
-     * Report the shape of this time signature
-     *
-     * @return the (lazily determined) shape, which may be null
-     * @throws omr.score.entity.TimeSignature.InvalidTimeSignature
-     */
-    public Shape getShape ()
-        throws InvalidTimeSignature
-    {
-        if (shape == null) {
-            computeTimeRational();
-        }
-
-        return shape;
-    }
-
-    //-----------------//
-    // getTimeRational //
-    //-----------------//
-    /**
-     * Report the time signature as a rational
-     * @return the num/den time rational, or null
-     */
-    public TimeRational getTimeRational ()
-        throws InvalidTimeSignature
-    {
-        if (timeRational == null) {
-            computeTimeRational();
-        }
-
-        return timeRational;
-    }
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
-    //------//
-    // copy //
-    //------//
-    /**
-     * Replaces in situ this time signature by the logical information
-     * of 'newSig'.
-     * @param newSig the correct sig to assign in lieu of this one
-     */
-    public void copy (TimeSignature newSig)
-    {
-        try {
-            modify(newSig.getShape(), newSig.timeRational);
-        } catch (InvalidTimeSignature ex) {
-            logger.warning("Invalid time signature", ex);
-        }
-    }
-
-    //-----------------//
-    // createDummyCopy //
-    //-----------------//
-    public TimeSignature createDummyCopy (Measure    measure,
-                                          PixelPoint center)
-    {
-        TimeSignature dummy = new TimeSignature(measure, null);
-        dummy.setCenter(center);
-
-        dummy.timeRational = timeRational;
-        dummy.shape = shape;
-
-        return dummy;
-    }
-
     //----------//
     // populate //
     //----------//
@@ -425,7 +207,7 @@ public class TimeSignature
         // Then, processing depends on partial / full time-signature
         Shape shape = glyph.getShape();
 
-        if (ShapeRange.PartialTimes.contains(shape)) {
+        if (ShapeSet.PartialTimes.contains(shape)) {
             return populatePartialTime(glyph, measure, staff);
         } else {
             return populateFullTime(glyph, measure, staff);
@@ -505,6 +287,211 @@ public class TimeSignature
     }
 
     //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
+    //------//
+    // copy //
+    //------//
+    /**
+     * Replaces in situ this time signature by the logical information
+     * of 'newSig'.
+     * @param newSig the correct sig to assign in lieu of this one
+     */
+    public void copy (TimeSignature newSig)
+    {
+        try {
+            modify(newSig.getShape(), newSig.timeRational);
+        } catch (InvalidTimeSignature ex) {
+            logger.warning("Invalid time signature", ex);
+        }
+    }
+
+    //-----------------//
+    // createDummyCopy //
+    //-----------------//
+    public TimeSignature createDummyCopy (Measure    measure,
+                                          PixelPoint center)
+    {
+        TimeSignature dummy = new TimeSignature(measure, null);
+        dummy.setCenter(center);
+
+        dummy.timeRational = timeRational;
+        dummy.shape = shape;
+
+        return dummy;
+    }
+
+    //----------------//
+    // getDenominator //
+    //----------------//
+    /**
+     * Report the bottom part of the time signature
+     *
+     * @return the bottom part
+     * @throws InvalidTimeSignature
+     */
+    public Integer getDenominator ()
+        throws InvalidTimeSignature
+    {
+        if (timeRational == null) {
+            if (shape == NO_LEGAL_TIME) {
+                throw new InvalidTimeSignature();
+            } else {
+                computeTimeRational();
+            }
+        }
+
+        if (timeRational != null) {
+            return timeRational.den;
+        } else {
+            return null;
+        }
+    }
+
+    //----------------------//
+    // getDenominatorShapes //
+    //----------------------//
+    /**
+     * Report the sequence of shapes that depict the denominator
+     * @return for example: [1, 6] if denominator is 16
+     */
+    public List<Shape> getDenominatorShapes ()
+    {
+        try {
+            return getShapes(getDenominator());
+        } catch (InvalidTimeSignature ex) {
+            return Collections.emptyList();
+        }
+    }
+
+    //--------------//
+    // getNumerator //
+    //--------------//
+    /**
+     * Report the top part of the time signature
+     *
+     * @return the top part
+     * @throws InvalidTimeSignature
+     */
+    public Integer getNumerator ()
+        throws InvalidTimeSignature
+    {
+        if (timeRational == null) {
+            if (shape == NO_LEGAL_TIME) {
+                throw new InvalidTimeSignature();
+            } else {
+                computeTimeRational();
+            }
+        }
+
+        if (timeRational != null) {
+            return timeRational.num;
+        } else {
+            return null;
+        }
+    }
+
+    //--------------------//
+    // getNumeratorShapes //
+    //--------------------//
+    /**
+     * Report the sequence of shapes that depict the numerator
+     * @return for example: [1, 2] if numerator is 12
+     */
+    public List<Shape> getNumeratorShapes ()
+    {
+        try {
+            return getShapes(getNumerator());
+        } catch (InvalidTimeSignature ex) {
+            return Collections.emptyList();
+        }
+    }
+
+    //----------//
+    // getShape //
+    //----------//
+    /**
+     * Report the shape of this time signature
+     *
+     * @return the (lazily determined) shape, which may be null
+     * @throws omr.score.entity.TimeSignature.InvalidTimeSignature
+     */
+    public Shape getShape ()
+        throws InvalidTimeSignature
+    {
+        if (shape == null) {
+            computeTimeRational();
+        }
+
+        return shape;
+    }
+
+    //-----------------//
+    // getTimeRational //
+    //-----------------//
+    /**
+     * Report the time signature as a rational
+     * @return the num/den time rational, or null
+     */
+    public TimeRational getTimeRational ()
+        throws InvalidTimeSignature
+    {
+        if (timeRational == null) {
+            computeTimeRational();
+        }
+
+        return timeRational;
+    }
+
+    //--------------//
+    // isAcceptable //
+    //--------------//
+    /**
+     * Check whether the provided value is a rather common time signature
+     * @param timeRational
+     * @return true if the provided sig is acceptable
+     */
+    public static boolean isAcceptable (TimeRational timeRational)
+    {
+        if (predefinedShape(timeRational) != null) {
+            return true;
+        }
+
+        // Check other acceptable rational values
+        return acceptables.contains(timeRational);
+    }
+
+    //---------//
+    // isDummy //
+    //---------//
+    /**
+     * Report whether this time signature has been built artificially
+     * @return true if artificial
+     */
+    public boolean isDummy ()
+    {
+        return isDummy;
+    }
+
+    //----------//
+    // isManual //
+    //----------//
+    /**
+     * Report whether this time signature is based on manual assignment
+     * @return true if manually assigned
+     */
+    public boolean isManual ()
+    {
+        return Glyphs.containsManual(getGlyphs());
+    }
+
+    //--------//
     // modify //
     //--------//
     /**
@@ -560,6 +547,19 @@ public class TimeSignature
         timeRational = null;
     }
 
+    //-------------//
+    // setTimeRational //
+    //-------------//
+    /**
+     * Force this time signature to align to the provided rational value
+     * @param timeRational the forced value
+     */
+    public void setRational (TimeRational timeRational)
+    {
+        this.timeRational = timeRational;
+        shape = predefinedShape();
+    }
+
     //----------//
     // toString //
     //----------//
@@ -611,6 +611,120 @@ public class TimeSignature
     protected void computeCenter ()
     {
         setCenter(computeGlyphsCenter(glyphs));
+    }
+
+    //-----------------//
+    // predefinedShape //
+    //-----------------//
+    /**
+     * Look for a predefined shape, if any, that would correspond to the current
+     * num and den values of this time sig
+     * @return the shape found or null
+     */
+    private static Shape predefinedShape (TimeRational timeRational)
+    {
+        if (timeRational == null) {
+            return null; // Safer
+        }
+
+        for (Shape s : ShapeSet.FullTimes) {
+            TimeRational nd = rationals.get(s);
+
+            if (timeRational.equals(nd)) {
+                return s;
+            }
+        }
+
+        return null;
+    }
+
+    //---------------------//
+    // computeTimeRational //
+    //---------------------//
+    /**
+     * Compute the actual members of time rational
+     * @throws InvalidTimeSignature
+     */
+    private void computeTimeRational ()
+        throws InvalidTimeSignature
+    {
+        if (glyphs == null) {
+            throw new InvalidTimeSignature();
+        }
+
+        if (!glyphs.isEmpty()) {
+            if (glyphs.size() == 1) {
+                // Just one symbol
+                Glyph theGlyph = glyphs.first();
+                Shape theShape = theGlyph.getShape();
+
+                if (theShape != null) {
+                    if (ShapeSet.FullTimes.contains(theShape)) {
+                        TimeRational theRational = (theShape == CUSTOM_TIME_SIGNATURE)
+                                                   ? theGlyph.getTimeRational()
+                                                   : rationalOf(theShape);
+
+                        if (theRational != null) {
+                            shape = theShape;
+                            this.timeRational = theRational;
+                        }
+
+                        return;
+                    }
+
+                    addError(glyphs.first(), "Weird single time component");
+
+                    return;
+                }
+            } else {
+                // Several symbols
+                // Dispatch symbols on top and bottom parts
+                timeRational = null;
+
+                int numerator = 0;
+                int denominator = 0;
+
+                for (Glyph glyph : glyphs) {
+                    int     pitch = (int) Math.rint(
+                        getStaff().pitchPositionOf(computeGlyphCenter(glyph)));
+                    Integer value = getNumericValue(glyph);
+
+                    if (logger.isFineEnabled()) {
+                        logger.fine(
+                            "pitch=" + pitch + " value=" + value + " glyph=" +
+                            glyph);
+                    }
+
+                    if (value != null) {
+                        if (pitch < 0) {
+                            numerator = (10 * numerator) + value;
+                        } else if (pitch > 0) {
+                            denominator = (10 * denominator) + value;
+                        } else {
+                            addError(
+                                glyph,
+                                "Multi-symbol time signature" +
+                                " with a component of pitch position 0");
+                        }
+                    } else {
+                        addError(
+                            glyph,
+                            "Time signature component with no numeric value");
+                    }
+                }
+
+                if ((numerator != 0) && (denominator != 0)) {
+                    timeRational = new TimeRational(numerator, denominator);
+                }
+
+                // Try to assign a predefined shape
+                shape = predefinedShape();
+            }
+
+            if (logger.isFineEnabled()) {
+                logger.fine("time rational: " + timeRational);
+            }
+        }
     }
 
     //-----------------//
@@ -710,112 +824,6 @@ public class TimeSignature
         return null;
     }
 
-    //-----------//
-    // getShapes //
-    //-----------//
-    private List<Shape> getShapes (int val)
-    {
-        List<Shape> shapes = new ArrayList<Shape>();
-
-        for (; val > 0; val /= 10) {
-            int digit = val % 10;
-            shapes.add(getNumericShape(digit));
-        }
-
-        Collections.reverse(shapes);
-
-        return shapes;
-    }
-
-    //---------------------//
-    // computeTimeRational //
-    //---------------------//
-    /**
-     * Compute the actual members of time rational
-     * @throws InvalidTimeSignature
-     */
-    private void computeTimeRational ()
-        throws InvalidTimeSignature
-    {
-        if (glyphs == null) {
-            throw new InvalidTimeSignature();
-        }
-
-        if (!glyphs.isEmpty()) {
-            if (glyphs.size() == 1) {
-                // Just one symbol
-                Glyph theGlyph = glyphs.first();
-                Shape theShape = theGlyph.getShape();
-
-                if (theShape != null) {
-                    if (ShapeRange.FullTimes.contains(theShape)) {
-                        TimeRational theRational = (theShape == CUSTOM_TIME_SIGNATURE)
-                                                   ? theGlyph.getTimeRational()
-                                                   : rationalOf(theShape);
-
-                        if (theRational != null) {
-                            shape = theShape;
-                            this.timeRational = theRational;
-                        }
-
-                        return;
-                    }
-
-                    addError(glyphs.first(), "Weird single time component");
-
-                    return;
-                }
-            } else {
-                // Several symbols
-                // Dispatch symbols on top and bottom parts
-                timeRational = null;
-
-                int numerator = 0;
-                int denominator = 0;
-
-                for (Glyph glyph : glyphs) {
-                    int     pitch = (int) Math.rint(
-                        getStaff().pitchPositionOf(computeGlyphCenter(glyph)));
-                    Integer value = getNumericValue(glyph);
-
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            "pitch=" + pitch + " value=" + value + " glyph=" +
-                            glyph);
-                    }
-
-                    if (value != null) {
-                        if (pitch < 0) {
-                            numerator = (10 * numerator) + value;
-                        } else if (pitch > 0) {
-                            denominator = (10 * denominator) + value;
-                        } else {
-                            addError(
-                                glyph,
-                                "Multi-symbol time signature" +
-                                " with a component of pitch position 0");
-                        }
-                    } else {
-                        addError(
-                            glyph,
-                            "Time signature component with no numeric value");
-                    }
-                }
-
-                if ((numerator != 0) && (denominator != 0)) {
-                    timeRational = new TimeRational(numerator, denominator);
-                }
-
-                // Try to assign a predefined shape
-                shape = predefinedShape();
-            }
-
-            if (logger.isFineEnabled()) {
-                logger.fine("time rational: " + timeRational);
-            }
-        }
-    }
-
     //---------------------//
     // populatePartialTime //
     //---------------------//
@@ -863,6 +871,23 @@ public class TimeSignature
         return true;
     }
 
+    //-----------//
+    // getShapes //
+    //-----------//
+    private List<Shape> getShapes (int val)
+    {
+        List<Shape> shapes = new ArrayList<Shape>();
+
+        for (; val > 0; val /= 10) {
+            int digit = val % 10;
+            shapes.add(getNumericShape(digit));
+        }
+
+        Collections.reverse(shapes);
+
+        return shapes;
+    }
+
     //-----------------//
     // predefinedShape //
     //-----------------//
@@ -878,31 +903,6 @@ public class TimeSignature
         } else {
             return predefinedShape(timeRational);
         }
-    }
-
-    //-----------------//
-    // predefinedShape //
-    //-----------------//
-    /**
-     * Look for a predefined shape, if any, that would correspond to the current
-     * num and den values of this time sig
-     * @return the shape found or null
-     */
-    private static Shape predefinedShape (TimeRational timeRational)
-    {
-        if (timeRational == null) {
-            return null; // Safer
-        }
-
-        for (Shape s : ShapeRange.FullTimes) {
-            TimeRational nd = rationals.get(s);
-
-            if (timeRational.equals(nd)) {
-                return s;
-            }
-        }
-
-        return null;
     }
 
     //~ Inner Classes ----------------------------------------------------------

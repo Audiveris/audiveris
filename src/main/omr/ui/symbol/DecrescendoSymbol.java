@@ -20,7 +20,7 @@ import java.awt.Graphics2D;
 import java.awt.Stroke;
 
 /**
- * Class {@code DecrescendoSymbol} displays a decrescendo symbol: >
+ * Class {@code DecrescendoSymbol} displays a decrescendo symbol: ">".
  */
 public class DecrescendoSymbol
     extends CrescendoSymbol
@@ -32,7 +32,6 @@ public class DecrescendoSymbol
     //-------------------//
     /**
      * Creates a new DecrescendoSymbol object.
-     *
      * @param isIcon true for an icon
      * @param shape the related shape
      */

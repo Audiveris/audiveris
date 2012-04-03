@@ -61,14 +61,6 @@ public abstract class GhostDropAdapter<A>
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------//
-    // getImage //
-    //----------//
-    public BufferedImage getImage ()
-    {
-        return image;
-    }
-
     //-----------------//
     // addDropListener //
     //-----------------//
@@ -81,6 +73,14 @@ public abstract class GhostDropAdapter<A>
         if (listener != null) {
             listeners.add(listener);
         }
+    }
+
+    //----------//
+    // getImage //
+    //----------//
+    public BufferedImage getImage ()
+    {
+        return image;
     }
 
     //--------------//

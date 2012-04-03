@@ -26,6 +26,7 @@ import omr.log.Logger;
 import omr.run.Orientation;
 
 import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 import omr.score.entity.Text.CreatorText.CreatorType;
 
 import omr.sheet.SystemInfo;
@@ -49,9 +50,9 @@ import java.util.TreeSet;
  * <li>pseudo content, meant to be used as a placeholder based on text type</li>
  * </ol>
  *
- * <p>The {@link #getContent} method returns the manual content if any, otherwise
- * the ocr content. Access to the pseudo content is done only through the {@link
- * #getPseudoContent} method.</p>
+ * <p>The {@link #getContent} method returns the manual content if any,
+ * otherwise the ocr content. Access to the pseudo content is done only through
+ * the {@link #getPseudoContent} method.</p>
  *
  * <p>The font size is taken from OCR if available, otherwise it is computed
  * from physical characteristics.</p>
@@ -80,34 +81,34 @@ public class TextInfo
 
     //~ Instance fields --------------------------------------------------------
 
-    /** The glyph this text info belongs to */
+    /** The glyph this text info belongs to. */
     private final Glyph glyph;
 
-    /** Related text area parameters */
+    /** Related text area parameters. */
     private TextArea textArea;
 
-    /** Manual content if any */
+    /** Manual content if any. */
     private String manualContent;
 
-    /** Detailed OCR info about this line */
+    /** Detailed OCR info about this line. */
     private OcrLine ocrLine;
 
-    /** Language used for OCR */
+    /** Language used for OCR. */
     private String ocrLanguage;
 
-    /** Dummy text content as placeholder, if any */
+    /** Dummy text content as placeholder, if any. */
     private String pseudoContent;
 
-    /** Containing text sentence if any */
+    /** Containing text sentence if any. */
     private Sentence sentence;
 
-    /** Role of this text item */
+    /** Role of this text item. */
     private TextRole role;
 
-    /** Creator type, if relevant */
+    /** Creator type, if relevant. */
     private CreatorType creatorType;
 
-    /** Font size */
+    /** Font size. */
     private Float fontSize;
 
     //~ Constructors -----------------------------------------------------------
@@ -123,15 +124,36 @@ public class TextInfo
 
     //~ Methods ----------------------------------------------------------------
 
-    //----------------//
-    // setCreatorType //
-    //----------------//
+    //------//
+    // dump //
+    //------//
     /**
-     * @param creatorType the creatorType to set
+     * Write detailed text information on the standard output.
      */
-    public void setCreatorType (CreatorType creatorType)
+    public void dump ()
     {
-        this.creatorType = creatorType;
+        logger.info(this.toString());
+
+        if (ocrLine != null) {
+            ocrLine.dump();
+        }
+    }
+
+    //------------//
+    // getContent //
+    //------------//
+    /**
+     * Report the content (the string value) of this text glyph if any.
+     * @return the text meaning of this glyph if any, either entered manually
+     * or via an OCR function
+     */
+    public String getContent ()
+    {
+        if (manualContent != null) {
+            return manualContent;
+        } else {
+            return getOcrContent();
+        }
     }
 
     //----------------//
@@ -145,63 +167,11 @@ public class TextInfo
         return creatorType;
     }
 
-    //-----------//
-    // isElision //
-    //-----------//
-    public boolean isElision ()
-    {
-        return getContent()
-                   .equals(ELISION_STRING);
-    }
-
-    //-------------//
-    // isExtension //
-    //-------------//
-    public boolean isExtension ()
-    {
-        return getContent()
-                   .equals(EXTENSION_STRING);
-    }
-
-    //----------//
-    // isHyphen //
-    //----------//
-    public boolean isHyphen ()
-    {
-        return getContent()
-                   .equals(HYPHEN_STRING);
-    }
-
-    //-----------------------//
-    // getMinExtensionAspect //
-    //-----------------------//
-    public static double getMinExtensionAspect ()
-    {
-        return constants.minExtensionAspect.getValue();
-    }
-
-    //------------//
-    // getContent //
-    //------------//
-    /**
-     * Report the content (the string value) of this text glyph if any
-     * @return the text meaning of this glyph if any, either entered manually
-     * or via an OCR function
-     */
-    public String getContent ()
-    {
-        if (manualContent != null) {
-            return manualContent;
-        } else {
-            return getOcrContent();
-        }
-    }
-
     //-------------//
     // getFontSize //
     //-------------//
     /**
-     * Report the proper font size for the textual glyph
+     * Report the proper font size for the textual glyph.
      * @return the fontSize
      */
     public Float getFontSize ()
@@ -219,24 +189,10 @@ public class TextInfo
     }
 
     //------------------//
-    // setManualContent //
-    //------------------//
-    /**
-     * Manually assign a text meaning to the glyph
-     * @param manualContent the string value for this text glyph
-     */
-    public void setManualContent (String manualContent)
-    {
-        this.manualContent = manualContent;
-
-        fontSize = null;
-    }
-
-    //------------------//
     // getManualContent //
     //------------------//
     /**
-     * Report the manually assigned text meaning of the glyph
+     * Report the manually assigned text meaning of the glyph.
      * @return manualContent the manual string value for this glyph, if any
      */
     public String getManualContent ()
@@ -244,11 +200,19 @@ public class TextInfo
         return manualContent;
     }
 
+    //-----------------------//
+    // getMinExtensionAspect //
+    //-----------------------//
+    public static double getMinExtensionAspect ()
+    {
+        return constants.minExtensionAspect.getValue();
+    }
+
     //---------------//
     // getOcrContent //
     //---------------//
     /**
-     * Report what the OCR has provided for this glyph
+     * Report what the OCR has provided for this glyph.
      * @return the text provided by the OCR engine, if any
      */
     public String getOcrContent ()
@@ -260,28 +224,11 @@ public class TextInfo
         }
     }
 
-    //------------//
-    // setOcrInfo //
-    //------------//
-    /**
-     * Remember the information as provided by the OCR engine
-     * @param ocrLanguage the language provided to OCR engine for recognition
-     * @param ocrLine the detailed OCR line about this glyph
-     */
-    public void setOcrInfo (String  ocrLanguage,
-                            OcrLine ocrLine)
-    {
-        this.ocrLanguage = ocrLanguage;
-        this.ocrLine = ocrLine;
-
-        fontSize = null;
-    }
-
     //----------------//
     // getOcrLanguage //
     //----------------//
     /**
-     * Report which language was used to OCR the glyph content
+     * Report which language was used to OCR the glyph content.
      * @return the language code, if any
      */
     public String getOcrLanguage ()
@@ -293,7 +240,7 @@ public class TextInfo
     // getOcrLine //
     //------------//
     /**
-     * Report the detailed OCR information
+     * Report the detailed OCR information.
      * @return the ocrLine
      */
     public OcrLine getOcrLine ()
@@ -305,7 +252,7 @@ public class TextInfo
     // getPseudoContent //
     //------------------//
     /**
-     * Report a dummy content for this glyph (for lack of known content)
+     * Report a dummy content for this glyph (for lack of known content).
      * @return an artificial text content, based on the enclosing sentence type
      */
     public String getPseudoContent ()
@@ -338,22 +285,10 @@ public class TextInfo
     }
 
     //-------------//
-    // setSentence //
-    //-------------//
-    /**
-     * Define the enclosing sentence for this (text) glyph
-     * @param sentence the enclosing sentence
-     */
-    public void setSentence (Sentence sentence)
-    {
-        this.sentence = sentence;
-    }
-
-    //-------------//
     // getSentence //
     //-------------//
     /**
-     * Report the sentence, if any, this (text) glyph is a component of
+     * Report the sentence, if any, this (text) glyph is a component of.
      * @return the containing sentence, or null
      */
     public Sentence getSentence ()
@@ -365,7 +300,7 @@ public class TextInfo
     // getTextArea //
     //-------------//
     /**
-     * Report the text area that contains this glyph
+     * Report the text area that contains this glyph.
      * @return the text area for this glyph
      */
     public TextArea getTextArea ()
@@ -386,24 +321,10 @@ public class TextInfo
     }
 
     //-------------//
-    // setTextRole //
-    //-------------//
-    /**
-     * Force the text type (role) of the textual glyph within the score
-     * @param type the role of this textual item
-     */
-    public void setTextRole (TextRole type)
-    {
-        this.role = type;
-
-        resetPseudoContent();
-    }
-
-    //-------------//
     // getTextRole //
     //-------------//
     /**
-     * Report the text type (role) of the textual glyph within the score
+     * Report the text type (role) of the textual glyph within the score.
      * @return the role of this textual glyph
      */
     public TextRole getTextRole ()
@@ -427,8 +348,8 @@ public class TextInfo
     // getTextStart //
     //--------------//
     /**
-     * Report the starting point of this text glyph, which is the left side
-     * abscissa and the baseline ordinate
+     * Report the starting point of this text glyph, which is the left
+     * side abscissa and the baseline ordinate.
      * @return the starting point of the text glyph, specified in pixels
      */
     public PixelPoint getTextStart ()
@@ -438,18 +359,64 @@ public class TextInfo
             getTextArea().getBaseline());
     }
 
-    //------//
-    // dump //
-    //------//
-    /**
-     * Write detailed text information on the standard output
-     */
-    public void dump ()
+    //-----------//
+    // isElision //
+    //-----------//
+    public boolean isElision ()
     {
-        logger.info(this.toString());
+        return getContent()
+                   .equals(ELISION_STRING);
+    }
 
-        if (ocrLine != null) {
-            ocrLine.dump();
+    //-------------//
+    // isExtension //
+    //-------------//
+    public boolean isExtension ()
+    {
+        return getContent()
+                   .equals(EXTENSION_STRING);
+    }
+
+    //----------//
+    // isHyphen //
+    //----------//
+    public boolean isHyphen ()
+    {
+        return getContent()
+                   .equals(HYPHEN_STRING);
+    }
+
+    //----------------//
+    // recognizeGlyph //
+    //----------------//
+    /**
+     * Run the OCR on this glyph, to retrieve the OcrLine instance(s)
+     * this glyph represents.
+     * @param language the probable language
+     * @return a list, not null but perhaps empty, of OcrLine instances with
+     *         absolute coordinates.
+     */
+    public List<OcrLine> recognizeGlyph (String language)
+    {
+        List<OcrLine> lines = Language.getOcr()
+                                      .recognize(
+            glyph.getImage(),
+            language,
+            "g" + glyph.getId());
+
+        // Convert from glyph-based to absolute coordinates
+        if (lines != null) {
+            PixelRectangle box = glyph.getContourBox();
+
+            for (OcrLine ol : lines) {
+                ol.translate(box.x, box.y);
+            }
+        }
+
+        if (lines != null) {
+            return lines;
+        } else {
+            return Collections.emptyList();
         }
     }
 
@@ -457,24 +424,24 @@ public class TextInfo
     // resetPseudoContent //
     //--------------------//
     /**
-     * Invalidate the glyph pseudo content, as a consequence of a sentence type
-     * change, to force its re-evaluation later
+     * Invalidate the glyph pseudo content, as a consequence of a
+     * sentence type change, to force its re-evaluation later.
      */
     public void resetPseudoContent ()
     {
         pseudoContent = null;
     }
 
-    //----------------------//
-    // retrieveSectionsFrom //
-    //----------------------//
+    //------------------//
+    // retrieveSections //
+    //------------------//
     /**
-     * Retrieve the glyph sections that correspond to the collection of OCR
-     * char descriptors
+     * Retrieve the glyph sections that correspond to the collection
+     * of OCR char descriptors.
      * @param chars the char descriptors for each word character
      * @return the set of word-enclosed sections
      */
-    public SortedSet<Section> retrieveSectionsFrom (List<OcrChar> chars)
+    public SortedSet<Section> retrieveSections (List<OcrChar> chars)
     {
         SortedSet<Section> sections = new TreeSet<Section>();
 
@@ -493,11 +460,79 @@ public class TextInfo
     }
 
     //----------------//
+    // setCreatorType //
+    //----------------//
+    /**
+     * @param creatorType the creatorType to set
+     */
+    public void setCreatorType (CreatorType creatorType)
+    {
+        this.creatorType = creatorType;
+    }
+
+    //------------------//
+    // setManualContent //
+    //------------------//
+    /**
+     * Manually assign a text meaning to the glyph.
+     * @param manualContent the string value for this text glyph
+     */
+    public void setManualContent (String manualContent)
+    {
+        this.manualContent = manualContent;
+
+        fontSize = null;
+    }
+
+    //------------//
+    // setOcrInfo //
+    //------------//
+    /**
+     * Remember the information as provided by the OCR engine.
+     * @param ocrLanguage the language provided to OCR engine for recognition
+     * @param ocrLine the detailed OCR line about this glyph
+     */
+    public void setOcrInfo (String  ocrLanguage,
+                            OcrLine ocrLine)
+    {
+        this.ocrLanguage = ocrLanguage;
+        this.ocrLine = ocrLine;
+
+        fontSize = null;
+    }
+
+    //-------------//
+    // setSentence //
+    //-------------//
+    /**
+     * Define the enclosing sentence for this (text) glyph.
+     * @param sentence the enclosing sentence
+     */
+    public void setSentence (Sentence sentence)
+    {
+        this.sentence = sentence;
+    }
+
+    //-------------//
+    // setTextRole //
+    //-------------//
+    /**
+     * Force the text type (role) of the textual glyph within the score.
+     * @param type the role of this textual item
+     */
+    public void setTextRole (TextRole type)
+    {
+        this.role = type;
+
+        resetPseudoContent();
+    }
+
+    //----------------//
     // splitIntoWords //
     //----------------//
     /**
-     * Split this (supposedly long lyrics line) sentence into separate words,
-     * one word for each lyrics item.
+     * Split this (supposedly long lyrics line) sentence into separate
+     * words, one word for each lyrics item.
      * @return The collection of (word) glyphs created
      */
     public Collection<Glyph> splitIntoWords ()
@@ -584,21 +619,12 @@ public class TextInfo
         return sb.toString();
     }
 
-    //-------------//
-    // isSeparator //
-    //-------------//
-    private static boolean isSeparator (String str)
-    {
-        return str.equals(EXTENSION_STRING) || str.equals(ELISION_STRING) ||
-               str.equals(HYPHEN_STRING);
-    }
-
     //------------------//
     // assignWordGlyphs //
     //------------------//
     /**
-     * Assign a glyph to each word, while further splitting words if they
-     * contain a space or other separator.
+     * Assign a glyph to each word, while further splitting words if
+     * they contain a space or other separator.
      * @param words the initial collection of words. The collection may get
      * modified, because of addition of new (sub)words and removal of words
      * getting split. At the end, each word of the collection should have a
@@ -620,8 +646,7 @@ public class TextInfo
                 ///logger.info("Word: '" + word.text + "'");
                 if (word.glyph == null) {
                     // Isolate proper word glyph from its enclosed sections
-                    SortedSet<Section> sections = retrieveSectionsFrom(
-                        word.chars);
+                    SortedSet<Section> sections = retrieveSections(word.chars);
 
                     if (!sections.isEmpty()) {
                         word.glyph = system.addGlyph(
@@ -683,10 +708,20 @@ public class TextInfo
     }
 
     //-------------//
+    // isSeparator //
+    //-------------//
+    private static boolean isSeparator (String str)
+    {
+        return str.equals(EXTENSION_STRING) || str.equals(ELISION_STRING) ||
+               str.equals(HYPHEN_STRING);
+    }
+
+    //-------------//
     // manualSplit //
     //-------------//
     /**
-     * Further split the provided text glyph, based on its manual content
+     * Further split the provided text glyph, based on its manual
+     * content.
      * @param glyph the provided glyph
      * @param chars the underlying OCR chars
      * @return the sequence of (sub)words
@@ -730,98 +765,11 @@ public class TextInfo
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        Constant.Ratio minExtensionAspect = new Constant.Ratio(
-            10d,
-            "Minimum width/height ratio for an extension character");
-    }
-
-    //-------------//
-    // WordScanner //
-    //-------------//
-    /**
-     * An abstract scanner to retrieve words.
-     */
-    private abstract static class WordScanner
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /** Precise description of each (non blank) character */
-        protected List<OcrChar> chars;
-
-        /** Position in the sequence of chars */
-        protected int pos = -1;
-
-        /** Current word and its parameters*/
-        private String currentWord = null;
-        private int    currentWordStart = 0;
-        private int    currentWordStop = 0;
-
-        /** Next word and its parameters */
-        private String nextWord = null;
-        protected int  nextWordStart = -1;
-        protected int  nextWordStop = -1;
-
-        //~ Constructors -------------------------------------------------------
-
-        public WordScanner (List<OcrChar> chars)
-        {
-            this.chars = chars;
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        /** Return the start position of the current word (as returned by next) */
-        public int getWordStart ()
-        {
-            return currentWordStart;
-        }
-
-        /** Return the stop position of the current word (as returned by next) */
-        public int getWordStop ()
-        {
-            return currentWordStop;
-        }
-
-        /** Tell whether there is a next word */
-        public boolean hasNext ()
-        {
-            return nextWord != null;
-        }
-
-        /** Make the next word current, and return it */
-        public String next ()
-        {
-            currentWord = nextWord;
-            currentWordStart = nextWordStart;
-            currentWordStop = nextWordStop;
-
-            /** Look ahead */
-            nextWord = getNextWord();
-
-            return currentWord;
-        }
-
-        protected abstract String getNextWord ();
-
-        protected void lookAhead ()
-        {
-            nextWord = getNextWord();
-        }
-    }
-
     //------------//
     // ManScanner //
     //------------//
     /**
-     * A specific scanner using manual text content
+     * A specific scanner using manual text content.
      */
     private static class ManScanner
         extends WordScanner
@@ -903,8 +851,9 @@ public class TextInfo
     // OcrScanner //
     //------------//
     /**
-     * A specific scanner to scan content, since we need to know the current
-     * position within the lineDesc, to infer proper word location.
+     * A specific scanner to scan content, since we need to know the
+     * current position within the lineDesc, to infer proper word
+     * location.
      */
     private static class OcrScanner
         extends WordScanner
@@ -1028,5 +977,92 @@ public class TextInfo
 
             return sb.toString();
         }
+    }
+
+    //-------------//
+    // WordScanner //
+    //-------------//
+    /**
+     * An abstract scanner to retrieve words.
+     */
+    private abstract static class WordScanner
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Precise description of each (non blank) character */
+        protected List<OcrChar> chars;
+
+        /** Position in the sequence of chars */
+        protected int pos = -1;
+
+        /** Current word and its parameters */
+        private String currentWord = null;
+        private int    currentWordStart = 0;
+        private int    currentWordStop = 0;
+
+        /** Next word and its parameters */
+        private String nextWord = null;
+        protected int  nextWordStart = -1;
+        protected int  nextWordStop = -1;
+
+        //~ Constructors -------------------------------------------------------
+
+        public WordScanner (List<OcrChar> chars)
+        {
+            this.chars = chars;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        /** Return the start position of the current word (as returned by next) */
+        public int getWordStart ()
+        {
+            return currentWordStart;
+        }
+
+        /** Return the stop position of the current word (as returned by next) */
+        public int getWordStop ()
+        {
+            return currentWordStop;
+        }
+
+        /** Tell whether there is a next word */
+        public boolean hasNext ()
+        {
+            return nextWord != null;
+        }
+
+        /** Make the next word current, and return it */
+        public String next ()
+        {
+            currentWord = nextWord;
+            currentWordStart = nextWordStart;
+            currentWordStop = nextWordStop;
+
+            /** Look ahead */
+            nextWord = getNextWord();
+
+            return currentWord;
+        }
+
+        protected abstract String getNextWord ();
+
+        protected void lookAhead ()
+        {
+            nextWord = getNextWord();
+        }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        Constant.Ratio minExtensionAspect = new Constant.Ratio(
+            10d,
+            "Minimum width/height ratio for an extension character");
     }
 }

@@ -49,6 +49,15 @@ public class BeamHookSymbol
 
     //~ Methods ----------------------------------------------------------------
 
+    //------------//
+    // createIcon //
+    //------------//
+    @Override
+    protected ShapeSymbol createIcon ()
+    {
+        return new BeamHookSymbol(true);
+    }
+
     //-----------//
     // getParams //
     //-----------//
@@ -61,14 +70,5 @@ public class BeamHookSymbol
         p.rect.height = (int) Math.ceil(p.layout.getBounds().getHeight());
 
         return p;
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new BeamHookSymbol(true);
     }
 }

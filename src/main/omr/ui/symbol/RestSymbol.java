@@ -24,8 +24,8 @@ import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code RestSymbol} implements rest symbols whose decoration uses staff
- * lines as background
+ * Class {@code RestSymbol} implements rest symbols whose decoration
+ * uses staff lines as background
  *
  * @author Hervé Bitteur
  */
@@ -43,8 +43,7 @@ public class RestSymbol
     // RestSymbol //
     //------------//
     /**
-     * Create a RestSymbol (with decoration?) standard size
-     *
+     * Create a RestSymbol (with decoration?) standard size.
      * @param shape the precise shape
      * @param decorated true for a decorated image
      * @param codes precise code for rest part
@@ -60,8 +59,7 @@ public class RestSymbol
     // RestSymbol //
     //------------//
     /**
-     * Create a RestSymbol (with decoration?)
-     *
+     * Create a RestSymbol (with decoration?).
      * @param isIcon true for an icon
      * @param shape the precise shape
      * @param decorated true for a decorated image
@@ -76,6 +74,15 @@ public class RestSymbol
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //------------//
+    // createIcon //
+    //------------//
+    @Override
+    protected ShapeSymbol createIcon ()
+    {
+        return new RestSymbol(true, shape, decorated, codes);
+    }
 
     //-----------//
     // getParams //
@@ -115,20 +122,11 @@ public class RestSymbol
     // getRestLayout //
     //---------------//
     /**
-     * Retrieve the layout of just the rest symbol part, w/o the lines
+     * Retrieve the layout of just the rest symbol part, w/o the lines.
      */
     protected TextLayout getRestLayout (MusicFont font)
     {
         return font.layout(getString());
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new RestSymbol(true, shape, decorated, codes);
     }
 
     //-------//
@@ -151,7 +149,7 @@ public class RestSymbol
             g.setComposite(decoComposite);
             MusicFont.paint(g, p.linesLayout, loc, AREA_CENTER);
             g.setComposite(oldComposite);
-            
+
             MusicFont.paint(g, p.layout, loc, BASELINE_CENTER);
         } else {
             MusicFont.paint(g, p.layout, loc, AREA_CENTER);

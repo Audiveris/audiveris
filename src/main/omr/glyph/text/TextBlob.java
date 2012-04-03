@@ -26,8 +26,6 @@ import omr.math.BasicLine;
 import omr.math.Line;
 import omr.math.Population;
 
-import omr.run.Orientation;
-
 import omr.score.common.PixelRectangle;
 
 import omr.sheet.Scale;
@@ -39,8 +37,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class {@code TextBlob} handles a growing sequence of glyphs that could form
- * a single text line.
+ * Class {@code TextBlob} handles a growing sequence of glyphs that
+ * could form a single text line.
  *
  * <p>A Blob is built in two phases:<ol>
  * <li>First phase concerns only large glyphs, which are used to gradually
@@ -124,48 +122,12 @@ public class TextBlob
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------//
-    // getGlyphs //
-    //-----------//
-    /**
-     * Report the collection of glyphs that currently compose this blob
-     * @return the (current) collection of glyphs
-     */
-    public List<Glyph> getGlyphs ()
-    {
-        return glyphs;
-    }
-
-    //---------------//
-    // getMaxWordGap //
-    //---------------//
-    /**
-     * Report the maximum horizontal gap between words
-     * @return the maximum word abscissa gap
-     */
-    public int getMaxWordGap ()
-    {
-        return (int) Math.rint(
-            getMedianHeight() * constants.maxWidthRatio.getValue());
-    }
-
-    //----------//
-    // getRight //
-    //----------//
-    /**
-     * Report the abscissa of the right side of the blob
-     * @return the (current) right abscissa
-     */
-    public int getRight ()
-    {
-        return blobBox.x + blobBox.width;
-    }
-
     //---------------------//
     // canInsertLargeGlyph //
     //---------------------//
     /**
-     * Check whether the provided (large) glyph can be inserted into this blob
+     * Check whether the provided (large) glyph can be inserted into 
+     * this blob.
      * @param glyph the candidate glyph
      * @return true if test is successful
      */
@@ -203,6 +165,105 @@ public class TextBlob
         }
 
         return true;
+    }
+
+    //-------------//
+    // getCompound //
+    //-------------//
+    /**
+     * Report the allowed text glyph if any
+     * @return the compound glyph if text if allowed for it, null otherwise
+     */
+    public Glyph getAllowedCompound ()
+    {
+        Glyph compound = (glyphs.size() > 1)
+                         ? system.buildTransientCompound(glyphs)
+                         : glyphs.iterator()
+                                 .next();
+
+        // Check that this glyph is not forbidden as text
+        if (compound.isShapeForbidden(Shape.TEXT)) {
+            if (logger.isFineEnabled()) {
+                logger.fine("Shape TEXT blacklisted");
+            }
+
+            return null;
+        } else {
+            return compound;
+        }
+    }
+
+    //----------------//
+    // getAverageLine //
+    //----------------//
+    public Line getAverageLine ()
+    {
+        if (averageLine == null) {
+            averageLine = new BasicLine();
+
+            for (Glyph glyph : glyphs) {
+                for (Section section : glyph.getMembers()) {
+                    averageLine.includeLine(section.getAbsoluteLine());
+                }
+            }
+        }
+
+        return averageLine;
+    }
+
+    //-----------//
+    // getGlyphs //
+    //-----------//
+    /**
+     * Report the collection of glyphs that currently compose this blob
+     * @return the (current) collection of glyphs
+     */
+    public List<Glyph> getGlyphs ()
+    {
+        return glyphs;
+    }
+
+    //---------------//
+    // getMaxWordGap //
+    //---------------//
+    /**
+     * Report the maximum horizontal gap between words
+     * @return the maximum word abscissa gap
+     */
+    public int getMaxWordGap ()
+    {
+        return (int) Math.rint(
+            getMedianHeight() * constants.maxWidthRatio.getValue());
+    }
+
+    //----------//
+    // getRight //
+    //----------//
+    /**
+     * Report the abscissa of the right side of the blob
+     * @return the (current) right abscissa
+     */
+    public int getRight ()
+    {
+        return blobBox.x + blobBox.width;
+    }
+
+    //-----------//
+    // getWeight //
+    //-----------//
+    /**
+     * Report the total weight (number of pixels) for this blob
+     * @return the weight of the blob
+     */
+    public int getWeight ()
+    {
+        int weight = 0;
+
+        for (Glyph glyph : glyphs) {
+            weight += glyph.getWeight();
+        }
+
+        return weight;
     }
 
     //------------------//
@@ -255,68 +316,6 @@ public class TextBlob
         if (logger.isFineEnabled() && (glyphs.size() > 1)) {
             logger.fine("Added large glyph to " + this);
         }
-    }
-
-    //-------------//
-    // getCompound //
-    //-------------//
-    /**
-     * Report the allowed text glyph if any
-     * @return the compound glyph if text if allowed for it, null otherwise
-     */
-    public Glyph getAllowedCompound ()
-    {
-        Glyph compound = (glyphs.size() > 1)
-                         ? system.buildTransientCompound(glyphs)
-                         : glyphs.iterator()
-                                 .next();
-
-        // Check that this glyph is not forbidden as text
-        if (compound.isShapeForbidden(Shape.TEXT)) {
-            if (logger.isFineEnabled()) {
-                logger.fine("Shape TEXT blacklisted");
-            }
-
-            return null;
-        } else {
-            return compound;
-        }
-    }
-
-    //----------------//
-    // getAverageLine //
-    //----------------//
-    public Line getAverageLine ()
-    {
-        if (averageLine == null) {
-            averageLine = new BasicLine();
-
-            for (Glyph glyph : glyphs) {
-                for (Section section : glyph.getMembers()) {
-                    averageLine.includeLine(section.getAbsoluteLine());
-                }
-            }
-        }
-
-        return averageLine;
-    }
-
-    //-----------//
-    // getWeight //
-    //-----------//
-    /**
-     * Report the total weight (number of pixels) for this blob
-     * @return the weight of the blob
-     */
-    public int getWeight ()
-    {
-        int weight = 0;
-
-        for (Glyph glyph : glyphs) {
-            weight += glyph.getWeight();
-        }
-
-        return weight;
     }
 
     //----------//

@@ -108,6 +108,20 @@ public class LDoubleField
     //~ Methods ----------------------------------------------------------------
 
     //----------//
+    // getValue //
+    //----------//
+    /**
+     * Extract the double value from the field (more precisely, the first
+     * value found in the text of the field ...)
+     *
+     * @return the value as double
+     */
+    public double getValue ()
+    {
+        return new Scanner(getText()).nextDouble();
+    }
+
+    //----------//
     // setValue //
     //----------//
     /**
@@ -136,19 +150,5 @@ public class LDoubleField
     {
         getField()
             .setText(String.format(format, val));
-    }
-
-    //----------//
-    // getValue //
-    //----------//
-    /**
-     * Extract the double value from the field (more precisely, the first
-     * value found in the text of the field ...)
-     *
-     * @return the value as double
-     */
-    public double getValue ()
-    {
-        return new Scanner(getText()).nextDouble();
     }
 }

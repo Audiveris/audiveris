@@ -16,7 +16,7 @@ import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
-import omr.glyph.ShapeRange;
+import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
 import omr.lag.Section;
@@ -25,7 +25,6 @@ import omr.log.Logger;
 
 import omr.sheet.SystemInfo;
 
-import omr.util.Implement;
 import omr.util.Predicate;
 
 import java.util.ArrayList;
@@ -56,7 +55,7 @@ public class StemPattern
             Shape   shape = glyph.getShape();
 
             boolean res = glyph.isWellKnown() &&
-                          ShapeRange.StemSymbols.contains(shape) &&
+                          ShapeSet.StemSymbols.contains(shape) &&
                           (shape != Shape.BEAM_HOOK);
 
             return res;
@@ -88,7 +87,7 @@ public class StemPattern
      *
      * @return the number of symbols recognized
      */
-    @Implement(GlyphPattern.class)
+    @Override
     public int runPattern ()
     {
         int                    nb = 0;
@@ -142,8 +141,8 @@ public class StemPattern
             if (glyph.getShape() == null) {
                 Evaluation vote = evaluator.vote(
                     glyph,
-                    Grades.patternsMinGrade,
-                    system);
+                    system,
+                    Grades.patternsMinGrade);
 
                 if (vote != null) {
                     glyph.setEvaluation(vote);
@@ -195,7 +194,7 @@ public class StemPattern
 
                         if ((shape != null) &&
                             !g.isManualShape() &&
-                            !ShapeRange.StemSymbols.contains(shape)) {
+                            !ShapeSet.StemSymbols.contains(shape)) {
                             g.setShape(null);
                         }
                     }

@@ -126,6 +126,141 @@ public class FilamentsFactory
 
     //~ Methods ----------------------------------------------------------------
 
+    //------//
+    // dump //
+    //------//
+    public void dump ()
+    {
+        params.dump();
+    }
+
+    //--------------//
+    // isSectionFat //
+    //--------------//
+    /**
+     * Detect if the provided section is a thick one
+     * (as seen in the context of the factory orientation).
+     * @param section the section to check
+     * @return true if fat
+     */
+    public boolean isSectionFat (Section section)
+    {
+        if (section.isFat() == null) {
+            try {
+                if (section.getMeanThickness(orientation) <= 1) {
+                    section.setFat(false);
+
+                    return section.isFat();
+                }
+
+                // Check global slimness
+                if (section.getMeanAspect(orientation) < params.minSectionAspect) {
+                    section.setFat(true);
+
+                    return section.isFat();
+                }
+
+                // Check thickness
+                Rectangle bounds = orientation.oriented(
+                    section.getContourBox());
+                Line      line = orientation.switchRef(
+                    section.getAbsoluteLine());
+
+                if (Math.abs(line.getSlope()) < (Math.PI / 4)) {
+                    // Measure mean thickness on each half
+                    int       startCoord = bounds.x + (bounds.width / 4);
+                    int       startPos = line.yAtX(startCoord);
+                    int       stopCoord = bounds.x + ((3 * bounds.width) / 4);
+                    int       stopPos = line.yAtX(stopCoord);
+
+                    // Start side
+                    Rectangle oRoi = new Rectangle(startCoord, startPos, 0, 0);
+                    final int halfWidth = Math.min(
+                        params.probeWidth / 2,
+                        bounds.width / 4);
+                    oRoi.grow(halfWidth, params.maxSectionThickness);
+
+                    PointsCollector collector = new PointsCollector(
+                        orientation.absolute(oRoi));
+                    section.cumulate(collector);
+
+                    int startThickness = (int) Math.rint(
+                        (double) collector.getSize() / oRoi.width);
+
+                    // Stop side
+                    oRoi.translate(stopCoord - startCoord, stopPos - startPos);
+                    collector = new PointsCollector(orientation.absolute(oRoi));
+                    section.cumulate(collector);
+
+                    int stopThickness = (int) Math.rint(
+                        (double) collector.getSize() / oRoi.width);
+
+                    section.setFat(
+                        (startThickness > params.maxSectionThickness) ||
+                        (stopThickness > params.maxSectionThickness));
+                } else {
+                    section.setFat(bounds.height > params.maxSectionThickness);
+                }
+            } catch (Exception ex) {
+                logger.warning("Error in checking fatness of " + section, ex);
+                section.setFat(true);
+            }
+        }
+
+        return section.isFat();
+    }
+
+    //-------------------//
+    // retrieveFilaments //
+    //-------------------//
+    /**
+     * Aggregate the long and thin sections into filaments (glyphs)
+     *
+     * @param source the section source for filaments
+     * @param useExpansion true to expand filaments with short sections left
+     * over
+     * @return the collection of retrieved filaments
+     */
+    public List<Glyph> retrieveFilaments (Collection<Section> source,
+                                          boolean             useExpansion)
+    {
+        StopWatch watch = new StopWatch("FilamentsFactory");
+
+        try {
+            // Create a filament for each section long & slim
+            watch.start("createFilaments");
+            createFilaments(source);
+
+            if (logger.isFineEnabled()) {
+                logger.info(
+                    orientation + " " + filaments.size() +
+                    " filaments created.");
+            }
+
+            // Merge filaments into larger filaments
+            watch.start("mergeFilaments");
+            mergeFilaments();
+
+            // Expand with short sections left over?
+            if (useExpansion) {
+                watch.start("expandFilaments");
+                expandFilaments(source);
+
+                // Merge filaments into larger filaments
+                watch.start("mergeFilaments #2");
+                mergeFilaments();
+            }
+        } catch (Exception ex) {
+            logger.warning("FilamentsFactory cannot retrieveFilaments", ex);
+        } finally {
+            if (constants.printWatch.getValue()) {
+                watch.print();
+            }
+        }
+
+        return filaments;
+    }
+
     //----------------//
     // setMaxCoordGap //
     //----------------//
@@ -260,141 +395,6 @@ public class FilamentsFactory
     public void setMinSectionAspect (double value)
     {
         params.minSectionAspect = value;
-    }
-
-    //--------------//
-    // isSectionFat //
-    //--------------//
-    /**
-     * Detect if the provided section is a thick one 
-     * (as seen in the context of the factory orientation).
-     * @param section the section to check
-     * @return true if fat
-     */
-    public boolean isSectionFat (Section section)
-    {
-        if (section.isFat() == null) {
-            try {
-                if (section.getMeanThickness(orientation) <= 1) {
-                    section.setFat(false);
-
-                    return section.isFat();
-                }
-
-                // Check global slimness
-                if (section.getMeanAspect(orientation) < params.minSectionAspect) {
-                    section.setFat(true);
-
-                    return section.isFat();
-                }
-
-                // Check thickness
-                Rectangle bounds = orientation.oriented(
-                    section.getContourBox());
-                Line      line = orientation.switchRef(
-                    section.getAbsoluteLine());
-
-                if (Math.abs(line.getSlope()) < (Math.PI / 4)) {
-                    // Measure mean thickness on each half
-                    int       startCoord = bounds.x + (bounds.width / 4);
-                    int       startPos = line.yAtX(startCoord);
-                    int       stopCoord = bounds.x + ((3 * bounds.width) / 4);
-                    int       stopPos = line.yAtX(stopCoord);
-
-                    // Start side
-                    Rectangle oRoi = new Rectangle(startCoord, startPos, 0, 0);
-                    final int halfWidth = Math.min(
-                        params.probeWidth / 2,
-                        bounds.width / 4);
-                    oRoi.grow(halfWidth, params.maxSectionThickness);
-
-                    PointsCollector collector = new PointsCollector(
-                        orientation.absolute(oRoi));
-                    section.cumulate(collector);
-
-                    int startThickness = (int) Math.rint(
-                        (double) collector.getSize() / oRoi.width);
-
-                    // Stop side
-                    oRoi.translate(stopCoord - startCoord, stopPos - startPos);
-                    collector = new PointsCollector(orientation.absolute(oRoi));
-                    section.cumulate(collector);
-
-                    int stopThickness = (int) Math.rint(
-                        (double) collector.getSize() / oRoi.width);
-
-                    section.setFat(
-                        (startThickness > params.maxSectionThickness) ||
-                        (stopThickness > params.maxSectionThickness));
-                } else {
-                    section.setFat(bounds.height > params.maxSectionThickness);
-                }
-            } catch (Exception ex) {
-                logger.warning("Error in checking fatness of " + section, ex);
-                section.setFat(true);
-            }
-        }
-
-        return section.isFat();
-    }
-
-    //------//
-    // dump //
-    //------//
-    public void dump ()
-    {
-        params.dump();
-    }
-
-    //-------------------//
-    // retrieveFilaments //
-    //-------------------//
-    /**
-     * Aggregate the long and thin sections into filaments (glyphs)
-     *
-     * @param source the section source for filaments
-     * @param useExpansion true to expand filaments with short sections left
-     * over
-     * @return the collection of retrieved filaments
-     */
-    public List<Glyph> retrieveFilaments (Collection<Section> source,
-                                          boolean             useExpansion)
-    {
-        StopWatch watch = new StopWatch("FilamentsFactory");
-
-        try {
-            // Create a filament for each section long & slim
-            watch.start("createFilaments");
-            createFilaments(source);
-
-            if (logger.isFineEnabled()) {
-                logger.info(
-                    orientation + " " + filaments.size() +
-                    " filaments created.");
-            }
-
-            // Merge filaments into larger filaments
-            watch.start("mergeFilaments");
-            mergeFilaments();
-
-            // Expand with short sections left over?
-            if (useExpansion) {
-                watch.start("expandFilaments");
-                expandFilaments(source);
-
-                // Merge filaments into larger filaments
-                watch.start("mergeFilaments #2");
-                mergeFilaments();
-            }
-        } catch (Exception ex) {
-            logger.warning("FilamentsFactory cannot retrieveFilaments", ex);
-        } finally {
-            if (constants.printWatch.getValue()) {
-                watch.print();
-            }
-        }
-
-        return filaments;
     }
 
     //----------//
@@ -650,7 +650,7 @@ public class FilamentsFactory
     // expandFilaments //
     //-----------------//
     /**
-     * Expand as much as possible the existing filaments with the 
+     * Expand as much as possible the existing filaments with the
      * provided sections
      * @param source the source of available sections
      * @return the collection of expanded filaments

@@ -41,8 +41,8 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Class {@code FilamentAlignment} is a GlyphAlignment meant for a 
- * Filamentinstance, where the underlying Line is actually not a 
+ * Class {@code FilamentAlignment} is a GlyphAlignment meant for a
+ * Filamentinstance, where the underlying Line is actually not a
  * straight line, but a NaturalSpline.
  *
  * @author Hervé Bitteur
@@ -82,6 +82,43 @@ public class FilamentAlignment
 
     //~ Methods ----------------------------------------------------------------
 
+    //
+    //    //---------------//
+    //    // getStartPoint //
+    //    //---------------//
+    //    @Override
+    //    public Point2D getStartPoint ()
+    //    {
+    //        if (startPoint == null) {
+    //            computeLine();
+    //        }
+    //
+    //        return startPoint;
+    //    }
+    //
+    //    //--------------//
+    //    // getStopPoint //
+    //    //--------------//
+    //    @Override
+    //    public Point2D getStopPoint ()
+    //    {
+    //        if (stopPoint == null) {
+    //            computeLine();
+    //        }
+    //
+    //        return stopPoint;
+    //    }
+
+    //------//
+    // dump //
+    //------//
+    @Override
+    public void dump ()
+    {
+        super.dump();
+        System.out.println("   meanRadius:" + (float) getMeanCurvature());
+    }
+
     //---------//
     // getLine //
     //---------//
@@ -95,7 +132,7 @@ public class FilamentAlignment
     // getMeanCurvature //
     //------------------//
     /**
-     * Report the average radius of curvature along all segments of 
+     * Report the average radius of curvature along all segments of
      * the curve.
      * This is not a global radius, but rather a way to mesure how straight
      * the curve is.
@@ -196,42 +233,6 @@ public class FilamentAlignment
                 return line.xAtY(coord);
             }
         }
-    }
-//
-//    //---------------//
-//    // getStartPoint //
-//    //---------------//
-//    @Override
-//    public Point2D getStartPoint ()
-//    {
-//        if (startPoint == null) {
-//            computeLine();
-//        }
-//
-//        return startPoint;
-//    }
-//
-//    //--------------//
-//    // getStopPoint //
-//    //--------------//
-//    @Override
-//    public Point2D getStopPoint ()
-//    {
-//        if (stopPoint == null) {
-//            computeLine();
-//        }
-//
-//        return stopPoint;
-//    }
-
-    //------//
-    // dump //
-    //------//
-    @Override
-    public void dump ()
-    {
-        super.dump();
-        System.out.println("   meanRadius:" + (float) getMeanCurvature());
     }
 
     //-----------------//

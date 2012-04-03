@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph id="1900" interline="22" shape="FLAG_1">
+    <stem-number>1</stem-number>
+    <with-ledger>false</with-ledger>
+    <pitch-position>-7.3882352941176475</pitch-position>
+        <section orientation="VERTICAL" id="3517" first-pos="1160">
+            <run start="2324" length="14" level="24"/>
+            <run start="2326" length="13" level="23"/>
+            <run start="2327" length="12" level="15"/>
+            <run start="2328" length="12" level="25"/>
+            <run start="2329" length="11" level="16"/>
+            <run start="2330" length="11" level="27"/>
+            <run start="2331" length="11" level="27"/>
+            <run start="2332" length="11" level="40"/>
+            <run start="2334" length="9" level="19"/>
+            <run start="2335" length="10" level="43"/>
+            <run start="2336" length="10" level="30"/>
+            <run start="2337" length="10" level="30"/>
+            <run start="2338" length="11" level="40"/>
+            <run start="2339" length="13" level="55"/>
+            <run start="2340" length="14" level="58"/>
+        </section>
+        <section orientation="VERTICAL" id="3560" first-pos="1175">
+            <run start="2342" length="19" level="82"/>
+        </section>
+        <section orientation="VERTICAL" id="3565" first-pos="1176">
+            <run start="2344" length="27" level="25"/>
+            <run start="2346" length="25" level="32"/>
+        </section>
+        <section orientation="VERTICAL" id="3561" first-pos="1175">
+            <run start="2362" length="9" level="127"/>
+        </section>
+        <section orientation="VERTICAL" id="3553" first-pos="1174">
+            <run start="2368" length="2" level="175"/>
+        </section>
+        <section orientation="VERTICAL" id="3570" first-pos="1178">
+            <run start="2349" length="20" level="76"/>
+        </section>
+        <section orientation="VERTICAL" id="3573" first-pos="1179">
+            <run start="2355" length="8" level="123"/>
+        </section>
+</glyph>

@@ -38,8 +38,6 @@ import omr.stick.StickRelation;
 
 import omr.ui.Colors;
 
-import omr.util.Implement;
-
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
@@ -172,623 +170,6 @@ public class BasicSection
 
     //~ Methods ----------------------------------------------------------------
 
-    //-----------------//
-    // getAbsoluteLine //
-    //-----------------//
-    public Line getAbsoluteLine ()
-    {
-        getOrientedLine();
-
-        return orientation.switchRef(orientedLine);
-    }
-
-    //--------------//
-    // isAggregable //
-    //--------------//
-    public boolean isAggregable ()
-    {
-        if ((relation == null) || !relation.isCandidate()) {
-            return false;
-        }
-
-        return !isKnown();
-    }
-
-    //---------------//
-    // getAreaCenter //
-    //---------------//
-    public PixelPoint getAreaCenter ()
-    {
-        PixelRectangle box = getContourBox();
-
-        return new PixelPoint(
-            box.x + (box.width / 2),
-            box.y + (box.height / 2));
-    }
-
-    //-----------//
-    // getAspect //
-    //-----------//
-    public double getAspect (Orientation orientation)
-    {
-        return (double) getLength(orientation) / (double) getThickness(
-            orientation);
-    }
-
-    //-------------//
-    // getCentroid //
-    //-------------//
-    public PixelPoint getCentroid ()
-    {
-        if (centroid == null) {
-            Point orientedPoint = new Point(0, 0);
-            int   y = firstPos;
-
-            for (Run run : runs) {
-                final int length = run.getLength();
-                orientedPoint.y += (length * (2 * y));
-                orientedPoint.x += (length * ((2 * run.getStart()) + length));
-                y++;
-            }
-
-            orientedPoint.x /= (2 * getWeight());
-            orientedPoint.y /= (2 * getWeight());
-
-            centroid = orientation.absolute(orientedPoint);
-
-            if (logger.isFineEnabled()) {
-                logger.fine("Centroid of " + this + " is " + centroid);
-            }
-        }
-
-        return centroid;
-    }
-
-    //----------//
-    // setColor //
-    //----------//
-    public void setColor (Color color)
-    {
-        this.color = color;
-    }
-
-    //-------------//
-    // isColorized //
-    //-------------//
-    public boolean isColorized ()
-    {
-        return defaultColor != null;
-    }
-
-    //---------------//
-    // getContourBox //
-    //---------------//
-    public PixelRectangle getContourBox ()
-    {
-        if (contourBox == null) {
-            contourBox = new PixelRectangle(getPolygon().getBounds());
-        }
-
-        return new PixelRectangle(contourBox); // Copy!
-    }
-
-    //-----------------//
-    // setDefaultColor //
-    //-----------------//
-    public void setDefaultColor (Color color)
-    {
-        defaultColor = color;
-    }
-
-    //-----------------//
-    // getDefaultColor //
-    //-----------------//
-    public Color getDefaultColor ()
-    {
-        return defaultColor;
-    }
-
-    //--------//
-    // setFat //
-    //--------//
-    public void setFat (boolean fat)
-    {
-        this.fat = fat;
-    }
-
-    //-------//
-    // isFat //
-    //-------//
-    public Boolean isFat ()
-    {
-        return fat;
-    }
-
-    //-------------------//
-    // getFirstAdjacency //
-    //-------------------//
-    public double getFirstAdjacency ()
-    {
-        Run run = getFirstRun();
-        int runStart = run.getStart();
-        int runStop = run.getStop();
-        int adjacency = 0;
-
-        for (Section source : getSources()) {
-            Run lastRun = source.getLastRun();
-            int start = Math.max(runStart, lastRun.getStart());
-            int stop = Math.min(runStop, lastRun.getStop());
-
-            if (stop >= start) {
-                adjacency += (stop - start + 1);
-            }
-        }
-
-        return (double) adjacency / (double) run.getLength();
-    }
-
-    //-------------//
-    // setFirstPos //
-    //-------------//
-    public void setFirstPos (int firstPos)
-    {
-        this.firstPos = firstPos;
-    }
-
-    //-------------//
-    // getFirstPos //
-    //-------------//
-    public int getFirstPos ()
-    {
-        return firstPos;
-    }
-
-    //-------------//
-    // getFirstRun //
-    //-------------//
-    public Run getFirstRun ()
-    {
-        return runs.get(0);
-    }
-
-    //---------------//
-    // getForeWeight //
-    //---------------//
-    public int getForeWeight ()
-    {
-        return foreWeight;
-    }
-
-    //----------//
-    // setGlyph //
-    //----------//
-    public void setGlyph (Glyph glyph)
-    {
-        // Keep the activeMap of the containing Nest in sync!
-        Nest nest = null;
-
-        if ((glyph != null) && (glyph.getNest() != null)) {
-            nest = glyph.getNest();
-        } else if ((this.glyph != null) && (this.glyph.getNest() != null)) {
-            nest = this.glyph.getNest();
-        }
-
-        this.glyph = glyph;
-
-        if (nest != null) {
-            nest.mapSection(this, glyph);
-        }
-
-        if (isVip()) {
-            logger.info(this + " linkedTo " + glyph);
-
-            if (glyph != null) {
-                glyph.setVip();
-            }
-        }
-    }
-
-    //----------//
-    // getGlyph //
-    //----------//
-    public Glyph getGlyph ()
-    {
-        return glyph;
-    }
-
-    //---------------//
-    // isGlyphMember //
-    //---------------//
-    public boolean isGlyphMember ()
-    {
-        return glyph != null;
-    }
-
-    //----------//
-    // setGraph //
-    //----------//
-    /**
-     * (package access from graph)
-     */
-    @Override
-    public void setGraph (Lag lag)
-    {
-        super.setGraph(lag);
-
-        if (lag != null) {
-            orientation = lag.getOrientation();
-        }
-    }
-
-    //----------//
-    // getGraph //
-    //----------//
-    /**
-     * Report the containing graph (lag) of this vertex (section)
-     * @return the containing graph
-     */
-    @Override
-    public Lag getGraph ()
-    {
-        return graph;
-    }
-
-    //---------//
-    // isKnown //
-    //---------//
-    public boolean isKnown ()
-    {
-        return (glyph != null) &&
-               (glyph.isSuccessful() || glyph.isWellKnown());
-    }
-
-    //------------------//
-    // getLastAdjacency //
-    //------------------//
-    public double getLastAdjacency ()
-    {
-        Run run = getLastRun();
-        int runStart = run.getStart();
-        int runStop = run.getStop();
-        int adjacency = 0;
-
-        for (Section target : getTargets()) {
-            Run firstRun = target.getFirstRun();
-            int start = Math.max(runStart, firstRun.getStart());
-            int stop = Math.min(runStop, firstRun.getStop());
-
-            if (stop >= start) {
-                adjacency += (stop - start + 1);
-            }
-        }
-
-        return (double) adjacency / (double) run.getLength();
-    }
-
-    //------------//
-    // getLastPos //
-    //------------//
-    public int getLastPos ()
-    {
-        return (firstPos + getRunCount()) - 1;
-    }
-
-    //------------//
-    // getLastRun //
-    //------------//
-    public Run getLastRun ()
-    {
-        return runs.get(runs.size() - 1);
-    }
-
-    //-----------//
-    // getLength //
-    //-----------//
-    public int getLength (Orientation orientation)
-    {
-        if (orientation == Orientation.HORIZONTAL) {
-            return getContourBox().width;
-        } else {
-            return getContourBox().height;
-        }
-    }
-
-    //----------//
-    // getLevel //
-    //----------//
-    public int getLevel ()
-    {
-        return (int) Math.rint((double) foreWeight / (double) weight);
-    }
-
-    //-----------------//
-    // getMaxRunLength //
-    //-----------------//
-    public int getMaxRunLength ()
-    {
-        return maxRunLength;
-    }
-
-    //---------------//
-    // getMeanAspect //
-    //---------------//
-    public double getMeanAspect (Orientation orientation)
-    {
-        return getLength(orientation) / getMeanThickness(orientation);
-    }
-
-    //------------------//
-    // getMeanRunLength //
-    //------------------//
-    public int getMeanRunLength ()
-    {
-        return weight / getRunCount();
-    }
-
-    //------------------//
-    // getMeanThickness //
-    //------------------//
-    public double getMeanThickness (Orientation orientation)
-    {
-        return (double) getWeight() / getLength(orientation);
-    }
-
-    //---------------------//
-    // getOppositeSections //
-    //---------------------//
-    public Set<Section> getOppositeSections ()
-    {
-        if (oppositeSections != null) {
-            return Collections.unmodifiableSet(oppositeSections);
-        } else {
-            return Collections.emptySet();
-        }
-    }
-
-    //----------------//
-    // getOrientation //
-    //----------------//
-    public Orientation getOrientation ()
-    {
-        return orientation;
-    }
-
-    //-------------------//
-    // getOrientedBounds //
-    //-------------------//
-    public Rectangle getOrientedBounds ()
-    {
-        if (orientedBounds == null) {
-            orientedBounds = new Rectangle(
-                orientation.oriented(getContourBox()));
-        }
-
-        return orientedBounds;
-    }
-
-    //-----------------//
-    // getOrientedLine //
-    //-----------------//
-    public Line getOrientedLine ()
-    {
-        if (orientedLine == null) {
-            // Compute the section line
-            orientedLine = new BasicLine();
-
-            int y = getFirstPos();
-
-            for (Run run : getRuns()) {
-                int stop = run.getStop();
-
-                for (int x = run.getStart(); x <= stop; x++) {
-                    orientedLine.includePoint((double) x, (double) y);
-                }
-
-                y++;
-            }
-        }
-
-        return orientedLine;
-    }
-
-    //-----------//
-    // setParams //
-    //-----------//
-    /**
-     * Assign major parameters (kind, layer and direction), since the enclosing
-     * stick may be assigned later.
-     *
-     * @param role      the role of this section in stick elaboration
-     * @param layer     the layer from stick core
-     * @param direction the direction when departing from the stick core
-     */
-    public void setParams (SectionRole role,
-                           int         layer,
-                           int         direction)
-    {
-        if (relation == null) {
-            relation = new StickRelation();
-        }
-
-        relation.setParams(role, layer, direction);
-    }
-
-    //-----------------//
-    // getPathIterator //
-    //-----------------//
-    public PathIterator getPathIterator ()
-    {
-        return getPolygon()
-                   .getPathIterator(null);
-    }
-
-    //------------//
-    // getPolygon //
-    //------------//
-    public Polygon getPolygon ()
-    {
-        if (polygon == null) {
-            polygon = computePolygon();
-        }
-
-        return polygon;
-    }
-
-    //--------------//
-    // setProcessed //
-    //--------------//
-    public void setProcessed (boolean processed)
-    {
-        this.processed = processed;
-    }
-
-    //-------------//
-    // isProcessed //
-    //-------------//
-    public boolean isProcessed ()
-    {
-        return processed;
-    }
-
-    //----------------------//
-    // getRectangleCentroid //
-    //----------------------//
-    public PixelPoint getRectangleCentroid (PixelRectangle absRoi)
-    {
-        if (absRoi == null) {
-            throw new IllegalArgumentException("Rectangle of Interest is null");
-        }
-
-        Barycenter barycenter = new Barycenter();
-        cumulate(barycenter, absRoi);
-
-        if (barycenter.getWeight() != 0) {
-            return new PixelPoint(
-                (int) Math.rint(barycenter.getX()),
-                (int) Math.rint(barycenter.getY()));
-        } else {
-            return null;
-        }
-    }
-
-    //-------------//
-    // getRelation //
-    //-------------//
-    public StickRelation getRelation ()
-    {
-        return relation;
-    }
-
-    //-------------//
-    // getRunCount //
-    //-------------//
-    public int getRunCount ()
-    {
-        return runs.size();
-    }
-
-    //---------//
-    // getRuns //
-    //---------//
-    public List<Run> getRuns ()
-    {
-        return runs;
-    }
-
-    //---------------//
-    // getStartCoord //
-    //---------------//
-    public int getStartCoord ()
-    {
-        return getOrientedBounds().x;
-    }
-
-    //--------------//
-    // getStopCoord //
-    //--------------//
-    public int getStopCoord ()
-    {
-        Rectangle bounds = getOrientedBounds();
-
-        return bounds.x + (bounds.width - 1);
-    }
-
-    //-----------//
-    // setSystem //
-    //-----------//
-    public void setSystem (SystemInfo system)
-    {
-        this.system = system;
-    }
-
-    //-----------//
-    // getSystem //
-    //-----------//
-    public SystemInfo getSystem ()
-    {
-        return system;
-    }
-
-    //--------------//
-    // getThickness //
-    //--------------//
-    public int getThickness (Orientation orientation)
-    {
-        if (orientation == Orientation.HORIZONTAL) {
-            return getContourBox().height;
-        } else {
-            return getContourBox().width;
-        }
-    }
-
-    //------------//
-    // isVertical //
-    //------------//
-    public boolean isVertical ()
-    {
-        return orientation == Orientation.VERTICAL;
-    }
-
-    //--------//
-    // setVip //
-    //--------//
-    public void setVip ()
-    {
-        vip = true;
-    }
-
-    //-------//
-    // isVip //
-    //-------//
-    public boolean isVip ()
-    {
-        return vip;
-    }
-
-    //-----------//
-    // getWeight //
-    //-----------//
-    public int getWeight ()
-    {
-        if (weight == 0) {
-            computeParameters();
-        }
-
-        return weight;
-    }
-
-    //--------------------//
-    // addOppositeSection //
-    //--------------------//
-    public void addOppositeSection (Section otherSection)
-    {
-        if (oppositeSections == null) {
-            oppositeSections = new HashSet<Section>();
-        }
-
-        oppositeSections.add(otherSection);
-    }
-
     //---------------//
     // allocateTable //
     //---------------//
@@ -808,6 +189,41 @@ public class BasicSection
         }
 
         return table;
+    }
+
+    //-----------//
+    // drawTable //
+    //-----------//
+    /**
+     * Printout the filled drawing table
+     *
+     * @param table the filled table
+     * @param box the table limits in the image
+     */
+    public static void drawTable (char[][]  table,
+                                  Rectangle box)
+    {
+        System.out.println(
+            "xMin=" + box.x + ", xMax=" + ((box.x + box.width) - 1));
+        System.out.println(
+            "yMin=" + box.y + ", yMax=" + ((box.y + box.height) - 1));
+
+        for (int iy = 0; iy < table.length; iy++) {
+            System.out.print((iy + box.y) + ": ");
+            System.out.println(table[iy]);
+        }
+    }
+
+    //--------------------//
+    // addOppositeSection //
+    //--------------------//
+    public void addOppositeSection (Section otherSection)
+    {
+        if (oppositeSections == null) {
+            oppositeSections = new HashSet<Section>();
+        }
+
+        oppositeSections.add(otherSection);
     }
 
     //--------//
@@ -832,7 +248,7 @@ public class BasicSection
      * @param other the other section to compare to
      * @return the result of ordering
      */
-    @Implement(Comparable.class)
+    @Override
     public int compareTo (Section other)
     {
         if (this == other) {
@@ -1036,29 +452,6 @@ public class BasicSection
     }
 
     //-----------//
-    // drawTable //
-    //-----------//
-    /**
-     * Printout the filled drawing table
-     *
-     * @param table the filled table
-     * @param box the table limits in the image
-     */
-    public static void drawTable (char[][]  table,
-                                  Rectangle box)
-    {
-        System.out.println(
-            "xMin=" + box.x + ", xMax=" + ((box.x + box.width) - 1));
-        System.out.println(
-            "yMin=" + box.y + ", yMax=" + ((box.y + box.height) - 1));
-
-        for (int iy = 0; iy < table.length; iy++) {
-            System.out.print((iy + box.y) + ": ");
-            System.out.println(table[iy]);
-        }
-    }
-
-    //-----------//
     // fillImage //
     //-----------//
     public void fillImage (BufferedImage im,
@@ -1138,6 +531,419 @@ public class BasicSection
         }
     }
 
+    //-----------------//
+    // getAbsoluteLine //
+    //-----------------//
+    public Line getAbsoluteLine ()
+    {
+        getOrientedLine();
+
+        return orientation.switchRef(orientedLine);
+    }
+
+    //---------------//
+    // getAreaCenter //
+    //---------------//
+    public PixelPoint getAreaCenter ()
+    {
+        PixelRectangle box = getContourBox();
+
+        return new PixelPoint(
+            box.x + (box.width / 2),
+            box.y + (box.height / 2));
+    }
+
+    //-----------//
+    // getAspect //
+    //-----------//
+    public double getAspect (Orientation orientation)
+    {
+        return (double) getLength(orientation) / (double) getThickness(
+            orientation);
+    }
+
+    //-------------//
+    // getCentroid //
+    //-------------//
+    public PixelPoint getCentroid ()
+    {
+        if (centroid == null) {
+            Point orientedPoint = new Point(0, 0);
+            int   y = firstPos;
+
+            for (Run run : runs) {
+                final int length = run.getLength();
+                orientedPoint.y += (length * (2 * y));
+                orientedPoint.x += (length * ((2 * run.getStart()) + length));
+                y++;
+            }
+
+            orientedPoint.x /= (2 * getWeight());
+            orientedPoint.y /= (2 * getWeight());
+
+            centroid = orientation.absolute(orientedPoint);
+
+            if (logger.isFineEnabled()) {
+                logger.fine("Centroid of " + this + " is " + centroid);
+            }
+        }
+
+        return centroid;
+    }
+
+    //---------------//
+    // getContourBox //
+    //---------------//
+    public PixelRectangle getContourBox ()
+    {
+        if (contourBox == null) {
+            contourBox = new PixelRectangle(getPolygon().getBounds());
+        }
+
+        return new PixelRectangle(contourBox); // Copy!
+    }
+
+    //-----------------//
+    // getDefaultColor //
+    //-----------------//
+    public Color getDefaultColor ()
+    {
+        return defaultColor;
+    }
+
+    //-------------------//
+    // getFirstAdjacency //
+    //-------------------//
+    public double getFirstAdjacency ()
+    {
+        Run run = getFirstRun();
+        int runStart = run.getStart();
+        int runStop = run.getStop();
+        int adjacency = 0;
+
+        for (Section source : getSources()) {
+            Run lastRun = source.getLastRun();
+            int start = Math.max(runStart, lastRun.getStart());
+            int stop = Math.min(runStop, lastRun.getStop());
+
+            if (stop >= start) {
+                adjacency += (stop - start + 1);
+            }
+        }
+
+        return (double) adjacency / (double) run.getLength();
+    }
+
+    //-------------//
+    // getFirstPos //
+    //-------------//
+    public int getFirstPos ()
+    {
+        return firstPos;
+    }
+
+    //-------------//
+    // getFirstRun //
+    //-------------//
+    public Run getFirstRun ()
+    {
+        return runs.get(0);
+    }
+
+    //---------------//
+    // getForeWeight //
+    //---------------//
+    public int getForeWeight ()
+    {
+        return foreWeight;
+    }
+
+    //----------//
+    // getGlyph //
+    //----------//
+    public Glyph getGlyph ()
+    {
+        return glyph;
+    }
+
+    //----------//
+    // getGraph //
+    //----------//
+    /**
+     * Report the containing graph (lag) of this vertex (section)
+     * @return the containing graph
+     */
+    @Override
+    public Lag getGraph ()
+    {
+        return graph;
+    }
+
+    //------------------//
+    // getLastAdjacency //
+    //------------------//
+    public double getLastAdjacency ()
+    {
+        Run run = getLastRun();
+        int runStart = run.getStart();
+        int runStop = run.getStop();
+        int adjacency = 0;
+
+        for (Section target : getTargets()) {
+            Run firstRun = target.getFirstRun();
+            int start = Math.max(runStart, firstRun.getStart());
+            int stop = Math.min(runStop, firstRun.getStop());
+
+            if (stop >= start) {
+                adjacency += (stop - start + 1);
+            }
+        }
+
+        return (double) adjacency / (double) run.getLength();
+    }
+
+    //------------//
+    // getLastPos //
+    //------------//
+    public int getLastPos ()
+    {
+        return (firstPos + getRunCount()) - 1;
+    }
+
+    //------------//
+    // getLastRun //
+    //------------//
+    public Run getLastRun ()
+    {
+        return runs.get(runs.size() - 1);
+    }
+
+    //-----------//
+    // getLength //
+    //-----------//
+    public int getLength (Orientation orientation)
+    {
+        if (orientation == Orientation.HORIZONTAL) {
+            return getContourBox().width;
+        } else {
+            return getContourBox().height;
+        }
+    }
+
+    //----------//
+    // getLevel //
+    //----------//
+    public int getLevel ()
+    {
+        return (int) Math.rint((double) foreWeight / (double) weight);
+    }
+
+    //-----------------//
+    // getMaxRunLength //
+    //-----------------//
+    public int getMaxRunLength ()
+    {
+        return maxRunLength;
+    }
+
+    //---------------//
+    // getMeanAspect //
+    //---------------//
+    public double getMeanAspect (Orientation orientation)
+    {
+        return getLength(orientation) / getMeanThickness(orientation);
+    }
+
+    //------------------//
+    // getMeanRunLength //
+    //------------------//
+    public int getMeanRunLength ()
+    {
+        return weight / getRunCount();
+    }
+
+    //------------------//
+    // getMeanThickness //
+    //------------------//
+    public double getMeanThickness (Orientation orientation)
+    {
+        return (double) getWeight() / getLength(orientation);
+    }
+
+    //---------------------//
+    // getOppositeSections //
+    //---------------------//
+    public Set<Section> getOppositeSections ()
+    {
+        if (oppositeSections != null) {
+            return Collections.unmodifiableSet(oppositeSections);
+        } else {
+            return Collections.emptySet();
+        }
+    }
+
+    //----------------//
+    // getOrientation //
+    //----------------//
+    public Orientation getOrientation ()
+    {
+        return orientation;
+    }
+
+    //-------------------//
+    // getOrientedBounds //
+    //-------------------//
+    public Rectangle getOrientedBounds ()
+    {
+        if (orientedBounds == null) {
+            orientedBounds = new Rectangle(
+                orientation.oriented(getContourBox()));
+        }
+
+        return orientedBounds;
+    }
+
+    //-----------------//
+    // getOrientedLine //
+    //-----------------//
+    public Line getOrientedLine ()
+    {
+        if (orientedLine == null) {
+            // Compute the section line
+            orientedLine = new BasicLine();
+
+            int y = getFirstPos();
+
+            for (Run run : getRuns()) {
+                int stop = run.getStop();
+
+                for (int x = run.getStart(); x <= stop; x++) {
+                    orientedLine.includePoint((double) x, (double) y);
+                }
+
+                y++;
+            }
+        }
+
+        return orientedLine;
+    }
+
+    //-----------------//
+    // getPathIterator //
+    //-----------------//
+    public PathIterator getPathIterator ()
+    {
+        return getPolygon()
+                   .getPathIterator(null);
+    }
+
+    //------------//
+    // getPolygon //
+    //------------//
+    public Polygon getPolygon ()
+    {
+        if (polygon == null) {
+            polygon = computePolygon();
+        }
+
+        return polygon;
+    }
+
+    //----------------------//
+    // getRectangleCentroid //
+    //----------------------//
+    public PixelPoint getRectangleCentroid (PixelRectangle absRoi)
+    {
+        if (absRoi == null) {
+            throw new IllegalArgumentException("Rectangle of Interest is null");
+        }
+
+        Barycenter barycenter = new Barycenter();
+        cumulate(barycenter, absRoi);
+
+        if (barycenter.getWeight() != 0) {
+            return new PixelPoint(
+                (int) Math.rint(barycenter.getX()),
+                (int) Math.rint(barycenter.getY()));
+        } else {
+            return null;
+        }
+    }
+
+    //-------------//
+    // getRelation //
+    //-------------//
+    public StickRelation getRelation ()
+    {
+        return relation;
+    }
+
+    //-------------//
+    // getRunCount //
+    //-------------//
+    public int getRunCount ()
+    {
+        return runs.size();
+    }
+
+    //---------//
+    // getRuns //
+    //---------//
+    public List<Run> getRuns ()
+    {
+        return runs;
+    }
+
+    //---------------//
+    // getStartCoord //
+    //---------------//
+    public int getStartCoord ()
+    {
+        return getOrientedBounds().x;
+    }
+
+    //--------------//
+    // getStopCoord //
+    //--------------//
+    public int getStopCoord ()
+    {
+        Rectangle bounds = getOrientedBounds();
+
+        return bounds.x + (bounds.width - 1);
+    }
+
+    //-----------//
+    // getSystem //
+    //-----------//
+    public SystemInfo getSystem ()
+    {
+        return system;
+    }
+
+    //--------------//
+    // getThickness //
+    //--------------//
+    public int getThickness (Orientation orientation)
+    {
+        if (orientation == Orientation.HORIZONTAL) {
+            return getContourBox().height;
+        } else {
+            return getContourBox().width;
+        }
+    }
+
+    //-----------//
+    // getWeight //
+    //-----------//
+    public int getWeight ()
+    {
+        if (weight == 0) {
+            computeParameters();
+        }
+
+        return weight;
+    }
+
     //---------------//
     // inNextSibling //
     //---------------//
@@ -1211,6 +1017,75 @@ public class BasicSection
     {
         return getPolygon()
                    .intersects(rect);
+    }
+
+    //--------------//
+    // isAggregable //
+    //--------------//
+    public boolean isAggregable ()
+    {
+        if ((relation == null) || !relation.isCandidate()) {
+            return false;
+        }
+
+        return !isKnown();
+    }
+
+    //-------------//
+    // isColorized //
+    //-------------//
+    public boolean isColorized ()
+    {
+        return defaultColor != null;
+    }
+
+    //-------//
+    // isFat //
+    //-------//
+    public Boolean isFat ()
+    {
+        return fat;
+    }
+
+    //---------------//
+    // isGlyphMember //
+    //---------------//
+    public boolean isGlyphMember ()
+    {
+        return glyph != null;
+    }
+
+    //---------//
+    // isKnown //
+    //---------//
+    public boolean isKnown ()
+    {
+        return (glyph != null) &&
+               (glyph.isSuccessful() || glyph.isWellKnown());
+    }
+
+    //-------------//
+    // isProcessed //
+    //-------------//
+    public boolean isProcessed ()
+    {
+        return processed;
+    }
+
+    //------------//
+    // isVertical //
+    //------------//
+    public boolean isVertical ()
+    {
+        return orientation == Orientation.VERTICAL;
+    }
+
+    //-------//
+    // isVip //
+    //-------//
+    public boolean isVip ()
+    {
+        return vip;
     }
 
     //-------//
@@ -1397,6 +1272,129 @@ public class BasicSection
     public void resetFat ()
     {
         this.fat = null;
+    }
+
+    //----------//
+    // setColor //
+    //----------//
+    public void setColor (Color color)
+    {
+        this.color = color;
+    }
+
+    //-----------------//
+    // setDefaultColor //
+    //-----------------//
+    public void setDefaultColor (Color color)
+    {
+        defaultColor = color;
+    }
+
+    //--------//
+    // setFat //
+    //--------//
+    public void setFat (boolean fat)
+    {
+        this.fat = fat;
+    }
+
+    //-------------//
+    // setFirstPos //
+    //-------------//
+    public void setFirstPos (int firstPos)
+    {
+        this.firstPos = firstPos;
+    }
+
+    //----------//
+    // setGlyph //
+    //----------//
+    public void setGlyph (Glyph glyph)
+    {
+        // Keep the activeMap of the containing Nest in sync!
+        Nest nest = null;
+
+        if ((glyph != null) && (glyph.getNest() != null)) {
+            nest = glyph.getNest();
+        } else if ((this.glyph != null) && (this.glyph.getNest() != null)) {
+            nest = this.glyph.getNest();
+        }
+
+        this.glyph = glyph;
+
+        if (nest != null) {
+            nest.mapSection(this, glyph);
+        }
+
+        if (isVip()) {
+            logger.info(this + " linkedTo " + glyph);
+
+            if (glyph != null) {
+                glyph.setVip();
+            }
+        }
+    }
+
+    //----------//
+    // setGraph //
+    //----------//
+    /**
+     * (package access from graph)
+     */
+    @Override
+    public void setGraph (Lag lag)
+    {
+        super.setGraph(lag);
+
+        if (lag != null) {
+            orientation = lag.getOrientation();
+        }
+    }
+
+    //-----------//
+    // setParams //
+    //-----------//
+    /**
+     * Assign major parameters (kind, layer and direction), since the enclosing
+     * stick may be assigned later.
+     *
+     * @param role      the role of this section in stick elaboration
+     * @param layer     the layer from stick core
+     * @param direction the direction when departing from the stick core
+     */
+    public void setParams (SectionRole role,
+                           int         layer,
+                           int         direction)
+    {
+        if (relation == null) {
+            relation = new StickRelation();
+        }
+
+        relation.setParams(role, layer, direction);
+    }
+
+    //--------------//
+    // setProcessed //
+    //--------------//
+    public void setProcessed (boolean processed)
+    {
+        this.processed = processed;
+    }
+
+    //-----------//
+    // setSystem //
+    //-----------//
+    public void setSystem (SystemInfo system)
+    {
+        this.system = system;
+    }
+
+    //--------//
+    // setVip //
+    //--------//
+    public void setVip ()
+    {
+        vip = true;
     }
 
     //----------//

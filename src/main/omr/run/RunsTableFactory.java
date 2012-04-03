@@ -17,8 +17,6 @@ import omr.log.Logger;
 
 import omr.score.common.PixelRectangle;
 
-import omr.util.Implement;
-
 import java.awt.Dimension;
 
 /**
@@ -120,44 +118,6 @@ public class RunsTableFactory
     {
         //~ Methods ------------------------------------------------------------
 
-        //--------//
-        // isFore //
-        //--------//
-        /**
-         * Check whether the provide pixel value is foreground or background
-         *
-         * @param level pixel gray level
-         *
-         * @return true if foreground, false if background
-         */
-        @Implement(RunsRetriever.Adapter.class)
-        public final boolean isFore (int level)
-        {
-            return level <= maxLevel;
-        }
-
-        //----------//
-        // getLevel //
-        //----------//
-        /**
-         * Retrieve the pixel gray level of a point in the underlying source
-         *
-         * @param coord coordinate value, relative to lag orientation
-         * @param pos position value, relative to lag orientation
-         *
-         * @return pixel gray level
-         */
-        @Implement(RunsRetriever.Adapter.class)
-        public final int getLevel (int coord,
-                                   int pos)
-        {
-            if (swapNeeded) {
-                return source.getPixel(pos, coord);
-            } else {
-                return source.getPixel(coord, pos);
-            }
-        }
-
         //---------//
         // backRun //
         //---------//
@@ -168,7 +128,7 @@ public class RunsTableFactory
          * @param pos position of run start
          * @param length run length
          */
-        @Implement(RunsRetriever.Adapter.class)
+        @Override
         public final void backRun (int coord,
                                    int pos,
                                    int length)
@@ -187,7 +147,7 @@ public class RunsTableFactory
          * @param length run length
          * @param cumul cumulated pixel gray levels on all run points
          */
-        @Implement(RunsRetriever.Adapter.class)
+        @Override
         public final void foreRun (int coord,
                                    int pos,
                                    int length,
@@ -201,13 +161,51 @@ public class RunsTableFactory
             }
         }
 
+        //----------//
+        // getLevel //
+        //----------//
+        /**
+         * Retrieve the pixel gray level of a point in the underlying source
+         *
+         * @param coord coordinate value, relative to lag orientation
+         * @param pos position value, relative to lag orientation
+         *
+         * @return pixel gray level
+         */
+        @Override
+        public final int getLevel (int coord,
+                                   int pos)
+        {
+            if (swapNeeded) {
+                return source.getPixel(pos, coord);
+            } else {
+                return source.getPixel(coord, pos);
+            }
+        }
+
+        //--------//
+        // isFore //
+        //--------//
+        /**
+         * Check whether the provide pixel value is foreground or background
+         *
+         * @param level pixel gray level
+         *
+         * @return true if foreground, false if background
+         */
+        @Override
+        public final boolean isFore (int level)
+        {
+            return level <= maxLevel;
+        }
+
         //-----------//
         // terminate //
         //-----------//
         /**
          * Method called-back when all runs have been read
          */
-        @Implement(RunsRetriever.Adapter.class)
+        @Override
         public final void terminate ()
         {
             if (logger.isFineEnabled()) {

@@ -770,8 +770,8 @@ public class BarsRetriever
      */
     private void checkBarsAlignment (SystemInfo system)
     {
-        List<StaffInfo> staves = system.getStaves();
-        int             staffCount = staves.size();
+        List<StaffInfo>    staves = system.getStaves();
+        int                staffCount = staves.size();
 
         // Bar alignments for the system
         List<BarAlignment> alignments = null;
@@ -1247,7 +1247,7 @@ public class BarsRetriever
     // retrievePartTops //
     //------------------//
     /**
-     * Retrieve, for each staff, the staff that starts its containing 
+     * Retrieve, for each staff, the staff that starts its containing
      * part.
      * @return the (id of) part-starting staff for each staff
      */
@@ -1726,7 +1726,7 @@ public class BarsRetriever
     // Parameters //
     //------------//
     /**
-     * Class {@code Parameters} gathers all constants related to 
+     * Class {@code Parameters} gathers all constants related to
      * vertical frames.
      */
     private static class Parameters

@@ -166,7 +166,7 @@ public class StaffInfo
         SortedSet<Ledger> ledgerSet = ledgerMap.get(pitch);
 
         if (ledgerSet == null) {
-            ledgerSet = new TreeSet(Dash.abscissaComparator);
+            ledgerSet = new TreeSet<Ledger>(Dash.abscissaComparator);
             ledgerMap.put(pitch, ledgerSet);
         }
 

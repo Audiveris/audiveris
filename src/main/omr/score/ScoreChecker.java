@@ -19,7 +19,7 @@ import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
-import omr.glyph.ShapeRange;
+import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -86,8 +86,7 @@ public class ScoreChecker
     private static final Predicate<Shape> hookPredicate = new Predicate<Shape>() {
         public boolean check (Shape shape)
         {
-            return ShapeRange.Beams.contains(shape) &&
-                   (shape != Shape.COMBINING_STEM);
+            return ShapeSet.Beams.contains(shape);
         }
     };
 
@@ -349,7 +348,7 @@ public class ScoreChecker
                 }
             } else if (shape == Shape.NO_LEGAL_TIME) {
                 timeSignature.addError("Illegal " + timeSignature);
-            } else if (ShapeRange.PartialTimes.contains(shape)) {
+            } else if (ShapeSet.PartialTimes.contains(shape)) {
                 // This time sig has the shape of a single digit
                 // So some other part is still missing
                 timeSignature.addError(
@@ -456,7 +455,9 @@ public class ScoreChecker
                 }
             }
 
-            logger.info(chord + " aligned on shape " + bestShape);
+            if (logger.isFineEnabled()) {
+                logger.info(chord + " aligned on shape " + bestShape);
+            }
 
             final Shape      baseShape = bestShape; // Must be final
             Predicate<Shape> predicate = new Predicate<Shape>() {
@@ -482,10 +483,10 @@ public class ScoreChecker
 
                 for (Note note : notes) {
                     for (Glyph glyph : note.getGlyphs()) {
-                        Evaluation vote = evaluator.topVote(
+                        Evaluation vote = evaluator.vote(
                             glyph,
-                            Grades.consistentNoteMinGrade,
                             system.getInfo(),
+                            Grades.consistentNoteMinGrade,
                             predicate);
 
                         if (vote != null) {
@@ -607,7 +608,7 @@ public class ScoreChecker
             Note  note = (Note) node;
             Shape noteShape = note.getShape();
 
-            if (ShapeRange.VoidNoteHeads.contains(noteShape)) {
+            if (ShapeSet.VoidNoteHeads.contains(noteShape)) {
                 for (Glyph glyph : note.getGlyphs()) {
                     noteGrade = Math.max(noteGrade, glyph.getGrade());
                     voidGlyphs.add(glyph);
@@ -623,7 +624,7 @@ public class ScoreChecker
         Predicate<Shape> predicate = new Predicate<Shape>() {
             public boolean check (Shape shape)
             {
-                return ShapeRange.BlackNoteHeads.contains(shape);
+                return ShapeSet.BlackNoteHeads.contains(shape);
             }
         };
 
@@ -662,7 +663,7 @@ public class ScoreChecker
         if (fix) {
             // Change note shape (void -> black)
             for (Glyph glyph : voidGlyphs) {
-                Evaluation vote = evaluator.topRawVote(
+                Evaluation vote = evaluator.rawVote(
                     glyph,
                     Grades.consistentNoteMinGrade,
                     predicate);
@@ -807,8 +808,8 @@ public class ScoreChecker
     private void mergeNotes (Note first,
                              Note second)
     {
-        if ((first.getShape() == Shape.VOID_NOTEHEAD) &&
-            (second.getShape() == Shape.VOID_NOTEHEAD)) {
+        if ((first.getShape() == Shape.NOTEHEAD_VOID) &&
+            (second.getShape() == Shape.NOTEHEAD_VOID)) {
             List<Glyph> glyphs = new ArrayList<Glyph>();
 
             glyphs.addAll(first.getGlyphs());
@@ -820,8 +821,8 @@ public class ScoreChecker
             Evaluation vote = GlyphNetwork.getInstance()
                                           .vote(
                 compound,
-                Grades.mergedNoteMinGrade,
-                first.getSystem().getInfo());
+                first.getSystem().getInfo(),
+                Grades.mergedNoteMinGrade);
 
             if (vote != null) {
                 compound = system.addGlyph(compound);
@@ -871,10 +872,10 @@ public class ScoreChecker
             }
 
             // Check if a beam appears in the top evaluations
-            Evaluation vote = network.topVote(
+            Evaluation vote = network.vote(
                 glyph,
-                Grades.hookMinGrade,
                 system.getInfo(),
+                Grades.hookMinGrade,
                 hookPredicate);
 
             if (vote != null) {

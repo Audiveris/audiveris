@@ -108,24 +108,6 @@ public class TreeTableModelAdapter
     //~ Methods ----------------------------------------------------------------
 
     //----------------//
-    // isCellEditable //
-    //----------------//
-    /**
-     * DOCUMENT ME!
-     *
-     * @param row DOCUMENT ME!
-     * @param column DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    @Override
-    public boolean isCellEditable (int row,
-                                   int column)
-    {
-        return treeTableModel.isCellEditable(nodeForRow(row), column);
-    }
-
-    //----------------//
     // getColumnClass //
     //----------------//
     /**
@@ -185,24 +167,6 @@ public class TreeTableModelAdapter
     }
 
     //------------//
-    // setValueAt //
-    //------------//
-    /**
-     * DOCUMENT ME!
-     *
-     * @param value DOCUMENT ME!
-     * @param row DOCUMENT ME!
-     * @param column DOCUMENT ME!
-     */
-    @Override
-    public void setValueAt (Object value,
-                            int    row,
-                            int    column)
-    {
-        treeTableModel.setValueAt(value, nodeForRow(row), column);
-    }
-
-    //------------//
     // getValueAt //
     //------------//
     /**
@@ -217,6 +181,24 @@ public class TreeTableModelAdapter
                               int column)
     {
         return treeTableModel.getValueAt(nodeForRow(row), column);
+    }
+
+    //----------------//
+    // isCellEditable //
+    //----------------//
+    /**
+     * DOCUMENT ME!
+     *
+     * @param row DOCUMENT ME!
+     * @param column DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    @Override
+    public boolean isCellEditable (int row,
+                                   int column)
+    {
+        return treeTableModel.isCellEditable(nodeForRow(row), column);
     }
 
     //------------//
@@ -234,6 +216,24 @@ public class TreeTableModelAdapter
         TreePath treePath = tree.getPathForRow(row);
 
         return treePath.getLastPathComponent();
+    }
+
+    //------------//
+    // setValueAt //
+    //------------//
+    /**
+     * DOCUMENT ME!
+     *
+     * @param value DOCUMENT ME!
+     * @param row DOCUMENT ME!
+     * @param column DOCUMENT ME!
+     */
+    @Override
+    public void setValueAt (Object value,
+                            int    row,
+                            int    column)
+    {
+        treeTableModel.setValueAt(value, nodeForRow(row), column);
     }
 
     //-----------------------------//

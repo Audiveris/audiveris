@@ -14,7 +14,6 @@ package omr.glyph;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.GlyphEvaluator.StartingMode;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -55,7 +54,7 @@ import javax.xml.bind.JAXBException;
  * @author Hervé Bitteur
  */
 public class GlyphNetwork
-    extends GlyphEvaluator
+    extends AbstractEvaluationEngine
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -120,22 +119,26 @@ public class GlyphNetwork
     public static GlyphNetwork getInstance ()
     {
         if (INSTANCE == null) {
-            INSTANCE = new GlyphNetwork();
+            synchronized (GlyphNetwork.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new GlyphNetwork();
+                }
+            }
         }
 
         return INSTANCE;
     }
 
-    //--------------//
-    // setAmplitude //
-    //--------------//
+    //------//
+    // dump //
+    //------//
     /**
-     * Set the amplitude value for initial random values (UNUSED).
-     * @param amplitude
+     * Dump the internals of the neural network to the standard output.
      */
-    public void setAmplitude (double amplitude)
+    @Override
+    public void dump ()
     {
-        constants.amplitude.setValue(amplitude);
+        engine.dump();
     }
 
     //--------------//
@@ -151,20 +154,6 @@ public class GlyphNetwork
     }
 
     //-----------------//
-    // setLearningRate //
-    //-----------------//
-    /**
-     * Dynamically modify the learning rate of the neural network for
-     * its training task.
-     * @param learningRate new learning rate to use
-     */
-    public void setLearningRate (double learningRate)
-    {
-        constants.learningRate.setValue(learningRate);
-        engine.setLearningRate(learningRate);
-    }
-
-    //-----------------//
     // getLearningRate //
     //-----------------//
     /**
@@ -174,20 +163,6 @@ public class GlyphNetwork
     public double getLearningRate ()
     {
         return constants.learningRate.getValue();
-    }
-
-    //---------------//
-    // setListEpochs //
-    //---------------//
-    /**
-     * Modify the upper limit on the number of epochs (training
-     * iterations) for the training process.
-     * @param listEpochs new value for iteration limit
-     */
-    public void setListEpochs (int listEpochs)
-    {
-        constants.listEpochs.setValue(listEpochs);
-        engine.setEpochs(listEpochs);
     }
 
     //---------------//
@@ -203,20 +178,6 @@ public class GlyphNetwork
     }
 
     //-------------//
-    // setMaxError //
-    //-------------//
-    /**
-     * Modify the error threshold to potentially stop the training
-     * process.
-     * @param maxError the new threshold value to use
-     */
-    public void setMaxError (double maxError)
-    {
-        constants.maxError.setValue(maxError);
-        engine.setMaxError(maxError);
-    }
-
-    //-------------//
     // getMaxError //
     //-------------//
     /**
@@ -227,20 +188,6 @@ public class GlyphNetwork
     public double getMaxError ()
     {
         return constants.maxError.getValue();
-    }
-
-    //-------------//
-    // setMomentum //
-    //-------------//
-    /**
-     * Modify the value for momentum used from learning epoch to the
-     * other.
-     * @param momentum the new momentum value to be used
-     */
-    public void setMomentum (double momentum)
-    {
-        constants.momentum.setValue(momentum);
-        engine.setMomentum(momentum);
     }
 
     //-------------//
@@ -280,46 +227,72 @@ public class GlyphNetwork
         return engine;
     }
 
-    //-------------------//
-    // getRawEvaluations //
-    //-------------------//
-    @Override
-    public Evaluation[] getRawEvaluations (Glyph glyph)
+    //--------------//
+    // setAmplitude //
+    //--------------//
+    /**
+     * Set the amplitude value for initial random values (UNUSED).
+     * @param amplitude
+     */
+    public void setAmplitude (double amplitude)
     {
-        // If too small, it's just NOISE
-        if (!isBigEnough(glyph)) {
-            return noiseEvaluations;
-        } else {
-            double[]     ins = feedInput(glyph);
-            double[]     outs = new double[shapeCount];
-            Evaluation[] evals = new Evaluation[shapeCount];
-            Shape[]      values = Shape.values();
-
-            engine.run(ins, null, outs);
-
-            for (int s = 0; s < shapeCount; s++) {
-                Shape shape = values[s];
-                // Use a grade in 0 .. 100 range
-                evals[s] = new Evaluation(shape, 100 * outs[s]);
-            }
-
-            // Order the evals from best to worst
-            Arrays.sort(evals);
-
-            return evals;
-        }
+        constants.amplitude.setValue(amplitude);
     }
 
-    //------//
-    // dump //
-    //------//
+    //-----------------//
+    // setLearningRate //
+    //-----------------//
     /**
-     * Dump the internals of the neural network to the standard output.
+     * Dynamically modify the learning rate of the neural network for
+     * its training task.
+     * @param learningRate new learning rate to use
      */
-    @Override
-    public void dump ()
+    public void setLearningRate (double learningRate)
     {
-        engine.dump();
+        constants.learningRate.setValue(learningRate);
+        engine.setLearningRate(learningRate);
+    }
+
+    //---------------//
+    // setListEpochs //
+    //---------------//
+    /**
+     * Modify the upper limit on the number of epochs (training
+     * iterations) for the training process.
+     * @param listEpochs new value for iteration limit
+     */
+    public void setListEpochs (int listEpochs)
+    {
+        constants.listEpochs.setValue(listEpochs);
+        engine.setEpochs(listEpochs);
+    }
+
+    //-------------//
+    // setMaxError //
+    //-------------//
+    /**
+     * Modify the error threshold to potentially stop the training
+     * process.
+     * @param maxError the new threshold value to use
+     */
+    public void setMaxError (double maxError)
+    {
+        constants.maxError.setValue(maxError);
+        engine.setMaxError(maxError);
+    }
+
+    //-------------//
+    // setMomentum //
+    //-------------//
+    /**
+     * Modify the value for momentum used from learning epoch to the
+     * other.
+     * @param momentum the new momentum value to be used
+     */
+    public void setMomentum (double momentum)
+    {
+        constants.momentum.setValue(momentum);
+        engine.setMomentum(momentum);
     }
 
     //------//
@@ -365,6 +338,7 @@ public class GlyphNetwork
 
         for (Glyph glyph : glyphs) {
             shapeGlyphs[glyph.getShape()
+                             .getPhysicalShape()
                              .ordinal()].add(glyph);
         }
 
@@ -400,13 +374,14 @@ public class GlyphNetwork
         int        ig = 0;
 
         for (Glyph glyph : newGlyphs) {
-            double[] ins = feedInput(glyph);
+            double[] ins = ShapeDescription.features(glyph);
             inputs[ig] = ins;
 
             double[] des = new double[shapeCount];
             Arrays.fill(des, 0);
 
             des[glyph.getShape()
+                     .getPhysicalShape()
                      .ordinal()] = 1;
             desiredOutputs[ig] = des;
 
@@ -429,6 +404,36 @@ public class GlyphNetwork
     protected String getFileName ()
     {
         return BACKUP_FILE_NAME;
+    }
+
+    //-------------------//
+    // getRawEvaluations //
+    //-------------------//
+    @Override
+    protected Evaluation[] getRawEvaluations (Glyph glyph)
+    {
+        // If too small, it's just NOISE
+        if (!isBigEnough(glyph)) {
+            return noiseEvaluations;
+        } else {
+            double[]     ins = ShapeDescription.features(glyph);
+            double[]     outs = new double[shapeCount];
+            Evaluation[] evals = new Evaluation[shapeCount];
+            Shape[]      values = Shape.values();
+
+            engine.run(ins, null, outs);
+
+            for (int s = 0; s < shapeCount; s++) {
+                Shape shape = values[s];
+                // Use a grade in 0 .. 100 range
+                evals[s] = new Evaluation(shape, 100 * outs[s]);
+            }
+
+            // Order the evals from best to worst
+            Arrays.sort(evals);
+
+            return evals;
+        }
     }
 
     //---------//
@@ -459,7 +464,7 @@ public class GlyphNetwork
         // Note : We allocate a hidden layer with as many cells as the output
         // layer
         NeuralNetwork nn = new NeuralNetwork(
-            paramCount,
+            ShapeDescription.length(),
             shapeCount,
             shapeCount,
             getAmplitude(),

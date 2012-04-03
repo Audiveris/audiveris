@@ -77,49 +77,6 @@ public class ScriptActions
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------------------//
-    // setConfirmOnClose //
-    //-------------------//
-    public static void setConfirmOnClose (boolean bool)
-    {
-        if (bool != isConfirmOnClose()) {
-            if (bool) {
-                logger.info(
-                    "You will now be prompted for Script saving on close");
-            } else {
-                logger.info(
-                    "You will no longer be prompted for Script saving on close");
-            }
-
-            constants.closeConfirmation.setValue(bool);
-        }
-    }
-
-    //------------------//
-    // isConfirmOnClose //
-    //------------------//
-    public static boolean isConfirmOnClose ()
-    {
-        return constants.closeConfirmation.getValue();
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the singleton
-     *
-     * @return the unique instance of this class
-     */
-    public static synchronized ScriptActions getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new ScriptActions();
-        }
-
-        return INSTANCE;
-    }
-
     //-------------//
     // checkStored //
     //-------------//
@@ -160,6 +117,31 @@ public class ScriptActions
         }
     }
 
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the singleton
+     *
+     * @return the unique instance of this class
+     */
+    public static synchronized ScriptActions getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new ScriptActions();
+        }
+
+        return INSTANCE;
+    }
+
+    //------------------//
+    // isConfirmOnClose //
+    //------------------//
+    public static boolean isConfirmOnClose ()
+    {
+        return constants.closeConfirmation.getValue();
+    }
+
     //------------//
     // loadScript //
     //------------//
@@ -178,6 +160,24 @@ public class ScriptActions
             return new LoadScriptTask(file);
         } else {
             return null;
+        }
+    }
+
+    //-------------------//
+    // setConfirmOnClose //
+    //-------------------//
+    public static void setConfirmOnClose (boolean bool)
+    {
+        if (bool != isConfirmOnClose()) {
+            if (bool) {
+                logger.info(
+                    "You will now be prompted for Script saving on close");
+            } else {
+                logger.info(
+                    "You will no longer be prompted for Script saving on close");
+            }
+
+            constants.closeConfirmation.setValue(bool);
         }
     }
 

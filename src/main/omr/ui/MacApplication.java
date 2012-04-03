@@ -20,8 +20,6 @@ import omr.score.Score;
 import omr.script.Script;
 import omr.script.ScriptManager;
 
-import omr.util.Implement;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.lang.reflect.InvocationHandler;
@@ -59,13 +57,64 @@ public class MacApplication
     //~ Methods ----------------------------------------------------------------
 
     /**
+     * Registers actions for preferences, about, and quit.
+     * @return true if successful, false if platform is not
+     * Mac OS X or if an error occurs
+     */
+    @SuppressWarnings("unchecked")
+    public static boolean setupMacMenus ()
+    {
+        if (!WellKnowns.MAC_OS_X) {
+            return false;
+        }
+
+        try {
+            //The class used to register hooks
+            Class  appClass = Class.forName("com.apple.eawt.Application");
+            Object app = appClass.newInstance();
+
+            //Enable the about menu item and the preferences menu item
+            for (String methodName : new String[] {
+                     "setEnabledAboutMenu", "setEnabledPreferencesMenu"
+                 }) {
+                Method method = appClass.getMethod(methodName, boolean.class);
+                method.invoke(app, true);
+            }
+
+            //The interface used to register hooks
+            Class  listenerClass = Class.forName(
+                "com.apple.eawt.ApplicationListener");
+
+            //Using the current class loader,
+            //generate, load, and instantiate a class implementing listenerClass,
+            //providing an instance of this class as a callback for any method invocation
+            Object listenerProxy = Proxy.newProxyInstance(
+                MacApplication.class.getClassLoader(),
+                new Class[] { listenerClass },
+                new MacApplication());
+
+            //Add the generated class as a hook
+            Method addListener = appClass.getMethod(
+                "addApplicationListener",
+                listenerClass);
+            addListener.invoke(app, listenerProxy);
+
+            return true;
+        } catch (Exception ex) {
+            logger.warning("Unable to setup Mac OS X GUI integration", ex);
+
+            return false;
+        }
+    }
+
+    /**
      * Invocation handler for <code>
      * com.apple.eawt.ApplicationListener</code>.
      * This method should not be manually called;
      * it is used by the proxy to forward calls.
      * @throws Throwable
      */
-    @Implement(InvocationHandler.class)
+    @Override
     public Object invoke (Object   proxy,
                           Method   method,
                           Object[] args)
@@ -131,57 +180,6 @@ public class MacApplication
         }
 
         return null;
-    }
-
-    /**
-     * Registers actions for preferences, about, and quit.
-     * @return true if successful, false if platform is not
-     * Mac OS X or if an error occurs
-     */
-    @SuppressWarnings("unchecked")
-    public static boolean setupMacMenus ()
-    {
-        if (!WellKnowns.MAC_OS_X) {
-            return false;
-        }
-
-        try {
-            //The class used to register hooks
-            Class  appClass = Class.forName("com.apple.eawt.Application");
-            Object app = appClass.newInstance();
-
-            //Enable the about menu item and the preferences menu item
-            for (String methodName : new String[] {
-                     "setEnabledAboutMenu", "setEnabledPreferencesMenu"
-                 }) {
-                Method method = appClass.getMethod(methodName, boolean.class);
-                method.invoke(app, true);
-            }
-
-            //The interface used to register hooks
-            Class  listenerClass = Class.forName(
-                "com.apple.eawt.ApplicationListener");
-
-            //Using the current class loader,
-            //generate, load, and instantiate a class implementing listenerClass,
-            //providing an instance of this class as a callback for any method invocation
-            Object listenerProxy = Proxy.newProxyInstance(
-                MacApplication.class.getClassLoader(),
-                new Class[] { listenerClass },
-                new MacApplication());
-
-            //Add the generated class as a hook
-            Method addListener = appClass.getMethod(
-                "addApplicationListener",
-                listenerClass);
-            addListener.invoke(app, listenerProxy);
-
-            return true;
-        } catch (Exception ex) {
-            logger.warning("Unable to setup Mac OS X GUI integration", ex);
-
-            return false;
-        }
     }
 
     private static Object getEvent (Object[] args)

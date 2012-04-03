@@ -38,10 +38,10 @@ public class SheetEvent
      * @param movement the mouse movement
      * @param sheet the selected sheet (or null)
      */
-    public SheetEvent (Object source,
-                         SelectionHint hint,
-                         MouseMovement movement,
-                       Sheet  sheet)
+    public SheetEvent (Object        source,
+                       SelectionHint hint,
+                       MouseMovement movement,
+                       Sheet         sheet)
     {
         super(source, null, null);
         this.sheet = sheet;

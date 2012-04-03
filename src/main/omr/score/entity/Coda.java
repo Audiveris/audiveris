@@ -37,24 +37,15 @@ public class Coda
      * @param chord the chord related to the mark, if any
      * @param glyph the underlying glyph
      */
-    public Coda (Measure     measure,
+    public Coda (Measure    measure,
                  PixelPoint point,
-                 Chord       chord,
-                 Glyph       glyph)
+                 Chord      chord,
+                 Glyph      glyph)
     {
         super(measure, point, chord, glyph);
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
 
     //----------//
     // populate //
@@ -66,12 +57,21 @@ public class Coda
      * @param measure measure where the mark is located
      * @param point location for the mark
      */
-    public static void populate (Glyph       glyph,
-                                 Measure     measure,
+    public static void populate (Glyph      glyph,
+                                 Measure    measure,
                                  PixelPoint point)
     {
         Slot slot = measure.getClosestSlot(point);
         glyph.setTranslation(
             new Coda(measure, point, slot.getChordBelow(point), glyph));
+    }
+
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
     }
 }

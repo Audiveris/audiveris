@@ -363,7 +363,6 @@
         
         <!-- baseline classes -->
         <javac
-            bootclasspath = "${env.JAVA_HOME}/jre/lib/rt.jar"
             includeantruntime = "false"
             encoding     = "${build.encoding}"
             target       = "${javac.target}"
@@ -382,7 +381,6 @@
         
         <!-- plugin classes -->
         <javac
-            bootclasspath = "${env.JAVA_HOME}/jre/lib/rt.jar"
             includeantruntime = "false"
             encoding     = "${build.encoding}"
             target       = "${javac.target}"
@@ -410,7 +408,6 @@
         <mkdir dir="${build.test.classes.dir}"/>
         
         <javac
-            bootclasspath = "${env.JAVA_HOME}/jre/lib/rt.jar"
             includeantruntime = "false"
             encoding     = "${build.encoding}"
             target       = "${javac.target}"

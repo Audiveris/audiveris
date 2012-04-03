@@ -77,6 +77,22 @@ public class ScreenPoint
     //~ Methods ----------------------------------------------------------------
 
     //---------------//
+    // getLocalPoint //
+    //---------------//
+    /**
+     * Get the corresponding local point wrt a containing component
+     * @param component the provided component
+     * @return the local point, wrt component top left corner
+     */
+    public Point getLocalPoint (Component component)
+    {
+        Point localPoint = new Point(x, y);
+        SwingUtilities.convertPointFromScreen(localPoint, component);
+
+        return localPoint;
+    }
+
+    //---------------//
     // isInComponent //
     //---------------//
     /**
@@ -94,21 +110,5 @@ public class ScreenPoint
             component.getHeight());
 
         return bounds.contains(getLocalPoint(component));
-    }
-
-    //---------------//
-    // getLocalPoint //
-    //---------------//
-    /**
-     * Get the corresponding local point wrt a containing component
-     * @param component the provided component
-     * @return the local point, wrt component top left corner
-     */
-    public Point getLocalPoint (Component component)
-    {
-        Point localPoint = new Point(x, y);
-        SwingUtilities.convertPointFromScreen(localPoint, component);
-
-        return localPoint;
     }
 }

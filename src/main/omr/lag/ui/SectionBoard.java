@@ -35,8 +35,6 @@ import omr.ui.field.LIntegerField;
 import omr.ui.field.SpinnerUtilities;
 import omr.ui.util.Panel;
 
-import omr.util.Implement;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -251,7 +249,7 @@ public class SectionBoard
      * @param event the section event
      */
     @SuppressWarnings("unchecked")
-    @Implement(EventSubscriber.class)
+    @Override
     public void onEvent (UserEvent event)
     {
         try {

@@ -116,31 +116,6 @@ public class CheckPanel<C extends Checkable>
     }
 
     //----------//
-    // setSuite //
-    //----------//
-    /**
-     * Assign a (new) suite to the check pane
-     *
-     * @param suite the (new) check suite to be used
-     */
-    public void setSuite (CheckSuite<C> suite)
-    {
-        this.suite = suite;
-
-        if (suite != null) {
-            createValueFields(); // Values
-            createBoundFields(); // Bounds
-            buildComponent(); // Create/update component
-        }
-
-        // Refresh the display
-        if (component != null) {
-            component.validate();
-            component.repaint();
-        }
-    }
-
-    //----------//
     // passForm //
     //----------//
     /**
@@ -239,6 +214,31 @@ public class CheckPanel<C extends Checkable>
             }
 
             globalField.setText(textOf(grade));
+        }
+    }
+
+    //----------//
+    // setSuite //
+    //----------//
+    /**
+     * Assign a (new) suite to the check pane
+     *
+     * @param suite the (new) check suite to be used
+     */
+    public void setSuite (CheckSuite<C> suite)
+    {
+        this.suite = suite;
+
+        if (suite != null) {
+            createValueFields(); // Values
+            createBoundFields(); // Bounds
+            buildComponent(); // Create/update component
+        }
+
+        // Refresh the display
+        if (component != null) {
+            component.validate();
+            component.repaint();
         }
     }
 

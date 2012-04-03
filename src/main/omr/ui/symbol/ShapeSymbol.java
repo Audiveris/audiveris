@@ -14,8 +14,6 @@ package omr.ui.symbol;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
-import omr.util.Implement;
-
 import java.awt.AlphaComposite;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -86,7 +84,7 @@ public class ShapeSymbol
     // ShapeSymbol //
     //-------------//
     /**
-     * Create a non decorated standard ShapeSymbol with the provided 
+     * Create a non decorated standard ShapeSymbol with the provided
      * shape and codes.
      * @param shape the related shape
      * @param codes the codes for MusicFont characters
@@ -98,66 +96,6 @@ public class ShapeSymbol
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //-----------------------//
-    // isDataFlavorSupported //
-    //-----------------------//
-    @Implement(Transferable.class)
-    @Override
-    public boolean isDataFlavorSupported (DataFlavor flavor)
-    {
-        return flavor == DATA_FLAVOR;
-    }
-
-    //-------------//
-    // isDecorated //
-    //-------------//
-    /**
-     * Tell whether the image represents the shape with additional 
-     * decorations.
-     * @return true if decorated
-     */
-    public boolean isDecorated ()
-    {
-        return decorated;
-    }
-
-    //----------//
-    // getShape //
-    //----------//
-    /**
-     * Report the shape of the symbol.
-     * @return the shape
-     */
-    public Shape getShape ()
-    {
-        return shape;
-    }
-
-    //-----------------//
-    // getTransferData //
-    //-----------------//
-    @Implement(Transferable.class)
-    @Override
-    public Object getTransferData (DataFlavor flavor)
-        throws UnsupportedFlavorException, IOException
-    {
-        if (isDataFlavorSupported(flavor)) {
-            return this;
-        } else {
-            throw new UnsupportedFlavorException(flavor);
-        }
-    }
-
-    //------------------------//
-    // getTransferDataFlavors //
-    //------------------------//
-    @Implement(Transferable.class)
-    @Override
-    public DataFlavor[] getTransferDataFlavors ()
-    {
-        return new DataFlavor[] { DATA_FLAVOR };
-    }
 
     //-------------//
     // numberCodes //
@@ -176,6 +114,63 @@ public class ShapeSymbol
         numberCodes[index] = base + (number % 10);
 
         return numberCodes;
+    }
+
+    //----------//
+    // getShape //
+    //----------//
+    /**
+     * Report the shape of the symbol.
+     * @return the shape
+     */
+    public Shape getShape ()
+    {
+        return shape;
+    }
+
+    //-----------------//
+    // getTransferData //
+    //-----------------//
+    @Override
+    public Object getTransferData (DataFlavor flavor)
+        throws UnsupportedFlavorException, IOException
+    {
+        if (isDataFlavorSupported(flavor)) {
+            return this;
+        } else {
+            throw new UnsupportedFlavorException(flavor);
+        }
+    }
+
+    //------------------------//
+    // getTransferDataFlavors //
+    //------------------------//
+    @Override
+    public DataFlavor[] getTransferDataFlavors ()
+    {
+        return new DataFlavor[] { DATA_FLAVOR };
+    }
+
+    //-----------------------//
+    // isDataFlavorSupported //
+    //-----------------------//
+    @Override
+    public boolean isDataFlavorSupported (DataFlavor flavor)
+    {
+        return flavor == DATA_FLAVOR;
+    }
+
+    //-------------//
+    // isDecorated //
+    //-------------//
+    /**
+     * Tell whether the image represents the shape with additional
+     * decorations.
+     * @return true if decorated
+     */
+    public boolean isDecorated ()
+    {
+        return decorated;
     }
 
     //------------//

@@ -17,7 +17,7 @@ import omr.constant.ConstantSet;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
-import omr.glyph.ShapeRange;
+import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -180,52 +180,27 @@ public class KeySignature
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------------//
-    // getAlterFor //
-    //-------------//
-    public int getAlterFor (Note.Step step)
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
     {
-        getKey();
-
-        if (key > 0) {
-            for (int k = 0; k < key; k++) {
-                if (step == sharpSteps[k]) {
-                    return 1;
-                }
-            }
-        } else {
-            for (int k = 0; k < -key; k++) {
-                if (step == flatSteps[k]) {
-                    return -1;
-                }
-            }
-        }
-
-        return 0;
+        return visitor.visit(this);
     }
 
     //-----------------//
-    // getItemPosition //
+    // createDummyCopy //
     //-----------------//
-    /**
-     * Report the pitch position of the nth item, within the given clef. 'n' is
-     * negative for flats and positive for sharps, and start at 1 for sharps
-     * (and at -1 for flats)
-     * @param n the signed index (one-based) of the desired item
-     * @param clefKind the kind (G_CLEF, F_CLEF or C_CLEF) of the active clef
-     * @return the pitch position of the item (sharp or flat)
-     */
-    public static int getItemPosition (int   n,
-                                       Shape clefKind)
+    public KeySignature createDummyCopy (Measure    measure,
+                                         PixelPoint center)
     {
-        if (clefKind == null) {
-            clefKind = G_CLEF;
-        }
+        KeySignature dummy = new KeySignature(measure, null);
 
-        int stdPitch = (int) Math.rint(
-            (n >= 0) ? sharpItemPositions[n - 1] : flatItemPositions[-n - 1]);
+        dummy.key = this.key;
+        dummy.setCenter(center);
 
-        return stdPitch + clefToDelta(clefKind);
+        return dummy;
     }
 
     //-------------//
@@ -274,6 +249,222 @@ public class KeySignature
 
             return null;
         }
+    }
+
+    //-----------------//
+    // getItemPosition //
+    //-----------------//
+    /**
+     * Report the pitch position of the nth item, within the given clef. 'n' is
+     * negative for flats and positive for sharps, and start at 1 for sharps
+     * (and at -1 for flats)
+     * @param n the signed index (one-based) of the desired item
+     * @param clefKind the kind (G_CLEF, F_CLEF or C_CLEF) of the active clef
+     * @return the pitch position of the item (sharp or flat)
+     */
+    public static int getItemPosition (int   n,
+                                       Shape clefKind)
+    {
+        if (clefKind == null) {
+            clefKind = G_CLEF;
+        }
+
+        int stdPitch = (int) Math.rint(
+            (n >= 0) ? sharpItemPositions[n - 1] : flatItemPositions[-n - 1]);
+
+        return stdPitch + clefToDelta(clefKind);
+    }
+
+    //---------------------//
+    // getStandardPosition //
+    //---------------------//
+    /**
+     * Compute the standard mean pitch position of the provided key
+     *
+     * @param k the provided key value
+     * @return the corresponding standard mean pitch position
+     */
+    public static double getStandardPosition (int k)
+    {
+        if (k == 0) {
+            return 0;
+        }
+
+        double sum = 0;
+
+        if (k > 0) {
+            for (int i = 0; i < k; i++) {
+                sum += sharpItemPositions[i];
+            }
+        } else {
+            for (int i = 0; i > k; i--) {
+                sum -= flatItemPositions[-i];
+            }
+        }
+
+        return sum / k;
+    }
+
+    //----------//
+    // populate //
+    //----------//
+    /**
+     * Populate the score with a key signature built from the provided glyph
+     *
+     * @param glyph the source glyph
+     * @param measure containing measure
+     * @param staff related staff
+     * @param center glyph center wrt system
+     *
+     * @return true if population is successful, false otherwise
+     */
+    public static boolean populate (Glyph      glyph,
+                                    Measure    measure,
+                                    Staff      staff,
+                                    PixelPoint center)
+    {
+        if (logger.isFineEnabled()) {
+            logger.fine("Populating keysig for " + glyph);
+        }
+
+        ScoreSystem system = measure.getSystem();
+        SystemInfo  systemInfo = system.getInfo();
+
+        // Make sure the glyph pitch position is within the bounds
+        double pitchPosition = staff.pitchPositionOf(center);
+
+        if ((pitchPosition < -5) || (pitchPosition > 5)) {
+            if (logger.isFineEnabled()) {
+                logger.fine("Glyph not within vertical bounds");
+            }
+
+            return false;
+        }
+
+        // Make sure we have no note nearby
+        // Use a enlarged rectangular box around the glyph, and check what's in
+        // Check for lack of stem symbols (beam, beam hook, note head, flags),
+        // or stand-alone note (THIS IS TOO RESTRICTIVE!!!)
+        PixelRectangle glyphFatBox = glyph.getContourBox();
+        glyphFatBox.grow(
+            measure.getScale().toPixels(constants.xMargin),
+            measure.getScale().toPixels(constants.yMargin));
+
+        List<Glyph> neighbors = systemInfo.lookupIntersectedGlyphs(
+            glyphFatBox,
+            glyph);
+
+        for (Glyph g : neighbors) {
+            Shape shape = g.getShape();
+
+            if (ShapeSet.StemSymbols.contains(shape) ||
+                ShapeSet.Notes.getShapes()
+                              .contains(shape)) {
+                if (logger.isFineEnabled()) {
+                    logger.fine("Cannot accept " + shape + " as neighbor");
+                }
+
+                return false;
+            }
+        }
+
+        // Do we have a key signature just before in the same measure & staff?
+        KeySignature keysig = null;
+        boolean      found = false;
+
+        for (TreeNode node : measure.getKeySignatures()) {
+            keysig = (KeySignature) node;
+
+            if (keysig.getCenter().x > center.x) {
+                break;
+            }
+
+            // Check distance
+            if (!glyphFatBox.intersects(keysig.getBox())) {
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "Glyph " + glyph.getId() + " too far from " + keysig);
+                }
+
+                continue;
+            } else if (((glyph.getShape().isSharpBased()) &&
+                       (keysig.getKey() < 0)) ||
+                       ((glyph.getShape().isFlatBased()) &&
+                       (keysig.getKey() > 0))) {
+                // Check sharp or flat key sig, wrt current glyph
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "Cannot extend opposite key signature with glyph " +
+                        glyph.getId());
+                }
+
+                return false;
+            } else {
+                // Everything is OK
+                found = true;
+
+                if (logger.isFineEnabled()) {
+                    logger.fine("Extending " + keysig);
+                }
+
+                break;
+            }
+        }
+
+        // If not found create a brand new one
+        if (!found) {
+            // Check pitch position
+            Clef clef = measure.getClefBefore(
+                measure.computeGlyphCenter(glyph),
+                staff);
+
+            if (!checkPitchPosition(glyph, center, staff, clef)) {
+                if (logger.isFineEnabled()) {
+                    logger.fine(
+                        "Cannot start a new key signature with glyph " +
+                        glyph.getId());
+                }
+
+                return false;
+            }
+
+            keysig = new KeySignature(measure, staff);
+        }
+
+        // Extend the keysig with this glyph
+        keysig.addGlyph(glyph);
+        keysig.getKey();
+        glyph.setTranslation(keysig);
+
+        if (logger.isFineEnabled()) {
+            logger.fine("OK: " + keysig);
+        }
+
+        return true;
+    }
+
+    //-------------//
+    // getAlterFor //
+    //-------------//
+    public int getAlterFor (Note.Step step)
+    {
+        getKey();
+
+        if (key > 0) {
+            for (int k = 0; k < key; k++) {
+                if (step == sharpSteps[k]) {
+                    return 1;
+                }
+            }
+        } else {
+            for (int k = 0; k < -key; k++) {
+                if (step == flatSteps[k]) {
+                    return -1;
+                }
+            }
+        }
+
+        return 0;
     }
 
     //--------//
@@ -443,197 +634,6 @@ public class KeySignature
         return shape;
     }
 
-    //---------------------//
-    // getStandardPosition //
-    //---------------------//
-    /**
-     * Compute the standard mean pitch position of the provided key
-     *
-     * @param k the provided key value
-     * @return the corresponding standard mean pitch position
-     */
-    public static double getStandardPosition (int k)
-    {
-        if (k == 0) {
-            return 0;
-        }
-
-        double sum = 0;
-
-        if (k > 0) {
-            for (int i = 0; i < k; i++) {
-                sum += sharpItemPositions[i];
-            }
-        } else {
-            for (int i = 0; i > k; i--) {
-                sum -= flatItemPositions[-i];
-            }
-        }
-
-        return sum / k;
-    }
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
-    //-----------------//
-    // createDummyCopy //
-    //-----------------//
-    public KeySignature createDummyCopy (Measure    measure,
-                                         PixelPoint center)
-    {
-        KeySignature dummy = new KeySignature(measure, null);
-
-        dummy.key = this.key;
-        dummy.setCenter(center);
-
-        return dummy;
-    }
-
-    //----------//
-    // populate //
-    //----------//
-    /**
-     * Populate the score with a key signature built from the provided glyph
-     *
-     * @param glyph the source glyph
-     * @param measure containing measure
-     * @param staff related staff
-     * @param center glyph center wrt system
-     *
-     * @return true if population is successful, false otherwise
-     */
-    public static boolean populate (Glyph      glyph,
-                                    Measure    measure,
-                                    Staff      staff,
-                                    PixelPoint center)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("Populating keysig for " + glyph);
-        }
-
-        ScoreSystem system = measure.getSystem();
-        SystemInfo  systemInfo = system.getInfo();
-
-        // Make sure the glyph pitch position is within the bounds
-        double pitchPosition = staff.pitchPositionOf(center);
-
-        if ((pitchPosition < -5) || (pitchPosition > 5)) {
-            if (logger.isFineEnabled()) {
-                logger.fine("Glyph not within vertical bounds");
-            }
-
-            return false;
-        }
-
-        // Make sure we have no note nearby
-        // Use a enlarged rectangular box around the glyph, and check what's in
-        // Check for lack of stem symbols (beam, beam hook, note head, flags),
-        // or stand-alone note (THIS IS TOO RESTRICTIVE!!!)
-        PixelRectangle glyphFatBox = glyph.getContourBox();
-        glyphFatBox.grow(
-            measure.getScale().toPixels(constants.xMargin),
-            measure.getScale().toPixels(constants.yMargin));
-
-        List<Glyph> neighbors = systemInfo.lookupIntersectedGlyphs(
-            glyphFatBox,
-            glyph);
-
-        for (Glyph g : neighbors) {
-            Shape shape = g.getShape();
-
-            if (ShapeRange.StemSymbols.contains(shape) ||
-                ShapeRange.Notes.getShapes()
-                                .contains(shape)) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("Cannot accept " + shape + " as neighbor");
-                }
-
-                return false;
-            }
-        }
-
-        // Do we have a key signature just before in the same measure & staff?
-        KeySignature keysig = null;
-        boolean      found = false;
-
-        for (TreeNode node : measure.getKeySignatures()) {
-            keysig = (KeySignature) node;
-
-            if (keysig.getCenter().x > center.x) {
-                break;
-            }
-
-            // Check distance
-            if (!glyphFatBox.intersects(keysig.getBox())) {
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "Glyph " + glyph.getId() + " too far from " + keysig);
-                }
-
-                continue;
-            } else if (((glyph.getShape().isSharpBased()) &&
-                       (keysig.getKey() < 0)) ||
-                       ((glyph.getShape().isFlatBased()) &&
-                       (keysig.getKey() > 0))) {
-                // Check sharp or flat key sig, wrt current glyph
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "Cannot extend opposite key signature with glyph " +
-                        glyph.getId());
-                }
-
-                return false;
-            } else {
-                // Everything is OK
-                found = true;
-
-                if (logger.isFineEnabled()) {
-                    logger.fine("Extending " + keysig);
-                }
-
-                break;
-            }
-        }
-
-        // If not found create a brand new one
-        if (!found) {
-            // Check pitch position
-            Clef clef = measure.getClefBefore(
-                measure.computeGlyphCenter(glyph),
-                staff);
-
-            if (!checkPitchPosition(glyph, center, staff, clef)) {
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "Cannot start a new key signature with glyph " +
-                        glyph.getId());
-                }
-
-                return false;
-            }
-
-            keysig = new KeySignature(measure, staff);
-        }
-
-        // Extend the keysig with this glyph
-        keysig.addGlyph(glyph);
-        keysig.getKey();
-        glyph.setTranslation(keysig);
-
-        if (logger.isFineEnabled()) {
-            logger.fine("OK: " + keysig);
-        }
-
-        return true;
-    }
-
     //----------//
     // toString //
     //----------//
@@ -686,43 +686,6 @@ public class KeySignature
         centroid = null;
         clefKind = null;
         refList = null;
-    }
-
-    //-------------//
-    // getClefKind //
-    //-------------//
-    /**
-     * Classify clefs by clef kinds, since for example the same key is
-     * represented with identical pitch positions for G_CLEF, 
-     * G_CLEF_OTTAVA_ALTA and G_CLEF_OTTAVA_BASSA.
-     *
-     * @param shape the precise clef shape
-     * @return the clef kind
-     */
-    private static Shape getClefKind (Shape shape)
-    {
-        switch (shape) {
-        case G_CLEF :
-        case G_CLEF_SMALL :
-        case G_CLEF_OTTAVA_ALTA :
-        case G_CLEF_OTTAVA_BASSA :
-            return G_CLEF;
-
-        case F_CLEF :
-        case F_CLEF_SMALL :
-        case F_CLEF_OTTAVA_ALTA :
-        case F_CLEF_OTTAVA_BASSA :
-            return F_CLEF;
-
-        case C_CLEF :
-            return C_CLEF;
-
-        case PERCUSSION_CLEF :
-            return PERCUSSION_CLEF;
-
-        default :
-            return null;
-        }
     }
 
     //--------------------//
@@ -845,8 +808,8 @@ public class KeySignature
         switch (clef) {
         case G_CLEF :
         case G_CLEF_SMALL :
-        case G_CLEF_OTTAVA_ALTA :
-        case G_CLEF_OTTAVA_BASSA :
+        case G_CLEF_8VA :
+        case G_CLEF_8VB :
             return G_CLEF;
 
         case C_CLEF :
@@ -854,8 +817,8 @@ public class KeySignature
 
         case F_CLEF :
         case F_CLEF_SMALL :
-        case F_CLEF_OTTAVA_ALTA :
-        case F_CLEF_OTTAVA_BASSA :
+        case F_CLEF_8VA :
+        case F_CLEF_8VB :
             return F_CLEF;
 
         case PERCUSSION_CLEF :
@@ -889,6 +852,140 @@ public class KeySignature
         case G_CLEF :
             return 0;
         }
+    }
+
+    //-------------//
+    // deltaToClef //
+    //-------------//
+    /**
+     * Determine clef kind, based on delta pitch position
+     *
+     * @param delta the delta in pitch position between the actual glyphs
+     *              position and the theoretical position based on key
+     * @return the kind of clef
+     */
+    private Shape deltaToClef (int delta)
+    {
+        switch (delta) {
+        case 0 :
+            return G_CLEF;
+
+        case 1 :
+            return C_CLEF;
+
+        case 2 :
+            return F_CLEF;
+
+        default :
+            return null;
+        }
+    }
+
+    //-------------//
+    // getCentroid //
+    //-------------//
+    /**
+     * Report the actual center of mass of the glyphs that compose the signature
+     *
+     * @return the PixelPoint that represent the center of mass
+     */
+    private PixelPoint getCentroid ()
+    {
+        if (centroid == null) {
+            centroid = new PixelPoint();
+
+            double totalWeight = 0;
+
+            for (Glyph glyph : glyphs) {
+                PixelPoint c = glyph.getCentroid();
+                double     w = glyph.getWeight();
+                centroid.x += (c.x * w);
+                centroid.y += (c.y * w);
+                totalWeight += w;
+            }
+
+            centroid.x /= totalWeight;
+            centroid.y /= totalWeight;
+        }
+
+        return centroid;
+    }
+
+    //-------------//
+    // getClefKind //
+    //-------------//
+    /**
+     * Classify clefs by clef kinds, since for example the same key is
+     * represented with identical pitch positions for G_CLEF,
+     * G_CLEF_8VA and G_CLEF_8VB.
+     *
+     * @param shape the precise clef shape
+     * @return the clef kind
+     */
+    private static Shape getClefKind (Shape shape)
+    {
+        switch (shape) {
+        case G_CLEF :
+        case G_CLEF_SMALL :
+        case G_CLEF_8VA :
+        case G_CLEF_8VB :
+            return G_CLEF;
+
+        case F_CLEF :
+        case F_CLEF_SMALL :
+        case F_CLEF_8VA :
+        case F_CLEF_8VB :
+            return F_CLEF;
+
+        case C_CLEF :
+            return C_CLEF;
+
+        case PERCUSSION_CLEF :
+            return PERCUSSION_CLEF;
+
+        default :
+            return null;
+        }
+    }
+
+    //---------------//
+    // guessClefKind //
+    //---------------//
+    /**
+     * Guess what the current clef kind (G, F or C) is, based on the pitch
+     * positions of the member glyphs
+     *
+     * @return the kind of clef
+     */
+    private Shape guessClefKind ()
+    {
+        double theoPos = getStandardPosition(getKey());
+        double realPos = getStaff()
+                             .pitchPositionOf(getCentroid());
+
+        // Correction for flats
+        if (glyphs.first()
+                  .getShape() == Shape.FLAT) {
+            realPos += 0.75;
+        }
+
+        int delta = (int) Math.rint(realPos - theoPos);
+
+        if (logger.isFineEnabled()) {
+            logger.fine(
+                "theoPos=" + theoPos + " realPos=" + realPos + " delta=" +
+                delta);
+        }
+
+        Shape kind = deltaToClef(delta);
+
+        if (kind == null) {
+            if (logger.isFineEnabled()) {
+                logger.fine("Cannot guess Clef from Key signature");
+            }
+        }
+
+        return kind;
     }
 
     //-------//
@@ -942,103 +1039,6 @@ public class KeySignature
         default :
             return null;
         }
-    }
-
-    //-------------//
-    // getCentroid //
-    //-------------//
-    /**
-     * Report the actual center of mass of the glyphs that compose the signature
-     *
-     * @return the PixelPoint that represent the center of mass
-     */
-    private PixelPoint getCentroid ()
-    {
-        if (centroid == null) {
-            centroid = new PixelPoint();
-
-            double totalWeight = 0;
-
-            for (Glyph glyph : glyphs) {
-                PixelPoint c = glyph.getCentroid();
-                double     w = glyph.getWeight();
-                centroid.x += (c.x * w);
-                centroid.y += (c.y * w);
-                totalWeight += w;
-            }
-
-            centroid.x /= totalWeight;
-            centroid.y /= totalWeight;
-        }
-
-        return centroid;
-    }
-
-    //-------------//
-    // deltaToClef //
-    //-------------//
-    /**
-     * Determine clef kind, based on delta pitch position
-     *
-     * @param delta the delta in pitch position between the actual glyphs
-     *              position and the theoretical position based on key
-     * @return the kind of clef
-     */
-    private Shape deltaToClef (int delta)
-    {
-        switch (delta) {
-        case 0 :
-            return G_CLEF;
-
-        case 1 :
-            return C_CLEF;
-
-        case 2 :
-            return F_CLEF;
-
-        default :
-            return null;
-        }
-    }
-
-    //---------------//
-    // guessClefKind //
-    //---------------//
-    /**
-     * Guess what the current clef kind (G, F or C) is, based on the pitch
-     * positions of the member glyphs
-     *
-     * @return the kind of clef
-     */
-    private Shape guessClefKind ()
-    {
-        double theoPos = getStandardPosition(getKey());
-        double realPos = getStaff()
-                             .pitchPositionOf(getCentroid());
-
-        // Correction for flats
-        if (glyphs.first()
-                  .getShape() == Shape.FLAT) {
-            realPos += 0.75;
-        }
-
-        int delta = (int) Math.rint(realPos - theoPos);
-
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "theoPos=" + theoPos + " realPos=" + realPos + " delta=" +
-                delta);
-        }
-
-        Shape kind = deltaToClef(delta);
-
-        if (kind == null) {
-            if (logger.isFineEnabled()) {
-                logger.fine("Cannot guess Clef from Key signature");
-            }
-        }
-
-        return kind;
     }
 
     //-------------//

@@ -59,24 +59,15 @@ public class Ornament
      * @param chord the chord related to the mark
      * @param glyph the underlying glyph
      */
-    public Ornament (Measure     measure,
+    public Ornament (Measure    measure,
                      PixelPoint point,
-                     Chord       chord,
-                     Glyph       glyph)
+                     Chord      chord,
+                     Glyph      glyph)
     {
         super(measure, point, chord, glyph);
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
 
     //----------//
     // populate //
@@ -88,8 +79,8 @@ public class Ornament
      * @param measure measure where the mark is located
      * @param point location for the mark
      */
-    public static void populate (Glyph       glyph,
-                                 Measure     measure,
+    public static void populate (Glyph      glyph,
+                                 Measure    measure,
                                  PixelPoint point)
     {
         // An Ornament relates to the note below on the same time slot
@@ -103,5 +94,14 @@ public class Ornament
                     new Ornament(measure, point, chord, glyph));
             }
         }
+    }
+
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
     }
 }

@@ -38,18 +38,6 @@ public class WrappedBoolean
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------//
-    // isSet //
-    //-------//
-    /**
-     * Report the current boolean value
-     * @return the current value
-     */
-    public boolean isSet ()
-    {
-        return value;
-    }
-
     //-----//
     // set //
     //-----//
@@ -60,5 +48,17 @@ public class WrappedBoolean
     public final void set (boolean value)
     {
         this.value = value;
+    }
+
+    //-------//
+    // isSet //
+    //-------//
+    /**
+     * Report the current boolean value
+     * @return the current value
+     */
+    public boolean isSet ()
+    {
+        return value;
     }
 }

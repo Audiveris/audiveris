@@ -141,6 +141,9 @@ public class WellKnowns
         DATA_FOLDER,
         "examples");
 
+    /** The folder where temporary data can be stored */
+    public static final File TEMP_FOLDER = new File(DATA_FOLDER, "temp");
+
     /** The folder where evaluation data is stored */
     public static final File EVAL_FOLDER = new File(DATA_FOLDER, "eval");
 

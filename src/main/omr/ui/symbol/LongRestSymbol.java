@@ -56,6 +56,15 @@ public class LongRestSymbol
 
     //~ Methods ----------------------------------------------------------------
 
+    //------------//
+    // createIcon //
+    //------------//
+    @Override
+    protected ShapeSymbol createIcon ()
+    {
+        return new LongRestSymbol(true, decorated);
+    }
+
     //---------------//
     // getRestLayout //
     //---------------//
@@ -72,14 +81,5 @@ public class LongRestSymbol
         AffineTransform at = new AffineTransform(1, 0, 0, 2, 0, restHeight);
 
         return font.layout(getString(), at);
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new LongRestSymbol(true, decorated);
     }
 }
