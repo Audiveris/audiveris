@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -26,7 +26,8 @@ import java.util.Collections;
 
 /**
  * Class {@code SystemNode} is an abstract class that is subclassed
- * for any Node that is contained in a system, beginning by the system itself.
+ * for any Node that is contained in a system, beginning by the system
+ * itself.
  * So this class encapsulates a direct link to the enclosing system.
  *
  * @author Hervé Bitteur
@@ -34,6 +35,22 @@ import java.util.Collections;
 public abstract class SystemNode
     extends PageNode
 {
+    //~ Enumerations -----------------------------------------------------------
+
+    /** Relative vertical position with respect to the staves of the system
+     * or part at hand */
+    public enum StaffPosition {
+        //~ Enumeration constant initializers ----------------------------------
+
+
+        /** Above the first real staff of this entity */
+        ABOVE_STAVES,
+        /** Somewhere within the staves of this entity (system or part) */
+        WITHIN_STAVES, 
+        /** Below the last staff of this entity */
+        BELOW_STAVES;
+    }
+
     //~ Instance fields --------------------------------------------------------
 
     /** Containing system */
@@ -261,9 +278,9 @@ public abstract class SystemNode
 
         for (Glyph glyph : glyphs) {
             if (pixRect == null) {
-                pixRect = glyph.getContourBox();
+                pixRect = glyph.getBounds();
             } else {
-                pixRect = pixRect.union(glyph.getContourBox());
+                pixRect = pixRect.union(glyph.getBounds());
             }
         }
 

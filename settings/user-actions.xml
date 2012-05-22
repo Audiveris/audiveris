@@ -3,39 +3,23 @@
 <!--                                                                         -->
 <!--                     u s e r - a c t i o n s . x m l                     -->
 <!--                                                                         -->
-<!-- Copyright (C) Herve Bitteur 2000-2010. All rights reserved.             -->
-<!-- This software is released under the GNU General Public License.         -->
-<!-- Goto http://kenai.com/projects/audiveris to report bugs or suggestions. -->
 <!-- ======================================================================= -->
 
 <!--
-     This file gathers the user-addedclasses to be loaded as UI actions.
+     This file gathers the user-added classes to be loaded as UI actions.
      
      The order of menus in the menu bar are predefined, but the order of items
      within a section depends on this.
      -->
      
 <actions>
-
-<!--    <action domain="PLUGIN" section="10" class="omr.plugin.PluginsManager" method="invokeDefaultPlugin" button="javax.swing.JButton" />-->
     
-    <!-- Just as an example -->
-    <action domain="DEBUG" section="20" class="omr.ui.GuiActions"         method="dumpEventServices"/>
-    <action domain="DEBUG" section="20" class="MyClass"                   method="dumpCurrentScript" />
+    <!--    <action domain="DEBUG" section="20" class="omr.ui.GuiActions"         method="dumpEventServices"/>-->
+    <!--    <action domain="DEBUG" section="20" class="MyClass"                   method="dumpCurrentScript" />-->
     
-    <action domain="DEBUG" section="30" class="omr.score.ui.ScoreActions" method="browseScore"/>
-    <action domain="DEBUG" section="30" class="omr.score.ui.ScoreActions" method="dumpScore"/>
+        <action domain="DEBUG" section="30" class="omr.score.ui.ScoreActions" method="browseScore"/>
+    <!--    <action domain="DEBUG" section="30" class="omr.score.ui.ScoreActions" method="dumpScore"/>-->
 
-<!--
-    <action domain="DEBUG" section="40" class="omr.glyph.ui.TextAreaBrowser"           method="showHorizontalHistogram" button="javax.swing.JButton"/>
-    <action domain="DEBUG" section="40" class="omr.glyph.ui.TextAreaBrowser"           method="showVerticalHistogram" button="javax.swing.JButton"/>
--->
-
-    <!--<action domain="DEBUG" section="50" class="MyClass"           method="rebuildFromStep" button="javax.swing.JButton"/>-->
-    <!--<action domain="DEBUG" section="50" class="omr.sheet.SheetsManager"  method="dumpAllSheets"/>-->
-    <!--<action domain="DEBUG" section="50" class="omr.sheet.ui.SheetsController"  method="dumpAllAssemblies"/>-->
-    
-    <!--<action domain="DEBUG" section="60" class="MyClass"  method="launchSymbolRipper"/>-->
-    <!--<action domain="DEBUG" section="70" class="MyClass"  method="launchScoreComputations"/>-->
+    <!--    <action domain="DEBUG" section="60" class="MyClass"  method="launchSymbolRipper"/>-->
 
 </actions>

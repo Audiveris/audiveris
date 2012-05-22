@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -29,7 +29,7 @@ public interface VertexView
      * Return the display rectangle used by the rendering of the vertex
      * @return the bounding rectangle in the display space
      */
-    PixelRectangle getContourBox ();
+    PixelRectangle getBounds ();
 
     /**
      * Render the vertex

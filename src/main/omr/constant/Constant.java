@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -76,7 +76,7 @@ public abstract class Constant
     private java.lang.String initialString;
 
     /** Current data */
-    private AtomicReference<Tuple> tuple = new AtomicReference<Tuple>();
+    private AtomicReference<Tuple> tuple = new AtomicReference<>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -98,7 +98,7 @@ public abstract class Constant
     {
         if (sourceString == null) {
             logger.warning(
-                "*** Constant with no sourceString. Description: " +
+                "*** Constant with no sourceString. Description: {0}",
                 description);
             throw new IllegalArgumentException(
                 "Any constant must have a source-provided String");
@@ -114,6 +114,18 @@ public abstract class Constant
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //----------//
+    // setValue //
+    //----------//
+    /**
+     * Modify the current value of the constant; this abstract method is
+     * actually defined in each subclass, to enforce validation of the provided
+     * string with respect to the target constant type.
+     *
+     * @param string the new value, as a string to be checked
+     */
+    public abstract void setValue (java.lang.String string);
 
     //------------------//
     // getCurrentString //
@@ -311,22 +323,10 @@ public abstract class Constant
             //                Thread.currentThread().getName() + ": " + "Done unit:" + unit +
             //                " name:" + name);
         } catch (Exception ex) {
-            logger.warning("Error registering constant " + qName);
+            logger.warning("Error registering constant {0}", qName);
             ex.printStackTrace();
         }
     }
-
-    //----------//
-    // setValue //
-    //----------//
-    /**
-     * Modify the current value of the constant; this abstract method is
-     * actually defined in each subclass, to enforce validation of the provided
-     * string with respect to the target constant type.
-     *
-     * @param string the new value, as a string to be checked
-     */
-    public abstract void setValue (java.lang.String string);
 
     //------------------//
     // toDetailedString //

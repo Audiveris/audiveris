@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -41,13 +41,13 @@ import java.awt.Font;
  * of parameters (such as baseline or font) for the whole sentence.</p>
  *
  * <h4>Synoptic of Text Translation:<br/>
- *    <img src="doc-files/TextTranslation.jpg"/>
+ * <img src="doc-files/TextTranslation.jpg"/>
  * </h4>
  *
  * @author Hervé Bitteur
  */
 public abstract class Text
-    extends PartNode
+        extends PartNode
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -55,7 +55,6 @@ public abstract class Text
     private static final Logger logger = Logger.getLogger(Text.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** The containing sentence */
     private final Sentence sentence;
 
@@ -63,7 +62,6 @@ public abstract class Text
     protected Font font;
 
     //~ Constructors -----------------------------------------------------------
-
     //------//
     // Text //
     //------//
@@ -81,83 +79,46 @@ public abstract class Text
     // Text //
     //------//
     /**
-     * Creates a new Text object, with a specific location, different from the
-     * sentence location
+     * Creates a new Text object, with a specific location, different
+     * from the sentence location.
      *
      * @param sentence the larger sentence
      * @param location specific location
      */
-    public Text (Sentence   sentence,
+    public Text (Sentence sentence,
                  PixelPoint location)
     {
         super(sentence.getSystemPart());
         this.sentence = sentence;
         setReferencePoint(location);
 
-        setBox(sentence.getContourBox());
+        setBox(sentence.getBounds());
 
         // Proper font ?
         if (sentence.getFontSize() != null) {
             font = TextFont.baseTextFont.deriveFont(
-                (float) sentence.getFontSize());
+                    (float) sentence.getFontSize());
         } else {
             addError("Text with no sentence font size at " + location);
             font = TextFont.baseTextFont;
         }
 
         ///determineFontSize();
-        if (logger.isFineEnabled()) {
-            logger.fine("Created " + this);
-        }
+        logger.fine("Created {0}", this);
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
-    //---------//
-    // getFont //
-    //---------//
-    /**
-     * Report the font to render this text
-     *
-     * @return the font to render this text
-     */
-    public Font getFont ()
-    {
-        return font;
-    }
-
     //---------------//
     // getLyricsFont //
     //---------------//
     /**
      * Report the font to be used for handling lyrics text
+     *
      * @return the lyrics text font
      */
     public static Font getLyricsFont ()
     {
         return TextFont.baseTextFont;
-    }
-
-    //-------------//
-    // getFontSize //
-    //-------------//
-    /**
-     * Report the font size to be exported for this text
-     *
-     * @return the exported font size
-     */
-    public float getFontSize ()
-    {
-        return font.getSize2D();
     }
 
     //-------------------//
@@ -177,108 +138,117 @@ public abstract class Text
     // populate //
     //----------//
     /**
-     * Allocate the proper score entity (or entities) that correspond to this
-     * textual sentence. This word or sequence of words may be: <ul>
+     * Allocate the proper score entity (or entities) that correspond
+     * to this textual sentence.
+     * This word or sequence of words may be:
+     * <ul>
      * <li>a Direction</li>
      * <li>a part Name</li>
      * <li>a part Number</li>
      * <li>a Creator</li>
      * <li>a Copyright</li>
      * <li>one or several LyricsItem entities</li>
+     * </ul>
      *
      * @param sentence the whole sentence
      * @param location its starting reference wrt containing system
      */
-    public static void populate (Sentence   sentence,
+    public static void populate (Sentence sentence,
                                  PixelPoint location)
     {
-        final SystemPart  systemPart = sentence.getSystemPart();
-        final ScoreSystem system = systemPart.getSystem();
-        final TextRole    role = sentence.getTextRole();
+        final SystemPart systemPart = sentence.getSystemPart();
+        final TextRole role = sentence.getTextRole();
 
         if ((role == null) || (role == TextRole.UnknownRole)) {
             systemPart.addError(
-                sentence.getGlyphs().first(),
-                "Sentence with no role defined");
+                    sentence.getCompound(),
+                    "Sentence with no role defined");
         }
 
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "Populating " + sentence + " " + role + " \"" +
-                sentence.getTextContent() + "\"");
-        }
+        logger.fine("Populating {0} {1} \"{2}\"", new Object[]{sentence, role,
+                                                               sentence.
+                    getTextContent()});
 
         if (role == null) {
             return;
         }
 
         switch (role) {
-        case Lyrics :
+            case Lyrics:
 
-            // Create as many lyrics items as needed
-            for (Glyph item : sentence.getGlyphs()) {
-                PixelRectangle itemBox = item.getContourBox();
-                String         itemStr = item.getTextInfo()
-                                             .getContent();
+                // Create as many lyrics items as needed
+                for (Glyph item : sentence.getItems()) {
+                    PixelRectangle itemBox = item.getBounds();
+                    String itemStr = item.getTextValue();
 
-                if (itemStr == null) {
-                    int nbChar = (int) Math.rint(
-                        (double) itemBox.width / sentence.getTextHeight());
-                    itemStr = role.getStringHolder(nbChar);
+                    if (itemStr == null) {
+                        int nbChar = (int) Math.rint(
+                                (double) itemBox.width / sentence.getTextHeight());
+                        itemStr = role.getStringHolder(nbChar);
+                    }
+
+                    item.setTranslation(
+                            new LyricsItem(
+                            sentence,
+                            new PixelPoint(itemBox.x, location.y),
+                            item,
+                            itemBox.width,
+                            itemStr));
                 }
 
-                item.setTranslation(
-                    new LyricsItem(
+                break;
+
+            case Title:
+                sentence.setGlyphsTranslation(new TitleText(sentence));
+
+                break;
+
+            case Direction:
+
+                Measure measure = systemPart.getMeasureAt(location);
+                sentence.setGlyphsTranslation(
+                        new DirectionStatement(
+                        measure,
+                        location,
+                        measure.getDirectionChord(location),
                         sentence,
-                        new PixelPoint(itemBox.x, location.y),
-                        item,
-                        itemBox.width,
-                        itemStr));
-            }
+                        new DirectionText(sentence)));
 
-            break;
+                break;
 
-        case Title :
-            sentence.setGlyphsTranslation(new TitleText(sentence));
+            case Number:
+                sentence.setGlyphsTranslation(new NumberText(sentence));
 
-            break;
+                break;
 
-        case Direction :
+            case Name:
+                sentence.setGlyphsTranslation(new NameText(sentence));
 
-            Measure measure = systemPart.getMeasureAt(location);
-            sentence.setGlyphsTranslation(
-                new DirectionStatement(
-                    measure,
-                    location,
-                    measure.getDirectionChord(location),
-                    sentence,
-                    new DirectionText(sentence)));
+                break;
 
-            break;
+            case Creator:
+                sentence.setGlyphsTranslation(new CreatorText(sentence));
 
-        case Number :
-            sentence.setGlyphsTranslation(new NumberText(sentence));
+                break;
 
-            break;
+            case Rights:
+                sentence.setGlyphsTranslation(new RightsText(sentence));
 
-        case Name :
-            sentence.setGlyphsTranslation(new NameText(sentence));
+                break;
 
-            break;
-
-        case Creator :
-            sentence.setGlyphsTranslation(new CreatorText(sentence));
-
-            break;
-
-        case Rights :
-            sentence.setGlyphsTranslation(new RightsText(sentence));
-
-            break;
-
-        case UnknownRole :default :
-            sentence.setGlyphsTranslation(new DefaultText(sentence));
+            case UnknownRole:
+            default:
+                sentence.setGlyphsTranslation(new DefaultText(sentence));
         }
+    }
+
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
     }
 
     //------------//
@@ -286,17 +256,38 @@ public abstract class Text
     //------------//
     /**
      * Report the current string value of this text
+     *
      * @return the string value of this text
      */
     public String getContent ()
     {
-        String str = sentence.getTextContent();
+        return sentence.getTextContent();
+    }
 
-        if (str == null) {
-            str = sentence.getContentFromGlyphs();
-        }
+    //---------//
+    // getFont //
+    //---------//
+    /**
+     * Report the font to render this text
+     *
+     * @return the font to render this text
+     */
+    public Font getFont ()
+    {
+        return font;
+    }
 
-        return str;
+    //-------------//
+    // getFontSize //
+    //-------------//
+    /**
+     * Report the font size to be exported for this text
+     *
+     * @return the exported font size
+     */
+    public float getFontSize ()
+    {
+        return font.getSize2D();
     }
 
     //-------------//
@@ -304,6 +295,7 @@ public abstract class Text
     //-------------//
     /**
      * Report the sentence that relates to this text
+     *
      * @return the related sentence
      */
     public Sentence getSentence ()
@@ -334,28 +326,21 @@ public abstract class Text
     public String toString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("{Text ")
-          .append(sentence.getTextRole())
-          .append(internalsString());
+        sb.append("{Text ").append(sentence.getTextRole()).append(
+                internalsString());
 
         if (font != null) {
-            sb.append(" font:")
-              .append(font.getSize());
+            sb.append(" font:").append(font.getSize());
         }
 
         if (getContent() != null) {
-            sb.append(" \"")
-              .append(getContent())
-              .append("\"");
+            sb.append(" \"").append(getContent()).append("\"");
         }
 
-        sb.append(" loc:")
-          .append(getReferencePoint());
+        sb.append(" loc:").append(getReferencePoint());
 
-        sb.append(" S")
-          .append(getSystem().getId())
-          .append("P")
-          .append(getPart().getId());
+        sb.append(" S").append(getSystem().getId()).append("P").append(getPart().
+                getId());
         sb.append("}");
 
         return sb.toString();
@@ -374,8 +359,8 @@ public abstract class Text
     // internalsString //
     //-----------------//
     /**
-     * Return the string of the internals of this class, for inclusion in a
-     * toString
+     * Return the string of the internals of this class, for inclusion
+     * in a toString().
      *
      * @return the string of internals
      */
@@ -385,32 +370,33 @@ public abstract class Text
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-------------//
     // CreatorText //
     //-------------//
-    /** Subclass of Text, dedicated to a Creator (composer, lyricist, ...) */
+    /** Subclass of Text, dedicated to a Creator (composer, lyricist,
+     * etc...). */
     public static class CreatorText
-        extends Text
+            extends Text
     {
         //~ Enumerations -------------------------------------------------------
 
-        public enum CreatorType {
+        public enum CreatorType
+        {
             //~ Enumeration constant initializers ------------------------------
 
-            arranger,composer, lyricist,
+            arranger,
+            composer,
+            lyricist,
             poet,
             transcriber,
             translator;
         }
 
         //~ Instance fields ----------------------------------------------------
-
         /** Creator type, if any */
         private CreatorType creatorType;
 
         //~ Constructors -------------------------------------------------------
-
         public CreatorText (Sentence sentence)
         {
             super(sentence);
@@ -418,7 +404,6 @@ public abstract class Text
         }
 
         //~ Methods ------------------------------------------------------------
-
         public CreatorType getCreatorType ()
         {
             return creatorType;
@@ -447,7 +432,7 @@ public abstract class Text
      * Subclass of Text, with no precise role assigned.
      */
     public static class DefaultText
-        extends Text
+            extends Text
     {
         //~ Constructors -------------------------------------------------------
 
@@ -460,9 +445,9 @@ public abstract class Text
     //---------------//
     // DirectionText //
     //---------------//
-    /** Subclass of Text, dedicated to a Direction instruction */
+    /** Subclass of Text, dedicated to a Direction instruction. */
     public static class DirectionText
-        extends Text
+            extends Text
     {
         //~ Constructors -------------------------------------------------------
 
@@ -475,9 +460,9 @@ public abstract class Text
     //----------//
     // NameText //
     //----------//
-    /** Subclass of Text, dedicated to a part Name */
+    /** Subclass of Text, dedicated to a part Name. */
     public static class NameText
-        extends Text
+            extends Text
     {
         //~ Constructors -------------------------------------------------------
 
@@ -486,8 +471,7 @@ public abstract class Text
             super(sentence);
 
             if (getContent() != null) {
-                sentence.getSystemPart()
-                        .setName(getContent());
+                sentence.getSystemPart().setName(getContent());
             }
         }
     }
@@ -495,9 +479,9 @@ public abstract class Text
     //------------//
     // NumberText //
     //------------//
-    /** Subclass of Text, dedicated to a score Number */
+    /** Subclass of Text, dedicated to a score Number. */
     public static class NumberText
-        extends Text
+            extends Text
     {
         //~ Constructors -------------------------------------------------------
 
@@ -510,9 +494,9 @@ public abstract class Text
     //------------//
     // RightsText //
     //------------//
-    /** Subclass of Text, dedicated to a copyright statement */
+    /** Subclass of Text, dedicated to a copyright statement. */
     public static class RightsText
-        extends Text
+            extends Text
     {
         //~ Constructors -------------------------------------------------------
 
@@ -525,9 +509,9 @@ public abstract class Text
     //-----------//
     // TitleText //
     //-----------//
-    /** Subclass of Text, dedicated to a score Title */
+    /** Subclass of Text, dedicated to a score Title. */
     public static class TitleText
-        extends Text
+            extends Text
     {
         //~ Constructors -------------------------------------------------------
 

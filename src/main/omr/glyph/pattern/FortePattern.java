@@ -113,9 +113,10 @@ public class FortePattern
 
         //~ Methods ------------------------------------------------------------
 
+        @Override
         public PixelRectangle computeReferenceBox ()
         {
-            PixelRectangle rect = seed.getContourBox();
+            PixelRectangle rect = seed.getBounds();
             PixelRectangle leftBox = new PixelRectangle(
                 rect.x,
                 rect.y + (rect.height / 3),
@@ -132,6 +133,7 @@ public class FortePattern
             return new Evaluation(chosenEvaluation.shape, Evaluation.ALGORITHM);
         }
 
+        @Override
         public boolean isCandidateSuitable (Glyph glyph)
         {
             return true;

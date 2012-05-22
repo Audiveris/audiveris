@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -27,7 +27,7 @@ public class PartInfo
     //~ Instance fields --------------------------------------------------------
 
     /** Staves in this part */
-    private List<StaffInfo> staves = new ArrayList<StaffInfo>();
+    private List<StaffInfo> staves = new ArrayList<>();
 
     //~ Constructors -----------------------------------------------------------
 

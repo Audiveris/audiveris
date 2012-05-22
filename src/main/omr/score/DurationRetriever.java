@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -36,24 +36,22 @@ import java.util.Map;
  * @author Hervé Bitteur
  */
 public class DurationRetriever
-    extends AbstractScoreVisitor
+        extends AbstractScoreVisitor
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
-        DurationRetriever.class);
+            DurationRetriever.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Map of Measure id -> Measure duration, whatever the containing part */
-    private final Map<PageBased, Rational> measureDurations = new HashMap<PageBased, Rational>();
+    private final Map<PageBased, Rational> measureDurations = new HashMap<>();
 
     /** Pass number, since we need 2 passes per system */
     private int pass = 1;
 
     //~ Constructors -----------------------------------------------------------
-
     //-------------------//
     // DurationRetriever //
     //-------------------//
@@ -65,7 +63,6 @@ public class DurationRetriever
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------------//
     // visit Measure //
     //---------------//
@@ -73,11 +70,8 @@ public class DurationRetriever
     public boolean visit (Measure measure)
     {
         try {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "Visiting Part#" + measure.getPart().getId() + " " +
-                    measure);
-            }
+            logger.fine("Visiting Part#{0} {1}", new Object[]{measure.getPart().
+                        getId(), measure});
 
             Rational measureDur = Rational.ZERO;
 
@@ -85,8 +79,8 @@ public class DurationRetriever
             for (Slot slot : measure.getSlots()) {
                 if (slot.getStartTime() != null) {
                     for (Chord chord : slot.getChords()) {
-                        Rational chordEnd = slot.getStartTime()
-                                                .plus(chord.getDuration());
+                        Rational chordEnd = slot.getStartTime().plus(chord.
+                                getDuration());
 
                         if (chordEnd.compareTo(measureDur) > 0) {
                             measureDur = chordEnd;
@@ -105,11 +99,9 @@ public class DurationRetriever
 
                 measureDurations.put(measure.getPageId(), measureDur);
 
-                if (logger.isFineEnabled()) {
-                    logger.fine(measure.getPageId() + ": " + measureDur);
-                }
-            } else if (!measure.getWholeChords()
-                               .isEmpty()) {
+                logger.fine("{0}: {1}", new Object[]{measure.getPageId(),
+                                                     measureDur});
+            } else if (!measure.getWholeChords().isEmpty()) {
                 if (pass > 1) {
                     Rational dur = measureDurations.get(measure.getPageId());
 
@@ -117,15 +109,15 @@ public class DurationRetriever
                         measure.setActualDuration(dur);
                     } else {
                         measure.setActualDuration(
-                            measure.getExpectedDuration());
+                                measure.getExpectedDuration());
                     }
                 }
             }
         } catch (InvalidTimeSignature ex) {
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + measure,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + measure,
+                    ex);
         }
 
         return false; // Dead end, we don't go deeper than measure level
@@ -182,23 +174,17 @@ public class DurationRetriever
     @Override
     public boolean visit (ScoreSystem system)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Visiting " + system);
-        }
+        logger.fine("Visiting {0}", system);
 
         // 2 passes are needed, to get the actual duration of whole notes
         // Since the measure duration may be specified in another system part
         for (pass = 1; pass <= 2; pass++) {
-            if (logger.isFineEnabled()) {
-                logger.fine("Pass #" + pass);
-            }
+            logger.fine("Pass #{0}", pass);
 
             // Browse the (SystemParts and the) Measures
             system.acceptChildren(this);
 
-            if (logger.isFineEnabled()) {
-                logger.fine("Durations:" + measureDurations);
-            }
+            logger.fine("Durations:{0}", measureDurations);
         }
 
         return false; // No default browsing this way

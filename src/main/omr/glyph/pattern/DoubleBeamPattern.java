@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2011. All rights reserved.               //
+//  Copyright (C) Herve Bitteur 2000-2012. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -36,21 +36,21 @@ import java.util.Set;
  * @author Hervé Bitteur
  */
 public class DoubleBeamPattern
-    extends GlyphPattern
+        extends GlyphPattern
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
-        DoubleBeamPattern.class);
+            DoubleBeamPattern.class);
 
     //~ Constructors -----------------------------------------------------------
-
     //-------------------//
     // DoubleBeamPattern //
     //-------------------//
     /**
      * Creates a new DoubleBeamPattern object.
+     *
      * @param system the system to process
      */
     public DoubleBeamPattern (SystemInfo system)
@@ -59,7 +59,6 @@ public class DoubleBeamPattern
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // runPattern //
     //------------//
@@ -69,47 +68,48 @@ public class DoubleBeamPattern
         int nb = 0;
 
         for (final Glyph beam : system.getGlyphs()) {
-            if ((beam.getShape() != Shape.BEAM) ||
-                beam.isManualShape() ||
-                (beam.getStemNumber() != 1)) {
+            if ((beam.getShape() != Shape.BEAM)
+                    || beam.isManualShape()
+                    || (beam.getStemNumber() != 1)) {
                 continue;
             }
 
             if (beam.isVip() || logger.isFineEnabled()) {
-                logger.info("Checking single-stem beam #" + beam.getId());
+                logger.info("Checking single-stem beam #{0}", beam.getId());
             }
 
-            final Glyph          stem = beam.getFirstStem();
+            final Glyph stem = beam.getFirstStem();
 
             // Look for a beam glyph next to it
-            final PixelRectangle beamBox = beam.getContourBox();
+            final PixelRectangle beamBox = beam.getBounds();
             beamBox.grow(1, 1);
 
             Set<Glyph> candidates = Glyphs.lookupGlyphs(
-                system.getGlyphs(),
-                new Predicate<Glyph>() {
+                    system.getGlyphs(),
+                    new Predicate<Glyph>()
+                    {
+
+                        @Override
                         public boolean check (Glyph glyph)
                         {
-                            return (glyph != stem) && (glyph != beam) &&
-                                   (glyph.getShape() == Shape.BEAM) &&
-                                   glyph.getContourBox()
-                                        .intersects(beamBox);
+                            return (glyph != stem) && (glyph != beam)
+                                    && (glyph.getShape() == Shape.BEAM)
+                                    && glyph.getBounds().intersects(beamBox);
                         }
                     });
 
             for (Glyph candidate : candidates) {
-                if (beam.isVip() || candidate.isVip() ||
-                    logger.isFineEnabled()) {
-                    logger.info("Beam candidate #" + candidate);
+                if (beam.isVip() || candidate.isVip()
+                        || logger.isFineEnabled()) {
+                    logger.info("Beam candidate #{0}", candidate);
                 }
 
-                Glyph      compound = system.buildTransientCompound(
-                    Arrays.asList(beam, candidate));
-                Evaluation eval = GlyphNetwork.getInstance()
-                                              .vote(
-                    compound,
-                    system,
-                    Grades.noMinGrade);
+                Glyph compound = system.buildTransientCompound(
+                        Arrays.asList(beam, candidate));
+                Evaluation eval = GlyphNetwork.getInstance().vote(
+                        compound,
+                        system,
+                        Grades.noMinGrade);
 
                 if (eval != null) {
                     // Assign and insert into system & lag environments
@@ -117,9 +117,9 @@ public class DoubleBeamPattern
                     compound.setEvaluation(eval);
 
                     if (compound.isVip() || logger.isFineEnabled()) {
-                        logger.info(
-                            "Compound #" + compound.getId() + " built as " +
-                            compound.getEvaluation());
+                        logger.info("Compound #{0} built as {1}",
+                                    new Object[]{compound.getId(),
+                                                 compound.getEvaluation()});
                     }
 
                     nb++;

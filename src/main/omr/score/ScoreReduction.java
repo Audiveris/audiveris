@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -34,7 +34,8 @@ import java.util.TreeMap;
 /**
  * Class {@code ScoreReduction} is the "reduce" part of a MapReduce
  * job for a given score, based on the merge of Audiveris Page
- * instances.<ol>
+ * instances.
+ * <ol>
  * <li>Any Map task processes a score page and produces the related
  * XML fragment as its output.</li>
  * <li>The Reduce task takes all the XML fragments as input and
@@ -66,20 +67,19 @@ public class ScoreReduction
     private static final Logger logger = Logger.getLogger(ScoreReduction.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Related score. */
     private final Score score;
 
     /** Pages to process. */
-    private final SortedMap<Integer, Page> pages = new TreeMap<Integer, Page>();
+    private final SortedMap<Integer, Page> pages = new TreeMap<>();
 
     /** Global connection of parts. */
     private PartConnection connection;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new ScoreReduction object.
+     *
      * @param score the score to process
      */
     public ScoreReduction (Score score)
@@ -93,7 +93,6 @@ public class ScoreReduction
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------//
     // reduce //
     //--------//
@@ -102,8 +101,7 @@ public class ScoreReduction
      */
     public void reduce ()
     {
-        if (score.getPages()
-                 .isEmpty()) {
+        if (score.getPages().isEmpty()) {
             return;
         }
 
@@ -132,17 +130,16 @@ public class ScoreReduction
     private void addPartList ()
     {
         // Map (page) ScorePart -> (score) ScorePart data
-        List<ScorePart> partList = new ArrayList<ScorePart>();
+        List<ScorePart> partList = new ArrayList<>();
 
-        for (Result result : connection.getResultMap()
-                                       .keySet()) {
+        for (Result result : connection.getResultMap().keySet()) {
             ScorePart scorePart = (ScorePart) result.getUnderlyingObject();
             partList.add(scorePart);
         }
 
         // Need map: pagePart instance -> set of related systemPart instances
         // (Since we only have the reverse link)
-        Map<ScorePart, List<SystemPart>> page2syst = new LinkedHashMap<ScorePart, List<SystemPart>>();
+        Map<ScorePart, List<SystemPart>> page2syst = new LinkedHashMap<>();
 
         for (TreeNode pn : score.getPages()) {
             Page page = (Page) pn;
@@ -151,13 +148,13 @@ public class ScoreReduction
                 ScoreSystem system = (ScoreSystem) sn;
 
                 for (TreeNode n : system.getParts()) {
-                    SystemPart       systPart = (SystemPart) n;
+                    SystemPart systPart = (SystemPart) n;
 
-                    ScorePart        pagePart = systPart.getScorePart();
+                    ScorePart pagePart = systPart.getScorePart();
                     List<SystemPart> cousins = page2syst.get(pagePart);
 
                     if (cousins == null) {
-                        cousins = new ArrayList<SystemPart>();
+                        cousins = new ArrayList<>();
                         page2syst.put(pagePart, cousins);
                     }
 
@@ -167,13 +164,11 @@ public class ScoreReduction
         }
 
         // Align each candidate to its related result (System -> Page -> Score)
-        for (Result result : connection.getResultMap()
-                                       .keySet()) {
+        for (Result result : connection.getResultMap().keySet()) {
             ScorePart scorePart = (ScorePart) result.getUnderlyingObject();
-            int       newId = scorePart.getId();
+            int newId = scorePart.getId();
 
-            for (Candidate candidate : connection.getResultMap()
-                                                 .get(result)) {
+            for (Candidate candidate : connection.getResultMap().get(result)) {
                 ScorePart pagePart = (ScorePart) candidate.getUnderlyingObject();
                 // Update (page) part id
                 pagePart.setId(newId);
@@ -196,12 +191,12 @@ public class ScoreReduction
      */
     private void dumpResultMapping ()
     {
-        for (Entry<Result, Set<Candidate>> entry : connection.getResultMap()
-                                                             .entrySet()) {
-            logger.fine("Result: " + entry.getKey());
+        for (Entry<Result, Set<Candidate>> entry : connection.getResultMap().
+                entrySet()) {
+            logger.fine("Result: {0}", entry.getKey());
 
             for (Candidate candidate : entry.getValue()) {
-                logger.fine("* candidate: " + candidate);
+                logger.fine("* candidate: {0}", candidate);
             }
         }
     }
@@ -216,8 +211,7 @@ public class ScoreReduction
     {
         int partIndex = 0;
 
-        for (Result result : connection.getResultMap()
-                                       .keySet()) {
+        for (Result result : connection.getResultMap().keySet()) {
             ScorePart scorePart = (ScorePart) result.getUnderlyingObject();
             scorePart.setId(++partIndex);
         }

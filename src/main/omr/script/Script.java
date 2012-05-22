@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -51,7 +51,6 @@ public class Script
     private static final Logger logger = Logger.getLogger(Script.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Score to which the script is applied */
     private Score score;
 
@@ -60,30 +59,44 @@ public class Script
     private final String scorePath;
 
     /** Sequence of tasks that compose the script */
-    @XmlElements({@XmlElement(name = "assign", type = AssignTask.class)
-        , @XmlElement(name = "barline", type = BarlineTask.class)
-        , @XmlElement(name = "boundary", type = BoundaryTask.class)
-        , @XmlElement(name = "delete", type = DeleteTask.class)
-        , @XmlElement(name = "export", type = ExportTask.class)
-        , @XmlElement(name = "insert", type = InsertTask.class)
-        , @XmlElement(name = "midi", type = MidiWriteTask.class)
-        , @XmlElement(name = "parameters", type = ParametersTask.class)
-        , @XmlElement(name = "play", type = PlayTask.class)
-        , @XmlElement(name = "print", type = PrintTask.class)
-        , @XmlElement(name = "rational", type = RationalTask.class)
-        , @XmlElement(name = "remove", type = RemoveTask.class)
-        , @XmlElement(name = "segment", type = SegmentTask.class)
-        , @XmlElement(name = "slur", type = SlurTask.class)
-        , @XmlElement(name = "step", type = StepTask.class)
-        , @XmlElement(name = "text", type = TextTask.class)
+    @XmlElements({
+        @XmlElement(name = "assign",
+                    type = AssignTask.class),
+        @XmlElement(name = "barline",
+                    type = BarlineTask.class),
+        @XmlElement(name = "boundary",
+                    type = BoundaryTask.class),
+        @XmlElement(name = "delete",
+                    type = DeleteTask.class),
+        @XmlElement(name = "export",
+                    type = ExportTask.class),
+        @XmlElement(name = "insert",
+                    type = InsertTask.class),
+        @XmlElement(name = "parameters",
+                    type = ParametersTask.class) //        , @XmlElement(name = "midi", type = MidiWriteTask.class)
+        //        , @XmlElement(name = "play", type = PlayTask.class)
+        ,
+        @XmlElement(name = "print",
+                    type = PrintTask.class),
+        @XmlElement(name = "rational",
+                    type = RationalTask.class),
+        @XmlElement(name = "remove",
+                    type = RemoveTask.class),
+        @XmlElement(name = "segment",
+                    type = SegmentTask.class),
+        @XmlElement(name = "slur",
+                    type = SlurTask.class),
+        @XmlElement(name = "step",
+                    type = StepTask.class),
+        @XmlElement(name = "text",
+                    type = TextTask.class)
     })
-    private final List<ScriptTask> tasks = new ArrayList<ScriptTask>();
+    private final List<ScriptTask> tasks = new ArrayList<>();
 
     /** Flag a script that needs to be stored */
     private boolean modified;
 
     //~ Constructors -----------------------------------------------------------
-
     //--------//
     // Script //
     //--------//
@@ -108,7 +121,6 @@ public class Script
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------//
     // addTask //
     //---------//
@@ -121,10 +133,7 @@ public class Script
     {
         tasks.add(task);
         setModified(true);
-
-        if (logger.isFineEnabled()) {
-            logger.fine("Script: added " + task);
-        }
+        logger.fine("Script: added {0}", task);
     }
 
     //------//
@@ -160,6 +169,7 @@ public class Script
     //------------//
     /**
      * Has the script been modified (wrt its backup on disk)?
+     *
      * @return the modified
      */
     public boolean isModified ()
@@ -171,17 +181,16 @@ public class Script
     // run //
     //-----//
     /**
-     * This methods runs sequentially and synchronously the various tasks of the
-     * script. It is up to the caller to run this method in a separate thread
-     * if so desired.
+     * This methods runs sequentially and synchronously the various
+     * tasks of the script. 
+     * It is up to the caller to run this method in a separate thread if so 
+     * desired.
      */
     public void run ()
     {
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "Running " + this +
-                ((score != null) ? (" on score " + score.getRadix()) : ""));
-        }
+        logger.fine("Running {0}{1}",
+                    new Object[]{this, (score != null) ? (" on score " + score.
+                                                          getRadix()) : ""});
 
         // Make score concrete (with its pages/sheets)
         if (score == null) {
@@ -205,8 +214,8 @@ public class Script
                     page = score.getPage(pageIndex);
 
                     if (page == null) {
-                        logger.warning(
-                            "Script error. No page for index " + pageIndex);
+                        logger.warning("Script error. No page for index {0}",
+                                       pageIndex);
 
                         continue;
                     }
@@ -215,10 +224,7 @@ public class Script
                 }
 
                 Sheet sheet = page.getSheet();
-
-                if (logger.isFineEnabled()) {
-                    logger.fine("Running " + task + " on " + sheet);
-                }
+                logger.fine("Running {0} on {1}", new Object[]{task, sheet});
 
                 try {
                     // Run the task synchronously (prolog/core/epilog)
@@ -231,17 +237,14 @@ public class Script
                 }
             }
 
-            if (logger.isFineEnabled()) {
-                logger.fine("All tasks run on " + score);
-            }
+            logger.fine("All tasks run on {0}", score);
         } catch (ProcessingCancellationException pce) {
             throw pce;
         } catch (Exception ex) {
             logger.warning("Script aborted", ex);
         } finally {
             // Flag the (active) script as up-to-date
-            score.getScript()
-                 .setModified(false);
+            score.getScript().setModified(false);
         }
     }
 
@@ -259,16 +262,13 @@ public class Script
         }
 
         if (scorePath != null) {
-            sb.append(" ")
-              .append(scorePath);
+            sb.append(" ").append(scorePath);
         } else if (score != null) {
-            sb.append(" ")
-              .append(score.getRadix());
+            sb.append(" ").append(score.getRadix());
         }
 
         if (tasks != null) {
-            sb.append(" tasks:")
-              .append(tasks.size());
+            sb.append(" tasks:").append(tasks.size());
         }
 
         sb.append("}");
@@ -281,6 +281,7 @@ public class Script
     //-------------//
     /**
      * Flag the script as modified (wrt disk)
+     *
      * @param modified the modified to set
      */
     void setModified (boolean modified)

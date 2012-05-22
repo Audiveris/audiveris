@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -59,9 +59,9 @@ public class LogBasicFormatter
      * Format the given LogRecord.
      *
      * @param record the log record to be formatted.
-     *
      * @return a formatted log record
      */
+    @Override
     public synchronized String format (LogRecord record)
     {
         StringBuilder sb = new StringBuilder(256);
@@ -98,7 +98,6 @@ public class LogBasicFormatter
         // Second part
         String message = formatMessage(record);
 
-        //sb.append(record.getLevel().getLocalizedName());
         sb.append(record.getLevel().getName());
         sb.append(": ");
         sb.append(message);

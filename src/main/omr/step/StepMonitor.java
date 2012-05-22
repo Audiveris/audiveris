@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -22,6 +22,7 @@ import omr.log.Logger;
 import omr.ui.util.UIUtilities;
 
 import java.awt.Graphics;
+import java.util.logging.Level;
 
 import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
@@ -220,7 +221,7 @@ public class StepMonitor
                 super.paintComponent(g);
             } catch (Exception ex) {
                 // Nearly ignored
-                logger.warning("StepMonitor. Ignored: " + ex);
+                logger.warning("StepMonitor. Ignored: {0}", ex);
                 repaint(); // To trigger another painting
             }
         }

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -72,8 +72,8 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "section")
 public class BasicSection
-    extends BasicVertex<Lag, Section>
-    implements Section
+        extends BasicVertex<Lag, Section>
+        implements Section
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -81,7 +81,6 @@ public class BasicSection
     private static final Logger logger = Logger.getLogger(BasicSection.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Position of first run */
     @XmlAttribute(name = "first-pos")
     private int firstPos;
@@ -92,7 +91,7 @@ public class BasicSection
 
     /** The collection of runs that make up the section */
     @XmlElement(name = "run")
-    private final List<Run> runs = new ArrayList<Run>();
+    private final List<Run> runs = new ArrayList<>();
 
     /** Oriented bounding rectangle */
     protected Rectangle orientedBounds;
@@ -113,19 +112,20 @@ public class BasicSection
     private Polygon polygon;
 
     /** Absolute contour box */
-    private PixelRectangle contourBox;
+    private PixelRectangle bounds;
 
     /** Adjacent sections from the other orientation */
     private Set<Section> oppositeSections;
 
     /**
-     * Glyph this section belongs to. This reference is kept in sync with the
-     * containing GlyphLag activeMap. Don't directly assign a value to 'glyph',
-     * use the setGlyph() method instead.
+     * Glyph this section belongs to.
+     * This reference is kept in sync with the containing GlyphLag activeMap.
+     * Don't directly assign a value to 'glyph', use the setGlyph() method
+     * instead.
      */
     private Glyph glyph;
 
-    /** To flag sections too thick for staff line  (null = don't know)*/
+    /** To flag sections too thick for staff line (null = don't know) */
     private Boolean fat = null;
 
     /** Flag to remember processing has been done */
@@ -144,20 +144,20 @@ public class BasicSection
     private SystemInfo system;
 
     /**
-     * Default color. This is the permanent default  which is used when
+     * Default color. This is the permanent default which is used when
      * the color is reset by {@link #resetColor}
      */
     protected Color defaultColor;
 
     /**
-     * Color currently used. By default, the color is the defaultColor chosen out
-     * of the palette. But, temporarily, a section can be assigned a different
-     * color, for example to highlight the section.
+     * Color currently used.
+     * By default, the color is the defaultColor chosen out of the palette.
+     * But, temporarily, a section can be assigned a different color,
+     * for example to highlight the section.
      */
     protected Color color;
 
     //~ Constructors -----------------------------------------------------------
-
     //--------------//
     // BasicSection //
     //--------------//
@@ -169,13 +169,12 @@ public class BasicSection
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------------//
     // allocateTable //
     //---------------//
     /**
-     * For basic print out, allocate a drawing table, to be later filled with
-     * section pixels
+     * For basic print out, allocate a drawing table, to be later filled
+     * with section pixels
      *
      * @param box the limits of the drawing table
      * @return the table ready to be filled
@@ -198,15 +197,15 @@ public class BasicSection
      * Printout the filled drawing table
      *
      * @param table the filled table
-     * @param box the table limits in the image
+     * @param box   the table limits in the image
      */
-    public static void drawTable (char[][]  table,
+    public static void drawTable (char[][] table,
                                   Rectangle box)
     {
         System.out.println(
-            "xMin=" + box.x + ", xMax=" + ((box.x + box.width) - 1));
+                "xMin=" + box.x + ", xMax=" + ((box.x + box.width) - 1));
         System.out.println(
-            "yMin=" + box.y + ", yMax=" + ((box.y + box.height) - 1));
+                "yMin=" + box.y + ", yMax=" + ((box.y + box.height) - 1));
 
         for (int iy = 0; iy < table.length; iy++) {
             System.out.print((iy + box.y) + ": ");
@@ -217,10 +216,11 @@ public class BasicSection
     //--------------------//
     // addOppositeSection //
     //--------------------//
+    @Override
     public void addOppositeSection (Section otherSection)
     {
         if (oppositeSections == null) {
-            oppositeSections = new HashSet<Section>();
+            oppositeSections = new HashSet<>();
         }
 
         oppositeSections.add(otherSection);
@@ -229,14 +229,13 @@ public class BasicSection
     //--------//
     // append //
     //--------//
+    @Override
     public void append (Run run)
     {
         runs.add(run);
         addRun(run);
 
-        if (logger.isFineEnabled()) {
-            logger.fine("Appended " + run + " to " + this);
-        }
+        logger.fine("Appended {0} to {1}", new Object[]{run, this});
     }
 
     //-----------//
@@ -245,6 +244,7 @@ public class BasicSection
     /**
      * Needed to implement Comparable, sorting sections first by absolute
      * abscissa, then by absolute ordinate.
+     *
      * @param other the other section to compare to
      * @return the result of ordering
      */
@@ -255,10 +255,8 @@ public class BasicSection
             return 0;
         }
 
-        final Point ref = this.getContourBox()
-                              .getLocation();
-        final Point otherRef = other.getContourBox()
-                                    .getLocation();
+        final Point ref = this.getBounds().getLocation();
+        final Point otherRef = other.getBounds().getLocation();
 
         // Are x values different?
         final int dx = ref.x - otherRef.x;
@@ -282,6 +280,7 @@ public class BasicSection
     //-------------------//
     // computeParameters //
     //-------------------//
+    @Override
     public void computeParameters ()
     {
         // weight & foreWeight & maxRunLength
@@ -297,28 +296,27 @@ public class BasicSection
         // Invalidate cached data
         invalidateCache();
 
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "Parameters of " + this + " maxRunLength=" + getMaxRunLength() +
-                " meanRunLength=" + getMeanRunLength() + " weight=" + weight +
-                "foreWeight=" + foreWeight);
-        }
+        logger.fine(
+                "Parameters of {0} maxRunLength={1} meanRunLength={2} weight={3}foreWeight={4}",
+                new Object[]{this, getMaxRunLength(), getMeanRunLength(),
+                             weight, foreWeight});
     }
 
     //----------//
     // contains //
     //----------//
+    @Override
     public boolean contains (int x,
                              int y)
     {
-        return getPolygon()
-                   .contains(x, y);
+        return getPolygon().contains(x, y);
     }
 
     //----------//
     // cumulate //
     //----------//
-    public void cumulate (Barycenter     barycenter,
+    @Override
+    public void cumulate (Barycenter barycenter,
                           PixelRectangle absRoi)
     {
         if (barycenter == null) {
@@ -344,8 +342,8 @@ public class BasicSection
 
             // Take only the pixels contained by the oriented roi
             int pos = firstPos - 1;
-            int posMax = Math.min(firstPos + runs.size(), oRoi.y + oRoi.height) -
-                         1;
+            int posMax = Math.min(firstPos + runs.size(), oRoi.y + oRoi.height)
+                    - 1;
             int coordMax = (oRoi.x + oRoi.width) - 1;
 
             for (Run run : runs) {
@@ -376,6 +374,7 @@ public class BasicSection
     //----------//
     // cumulate //
     //----------//
+    @Override
     public void cumulate (PointsCollector collector)
     {
         final PixelRectangle roi = collector.getRoi();
@@ -400,13 +399,13 @@ public class BasicSection
             // Take only the pixels contained by the absolute roi
             Rectangle oRoi = orientation.oriented(roi);
             final int pMin = oRoi.y;
-            final int pMax = -1 +
-                             Math.min(
-                firstPos + runs.size(),
-                oRoi.y + oRoi.height);
+            final int pMax = -1
+                    + Math.min(
+                    firstPos + runs.size(),
+                    oRoi.y + oRoi.height);
             final int cMin = oRoi.x;
             final int cMax = (oRoi.x + oRoi.width) - 1;
-            int       p = firstPos - 1;
+            int p = firstPos - 1;
 
             for (Run run : runs) {
                 p++;
@@ -439,14 +438,15 @@ public class BasicSection
     //-----------//
     // drawAscii //
     //-----------//
+    @Override
     public void drawAscii ()
     {
         System.out.println("Section#" + getId());
 
         // Determine the absolute bounds
-        Rectangle box = getContourBox();
+        Rectangle box = getBounds();
 
-        char[][]  table = allocateTable(box);
+        char[][] table = allocateTable(box);
         fillTable(table, box);
         drawTable(table, box);
     }
@@ -454,8 +454,9 @@ public class BasicSection
     //-----------//
     // fillImage //
     //-----------//
+    @Override
     public void fillImage (BufferedImage im,
-                           Rectangle     box)
+                           Rectangle box)
     {
         final WritableRaster raster = im.getRaster();
 
@@ -485,7 +486,8 @@ public class BasicSection
     //-----------//
     // fillTable //
     //-----------//
-    public void fillTable (char[][]  table,
+    @Override
+    public void fillTable (char[][] table,
                            Rectangle box)
     {
         // Determine the bounds
@@ -534,6 +536,7 @@ public class BasicSection
     //-----------------//
     // getAbsoluteLine //
     //-----------------//
+    @Override
     public Line getAbsoluteLine ()
     {
         getOrientedLine();
@@ -544,32 +547,48 @@ public class BasicSection
     //---------------//
     // getAreaCenter //
     //---------------//
+    @Override
     public PixelPoint getAreaCenter ()
     {
-        PixelRectangle box = getContourBox();
+        PixelRectangle box = getBounds();
 
         return new PixelPoint(
-            box.x + (box.width / 2),
-            box.y + (box.height / 2));
+                box.x + (box.width / 2),
+                box.y + (box.height / 2));
     }
 
     //-----------//
     // getAspect //
     //-----------//
+    @Override
     public double getAspect (Orientation orientation)
     {
         return (double) getLength(orientation) / (double) getThickness(
-            orientation);
+                orientation);
+    }
+
+    //-----------//
+    // getBounds //
+    //-----------//
+    @Override
+    public PixelRectangle getBounds ()
+    {
+        if (bounds == null) {
+            bounds = new PixelRectangle(getPolygon().getBounds());
+        }
+
+        return new PixelRectangle(bounds); // Copy!
     }
 
     //-------------//
     // getCentroid //
     //-------------//
+    @Override
     public PixelPoint getCentroid ()
     {
         if (centroid == null) {
             Point orientedPoint = new Point(0, 0);
-            int   y = firstPos;
+            int y = firstPos;
 
             for (Run run : runs) {
                 final int length = run.getLength();
@@ -582,30 +601,16 @@ public class BasicSection
             orientedPoint.y /= (2 * getWeight());
 
             centroid = orientation.absolute(orientedPoint);
-
-            if (logger.isFineEnabled()) {
-                logger.fine("Centroid of " + this + " is " + centroid);
-            }
+            logger.fine("Centroid of {0} is {1}", new Object[]{this, centroid});
         }
 
         return centroid;
     }
 
-    //---------------//
-    // getContourBox //
-    //---------------//
-    public PixelRectangle getContourBox ()
-    {
-        if (contourBox == null) {
-            contourBox = new PixelRectangle(getPolygon().getBounds());
-        }
-
-        return new PixelRectangle(contourBox); // Copy!
-    }
-
     //-----------------//
     // getDefaultColor //
     //-----------------//
+    @Override
     public Color getDefaultColor ()
     {
         return defaultColor;
@@ -614,6 +619,7 @@ public class BasicSection
     //-------------------//
     // getFirstAdjacency //
     //-------------------//
+    @Override
     public double getFirstAdjacency ()
     {
         Run run = getFirstRun();
@@ -637,6 +643,7 @@ public class BasicSection
     //-------------//
     // getFirstPos //
     //-------------//
+    @Override
     public int getFirstPos ()
     {
         return firstPos;
@@ -645,6 +652,7 @@ public class BasicSection
     //-------------//
     // getFirstRun //
     //-------------//
+    @Override
     public Run getFirstRun ()
     {
         return runs.get(0);
@@ -653,6 +661,7 @@ public class BasicSection
     //---------------//
     // getForeWeight //
     //---------------//
+    @Override
     public int getForeWeight ()
     {
         return foreWeight;
@@ -661,6 +670,7 @@ public class BasicSection
     //----------//
     // getGlyph //
     //----------//
+    @Override
     public Glyph getGlyph ()
     {
         return glyph;
@@ -671,6 +681,7 @@ public class BasicSection
     //----------//
     /**
      * Report the containing graph (lag) of this vertex (section)
+     *
      * @return the containing graph
      */
     @Override
@@ -682,6 +693,7 @@ public class BasicSection
     //------------------//
     // getLastAdjacency //
     //------------------//
+    @Override
     public double getLastAdjacency ()
     {
         Run run = getLastRun();
@@ -705,6 +717,7 @@ public class BasicSection
     //------------//
     // getLastPos //
     //------------//
+    @Override
     public int getLastPos ()
     {
         return (firstPos + getRunCount()) - 1;
@@ -713,6 +726,7 @@ public class BasicSection
     //------------//
     // getLastRun //
     //------------//
+    @Override
     public Run getLastRun ()
     {
         return runs.get(runs.size() - 1);
@@ -721,18 +735,20 @@ public class BasicSection
     //-----------//
     // getLength //
     //-----------//
+    @Override
     public int getLength (Orientation orientation)
     {
         if (orientation == Orientation.HORIZONTAL) {
-            return getContourBox().width;
+            return getBounds().width;
         } else {
-            return getContourBox().height;
+            return getBounds().height;
         }
     }
 
     //----------//
     // getLevel //
     //----------//
+    @Override
     public int getLevel ()
     {
         return (int) Math.rint((double) foreWeight / (double) weight);
@@ -741,6 +757,7 @@ public class BasicSection
     //-----------------//
     // getMaxRunLength //
     //-----------------//
+    @Override
     public int getMaxRunLength ()
     {
         return maxRunLength;
@@ -749,6 +766,7 @@ public class BasicSection
     //---------------//
     // getMeanAspect //
     //---------------//
+    @Override
     public double getMeanAspect (Orientation orientation)
     {
         return getLength(orientation) / getMeanThickness(orientation);
@@ -757,6 +775,7 @@ public class BasicSection
     //------------------//
     // getMeanRunLength //
     //------------------//
+    @Override
     public int getMeanRunLength ()
     {
         return weight / getRunCount();
@@ -765,6 +784,7 @@ public class BasicSection
     //------------------//
     // getMeanThickness //
     //------------------//
+    @Override
     public double getMeanThickness (Orientation orientation)
     {
         return (double) getWeight() / getLength(orientation);
@@ -773,6 +793,7 @@ public class BasicSection
     //---------------------//
     // getOppositeSections //
     //---------------------//
+    @Override
     public Set<Section> getOppositeSections ()
     {
         if (oppositeSections != null) {
@@ -785,6 +806,7 @@ public class BasicSection
     //----------------//
     // getOrientation //
     //----------------//
+    @Override
     public Orientation getOrientation ()
     {
         return orientation;
@@ -793,11 +815,11 @@ public class BasicSection
     //-------------------//
     // getOrientedBounds //
     //-------------------//
+    @Override
     public Rectangle getOrientedBounds ()
     {
         if (orientedBounds == null) {
-            orientedBounds = new Rectangle(
-                orientation.oriented(getContourBox()));
+            orientedBounds = new Rectangle(orientation.oriented(getBounds()));
         }
 
         return orientedBounds;
@@ -806,6 +828,7 @@ public class BasicSection
     //-----------------//
     // getOrientedLine //
     //-----------------//
+    @Override
     public Line getOrientedLine ()
     {
         if (orientedLine == null) {
@@ -831,15 +854,16 @@ public class BasicSection
     //-----------------//
     // getPathIterator //
     //-----------------//
+    @Override
     public PathIterator getPathIterator ()
     {
-        return getPolygon()
-                   .getPathIterator(null);
+        return getPolygon().getPathIterator(null);
     }
 
     //------------//
     // getPolygon //
     //------------//
+    @Override
     public Polygon getPolygon ()
     {
         if (polygon == null) {
@@ -852,6 +876,7 @@ public class BasicSection
     //----------------------//
     // getRectangleCentroid //
     //----------------------//
+    @Override
     public PixelPoint getRectangleCentroid (PixelRectangle absRoi)
     {
         if (absRoi == null) {
@@ -863,8 +888,8 @@ public class BasicSection
 
         if (barycenter.getWeight() != 0) {
             return new PixelPoint(
-                (int) Math.rint(barycenter.getX()),
-                (int) Math.rint(barycenter.getY()));
+                    (int) Math.rint(barycenter.getX()),
+                    (int) Math.rint(barycenter.getY()));
         } else {
             return null;
         }
@@ -873,6 +898,7 @@ public class BasicSection
     //-------------//
     // getRelation //
     //-------------//
+    @Override
     public StickRelation getRelation ()
     {
         return relation;
@@ -881,6 +907,7 @@ public class BasicSection
     //-------------//
     // getRunCount //
     //-------------//
+    @Override
     public int getRunCount ()
     {
         return runs.size();
@@ -889,6 +916,7 @@ public class BasicSection
     //---------//
     // getRuns //
     //---------//
+    @Override
     public List<Run> getRuns ()
     {
         return runs;
@@ -897,6 +925,7 @@ public class BasicSection
     //---------------//
     // getStartCoord //
     //---------------//
+    @Override
     public int getStartCoord ()
     {
         return getOrientedBounds().x;
@@ -905,6 +934,7 @@ public class BasicSection
     //--------------//
     // getStopCoord //
     //--------------//
+    @Override
     public int getStopCoord ()
     {
         Rectangle bounds = getOrientedBounds();
@@ -915,6 +945,7 @@ public class BasicSection
     //-----------//
     // getSystem //
     //-----------//
+    @Override
     public SystemInfo getSystem ()
     {
         return system;
@@ -923,18 +954,20 @@ public class BasicSection
     //--------------//
     // getThickness //
     //--------------//
+    @Override
     public int getThickness (Orientation orientation)
     {
         if (orientation == Orientation.HORIZONTAL) {
-            return getContourBox().height;
+            return getBounds().height;
         } else {
-            return getContourBox().width;
+            return getBounds().width;
         }
     }
 
     //-----------//
     // getWeight //
     //-----------//
+    @Override
     public int getWeight ()
     {
         if (weight == 0) {
@@ -947,6 +980,7 @@ public class BasicSection
     //---------------//
     // inNextSibling //
     //---------------//
+    @Override
     public Section inNextSibling ()
     {
         // Check we have sources
@@ -955,12 +989,10 @@ public class BasicSection
         }
 
         // Proper source section
-        Section source = getSources()
-                             .get(getInDegree() - 1);
+        Section source = getSources().get(getInDegree() - 1);
 
         // Browse till we get to this as target
-        for (Iterator<Section> li = source.getTargets()
-                                          .iterator(); li.hasNext();) {
+        for (Iterator<Section> li = source.getTargets().iterator(); li.hasNext();) {
             Section section = li.next();
 
             if (section == this) {
@@ -980,6 +1012,7 @@ public class BasicSection
     //-------------------//
     // inPreviousSibling //
     //-------------------//
+    @Override
     public Section inPreviousSibling ()
     {
         if (getInDegree() == 0) {
@@ -987,13 +1020,11 @@ public class BasicSection
         }
 
         // Proper source section
-        Section source = getSources()
-                             .get(0);
+        Section source = getSources().get(0);
 
         // Browse till we get to this as target
-        for (ListIterator<Section> li = source.getTargets()
-                                              .listIterator(
-            source.getOutDegree()); li.hasPrevious();) {
+        for (ListIterator<Section> li = source.getTargets().listIterator(
+                source.getOutDegree()); li.hasPrevious();) {
             Section section = li.previous();
 
             if (section == this) {
@@ -1013,15 +1044,16 @@ public class BasicSection
     //------------//
     // intersects //
     //------------//
+    @Override
     public boolean intersects (Rectangle rect)
     {
-        return getPolygon()
-                   .intersects(rect);
+        return getPolygon().intersects(rect);
     }
 
     //--------------//
     // isAggregable //
     //--------------//
+    @Override
     public boolean isAggregable ()
     {
         if ((relation == null) || !relation.isCandidate()) {
@@ -1034,6 +1066,7 @@ public class BasicSection
     //-------------//
     // isColorized //
     //-------------//
+    @Override
     public boolean isColorized ()
     {
         return defaultColor != null;
@@ -1042,6 +1075,7 @@ public class BasicSection
     //-------//
     // isFat //
     //-------//
+    @Override
     public Boolean isFat ()
     {
         return fat;
@@ -1050,6 +1084,7 @@ public class BasicSection
     //---------------//
     // isGlyphMember //
     //---------------//
+    @Override
     public boolean isGlyphMember ()
     {
         return glyph != null;
@@ -1058,15 +1093,17 @@ public class BasicSection
     //---------//
     // isKnown //
     //---------//
+    @Override
     public boolean isKnown ()
     {
-        return (glyph != null) &&
-               (glyph.isSuccessful() || glyph.isWellKnown());
+        return (glyph != null)
+                && (glyph.isSuccessful() || glyph.isWellKnown());
     }
 
     //-------------//
     // isProcessed //
     //-------------//
+    @Override
     public boolean isProcessed ()
     {
         return processed;
@@ -1075,6 +1112,7 @@ public class BasicSection
     //------------//
     // isVertical //
     //------------//
+    @Override
     public boolean isVertical ()
     {
         return orientation == Orientation.VERTICAL;
@@ -1083,6 +1121,7 @@ public class BasicSection
     //-------//
     // isVip //
     //-------//
+    @Override
     public boolean isVip ()
     {
         return vip;
@@ -1091,23 +1130,21 @@ public class BasicSection
     //-------//
     // merge //
     //-------//
+    @Override
     public void merge (Section other)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Merging " + this + " with " + other);
-        }
+        logger.fine("Merging {0} with {1}", new Object[]{this, other});
 
         runs.addAll(other.getRuns());
         computeParameters();
 
-        if (logger.isFineEnabled()) {
-            logger.fine("Merged " + this);
-        }
+        logger.fine("Merged {0}", this);
     }
 
     //----------------//
     // outNextSibling //
     //----------------//
+    @Override
     public Section outNextSibling ()
     {
         if (getOutDegree() == 0) {
@@ -1115,12 +1152,10 @@ public class BasicSection
         }
 
         // Proper target section
-        Section target = getTargets()
-                             .get(getOutDegree() - 1);
+        Section target = getTargets().get(getOutDegree() - 1);
 
         // Browse till we get to this as source
-        for (Iterator<Section> li = target.getSources()
-                                          .iterator(); li.hasNext();) {
+        for (Iterator<Section> li = target.getSources().iterator(); li.hasNext();) {
             Section section = li.next();
 
             if (section == this) {
@@ -1140,6 +1175,7 @@ public class BasicSection
     //--------------------//
     // outPreviousSibling //
     //--------------------//
+    @Override
     public Section outPreviousSibling ()
     {
         if (getOutDegree() == 0) {
@@ -1147,13 +1183,11 @@ public class BasicSection
         }
 
         // Proper target section
-        Section target = getTargets()
-                             .get(getOutDegree() - 1);
+        Section target = getTargets().get(getOutDegree() - 1);
 
         // Browse till we get to this as source
-        for (ListIterator<Section> li = target.getSources()
-                                              .listIterator(
-            target.getInDegree()); li.hasPrevious();) {
+        for (ListIterator<Section> li = target.getSources().listIterator(
+                target.getInDegree()); li.hasPrevious();) {
             Section section = li.previous();
 
             if (section == this) {
@@ -1173,30 +1207,28 @@ public class BasicSection
     //---------//
     // prepend //
     //---------//
+    @Override
     public void prepend (Run run)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Prepending " + run + " to " + this);
-        }
+        logger.fine("Prepending {0} to {1}", new Object[]{run, this});
 
         firstPos--;
         runs.add(0, run);
         addRun(run);
 
-        if (logger.isFineEnabled()) {
-            logger.fine("Prepended " + this);
-        }
+        logger.fine("Prepended {0}", this);
     }
 
     //--------//
     // render //
     //--------//
+    @Override
     public boolean render (Graphics g,
-                           boolean  drawBorders)
+                           boolean drawBorders)
     {
         Rectangle clip = g.getClipBounds();
-        Rectangle rect = getContourBox();
-        Color     oldColor = g.getColor();
+        Rectangle rect = getBounds();
+        Color oldColor = g.getColor();
 
         if (clip.intersects(rect)) {
             // Default section color
@@ -1224,9 +1256,9 @@ public class BasicSection
             if (drawBorders) {
                 g.setColor(Color.black);
                 g.drawPolygon(
-                    polygon.xpoints,
-                    polygon.ypoints,
-                    polygon.npoints);
+                        polygon.xpoints,
+                        polygon.ypoints,
+                        polygon.npoints);
             }
 
             g.setColor(oldColor);
@@ -1240,10 +1272,11 @@ public class BasicSection
     //----------------//
     // renderSelected //
     //----------------//
+    @Override
     public boolean renderSelected (Graphics g)
     {
         Rectangle clip = g.getClipBounds();
-        Rectangle rect = getContourBox();
+        Rectangle rect = getBounds();
 
         if (clip.intersects(rect)) {
             Polygon polygon = getPolygon();
@@ -1261,6 +1294,7 @@ public class BasicSection
     //------------//
     // resetColor //
     //------------//
+    @Override
     public void resetColor ()
     {
         setColor(defaultColor);
@@ -1269,6 +1303,7 @@ public class BasicSection
     //----------//
     // resetFat //
     //----------//
+    @Override
     public void resetFat ()
     {
         this.fat = null;
@@ -1277,6 +1312,7 @@ public class BasicSection
     //----------//
     // setColor //
     //----------//
+    @Override
     public void setColor (Color color)
     {
         this.color = color;
@@ -1285,6 +1321,7 @@ public class BasicSection
     //-----------------//
     // setDefaultColor //
     //-----------------//
+    @Override
     public void setDefaultColor (Color color)
     {
         defaultColor = color;
@@ -1293,6 +1330,7 @@ public class BasicSection
     //--------//
     // setFat //
     //--------//
+    @Override
     public void setFat (boolean fat)
     {
         this.fat = fat;
@@ -1301,6 +1339,7 @@ public class BasicSection
     //-------------//
     // setFirstPos //
     //-------------//
+    @Override
     public void setFirstPos (int firstPos)
     {
         this.firstPos = firstPos;
@@ -1309,6 +1348,7 @@ public class BasicSection
     //----------//
     // setGlyph //
     //----------//
+    @Override
     public void setGlyph (Glyph glyph)
     {
         // Keep the activeMap of the containing Nest in sync!
@@ -1327,7 +1367,7 @@ public class BasicSection
         }
 
         if (isVip()) {
-            logger.info(this + " linkedTo " + glyph);
+            logger.info("{0} linkedTo {1}", new Object[]{this, glyph});
 
             if (glyph != null) {
                 glyph.setVip();
@@ -1363,8 +1403,8 @@ public class BasicSection
      * @param direction the direction when departing from the stick core
      */
     public void setParams (SectionRole role,
-                           int         layer,
-                           int         direction)
+                           int layer,
+                           int direction)
     {
         if (relation == null) {
             relation = new StickRelation();
@@ -1376,6 +1416,7 @@ public class BasicSection
     //--------------//
     // setProcessed //
     //--------------//
+    @Override
     public void setProcessed (boolean processed)
     {
         this.processed = processed;
@@ -1384,6 +1425,7 @@ public class BasicSection
     //-----------//
     // setSystem //
     //-----------//
+    @Override
     public void setSystem (SystemInfo system)
     {
         this.system = system;
@@ -1392,6 +1434,7 @@ public class BasicSection
     //--------//
     // setVip //
     //--------//
+    @Override
     public void setVip ()
     {
         vip = true;
@@ -1413,8 +1456,7 @@ public class BasicSection
             sb.append("?");
         }
 
-        sb.append("#")
-          .append(getId());
+        sb.append("#").append(getId());
 
         sb.append(internalsString());
 
@@ -1426,12 +1468,13 @@ public class BasicSection
     //-----------//
     // translate //
     //-----------//
+    @Override
     public void translate (PixelPoint vector)
     {
         // Get the coord/pos equivalent of dx/dy vector
         Point cp = orientation.oriented(vector);
-        int   dc = cp.x;
-        int   dp = cp.y;
+        int dc = cp.x;
+        int dp = cp.y;
 
         // Apply the needed modifications
         firstPos += dp;
@@ -1447,8 +1490,9 @@ public class BasicSection
     //-------//
     // write //
     //-------//
+    @Override
     public void write (Picture picture,
-                       int     pixel)
+                       int pixel)
     {
         Point pt = new Point();
         pt.y = getFirstPos();
@@ -1466,15 +1510,15 @@ public class BasicSection
     // computePolygon //
     //----------------//
     /**
-     * Compute the arrays of points needed to draw the section runs. This is
-     * an absolute definition.
+     * Compute the arrays of points needed to draw the section runs.
+     * This is an absolute definition.
      */
     protected Polygon computePolygon ()
     {
-        final int   maxNb = 1 + (4 * getRunCount()); // Upper value
+        final int maxNb = 1 + (4 * getRunCount()); // Upper value
         final int[] xx = new int[maxNb];
         final int[] yy = new int[maxNb];
-        int         idx = 0; // Current filling index in xx & yy arrays
+        int idx = 0; // Current filling index in xx & yy arrays
 
         if (isVertical()) {
             idx = populatePolygon(yy, xx, idx, 1);
@@ -1498,8 +1542,7 @@ public class BasicSection
         StringBuilder sb = new StringBuilder(super.internalsString());
 
         if (oppositeSections != null) {
-            sb.append("/")
-              .append(oppositeSections.size());
+            sb.append("/").append(oppositeSections.size());
         }
 
         //        sb.append(" fPos=")
@@ -1526,17 +1569,14 @@ public class BasicSection
         }
 
         if (relation != null) {
-            sb.append(" ")
-              .append(relation);
+            sb.append(" ").append(relation);
         }
 
         if (glyph != null) {
-            sb.append(" glyph#")
-              .append(glyph.getId());
+            sb.append(" ").append(glyph.idString());
 
             if (glyph.getShape() != null) {
-                sb.append(":")
-                  .append(glyph.getShape());
+                sb.append(":").append(glyph.getShape());
             }
         }
 
@@ -1555,7 +1595,7 @@ public class BasicSection
         orientedBounds = null;
         centroid = null;
         polygon = null;
-        contourBox = null;
+        bounds = null;
         orientedLine = null;
     }
 
@@ -1593,16 +1633,17 @@ public class BasicSection
     //-----------------//
     /**
      * Compute the arrays of points needed to draw the section runs
+     *
      * @param xpoints to receive abscissae
      * @param ypoints to receive coordinates
-     * @param dir direction for browsing runs
-     * @param index first index available in arrays
+     * @param dir     direction for browsing runs
+     * @param index   first index available in arrays
      * @return last index value
      */
     private int populatePolygon (int[] xpoints,
                                  int[] ypoints,
-                                 int   index,
-                                 int   dir)
+                                 int index,
+                                 int dir)
     {
         // Precise delimitating points
         int runNb = getRunCount();
@@ -1650,8 +1691,7 @@ public class BasicSection
 
         if (dir < 0) {
             // Finish with starting point
-            xpoints[index] = runs.get(0)
-                                 .getStart();
+            xpoints[index] = runs.get(0).getStart();
             ypoints[index] = getFirstPos();
             index++;
         }
@@ -1660,7 +1700,6 @@ public class BasicSection
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //---------//
     // Adapter //
     //---------//
@@ -1668,15 +1707,17 @@ public class BasicSection
      * Meant for JAXB handling of Section interface
      */
     public static class Adapter
-        extends XmlAdapter<BasicSection, Section>
+            extends XmlAdapter<BasicSection, Section>
     {
         //~ Methods ------------------------------------------------------------
 
+        @Override
         public BasicSection marshal (Section s)
         {
             return (BasicSection) s;
         }
 
+        @Override
         public Section unmarshal (BasicSection s)
         {
             return s;

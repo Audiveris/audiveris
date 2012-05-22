@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -30,7 +30,7 @@ public class Colors
     public static final Color ANNOTATION = Color.lightGray;
 
     /** Attachments */
-    public static final Color ATTACHMENT = Color.blue;
+    public static final Color ATTACHMENT = Color.pink;
 
     /** Filament combs of main interline */
     public static final Color COMB = new Color(220, 200, 150, alpha);
@@ -104,9 +104,6 @@ public class Colors
     /** Current time slot */
     public static final Color SLOT_CURRENT = new Color(255, 0, 255, alpha);
 
-    /** Specific sections */
-    public static final Color SPECIFIC = Color.yellow;
-
     /** Tangents */
     public static final Color TANGENT = new Color(0, 0, 0, 100);
 
@@ -115,4 +112,8 @@ public class Colors
 
     /** Warping points */
     public static final Color WARP_POINT = Color.red;
+
+    private Colors ()
+    {
+    }
 }

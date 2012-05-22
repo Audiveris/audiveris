@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -40,8 +40,9 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 /**
- * Abstract class {@code GlyphMenu} is the base for all glyph-based menus
- * such as {@link DashMenu}, {@link BarMenu} and {@link SymbolMenu}.
+ * Abstract class {@code GlyphMenu} is the base for all glyph-based 
+ * menus such as {@link DashMenu}, {@link BarMenu} and 
+ * {@link SymbolMenu}.
  * It also provides implementation for basic actions: copy, paste, assign,
  * compound, deassign and dump.
  *
@@ -63,10 +64,10 @@ public abstract class GlyphMenu
     //~ Instance fields --------------------------------------------------------
 
     /** Map action -> tag to update according to context */
-    private final Map<DynAction, Integer> dynActions = new LinkedHashMap<DynAction, Integer>();
+    private final Map<DynAction, Integer> dynActions = new LinkedHashMap<>();
 
     /** Map action -> menu level */
-    private final Map<DynAction, Integer> levels = new LinkedHashMap<DynAction, Integer>();
+    private final Map<DynAction, Integer> levels = new LinkedHashMap<>();
 
     /** Concrete menu */
     private final SeparableMenu menu = new SeparableMenu();
@@ -102,7 +103,6 @@ public abstract class GlyphMenu
     //-----------//
     /**
      * Creates a new GlyphMenu object.
-     *
      * @param controller the related glyphs controller
      */
     public GlyphMenu (GlyphsController controller)
@@ -121,8 +121,7 @@ public abstract class GlyphMenu
     // getMenu //
     //---------//
     /**
-     * Report the concrete menu
-     *
+     * Report the concrete menu.
      * @return the menu
      */
     public JMenu getMenu ()
@@ -134,7 +133,7 @@ public abstract class GlyphMenu
     // updateMenu //
     //------------//
     /**
-     * Update the menu according to the currently selected glyphs
+     * Update the menu according to the currently selected glyphs.
      * @return the number of selected glyphs
      */
     public int updateMenu ()
@@ -212,8 +211,8 @@ public abstract class GlyphMenu
     //-----------//
     /**
      * Build the menu instance, grouping the actions with the same tag
-     * and separating them from other tags, and organize actions into their
-     * target menu level.
+     * and separating them from other tags, and organize actions into 
+     * their target menu level.
      */
     private void buildMenu ()
     {
@@ -221,7 +220,7 @@ public abstract class GlyphMenu
         registerActions();
 
         // Sort actions on their tag
-        SortedSet<Integer> tags = new TreeSet<Integer>(dynActions.values());
+        SortedSet<Integer> tags = new TreeSet<>(dynActions.values());
 
         // Retrieve the highest menu level
         int maxLevel = 0;
@@ -274,7 +273,7 @@ public abstract class GlyphMenu
     // AssignListener //
     //----------------//
     /**
-     * A standard listener used in all shape assignment menus
+     * A standard listener used in all shape assignment menus.
      */
     protected class AssignListener
         implements ActionListener
@@ -286,7 +285,7 @@ public abstract class GlyphMenu
         //~ Constructors -------------------------------------------------------
 
         /**
-         * Creates the AssignListener, with the compound flag
+         * Creates the AssignListener, with the compound flag.
          * @param compound true if we assign a compound, false otherwise
          */
         public AssignListener (boolean compound)
@@ -296,6 +295,7 @@ public abstract class GlyphMenu
 
         //~ Methods ------------------------------------------------------------
 
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             JMenuItem source = (JMenuItem) e.getSource();
@@ -310,7 +310,7 @@ public abstract class GlyphMenu
     // CompoundAction //
     //----------------//
     /**
-     * Build a compound and assign the shape selected in the menu
+     * Build a compound and assign the shape selected in the menu.
      */
     protected class CompoundAction
         extends DynAction
@@ -324,6 +324,7 @@ public abstract class GlyphMenu
 
         //~ Methods ------------------------------------------------------------
 
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             // Default action is to open the menu
@@ -358,8 +359,8 @@ public abstract class GlyphMenu
     // CopyAction //
     //------------//
     /**
-     * Copy the shape of the selected glyph shape (in order to replicate the
-     * assignment to another glyph later)
+     * Copy the shape of the selected glyph shape (in order to replicate
+     * the assignment to another glyph later).
      */
     protected class CopyAction
         extends DynAction
@@ -373,6 +374,7 @@ public abstract class GlyphMenu
 
         //~ Methods ------------------------------------------------------------
 
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             Glyph glyph = nest.getSelectedGlyph();
@@ -413,7 +415,7 @@ public abstract class GlyphMenu
     // DumpAction //
     //------------//
     /**
-     * Dump each glyph in the selected collection of glyphs
+     * Dump each glyph in the selected collection of glyphs.
      */
     protected class DumpAction
         extends DynAction
@@ -427,6 +429,7 @@ public abstract class GlyphMenu
 
         //~ Methods ------------------------------------------------------------
 
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             for (Glyph glyph : nest.getSelectedGlyphSet()) {
@@ -463,8 +466,8 @@ public abstract class GlyphMenu
     // DynAction //
     //-----------//
     /**
-     * Base implementation, to register the dynamic actions that need to be
-     * updated according to the current glyph selection context.
+     * Base implementation, to register the dynamic actions that need
+     * to be updated according to the current glyph selection context.
      */
     protected abstract class DynAction
         extends AbstractAction
@@ -502,7 +505,7 @@ public abstract class GlyphMenu
     // AssignAction //
     //--------------//
     /**
-     * Assign to each glyph the shape selected in the menu
+     * Assign to each glyph the shape selected in the menu.
      */
     protected class AssignAction
         extends DynAction
@@ -516,6 +519,7 @@ public abstract class GlyphMenu
 
         //~ Methods ------------------------------------------------------------
 
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             // Default action is to open the menu
@@ -556,7 +560,7 @@ public abstract class GlyphMenu
     // DeassignAction //
     //----------------//
     /**
-     * Deassign each glyph in the selected collection of glyphs
+     * Deassign each glyph in the selected collection of glyphs.
      */
     protected class DeassignAction
         extends DynAction
@@ -570,6 +574,7 @@ public abstract class GlyphMenu
 
         //~ Methods ------------------------------------------------------------
 
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             // Remember which is the current selected glyph
@@ -654,7 +659,7 @@ public abstract class GlyphMenu
     // PasteAction //
     //-------------//
     /**
-     * Paste the latest shape to the glyph(s) at end
+     * Paste the latest shape to the glyph(s) at end.
      */
     protected class PasteAction
         extends DynAction
@@ -672,6 +677,7 @@ public abstract class GlyphMenu
 
         //~ Methods ------------------------------------------------------------
 
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             JMenuItem source = (JMenuItem) e.getSource();

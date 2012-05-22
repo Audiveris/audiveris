@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -47,7 +47,8 @@ import java.util.TreeMap;
  * <ul>
  * <li>The various systems of a page using Audiveris ScoreSystem instances.</li>
  * <li>The various pages of a score using Audiveris Page instances.</li>
- * <li>The various pages of a score using Proxymusic ScorePartwise instances.</li>
+ * <li>The various pages of a score using Proxymusic ScorePartwise
+ * instances.</li>
  * </ul>
  * All together, this sums up to three different cases to handle, so we have
  * taken a generic approach, abstracting the different types into Candidates and
@@ -56,7 +57,7 @@ import java.util.TreeMap;
  * <p>The strategy used to build Results out of Candidates is based on the
  * following assumptions:
  * <ul>
- * <li>For a  part of a system to be connected to a part of another system,
+ * <li>For a part of a system to be connected to a part of another system,
  * they must exhibit the same count of staves.</li>
  * <li>Parts cannot be swapped from one system to the other. In other words, we
  * cannot have say partA followed by partB in a system, and partB followed by
@@ -77,18 +78,16 @@ public class PartConnection
     private static final Logger logger = Logger.getLogger(PartConnection.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Input data */
     private final Set<List<Candidate>> sequences;
 
     /** Record the set of candidates per result */
-    private final SortedMap<Result, Set<Candidate>> resultMap = new TreeMap<Result, Set<Candidate>>();
+    private final SortedMap<Result, Set<Candidate>> resultMap = new TreeMap<>();
 
     /** Record which result is mapped to which candidate */
-    private final Map<Candidate, Result> candidateMap = new LinkedHashMap<Candidate, Result>();
+    private final Map<Candidate, Result> candidateMap = new LinkedHashMap<>();
 
     //~ Constructors -----------------------------------------------------------
-
     //----------------//
     // PartConnection //
     //----------------//
@@ -98,6 +97,7 @@ public class PartConnection
      * {@link #connectPageSystems},
      * {@link #connectScorePages} or
      * {@link #connectProxyPages}.
+     *
      * @param sequences a set of sequences of parts
      */
     private PartConnection (Set<List<Candidate>> sequences)
@@ -108,7 +108,6 @@ public class PartConnection
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------------------//
     // connectPageSystems //
     //--------------------//
@@ -117,16 +116,17 @@ public class PartConnection
      * This method is to be used when processing one page, and simply connecting
      * the parts of the systems that appear on this page. Here we work with
      * Audiveris ScoreSystem entities.
+     *
      * @param page the containing page
      */
     public static PartConnection connectPageSystems (Page page)
     {
         // Build candidates (here, a candidate is a SystemPart)
-        Set<List<Candidate>> sequences = new LinkedHashSet<List<Candidate>>();
+        Set<List<Candidate>> sequences = new LinkedHashSet<>();
 
         for (TreeNode sn : page.getSystems()) {
-            ScoreSystem     system = (ScoreSystem) sn;
-            List<Candidate> parts = new ArrayList<Candidate>();
+            ScoreSystem system = (ScoreSystem) sn;
+            List<Candidate> parts = new ArrayList<>();
 
             for (TreeNode pn : system.getParts()) {
                 SystemPart systemPart = (SystemPart) pn;
@@ -147,19 +147,21 @@ public class PartConnection
      * This method is to be used when merging the results of several pages.
      * Here we work with ProxyMusic ScorePartwise entities, since we expect each
      * page result to be provided via MusicXML.
+     *
      * @param pages the sequence of pages, as (proxymusic) ScorePartwise
      * instances
      */
-    public static PartConnection connectProxyPages (SortedMap<Integer, ScorePartwise> pages)
+    public static PartConnection connectProxyPages (
+            SortedMap<Integer, ScorePartwise> pages)
     {
         // Build candidates (here a candidate is a ScorePart)
-        Set<List<Candidate>> sequences = new LinkedHashSet<List<Candidate>>();
+        Set<List<Candidate>> sequences = new LinkedHashSet<>();
 
         for (Entry<Integer, ScorePartwise> entry : pages.entrySet()) {
-            int             index = entry.getKey();
-            ScorePartwise   page = entry.getValue();
-            PartList        partList = page.getPartList();
-            List<Candidate> parts = new ArrayList<Candidate>();
+            int index = entry.getKey();
+            ScorePartwise page = entry.getValue();
+            PartList partList = page.getPartList();
+            List<Candidate> parts = new ArrayList<>();
 
             for (Object obj : partList.getPartGroupOrScorePart()) {
                 // TODO: For the time being, we ignore part-group elements.
@@ -182,17 +184,19 @@ public class PartConnection
      * Convenient method to connect parts across pages.
      * This method is to be used when merging the results of several pages.
      * Here we work directly with Audiveris Page entities
+     *
      * @param pages the sequence of pages, as (audiveris) Page instances
      */
-    public static PartConnection connectScorePages (SortedMap<Integer, Page> pages)
+    public static PartConnection connectScorePages (
+            SortedMap<Integer, Page> pages)
     {
         // Build candidates (here a candidate is a ScorePart)
-        Set<List<Candidate>> sequences = new LinkedHashSet<List<Candidate>>();
+        Set<List<Candidate>> sequences = new LinkedHashSet<>();
 
         for (Entry<Integer, Page> entry : pages.entrySet()) {
-            Page            page = entry.getValue();
+            Page page = entry.getValue();
             List<ScorePart> partList = page.getPartList();
-            List<Candidate> parts = new ArrayList<Candidate>();
+            List<Candidate> parts = new ArrayList<>();
 
             for (ScorePart scorePart : partList) {
                 parts.add(new ScorePartCandidate(scorePart, page));
@@ -210,6 +214,7 @@ public class PartConnection
     /**
      * Report an unmodifiable view of which resulting part has been assigned
      * to any given candidate
+     *
      * @return the candidateMap (candidate -> assigned result)
      */
     public Map<Candidate, Result> getCandidateMap ()
@@ -222,6 +227,7 @@ public class PartConnection
     //--------------//
     /**
      * Report which candidate parts have been mapped to any given result
+     *
      * @return the resultMap ((sorted) result -> (unsorted) set of candidates)
      */
     public SortedMap<Result, Set<Candidate>> getResultMap ()
@@ -240,10 +246,10 @@ public class PartConnection
     private void connect ()
     {
         /** Resulting sequence of ScorePart's */
-        final List<Result> results = new ArrayList<Result>();
+        final List<Result> results = new ArrayList<>();
 
         /** Temporary map, to record the set of candidates per result */
-        final Map<Result, Set<Candidate>> rawMap = new HashMap<Result, Set<Candidate>>();
+        final Map<Result, Set<Candidate>> rawMap = new HashMap<>();
 
         // Process each sequence of parts in turn
         // (typically a sequence of parts is a system)
@@ -255,80 +261,60 @@ public class PartConnection
                 logger.fine("Processing new sequence ...");
 
                 for (Candidate candidate : sequence) {
-                    logger.fine("- " + candidate);
+                    logger.fine("- {0}", candidate);
                 }
             }
 
             // Process the sequence in reverse order (bottom up)
             for (ListIterator<Candidate> it = sequence.listIterator(
-                sequence.size()); it.hasPrevious();) {
+                    sequence.size()); it.hasPrevious();) {
                 Candidate candidate = it.previous();
-
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "Processing candidate " + candidate + " count:" +
-                        candidate.getStaffCount());
-                }
+                logger.fine("Processing candidate {0} count:{1}", new Object[]{
+                            candidate, candidate.getStaffCount()});
 
                 // Check with scoreParts currently defined
                 resultIndex++;
-
-                if (logger.isFineEnabled()) {
-                    logger.fine("scorePartIndex:" + resultIndex);
-                }
+                logger.fine("scorePartIndex:{0}", resultIndex);
 
                 if (resultIndex >= results.size()) {
-                    if (logger.isFineEnabled()) {
-                        logger.fine("No more scoreParts available");
-                    }
+                    logger.fine("No more scoreParts available");
 
                     // Create a brand new score part for this candidate
                     createResult(resultIndex, candidate, results, rawMap);
                 } else {
                     Result result = results.get(resultIndex);
-
-                    if (logger.isFineEnabled()) {
-                        logger.fine("Part:" + result);
-                    }
+                    logger.fine("Part:{0}", result);
 
                     // Check we are connectable in terms of staves
                     if (result.getStaffCount() != candidate.getStaffCount()) {
-                        if (logger.isFineEnabled()) {
-                            logger.fine("Count incompatibility");
-                        }
+                        logger.fine("Count incompatibility");
 
                         // Create a brand new score part for this candidate
                         createResult(resultIndex, candidate, results, rawMap);
                     } else {
                         // Can we use names? Just for fun for the time being
-                        if ((candidate.getName() != null) &&
-                            (result.getName() != null)) {
-                            boolean namesOk = candidate.getName()
-                                                       .equalsIgnoreCase(
-                                result.getName());
+                        if ((candidate.getName() != null)
+                                && (result.getName() != null)) {
+                            boolean namesOk = candidate.getName().
+                                    equalsIgnoreCase(
+                                    result.getName());
 
-                            if (logger.isFineEnabled()) {
-                                logger.fine("Names OK: " + namesOk);
+                            logger.fine("Names OK: {0}", namesOk);
 
-                                if (!namesOk) {
-                                    logger.fine(
-                                        "\"" + candidate.getName() +
-                                        "\" vs \"" + result.getName() + "\"");
-                                }
+                            if (!namesOk) {
+                                logger.fine("\"{0}\" vs \"{1}\"",
+                                            new Object[]{candidate.getName(),
+                                                         result.getName()});
                             }
                         }
 
                         // We are compatible
                         candidateMap.put(candidate, result);
+                        logger.fine(
+                                "Compatible. Mapped candidate {0} to result {1}",
+                                    new Object[]{candidate, result});
 
-                        if (logger.isFineEnabled()) {
-                            logger.fine(
-                                "Compatible. Mapped candidate " + candidate +
-                                " to result " + result);
-                        }
-
-                        rawMap.get(result)
-                              .add(candidate);
+                        rawMap.get(result).add(candidate);
                     }
                 }
             }
@@ -339,17 +325,14 @@ public class PartConnection
 
         for (int i = 0; i < results.size(); i++) {
             Result result = results.get(i);
-            int    id = i + 1;
+            int id = i + 1;
             result.setId(id);
 
             // Forge a ScorePart name if none has been assigned
             if (result.getName() == null) {
                 result.setName("Part_" + id);
             }
-
-            if (logger.isFineEnabled()) {
-                logger.fine("Final " + result);
-            }
+            logger.fine("Final {0}", result);
         }
 
         // Now that results are ordered, we can deliver the sorted map
@@ -359,20 +342,16 @@ public class PartConnection
     //--------------//
     // createResult //
     //--------------//
-    private Result createResult (int                         resultIndex,
-                                 Candidate                   candidate,
-                                 List<Result>                results,
+    private Result createResult (int resultIndex,
+                                 Candidate candidate,
+                                 List<Result> results,
                                  Map<Result, Set<Candidate>> rawMap)
     {
-        Set<Candidate> candidates = new LinkedHashSet<Candidate>();
-        Result         result = candidate.createResult();
+        Set<Candidate> candidates = new LinkedHashSet<>();
+        Result result = candidate.createResult();
         candidateMap.put(candidate, result);
-
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "Creation. Mapped candidate " + candidate + " to result " +
-                result);
-        }
+        logger.fine("Creation. Mapped candidate {0} to result {1}",
+                    new Object[]{candidate, result});
 
         candidates.add(candidate);
         rawMap.put(result, candidates);
@@ -382,7 +361,6 @@ public class PartConnection
     }
 
     //~ Inner Interfaces -------------------------------------------------------
-
     //-----------//
     // Candidate //
     //-----------//
@@ -425,12 +403,13 @@ public class PartConnection
     // Result //
     //--------//
     /**
-     * Interface {@code Result} is used to process resulting ScorePart instances,
+     * Interface {@code Result} is used to process resulting ScorePart
+     * instances,
      * regardless whether they are instances of standard Audiveris {@link
      * ScorePart} or instances of ProxyMusic {@link proxymusic.ScorePart}.
      */
     public static interface Result
-        extends Comparable<Result>
+            extends Comparable<Result>
     {
         //~ Methods ------------------------------------------------------------
 
@@ -463,31 +442,30 @@ public class PartConnection
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //----------------//
     // AbstractResult //
     //----------------//
     private abstract static class AbstractResult
-        implements Result
+            implements Result
     {
         //~ Instance fields ----------------------------------------------------
 
         protected final Candidate candidate;
 
         //~ Constructors -------------------------------------------------------
-
         public AbstractResult (Candidate candidate)
         {
             this.candidate = candidate;
         }
 
         //~ Methods ------------------------------------------------------------
-
+        @Override
         public int compareTo (Result other)
         {
             return Integer.signum(getId() - other.getId());
         }
 
+        @Override
         public Candidate getCandidate ()
         {
             return candidate;
@@ -499,21 +477,15 @@ public class PartConnection
             StringBuilder sb = new StringBuilder("{");
             sb.append(getClass().getSimpleName());
 
-            sb.append(" id:")
-              .append(getId());
+            sb.append(" id:").append(getId());
 
-            sb.append(" name:\"")
-              .append(getName())
-              .append("\"");
+            sb.append(" name:\"").append(getName()).append("\"");
 
             if (getAbbreviation() != null) {
-                sb.append(" abbr:\"")
-                  .append(getAbbreviation())
-                  .append("\"");
+                sb.append(" abbr:\"").append(getAbbreviation()).append("\"");
             }
 
-            sb.append(" staffCount:")
-              .append(getStaffCount());
+            sb.append(" staffCount:").append(getStaffCount());
 
             sb.append("}");
 
@@ -528,20 +500,22 @@ public class PartConnection
      * Wrapping class meant for a proxymusic ScorePart instance candidate
      */
     private static class PMScorePartCandidate
-        implements Candidate
+            implements Candidate
     {
         //~ Instance fields ----------------------------------------------------
 
         private final proxymusic.ScorePart scorePart;
-        private final ScorePartwise        scorePartwise;
-        private final int                  inputIndex;
-        private Integer                    staffCount;
+
+        private final ScorePartwise scorePartwise;
+
+        private final int inputIndex;
+
+        private Integer staffCount;
 
         //~ Constructors -------------------------------------------------------
-
         public PMScorePartCandidate (proxymusic.ScorePart scorePart,
-                                     ScorePartwise        scorePartwise,
-                                     int                  inputIndex)
+                                     ScorePartwise scorePartwise,
+                                     int inputIndex)
         {
             this.scorePart = scorePart;
             this.scorePartwise = scorePartwise;
@@ -549,7 +523,7 @@ public class PartConnection
         }
 
         //~ Methods ------------------------------------------------------------
-
+        @Override
         public PMScorePartResult createResult ()
         {
             // Create a brand new score part for this candidate
@@ -559,20 +533,18 @@ public class PartConnection
             proxymusic.ObjectFactory factory = new proxymusic.ObjectFactory();
 
             PMScorePartResult result = new PMScorePartResult(
-                this,
-                getStaffCount(),
-                factory.createScorePart());
+                    this,
+                    getStaffCount(),
+                    factory.createScorePart());
 
             result.setName(getName());
             result.setAbbreviation(getAbbreviation());
-
-            if (logger.isFineEnabled()) {
-                logger.fine("Created " + result + " from " + this);
-            }
+            logger.fine("Created {0} from {1}", new Object[]{result, this});
 
             return result;
         }
 
+        @Override
         public String getAbbreviation ()
         {
             PartName partName = scorePart.getPartAbbreviation();
@@ -584,11 +556,13 @@ public class PartConnection
             }
         }
 
+        @Override
         public int getInputIndex ()
         {
             return inputIndex;
         }
 
+        @Override
         public String getName ()
         {
             PartName partName = scorePart.getPartName();
@@ -600,6 +574,7 @@ public class PartConnection
             }
         }
 
+        @Override
         public int getStaffCount ()
         {
             if (staffCount == null) {
@@ -616,8 +591,8 @@ public class PartConnection
                     }
 
                     // Get first measure of this part
-                    ScorePartwise.Part.Measure firstMeasure = part.getMeasure()
-                                                                  .get(0);
+                    ScorePartwise.Part.Measure firstMeasure = part.getMeasure().
+                            get(0);
 
                     // Look for Attributes element
                     for (Object obj : firstMeasure.getNoteOrBackupOrForward()) {
@@ -626,7 +601,7 @@ public class PartConnection
                         }
 
                         proxymusic.Attributes attributes = (proxymusic.Attributes) obj;
-                        BigInteger            staves = attributes.getStaves();
+                        BigInteger staves = attributes.getStaves();
 
                         if (staves != null) {
                             staffCount = staves.intValue();
@@ -642,6 +617,7 @@ public class PartConnection
             return staffCount;
         }
 
+        @Override
         public Object getUnderlyingObject ()
         {
             return scorePart;
@@ -654,15 +630,11 @@ public class PartConnection
 
             sb.append(getClass().getSimpleName());
 
-            sb.append(" page#")
-              .append(inputIndex);
+            sb.append(" page#").append(inputIndex);
 
-            sb.append(" \"")
-              .append(getName())
-              .append("\"");
+            sb.append(" \"").append(getName()).append("\"");
 
-            sb.append(" staffCount:")
-              .append(getStaffCount());
+            sb.append(" staffCount:").append(getStaffCount());
 
             sb.append("}");
 
@@ -677,18 +649,19 @@ public class PartConnection
      * Wrapping class meant for a proxymusic ScorePart instance result
      */
     private static class PMScorePartResult
-        extends AbstractResult
+            extends AbstractResult
     {
         //~ Instance fields ----------------------------------------------------
 
-        private final int                  staffCount;
+        private final int staffCount;
+
         private final proxymusic.ScorePart scorePart;
-        private int                        id;
+
+        private int id;
 
         //~ Constructors -------------------------------------------------------
-
-        public PMScorePartResult (Candidate            candidate,
-                                  int                  staffCount,
+        public PMScorePartResult (Candidate candidate,
+                                  int staffCount,
                                   proxymusic.ScorePart scorePart)
         {
             super(candidate);
@@ -697,7 +670,7 @@ public class PartConnection
         }
 
         //~ Methods ------------------------------------------------------------
-
+        @Override
         public String getAbbreviation ()
         {
             PartName partName = scorePart.getPartAbbreviation();
@@ -709,11 +682,13 @@ public class PartConnection
             }
         }
 
+        @Override
         public int getId ()
         {
             return id;
         }
 
+        @Override
         public String getName ()
         {
             PartName partName = scorePart.getPartName();
@@ -725,34 +700,39 @@ public class PartConnection
             }
         }
 
+        @Override
         public int getStaffCount ()
         {
             return staffCount;
         }
 
+        @Override
         public proxymusic.ScorePart getUnderlyingObject ()
         {
             return scorePart;
         }
 
+        @Override
         public void setAbbreviation (String abbreviation)
         {
             proxymusic.ObjectFactory factory = new proxymusic.ObjectFactory();
-            PartName                 partName = factory.createPartName();
+            PartName partName = factory.createPartName();
             scorePart.setPartAbbreviation(partName);
             partName.setValue(abbreviation);
         }
 
+        @Override
         public void setId (int id)
         {
             this.id = id;
             scorePart.setId("P" + id);
         }
 
+        @Override
         public void setName (String name)
         {
             proxymusic.ObjectFactory factory = new proxymusic.ObjectFactory();
-            proxymusic.PartName      partName = factory.createPartName();
+            proxymusic.PartName partName = factory.createPartName();
             scorePart.setPartName(partName);
             partName.setValue(name);
         }
@@ -765,61 +745,63 @@ public class PartConnection
      * Wrapping class meant for a ScorePart instance candidate
      */
     private static class ScorePartCandidate
-        implements Candidate
+            implements Candidate
     {
         //~ Instance fields ----------------------------------------------------
 
         private final ScorePart scorePart;
-        private final Page      page;
+
+        private final Page page;
 
         //~ Constructors -------------------------------------------------------
-
         public ScorePartCandidate (ScorePart scorePart,
-                                   Page      page)
+                                   Page page)
         {
             this.scorePart = scorePart;
             this.page = page;
         }
 
         //~ Methods ------------------------------------------------------------
-
+        @Override
         public ScorePartResult createResult ()
         {
             // Create a brand new score part for this candidate
             // Id is irrelevant for the time being
             ScorePartResult result = new ScorePartResult(
-                this,
-                new ScorePart(0, getStaffCount()));
+                    this,
+                    new ScorePart(0, getStaffCount()));
             result.setName(getName());
             result.setAbbreviation(getAbbreviation());
-
-            if (logger.isFineEnabled()) {
-                logger.fine("Created " + result + " from " + this);
-            }
+            logger.fine("Created {0} from {1}", new Object[]{result, this});
 
             return result;
         }
 
+        @Override
         public String getAbbreviation ()
         {
             return scorePart.getAbbreviation();
         }
 
+        @Override
         public int getInputIndex ()
         {
             return page.getIndex();
         }
 
+        @Override
         public String getName ()
         {
             return scorePart.getName();
         }
 
+        @Override
         public int getStaffCount ()
         {
             return scorePart.getStaffCount();
         }
 
+        @Override
         public Object getUnderlyingObject ()
         {
             return scorePart;
@@ -832,15 +814,11 @@ public class PartConnection
 
             sb.append(getClass().getSimpleName());
 
-            sb.append(" page#")
-              .append(getInputIndex());
+            sb.append(" page#").append(getInputIndex());
 
-            sb.append(" \"")
-              .append(getName())
-              .append("\"");
+            sb.append(" \"").append(getName()).append("\"");
 
-            sb.append(" staffCount:")
-              .append(getStaffCount());
+            sb.append(" staffCount:").append(getStaffCount());
 
             sb.append("}");
 
@@ -855,14 +833,13 @@ public class PartConnection
      * Wrapping class meant for a ScorePart instance result
      */
     private static class ScorePartResult
-        extends AbstractResult
+            extends AbstractResult
     {
         //~ Instance fields ----------------------------------------------------
 
         private final ScorePart scorePart;
 
         //~ Constructors -------------------------------------------------------
-
         public ScorePartResult (Candidate candidate,
                                 ScorePart scorePart)
         {
@@ -871,42 +848,49 @@ public class PartConnection
         }
 
         //~ Methods ------------------------------------------------------------
-
+        @Override
         public String getAbbreviation ()
         {
             return scorePart.getAbbreviation();
         }
 
+        @Override
         public int getId ()
         {
             return scorePart.getId();
         }
 
+        @Override
         public String getName ()
         {
             return scorePart.getName();
         }
 
+        @Override
         public int getStaffCount ()
         {
             return scorePart.getStaffCount();
         }
 
+        @Override
         public ScorePart getUnderlyingObject ()
         {
             return scorePart;
         }
 
+        @Override
         public void setAbbreviation (String abbreviation)
         {
             scorePart.setAbbreviation(abbreviation);
         }
 
+        @Override
         public void setId (int id)
         {
             scorePart.setId(id);
         }
 
+        @Override
         public void setName (String name)
         {
             scorePart.setName(name);
@@ -920,60 +904,59 @@ public class PartConnection
      * Wrapping class meant for a SystemPart instance
      */
     private static class SystemPartCandidate
-        implements Candidate
+            implements Candidate
     {
         //~ Instance fields ----------------------------------------------------
 
         private final SystemPart systemPart;
 
         //~ Constructors -------------------------------------------------------
-
         public SystemPartCandidate (SystemPart part)
         {
             this.systemPart = part;
         }
 
         //~ Methods ------------------------------------------------------------
-
+        @Override
         public ScorePartResult createResult ()
         {
             // Create a brand new score part for this candidate
             // Id is irrelevant for the time being
             ScorePartResult result = new ScorePartResult(
-                this,
-                new ScorePart(0, getStaffCount()));
+                    this,
+                    new ScorePart(0, getStaffCount()));
             result.setName(getName());
             result.setAbbreviation(getAbbreviation());
-
-            if (logger.isFineEnabled()) {
-                logger.fine("Created " + result + " from " + this);
-            }
+            logger.fine("Created {0} from {1}", new Object[]{result, this});
 
             return result;
         }
 
+        @Override
         public String getAbbreviation ()
         {
             return null;
         }
 
+        @Override
         public int getInputIndex ()
         {
-            return systemPart.getSystem()
-                             .getId();
+            return systemPart.getSystem().getId();
         }
 
+        @Override
         public String getName ()
         {
             return systemPart.getName();
         }
 
+        @Override
         public int getStaffCount ()
         {
-            return systemPart.getStaves()
-                             .size();
+            return systemPart.getStaves().size();
         }
 
+        @Override
         public Object getUnderlyingObject ()
         {
             return systemPart;

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -15,10 +15,10 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
-import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
+import omr.glyph.ShapeEvaluator;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
@@ -72,7 +72,7 @@ import java.util.SortedSet;
  * @author Hervé Bitteur
  */
 public class ScoreChecker
-    extends AbstractScoreVisitor
+        extends AbstractScoreVisitor
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -83,29 +83,30 @@ public class ScoreChecker
     private static final Logger logger = Logger.getLogger(ScoreChecker.class);
 
     /** Specific predicate for beam hooks */
-    private static final Predicate<Shape> hookPredicate = new Predicate<Shape>() {
+    private static final Predicate<Shape> hookPredicate = new Predicate<Shape>()
+    {
+
+        @Override
         public boolean check (Shape shape)
         {
             return ShapeSet.Beams.contains(shape);
         }
     };
 
-
     //~ Instance fields --------------------------------------------------------
-
     /** Glyph evaluator */
-    private final GlyphEvaluator evaluator = GlyphNetwork.getInstance();
+    private final ShapeEvaluator evaluator = GlyphNetwork.getInstance();
 
     /** Output of the checks */
     private final WrappedBoolean modified;
 
     //~ Constructors -----------------------------------------------------------
-
     //--------------//
     // ScoreChecker //
     //--------------//
     /**
      * Creates a new ScoreChecker object.
+     *
      * @param modified This is actually an out parameter, to tell if one or
      * several entities have been modified by the score visit
      */
@@ -115,12 +116,12 @@ public class ScoreChecker
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // visit Beam //
     //------------//
     /**
      * Check that all beam hooks are legal
+     *
      * @param beam the beam to check
      * @return true
      */
@@ -128,17 +129,12 @@ public class ScoreChecker
     public boolean visit (Beam beam)
     {
         try {
-            if (!beam.isHook() ||
-                beam.getItems()
-                    .first()
-                    .getGlyph()
-                    .isManualShape()) {
+            if (!beam.isHook()
+                    || beam.getItems().first().getGlyph().isManualShape()) {
                 return true;
             }
 
-            Glyph            glyph = beam.getItems()
-                                         .first()
-                                         .getGlyph();
+            Glyph glyph = beam.getItems().first().getGlyph();
             SortedSet<Chord> chords = beam.getChords();
 
             if (chords.size() > 1) {
@@ -155,18 +151,16 @@ public class ScoreChecker
 
             // Check that there is at least one full beam on the same chord
             // And vertically closer than the chord head 
-            Chord  chord = chords.first();
-            int    stemX = chord.getStem()
-                                .getLocation().x;
+            Chord chord = chords.first();
+            int stemX = chord.getStem().getLocation().x;
             double hookY = glyph.getCentroid().y;
-            int    headY = chord.getHeadLocation().y;
+            int headY = chord.getHeadLocation().y;
             double toHead = Math.abs(headY - hookY);
 
             for (Beam b : chord.getBeams()) {
                 if (!b.isHook()) {
                     // Check hook is closer to beam than to head
-                    double beamY = b.getLine()
-                                    .yAtX(stemX);
+                    double beamY = b.getLine().yAtX(stemX);
                     double toBeam = Math.abs(beamY - hookY);
 
                     if (toBeam <= toHead) {
@@ -177,7 +171,7 @@ public class ScoreChecker
 
             // No real beam found on the same chord, so let's discard the hook
             if (glyph.isVip() || logger.isFineEnabled()) {
-                logger.info("Removing false beam hook glyph#" + glyph.getId());
+                logger.info("Removing false beam hook {0}", glyph.idString());
             }
 
             glyph.setShape(null);
@@ -186,8 +180,8 @@ public class ScoreChecker
             return true;
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + beam,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + beam,
+                    ex);
         }
 
         return true;
@@ -210,8 +204,8 @@ public class ScoreChecker
             checkVoidHeads(chord);
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + chord,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + chord,
+                    ex);
         }
 
         return true;
@@ -222,6 +216,7 @@ public class ScoreChecker
     //----------------//
     /**
      * Check that each dynamics shape can be computed
+     *
      * @param dynamics the dynamics item
      * @return true
      */
@@ -232,8 +227,8 @@ public class ScoreChecker
             dynamics.getShape();
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + dynamics,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + dynamics,
+                    ex);
         }
 
         return true;
@@ -244,6 +239,7 @@ public class ScoreChecker
     //---------------//
     /**
      * This method is used to detect & fix unrecognized beam hooks
+     *
      * @param measure the measure to browse
      * @return true. The real output is stored in the modified global which is
      * set to true if at least a beam_hook has been fixed.
@@ -252,9 +248,9 @@ public class ScoreChecker
     public boolean visit (Measure measure)
     {
         try {
-            final Scale       scale = measure.getScale();
+            final Scale scale = measure.getScale();
             final ScoreSystem system = measure.getSystem();
-            final SystemInfo  systemInfo = system.getInfo();
+            final SystemInfo systemInfo = system.getInfo();
 
             // Check the beam groups for non-recognized hooks
             for (BeamGroup group : measure.getBeamGroups()) {
@@ -266,8 +262,8 @@ public class ScoreChecker
                     // We could have rests (w/o stem!)
                     if (stem != null) {
                         searchHooks(
-                            chord,
-                            systemInfo.lookupIntersectedGlyphs(
+                                chord,
+                                systemInfo.lookupIntersectedGlyphs(
                                 systemInfo.stemBoxOf(stem),
                                 stem));
                     }
@@ -275,8 +271,8 @@ public class ScoreChecker
             }
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + measure,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + measure,
+                    ex);
         }
 
         return true;
@@ -287,6 +283,7 @@ public class ScoreChecker
     //-------------//
     /**
      * Not used
+     *
      * @param score
      * @return true
      */
@@ -294,15 +291,12 @@ public class ScoreChecker
     public boolean visit (Score score)
     {
         try {
-            if (logger.isFineEnabled()) {
-                logger.fine("Checking score ...");
-            }
-
+            logger.fine("Checking score ...");
             score.acceptChildren(this);
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + score,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + score,
+                    ex);
         }
 
         return false;
@@ -314,6 +308,7 @@ public class ScoreChecker
     /**
      * Method used to check and correct the consistency between all time
      * signatures that occur in parallel measures.
+     *
      * @param timeSignature the score entity that triggers the check
      * @return true
      */
@@ -321,11 +316,8 @@ public class ScoreChecker
     public boolean visit (TimeSignature timeSignature)
     {
         try {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    timeSignature.getContextString() + " Checking " +
-                    timeSignature);
-            }
+            logger.fine("{0} Checking {1}", new Object[]{timeSignature.
+                        getContextString(), timeSignature});
 
             // Trigger computation of Num & Den if not already done
             Shape shape = timeSignature.getShape();
@@ -334,12 +326,12 @@ public class ScoreChecker
                 // This is assumed to be a complex time sig
                 // (with no equivalent predefined shape)
                 // Just check we are able to get num and den
-                if ((timeSignature.getNumerator() == null) ||
-                    (timeSignature.getDenominator() == null)) {
+                if ((timeSignature.getNumerator() == null)
+                        || (timeSignature.getDenominator() == null)) {
                     timeSignature.addError(
-                        "Time signature with no rational value");
+                            "Time signature with no rational value");
                 } else {
-                    logger.fine("Complex " + timeSignature);
+                    logger.fine("Complex {0}", timeSignature);
 
                     // Normal complex shape
                     if (!timeSignature.isDummy()) {
@@ -352,7 +344,7 @@ public class ScoreChecker
                 // This time sig has the shape of a single digit
                 // So some other part is still missing
                 timeSignature.addError(
-                    "Orphan time signature shape : " + shape);
+                        "Orphan time signature shape : " + shape);
             } else {
                 // Normal predefined shape
                 if (!timeSignature.isDummy()) {
@@ -361,36 +353,31 @@ public class ScoreChecker
             }
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " +
-                timeSignature,
-                ex);
+                    getClass().getSimpleName() + " Error visiting "
+                    + timeSignature,
+                    ex);
         }
 
         return true;
     }
 
     //- Utilities --------------------------------------------------------------
-
     //------------------//
     // arePitchDeltasOk //
     //------------------//
     private boolean arePitchDeltasOk (List<Note> list)
     {
         double minDeltaPitch = constants.minDeltaNotePitch.getValue();
-        Note   lastNote = null;
+        Note lastNote = null;
 
         for (Note note : list) {
             if (lastNote != null) {
-                double deltaPitch = note.getPitchPosition() -
-                                    lastNote.getPitchPosition();
+                double deltaPitch = note.getPitchPosition()
+                        - lastNote.getPitchPosition();
 
                 if (Math.abs(deltaPitch) < minDeltaPitch) {
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            "Too small delta pitch between " + note + " & " +
-                            lastNote);
-                    }
-
+                    logger.fine("Too small delta pitch between {0} & {1}",
+                                new Object[]{note, lastNote});
                     mergeNotes(lastNote, note);
 
                     return false;
@@ -409,22 +396,23 @@ public class ScoreChecker
     /**
      * Check that all note heads of a chord are of the same shape
      * (either all black or all void).
+     *
      * @param chord
      */
     private void checkNoteConsistency (Chord chord)
     {
-        EnumMap<Shape, List<Note>> shapes = new EnumMap<Shape, List<Note>>(
-            Shape.class);
+        EnumMap<Shape, List<Note>> shapes = new EnumMap<>(
+                Shape.class);
 
         for (TreeNode node : chord.getNotes()) {
             Note note = (Note) node;
 
             if (!note.isRest()) {
-                Shape      shape = note.getShape();
+                Shape shape = note.getShape();
                 List<Note> notes = shapes.get(shape);
 
                 if (notes == null) {
-                    notes = new ArrayList<Note>();
+                    notes = new ArrayList<>();
                     shapes.put(shape, notes);
                 }
 
@@ -432,15 +420,14 @@ public class ScoreChecker
             }
         }
 
-        if (shapes.keySet()
-                  .size() > 1) {
+        if (shapes.keySet().size() > 1) {
             chord.addError(
-                chord.getStem(),
-                "Note inconsistency in " + chord + shapes);
+                    chord.getStem(),
+                    "Note inconsistency in " + chord + shapes);
 
             // Check evaluations
             double bestEval = Double.MIN_VALUE;
-            Shape  bestShape = null;
+            Shape bestShape = null;
 
             for (Shape shape : shapes.keySet()) {
                 List<Note> notes = shapes.get(shape);
@@ -455,17 +442,19 @@ public class ScoreChecker
                 }
             }
 
-            if (logger.isFineEnabled()) {
-                logger.info(chord + " aligned on shape " + bestShape);
-            }
+            logger.fine("{0} aligned on shape {1}", new Object[]{chord,
+                                                                 bestShape});
 
-            final Shape      baseShape = bestShape; // Must be final
-            Predicate<Shape> predicate = new Predicate<Shape>() {
+            final Shape baseShape = bestShape; // Must be final
+            Predicate<Shape> predicate = new Predicate<Shape>()
+            {
+
                 final Collection<Shape> desiredShapes = Arrays.asList(
-                    Note.getActualShape(baseShape, 1),
-                    Note.getActualShape(baseShape, 2),
-                    Note.getActualShape(baseShape, 3));
+                        Note.getActualShape(baseShape, 1),
+                        Note.getActualShape(baseShape, 2),
+                        Note.getActualShape(baseShape, 3));
 
+                @Override
                 public boolean check (Shape shape)
                 {
                     return desiredShapes.contains(shape);
@@ -484,10 +473,10 @@ public class ScoreChecker
                 for (Note note : notes) {
                     for (Glyph glyph : note.getGlyphs()) {
                         Evaluation vote = evaluator.vote(
-                            glyph,
-                            system.getInfo(),
-                            Grades.consistentNoteMinGrade,
-                            predicate);
+                                glyph,
+                                system.getInfo(),
+                                Grades.consistentNoteMinGrade,
+                                predicate);
 
                         if (vote != null) {
                             glyph.setEvaluation(vote);
@@ -504,6 +493,7 @@ public class ScoreChecker
     /**
      * Check that on each side of the chord stem, the notes pitches are
      * not too close to each other.
+     *
      * @param chord the chord at hand
      */
     private void checkNotePitches (Chord chord)
@@ -514,18 +504,18 @@ public class ScoreChecker
             return;
         }
 
-        PixelPoint     pixPoint = stem.getAreaCenter();
-        PixelPoint     stemCenter = pixPoint;
+        PixelPoint pixPoint = stem.getAreaCenter();
+        PixelPoint stemCenter = pixPoint;
 
         // Look on left and right sides
-        List<TreeNode> allNotes = new ArrayList<TreeNode>(chord.getNotes());
+        List<TreeNode> allNotes = new ArrayList<>(chord.getNotes());
         Collections.sort(allNotes, Chord.noteHeadComparator);
 
-        List<Note> lefts = new ArrayList<Note>();
-        List<Note> rights = new ArrayList<Note>();
+        List<Note> lefts = new ArrayList<>();
+        List<Note> rights = new ArrayList<>();
 
         for (TreeNode nNode : allNotes) {
-            Note       note = (Note) nNode;
+            Note note = (Note) nNode;
             PixelPoint center = note.getCenter();
 
             if (center.x < stemCenter.x) {
@@ -550,6 +540,7 @@ public class ScoreChecker
     //--------------//
     /**
      * Here we check time signature across all staves of the system
+     *
      * @param timeSignature the sig to check
      */
     private void checkTimeSig (TimeSignature timeSignature)
@@ -563,29 +554,24 @@ public class ScoreChecker
 
         if (bestSig != null) {
             for (Staff.SystemIterator sit = new Staff.SystemIterator(
-                timeSignature.getMeasure()); sit.hasNext();) {
-                Staff         staff = sit.next();
-                Measure       measure = sit.getMeasure();
+                    timeSignature.getMeasure()); sit.hasNext();) {
+                Staff staff = sit.next();
+                Measure measure = sit.getMeasure();
                 TimeSignature sig = measure.getTimeSignature(staff);
 
                 if (sig == null) {
                     sig = new TimeSignature(measure, staff, bestSig);
 
                     try {
-                        if (logger.isFineEnabled()) {
-                            logger.fine(
-                                sig.getContextString() + " Created time sig " +
-                                sig.getNumerator() + "/" +
-                                sig.getDenominator());
-                        }
+                        logger.fine("{0} Created time sig {1}/{2}",
+                                    new Object[]{sig.getContextString(), sig.
+                                    getNumerator(), sig.getDenominator()});
                     } catch (InvalidTimeSignature ignored) {
                         logger.warning("InvalidTimeSignature", ignored);
                     }
                 } else {
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            sig.getContextString() + " Existing sig " + sig);
-                    }
+                    logger.fine("{0} Existing sig {1}", new Object[]{sig.
+                                getContextString(), sig});
                 }
             }
         }
@@ -596,16 +582,17 @@ public class ScoreChecker
     //----------------//
     /**
      * Check that void note heads do not coexist with flags or beams.
+     *
      * @param chord
      */
     private void checkVoidHeads (Chord chord)
     {
         // Void heads?
-        double     noteGrade = Double.MIN_VALUE;
-        Set<Glyph> voidGlyphs = new HashSet<Glyph>();
+        double noteGrade = Double.MIN_VALUE;
+        Set<Glyph> voidGlyphs = new HashSet<>();
 
         for (TreeNode node : chord.getNotes()) {
-            Note  note = (Note) node;
+            Note note = (Note) node;
             Shape noteShape = note.getShape();
 
             if (ShapeSet.VoidNoteHeads.contains(noteShape)) {
@@ -620,8 +607,11 @@ public class ScoreChecker
             return;
         }
 
-        ScoreSystem      system = chord.getSystem();
-        Predicate<Shape> predicate = new Predicate<Shape>() {
+        ScoreSystem system = chord.getSystem();
+        Predicate<Shape> predicate = new Predicate<Shape>()
+        {
+
+            @Override
             public boolean check (Shape shape)
             {
                 return ShapeSet.BlackNoteHeads.contains(shape);
@@ -631,15 +621,10 @@ public class ScoreChecker
         // Flags or beams
         boolean fix = false;
 
-        if (!chord.getBeams()
-                  .isEmpty()) {
+        if (!chord.getBeams().isEmpty()) {
             // We trust beams
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    chord.getContextString() + " Head/beam conflict in " +
-                    chord);
-            }
-
+            logger.fine("{0} Head/beam conflict in {1}", new Object[]{chord.
+                        getContextString(), chord});
             fix = true;
         } else if (chord.getFlagsNumber() > 0) {
             // Check grade of flag(s)
@@ -649,11 +634,8 @@ public class ScoreChecker
                 flagGrade = Math.max(flagGrade, flag.getGrade());
             }
 
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    chord.getContextString() + " Head/flag conflict in " +
-                    chord);
-            }
+            logger.fine("{0} Head/flag conflict in {1}", new Object[]{chord.
+                        getContextString(), chord});
 
             if (noteGrade <= flagGrade) {
                 fix = true;
@@ -664,9 +646,9 @@ public class ScoreChecker
             // Change note shape (void -> black)
             for (Glyph glyph : voidGlyphs) {
                 Evaluation vote = evaluator.rawVote(
-                    glyph,
-                    Grades.consistentNoteMinGrade,
-                    predicate);
+                        glyph,
+                        Grades.consistentNoteMinGrade,
+                        predicate);
 
                 if (vote != null) {
                     glyph.setEvaluation(vote);
@@ -681,6 +663,7 @@ public class ScoreChecker
     /**
      * Report the best time signature for all parallel measures (among all the
      * parallel candidate time signatures)
+     *
      * @param measure the reference measure
      * @return the best signature, or null if no suitable signature found
      */
@@ -699,7 +682,7 @@ public class ScoreChecker
         TimeSignature bestSig = manualSig;
 
         for (Staff.SystemIterator sit = new Staff.SystemIterator(measure);
-             sit.hasNext();) {
+                sit.hasNext();) {
             Staff staff = sit.next();
             measure = sit.getMeasure();
 
@@ -722,8 +705,8 @@ public class ScoreChecker
                 }
 
                 // Still consistent?
-                if ((num == bestSig.getNumerator()) &&
-                    (den == bestSig.getDenominator())) {
+                if ((num == bestSig.getNumerator())
+                        && (den == bestSig.getDenominator())) {
                     continue;
                 }
 
@@ -733,10 +716,7 @@ public class ScoreChecker
                     sig.copy(manualSig);
                 } else {
                     // Inconsistent sigs
-                    if (logger.isFineEnabled()) {
-                        logger.fine("Inconsistency between time sigs");
-                    }
-
+                    logger.fine("Inconsistency between time sigs");
                     sig.addError("Inconsistent time signature ");
                     bestSig.addError("Inconsistent time signature");
 
@@ -757,20 +737,20 @@ public class ScoreChecker
      * Report a suitable manually assigned time signature, if any. For this, we
      * need to find a manual time sig, after having checked that all manual time
      * sigs in the measure are consistent.
+     *
      * @param measure the reference measure
      * @return the suitable manual sig, if any
      * @throws InconsistentTimeSignatures if at least two manual sigs differ
      */
     private TimeSignature findManualTimeSig (Measure measure)
-        throws InconsistentTimeSignatures
+            throws InconsistentTimeSignatures
     {
         TimeSignature manualSig = null;
 
         for (Staff.SystemIterator sit = new Staff.SystemIterator(measure);
-             sit.hasNext();) {
-            Staff         staff = sit.next();
-            TimeSignature sig = sit.getMeasure()
-                                   .getTimeSignature(staff);
+                sit.hasNext();) {
+            Staff staff = sit.next();
+            TimeSignature sig = sit.getMeasure().getTimeSignature(staff);
 
             if ((sig != null) && !sig.isDummy() && sig.isManual()) {
                 try {
@@ -786,14 +766,14 @@ public class ScoreChecker
                     }
 
                     // Still consistent?
-                    if ((num != manualSig.getNumerator()) ||
-                        (den != manualSig.getDenominator())) {
+                    if ((num != manualSig.getNumerator())
+                            || (den != manualSig.getDenominator())) {
                         sig.addError("Inconsistent time signature");
                         manualSig.addError("Inconsistent time signature");
 
                         throw new InconsistentTimeSignatures();
                     }
-                } catch (Exception ex) {
+                } catch (InvalidTimeSignature | InconsistentTimeSignatures ex) {
                     // Unusable signature, forget about this one
                 }
             }
@@ -808,27 +788,24 @@ public class ScoreChecker
     private void mergeNotes (Note first,
                              Note second)
     {
-        if ((first.getShape() == Shape.NOTEHEAD_VOID) &&
-            (second.getShape() == Shape.NOTEHEAD_VOID)) {
-            List<Glyph> glyphs = new ArrayList<Glyph>();
+        if ((first.getShape() == Shape.NOTEHEAD_VOID)
+                && (second.getShape() == Shape.NOTEHEAD_VOID)) {
+            List<Glyph> glyphs = new ArrayList<>();
 
             glyphs.addAll(first.getGlyphs());
             glyphs.addAll(second.getGlyphs());
 
-            SystemInfo system = first.getSystem()
-                                     .getInfo();
-            Glyph      compound = system.buildTransientCompound(glyphs);
-            Evaluation vote = GlyphNetwork.getInstance()
-                                          .vote(
-                compound,
-                first.getSystem().getInfo(),
-                Grades.mergedNoteMinGrade);
+            SystemInfo system = first.getSystem().getInfo();
+            Glyph compound = system.buildTransientCompound(glyphs);
+            Evaluation vote = GlyphNetwork.getInstance().vote(
+                    compound,
+                    first.getSystem().getInfo(),
+                    Grades.mergedNoteMinGrade);
 
             if (vote != null) {
                 compound = system.addGlyph(compound);
                 compound.setEvaluation(vote);
-                logger.info(
-                    "Glyph#" + compound.getId() + " merged two note heads");
+                logger.info("{0} merged two note heads", compound.idString());
             }
         }
     }
@@ -838,16 +815,17 @@ public class ScoreChecker
     //-------------//
     /**
      * Search unrecognized beam hooks among the glyphs around the provided chord
-     * @param chord the provided chord
+     *
+     * @param chord  the provided chord
      * @param glyphs the surrounding glyphs
      */
-    private void searchHooks (Chord             chord,
+    private void searchHooks (Chord chord,
                               Collection<Glyph> glyphs)
     {
         // Up(+1) or down(-1) stem?
-        final int          stemDir = chord.getStemDir();
-        final PixelPoint   chordCenter = chord.getCenter();
-        final ScoreSystem  system = chord.getSystem();
+        final int stemDir = chord.getStemDir();
+        final PixelPoint chordCenter = chord.getCenter();
+        final ScoreSystem system = chord.getSystem();
         final GlyphNetwork network = GlyphNetwork.getInstance();
 
         for (Glyph glyph : glyphs) {
@@ -855,37 +833,30 @@ public class ScoreChecker
                 continue;
             }
 
-            if (logger.isFineEnabled()) {
-                logger.fine("Spurious glyph#" + glyph.getId());
-            }
+            logger.fine("Spurious {0}", glyph.idString());
 
             // Check we are on the tail (beam) end of the stem
             // Beware, stemDir is >0 upwards, while y is >0 downwards
             PixelPoint glyphCenter = glyph.getAreaCenter();
 
             if ((chordCenter.to(glyphCenter).y * stemDir) > 0) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("Glyph#" + glyph.getId() + " not on beam side");
-                }
+                logger.fine("{0} not on beam side", glyph.idString());
 
                 continue;
             }
 
             // Check if a beam appears in the top evaluations
             Evaluation vote = network.vote(
-                glyph,
-                system.getInfo(),
-                Grades.hookMinGrade,
-                hookPredicate);
+                    glyph,
+                    system.getInfo(),
+                    Grades.hookMinGrade,
+                    hookPredicate);
 
             if (vote != null) {
                 glyph.setShape(vote.shape, Evaluation.ALGORITHM);
 
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "glyph#" + glyph.getId() + " recognized as " +
-                        vote.shape);
-                }
+                logger.fine("{0} recognized as {1}",
+                            new Object[]{glyph.idString(), vote.shape});
 
                 modified.set(true);
             }
@@ -893,7 +864,6 @@ public class ScoreChecker
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //----------------------------//
     // InconsistentTimeSignatures //
     //----------------------------//
@@ -901,7 +871,7 @@ public class ScoreChecker
      * Used to signal that parallel time signatures are not consistent
      */
     public static class InconsistentTimeSignatures
-        extends Exception
+            extends Exception
     {
         //~ Constructors -------------------------------------------------------
 
@@ -915,13 +885,13 @@ public class ScoreChecker
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Constant.Double minDeltaNotePitch = new Constant.Double(
-            "PitchPosition",
-            1.5,
-            "Minimum pitch difference between note heads on same stem side");
+                "PitchPosition",
+                1.5,
+                "Minimum pitch difference between note heads on same stem side");
     }
 }

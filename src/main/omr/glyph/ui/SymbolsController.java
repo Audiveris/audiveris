@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 
 /**
  * Class {@code SymbolsController} is a GlyphsController specifically
@@ -127,7 +128,7 @@ public class SymbolsController
      */
     public Task asyncModifyBoundaries (Set<BrokenLine> modifiedLines)
     {
-        List<BrokenLineContext> contexts = new ArrayList<BrokenLineContext>();
+        List<BrokenLineContext> contexts = new ArrayList<>();
 
         // Retrieve impacted systems
         for (BrokenLine line : modifiedLines) {
@@ -202,7 +203,7 @@ public class SymbolsController
             for (Object entity : glyph.getTranslations()) {
                 if (entity instanceof Note) {
                     Note note = (Note) entity;
-                    logger.info(note + "->" + note.getChord());
+                    logger.info("{0}->{1}", new Object[]{note, note.getChord()});
                 } else {
                     logger.info(entity.toString());
                 }

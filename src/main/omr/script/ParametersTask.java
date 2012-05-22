@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -24,6 +24,7 @@ import omr.step.Steps;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -70,7 +71,7 @@ public class ParametersTask
 
     /** Description data for each part */
     @XmlElement(name = "part")
-    private List<PartData> parts = new ArrayList<PartData>();
+    private List<PartData> parts = new ArrayList<>();
 
     /** Remember if we have changed these items */
     private boolean foregroundChanged;
@@ -175,7 +176,7 @@ public class ParametersTask
         }
 
         if (sb.length() > 0) {
-            logger.info("Parameters" + sb);
+            logger.info("Parameters{0}", sb);
         }
 
         // Parts
@@ -230,7 +231,7 @@ public class ParametersTask
         }
 
         if ((from != null) && Stepping.shouldReprocessSheet(from, sheet)) {
-            logger.info("Rebuilding from " + from);
+            logger.info("Rebuilding from {0}", from);
             Stepping.reprocessSheet(from, sheet, null, true);
         }
 

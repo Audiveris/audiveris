@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -29,7 +29,6 @@ import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
-import java.util.logging.LogRecord;
 
 /**
  * Class {@code Logger} is a specific subclass of standard java Logger,
@@ -60,7 +59,7 @@ public class Logger
     private static LogManager manager;
 
     /** Temporary mail box for logged messages */
-    private static ArrayBlockingQueue<LogRecord> logMbx;
+    private static ArrayBlockingQueue<FormattedRecord> logMbx;
 
     /** Size of the mail box (cannot use a Constant) */
     private static final int LOG_MBX_SIZE = 10000;
@@ -77,30 +76,22 @@ public class Logger
 
     //~ Methods ----------------------------------------------------------------
 
-    //-------------------//
-    // getEffectiveLevel //
-    //-------------------//
-    /**
-     * Report the resulting level for the logger, which may be
-     * inherited from parents higher in the hierarchy.
-     * @return The effective logging level for this logger
-     */
-    public Level getEffectiveLevel ()
+    //------//
+    // fine //
+    //------//
+    public void fine (String   msg,
+                      Object[] params)
     {
-        java.util.logging.Logger logger = this;
-        Level                    level = getLevel();
+        super.log(Level.FINE, msg, params);
+    }
 
-        while (level == null) {
-            logger = logger.getParent();
-
-            if (logger == null) {
-                return null;
-            }
-
-            level = logger.getLevel();
-        }
-
-        return level;
+    //------//
+    // fine //
+    //------//
+    public void fine (String msg,
+                      Object param1)
+    {
+        super.log(Level.FINE, msg, param1);
     }
 
     //-----------//
@@ -157,13 +148,88 @@ public class Logger
      * get displayed by a GUI.
      * @return the GUI mailbox
      */
-    public static synchronized BlockingQueue<LogRecord> getMailbox ()
+    public static synchronized BlockingQueue<FormattedRecord> getMailbox ()
     {
         if (logMbx == null) {
-            logMbx = new ArrayBlockingQueue<LogRecord>(LOG_MBX_SIZE);
+            logMbx = new ArrayBlockingQueue<>(LOG_MBX_SIZE);
         }
 
         return logMbx;
+    }
+
+    //------//
+    // info //
+    //------//
+    /**
+     * Log a message, with one object parameter.
+     * @param   msg     The string message (or a key in the message catalog)
+     * @param   param1  parameter to the message
+     */
+    public void info (String msg,
+                      Object param1)
+    {
+        super.log(Level.INFO, msg, param1);
+    }
+
+    //-----------------------//
+    // isPrintStackOnWarning //
+    //-----------------------//
+    public static boolean isPrintStackOnWarning ()
+    {
+        return constants.printStackOnWarning.getValue();
+    }
+
+    //------------------------//
+    // setPrintStackOnWarning //
+    //------------------------//
+    public static void setPrintStackOnWarning (boolean val)
+    {
+        constants.printStackOnWarning.setValue(val);
+    }
+
+    //-------------------//
+    // getEffectiveLevel //
+    //-------------------//
+    /**
+     * Report the resulting level for the logger, which may be
+     * inherited from parents higher in the hierarchy.
+     * @return The effective logging level for this logger
+     */
+    public Level getEffectiveLevel ()
+    {
+        java.util.logging.Logger logger = this;
+        Level                    level = getLevel();
+
+        while (level == null) {
+            logger = logger.getParent();
+
+            if (logger == null) {
+                return null;
+            }
+
+            level = logger.getLevel();
+        }
+
+        return level;
+    }
+
+    //------//
+    // info //
+    //------//
+    /**
+     * Log a message, with an array of object arguments.
+     * <p>
+     * If the logger is currently enabled for the given message
+     * level then a corresponding LogRecord is created and forwarded
+     * to all the registered output Handler objects.
+     * <p>
+     * @param   msg     The string message (or a key in the message catalog)
+     * @param   params  array of parameters to the message
+     */
+    public void info (String   msg,
+                      Object[] params)
+    {
+        super.log(Level.INFO, msg, params);
     }
 
     //---------------//
@@ -176,14 +242,6 @@ public class Logger
     public boolean isFineEnabled ()
     {
         return isLoggable(Level.FINE);
-    }
-
-    //-----------------------//
-    // isPrintStackOnWarning //
-    //-----------------------//
-    public static boolean isPrintStackOnWarning ()
-    {
-        return constants.printStackOnWarning.getValue();
     }
 
     //-----------//
@@ -217,36 +275,29 @@ public class Logger
         setLevel(Level.parse(levelStr.toUpperCase()));
     }
 
-    //------------------------//
-    // setPrintStackOnWarning //
-    //------------------------//
-    public static void setPrintStackOnWarning (boolean val)
-    {
-        constants.printStackOnWarning.setValue(val);
-    }
-
-    //-----//
-    // log //
-    //-----//
-    /**
-     * Overridden version, to insert the name of the calling thread.
-     * @param level A message level identifier
-     * @param msg   The string message
-     */
-    @Override
-    public void log (Level  level,
-                     String msg)
-    {
-        StringBuilder sb = new StringBuilder();
-
-        //        if (constants.printThreadName.getValue()) {
-        //            sb.append(Thread.currentThread().getName())
-        //              .append(": ");
-        //        }
-        sb.append(msg);
-
-        super.log(level, sb.toString());
-    }
+    //    //-----//
+    //    // log //
+    //    //-----//
+    //    /**
+    //     * Overridden version, to insert the name of the calling thread.
+    //     * @param level A message level identifier
+    //     * @param msg   The string message
+    //     */
+    //    @Override
+    //    public void log (Level  level,
+    //                     String msg)
+    //    {
+    //        StringBuilder sb = new StringBuilder();
+    //
+    //        if (constants.printThreadName.isSet()) {
+    //            sb.append(Thread.currentThread().getName())
+    //              .append(": ");
+    //        }
+    //
+    //        sb.append(msg);
+    //
+    //        super.log(level, sb.toString());
+    //    }
 
     //--------//
     // severe //
@@ -265,6 +316,26 @@ public class Logger
     //--------//
     // severe //
     //--------//
+    public void severe (String msg,
+                        Object param1)
+    {
+        super.log(Level.SEVERE, msg, param1);
+        new Throwable().printStackTrace();
+    }
+
+    //--------//
+    // severe //
+    //--------//
+    public void severe (String   msg,
+                        Object[] params)
+    {
+        super.log(Level.SEVERE, msg, params);
+        new Throwable().printStackTrace();
+    }
+
+    //--------//
+    // severe //
+    //--------//
     /**
      * Log the provided message and exception and stop the application.
      * @param msg    the (severe) message
@@ -273,7 +344,7 @@ public class Logger
     public void severe (String    msg,
                         Throwable thrown)
     {
-        super.severe(msg + " [" + thrown + "]");
+        super.log(Level.SEVERE, "{0} [{1}]", new Object[] { msg, thrown });
         thrown.printStackTrace();
     }
 
@@ -289,11 +360,43 @@ public class Logger
     public void warning (String    msg,
                          Throwable thrown)
     {
-        super.warning(msg + " [" + thrown + "]");
+        super.log(Level.WARNING, "{0} [{1}]", new Object[] { msg, thrown });
 
-        if (constants.printStackOnWarning.getValue()) {
+        if (constants.printStackOnWarning.isSet()) {
             thrown.printStackTrace();
         }
+    }
+
+    //---------//
+    // warning //
+    //---------//
+    /**
+     * Log a warning with a related exception, then continue.
+     * @param msg    the (warning) message
+     * @param thrown the related exception, whose stack trace will be printed
+     * only if the constant flag 'printStackTraces' is set.
+     */
+    public void warning (String    msg,
+                         Object    param1,
+                         Throwable thrown)
+    {
+        super.log(
+            Level.WARNING,
+            "{0} {1} [{2}]",
+            new Object[] { msg, param1, thrown });
+
+        if (constants.printStackOnWarning.isSet()) {
+            thrown.printStackTrace();
+        }
+    }
+
+    //---------//
+    // warning //
+    //---------//
+    public void warning (String msg,
+                         Object param1)
+    {
+        super.log(Level.WARNING, msg, param1);
     }
 
     //---------------------//
@@ -331,7 +434,7 @@ public class Logger
                 // Tell user we are redirecting log
                 try {
                     String path = new File(redirection).getCanonicalPath();
-                    topLogger.log(Level.INFO, "Log is redirected to " + path);
+                    topLogger.log(Level.INFO, "Log is redirected to {0}", path);
                     System.out.println("Log is redirected to " + path);
                 } catch (IOException ex) {
                     ex.printStackTrace();

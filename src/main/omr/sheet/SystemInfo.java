@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -73,7 +73,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
  * @author Hervé Bitteur
  */
 public class SystemInfo
-    implements Comparable<SystemInfo>
+        implements Comparable<SystemInfo>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -81,7 +81,6 @@ public class SystemInfo
     private static final Logger logger = Logger.getLogger(SystemInfo.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Related sheet */
     @Navigable(false)
     private final Sheet sheet;
@@ -111,10 +110,10 @@ public class SystemInfo
     private final SystemTranslator translator;
 
     /** Staves of this system */
-    private List<StaffInfo> staves = new ArrayList<StaffInfo>();
+    private List<StaffInfo> staves = new ArrayList<>();
 
     /** Parts in this system */
-    private final List<PartInfo> parts = new ArrayList<PartInfo>();
+    private final List<PartInfo> parts = new ArrayList<>();
 
     /** Related System in Score hierarchy */
     private ScoreSystem scoreSystem;
@@ -125,69 +124,69 @@ public class SystemInfo
     /** Right system bar, if any */
     private BarInfo rightBar;
 
-    /** Left system limit  (a filament or a straight line) */
+    /** Left system limit (a filament or a straight line) */
     private Object leftLimit;
 
-    /** Right system limit  (a filament or a straight line) */
+    /** Right system limit (a filament or a straight line) */
     private Object rightLimit;
 
     /** Bar alignments for this system */
     private List<BarAlignment> barAlignments;
 
     ///   HORIZONTALS   ////////////////////////////////////////////////////////
-
     /** Horizontal sections, assigned once for all to this system */
-    private final List<Section> hSections = new ArrayList<Section>();
+    private final List<Section> hSections = new ArrayList<>();
 
     /** Unmodifiable view of the horizontal section collection */
-    private final Collection<Section> hSectionsView = Collections.unmodifiableCollection(
-        hSections);
+    private final Collection<Section> hSectionsView = Collections.
+            unmodifiableCollection(
+            hSections);
 
     /** Retrieved ledgers in this system */
-    private final List<Glyph> ledgers = new ArrayList<Glyph>();
+    private final List<Glyph> ledgers = new ArrayList<>();
 
     /** Retrieved tenuto signs in this system */
-    private final List<Glyph> tenutos = new ArrayList<Glyph>();
+    private final List<Glyph> tenutos = new ArrayList<>();
 
     /** Retrieved endings in this system */
-    private final List<Glyph> endings = new ArrayList<Glyph>();
+    private final List<Glyph> endings = new ArrayList<>();
 
     ///   VERTICALS   //////////////////////////////////////////////////////////
-
     /** Vertical sections, assigned once for all to this system */
-    private final List<Section> vSections = new ArrayList<Section>();
+    private final List<Section> vSections = new ArrayList<>();
 
     /** Unmodifiable view of the vertical section collection */
-    private final Collection<Section> vSectionsView = Collections.unmodifiableCollection(
-        vSections);
+    private final Collection<Section> vSectionsView = Collections.
+            unmodifiableCollection(
+            vSections);
 
     /** Collection of (active?) glyphs in this system */
-    private final SortedSet<Glyph> glyphs = new ConcurrentSkipListSet<Glyph>(
-        Glyph.abscissaComparator);
+    private final SortedSet<Glyph> glyphs = new ConcurrentSkipListSet<>(
+            Glyph.abscissaComparator);
 
     /** Unmodifiable view of the glyphs collection */
-    private final SortedSet<Glyph> glyphsView = Collections.unmodifiableSortedSet(
-        glyphs);
+    private final SortedSet<Glyph> glyphsView = Collections.
+            unmodifiableSortedSet(
+            glyphs);
 
     /** Set of sentences made of text glyphs */
-    private Set<Sentence> sentences = new LinkedHashSet<Sentence>();
+    private Set<Sentence> sentences = new LinkedHashSet<>();
 
     /** Used to assign a unique ID to system sentences */
     private int sentenceCount = 0;
 
     ////////////////////////////////////////////////////////////////////////////
-
     /** Unique Id for this system (in the sheet) */
     private final int id;
 
-    /** Boundary that encloses all items of this system */
+    /** Boundary that encloses all items of this system. */
     private SystemBoundary boundary;
 
     /** Ordinate of bottom of last staff of the system. */
     private int bottom;
 
-    /** Delta ordinate between first line of first staff & first line of last
-       staff. */
+    /** Delta ordinate between first line of first staff & first line of
+     * last staff. */
     private int deltaY;
 
     /** Abscissa of beginning of system. */
@@ -200,18 +199,18 @@ public class SystemInfo
     private int width = -1;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // SystemInfo //
     //------------//
     /**
      * Create a SystemInfo entity, to register the provided parameters.
-     * @param id the unique identity
-     * @param sheet the containing sheet
+     *
+     * @param id     the unique identity
+     * @param sheet  the containing sheet
      * @param staves the (initial) sequence of staves
      */
-    public SystemInfo (int             id,
-                       Sheet           sheet,
+    public SystemInfo (int id,
+                       Sheet sheet,
                        List<StaffInfo> staves)
     {
         this.id = id;
@@ -231,7 +230,6 @@ public class SystemInfo
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // addGlyph //
     //----------//
@@ -261,6 +259,7 @@ public class SystemInfo
     //---------//
     /**
      * Add a part (set of staves) in this system.
+     *
      * @param partInfo the part to add
      */
     public void addPart (PartInfo partInfo)
@@ -274,6 +273,7 @@ public class SystemInfo
     /**
      * This is a private entry meant for GlyphsBuilder only.
      * The standard entry is {@link #addGlyph}
+     *
      * @param glyph the glyph to add to the system glyph collection
      */
     public void addToGlyphsCollection (Glyph glyph)
@@ -286,6 +286,7 @@ public class SystemInfo
     //------------------------//
     /**
      * This is a private entry meant for StaffInfo only.
+     *
      * @param ledger the ledger to add to the system ledger glyph collection
      */
     public void addToLedgersCollection (Ledger ledger)
@@ -304,10 +305,10 @@ public class SystemInfo
     {
         // Allocate the score system
         scoreSystem = new ScoreSystem(
-            this,
-            sheet.getPage(),
-            new PixelPoint(getLeft(), getTop()),
-            new PixelDimension(getWidth(), getDeltaY()));
+                this,
+                sheet.getPage(),
+                new PixelPoint(getLeft(), getTop()),
+                new PixelDimension(getWidth(), getDeltaY()));
 
         // Allocate the parts in the system
         int partId = 0;
@@ -321,11 +322,11 @@ public class SystemInfo
                 LineInfo firstLine = staffInfo.getFirstLine();
                 LineInfo lastLine = staffInfo.getLastLine();
                 new Staff(
-                    staffInfo,
-                    part,
-                    new PixelPoint(left, firstLine.yAt(left)),
-                    (int) Math.rint(staffInfo.getAbscissa(RIGHT) - left),
-                    lastLine.yAt(left) - firstLine.yAt(left));
+                        staffInfo,
+                        part,
+                        new PixelPoint(left, firstLine.yAt(left)),
+                        (int) Math.rint(staffInfo.getAbscissa(RIGHT) - left),
+                        lastLine.yAt(left) - firstLine.yAt(left));
             }
         }
     }
@@ -333,16 +334,16 @@ public class SystemInfo
     //---------------//
     // buildCompound //
     //---------------//
-    public Glyph buildCompound (Glyph             seed,
-                                boolean           includeSeed,
+    public Glyph buildCompound (Glyph seed,
+                                boolean includeSeed,
                                 Collection<Glyph> suitables,
-                                CompoundAdapter   adapter)
+                                CompoundAdapter adapter)
     {
         return compoundBuilder.buildCompound(
-            seed,
-            includeSeed,
-            suitables,
-            adapter);
+                seed,
+                includeSeed,
+                suitables,
+                adapter);
     }
 
     //---------------//
@@ -359,6 +360,7 @@ public class SystemInfo
     /**
      * Build a glyph from a collection of sections, and make the
      * sections point back to the glyph.
+     *
      * @param sections the provided members of the future glyph
      * @return the newly built glyph
      */
@@ -449,9 +451,11 @@ public class SystemInfo
     //-----------//
     /**
      * Needed to implement natural SystemInfo sorting, based on system id.
+     *
      * @param o the other system to compare to
      * @return the comparison result
      */
+    @Override
     public int compareTo (SystemInfo o)
     {
         return Integer.signum(id - o.id);
@@ -476,12 +480,12 @@ public class SystemInfo
     //----------------------//
     /**
      * Build a check suite for stem retrievals.
+     *
      * @param isShort are we looking for short (vs standard) stems?
      * @return the newly built check suite
-     * @throws omr.step.StepException
      */
     public CheckSuite<Glyph> createStemCheckSuite (boolean isShort)
-        throws StepException
+            throws StepException
     {
         return verticalsBuilder.createStemCheckSuite(isShort);
     }
@@ -503,17 +507,18 @@ public class SystemInfo
     /**
      * Dump the glyphs handled by this system and that are contained
      * by the provided rectangle.
+     *
      * @param rect the region of interest
      */
     public void dumpGlyphs (PixelRectangle rect)
     {
         for (Glyph glyph : getGlyphs()) {
-            if ((rect == null) || (rect.contains(glyph.getContourBox()))) {
+            if ((rect == null) || (rect.contains(glyph.getBounds()))) {
                 System.out.println(
-                    (glyph.isActive() ? "active " : "       ") +
-                    (glyph.isKnown() ? "known " : "      ") +
-                    (glyph.isWellKnown() ? "wellKnown " : "          ") +
-                    glyph.toString());
+                        (glyph.isActive() ? "active " : "       ")
+                        + (glyph.isKnown() ? "known " : "      ")
+                        + (glyph.isWellKnown() ? "wellKnown " : "          ")
+                        + glyph.toString());
             }
         }
     }
@@ -535,15 +540,16 @@ public class SystemInfo
     /**
      * Dump the (vertical) sections handled by this system and that are
      * contained by the provided rectangle.
+     *
      * @param rect the region of interest
      */
     public void dumpSections (PixelRectangle rect)
     {
         for (Section section : getVerticalSections()) {
-            if ((rect == null) || (rect.contains(section.getContourBox()))) {
+            if ((rect == null) || (rect.contains(section.getBounds()))) {
                 System.out.println(
-                    (section.isKnown() ? "known " : "      ") +
-                    section.toString());
+                        (section.isKnown() ? "known " : "      ")
+                        + section.toString());
             }
         }
     }
@@ -566,6 +572,7 @@ public class SystemInfo
     //--------//
     /**
      * Report the system barline on the provided side.
+     *
      * @param side proper horizontal side
      * @return the system bar on this side, or null
      */
@@ -583,6 +590,7 @@ public class SystemInfo
     //------------------//
     /**
      * Report the system bar alignments.
+     *
      * @return the barAlignments
      */
     public List<BarAlignment> getBarAlignments ()
@@ -596,6 +604,7 @@ public class SystemInfo
     /**
      * Report the ordinate of the bottom of the system, which is the
      * ordinate of the last line of the last staff of this system.
+     *
      * @return the system bottom, in pixels
      */
     public int getBottom ()
@@ -608,6 +617,7 @@ public class SystemInfo
     //-------------//
     /**
      * Report the precise boundary of this system.
+     *
      * @return the precise system boundary
      */
     public SystemBoundary getBoundary ()
@@ -620,6 +630,7 @@ public class SystemInfo
     //-----------//
     /**
      * Report the rectangular bounds that enclose this system.
+     *
      * @return the system rectangular bounds
      */
     public PixelRectangle getBounds ()
@@ -662,6 +673,7 @@ public class SystemInfo
     //------------//
     /**
      * Report the collection of endings found.
+     *
      * @return the endings collection
      */
     public List<Glyph> getEndings ()
@@ -674,6 +686,7 @@ public class SystemInfo
     //---------------//
     /**
      * Report the first staff of the system.
+     *
      * @return the first staff
      */
     public StaffInfo getFirstStaff ()
@@ -687,6 +700,7 @@ public class SystemInfo
     /**
      * Report the unmodifiable collection of glyphs within the system
      * area.
+     *
      * @return the unmodifiable collection of glyphs
      */
     public SortedSet<Glyph> getGlyphs ()
@@ -700,6 +714,7 @@ public class SystemInfo
     /**
      * Report the (unmodifiable) collection of horizontal sections in
      * the system related area.
+     *
      * @return the area horizontal sections
      */
     public Collection<Section> getHorizontalSections ()
@@ -720,6 +735,7 @@ public class SystemInfo
     //-------//
     /**
      * Report the id (debugging info) of the system info.
+     *
      * @return the id
      */
     public int getId ()
@@ -743,6 +759,7 @@ public class SystemInfo
     //------------//
     /**
      * Report non-modifiable view of ledgers found.
+     *
      * @return the ledger collection
      */
     public List<Glyph> getLedgers ()
@@ -755,6 +772,7 @@ public class SystemInfo
     //---------//
     /**
      * Report the left abscissa.
+     *
      * @return the left abscissa value, expressed in pixels
      */
     public int getLeft ()
@@ -767,6 +785,7 @@ public class SystemInfo
     //----------//
     /**
      * Report the system limit on the provided side.
+     *
      * @param side proper horizontal side
      * @return the leftBar
      */
@@ -784,6 +803,7 @@ public class SystemInfo
     //--------------//
     /**
      * Report the proper prefix to use when logging a message.
+     *
      * @return the proper prefix
      */
     public String getLogPrefix ()
@@ -793,9 +813,7 @@ public class SystemInfo
         if (sb.length() > 1) {
             sb.insert(sb.length() - 1, "S" + id);
         } else {
-            sb.append("S")
-              .append(id)
-              .append(" ");
+            sb.append("S").append(id).append(" ");
         }
 
         return sb.toString();
@@ -807,6 +825,7 @@ public class SystemInfo
     /**
      * Report the (modifiable) collection of horizontal sections in the
      * system related area.
+     *
      * @return the area vertical sections
      */
     public Collection<Section> getMutableHorizontalSections ()
@@ -820,6 +839,7 @@ public class SystemInfo
     /**
      * Report the (modifiable) collection of vertical sections in the
      * system related area.
+     *
      * @return the area vertical sections
      */
     public Collection<Section> getMutableVerticalSections ()
@@ -832,32 +852,12 @@ public class SystemInfo
     //------------------//
     /**
      * Report the id for a new sentence.
+     *
      * @return the next id
      */
     public int getNewSentenceId ()
     {
         return ++sentenceCount;
-    }
-
-    //-------------------//
-    // updateCoordinates //
-    //-------------------//
-    public final void updateCoordinates ()
-    {
-        StaffInfo firstStaff = getFirstStaff();
-        LineInfo  firstLine = firstStaff.getFirstLine();
-        Point2D   topLeft = firstLine.getEndPoint(LEFT);
-        Point2D   topRight = firstLine.getEndPoint(RIGHT);
-        StaffInfo lastStaff = getLastStaff();
-        LineInfo  lastLine = lastStaff.getLastLine();
-        Point2D   botLeft = lastLine.getEndPoint(LEFT);
-
-        left = (int) Math.rint(topLeft.getX());
-        top = (int) Math.rint(topLeft.getY());
-        width = (int) Math.rint(topRight.getX() - topLeft.getX());
-        deltaY = (int) Math.rint(
-            lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
-        bottom = (int) Math.rint(botLeft.getY());
     }
 
     //----------------//
@@ -866,27 +866,26 @@ public class SystemInfo
     /**
      * Given a note, retrieve the proper related staff within the
      * system, using ledgers if any.
+     *
      * @param point the center of the provided note entity
      * @return the proper note position (staff & pitch)
      */
     public NotePosition getNoteStaffAt (PixelPoint point)
     {
         StaffManager manager = sheet.getStaffManager();
-        StaffInfo    staff = manager.getStaffAt(point);
+        StaffInfo staff = manager.getStaffAt(point);
         NotePosition pos = staff.getNotePosition(point);
 
-        if (logger.isFineEnabled()) {
-            logger.fine(point + " -> " + pos);
-        }
+        logger.fine("{0} -> {1}", new Object[]{point, pos});
 
         double pitch = pos.getPitchPosition();
 
         if ((Math.abs(pitch) > 5) && (pos.getLedger() == null)) {
             // Delta pitch from reference line
-            double    dp = Math.abs(pitch) - 4;
+            double dp = Math.abs(pitch) - 4;
 
             // Check with the other staff, if any
-            int       index = staves.indexOf(staff);
+            int index = staves.indexOf(staff);
             StaffInfo otherStaff = null;
 
             if ((pitch < 0) && (index > 0)) {
@@ -901,14 +900,11 @@ public class SystemInfo
                 if (otherPos.getLedger() != null) {
                     // Delta pitch from closest reference ledger
                     double otherDp = Math.abs(
-                        otherPos.getPitchPosition() -
-                        otherPos.getLedger().getPitchPosition());
+                            otherPos.getPitchPosition()
+                            - otherPos.getLedger().getPitchPosition());
 
                     if (otherDp < dp) {
-                        if (logger.isFineEnabled()) {
-                            logger.info("   otherPos: " + pos);
-                        }
-
+                        logger.fine("   otherPos: {0}", pos);
                         pos = otherPos;
                     }
                 }
@@ -923,6 +919,7 @@ public class SystemInfo
     //----------//
     /**
      * Reports the parts of this system.
+     *
      * @return the parts (non-null)
      */
     public List<PartInfo> getParts ()
@@ -935,6 +932,7 @@ public class SystemInfo
     //----------//
     /**
      * Report the abscissa of the end of the system.
+     *
      * @return the right abscissa, expressed in pixels
      */
     public int getRight ()
@@ -947,6 +945,7 @@ public class SystemInfo
     //----------------//
     /**
      * Report the related logical score system.
+     *
      * @return the logical score System counterpart
      */
     public ScoreSystem getScoreSystem ()
@@ -959,6 +958,7 @@ public class SystemInfo
     //--------------//
     /**
      * Report the various sentences retrieved in this system.
+     *
      * @return the (perhaps empty) collection of sentences found
      */
     public Set<Sentence> getSentences ()
@@ -971,11 +971,25 @@ public class SystemInfo
     //----------//
     /**
      * Report the sheet this system belongs to.
+     *
      * @return the containing sheet
      */
     public Sheet getSheet ()
     {
         return sheet;
+    }
+
+    //---------//
+    // getSkew //
+    //---------//
+    /**
+     * Report the system specific skew (or the global sheet skew).
+     *
+     * @return the related skew
+     */
+    public Skew getSkew ()
+    {
+        return sheet.getSkew();
     }
 
     //------------------//
@@ -991,13 +1005,13 @@ public class SystemInfo
     //------------//
     /**
      * Given a point, retrieve the closest staff within the system.
+     *
      * @param point the provided point
      * @return the "containing" staff
      */
     public StaffInfo getStaffAt (Point2D point)
     {
-        return sheet.getStaffManager()
-                    .getStaffAt(point);
+        return sheet.getStaffManager().getStaffAt(point);
     }
 
     //-----------//
@@ -1005,6 +1019,7 @@ public class SystemInfo
     //-----------//
     /**
      * Report the list of staves that compose this system.
+     *
      * @return the staves
      */
     public List<StaffInfo> getStaves ()
@@ -1017,6 +1032,7 @@ public class SystemInfo
     //------------//
     /**
      * Report the collection of tenutos found.
+     *
      * @return the tenutos collection
      */
     public List<Glyph> getTenutos ()
@@ -1029,6 +1045,7 @@ public class SystemInfo
     //--------//
     /**
      * Report the ordinate of the top of this system.
+     *
      * @return the top ordinate, expressed in pixels
      */
     public int getTop ()
@@ -1042,6 +1059,7 @@ public class SystemInfo
     /**
      * Report the (unmodifiable) collection of vertical sections in
      * the system related area.
+     *
      * @return the area vertical sections
      */
     public Collection<Section> getVerticalSections ()
@@ -1054,11 +1072,25 @@ public class SystemInfo
     //----------//
     /**
      * Report the width of the system.
+     *
      * @return the width value, expressed in pixels
      */
     public int getWidth ()
     {
         return width;
+    }
+
+    //----------//
+    // idString //
+    //----------//
+    /**
+     * Convenient way to report a small system reference.
+     *
+     * @return system reference
+     */
+    public String idString ()
+    {
+        return "system#" + id;
     }
 
     //---------------//
@@ -1068,6 +1100,7 @@ public class SystemInfo
      * Process the given system, by retrieving unassigned glyphs,
      * evaluating and assigning them if OK, or trying compounds
      * otherwise.
+     *
      * @param minGrade the minimum acceptable grade for this processing
      */
     public void inspectGlyphs (double minGrade)
@@ -1081,15 +1114,16 @@ public class SystemInfo
     /**
      * Look up in system glyphs for the glyphs contained by a
      * provided rectangle.
+     *
      * @param rect the coordinates rectangle, in pixels
      * @return the glyphs found, which may be an empty list
      */
     public List<Glyph> lookupContainedGlyphs (PixelRectangle rect)
     {
-        List<Glyph> found = new ArrayList<Glyph>();
+        List<Glyph> found = new ArrayList<>();
 
         for (Glyph glyph : getGlyphs()) {
-            if (rect.contains(glyph.getContourBox())) {
+            if (rect.contains(glyph.getBounds())) {
                 found.add(glyph);
             }
         }
@@ -1103,7 +1137,8 @@ public class SystemInfo
     /**
      * Look up in system glyphs for <b>all</b> glyphs, apart from the
      * excluded glyphs, intersected by a provided rectangle.
-     * @param rect the coordinates rectangle, in pixels
+     *
+     * @param rect     the coordinates rectangle, in pixels
      * @param excluded the glyphs to be excluded
      * @return the glyphs found, which may be an empty list
      */
@@ -1111,7 +1146,7 @@ public class SystemInfo
                                                 Glyph... excluded)
     {
         List<Glyph> exc = Arrays.asList(excluded);
-        List<Glyph> found = new ArrayList<Glyph>();
+        List<Glyph> found = new ArrayList<>();
 
         for (Glyph glyph : getGlyphs()) {
             if (!exc.contains(glyph) && glyph.intersects(rect)) {
@@ -1129,6 +1164,7 @@ public class SystemInfo
      * Just register this glyph (as inactive) in order to persist glyph
      * info such as TextInfo.
      * Use {@link #addGlyph} to fully add the glpyh as active.
+     *
      * @param glyph the glyph to just register
      * @return the proper (original) glyph
      * @see #addGlyph
@@ -1144,6 +1180,7 @@ public class SystemInfo
     /**
      * Meant for access by GlyphsBuilder only,
      * since standard entry is {@link #removeGlyph}.
+     *
      * @param glyph the glyph to remove
      * @return true if the glyph was registered
      */
@@ -1157,7 +1194,9 @@ public class SystemInfo
     //-----------------------------//
     /**
      * This is a private entry meant for StaffInfo only.
-     * @param ledger the ledger to remove from the system ledger glyph collection
+     *
+     * @param ledger the ledger to remove from the system ledger glyph
+     *               collection
      */
     public void removeFromLedgersCollection (Ledger ledger)
     {
@@ -1190,7 +1229,7 @@ public class SystemInfo
     public void removeInactiveGlyphs ()
     {
         // To avoid concurrent modifs exception
-        Collection<Glyph> toRemove = new ArrayList<Glyph>();
+        Collection<Glyph> toRemove = new ArrayList<>();
 
         for (Glyph glyph : getGlyphs()) {
             if (!glyph.isActive()) {
@@ -1198,11 +1237,8 @@ public class SystemInfo
             }
         }
 
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "removeInactiveGlyphs: " + toRemove.size() + " " +
-                Glyphs.toString(toRemove));
-        }
+        logger.fine("removeInactiveGlyphs: {0} {1}", new Object[]{
+                    toRemove.size(), Glyphs.toString(toRemove)});
 
         for (Glyph glyph : toRemove) {
             // Remove glyph from system & cut sections links to it
@@ -1236,10 +1272,9 @@ public class SystemInfo
     //---------------------//
     /**
      * Retrieve ledgers (and tenuto, and horizontal endings).
-     * @throws omr.step.StepException
      */
     public void retrieveHorizontals ()
-        throws StepException
+            throws StepException
     {
         try {
             horizontalsBuilder.buildInfo();
@@ -1253,11 +1288,11 @@ public class SystemInfo
     //-------------------//
     /**
      * Retrieve stems (and vertical endings).
+     *
      * @return the number of glyphs built
-     * @throws omr.step.StepException
      */
     public int retrieveVerticals ()
-        throws StepException
+            throws StepException
     {
         return verticalsBuilder.retrieveVerticals();
     }
@@ -1267,6 +1302,7 @@ public class SystemInfo
     //-------------//
     /**
      * Run the series of glyphs patterns.
+     *
      * @return true if some progress has been made
      */
     public boolean runPatterns ()
@@ -1280,10 +1316,11 @@ public class SystemInfo
     /**
      * Process a glyph to retrieve its internal potential stems and
      * leaves.
-     * @param glyph the glyph to segment along stems
+     *
+     * @param glyph   the glyph to segment along stems
      * @param isShort should we look for short (rather than standard) stems?
      */
-    public void segmentGlyphOnStems (Glyph   glyph,
+    public void segmentGlyphOnStems (Glyph glyph,
                                      boolean isShort)
     {
         verticalsBuilder.segmentGlyphOnStems(glyph, isShort);
@@ -1295,15 +1332,17 @@ public class SystemInfo
     /**
      * Select glyphs out of a provided collection of glyphs,for which
      * the provided predicate holds true.
-     * @param glyphs the provided collection of glyphs candidates, or the full
+     *
+     * @param glyphs    the provided collection of glyphs candidates, or the
+     *                  full
      * system collection if null
      * @param predicate the condition to be fulfilled to get selected
      * @return the sorted set of selected glyphs
      */
     public SortedSet selectGlyphs (Collection<Glyph> glyphs,
-                                   Predicate<Glyph>  predicate)
+                                   Predicate<Glyph> predicate)
     {
-        SortedSet<Glyph> selected = new TreeSet<Glyph>();
+        SortedSet<Glyph> selected = new TreeSet<>();
 
         if (glyphs == null) {
             glyphs = getGlyphs();
@@ -1323,11 +1362,12 @@ public class SystemInfo
     //--------//
     /**
      * Assign system barline on the provided side.
+     *
      * @param side proper horizontal side
-     * @param bar the bar to set
+     * @param bar  the bar to set
      */
     public void setBar (HorizontalSide side,
-                        BarInfo        bar)
+                        BarInfo bar)
     {
         if (side == HorizontalSide.LEFT) {
             this.leftBar = bar;
@@ -1341,6 +1381,7 @@ public class SystemInfo
     //------------------//
     /**
      * Record the various bar alignments for this system.
+     *
      * @param barAlignments the barAlignments to set
      */
     public void setBarAlignments (List<BarAlignment> barAlignments)
@@ -1353,6 +1394,7 @@ public class SystemInfo
     //-------------//
     /**
      * Define the precise boundary of this system.
+     *
      * @param boundary the (new) boundary
      */
     public void setBoundary (SystemBoundary boundary)
@@ -1365,11 +1407,12 @@ public class SystemInfo
     //----------//
     /**
      * Record the system limit on the provided side.
-     * @param side proper horizontal side
+     *
+     * @param side  proper horizontal side
      * @param limit the limit to set
      */
     public void setLimit (HorizontalSide side,
-                          Object         limit)
+                          Object limit)
     {
         if (side == HorizontalSide.LEFT) {
             this.leftLimit = limit;
@@ -1395,6 +1438,7 @@ public class SystemInfo
     //-----------//
     /**
      * Report a enlarged box of a given (stem) glyph.
+     *
      * @param stem the stem
      * @return the enlarged stem box
      */
@@ -1407,54 +1451,9 @@ public class SystemInfo
     // toString //
     //----------//
     /**
-     * Report a readable description.
-     * @return a description based on staff indices
-     */
-    @Override
-    public String toString ()
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append("{SystemInfo#")
-          .append(id);
-        sb.append(" T")
-          .append(getFirstStaff().getId());
-
-        if (staves.size() > 1) {
-            sb.append("..T")
-              .append(getLastStaff().getId());
-        }
-
-        if (leftBar != null) {
-            sb.append(" leftBar:")
-              .append(leftBar);
-        }
-
-        if (rightBar != null) {
-            sb.append(" rightBar:")
-              .append(rightBar);
-        }
-
-        if (leftLimit != null) {
-            sb.append(" leftLimit:")
-              .append(leftLimit);
-        }
-
-        if (rightLimit != null) {
-            sb.append(" rightLimit:")
-              .append(rightLimit);
-        }
-
-        sb.append("}");
-
-        return sb.toString();
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    /**
      * Convenient method, to build a string with just the ids of the
      * system collection.
+     *
      * @param systems the collection of glysystemsphs
      * @return the string built
      */
@@ -1468,11 +1467,50 @@ public class SystemInfo
         sb.append(" systems[");
 
         for (SystemInfo system : systems) {
-            sb.append("#")
-              .append(system.getId());
+            sb.append("#").append(system.getId());
         }
 
         sb.append("]");
+
+        return sb.toString();
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    /**
+     * Report a readable description.
+     *
+     * @return a description based on staff indices
+     */
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{SystemInfo#").append(id);
+        sb.append(" T").append(getFirstStaff().getId());
+
+        if (staves.size() > 1) {
+            sb.append("..T").append(getLastStaff().getId());
+        }
+
+        if (leftBar != null) {
+            sb.append(" leftBar:").append(leftBar);
+        }
+
+        if (rightBar != null) {
+            sb.append(" rightBar:").append(rightBar);
+        }
+
+        if (leftLimit != null) {
+            sb.append(" leftLimit:").append(leftLimit);
+        }
+
+        if (rightLimit != null) {
+            sb.append(" rightLimit:").append(rightLimit);
+        }
+
+        sb.append("}");
 
         return sb.toString();
     }
@@ -1506,11 +1544,33 @@ public class SystemInfo
     //----------//
     /**
      * Rebuild true Slur from some underlying sections.
+     *
      * @param slur the spurious slur
      * @return the extracted slur glyph, if any
      */
     public Glyph trimSlur (Glyph slur)
     {
         return slurInspector.trimSlur(slur);
+    }
+
+    //-------------------//
+    // updateCoordinates //
+    //-------------------//
+    public final void updateCoordinates ()
+    {
+        StaffInfo firstStaff = getFirstStaff();
+        LineInfo firstLine = firstStaff.getFirstLine();
+        Point2D topLeft = firstLine.getEndPoint(LEFT);
+        Point2D topRight = firstLine.getEndPoint(RIGHT);
+        StaffInfo lastStaff = getLastStaff();
+        LineInfo lastLine = lastStaff.getLastLine();
+        Point2D botLeft = lastLine.getEndPoint(LEFT);
+
+        left = (int) Math.rint(topLeft.getX());
+        top = (int) Math.rint(topLeft.getY());
+        width = (int) Math.rint(topRight.getX() - topLeft.getX());
+        deltaY = (int) Math.rint(
+                lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
+        bottom = (int) Math.rint(botLeft.getY());
     }
 }

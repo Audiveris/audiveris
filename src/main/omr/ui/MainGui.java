@@ -3,7 +3,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -27,7 +27,6 @@ import omr.plugin.PluginsManager;
 import omr.score.Score;
 import omr.score.ScoreExporter;
 import omr.score.ScoresManager;
-import omr.score.midi.MidiAgentFactory;
 
 import omr.selection.MouseMovement;
 import omr.selection.SheetEvent;
@@ -81,8 +80,9 @@ import javax.swing.*;
  * @author Hervé Bitteur
  */
 public class MainGui
-    extends SingleFrameApplication
-    implements EventSubscriber<SheetEvent>, PropertyChangeListener
+        extends SingleFrameApplication
+        implements EventSubscriber<SheetEvent>,
+                   PropertyChangeListener
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -93,7 +93,6 @@ public class MainGui
     private static final Logger logger = Logger.getLogger(MainGui.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Official name of the application */
     private String appName;
 
@@ -120,10 +119,10 @@ public class MainGui
 
     /** Needed to rectify their dividers */
     private JSplitPane vertSplitPane;
+
     private JSplitPane horiSplitPane;
 
     //~ Constructors -----------------------------------------------------------
-
     //---------//
     // MainGui //
     //---------//
@@ -136,19 +135,6 @@ public class MainGui
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single instance of this application.
-     * @return the SingleFrameApplication instance
-     */
-    public static SingleFrameApplication getInstance ()
-    {
-        return (SingleFrameApplication) Application.getInstance();
-    }
-
     //--------------//
     // addOnToolBar //
     //--------------//
@@ -176,16 +162,17 @@ public class MainGui
     //---------------------//
     /**
      * Allow to display a confirmation dialog with a message.
+     *
      * @param message the message asking for confirmation
      * @return true if confirmed, false otherwise
      */
     public boolean displayConfirmation (String message)
     {
         int answer = JOptionPane.showConfirmDialog(
-            frame,
-            message,
-            "Confirm - " + appName,
-            JOptionPane.WARNING_MESSAGE);
+                frame,
+                message,
+                "Confirm - " + appName,
+                JOptionPane.WARNING_MESSAGE);
 
         return answer == JOptionPane.YES_OPTION;
     }
@@ -195,15 +182,16 @@ public class MainGui
     //--------------//
     /**
      * Allow to display a modal dialog with an error message.
+     *
      * @param message the error message
      */
     public void displayError (String message)
     {
         JOptionPane.showMessageDialog(
-            frame,
-            message,
-            "Error - " + appName,
-            JOptionPane.ERROR_MESSAGE);
+                frame,
+                message,
+                "Error - " + appName,
+                JOptionPane.ERROR_MESSAGE);
     }
 
     //----------------//
@@ -211,6 +199,7 @@ public class MainGui
     //----------------//
     /**
      * Allow to display a modal dialog with an html content.
+     *
      * @param htmlStr the HTML string
      */
     public void displayMessage (String htmlStr)
@@ -218,10 +207,10 @@ public class MainGui
         JEditorPane htmlPane = new JEditorPane("text/html", htmlStr);
         htmlPane.setEditable(false);
         JOptionPane.showMessageDialog(
-            frame,
-            htmlPane,
-            appName,
-            JOptionPane.INFORMATION_MESSAGE);
+                frame,
+                htmlPane,
+                appName,
+                JOptionPane.INFORMATION_MESSAGE);
     }
 
     //------------------------//
@@ -230,10 +219,10 @@ public class MainGui
     public int displayModelessConfirm (String message)
     {
         return ModelessOptionPane.showModelessConfirmDialog(
-            frame,
-            message,
-            "Confirm - " + appName,
-            JOptionPane.YES_NO_OPTION);
+                frame,
+                message,
+                "Confirm - " + appName,
+                JOptionPane.YES_NO_OPTION);
     }
 
     //----------------//
@@ -241,15 +230,16 @@ public class MainGui
     //----------------//
     /**
      * Allow to display a modal dialog with a message.
+     *
      * @param message the warning message
      */
     public void displayWarning (String message)
     {
         JOptionPane.showMessageDialog(
-            frame,
-            message,
-            "Warning - " + appName,
-            JOptionPane.WARNING_MESSAGE);
+                frame,
+                message,
+                "Warning - " + appName,
+                JOptionPane.WARNING_MESSAGE);
     }
 
     //----------//
@@ -257,6 +247,7 @@ public class MainGui
     //----------//
     /**
      * Report the concrete frame.
+     *
      * @return the ui frame
      */
     public JFrame getFrame ()
@@ -268,7 +259,8 @@ public class MainGui
     // getGlassPane //
     //--------------//
     /**
-     * Report the main window glassPane, needed for shape drag 'n drop.
+     * Report the main window glassPane, needed for shape drag and drop.
+     *
      * @return the ghost glass pane
      */
     public GhostGlassPane getGlassPane ()
@@ -276,11 +268,25 @@ public class MainGui
         return glassPane;
     }
 
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of this application.
+     *
+     * @return the SingleFrameApplication instance
+     */
+    public static SingleFrameApplication getInstance ()
+    {
+        return (SingleFrameApplication) Application.getInstance();
+    }
+
     //---------//
     // getName //
     //---------//
     /**
      * Report an Observer name.
+     *
      * @return observer name
      */
     public String getName ()
@@ -293,6 +299,7 @@ public class MainGui
     //----------------//
     /**
      * Remove the specific component the errors pane.
+     *
      * @param component the component to remove (or null if we don't care)
      */
     public void hideErrorsPane (JComponent component)
@@ -316,6 +323,7 @@ public class MainGui
     //---------//
     /**
      * Notification of sheet selection, to update frame title.
+     *
      * @param sheetEvent the event about selected sheet
      */
     @Override
@@ -329,21 +337,25 @@ public class MainGui
 
             final Sheet sheet = sheetEvent.getData();
             SwingUtilities.invokeLater(
-                new Runnable() {
+                    new Runnable()
+                    {
+
+                        @Override
                         public void run ()
                         {
                             final StringBuilder sb = new StringBuilder();
 
                             if (sheet != null) {
                                 Score score = sheet.getScore();
-                                // Frame title tells score name (+ step?)
+                                // Frame title tells score name
                                 sb.append(score.getImageFile().getName());
                             }
 
                             // Update frame title
-                            sb.append(" ")
-                              .append(
-                                MainGui.this.getContext().getResourceMap().getString(
+                            sb.append(" - ");
+                            sb.append(
+                                    MainGui.this.getContext().getResourceMap().
+                                    getString(
                                     "mainFrame.title"));
                             frame.setTitle(sb.toString());
                         }
@@ -358,14 +370,16 @@ public class MainGui
     //----------------//
     /**
      * Called when notified from GuiActions.
+     *
      * @param evt the event details
      */
+    @Override
     public void propertyChange (PropertyChangeEvent evt)
     {
-        String  propertyName = evt.getPropertyName();
+        String propertyName = evt.getPropertyName();
         Boolean display = (Boolean) evt.getNewValue();
-
-        if (propertyName.equals(GuiActions.BOARDS_DISPLAYED)) {
+        switch (propertyName) {
+        case GuiActions.BOARDS_DISPLAYED:
             // Toggle display of boards
             if (display) {
                 horiSplitPane.setRightComponent(boardsScrollPane);
@@ -373,13 +387,15 @@ public class MainGui
             } else {
                 horiSplitPane.setRightComponent(null);
             }
-        } else if (propertyName.equals(GuiActions.LOG_DISPLAYED)) {
+            break;
+        case GuiActions.LOG_DISPLAYED:
             // Toggle display of log
             if (display) {
                 vertSplitPane.setRightComponent(bottomPane);
             } else {
                 vertSplitPane.setRightComponent(null);
             }
+            break;
         }
     }
 
@@ -399,6 +415,7 @@ public class MainGui
     //---------------//
     /**
      * Set a new boardspane to the boards holder.
+     *
      * @param boards the boards pane to be shown
      */
     public void setBoardsPane (JComponent boards)
@@ -411,6 +428,7 @@ public class MainGui
     //----------------//
     /**
      * Show the errors pane.
+     *
      * @param errorsPane the errors pane to be shown
      */
     public void showErrorsPane (JComponent errorsPane)
@@ -425,23 +443,22 @@ public class MainGui
     @Override
     protected void initialize (String[] args)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("MainGui. initialize");
-        }
+        logger.fine("MainGui. initialize");
 
         // Provide default tool parameters if not already set
 
         // Tool build
         if (Main.getToolBuild() == null) {
             Main.setToolBuild(
-                getContext().getResourceMap().getString("Application.build"));
+                    getContext().getResourceMap().getString("Application.build"));
         }
 
         // Launch background pre-loading tasks?
         if (constants.preloadCostlyPackages.getValue()) {
             JaiLoader.preload();
             ScoreExporter.preload();
-            MidiAgentFactory.preload();
+
+            ///MidiAgentFactory.preload();
         }
     }
 
@@ -452,29 +469,27 @@ public class MainGui
     @Override
     protected void ready ()
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("MainGui. ready");
-        }
+        logger.fine("MainGui. ready");
 
         // Tool bar adjustments
         toolBar.putClientProperty(Options.HEADER_STYLE_KEY, HeaderStyle.BOTH);
         toolBar.putClientProperty(
-            PlasticLookAndFeel.BORDER_STYLE_KEY,
-            BorderStyle.SEPARATOR);
+                PlasticLookAndFeel.BORDER_STYLE_KEY,
+                BorderStyle.SEPARATOR);
 
         // Weakly listen to some GUI Actions parameters
         PropertyChangeListener weak = new WeakPropertyChangeListener(this);
-        GuiActions.getInstance()
-                  .addPropertyChangeListener(GuiActions.BOARDS_DISPLAYED, weak);
-        GuiActions.getInstance()
-                  .addPropertyChangeListener(GuiActions.LOG_DISPLAYED, weak);
+        GuiActions.getInstance().addPropertyChangeListener(
+                GuiActions.BOARDS_DISPLAYED, weak);
+        GuiActions.getInstance().addPropertyChangeListener(
+                GuiActions.LOG_DISPLAYED, weak);
 
         // Kludge! Workaround to persist correctly when maximized
         if ((frame.getExtendedState() & Frame.MAXIMIZED_BOTH) == Frame.MAXIMIZED_BOTH) {
             vertSplitPane.setDividerLocation(
-                vertSplitPane.getDividerLocation() - 10);
+                    vertSplitPane.getDividerLocation() - 10);
             horiSplitPane.setDividerLocation(
-                horiSplitPane.getDividerLocation() - 10);
+                    horiSplitPane.getDividerLocation() - 10);
         }
 
         // Make the GUI instance available for the other classes
@@ -488,14 +503,12 @@ public class MainGui
 
         // Launch scores
         for (Callable<Void> task : Main.getFilesTasks()) {
-            OmrExecutors.getCachedLowExecutor()
-                        .submit(task);
+            OmrExecutors.getCachedLowExecutor().submit(task);
         }
 
         // Launch scripts
         for (Callable<Void> task : Main.getScriptsTasks()) {
-            OmrExecutors.getCachedLowExecutor()
-                        .submit(task);
+            OmrExecutors.getCachedLowExecutor().submit(task);
         }
     }
 
@@ -506,9 +519,7 @@ public class MainGui
     @Override
     protected void startup ()
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("MainGui. startup");
-        }
+        logger.fine("MainGui. startup");
 
         frame = getMainFrame();
 
@@ -525,23 +536,24 @@ public class MainGui
         frame.setGlassPane(glassPane);
 
         // Use the defined application name
-        appName = getContext()
-                      .getResourceMap()
-                      .getString("Application.name");
+        appName = getContext().getResourceMap().getString("Application.name");
 
         // Define an exit listener
         addExitListener(
-            new ExitListener() {
+                new ExitListener()
+                {
+
+                    @Override
                     public boolean canExit (EventObject e)
                     {
                         return true;
                     }
 
+                    @Override
                     public void willExit (EventObject e)
                     {
                         // Store latest constant values on disk
-                        ConstantManager.getInstance()
-                                       .storeResource();
+                        ConstantManager.getInstance().storeResource();
                     }
                 });
 
@@ -554,34 +566,34 @@ public class MainGui
     private void defineLayout ()
     {
         /*
-           +=============================================================+
-           |toolKeyPanel                                                 |
-           |+=================+=============================+===========+|
-           || toolBar         | progressBar                 |   Memory  ||
-           |+=================+=============================+===========+|
-           +=============================================================+
-           |                                   horiSplitPane             |
-           |+=========================================+=================+|
-           |                                          |boardsScrollPane ||
-           | +========================================+                 ||
-           | | sheetController                        |                 ||
-           | |                                        |                 ||
-           | |                                        |                 ||
-           |v|                                        |                 ||
-           |e|                                        |                 ||
-           |r|                                        |                 ||
-           |t|                                        |                 ||
-           |S|                                        |                 ||
-           |p|                                        |                 ||
-           |l|                                        |                 ||
-           |i|                                        |                 ||
-           |t|                                        |                 ||
-           |P+=====================+==================+                 ||
-           |a| logPane             | errors           |                 ||
-           |n|                     |                  |                 ||
-           |e|                     |                  |                 ||
-           | +=====================+==================+=================+|
-           +=============================================================+
+         * +=============================================================+
+         * |toolKeyPanel |
+         * |+=================+=============================+===========+|
+         * || toolBar | progressBar | Memory ||
+         * |+=================+=============================+===========+|
+         * +=============================================================+
+         * | horiSplitPane |
+         * |+=========================================+=================+|
+         * | |boardsScrollPane ||
+         * | +========================================+ ||
+         * | | sheetController | ||
+         * | | | ||
+         * | | | ||
+         * |v| | ||
+         * |e| | ||
+         * |r| | ||
+         * |t| | ||
+         * |S| | ||
+         * |p| | ||
+         * |l| | ||
+         * |i| | ||
+         * |t| | ||
+         * |P+=====================+==================+ ||
+         * |a| logPane | errors | ||
+         * |n| | | ||
+         * |e| | | ||
+         * | +=====================+==================+=================+|
+         * +=============================================================+
          */
 
         // Individual panes
@@ -593,9 +605,9 @@ public class MainGui
 
         // vertSplitPane =  sheetsController / bottomPane
         vertSplitPane = new JSplitPane(
-            JSplitPane.VERTICAL_SPLIT,
-            sheetsController.getComponent(),
-            bottomPane);
+                JSplitPane.VERTICAL_SPLIT,
+                sheetsController.getComponent(),
+                bottomPane);
         vertSplitPane.setName("vertSplitPane");
         vertSplitPane.setDividerSize(1);
         vertSplitPane.setResizeWeight(1d); // Give extra space to upper part
@@ -604,8 +616,7 @@ public class MainGui
         JPanel toolKeyPanel = new JPanel();
         toolKeyPanel.setLayout(new BorderLayout());
 
-        JComponent stepPanel = Stepping.createMonitor()
-                                       .getComponent();
+        JComponent stepPanel = Stepping.createMonitor().getComponent();
         toolKeyPanel.add(stepPanel, BorderLayout.CENTER);
 
         JComponent memoryPanel = new MemoryMeter().getComponent();
@@ -613,21 +624,18 @@ public class MainGui
 
         // horiSplitPane = splitPane | boards
         horiSplitPane = new JSplitPane(
-            JSplitPane.HORIZONTAL_SPLIT,
-            vertSplitPane,
-            boardsScrollPane);
+                JSplitPane.HORIZONTAL_SPLIT,
+                vertSplitPane,
+                boardsScrollPane);
         horiSplitPane.setName("horiSplitPane");
         horiSplitPane.setDividerSize(1);
         horiSplitPane.setResizeWeight(1d); // Give extra space to left part
 
         // Global layout: Use a toolbar on top and a double split pane below
         toolBar.add(toolKeyPanel);
-        frame.getContentPane()
-             .setLayout(new BorderLayout());
-        frame.getContentPane()
-             .add(toolBar, BorderLayout.NORTH);
-        frame.getContentPane()
-             .add(horiSplitPane, BorderLayout.CENTER);
+        frame.getContentPane().setLayout(new BorderLayout());
+        frame.getContentPane().add(toolBar, BorderLayout.NORTH);
+        frame.getContentPane().add(horiSplitPane, BorderLayout.CENTER);
 
         // Suppress all internal borders, recursively
         UIUtilities.suppressBorders(frame.getContentPane());
@@ -639,27 +647,23 @@ public class MainGui
     private void defineMenus ()
     {
         // Specific sheet menu
-        JMenu     sheetMenu = new SeparableMenu();
+        JMenu sheetMenu = new SeparableMenu();
 
         // Specific history sub-menu
-        JMenuItem historyMenu = ScoresManager.getInstance()
-                                             .getHistory()
-                                             .menu(
-            "Sheet History",
-            new HistoryListener());
+        JMenuItem historyMenu = ScoresManager.getInstance().getHistory().menu(
+                "Sheet History",
+                new HistoryListener());
         sheetMenu.add(historyMenu);
 
         // Specific step menu
-        JMenu       stepMenu = new StepMenu(new SeparableMenu()).getMenu();
+        JMenu stepMenu = new StepMenu(new SeparableMenu()).getMenu();
 
         // Specific plugin menu
-        JMenu       pluginMenu = PluginsManager.getInstance()
-                                               .getMenu(null);
+        JMenu pluginMenu = PluginsManager.getInstance().getMenu(null);
 
         // For history sub-menu
-        ResourceMap resource = MainGui.getInstance()
-                                      .getContext()
-                                      .getResourceMap(Actions.class);
+        ResourceMap resource = MainGui.getInstance().getContext().getResourceMap(
+                Actions.class);
         historyMenu.setName("historyMenu");
         resource.injectComponents(historyMenu);
 
@@ -686,19 +690,55 @@ public class MainGui
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
+    //------------------//
+    // BoardsScrollPane //
+    //------------------//
+    /**
+     * Just a scrollPane to host the pane of user boards, trying to offer
+     * enough room for the boards.
+     */
+    private class BoardsScrollPane
+            extends JScrollPane
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Methods ------------------------------------------------------------
 
-        /** Flag for the preloading of costly packages in the background */
-        private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
-            true,
-            "Should we preload costly packages in the background?");
+        public void adjustRoom ()
+        {
+            Component view = getViewport().getView();
+
+            if (view != null) {
+                int boardsWidth = view.getBounds().width;
+
+                if (boardsWidth != 0) {
+                    int horiWidth = horiSplitPane.getBounds().width;
+                    horiSplitPane.setDividerLocation(
+                            horiWidth - boardsWidth
+                            - horiSplitPane.getDividerSize());
+                    repaint();
+                }
+            }
+        }
+
+        public void setBoards (JComponent boards)
+        {
+            setViewportView(boards);
+            revalidate();
+
+            if ((boards != null)
+                    && GuiActions.getInstance().isBoardsDisplayed()) {
+                // Make sure we have enough room
+                SwingUtilities.invokeLater(
+                        new Runnable()
+                        {
+
+                            @Override
+                            public void run ()
+                            {
+                                adjustRoom();
+                            }
+                        });
+            }
+        }
     }
 
     //------------//
@@ -710,7 +750,7 @@ public class MainGui
      * We try to remember the last divider location
      */
     private static class BottomPane
-        extends JSplitPane
+            extends JSplitPane
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -718,7 +758,6 @@ public class MainGui
         private int dividerLocation = -1;
 
         //~ Constructors -------------------------------------------------------
-
         public BottomPane (JComponent left)
         {
             super(JSplitPane.HORIZONTAL_SPLIT, left, null);
@@ -726,7 +765,6 @@ public class MainGui
         }
 
         //~ Methods ------------------------------------------------------------
-
         public void addErrors (JComponent errorsPane)
         {
             removeErrors(null);
@@ -756,6 +794,20 @@ public class MainGui
         }
     }
 
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Flag for the preloading of costly packages in the background */
+        private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
+                true,
+                "Should we preload costly packages in the background?");
+    }
+
     //-----------------//
     // HistoryListener //
     //-----------------//
@@ -764,7 +816,7 @@ public class MainGui
      * when selected from the history of previous image files.
      */
     private static class HistoryListener
-        implements ActionListener
+            implements ActionListener
     {
         //~ Methods ------------------------------------------------------------
 
@@ -773,56 +825,6 @@ public class MainGui
         {
             File file = new File(e.getActionCommand());
             new OpenTask(file).execute();
-        }
-    }
-
-    //------------------//
-    // BoardsScrollPane //
-    //------------------//
-    /**
-     * Just a scrollPane to host the pane of user boards, trying to offer
-     * enough room for the boards.
-     */
-    private class BoardsScrollPane
-        extends JScrollPane
-    {
-        //~ Methods ------------------------------------------------------------
-
-        public void adjustRoom ()
-        {
-            Component view = getViewport()
-                                 .getView();
-
-            if (view != null) {
-                int boardsWidth = view.getBounds().width;
-
-                if (boardsWidth != 0) {
-                    int horiWidth = horiSplitPane.getBounds().width;
-                    horiSplitPane.setDividerLocation(
-                        horiWidth - boardsWidth -
-                        horiSplitPane.getDividerSize());
-                    repaint();
-                }
-            }
-        }
-
-        public void setBoards (JComponent boards)
-        {
-            setViewportView(boards);
-            revalidate();
-
-            if ((boards != null) &&
-                GuiActions.getInstance()
-                          .isBoardsDisplayed()) {
-                // Make sure we have enough room
-                SwingUtilities.invokeLater(
-                    new Runnable() {
-                            public void run ()
-                            {
-                                adjustRoom();
-                            }
-                        });
-            }
         }
     }
 }

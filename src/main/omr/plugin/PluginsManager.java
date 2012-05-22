@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2011. All rights reserved.               //
+//  Copyright (C) Herve Bitteur 2000-2012. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -36,6 +36,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Level;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -91,10 +92,10 @@ public class PluginsManager
     private JMenu menu;
 
     /** The sorted collection of registered plugins: ID -> Plugin */
-    private final Map<String, Plugin> map = new TreeMap<String, Plugin>();
+    private final Map<String, Plugin> map = new TreeMap<>();
 
     /** The default plugin */
-    private Plugin defaultPlugin = null;
+    private Plugin defaultPlugin;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -118,18 +119,29 @@ public class PluginsManager
             }
 
             // Default plugin, if any is defined
-            for (Plugin plugin : map.values()) {
-                if (plugin.getId()
-                          .equalsIgnoreCase(constants.defaultPlugin.getValue())) {
-                    defaultPlugin = plugin;
+            String defaultId = constants.defaultPlugin.getValue()
+                                                      .trim();
+            defaultPlugin = findDefaultPlugin(defaultId);
 
-                    break;
-                }
+            if (!defaultId.isEmpty() && (defaultPlugin == null)) {
+                logger.warning("Could not find default plugin {0}", defaultId);
             }
         }
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //------------------//
+    // getDefaultPlugin //
+    //------------------//
+    /**
+     * Return the default plugin if any.
+     * @return the default plugin, or null if none is defined
+     */
+    public Plugin getDefaultPlugin ()
+    {
+        return defaultPlugin;
+    }
 
     //-------------//
     // getInstance //
@@ -199,6 +211,21 @@ public class PluginsManager
         }
     }
 
+    //-------------------//
+    // findDefaultPlugin //
+    //-------------------//
+    private Plugin findDefaultPlugin (String pluginId)
+    {
+        for (Plugin plugin : map.values()) {
+            if (plugin.getId()
+                      .equalsIgnoreCase(constants.defaultPlugin.getValue())) {
+                return plugin;
+            }
+        }
+
+        return null;
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
     //-----------//
@@ -243,7 +270,11 @@ public class PluginsManager
 
             for (int i = 0; i < menu.getItemCount(); i++) {
                 JMenuItem menuItem = menu.getItem(i);
-                menuItem.setEnabled(enabled);
+
+                // Beware of separators (for which returned menuItem is null)
+                if (menuItem != null) {
+                    menuItem.setEnabled(enabled);
+                }
             }
         }
     }

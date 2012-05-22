@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -31,11 +31,10 @@ public class RunsTableFactory
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
-        RunsTableFactory.class);
+            RunsTableFactory.class);
 
     //~ Instance fields --------------------------------------------------------
-
-    /** The source to read runs of pixels from*/
+    /** The source to read runs of pixels from */
     private final PixelSource source;
 
     /** The desired orientation */
@@ -54,7 +53,6 @@ public class RunsTableFactory
     private RunsTable table;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------------//
     // RunsTableFactory //
     //------------------//
@@ -62,15 +60,15 @@ public class RunsTableFactory
      * Create an RunsTableFactory, with its key parameters.
      *
      * @param orientation the desired orientation of runs
-     * @param source the source to read runs from. Orientation parameter is
+     * @param source      the source to read runs from. Orientation parameter is
      * used to properly access the source pixels.
-     * @param maxLevel maximum gray level to be a foreground pixel
-     * @param minLength the minimum length for each run
+     * @param maxLevel    maximum gray level to be a foreground pixel
+     * @param minLength   the minimum length for each run
      */
     public RunsTableFactory (Orientation orientation,
                              PixelSource source,
-                             int         maxLevel,
-                             int         minLength)
+                             int maxLevel,
+                             int minLength)
     {
         this.orientation = orientation;
         this.source = source;
@@ -81,40 +79,39 @@ public class RunsTableFactory
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // createTable //
     //------------//
     /**
      * Report the RunsTable created with the runs retrieved from the provided
      * source.
+     *
      * @param name the name to be assigned to the table
      * @return a populated RunsTable
      */
     public RunsTable createTable (String name)
     {
         table = new RunsTable(
-            name,
-            orientation,
-            new Dimension(source.getWidth(), source.getHeight()));
+                name,
+                orientation,
+                new Dimension(source.getWidth(), source.getHeight()));
 
         RunsRetriever retriever = new RunsRetriever(
-            orientation,
-            new MyAdapter());
+                orientation,
+                new MyAdapter());
 
         retriever.retrieveRuns(
-            new PixelRectangle(0, 0, source.getWidth(), source.getHeight()));
+                new PixelRectangle(0, 0, source.getWidth(), source.getHeight()));
 
         return table;
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // MyAdapter //
     //-----------//
     private class MyAdapter
-        implements RunsRetriever.Adapter
+            implements RunsRetriever.Adapter
     {
         //~ Methods ------------------------------------------------------------
 
@@ -124,8 +121,8 @@ public class RunsTableFactory
         /**
          * Call-back called when a background run has been built
          *
-         * @param coord coordinate of run start
-         * @param pos position of run start
+         * @param coord  coordinate of run start
+         * @param pos    position of run start
          * @param length run length
          */
         @Override
@@ -142,10 +139,10 @@ public class RunsTableFactory
         /**
          * Call-back called when a foreground run has been built
          *
-         * @param coord coordinate of run start
-         * @param pos position of run start
+         * @param coord  coordinate of run start
+         * @param pos    position of run start
          * @param length run length
-         * @param cumul cumulated pixel gray levels on all run points
+         * @param cumul  cumulated pixel gray levels on all run points
          */
         @Override
         public final void foreRun (int coord,
@@ -156,8 +153,8 @@ public class RunsTableFactory
             // We consider only runs that are longer than minLength
             if (length >= minLength) {
                 final int level = ((2 * cumul) + length) / (2 * length);
-                table.getSequence(pos)
-                     .add(new Run(coord - length, length, level));
+                table.getSequence(pos).add(
+                        new Run(coord - length, length, level));
             }
         }
 
@@ -168,7 +165,7 @@ public class RunsTableFactory
          * Retrieve the pixel gray level of a point in the underlying source
          *
          * @param coord coordinate value, relative to lag orientation
-         * @param pos position value, relative to lag orientation
+         * @param pos   position value, relative to lag orientation
          *
          * @return pixel gray level
          */
@@ -208,9 +205,8 @@ public class RunsTableFactory
         @Override
         public final void terminate ()
         {
-            if (logger.isFineEnabled()) {
-                logger.fine(table + " Retrieved runs: " + table.getRunCount());
-            }
+            logger.fine("{0} Retrieved runs: {1}",
+                        new Object[]{table, table.getRunCount()});
         }
     }
 }

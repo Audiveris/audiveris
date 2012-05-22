@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -29,6 +29,7 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.logging.Level;
 
 import javax.swing.TransferHandler;
 import javax.swing.TransferHandler.TransferSupport;
@@ -147,7 +148,7 @@ public class FileDropHandler
     public static void setDefaultStep (Step step)
     {
         if (step != getDefaultStep()) {
-            logger.info("Default drop step is now " + step);
+            logger.info("Default drop step is now {0}", step);
             constants.defaultStep.setValue(step);
         }
     }
@@ -193,7 +194,7 @@ public class FileDropHandler
         protected Void doInBackground ()
             throws Exception
         {
-            logger.info("Dropping file " + file);
+            logger.info("Dropping file {0}", file);
 
             Score score = new Score(file);
             Stepping.processScore(Collections.singleton(target), score);

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -14,9 +14,9 @@ package omr.glyph.pattern;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
-import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Grades;
+import omr.glyph.ShapeEvaluator;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -33,7 +33,7 @@ import omr.sheet.SystemInfo;
  * @author Hervé Bitteur
  */
 public class LeftOverPattern
-    extends GlyphPattern
+        extends GlyphPattern
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -42,15 +42,15 @@ public class LeftOverPattern
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
-        LeftOverPattern.class);
+            LeftOverPattern.class);
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------------//
     // LeftOverPattern //
     //-----------------//
     /**
      * Creates a new LeftOverPattern object.
+     *
      * @param system the containing system
      */
     public LeftOverPattern (SystemInfo system)
@@ -59,36 +59,35 @@ public class LeftOverPattern
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // runPattern //
     //------------//
     @Override
     public int runPattern ()
     {
-        int                  successNb = 0;
-        final double         minWeight = constants.minWeight.getValue();
-        final GlyphEvaluator evaluator = GlyphNetwork.getInstance();
+        int successNb = 0;
+        final double minWeight = constants.minWeight.getValue();
+        final ShapeEvaluator evaluator = GlyphNetwork.getInstance();
 
         for (Glyph glyph : system.getGlyphs()) {
-            if (glyph.isKnown() ||
-                glyph.isManualShape() ||
-                (glyph.getNormalizedWeight() < minWeight)) {
+            if (glyph.isKnown()
+                    || glyph.isManualShape()
+                    || (glyph.getNormalizedWeight() < minWeight)) {
                 continue;
             }
 
             Evaluation vote = evaluator.vote(
-                glyph,
-                system,
-                Grades.leftOverMinGrade);
+                    glyph,
+                    system,
+                    Grades.leftOverMinGrade);
 
             if (vote != null) {
                 glyph = system.addGlyph(glyph);
                 glyph.setEvaluation(vote);
 
                 if (logger.isFineEnabled() || glyph.isVip()) {
-                    logger.info(
-                        "LeftOver glyph#" + glyph.getId() + " vote: " + vote);
+                    logger.info("LeftOver {0} vote: {1}", new Object[]{glyph.
+                                idString(), vote});
                 }
 
                 successNb++;
@@ -99,17 +98,16 @@ public class LeftOverPattern
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Scale.AreaFraction minWeight = new Scale.AreaFraction(
-            0.3,
-            "Minimum normalized weight to be a left over glyph");
+                0.3,
+                "Minimum normalized weight to be a left over glyph");
     }
 }

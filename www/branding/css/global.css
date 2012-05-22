@@ -1,39 +1,119 @@
 /* --------------------------------------------------------------------------*/
 /*                                                                           */
-/*                              g l o b a l . j s                            */
+/*                              g l o b a l . c s s                          */
 /*                                                                           */
 /*    Description: Global CSS definitions that apply to all documents        */
+/*    Inspired from http://www.alsacreations.com/static/gabarits/            */
 /* --------------------------------------------------------------------------*/
 
+/* --- Page --- */
+root { 
+    display: block;
+}
+
+html {
+    font-size: 100%;
+}
+
 body {
-    font-family: Helvetica, Arial, Verdana, sans-serif;
-    font-size: 14px;
-    line-height: 20.5px;
+    /*    font-family: Helvetica, Arial, Verdana, sans-serif;*/
+    font-family: Verdana, "Bitstream Vera Sans", "Lucida Grande", sans-serif; /* 3 */
+    font-size: 0.9em; 
+    line-height: 1.25;
     color: #245678;
+
     margin: 0;
+    padding: 10px 20px;
     background-color: rgba(250,250,255,1); 
 }
+
 .block a:link,
-.block a:visited {color: #245678;}
+.block a:visited {
+    color: #245678;
+}
+
 .block a:hover {
     color: #4FA3F9;
     text-decoration: underline;
 }
+
+/* --- Titles --- */
+h1, h2, h3, h4, h5 {
+    clear: both;
+    color: #4444AA;
+}
+
+h1, h2, h3 {
+    margin: 1em 0 1em 0;
+}
+h4, h5 {
+    margin: 1em 0 .5em 0;
+}
+h1 {
+    font-family: Georgia, "Bitstream Vera Serif", Norasi, serif;
+}
+h1 {
+    font-size: 4em;
+    font-style: italic;
+}
+h2 {font-size: 2.5em;}
+h3 {font-size: 1.8em;}
+h4 {font-size: 1.5em;}
+h5 {font-size: 1.2em;}
+
+div.main h1 {
+    text-shadow: 4px 4px 6px rgba(0,0,0,0.5);
+}
+.chapter {
+    page-break-before: always;
+    text-align: center;
+}
+
+/* --- Lists --- */
+ul, ol {
+    margin: .75em 0 .75em 24px;
+    padding: 0;
+}
+li {
+    margin: 0;
+    padding: 0;
+}
 ul {
     list-style-type: circle;
-    padding-left: 20px;
 }
+
 ul.light {
     list-style-type: none;
     padding-left: 0px;
 }
+
+/* --- Paragraphs --- */
+p {
+    margin: .75em .5em;
+}
+li p, blockquote p {
+    margin: .5em 0;
+}
+
+/* --- links --- */
 footer a, 
 a.light {
     text-decoration: none;
 }
-footer a:hover, 
+
+footer a:hover,
 a.light:hover {
     text-decoration: underline;
+}
+a {
+    color: mediumblue;
+    text-decoration: underline;
+}
+a:hover, a:focus {
+    color: crimson;
+}
+a img {
+    border: none;
 }
 div.creation-date {
     font-size: 12px;
@@ -41,14 +121,52 @@ div.creation-date {
     color: #c0c0c0;
     margin-bottom: 8px;
 }
+
+/* --- Quotes --- */
+blockquote, q {
+    font-size: 1.1em;
+    font-style: italic;
+    font-family: Georgia, "Bitstream Vera Serif", Norasi, serif;
+}
+blockquote {
+    margin: .75em 0 .75em 24px;
+}
+cite {
+    font-style: italic;
+}
+
+
+/* --- Miscellaneous --- */
+em {
+    font-style: italic;
+}
+strong {
+    font-weight: bold;
+    color: dimgray;
+}
+
+
+pre, code {
+    font-size: 95%;
+    font-family: "Bitstream Vera Mono", "Lucida Console", "Courier New", monospace;
+}
+pre {
+    width: 95%;
+    overflow: auto;
+    overflow-y: hidden;
+    /*    margin: .75em 0;
+        padding: 12px;*/
+    background: ivory;
+    color: #555;
+}
+pre strong {
+    font-weight: normal;
+    color: black;
+}
 div.main {
     float: left;
     margin: 15px;
     margin-top: 120px;
-    /*                border: 1px solid red;*/
-}
-div.main h1 {
-    text-shadow: 0px 2px 5px rgba(0,0,0,0.3);
 }
 
 header {
@@ -71,51 +189,7 @@ header {
     background: linear-gradient(top,  rgba(210,235,249,1) 0%,rgba(250,250,255,1) 100%);  /* W3C */
 }
 
-/* Logo */
-#logo {
-    position:absolute;
-    left: 5px;
-    top: 0px;               
-    height: 95px;
-    width: 195px;
-    text-decoration: none;
-    background:  url('../images/logo-audiveris-195x80.png') no-repeat;
-}
-#logo-subtitle {
-    position: absolute;
-    right: 0px;
-    bottom: 0px;
-    text-align: right;
-    color: black;
-    font-size: 14px;
-    text-shadow: 0px 2px 3px rgba(0,0,0,0.3);
-}
-
-/* Download button */
-#download-button {
-    position: absolute;
-    right: 10px;
-    top: 10px;
-    width: 195px;
-    height: 73px;
-    background:  url('../images/download_now.png') no-repeat;
-    text-decoration: none;
-    border-radius: 6px;
-    box-shadow:0px 5px 5px rgba(0,0,0,0.3),
-        0px 5px 5px 0px rgba(255, 255, 255, 0.3) inset;
-}
-#download-button:active {
-    box-shadow:  0px 5px 5px 0px rgba(0,0,0,0.3) inset;
-}
-#download-version {
-    position: absolute;
-    left: 13px;
-    top: 8px;
-    color: white;
-    text-shadow: 2px 2px #888888;
-}
-
-div.block  {
+.block  {
     float: left;
     width: 200px;
     margin: 10px;
@@ -129,14 +203,42 @@ div.block  {
     border-radius: 6px;
     box-shadow: 0px 2px 2px 1px rgba(45,20,6,0.2);
 }
-div.block h2 {
-    font-size: 19.5px;
-    font-weight: 400;
-    color: #5A5A5A;
+
+.block h2 {
+    font-size: 140%;
     padding-bottom: 2px;
     border-bottom: 1px solid #cccccc;      
 }
-div.warning {
+.chapter-title {
+    font-size: x-large;
+    color: #4444AA;
+}
+.code {
+    margin-left: 50pt;
+}
+.note {
+    page-break-inside: avoid;
+    margin-left: 50pt;
+    margin-right: 50pt;
+    padding: 10pt;
+    background-color: ivory;
+    border-radius: 6px;
+    box-shadow: 0px 2px 2px 1px rgba(45,20,6,0.2);
+}
+.page-title {
+    text-align: center
+}
+
+.snippet {
+    padding: 10pt;
+    margin-left: 50pt;
+    margin-bottom: 20pt;
+    background-color: ivory;
+    border-radius: 6px;
+    box-shadow: 0px 2px 2px 1px rgba(45,20,6,0.2);
+}
+
+.warning {
     background: url('../../branding/images/icon_alert.gif') no-repeat;
     background-color: white;
     color: red;
@@ -146,6 +248,7 @@ div.warning {
     margin-left: auto;
     width: 50%;
 }
+
 footer {
     clear: left;
     border-top: 1px solid #cccccc;
@@ -157,8 +260,71 @@ footer {
     padding-top: 10px;
     text-align: center;
 }
+
 h3.title {
     border-bottom: 1px solid silver;  
+}
+
+/* --- Specific --- */
+#copyright {
+    margin: 20px 0 5px 0;
+    text-align: right;
+    font-size: .8em;
+    color: #848F63;
+}
+#copyright a {
+    color: #848F63;
+    text-decoration: none;
+}
+#copyright a:hover, 
+#copyright a:focus {
+    text-decoration: underline;
+}
+
+
+#download-button {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    width: 195px;
+    height: 73px;
+    background:  url('../images/download_now.png') no-repeat;
+    text-decoration: none;
+    border-radius: 6px;
+    box-shadow:0px 5px 5px rgba(0,0,0,0.3),
+        0px 5px 5px 0px rgba(255, 255, 255, 0.3) inset;
+}
+
+#download-button:active {
+    box-shadow:  0px 5px 5px 0px rgba(0,0,0,0.3) inset;
+}
+
+#download-version {
+    position: absolute;
+    left: 13px;
+    top: 8px;
+    color: white;
+    text-shadow: 2px 2px #888888;
+}
+
+#logo {
+    position:absolute;
+    left: 5px;
+    top: 0px;               
+    height: 95px;
+    width: 195px;
+    text-decoration: none;
+    background:  url('../images/logo-audiveris-195x80.png') no-repeat;
+}
+
+#logo-subtitle {
+    position: absolute;
+    right: 0px;
+    bottom: 0px;
+    text-align: right;
+    color: black;
+    font-size: 14px;
+    text-shadow: 0px 2px 3px rgba(0,0,0,0.3);
 }
 
 /* Global navigation bar */
@@ -174,20 +340,24 @@ h3.title {
     margin-bottom: 0px;
     padding-left: 36px;
 }
+
 #tabs li {
     display:inline;
 }
+
 #tabs a {
+    padding-top: 5px;
     float: left; 
     width: 75px; 
     height: 21px; 
     overflow: hidden;
-    font-size: 11.5px;
+    font-size: 12px;
     text-align: center;
     text-decoration: none;
     border-radius:3px;
     box-shadow: 0px 2px 2px 0px rgba(0,0,0,0.5), 0px 2px 2px 0px rgba(255, 255, 255, 0.5) inset;
 }
+
 #tabs a:link,
 #tabs a:visited {
     color: white;
@@ -196,9 +366,11 @@ h3.title {
 #tabs a:hover {
     background-color:#535898;
 }
+
 #tabs a:active {
     box-shadow:  0px 2px 2px 0px rgba(0,0,0,0.8) inset;
 }
+
 /* Color for current page */
 #tabs a.current:link,
 #tabs a.current:visited,

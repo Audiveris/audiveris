@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -38,7 +38,7 @@ import java.util.Collection;
  * @author Hervé Bitteur
  */
 public class PagesStep
-    extends AbstractSystemStep
+        extends AbstractSystemStep
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -49,7 +49,6 @@ public class PagesStep
     private static final Logger logger = Logger.getLogger(PagesStep.class);
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------//
     // PagesStep //
     //-----------//
@@ -59,24 +58,22 @@ public class PagesStep
     public PagesStep ()
     {
         super(
-            Steps.PAGES,
-            Level.SHEET_LEVEL,
-            Mandatory.MANDATORY,
-            Redoable.REDOABLE,
-            DATA_TAB,
-            "Translate glyphs to score items");
+                Steps.PAGES,
+                Level.SHEET_LEVEL,
+                Mandatory.MANDATORY,
+                Redoable.REDOABLE,
+                DATA_TAB,
+                "Translate glyphs to score items");
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // displayUI //
     //-----------//
     @Override
     public void displayUI (Sheet sheet)
     {
-        Steps.valueOf(Steps.SYMBOLS)
-             .displayUI(sheet);
+        Steps.valueOf(Steps.SYMBOLS).displayUI(sheet);
     }
 
     //----------//
@@ -84,10 +81,10 @@ public class PagesStep
     //----------//
     @Override
     public void doSystem (SystemInfo system)
-        throws StepException
+            throws StepException
     {
-        final int            iterMax = constants.maxPageIterations.getValue();
-        final ScoreSystem    scoreSystem = system.getScoreSystem();
+        final int iterMax = constants.maxPageIterations.getValue();
+        final ScoreSystem scoreSystem = system.getScoreSystem();
         final WrappedBoolean modified = new WrappedBoolean(true);
 
         // Purge system of non-active glyphs
@@ -95,17 +92,13 @@ public class PagesStep
 
         for (int iter = 1; modified.isSet() && (iter <= iterMax); iter++) {
             modified.set(false);
-
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "System#" + system.getId() + " translation iter #" + iter);
-            }
+            logger.fine("System#{0} translation iter #{1}",
+                        new Object[]{system.getId(), iter});
 
             // Clear errors for this system only (and this step)
             if (Main.getGui() != null) {
-                system.getSheet()
-                      .getErrorsEditor()
-                      .clearSystem(this, system.getId());
+                system.getSheet().getErrorsEditor().clearSystem(this, system.
+                        getId());
             }
 
             // Cleanup the system, staves, measures, barlines, ...
@@ -125,8 +118,8 @@ public class PagesStep
     //----------//
     @Override
     protected void doEpilog (Collection<SystemInfo> systems,
-                             Sheet                  sheet)
-        throws StepException
+                             Sheet sheet)
+            throws StepException
     {
         // For the very first time, we reperform from the SYMBOLS step
         if (!sheet.isDone(this)) {
@@ -135,10 +128,10 @@ public class PagesStep
             // Reperform patterns once
             try {
                 Stepping.reprocessSheet(
-                    Steps.valueOf(Steps.SYMBOLS),
-                    sheet,
-                    systems,
-                    true);
+                        Steps.valueOf(Steps.SYMBOLS),
+                        sheet,
+                        systems,
+                        true);
             } catch (Exception ex) {
                 logger.warning("Error in re-processing from " + this, ex);
             }
@@ -149,9 +142,7 @@ public class PagesStep
             }
 
             if (!systems.isEmpty()) {
-                systems.iterator()
-                       .next()
-                       .translateFinal();
+                systems.iterator().next().translateFinal();
 
                 // Finally, all actions for completed page (in proper order)
                 Page page = sheet.getPage();
@@ -179,18 +170,17 @@ public class PagesStep
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         private final Constant.Integer maxPageIterations = new Constant.Integer(
-            "count",
-            2,
-            "Maximum number of iterations for PAGES task");
+                "count",
+                2,
+                "Maximum number of iterations for PAGES task");
     }
 }

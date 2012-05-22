@@ -219,24 +219,6 @@ public class FilamentTest
     }
 
     /**
-     * Test of getRefDistance method, of class Filament.
-     */
-    @Test
-    public void testGetRefDistance ()
-    {
-        System.out.println("+++ getRefDistance");
-
-        for (Orientation ori : Orientation.values()) {
-            setOrientation(ori);
-
-            Filament instance = createFil();
-            Integer  expResult = null;
-            Integer  result = instance.getRefDistance();
-            assertEquals(expResult, result);
-        }
-    }
-
-    /**
      * Test of getStartPoint method, of class Filament.
      */
     @Test
@@ -325,7 +307,7 @@ public class FilamentTest
     }
 
     /**
-     * Test of include method, of class Filament.
+     * Test of includeSections method, of class Filament.
      */
     @Test
     public void testInclude ()
@@ -337,13 +319,13 @@ public class FilamentTest
 
             Filament instance = createFil();
             Filament that = createFilTwo();
-            instance.include(that);
+            instance.stealSections(that);
 
             that = createFilThree();
-            instance.include(that);
+            instance.stealSections(that);
 
             that = createFilFour();
-            instance.include(that);
+            instance.stealSections(that);
 
             instance.drawAscii();
             instance.dump();
@@ -391,9 +373,9 @@ public class FilamentTest
             setOrientation(ori);
 
             Filament instance = createFil();
-            instance.include(createFilTwo());
-            instance.include(createFilThree());
-            instance.include(createFilFour());
+            instance.stealSections(createFilTwo());
+            instance.stealSections(createFilThree());
+            instance.stealSections(createFilFour());
 
             PixelPoint pStart = new PixelPoint(80, 26);
             Point2D    pStop = instance.getStopPoint(Orientation.HORIZONTAL);
@@ -401,23 +383,6 @@ public class FilamentTest
 
             instance.drawAscii();
             instance.dump();
-        }
-    }
-
-    /**
-     * Test of setRefDistance method, of class Filament.
-     */
-    @Test
-    public void testSetRefDistance ()
-    {
-        System.out.println("+++ setRefDistance");
-
-        for (Orientation ori : Orientation.values()) {
-            setOrientation(ori);
-
-            int      refDist = 0;
-            Filament instance = createFil();
-            instance.setRefDistance(refDist);
         }
     }
 

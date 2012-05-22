@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -45,6 +45,7 @@ import java.util.Observer;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -282,7 +283,7 @@ class SelectionPanel
         // Train regression on them
         GlyphRegression    regression = GlyphRegression.getInstance();
         Collection<String> gNames = getBase(true); // use whole
-        List<Glyph>        glyphs = new ArrayList<Glyph>();
+        List<Glyph>        glyphs = new ArrayList<>();
 
         // Actually load each glyph description, if not yet done
         for (String gName : gNames) {
@@ -297,7 +298,7 @@ class SelectionPanel
         regression.train(glyphs, null, EvaluationEngine.StartingMode.SCRATCH);
 
         // Measure all glyphs of each shape
-        Map<Shape, List<NotedGlyph>> palmares = new HashMap<Shape, List<NotedGlyph>>();
+        Map<Shape, List<NotedGlyph>> palmares = new HashMap<>();
 
         for (String gName : gNames) {
             Glyph glyph = repository.getGlyph(gName, this);
@@ -311,19 +312,19 @@ class SelectionPanel
                     List<NotedGlyph> shapeNotes = palmares.get(shape);
 
                     if (shapeNotes == null) {
-                        shapeNotes = new ArrayList<NotedGlyph>();
+                        shapeNotes = new ArrayList<>();
                         palmares.put(shape, shapeNotes);
                     }
 
                     shapeNotes.add(new NotedGlyph(gName, glyph, grade));
                 } catch (Exception ex) {
-                    logger.warning("Cannot evaluate " + glyph);
+                    logger.warning("Cannot evaluate {0}", glyph);
                 }
             }
         }
 
         // Set of chosen shapes
-        final Set<NotedGlyph> set = new HashSet<NotedGlyph>();
+        final Set<NotedGlyph> set = new HashSet<>();
         final int             maxSimilar = similar.getValue();
 
         // Sort the palmares, shape by shape, by (decreasing) grade
@@ -346,7 +347,7 @@ class SelectionPanel
         }
 
         // Build the core base
-        List<String> base = new ArrayList<String>(set.size());
+        List<String> base = new ArrayList<>(set.size());
 
         for (NotedGlyph ng : set) {
             base.add(ng.gName);
@@ -439,6 +440,7 @@ class SelectionPanel
 
         /** For comparing NotedGlyph instance in reverse grade order */
         static final Comparator<NotedGlyph> reverseGradeComparator = new Comparator<NotedGlyph>() {
+            @Override
             public int compare (NotedGlyph ng1,
                                 NotedGlyph ng2)
             {
@@ -589,6 +591,7 @@ class SelectionPanel
         {
             executor.execute(
                 new Runnable() {
+                @Override
                         public void run ()
                         {
                             task.setActivity(SELECTING);

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -47,6 +47,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JToolBar;
+import javax.xml.bind.JAXBException;
 
 /**
  * Class {@code ActionManager} handles the instantiation and dressing
@@ -56,7 +57,7 @@ import javax.swing.JToolBar;
  * @author Hervé Bitteur
  */
 public class ActionManager
-    implements EventSubscriber<SheetEvent>
+        implements EventSubscriber<SheetEvent>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -64,21 +65,22 @@ public class ActionManager
     private static final Logger logger = Logger.getLogger(ActionManager.class);
 
     /** Class loader */
-    private static final ClassLoader classLoader = ActionManager.class.getClassLoader();
+    private static final ClassLoader classLoader = ActionManager.class.
+            getClassLoader();
 
     /** Singleton */
     private static volatile ActionManager INSTANCE;
 
     //~ Instance fields --------------------------------------------------------
-
+    //
     /** The map of all menus, so that we can directly provide some */
-    private final Map<String, JMenu> menuMap = new HashMap<String, JMenu>();
+    private final Map<String, JMenu> menuMap = new HashMap<>();
 
     /** Collection of actions enabled only when a sheet is selected */
-    private final Collection<Action> sheetDependentActions = new ArrayList<Action>();
+    private final Collection<Action> sheetDependentActions = new ArrayList<>();
 
     /** Collection of actions enabled only when current score is available */
-    private final Collection<Action> scoreDependentActions = new ArrayList<Action>();
+    private final Collection<Action> scoreDependentActions = new ArrayList<>();
 
     /** The tool bar that hosts some actions */
     private final JToolBar toolBar = new SeparableToolBar();
@@ -87,7 +89,7 @@ public class ActionManager
     private final JMenuBar menuBar = new JMenuBar();
 
     //~ Constructors -----------------------------------------------------------
-
+    //
     //---------------//
     // ActionManager //
     //---------------//
@@ -98,31 +100,11 @@ public class ActionManager
     {
         // Stay informed on sheet selection, in order to enable sheet-dependent
         // actions accordingly
-        SheetsController.getInstance()
-                        .subscribe(this);
+        SheetsController.getInstance().
+                subscribe(this);
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //-------------------//
-    // getActionInstance //
-    //-------------------//
-    /**
-     * Retrieve an action knowing its methodName.
-     * @param instance the instance of the hosting class
-     * @param methodName the method name
-     * @return the action found, or null if none
-     */
-    public ApplicationAction getActionInstance (Object instance,
-                                                String methodName)
-    {
-        ActionMap actionMap = MainGui.getInstance()
-                                     .getContext()
-                                     .getActionMap(instance);
-
-        return (ApplicationAction) actionMap.get(methodName);
-    }
-
     //-------------//
     // getInstance //
     //-------------//
@@ -137,6 +119,25 @@ public class ActionManager
         }
 
         return INSTANCE;
+    }
+
+    //-------------------//
+    // getActionInstance //
+    //-------------------//
+    /**
+     * Retrieve an action knowing its methodName.
+     * @param instance   the instance of the hosting class
+     * @param methodName the method name
+     * @return the action found, or null if none
+     */
+    public ApplicationAction getActionInstance (Object instance,
+                                                String methodName)
+    {
+        ActionMap actionMap = MainGui.getInstance().
+                getContext().
+                getActionMap(instance);
+
+        return (ApplicationAction) actionMap.get(methodName);
     }
 
     //---------//
@@ -193,11 +194,11 @@ public class ActionManager
     //------------//
     /**
      * Insert a predefined menu, either partly or fully built.
-     * @param key the menu unique name
+     * @param key  the menu unique name
      * @param menu the menu to inject
      */
     public void injectMenu (String key,
-                            JMenu  menu)
+                            JMenu menu)
     {
         menuMap.put(key, menu);
     }
@@ -212,7 +213,7 @@ public class ActionManager
     public void loadAllDescriptors ()
     {
         // Load classes first for system actions, then for user actions
-        for (String name : new String[] { "system-actions.xml", "user-actions.xml" }) {
+        for (String name : new String[]{"system-actions.xml", "user-actions.xml"}) {
             File file = new File(WellKnowns.SETTINGS_FOLDER, name);
 
             if (file.exists()) {
@@ -221,8 +222,8 @@ public class ActionManager
                 try {
                     input = new FileInputStream(file);
                     Actions.loadActionsFrom(input);
-                } catch (Exception ex) {
-                    logger.warning("Error loading actions from " + name, ex);
+                } catch (FileNotFoundException | JAXBException ex) {
+                    logger.warning("Error loading actions from {0}", name, ex);
                 } finally {
                     try {
                         input.close();
@@ -230,7 +231,7 @@ public class ActionManager
                     }
                 }
             } else {
-                logger.severe("File not found " + file);
+                logger.severe("File not found {0}", file);
             }
         }
     }
@@ -255,7 +256,7 @@ public class ActionManager
             enableSheetActions(sheet != null);
             enableScoreActions((sheet != null) && (sheet.getScore() != null));
         } catch (Exception ex) {
-            logger.warning(getClass().getName() + " onEvent error", ex);
+            logger.warning("{0} onEvent error", getClass().getName(), ex);
         }
     }
 
@@ -274,20 +275,17 @@ public class ActionManager
             JMenu menu = menuMap.get(domain);
 
             if (menu == null) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("Creating menu:" + domain);
-                }
-
+                logger.fine("Creating menu:{0}", domain);
                 menu = new SeparableMenu(domain);
                 menuMap.put(domain, menu);
             } else {
-                logger.fine("Augmenting menu:" + domain);
+                logger.fine("Augmenting menu:{0}", domain);
             }
 
             // Proper menu decoration
-            ResourceMap resource = MainGui.getInstance()
-                                          .getContext()
-                                          .getResourceMap(Actions.class);
+            ResourceMap resource = MainGui.getInstance().
+                    getContext().
+                    getResourceMap(Actions.class);
             menu.setText(domain); // As default
             menu.setName(domain);
 
@@ -347,14 +345,14 @@ public class ActionManager
 
         try {
             // Retrieve proper class instance
-            Class  classe = classLoader.loadClass(desc.className);
+            Class classe = classLoader.loadClass(desc.className);
             Object instance = null;
 
             // Reuse existing instance through a 'getInstance()' method if any
             try {
                 Method getInstance = classe.getDeclaredMethod(
-                    "getInstance",
-                    (Class[]) null);
+                        "getInstance",
+                        (Class[]) null);
 
                 if (Modifier.isStatic(getInstance.getModifiers())) {
                     instance = getInstance.invoke(null);
@@ -374,9 +372,10 @@ public class ActionManager
             if (action != null) {
                 // Insertion of a button on Tool Bar?
                 if (desc.buttonClassName != null) {
-                    Class<?extends AbstractButton> buttonClass = (Class<?extends AbstractButton>) classLoader.loadClass(
-                        desc.buttonClassName);
-                    AbstractButton                 button = buttonClass.newInstance();
+                    Class<? extends AbstractButton> buttonClass = (Class<? extends AbstractButton>) classLoader.
+                            loadClass(
+                            desc.buttonClassName);
+                    AbstractButton button = buttonClass.newInstance();
                     button.setAction(action);
                     toolBar.add(button);
                     button.setBorder(UIUtilities.getToolBorder());
@@ -384,11 +383,11 @@ public class ActionManager
                 }
             } else {
                 logger.severe(
-                    "Unknown action " + desc.methodName + " in class " +
-                    desc.className);
+                        "Unknown action {0} in class {1}",
+                        new Object[]{desc.methodName, desc.className});
             }
         } catch (Throwable ex) {
-            logger.warning("Error while registering " + desc, ex);
+            logger.warning("Error while registering {0}", desc, ex);
         }
 
         return action;
@@ -399,30 +398,27 @@ public class ActionManager
     //-----------------------//
     @SuppressWarnings("unchecked")
     private void registerDomainActions (String domain,
-                                        JMenu  menu)
+                                        JMenu menu)
     {
         // Create all type sections for this menu
         for (int section : Actions.getSections()) {
-            if (logger.isFineEnabled()) {
-                logger.fine("Starting section: " + section);
-            }
+            logger.fine("Starting section: {0}", section);
 
             // Use a separator between sections
             menu.addSeparator();
 
             for (ActionDescriptor desc : Actions.getAllDescriptors()) {
-                if (desc.domain.equalsIgnoreCase(domain) &&
-                    (desc.section == section)) {
-                    if (logger.isFineEnabled()) {
-                        logger.fine("Registering " + desc);
-                    }
+                if (desc.domain.equalsIgnoreCase(domain)
+                        && (desc.section == section)) {
+                    logger.fine("Registering {0}", desc);
 
                     try {
-                        Class<?extends JMenuItem> itemClass;
+                        Class<? extends JMenuItem> itemClass;
 
                         if (desc.itemClassName != null) {
-                            itemClass = (Class<?extends JMenuItem>) classLoader.loadClass(
-                                desc.itemClassName);
+                            itemClass = (Class<? extends JMenuItem>) classLoader.
+                                    loadClass(
+                                    desc.itemClassName);
                         } else {
                             itemClass = JMenuItem.class;
                         }
@@ -437,20 +433,11 @@ public class ActionManager
                             item.setAction(action);
                             menu.add(item);
                         } else {
-                            logger.warning("Could not register " + desc);
+                            logger.warning("Could not register {0}", desc);
                         }
-                    } catch (InstantiationException ex) {
-                        logger.warning(
-                            "Cannot instantiate " + desc.itemClassName,
-                            ex);
-                    } catch (IllegalAccessException ex) {
-                        logger.warning(
-                            "Cannot access " + desc.itemClassName,
-                            ex);
-                    } catch (ClassNotFoundException ex) {
-                        logger.warning(
-                            "Cannot find class " + desc.itemClassName,
-                            ex);
+                    } catch (ClassNotFoundException | InstantiationException |
+                             IllegalAccessException ex) {
+                        logger.warning("Error with {0}", desc.itemClassName, ex);
                     }
                 }
             }

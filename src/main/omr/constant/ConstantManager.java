@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -99,7 +99,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * Typically, these USER values represent some modification made by the end user
  * at run-time and thus saved from one run to the other.
  * The format of the user file is the same as the default file, and it is not
- * meant to be edited manually, but rather through the provided GUI tool.</li> <br/>
+ * meant to be edited manually, but rather through the provided GUI tool.</li>
+ * <br/>
  *
  * <li>Then, <b>CLI</b> values, as set on the command line interface, by means
  * of the <em><b>"-option"</b> key=value</em> command. For further details on
@@ -162,7 +163,7 @@ public class ConstantManager
      * Map of all constants created in the application, regardless whether these
      * constants are enclosed in a ConstantSet or defined as standalone entities
      */
-    protected final ConcurrentHashMap<String, Constant> constants = new ConcurrentHashMap<String, Constant>();
+    protected final ConcurrentHashMap<String, Constant> constants = new ConcurrentHashMap<>();
 
     /** Default properties */
     private final DefaultHolder defaultHolder = new DefaultHolder(
@@ -194,7 +195,7 @@ public class ConstantManager
      */
     public Collection<String> getAllProperties ()
     {
-        SortedSet<String> props = new TreeSet<String>(defaultHolder.getKeys());
+        SortedSet<String> props = new TreeSet<>(defaultHolder.getKeys());
         props.addAll(userHolder.getKeys());
 
         return props;
@@ -364,7 +365,7 @@ public class ConstantManager
 
         public Collection<String> getKeys ()
         {
-            Collection<String> strings = new ArrayList<String>();
+            Collection<String> strings = new ArrayList<>();
 
             for (Object obj : properties.keySet()) {
                 strings.add((String) obj);
@@ -380,7 +381,7 @@ public class ConstantManager
 
         public Collection<String> getUnusedKeys ()
         {
-            SortedSet<String> props = new TreeSet<String>();
+            SortedSet<String> props = new TreeSet<>();
 
             for (Object obj : properties.keySet()) {
                 if (!constants.containsKey((String) obj)) {
@@ -393,7 +394,7 @@ public class ConstantManager
 
         public Collection<String> getUselessKeys ()
         {
-            SortedSet<String> props = new TreeSet<String>();
+            SortedSet<String> props = new TreeSet<>();
 
             for (Entry<Object, Object> entry : properties.entrySet()) {
                 Constant constant = constants.get((String) entry.getKey());
@@ -426,14 +427,15 @@ public class ConstantManager
                 in.close();
             } catch (FileNotFoundException ex) {
                 // This is not at all an error
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "[" + ConstantManager.class.getName() + "]" +
-                        " No property file " + file.getAbsolutePath());
-                }
+                logger.fine(
+                    "[{0}" + "]" + " No property file {1}",
+                    new Object[] {
+                        ConstantManager.class.getName(), file.getAbsolutePath()
+                    });
             } catch (IOException ex) {
                 logger.severe(
-                    "Error loading constants file " + file.getAbsolutePath());
+                    "Error loading constants file {0}",
+                    file.getAbsolutePath());
             } finally {
                 if (in != null) {
                     try {
@@ -508,27 +510,21 @@ public class ConstantManager
 
                 if ((def != null) && current.equals(def)) {
                     if (properties.remove(key) != null) {
-                        if (logger.isFineEnabled()) {
-                            logger.fine(
-                                "Removing User value for key: " + key + " = " +
-                                current);
-                        }
+                        logger.fine(
+                            "Removing User value for key: {0} = {1}",
+                            new Object[] { key, current });
                     }
                 } else if (!current.equals(source)) {
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            "Writing User value for key: " + key + " = " +
-                            current);
-                    }
+                    logger.fine(
+                        "Writing User value for key: {0} = {1}",
+                        new Object[] { key, current });
 
                     properties.setProperty(key, current);
                 } else {
                     if (properties.remove(key) != null) {
-                        if (logger.isFineEnabled()) {
-                            logger.fine(
-                                "Removing User value for key: " + key + " = " +
-                                current);
-                        }
+                        logger.fine(
+                            "Removing User value for key: {0} = {1}",
+                            new Object[] { key, current });
                     }
                 }
             }
@@ -543,14 +539,12 @@ public class ConstantManager
             FileOutputStream out = null;
 
             try {
-                if (logger.isFineEnabled()) {
-                    logger.fine("Store constants into " + file);
-                }
+                logger.fine("Store constants into {0}", file);
 
                 // First make sure the directory exists (Brenton patch)
                 if (file.getParentFile()
                         .mkdirs()) {
-                    logger.info("Creating " + file);
+                    logger.info("Creating {0}", file);
                 }
 
                 // Then write down the properties
@@ -561,11 +555,11 @@ public class ConstantManager
                 out.close();
             } catch (FileNotFoundException ex) {
                 logger.warning(
-                    "Property file " + file.getAbsolutePath() +
-                    " not found or not writable");
+                    "Property file {0} not found or not writable",
+                    file.getAbsolutePath());
             } catch (IOException ex) {
                 logger.warning(
-                    "Error while storing the property file " +
+                    "Error while storing the property file {0}",
                     file.getAbsolutePath());
             } finally {
                 if (out != null) {

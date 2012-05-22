@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -348,7 +348,7 @@ public abstract class PagePainter
             polygon.addPoint(right.x, right.y - dy);
 
             // Related voices
-            Set<Voice> voices = new LinkedHashSet<Voice>();
+            Set<Voice> voices = new LinkedHashSet<>();
 
             for (Chord chord : beam.getChords()) {
                 Voice voice = chord.getVoice();
@@ -762,7 +762,7 @@ public abstract class PagePainter
             final String     str = text.getContent();
             final Font       font = text.getFont();
 
-            if ((str != null) && (font != null)) {
+            if ((str != null) && !str.isEmpty() && (font != null)) {
                 final FontRenderContext frc = g.getFontRenderContext();
                 TextLayout              layout = new TextLayout(str, font, frc);
 
@@ -838,7 +838,7 @@ public abstract class PagePainter
         try {
             if (wedge.isStart()) {
                 final PixelRectangle box = wedge.getGlyph()
-                                                .getContourBox();
+                                                .getBounds();
 
                 PixelPoint           single;
                 PixelPoint           top;

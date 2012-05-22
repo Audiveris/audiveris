@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -40,12 +40,10 @@ public class Circle
     private static final int dim = 4;
 
     //~ Instance fields --------------------------------------------------------
-
     /** Mean algebraic distance between circle and the defining points */
     private final double distance;
 
     // Circle characteristics
-
     /** Center */
     private Point2D.Double center;
 
@@ -63,17 +61,20 @@ public class Circle
 
     // Bounding coordinates
     private double xMax = Double.MIN_VALUE;
+
     private double yMax = Double.MIN_VALUE;
+
     private double xMin = Double.MAX_VALUE;
+
     private double yMin = Double.MAX_VALUE;
 
     //~ Constructors -----------------------------------------------------------
-
     //--------//
     // Circle //
     //--------//
     /**
      * Creates a new instance of Circle, defined by a set of points.
+     *
      * @param x array of abscissae
      * @param y array of ordinates
      */
@@ -92,15 +93,16 @@ public class Circle
      * Creates a new instance of Circle, fitted to 3 defining points.
      * The provided collection of coordinates is used only to compute the
      * resulting distance.
-     * @param left left defining point
+     *
+     * @param left   left defining point
      * @param middle middle defining point
-     * @param right right defining point
-     * @param x array of abscissae (including the defining points)
-     * @param y array of ordinates (including the defining points)
+     * @param right  right defining point
+     * @param x      array of abscissae (including the defining points)
+     * @param y      array of ordinates (including the defining points)
      */
-    public Circle (Point2D  left,
-                   Point2D  middle,
-                   Point2D  right,
+    public Circle (Point2D left,
+                   Point2D middle,
+                   Point2D right,
                    double[] x,
                    double[] y)
     {
@@ -110,12 +112,12 @@ public class Circle
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // getCenter //
     //-----------//
     /**
      * Report the circle center.
+     *
      * @return the center of the circle
      */
     public Point2D.Double getCenter ()
@@ -128,6 +130,7 @@ public class Circle
     //----------//
     /**
      * Report the Bezier curve which best approximates the circle arc.
+     *
      * @return the Bezier curve
      */
     public CubicCurve2D.Double getCurve ()
@@ -144,6 +147,7 @@ public class Circle
     //-------------//
     /**
      * Report the mean distance between the data points and the circle.
+     *
      * @return the mean distance
      */
     public double getDistance ()
@@ -156,6 +160,7 @@ public class Circle
     //-----------//
     /**
      * Report the circle radius.
+     *
      * @return the circle radius
      */
     public Double getRadius ()
@@ -168,6 +173,7 @@ public class Circle
     //---------------//
     /**
      * Report the angle at start of the circle arc.
+     *
      * @return the starting angle, in radians
      */
     public Double getStartAngle ()
@@ -180,6 +186,7 @@ public class Circle
     //--------------//
     /**
      * Report the angle at stop of the circle arc.
+     *
      * @return the stopping angle, in radians
      */
     public Double getStopAngle ()
@@ -202,7 +209,7 @@ public class Circle
 
         if ((startAngle != null) && (stopAngle != null)) {
             sb.append(
-                String.format(
+                    String.format(
                     " angles=(%g,%g)",
                     toDegrees(startAngle),
                     toDegrees(stopAngle)));
@@ -223,15 +230,15 @@ public class Circle
                                 double[] y)
     {
         // Get all angles, split into buckets
-        final int   BUCKET_NB = 8;
+        final int BUCKET_NB = 8;
         final int[] buckets = new int[BUCKET_NB];
 
         for (int i = 0; i < BUCKET_NB; i++) {
             buckets[i] = 0;
         }
 
-        final double      bucketSize = (2 * PI) / BUCKET_NB;
-        ArrayList<Double> angles = new ArrayList<Double>();
+        final double bucketSize = (2 * PI) / BUCKET_NB;
+        ArrayList<Double> angles = new ArrayList<>();
 
         for (int i = 0; i < x.length; i++) {
             // Get an angle between 0 and 2*PI
@@ -255,13 +262,11 @@ public class Circle
         }
 
         if (emptyIdx >= BUCKET_NB) {
-            if (logger.isFineEnabled()) {
-                logger.fine("No empty sector in circle, this is not a slur");
-            }
+            logger.fine("No empty sector in circle, this is not a slur");
         } else {
             final double bottom = emptyIdx * bucketSize;
-            double       start = 2 * PI;
-            double       stop = 0;
+            double start = 2 * PI;
+            double stop = 0;
 
             for (double angle : angles) {
                 angle -= bottom;
@@ -305,106 +310,105 @@ public class Circle
     private void computeCurve ()
     {
         // Make sure we do have an arc defined, rather than a full circle
-        if (((stopAngle == null) || (stopAngle.isNaN())) ||
-            ((startAngle == null) || (startAngle.isNaN()))) {
+        if (((stopAngle == null) || (stopAngle.isNaN()))
+                || ((startAngle == null) || (startAngle.isNaN()))) {
             return;
         }
 
         // Bezier points for circle arc, centered at origin, with radius 1
-        double       arc = stopAngle - startAngle;
-        double       x0 = cos(arc / 2);
-        double       y0 = sin(arc / 2);
-        double       x1 = (4 - x0) / 3;
-        double       y1 = ((1 - x0) * (3 - x0)) / (3 * y0);
-        double       x2 = x1;
-        double       y2 = -y1;
-        double       x3 = x0;
-        double       y3 = -y0;
+        double arc = stopAngle - startAngle;
+        double x0 = cos(arc / 2);
+        double y0 = sin(arc / 2);
+        double x1 = (4 - x0) / 3;
+        double y1 = ((1 - x0) * (3 - x0)) / (3 * y0);
+        double x2 = x1;
+        double y2 = -y1;
+        double x3 = x0;
+        double y3 = -y0;
 
         // Rotation
         final double theta = (startAngle + stopAngle) / 2;
 
         ///System.out.println("angleDeg/2=" + Math.toDegrees(theta));
         final Matrix rotation = new Matrix(
-            new double[][] {
-                { cos(theta), -sin(theta), 0 },
-                { sin(theta), cos(theta), 0 },
-                { 0, 0, 1 }
-            });
+                new double[][]{
+                    {cos(theta), -sin(theta), 0},
+                    {sin(theta), cos(theta), 0},
+                    {0, 0, 1}
+                });
 
         // Scaling
         final Matrix scaling = new Matrix(
-            new double[][] {
-                { radius, 0, 0 },
-                { 0, radius, 0 },
-                { 0, 0, 1 }
-            });
+                new double[][]{
+                    {radius, 0, 0},
+                    {0, radius, 0},
+                    {0, 0, 1}
+                });
 
         // Translation
         final Matrix translation = new Matrix(
-            new double[][] {
-                { 1, 0, center.x },
-                { 0, 1, center.y },
-                { 0, 0, 1 }
-            });
+                new double[][]{
+                    {1, 0, center.x},
+                    {0, 1, center.y},
+                    {0, 0, 1}
+                });
 
         // Composite operation
-        final Matrix op = translation.times(scaling)
-                                     .times(rotation);
+        final Matrix op = translation.times(scaling).times(rotation);
 
         final Matrix M0 = op.times(
-            new Matrix(
-                new double[][] {
-                    { x0 },
-                    { y0 },
-                    { 1 }
+                new Matrix(
+                new double[][]{
+                    {x0},
+                    {y0},
+                    {1}
                 }));
 
         final Matrix M1 = op.times(
-            new Matrix(
-                new double[][] {
-                    { x1 },
-                    { y1 },
-                    { 1 }
+                new Matrix(
+                new double[][]{
+                    {x1},
+                    {y1},
+                    {1}
                 }));
 
         final Matrix M2 = op.times(
-            new Matrix(
-                new double[][] {
-                    { x2 },
-                    { y2 },
-                    { 1 }
+                new Matrix(
+                new double[][]{
+                    {x2},
+                    {y2},
+                    {1}
                 }));
 
         final Matrix M3 = op.times(
-            new Matrix(
-                new double[][] {
-                    { x3 },
-                    { y3 },
-                    { 1 }
+                new Matrix(
+                new double[][]{
+                    {x3},
+                    {y3},
+                    {1}
                 }));
 
         // Bezier curve (make sure the curve goes from left to right)
         if (M0.get(0, 0) <= M3.get(0, 0)) {
             curve = new CubicCurve2D.Double(
-                M0.get(0, 0),
-                M0.get(1, 0),
-                M1.get(0, 0),
-                M1.get(1, 0),
-                M2.get(0, 0),
-                M2.get(1, 0),
-                M3.get(0, 0),
-                M3.get(1, 0));
+                    M0.get(0, 0),
+                    M0.get(1, 0),
+                    M1.get(0, 0),
+                    M1.get(1, 0),
+                    M2.get(0, 0),
+                    M2.get(1, 0),
+                    M3.get(0, 0),
+                    M3.get(1, 0));
         } else {
             curve = new CubicCurve2D.Double(
-                M3.get(0, 0),
-                M3.get(1, 0),
-                M2.get(0, 0),
-                M2.get(1, 0),
-                M1.get(0, 0),
-                M1.get(1, 0),
-                M0.get(0, 0),
-                M0.get(1, 0));
+                    M3.get(0, 0),
+                    M3.get(1, 0),
+                    M2.get(0, 0),
+                    M2.get(1, 0),
+                    M1.get(0, 0),
+                    M1.get(1, 0),
+                    M0.get(0, 0),
+                    M0.get(1, 0));
         }
 
         //        System.out.println(" P1=" + curve.getP1());
@@ -418,6 +422,7 @@ public class Circle
     //-----------------//
     /**
      * Compute the mean quadratic distance of all points to the circle.
+     *
      * @param x array of abscissae
      * @param y array of ordinates
      * @return the mean quadratic distance
@@ -426,12 +431,12 @@ public class Circle
                                     double[] y)
     {
         final int nbPoints = x.length;
-        double    sum = 0;
+        double sum = 0;
 
         for (int i = 0; i < nbPoints; i++) {
             double delta = Math.hypot(
-                x[i] - getCenter().x,
-                y[i] - getCenter().y) - getRadius();
+                    x[i] - getCenter().x,
+                    y[i] - getCenter().y) - getRadius();
             sum += (delta * delta);
         }
 
@@ -443,26 +448,27 @@ public class Circle
     //--------------//
     /**
      * Define the circle by means of a sequence of 3 key points.
-     * @param left precise left point
+     *
+     * @param left   precise left point
      * @param middle a point rather in the middle
-     * @param right precise right point
+     * @param right  precise right point
      */
     private void defineCircle (Point2D left,
                                Point2D middle,
                                Point2D right)
     {
         Line2D prevBisector = LineUtilities.bisector(
-            new Line2D.Double(left, middle));
+                new Line2D.Double(left, middle));
         Line2D bisector = LineUtilities.bisector(
-            new Line2D.Double(middle, right));
+                new Line2D.Double(middle, right));
         center = LineUtilities.intersection(
-            prevBisector.getP1(),
-            prevBisector.getP2(),
-            bisector.getP1(),
-            bisector.getP2());
+                prevBisector.getP1(),
+                prevBisector.getP2(),
+                bisector.getP1(),
+                bisector.getP2());
         radius = Math.hypot(
-            center.getX() - right.getX(),
-            center.getY() - right.getY());
+                center.getX() - right.getX(),
+                center.getY() - right.getY());
     }
 
     //-----//
@@ -472,6 +478,7 @@ public class Circle
      * Given a collection of points, determine the best approximating
      * circle.
      * The result is available in the center and radius variables.
+     *
      * @param x the array of abscissae
      * @param y the array of ordinates
      */
@@ -524,8 +531,7 @@ public class Circle
         ///print(design, "design");
 
         //  Build the scatter matrix
-        Matrix scatter = design.transpose()
-                               .times(design);
+        Matrix scatter = design.transpose().times(design);
 
         ///print(scatter, "scatter");
 

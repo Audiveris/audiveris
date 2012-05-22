@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -12,7 +12,6 @@
 package omr.glyph;
 
 import omr.glyph.facets.Glyph;
-import omr.glyph.text.TextInfo;
 import omr.glyph.text.TextRole;
 
 import omr.log.Logger;
@@ -34,12 +33,12 @@ import java.util.Set;
 
 /**
  * Class {@code SymbolsModel} is a GlyphsModel specifically meant for
- * symbol glyphs
+ * symbol glyphs.
  *
  * @author Hervé Bitteur
  */
 public class SymbolsModel
-    extends GlyphsModel
+        extends GlyphsModel
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -47,17 +46,16 @@ public class SymbolsModel
     private static final Logger logger = Logger.getLogger(SymbolsModel.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Standard evaluator */
-    private GlyphEvaluator evaluator = GlyphNetwork.getInstance();
+    private ShapeEvaluator evaluator = GlyphNetwork.getInstance();
 
     //~ Constructors -----------------------------------------------------------
-
     //--------------//
     // SymbolsModel //
     //--------------//
     /**
      * Creates a new SymbolsModel object.
+     *
      * @param sheet the related sheet
      */
     public SymbolsModel (Sheet sheet)
@@ -66,39 +64,37 @@ public class SymbolsModel
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // assignText //
     //------------//
     /**
      * Assign a collection of glyphs as textual element
-     * @param glyphs the collection of glyphs
-     * @param textType Creator type if relevant
-     * @param textRole the text role
+     *
+     * @param glyphs      the collection of glyphs
+     * @param textType    Creator type if relevant
+     * @param textRole    the text role
      * @param textContent the ascii content
-     * @param grade the grade wrt this assignment
+     * @param grade       the grade wrt this assignment
      */
     public void assignText (Collection<Glyph> glyphs,
-                            CreatorType       textType,
-                            TextRole          textRole,
-                            String            textContent,
-                            double            grade)
+                            CreatorType textType,
+                            TextRole textRole,
+                            String textContent,
+                            double grade)
     {
         // Do the job
         for (Glyph glyph : glyphs) {
-            TextInfo info = glyph.getTextInfo();
-
             // Assign creator type?
             if (textRole == TextRole.Creator) {
-                info.setCreatorType(textType);
+                glyph.setCreatorType(textType);
             }
 
             // Assign text role
-            info.setTextRole(textRole);
+            glyph.setTextRole(textRole);
 
             // Assign text only if it is not empty
             if ((textContent != null) && (textContent.length() > 0)) {
-                info.setManualContent(textContent);
+                glyph.setManualValue(textContent);
             }
         }
     }
@@ -108,13 +104,14 @@ public class SymbolsModel
     //--------------------//
     /**
      * Assign a time rational value to collection of glyphs
-     * @param glyphs the collection of glyphs
+     *
+     * @param glyphs       the collection of glyphs
      * @param timeRational the time rational value
-     * @param grade the grade wrt this assignment
+     * @param grade        the grade wrt this assignment
      */
     public void assignTimeRational (Collection<Glyph> glyphs,
-                                    TimeRational      timeRational,
-                                    double            grade)
+                                    TimeRational timeRational,
+                                    double grade)
     {
         // Do the job
         for (Glyph glyph : glyphs) {
@@ -146,7 +143,7 @@ public class SymbolsModel
          * (GlyphBuilder). Should work on a micro scale : just the former stem
          * and the neighboring (non-assigned) glyphs.
          */
-        Set<SystemInfo> impactedSystems = new HashSet<SystemInfo>();
+        Set<SystemInfo> impactedSystems = new HashSet<>();
 
         for (Glyph stem : stems) {
             SystemInfo system = sheet.getSystemOf(stem);
@@ -165,8 +162,9 @@ public class SymbolsModel
     // deassignGlyph //
     //---------------//
     /**
-     * Deassign the shape of a glyph. This overrides the basic deassignment, in
-     * order to delegate the handling of some specific shapes.
+     * Deassign the shape of a glyph. 
+     * This overrides the basic deassignment, in order to delegate the handling
+     * of some specific shapes.
      *
      * @param glyph the glyph to deassign
      */
@@ -180,22 +178,18 @@ public class SymbolsModel
 
         // Processing depends on shape at hand
         switch (glyph.getShape()) {
-        case STEM :
-
-            if (logger.isFineEnabled()) {
-                logger.fine("Deassigning a Stem as glyph " + glyph.getId());
-            }
-
+        case STEM:
+            logger.fine("Deassigning a Stem as glyph {0}", glyph.getId());
             cancelStems(Collections.singletonList(glyph));
 
             break;
 
-        case NOISE :
-            logger.info("Skipping Noise as glyph " + glyph.getId());
+        case NOISE:
+            logger.info("Skipping Noise as glyph {0}", glyph.getId());
 
             break;
 
-        default :
+        default:
             super.deassignGlyph(glyph);
 
             break;
@@ -206,11 +200,11 @@ public class SymbolsModel
     // segmentGlyphs //
     //---------------//
     public void segmentGlyphs (Collection<Glyph> glyphs,
-                               boolean           isShort)
+                               boolean isShort)
     {
         deassignGlyphs(glyphs);
 
-        for (Glyph glyph : new ArrayList<Glyph>(glyphs)) {
+        for (Glyph glyph : new ArrayList<>(glyphs)) {
             SystemInfo system = sheet.getSystemOf(glyph);
             system.segmentGlyphOnStems(glyph, isShort);
         }
@@ -221,11 +215,11 @@ public class SymbolsModel
     //-----------//
     public void trimSlurs (Collection<Glyph> glyphs)
     {
-        List<Glyph> slurs = new ArrayList<Glyph>();
+        List<Glyph> slurs = new ArrayList<>();
 
-        for (Glyph glyph : new ArrayList<Glyph>(glyphs)) {
+        for (Glyph glyph : new ArrayList<>(glyphs)) {
             SystemInfo system = sheet.getSystemOf(glyph);
-            Glyph      slur = system.trimSlur(glyph);
+            Glyph slur = system.trimSlur(glyph);
 
             if (slur != null) {
                 slurs.add(slur);
@@ -249,8 +243,8 @@ public class SymbolsModel
      * @param grade the grade about shape
      */
     @Override
-    protected Glyph assignGlyph (Glyph  glyph,
-                                 Shape  shape,
+    protected Glyph assignGlyph (Glyph glyph,
+                                 Shape shape,
                                  double grade)
     {
         if (glyph == null) {

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -64,8 +64,10 @@ import javax.swing.event.ChangeListener;
  * @author Hervé Bitteur
  */
 public class RubberPanel
-    extends JPanel
-    implements ChangeListener, MouseMonitor, EventSubscriber<UserEvent>
+        extends JPanel
+        implements ChangeListener,
+                   MouseMonitor,
+                   EventSubscriber<UserEvent>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -76,7 +78,6 @@ public class RubberPanel
     private static final Logger logger = Logger.getLogger(RubberPanel.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Current display zoom, if any */
     protected Zoom zoom;
 
@@ -86,11 +87,10 @@ public class RubberPanel
     /** Model size (independent of display zoom) */
     protected Dimension modelSize;
 
-    /** Location Service if any  (for Location event) */
+    /** Location Service if any (for Location event) */
     protected SelectionService locationService;
 
     //~ Constructors -----------------------------------------------------------
-
     //-------------//
     // RubberPanel //
     //-------------//
@@ -100,9 +100,7 @@ public class RubberPanel
      */
     public RubberPanel ()
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("new RubberPanel");
-        }
+        logger.fine("new RubberPanel");
     }
 
     //-------------//
@@ -112,27 +110,25 @@ public class RubberPanel
      * Create a RubberPanel, with the specified Rubber to interact via the
      * mouse, and a specified Zoom instance
      *
-     * @param zoom related display zoom
+     * @param zoom   related display zoom
      * @param rubber the rubber instance to be linked to this panel
      */
-    public RubberPanel (Zoom   zoom,
+    public RubberPanel (Zoom zoom,
                         Rubber rubber)
     {
         setZoom(zoom);
         setRubber(rubber);
 
-        if (logger.isFineEnabled()) {
-            logger.fine("new RubberPanel zoom=" + zoom + " rubber=" + rubber);
-        }
+        logger.fine("new RubberPanel zoom={0} rubber={1}", new Object[]{zoom,
+                                                                        rubber});
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------------//
     // contextAdded //
     //--------------//
     @Override
-    public void contextAdded (Point         pt,
+    public void contextAdded (Point pt,
                               MouseMovement movement)
     {
         setFocusLocation(new Rectangle(pt), movement, LOCATION_ADD);
@@ -142,7 +138,7 @@ public class RubberPanel
     // contextSelected //
     //-----------------//
     @Override
-    public void contextSelected (Point         pt,
+    public void contextSelected (Point pt,
                                  MouseMovement movement)
     {
         // Nothing by default
@@ -216,13 +212,11 @@ public class RubberPanel
     public Point getPanelCenter ()
     {
         Rectangle vr = getVisibleRect();
-        Point     pt = new Point(
-            zoom.unscaled(vr.x + (vr.width / 2)),
-            zoom.unscaled(vr.y + (vr.height / 2)));
+        Point pt = new Point(
+                zoom.unscaled(vr.x + (vr.width / 2)),
+                zoom.unscaled(vr.y + (vr.height / 2)));
 
-        if (logger.isFineEnabled()) {
-            logger.fine("getPanelCenter=" + pt);
-        }
+        logger.fine("getPanelCenter={0}", pt);
 
         return pt;
     }
@@ -232,18 +226,20 @@ public class RubberPanel
     //----------------------//
     /**
      * Report the rectangle currently selected, or null
+     *
      * @return the absolute rectangle selected
      */
     public Rectangle getSelectedRectangle ()
     {
         if (locationService == null) {
-            logger.severe("No locationService for " + this);
+            logger.severe("No locationService for {0}", this);
 
             return null;
         }
 
-        LocationEvent locationEvent = (LocationEvent) locationService.getLastEvent(
-            LocationEvent.class);
+        LocationEvent locationEvent = (LocationEvent) locationService.
+                getLastEvent(
+                LocationEvent.class);
 
         return (locationEvent != null) ? locationEvent.getData() : null;
     }
@@ -265,7 +261,7 @@ public class RubberPanel
     // onEvent //
     //---------//
     /**
-     * Notification of a location selection  (pixel or score)
+     * Notification of a location selection (pixel or score)
      *
      * @param event the location event
      */
@@ -278,9 +274,8 @@ public class RubberPanel
                 return;
             }
 
-            if (logger.isFineEnabled()) {
-                logger.fine(getClass().getName() + " onEvent " + event);
-            }
+            logger.fine("{0} onEvent {1}", new Object[]{getClass().getName(),
+                                                        event});
 
             if (event instanceof LocationEvent) {
                 // Location => move view focus on this location w/ markers
@@ -296,7 +291,7 @@ public class RubberPanel
     // pointAdded //
     //------------//
     @Override
-    public void pointAdded (Point         pt,
+    public void pointAdded (Point pt,
                             MouseMovement movement)
     {
         setFocusLocation(new Rectangle(pt), movement, LOCATION_ADD);
@@ -306,7 +301,7 @@ public class RubberPanel
     // pointSelected //
     //---------------//
     @Override
-    public void pointSelected (Point         pt,
+    public void pointSelected (Point pt,
                                MouseMovement movement)
     {
         setFocusLocation(new Rectangle(pt), movement, LOCATION_INIT);
@@ -324,7 +319,7 @@ public class RubberPanel
     // rectangleSelected //
     //-------------------//
     @Override
-    public void rectangleSelected (Rectangle     rect,
+    public void rectangleSelected (Rectangle rect,
                                    MouseMovement movement)
     {
         setFocusLocation(rect, movement, LOCATION_INIT);
@@ -335,11 +330,10 @@ public class RubberPanel
     //-----------------//
     @Override
     public void rectangleZoomed (final Rectangle rect,
-                                 MouseMovement   movement)
+                                 MouseMovement movement)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine(getClass().getName() + " rectangleZoomed " + rect);
-        }
+        logger.fine("{0} rectangleZoomed {1}", new Object[]{getClass().getName(),
+                                                            rect});
 
         if (rect != null) {
             // First focus on center of the specified rectangle
@@ -348,12 +342,15 @@ public class RubberPanel
 
             // Then, adjust zoom ratio to fit the rectangle size
             SwingUtilities.invokeLater(
-                new Runnable() {
+                    new Runnable()
+                    {
+
+                        @Override
                         public void run ()
                         {
                             Rectangle vr = getVisibleRect();
-                            double    zoomX = (double) vr.width / (double) rect.width;
-                            double    zoomY = (double) vr.height / (double) rect.height;
+                            double zoomX = (double) vr.width / (double) rect.width;
+                            double zoomY = (double) vr.height / (double) rect.height;
                             zoom.setRatio(Math.min(zoomX, zoomY));
                         }
                     });
@@ -387,8 +384,8 @@ public class RubberPanel
      */
     public void setLocationService (SelectionService locationService)
     {
-        if ((this.locationService != null) &&
-            (this.locationService != locationService)) {
+        if ((this.locationService != null)
+                && (this.locationService != locationService)) {
             this.locationService.unsubscribe(LocationEvent.class, this);
         }
 
@@ -400,6 +397,7 @@ public class RubberPanel
     //--------------//
     /**
      * Assign the size of the model object, that is the unscaled size.
+     *
      * @param modelSize the model size to use
      */
     public void setModelSize (Dimension modelSize)
@@ -416,11 +414,11 @@ public class RubberPanel
      * <b>NOTA</b>: Subclasses that override this method should call this
      * super implementation or the display will not be updated by default.
      *
-     * @param rect the location information
+     * @param rect     the location information
      * @param centered true to center the display on rect center
      */
     public void showFocusLocation (final Rectangle rect,
-                                   final boolean   centered)
+                                   final boolean centered)
     {
         if (zoom == null) {
             return; // For degenerated cases (no real view)
@@ -440,17 +438,17 @@ public class RubberPanel
             // Check whether the rectangle is fully visible,
             // if not, scroll so as to make (most of) it visible
             Rectangle scaledRect = zoom.scaled(rect);
-            Point     center = new Point(
-                scaledRect.x + (scaledRect.width / 2),
-                scaledRect.y + (scaledRect.height / 2));
+            Point center = new Point(
+                    scaledRect.x + (scaledRect.width / 2),
+                    scaledRect.y + (scaledRect.height / 2));
 
             if (centered) {
                 Rectangle vr = getVisibleRect();
                 scaledRect = new Rectangle(
-                    center.x - (vr.width / 2),
-                    center.y - (vr.height / 2),
-                    vr.width,
-                    vr.height);
+                        center.x - (vr.width / 2),
+                        center.y - (vr.height / 2),
+                        vr.width,
+                        vr.height);
             } else {
                 int margin = constants.focusMargin.getValue();
 
@@ -492,10 +490,8 @@ public class RubberPanel
      */
     public void subscribe ()
     {
-        if (logger.isFineEnabled()) {
-            logger.info(
-                "Subscribe " + getClass().getSimpleName() + " " + getName());
-        }
+        logger.fine("Subscribe {0} {1}", new Object[]{getClass().getSimpleName(),
+                                                      getName()});
 
         // Subscribe to location events
         if (locationService != null) {
@@ -517,6 +513,7 @@ public class RubberPanel
     //-------------//
     /**
      * Cut the connection between this view and the rubber
+     *
      * @param rubber the rubber to disconnect
      */
     public void unsetRubber (Rubber rubber)
@@ -529,6 +526,7 @@ public class RubberPanel
     //-----------//
     /**
      * Deassign the zoom, unregistering this component as a zoom listener
+     *
      * @param zoom the zoom to unregister from
      * @return true if actually disconnected
      */
@@ -545,14 +543,12 @@ public class RubberPanel
     // unsubscribe //
     //-------------//
     /**
-     * Unsubscribe from the related location  service
+     * Unsubscribe from the related location service
      */
     public void unsubscribe ()
     {
-        if (logger.isFineEnabled()) {
-            logger.info(
-                "Unsubscribe " + getClass().getSimpleName() + " " + getName());
-        }
+        logger.fine("Unsubscribe {0} {1}", new Object[]{
+                    getClass().getSimpleName(), getName()});
 
         // Unsubscribe to location events
         if (locationService != null) {
@@ -625,22 +621,21 @@ public class RubberPanel
      * such object has been previously injected (by means of the method
      * {@link #setLocationService}.
      *
-     * @param rect the location information
+     * @param rect     the location information
      * @param movement the button movement
-     * @param hint the related selection hint
+     * @param hint     the related selection hint
      */
-    protected void setFocusLocation (Rectangle     rect,
+    protected void setFocusLocation (Rectangle rect,
                                      MouseMovement movement,
                                      SelectionHint hint)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("setFocusLocation rect=" + rect + " hint=" + hint);
-        }
+        logger.fine("setFocusLocation rect={0} hint={1}", new Object[]{rect,
+                                                                       hint});
 
         // Publish the new user-selected location
         if (locationService != null) {
             locationService.publish(
-                new LocationEvent(
+                    new LocationEvent(
                     this,
                     hint,
                     movement,
@@ -649,17 +644,16 @@ public class RubberPanel
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         PixelCount focusMargin = new PixelCount(
-            20,
-            "Margin visible around a focus");
+                20,
+                "Margin visible around a focus");
     }
 }

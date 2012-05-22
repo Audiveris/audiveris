@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2011. All rights reserved.               //
+//  Copyright (C) Herve Bitteur 2000-2012. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -106,7 +106,7 @@ public class ShapeDescriptorGeo
         //~ Static fields/initializers -----------------------------------------
 
         /** Label -> Index */
-        public static final Map<String, Integer> indices = new HashMap<String, Integer>();
+        public static final Map<String, Integer> indices = new HashMap<>();
 
         /** Index -> Label */
         public static final String[] labels = new String[length];
@@ -129,6 +129,10 @@ public class ShapeDescriptorGeo
             for (int j = 0; j < labels.length; j++) {
                 indices.put(labels[j], j);
             }
+        }
+
+        private LabelsHolder ()
+        {
         }
     }
 }

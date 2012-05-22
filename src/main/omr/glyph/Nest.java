@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -67,7 +67,8 @@ public interface Nest
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * Register a glyph and make sure all its member sections point back to it.
+     * Register a glyph and make sure all its member sections point back
+     * to it.
      * @param glyph the glyph to add to the nest
      * @return the actual glyph (already existing or brand new)
      */
@@ -105,7 +106,8 @@ public interface Nest
     SelectionService getGlyphService ();
 
     /**
-     * Get the histogram for a glyph in this area, in the specified orientation
+     * Get the pixel histogram for a collection of glyphs, in the 
+     * specified orientation.
      * @param orientation specific orientation desired for the histogram
      * @param glyphs the provided collection of glyphs
      * @return the histogram of projected pixels
@@ -120,15 +122,16 @@ public interface Nest
     String getName ();
 
     /**
-     * Return the original glyph, if any, that the provided glyph duplicates
+     * Return the original glyph, if any, that the provided glyph
+     * duplicates.
      * @param glyph the provided glyph
      * @return the original for this glyph, if any, otherwise null
      */
     Glyph getOriginal (Glyph glyph);
 
     /**
-     * Return the original glyph, if any,  that corresponds to the provided
-     * signature
+     * Return the original glyph, if any,  that corresponds to the
+     * provided signature.
      * @param signature the provided signature
      * @return the original glyph for this signature, if any, otherwise null
      */
@@ -154,14 +157,16 @@ public interface Nest
     boolean isVip (Glyph glyph);
 
     /**
-     * Look up for <b>all</b> active glyphs contained in a provided rectangle
+     * Look up for <b>all</b> active glyphs contained in a provided
+     * rectangle.
      * @param rect the coordinates rectangle
      * @return the glyphs found, which may be an empty list
      */
     Set<Glyph> lookupGlyphs (PixelRectangle rect);
 
     /**
-     * Look up for <b>all</b> active glyphs intersected by a provided rectangle
+     * Look up for <b>all</b> active glyphs intersected by a provided
+     * rectangle.
      * @param rect the coordinates rectangle
      * @return the glyphs found, which may be an empty list
      */
@@ -184,9 +189,9 @@ public interface Nest
                      Glyph   glyph);
 
     /**
-     * Simply register a glyph in the graph, making sure we do not duplicate
-     * any existing glyph (a glyph being really defined by the set of its member
-     * sections)
+     * Simply register a glyph in the graph, making sure we do not
+     * duplicate any existing glyph.
+     * (a glyph being really defined by the set of its member sections)
      * @param glyph the glyph to add to the nest
      * @return the actual glyph (already existing or brand new)
      */

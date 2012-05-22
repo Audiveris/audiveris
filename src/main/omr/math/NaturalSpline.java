@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -62,37 +62,44 @@ public class NaturalSpline
 
     //~ Methods ----------------------------------------------------------------
 
+    @Override
     public double distanceOf (double x,
                               double y)
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public double getInvertedSlope ()
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public double getMeanDistance ()
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public int getNumberOfPoints ()
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public double getSlope ()
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public Line includeLine (Line other)
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public void includePoint (double x,
                               double y)
     {
@@ -199,11 +206,13 @@ public class NaturalSpline
         }
     }
 
+    @Override
     public boolean isHorizontal ()
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public boolean isVertical ()
     {
         throw new UnsupportedOperationException("Not supported yet.");
@@ -249,11 +258,13 @@ public class NaturalSpline
     //
     //        g.setColor(oldColor);
     //    }
+    @Override
     public Line swappedCoordinates ()
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public int xAtY (int y)
     {
         return (int) Math.rint(xAtY((double) y));
@@ -304,6 +315,7 @@ public class NaturalSpline
         }
     }
 
+    @Override
     public int yAtX (int x)
     {
         return (int) Math.rint((double) x);

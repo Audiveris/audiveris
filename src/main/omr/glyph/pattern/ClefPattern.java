@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -44,7 +44,7 @@ import java.util.*;
  * @author Hervé Bitteur
  */
 public class ClefPattern
-    extends GlyphPattern
+        extends GlyphPattern
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -55,7 +55,9 @@ public class ClefPattern
     private static final Logger logger = Logger.getLogger(ClefPattern.class);
 
     /** Specific predicate to filter clef shapes */
-    private static final Predicate<Shape> clefShapePredicate = new Predicate<Shape>() {
+    private static final Predicate<Shape> clefShapePredicate = new Predicate<Shape>()
+    {
+
         @Override
         public boolean check (Shape shape)
         {
@@ -64,7 +66,9 @@ public class ClefPattern
     };
 
     /** Specific predicate to filter clef glyphs */
-    private static final Predicate<Glyph> clefGlyphPredicate = new Predicate<Glyph>() {
+    private static final Predicate<Glyph> clefGlyphPredicate = new Predicate<Glyph>()
+    {
+
         @Override
         public boolean check (Glyph glyph)
         {
@@ -72,31 +76,32 @@ public class ClefPattern
         }
     };
 
-
     //~ Instance fields --------------------------------------------------------
-
     /** Glyphs nest */
     private final Nest nest;
 
     // Scale-dependent parameters
     private final int clefWidth;
+
     private final int xOffset;
+
     private final int yOffset;
+
     private final int xMargin;
+
     private final int yMargin;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new ClefPattern object.
+     *
      * @param system the containing system
      */
     public ClefPattern (SystemInfo system)
     {
         super("Clef", system);
 
-        nest = system.getSheet()
-                     .getNest();
+        nest = system.getSheet().getNest();
 
         clefWidth = scale.toPixels(constants.clefWidth);
         xOffset = scale.toPixels(constants.xOffset);
@@ -106,12 +111,12 @@ public class ClefPattern
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // runPattern //
     //------------//
     /**
      * Check that each staff begins with a clef.
+     *
      * @return the number of clefs rebuilt
      */
     @Override
@@ -124,36 +129,32 @@ public class ClefPattern
             staffId++;
 
             // Define the inner box to intersect clef glyph(s)
-            int            left = (int) Math.rint(
-                staff.getAbscissa(HorizontalSide.LEFT));
+            int left = (int) Math.rint(
+                    staff.getAbscissa(HorizontalSide.LEFT));
             PixelRectangle inner = new PixelRectangle(
-                left + (2 * xOffset) + (clefWidth / 2),
-                staff.getFirstLine().yAt(left) + (staff.getHeight() / 2),
-                0,
-                0);
+                    left + (2 * xOffset) + (clefWidth / 2),
+                    staff.getFirstLine().yAt(left) + (staff.getHeight() / 2),
+                    0,
+                    0);
             inner.grow(
-                (clefWidth / 2) - xOffset,
-                (staff.getHeight() / 2) - yOffset);
+                    (clefWidth / 2) - xOffset,
+                    (staff.getHeight() / 2) - yOffset);
 
             // Remember the box, for visual debug
             staff.addAttachment("  ci", inner);
 
             // We must find a clef out of these glyphs
             Collection<Glyph> glyphs = system.lookupIntersectedGlyphs(inner);
-
-            if (logger.isFineEnabled()) {
-                logger.fine(staffId + Glyphs.toString(" int", glyphs));
-            }
+            logger.fine("{0}{1}", new Object[]{staffId, Glyphs.toString(" int",
+                                                                        glyphs)});
 
             // We assume than there can't be any alien among them, so we should 
             // rebuild the larger glyph which the alien had wrongly segmented
-            Set<Glyph> impacted = new HashSet<Glyph>();
+            Set<Glyph> impacted = new HashSet<>();
 
             for (Glyph glyph : glyphs) {
                 if (glyph.getShape() == Shape.STEM) {
-                    if (logger.isFineEnabled()) {
-                        logger.info("Clef: Removed stem#" + glyph.getId());
-                    }
+                    logger.fine("Clef: Removed stem#{0}", glyph.getId());
 
                     impacted.addAll(glyph.getConnectedNeighbors());
                     impacted.add(glyph);
@@ -163,11 +164,7 @@ public class ClefPattern
             if (!impacted.isEmpty()) {
                 // Rebuild the larger glyph
                 Glyph larger = system.buildCompound(impacted);
-
-                if (logger.isFineEnabled()) {
-                    logger.info(
-                        "Rebuilt stem-segmented glyph#" + larger.getId());
-                }
+                logger.fine("Rebuilt stem-segmented {0}", larger.idString());
 
                 // Recompute the set of intersected glyphs
                 glyphs = system.lookupIntersectedGlyphs(inner);
@@ -186,12 +183,13 @@ public class ClefPattern
     //-----------//
     /**
      * Try to recognize a clef in the compound of the provided glyphs.
+     *
      * @param glyphs the parts of a clef candidate
      * @param staff  the containing staff
      * @return true if successful
      */
     private boolean checkClef (Collection<Glyph> glyphs,
-                               StaffInfo         staff)
+                               StaffInfo staff)
     {
         if (glyphs.isEmpty()) {
             return false;
@@ -199,7 +197,7 @@ public class ClefPattern
 
         // Check if we already have a clef among the intersected glyphs
         Set<Glyph> clefs = Glyphs.lookupGlyphs(glyphs, clefGlyphPredicate);
-        Glyph      orgClef = null;
+        Glyph orgClef = null;
 
         if (!clefs.isEmpty()) {
             if (Glyphs.containsManual(clefs)) {
@@ -207,8 +205,8 @@ public class ClefPattern
             } else {
                 // Remember grade of the best existing clef
                 for (Glyph glyph : clefs) {
-                    if ((orgClef == null) ||
-                        (glyph.getGrade() > orgClef.getGrade())) {
+                    if ((orgClef == null)
+                            || (glyph.getGrade() > orgClef.getGrade())) {
                         orgClef = glyph;
                     }
                 }
@@ -218,27 +216,24 @@ public class ClefPattern
         // Remove potential aliens
         Glyphs.purgeManuals(glyphs);
 
-        Glyph      compound = system.buildTransientCompound(glyphs);
+        Glyph compound = system.buildTransientCompound(glyphs);
 
         // Check if a clef appears in the top evaluations
-        Evaluation vote = GlyphNetwork.getInstance()
-                                      .vote(
-            compound,
-            system,
-            Grades.clefMinGrade,
-            clefShapePredicate);
+        Evaluation vote = GlyphNetwork.getInstance().vote(
+                compound,
+                system,
+                Grades.clefMinGrade,
+                clefShapePredicate);
 
-        if ((vote != null) &&
-            ((orgClef == null) || (vote.grade > orgClef.getGrade()))) {
+        if ((vote != null)
+                && ((orgClef == null) || (vote.grade > orgClef.getGrade()))) {
             // We now have a clef!
             // Look around for an even better result...
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    vote.shape + " built from " + Glyphs.toString(glyphs));
-            }
+            logger.fine("{0} built from {1}", new Object[]{vote.shape, Glyphs.
+                        toString(glyphs)});
 
             // Look for larger stuff
-            PixelRectangle outer = compound.getContourBox();
+            PixelRectangle outer = compound.getBounds();
             outer.grow(xMargin, yMargin);
 
             // Remember the box, for visual debug
@@ -256,24 +251,20 @@ public class ClefPattern
                     break;
                 }
 
-                if (logger.isFineEnabled()) {
-                    logger.fine("Considering " + g);
-                }
+                logger.fine("Considering {0}", g);
 
-                Glyph            newCompound = system.buildTransientCompound(
-                    Arrays.asList(compound, g));
-                final Evaluation newVote = GlyphNetwork.getInstance()
-                                                       .vote(
-                    newCompound,
-                    system,
-                    Grades.clefMinGrade,
-                    clefShapePredicate);
+                Glyph newCompound = system.buildTransientCompound(
+                        Arrays.asList(compound, g));
+                final Evaluation newVote = GlyphNetwork.getInstance().vote(
+                        newCompound,
+                        system,
+                        Grades.clefMinGrade,
+                        clefShapePredicate);
 
                 if ((newVote != null) && (newVote.grade > vote.grade)) {
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            vote + " better built with glyph#" + g.getId());
-                    }
+                    logger.fine("{0} better built with {1}", new Object[]{vote,
+                                                                          g.
+                                idString()});
 
                     compound = newCompound;
                     vote = newVote;
@@ -284,10 +275,8 @@ public class ClefPattern
             compound = system.addGlyph(compound);
             compound.setShape(vote.shape, Evaluation.ALGORITHM);
 
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    vote.shape + " rebuilt as glyph#" + compound.getId());
-            }
+            logger.fine("{0} rebuilt as {1}", new Object[]{vote.shape, compound.
+                        idString()});
 
             return true;
         } else {
@@ -296,42 +285,36 @@ public class ClefPattern
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
-        Scale.Fraction     clefWidth = new Scale.Fraction(
-            3d,
-            "Width of a clef");
+        Scale.Fraction clefWidth = new Scale.Fraction(
+                3d,
+                "Width of a clef");
 
-        //
-        Scale.Fraction     xOffset = new Scale.Fraction(
-            0.2d,
-            "Clef horizontal offset since left bar");
+        Scale.Fraction xOffset = new Scale.Fraction(
+                0.2d,
+                "Clef horizontal offset since left bar");
 
-        //
-        Scale.Fraction     yOffset = new Scale.Fraction(
-            0d,
-            "Clef vertical offset since staff line");
+        Scale.Fraction yOffset = new Scale.Fraction(
+                0d,
+                "Clef vertical offset since staff line");
 
-        //
-        Scale.Fraction     xMargin = new Scale.Fraction(
-            0d,
-            "Clef horizontal outer margin");
+        Scale.Fraction xMargin = new Scale.Fraction(
+                0d,
+                "Clef horizontal outer margin");
 
-        //
-        Scale.Fraction     yMargin = new Scale.Fraction(
-            0.5d,
-            "Clef vertical outer margin");
+        Scale.Fraction yMargin = new Scale.Fraction(
+                0.5d,
+                "Clef vertical outer margin");
 
-        //
         Scale.AreaFraction minWeight = new Scale.AreaFraction(
-            0.1,
-            "Minimum normalized weight to be added to a clef");
+                0.1,
+                "Minimum normalized weight to be added to a clef");
     }
 }

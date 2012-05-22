@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -12,9 +12,9 @@
 package omr.glyph.ui;
 
 import omr.glyph.Evaluation;
-import omr.glyph.GlyphEvaluator;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
+import omr.glyph.ShapeEvaluator;
 import omr.glyph.facets.Glyph;
 
 import omr.sheet.SystemInfo;
@@ -38,7 +38,7 @@ public class SymbolMenu
     private final ShapeFocusBoard shapeFocus;
 
     /////private final SymbolsController symbolsController;
-    private final GlyphEvaluator evaluator;
+    private final ShapeEvaluator evaluator;
 
     // To handle proposed compound shape
     private Glyph proposedGlyph;
@@ -56,7 +56,7 @@ public class SymbolMenu
      * @param shapeFocus the current shape focus
      */
     public SymbolMenu (final SymbolsController symbolsController,
-                       GlyphEvaluator          evaluator,
+                       ShapeEvaluator          evaluator,
                        ShapeFocusBoard         shapeFocus)
     {
         super(symbolsController);
@@ -110,7 +110,7 @@ public class SymbolMenu
         register(0, new ShapeAction());
 
         // Display all glyphs similar to the current glyph
-        ///register(0, new SimilarAction());
+        register(0, new SimilarAction());
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -134,11 +134,13 @@ public class SymbolMenu
 
         //~ Methods ------------------------------------------------------------
 
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             for (Glyph glyph : nest.getSelectedGlyphSet()) {
-                glyph.getTextInfo()
-                     .dump();
+                //                glyph.getTextInfo()
+                //                     .dump();
+                glyph.dump();
             }
         }
 
@@ -185,6 +187,7 @@ public class SymbolMenu
 
         //~ Methods ------------------------------------------------------------
 
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             Glyph glyph = nest.getSelectedGlyph();
@@ -248,6 +251,7 @@ public class SymbolMenu
 
         //~ Methods ------------------------------------------------------------
 
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             Set<Glyph> glyphs = nest.getSelectedGlyphSet();
@@ -262,6 +266,7 @@ public class SymbolMenu
             }
         }
 
+        @Override
         public void update ()
         {
             Glyph glyph = nest.getSelectedGlyph();
@@ -297,6 +302,7 @@ public class SymbolMenu
 
         //~ Methods ------------------------------------------------------------
 
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             Set<Glyph> glyphs = nest.getSelectedGlyphSet();
@@ -336,6 +342,7 @@ public class SymbolMenu
 
         //~ Methods ------------------------------------------------------------
 
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             Set<Glyph> glyphs = nest.getSelectedGlyphSet();
@@ -350,6 +357,7 @@ public class SymbolMenu
             }
         }
 
+        @Override
         public void update ()
         {
             Glyph glyph = nest.getSelectedGlyph();
@@ -387,6 +395,7 @@ public class SymbolMenu
 
         //~ Methods ------------------------------------------------------------
 
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             Set<Glyph> glyphs = nest.getSelectedGlyphSet();
@@ -426,6 +435,7 @@ public class SymbolMenu
 
         //~ Methods ------------------------------------------------------------
 
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             Set<Glyph> glyphs = nest.getSelectedGlyphSet();
@@ -477,12 +487,14 @@ public class SymbolMenu
 
         //~ Methods ------------------------------------------------------------
 
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             Set<Glyph> glyphs = nest.getSelectedGlyphSet();
             ((SymbolsController) controller).asyncTrimSlurs(glyphs);
         }
 
+        @Override
         public void update ()
         {
             putValue(NAME, "Trim slur");

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -42,13 +42,13 @@ import java.util.List;
 
 /**
  * Class {@code SystemsBuilder} is in charge of retrieving the systems
- * (SystemInfo instances) and parts (PartInfo instances) in the provided sheet
- * and to allocate the corresponding instances on the Score side (the Score
- * instance, and the various instances of ScoreSystem, SystemPart and Staff).
- * The result is visible in the ScoreView.
+ * (SystemInfo instances) and parts (PartInfo instances) in the
+ * provided sheet and to allocate the corresponding instances on the
+ * Score side (the Score instance, and the various instances of
+ * ScoreSystem, SystemPart and Staff).
  *
  * <p>Is does so automatically by using barlines glyphs that embrace staves,
- * parts and systems.  It also allows the user to interactively modify the
+ * parts and systems. It also allows the user to interactively modify the
  * retrieved information.</p>
  *
  * <p>Systems define their own area, which may be more complex than a simple
@@ -69,7 +69,7 @@ import java.util.List;
  * @author Hervé Bitteur
  */
 public class SystemsBuilder
-    extends GlyphsModel
+        extends GlyphsModel
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -80,28 +80,26 @@ public class SystemsBuilder
     private static final Logger logger = Logger.getLogger(SystemsBuilder.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Sheet retrieved systems */
     private final List<SystemInfo> systems;
 
     //~ Constructors -----------------------------------------------------------
-
     //----------------//
     // SystemsBuilder //
     //----------------//
     /**
      * Creates a new SystemsBuilder object.
+     *
      * @param sheet the related sheet
      */
     public SystemsBuilder (Sheet sheet)
     {
-        super(sheet, sheet.getNest(), Steps.valueOf(Steps.SPLIT));
+        super(sheet, sheet.getNest(), Steps.valueOf(Steps.SYSTEMS));
 
         systems = sheet.getSystems();
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------------//
     // buildSystems //
     //--------------//
@@ -110,7 +108,7 @@ public class SystemsBuilder
      * related score information
      */
     public void buildSystems ()
-        throws StepException
+            throws StepException
     {
         // Systems have been created by GRID step on sheet side
         // Build parts on sheet side
@@ -153,11 +151,10 @@ public class SystemsBuilder
      * depending Parts and Staves
      */
     private void allocateScoreStructure ()
-        throws StepException
+            throws StepException
     {
         // Clear Score -> Systems
-        sheet.getPage()
-             .resetSystems();
+        sheet.getPage().resetSystems();
 
         for (SystemInfo system : systems) {
             system.allocateScoreStructure(); // ScoreSystem, Parts & Staves
@@ -174,10 +171,10 @@ public class SystemsBuilder
     private void buildParts ()
     {
         final SystemManager systemManager = sheet.getSystemManager();
-        final Integer[]     partTops = systemManager.getPartTops();
+        final Integer[] partTops = systemManager.getPartTops();
 
         for (SystemInfo system : systemManager.getSystems()) {
-            int      partTop = -1;
+            int partTop = -1;
             PartInfo part = null;
 
             for (StaffInfo staff : system.getStaves()) {
@@ -228,8 +225,8 @@ public class SystemsBuilder
         // Very first system top border
         SystemInfo prevSystem = null;
         BrokenLine prevBorder = new BrokenLine(
-            new Point(0, 0),
-            new Point(sheet.getWidth(), 0));
+                new Point(0, 0),
+                new Point(sheet.getWidth(), 0));
 
         BrokenLine border; // Top border of current system
 
@@ -238,29 +235,27 @@ public class SystemsBuilder
                 // Try the simplistic approach, defining top border as the 
                 // middle between last line of last staff of previous system
                 // and first line of first staff of current system
-                Line     line = new BasicLine();
-                LineInfo topLine = prevSystem.getLastStaff()
-                                             .getLastLine();
-                LineInfo botLine = system.getFirstStaff()
-                                         .getFirstLine();
+                Line line = new BasicLine();
+                LineInfo topLine = prevSystem.getLastStaff().getLastLine();
+                LineInfo botLine = system.getFirstStaff().getFirstLine();
 
                 for (HorizontalSide side : HorizontalSide.values()) {
                     Point2D top = topLine.getEndPoint(side);
                     Point2D bot = botLine.getEndPoint(side);
                     line.includePoint(
-                        (top.getX() + bot.getX()) / 2,
-                        (top.getY() + bot.getY()) / 2);
+                            (top.getX() + bot.getX()) / 2,
+                            (top.getY() + bot.getY()) / 2);
                 }
 
                 border = new BrokenLine(
-                    new Point(0, line.yAtX(0)),
-                    new Point(sheet.getWidth(), line.yAtX(sheet.getWidth())));
+                        new Point(0, line.yAtX(0)),
+                        new Point(sheet.getWidth(), line.yAtX(sheet.getWidth())));
 
                 // Check if the border is acceptable and replace it if needed
                 border = refineBorder(border, prevSystem, system);
 
                 prevSystem.setBoundary(
-                    new SystemBoundary(prevSystem, prevBorder, border));
+                        new SystemBoundary(prevSystem, prevBorder, border));
                 prevBorder = border;
             }
 
@@ -270,10 +265,10 @@ public class SystemsBuilder
         // Very last system
         if (prevSystem != null) {
             border = new BrokenLine(
-                new Point(0, sheet.getHeight()),
-                new Point(sheet.getWidth(), sheet.getHeight()));
+                    new Point(0, sheet.getHeight()),
+                    new Point(sheet.getWidth(), sheet.getHeight()));
             prevSystem.setBoundary(
-                new SystemBoundary(prevSystem, prevBorder, border));
+                    new SystemBoundary(prevSystem, prevBorder, border));
         }
 
         sheet.setSystemBoundaries();
@@ -287,30 +282,27 @@ public class SystemsBuilder
                                      SystemInfo system)
     {
         // Define the inter-system yellow zone
-        int     yellowDy = sheet.getScale()
-                                .toPixels(constants.yellowZoneHalfHeight);
+        int yellowDy = sheet.getScale().toPixels(constants.yellowZoneHalfHeight);
         Polygon polygon = new Polygon();
-        Point   left = border.getPoint(0);
-        Point   right = border.getPoint(1);
+        Point left = border.getPoint(0);
+        Point right = border.getPoint(1);
         polygon.addPoint(left.x, left.y - yellowDy);
         polygon.addPoint(right.x, right.y - yellowDy);
         polygon.addPoint(right.x, right.y + yellowDy);
         polygon.addPoint(left.x, left.y + yellowDy);
 
         // Look for glyphs intersected by this yellow zone
-        List<Glyph> intersected = new ArrayList<Glyph>();
+        List<Glyph> intersected = new ArrayList<>();
 
         for (Glyph glyph : nest.getActiveGlyphs()) {
-            if (polygon.intersects(glyph.getContourBox())) {
+            if (polygon.intersects(glyph.getBounds())) {
                 intersected.add(glyph);
             }
         }
 
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "S#" + prevSystem.getId() + "-" + system.getId() + " : " +
-                polygon.getBounds() + Glyphs.toString(" inter:", intersected));
-        }
+        logger.fine("S#{0}-{1} : {2}{3}", new Object[]{prevSystem.getId(),
+                                                       system.getId(), polygon.
+                    getBounds(), Glyphs.toString(" inter:", intersected)});
 
         // If the yellow zone is empty, keep the border
         // Otherwise, use the more complex approach
@@ -327,7 +319,7 @@ public class SystemsBuilder
     private void reportResults ()
     {
         StringBuilder sb = new StringBuilder();
-        int           partNb = 0;
+        int partNb = 0;
 
         for (SystemInfo system : sheet.getSystems()) {
             partNb = Math.max(partNb, system.getParts().size());
@@ -336,8 +328,7 @@ public class SystemsBuilder
         int sysNb = systems.size();
 
         if (partNb > 0) {
-            sb.append(partNb)
-              .append(" part");
+            sb.append(partNb).append(" part");
 
             if (partNb > 1) {
                 sb.append("s");
@@ -346,13 +337,10 @@ public class SystemsBuilder
             sb.append("no part found");
         }
 
-        sheet.getBench()
-             .recordPartCount(partNb);
+        sheet.getBench().recordPartCount(partNb);
 
         if (sysNb > 0) {
-            sb.append(", ")
-              .append(sysNb)
-              .append(" system");
+            sb.append(", ").append(sysNb).append(" system");
 
             if (sysNb > 1) {
                 sb.append("s");
@@ -361,24 +349,22 @@ public class SystemsBuilder
             sb.append(", no system found");
         }
 
-        sheet.getBench()
-             .recordSystemCount(sysNb);
+        sheet.getBench().recordSystemCount(sysNb);
 
-        logger.info(sheet.getLogPrefix() + sb.toString());
+        logger.info("{0}{1}", new Object[]{sheet.getLogPrefix(), sb.toString()});
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Scale.Fraction yellowZoneHalfHeight = new Scale.Fraction(
-            1,
-            "Half height of inter-system yellow zone");
+                1,
+                "Half height of inter-system yellow zone");
     }
 }

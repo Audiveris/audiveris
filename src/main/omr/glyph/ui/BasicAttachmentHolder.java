@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2011. All rights reserved.               //
+//  Copyright (C) Herve Bitteur 2000-2012. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -18,8 +18,10 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,7 +36,7 @@ public class BasicAttachmentHolder
     //~ Instance fields --------------------------------------------------------
 
     /** Map for attachments */
-    protected Map<String, java.awt.Shape> attachments = new HashMap<String, java.awt.Shape>();
+    protected Map<String, java.awt.Shape> attachments = new HashMap<>();
 
     //~ Methods ----------------------------------------------------------------
 
@@ -42,8 +44,8 @@ public class BasicAttachmentHolder
     // addAttachment //
     //---------------//
     @Override
-    public void addAttachment (String         id,
-                               java.awt.Shape attachment)
+    public void addAttachment (String id,
+                               Shape  attachment)
     {
         if (attachment != null) {
             attachments.put(id, attachment);
@@ -56,11 +58,29 @@ public class BasicAttachmentHolder
     @Override
     public Map<String, java.awt.Shape> getAttachments ()
     {
-        if (attachments != null) {
-            return Collections.unmodifiableMap(attachments);
-        } else {
-            return Collections.emptyMap();
+        return Collections.unmodifiableMap(attachments);
+    }
+
+    //-------------------//
+    // removeAttachments //
+    //-------------------//
+    @Override
+    public int removeAttachments (String prefix)
+    {
+        // To avoid concurrent modifications
+        List<String> toRemove = new ArrayList<>();
+
+        for (String key : attachments.keySet()) {
+            if (key.startsWith(prefix)) {
+                toRemove.add(key);
+            }
         }
+
+        for (String key : toRemove) {
+            attachments.remove(key);
+        }
+
+        return toRemove.size();
     }
 
     //-------------------//
@@ -81,7 +101,7 @@ public class BasicAttachmentHolder
         Font oldFont = g.getFont();
         g.setFont(oldFont.deriveFont(4f));
 
-        for (Map.Entry<String, java.awt.Shape> entry : attachments.entrySet()) {
+        for (Map.Entry<String, Shape> entry : attachments.entrySet()) {
             Shape shape = entry.getValue();
             g.draw(shape);
 

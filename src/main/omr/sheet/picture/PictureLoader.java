@@ -64,7 +64,6 @@ public class PictureLoader
     private static final Constants constants = new Constants();
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * To disallow instantiation.
      */
@@ -73,7 +72,6 @@ public class PictureLoader
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // loadFile //
     //----------//
@@ -85,25 +83,24 @@ public class PictureLoader
      * ending with ".pdf" and JAI is used for all other files.
      *
      * @param imgFile the image file to load
-     * @param index if not null, specifies (counted from 1) which single image
+     * @param index   if not null, specifies (counted from 1) which single image
      * is desired
      * @return a sorted map of RenderedImage's (often but not always a
      * BufferedImage), guaranteed not to be null, index counted from 1.
      * @throws IllegalArgumentException if file does not exist
-     * @throws RuntimeException if all libraries are unable to load the file
+     * @throws RuntimeException         if all libraries are unable to load the
+     *                                  file
      */
-    public static SortedMap<Integer, RenderedImage> loadImages (File    imgFile,
+    public static SortedMap<Integer, RenderedImage> loadImages (File imgFile,
                                                                 Integer index)
     {
         if (!imgFile.exists()) {
             throw new IllegalArgumentException(imgFile + " does not exist");
         }
 
-        logger.info("Loading " + imgFile + " ...");
+        logger.info("Loading {0} ...", imgFile);
 
-        if (logger.isFineEnabled()) {
-            logger.fine("Using ImageIO");
-        }
+        logger.fine("Using ImageIO");
 
         SortedMap<Integer, RenderedImage> images = loadImageIO(imgFile, index);
 
@@ -111,23 +108,17 @@ public class PictureLoader
             String extension = FileUtil.getExtension(imgFile);
 
             if (extension.equalsIgnoreCase(".pdf")) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("Using PDF renderer");
-                }
-
+                logger.fine("Using PDF renderer");
                 images = loadPDF(imgFile, index);
             } else {
-                if (logger.isFineEnabled()) {
-                    logger.fine("Using JAI");
-                }
-
+                logger.fine("Using JAI");
                 images = loadJAI(imgFile);
             }
         }
 
         if (images == null) {
             throw new RuntimeException(
-                "Unable to load any image from " + imgFile);
+                    "Unable to load any image from " + imgFile);
         }
 
         return images;
@@ -138,12 +129,13 @@ public class PictureLoader
     //-------------//
     /**
      * Try to load a sequence of images out of the provided stream
+     *
      * @param imgFile the input image file
-     * @param index if not null, specifies (counted from 1) which single image
+     * @param index   if not null, specifies (counted from 1) which single image
      * is desired
      * @return a map of images, or null if failed to load
      */
-    private static SortedMap<Integer, RenderedImage> loadImageIO (File    imgFile,
+    private static SortedMap<Integer, RenderedImage> loadImageIO (File imgFile,
                                                                   Integer index)
     {
         // Input stream
@@ -181,20 +173,19 @@ public class PictureLoader
                 int imageCount = reader.getNumImages(true);
 
                 if (imageCount > 1) {
-                    logger.info(
-                        imgFile.getName() + " contains " + imageCount +
-                        " images");
+                    logger.info("{0} contains {1} images", new Object[]{imgFile.
+                                getName(), imageCount});
                 }
 
-                SortedMap<Integer, RenderedImage> images = new TreeMap<Integer, RenderedImage>();
+                SortedMap<Integer, RenderedImage> images = new TreeMap<>();
 
                 for (int i = 1; i <= imageCount; i++) {
                     if ((index == null) || (index == i)) {
                         BufferedImage img = reader.read(i - 1);
                         images.put(i, img);
-                        logger.info(
-                            "Loaded image #" + i + " (" + img.getWidth() +
-                            " x " + img.getHeight() + ")");
+                        logger.info("Loaded image #{0} ({1} x {2})",
+                                    new Object[]{i, img.getWidth(), img.
+                                    getHeight()});
                     }
                 }
 
@@ -219,6 +210,7 @@ public class PictureLoader
     //---------//
     /**
      * Load an image, using JAI
+     *
      * @param imgFile the input file
      * @return a map of one image, or null if failed to load
      */
@@ -228,15 +220,13 @@ public class PictureLoader
 
         try {
             if ((image.getWidth() > 0) && (image.getHeight() > 0)) {
-                SortedMap<Integer, RenderedImage> images = new TreeMap<Integer, RenderedImage>();
+                SortedMap<Integer, RenderedImage> images = new TreeMap<>();
                 images.put(1, image);
 
                 return images;
             }
         } catch (Exception ex) {
-            if (logger.isFineEnabled()) {
-                logger.fine(ex.getMessage());
-            }
+            logger.fine(ex.getMessage());
         }
 
         return null;
@@ -247,12 +237,13 @@ public class PictureLoader
     //---------//
     /**
      * Load a sequence of images out of a PDF file
+     *
      * @param imgFile the input PDF file
-     * @param index if not null, specifies (counted from 1) which single image
+     * @param index   if not null, specifies (counted from 1) which single image
      * is desired
      * @return a map of images, or null if failed to load
      */
-    private static SortedMap<Integer, RenderedImage> loadPDF (File    imgFile,
+    private static SortedMap<Integer, RenderedImage> loadPDF (File imgFile,
                                                               Integer index)
     {
         double res = constants.pdfScale.getValue();
@@ -260,11 +251,11 @@ public class PictureLoader
         try {
             // set up the PDF reading
             RandomAccessFile raf = new RandomAccessFile(imgFile, "r");
-            FileChannel      channel = raf.getChannel();
-            ByteBuffer       buf = channel.map(
-                FileChannel.MapMode.READ_ONLY,
-                0,
-                channel.size());
+            FileChannel channel = raf.getChannel();
+            ByteBuffer buf = channel.map(
+                    FileChannel.MapMode.READ_ONLY,
+                    0,
+                    channel.size());
 
             try {
                 PDFFile pdfFile = new PDFFile(buf);
@@ -273,52 +264,51 @@ public class PictureLoader
                 int imageCount = pdfFile.getNumPages();
 
                 if (imageCount > 1) {
-                    logger.info(
-                        imgFile.getName() + " contains " + imageCount +
-                        " images");
+                    logger.info("{0} contains {1} images", new Object[]{imgFile.
+                                getName(), imageCount});
                 }
 
-                SortedMap<Integer, RenderedImage> images = new TreeMap<Integer, RenderedImage>();
+                SortedMap<Integer, RenderedImage> images = new TreeMap<>();
 
                 for (int i = 1; i <= imageCount; i++) {
                     if ((index == null) || (index == i)) {
                         // PDF pages are accessed starting from 1 (vs 0)!!!
-                        PDFPage       page = pdfFile.getPage(i);
+                        PDFPage page = pdfFile.getPage(i);
 
                         // Get the dimensions
-                        Rectangle2D   bbox = page.getBBox();
-                        Rectangle     rect = new Rectangle(
-                            0,
-                            0,
-                            (int) (bbox.getWidth() * res),
-                            (int) (bbox.getHeight() * res));
+                        Rectangle2D bbox = page.getBBox();
+                        Rectangle rect = new Rectangle(
+                                0,
+                                0,
+                                (int) (bbox.getWidth() * res),
+                                (int) (bbox.getHeight() * res));
 
                         // Create and configure a graphics object
                         BufferedImage img = new BufferedImage(
-                            rect.width,
-                            rect.height,
-                            BufferedImage.TYPE_BYTE_GRAY); // 0..255
+                                rect.width,
+                                rect.height,
+                                BufferedImage.TYPE_BYTE_GRAY); // 0..255
 
-                        Graphics2D    g2 = img.createGraphics();
+                        Graphics2D g2 = img.createGraphics();
                         // Use antialiasing
                         g2.setRenderingHint(
-                            RenderingHints.KEY_ANTIALIASING,
-                            RenderingHints.VALUE_ANTIALIAS_ON);
+                                RenderingHints.KEY_ANTIALIASING,
+                                RenderingHints.VALUE_ANTIALIAS_ON);
 
                         // Do the actual drawing
                         PDFRenderer renderer = new PDFRenderer(
-                            page,
-                            g2,
-                            rect, // bounds into which to fit the page
-                            null, // No clipping
-                            Color.WHITE); // Background color
+                                page,
+                                g2,
+                                rect, // bounds into which to fit the page
+                                null, // No clipping
+                                Color.WHITE); // Background color
                         page.waitForFinish();
                         renderer.run();
                         images.put(i, img);
 
-                        logger.info(
-                            imgFile.getName() + " loaded image #" + i + " (" +
-                            img.getWidth() + " x " + img.getHeight() + ")");
+                        logger.info("{0} loaded image #{1} ({2} x {3})",
+                                    new Object[]{imgFile.getName(), i, img.
+                                    getWidth(), img.getHeight()});
                     }
                 }
 
@@ -338,17 +328,16 @@ public class PictureLoader
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Constant.Ratio pdfScale = new Constant.Ratio(
-            4,
-            "Upscaling of PDF resolution from default dimensions");
+                4,
+                "Upscaling of PDF resolution from default dimensions");
     }
 }

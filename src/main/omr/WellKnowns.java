@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -312,7 +312,7 @@ public class WellKnowns
     private static boolean isProject ()
     {
         // We use the fact that a "src" folder is the evidence that we
-        // are running from the development folder (with data & config as
+        // are running from the development folder (with data & settings as
         // subfolders) rather than from a standard folder (installed with 
         // distinct location for application data & config).
         File devFolder = new File(PROGRAM_FOLDER, "src");
@@ -340,5 +340,9 @@ public class WellKnowns
 
         /** Set up logger mechanism */
         Logger.getLogger(WellKnowns.class);
+    }
+
+    private WellKnowns ()
+    {
     }
 }

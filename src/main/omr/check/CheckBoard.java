@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -32,7 +32,7 @@ import com.jgoodies.forms.layout.FormLayout;
  * @author Hervé Bitteur
  */
 public class CheckBoard<C extends Checkable>
-    extends Board
+        extends Board
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -40,36 +40,36 @@ public class CheckBoard<C extends Checkable>
     private static final Logger logger = Logger.getLogger(CheckBoard.class);
 
     //~ Instance fields --------------------------------------------------------
-
+    //
     /** For display of check suite results */
     private final CheckPanel<C> checkPanel;
 
     //~ Constructors -----------------------------------------------------------
-
+    //
     //------------//
     // CheckBoard //
     //------------//
     /**
-     * Create a Check Board
+     * Create a Check Board.
      *
-     * @param name         the name of the check
-     * @param suite        the check suite to be used
+     * @param name             the name of the check
+     * @param suite            the check suite to be used
      * @param selectionService which selection service to use
-     * @param eventList    which even classes to expect
+     * @param eventList        which even classes to expect
      */
-    public CheckBoard (String           name,
-                       CheckSuite<C>    suite,
+    public CheckBoard (String name,
+                       CheckSuite<C> suite,
                        SelectionService selectionService,
-                       Class[]          eventList)
+                       Class[] eventList)
     {
         super(
-            name,
-            Board.CHECK.position,
-            selectionService,
-            eventList,
-            false, // Dump
-            false); // Selected
-        checkPanel = new CheckPanel<C>(suite);
+                name,
+                Board.CHECK.position,
+                selectionService,
+                eventList,
+                false, // Dump
+                false); // Selected
+        checkPanel = new CheckPanel<>(suite);
 
         if (suite != null) {
             defineLayout(suite.getName());
@@ -80,12 +80,13 @@ public class CheckBoard<C extends Checkable>
     }
 
     //~ Methods ----------------------------------------------------------------
-
+    //
     //--------//
     // update //
     //--------//
     /**
      * Call-back triggered when C Selection has been modified.
+     *
      * @param event the Event to perform check upon its data
      */
     @Override
@@ -109,6 +110,7 @@ public class CheckBoard<C extends Checkable>
     //----------//
     /**
      * Assign a (new) suite to the check board.
+     *
      * @param suite the (new) check suite to be used
      */
     public synchronized void setSuite (CheckSuite<C> suite)
@@ -126,6 +128,7 @@ public class CheckBoard<C extends Checkable>
     //------------//
     /**
      * Render the result of checking the given object.
+     *
      * @param object the object whose check result is to be displayed
      */
     protected void tellObject (C object)
@@ -143,13 +146,13 @@ public class CheckBoard<C extends Checkable>
     //--------------//
     private void defineLayout (String name)
     {
-        FormLayout   layout = new FormLayout("pref", "pref");
+        FormLayout layout = new FormLayout("pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout, getBody());
         builder.setDefaultDialogBorder();
 
         CellConstraints cst = new CellConstraints();
 
-        int             r = 1; // --------------------------------
+        int r = 1; // --------------------------------
         builder.add(checkPanel.getComponent(), cst.xy(1, r));
     }
 }

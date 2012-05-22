@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -14,7 +14,6 @@ package omr.glyph.ui;
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
-import omr.glyph.text.TextInfo;
 import omr.glyph.text.TextRole;
 
 import omr.log.Logger;
@@ -36,7 +35,6 @@ import omr.ui.field.LIntegerField;
 import omr.ui.field.LTextField;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
@@ -48,7 +46,7 @@ import javax.swing.KeyStroke;
 /**
  * Class {@code SymbolGlyphBoard} defines an extended glyph board,
  * with characteristics (pitch position, stem number, etc) that are
- * specific to a symbol, and an additional symbol glyph spinner:
+ * specific to a symbol, and an additional symbol glyph spinner.
  * <ul>
  * <li>A <b>symbolSpinner</b> to browse through all glyphs that are
  * considered as symbols, that is built from aggregation of contiguous
@@ -57,22 +55,21 @@ import javax.swing.KeyStroke;
  * small glyphs, are not included in this spinner.</ul>
  *
  * <h4>Layout of an instance of SymbolGlyphBoard:<br/>
- *    <img src="doc-files/SymbolGlyphBoard.png"/>
+ * <img src="doc-files/SymbolGlyphBoard.png"/>
  * </h4>
  *
  * @author Hervé Bitteur
  */
 public class SymbolGlyphBoard
-    extends GlyphBoard
+        extends GlyphBoard
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
-        SymbolGlyphBoard.class);
+            SymbolGlyphBoard.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Numerator of time signature */
     private LIntegerField timeNum;
 
@@ -90,43 +87,43 @@ public class SymbolGlyphBoard
 
     /** Glyph characteristics : position wrt staff */
     private LDoubleField pitchPosition = new LDoubleField(
-        false,
-        "Pitch",
-        "Logical pitch position",
-        "%.3f");
+            false,
+            "Pitch",
+            "Logical pitch position",
+            "%.3f");
 
     /** Glyph characteristics : is there a ledger */
     private LTextField ledger = new LTextField(
-        false,
-        "Ledger",
-        "Does this glyph intersect a ledger?");
+            false,
+            "Ledger",
+            "Does this glyph intersect a ledger?");
 
     /** Glyph characteristics : how many stems */
     private LIntegerField stems = new LIntegerField(
-        false,
-        "Stems",
-        "Number of stems connected to this glyph");
+            false,
+            "Stems",
+            "Number of stems connected to this glyph");
 
     /** Glyph characteristics : normalized weight */
     private LDoubleField weight = new LDoubleField(
-        false,
-        "Weight",
-        "Normalized weight",
-        "%.3f");
+            false,
+            "Weight",
+            "Normalized weight",
+            "%.3f");
 
     /** Glyph characteristics : normalized width */
     private LDoubleField width = new LDoubleField(
-        false,
-        "Width",
-        "Normalized width",
-        "%.3f");
+            false,
+            "Width",
+            "Normalized width",
+            "%.3f");
 
     /** Glyph characteristics : normalized height */
     private LDoubleField height = new LDoubleField(
-        false,
-        "Height",
-        "Normalized height",
-        "%.3f");
+            false,
+            "Height",
+            "Normalized height",
+            "%.3f");
 
     /** Handling of entered / selected values */
     private final Action paramAction;
@@ -135,63 +132,61 @@ public class SymbolGlyphBoard
     private boolean selfUpdatingText;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------------//
     // SymbolGlyphBoard //
     //------------------//
     /**
      * Create the symbol glyph board.
+     *
      * @param glyphsController the companion which handles glyph (de)assignments
-     * @param expanded true to initially expand this board
+     * @param useSpinners      true for use of spinners
+     * @param expanded         true to initially expand this board
      */
     public SymbolGlyphBoard (GlyphsController glyphsController,
-                             boolean          expanded)
+                             boolean useSpinners,
+                             boolean expanded)
     {
         // For all glyphs
-        super(glyphsController, true);
+        super(glyphsController, useSpinners, true);
 
         // Additional combo for text role
         paramAction = new ParamAction();
-        roleCombo = new LComboBox<TextRole>(
-            "Role",
-            "Role of the Text",
-            TextRole.values());
+        roleCombo = new LComboBox<>(
+                "Role",
+                "Role of the Text",
+                TextRole.values());
         roleCombo.addActionListener(paramAction);
 
         // Additional combo for text type
-        typeCombo = new LComboBox<CreatorType>(
-            "Type",
-            "Type of the Text",
-            CreatorType.values());
+        typeCombo = new LComboBox<>(
+                "Type",
+                "Type of the Text",
+                CreatorType.values());
         typeCombo.addActionListener(paramAction);
 
         // Text field
         textField = new LTextField(true, "Text", "Content of a textual glyph");
-        textField.getField()
-                 .setHorizontalAlignment(JTextField.LEFT);
+        textField.getField().setHorizontalAlignment(JTextField.LEFT);
 
         // Time signature
         timeNum = new LIntegerField("Num", "");
         timeDen = new LIntegerField("Den", "");
 
-        defineSpecificLayout(true); // use of spinners
+        defineSpecificLayout();
 
         // Needed to process user input when RETURN/ENTER is pressed
-        getComponent()
-            .getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-            .put(KeyStroke.getKeyStroke("ENTER"), "TextAction");
-        getComponent()
-            .getActionMap()
-            .put("TextAction", paramAction);
+        getComponent().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).
+                put(KeyStroke.getKeyStroke("ENTER"), "TextAction");
+        getComponent().getActionMap().put("TextAction", paramAction);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------//
     // onEvent //
     //---------//
     /**
      * Call-back triggered when Glyph Selection has been modified.
+     *
      * @param event the (Glyph or glyph set) Selection
      */
     @Override
@@ -209,8 +204,8 @@ public class SymbolGlyphBoard
                 selfUpdating = true;
 
                 GlyphEvent glyphEvent = (GlyphEvent) event;
-                Glyph      glyph = glyphEvent.getData();
-                Shape      shape = (glyph != null) ? glyph.getShape() : null;
+                Glyph glyph = glyphEvent.getData();
+                Shape shape = (glyph != null) ? glyph.getShape() : null;
 
                 // Fill symbol characteristics
                 if (glyph != null) {
@@ -242,21 +237,19 @@ public class SymbolGlyphBoard
                         roleCombo.setEnabled(true);
                         textField.setEnabled(true);
 
-                        TextInfo textInfo = glyph.getTextInfo();
-
-                        if (textInfo.getContent() != null) {
-                            textField.setText(glyph.getTextInfo().getContent());
+                        if (glyph.getTextValue() != null) {
+                            textField.setText(glyph.getTextValue());
                         } else {
                             textField.setText("");
                         }
 
-                        if (textInfo.getTextRole() != null) {
-                            roleCombo.setSelectedItem(textInfo.getTextRole());
+                        if (glyph.getTextRole() != null) {
+                            roleCombo.setSelectedItem(glyph.getTextRole());
 
-                            if (textInfo.getTextRole() == TextRole.Creator) {
+                            if (glyph.getTextRole() == TextRole.Creator) {
                                 typeCombo.setVisible(true);
                                 typeCombo.setSelectedItem(
-                                    textInfo.getCreatorType());
+                                        glyph.getCreatorType());
                             }
                         } else {
                             roleCombo.setSelectedItem(TextRole.UnknownRole);
@@ -277,14 +270,14 @@ public class SymbolGlyphBoard
                         timeDen.setVisible(true);
 
                         timeNum.setEnabled(
-                            shape == Shape.CUSTOM_TIME_SIGNATURE);
+                                shape == Shape.CUSTOM_TIME_SIGNATURE);
                         timeDen.setEnabled(
-                            shape == Shape.CUSTOM_TIME_SIGNATURE);
+                                shape == Shape.CUSTOM_TIME_SIGNATURE);
 
                         TimeRational timeRational = (shape == Shape.CUSTOM_TIME_SIGNATURE)
                                                     ? glyph.getTimeRational()
                                                     : TimeSignature.rationalOf(
-                            shape);
+                                shape);
 
                         if (timeRational != null) {
                             timeNum.setValue(timeRational.num);
@@ -311,19 +304,17 @@ public class SymbolGlyphBoard
     //----------------------//
     /**
      * Define a specific layout for this Symbol GlyphBoard
-     *
-     * @param useSpinners true if spinners must be created
      */
-    protected void defineSpecificLayout (boolean useSpinners)
+    protected void defineSpecificLayout ()
     {
         int r = 1; // --------------------------------
-                   // Glyph ---
+        // Glyph ---
 
         r += 2; // --------------------------------
-                // shape
+        // shape
 
         r += 2; // --------------------------------
-                // Glyph characteristics, first line
+        // Glyph characteristics, first line
 
         builder.add(pitchPosition.getLabel(), cst.xy(1, r));
         builder.add(pitchPosition.getField(), cst.xy(3, r));
@@ -335,7 +326,7 @@ public class SymbolGlyphBoard
         builder.add(stems.getField(), cst.xy(11, r));
 
         r += 2; // --------------------------------
-                // Glyph characteristics, second line
+        // Glyph characteristics, second line
 
         builder.add(weight.getLabel(), cst.xy(1, r));
         builder.add(weight.getField(), cst.xy(3, r));
@@ -347,7 +338,7 @@ public class SymbolGlyphBoard
         builder.add(height.getField(), cst.xy(11, r));
 
         r += 2; // --------------------------------
-                // Text information, first line
+        // Text information, first line
 
         if (textField != null) {
             builder.add(textField.getLabel(), cst.xyw(1, r, 1));
@@ -367,7 +358,7 @@ public class SymbolGlyphBoard
         }
 
         r += 2; // --------------------------------
-                // Text information, second line
+        // Text information, second line
 
         if (roleCombo != null) {
             builder.add(roleCombo.getLabel(), cst.xyw(1, r, 1));
@@ -381,12 +372,11 @@ public class SymbolGlyphBoard
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-------------//
     // ParamAction //
     //-------------//
     private class ParamAction
-        extends AbstractAction
+            extends AbstractAction
     {
         //~ Methods ------------------------------------------------------------
 
@@ -401,17 +391,17 @@ public class SymbolGlyphBoard
             }
 
             // Get current glyph set
-            GlyphSetEvent glyphsEvent = (GlyphSetEvent) getSelectionService()
-                                                            .getLastEvent(
-                GlyphSetEvent.class);
-            Set<Glyph>    glyphs = (glyphsEvent != null)
-                                   ? glyphsEvent.getData() : null;
+            GlyphSetEvent glyphsEvent = (GlyphSetEvent) getSelectionService().
+                    getLastEvent(
+                    GlyphSetEvent.class);
+            Set<Glyph> glyphs = (glyphsEvent != null)
+                                ? glyphsEvent.getData() : null;
 
             if ((glyphs != null) && !glyphs.isEmpty()) {
                 // Read shape information
                 String shapeName = shapeField.getText();
 
-                if (shapeName.equals("")) {
+                if (shapeName.isEmpty()) {
                     return;
                 }
 
@@ -419,33 +409,28 @@ public class SymbolGlyphBoard
 
                 // Text?
                 if (shape.isText()) {
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            "Text='" + textField.getText().trim() + "' Role=" +
-                            roleCombo.getSelectedItem());
-                    }
+                    logger.fine("Text=''{0}'' Role={1}",
+                                new Object[]{textField.getText().trim(),
+                                             roleCombo.getSelectedItem()});
 
                     TextRole role = (TextRole) roleCombo.getSelectedItem();
-                    SheetsController.getCurrentSheet()
-                                    .getSymbolsController()
-                                    .asyncAssignTexts(
-                        glyphs,
-                        ((role == TextRole.Creator)
-                         ? (CreatorType) typeCombo.getSelectedItem() : null),
-                        role,
-                        textField.getText());
-                } else
-                // Custom time sig?
+                    SheetsController.getCurrentSheet().getSymbolsController().
+                            asyncAssignTexts(
+                            glyphs,
+                            ((role == TextRole.Creator)
+                             ? (CreatorType) typeCombo.getSelectedItem() : null),
+                            role,
+                            textField.getText());
+                } else // Custom time sig?
                 if (shape == Shape.CUSTOM_TIME_SIGNATURE) {
                     int num = timeNum.getValue();
                     int den = timeDen.getValue();
 
                     if ((num != 0) && (den != 0)) {
-                        SheetsController.getCurrentSheet()
-                                        .getSymbolsController()
-                                        .asyncAssignRationals(
-                            glyphs,
-                            new TimeRational(num, den));
+                        SheetsController.getCurrentSheet().getSymbolsController().
+                                asyncAssignRationals(
+                                glyphs,
+                                new TimeRational(num, den));
                     } else {
                         logger.warning("Invalid time signature parameters");
                     }

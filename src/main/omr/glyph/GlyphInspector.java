@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -13,7 +13,6 @@ package omr.glyph;
 
 import omr.constant.ConstantSet;
 
-import omr.glyph.CompoundBuilder.CompoundAdapter;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -28,9 +27,9 @@ import java.util.EnumSet;
 import java.util.List;
 
 /**
- * Class {@code GlyphInspector} is at a System level, dedicated to the
+ * Class {@code GlyphInspector} is at a system level, dedicated to the
  * inspection of retrieved glyphs, their recognition being usually
- * based on features used by a neural network evaluator.
+ * based on features used by a shape evaluator.
  *
  * @author Hervé Bitteur
  */
@@ -46,26 +45,25 @@ public class GlyphInspector
 
     /** Shapes acceptable for a part candidate */
     private static final EnumSet<Shape> partShapes = EnumSet.of(
-        Shape.DOT_set,
-        Shape.NOISE,
-        Shape.CLUTTER,
-        Shape.STACCATISSIMO,
-        Shape.NOTEHEAD_VOID,
-        Shape.FLAG_1,
-        Shape.FLAG_1_UP);
+            Shape.DOT_set,
+            Shape.NOISE,
+            Shape.CLUTTER,
+            Shape.STACCATISSIMO,
+            Shape.NOTEHEAD_VOID,
+            Shape.FLAG_1,
+            Shape.FLAG_1_UP);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Dedicated system */
     private final SystemInfo system;
 
     //~ Constructors -----------------------------------------------------------
-
     //----------------//
     // GlyphInspector //
     //----------------//
     /**
      * Create an GlyphInspector instance.
+     *
      * @param system the dedicated system
      */
     public GlyphInspector (SystemInfo system)
@@ -74,7 +72,6 @@ public class GlyphInspector
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------------//
     // evaluateGlyphs //
     //----------------//
@@ -82,18 +79,19 @@ public class GlyphInspector
      * All unassigned symbol glyphs of a given system, for which we can
      * get a positive vote from the evaluator, are assigned the voted
      * shape.
+     *
      * @param minGrade the lower limit on grade to accept an evaluation
      */
     public void evaluateGlyphs (double minGrade)
     {
-        GlyphEvaluator evaluator = GlyphNetwork.getInstance();
+        ShapeEvaluator evaluator = GlyphNetwork.getInstance();
 
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.getShape() == null) {
                 // Get vote
                 Evaluation vote = evaluator.vote(glyph, system, minGrade);
 
-                if ((vote != null) && !glyph.isShapeForbidden(vote.shape)) {
+                if (vote != null) {
                     glyph.setEvaluation(vote);
                 }
             }
@@ -107,13 +105,12 @@ public class GlyphInspector
      * Process the given system, by retrieving unassigned glyphs,
      * evaluating and assigning them if OK, or trying compounds
      * otherwise.
+     *
      * @param minGrade the minimum acceptable grade for this processing
      */
     public void inspectGlyphs (double minGrade)
     {
-        if (logger.isFineEnabled()) {
-            logger.info("S#" + system.getId() + " inspectGlyphs start");
-        }
+        logger.fine("S#{0} inspectGlyphs start", system.getId());
 
         // For Symbols & Leaves
         system.retrieveGlyphs();
@@ -134,12 +131,13 @@ public class GlyphInspector
     /**
      * In the specified system, look for glyphs portions that should be
      * considered as parts of compound glyphs.
+     *
      * @param minGrade minimum acceptable grade
      */
     private void retrieveCompounds (double minGrade)
     {
         // Use a copy to avoid concurrent modifications
-        List<Glyph> glyphs = new ArrayList<Glyph>(system.getGlyphs());
+        List<Glyph> glyphs = new ArrayList<>(system.getGlyphs());
 
         for (Glyph seed : glyphs) {
             // Now process this seed, by looking at neighbors
@@ -152,6 +150,18 @@ public class GlyphInspector
     }
 
     //~ Inner Classes ----------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        Scale.Fraction boxWiden = new Scale.Fraction(
+                0.25,
+                "Box widening to check intersection with compound");
+    }
 
     //--------------//
     // BasicAdapter //
@@ -161,24 +171,26 @@ public class GlyphInspector
      * retrieve all compounds (in a system).
      */
     private class BasicAdapter
-        extends CompoundBuilder.AbstractAdapter
+            extends CompoundBuilder.AbstractAdapter
     {
         //~ Instance fields ----------------------------------------------------
 
         Glyph stem = null;
-        int   stemX;
-        int   stemToSeed;
+
+        int stemX;
+
+        int stemToSeed;
 
         //~ Constructors -------------------------------------------------------
-
         /**
          * Construct a BasicAdapter around a given seed
-         * @param system the containing system
+         *
+         * @param system   the containing system
          * @param minGrade minimum acceptable grade
          */
         public BasicAdapter (SystemInfo system,
-                             double     minGrade,
-                             Glyph      seed)
+                             double minGrade,
+                             Glyph seed)
         {
             super(system, minGrade);
 
@@ -192,21 +204,19 @@ public class GlyphInspector
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public PixelRectangle computeReferenceBox ()
         {
             if (seed == null) {
                 throw new NullPointerException(
-                    "Compound seed has not been set");
+                        "Compound seed has not been set");
             }
 
-            PixelRectangle newBox = seed.getContourBox();
+            PixelRectangle newBox = seed.getBounds();
 
-            Scale          scale = system.getScoreSystem()
-                                         .getScale();
-            int            boxWiden = scale.toPixels(
-                GlyphInspector.constants.boxWiden);
+            Scale scale = system.getScoreSystem().getScale();
+            int boxWiden = scale.toPixels(
+                    GlyphInspector.constants.boxWiden);
             newBox.grow(boxWiden, boxWiden);
 
             return newBox;
@@ -217,22 +227,14 @@ public class GlyphInspector
         {
             Shape shape = glyph.getShape();
 
-            //            boolean ok = glyph.isActive() && (shape != Shape.LEDGER) &&
-            //                         (!glyph.isKnown() ||
-            //                         (!glyph.isManualShape() &&
-            //                         ((shape == Shape.DOT_set) || (shape == Shape.NOISE) ||
-            //                         (shape == Shape.CLUTTER) ||
-            //                         (shape == Shape.STRUCTURE) ||
-            //                         (shape == Shape.STACCATISSIMO) ||
-            //                         (glyph.getGrade() <= Grades.compoundPartMaxGrade))));
             if (!glyph.isActive() || (shape == Shape.LEDGER)) {
                 return false;
             }
 
-            if (glyph.isKnown() &&
-                (glyph.isManualShape() ||
-                (!partShapes.contains(shape) &&
-                (glyph.getGrade() > Grades.compoundPartMaxGrade)))) {
+            if (glyph.isKnown()
+                    && (glyph.isManualShape()
+                        || (!partShapes.contains(shape)
+                            && (glyph.getGrade() > Grades.compoundPartMaxGrade)))) {
                 return false;
             }
 
@@ -247,13 +249,13 @@ public class GlyphInspector
         @Override
         public boolean isCompoundValid (Glyph compound)
         {
-            Evaluation eval = GlyphNetwork.getInstance()
-                                          .vote(compound, system, minGrade);
+            Evaluation eval = GlyphNetwork.getInstance().vote(compound, system,
+                                                              minGrade);
 
-            if ((eval != null) &&
-                eval.shape.isWellKnown() &&
-                (eval.shape != Shape.CLUTTER) &&
-                (!seed.isKnown() || (eval.grade > seed.getGrade()))) {
+            if ((eval != null)
+                    && eval.shape.isWellKnown()
+                    && (eval.shape != Shape.CLUTTER)
+                    && (!seed.isKnown() || (eval.grade > seed.getGrade()))) {
                 chosenEvaluation = eval;
 
                 return true;
@@ -261,18 +263,5 @@ public class GlyphInspector
                 return false;
             }
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        Scale.Fraction boxWiden = new Scale.Fraction(
-            0.25,
-            "Box widening to check intersection with compound");
     }
 }

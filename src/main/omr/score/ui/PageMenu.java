@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -15,16 +15,12 @@ import omr.glyph.ui.SymbolMenu;
 
 import omr.log.Logger;
 
-import omr.score.Score;
 import omr.score.common.PixelPoint;
 import omr.score.entity.Measure;
-import omr.score.entity.MeasureId;
 import omr.score.entity.Page;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Slot;
 import omr.score.entity.SystemPart;
-import omr.score.midi.MidiActions;
-import omr.score.midi.MidiAgentFactory;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
@@ -60,7 +56,7 @@ public class PageMenu
     private final Page page;
 
     /** Set of actions to update menu according to current selections */
-    private final Collection<DynAction> dynActions = new HashSet<DynAction>();
+    private final Collection<DynAction> dynActions = new HashSet<>();
 
     /** Concrete popup menu */
     private final JPopupMenu popup;
@@ -191,8 +187,8 @@ public class PageMenu
     // DynAction //
     //-----------//
     /**
-     * Base implementation, to register the dynamic actions that need to be
-     * updated according to the current glyph selection context.
+     * Base implementation, to register the dynamic actions that need to
+     * be updated according to the current glyph selection context.
      */
     public abstract class DynAction
         extends AbstractAction
@@ -349,6 +345,7 @@ public class PageMenu
 
         //~ Methods ------------------------------------------------------------
 
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             // Default action is to open the menu
@@ -402,6 +399,7 @@ public class PageMenu
 
             //~ Methods --------------------------------------------------------
 
+            @Override
             public void actionPerformed (ActionEvent e)
             {
                 measure.printVoices(null);
@@ -414,52 +412,53 @@ public class PageMenu
             }
         }
 
-        //------------//
-        // PlayAction //
-        //------------//
-        /**
-         * Play the current measure
-         */
-        private class PlayAction
-            extends DynAction
-        {
-            //~ Constructors ---------------------------------------------------
-
-            public PlayAction ()
-            {
-                putValue(NAME, "Play");
-                putValue(SHORT_DESCRIPTION, "Play the selected measure");
-            }
-
-            //~ Methods --------------------------------------------------------
-
-            public void actionPerformed (ActionEvent e)
-            {
-                try {
-                    if (logger.isFineEnabled()) {
-                        logger.fine("Play " + measure);
-                    }
-
-                    Score score = page.getScore();
-                    MidiAgentFactory.getAgent()
-                                    .reset();
-                    new MidiActions.PlayTask(
-                        score,
-                        new MeasureId.MeasureRange(
-                            score,
-                            measure.getScoreId(),
-                            measure.getScoreId())).execute();
-                } catch (Exception ex) {
-                    logger.warning("Cannot play measure", ex);
-                }
-            }
-
-            @Override
-            public void update ()
-            {
-                setEnabled(measure != null);
-            }
-        }
+        //        //------------//
+        //        // PlayAction //
+        //        //------------//
+        //        /**
+        //         * Play the current measure
+        //         */
+        //        private class PlayAction
+        //            extends DynAction
+        //        {
+        //            //~ Constructors ---------------------------------------------------
+        //
+        //            public PlayAction ()
+        //            {
+        //                putValue(NAME, "Play");
+        //                putValue(SHORT_DESCRIPTION, "Play the selected measure");
+        //            }
+        //
+        //            //~ Methods --------------------------------------------------------
+        //
+        //            @Override
+        //            public void actionPerformed (ActionEvent e)
+        //            {
+        //                try {
+        //                    if (logger.isFineEnabled()) {
+        //                        logger.fine("Play " + measure);
+        //                    }
+        //
+        //                    Score score = page.getScore();
+        //                    MidiAgentFactory.getAgent()
+        //                                    .reset();
+        //                    new MidiActions.PlayTask(
+        //                        score,
+        //                        new MeasureId.MeasureRange(
+        //                            score,
+        //                            measure.getScoreId(),
+        //                            measure.getScoreId())).execute();
+        //                } catch (Exception ex) {
+        //                    logger.warning("Cannot play measure", ex);
+        //                }
+        //            }
+        //
+        //            @Override
+        //            public void update ()
+        //            {
+        //                setEnabled(measure != null);
+        //            }
+        //        }
     }
 
     //----------//
@@ -483,6 +482,7 @@ public class PageMenu
 
         //~ Methods ------------------------------------------------------------
 
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             // Default action is to open the menu
@@ -539,6 +539,7 @@ public class PageMenu
 
             //~ Methods --------------------------------------------------------
 
+            @Override
             public void actionPerformed (ActionEvent e)
             {
                 logger.info(slot.toChordString());
@@ -572,6 +573,7 @@ public class PageMenu
 
             //~ Methods --------------------------------------------------------
 
+            @Override
             public void actionPerformed (ActionEvent e)
             {
                 logger.info(slot.toVoiceString());

@@ -4,14 +4,12 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
 package omr;
-
-import static omr.WellKnowns.*;
 
 import omr.constant.Constant;
 import omr.constant.ConstantManager;
@@ -25,9 +23,7 @@ import omr.script.Script;
 import omr.script.ScriptManager;
 
 import omr.step.ProcessingCancellationException;
-import omr.step.Step;
 import omr.step.Stepping;
-import omr.step.Steps;
 
 import omr.ui.MainGui;
 import omr.ui.symbol.MusicFont;
@@ -88,7 +84,6 @@ public class Main
     public static final Dumping dumping = new Dumping(Main.class.getPackage());
 
     //~ Constructors -----------------------------------------------------------
-
     //------//
     // Main //
     //------//
@@ -97,12 +92,12 @@ public class Main
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------//
     // doMain //
     //--------//
     /**
      * Specific starting method for the application.
+     *
      * @param args command line parameters
      * @see omr.CLI the possible command line parameters
      */
@@ -119,10 +114,7 @@ public class Main
 
         if (!parameters.batchMode) {
             // For interactive mode
-            if (logger.isFineEnabled()) {
-                logger.fine("Main. Launching MainGui");
-            }
-
+            logger.fine("Main. Launching MainGui");
             Application.launch(MainGui.class, args);
         } else {
             // For batch mode
@@ -134,20 +126,20 @@ public class Main
             MusicFont.checkMusicFont();
 
             // Launch the required tasks, if any
-            List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
+            List<Callable<Void>> tasks = new ArrayList<>();
             tasks.addAll(getFilesTasks());
             tasks.addAll(getScriptsTasks());
 
             if (!tasks.isEmpty()) {
                 try {
-                    logger.info("Submitting " + tasks.size() + " task(s)");
+                    logger.info("Submitting {0} task(s)", tasks.size());
 
-                    List<Future<Void>> futures = OmrExecutors.getCachedLowExecutor()
-                                                             .invokeAll(
-                        tasks,
-                        constants.processTimeOut.getValue(),
-                        TimeUnit.SECONDS);
-                    logger.info("Checking " + tasks.size() + " task(s)");
+                    List<Future<Void>> futures = OmrExecutors.
+                            getCachedLowExecutor().invokeAll(
+                            tasks,
+                            constants.processTimeOut.getValue(),
+                            TimeUnit.SECONDS);
+                    logger.info("Checking {0} task(s)", tasks.size());
 
                     // Check for time-out
                     for (Future<Void> future : futures) {
@@ -171,8 +163,7 @@ public class Main
 
             // Store latest constant values on disk?
             if (constants.persistBatchCliConstants.getValue()) {
-                ConstantManager.getInstance()
-                               .storeResource();
+                ConstantManager.getInstance().storeResource();
             }
 
             // Stop the JVM with failure status?
@@ -188,6 +179,7 @@ public class Main
     //--------------//
     /**
      * Report the bench path if present on the CLI
+     *
      * @return the CLI bench path, or null
      */
     public static String getBenchPath ()
@@ -200,6 +192,7 @@ public class Main
     //-----------------//
     /**
      * Report the properties set at the CLI level
+     *
      * @return the CLI-defined constant values
      */
     public static Properties getCliConstants ()
@@ -216,6 +209,7 @@ public class Main
     //---------------//
     /**
      * Report the export path if present on the CLI
+     *
      * @return the CLI export path, or null
      */
     public static String getExportPath ()
@@ -228,36 +222,39 @@ public class Main
     //---------------//
     /**
      * Prepare the processing of image files listed on command line
+     *
      * @return the collection of proper callables
      */
     public static List<Callable<Void>> getFilesTasks ()
     {
-        List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
+        List<Callable<Void>> tasks = new ArrayList<>();
 
         // Launch desired step on each score in parallel
         for (final String name : parameters.inputNames) {
             final File file = new File(name);
 
             tasks.add(
-                new Callable<Void>() {
+                    new Callable<Void>()
+                    {
+
+                        @Override
                         public Void call ()
-                            throws Exception
+                                throws Exception
                         {
                             logger.info(
-                                "Launching " + parameters.desiredSteps +
-                                " on " + name);
+                                    "Launching {0} on {1}",
+                                    new Object[]{parameters.desiredSteps, name});
 
                             if (file.exists()) {
                                 final Score score = new Score(file);
 
                                 try {
                                     Stepping.processScore(
-                                        parameters.desiredSteps,
-                                        score);
+                                            parameters.desiredSteps,
+                                            score);
                                 } catch (ProcessingCancellationException pce) {
                                     logger.warning("Cancelled " + score, pce);
-                                    score.getBench()
-                                         .recordCancellation();
+                                    score.getBench().recordCancellation();
                                     throw pce;
                                 } catch (Exception ex) {
                                     logger.warning("Exception occurred", ex);
@@ -271,8 +268,8 @@ public class Main
                                     return null;
                                 }
                             } else {
-                                String msg = "Could not find file " +
-                                             file.getCanonicalPath();
+                                String msg = "Could not find file "
+                                        + file.getCanonicalPath();
                                 logger.warning(msg);
                                 throw new RuntimeException(msg);
                             }
@@ -301,6 +298,7 @@ public class Main
     //-------------//
     /**
      * Report the midi path if present on the CLI
+     *
      * @return the CLI midi path, or null
      */
     public static String getMidiPath ()
@@ -313,6 +311,7 @@ public class Main
     //--------------//
     /**
      * Report the print path if present on the CLI
+     *
      * @return the CLI print path, or null
      */
     public static String getPrintPath ()
@@ -325,48 +324,51 @@ public class Main
     //-----------------//
     /**
      * Prepare the processing of scripts listed on command line
+     *
      * @return the collection of proper script callables
      */
     public static List<Callable<Void>> getScriptsTasks ()
     {
-        List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
+        List<Callable<Void>> tasks = new ArrayList<>();
 
         // Launch desired scripts in parallel
         for (String name : parameters.scriptNames) {
             final String scriptName = name;
 
             tasks.add(
-                new Callable<Void>() {
+                    new Callable<Void>()
+                    {
+
+                        @Override
                         public Void call ()
-                            throws Exception
+                                throws Exception
                         {
-                            long   start = System.currentTimeMillis();
+                            long start = System.currentTimeMillis();
                             Script script = null;
-                            File   file = new File(scriptName);
-                            logger.info("Loading script file " + file + " ...");
+                            File file = new File(scriptName);
+                            logger.info("Loading script file {0} ...", file);
 
                             try {
                                 FileInputStream fis = new FileInputStream(file);
-                                script = ScriptManager.getInstance()
-                                                      .load(fis);
+                                script = ScriptManager.getInstance().load(fis);
                                 fis.close();
                                 script.run();
 
                                 long stop = System.currentTimeMillis();
                                 logger.info(
-                                    "Script file " + file + " run in " +
-                                    (stop - start) + " ms");
+                                        "Script file {0} run in {1} ms",
+                                        new Object[]{file, stop - start});
                             } catch (ProcessingCancellationException pce) {
                                 Score score = script.getScore();
                                 logger.warning("Cancelled " + score, pce);
 
                                 if (score != null) {
-                                    score.getBench()
-                                         .recordCancellation();
+                                    score.getBench().recordCancellation();
                                 }
                             } catch (FileNotFoundException ex) {
                                 logger.warning(
-                                    "Cannot find script file " + file);
+                                        "Cannot find script file {0}",
+                                        file);
                             } catch (Exception ex) {
                                 logger.warning("Exception occurred", ex);
                             } finally {
@@ -406,6 +408,7 @@ public class Main
     //--------//
     /**
      * Register the GUI (done by the GUI itself when it is ready)
+     *
      * @param gui the MainGui instance
      */
     public static void setGui (MainGui gui)
@@ -426,24 +429,18 @@ public class Main
     //-------------//
     private static void checkLocale ()
     {
-        final String localeStr = constants.locale.getValue()
-                                                 .trim();
+        final String localeStr = constants.locale.getValue().trim();
 
         if (!localeStr.isEmpty()) {
             for (Locale locale : Locale.getAvailableLocales()) {
-                if (locale.toString()
-                          .equalsIgnoreCase(localeStr)) {
+                if (locale.toString().equalsIgnoreCase(localeStr)) {
                     Locale.setDefault(locale);
-
-                    if (logger.isFineEnabled()) {
-                        logger.fine("Locale set to " + locale);
-                    }
-
+                    logger.fine("Locale set to {0}", locale);
                     return;
                 }
             }
 
-            logger.warning("Cannot set locale to " + localeStr);
+            logger.warning("Cannot set locale to {0}", localeStr);
         }
     }
 
@@ -469,8 +466,7 @@ public class Main
             logger.warning("Exiting ...");
 
             // Stop the JVM, with failure status (1)
-            Runtime.getRuntime()
-                   .exit(1);
+            Runtime.getRuntime().exit(1);
         }
 
         // Interactive or Batch mode ?
@@ -479,16 +475,16 @@ public class Main
 
             ///System.setProperty("java.awt.headless", "true");
 
-            // Check MIDI output is not asked for
-            Step midiStep = Steps.valueOf(Steps.MIDI);
-
-            if ((midiStep != null) &&
-                parameters.desiredSteps.contains(midiStep)) {
-                logger.warning(
-                    "MIDI output is not compatible with -batch mode." +
-                    " MIDI output is ignored.");
-                parameters.desiredSteps.remove(midiStep);
-            }
+            //            // Check MIDI output is not asked for
+            //            Step midiStep = Steps.valueOf(Steps.MIDI);
+            //
+            //            if ((midiStep != null) &&
+            //                parameters.desiredSteps.contains(midiStep)) {
+            //                logger.warning(
+            //                    "MIDI output is not compatible with -batch mode." +
+            //                    " MIDI output is ignored.");
+            //                parameters.desiredSteps.remove(midiStep);
+            //            }
         } else {
             logger.fine("Running in interactive mode");
 
@@ -498,29 +494,25 @@ public class Main
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** Selection of locale, or empty */
         private final Constant.String locale = new Constant.String(
-            "en",
-            "Locale language to be used in the whole application (en, fr)");
+                "en",
+                "Locale language to be used in the whole application (en, fr)");
 
-        /** "Should we persist CLI-defined options when running in batch? */
         private final Constant.Boolean persistBatchCliConstants = new Constant.Boolean(
-            false,
-            "Should we persist CLI-defined constants when running in batch?");
+                false,
+                "Should we persist CLI-defined constants when running in batch?");
 
-        /** Process time-out, specified in seconds */
         private final Constant.Integer processTimeOut = new Constant.Integer(
-            "Seconds",
-            300,
-            "Process time-out, specified in seconds");
+                "Seconds",
+                300,
+                "Process time-out, specified in seconds");
     }
 }

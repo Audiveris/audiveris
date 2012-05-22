@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -94,7 +94,7 @@ public class Arpeggiate
         }
 
         // We look for ALL embraced chord notes
-        PixelRectangle box = glyph.getContourBox();
+        PixelRectangle box = glyph.getBounds();
         PixelPoint     top = new PixelPoint(box.x + (box.width / 2), box.y);
         PixelPoint     bottom = new PixelPoint(
             box.x + (box.width / 2),

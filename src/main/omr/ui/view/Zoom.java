@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -27,9 +27,10 @@ import javax.swing.event.ChangeListener;
 
 /**
  * Class {@code Zoom} encapsulates a zoom ratio, which is typically
- * the ratio between display values (such as the size of the display of an
- * entity) and model values (such as the size of the entity itself). For
- * example, a Zoom with ratio set to a 2.0 value would double the display
+ * the ratio between display values (such as the size of the display of
+ * an entity) and model values (such as the size of the entity itself).
+ * 
+ * For example, a Zoom with ratio set to a 2.0 value would double the display
  * of a given entity.
  *
  * <p>Since this class is meant to be used when handling display tasks, it
@@ -60,10 +61,9 @@ public class Zoom
     private static final Logger logger = Logger.getLogger(Zoom.class);
 
     // To assign a unique Id
-    private static int            globalId;
+    private static int globalId;
 
     //~ Instance fields --------------------------------------------------------
-
     /** Unique event, created lazily */
     protected ChangeEvent changeEvent = null;
 
@@ -71,7 +71,7 @@ public class Zoom
     protected LogSlider slider;
 
     /** Collection of event listeners */
-    protected Set<ChangeListener> listeners = new HashSet<ChangeListener>();
+    protected Set<ChangeListener> listeners = new HashSet<>();
 
     /** Current ratio value */
     protected double ratio;
@@ -80,7 +80,6 @@ public class Zoom
     private int id = ++globalId;
 
     //~ Constructors -----------------------------------------------------------
-
     //------//
     // Zoom //
     //------//
@@ -102,10 +101,7 @@ public class Zoom
      */
     public Zoom (double ratio)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Zoom created with ratio " + ratio);
-        }
-
+        logger.fine("Zoom created with ratio {0}", ratio);
         setRatio(ratio);
     }
 
@@ -117,22 +113,18 @@ public class Zoom
      * related slider
      *
      * @param slider the related slider
-     * @param ratio the initial ratio value
+     * @param ratio  the initial ratio value
      */
     public Zoom (LogSlider slider,
-                 double    ratio)
+                 double ratio)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "Zoom created" + " slider=" + slider + " ratio=" + ratio);
-        }
-
+        logger.fine("Zoom created" + " slider={0} ratio={1}", new Object[]{
+                    slider, ratio});
         setSlider(slider);
         setRatio(ratio);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-------------------//
     // addChangeListener //
     //-------------------//
@@ -145,11 +137,8 @@ public class Zoom
     public void addChangeListener (ChangeListener listener)
     {
         listeners.add(listener);
-
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "addChangeListener " + listener + " -> " + listeners.size());
-        }
+        logger.fine("addChangeListener {0} -> {1}", new Object[]{listener,
+                                                                 listeners.size()});
     }
 
     //------------------//
@@ -166,10 +155,7 @@ public class Zoom
                 changeEvent = new ChangeEvent(this);
             }
 
-            if (logger.isFineEnabled()) {
-                logger.fine(this + " Firing " + listener);
-            }
-
+            logger.fine("{0} Firing {1}", new Object[]{this, listener});
             listener.stateChanged(changeEvent);
         }
     }
@@ -308,9 +294,7 @@ public class Zoom
      */
     public void setRatio (double ratio)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("setRatio ratio=" + ratio);
-        }
+        logger.fine("setRatio ratio={0}", ratio);
 
         // Propagate to slider (useful to keep slider in sync when ratio is
         // set programmatically)
@@ -333,28 +317,23 @@ public class Zoom
     public void setSlider (final LogSlider slider)
     {
         this.slider = slider;
-
-        if (logger.isFineEnabled()) {
-            logger.fine("setSlider");
-        }
+        logger.fine("setSlider");
 
         if (slider != null) {
             slider.setDoubleValue(ratio);
 
             slider.addChangeListener(
-                new ChangeListener() {
+                    new ChangeListener()
+                    {
+
+                        @Override
                         public void stateChanged (ChangeEvent e)
                         {
                             // Forward the new zoom ratio
-                            if (constants.continuousSliderReading.getValue() ||
-                                !slider.getValueIsAdjusting()) {
+                            if (constants.continuousSliderReading.getValue()
+                                    || !slider.getValueIsAdjusting()) {
                                 double newRatio = slider.getDoubleValue();
-
-                                if (logger.isFineEnabled()) {
-                                    logger.fine(
-                                        "Slider firing zoom newRatio=" +
-                                        newRatio);
-                                }
+                                logger.fine("Slider firing zoom newRatio={0}", newRatio);
 
                                 // Stop condition to avoid endless loop between
                                 // slider and zoom
@@ -378,8 +357,8 @@ public class Zoom
     @Override
     public String toString ()
     {
-        return "{Zoom#" + id + " listeners=" + listeners.size() + " ratio=" +
-               ratio + "}";
+        return "{Zoom#" + id + " listeners=" + listeners.size() + " ratio="
+                + ratio + "}";
     }
 
     //-------------//
@@ -390,7 +369,6 @@ public class Zoom
      * rather than rounding.
      *
      * @param val a source value
-     *
      * @return the (scaled) display value
      */
     public int truncScaled (double val)
@@ -406,7 +384,6 @@ public class Zoom
      * rather than rounding.
      *
      * @param val a display value
-     *
      * @return the corresponding (unscaled) source coordinate
      */
     public int truncUnscaled (double val)
@@ -419,6 +396,7 @@ public class Zoom
     //---------//
     /**
      * Unscale a point
+     *
      * @param pt the point to unscale
      */
     public void unscale (Point pt)
@@ -434,7 +412,6 @@ public class Zoom
      * Coordinate computation Display -> Source
      *
      * @param val a display value
-     *
      * @return the corresponding (unscaled) source coordinate
      */
     public int unscaled (double val)
@@ -452,10 +429,7 @@ public class Zoom
      */
     private void forceRatio (double ratio)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("forceRatio ratio=" + ratio);
-        }
-
+        logger.fine("forceRatio ratio={0}", ratio);
         this.ratio = ratio;
 
         // Propagate to listeners
@@ -463,17 +437,16 @@ public class Zoom
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Constant.Boolean continuousSliderReading = new Constant.Boolean(
-            true,
-            "Should we allow continuous reading of the zoom slider");
+                true,
+                "Should we allow continuous reading of the zoom slider");
     }
 }

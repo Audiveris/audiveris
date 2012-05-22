@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -191,7 +191,7 @@ public class Dumping
         //~ Instance fields ----------------------------------------------------
 
         /** Collection of root packages, to filter non-relevant classes */
-        protected final Set<Package> rootPackages = new HashSet<Package>();
+        protected final Set<Package> rootPackages = new HashSet<>();
 
         //~ Constructors -------------------------------------------------------
 
@@ -212,6 +212,7 @@ public class Dumping
         //-----------------//
         // isClassRelevant //
         //-----------------//
+        @Override
         public boolean isClassRelevant (Class classe)
         {
             if (classe == null) {
@@ -231,6 +232,7 @@ public class Dumping
         //-----------------//
         // isFieldRelevant //
         //-----------------//
+        @Override
         public boolean isFieldRelevant (Field field)
         {
             // We don't print static field since the Dumper is meant for instances

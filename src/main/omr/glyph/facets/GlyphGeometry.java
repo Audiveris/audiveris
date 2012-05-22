@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -51,6 +51,13 @@ interface GlyphGeometry
     PixelPoint getAreaCenter ();
 
     /**
+     * Return a copy of the absolute display bounding box.
+     * Useful to quickly check if the glyph needs to be repainted.
+     * @return a COPY of the bounding contour rectangle box
+     */
+    PixelRectangle getBounds ();
+
+    /**
      * Report the glyph absolute centroid (mass center).
      * The point is lazily evaluated.
      * @return the absolute mass center point
@@ -62,13 +69,6 @@ interface GlyphGeometry
      * @return the approximating circle, or null
      */
     Circle getCircle ();
-
-    /**
-     * Return a copy of the absolute display bounding box.
-     * Useful to quickly check if the glyph needs to be repainted.
-     * @return a COPY of the bounding contour rectangle box
-     */
-    PixelRectangle getContourBox ();
 
     /**
      * Report the density of the stick, that is its weight divided by
@@ -127,7 +127,13 @@ interface GlyphGeometry
     PointsCollector getPointsCollector ();
 
     /**
-     * Report a signature that should allow to detect glyph identity.
+     * Report the last registration signature.
+     * @return the previous valid glyph signature
+     */
+    GlyphSignature getRegisteredSignature ();
+
+    /**
+     * Report current signature that distinguishes this glyph.
      * @return the glyph signature
      */
     GlyphSignature getSignature ();
@@ -159,6 +165,12 @@ interface GlyphGeometry
      * @param contourBox the forced contour box
      */
     void setContourBox (PixelRectangle contourBox);
+
+    /**
+     * Remember registration signature.
+     * @param sig the signature used for registration
+     */
+    void setRegisteredSignature (GlyphSignature sig);
 
     /**
      * Apply a translation to the glyph from its current location,

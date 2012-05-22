@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -28,7 +28,6 @@ public class ClassUtil
     private static final Logger logger = Logger.getLogger(ClassUtil.class);
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------------//
     // getCallingFrame //
     //-----------------//
@@ -54,10 +53,10 @@ public class ClassUtil
 
         // First, search back to a method in the skipped classes, if any
         int ix;
-        searchingForSkipped: 
+        searchingForSkipped:
         for (ix = 0; ix < stack.length; ix++) {
             StackTraceElement frame = stack[ix];
-            String            cname = frame.getClassName();
+            String cname = frame.getClassName();
 
             for (Class skipped : skippedClasses) {
                 if (cname.equals(skipped.getName())) {
@@ -67,10 +66,10 @@ public class ClassUtil
         }
 
         // Now search for the first frame before the skipped classes
-        searchingForNonSkipped: 
+        searchingForNonSkipped:
         for (; ix < stack.length; ix++) {
             StackTraceElement frame = stack[ix];
-            String            cname = frame.getClassName();
+            String cname = frame.getClassName();
 
             for (Class skipped : skippedClasses) {
                 if (cname.equals(skipped.getName())) {
@@ -108,10 +107,10 @@ public class ClassUtil
         } else {
             // More complex case, skip the unwanted classes
             int ix;
-            searchingForSkipped: 
+            searchingForSkipped:
             for (ix = 2; ix < stack.length; ix++) {
                 StackTraceElement frame = stack[ix];
-                String            cname = frame.getClassName();
+                String cname = frame.getClassName();
 
                 if (!skipped.check(cname)) {
                     return frame;
@@ -128,24 +127,21 @@ public class ClassUtil
     //------//
     /**
      * Try to load a (library) file.
+     *
      * @param file the file to load, which must point to the precise location
      * @throws Exception
      */
     public static void load (File file)
-        throws Throwable
+            throws Throwable
     {
         String path = file.getAbsolutePath();
 
-        if (logger.isFineEnabled()) {
-            logger.fine("Loading file " + path + " ...");
-        }
+        logger.fine("Loading file {0} ...", path);
 
         try {
             System.load(path);
 
-            if (logger.isFineEnabled()) {
-                logger.fine("Loaded  file " + path);
-            }
+            logger.fine("Loaded  file {0}", path);
         } catch (Throwable ex) {
             if (logger.isFineEnabled()) {
                 logger.warning("Error while loading file " + path, ex);
@@ -160,22 +156,19 @@ public class ClassUtil
     //-------------//
     /**
      * Try to load a library.
+     *
      * @param library the library to load
      * @throws Exception
      */
     public static void loadLibrary (String library)
-        throws Throwable
+            throws Throwable
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Loading library " + library + " ...");
-        }
+        logger.fine("Loading library {0} ...", library);
 
         try {
             System.loadLibrary(library);
 
-            if (logger.isFineEnabled()) {
-                logger.fine("Loaded  library " + library);
-            }
+            logger.fine("Loaded  library {0}", library);
         } catch (Throwable ex) {
             if (logger.isFineEnabled()) {
                 logger.warning("Error while loading library " + library, ex);
@@ -200,7 +193,7 @@ public class ClassUtil
         StringBuilder sb = new StringBuilder();
 
         for (Class cl = obj.getClass(); cl != null;
-             cl = cl.getEnclosingClass()) {
+                cl = cl.getEnclosingClass()) {
             if (sb.length() > 0) {
                 sb.insert(0, "-");
             }
@@ -209,5 +202,9 @@ public class ClassUtil
         }
 
         return sb.toString();
+    }
+
+    private ClassUtil ()
+    {
     }
 }

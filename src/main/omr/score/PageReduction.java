@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -37,12 +37,10 @@ public class PageReduction
     private static final Logger logger = Logger.getLogger(PageReduction.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Related page */
     private final Page page;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new PageReduction object.
      *
@@ -54,7 +52,6 @@ public class PageReduction
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------//
     // reduce //
     //--------//
@@ -63,8 +60,7 @@ public class PageReduction
      */
     public void reduce ()
     {
-        if (page.getSystems()
-                .isEmpty()) {
+        if (page.getSystems().isEmpty()) {
             return;
         }
 
@@ -72,10 +68,9 @@ public class PageReduction
         PartConnection connection = PartConnection.connectPageSystems(page);
 
         // Build part list
-        List<ScorePart> scoreParts = new ArrayList<ScorePart>();
+        List<ScorePart> scoreParts = new ArrayList<>();
 
-        for (Result result : connection.getResultMap()
-                                       .keySet()) {
+        for (Result result : connection.getResultMap().keySet()) {
             scoreParts.add((ScorePart) result.getUnderlyingObject());
         }
 
@@ -83,17 +78,14 @@ public class PageReduction
 
         // Make the connections: (system) SystemPart -> (page) ScorePart
         Map<Candidate, Result> candidateMap = connection.getCandidateMap();
-
-        if (logger.isFineEnabled()) {
-            logger.fine("Candidates:" + candidateMap.size());
-        }
+        logger.fine("Candidates:{0}", candidateMap.size());
 
         for (Map.Entry<Candidate, Result> entry : candidateMap.entrySet()) {
-            Candidate  candidate = entry.getKey();
+            Candidate candidate = entry.getKey();
             SystemPart systemPart = (SystemPart) candidate.getUnderlyingObject();
 
-            Result     result = entry.getValue();
-            ScorePart  scorePart = (ScorePart) result.getUnderlyingObject();
+            Result result = entry.getValue();
+            ScorePart scorePart = (ScorePart) result.getUnderlyingObject();
 
             // Connect (system) part -> (page) part
             systemPart.setScorePart(scorePart);

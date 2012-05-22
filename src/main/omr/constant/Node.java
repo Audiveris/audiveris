@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -25,6 +25,7 @@ public abstract class Node
 
     /** For comparing Node instances according to their name */
     public static final Comparator<Node> nameComparator = new Comparator<Node>() {
+        @Override
         public int compare (Node n1,
                             Node n2)
         {

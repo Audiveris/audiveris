@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -53,7 +53,7 @@ import javax.swing.event.ChangeListener;
  * @author Hervé Bitteur
  */
 public class SheetsController
-    implements ChangeListener
+        implements ChangeListener
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -62,16 +62,15 @@ public class SheetsController
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
-        SheetsController.class);
+            SheetsController.class);
 
     /** Events that can be published on sheet service */
-    private static final Class[] eventsWritten = new Class[] { SheetEvent.class };
+    private static final Class[] eventsWritten = new Class[]{SheetEvent.class};
 
     /** The single instance of this class */
     private static volatile SheetsController INSTANCE;
 
     //~ Instance fields --------------------------------------------------------
-
     /** Ordered sequence of sheet assemblies */
     private final ArrayList<SheetAssembly> assemblies;
 
@@ -83,11 +82,10 @@ public class SheetsController
      * currently selected sheet.
      */
     private final SelectionService sheetService = new SelectionService(
-        getClass().getSimpleName(),
-        eventsWritten);
+            getClass().getSimpleName(),
+            eventsWritten);
 
     //~ Constructors -----------------------------------------------------------
-
     //------------------//
     // SheetsController //
     //------------------//
@@ -97,20 +95,20 @@ public class SheetsController
     private SheetsController ()
     {
         tabbedPane = new JTabbedPane();
-        assemblies = new ArrayList<SheetAssembly>();
+        assemblies = new ArrayList<>();
 
         // Listener on sheet tab operations
         tabbedPane.addChangeListener(this);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------------//
     // callAboutSheet //
     //----------------//
     /**
      * Call the attention about the provided sheet, by publishing it on
      * the proper event service.
+     *
      * @param sheet the provided sheet, which may be null
      */
     public void callAboutSheet (Sheet sheet)
@@ -123,13 +121,12 @@ public class SheetsController
     //----------------//
     /**
      * Create the assembly that relates to the specified sheet.
+     *
      * @param sheet the sheet to be viewed (sheet cannot be null).
      */
     public synchronized void createAssembly (Sheet sheet)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("createAssembly " + sheet.getId());
-        }
+        logger.fine("createAssembly {0}", sheet.getId());
 
         // Create the assembly on this sheet
         SheetAssembly assembly = new SheetAssembly(sheet);
@@ -141,19 +138,17 @@ public class SheetsController
         int sheetIndex = tabbedPane.indexOfComponent(assembly.getComponent());
 
         if (sheetIndex == -1) {
-            if (logger.isFineEnabled()) {
-                logger.fine("Adding assembly for sheet " + sheet.getId());
-            }
+            logger.fine("Adding assembly for sheet {0}", sheet.getId());
 
             // Insert in tabbed pane
             assemblies.add(assembly);
 
             JComponent comp = assembly.getComponent();
             tabbedPane.addTab(
-                defineTitleFor(sheet),
-                null,
-                comp,
-                sheet.getScore().getImagePath());
+                    defineTitleFor(sheet),
+                    null,
+                    comp,
+                    sheet.getScore().getImagePath());
             sheetIndex = tabbedPane.indexOfComponent(assembly.getComponent());
         }
     }
@@ -165,7 +160,8 @@ public class SheetsController
     public synchronized void dumpAllAssemblies ()
     {
         for (SheetAssembly assembly : assemblies) {
-            logger.info("Assembly of " + assembly.getSheet() + " " + assembly);
+            logger.info("Assembly of {0} {1}", new Object[]{assembly.getSheet(),
+                                                            assembly});
         }
     }
 
@@ -179,36 +175,25 @@ public class SheetsController
     public void dumpCurrentSheetServices ()
     {
         Sheet sheet = getSelectedSheet();
-        logger.info("Sheet:" + sheet);
+        logger.info("Sheet:{0}", sheet);
 
         if (sheet == null) {
             return;
         }
 
-        sheet.getLocationService()
-             .dumpSubscribers();
+        sheet.getLocationService().dumpSubscribers();
 
         if (sheet.getHorizontalLag() != null) {
-            sheet.getHorizontalLag()
-                 .getSectionService()
-                 .dumpSubscribers();
-            sheet.getHorizontalLag()
-                 .getRunService()
-                 .dumpSubscribers();
+            sheet.getHorizontalLag().getSectionService().dumpSubscribers();
+            sheet.getHorizontalLag().getRunService().dumpSubscribers();
         }
 
         if (sheet.getVerticalLag() != null) {
-            sheet.getVerticalLag()
-                 .getSectionService()
-                 .dumpSubscribers();
-            sheet.getVerticalLag()
-                 .getRunService()
-                 .dumpSubscribers();
+            sheet.getVerticalLag().getSectionService().dumpSubscribers();
+            sheet.getVerticalLag().getRunService().dumpSubscribers();
         }
 
-        sheet.getNest()
-             .getGlyphService()
-             .dumpSubscribers();
+        sheet.getNest().getGlyphService().dumpSubscribers();
     }
 
     //--------------//
@@ -216,6 +201,7 @@ public class SheetsController
     //--------------//
     /**
      * Give access to the real pane (to insert in proper UI hierarchy).
+     *
      * @return the concrete component
      */
     public JComponent getComponent ()
@@ -229,12 +215,12 @@ public class SheetsController
     /**
      * A convenient static method to directly report the currently
      * selected sheet, if any.
+     *
      * @return the selected sheet, or null
      */
     public static Sheet getCurrentSheet ()
     {
-        return getInstance()
-                   .getSelectedSheet();
+        return getInstance().getSelectedSheet();
     }
 
     //-------------//
@@ -242,6 +228,7 @@ public class SheetsController
     //-------------//
     /**
      * Report the single instance of this class.
+     *
      * @return the single instance
      */
     public static SheetsController getInstance ()
@@ -259,12 +246,13 @@ public class SheetsController
     /**
      * Convenient method to directly access currently selected sheet,
      * if any.
+     *
      * @return the selected sheet, which may be null (if no sheet is selected)
      */
     public Sheet getSelectedSheet ()
     {
         SheetEvent sheetEvent = (SheetEvent) sheetService.getLastEvent(
-            SheetEvent.class);
+                SheetEvent.class);
 
         return (sheetEvent != null) ? sheetEvent.getData() : null;
     }
@@ -274,18 +262,17 @@ public class SheetsController
     //----------------//
     /**
      * Remove the specified view from the tabbed pane.
+     *
      * @param sheet the sheet to close
      */
     public synchronized void removeAssembly (Sheet sheet)
     {
         SheetAssembly assembly = sheet.getAssembly();
-        int           sheetIndex = tabbedPane.indexOfComponent(
-            assembly.getComponent());
+        int sheetIndex = tabbedPane.indexOfComponent(
+                assembly.getComponent());
 
         if (sheetIndex != -1) {
-            if (logger.isFineEnabled()) {
-                logger.fine("Removing assembly " + sheet);
-            }
+            logger.fine("Removing assembly {0}", sheet);
 
             // Let others know (if this closing sheet was the current one)
             if (sheet == getSelectedSheet()) {
@@ -302,18 +289,16 @@ public class SheetsController
 
             // Make sure the first sheet of a multipage score is OK
             // We need to modify the tab label for the score (new) first tab
-            if (score.getPages()
-                     .size() > 1) {
-                Page  firstPage = (Page) score.getPages()
-                                              .get(0);
+            if (score.getPages().size() > 1) {
+                Page firstPage = (Page) score.getPages().get(0);
                 Sheet firstSheet = firstPage.getSheet();
-                int   firstIndex = tabbedPane.indexOfComponent(
-                    firstSheet.getAssembly().getComponent());
+                int firstIndex = tabbedPane.indexOfComponent(
+                        firstSheet.getAssembly().getComponent());
 
                 if (firstIndex != -1) {
                     tabbedPane.setTitleAt(
-                        firstIndex,
-                        defineTitleFor(firstSheet));
+                            firstIndex,
+                            defineTitleFor(firstSheet));
                 }
             }
         }
@@ -324,25 +309,24 @@ public class SheetsController
     //--------------//
     /**
      * Display the assembly that relates to the specified sheet.
+     *
      * @param sheet the sheet to be viewed (sheet cannot be null).
      */
     public synchronized void showAssembly (Sheet sheet)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("showAssembly " + sheet.getId());
-        }
+        logger.fine("showAssembly {0}", sheet.getId());
 
         if (sheet != null) {
             SheetAssembly assembly = sheet.getAssembly();
 
             // Make sure the assembly is part of the tabbed pane
             int sheetIndex = tabbedPane.indexOfComponent(
-                assembly.getComponent());
+                    assembly.getComponent());
 
             if (sheetIndex != -1) {
                 tabbedPane.setSelectedIndex(sheetIndex);
             } else {
-                logger.warning("No tab found for " + sheet);
+                logger.warning("No tab found for {0}", sheet);
             }
         }
     }
@@ -377,6 +361,7 @@ public class SheetsController
     //-----------//
     /**
      * Subscribe to the sheet event service (for the SheetEvent class).
+     *
      * @param subscriber The subscriber to accept the events when published.
      */
     public void subscribe (EventSubscriber subscriber)
@@ -389,6 +374,7 @@ public class SheetsController
     //-------------//
     /**
      * Unsubscribe to the sheet event service (for the SheetEvent class).
+     *
      * @param subscriber the entity to unsubscribe
      */
     public void unsubscribe (EventSubscriber subscriber)
@@ -401,14 +387,15 @@ public class SheetsController
     //----------------//
     /**
      * Generate proper tab title for the provided sheet.
+     *
      * @param sheet the provided sheet instance
      * @return the title to use for the related tab
      */
     private String defineTitleFor (Sheet sheet)
     {
-        Page   page = sheet.getPage();
-        Score  score = page.getScore();
-        int    index = page.getIndex();
+        Page page = sheet.getPage();
+        Score score = page.getScore();
+        int index = page.getIndex();
         String label = score.isMultiPage()
                        ? ((page == score.getFirstPage()) ? sheet.getId()
                           : ("#" + index)) : score.getRadix();
@@ -421,13 +408,14 @@ public class SheetsController
     //------------------//
     /**
      * Run when a sheetTab has been selected in the tabbedPane.
+     *
      * @param sheetIndex the index of the tab
      */
     private void sheetTabSelected (int sheetIndex)
     {
         // Remember the new selected sheet
         SheetAssembly assembly = assemblies.get(sheetIndex);
-        Sheet         sheet = assembly.getSheet();
+        Sheet sheet = assembly.getSheet();
 
         // Tell everyone about the new selected sheet
         callAboutSheet(sheet);
@@ -437,18 +425,17 @@ public class SheetsController
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         /** Initial zoom ratio for displayed sheet pictures */
         Constant.Ratio initialZoomRatio = new Constant.Ratio(
-            0.5,
-            "Initial zoom ratio for displayed sheet pictures");
+                0.5,
+                "Initial zoom ratio for displayed sheet pictures");
     }
 }

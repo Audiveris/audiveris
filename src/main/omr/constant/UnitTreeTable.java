@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -43,11 +43,11 @@ import javax.swing.tree.TreePath;
  * display the hierarchy of Units, that contains ConstantSets and/or Loggers,
  * and a table to display and edit the various Constants in each ConstantSet as
  * well as the logger level of units.
- *
+ * <p/>
  * @author Hervé Bitteur
  */
 public class UnitTreeTable
-    extends JTreeTable
+        extends JTreeTable
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -58,22 +58,24 @@ public class UnitTreeTable
     private static final Color zebraColor = new Color(248, 248, 255);
 
     //~ Instance fields --------------------------------------------------------
-
     private TableCellRenderer loggerRenderer = new LoggerRenderer();
+
     private TableCellRenderer valueRenderer = new ValueRenderer();
+
     private TableCellRenderer pixelRenderer = new PixelRenderer();
-    private JComboBox<String> loggerCombo = new JComboBox<String>();
-    private TableCellEditor   loggerEditor = new DefaultCellEditor(loggerCombo);
+
+    private JComboBox<String> loggerCombo = new JComboBox<>();
+
+    private TableCellEditor loggerEditor = new DefaultCellEditor(loggerCombo);
 
     //~ Constructors -----------------------------------------------------------
-
     //---------------//
     // UnitTreeTable //
     //---------------//
     /**
      * Create a User Interface JTreeTable dedicated to the handling of unit
      * constants and loggers.
-     *
+     * <p/>
      * @param model the corresponding data model
      */
     public UnitTreeTable (UnitModel model)
@@ -104,7 +106,6 @@ public class UnitTreeTable
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------------//
     // getCellEditor //
     //---------------//
@@ -115,40 +116,39 @@ public class UnitTreeTable
         UnitModel.Column column = UnitModel.Column.values()[col];
 
         switch (column) {
-        case LOGMOD : {
-            Object node = nodeForRow(row);
+            case LOGMOD: {
+                Object node = nodeForRow(row);
 
-            if (node instanceof UnitNode) { // LOGGER
+                if (node instanceof UnitNode) { // LOGGER
 
-                UnitNode unit = (UnitNode) node;
-                Logger   logger = unit.getLogger();
+                    UnitNode unit = (UnitNode) node;
+                    Logger unitLogger = unit.getLogger();
 
-                if (logger != null) {
-                    Level level = logger.getEffectiveLevel();
-                    loggerCombo.setSelectedItem(level.toString());
+                    if (unitLogger != null) {
+                        Level level = unitLogger.getEffectiveLevel();
+                        loggerCombo.setSelectedItem(level.toString());
 
-                    return loggerEditor;
+                        return loggerEditor;
+                    }
+                } else if (node instanceof Constant) { // MODIF
+
+                    return getDefaultEditor(Boolean.class);
                 }
-            } else if (node instanceof Constant) { // MODIF
-
-                return getDefaultEditor(Boolean.class);
             }
-        }
 
-        break;
+            break;
 
-        case VALUE : {
-            Object obj = getModel()
-                             .getValueAt(row, col);
+            case VALUE: {
+                Object obj = getModel().getValueAt(row, col);
 
-            if (obj instanceof Boolean) {
-                return getDefaultEditor(Boolean.class);
+                if (obj instanceof Boolean) {
+                    return getDefaultEditor(Boolean.class);
+                }
             }
-        }
 
-        break;
+            break;
 
-        default :
+            default:
         }
 
         // Default cell editor (determined by column class)
@@ -163,10 +163,10 @@ public class UnitTreeTable
      * table. For the 'MODIF' column for example, we are able to differentiate
      * rows for Constant (where this Modif flag makes sense) from any other row
      * where Modif is irrelevant and thus left totally blank.
-     *
+     * <p/>
      * @param row row in the table
      * @param col column in the table
-     *
+     * <p/>
      * @return the best renderer for the cell.
      */
     @Override
@@ -176,38 +176,36 @@ public class UnitTreeTable
         UnitModel.Column column = UnitModel.Column.values()[col];
 
         switch (column) {
-        case LOGMOD : {
-            Object obj = getModel()
-                             .getValueAt(row, col);
+            case LOGMOD: {
+                Object obj = getModel().getValueAt(row, col);
 
-            if (obj instanceof Boolean) {
-                // A constant => Modif flag
-                return getDefaultRenderer(Boolean.class);
-            } else if (obj instanceof Level) {
-                // A logger level
-                return loggerRenderer;
-            } else {
-                // A node (unit or package)
-                return getDefaultRenderer(Object.class);
+                if (obj instanceof Boolean) {
+                    // A constant => Modif flag
+                    return getDefaultRenderer(Boolean.class);
+                } else if (obj instanceof Level) {
+                    // A logger level
+                    return loggerRenderer;
+                } else {
+                    // A node (unit or package)
+                    return getDefaultRenderer(Object.class);
+                }
             }
-        }
 
-        case VALUE : {
-            Object obj = getModel()
-                             .getValueAt(row, col);
+            case VALUE: {
+                Object obj = getModel().getValueAt(row, col);
 
-            if (obj instanceof Boolean) {
-                return getDefaultRenderer(Boolean.class);
-            } else {
-                return valueRenderer;
+                if (obj instanceof Boolean) {
+                    return getDefaultRenderer(Boolean.class);
+                } else {
+                    return valueRenderer;
+                }
             }
-        }
 
-        case PIXEL :
-            return pixelRenderer;
+            case PIXEL:
+                return pixelRenderer;
 
-        default :
-            return getDefaultRenderer(getColumnClass(col));
+            default:
+                return getDefaultRenderer(getColumnClass(col));
         }
     }
 
@@ -243,7 +241,7 @@ public class UnitTreeTable
      */
     public List<Integer> setNodesSelection (Collection<Object> matches)
     {
-        List<TreePath> paths = new ArrayList<TreePath>();
+        List<TreePath> paths = new ArrayList<>();
 
         for (Object object : matches) {
             if (object instanceof Constant) {
@@ -251,7 +249,7 @@ public class UnitTreeTable
                 TreePath path = getPath(constant, constant.getQualifiedName());
                 paths.add(path);
             } else if (object instanceof Node) {
-                Node     node = (Node) object;
+                Node node = (Node) object;
                 TreePath path = getPath(node, node.getName());
                 paths.add(path);
             }
@@ -263,7 +261,7 @@ public class UnitTreeTable
         // Selection on table side
         clearSelection();
 
-        List<Integer> rows = new ArrayList<Integer>();
+        List<Integer> rows = new ArrayList<>();
 
         for (TreePath path : paths) {
             int row = tree.getRowForPath(path);
@@ -284,7 +282,7 @@ public class UnitTreeTable
     //---------------//
     /**
      * Allows to adjust the related columnModel, for each and every column
-     *
+     * <p/>
      * @param cModel the proper table column model
      */
     private void adjustColumns ()
@@ -293,8 +291,7 @@ public class UnitTreeTable
 
         // Columns widths
         for (UnitModel.Column c : UnitModel.Column.values()) {
-            cModel.getColumn(c.ordinal())
-                  .setPreferredWidth(c.width);
+            cModel.getColumn(c.ordinal()).setPreferredWidth(c.width);
         }
     }
 
@@ -304,8 +301,8 @@ public class UnitTreeTable
     private TreePath getPath (Object object,
                               String fullName)
     {
-        UnitManager  unitManager = UnitManager.getInstance();
-        List<Object> objects = new ArrayList<Object>();
+        UnitManager unitManager = UnitManager.getInstance();
+        List<Object> objects = new ArrayList<>();
         objects.add(unitManager.getRoot());
 
         int dotPos = -1;
@@ -317,9 +314,7 @@ public class UnitTreeTable
 
         objects.add(object);
 
-        if (logger.isFineEnabled()) {
-            logger.fine("path to " + fullName + " objects:" + objects);
-        }
+        logger.fine("path to {0} objects:{1}", new Object[]{fullName, objects});
 
         return new TreePath(objects.toArray());
     }
@@ -354,36 +349,35 @@ public class UnitTreeTable
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //----------------//
     // LoggerRenderer //
     //----------------//
     private class LoggerRenderer
-        extends DefaultTableCellRenderer
+            extends DefaultTableCellRenderer
     {
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public Component getTableCellRendererComponent (JTable  table,
-                                                        Object  value,
+        public Component getTableCellRendererComponent (JTable table,
+                                                        Object value,
                                                         boolean isSelected,
                                                         boolean hasFocus,
-                                                        int     row,
-                                                        int     column)
+                                                        int row,
+                                                        int column)
         {
             super.getTableCellRendererComponent(
-                table,
-                value,
-                isSelected,
-                hasFocus,
-                row,
-                column);
+                    table,
+                    value,
+                    isSelected,
+                    hasFocus,
+                    row,
+                    column);
 
             Object node = nodeForRow(row);
 
             if (node instanceof UnitNode) {
                 UnitNode unit = (UnitNode) nodeForRow(row);
-                Logger   logger = unit.getLogger();
+                Logger logger = unit.getLogger();
 
                 if (logger != null) {
                     Level level = logger.getEffectiveLevel();
@@ -408,25 +402,25 @@ public class UnitTreeTable
     // PixelRenderer //
     //---------------//
     private class PixelRenderer
-        extends DefaultTableCellRenderer
+            extends DefaultTableCellRenderer
     {
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public Component getTableCellRendererComponent (JTable  table,
-                                                        Object  value,
+        public Component getTableCellRendererComponent (JTable table,
+                                                        Object value,
                                                         boolean isSelected,
                                                         boolean hasFocus,
-                                                        int     row,
-                                                        int     column)
+                                                        int row,
+                                                        int column)
         {
             super.getTableCellRendererComponent(
-                table,
-                value,
-                isSelected,
-                hasFocus,
-                row,
-                column);
+                    table,
+                    value,
+                    isSelected,
+                    hasFocus,
+                    row,
+                    column);
 
             // Use right alignment
             setHorizontalAlignment(SwingConstants.RIGHT);
@@ -439,25 +433,25 @@ public class UnitTreeTable
     // ValueRenderer //
     //---------------//
     private class ValueRenderer
-        extends DefaultTableCellRenderer
+            extends DefaultTableCellRenderer
     {
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public Component getTableCellRendererComponent (JTable  table,
-                                                        Object  value,
+        public Component getTableCellRendererComponent (JTable table,
+                                                        Object value,
                                                         boolean isSelected,
                                                         boolean hasFocus,
-                                                        int     row,
-                                                        int     column)
+                                                        int row,
+                                                        int column)
         {
             super.getTableCellRendererComponent(
-                table,
-                value,
-                isSelected,
-                hasFocus,
-                row,
-                column);
+                    table,
+                    value,
+                    isSelected,
+                    hasFocus,
+                    row,
+                    column);
 
             // Use a bold font
             setFont(table.getFont().deriveFont(Font.BOLD).deriveFont(12.0f));

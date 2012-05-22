@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -29,6 +29,7 @@ import omr.util.TreeNode;
 
 import java.awt.image.RenderedImage;
 import java.util.List;
+import java.util.logging.Level;
 
 /**
  * Class {@code Page} represents a page in the score hierarchy,
@@ -100,6 +101,18 @@ public class Page
 
     //~ Methods ----------------------------------------------------------------
 
+    //-------------------//
+    // getMinSlotSpacing //
+    //-------------------//
+    /**
+     * Report the minimum acceptable spacing between slots.
+     * @return the minimum spacing (in interline fraction)
+     */
+    public static Scale.Fraction getMinSlotSpacing ()
+    {
+        return constants.minSlotSpacing;
+    }
+
     //--------//
     // accept //
     //--------//
@@ -149,8 +162,8 @@ public class Page
             }
 
             sb.append(part.getMeasures().size())
-              .append(" in S#")
-              .append(sys.getId());
+              .append(" in ")
+              .append(sys.getInfo().idString());
             count += part.getMeasures()
                          .size();
         }
@@ -167,7 +180,7 @@ public class Page
            .append(sb)
            .append("]");
 
-        logger.info(sheet.getLogPrefix() + msg.toString());
+        logger.info("{0}{1}", new Object[]{sheet.getLogPrefix(), msg.toString()});
     }
 
     //-------------------//
@@ -271,18 +284,6 @@ public class Page
     public int getMeasureCount ()
     {
         return measureCount;
-    }
-
-    //-------------------//
-    // getMinSlotSpacing //
-    //-------------------//
-    /**
-     * Report the minimum acceptable spacing between slots.
-     * @return the minimum spacing (in interline fraction)
-     */
-    public static Scale.Fraction getMinSlotSpacing ()
-    {
-        return constants.minSlotSpacing;
     }
 
     //-------------//

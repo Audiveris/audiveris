@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -15,7 +15,7 @@ import omr.Main;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
-import static omr.glyph.Shape.*;
+
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -45,7 +45,7 @@ import javax.xml.bind.JAXBException;
  * @author Hervé Bitteur
  */
 public class GlyphRegression
-    extends AbstractEvaluationEngine
+        extends AbstractEvaluationEngine
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -54,7 +54,7 @@ public class GlyphRegression
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
-        GlyphRegression.class);
+            GlyphRegression.class);
 
     /** LinearEvaluator backup file name */
     private static final String BACKUP_FILE_NAME = "linear-evaluator.xml";
@@ -63,16 +63,14 @@ public class GlyphRegression
     private static volatile GlyphRegression INSTANCE;
 
     //~ Instance fields --------------------------------------------------------
-
     /** The encapsulated linear evaluator */
     private LinearEvaluator engine;
 
     /** The constraints (minimum, maximum) per shape & per parameter */
-    private EnumMap<Shape, Range[]> constraintMap = new EnumMap<Shape, Range[]>(
-        Shape.class);
+    private EnumMap<Shape, Range[]> constraintMap = new EnumMap<>(
+            Shape.class);
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------------//
     // GlyphRegression //
     //-----------------//
@@ -87,8 +85,8 @@ public class GlyphRegression
         // Basic check
         if (engine != null) {
             if (engine.getInputSize() != ShapeDescription.length()) {
-                final String msg = "Linear Evaluator data is obsolete," +
-                                   " it must be retrained from scratch";
+                final String msg = "Linear Evaluator data is obsolete,"
+                        + " it must be retrained from scratch";
                 logger.warning(msg);
                 JOptionPane.showMessageDialog(null, msg);
 
@@ -111,9 +109,10 @@ public class GlyphRegression
 
         // Listen to application exit
         if (Main.getGui() != null) {
-            Main.getGui()
-                .addExitListener(
-                new ExitListener() {
+            Main.getGui().addExitListener(
+                    new ExitListener()
+                    {
+
                         @Override
                         public boolean canExit (EventObject eo)
                         {
@@ -132,53 +131,29 @@ public class GlyphRegression
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Provide access to the single instance of GlyphRegression for the
-     * application
-     *
-     * @return the GlyphRegression instance
-     */
-    public static GlyphRegression getInstance ()
-    {
-        if (INSTANCE == null) {
-            synchronized (GlyphRegression.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = new GlyphRegression();
-                }
-            }
-        }
-
-        return INSTANCE;
-    }
-
-    //--------------------//
-    // constraintsMatched //
-    //--------------------//
-    /**
-     * Check that all the (non-disabled) constraints matched between a
-     * given glyph and a shape
-     * @param params the glyph features
-     * @param eval   the evaluation context to update
-     * @return true if matched, false otherwise
-     */
-    public boolean constraintsMatched (double[]   params,
-                                       Evaluation eval)
-    {
-        String failed = firstMisMatched(params, eval.shape);
-
-        if (failed != null) {
-            eval.failure = new Evaluation.Failure(failed);
-
-            return false;
-        } else {
-            return true;
-        }
-    }
-
+    //    //--------------------//
+    //    // constraintsMatched //
+    //    //--------------------//
+    //    /**
+    //     * Check that all the (non-disabled) constraints matched between a
+    //     * given glyph and a shape
+    //     * @param params the glyph features
+    //     * @param eval   the evaluation context to update
+    //     * @return true if matched, false otherwise
+    //     */
+    //    public boolean constraintsMatched (double[]   params,
+    //                                       Evaluation eval)
+    //    {
+    //        String failed = firstMisMatched(params, eval.shape);
+    //
+    //        if (failed != null) {
+    //            eval.failure = new Evaluation.Failure(failed);
+    //
+    //            return false;
+    //        } else {
+    //            return true;
+    //        }
+    //    }
     //------//
     // dump //
     //------//
@@ -212,7 +187,7 @@ public class GlyphRegression
         System.out.print("Constraints for " + shape + ": ");
 
         String[] labels = ShapeDescription.getParameterLabels();
-        Range[]  ranges = constraintMap.get(shape);
+        Range[] ranges = constraintMap.get(shape);
 
         if (ranges == null) {
             System.out.println("none");
@@ -221,21 +196,19 @@ public class GlyphRegression
 
             for (int p = 0; p < ShapeDescription.length(); p++) {
                 StringBuilder sb = new StringBuilder();
-                Range         range = ranges[p];
+                Range range = ranges[p];
 
                 if (range != null) {
                     Double min = range.min;
 
                     if (min != null) {
-                        sb.append(" min=")
-                          .append(min);
+                        sb.append(" min=").append(min);
                     }
 
                     Double max = range.max;
 
                     if (max != null) {
-                        sb.append(" max=")
-                          .append(max);
+                        sb.append(" max=").append(max);
                     }
                 }
 
@@ -257,17 +230,40 @@ public class GlyphRegression
         return engine;
     }
 
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Provide access to the single instance of GlyphRegression for the
+     * application
+     *
+     * @return the GlyphRegression instance
+     */
+    public static GlyphRegression getInstance ()
+    {
+        if (INSTANCE == null) {
+            synchronized (GlyphRegression.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new GlyphRegression();
+                }
+            }
+        }
+
+        return INSTANCE;
+    }
+
     //------------//
     // getMaximum //
     //------------//
     /**
      * Get the constraint test on maximum for a parameter of the
      * provided shape.
+     *
      * @param paramIndex the impacted parameter
      * @param shape      the targeted shape
      * @return the current maximum value (null if test is disabled)
      */
-    public Double getMaximum (int   paramIndex,
+    public Double getMaximum (int paramIndex,
                               Shape shape)
     {
         Range[] ranges = constraintMap.get(shape);
@@ -287,11 +283,12 @@ public class GlyphRegression
     /**
      * Get the constraint test on minimum for a parameter of the
      * provided shape.
+     *
      * @param paramIndex the impacted parameter
      * @param shape      the targeted shape
      * @return the current minimum value (null if test is disabled)
      */
-    public Double getMinimum (int   paramIndex,
+    public Double getMinimum (int paramIndex,
                               Shape shape)
     {
         Range[] ranges = constraintMap.get(shape);
@@ -320,12 +317,13 @@ public class GlyphRegression
     /**
      * Take into account the observed parameters for the provided shape,
      * and relax the related constraints if needed.
+     *
      * @param params the observed input parameters
      * @param shape  the provided shape
      * @return true if constraints have been extended
      */
     public boolean includeSample (double[] params,
-                                  Shape    shape)
+                                  Shape shape)
     {
         // Include this observation
         boolean extended = engine.includeSample(params, shape.toString());
@@ -344,6 +342,7 @@ public class GlyphRegression
     /**
      * Measure the "distance" information between a given glyph and a
      * shape.
+     *
      * @param glyph the glyph at hand
      * @param shape the shape to measure distance from
      * @return the measured distance
@@ -352,8 +351,8 @@ public class GlyphRegression
                                    Shape shape)
     {
         return engine.categoryDistance(
-            ShapeDescription.features(glyph),
-            shape.toString());
+                ShapeDescription.features(glyph),
+                shape.toString());
     }
 
     //-----------------//
@@ -362,12 +361,13 @@ public class GlyphRegression
     /**
      * Measure the "distance" information between a given glyph and a
      * shape.
+     *
      * @param ins   the input parameters
      * @param shape the shape to measure distance from
      * @return the measured distance
      */
     public double measureDistance (double[] ins,
-                                   Shape    shape)
+                                   Shape shape)
     {
         return engine.categoryDistance(ins, shape.toString());
     }
@@ -377,6 +377,7 @@ public class GlyphRegression
     //-----------------//
     /**
      * Measure the "distance" information between two glyphs.
+     *
      * @param one the first glyph
      * @param two the second glyph
      * @return the measured distance
@@ -393,11 +394,12 @@ public class GlyphRegression
     /**
      * Measure the "distance" information between a glyph and an array
      * of parameters (generally fed from another glyph).
+     *
      * @param glyph the given glyph
      * @param ins   the array (size = paramCount) of parameters
      * @return the measured distance
      */
-    public double measureDistance (Glyph    glyph,
+    public double measureDistance (Glyph glyph,
                                    double[] ins)
     {
         return engine.patternDistance(ShapeDescription.features(glyph), ins);
@@ -409,12 +411,13 @@ public class GlyphRegression
     /**
      * Set the constraint test on maximum for a parameter of the
      * provided shape.
+     *
      * @param paramIndex the impacted parameter
      * @param shape      the targeted shape
      * @param val        the new maximum value (null for disabling the test)
      */
-    public void setMaximum (int    paramIndex,
-                            Shape  shape,
+    public void setMaximum (int paramIndex,
+                            Shape shape,
                             Double val)
     {
         doGetRange(paramIndex, shape).max = val;
@@ -426,12 +429,13 @@ public class GlyphRegression
     /**
      * Set the constraint test on minimum for a parameter of the
      * provided shape.
+     *
      * @param paramIndex the impacted parameter
      * @param shape      the targeted shape
      * @param val        the new minimum value (null for disabling the test)
      */
-    public void setMinimum (int    paramIndex,
-                            Shape  shape,
+    public void setMinimum (int paramIndex,
+                            Shape shape,
                             Double val)
     {
         doGetRange(paramIndex, shape).min = val;
@@ -442,14 +446,15 @@ public class GlyphRegression
     //-------//
     /**
      * Launch the training of the evaluator.
+     *
      * @param base    the collection of glyphs used for training
      * @param monitor a monitoring entity
      * @param mode    incremental or scratch mode
      */
     @Override
     public void train (Collection<Glyph> base,
-                       Monitor           monitor,
-                       StartingMode      mode)
+                       Monitor monitor,
+                       StartingMode mode)
     {
         if (base.isEmpty()) {
             logger.warning("No glyph to retrain Regression Evaluator");
@@ -458,20 +463,20 @@ public class GlyphRegression
         }
 
         // Prepare the collection of samples
-        Collection<Sample> samples = new ArrayList<Sample>();
+        Collection<Sample> samples = new ArrayList<>();
 
         for (Glyph glyph : base) {
             try {
-                Shape  shape = glyph.getShape();
+                Shape shape = glyph.getShape();
                 Sample sample = new Sample(
-                    shape.toString(),
-                    ShapeDescription.features(glyph));
+                        shape.toString(),
+                        ShapeDescription.features(glyph));
                 samples.add(sample);
             } catch (Exception ex) {
                 logger.warning(
-                    "Weird glyph shape: " + glyph.getShape() + " file=" +
-                    GlyphRepository.getInstance().getGlyphName(glyph),
-                    ex);
+                        "Weird glyph shape: " + glyph.getShape() + " file="
+                        + GlyphRepository.getInstance().getGlyphName(glyph),
+                        ex);
             }
         }
 
@@ -501,15 +506,15 @@ public class GlyphRegression
         if (!isBigEnough(glyph)) {
             return noiseEvaluations;
         } else {
-            double[]     ins = ShapeDescription.features(glyph);
+            double[] ins = ShapeDescription.features(glyph);
             Evaluation[] evals = new Evaluation[shapeCount];
-            Shape[]      values = Shape.values();
+            Shape[] values = Shape.values();
 
             for (int s = 0; s < shapeCount; s++) {
                 Shape shape = values[s];
                 evals[s] = new Evaluation(
-                    shape,
-                    1d / measureDistance(ins, shape));
+                        shape,
+                        1d / measureDistance(ins, shape));
             }
 
             // Order the evals from best to worst
@@ -524,7 +529,7 @@ public class GlyphRegression
     //---------//
     @Override
     protected void marshal (OutputStream os)
-        throws FileNotFoundException, IOException, JAXBException
+            throws FileNotFoundException, IOException, JAXBException
     {
         engine.marshal(os);
     }
@@ -534,7 +539,7 @@ public class GlyphRegression
     //-----------//
     @Override
     protected LinearEvaluator unmarshal (InputStream is)
-        throws JAXBException
+            throws JAXBException
     {
         return LinearEvaluator.unmarshal(is);
     }
@@ -559,138 +564,139 @@ public class GlyphRegression
     /**
      * Here we customize the constraints to our specific needs, by
      * removing some constraint checks and relaxing others.
+     *
      * @param shape the shape at hand
      */
     private void defineOneShapeConstraints (Shape shape)
     {
-        // First, use LinearEvaluator observed constraints
-        for (int p = 0; p < ShapeDescription.length(); p++) {
-            setMinimum(p, shape, engine.getMinimum(p, shape.name()));
-            setMaximum(p, shape, engine.getMaximum(p, shape.name()));
-        }
-
-        // Second, relax some constraints
-        // Add some margin around constraints
-        double minFactor = constants.factorForMinima.getValue();
-        double maxFactor = constants.factorForMaxima.getValue();
-
-        for (String label : Arrays.asList("weight", "width", "height")) {
-            int    p = ShapeDescription.getParameterIndex(label);
-            Double val = getMinimum(p, shape);
-
-            if (val != null) {
-                if (val > 0) {
-                    setMinimum(p, shape, val * minFactor);
-                } else {
-                    setMinimum(p, shape, val * maxFactor);
-                }
-            }
-
-            val = getMaximum(p, shape);
-
-            if (val != null) {
-                if (val > 0) {
-                    setMaximum(p, shape, val * maxFactor);
-                } else {
-                    setMaximum(p, shape, val * minFactor);
-                }
-            }
-        }
-
-        // Disable some selected features
-        for (String label : Arrays.asList(
-            "ledger",
-            "n11",
-            "n20",
-            "n02",
-            "n30",
-            "n21",
-            "n12",
-            "n03",
-            "aspect")) {
-            int p = ShapeDescription.getParameterIndex(label);
-            setMinimum(p, shape, null);
-            setMaximum(p, shape, null);
-        }
-
-        // Keep "stemNb" exactly as it is, with no margin
-
-        // Third, remove some constraints
-        switch (shape) {
-        case TEXT :
-            disableMaximum(TEXT, "weight");
-            disableMaximum(TEXT, "width");
-
-            break;
-
-        case BRACE :
-            disableMaximum(BRACE, "weight");
-            disableMaximum(BRACE, "height");
-
-            break;
-
-        case BRACKET :
-            disableMaximum(BRACKET, "weight");
-            disableMaximum(BRACKET, "height");
-
-            break;
-
-        case BEAM :
-            disableMaximum(BEAM, "weight");
-            disableMaximum(BEAM, "width");
-            disableMaximum(BEAM, "height");
-
-            break;
-
-        case BEAM_2 :
-            disableMaximum(BEAM_2, "weight");
-            disableMaximum(BEAM_2, "width");
-            disableMaximum(BEAM_2, "height");
-
-            break;
-
-        case BEAM_3 :
-            disableMaximum(BEAM_3, "weight");
-            disableMaximum(BEAM_3, "width");
-            disableMaximum(BEAM_3, "height");
-
-            break;
-
-        case SLUR :
-            disableMaximum(SLUR, "weight");
-            disableMaximum(SLUR, "width");
-            disableMaximum(SLUR, "height");
-
-            break;
-
-        case ARPEGGIATO :
-            disableMaximum(ARPEGGIATO, "weight");
-            disableMaximum(ARPEGGIATO, "height");
-
-            break;
-
-        case CRESCENDO :
-            disableMaximum(CRESCENDO, "weight");
-            disableMaximum(CRESCENDO, "width");
-            disableMaximum(CRESCENDO, "height");
-
-            break;
-
-        case DECRESCENDO :
-            disableMaximum(DECRESCENDO, "weight");
-            disableMaximum(DECRESCENDO, "width");
-            disableMaximum(DECRESCENDO, "height");
-
-            break;
-
-        default :
-        }
+        //        // First, use LinearEvaluator observed constraints
+        //        for (int p = 0; p < ShapeDescription.length(); p++) {
+        //            setMinimum(p, shape, engine.getMinimum(p, shape.name()));
+        //            setMaximum(p, shape, engine.getMaximum(p, shape.name()));
+        //        }
+        //
+        //        // Second, relax some constraints
+        //        // Add some margin around constraints
+        //        double minFactor = constants.factorForMinima.getValue();
+        //        double maxFactor = constants.factorForMaxima.getValue();
+        //
+        //        for (String label : Arrays.asList("weight", "width", "height")) {
+        //            int    p = ShapeDescription.getParameterIndex(label);
+        //            Double val = getMinimum(p, shape);
+        //
+        //            if (val != null) {
+        //                if (val > 0) {
+        //                    setMinimum(p, shape, val * minFactor);
+        //                } else {
+        //                    setMinimum(p, shape, val * maxFactor);
+        //                }
+        //            }
+        //
+        //            val = getMaximum(p, shape);
+        //
+        //            if (val != null) {
+        //                if (val > 0) {
+        //                    setMaximum(p, shape, val * maxFactor);
+        //                } else {
+        //                    setMaximum(p, shape, val * minFactor);
+        //                }
+        //            }
+        //        }
+        //
+        //        // Disable some selected features
+        //        for (String label : Arrays.asList(
+        //            "ledger",
+        //            "n11",
+        //            "n20",
+        //            "n02",
+        //            "n30",
+        //            "n21",
+        //            "n12",
+        //            "n03",
+        //            "aspect")) {
+        //            int p = ShapeDescription.getParameterIndex(label);
+        //            setMinimum(p, shape, null);
+        //            setMaximum(p, shape, null);
+        //        }
+        //
+        //        // Keep "stemNb" exactly as it is, with no margin
+        //
+        //        // Third, remove some constraints
+        //        switch (shape) {
+        //        case TEXT :
+        //            disableMaximum(TEXT, "weight");
+        //            disableMaximum(TEXT, "width");
+        //
+        //            break;
+        //
+        //        case BRACE :
+        //            disableMaximum(BRACE, "weight");
+        //            disableMaximum(BRACE, "height");
+        //
+        //            break;
+        //
+        //        case BRACKET :
+        //            disableMaximum(BRACKET, "weight");
+        //            disableMaximum(BRACKET, "height");
+        //
+        //            break;
+        //
+        //        case BEAM :
+        //            disableMaximum(BEAM, "weight");
+        //            disableMaximum(BEAM, "width");
+        //            disableMaximum(BEAM, "height");
+        //
+        //            break;
+        //
+        //        case BEAM_2 :
+        //            disableMaximum(BEAM_2, "weight");
+        //            disableMaximum(BEAM_2, "width");
+        //            disableMaximum(BEAM_2, "height");
+        //
+        //            break;
+        //
+        //        case BEAM_3 :
+        //            disableMaximum(BEAM_3, "weight");
+        //            disableMaximum(BEAM_3, "width");
+        //            disableMaximum(BEAM_3, "height");
+        //
+        //            break;
+        //
+        //        case SLUR :
+        //            disableMaximum(SLUR, "weight");
+        //            disableMaximum(SLUR, "width");
+        //            disableMaximum(SLUR, "height");
+        //
+        //            break;
+        //
+        //        case ARPEGGIATO :
+        //            disableMaximum(ARPEGGIATO, "weight");
+        //            disableMaximum(ARPEGGIATO, "height");
+        //
+        //            break;
+        //
+        //        case CRESCENDO :
+        //            disableMaximum(CRESCENDO, "weight");
+        //            disableMaximum(CRESCENDO, "width");
+        //            disableMaximum(CRESCENDO, "height");
+        //
+        //            break;
+        //
+        //        case DECRESCENDO :
+        //            disableMaximum(DECRESCENDO, "weight");
+        //            disableMaximum(DECRESCENDO, "width");
+        //            disableMaximum(DECRESCENDO, "height");
+        //
+        //            break;
+        //
+        //        default :
+        //        }
     }
 
     //----------------//
     // disableMaximum //
     //----------------//
-    private void disableMaximum (Shape  shape,
+    private void disableMaximum (Shape shape,
                                  String paramLabel)
     {
         setMaximum(ShapeDescription.getParameterIndex(paramLabel), shape, null);
@@ -699,7 +705,7 @@ public class GlyphRegression
     //----------------//
     // disableMinimum //
     //----------------//
-    private void disableMinimum (Shape  shape,
+    private void disableMinimum (Shape shape,
                                  String paramLabel)
     {
         setMinimum(ShapeDescription.getParameterIndex(paramLabel), shape, null);
@@ -711,11 +717,12 @@ public class GlyphRegression
     /**
      * Retrieve (and create if necessary) the range entity that
      * corresponds to parameter of paramIndex for the provided shape.
+     *
      * @param paramIndex parameter reference
      * @param shape      provided shape
      * @return the desired range entity
      */
-    private Range doGetRange (int   paramIndex,
+    private Range doGetRange (int paramIndex,
                               Shape shape)
     {
         Range[] ranges = constraintMap.get(shape);
@@ -740,16 +747,17 @@ public class GlyphRegression
     /**
      * Perform a basic check on max / min bounds, if any, for each
      * parameter value of the provided pattern.
+     *
      * @param pattern the collection of parameters to check with respect to
      * targeted shape
      * @param shape   the targeted shape
      * @return the name of the first failing check, null otherwise
      */
     private String firstMisMatched (double[] pattern,
-                                    Shape    shape)
+                                    Shape shape)
     {
         String[] labels = ShapeDescription.getParameterLabels();
-        Range[]  ranges = constraintMap.get(shape);
+        Range[] ranges = constraintMap.get(shape);
 
         if (ranges == null) {
             return null; // No test => OK
@@ -758,7 +766,7 @@ public class GlyphRegression
         for (int p = 0; p < ShapeDescription.length(); p++) {
             String label = labels[p];
             double val = pattern[p];
-            Range  range = ranges[p];
+            Range range = ranges[p];
 
             if (range == null) {
                 continue;
@@ -767,24 +775,16 @@ public class GlyphRegression
             Double min = range.min;
 
             if ((min != null) && (val < min)) {
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        shape + " failed on minimum for " + label + " " + val +
-                        " < " + min);
-                }
-
+                logger.fine("{0} failed on minimum for {1} {2} < {3}",
+                            new Object[]{shape, label, val, min});
                 return label + ".min";
             }
 
             Double max = range.max;
 
             if ((max != null) && (val > max)) {
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        shape + " failed on maximum for " + label + " " + val +
-                        " > " + max);
-                }
-
+                logger.fine("{0} failed on maximum for {1} {2} > {3}",
+                            new Object[]{shape, label, val, max});
                 return label + ".max";
             }
         }
@@ -794,7 +794,6 @@ public class GlyphRegression
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-------//
     // Range //
     //-------//
@@ -813,17 +812,18 @@ public class GlyphRegression
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Constant.Double factorForMinima = new Constant.Double(
-            "factor",
-            0.7,
-            "Factor applied to all minimum constraints");
+                "factor",
+                0.7,
+                "Factor applied to all minimum constraints");
+
         Constant.Double factorForMaxima = new Constant.Double(
-            "factor",
-            1.3,
-            "Factor applied to all maximum constraints");
+                "factor",
+                1.3,
+                "Factor applied to all maximum constraints");
     }
 }

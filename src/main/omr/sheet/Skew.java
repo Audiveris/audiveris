@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -42,7 +42,6 @@ public class Skew
 
     /**
      * Creates a new Skew object.
-     *
      * @param slope the sheet global slope
      * @param sheet the related sheet
      */
@@ -85,9 +84,8 @@ public class Skew
     // deskewed //
     //----------//
     /**
-     * Apply rotation OPPOSITE to the measured global angle and use the new
-     * sheet origin
-     *
+     * Apply rotation OPPOSITE to the measured global angle and use the
+     * new sheet origin.
      * @param point the initial (skewed) point
      * @return the deskewed point
      */
@@ -100,8 +98,7 @@ public class Skew
     // getAngle //
     //----------//
     /**
-     * Report the skew angle
-     *
+     * Report the skew angle.
      * @return the angle value, expressed in radians
      */
     public double getAngle ()

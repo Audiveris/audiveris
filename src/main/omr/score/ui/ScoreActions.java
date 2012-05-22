@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -21,8 +21,6 @@ import omr.log.Logger;
 import omr.score.Score;
 import omr.score.ScoresManager;
 import omr.score.entity.ScorePart;
-import omr.score.midi.MidiAgent;
-import omr.score.midi.MidiAgentFactory;
 
 import omr.sheet.Sheet;
 import omr.sheet.ui.SheetsController;
@@ -44,6 +42,7 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.logging.Level;
 
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
@@ -141,18 +140,18 @@ public class ScoreActions
         Score score = ScoreController.getCurrentScore();
 
         if (parametersAreConfirmed(score)) {
-            // Invalidate the midi sequence?
-            try {
-                if (MidiAgentFactory.hasAgent()) {
-                    MidiAgent agent = MidiAgentFactory.getAgent();
-
-                    if ((agent.getScore() == score) && (score != null)) {
-                        agent.reset();
-                    }
-                }
-            } catch (Exception ex) {
-                logger.warning("Cannot reset Midi sequence", ex);
-            }
+            //            // Invalidate the midi sequence?
+            //            try {
+            //                if (MidiAgentFactory.hasAgent()) {
+            //                    MidiAgent agent = MidiAgentFactory.getAgent();
+            //
+            //                    if ((agent.getScore() == score) && (score != null)) {
+            //                        agent.reset();
+            //                    }
+            //                }
+            //            } catch (Exception ex) {
+            //                logger.warning("Cannot reset Midi sequence", ex);
+            //            }
         }
     }
 
@@ -307,8 +306,7 @@ public class ScoreActions
     @Action(selectedProperty = MANUAL_PERSISTED)
     public void togglePersist (ActionEvent e)
     {
-        logger.info(
-            "Persistency mode is " + (isManualPersisted() ? "on" : "off"));
+        logger.info("Persistency mode is {0}", (isManualPersisted() ? "on" : "off"));
     }
 
     //---------------//

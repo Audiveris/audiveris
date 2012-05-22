@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -53,8 +53,9 @@ import java.util.TreeMap;
 
 /**
  * Class {@code ClustersRetriever} performs vertical samplings of the
- * horizontal filaments in order to detect regular patterns of a preferred
- * interline value and aggregate the filaments into clusters of lines.
+ * horizontal filaments in order to detect regular patterns of a
+ * preferred interline value and aggregate the filaments into clusters
+ * of lines.
  *
  * @author Hervé Bitteur
  */
@@ -67,41 +68,48 @@ public class ClustersRetriever
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
-        ClustersRetriever.class);
+            ClustersRetriever.class);
 
     /**
      * For comparing Filament instances on their starting point
      */
-    private static final Comparator<Filament> startComparator = new Comparator<Filament>() {
+    private static final Comparator<Filament> startComparator = new Comparator<Filament>()
+    {
+
+        @Override
         public int compare (Filament f1,
                             Filament f2)
         {
             // Sort on start
             return Double.compare(
-                f1.getStartPoint(HORIZONTAL).getX(),
-                f2.getStartPoint(HORIZONTAL).getX());
+                    f1.getStartPoint(HORIZONTAL).getX(),
+                    f2.getStartPoint(HORIZONTAL).getX());
         }
     };
 
     /**
      * For comparing Filament instances on their stopping point
      */
-    private static final Comparator<Filament> stopComparator = new Comparator<Filament>() {
+    private static final Comparator<Filament> stopComparator = new Comparator<Filament>()
+    {
+
+        @Override
         public int compare (Filament f1,
                             Filament f2)
         {
             // Sort on stop
             return Double.compare(
-                f1.getStopPoint(HORIZONTAL).getX(),
-                f2.getStopPoint(HORIZONTAL).getX());
+                    f1.getStopPoint(HORIZONTAL).getX(),
+                    f2.getStopPoint(HORIZONTAL).getX());
         }
     };
 
-
     //~ Instance fields --------------------------------------------------------
-
     /** Comparator on cluster ordinate */
-    public Comparator<LineCluster> ordinateComparator = new Comparator<LineCluster>() {
+    public Comparator<LineCluster> ordinateComparator = new Comparator<LineCluster>()
+    {
+
+        @Override
         public int compare (LineCluster c1,
                             LineCluster c2)
         {
@@ -139,7 +147,7 @@ public class ClustersRetriever
     private final List<LineFilament> filaments;
 
     /** Filaments discarded */
-    private final List<LineFilament> discardedFilaments = new ArrayList<LineFilament>();
+    private final List<LineFilament> discardedFilaments = new ArrayList<>();
 
     /** Skew of the sheet */
     private final Skew skew;
@@ -160,25 +168,25 @@ public class ClustersRetriever
     private int[] colX;
 
     /** Collection of clusters */
-    private final List<LineCluster> clusters = new ArrayList<LineCluster>();
+    private final List<LineCluster> clusters = new ArrayList<>();
 
     //~ Constructors -----------------------------------------------------------
-
     //-------------------//
     // ClustersRetriever //
     //-------------------//
     /**
-     * Creates a new ClustersRetriever object, for a given staff interline.
+     * Creates a new ClustersRetriever object, for a given staff
+     * interline.
      *
-     * @param sheet the sheet to process
+     * @param sheet     the sheet to process
      * @param filaments the current collection of filaments
      * @param interline the precise interline to be processed
      * @param combColor color to be used for combs display
      */
-    public ClustersRetriever (Sheet              sheet,
+    public ClustersRetriever (Sheet sheet,
                               List<LineFilament> filaments,
-                              int                interline,
-                              Color              combColor)
+                              int interline,
+                              Color combColor)
     {
         this.sheet = sheet;
         this.filaments = filaments;
@@ -188,13 +196,12 @@ public class ClustersRetriever
         skew = sheet.getSkew();
         pictureWidth = sheet.getWidth();
         scale = sheet.getScale();
-        colCombs = new TreeMap<Integer, List<FilamentComb>>();
+        colCombs = new TreeMap<>();
 
         params = new Parameters(scale);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // buildInfo //
     //-----------//
@@ -208,7 +215,7 @@ public class ClustersRetriever
 
         // Check relevance
         if ((popSize < 4) || (popSize > 6)) {
-            logger.warning("Giving up spurious line comb size: " + popSize);
+            logger.warning("Giving up spurious line comb size: {0}", popSize);
 
             return discardedFilaments;
         }
@@ -220,9 +227,9 @@ public class ClustersRetriever
         retrieveClusters();
 
         logger.info(
-            sheet.getLogPrefix() + "Retrieved line clusters: " +
-            clusters.size() + " of size: " + popSize + " with interline: " +
-            interline);
+                "{0}Retrieved line clusters: {1} of size: {2} with interline: {3}",
+                new Object[]{sheet.getLogPrefix(), clusters.size(), popSize,
+                             interline});
 
         return discardedFilaments;
     }
@@ -231,8 +238,9 @@ public class ClustersRetriever
     // getClusters //
     //-------------//
     /**
-     * Report the sequence of clusters detected by this retriever using its
-     * provided interline value.
+     * Report the sequence of clusters detected by this retriever using
+     * its provided interline value.
+     *
      * @return the sequence of interline-based clusters
      */
     public List<LineCluster> getClusters ()
@@ -245,6 +253,7 @@ public class ClustersRetriever
     //--------------//
     /**
      * Report the value of the interline this retriever is based upon
+     *
      * @return the interline value
      */
     public int getInterline ()
@@ -257,11 +266,12 @@ public class ClustersRetriever
     //--------------------//
     /**
      * Report the glyphs that are part of actual cluster lines
+     *
      * @return the collection of glyphs actually used for retained cluster
      */
     Collection<Glyph> getStafflineGlyphs ()
     {
-        List<Glyph> glyphs = new ArrayList<Glyph>();
+        List<Glyph> glyphs = new ArrayList<>();
 
         for (LineCluster cluster : clusters) {
             for (FilamentLine line : cluster.getLines()) {
@@ -277,6 +287,7 @@ public class ClustersRetriever
     //-------------//
     /**
      * Render the vertical combs of filaments
+     *
      * @param g graphics context
      */
     void renderItems (Graphics2D g)
@@ -290,7 +301,7 @@ public class ClustersRetriever
 
             for (FilamentComb comb : entry.getValue()) {
                 g.draw(
-                    new Line2D.Double(
+                        new Line2D.Double(
                         x,
                         comb.getY(0),
                         x,
@@ -305,21 +316,22 @@ public class ClustersRetriever
     // bestMatch //
     //-----------//
     /**
-     * Find the best match between provided sequences (which may contain null
-     * values when related data is not available)
-     * @param one first sequence
-     * @param two second sequence
+     * Find the best match between provided sequences.
+     * (which may contain null values when related data is not available)
+     *
+     * @param one       first sequence
+     * @param two       second sequence
      * @param bestDelta output: best delta between the two sequences
      * @return the best distance found
      */
-    private double bestMatch (Double[]         one,
-                              Double[]         two,
+    private double bestMatch (Double[] one,
+                              Double[] two,
                               Wrapper<Integer> bestDelta)
     {
         final int deltaMax = one.length - 1;
         final int deltaMin = -deltaMax;
 
-        double    bestDist = Double.MAX_VALUE;
+        double bestDist = Double.MAX_VALUE;
         bestDelta.value = null;
 
         for (int delta = deltaMin; delta <= deltaMax; delta++) {
@@ -358,70 +370,64 @@ public class ClustersRetriever
     //----------//
     /**
      * Check for merge possibility between two clusters
-     * @param one first cluster
-     * @param two second cluster
+     *
+     * @param one      first cluster
+     * @param two      second cluster
      * @param deltaPos output: the delta in positions between these clusters
      * if the test has succeeded
      * @return true if successful
      */
-    private boolean canMerge (LineCluster      one,
-                              LineCluster      two,
+    private boolean canMerge (LineCluster one,
+                              LineCluster two,
                               Wrapper<Integer> deltaPos)
     {
-        final Rectangle oneBox = one.getContourBox();
-        final Rectangle twoBox = two.getContourBox();
+        final Rectangle oneBox = one.getBounds();
+        final Rectangle twoBox = two.getBounds();
 
-        final int       oneLeft = oneBox.x;
-        final int       oneRight = (oneBox.x + oneBox.width) - 1;
-        final int       twoLeft = twoBox.x;
-        final int       twoRight = (twoBox.x + twoBox.width) - 1;
+        final int oneLeft = oneBox.x;
+        final int oneRight = (oneBox.x + oneBox.width) - 1;
+        final int twoLeft = twoBox.x;
+        final int twoRight = (twoBox.x + twoBox.width) - 1;
 
-        final int       minRight = Math.min(oneRight, twoRight);
-        final int       maxLeft = Math.max(oneLeft, twoLeft);
-        final int       gap = maxLeft - minRight;
-        double          dist;
+        final int minRight = Math.min(oneRight, twoRight);
+        final int maxLeft = Math.max(oneLeft, twoLeft);
+        final int gap = maxLeft - minRight;
+        double dist;
 
-        if (logger.isFineEnabled()) {
-            logger.fine("gap:" + gap);
-        }
+        logger.fine("gap:{0}", gap);
 
         if (gap <= 0) {
             // Overlap: use middle of common part
-            final int    xMid = (maxLeft + minRight) / 2;
-            final double slope = sheet.getSkew()
-                                      .getSlope();
+            final int xMid = (maxLeft + minRight) / 2;
+            final double slope = sheet.getSkew().getSlope();
             dist = bestMatch(
-                ordinatesOf(
+                    ordinatesOf(
                     one.getPointsAt(xMid, params.maxExpandDx, interline, slope)),
-                ordinatesOf(
+                    ordinatesOf(
                     two.getPointsAt(xMid, params.maxExpandDx, interline, slope)),
-                deltaPos);
+                    deltaPos);
         } else if (gap > params.maxMergeDx) {
-            if (logger.isFineEnabled()) {
-                logger.fine("Gap too wide between " + one + " & " + two);
-            }
+            logger.fine("Gap too wide between {0} & {1}", new Object[]{one, two});
 
             return false;
         } else {
             // True gap: use proper edges
             if (oneLeft < twoLeft) { // Case one --- two
                 dist = bestMatch(
-                    ordinatesOf(one.getStops()),
-                    ordinatesOf(two.getStarts()),
-                    deltaPos);
+                        ordinatesOf(one.getStops()),
+                        ordinatesOf(two.getStarts()),
+                        deltaPos);
             } else { // Case two --- one
                 dist = bestMatch(
-                    ordinatesOf(one.getStarts()),
-                    ordinatesOf(two.getStops()),
-                    deltaPos);
+                        ordinatesOf(one.getStarts()),
+                        ordinatesOf(two.getStops()),
+                        deltaPos);
             }
         }
 
         // Check best distance
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "canMerge dist: " + dist + " one:" + one + " two:" + two);
-        }
+        logger.fine("canMerge dist: {0} one:{1} two:{2}", new Object[]{dist, one,
+                                                                       two});
 
         return dist <= params.maxMergeDy;
     }
@@ -432,7 +438,7 @@ public class ClustersRetriever
     private double computeAcceptableLength ()
     {
         // Determine minimum true length for valid clusters
-        List<Integer> lengths = new ArrayList<Integer>();
+        List<Integer> lengths = new ArrayList<>();
 
         for (LineCluster cluster : clusters) {
             lengths.add(cluster.getTrueLength());
@@ -440,13 +446,12 @@ public class ClustersRetriever
 
         Collections.sort(lengths);
 
-        int    medianLength = lengths.get(lengths.size() / 2);
-        double minLength = medianLength * constants.minClusterLengthRatio.getValue();
+        int medianLength = lengths.get(lengths.size() / 2);
+        double minLength = medianLength * constants.minClusterLengthRatio.
+                getValue();
 
-        if (logger.isFineEnabled()) {
-            logger.info(
-                "medianLength: " + medianLength + " minLength: " + minLength);
-        }
+        logger.fine("medianLength: {0} minLength: {1}", new Object[]{
+                    medianLength, minLength});
 
         return minLength;
     }
@@ -462,16 +467,14 @@ public class ClustersRetriever
 
         if (oneAnc != twoAnc) {
             if (oneAnc.getLength(Orientation.HORIZONTAL) >= twoAnc.getLength(
-                Orientation.HORIZONTAL)) {
+                    Orientation.HORIZONTAL)) {
                 ///logger.info("Inclusion " + twoAnc + " into " + oneAnc);
                 oneAnc.include(twoAnc);
-                oneAnc.getCombs()
-                      .putAll(twoAnc.getCombs());
+                oneAnc.getCombs().putAll(twoAnc.getCombs());
             } else {
                 ///logger.info("Inclusion " + oneAnc + " into " + twoAnc);
                 twoAnc.include(oneAnc);
-                twoAnc.getCombs()
-                      .putAll(oneAnc.getCombs());
+                twoAnc.getCombs().putAll(oneAnc.getCombs());
             }
         }
     }
@@ -482,14 +485,13 @@ public class ClustersRetriever
     private void createClusters ()
     {
         Collections.sort(
-            filaments,
-            Glyphs.getReverseLengthComparator(Orientation.HORIZONTAL));
+                filaments,
+                Glyphs.getReverseLengthComparator(Orientation.HORIZONTAL));
 
         for (LineFilament fil : filaments) {
             fil = (LineFilament) fil.getAncestor();
 
-            if ((fil.getCluster() == null) && !fil.getCombs()
-                                                  .isEmpty()) {
+            if ((fil.getCluster() == null) && !fil.getCombs().isEmpty()) {
                 LineCluster cluster = new LineCluster(interline, fil);
                 clusters.add(cluster);
             }
@@ -507,9 +509,7 @@ public class ClustersRetriever
             LineCluster cluster = it.next();
 
             if (cluster.getSize() != popSize) {
-                if (logger.isFineEnabled()) {
-                    logger.info("Destroying non standard " + cluster);
-                }
+                logger.fine("Destroying non standard {0}", cluster);
 
                 cluster.destroy();
                 it.remove();
@@ -540,7 +540,8 @@ public class ClustersRetriever
     private void dumpClusters ()
     {
         for (LineCluster cluster : clusters) {
-            logger.info(cluster.getCenter() + " " + cluster.toString());
+            logger.info("{0} {1}", new Object[]{cluster.getCenter(), cluster.
+                        toString()});
         }
     }
 
@@ -550,15 +551,15 @@ public class ClustersRetriever
     /**
      * Try to expand the provided cluster with filaments taken out of
      * the provided sorted collection of isolated filaments
+     *
      * @param cluster the cluster to work on
-     * @param fils the (properly sorted) collection of filaments
+     * @param fils    the (properly sorted) collection of filaments
      */
-    private void expandCluster (LineCluster        cluster,
+    private void expandCluster (LineCluster cluster,
                                 List<LineFilament> fils)
     {
-        final double slope = sheet.getSkew()
-                                  .getSlope();
-        Rectangle    clusterBox = null;
+        final double slope = sheet.getSkew().getSlope();
+        Rectangle clusterBox = null;
 
         for (LineFilament fil : fils) {
             fil = (LineFilament) fil.getAncestor();
@@ -569,29 +570,29 @@ public class ClustersRetriever
 
             // For VIP debugging
             final boolean areVips = cluster.isVip() && fil.isVip();
-            String        vips = null;
+            String vips = null;
 
             if (areVips) {
                 vips = "F" + fil.getId() + "&C" + cluster.getId() + ": "; // BP here!
             }
 
             if (clusterBox == null) {
-                clusterBox = cluster.getContourBox();
+                clusterBox = cluster.getBounds();
                 clusterBox.grow(params.clusterXMargin, params.clusterYMargin);
             }
 
-            PixelRectangle filBox = fil.getContourBox();
-            PixelPoint     middle = new PixelPoint();
+            PixelRectangle filBox = fil.getBounds();
+            PixelPoint middle = new PixelPoint();
             middle.x = filBox.x + (filBox.width / 2);
             middle.y = (int) Math.rint(fil.getPositionAt(middle.x, HORIZONTAL));
 
             if (clusterBox.contains(middle)) {
                 // Check if this filament matches a cluster line
                 List<Point2D> points = cluster.getPointsAt(
-                    middle.x,
-                    params.maxExpandDx,
-                    interline,
-                    slope);
+                        middle.x,
+                        params.maxExpandDx,
+                        interline,
+                        slope);
 
                 for (Point2D point : points) {
                     // Check vertical distance, if point is available
@@ -605,12 +606,13 @@ public class ClustersRetriever
                         int index = points.indexOf(point);
 
                         if (cluster.includeFilamentByIndex(fil, index)) {
-                            if (logger.isFineEnabled() ||
-                                fil.isVip() ||
-                                cluster.isVip()) {
+                            if (logger.isFineEnabled()
+                                    || fil.isVip()
+                                    || cluster.isVip()) {
                                 logger.info(
-                                    "Aggregated F" + fil.getId() + " to C" +
-                                    cluster.getId() + " at index " + index);
+                                        "Aggregated F{0} to C{1} at index {2}",
+                                        new Object[]{fil.getId(),
+                                                     cluster.getId(), index});
 
                                 if (fil.isVip()) {
                                     cluster.setVip();
@@ -623,15 +625,15 @@ public class ClustersRetriever
                         }
                     } else {
                         if (areVips) {
-                            logger.info(
-                                vips + "dy=" + dy + " vs " +
-                                params.maxExpandDy);
+                            logger.info("{0}dy={1} vs {2}",
+                                        new Object[]{vips, dy,
+                                                     params.maxExpandDy});
                         }
                     }
                 }
             } else {
                 if (areVips) {
-                    logger.info(vips + "No box intersection");
+                    logger.info("{0}No box intersection", vips);
                 }
             }
         }
@@ -641,23 +643,22 @@ public class ClustersRetriever
     // expandClusters //
     //----------------//
     /**
-     * Aggregate non-clustered filaments to close clusters when appropriate
+     * Aggregate non-clustered filaments to close clusters when
+     * appropriate.
      */
     private void expandClusters ()
     {
-        List<LineFilament> startFils = new ArrayList<LineFilament>(filaments);
+        List<LineFilament> startFils = new ArrayList<>(filaments);
         Collections.sort(startFils, startComparator);
 
-        List<LineFilament> stopFils = new ArrayList<LineFilament>(startFils);
+        List<LineFilament> stopFils = new ArrayList<>(startFils);
         Collections.sort(stopFils, stopComparator);
 
         // Browse clusters, starting with the longest ones
         Collections.sort(clusters, LineCluster.reverseLengthComparator);
 
         for (LineCluster cluster : clusters) {
-            if (logger.isFineEnabled()) {
-                logger.fine("Expanding " + cluster);
-            }
+            logger.fine("Expanding {0}", cluster);
 
             // Expanding on left side
             expandCluster(cluster, stopFils);
@@ -670,20 +671,18 @@ public class ClustersRetriever
     // followCombsNetwork //
     //--------------------//
     /**
-     * Use the network of combs and filaments to interconnect filaments via
-     * common combs
+     * Use the network of combs and filaments to interconnect filaments
+     * via common combs.
      */
     private void followCombsNetwork ()
     {
-        if (logger.isFineEnabled()) {
-            logger.info("Following combs network");
-        }
+        logger.fine("Following combs network");
 
         for (LineFilament fil : filaments) {
             Map<Integer, FilamentComb> combs = fil.getCombs();
 
             // Sequence of lines around the filament, indexed by relative pos
-            Map<Integer, LineFilament> lines = new TreeMap<Integer, LineFilament>();
+            Map<Integer, LineFilament> lines = new TreeMap<>();
 
             // Loop on all combs this filament is involved in
             for (FilamentComb comb : combs.values()) {
@@ -712,7 +711,7 @@ public class ClustersRetriever
     // mergeClusterPairs //
     //-------------------//
     /**
-     * Merge clusters horizontally or destroy short clusters
+     * Merge clusters horizontally or destroy short clusters.
      */
     private void mergeClusterPairs ()
     {
@@ -720,23 +719,21 @@ public class ClustersRetriever
         Collections.sort(clusters, ordinateComparator);
 
         double minLength = computeAcceptableLength();
-        WholeLoop: 
+        WholeLoop:
         for (int idx = 0; idx < clusters.size();) {
             LineCluster cluster = clusters.get(idx);
-            Point2D     dskCenter = skew.deskewed(cluster.getCenter());
-            double      yMax = dskCenter.getY() + params.maxMergeCenterDy;
+            Point2D dskCenter = skew.deskewed(cluster.getCenter());
+            double yMax = dskCenter.getY() + params.maxMergeCenterDy;
 
             for (LineCluster cl : clusters.subList(idx + 1, clusters.size())) {
                 // Check dy
-                if (skew.deskewed(cl.getCenter())
-                        .getY() > yMax) {
+                if (skew.deskewed(cl.getCenter()).getY() > yMax) {
                     break;
                 }
 
                 // Merge
-                logger.info(
-                    "Pairing clusters C" + cluster.getId() + " & C" +
-                    cl.getId());
+                logger.info("Pairing clusters C{0} & C{1}",
+                            new Object[]{cluster.getId(), cl.getId()});
                 cluster.mergeWith(cl, 0);
                 clusters.remove(cl);
 
@@ -745,7 +742,7 @@ public class ClustersRetriever
 
             // Short isolated?
             if (cluster.getTrueLength() < minLength) {
-                logger.info("Destroying spurious " + cluster);
+                logger.info("Destroying spurious {0}", cluster);
                 clusters.remove(cluster);
             } else {
                 idx++; // Move forward
@@ -759,7 +756,7 @@ public class ClustersRetriever
     // mergeClusters //
     //---------------//
     /**
-     * Merge compatible clusters as much as possible
+     * Merge compatible clusters as much as possible.
      */
     private void mergeClusters ()
     {
@@ -770,10 +767,10 @@ public class ClustersRetriever
             LineCluster candidate = current;
 
             // Keep on working while we do have a candidate to check for merge
-            CandidateLoop: 
+            CandidateLoop:
             while (true) {
-                Wrapper<Integer> deltaPos = new Wrapper<Integer>();
-                Rectangle        candidateBox = candidate.getContourBox();
+                Wrapper<Integer> deltaPos = new Wrapper<>();
+                Rectangle candidateBox = candidate.getBounds();
                 candidateBox.grow(params.clusterXMargin, params.clusterYMargin);
 
                 // Check the candidate vs all clusters until current excluded
@@ -787,16 +784,14 @@ public class ClustersRetriever
                     }
 
                     // Check rough proximity
-                    Rectangle headBox = head.getContourBox();
+                    Rectangle headBox = head.getBounds();
 
                     if (headBox.intersects(candidateBox)) {
                         // Try a merge
                         if (canMerge(head, candidate, deltaPos)) {
-                            if (logger.isFineEnabled()) {
-                                logger.fine(
-                                    "Merging " + candidate + " with " + head +
-                                    " delta:" + deltaPos.value);
-                            }
+                            logger.fine("Merging {0} with {1} delta:{2}",
+                                        new Object[]{candidate, head,
+                                                     deltaPos.value});
 
                             // Do the merge
                             candidate.mergeWith(head, deltaPos.value);
@@ -822,9 +817,7 @@ public class ClustersRetriever
     private Double ordinateOf (Point2D point)
     {
         if (point != null) {
-            return sheet.getSkew()
-                        .deskewed(point)
-                        .getY();
+            return sheet.getSkew().deskewed(point).getY();
         } else {
             return null;
         }
@@ -848,7 +841,7 @@ public class ClustersRetriever
     private Double[] ordinatesOf (Collection<Point2D> points)
     {
         Double[] ys = new Double[points.size()];
-        int      index = 0;
+        int index = 0;
 
         for (Point2D p : points) {
             ys[index++] = ordinateOf(p);
@@ -890,7 +883,7 @@ public class ClustersRetriever
     //------------------//
     /**
      * Connect filaments via the combs they are involved in,
-     * and come up with clusters of lines
+     * and come up with clusters of lines.
      */
     private void retrieveClusters ()
     {
@@ -949,9 +942,9 @@ public class ClustersRetriever
         int dMax = (int) Math.ceil(scale.getMaxInterline());
 
         /** Number of vertical samples to collect */
-        int sampleCount = -1 +
-                          (int) Math.rint(
-            (double) pictureWidth / params.samplingDx);
+        int sampleCount = -1
+                + (int) Math.rint(
+                (double) pictureWidth / params.samplingDx);
 
         /** Exact columns abscissae */
         colX = new int[sampleCount + 1];
@@ -960,18 +953,18 @@ public class ClustersRetriever
         double samplingDx = (double) pictureWidth / (sampleCount + 1);
 
         for (int col = 1; col <= sampleCount; col++) {
-            final List<FilamentComb> colList = new ArrayList<FilamentComb>();
+            final List<FilamentComb> colList = new ArrayList<>();
             colCombs.put(col, colList);
 
             final int x = (int) Math.rint(samplingDx * col);
             colX[col] = x;
 
             // Retrieve Filaments with ordinate at x, sorted by increasing y
-            List<FilY>   filys = retrieveFilamentsAtX(x);
+            List<FilY> filys = retrieveFilamentsAtX(x);
 
             // Second, check y deltas to detect combs
             FilamentComb comb = null;
-            FilY         prevFily = null;
+            FilY prevFily = null;
 
             for (FilY fily : filys) {
                 if (prevFily != null) {
@@ -985,9 +978,8 @@ public class ClustersRetriever
                             comb.append(prevFily.filament, prevFily.y);
 
                             if (prevFily.filament.isVip()) {
-                                logger.info(
-                                    "Created " + comb + " with " +
-                                    prevFily.filament);
+                                logger.info("Created {0} with {1}",
+                                            new Object[]{comb, prevFily.filament});
                             }
                         }
 
@@ -995,8 +987,8 @@ public class ClustersRetriever
                         comb.append(fily.filament, fily.y);
 
                         if (fily.filament.isVip()) {
-                            logger.info(
-                                "Appended " + fily.filament + " to " + comb);
+                            logger.info("Appended {0} to {1}",
+                                        new Object[]{fily.filament, comb});
                         }
                     } else {
                         // No comb active
@@ -1013,20 +1005,19 @@ public class ClustersRetriever
     // retrieveFilamentsAtX //
     //----------------------//
     /**
-     * For a given abscissa, retrieve the filaments that are intersected by
-     * vertical x, and sort them according to their ordinate at x
+     * For a given abscissa, retrieve the filaments that are intersected
+     * by vertical x, and sort them according to their ordinate at x.
+     *
      * @param x the desired abscissa
      * @return the sorted list of structures (Fil + Y), perhaps empty
      */
     private List<FilY> retrieveFilamentsAtX (double x)
     {
-        List<FilY> list = new ArrayList<FilY>();
+        List<FilY> list = new ArrayList<>();
 
         for (LineFilament fil : filaments) {
-            if ((x >= fil.getStartPoint(HORIZONTAL)
-                         .getX()) &&
-                (x <= fil.getStopPoint(HORIZONTAL)
-                         .getX())) {
+            if ((x >= fil.getStartPoint(HORIZONTAL).getX())
+                    && (x <= fil.getStopPoint(HORIZONTAL).getX())) {
                 list.add(new FilY(fil, fil.getPositionAt(x, HORIZONTAL)));
             }
         }
@@ -1040,12 +1031,12 @@ public class ClustersRetriever
     // retrievePopularSize //
     //---------------------//
     /**
-     * Retrieve the most popular size (line count) among all combs
+     * Retrieve the most popular size (line count) among all combs.
      */
     private void retrievePopularSize ()
     {
         // Build histogram of combs lengths
-        Histogram<Integer> histo = new Histogram<Integer>();
+        Histogram<Integer> histo = new Histogram<>();
 
         for (List<FilamentComb> list : colCombs.values()) {
             for (FilamentComb comb : list) {
@@ -1057,11 +1048,8 @@ public class ClustersRetriever
         // Should be 4 for bass tab, 5 for standard notation, 6 for guitar tab
         popSize = histo.getMaxBucket();
 
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                sheet.getLogPrefix() + "Popular line comb: " + popSize +
-                " histo:" + histo.dataString());
-        }
+        logger.fine("{0}Popular line comb: {1} histo:{2}", new Object[]{sheet.
+                    getLogPrefix(), popSize, histo.dataString()});
     }
 
     //--------------//
@@ -1079,91 +1067,81 @@ public class ClustersRetriever
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Scale.Fraction samplingDx = new Scale.Fraction(
-            1,
-            "Typical delta X between two vertical samplings");
+                1,
+                "Typical delta X between two vertical samplings");
 
-        //
         Scale.Fraction maxExpandDx = new Scale.Fraction(
-            2,
-            "Maximum dx to aggregate a filament to a cluster");
+                2,
+                "Maximum dx to aggregate a filament to a cluster");
 
-        //
         Scale.Fraction maxExpandDy = new Scale.Fraction(
-            0.175,
-            "Maximum dy to aggregate a filament to a cluster");
+                0.175,
+                "Maximum dy to aggregate a filament to a cluster");
 
-        //
         Scale.Fraction maxMergeDx = new Scale.Fraction(
-            10,
-            "Maximum dx to merge two clusters");
+                10,
+                "Maximum dx to merge two clusters");
 
-        //
         Scale.Fraction maxMergeDy = new Scale.Fraction(
-            0.4,
-            "Maximum dy to merge two clusters");
+                0.4,
+                "Maximum dy to merge two clusters");
 
-        //
         Scale.Fraction maxMergeCenterDy = new Scale.Fraction(
-            1.0,
-            "Maximum center dy to merge two clusters");
+                1.0,
+                "Maximum center dy to merge two clusters");
 
-        //
         Scale.Fraction clusterXMargin = new Scale.Fraction(
-            4,
-            "Rough margin around cluster abscissa");
+                4,
+                "Rough margin around cluster abscissa");
 
-        //
         Scale.Fraction clusterYMargin = new Scale.Fraction(
-            2,
-            "Rough margin around cluster ordinate");
+                2,
+                "Rough margin around cluster ordinate");
 
-        //
         Constant.Ratio maxJitter = new Constant.Ratio(
-            0.1,
-            "Maximum gap from standard comb dy");
+                0.1,
+                "Maximum gap from standard comb dy");
 
-        //
         Constant.Ratio minClusterLengthRatio = new Constant.Ratio(
-            0.3,
-            "Minimum cluster length (as ratio of median length)");
+                0.3,
+                "Minimum cluster length (as ratio of median length)");
     }
 
     //------//
     // FilY //
     //------//
     /**
-     * Class meant to define an ordering relationship between filaments, knowing
-     * their ordinate at a common abscissa value.
+     * Class meant to define an ordering relationship between filaments,
+     * knowing their ordinate at a common abscissa value.
      */
     private static class FilY
-        implements Comparable<FilY>
+            implements Comparable<FilY>
     {
         //~ Instance fields ----------------------------------------------------
 
         final LineFilament filament;
-        final double       y;
+
+        final double y;
 
         //~ Constructors -------------------------------------------------------
-
         public FilY (LineFilament filament,
-                     double       y)
+                     double y)
         {
             this.filament = filament;
             this.y = y;
         }
 
         //~ Methods ------------------------------------------------------------
-
+        @Override
         public int compareTo (FilY that)
         {
             return Double.compare(this.y, that.y);
@@ -1180,23 +1158,30 @@ public class ClustersRetriever
     // Parameters //
     //------------//
     /**
-     * Class {@code Parameters} gathers all constants related to horizontal frames
+     * Class {@code Parameters} gathers all constants related to
+     * horizontal frames.
      */
     private static class Parameters
     {
         //~ Instance fields ----------------------------------------------------
 
         final int samplingDx;
+
         final int maxExpandDx;
+
         final int maxExpandDy;
+
         final int maxMergeDx;
+
         final int maxMergeDy;
+
         final int maxMergeCenterDy;
+
         final int clusterXMargin;
+
         final int clusterYMargin;
 
         //~ Constructors -------------------------------------------------------
-
         /**
          * Creates a new Parameters object.
          *

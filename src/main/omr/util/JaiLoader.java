@@ -40,6 +40,7 @@ public class JaiLoader
     private static final Future<Void> loading = OmrExecutors.getCachedLowExecutor()
                                                             .submit(
         new Callable<Void>() {
+        @Override
                 public Void call ()
                     throws Exception
                 {

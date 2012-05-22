@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -15,10 +15,10 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
-import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
+import omr.glyph.ShapeEvaluator;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -88,7 +88,7 @@ class EvaluationBoard
     //~ Instance fields --------------------------------------------------------
 
     /** The evaluator this display is related to */
-    private final GlyphEvaluator evaluator = GlyphNetwork.getInstance();
+    private final ShapeEvaluator evaluator = GlyphNetwork.getInstance();
 
     /** Related glyphs controller */
     private final GlyphsController glyphsController;
@@ -176,7 +176,7 @@ class EvaluationBoard
                                 system,
                                 selector.evalCount(),
                                 constants.minGrade.getValue(),
-                                EnumSet.of(GlyphEvaluator.Condition.CHECKED),
+                                EnumSet.of(ShapeEvaluator.Condition.CHECKED),
                                 null),
                             glyph);
                     }
@@ -187,7 +187,7 @@ class EvaluationBoard
                             null,
                             selector.evalCount(),
                             constants.minGrade.getValue(),
-                            GlyphEvaluator.NO_CONDITIONS,
+                            ShapeEvaluator.NO_CONDITIONS,
                             null),
                         glyph);
                 }
@@ -232,16 +232,10 @@ class EvaluationBoard
     //--------------//
     private void defineLayout ()
     {
-        final String buttonWidth = Panel.getButtonWidth();
-        final String fieldInterval = Panel.getFieldInterval();
+        String colSpec = Panel.makeColumns(3);
+        FormLayout layout = new FormLayout(colSpec, "");
 
-        FormLayout   layout = new FormLayout(
-            buttonWidth + "," + fieldInterval + "," + buttonWidth + "," +
-            fieldInterval + "," + buttonWidth + "," + fieldInterval + "," +
-            buttonWidth,
-            "");
-
-        int          visibleButtons = Math.min(
+        int        visibleButtons = Math.min(
             constants.visibleButtons.getValue(),
             selector.buttons.size());
 
@@ -258,14 +252,12 @@ class EvaluationBoard
         CellConstraints cst = new CellConstraints();
 
         for (int i = 0; i < visibleButtons; i++) {
-            int r = i + 1; // --------------------------------
-            builder.add(selector.buttons.get(i).grade, cst.xy(1, r));
-
-            if (sheet != null) {
-                builder.add(selector.buttons.get(i).button, cst.xyw(3, r, 5));
-            } else {
-                builder.add(selector.buttons.get(i).field, cst.xyw(3, r, 5));
-            }
+            int        r = i + 1; // --------------------------------
+            EvalButton evb = selector.buttons.get(i);
+            builder.add(evb.grade, cst.xy(5, r));
+            builder.add(
+                (sheet != null) ? evb.button : evb.field,
+                cst.xyw(7, r, 5));
         }
     }
 
@@ -415,7 +407,7 @@ class EvaluationBoard
         //~ Instance fields ----------------------------------------------------
 
         // A collection of EvalButton's
-        final List<EvalButton> buttons = new ArrayList<EvalButton>();
+        final List<EvalButton> buttons = new ArrayList<>();
 
         //~ Constructors -------------------------------------------------------
 

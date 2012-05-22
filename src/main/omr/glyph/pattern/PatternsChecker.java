@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -31,10 +31,9 @@ public class PatternsChecker
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
-        PatternsChecker.class);
+            PatternsChecker.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Sequence of patterns to runPattern */
     private final GlyphPattern[] patterns;
 
@@ -42,89 +41,69 @@ public class PatternsChecker
     private final SystemInfo system;
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------------//
     // PatternsChecker //
     //-----------------//
     /**
      * Creates a new PatternsChecker object.
+     *
      * @param system the dedicated system
      */
     public PatternsChecker (final SystemInfo system)
     {
         this.system = system;
-        patterns = new GlyphPattern[] {
-                       
-        //
-        new CaesuraPattern(system),
-                       
-        new BeamHookPattern(system),
-                       
+        patterns = new GlyphPattern[]{
+            //
+            new CaesuraPattern(system),
+            new BeamHookPattern(system),
+            // Refresh ...
+            new RefreshPattern(system),
+            new DoubleBeamPattern(system),
+            new FermataDotPattern(system),
+            new FlagPattern(system),
+            new FortePattern(system),
+            new HiddenSlurPattern(system),
+            new SplitPattern(system),
+            new LedgerPattern(system),
+            new AlterPattern(system),
+            system.getSlurInspector(),
+            new BassPattern(system),
+            new ClefPattern(system),
+            new TimePattern(system),
+            // Refresh ...
+            new RefreshPattern(system),
+            //
+            // Text patterns
+            new TextBorderPattern(system), // Glyphs -> Text
+            new TextGreedyPattern(system), // Glyphs -> Text
+            new TextAreaPattern(system), //   Glyphs -> Text
+            new SentencePattern(system), // Text -> sentences
 
-        // Refresh ...
-        new RefreshPattern(system),
-                       
-        new DoubleBeamPattern(system),
-                       
-        new FermataDotPattern(system),
-                       
-        new FlagPattern(system),
-                       
-        new FortePattern(system),
-                       
-        new HiddenSlurPattern(system),
-                       
-        new SplitPattern(system),
-                       
-        new LedgerPattern(system),
-                       
-        new AlterPattern(system),
-                       
-        system.getSlurInspector(),
-                       
-        new BassPattern(system),
-                       
-        new ClefPattern(system),
-                       
-        new TimePattern(system),
-                       
+            ///new ArticulationPattern(system),
 
-        // Refresh ...
-        new RefreshPattern(system), 
-        //
-        // Text patterns
-        new TextBorderPattern(system), // Glyphs -> Text
-        new TextGreedyPattern(system), // Glyphs -> Text
-        new TextAreaPattern(system), //   Glyphs -> Text
-        new SentencePattern(system), // Text -> sentences
-
-        ///new ArticulationPattern(system),
-
-        ///new SegmentationPattern(system),
-        new LeftOverPattern(system)
-                   };
+            ///new SegmentationPattern(system),
+            new LeftOverPattern(system)
+        };
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-------------//
     // runPatterns //
     //-------------//
     /**
      * Run the sequence of pattern on the dedicated system
+     *
      * @return the number of modifications made
      */
     public boolean runPatterns ()
     {
-        int           totalModifs = 0;
+        int totalModifs = 0;
         StringBuilder sb = new StringBuilder();
 
         system.inspectGlyphs(Grades.symbolMinGrade);
 
         for (GlyphPattern pattern : patterns) {
-            if (logger.isFineEnabled()) {
-                logger.finest("Starting " + pattern);
-            }
+            logger.fine("Starting {0}", pattern);
 
             system.removeInactiveGlyphs();
 
@@ -132,32 +111,29 @@ public class PatternsChecker
                 int modifs = pattern.runPattern();
 
                 if (logger.isFineEnabled()) {
-                    sb.append(" ")
-                      .append(pattern.name)
-                      .append(":")
-                      .append(modifs);
+                    sb.append(" ").append(pattern.name).append(":").append(
+                            modifs);
                 }
 
                 totalModifs += modifs;
             } catch (Throwable ex) {
                 logger.warning(
-                    "System #" + system.getId() + " error running pattern " +
-                    pattern.name,
-                    ex);
+                        system.idString() + " error running pattern "
+                        + pattern.name,
+                        ex);
             }
         }
 
         system.inspectGlyphs(Grades.symbolMinGrade);
 
-        if ((totalModifs > 0) && logger.isFineEnabled()) {
-            logger.fine("S#" + system.getId() + " Patterns" + sb);
+        if (totalModifs > 0) {
+            logger.fine("S#{0} Patterns{1}", new Object[]{system.getId(), sb});
         }
 
         return totalModifs != 0;
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //----------------//
     // RefreshPattern //
     //----------------//
@@ -165,7 +141,7 @@ public class PatternsChecker
      * Dummy pattern, just to refresh the system glyphs
      */
     private static class RefreshPattern
-        extends GlyphPattern
+            extends GlyphPattern
     {
         //~ Constructors -------------------------------------------------------
 
@@ -175,7 +151,6 @@ public class PatternsChecker
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public int runPattern ()
         {

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -29,7 +29,7 @@ import java.awt.Color;
  * @author Hervé Bitteur
  */
 public class ScoreColorizer
-    extends AbstractScoreVisitor
+        extends AbstractScoreVisitor
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -37,12 +37,10 @@ public class ScoreColorizer
     private static final Logger logger = Logger.getLogger(ScoreColorizer.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** The color to use */
     private final Color color;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new ScoreColorizer object.
      *
@@ -54,7 +52,6 @@ public class ScoreColorizer
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------------//
     // visit Barline //
     //---------------//
@@ -62,17 +59,15 @@ public class ScoreColorizer
     public boolean visit (Barline barline)
     {
         try {
-            if (logger.isFineEnabled()) {
-                logger.fine("Colorizing " + barline);
-            }
+            logger.fine("Colorizing {0}", barline);
 
             for (Glyph glyph : barline.getGlyphs()) {
                 glyph.colorize(color);
             }
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + barline,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + barline,
+                    ex);
         }
 
         return true;
@@ -85,15 +80,12 @@ public class ScoreColorizer
     public boolean visit (Score score)
     {
         try {
-            if (logger.isFineEnabled()) {
-                logger.fine("Colorizing score ...");
-            }
-
+            logger.fine("Colorizing score ...");
             score.acceptChildren(this);
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + score,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + score,
+                    ex);
         }
 
         return false;
@@ -114,8 +106,8 @@ public class ScoreColorizer
             }
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + part,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + part,
+                    ex);
         }
 
         return true;

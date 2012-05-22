@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -45,7 +45,7 @@ import java.util.List;
  * @author Hervé Bitteur
  */
 public class Slur
-    extends PartNode
+        extends PartNode
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -56,7 +56,10 @@ public class Slur
     private static final Logger logger = Logger.getLogger(Slur.class);
 
     /** To order slurs vertically within a measure */
-    public static final Comparator<Slur> verticalComparator = new Comparator<Slur>() {
+    public static final Comparator<Slur> verticalComparator = new Comparator<Slur>()
+    {
+
+        @Override
         public int compare (Slur s1,
                             Slur s2)
         {
@@ -65,19 +68,19 @@ public class Slur
     };
 
     /** Predicate for a orphan slur at the end of its system/part */
-    public static final Predicate<Slur> isEndingOrphan = new Predicate<Slur>() {
+    public static final Predicate<Slur> isEndingOrphan = new Predicate<Slur>()
+    {
+
+        @Override
         public boolean check (Slur slur)
         {
             if (slur.getRightNote() == null) {
                 // Check we are in last measure
-                Point2D p2 = slur.getCurve()
-                                 .getP2();
-                Measure measure = slur.getPart()
-                                      .getMeasureAt(
-                    new PixelPoint((int) p2.getX(), (int) p2.getY()));
+                Point2D p2 = slur.getCurve().getP2();
+                Measure measure = slur.getPart().getMeasureAt(
+                        new PixelPoint((int) p2.getX(), (int) p2.getY()));
 
-                if (measure == slur.getPart()
-                                   .getLastMeasure()) {
+                if (measure == slur.getPart().getLastMeasure()) {
                     // Check slur ends in last measure half
                     if (p2.getX() > measure.getCenter().x) {
                         return true;
@@ -90,19 +93,19 @@ public class Slur
     };
 
     /** Predicate for a orphan slur at the beginning of its system/part */
-    public static final Predicate<Slur> isBeginningOrphan = new Predicate<Slur>() {
+    public static final Predicate<Slur> isBeginningOrphan = new Predicate<Slur>()
+    {
+
+        @Override
         public boolean check (Slur slur)
         {
             if (slur.getLeftNote() == null) {
                 // Check we are in first measure
-                Point2D p1 = slur.getCurve()
-                                 .getP1();
-                Measure measure = slur.getPart()
-                                      .getMeasureAt(
-                    new PixelPoint((int) p1.getX(), (int) p1.getY()));
+                Point2D p1 = slur.getCurve().getP1();
+                Measure measure = slur.getPart().getMeasureAt(
+                        new PixelPoint((int) p1.getX(), (int) p1.getY()));
 
-                if (measure == slur.getPart()
-                                   .getFirstMeasure()) {
+                if (measure == slur.getPart().getFirstMeasure()) {
                     // Check slur begins in first measure half
                     if (p1.getX() < measure.getCenter().x) {
                         return true;
@@ -114,9 +117,7 @@ public class Slur
         }
     };
 
-
     //~ Instance fields --------------------------------------------------------
-
     /** Underlying glyph */
     private final Glyph glyph;
 
@@ -142,25 +143,25 @@ public class Slur
     private boolean tie;
 
     //~ Constructors -----------------------------------------------------------
-
     //------//
     // Slur //
     //------//
     /**
      * Create a slur with all the specified parameters.
-     * @param part  the containing system part
-     * @param glyph the underlying glyph
-     * @param curve the underlying bezier curve
-     * @param below true if below, false if above
-     * @param leftNote the note on the left
+     *
+     * @param part      the containing system part
+     * @param glyph     the underlying glyph
+     * @param curve     the underlying bezier curve
+     * @param below     true if below, false if above
+     * @param leftNote  the note on the left
      * @param rightNote the note on the right
      */
-    public Slur (SystemPart   part,
-                 Glyph        glyph,
+    public Slur (SystemPart part,
+                 Glyph glyph,
                  CubicCurve2D curve,
-                 boolean      below,
-                 Note         leftNote,
-                 Note         rightNote)
+                 boolean below,
+                 Note leftNote,
+                 Note rightNote)
     {
         super(part);
         this.glyph = glyph;
@@ -183,110 +184,77 @@ public class Slur
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
-    //-----------//
-    // canExtend //
-    //-----------//
-    /**
-     * Check whether this slur can extend the prevSlur of the preceding
-     * system.
-     * @param prevSlur the slur candidate in the preceding system
-     * @return true if connection is possible
-     */
-    public boolean canExtend (Slur prevSlur)
-    {
-        return (this.leftExtension == null) &&
-               (prevSlur.rightExtension == null) &&
-               this.isCompatibleWith(prevSlur);
-    }
-
     //----------//
     // populate //
     //----------//
     /**
      * Given a glyph (potentially representing a Slur), allocate the Slur
      * entity that corresponds to this glyph.
-     * @param glyph The glyph to process
+     *
+     * @param glyph  The glyph to process
      * @param system The system which will contain the allocated Slur
      */
-    public static void populate (Glyph       glyph,
+    public static void populate (Glyph glyph,
                                  ScoreSystem system)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Populating slur glyph#" + glyph.getId());
-        }
+        logger.fine("Populating slur {0}", glyph.idString());
 
         // Compute the approximating circle
-        Circle       circle = system.getInfo()
-                                    .getSlurInspector()
-                                    .getCircle(glyph);
+        Circle circle = system.getInfo().getSlurInspector().getCircle(glyph);
         CubicCurve2D curve = circle.getCurve();
 
         // Safer
         if (curve == null) {
-            if (logger.isFineEnabled()) {
-                logger.info(
-                    "No curve found for slur candidate #" + glyph.getId());
-            }
-
+            logger.fine("No curve found for slur candidate #{0}", glyph.getId());
             return;
         }
 
         // Retrieve & sort nodes (notes or chords) on both ends of the slur
-        List<MeasureNode> leftNodes = new ArrayList<MeasureNode>();
-        List<MeasureNode> rightNodes = new ArrayList<MeasureNode>();
+        List<MeasureNode> leftNodes = new ArrayList<>();
+        List<MeasureNode> rightNodes = new ArrayList<>();
 
-        boolean           below = retrieveEmbracedNotes(
-            glyph,
-            system,
-            curve,
-            leftNodes,
-            rightNodes);
+        boolean below = retrieveEmbracedNotes(
+                glyph,
+                system,
+                curve,
+                leftNodes,
+                rightNodes);
 
         // Now choose the most relevant note, if any, on each slur end
         End leftEnd = null;
         End rightEnd = null;
 
         switch (leftNodes.size()) {
-        case 0 :
+        case 0:
 
             switch (rightNodes.size()) {
-            case 0 :
+            case 0:
                 break;
 
-            case 1 :
+            case 1:
                 rightEnd = new End(rightNodes.get(0));
 
                 break;
 
-            default :
+            default:
                 rightEnd = new End(rightNodes.get(0)); // Why not?
             }
 
             break;
 
-        case 1 :
+        case 1:
             leftEnd = new End(leftNodes.get(0));
 
             switch (rightNodes.size()) {
-            case 0 :
+            case 0:
                 break;
 
-            case 1 :
+            case 1:
                 rightEnd = new End(rightNodes.get(0));
 
                 break;
 
-            default :
+            default:
 
                 for (MeasureNode node : rightNodes) {
                     rightEnd = new End(node);
@@ -299,15 +267,15 @@ public class Slur
 
             break;
 
-        default :
+        default:
 
             switch (rightNodes.size()) {
-            case 0 :
+            case 0:
                 leftEnd = new End(leftNodes.get(0)); // Why not?
 
                 break;
 
-            case 1 :
+            case 1:
                 rightEnd = new End(rightNodes.get(0));
 
                 for (MeasureNode node : leftNodes) {
@@ -320,7 +288,7 @@ public class Slur
 
                 break;
 
-            default : // N left & P right
+            default: // N left & P right
                 leftEnd = new End(leftNodes.get(0)); // Why not?
                 rightEnd = new End(rightNodes.get(0)); // Why not?
             }
@@ -330,21 +298,28 @@ public class Slur
         if ((leftEnd != null) || (rightEnd != null)) {
             SystemPart part = (leftEnd != null) ? leftEnd.note.getPart()
                               : rightEnd.note.getPart();
-            Slur       slur = new Slur(
-                part,
-                glyph,
-                curve,
-                below,
-                (leftEnd != null) ? leftEnd.note : null,
-                (rightEnd != null) ? rightEnd.note : null);
+            Slur slur = new Slur(
+                    part,
+                    glyph,
+                    curve,
+                    below,
+                    (leftEnd != null) ? leftEnd.note : null,
+                    (rightEnd != null) ? rightEnd.note : null);
             glyph.setTranslation(slur);
 
-            if (logger.isFineEnabled()) {
-                logger.finest(slur.toString());
-            }
+            logger.finest(slur.toString());
         } else {
             system.addError(glyph, "Slur with no embraced notes");
         }
+    }
+
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
     }
 
     //----------//
@@ -357,10 +332,28 @@ public class Slur
     }
 
     //-----------//
+    // canExtend //
+    //-----------//
+    /**
+     * Check whether this slur can extend the prevSlur of the preceding
+     * system.
+     *
+     * @param prevSlur the slur candidate in the preceding system
+     * @return true if connection is possible
+     */
+    public boolean canExtend (Slur prevSlur)
+    {
+        return (this.leftExtension == null)
+                && (prevSlur.rightExtension == null)
+                && this.isCompatibleWith(prevSlur);
+    }
+
+    //-----------//
     // connectTo //
     //-----------//
     /**
      * Make the connection with another slur in the previous system.
+     *
      * @param prevSlur slur at the end of previous system
      */
     public void connectTo (Slur prevSlur)
@@ -374,11 +367,10 @@ public class Slur
         prevSlur.tie = isATie;
         this.tie = isATie;
 
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                (isATie ? "Tie" : "Slur") + " connection #" +
-                prevSlur.glyph.getId() + " -> #" + this.glyph.getId());
-        }
+        logger.fine("{0} connection #{1} -> #{2}",
+                    new Object[]{isATie ? "Tie" : "Slur",
+                                 prevSlur.glyph.getId(),
+                                 this.glyph.getId()});
     }
 
     //----------//
@@ -386,6 +378,7 @@ public class Slur
     //----------//
     /**
      * Report the curve of the slur.
+     *
      * @return the curve to draw
      */
     public CubicCurve2D getCurve ()
@@ -398,6 +391,7 @@ public class Slur
     //-------//
     /**
      * Report the slur id (as the id of the underlying glyph).
+     *
      * @return the id of the underlying glyph
      */
     public int getId ()
@@ -411,6 +405,7 @@ public class Slur
     /**
      * Report the slur (if any) at the end of previous system that could
      * be considered as an extension of this slur.
+     *
      * @return the connected slur on left, or null if none
      */
     public Slur getLeftExtension ()
@@ -423,6 +418,7 @@ public class Slur
     //-------------//
     /**
      * Report the note (if any) embraced by the left side of this slur
+     *
      * @return the embraced note, or null
      */
     public Note getLeftNote ()
@@ -436,6 +432,7 @@ public class Slur
     /**
      * Report the slur (if any) at the beginning of next system that
      * could be considered as an extension of this slur.
+     *
      * @return the connected slur on right, or null if none
      */
     public Slur getRightExtension ()
@@ -448,6 +445,7 @@ public class Slur
     //--------------//
     /**
      * Report the note (if any) embraced by the right side of this slur.
+     *
      * @return the embraced note, or null
      */
     public Note getRightNote ()
@@ -460,6 +458,7 @@ public class Slur
     //---------//
     /**
      * Report whether the placement of this slur is below the embraced notes.
+     *
      * @return true if below, false if above
      */
     public boolean isBelow ()
@@ -473,6 +472,7 @@ public class Slur
     /**
      * Report whether this slur is actually a tie (a slur between
      * similar notes).
+     *
      * @return true if is a Tie, false otherwise
      */
     public boolean isTie ()
@@ -517,49 +517,32 @@ public class Slur
         }
 
         try {
-            sb.append("#")
-              .append(glyph.getId());
-            sb.append(" P1[")
-              .append((int) Math.rint(curve.getX1()))
-              .append(",")
-              .append((int) Math.rint(curve.getY1()))
-              .append("]");
-            sb.append(" C1[")
-              .append((int) Math.rint(curve.getCtrlX1()))
-              .append(",")
-              .append((int) Math.rint(curve.getCtrlY1()))
-              .append("]");
-            sb.append(" C2[")
-              .append((int) Math.rint(curve.getCtrlX2()))
-              .append(",")
-              .append((int) Math.rint(curve.getCtrlY2()))
-              .append("]");
-            sb.append(" P2[")
-              .append((int) Math.rint(curve.getX2()))
-              .append(",")
-              .append((int) Math.rint(curve.getY2()))
-              .append("]");
+            sb.append("#").append(glyph.getId());
+            sb.append(" P1[").append((int) Math.rint(curve.getX1())).append(",").
+                    append((int) Math.rint(curve.getY1())).append("]");
+            sb.append(" C1[").append((int) Math.rint(curve.getCtrlX1())).append(
+                    ",").append((int) Math.rint(curve.getCtrlY1())).append("]");
+            sb.append(" C2[").append((int) Math.rint(curve.getCtrlX2())).append(
+                    ",").append((int) Math.rint(curve.getCtrlY2())).append("]");
+            sb.append(" P2[").append((int) Math.rint(curve.getX2())).append(",").
+                    append((int) Math.rint(curve.getY2())).append("]");
 
             if (leftNote != null) {
-                sb.append(" L=")
-                  .append(leftNote.getStep())
-                  .append(leftNote.getOctave());
-            } else if ((leftExtension != null) &&
-                       (leftExtension.leftNote != null)) {
-                sb.append(" LE=")
-                  .append(leftExtension.leftNote.getStep())
-                  .append(leftExtension.leftNote.getOctave());
+                sb.append(" L=").append(leftNote.getStep()).append(leftNote.
+                        getOctave());
+            } else if ((leftExtension != null)
+                    && (leftExtension.leftNote != null)) {
+                sb.append(" LE=").append(leftExtension.leftNote.getStep()).
+                        append(leftExtension.leftNote.getOctave());
             }
 
             if (rightNote != null) {
-                sb.append(" R=")
-                  .append(rightNote.getStep())
-                  .append(rightNote.getOctave());
-            } else if ((rightExtension != null) &&
-                       (rightExtension.rightNote != null)) {
-                sb.append(" RE=")
-                  .append(rightExtension.rightNote.getStep())
-                  .append(rightExtension.rightNote.getOctave());
+                sb.append(" R=").append(rightNote.getStep()).append(rightNote.
+                        getOctave());
+            } else if ((rightExtension != null)
+                    && (rightExtension.rightNote != null)) {
+                sb.append(" RE=").append(rightExtension.rightNote.getStep()).
+                        append(rightExtension.rightNote.getOctave());
             }
         } catch (NullPointerException e) {
             sb.append(" INVALID");
@@ -576,11 +559,12 @@ public class Slur
     /**
      * Keep in the provided collection of nodes the very first ones that
      * cannot be separated via the normal node comparator.
+     *
      * @param nodes the collection of nodes found in the neighborhood
-     * @param ref the reference point to compare distance from
+     * @param ref   the reference point to compare distance from
      */
     private static void filterNodes (List<MeasureNode> nodes,
-                                     PixelPoint        ref)
+                                     PixelPoint ref)
     {
         if (nodes.size() > 1) {
             NodeComparator comparator = new NodeComparator(ref);
@@ -619,6 +603,7 @@ public class Slur
      * Check whether two notes represent the same pitch (same octave,
      * same step, same alteration).
      * This is needed to detects tie slurs.
+     *
      * @param n1 one note
      * @param n2 the other note
      * @return true if the notes are equivalent.
@@ -626,8 +611,8 @@ public class Slur
     private static boolean haveSameHeight (Note n1,
                                            Note n2)
     {
-        return (n1 != null) && (n2 != null) && (n1.getStep() == n2.getStep()) &&
-               (n1.getOctave() == n2.getOctave());
+        return (n1 != null) && (n2 != null) && (n1.getStep() == n2.getStep())
+                && (n1.getOctave() == n2.getOctave());
 
         // TODO: what about alteration, if we have not processed them yet ???
     }
@@ -638,6 +623,7 @@ public class Slur
     /**
      * Report whether the provided curve is below the notes (turned
      * upwards) or above the notes (turned downwards).
+     *
      * @param curve the provided curve to check
      * @return true if below, false if above
      */
@@ -646,11 +632,63 @@ public class Slur
         // Determine arc orientation (above or below)
         final double DX = curve.getX2() - curve.getX1();
         final double DY = curve.getY2() - curve.getY1();
-        final double power = (curve.getCtrlX1() * DY) -
-                             (curve.getCtrlY1() * DX) - (curve.getX1() * DY) +
-                             (curve.getY1() * DX);
+        final double power = (curve.getCtrlX1() * DY)
+                - (curve.getCtrlY1() * DX) - (curve.getX1() * DY)
+                + (curve.getY1() * DX);
 
         return power < 0;
+    }
+
+    //------------------//
+    // isCompatibleWith //
+    //------------------//
+    /**
+     * Check whether two slurs to-be-connected are roughly compatible
+     * with each other (same staff id, and pitch positions not too
+     * different).
+     *
+     * @param prevSlur the previous slur
+     * @return true if found compatible
+     */
+    private boolean isCompatibleWith (Slur prevSlur)
+    {
+        // Retrieve prev staff, using the left point of the prev slur
+        Staff prevStaff = prevSlur.getPart().getStaffAt(
+                new PixelPoint(
+                (int) prevSlur.curve.getX1(),
+                (int) prevSlur.curve.getY1()));
+
+        // Retrieve staff, using the right point of the slur
+        Staff staff = getPart().getStaffAt(
+                new PixelPoint((int) curve.getX2(), (int) curve.getY2()));
+
+        if (prevStaff.getId() != staff.getId()) {
+            logger.fine(
+                    "prevSlur#{0} prevStaff:{1} slur#{2} staff:{3} different staff id",
+                        new Object[]{prevSlur.getId(), prevStaff.getId(), this.
+                        getId(), staff.getId()});
+            return false;
+        }
+
+        // Retrieve prev position, using the right point of the prev slur
+        double prevPp = prevStaff.pitchPositionOf(
+                new PixelPoint(
+                (int) prevSlur.curve.getX2(),
+                (int) prevSlur.curve.getY2()));
+
+        // Retrieve position, using the left point of the slur
+        PixelPoint pt = new PixelPoint(
+                (int) curve.getX1(),
+                (int) curve.getY1());
+        double pp = staff.pitchPositionOf(pt);
+
+        // Compare staves and pitch positions (very roughly)
+        double deltaPitch = pp - prevPp;
+        boolean res = Math.abs(deltaPitch) <= (constants.maxDeltaY.getValue() * 2);
+        logger.fine("prevSlur#{0} slur#{1} deltaPitch:{2} res:{3}",
+                    new Object[]{prevSlur.getId(), this.getId(), deltaPitch, res});
+
+        return res;
     }
 
     //-----------------------//
@@ -659,35 +697,36 @@ public class Slur
     /**
      * Retrieve the notes that are embraced on the left side and on the
      * right side of a slur glyph.
-     * @param system the containing system
-     * @param curve the slur underlying curve
-     * @param leftNodes output: the ordered list of notes found on left side
+     *
+     * @param system     the containing system
+     * @param curve      the slur underlying curve
+     * @param leftNodes  output: the ordered list of notes found on left side
      * @param rightNodes output: the ordered list of notes found on right side
      * @return true if the placement is 'below'
      */
-    private static boolean retrieveEmbracedNotes (Glyph             glyph,
-                                                  ScoreSystem       system,
-                                                  CubicCurve2D      curve,
+    private static boolean retrieveEmbracedNotes (Glyph glyph,
+                                                  ScoreSystem system,
+                                                  CubicCurve2D curve,
                                                   List<MeasureNode> leftNodes,
                                                   List<MeasureNode> rightNodes)
     {
-        boolean              below = isBelow(curve);
+        boolean below = isBelow(curve);
 
         // Determine left and right search areas
-        final Scale          scale = system.getScale();
-        final int            dx = scale.toPixels(constants.areaDx);
-        final int            dy = scale.toPixels(constants.areaDy);
-        final int            xMg = scale.toPixels(constants.areaXMargin);
+        final Scale scale = system.getScale();
+        final int dx = scale.toPixels(constants.areaDx);
+        final int dy = scale.toPixels(constants.areaDy);
+        final int xMg = scale.toPixels(constants.areaXMargin);
         final PixelRectangle leftRect = new PixelRectangle(
-            (int) Math.rint(curve.getX1() - dx),
-            (int) Math.rint(curve.getY1()),
-            dx + xMg,
-            dy);
+                (int) Math.rint(curve.getX1() - dx),
+                (int) Math.rint(curve.getY1()),
+                dx + xMg,
+                dy);
         final PixelRectangle rightRect = new PixelRectangle(
-            (int) Math.rint(curve.getX2() - xMg),
-            (int) Math.rint(curve.getY2()),
-            dx + xMg,
-            dy);
+                (int) Math.rint(curve.getX2() - xMg),
+                (int) Math.rint(curve.getY2()),
+                dx + xMg,
+                dy);
 
         if (below) {
             leftRect.y -= dy;
@@ -708,8 +747,7 @@ public class Slur
                 for (TreeNode cNode : measure.getChords()) {
                     Chord chord = (Chord) cNode;
 
-                    if (!chord.getNotes()
-                              .isEmpty()) {
+                    if (!chord.getNotes().isEmpty()) {
                         if (leftRect.contains(chord.getTailLocation())) {
                             leftNodes.add(chord);
                         }
@@ -736,147 +774,50 @@ public class Slur
 
         // Sort the collections of nodes, and keep only the closest ones
         filterNodes(
-            leftNodes,
-            new PixelPoint((int) curve.getX1(), (int) curve.getY1()));
+                leftNodes,
+                new PixelPoint((int) curve.getX1(), (int) curve.getY1()));
         filterNodes(
-            rightNodes,
-            new PixelPoint((int) curve.getX2(), (int) curve.getY2()));
+                rightNodes,
+                new PixelPoint((int) curve.getX2(), (int) curve.getY2()));
 
         return below;
     }
 
-    //------------------//
-    // isCompatibleWith //
-    //------------------//
-    /**
-     * Check whether two slurs to-be-connected are roughly compatible
-     * with each other (same staff id, and pitch positions not too
-     * different).
-     * @param prevSlur the previous slur
-     * @return true if found compatible
-     */
-    private boolean isCompatibleWith (Slur prevSlur)
-    {
-        // Retrieve prev staff, using the left point of the prev slur
-        Staff prevStaff = prevSlur.getPart()
-                                  .getStaffAt(
-            new PixelPoint(
-                (int) prevSlur.curve.getX1(),
-                (int) prevSlur.curve.getY1()));
-
-        // Retrieve staff, using the right point of the slur
-        Staff staff = getPart()
-                          .getStaffAt(
-            new PixelPoint((int) curve.getX2(), (int) curve.getY2()));
-
-        if (prevStaff.getId() != staff.getId()) {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "prevSlur#" + prevSlur.getId() + " prevStaff:" +
-                    prevStaff.getId() + " slur#" + this.getId() + " staff:" +
-                    staff.getId() + " different staff id");
-            }
-
-            return false;
-        }
-
-        // Retrieve prev position, using the right point of the prev slur
-        double     prevPp = prevStaff.pitchPositionOf(
-            new PixelPoint(
-                (int) prevSlur.curve.getX2(),
-                (int) prevSlur.curve.getY2()));
-
-        // Retrieve position, using the left point of the slur
-        PixelPoint pt = new PixelPoint(
-            (int) curve.getX1(),
-            (int) curve.getY1());
-        double     pp = staff.pitchPositionOf(pt);
-
-        // Compare staves and pitch positions (very roughly)
-        double  deltaPitch = pp - prevPp;
-        boolean res = Math.abs(deltaPitch) <= (constants.maxDeltaY.getValue() * 2);
-
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "prevSlur#" + prevSlur.getId() + " slur#" + this.getId() +
-                " deltaPitch:" + deltaPitch + " res:" + res);
-        }
-
-        return res;
-    }
-
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         /** Abscissa extension when looking for embraced notes */
         Scale.Fraction areaDx = new Scale.Fraction(
-            1.7,
-            "Abscissa extension when looking for embraced notes");
+                1.7,
+                "Abscissa extension when looking for embraced notes");
 
         /** Abscissa margin when looking for embraced notes */
         Scale.Fraction areaXMargin = new Scale.Fraction(
-            0.5,
-            "Abscissa margin when looking for embraced notes");
+                0.5,
+                "Abscissa margin when looking for embraced notes");
 
         /** Ordinate extension when looking for embraced notes */
         Scale.Fraction areaDy = new Scale.Fraction(
-            5,
-            "Ordinate extension when looking for embraced notes");
+                5,
+                "Ordinate extension when looking for embraced notes");
 
         /** Maximum difference in vertical position between connecting slurs */
         Scale.Fraction maxDeltaY = new Scale.Fraction(
-            4,
-            "Maximum difference in vertical position between connecting slurs");
-    }
-
-    //----------------//
-    // NodeComparator //
-    //----------------//
-    /**
-     * Class {@code NodeComparator} implements a Node comparator, where
-     * nodes are sorted according to the ordinate of the left point
-     * (whether its'a Note or a chord tail location, from top to bottom).
-     */
-    private static final class NodeComparator
-        implements Comparator<MeasureNode>, Serializable
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        final PixelPoint ref;
-
-        //~ Constructors -------------------------------------------------------
-
-        public NodeComparator (PixelPoint ref)
-        {
-            this.ref = ref;
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        public int compare (MeasureNode n1,
-                            MeasureNode n2)
-        {
-            PixelPoint p1 = (n1 instanceof Chord)
-                            ? ((Chord) n1).getTailLocation() : n1.getCenter();
-            PixelPoint p2 = (n2 instanceof Chord)
-                            ? ((Chord) n2).getTailLocation() : n2.getCenter();
-
-            return Double.compare(p1.distance(ref), p2.distance(ref));
-        }
+                4,
+                "Maximum difference in vertical position between connecting slurs");
     }
 
     //-----//
     // End //
     //-----//
     /**
-     *  Note information on one end of a slur.
+     * Note information on one end of a slur.
      */
     private static class End
     {
@@ -889,7 +830,6 @@ public class Slur
         final int stemDir;
 
         //~ Constructors -------------------------------------------------------
-
         public End (MeasureNode node)
         {
             if (node instanceof Note) {
@@ -897,12 +837,46 @@ public class Slur
             } else {
                 Chord chord = (Chord) node;
                 // Take the last note (closest to the tail)
-                note = (Note) chord.getNotes()
-                                   .get(chord.getNotes().size() - 1);
+                note = (Note) chord.getNotes().get(chord.getNotes().size() - 1);
             }
 
-            stemDir = note.getChord()
-                          .getStemDir();
+            stemDir = note.getChord().getStemDir();
+        }
+    }
+
+    //----------------//
+    // NodeComparator //
+    //----------------//
+    /**
+     * Class {@code NodeComparator} implements a Node comparator, where
+     * nodes are sorted according to the ordinate of the left point
+     * (whether its'a Note or a chord tail location, from top to bottom).
+     */
+    private static final class NodeComparator
+            implements Comparator<MeasureNode>,
+                       Serializable
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final PixelPoint ref;
+
+        //~ Constructors -------------------------------------------------------
+        public NodeComparator (PixelPoint ref)
+        {
+            this.ref = ref;
+        }
+
+        //~ Methods ------------------------------------------------------------
+        @Override
+        public int compare (MeasureNode n1,
+                            MeasureNode n2)
+        {
+            PixelPoint p1 = (n1 instanceof Chord)
+                            ? ((Chord) n1).getTailLocation() : n1.getCenter();
+            PixelPoint p2 = (n2 instanceof Chord)
+                            ? ((Chord) n2).getTailLocation() : n2.getCenter();
+
+            return Double.compare(p1.distance(ref), p2.distance(ref));
         }
     }
 }

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -23,7 +23,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 
 /**
- * Class {@code BasicVertex} is a basic implementation of {@link Vertex}
+ * Class {@code BasicVertex} is a basic implementation of {@link Vertex}.
  *
  * <p>NOTA: This plain Vertex type has no room for user-defined data, if such
  * feature is needed then a proper subtype of BasicVertex should be used.
@@ -40,7 +40,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 @NotThreadSafe
 @XmlAccessorType(XmlAccessType.NONE)
 public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
-    implements Vertex<D, V>
+        implements Vertex<D, V>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -48,7 +48,6 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
     private static final Logger logger = Logger.getLogger(BasicVertex.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /**
      * Unique vertex Id (for debugging mainly)
      */
@@ -57,12 +56,12 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
     /**
      * Incoming edges from other vertices
      */
-    protected final List<V> sources = new ArrayList<V>();
+    protected final List<V> sources = new ArrayList<>();
 
     /**
      * Outgoing edges to other vertices
      */
-    protected final List<V> targets = new ArrayList<V>();
+    protected final List<V> targets = new ArrayList<>();
 
     /**
      * Containing graph
@@ -77,7 +76,6 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
     protected List<VertexView> views;
 
     //~ Constructors -----------------------------------------------------------
-
     //--------//
     // Vertex //
     //--------//
@@ -86,9 +84,7 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
      */
     protected BasicVertex ()
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("new vertex");
-        }
+        logger.fine("new vertex");
     }
 
     //--------//
@@ -96,86 +92,79 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
     //--------//
     /**
      * Create a Vertex in a graph.
+     *
      * @param graph The containing graph where this vertex is to be hosted
      */
     protected BasicVertex (D graph)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("new vertex in graph " + graph);
-        }
+        logger.fine("new vertex in graph {0}", graph);
 
         graph.addVertex(this); // Compiler warning here
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // addTarget //
     //-----------//
+    @Override
     public void addTarget (V target)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("adding edge from " + this + " to " + target);
-        }
+        logger.fine("adding edge from {0} to {1}", new Object[]{this, target});
 
         // Assert we have real target
         if (target == null) {
             throw new IllegalArgumentException(
-                "Cannot add an edge to a null target");
+                    "Cannot add an edge to a null target");
         }
 
         // Assert this vertex and target vertex belong to the same graph
         if (this.getGraph() != target.getGraph()) {
             throw new RuntimeException(
-                "An edge can link vertices of the same graph only");
+                    "An edge can link vertices of the same graph only");
         }
 
         // Avoid duplicates
-        getTargets()
-            .remove(target);
-        target.getSources()
-              .remove((V) this);
+        getTargets().remove(target);
+        target.getSources().remove((V) this);
 
         targets.add(target);
-        target.getSources()
-              .add((V) this);
+        target.getSources().add((V) this);
     }
 
     //---------//
     // addView //
     //---------//
+    @Override
     public void addView (VertexView view)
     {
-        getViews()
-            .add(view);
+        getViews().add(view);
     }
 
     //------------//
     // clearViews //
     //------------//
+    @Override
     public void clearViews ()
     {
-        getViews()
-            .clear();
+        getViews().clear();
     }
 
     //--------//
     // delete //
     //--------//
+    @Override
     public void delete ()
     {
         try {
-            if (logger.isFineEnabled()) {
-                logger.fine("deleting vertex " + this);
-            }
+            logger.fine("deleting vertex {0}", this);
 
             // Remove in vertices of the vertex
-            for (V source : new ArrayList<V>(getSources())) {
+            for (V source : new ArrayList<>(getSources())) {
                 source.removeTarget((V) this, false);
             }
 
             // Remove out vertices of the vertex
-            for (V target : new ArrayList<V>(getTargets())) {
+            for (V target : new ArrayList<>(getTargets())) {
                 removeTarget(target, false);
             }
 
@@ -189,6 +178,7 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
     //------//
     // dump //
     //------//
+    @Override
     public void dump ()
     {
         // The vertex
@@ -209,6 +199,7 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
     //----------//
     // getGraph //
     //----------//
+    @Override
     public D getGraph ()
     {
         return graph;
@@ -217,6 +208,7 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
     //-------//
     // getId //
     //-------//
+    @Override
     public int getId ()
     {
         return id;
@@ -225,6 +217,7 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
     //-------------//
     // getInDegree //
     //-------------//
+    @Override
     public int getInDegree ()
     {
         return sources.size();
@@ -233,6 +226,7 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
     //--------------//
     // getOutDegree //
     //--------------//
+    @Override
     public int getOutDegree ()
     {
         return targets.size();
@@ -241,6 +235,7 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
     //------------//
     // getSources //
     //------------//
+    @Override
     public List<V> getSources ()
     {
         return sources;
@@ -249,6 +244,7 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
     //------------//
     // getTargets //
     //------------//
+    @Override
     public List<V> getTargets ()
     {
         return targets;
@@ -257,44 +253,44 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
     //---------//
     // getView //
     //---------//
+    @Override
     public VertexView getView (int index)
     {
-        return getViews()
-                   .get(index);
+        return getViews().get(index);
     }
 
     //---------------//
     // getViewsCount //
     //---------------//
+    @Override
     public int getViewsCount ()
     {
-        return getViews()
-                   .size();
+        return getViews().size();
     }
 
     //--------------//
     // removeTarget //
     //--------------//
-    public void removeTarget (V       target,
+    @Override
+    public void removeTarget (V target,
                               boolean strict)
     {
         // Assert we have real target
         if (target == null) {
             throw new IllegalArgumentException(
-                "Cannot remove an edge to a null target");
+                    "Cannot remove an edge to a null target");
         }
 
         if (!this.targets.remove(target) && strict) {
             throw new RuntimeException(
-                "Attempting to remove non-existing edge between " + this +
-                " and " + target);
+                    "Attempting to remove non-existing edge between " + this
+                    + " and " + target);
         }
 
-        if (!target.getSources()
-                   .remove((V) this) && strict) {
+        if (!target.getSources().remove((V) this) && strict) {
             throw new RuntimeException(
-                "Attempting to remove non-existing edge between " + this +
-                " and " + target);
+                    "Attempting to remove non-existing edge between " + this
+                    + " and " + target);
         }
     }
 
@@ -304,6 +300,7 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
     /**
      * (package access from graph)
      */
+    @Override
     public void setGraph (D graph)
     {
         this.graph = graph;
@@ -313,6 +310,7 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
     // setId //
     //-------//
     @XmlAttribute
+    @Override
     public void setId (int id)
     {
         this.id = id;
@@ -326,10 +324,7 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
     {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("{")
-          .append(getClass().getSimpleName())
-          .append("#")
-          .append(id);
+        sb.append("{").append(getClass().getSimpleName()).append("#").append(id);
 
         sb.append(internalsString());
 
@@ -345,16 +340,15 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
      * Return the string of the internals of this class, typically for inclusion
      * in a toString. The overriding methods, if any, should return a string
      * that begins with a " " followed by some content.
+     *
      * @return the string of internals
      */
     protected String internalsString ()
     {
         StringBuilder sb = new StringBuilder(100);
 
-        sb.append(" ")
-          .append(getInDegree());
-        sb.append("/")
-          .append(getOutDegree());
+        sb.append(" ").append(getInDegree());
+        sb.append("/").append(getOutDegree());
 
         return sb.toString();
     }
@@ -364,12 +358,13 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
     //----------//
     /**
      * Report the sequence of the related views, lazily created.
+     *
      * @return the views collection (perhaps empty, but not null)
      */
     private List<VertexView> getViews ()
     {
         if (views == null) {
-            views = new ArrayList<VertexView>();
+            views = new ArrayList<>();
         }
 
         return views;

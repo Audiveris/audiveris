@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -18,6 +18,8 @@ import omr.run.Run;
 
 import omr.score.common.PixelRectangle;
 
+import omr.sheet.SystemInfo;
+
 import omr.util.HorizontalSide;
 import omr.util.Predicate;
 
@@ -26,8 +28,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Class {@code BasicEnvironment} is the basic implementation of an environment
- * facet
+ * Class {@code BasicEnvironment} is the basic implementation of an
+ * environment facet.
  *
  * @author Hervé Bitteur
  */
@@ -73,6 +75,7 @@ class BasicEnvironment
     //---------------------//
     // copyStemInformation //
     //---------------------//
+    @Override
     public void copyStemInformation (Glyph other)
     {
         for (HorizontalSide side : HorizontalSide.values()) {
@@ -98,6 +101,7 @@ class BasicEnvironment
     //--------------------//
     // getAlienPixelsFrom //
     //--------------------//
+    @Override
     public int getAlienPixelsFrom (Lag                lag,
                                    PixelRectangle     absRoi,
                                    Predicate<Section> predicate)
@@ -156,7 +160,7 @@ class BasicEnvironment
         Set<Section> sections = glyph.getMembers();
 
         // Retrieve sections connected to this glyph
-        Set<Section> connectedSections = new HashSet<Section>();
+        Set<Section> connectedSections = new HashSet<>();
 
         for (Section section : sections) {
             for (Section s : section.getSources()) {
@@ -179,7 +183,7 @@ class BasicEnvironment
         }
 
         // Retrieve their containing glyphs
-        Set<Glyph> connectedGlyphs = new HashSet<Glyph>();
+        Set<Glyph> connectedGlyphs = new HashSet<>();
 
         for (Section s : connectedSections) {
             Glyph g = s.getGlyph();
@@ -195,6 +199,7 @@ class BasicEnvironment
     //--------------//
     // getFirstStem //
     //--------------//
+    @Override
     public Glyph getFirstStem ()
     {
         for (HorizontalSide side : HorizontalSide.values()) {
@@ -211,6 +216,7 @@ class BasicEnvironment
     //------------------//
     // getPitchPosition //
     //------------------//
+    @Override
     public double getPitchPosition ()
     {
         return pitchPosition;
@@ -219,6 +225,7 @@ class BasicEnvironment
     //---------//
     // getStem //
     //---------//
+    @Override
     public Glyph getStem (HorizontalSide side)
     {
         if (side == HorizontalSide.LEFT) {
@@ -231,6 +238,7 @@ class BasicEnvironment
     //---------------//
     // getStemNumber //
     //---------------//
+    @Override
     public int getStemNumber ()
     {
         return stemNumber;
@@ -239,6 +247,7 @@ class BasicEnvironment
     //-----------------//
     // getSymbolsAfter //
     //-----------------//
+    @Override
     public void getSymbolsAfter (Predicate<Glyph> predicate,
                                  Set<Glyph>       goods,
                                  Set<Glyph>       bads)
@@ -263,6 +272,7 @@ class BasicEnvironment
     //------------------//
     // getSymbolsBefore //
     //------------------//
+    @Override
     public void getSymbolsBefore (Predicate<Glyph> predicate,
                                   Set<Glyph>       goods,
                                   Set<Glyph>       bads)
@@ -284,9 +294,20 @@ class BasicEnvironment
         }
     }
 
+    //-----------//
+    // getSystem //
+    //-----------//
+    @Override
+    public SystemInfo getSystem ()
+    {
+        return glyph.getFirstSection()
+                    .getSystem();
+    }
+
     //--------------//
     // isWithLedger //
     //--------------//
+    @Override
     public boolean isWithLedger ()
     {
         return withLedger;
@@ -295,6 +316,7 @@ class BasicEnvironment
     //------------------//
     // setPitchPosition //
     //------------------//
+    @Override
     public void setPitchPosition (double pitchPosition)
     {
         this.pitchPosition = pitchPosition;
@@ -303,6 +325,7 @@ class BasicEnvironment
     //---------//
     // setStem //
     //---------//
+    @Override
     public void setStem (Glyph          stem,
                          HorizontalSide side)
     {
@@ -316,6 +339,7 @@ class BasicEnvironment
     //---------------//
     // setStemNumber //
     //---------------//
+    @Override
     public void setStemNumber (int stemNumber)
     {
         this.stemNumber = stemNumber;
@@ -324,6 +348,7 @@ class BasicEnvironment
     //---------------//
     // setWithLedger //
     //---------------//
+    @Override
     public void setWithLedger (boolean withLedger)
     {
         this.withLedger = withLedger;

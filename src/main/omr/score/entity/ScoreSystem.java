@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -35,36 +35,21 @@ import java.util.List;
  * @author Hervé Bitteur
  */
 public class ScoreSystem
-    extends SystemNode
+        extends SystemNode
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScoreSystem.class);
 
-    //~ Enumerations -----------------------------------------------------------
-
-    /** Relative vertical position with respect to the system staves */
-    public enum StaffPosition {
-        //~ Enumeration constant initializers ----------------------------------
-
-
-        /** Above the first staff of the first (real)part */
-        ABOVE_STAVES,
-        /** Somewhere within the staves of this system */
-        WITHIN_STAVES, 
-        /** Below the last staff of the last part */
-        BELOW_STAVES;
-    }
-
     //~ Instance fields --------------------------------------------------------
-
     /** Id for debug */
     private final int id;
 
     /**
-     * Top left corner of the system in the containing page. This points to the
-     * first real staff, and does not count the preceding dummy staves if any.
+     * Top left corner of the system in the containing page.
+     * This points to the first real staff, and does not count the preceding
+     * dummy staves if any.
      */
     private final PixelPoint topLeft;
 
@@ -72,22 +57,21 @@ public class ScoreSystem
     private final SystemInfo info;
 
     //~ Constructors -----------------------------------------------------------
-
     //-------------//
     // ScoreSystem //
     //-------------//
     /**
-     * Create a system with all needed parameters
+     * Create a system with all needed parameters.
      *
-     * @param info the physical information retrieved from the sheet
-     * @param page the containing page
-     * @param topLeft the coordinates of the upper left point of the system in
-     * its containing page
+     * @param info      the physical information retrieved from the sheet
+     * @param page      the containing page
+     * @param topLeft   the coordinates of the upper left point of the system
+     * in its containing page
      * @param dimension the dimension of the system
      */
-    public ScoreSystem (SystemInfo     info,
-                        Page           page,
-                        PixelPoint     topLeft,
+    public ScoreSystem (SystemInfo info,
+                        Page page,
+                        PixelPoint topLeft,
                         PixelDimension dimension)
     {
         super(page);
@@ -98,7 +82,7 @@ public class ScoreSystem
         id = 1 + getChildIndex();
 
         setBox(
-            new PixelRectangle(
+                new PixelRectangle(
                 topLeft.x,
                 topLeft.y,
                 dimension.width,
@@ -107,7 +91,6 @@ public class ScoreSystem
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------//
     // accept //
     //--------//
@@ -121,27 +104,25 @@ public class ScoreSystem
     // connectPageInitialSlurs //
     //-------------------------//
     /**
-     * For this system, retrieve the connections between the (orphan) slurs at
-     * the beginning of this page and the (orphan) slurs at the end of the
-     * previous page.
+     * For this system, retrieve the connections between the (orphan)
+     * slurs at the beginning of this page and the (orphan) slurs at the
+     * end of the previous page.
      */
     public void connectPageInitialSlurs ()
     {
         // Safer: check we are the very first system in page
         if (getChildIndex() != 0) {
             throw new IllegalArgumentException(
-                "connectSlursAcrossPages called for non-first system");
+                    "connectSlursAcrossPages called for non-first system");
         }
 
         // If very first page, we are done
-        if (getPage()
-                .getChildIndex() == 0) {
+        if (getPage().getChildIndex() == 0) {
             return;
         }
 
-        ScoreSystem precedingSystem = getPage()
-                                          .getPrecedingInScore()
-                                          .getLastSystem();
+        ScoreSystem precedingSystem = getPage().getPrecedingInScore().
+                getLastSystem();
 
         if (precedingSystem != null) {
             // Examine every part in sequence
@@ -150,7 +131,7 @@ public class ScoreSystem
 
                 // Find out the proper preceding part (across pages)
                 SystemPart precedingPart = precedingSystem.getPart(
-                    part.getId());
+                        part.getId());
 
                 // Ending orphans in preceding system/part (if such part exists)
                 part.connectSlursWith(precedingPart);
@@ -162,8 +143,9 @@ public class ScoreSystem
     // connectSystemInitialSlurs //
     //---------------------------//
     /**
-     * Retrieve the connections between the (orphan) slurs at the beginning of
-     * this system and the (orphan) slurs at the end of the previous system
+     * Retrieve the connections between the (orphan) slurs at the
+     * beginning of this system and the (orphan) slurs at the end of the
+     * previous system.
      */
     public void connectSystemInitialSlurs ()
     {
@@ -181,17 +163,15 @@ public class ScoreSystem
     // fillMissingParts //
     //------------------//
     /**
-     * Check for missing parts in this system, and if needed create dummy parts
-     * filled with whole rests
+     * Check for missing parts in this system, and if needed create
+     * dummy parts filled with whole rests.
      */
     public void fillMissingParts ()
     {
         // Check we have all the defined parts in this system
-        for (ScorePart scorePart : getPage()
-                                       .getPartList()) {
+        for (ScorePart scorePart : getPage().getPartList()) {
             if (getPart(scorePart.getId()) == null) {
-                getFirstRealPart()
-                    .createDummyPart(scorePart.getId());
+                getFirstRealPart().createDummyPart(scorePart.getId());
                 Collections.sort(getParts(), SystemPart.idComparator);
             }
         }
@@ -219,7 +199,8 @@ public class ScoreSystem
     // getFirstPart //
     //--------------//
     /**
-     * Report the very first part in this system, which may be a dummy one.
+     * Report the very first part in this system, which may be a dummy
+     * one.
      * Use {@link #getFirstRealPart} instead to point to the first real part.
      *
      * @return the first part entity
@@ -227,15 +208,14 @@ public class ScoreSystem
      */
     public SystemPart getFirstPart ()
     {
-        return (SystemPart) getParts()
-                                .get(0);
+        return (SystemPart) getParts().get(0);
     }
 
     //------------------//
     // getFirstRealPart //
     //------------------//
     /**
-     * Report the first non dummy part in this system
+     * Report the first non dummy part in this system.
      *
      * @return the real first part entity
      * @see #getFirstPart()
@@ -265,7 +245,8 @@ public class ScoreSystem
     // getInfo //
     //---------//
     /**
-     * Report the physical information retrieved from the sheet for this system
+     * Report the physical information retrieved from the sheet for this
+     * system.
      *
      * @return the information entity
      */
@@ -278,14 +259,13 @@ public class ScoreSystem
     // getLastPart //
     //-------------//
     /**
-     * Report the last part in this system
+     * Report the last part in this system.
      *
      * @return the last part entity
      */
     public SystemPart getLastPart ()
     {
-        return (SystemPart) getParts()
-                                .get(getParts().size() - 1);
+        return (SystemPart) getParts().get(getParts().size() - 1);
     }
 
     //---------//
@@ -293,6 +273,7 @@ public class ScoreSystem
     //---------//
     /**
      * Report the part with the provided id, if any.
+     *
      * @param id the id of the desired part
      * @return the part found or null
      */
@@ -306,9 +287,8 @@ public class ScoreSystem
             }
         }
 
-        if (logger.isFineEnabled()) {
-            logger.info(getContextString() + " No part " + id + " found");
-        }
+        logger.fine("{0} No part {1} found",
+                    new Object[]{getContextString(), id});
 
         return null;
     }
@@ -317,22 +297,47 @@ public class ScoreSystem
     // getPartAt //
     //-----------//
     /**
-     * Determine the part which contains the given point
+     * Determine the part which relates to the given point.
      *
      * @param point the given point
      * @return the containing part
      */
     public SystemPart getPartAt (PixelPoint point)
     {
-        return getStaffAt(point)
-                   .getPart();
+        Staff staff = getStaffAt(point);
+
+        if (staff == null) {
+            return getFirstPart();
+        } else {
+            return staff.getPart();
+        }
+    }
+
+    //--------------//
+    // getPartAbove //
+    //--------------//
+    /**
+     * Determine the part which is above the given point.
+     *
+     * @param point the given point
+     * @return the part above
+     */
+    public SystemPart getPartAbove (PixelPoint point)
+    {
+        Staff staff = getStaffAbove(point);
+
+        if (staff == null) {
+            return getFirstPart();
+        } else {
+            return staff.getPart();
+        }
     }
 
     //----------//
     // getParts //
     //----------//
     /**
-     * Report the parts for this system
+     * Report the parts for this system.
      *
      * @return the ordered parts
      */
@@ -345,9 +350,9 @@ public class ScoreSystem
     // getStaffAbove //
     //---------------//
     /**
-     * Determine the staff which is just above the given system point
+     * Determine the real staff which is just above the given point.
      *
-     * @param sysPt the given system point
+     * @param sysPt the given point
      * @return the staff above
      */
     public Staff getStaffAbove (PixelPoint sysPt)
@@ -357,11 +362,13 @@ public class ScoreSystem
         for (TreeNode node : getParts()) {
             SystemPart part = (SystemPart) node;
 
-            for (TreeNode n : part.getStaves()) {
-                Staff staff = (Staff) n;
+            if (!part.isDummy()) {
+                for (TreeNode n : part.getStaves()) {
+                    Staff staff = (Staff) n;
 
-                if (staff.getCenter().y < sysPt.y) {
-                    best = staff;
+                    if (staff.getCenter().y < sysPt.y) {
+                        best = staff;
+                    }
                 }
             }
         }
@@ -373,14 +380,14 @@ public class ScoreSystem
     // getStaffAt //
     //------------//
     /**
-     * Determine the staff which is closest to the given system point
+     * Determine the real staff which is closest to the given point.
      *
-     * @param sysPt the given system point
+     * @param sysPt the given point
      * @return the closest staff
      */
     public Staff getStaffAt (PixelPoint sysPt)
     {
-        int   minDy = Integer.MAX_VALUE;
+        int bestDy = Integer.MAX_VALUE;
         Staff best = null;
 
         for (TreeNode node : getParts()) {
@@ -389,10 +396,10 @@ public class ScoreSystem
             if (!part.isDummy()) {
                 for (TreeNode n : part.getStaves()) {
                     Staff staff = (Staff) n;
-                    int   dy = Math.abs(sysPt.y - staff.getCenter().y);
+                    int dy = Math.abs(sysPt.y - staff.getCenter().y);
 
-                    if (dy < minDy) {
-                        minDy = dy;
+                    if (dy < bestDy) {
+                        bestDy = dy;
                         best = staff;
                     }
                 }
@@ -406,7 +413,7 @@ public class ScoreSystem
     // getStaffBelow //
     //---------------//
     /**
-     * Determine the staff which is just below the given system point
+     * Determine the staff which is just below the given system point.
      *
      * @param sysPt the given system point
      * @return the staff below
@@ -432,22 +439,21 @@ public class ScoreSystem
     // getStaffPosition //
     //------------------//
     /**
-     * Report the vertical position of the provided system point with respect to
-     * the system staves
+     * Report the vertical position of the provided point with respect
+     * to the system staves.
+     *
      * @param point the point whose ordinate is to be checked
      * @return the StaffPosition value
      */
     public StaffPosition getStaffPosition (PixelPoint point)
     {
-        Staff firstStaff = getFirstRealPart()
-                               .getFirstStaff();
+        Staff firstStaff = getFirstRealPart().getFirstStaff();
 
         if (point.y < firstStaff.getTopLeft().y) {
             return StaffPosition.ABOVE_STAVES;
         }
 
-        Staff lastStaff = getLastPart()
-                              .getLastStaff();
+        Staff lastStaff = getLastPart().getLastStaff();
 
         if (point.y > (lastStaff.getTopLeft().y + lastStaff.getHeight())) {
             return StaffPosition.BELOW_STAVES;
@@ -460,24 +466,25 @@ public class ScoreSystem
     // getTextStaff //
     //--------------//
     /**
-     * Report the related staff for a text at the provided point, since some
-     * texts (direction, lyrics) are preferably assigned to the staff ABOVE_STAVES if
-     * any
-     * @param role the precise role of text glyph
-     * @param sysPt the provided point
+     * Report the related staff for a text at the provided point,
+     * since some texts (direction, lyrics) are preferably assigned to
+     * the staff above if any.
+     *
+     * @param role  the precise role of text glyph
+     * @param point the provided point
      * @return the preferred staff
      */
-    public Staff getTextStaff (TextRole   role,
-                               PixelPoint sysPt)
+    public Staff getTextStaff (TextRole role,
+                               PixelPoint point)
     {
         Staff staff = null;
 
         if ((role == TextRole.Direction) || (role == TextRole.Lyrics)) {
-            staff = getStaffAbove(sysPt);
+            staff = getStaffAbove(point);
         }
 
         if (staff == null) {
-            staff = getStaffAt(sysPt);
+            staff = getStaffAt(point);
         }
 
         return staff;
@@ -487,8 +494,10 @@ public class ScoreSystem
     // getTopLeft //
     //------------//
     /**
-     * Report the coordinates of the upper left corner of this system in its
-     * containing score (not counting preceding dummy staves if any).
+     * Report the coordinates of the upper left corner of this system
+     * in its containing score (not counting preceding dummy staves if
+     * any).
+     *
      * @return the top left corner
      */
     public PixelPoint getTopLeft ()
@@ -500,8 +509,9 @@ public class ScoreSystem
     // isLeftOfStaves //
     //----------------//
     /**
-     * Report whether the provided system point is on the left side of the
-     * staves (on left of the starting barline)
+     * Report whether the provided system point is on the left side of
+     * the staves (on left of the starting barline).
+     *
      * @param sysPt the system point to check
      * @return true if on left
      */
@@ -526,6 +536,7 @@ public class ScoreSystem
     //----------//
     /**
      * Set the system width.
+     *
      * @param unitWidth the system width, in units
      */
     public void setWidth (int unitWidth)
@@ -545,21 +556,15 @@ public class ScoreSystem
     public String toString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("{System#")
-          .append(id);
+        sb.append("{System#").append(id);
 
         if (topLeft != null) {
-            sb.append(" topLeft=[")
-              .append(topLeft.x)
-              .append(",")
-              .append(topLeft.y)
-              .append("]");
+            sb.append(" topLeft=[").append(topLeft.x).append(",").append(
+                    topLeft.y).append("]");
         }
 
-        sb.append(" dimension=")
-          .append(getBox().width)
-          .append("x")
-          .append(getBox().height);
+        sb.append(" dimension=").append(getBox().width).append("x").append(
+                getBox().height);
 
         sb.append("}");
 

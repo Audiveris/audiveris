@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -14,7 +14,6 @@ package omr.glyph.facets;
 import omr.glyph.Evaluation;
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
-import omr.glyph.text.TextInfo;
 
 import omr.log.Logger;
 
@@ -22,6 +21,8 @@ import omr.score.entity.TimeRational;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+
 
 /**
  * Class {@code BasicRecognition} is the basic implementation of a
@@ -29,17 +30,9 @@ import java.util.Set;
  *
  * @author Hervé Bitteur
  */
-class BasicRecognition
-    extends BasicFacet
-    implements GlyphRecognition
-{
-    //~ Static fields/initializers ---------------------------------------------
-
+class BasicRecognition extends BasicFacet implements GlyphRecognition {
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
-        BasicRecognition.class);
-
-    //~ Instance fields --------------------------------------------------------
+    private static final Logger logger = Logger.getLogger(BasicRecognition.class);
 
     /** Current evaluation (shape + grade), if any */
     private Evaluation evaluation;
@@ -47,13 +40,8 @@ class BasicRecognition
     /** Set of forbidden shapes, if any */
     private Set<Shape> forbiddenShapes;
 
-    /** Related textual information, if any */
-    private TextInfo textInfo;
-
     /** Related time sig rational information, if any */
     private TimeRational timeRational;
-
-    //~ Constructors -----------------------------------------------------------
 
     //------------------//
     // BasicRecognition //
@@ -62,19 +50,15 @@ class BasicRecognition
      * Creates a new BasicRecognition object.
      * @param glyph our glyph
      */
-    public BasicRecognition (Glyph glyph)
-    {
+    public BasicRecognition(Glyph glyph) {
         super(glyph);
     }
-
-    //~ Methods ----------------------------------------------------------------
 
     //------------//
     // allowShape //
     //------------//
     @Override
-    public void allowShape (Shape shape)
-    {
+    public void allowShape(Shape shape) {
         if (forbiddenShapes != null) {
             forbiddenShapes.remove(shape);
         }
@@ -84,14 +68,11 @@ class BasicRecognition
     // dump //
     //------//
     @Override
-    public void dump ()
-    {
+    public void dump() {
         System.out.println("   evaluation=" + evaluation);
-        System.out.println(
-            "   physical=" +
+        System.out.println("   physical=" +
             ((getShape() != null) ? getShape().getPhysicalShape() : null));
         System.out.println("   forbiddenShapes=" + forbiddenShapes);
-        System.out.println("   textInfo=" + textInfo);
         System.out.println("   rational=" + timeRational);
     }
 
@@ -99,10 +80,9 @@ class BasicRecognition
     // forbidShape //
     //-------------//
     @Override
-    public void forbidShape (Shape shape)
-    {
+    public void forbidShape(Shape shape) {
         if (forbiddenShapes == null) {
-            forbiddenShapes = new HashSet<Shape>();
+            forbiddenShapes = new HashSet<>();
         }
 
         forbiddenShapes.add(shape);
@@ -112,8 +92,7 @@ class BasicRecognition
     // getEvaluation //
     //---------------//
     @Override
-    public Evaluation getEvaluation ()
-    {
+    public Evaluation getEvaluation() {
         return evaluation;
     }
 
@@ -121,8 +100,7 @@ class BasicRecognition
     // getGrade //
     //----------//
     @Override
-    public double getGrade ()
-    {
+    public double getGrade() {
         if (evaluation != null) {
             return evaluation.grade;
         } else {
@@ -135,8 +113,7 @@ class BasicRecognition
     // getShape //
     //----------//
     @Override
-    public Shape getShape ()
-    {
+    public Shape getShape() {
         if (evaluation != null) {
             return evaluation.shape;
         } else {
@@ -144,25 +121,11 @@ class BasicRecognition
         }
     }
 
-    //-------------//
-    // getTextInfo //
-    //-------------//
-    @Override
-    public TextInfo getTextInfo ()
-    {
-        if (textInfo == null) {
-            textInfo = new TextInfo(glyph);
-        }
-
-        return textInfo;
-    }
-
     //-----------------//
     // getTimeRational //
     //-----------------//
     @Override
-    public TimeRational getTimeRational ()
-    {
+    public TimeRational getTimeRational() {
         return timeRational;
     }
 
@@ -170,8 +133,7 @@ class BasicRecognition
     // isBar //
     //-------//
     @Override
-    public boolean isBar ()
-    {
+    public boolean isBar() {
         return ShapeSet.Barlines.contains(getShape());
     }
 
@@ -179,8 +141,7 @@ class BasicRecognition
     // isClef //
     //--------//
     @Override
-    public boolean isClef ()
-    {
+    public boolean isClef() {
         return ShapeSet.Clefs.contains(getShape());
     }
 
@@ -188,8 +149,7 @@ class BasicRecognition
     // isKnown //
     //---------//
     @Override
-    public boolean isKnown ()
-    {
+    public boolean isKnown() {
         Shape shape = getShape();
 
         return (shape != null) && (shape != Shape.NOISE);
@@ -199,8 +159,7 @@ class BasicRecognition
     // isManualShape //
     //---------------//
     @Override
-    public boolean isManualShape ()
-    {
+    public boolean isManualShape() {
         return getGrade() == Evaluation.MANUAL;
     }
 
@@ -208,8 +167,7 @@ class BasicRecognition
     // isShapeForbidden //
     //------------------//
     @Override
-    public boolean isShapeForbidden (Shape shape)
-    {
+    public boolean isShapeForbidden(Shape shape) {
         return (forbiddenShapes != null) && forbiddenShapes.contains(shape);
     }
 
@@ -217,8 +175,7 @@ class BasicRecognition
     // isStem //
     //--------//
     @Override
-    public boolean isStem ()
-    {
+    public boolean isStem() {
         return getShape() == Shape.STEM;
     }
 
@@ -226,8 +183,7 @@ class BasicRecognition
     // isText //
     //--------//
     @Override
-    public boolean isText ()
-    {
+    public boolean isText() {
         Shape shape = getShape();
 
         return (shape != null) && shape.isText();
@@ -237,8 +193,7 @@ class BasicRecognition
     // isWellKnown //
     //-------------//
     @Override
-    public boolean isWellKnown ()
-    {
+    public boolean isWellKnown() {
         Shape shape = getShape();
 
         return (shape != null) && shape.isWellKnown();
@@ -248,8 +203,7 @@ class BasicRecognition
     // resetEvaluation //
     //-----------------//
     @Override
-    public void resetEvaluation ()
-    {
+    public void resetEvaluation() {
         evaluation = null;
     }
 
@@ -257,8 +211,7 @@ class BasicRecognition
     // setEvaluation //
     //---------------//
     @Override
-    public void setEvaluation (Evaluation evaluation)
-    {
+    public void setEvaluation(Evaluation evaluation) {
         setShape(evaluation.shape, evaluation.grade);
     }
 
@@ -266,8 +219,7 @@ class BasicRecognition
     // setShape //
     //----------//
     @Override
-    public void setShape (Shape shape)
-    {
+    public void setShape(Shape shape) {
         setShape(shape, Evaluation.ALGORITHM);
     }
 
@@ -275,21 +227,21 @@ class BasicRecognition
     // setShape //
     //----------//
     @Override
-    public void setShape (Shape  shape,
-                          double grade)
-    {
+    public void setShape(Shape shape, double grade) {
+        // Check status
+        if (glyph.isTransient()) {
+            logger.severe("Setting shape of a transient glyph");
+        }
+
         // Blacklist the old shape if any
         Shape oldShape = getShape();
 
-        if ((oldShape != null) &&
-            (oldShape != shape) &&
-            (oldShape != Shape.GLYPH_PART)) {
+        if ((oldShape != null) && (oldShape != shape) &&
+                (oldShape != Shape.GLYPH_PART)) {
             forbidShape(oldShape);
 
             if (glyph.isVip()) {
-                logger.info(
-                    "Shape " + oldShape + " forbidden for Glyph#" +
-                    glyph.getId());
+                logger.info("Shape {0} forbidden for {1}", new Object[]{oldShape, glyph.idString()});
             }
         }
 
@@ -302,7 +254,7 @@ class BasicRecognition
         evaluation = new Evaluation(shape, grade);
 
         if (glyph.isVip()) {
-            logger.info("Glyph#" + glyph.getId() + " assigned " + evaluation);
+            logger.info("{0} assigned {1}", new Object[]{glyph.idString(), evaluation});
         }
     }
 
@@ -310,8 +262,7 @@ class BasicRecognition
     // setTimeRational //
     //-----------------//
     @Override
-    public void setTimeRational (TimeRational timeRational)
-    {
+    public void setTimeRational(TimeRational timeRational) {
         this.timeRational = timeRational;
     }
 }

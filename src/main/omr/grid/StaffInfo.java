@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -103,7 +103,7 @@ public class StaffInfo
     private GeoPath area;
 
     /** Map of ledgers nearby */
-    private final Map<Integer, SortedSet<Ledger>> ledgerMap = new TreeMap<Integer, SortedSet<Ledger>>();
+    private final Map<Integer, SortedSet<Ledger>> ledgerMap = new TreeMap<>();
 
     /** Corresponding staff entity in the score hierarchy */
     private Staff scoreStaff;
@@ -166,7 +166,7 @@ public class StaffInfo
         SortedSet<Ledger> ledgerSet = ledgerMap.get(pitch);
 
         if (ledgerSet == null) {
-            ledgerSet = new TreeSet<Ledger>(Dash.abscissaComparator);
+            ledgerSet = new TreeSet<>(Dash.abscissaComparator);
             ledgerMap.put(pitch, ledgerSet);
         }
 
@@ -318,11 +318,11 @@ public class StaffInfo
             searchBox.getHeight() + (2 * interline));
 
         // Browse all staff ledgers
-        Set<Ledger> foundLedgers = new HashSet<Ledger>();
+        Set<Ledger> foundLedgers = new HashSet<>();
 
         for (Set<Ledger> set : ledgerMap.values()) {
             for (Ledger ledger : set) {
-                if (ledger.getContourBox()
+                if (ledger.getBounds()
                           .intersects(searchBox)) {
                     foundLedgers.add(ledger);
                 }
@@ -382,7 +382,7 @@ public class StaffInfo
      */
     public double getEndingSlope (HorizontalSide side)
     {
-        List<Double> slopes = new ArrayList<Double>(lines.size());
+        List<Double> slopes = new ArrayList<>(lines.size());
 
         for (LineInfo l : lines) {
             FilamentLine line = (FilamentLine) l;
@@ -392,6 +392,7 @@ public class StaffInfo
         Collections.sort(
             slopes,
             new Comparator<Double>() {
+            @Override
                     public int compare (Double o1,
                                         Double o2)
                     {
@@ -662,6 +663,15 @@ public class StaffInfo
                                                                          top);
     }
 
+    //-------------------//
+    // removeAttachments //
+    //-------------------//
+    @Override
+    public int removeAttachments (String prefix)
+    {
+        return attachments.removeAttachments(prefix);
+    }
+
     //--------//
     // render //
     //--------//
@@ -689,9 +699,6 @@ public class StaffInfo
                 for (LineInfo line : lines) {
                     line.render(g);
                 }
-
-                // Draw attachments if any
-                renderAttachments(g);
 
                 return true;
             }

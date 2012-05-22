@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -15,7 +15,6 @@ import omr.glyph.Nest;
 import omr.glyph.facets.Glyph;
 import omr.glyph.text.OcrChar;
 import omr.glyph.text.OcrLine;
-import omr.glyph.text.TextInfo;
 
 import omr.graph.DigraphView;
 
@@ -68,7 +67,7 @@ public class NestView
     protected final List<Lag> lags;
 
     /** Additional items rendering */
-    protected final List<ItemRenderer> itemRenderers = new ArrayList<ItemRenderer>();
+    protected final List<ItemRenderer> itemRenderers = new ArrayList<>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -188,9 +187,9 @@ public class NestView
                                     Graphics2D g)
     {
         // Check the clipping
-        Rectangle box = glyph.getContourBox();
+        Rectangle box = glyph.getBounds();
 
-        if (box.intersects(g.getClipBounds())) {
+        if ((box != null) && box.intersects(g.getClipBounds())) {
             g.fillRect(box.x, box.y, box.width, box.height);
         }
     }
@@ -224,8 +223,7 @@ public class NestView
                 if (glyph.isText()) {
                     if (ViewParameters.getInstance()
                                       .isLetterBoxPainting()) {
-                        TextInfo info = glyph.getTextInfo();
-                        OcrLine  ocrLine = info.getOcrLine();
+                        OcrLine ocrLine = glyph.getOcrLine();
 
                         if (ocrLine != null) {
                             for (OcrChar ch : ocrLine.getChars()) {

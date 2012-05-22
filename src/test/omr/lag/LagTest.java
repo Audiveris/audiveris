@@ -247,12 +247,12 @@ public class LagTest
         Section s3 = vLag.createSection(180, new Run(100, 10, 127));
         s3.append(new Run(101, 20, 127));
 
-        List<Section> sections = new ArrayList<Section>();
+        List<Section> sections = new ArrayList<>();
         sections.add(s2);
         sections.add(s3);
         Collections.sort(sections, Section.idComparator);
 
-        List<Section> lagSections = new ArrayList<Section>(vLag.getSections());
+        List<Section> lagSections = new ArrayList<>(vLag.getSections());
         Collections.sort(lagSections, Section.idComparator);
         assertEquals("Retrieved sections.", sections, lagSections);
     }
@@ -309,7 +309,7 @@ public class LagTest
         commonAssertions(s1);
         assertEquals(
             "Bad ContourBox",
-            s1.getContourBox(),
+            s1.getBounds(),
             new Rectangle(100, 180, 21, 2));
     }
 
@@ -535,7 +535,7 @@ public class LagTest
         commonAssertions(s2);
         assertEquals(
             "Bad ContourBox",
-            s2.getContourBox(),
+            s2.getBounds(),
             new Rectangle(180, 100, 2, 21));
 
         Section s3 = vLag.createSection(180, new Run(100, 10, 127));
@@ -667,7 +667,7 @@ public class LagTest
         //        System.out.println ("getRunAtPos(0)=" + section.getRunAtPos(0));
         System.out.println("getOrientedBounds=" + section.getOrientedBounds());
         System.out.println("getCentroid=" + section.getCentroid());
-        System.out.println("getContourBox=" + section.getContourBox());
+        System.out.println("getContourBox=" + section.getBounds());
         System.out.println("getFirstAdjacency=" + section.getFirstAdjacency());
         System.out.println("getFirstPos=" + section.getFirstPos());
         System.out.println("getFirstRun=" + section.getFirstRun());

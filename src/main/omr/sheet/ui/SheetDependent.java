@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -24,7 +24,7 @@ import org.jdesktop.application.AbstractBean;
 
 /**
  * Class {@code SheetDependent} handles the dependency on sheet
- * availability
+ * availability.
  *
  * @author Hervé Bitteur
  */
@@ -55,8 +55,8 @@ public abstract class SheetDependent
      */
     protected SheetDependent ()
     {
-        // Stay informed on sheet status, in order to enable sheet-dependent
-        // actions accordingly
+        // Stay informed on sheet status, in order to enable or disable all
+        // sheet-dependent actions accordingly
         SheetsController.getInstance()
                         .subscribe(this);
     }
@@ -79,8 +79,7 @@ public abstract class SheetDependent
     // onEvent //
     //---------//
     /**
-     * Notification of sheet selection
-     *
+     * Notification of sheet selection.
      * @param event the notified sheet event
      */
     @Override
@@ -103,7 +102,7 @@ public abstract class SheetDependent
     // setSheetAvailable //
     //-------------------//
     /**
-     * Setter for sheetAvailable property
+     * Setter for sheetAvailable property.
      * @param sheetAvailable the new property value
      */
     public void setSheetAvailable (boolean sheetAvailable)

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -104,7 +104,7 @@ class BasicDisplay
         System.out.println(glyph.toString());
 
         // Determine the bounding box
-        Rectangle box = glyph.getContourBox();
+        Rectangle box = glyph.getBounds();
 
         if (box == null) {
             return; // Safer
@@ -167,7 +167,7 @@ class BasicDisplay
     public BufferedImage getImage ()
     {
         // Determine the bounding box
-        Rectangle     box = glyph.getContourBox();
+        Rectangle     box = glyph.getBounds();
         BufferedImage image = new BufferedImage(
             box.width,
             box.height,
@@ -188,6 +188,19 @@ class BasicDisplay
     {
         for (Section section : glyph.getMembers()) {
             section.resetColor();
+        }
+    }
+
+    //-------------------//
+    // removeAttachments //
+    //-------------------//
+    @Override
+    public int removeAttachments (String prefix)
+    {
+        if (attachments != null) {
+            return attachments.removeAttachments(prefix);
+        } else {
+            return 0;
         }
     }
 

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -194,7 +194,7 @@ public class PagePhysicalPainter
 
                     // Stroke is now OK for thickness but will draw beyond start
                     // and stop points of the bar. So use clipping to fix this.
-                    final PixelRectangle box = glyph.getContourBox();
+                    final PixelRectangle box = glyph.getBounds();
                     box.y = (int) Math.floor(
                         glyph.getStartPoint(Orientation.VERTICAL).getY());
                     box.height = (int) Math.ceil(
@@ -521,7 +521,7 @@ public class PagePhysicalPainter
     protected PixelRectangle braceBox (SystemPart part)
     {
         PixelRectangle braceBox = part.getBrace()
-                                      .getContourBox();
+                                      .getBounds();
 
         // Cheat a little, so that top and bottom are aligned with part extrema
         int leftX = braceBox.x + braceBox.width;
@@ -542,6 +542,7 @@ public class PagePhysicalPainter
     //--------------//
     // noteLocation //
     //--------------//
+    @Override
     protected PixelPoint noteLocation (Note note)
     {
         final PixelPoint center = note.getCenter();

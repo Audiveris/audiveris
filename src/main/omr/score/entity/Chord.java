@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -46,14 +46,15 @@ import java.util.TreeSet;
 
 /**
  * Class {@code Chord} represents an ensemble of entities (rests, notes)
- * attached to the same stem if any, and that occur on the same time in a staff.
+ * attached to the same stem if any, and that occur on the same time in
+ * a staff.
  * <p><b>NB</>We assume that all notes of a chord have the same duration.
  *
  * @author Hervé Bitteur
  */
 public class Chord
-    extends MeasureNode
-    implements Comparable<Chord>
+        extends MeasureNode
+        implements Comparable<Chord>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -64,7 +65,10 @@ public class Chord
     private static final Logger logger = Logger.getLogger(Chord.class);
 
     /** Compare two chords (slot first, then ordinate) within a measure */
-    private static final Comparator<TreeNode> chordComparator = new Comparator<TreeNode>() {
+    private static final Comparator<TreeNode> chordComparator = new Comparator<TreeNode>()
+    {
+
+        @Override
         public int compare (TreeNode tn1,
                             TreeNode tn2)
         {
@@ -79,7 +83,10 @@ public class Chord
      * Compare two notes of the same chord, ordered by increasing distance from
      * chord head ordinate
      */
-    public static Comparator<TreeNode> noteHeadComparator = new Comparator<TreeNode>() {
+    public static Comparator<TreeNode> noteHeadComparator = new Comparator<TreeNode>()
+    {
+
+        @Override
         public int compare (TreeNode tn1,
                             TreeNode tn2)
         {
@@ -94,14 +101,11 @@ public class Chord
                 logger.severe("Ordering notes from different chords");
             }
 
-            return n1.getChord()
-                     .getStemDir() * (n2.getCenter().y - n1.getCenter().y);
+            return n1.getChord().getStemDir() * (n2.getCenter().y - n1.getCenter().y);
         }
     };
 
-
     //~ Instance fields --------------------------------------------------------
-
     /** Id for debug (unique within measure) */
     private final int id;
 
@@ -118,13 +122,13 @@ public class Chord
     private PixelPoint tailLocation;
 
     /** Ordered collection of beams this chord is connected to */
-    private SortedSet<Beam> beams = new TreeSet<Beam>();
+    private SortedSet<Beam> beams = new TreeSet<>();
 
     /** Number of augmentation dots */
     private int dotsNumber;
 
     /** Flag glyphs */
-    private Set<Glyph> flagGlyphs = new HashSet<Glyph>();
+    private Set<Glyph> flagGlyphs = new HashSet<>();
 
     /** Number of flags (a beam is not a flag) */
     private int flagsNumber;
@@ -139,16 +143,15 @@ public class Chord
     private Voice voice;
 
     /** Collection of marks for user */
-    private List<Mark> marks = new ArrayList<Mark>();
+    private List<Mark> marks = new ArrayList<>();
 
-    /** Notations related  to this chord */
-    private List<Notation> notations = new ArrayList<Notation>();
+    /** Notations related to this chord */
+    private List<Notation> notations = new ArrayList<>();
 
     /** Directions (loosely) related to this chord */
-    private List<Direction> directions = new ArrayList<Direction>();
+    private List<Direction> directions = new ArrayList<>();
 
     //~ Constructors -----------------------------------------------------------
-
     //-------//
     // Chord //
     //-------//
@@ -156,44 +159,42 @@ public class Chord
      * Creates a new instance of Chord
      *
      * @param measure the containing measure
-     * @param slot the containing slot (null for whole/multi rest chords)
+     * @param slot    the containing slot (null for whole/multi rest chords)
      */
     public Chord (Measure measure,
-                  Slot    slot)
+                  Slot slot)
     {
         super(measure);
         reset();
         this.slot = slot;
-        id = measure.getChords()
-                    .size();
+        id = measure.getChords().size();
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------------//
     // getFlagShape //
     //--------------//
-    public static Shape getFlagShape (int     fn,
+    public static Shape getFlagShape (int fn,
                                       boolean up)
     {
         switch (fn) {
-        case 1 :
+        case 1:
             return up ? FLAG_1_UP : FLAG_1;
 
-        case 2 :
+        case 2:
             return up ? FLAG_2_UP : FLAG_2;
 
-        case 3 :
+        case 3:
             return up ? FLAG_3_UP : FLAG_3;
 
-        case 4 :
+        case 4:
             return up ? FLAG_4_UP : FLAG_4;
 
-        case 5 :
+        case 5:
             return up ? FLAG_5_UP : FLAG_5;
         }
 
-        logger.severe("Illegal flag number: " + fn);
+        logger.severe("Illegal flag number: {0}", fn);
 
         return null;
     }
@@ -205,14 +206,14 @@ public class Chord
      * Find the chord(s) that are carried by a given stem
      *
      * @param measure the containing measure
-     * @param stem the given stem
+     * @param stem    the given stem
      * @return the collection of related chords, which may be empty if no chord
-     *         is yet attached to this stem
+     * is yet attached to this stem
      */
     public static List<Chord> getStemChords (Measure measure,
-                                             Glyph   stem)
+                                             Glyph stem)
     {
-        List<Chord> chords = new ArrayList<Chord>();
+        List<Chord> chords = new ArrayList<>();
 
         for (TreeNode node : measure.getChords()) {
             Chord chord = (Chord) node;
@@ -230,14 +231,15 @@ public class Chord
     //-------------------------//
     /**
      * Look up for all chords interleaved between the given stemed chords
-     * @param left the chord on the left of the area
+     *
+     * @param left  the chord on the left of the area
      * @param right the chord on the right of the area
      * @return the collection of interleaved chords, which may be empty
      */
     public static SortedSet<Chord> lookupInterleavedChords (Chord left,
                                                             Chord right)
     {
-        SortedSet<Chord> found = new TreeSet<Chord>();
+        SortedSet<Chord> found = new TreeSet<>();
 
         if ((left == null) || (right == null)) {
             return found; // Safer
@@ -253,8 +255,7 @@ public class Chord
         polygon.addPoint(right.getTailLocation().x, right.getTailLocation().y);
         polygon.addPoint(right.getHeadLocation().x, right.getCenter().y);
 
-        for (TreeNode node : left.getMeasure()
-                                 .getChords()) {
+        for (TreeNode node : left.getMeasure().getChords()) {
             Chord chord = (Chord) node;
 
             // Not interested in the bounding chords (TBC)
@@ -283,8 +284,10 @@ public class Chord
     // lookupRest //
     //------------//
     /**
-     * Look up for a potential rest interleaved between the given stemed chords
-     * @param left the chord on the left of the area
+     * Look up for a potential rest interleaved between the given stemed
+     * chords
+     *
+     * @param left  the chord on the left of the area
      * @param right the chord on the right of the area
      * @return the rest found, or null otherwise
      */
@@ -299,8 +302,7 @@ public class Chord
         polygon.addPoint(right.tailLocation.x, right.tailLocation.y);
         polygon.addPoint(right.headLocation.x, right.headLocation.y);
 
-        for (TreeNode node : left.getMeasure()
-                                 .getChords()) {
+        for (TreeNode node : left.getMeasure().getChords()) {
             Chord chord = (Chord) node;
 
             // Not interested in the bounding chords
@@ -330,15 +332,14 @@ public class Chord
     //--------------//
     /**
      * Try to assign a flag to a relevant chord.
-     * @param glyph the underlying glyph of this flag
+     *
+     * @param glyph   the underlying glyph of this flag
      * @param measure the containing measure
      */
-    public static void populateFlag (Glyph   glyph,
+    public static void populateFlag (Glyph glyph,
                                      Measure measure)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Chord Populating flag " + glyph);
-        }
+        logger.fine("Chord Populating flag {0}", glyph);
 
         // Retrieve the related chord
         Glyph stem = null;
@@ -392,8 +393,8 @@ public class Chord
     // addChild //
     //----------//
     /**
-     * Override normal behavior, so that adding a note resets chord internal
-     * parameters
+     * Override normal behavior, so that adding a note resets chord
+     * internal parameters
      *
      * @param node the child to insert in the chord
      */
@@ -428,6 +429,7 @@ public class Chord
     //--------------//
     /**
      * Remember a flag glyph for this chord
+     *
      * @param flag the glyph (which may represent several flags)
      */
     public void addFlagGlyph (Glyph flag)
@@ -465,19 +467,23 @@ public class Chord
     // checkTies //
     //-----------//
     /**
-     * Check that all incoming ties come from the same chord, and similarly that
-     * all outgoing ties go to the same chord.
+     * Check that all incoming ties come from the same chord,
+     * and similarly that all outgoing ties go to the same chord.
      */
     public void checkTies ()
     {
         // Incoming ties
         SplitOrder order = checkTies(
-            new TieRelation() {
+                new TieRelation()
+                {
+
+                    @Override
                     public Note getDistantNote (Slur slur)
                     {
                         return slur.getLeftNote();
                     }
 
+                    @Override
                     public Note getLocalNote (Slur slur)
                     {
                         return slur.getRightNote();
@@ -492,12 +498,16 @@ public class Chord
 
         // Outgoing ties
         order = checkTies(
-            new TieRelation() {
+                new TieRelation()
+                {
+
+                    @Override
                     public Note getDistantNote (Slur slur)
                     {
                         return slur.getRightNote();
                     }
 
+                    @Override
                     public Note getLocalNote (Slur slur)
                     {
                         return slur.getLeftNote();
@@ -513,8 +523,9 @@ public class Chord
     // compareTo //
     //-----------//
     /**
-     * Compare this chord with another chord, to implement order based first on
-     * slot abscissa, then on head ordinate within the same slot, finally by id
+     * Compare this chord with another chord, to implement order based
+     * first on slot abscissa, then on head ordinate within the same
+     * slot, finally by id.
      *
      * @param otherChord the other chord
      * @return -1, 0, +1 according to the comparison result
@@ -528,7 +539,7 @@ public class Chord
         if (slot == null) {
             if (otherSlot == null) {
                 return Integer.signum(
-                    getHeadLocation().y - otherChord.getHeadLocation().y);
+                        getHeadLocation().y - otherChord.getHeadLocation().y);
             } else {
                 return -1; // Wholes are before slot-based chords
             }
@@ -562,7 +573,7 @@ public class Chord
         clone.stem = stem;
 
         // Notes (we make a deep copy of each note)
-        List<TreeNode> notesCopy = new ArrayList<TreeNode>();
+        List<TreeNode> notesCopy = new ArrayList<>();
         notesCopy.addAll(getNotes());
 
         for (TreeNode node : notesCopy) {
@@ -591,11 +602,8 @@ public class Chord
      */
     public BeamGroup getBeamGroup ()
     {
-        if (!getBeams()
-                 .isEmpty()) {
-            return getBeams()
-                       .first()
-                       .getGroup();
+        if (!getBeams().isEmpty()) {
+            return getBeams().first().getGroup();
         } else {
             return null;
         }
@@ -622,7 +630,7 @@ public class Chord
      *
      * @return the collection of (loosely) related directions, perhaps empty
      */
-    public Collection<?extends Direction> getDirections ()
+    public Collection<? extends Direction> getDirections ()
     {
         return directions;
     }
@@ -724,15 +732,15 @@ public class Chord
      */
     public SortedSet<Chord> getFollowingTiedChords ()
     {
-        SortedSet<Chord> tied = new TreeSet<Chord>();
+        SortedSet<Chord> tied = new TreeSet<>();
 
         for (TreeNode node : children) {
             Note note = (Note) node;
 
             for (Slur slur : note.getSlurs()) {
-                if (slur.isTie() &&
-                    (slur.getLeftNote() == note) &&
-                    (slur.getRightNote() != null)) {
+                if (slur.isTie()
+                        && (slur.getLeftNote() == note)
+                        && (slur.getRightNote() != null)) {
                     tied.add(slur.getRightNote().getChord());
                 }
             }
@@ -764,6 +772,7 @@ public class Chord
     //-------//
     /**
      * Report the id of the chord within the measure (meant for debug)
+     *
      * @return the unique id within the measure
      */
     public int getId ()
@@ -792,7 +801,7 @@ public class Chord
      *
      * @return the collection of notations
      */
-    public Collection<?extends Notation> getNotations ()
+    public Collection<? extends Notation> getNotations ()
     {
         return notations;
     }
@@ -844,14 +853,11 @@ public class Chord
     {
         Rational rawDuration = null;
 
-        if (!getNotes()
-                 .isEmpty()) {
+        if (!getNotes().isEmpty()) {
             // All note heads are assumed to be the same within one chord
-            Note note = (Note) getNotes()
-                                   .get(0);
+            Note note = (Note) getNotes().get(0);
 
-            if (!note.getShape()
-                     .isMeasureRest()) {
+            if (!note.getShape().isMeasureRest()) {
                 // Duration (with flags/beams applied for non-rests)
                 rawDuration = note.getNoteDuration();
 
@@ -892,10 +898,8 @@ public class Chord
     public Staff getStaff ()
     {
         if (super.getStaff() == null) {
-            if (!getNotes()
-                     .isEmpty()) {
-                Note note = (Note) getNotes()
-                                       .get(0);
+            if (!getNotes().isEmpty()) {
+                Note note = (Note) getNotes().get(0);
                 setStaff(note.getStaff());
             }
         }
@@ -1018,7 +1022,7 @@ public class Chord
      * Check whether the notes of this chord stand within the given
      * vertical range
      *
-     * @param top top of vertical range
+     * @param top    top of vertical range
      * @param bottom bottom of vertical range
      * @return true if all notes are within the given range
      */
@@ -1026,7 +1030,7 @@ public class Chord
                                  PixelPoint bottom)
     {
         for (TreeNode node : getNotes()) {
-            Note       note = (Note) node;
+            Note note = (Note) node;
             PixelPoint center = note.getCenter();
 
             if ((center.y >= top.y) && (center.y <= bottom.y)) {
@@ -1041,19 +1045,16 @@ public class Chord
     // isWholeDuration //
     //-----------------//
     /**
-     * Check whether the chord/note  is a whole rest
+     * Check whether the chord/note is a whole rest
      *
      * @return true if whole
      */
     public boolean isWholeDuration ()
     {
-        if (!getNotes()
-                 .isEmpty()) {
-            Note note = (Note) getNotes()
-                                   .get(0);
+        if (!getNotes().isEmpty()) {
+            Note note = (Note) getNotes().get(0);
 
-            return note.getShape()
-                       .isMeasureRest();
+            return note.getShape().isMeasureRest();
         }
 
         return false;
@@ -1085,10 +1086,8 @@ public class Chord
     {
         // Already done?
         if (this.startTime == null) {
-            if (logger.isFineEnabled()) {
-                logger.info(
-                    "setStartTime " + startTime + " for chord #" + getId());
-            }
+            logger.fine("setStartTime {0} for chord #{1}", new Object[]{
+                        startTime, getId()});
 
             this.startTime = startTime;
 
@@ -1099,8 +1098,8 @@ public class Chord
         } else {
             if (!this.startTime.equals(startTime)) {
                 addError(
-                    "Reassigning startTime from " + this.startTime + " to " +
-                    startTime + " in " + this);
+                        "Reassigning startTime from " + this.startTime + " to "
+                        + startTime + " in " + this);
             }
         }
     }
@@ -1143,30 +1142,26 @@ public class Chord
     {
         // Already done?
         if (this.voice == null) {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    getContextString() + " Ch#" + id + " setVoice " +
-                    voice.getId());
-            }
+            final String contextString = getContextString();
+            logger.fine("{0} Ch#{1} setVoice {2}",
+                        new Object[]{contextString, id, voice.getId()});
 
             this.voice = voice;
 
             // Update the voice entity
             if (!isWholeDuration()) {
                 voice.setSlotInfo(
-                    slot,
-                    new ChordInfo(this, Voice.Status.BEGIN));
+                        slot,
+                        new ChordInfo(this, Voice.Status.BEGIN));
 
                 // Extend this info to otherChord beamed chords if any
                 BeamGroup group = getBeamGroup();
 
                 if (group != null) {
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            getContextString() + " Ch#" + id +
-                            " extending voice#" + voice.getId() + " to group#" +
-                            group.getId());
-                    }
+                    logger.fine(
+                            "{0} Ch#{1} extending voice#{2} to group#{3}",
+                            new Object[]{contextString, id, voice.getId(),
+                                         group.getId()});
 
                     group.setVoice(voice);
                 }
@@ -1175,35 +1170,30 @@ public class Chord
                 SortedSet<Chord> tied = getFollowingTiedChords();
 
                 for (Chord chord : tied) {
-                    if (logger.isFineEnabled()) {
-                        logger.fine(this + " tied to " + chord);
-                    }
+                    logger.fine("{0} tied to {1}", new Object[]{this, chord});
 
                     // Check the tied chords belong to the same measure
                     if (this.getMeasure() == chord.getMeasure()) {
-                        if (logger.isFineEnabled()) {
-                            logger.fine(
-                                getContextString() + " Ch#" + id +
-                                " extending voice#" + voice.getId() +
-                                " to tied chord#" + chord.getId());
-                        }
+                        logger.fine(
+                                "{0} Ch#{1} extending voice#{2} to tied chord#{3}",
+                                new Object[]{contextString, id,
+                                             voice.getId(),
+                                             chord.getId()});
 
                         chord.setVoice(voice);
                     } else {
                         // Chords tied across measure boundary
-                        if (logger.isFineEnabled()) {
-                            logger.fine(
-                                getContextString() + " Cross tie " +
-                                toShortString() + " -> " +
-                                chord.toShortString());
-                        }
+                        logger.fine("{0} Cross tie {1} -> {2}",
+                                    new Object[]{contextString,
+                                                 toShortString(), chord.
+                                    toShortString()});
                     }
                 }
             }
         } else if (this.voice != voice) {
             addError(
-                "Chord. Attempt to reassign voice from " + this.voice.getId() +
-                " to " + voice.getId() + " in " + this);
+                    "Chord. Attempt to reassign voice from " + this.voice.getId()
+                    + " to " + voice.getId() + " in " + this);
         }
     }
 
@@ -1212,6 +1202,7 @@ public class Chord
     //--------------//
     /**
      * Report a more detailed description than plain toStrïng
+     *
      * @return a detailed description
      */
     public String toLongString ()
@@ -1222,28 +1213,23 @@ public class Chord
 
         try {
             if (headLocation != null) {
-                sb.append(" head[x=")
-                  .append(headLocation.x)
-                  .append(",y=")
-                  .append(headLocation.y)
-                  .append("]");
+                sb.append(" head[x=").append(headLocation.x).append(",y=").
+                        append(headLocation.y).append("]");
             }
 
             if (tailLocation != null) {
-                sb.append(" tail[x=")
-                  .append(tailLocation.x)
-                  .append(",y=")
-                  .append(tailLocation.y)
-                  .append("]");
+                sb.append(" tail[x=").append(tailLocation.x).append(",y=").
+                        append(tailLocation.y).append("]");
             }
 
             if (!beams.isEmpty()) {
                 try {
-                    sb.append(
-                        " beams G#" + beams.first().getGroup().getId() + "[");
+                    sb.append(" beams G#").
+                            append(beams.first().getGroup().getId()).append(
+                            "[");
 
                     for (Beam beam : beams) {
-                        sb.append(beam + " ");
+                        sb.append(beam).append(" ");
                     }
 
                     sb.append("]");
@@ -1265,6 +1251,7 @@ public class Chord
     //---------------//
     /**
      * A description meant for constrained labels
+     *
      * @return a short chord description
      */
     public String toShortString ()
@@ -1273,12 +1260,10 @@ public class Chord
         sb.append("[");
 
         if (getVoice() != null) {
-            sb.append("Voice#")
-              .append(getVoice().getId());
+            sb.append("Voice#").append(getVoice().getId());
         }
 
-        sb.append(" Chord#")
-          .append(getId());
+        sb.append(" Chord#").append(getId());
 
         sb.append(" dur:");
 
@@ -1309,29 +1294,23 @@ public class Chord
         sb.append("{Chord");
 
         try {
-            sb.append("#")
-              .append(id);
+            sb.append("#").append(id);
 
             if (voice != null) {
-                sb.append(" voice#")
-                  .append(voice.getId());
+                sb.append(" voice#").append(voice.getId());
             }
 
             // Staff ?
-            if (!getNotes()
-                     .isEmpty()) {
-                Note note = (Note) getNotes()
-                                       .get(0);
+            if (!getNotes().isEmpty()) {
+                Note note = (Note) getNotes().get(0);
 
                 if (note != null) {
-                    sb.append(" staff#")
-                      .append(note.getStaff().getId());
+                    sb.append(" staff#").append(note.getStaff().getId());
                 }
             }
 
             if (startTime != null) {
-                sb.append(" start=")
-                  .append(startTime);
+                sb.append(" start=").append(startTime);
             }
 
             sb.append(" dur=");
@@ -1353,23 +1332,19 @@ public class Chord
             }
 
             if (stem != null) {
-                sb.append(" stem#")
-                  .append(stem.getId());
+                sb.append(" stem#").append(stem.getId());
             }
 
             if (tupletFactor != null) {
-                sb.append(" tupletFactor=")
-                  .append(tupletFactor);
+                sb.append(" tupletFactor=").append(tupletFactor);
             }
 
             if (dotsNumber != 0) {
-                sb.append(" dots=")
-                  .append(dotsNumber);
+                sb.append(" dots=").append(dotsNumber);
             }
 
             if (flagsNumber != 0) {
-                sb.append(" flags=")
-                  .append(flagsNumber);
+                sb.append(" flags=").append(flagsNumber);
             }
         } catch (NullPointerException e) {
             sb.append(" INVALID");
@@ -1385,7 +1360,7 @@ public class Chord
     //-------//
     /**
      * Reset all internal data that depends on the chord composition in
-     * terms of notes
+     * terms of notes.
      */
     @Override
     protected final void reset ()
@@ -1437,18 +1412,19 @@ public class Chord
     // checkTies //
     //-----------//
     /**
-     * For this chord, check either the incoming or the outgoing ties according
-     * to the TieRelation information. For true ties (slurs linking notes with
-     * same pitch) we make sure there is no more than one distant chord. If not,
-     * we split the chord in two, so that each (sub)chord has only consistent
-     * ties.
+     * For this chord, check either the incoming or the outgoing ties
+     * according to the TieRelation information.
+     * For true ties (slurs linking notes with same pitch) we make sure there
+     * is no more than one distant chord. If not, we split the chord in two,
+     * so that each (sub)chord has only consistent ties.
+     *
      * @param tie info about the relation between the slur and this chord
      * @return how to split the chord, or null if no split is needed
      */
     private SplitOrder checkTies (TieRelation tie)
     {
-        List<Note>       distantNotes = new ArrayList<Note>();
-        SortedSet<Chord> distantChords = new TreeSet<Chord>();
+        List<Note> distantNotes = new ArrayList<>();
+        SortedSet<Chord> distantChords = new TreeSet<>();
 
         for (TreeNode nn : getNotes()) {
             Note note = (Note) nn;
@@ -1457,8 +1433,8 @@ public class Chord
                 if (tie.isRelevant(slur, note)) {
                     Note distantNote = tie.getDistantNote(slur);
 
-                    if ((distantNote != null) &&
-                        (distantNote.getMeasure() == getMeasure())) {
+                    if ((distantNote != null)
+                            && (distantNote.getMeasure() == getMeasure())) {
                         distantNotes.add(distantNote);
                         distantChords.add(distantNote.getChord());
                     }
@@ -1467,15 +1443,12 @@ public class Chord
         }
 
         if (distantChords.size() > 1) {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    getContextString() + " Ch#" + getId() +
-                    " with multiple tied chords: " + distantChords);
-            }
+            logger.fine("{0} Ch#{1} with multiple tied chords: {2}",
+                        new Object[]{getContextString(), getId(), distantChords});
 
             // Prepare the split of this chord, using the most distant note from
             // chord head
-            SortedSet<Note> tiedNotes = new TreeSet<Note>(noteHeadComparator);
+            SortedSet<Note> tiedNotes = new TreeSet<>(noteHeadComparator);
 
             for (Note distantNote : distantNotes) {
                 for (Slur slur : distantNote.getSlurs()) {
@@ -1487,9 +1460,7 @@ public class Chord
                 }
             }
 
-            if (logger.isFineEnabled()) {
-                logger.fine("Splitting from " + tiedNotes.last());
-            }
+            logger.fine("Splitting from {0}", tiedNotes.last());
 
             return new SplitOrder(this, tiedNotes.last());
         } else {
@@ -1506,17 +1477,16 @@ public class Chord
     private void computeLocations ()
     {
         // Find the note farthest from stem middle point
-        if (!getNotes()
-                 .isEmpty()) {
+        if (!getNotes().isEmpty()) {
             if (stem != null) {
                 PixelPoint middle = stem.getLocation();
-                Note       bestNote = null;
-                int        bestDy = Integer.MIN_VALUE;
+                Note bestNote = null;
+                int bestDy = Integer.MIN_VALUE;
 
                 for (TreeNode node : getNotes()) {
                     Note note = (Note) node;
-                    int  noteY = note.getCenter().y;
-                    int  dy = Math.abs(noteY - middle.y);
+                    int noteY = note.getCenter().y;
+                    int dy = Math.abs(noteY - middle.y);
 
                     if (dy > bestDy) {
                         bestNote = note;
@@ -1524,24 +1494,23 @@ public class Chord
                     }
                 }
 
-                PixelRectangle stemBox = stem.getContourBox();
+                PixelRectangle stemBox = stem.getBounds();
 
                 if (middle.y < bestNote.getCenter().y) {
                     // Stem is up
                     tailLocation = new PixelPoint(
-                        stemBox.x + (stemBox.width / 2),
-                        stemBox.y);
+                            stemBox.x + (stemBox.width / 2),
+                            stemBox.y);
                 } else {
                     // Stem is down
                     tailLocation = new PixelPoint(
-                        stemBox.x + (stemBox.width / 2),
-                        (stemBox.y + stemBox.height));
+                            stemBox.x + (stemBox.width / 2),
+                            (stemBox.y + stemBox.height));
                 }
 
                 headLocation = getHeadLocation(bestNote);
             } else {
-                Note note = (Note) getNotes()
-                                       .get(0);
+                Note note = (Note) getNotes().get(0);
                 headLocation = note.getCenter();
                 tailLocation = headLocation;
             }
@@ -1562,28 +1531,28 @@ public class Chord
     private static int getFlagValue (Shape shape)
     {
         switch (shape) {
-        case FLAG_1 :
-        case FLAG_1_UP :
+        case FLAG_1:
+        case FLAG_1_UP:
             return 1;
 
-        case FLAG_2 :
-        case FLAG_2_UP :
+        case FLAG_2:
+        case FLAG_2_UP:
             return 2;
 
-        case FLAG_3 :
-        case FLAG_3_UP :
+        case FLAG_3:
+        case FLAG_3_UP:
             return 3;
 
-        case FLAG_4 :
-        case FLAG_4_UP :
+        case FLAG_4:
+        case FLAG_4_UP:
             return 4;
 
-        case FLAG_5 :
-        case FLAG_5_UP :
+        case FLAG_5:
+        case FLAG_5_UP:
             return 5;
         }
 
-        logger.severe("Illegal flag shape: " + shape);
+        logger.severe("Illegal flag shape: {0}", shape);
 
         return 0;
     }
@@ -1592,9 +1561,10 @@ public class Chord
     // getHeadLocation //
     //-----------------//
     /**
-     * Compute the head location of a chord, given the chord head note
+     * Compute the head location of a chord, given the chord head note.
      * (TODO: Perhaps we could adjust note ordinate, to align it to pitch while
      * using the real staff lines ordinates)
+     *
      * @param note the head note
      * @return the head location
      */
@@ -1610,20 +1580,18 @@ public class Chord
      * Report the set of flags for this chord.
      * Nota: This is not an efficient implementation. A better one would require
      * to record a link from chord to flag glyphs.
+     *
      * @return the set of flags, perhaps empty but not null
      */
     private Set<Glyph> retrieveFlags ()
     {
-        Set<Glyph> foundFlags = new HashSet<Glyph>();
+        Set<Glyph> foundFlags = new HashSet<>();
 
-        for (Glyph glyph : getSystem()
-                               .getInfo()
-                               .getGlyphs()) {
+        for (Glyph glyph : getSystem().getInfo().getGlyphs()) {
             Shape shape = glyph.getShape();
 
             if (ShapeSet.Flags.contains(shape)) {
-                if (glyph.getTranslations()
-                         .contains(this)) {
+                if (glyph.getTranslations().contains(this)) {
                     foundFlags.add(glyph);
                 }
             }
@@ -1643,10 +1611,8 @@ public class Chord
      */
     private Chord split (SplitOrder order)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine(order.toString());
-            logger.fine("Initial notes=" + getNotes());
-        }
+        logger.fine("{0}", order);
+        logger.fine("Initial notes={0}", getNotes());
 
         // Same measure & slot
         Chord alien = new Chord(getMeasure(), slot);
@@ -1696,33 +1662,30 @@ public class Chord
         // Should we split the stem as well?
         // Use a test on length of resulting stem fragment
         int stemFragmentLength = Math.abs(
-            alien.headLocation.y - this.headLocation.y);
+                alien.headLocation.y - this.headLocation.y);
 
-        if (stemFragmentLength >= getScale()
-                                      .toPixels(
-            constants.minStemFragmentLength)) {
+        if (stemFragmentLength >= getScale().toPixels(
+                constants.minStemFragmentLength)) {
             this.tailLocation = alien.headLocation;
         }
 
         // Include the new chord in its slot
-        slot.getChords()
-            .add(alien);
+        slot.getChords().add(alien);
 
         // Insure correct ordering of chords within their container
         Collections.sort(getParent().getChildren(), chordComparator);
 
         if (logger.isFineEnabled()) {
-            logger.fine("Remaining notes=" + getNotes());
-            logger.fine("Remaining " + this.toLongString());
-            logger.fine("Alien notes=" + alien.getNotes());
-            logger.fine("Alien " + alien.toLongString());
+            logger.fine("Remaining notes={0}", getNotes());
+            logger.fine("Remaining {0}", this.toLongString());
+            logger.fine("Alien notes={0}", alien.getNotes());
+            logger.fine("Alien {0}", alien.toLongString());
         }
 
         return alien;
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //------------//
     // SplitOrder //
     //------------//
@@ -1738,34 +1701,30 @@ public class Chord
         /** The chord to be split */
         final Chord chord;
 
-        /** The first note of this chord to feed an alien chord  */
+        /** The first note of this chord to feed an alien chord */
         final Note alienNote;
 
         //~ Constructors -------------------------------------------------------
-
         /**
          *
          * @param chord
-         * @param alienNote
+         * param alienNote
          */
         public SplitOrder (Chord chord,
-                           Note  alienNote)
+                           Note alienNote)
         {
             this.chord = chord;
             this.alienNote = alienNote;
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public String toString ()
         {
             StringBuilder sb = new StringBuilder();
             sb.append("{Split");
-            sb.append(" chord=")
-              .append(chord);
-            sb.append(" alienNote=")
-              .append(alienNote);
+            sb.append(" chord=").append(chord);
+            sb.append(" alienNote=").append(alienNote);
             sb.append("}");
 
             return sb.toString();
@@ -1776,16 +1735,13 @@ public class Chord
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
-        /**
-         * Minimum length for stem fragment in split
-         */
         Scale.Fraction minStemFragmentLength = new Scale.Fraction(
-            2d,
-            "Minimum length for stem fragment in split");
+                2d,
+                "Minimum length for stem fragment in split");
     }
 
     //-------------//

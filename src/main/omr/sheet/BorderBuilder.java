@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2011. All rights reserved.               //
+//  Copyright (C) Herve Bitteur 2000-2012. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -76,7 +76,6 @@ public class BorderBuilder
     private static final Logger logger = Logger.getLogger(BorderBuilder.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Related sheet */
     private final Sheet sheet;
 
@@ -87,30 +86,34 @@ public class BorderBuilder
     private final SystemInfo system;
 
     // GlyphRect-based limits 
-    private Limit           topLimit;
-    private Limit           botLimit;
+    private Limit topLimit;
+
+    private Limit botLimit;
 
     /** Free blobs */
-    private List<GlyphRect> blobs = new ArrayList<GlyphRect>();
+    private List<GlyphRect> blobs = new ArrayList<>();
 
     // Scale-dependent parameters
     private final double flatness;
-    private final int    minGlyphWeight;
-    private final int    xMargin;
-    private final int    yMargin;
+
+    private final int minGlyphWeight;
+
+    private final int xMargin;
+
+    private final int yMargin;
 
     //~ Constructors -----------------------------------------------------------
-
     //---------------//
     // BorderBuilder //
     //---------------//
     /**
      * Creates a new BorderBuilder object.
-     * @param sheet the related sheet
+     *
+     * @param sheet      the related sheet
      * @param prevSystem system on north side
-     * @param system system on south side
+     * @param system     system on south side
      */
-    public BorderBuilder (Sheet      sheet,
+    public BorderBuilder (Sheet sheet,
                           SystemInfo prevSystem,
                           SystemInfo system)
     {
@@ -126,31 +129,30 @@ public class BorderBuilder
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-------------//
     // buildBorder //
     //-------------//
     public BrokenLine buildBorder ()
     {
         // First, retrieve glyphs intersected by intersystem rectangle
-        LineInfo       topLine = prevSystem.getLastStaff()
-                                           .getLastLine();
-        LineInfo       botLine = system.getFirstStaff()
-                                       .getFirstLine();
-        PixelRectangle box = topLine.getContourBox();
-        box.add(botLine.getContourBox());
+        LineInfo topLine = prevSystem.getLastStaff().getLastLine();
+        LineInfo botLine = system.getFirstStaff().getFirstLine();
+        PixelRectangle box = topLine.getBounds();
+        box.add(botLine.getBounds());
 
-        Set<Glyph> glyphs = sheet.getNest()
-                                 .lookupIntersectedGlyphs(box);
+        Set<Glyph> glyphs = sheet.getNest().lookupIntersectedGlyphs(box);
 
         // Remove small glyphs and the staff lines themselves
         Glyphs.purge(
-            glyphs,
-            new Predicate<Glyph>() {
+                glyphs,
+                new Predicate<Glyph>()
+                {
+
+                    @Override
                     public boolean check (Glyph glyph)
                     {
-                        return (glyph.getShape() == Shape.STAFF_LINE) ||
-                               (glyph.getWeight() < minGlyphWeight);
+                        return (glyph.getShape() == Shape.STAFF_LINE)
+                                || (glyph.getWeight() < minGlyphWeight);
                     }
                 });
 
@@ -158,10 +160,8 @@ public class BorderBuilder
         topLimit = buildLimit(topLine, glyphs, -1);
         botLimit = buildLimit(botLine, glyphs, +1);
 
-        if (logger.isFineEnabled()) {
-            logger.fine("topLimit: " + topLimit);
-            logger.fine("botLimit: " + botLimit);
-        }
+        logger.fine("topLimit: {0}", topLimit);
+        logger.fine("botLimit: {0}", botLimit);
 
         // Aggregate free glyphs into fewer blobs
         buildFreeBlobs(glyphs);
@@ -180,20 +180,31 @@ public class BorderBuilder
         }
     }
 
+    //----------//
+    // idString //
+    //----------//
+    public String idString ()
+    {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("Border S#").append(prevSystem.getId()).append("/S#").append(system.
+                getId());
+
+        return sb.toString();
+    }
+
     //-----------------//
     // assignFreeBlobs //
     //-----------------//
     /**
-     * Iterate on growing free blobs, until they get assigned to a limit
+     * Iterate on growing free blobs, until they get assigned to a limit.
      */
     private void assignFreeBlobs ()
     {
         int delta = system.getTop() - prevSystem.getBottom();
 
         for (int i = 1; i < delta; i++) {
-            if (logger.isFineEnabled()) {
-                logger.fine("i:" + i);
-            }
+            logger.fine("i:{0}", i);
 
             // Thicken free blobs and revaluate position WRT limits
             int index = -1;
@@ -207,30 +218,22 @@ public class BorderBuilder
 
                 if (topLimit.intersects(rect)) {
                     topLimit.add(blob);
-
-                    if (logger.isFineEnabled()) {
-                        logger.info("topLimit <- " + blob);
-                    }
+                    logger.fine("topLimit <- {0}", blob);
 
                     it.remove();
                 } else if (botLimit.intersects(rect)) {
                     botLimit.add(blob);
-
-                    if (logger.isFineEnabled()) {
-                        logger.info("botLimit <- " + blob);
-                    }
+                    logger.fine("botLimit <- {0}", blob);
 
                     it.remove();
                 } else {
                     // Fusion with another blob?
                     if (index < (blobs.size() - 1)) {
                         for (Rectangle b : blobs.subList(
-                            index + 1,
-                            blobs.size())) {
+                                index + 1,
+                                blobs.size())) {
                             if (b.intersects(rect)) {
-                                if (logger.isFineEnabled()) {
-                                    logger.info(b + " + " + blob);
-                                }
+                                logger.fine("{0} + {1}", new Object[]{b, blob});
 
                                 b.add(blob);
                                 it.remove();
@@ -252,13 +255,15 @@ public class BorderBuilder
     // buildFreeBlobs //
     //----------------//
     /**
-     * Aggregate the free glyphs into a reduced number of horizontal rectangles
+     * Aggregate the free glyphs into a reduced number of horizontal
+     * rectangles
+     *
      * @param glyphs the free glyphs
      */
     private void buildFreeBlobs (Collection<Glyph> glyphs)
     {
         for (Glyph glyph : glyphs) {
-            Rectangle rect = glyph.getContourBox();
+            Rectangle rect = glyph.getBounds();
             rect.grow(xMargin, yMargin);
 
             boolean aggregated = false;
@@ -281,7 +286,7 @@ public class BorderBuilder
 
         if (logger.isFineEnabled()) {
             for (Rectangle blob : blobs) {
-                logger.fine("free: " + blob);
+                logger.fine("free: {0}", blob);
             }
         }
     }
@@ -291,33 +296,34 @@ public class BorderBuilder
     //------------//
     /**
      * Pickup the glyphs intersected by the provided line, and purge the
-     * provided collection of these intersecting glyphs, as well as the non
-     * intersecting glyphs which are located in the 'dir' direction with
-     * respect to the line
+     * provided collection of these intersecting glyphs, as well as the
+     * non intersecting glyphs which are located in the 'dir' direction
+     * with respect to the line.
+     *
      * @param lineInfo the line to intersect
-     * @param glyphs the initial collection of glyphs
-     * @param dir the direction in which glyphs are removed
+     * @param glyphs   the initial collection of glyphs
+     * @param dir      the direction in which glyphs are removed
      * @return the limit made of glyphs on the line
      */
-    private Limit buildLimit (LineInfo          lineInfo,
+    private Limit buildLimit (LineInfo lineInfo,
                               Collection<Glyph> glyphs,
-                              int               dir)
+                              int dir)
     {
-        List<Glyph>   lineGlyphs = new ArrayList<Glyph>();
-        FilamentLine  filamentLine = (FilamentLine) lineInfo;
-        Filament      fil = filamentLine.getFilament();
+        List<Glyph> lineGlyphs = new ArrayList<>();
+        FilamentLine filamentLine = (FilamentLine) lineInfo;
+        Filament fil = filamentLine.getFilament();
         NaturalSpline line = (NaturalSpline) fil.getLine();
 
         for (Iterator<Glyph> it = glyphs.iterator(); it.hasNext();) {
             Glyph glyph = it.next();
 
-            if (line.intersects(glyph.getContourBox(), flatness)) {
+            if (line.intersects(glyph.getBounds(), flatness)) {
                 lineGlyphs.add(glyph);
                 it.remove();
             } else {
                 // Check glyph position WRT line
                 PixelPoint center = glyph.getAreaCenter();
-                int        y = filamentLine.yAt(center.x);
+                int y = filamentLine.yAt(center.x);
 
                 if (((center.y - y) * dir) > 0) {
                     it.remove();
@@ -327,10 +333,10 @@ public class BorderBuilder
 
         // Now build the line-based limit
         Limit limit = new Limit();
-        int   x1 = 0;
+        int x1 = 0;
 
         for (Glyph glyph : lineGlyphs) {
-            PixelRectangle contour = glyph.getContourBox();
+            PixelRectangle contour = glyph.getBounds();
 
             if (contour.x > x1) {
                 // We need to insert an artificial box, based on line segment
@@ -357,6 +363,7 @@ public class BorderBuilder
     //--------------//
     /**
      * Build a broken line as the "middle" between top & bottom limits
+     *
      * @return the (raw) border
      */
     private BrokenLine getRawBorder ()
@@ -367,15 +374,16 @@ public class BorderBuilder
 
         //
         BrokenLine line = new BrokenLine();
-        int        yPrev = -1;
-        int        xPrev = -1;
+        int yPrev = -1;
+        int xPrev = -1;
 
         for (int x = 0, xMax = sheet.getWidth(); x <= xMax; x++) {
             int top = topLimit.getY(x, -1);
             int bot = botLimit.getY(x, +1);
 
             if (top > bot) {
-                logger.warning("Border closed at x: " + x);
+                logger.warning("{0} closed at x: {1}", new Object[]{idString(),
+                                                                    x});
             }
 
             int y = (top + bot) / 2;
@@ -394,9 +402,7 @@ public class BorderBuilder
             }
         }
 
-        if (logger.isFineEnabled()) {
-            logger.fine("Raw border: " + line);
-        }
+        logger.fine("Raw border: {0}", line);
 
         return line;
     }
@@ -406,6 +412,7 @@ public class BorderBuilder
     //------------------//
     /**
      * Refine the raw border as much as possible
+     *
      * @param line the initial (raw) border
      * @return the refined border
      */
@@ -418,24 +425,21 @@ public class BorderBuilder
         // Complete with right side
         int lastIndex = 0;
 
-        Removal: 
+        Removal:
         while (true) {
             Point lastPoint = line.getPoint(lastIndex);
 
             for (int index = lastIndex + 1; index < line.size(); index++) {
                 Point pt = line.getPoint(index);
 
-                if (topLimit.intersects(lastPoint, pt) ||
-                    botLimit.intersects(lastPoint, pt)) {
+                if (topLimit.intersects(lastPoint, pt)
+                        || botLimit.intersects(lastPoint, pt)) {
                     // Backup 
                     for (int i = lastIndex + 1, iBreak = index - 1; i < iBreak;
-                         i++) {
+                            i++) {
                         Point p = line.getPoint(lastIndex + 1);
                         line.removePoint(p);
-
-                        if (logger.isFineEnabled()) {
-                            logger.fine("Removed " + p);
-                        }
+                        logger.fine("Removed {0}", p);
                     }
 
                     lastIndex++;
@@ -448,77 +452,67 @@ public class BorderBuilder
         }
 
         for (int i = lastIndex + 1, iBreak = line.size() - 1; i < iBreak;
-             i++) {
+                i++) {
             Point p = line.getPoint(lastIndex + 1);
             line.removePoint(p);
         }
 
-        if (logger.isFineEnabled()) {
-            logger.info(
-                sheet.getLogPrefix() + "Smart S" + prevSystem.getId() + "-S" +
-                system.getId() + " system border: " + line);
-        }
+        logger.fine("{0}Smart S{1}-S{2} system border: {3}", new Object[]{sheet.
+                    getLogPrefix(), prevSystem.getId(), system.getId(), line});
 
         return line;
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
 
-        Scale.Fraction     lineFlatness = new Scale.Fraction(
-            0.5,
-            "Maximum flattening distance");
+        Scale.Fraction lineFlatness = new Scale.Fraction(
+                0.5,
+                "Maximum flattening distance");
 
-        //
-        Scale.Fraction     xMargin = new Scale.Fraction(
-            2,
-            "Inter blob horizontal margin");
+        Scale.Fraction xMargin = new Scale.Fraction(
+                2,
+                "Inter blob horizontal margin");
 
-        //
-        Scale.Fraction     yMargin = new Scale.Fraction(
-            0,
-            "Inter blob vertical margin");
+        Scale.Fraction yMargin = new Scale.Fraction(
+                0,
+                "Inter blob vertical margin");
 
-        //
         Scale.AreaFraction minGlyphWeight = new Scale.AreaFraction(
-            0.1,
-            "Minimum weight for free glyph");
+                0.1,
+                "Minimum weight for free glyph");
     }
 
     //-----------//
     // GlyphRect // 
     //-----------//
     /**
-     * A standard rectangle, which keeps track of its building glyphs
+     * A standard rectangle, which keeps track of its building glyphs.
      */
     private static class GlyphRect
-        extends PixelRectangle
+            extends PixelRectangle
     {
         //~ Instance fields ----------------------------------------------------
 
         /** Related glyphs (just for debug) */
-        final List<Glyph> glyphs = new ArrayList<Glyph>();
+        final List<Glyph> glyphs = new ArrayList<>();
 
         //~ Constructors -------------------------------------------------------
-
         public GlyphRect (Glyph glyph)
         {
-            super(glyph.getContourBox());
+            super(glyph.getBounds());
             glyphs.add(glyph);
         }
 
         //~ Methods ------------------------------------------------------------
-
         public void add (Glyph glyph)
         {
-            add(glyph.getContourBox());
+            add(glyph.getBounds());
             glyphs.add(glyph);
         }
 
@@ -539,18 +533,17 @@ public class BorderBuilder
     // Limit //
     //-------//
     /**
-     * Handles the limit of a system as a continuous sequence of rectangles
-     * made of intersected glyphs and staff line segments.
+     * Handles the limit of a system as a continuous sequence of
+     * rectangles made of intersected glyphs and staff line segments.
      */
     private static class Limit
     {
         //~ Instance fields ----------------------------------------------------
 
         /** Horizontal sequence of boxes */
-        List<Rectangle> boxes = new ArrayList<Rectangle>();
+        List<Rectangle> boxes = new ArrayList<>();
 
         //~ Methods ------------------------------------------------------------
-
         public Rectangle getBounds ()
         {
             Rectangle bounds = null;
@@ -595,16 +588,13 @@ public class BorderBuilder
 
             for (Rectangle rect : boxes) {
                 if (rect instanceof LineRect) {
-                    sb.append("-")
-                      .append(rect.height)
-                      .append("-");
+                    sb.append("-").append(rect.height).append("-");
                 } else {
                     sb.append(rect);
                 }
             }
 
-            sb.append("] bounds:")
-              .append(getBounds());
+            sb.append("] bounds:").append(getBounds());
             sb.append("}");
 
             return sb.toString();
@@ -643,11 +633,8 @@ public class BorderBuilder
         {
             for (Rectangle rect : boxes) {
                 if (rect.intersectsLine(p1.x, p1.y, p2.x, p2.y)) {
-                    if (logger.isFineEnabled()) {
-                        logger.info(
-                            rect + " intersects from " + p1 + " to " + p2);
-                    }
-
+                    logger.fine("{0} intersects from {1} to {2}", new Object[]{
+                                rect, p1, p2});
                     return true;
                 }
             }
@@ -660,11 +647,11 @@ public class BorderBuilder
     // LineRect //
     //----------//
     /**
-     * A Rectangle built from a segment of rather horizontal staff line, and
-     * ensured to be non-empty to allow intersection computation.
+     * A Rectangle built from a segment of rather horizontal staff line,
+     * and ensured to be non-empty to allow intersection computation.
      */
     private static class LineRect
-        extends Rectangle
+            extends Rectangle
     {
         //~ Constructors -------------------------------------------------------
 

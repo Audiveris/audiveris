@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -17,7 +17,7 @@ import omr.WellKnowns;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.ui.GlyphVerifier;
+import omr.glyph.ui.SampleVerifier;
 import omr.glyph.ui.ShapeColorChooser;
 import omr.glyph.ui.panel.GlyphTrainer;
 
@@ -49,6 +49,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.logging.Level;
 
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
@@ -293,7 +294,7 @@ public class GuiActions
     // showManual //
     //------------//
     /**
-     * Action to launch a browser on Audiveris Operation manual
+     * Action to launch a browser on Audiveris handbook
      * @param e the event which triggered this action
      */
     @Action(enabledProperty = "browserSupported")
@@ -305,9 +306,9 @@ public class GuiActions
                 constants.manualUrl.getValue());
             URI    uri = file.toURI();
             URL    url = uri.toURL();
-            String str = "\"" + url + "?manual=operation" + "\"";
+            String str = "\"" + url + "\"";
 
-            logger.info("Launching browser on " + str);
+            logger.fine("Launching browser on {0}", str);
             WebBrowser.getBrowser()
                       .launch(str);
         } catch (MalformedURLException ex) {
@@ -325,7 +326,7 @@ public class GuiActions
     @Action
     public void showMemory (ActionEvent e)
     {
-        logger.info("Occupied memory is " + Memory.getValue() + " bytes");
+        logger.info("Occupied memory is {0} bytes", Memory.getValue());
     }
 
     //--------------//
@@ -376,7 +377,7 @@ public class GuiActions
     @Action
     public void verifyTrainingMaterial (ActionEvent e)
     {
-        GlyphVerifier.getInstance()
+        SampleVerifier.getInstance()
                      .setVisible(true);
     }
 
@@ -392,7 +393,7 @@ public class GuiActions
     {
         String str = constants.webSiteUrl.getValue();
 
-        logger.info("Launching browser on " + str);
+        logger.info("Launching browser on {0}", str);
         WebBrowser.getBrowser()
                   .launch(str);
     }
@@ -415,10 +416,8 @@ public class GuiActions
             //~ Enumeration constant initializers ------------------------------
 
 
-            /** Application name */
-            application(new JTextField()),
             /** Longer application description */
-            description(new JTextField()), 
+            description(new JTextField()),
             /** Current version */
             version(new JTextField()), 
             /** Current revision */
@@ -429,7 +428,10 @@ public class GuiActions
             home(new JEditorPane("text/html", "")), 
 
             /** Link to project site */
-            project(new JEditorPane("text/html", ""));
+            project(new JEditorPane("text/html", "")), 
+
+            /** License */
+            license(new JTextField());
             //~ Instance fields ------------------------------------------------
 
             public final JTextComponent comp;
@@ -516,9 +518,9 @@ public class GuiActions
 
             // Manual injection
             resource.injectComponents(dialog);
-            Topic.application.comp.setText(WellKnowns.TOOL_NAME);
             Topic.revision.comp.setText(Main.getToolBuild());
             Topic.classes.comp.setText(" " + WellKnowns.CLASS_CONTAINER);
+            Topic.license.comp.setText(" " + "GNU GPL V2");
 
             return dialog;
         }
@@ -599,7 +601,7 @@ public class GuiActions
 
         //
         Constant.String        manualUrl = new Constant.String(
-            "/docs/manual/index.html",
+            "/docs/manual/handbook.html",
             "URL of local Audiveris manual");
 
         //

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -66,7 +66,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author Hervé Bitteur
  */
 public class BasicNest
-    implements Nest, EventSubscriber<UserEvent>
+        implements Nest,
+                   EventSubscriber<UserEvent>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -77,17 +78,16 @@ public class BasicNest
     private static final Logger logger = Logger.getLogger(BasicNest.class);
 
     /** Events read on location service */
-    public static final Class[] locEventsRead = new Class[] { LocationEvent.class };
+    public static final Class[] locEventsRead = new Class[]{LocationEvent.class};
 
     /** Events read on nest (glyph) service */
-    public static final Class[] glyEventsRead = new Class[] {
-                                                    GlyphIdEvent.class,
-                                                    GlyphEvent.class,
-                                                    GlyphSetEvent.class
-                                                };
+    public static final Class[] glyEventsRead = new Class[]{
+        GlyphIdEvent.class,
+        GlyphEvent.class,
+        GlyphSetEvent.class
+    };
 
     //~ Instance fields --------------------------------------------------------
-
     /** (Debug) a unique name for this nest. */
     private final String name;
 
@@ -102,21 +102,22 @@ public class BasicNest
      * usable across several glyph extractions, to ensure glyph unicity
      * whatever the sequential ID it is assigned.
      */
-    private final ConcurrentHashMap<GlyphSignature, Glyph> originals = new ConcurrentHashMap<GlyphSignature, Glyph>();
+    private final ConcurrentHashMap<GlyphSignature, Glyph> originals = new ConcurrentHashMap<>();
 
     /**
      * Collection of all glyphs ever inserted in this Nest, indexed by
      * glyph id. No non-virtual glyph is ever removed from this map.
      */
-    private final ConcurrentHashMap<Integer, Glyph> allGlyphs = new ConcurrentHashMap<Integer, Glyph>();
+    private final ConcurrentHashMap<Integer, Glyph> allGlyphs = new ConcurrentHashMap<>();
 
     /**
      * Current map of section -> glyphs.
      * This defines the glyphs that are currently active, since there is at
-     * least one section pointing to them (the sections collection is immutable).
+     * least one section pointing to them (the sections collection is
+     * immutable).
      * Nota: The glyph reference within the section is kept in sync
      */
-    private final ConcurrentHashMap<Section, Glyph> activeMap = new ConcurrentHashMap<Section, Glyph>();
+    private final ConcurrentHashMap<Section, Glyph> activeMap = new ConcurrentHashMap<>();
 
     /**
      * Collection of active glyphs.
@@ -126,8 +127,8 @@ public class BasicNest
      */
     private Set<Glyph> activeGlyphs;
 
-    /** Collection of virtual glyphs (with no underlying sections). */
-    private Set<Glyph> virtualGlyphs = new HashSet<Glyph>();
+    /** Collection of virtual glyphs. (with no underlying sections) */
+    private Set<Glyph> virtualGlyphs = new HashSet<>();
 
     /** Global id to uniquely identify a glyph. */
     private final AtomicInteger globalGlyphId = new AtomicInteger(0);
@@ -135,20 +136,20 @@ public class BasicNest
     /** Location service (read & write). */
     private SelectionService locationService;
 
-    /** Hosted glyph service (Glyph, GlyphId and GlyphSet). */
+    /** Hosted glyph service. (Glyph, GlyphId and GlyphSet) */
     protected final SelectionService glyphService;
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------//
     // BasicNest //
     //-----------//
     /**
      * Create a glyph nest.
+     *
      * @param name the distinguished name for this instance
      */
     public BasicNest (String name,
-                      Sheet  sheet)
+                      Sheet sheet)
     {
         this.name = name;
         this.sheet = sheet;
@@ -158,10 +159,10 @@ public class BasicNest
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // addGlyph //
     //----------//
+    @Override
     public Glyph addGlyph (Glyph glyph)
     {
         glyph = registerGlyph(glyph);
@@ -170,7 +171,7 @@ public class BasicNest
         glyph.linkAllSections();
 
         if (glyph.isVip()) {
-            logger.info("Glyph#" + glyph.getId() + " added");
+            logger.info("{0} added", glyph.idString());
         }
 
         return glyph;
@@ -188,14 +189,14 @@ public class BasicNest
 
         // Dump of active glyphs
         System.out.println(
-            "\nActive glyphs (" + getActiveGlyphs().size() + ") :");
+                "\nActive glyphs (" + getActiveGlyphs().size() + ") :");
 
         for (Glyph glyph : getActiveGlyphs()) {
             System.out.println(glyph.toString());
         }
 
         // Dump of inactive glyphs
-        Collection<Glyph> inactives = new ArrayList<Glyph>(getAllGlyphs());
+        Collection<Glyph> inactives = new ArrayList<>(getAllGlyphs());
         inactives.removeAll(getActiveGlyphs());
         System.out.println("\nInactive glyphs (" + inactives.size() + ") :");
 
@@ -207,6 +208,7 @@ public class BasicNest
     //-----------------//
     // getActiveGlyphs //
     //-----------------//
+    @Override
     public synchronized Collection<Glyph> getActiveGlyphs ()
     {
         if (activeGlyphs == null) {
@@ -220,6 +222,7 @@ public class BasicNest
     //--------------//
     // getAllGlyphs //
     //--------------//
+    @Override
     public Collection<Glyph> getAllGlyphs ()
     {
         return Collections.unmodifiableCollection(allGlyphs.values());
@@ -228,62 +231,16 @@ public class BasicNest
     //----------//
     // getGlyph //
     //----------//
+    @Override
     public Glyph getGlyph (Integer id)
     {
         return allGlyphs.get(id);
     }
 
-    //    //--------------------//
-    //    // transferAlienGlyph //
-    //    //--------------------//
-    //    /**
-    //     * Transfer a glyph (from another lag) to this one
-    //     * @param alien the glyph to be copied from the other lag
-    //     * @return the (reified) glyph in this lag
-    //     */
-    //    private Glyph transferAlienGlyph (Glyph alien)
-    //    {
-    //        if (logger.isFineEnabled()) {
-    //            logger.fine("Transfering " + alien);
-    //        }
-    //
-    //        Set<GlyphSection> newSections = new HashSet<GlyphSection>();
-    //
-    //        for (GlyphSection section : alien.getMembers()) {
-    //            GlyphSection newSection = getVertexBySignature(
-    //                section.getSignature());
-    //
-    //            if (newSection == null) {
-    //                logger.warning("Could not retrieve section " + section);
-    //
-    //                return null;
-    //            }
-    //
-    //            newSections.add(newSection);
-    //        }
-    //
-    //        // Create Glyph from sections
-    //        Glyph glyph = null;
-    //
-    //        if (alien instanceof Stick) {
-    //            glyph = new BasicStick(alien.getInterline());
-    //        } else {
-    //            glyph = new BasicGlyph(alien.getInterline());
-    //        }
-    //
-    //        for (GlyphSection section : newSections) {
-    //            glyph.addSection(section, Glyph.Linking.LINK_BACK);
-    //        }
-    //
-    //        // Add/get original glyph
-    //        Glyph orgGlyph = addGlyph(glyph);
-    //
-    //        return orgGlyph;
-    //    }
-
     //-----------------//
     // getGlyphService //
     //-----------------//
+    @Override
     public SelectionService getGlyphService ()
     {
         return glyphService;
@@ -292,17 +249,18 @@ public class BasicNest
     //--------------//
     // getHistogram //
     //--------------//
-    public Histogram<Integer> getHistogram (Orientation       orientation,
+    @Override
+    public Histogram<Integer> getHistogram (Orientation orientation,
                                             Collection<Glyph> glyphs)
     {
-        Histogram<Integer> histo = new Histogram<Integer>();
+        Histogram<Integer> histo = new Histogram<>();
 
         if (!glyphs.isEmpty()) {
-            PixelRectangle box = Glyphs.getContourBox(glyphs);
-            Roi            roi = new BasicRoi(box);
+            PixelRectangle box = Glyphs.getBounds(glyphs);
+            Roi roi = new BasicRoi(box);
             histo = roi.getSectionHistogram(
-                orientation,
-                Glyphs.sectionsOf(glyphs));
+                    orientation,
+                    Glyphs.sectionsOf(glyphs));
         }
 
         return histo;
@@ -311,6 +269,7 @@ public class BasicNest
     //---------//
     // getName //
     //---------//
+    @Override
     public String getName ()
     {
         return name;
@@ -319,6 +278,7 @@ public class BasicNest
     //-------------//
     // getOriginal //
     //-------------//
+    @Override
     public Glyph getOriginal (Glyph glyph)
     {
         return getOriginal(glyph.getSignature());
@@ -327,6 +287,7 @@ public class BasicNest
     //-------------//
     // getOriginal //
     //-------------//
+    @Override
     public Glyph getOriginal (GlyphSignature signature)
     {
         // Find an old glyph registered with this signature
@@ -337,13 +298,10 @@ public class BasicNest
         }
 
         // Check the old signature is still valid
-        if (oldGlyph.getSignature()
-                    .compareTo(signature) == 0) {
+        if (oldGlyph.getSignature().compareTo(signature) == 0) {
             return oldGlyph;
         } else {
-            if (logger.isFineEnabled()) {
-                logger.info("Obsolete signature for " + oldGlyph);
-            }
+            logger.fine("Obsolete signature for {0}", oldGlyph);
 
             return null;
         }
@@ -352,25 +310,26 @@ public class BasicNest
     //------------------//
     // getSelectedGlyph //
     //------------------//
+    @Override
     public Glyph getSelectedGlyph ()
     {
-        return (Glyph) getGlyphService()
-                           .getSelection(GlyphEvent.class);
+        return (Glyph) getGlyphService().getSelection(GlyphEvent.class);
     }
 
     //---------------------//
     // getSelectedGlyphSet //
     //---------------------//
     @SuppressWarnings("unchecked")
+    @Override
     public Set<Glyph> getSelectedGlyphSet ()
     {
-        return (Set<Glyph>) getGlyphService()
-                                .getSelection(GlyphSetEvent.class);
+        return (Set<Glyph>) getGlyphService().getSelection(GlyphSetEvent.class);
     }
 
     //-------//
     // isVip //
     //-------//
+    @Override
     public boolean isVip (Glyph glyph)
     {
         return params.vipGlyphs.contains(glyph.getId());
@@ -379,6 +338,7 @@ public class BasicNest
     //--------------//
     // lookupGlyphs //
     //--------------//
+    @Override
     public Set<Glyph> lookupGlyphs (PixelRectangle rect)
     {
         return Glyphs.lookupGlyphs(getActiveGlyphs(), rect);
@@ -387,6 +347,7 @@ public class BasicNest
     //-------------------------//
     // lookupIntersectedGlyphs //
     //-------------------------//
+    @Override
     public Set<Glyph> lookupIntersectedGlyphs (PixelRectangle rect)
     {
         return Glyphs.lookupIntersectedGlyphs(getActiveGlyphs(), rect);
@@ -395,11 +356,11 @@ public class BasicNest
     //--------------------//
     // lookupVirtualGlyph //
     //--------------------//
+    @Override
     public Glyph lookupVirtualGlyph (PixelPoint point)
     {
         for (Glyph virtual : virtualGlyphs) {
-            if (virtual.getContourBox()
-                       .contains(point)) {
+            if (virtual.getBounds().contains(point)) {
                 return virtual;
             }
         }
@@ -414,10 +375,11 @@ public class BasicNest
      * Map a section to a glyph, making the glyph active
      *
      * @param section the section to map
-     * @param glyph the assigned glyph
+     * @param glyph   the assigned glyph
      */
+    @Override
     public synchronized void mapSection (Section section,
-                                         Glyph   glyph)
+                                         Glyph glyph)
     {
         if (glyph != null) {
             activeMap.put(section, glyph);
@@ -432,6 +394,7 @@ public class BasicNest
     //---------//
     // onEvent //
     //---------//
+    @Override
     public void onEvent (UserEvent event)
     {
         try {
@@ -461,6 +424,7 @@ public class BasicNest
     //---------------//
     // registerGlyph //
     //---------------//
+    @Override
     public Glyph registerGlyph (Glyph glyph)
     {
         // First check this physical glyph does not already exist
@@ -470,32 +434,52 @@ public class BasicNest
             if (original != glyph) {
                 // Reuse the existing glyph
                 if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "new avatar of #" + original.getId() +
-                        Sections.toString(" members", glyph.getMembers()) +
-                        Sections.toString(" original", original.getMembers()));
+                    logger.fine("new avatar of #{0}{1}{2}",
+                                new Object[]{
+                                original.getId(),
+                                Sections.toString(" members", glyph.getMembers()),
+                                Sections.toString(" original", original.
+                                getMembers())
+                            });
                 }
 
                 glyph = original;
                 glyph.setPartOf(null);
             }
         } else {
-            // Create a brand new glyph
-            final int id = generateId();
-            glyph.setId(id);
-            glyph.setNest(this);
-            originals.put(glyph.getSignature(), glyph);
-            allGlyphs.put(id, glyph);
+            GlyphSignature newSig = glyph.getSignature();
 
-            if (isVip(glyph)) {
-                glyph.setVip();
+            if (glyph.isTransient()) {
+                // Register with a brand new Id
+                final int id = generateId();
+                glyph.setId(id);
+                glyph.setNest(this);
+                allGlyphs.put(id, glyph);
+
+                if (isVip(glyph)) {
+                    glyph.setVip();
+                }
+            } else {
+                // This is a re-registration
+                GlyphSignature oldSig = glyph.getRegisteredSignature();
+
+                if ((oldSig != null) && !newSig.equals(oldSig)) {
+                    Glyph oldGlyph = originals.remove(oldSig);
+
+                    if (oldGlyph != null) {
+                        logger.fine(
+                                "Updating registration of {0} oldGlyph:{1}",
+                                new Object[]{glyph.idString(), oldGlyph.getId()});
+                    }
+                }
             }
 
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "Registered glyph #" + glyph.getId() + " as original " +
-                    glyph.getSignature());
-            }
+            originals.put(newSig, glyph);
+            glyph.setRegisteredSignature(newSig);
+
+            logger.fine(
+                    "Registered {0} as original {1}",
+                    new Object[]{glyph.idString(), glyph.getSignature()});
         }
 
         // Special for virtual glyphs
@@ -503,15 +487,13 @@ public class BasicNest
             virtualGlyphs.add(glyph);
         }
 
-        //        if (glyph.isVip()) {
-        //            logger.info("Glyph#" + glyph.getId() + " registered");
-        //        }
         return glyph;
     }
 
     //--------------------//
     // removeVirtualGlyph //
     //--------------------//
+    @Override
     public synchronized void removeVirtualGlyph (VirtualGlyph glyph)
     {
         originals.remove(glyph.getSignature(), glyph);
@@ -523,6 +505,7 @@ public class BasicNest
     //-------------//
     // setServices //
     //-------------//
+    @Override
     public void setServices (SelectionService locationService)
     {
         this.locationService = locationService;
@@ -544,15 +527,12 @@ public class BasicNest
     {
         StringBuilder sb = new StringBuilder("{Nest");
 
-        sb.append(" ")
-          .append(name);
+        sb.append(" ").append(name);
 
         // Active/All glyphs
         if (!allGlyphs.isEmpty()) {
-            sb.append(" glyphs=")
-              .append(getActiveGlyphs().size())
-              .append("/")
-              .append(allGlyphs.size());
+            sb.append(" glyphs=").append(getActiveGlyphs().size()).append("/").
+                    append(allGlyphs.size());
         } else {
             sb.append(" noglyphs");
         }
@@ -567,6 +547,7 @@ public class BasicNest
     //---------//
     /**
      * Publish on glyph service
+     *
      * @param event the event to publish
      */
     protected void publish (NestEvent event)
@@ -579,6 +560,7 @@ public class BasicNest
     //---------//
     /**
      * Publish on location service
+     *
      * @param event the event to publish
      */
     protected void publish (LocationEvent event)
@@ -592,10 +574,11 @@ public class BasicNest
     /**
      * Convenient method to retrieve the number of subscribers on the glyph
      * service for a specific class
+     *
      * @param classe the specific classe
      * @return the number of subscribers interested in the specific class
      */
-    protected int subscribersCount (Class<?extends NestEvent> classe)
+    protected int subscribersCount (Class<? extends NestEvent> classe)
     {
         return glyphService.subscribersCount(classe);
     }
@@ -612,13 +595,14 @@ public class BasicNest
     // handleEvent //
     //-------------//
     /**
-     *  Interest in sheet location => [active] glyph(s)
+     * Interest in sheet location => [active] glyph(s)
+     *
      * @param locationEvent
      */
     private void handleEvent (LocationEvent locationEvent)
     {
-        SelectionHint  hint = locationEvent.hint;
-        MouseMovement  movement = locationEvent.movement;
+        SelectionHint hint = locationEvent.hint;
+        MouseMovement movement = locationEvent.movement;
         PixelRectangle rect = locationEvent.getData();
 
         if ((hint != LOCATION_ADD) && (hint != LOCATION_INIT)) {
@@ -636,8 +620,7 @@ public class BasicNest
 
             // Publish Glyph
             Glyph glyph = glyphsFound.isEmpty() ? null
-                          : glyphsFound.iterator()
-                                       .next();
+                          : glyphsFound.iterator().next();
             publish(new GlyphEvent(this, hint, movement, glyph));
 
             // Publish GlyphSet
@@ -645,7 +628,7 @@ public class BasicNest
         } else {
             // This is just a point
             Glyph glyph = lookupVirtualGlyph(
-                new PixelPoint(rect.getLocation()));
+                    new PixelPoint(rect.getLocation()));
 
             // Publish virtual Glyph, if any
             if (glyph != null) {
@@ -667,33 +650,33 @@ public class BasicNest
     //-------------//
     /**
      * Interest in Glyph => glyph contour & GlyphSet update
+     *
      * @param glyphEvent
      */
     private void handleEvent (GlyphEvent glyphEvent)
     {
         SelectionHint hint = glyphEvent.hint;
         MouseMovement movement = glyphEvent.movement;
-        Glyph         glyph = glyphEvent.getData();
+        Glyph glyph = glyphEvent.getData();
 
         if ((hint == GLYPH_INIT) || (hint == GLYPH_MODIFIED)) {
             // Display glyph contour
             if (glyph != null) {
-                PixelRectangle box = glyph.getContourBox();
+                PixelRectangle box = glyph.getBounds();
                 publish(new LocationEvent(this, hint, movement, box));
             }
         }
 
         // In glyph-selection mode, for non-transient glyphs
         // (and only if we have interested subscribers)
-        if ((hint != GLYPH_TRANSIENT) &&
-            !ViewParameters.getInstance()
-                           .isSectionSelectionEnabled() &&
-            (subscribersCount(GlyphSetEvent.class) > 0)) {
+        if ((hint != GLYPH_TRANSIENT)
+                && !ViewParameters.getInstance().isSectionSelectionEnabled()
+                && (subscribersCount(GlyphSetEvent.class) > 0)) {
             // Update glyph set
             Set<Glyph> glyphs = getSelectedGlyphSet();
 
             if (glyphs == null) {
-                glyphs = new LinkedHashSet<Glyph>();
+                glyphs = new LinkedHashSet<>();
             }
 
             if (hint == LOCATION_ADD) {
@@ -724,20 +707,20 @@ public class BasicNest
     //-------------//
     /**
      * Interest in GlyphSet => Compound
+     *
      * @param glyphSetEvent
      */
     private void handleEvent (GlyphSetEvent glyphSetEvent)
     {
-        if (ViewParameters.getInstance()
-                          .isSectionSelectionEnabled()) {
+        if (ViewParameters.getInstance().isSectionSelectionEnabled()) {
             // Section mode
             return;
         }
 
         // Glyph mode
         MouseMovement movement = glyphSetEvent.movement;
-        Set<Glyph>    glyphs = glyphSetEvent.getData();
-        Glyph         compound = null;
+        Set<Glyph> glyphs = glyphSetEvent.getData();
+        Glyph compound = null;
 
         if ((glyphs != null) && (glyphs.size() > 1)) {
             try {
@@ -746,7 +729,7 @@ public class BasicNest
                 if (system != null) {
                     compound = system.buildTransientCompound(glyphs);
                     publish(
-                        new GlyphEvent(
+                            new GlyphEvent(
                             this,
                             SelectionHint.GLYPH_TRANSIENT,
                             movement,
@@ -756,7 +739,8 @@ public class BasicNest
                 // All glyphs do not belong to the same system
                 // No compound is allowed and displayed
                 logger.warning(
-                    "Glyphs from different systems " + Glyphs.toString(glyphs));
+                        "Glyphs from different systems {0}",
+                        Glyphs.toString(glyphs));
             }
         }
     }
@@ -766,13 +750,14 @@ public class BasicNest
     //-------------//
     /**
      * Interest in Glyph ID => glyph
+     *
      * @param glyphIdEvent
      */
     private void handleEvent (GlyphIdEvent glyphIdEvent)
     {
         SelectionHint hint = glyphIdEvent.hint;
         MouseMovement movement = glyphIdEvent.movement;
-        int           id = glyphIdEvent.getData();
+        int id = glyphIdEvent.getData();
 
         //TODO: Check the need for this:
         //        // Nullify Run  entity
@@ -786,18 +771,17 @@ public class BasicNest
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Constant.String vipGlyphs = new Constant.String(
-            "",
-            "(Debug) Comma-separated list of VIP glyphs");
+                "",
+                "(Debug) Comma-separated list of VIP glyphs");
     }
 
     //------------//
@@ -813,7 +797,6 @@ public class BasicNest
         final List<Integer> vipGlyphs; // List of IDs for VIP glyphs
 
         //~ Constructors -------------------------------------------------------
-
         public Parameters ()
         {
             vipGlyphs = decode(constants.vipGlyphs.getValue());
@@ -823,15 +806,14 @@ public class BasicNest
             }
 
             if (!vipGlyphs.isEmpty()) {
-                logger.info("VIP glyphs: " + vipGlyphs);
+                logger.info("VIP glyphs: {0}", vipGlyphs);
             }
         }
 
         //~ Methods ------------------------------------------------------------
-
         private List<Integer> decode (String str)
         {
-            List<Integer>   ids = new ArrayList<Integer>();
+            List<Integer> ids = new ArrayList<>();
 
             // Retrieve the list of ids
             StringTokenizer st = new StringTokenizer(str, ",");

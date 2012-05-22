@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -34,7 +34,7 @@ import java.util.List;
  * @author Hervé Bitteur
  */
 public class SystemPart
-    extends PartNode
+        extends PartNode
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -42,7 +42,10 @@ public class SystemPart
     private static final Logger logger = Logger.getLogger(SystemPart.class);
 
     /** For comparing (TreeNode) SystemPart instances according to their id */
-    public static final Comparator<TreeNode> idComparator = new Comparator<TreeNode>() {
+    public static final Comparator<TreeNode> idComparator = new Comparator<TreeNode>()
+    {
+
+        @Override
         public int compare (TreeNode o1,
                             TreeNode o2)
         {
@@ -53,14 +56,12 @@ public class SystemPart
                 return Integer.signum(p1.getId() - p2.getId());
             } else {
                 throw new RuntimeException(
-                    "Comparing illegal SystemPart instances");
+                        "Comparing illegal SystemPart instances");
             }
         }
     };
 
-
     //~ Instance fields --------------------------------------------------------
-
     /** Id of this part within the system, starting at 1 */
     private int id;
 
@@ -73,7 +74,7 @@ public class SystemPart
     /** A brace attached if any */
     private Glyph brace;
 
-    /** Specific child : sequence of staves that belong to this system */
+    /** Specific child : sequence of staves that belong to this system part */
     private final Container staves;
 
     /** Specific child : sequence of measures that compose this system part */
@@ -95,12 +96,12 @@ public class SystemPart
     private boolean dummy;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // SystemPart //
     //------------//
     /**
      * Create a new instance of SystemPart.
+     *
      * @param system the containing system
      */
     public SystemPart (ScoreSystem system)
@@ -116,7 +117,6 @@ public class SystemPart
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------//
     // accept //
     //--------//
@@ -132,6 +132,7 @@ public class SystemPart
     /**
      * Overrides normal behavior, to deal with the separation of
      * specific children.
+     *
      * @param node the node to insert
      */
     @Override
@@ -176,12 +177,9 @@ public class SystemPart
     //-------------//
     public void cleanupNode ()
     {
-        getSlurs()
-            .clear();
-        getLyrics()
-            .clear();
-        getTexts()
-            .clear();
+        getSlurs().clear();
+        getLyrics().clear();
+        getTexts().clear();
     }
 
     //------------------//
@@ -190,6 +188,7 @@ public class SystemPart
     /**
      * Try to connect the orphan slurs at the beginning of this part
      * with the orphan slurs at the end of the provided preceding part.
+     *
      * @param precedingPart the part to connect to, either in the preceding
      * system, or in the last system of the preceding page
      */
@@ -206,7 +205,7 @@ public class SystemPart
             }
 
             List<Slur> precedingOrphans = precedingPart.getSlurs(
-                Slur.isEndingOrphan);
+                    Slur.isEndingOrphan);
             Collections.sort(precedingOrphans, Slur.verticalComparator);
 
             for (Slur slur : precedingOrphans) {
@@ -215,7 +214,7 @@ public class SystemPart
             }
 
             // Connect the orphans as much as possible
-            SlurLoop: 
+            SlurLoop:
             for (Slur slur : orphans) {
                 for (Slur prevSlur : precedingOrphans) {
                     if (slur.canExtend(prevSlur)) {
@@ -233,7 +232,7 @@ public class SystemPart
             for (Slur prevSlur : precedingOrphans) {
                 if (prevSlur.getRightExtension() == null) {
                     prevSlur.addError(
-                        " Could not right-connect slur #" + prevSlur.getId());
+                            " Could not right-connect slur #" + prevSlur.getId());
                 }
             }
         }
@@ -244,23 +243,24 @@ public class SystemPart
     //-----------------//
     /**
      * Create an dummy system part, parallel to this part, just to fill
-     * needed measures in another part. <ul>
+     * needed measures in another part.
+     * <ul>
      * <li>Clef is taken from first real measure of part to be extended</li>
      * <li>Key sig is taken from this part</li>
      * <li>Time sig is taken from this part</li>
      * <li>Measures are filled with just one whole rest</li>
      * </ul>
+     *
      * @param id the id for the desired dummy part
      * @return the created dummy part, ready to be exported
      */
     public SystemPart createDummyPart (int id)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine(getContextString() + " createDummyPart for id=" + id);
-        }
+        logger.fine("{0} createDummyPart for id={1}",
+                    new Object[]{getContextString(), id});
 
         // Find some concrete system part for the provided id
-        SystemPart  nextPart;
+        SystemPart nextPart;
         ScoreSystem nextSystem = getSystem();
 
         while (true) {
@@ -275,9 +275,8 @@ public class SystemPart
                     break;
                 }
             } else {
-                logger.warning(
-                    getContextString() +
-                    " Cannot find real system part with id " + id);
+                logger.warning("{0} Cannot find real system part with id {1}",
+                               new Object[]{getContextString(), id});
 
                 return null;
             }
@@ -311,37 +310,35 @@ public class SystemPart
                 if (isFirstMeasure) {
                     // Create dummy Staff
                     dummyStaff = new Staff(
-                        null, // No staff info counterpart
-                        dummyPart,
-                        null,
-                        getFirstStaff().getWidth(),
-                        nextStaff.getHeight());
+                            null, // No staff info counterpart
+                            dummyPart,
+                            null,
+                            getFirstStaff().getWidth(),
+                            nextStaff.getHeight());
                     dummyStaff.setDummy(true);
 
                     // Create dummy Clef
                     Clef nextClef = nextMeasure.getFirstMeasureClef(
-                        nextStaff.getId());
+                            nextStaff.getId());
 
                     if (nextClef != null) {
                         Clef dummyClef = new Clef(
-                            dummyMeasure,
-                            dummyStaff,
-                            nextClef);
+                                dummyMeasure,
+                                dummyStaff,
+                                nextClef);
                     }
 
                     isFirstMeasure = false;
                 } else {
-                    dummyStaff = (Staff) dummyPart.getStaves()
-                                                  .get(staffIndex);
+                    dummyStaff = (Staff) dummyPart.getStaves().get(staffIndex);
                 }
 
                 // Replicate Key if any
-                if (!measure.getKeySignatures()
-                            .isEmpty()) {
+                if (!measure.getKeySignatures().isEmpty()) {
                     KeySignature dummyKey = new KeySignature(
-                        dummyMeasure,
-                        dummyStaff,
-                        (KeySignature) measure.getKeySignatures().get(0));
+                            dummyMeasure,
+                            dummyStaff,
+                            (KeySignature) measure.getKeySignatures().get(0));
                 }
 
                 // Replicate Time if any
@@ -357,7 +354,7 @@ public class SystemPart
             }
 
             dummyMeasure.setBox(
-                new PixelRectangle(
+                    new PixelRectangle(
                     measure.getBox().x,
                     nextPart.getBox().y,
                     measure.getBox().width,
@@ -389,12 +386,12 @@ public class SystemPart
     //-----------------//
     /**
      * Report the first measure in this system part.
+     *
      * @return the first measure entity
      */
     public Measure getFirstMeasure ()
     {
-        return (Measure) getMeasures()
-                             .get(0);
+        return (Measure) getMeasures().get(0);
     }
 
     //---------------//
@@ -402,12 +399,12 @@ public class SystemPart
     //---------------//
     /**
      * Report the first staff in this system part.
+     *
      * @return the first staff entity
      */
     public Staff getFirstStaff ()
     {
-        return (Staff) getStaves()
-                           .get(0);
+        return (Staff) getStaves().get(0);
     }
 
     //--------------//
@@ -415,8 +412,7 @@ public class SystemPart
     //--------------//
     public SystemPart getFollowing ()
     {
-        ScoreSystem nextSystem = (ScoreSystem) getSystem()
-                                                   .getNextSibling();
+        ScoreSystem nextSystem = (ScoreSystem) getSystem().getNextSibling();
 
         if (nextSystem != null) {
             return nextSystem.getPart(id);
@@ -430,6 +426,7 @@ public class SystemPart
     //-------//
     /**
      * Report the part id within the containing system, starting at 1.
+     *
      * @return the part id
      */
     public int getId ()
@@ -442,6 +439,7 @@ public class SystemPart
     //----------------//
     /**
      * Report the last measure in the system part.
+     *
      * @return the last measure entity
      */
     public Measure getLastMeasure ()
@@ -460,12 +458,12 @@ public class SystemPart
     //--------------//
     /**
      * Report the last staff in this system part.
+     *
      * @return the last staff entity
      */
     public Staff getLastStaff ()
     {
-        return (Staff) getStaves()
-                           .get(getStaves().size() - 1);
+        return (Staff) getStaves().get(getStaves().size() - 1);
     }
 
     //-----------//
@@ -473,6 +471,7 @@ public class SystemPart
     //-----------//
     /**
      * Report the collection of lyrics.
+     *
      * @return the lyrics list, which may be empty but not null
      */
     public List<TreeNode> getLyrics ()
@@ -486,6 +485,7 @@ public class SystemPart
     /**
      * Report the measure that contains a given point (assumed to be in
      * the containing system part).
+     *
      * @param point page-based coordinates of the given point
      * @return the containing measure
      */
@@ -511,6 +511,7 @@ public class SystemPart
     //-------------//
     /**
      * Report the collection of measures.
+     *
      * @return the measure list, which may be empty but not null
      */
     public List<TreeNode> getMeasures ()
@@ -536,12 +537,12 @@ public class SystemPart
      * Report the corresponding part (if any) in the previous system.
      * Even if there is a previous system, there may be no part that corresponds
      * to this one.
+     *
      * @return the corresponding part, or null
      */
     public SystemPart getPrecedingInPage ()
     {
-        ScoreSystem prevSystem = (ScoreSystem) getSystem()
-                                                   .getPreviousSibling();
+        ScoreSystem prevSystem = (ScoreSystem) getSystem().getPreviousSibling();
 
         if (prevSystem != null) {
             return prevSystem.getPart(id);
@@ -563,6 +564,7 @@ public class SystemPart
     //----------//
     /**
      * Report the collection of slurs.
+     *
      * @return the slur list, which may be empty but not null
      */
     public List<TreeNode> getSlurs ()
@@ -576,12 +578,13 @@ public class SystemPart
     /**
      * Report the collection of slurs for which the provided predicate
      * is true.
+     *
      * @param predicate the check to run
      * @return the collection of selected slurs, which may be empty
      */
     public List<Slur> getSlurs (Predicate<Slur> predicate)
     {
-        List<Slur> selectedSlurs = new ArrayList<Slur>();
+        List<Slur> selectedSlurs = new ArrayList<>();
 
         for (TreeNode sNode : getSlurs()) {
             Slur slur = (Slur) sNode;
@@ -600,28 +603,49 @@ public class SystemPart
     /**
      * Report the staff nearest (in ordinate) to a provided page point
      * within the part staves.
+     *
      * @param point the provided page point
      * @return the nearest staff, within the part staves
      */
     public Staff getStaffAt (PixelPoint point)
     {
-        Staff staff = getSystem()
-                          .getInfo()
-                          .getStaffAt(point)
-                          .getScoreStaff();
+        Staff staff = getSystem().getInfo().getStaffAt(point).getScoreStaff();
 
-        if (staves.getChildren()
-                  .contains(staff)) {
+        if (staves.getChildren().contains(staff)) {
             return staff;
         }
 
-        if (staff.getInfo()
-                 .getId() < getFirstStaff()
-                                .getInfo()
-                                .getId()) {
+        if (staff.getInfo().getId() < getFirstStaff().getInfo().getId()) {
             return getFirstStaff();
         } else {
             return getLastStaff();
+        }
+    }
+
+    //------------------//
+    // getStaffPosition //
+    //------------------//
+    /**
+     * Report the vertical position of the provided point with respect
+     * to the part staves.
+     *
+     * @param point the point whose ordinate is to be checked
+     * @return the StaffPosition value
+     */
+    public StaffPosition getStaffPosition (PixelPoint point)
+    {
+        Staff firstStaff = getFirstStaff();
+
+        if (point.y < firstStaff.getTopLeft().y) {
+            return StaffPosition.ABOVE_STAVES;
+        }
+
+        Staff lastStaff = getLastStaff();
+
+        if (point.y > (lastStaff.getTopLeft().y + lastStaff.getHeight())) {
+            return StaffPosition.BELOW_STAVES;
+        } else {
+            return StaffPosition.WITHIN_STAVES;
         }
     }
 
@@ -630,6 +654,7 @@ public class SystemPart
     //--------------------//
     /**
      * Get the barline that starts the part.
+     *
      * @return barline the starting bar line (which may be null)
      */
     public Barline getStartingBarline ()
@@ -642,6 +667,7 @@ public class SystemPart
     //-----------//
     /**
      * Report the ordered list of staves that belong to this system part.
+     *
      * @return the list of staves
      */
     public List<TreeNode> getStaves ()
@@ -654,6 +680,7 @@ public class SystemPart
     //-----------//
     /**
      * Report the containing system.
+     *
      * @return the containing system
      */
     @Override
@@ -717,7 +744,7 @@ public class SystemPart
             LyricsLine line = (LyricsLine) node;
             line.setId(lyrics.getChildren().indexOf(line) + 1);
             line.setStaff(
-                getSystem().getStaffAbove(new PixelPoint(0, line.getY())));
+                    getSystem().getStaffAbove(new PixelPoint(0, line.getY())));
         }
     }
 
@@ -775,6 +802,7 @@ public class SystemPart
     //-------//
     /**
      * Set the part id within the containing system, starting at 1.
+     *
      * @param id the id value
      */
     public void setId (int id)
@@ -806,6 +834,7 @@ public class SystemPart
     //--------------------//
     /**
      * Set the barline that starts the part.
+     *
      * @param startingBarline the starting barline
      */
     public void setStartingBarline (Barline startingBarline)
@@ -820,8 +849,7 @@ public class SystemPart
     public String toString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("{SystemPart #")
-          .append(getId());
+        sb.append("{SystemPart #").append(getId());
 
         if (dummy) {
             sb.append(" dummy");
@@ -850,8 +878,7 @@ public class SystemPart
         sb.append("]");
 
         if (name != null) {
-            sb.append(" name:")
-              .append(name);
+            sb.append(" name:").append(name);
         }
 
         sb.append("}");

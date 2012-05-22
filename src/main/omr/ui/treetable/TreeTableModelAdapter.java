@@ -66,11 +66,13 @@ public class TreeTableModelAdapter
             new TreeExpansionListener() {
                     // Don't use fireTableRowsInserted() here; the selection model
                     // would get updated twice.
+            @Override
                     public void treeExpanded (TreeExpansionEvent event)
                     {
                         fireTableDataChanged();
                     }
 
+            @Override
                     public void treeCollapsed (TreeExpansionEvent event)
                     {
                         fireTableDataChanged();
@@ -83,21 +85,25 @@ public class TreeTableModelAdapter
         // the event before us.
         treeTableModel.addTreeModelListener(
             new TreeModelListener() {
+            @Override
                     public void treeNodesChanged (TreeModelEvent e)
                     {
                         delayedFireTableDataChanged();
                     }
 
+            @Override
                     public void treeNodesInserted (TreeModelEvent e)
                     {
                         delayedFireTableDataChanged();
                     }
 
+            @Override
                     public void treeNodesRemoved (TreeModelEvent e)
                     {
                         delayedFireTableDataChanged();
                     }
 
+            @Override
                     public void treeStructureChanged (TreeModelEvent e)
                     {
                         delayedFireTableDataChanged();
@@ -132,6 +138,7 @@ public class TreeTableModelAdapter
      *
      * @return DOCUMENT ME!
      */
+    @Override
     public int getColumnCount ()
     {
         return treeTableModel.getColumnCount();
@@ -161,6 +168,7 @@ public class TreeTableModelAdapter
      *
      * @return DOCUMENT ME!
      */
+    @Override
     public int getRowCount ()
     {
         return tree.getRowCount();
@@ -177,6 +185,7 @@ public class TreeTableModelAdapter
      *
      * @return DOCUMENT ME!
      */
+    @Override
     public Object getValueAt (int row,
                               int column)
     {
@@ -247,6 +256,7 @@ public class TreeTableModelAdapter
     {
         SwingUtilities.invokeLater(
             new Runnable() {
+            @Override
                     public void run ()
                     {
                         fireTableDataChanged();

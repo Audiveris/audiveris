@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -38,8 +38,8 @@ import javax.swing.event.ChangeListener;
 
 /**
  * Class {@code GlyphTrainer} handles a User Interface dedicated to the
- * training and testing of a glyph evaluator. This class can be launched as a
- * stand-alone program.
+ * training and testing of a glyph evaluator.
+ * This class can be launched as a stand-alone program.
  *
  * <p>The frame is divided vertically in 4 parts:
  * <ol>
@@ -126,6 +126,7 @@ public class GlyphTrainer
 
         // Listener on remaining error
         ChangeListener errorListener = new ChangeListener() {
+            @Override
             public void stateChanged (ChangeEvent e)
             {
                 frame.setTitle(

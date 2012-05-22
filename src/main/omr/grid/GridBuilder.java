@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -35,8 +35,8 @@ import java.util.List;
 
 /**
  * Class {@code GridBuilder} computes the grid of systems of a sheet
- * picture, based on the retrieval of horizontal staff lines and of vertical
- * bar lines.
+ * picture, based on the retrieval of horizontal staff lines and of
+ * vertical bar lines.
  *
  * <p>The actual processing is delegated to 3 companions:<ul>
  * <li>{@link LinesRetriever} for retrieving all horizontal staff lines.</li>
@@ -76,8 +76,7 @@ public class GridBuilder
     // GridBuilder //
     //-------------//
     /**
-     * Retrieve the frames of all staff lines
-     *
+     * Retrieve the frames of all staff lines.
      * @param sheet the sheet to process
      */
     public GridBuilder (Sheet sheet)
@@ -97,7 +96,7 @@ public class GridBuilder
     // buildInfo //
     //-----------//
     /**
-     * Compute and display the system frames of the sheet picture
+     * Compute and display the system frames of the sheet picture.
      */
     public void buildInfo ()
         throws StepException
@@ -133,14 +132,13 @@ public class GridBuilder
             // Adjust ending points of all systems (side) bars
             barsRetriever.adjustSystemBars();
 
+            /** Companion in charge of target grid */
+            TargetBuilder targetBuilder = new TargetBuilder(sheet);
+            sheet.setTargetBuilder(targetBuilder);
+
             // Define the destination grid, if so desired
             if (constants.buildDewarpedTarget.isSet()) {
                 watch.start("targetBuilder");
-
-                /** Companion in charge of target grid */
-                TargetBuilder targetBuilder = new TargetBuilder(sheet);
-
-                sheet.setTargetBuilder(targetBuilder);
                 targetBuilder.buildInfo();
             }
         } catch (Throwable ex) {
@@ -162,12 +160,13 @@ public class GridBuilder
     // buildAllLags //
     //--------------//
     /**
-     * From the sheet picture, build the vertical lag (for barlines) and the
-     * horizontal lag (for staff lines)
+     * From the sheet picture, build the vertical lag (for bar lines)
+     * and the horizontal lag (for staff lines).
      */
     private void buildAllLags ()
     {
-        final boolean   showRuns = constants.showRuns.getValue();
+        final boolean   showRuns = constants.showRuns.isSet() &&
+                                   (Main.getGui() != null);
         final StopWatch watch = new StopWatch("buildAllLags");
 
         try {
@@ -186,7 +185,7 @@ public class GridBuilder
             // allow the dewarping of the initial picture.
 
             // View on the initial runs (just for information)
-            if (showRuns && (Main.getGui() != null)) {
+            if (showRuns) {
                 runsViewer.display(wholeVertTable);
             }
 
@@ -199,9 +198,9 @@ public class GridBuilder
 
             // vLag creation
             watch.start("barsRetriever.buildLag");
-            barsRetriever.buildLag(longVertTable, showRuns);
+            barsRetriever.buildLag(longVertTable);
         } finally {
-            if (constants.printWatch.getValue()) {
+            if (constants.printWatch.isSet()) {
                 watch.print();
             }
         }

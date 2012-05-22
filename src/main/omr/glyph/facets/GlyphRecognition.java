@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -13,13 +13,12 @@ package omr.glyph.facets;
 
 import omr.glyph.Evaluation;
 import omr.glyph.Shape;
-import omr.glyph.text.TextInfo;
 
 import omr.score.entity.TimeRational;
 
 /**
- * Interface {@code GlyphRecognition} defines a facet that deals with the shape
- * recognition of a glyph.
+ * Interface {@code GlyphRecognition} defines a facet that deals with
+ * the shape recognition of a glyph.
  *
  * @author Hervé Bitteur
  */
@@ -58,12 +57,6 @@ interface GlyphRecognition
      * @return the glyph shape, which may be null
      */
     Shape getShape ();
-
-    /**
-     * Report the textual information for this glyph.
-     * @return the glyph textual info, or null if none
-     */
-    TextInfo getTextInfo ();
 
     /**
      * Report the related timesig rational if any.

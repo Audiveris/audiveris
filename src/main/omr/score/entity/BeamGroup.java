@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -40,7 +40,7 @@ import java.util.TreeSet;
  * @author Hervé Bitteur
  */
 public class BeamGroup
-    implements Vip
+        implements Vip
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -51,7 +51,6 @@ public class BeamGroup
     private static final Logger logger = Logger.getLogger(BeamGroup.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** (Debug) flag this object as VIP */
     private boolean vip;
 
@@ -63,39 +62,37 @@ public class BeamGroup
     private final Measure measure;
 
     /** Sorted collection of contained beams */
-    private SortedSet<Beam> beams = new TreeSet<Beam>();
+    private SortedSet<Beam> beams = new TreeSet<>();
 
     /** Same voice for all chords of this beam group */
     private Voice voice;
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------//
     // BeamGroup //
     //-----------//
     /**
      * Creates a new instance of BeamGroup.
+     *
      * @param measure the containing measure
      */
     public BeamGroup (Measure measure)
     {
         this.measure = measure;
         measure.addGroup(this);
-        id = measure.getBeamGroups()
-                    .indexOf(this) + 1;
+        id = measure.getBeamGroups().indexOf(this) + 1;
 
-        if (logger.isFineEnabled()) {
-            logger.fine(measure.getContextString() + " Created " + this);
-        }
+        logger.fine("{0} Created {1}", new Object[]{measure.getContextString(),
+                                                    this});
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // populate //
     //----------//
     /**
      * Populate all the BeamGroup instances for a given measure.
+     *
      * @param measure the containing measure
      */
     public static void populate (Measure measure)
@@ -115,7 +112,7 @@ public class BeamGroup
         // Separate illegal beam groups
         BeamGroup.SplitOrder split;
 
-        int                  loopNb = constants.maxSplitLoops.getValue();
+        int loopNb = constants.maxSplitLoops.getValue();
 
         while ((split = checkBeamGroups(measure)) != null) {
             if (--loopNb < 0) {
@@ -132,7 +129,7 @@ public class BeamGroup
             logger.fine(measure.getContextString());
 
             for (BeamGroup group : measure.getBeamGroups()) {
-                logger.fine("   " + group);
+                logger.fine("   {0}", group);
             }
         }
 
@@ -153,6 +150,7 @@ public class BeamGroup
     //---------//
     /**
      * Include a beam as part of this group.
+     *
      * @param beam the beam to include
      */
     public void addBeam (Beam beam)
@@ -166,8 +164,8 @@ public class BeamGroup
         }
 
         if (isVip() || logger.isFineEnabled()) {
-            logger.info(
-                measure.getContextString() + " Added " + beam + " to " + this);
+            logger.info("{0} Added {1} to {2}", new Object[]{measure.
+                        getContextString(), beam, this});
         }
     }
 
@@ -190,20 +188,19 @@ public class BeamGroup
                     Note rest = Chord.lookupRest(prevChord, chord);
 
                     if (rest != null) {
-                        rest.getChord()
-                            .setStartTime(prevChord.getEndTime());
+                        rest.getChord().setStartTime(prevChord.getEndTime());
                         chord.setStartTime(rest.getChord().getEndTime());
                     } else {
                         chord.setStartTime(prevChord.getEndTime());
                     }
                 } catch (Exception ex) {
                     chord.addError(
-                        "Cannot compute chord time based on previous chord");
+                            "Cannot compute chord time based on previous chord");
                 }
             } else {
                 if (chord.getStartTime() == null) {
                     chord.addError(
-                        "Computing beam group times with first chord not set");
+                            "Computing beam group times with first chord not set");
                 }
             }
 
@@ -216,6 +213,7 @@ public class BeamGroup
     //----------//
     /**
      * Report the ordered set of beams that are part of this group.
+     *
      * @return the sorted set of contained beams
      */
     public SortedSet<Beam> getBeams ()
@@ -229,11 +227,12 @@ public class BeamGroup
     /**
      * Report the x-ordered collection of chords that are grouped by
      * this beam group.
+     *
      * @return the (perhaps empty) collection of 'beamed' chords.
      */
     public SortedSet<Chord> getChords ()
     {
-        SortedSet<Chord> chords = new TreeSet<Chord>();
+        SortedSet<Chord> chords = new TreeSet<>();
 
         for (Beam beam : getBeams()) {
             for (Chord chord : beam.getChords()) {
@@ -250,12 +249,13 @@ public class BeamGroup
     /**
      * Report the total duration of the sequence of chords within this
      * group.
+     *
      * @return the total group duration, perhaps null
      */
     public Rational getDuration ()
     {
-        Rational         duration = null;
-        SortedSet<Chord> chords = new TreeSet<Chord>();
+        Rational duration = null;
+        SortedSet<Chord> chords = new TreeSet<>();
 
         for (Beam beam : beams) {
             for (Chord chord : beam.getChords()) {
@@ -283,6 +283,7 @@ public class BeamGroup
     //-------//
     /**
      * Report the group id (unique within the measure, starting from 1).
+     *
      * @return the group id
      */
     public int getId ()
@@ -295,6 +296,7 @@ public class BeamGroup
     //----------//
     /**
      * Report the level of a beam within its containing BeamGroup.
+     *
      * @param beam the given beam (assumed to be part of this group)
      * @return the beam level within the group, counted from 1
      */
@@ -319,6 +321,7 @@ public class BeamGroup
     //-------//
     // isVip //
     //-------//
+    @Override
     public boolean isVip ()
     {
         return vip;
@@ -330,6 +333,7 @@ public class BeamGroup
     /**
      * Remove a beam from this group (in order to assign the beam to
      * another group).
+     *
      * @param beam the beam to remove
      */
     public void removeBeam (Beam beam)
@@ -342,6 +346,7 @@ public class BeamGroup
     //--------//
     // setVip //
     //--------//
+    @Override
     public void setVip ()
     {
         vip = true;
@@ -352,6 +357,7 @@ public class BeamGroup
     //----------//
     /**
      * Assign a voice to this beam group.
+     *
      * @param voice the voice to assign
      */
     public void setVoice (Voice voice)
@@ -370,8 +376,7 @@ public class BeamGroup
                     Note rest = Chord.lookupRest(prevChord, chord);
 
                     if (rest != null) {
-                        rest.getChord()
-                            .setVoice(voice);
+                        rest.getChord().setVoice(voice);
                     }
                 }
 
@@ -379,11 +384,9 @@ public class BeamGroup
                 prevChord = chord;
             }
         } else if (!this.voice.equals(voice)) {
-            getChords()
-                .first()
-                .addError(
-                "Group. Reassigning voice from " + this.voice + " to " + voice +
-                " in " + this);
+            getChords().first().addError(
+                    "Group. Reassigning voice from " + this.voice + " to " + voice
+                    + " in " + this);
         }
     }
 
@@ -394,18 +397,15 @@ public class BeamGroup
     public String toString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("{BeamGroup#")
-          .append(id)
-          .append(" beams[");
+        sb.append("{BeamGroup#").append(id).append(" beams[");
 
         if (beams != null) {
             for (Beam beam : beams) {
-                sb.append(beam + " ");
+                sb.append(beam).append(" ");
             }
         }
 
-        sb.append("]")
-          .append("}");
+        sb.append("]").append("}");
 
         return sb.toString();
     }
@@ -421,7 +421,7 @@ public class BeamGroup
     {
         // Retrieve the longest beam and use its slope
         double bestLength = 0;
-        Beam   bestBeam = null;
+        Beam bestBeam = null;
 
         for (Beam beam : beams) {
             // Extrema points of Beam hooks are not reliable, skip them
@@ -429,8 +429,8 @@ public class BeamGroup
                 continue;
             }
 
-            double length = beam.getPoint(HorizontalSide.LEFT)
-                                .distance(beam.getPoint(HorizontalSide.RIGHT));
+            double length = beam.getPoint(HorizontalSide.LEFT).distance(beam.
+                    getPoint(HorizontalSide.RIGHT));
 
             if (length > bestLength) {
                 bestLength = length;
@@ -439,14 +439,13 @@ public class BeamGroup
         }
 
         if (bestBeam != null) {
-            double slope = bestBeam.getLine()
-                                   .getSlope();
+            double slope = bestBeam.getLine().getSlope();
 
             for (Beam beam : beams) {
                 PixelPoint left = beam.getPoint(HorizontalSide.LEFT);
                 PixelPoint right = beam.getPoint(HorizontalSide.RIGHT);
-                double     yMid = (left.y + right.y) / 2d;
-                double     dy = (right.x - left.x) * slope;
+                double yMid = (left.y + right.y) / 2d;
+                double dy = (right.x - left.x) * slope;
                 left.y = (int) Math.rint(yMid - (dy / 2));
                 right.y = (int) Math.rint(yMid + (dy / 2));
             }
@@ -459,6 +458,7 @@ public class BeamGroup
     /**
      * Check all the BeamGroup instances of the given measure, to find
      * the first split if any to perform.
+     *
      * @param measure the given measure
      * @return the first split parameters, or null if everything is OK
      */
@@ -481,6 +481,7 @@ public class BeamGroup
     /**
      * Run a consistency check on the group, and detect when a group
      * has to be splitted.
+     *
      * @return the split order parameters, or null if no split is needed
      */
     private SplitOrder checkGroup ()
@@ -494,15 +495,12 @@ public class BeamGroup
 
             for (Beam beam : this.beams) {
                 for (Chord chord : beam.getChords()) {
-                    if (slot.getChords()
-                            .contains(chord)) {
+                    if (slot.getChords().contains(chord)) {
                         if (prevChord == null) {
                             prevChord = chord;
                         } else if (prevChord != chord) {
-                            if (logger.isFineEnabled()) {
-                                logger.fine(
-                                    measure + " Suspicious BeamGroup " + this);
-                            }
+                            logger.fine("{0} Suspicious BeamGroup {1}",
+                                        new Object[]{measure, this});
 
                             // Split the beam group here
                             return new SplitOrder(this, beam, prevChord, chord);
@@ -520,25 +518,23 @@ public class BeamGroup
     //------------//
     /**
      * We actually split a chord which embraces the two beam groups.
-     * @param chord the chord to split
-     * @param split the split parameters
+     *
+     * @param chord      the chord to split
+     * @param split      the split parameters
      * @param alienGroup the alien beam group
      */
-    private void splitChord (Chord      chord,
+    private void splitChord (Chord chord,
                              SplitOrder split,
-                             BeamGroup  alienGroup)
+                             BeamGroup alienGroup)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Shared : " + chord);
-        }
+        logger.fine("Shared : {0}", chord);
 
-        Chord   alienChord = chord.duplicate();
+        Chord alienChord = chord.duplicate();
 
         // Split beams properly between chord & alienChord
         boolean started = false;
 
-        for (Iterator<Beam> bit = chord.getBeams()
-                                       .iterator(); bit.hasNext();) {
+        for (Iterator<Beam> bit = chord.getBeams().iterator(); bit.hasNext();) {
             Beam beam = bit.next();
 
             if (!started && (beam == split.alienBeam)) {
@@ -546,9 +542,7 @@ public class BeamGroup
             }
 
             if (started) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("Beam to switch: " + beam.toLongString());
-                }
+                logger.fine("Beam to switch: {0}", beam.toLongString());
 
                 // Cut the link chord -> beam
                 bit.remove();
@@ -565,10 +559,8 @@ public class BeamGroup
             }
         }
 
-        if (logger.isFineEnabled()) {
-            logger.fine("Remaining : " + chord);
-            logger.fine("Alien : " + alienChord);
-        }
+        logger.fine("Remaining : {0}", chord);
+        logger.fine("Alien : {0}", alienChord);
     }
 
     //------------//
@@ -576,23 +568,21 @@ public class BeamGroup
     //------------//
     /**
      * Actually split a group in two, according to the split parameters.
+     *
      * @param split the split parameters
      */
     private void splitGroup (SplitOrder split)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("processing " + split);
-        }
+        logger.fine("processing {0}", split);
 
-        BeamGroup  alienGroup = new BeamGroup(measure);
+        BeamGroup alienGroup = new BeamGroup(measure);
 
         // Check all former beams: any beam linked to the alienChord should be
         // moved to the alienGroup as well.
-        List<Beam> alienBeams = new ArrayList<Beam>(); // To avoid concurrent modifs
+        List<Beam> alienBeams = new ArrayList<>(); // To avoid concurrent modifs
 
         for (Beam beam : beams) {
-            if (beam.getChords()
-                    .contains(split.alienChord)) {
+            if (beam.getChords().contains(split.alienChord)) {
                 alienBeams.add(beam);
             }
         }
@@ -621,12 +611,11 @@ public class BeamGroup
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -634,9 +623,9 @@ public class BeamGroup
          * Maximum number of loops allowed for splitting beam groups
          */
         Constant.Integer maxSplitLoops = new Constant.Integer(
-            "loops",
-            10,
-            "Maximum number of loops allowed for splitting beam groups");
+                "loops",
+                10,
+                "Maximum number of loops allowed for splitting beam groups");
     }
 
     //------------//
@@ -664,11 +653,10 @@ public class BeamGroup
         final Chord alienChord;
 
         //~ Constructors -------------------------------------------------------
-
         public SplitOrder (BeamGroup group,
-                           Beam      alienBeam,
-                           Chord     firstChord,
-                           Chord     alienChord)
+                           Beam alienBeam,
+                           Chord firstChord,
+                           Chord alienChord)
         {
             this.group = group;
             this.alienBeam = alienBeam;
@@ -677,20 +665,15 @@ public class BeamGroup
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public String toString ()
         {
             StringBuilder sb = new StringBuilder();
             sb.append("{Split");
-            sb.append("\n\tgroup=")
-              .append(group);
-            sb.append("\n\tfirstChord=")
-              .append(firstChord);
-            sb.append("\n\talienBeam=")
-              .append(alienBeam);
-            sb.append("\n\talienChord=")
-              .append(alienChord);
+            sb.append("\n\tgroup=").append(group);
+            sb.append("\n\tfirstChord=").append(firstChord);
+            sb.append("\n\talienBeam=").append(alienBeam);
+            sb.append("\n\talienChord=").append(alienChord);
             sb.append("}");
 
             return sb.toString();

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -42,6 +42,7 @@ import java.awt.font.GlyphVector;
 import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.logging.Level;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -83,6 +84,7 @@ public class SymbolRipper
     // paramListener //
     //---------------//
     private ChangeListener     paramListener = new ChangeListener() {
+        @Override
         public void stateChanged (ChangeEvent e)
         {
             JSpinner s = (JSpinner) e.getSource();
@@ -469,9 +471,7 @@ public class SymbolRipper
 
                 // Debug
                 TextLayout layout = new TextLayout(string, musicFont, frc);
-                logger.info(
-                    "getAdvance(): " + layout.getAdvance() +
-                    " getVisibleAdvance(): " + layout.getVisibleAdvance());
+                logger.info("getAdvance(): {0} getVisibleAdvance(): {1}", new Object[]{layout.getAdvance(), layout.getVisibleAdvance()});
             }
         }
     }

@@ -25,6 +25,7 @@ import java.io.FileInputStream;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.logging.Level;
 
 import javax.swing.SwingWorker;
 
@@ -131,52 +132,55 @@ public class MacApplication
         }
 
         logger.fine(name);
+        switch (name) {
+            case "handlePreferences":
+                GuiActions.getInstance()
+                          .defineOptions(null);
+                break;
+            case "handleQuit":
+                GuiActions.getInstance()
+                          .exit(null);
+                break;
+            case "handleAbout":
+                GuiActions.getInstance()
+                          .showAbout(null);
+                break;
+            case "handleOpenFile":
+                logger.fine(filename);
+                if (filename.toLowerCase()
+                            .endsWith(".script")) {
+                    final File              file = new File(filename);
+                    final SwingWorker<?, ?> worker = new SwingWorker<Object, Object>() {
+                        @Override
+                        protected Object doInBackground ()
+                        {
+                            // Actually load the script
+                            logger.info("Loading script file {0} ...", file);
 
-        if ("handlePreferences".equals(name)) {
-            GuiActions.getInstance()
-                      .defineOptions(null);
-        } else if ("handleQuit".equals(name)) {
-            GuiActions.getInstance()
-                      .exit(null);
-        } else if ("handleAbout".equals(name)) {
-            GuiActions.getInstance()
-                      .showAbout(null);
-        } else if ("handleOpenFile".equals(name)) {
-            logger.fine(filename);
+                            try {
+                                final Script script = ScriptManager.getInstance()
+                                                                   .load(
+                                    new FileInputStream(file));
 
-            if (filename.toLowerCase()
-                        .endsWith(".script")) {
-                final File              file = new File(filename);
-                final SwingWorker<?, ?> worker = new SwingWorker<Object, Object>() {
-                    @Override
-                    protected Object doInBackground ()
-                    {
-                        // Actually load the script
-                        logger.info("Loading script file " + file + " ...");
+                                if (logger.isFineEnabled()) {
+                                    script.dump();
+                                }
 
-                        try {
-                            final Script script = ScriptManager.getInstance()
-                                                               .load(
-                                new FileInputStream(file));
-
-                            if (logger.isFineEnabled()) {
-                                script.dump();
+                                script.run();
+                            } catch (Exception ex) {
+                                logger.warning("Error loading script file {0}", file);
                             }
 
-                            script.run();
-                        } catch (Exception ex) {
-                            logger.warning("Error loading script file " + file);
+                            return null;
                         }
+                    };
 
-                        return null;
-                    }
-                };
-
-                worker.execute();
-            } else {
-                // Actually load the sheet picture
-                Score score = new Score(new File(filename));
-            }
+                    worker.execute();
+                } else {
+                    // Actually load the sheet picture
+                    Score score = new Score(new File(filename));
+                }
+                break;
         }
 
         return null;

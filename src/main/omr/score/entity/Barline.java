@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -40,7 +40,7 @@ import java.util.Map;
  * @author Hervé Bitteur
  */
 public class Barline
-    extends PartNode
+        extends PartNode
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -48,21 +48,21 @@ public class Barline
     private static final Logger logger = Logger.getLogger(Barline.class);
 
     /** Predicate to detect a barline glyph (not a repeat dot) */
-    public static final Predicate<Glyph> linePredicate = new Predicate<Glyph>() {
+    public static final Predicate<Glyph> linePredicate = new Predicate<Glyph>()
+    {
+
         @Override
         public boolean check (Glyph glyph)
         {
             Shape shape = glyph.getShape();
 
-            return (shape == Shape.PART_DEFINING_BARLINE) ||
-                   (shape == Shape.THIN_BARLINE) ||
-                   (shape == Shape.THICK_BARLINE);
+            return (shape == Shape.PART_DEFINING_BARLINE)
+                    || (shape == Shape.THIN_BARLINE)
+                    || (shape == Shape.THICK_BARLINE);
         }
     };
 
-
     //~ Instance fields --------------------------------------------------------
-
     /** Precise bar line shape */
     private Shape shape;
 
@@ -70,7 +70,6 @@ public class Barline
     private String signature;
 
     //~ Constructors -----------------------------------------------------------
-
     //---------//
     // Barline //
     //---------//
@@ -85,7 +84,6 @@ public class Barline
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------//
     // accept //
     //--------//
@@ -120,13 +118,11 @@ public class Barline
      */
     public int getLeftX ()
     {
-        PixelPoint topLeft = getSystem()
-                                 .getTopLeft();
+        PixelPoint topLeft = getSystem().getTopLeft();
 
         for (Glyph glyph : getGlyphs()) {
             if (linePredicate.check(glyph)) {
-                int x = glyph.getLine()
-                             .xAtY(topLeft.y);
+                int x = glyph.getLine().xAtY(topLeft.y);
 
                 return x;
             }
@@ -148,14 +144,12 @@ public class Barline
      */
     public int getRightX ()
     {
-        int        right = 0;
-        PixelPoint topLeft = getSystem()
-                                 .getTopLeft();
+        int right = 0;
+        PixelPoint topLeft = getSystem().getTopLeft();
 
         for (Glyph glyph : getGlyphs()) {
             if (glyph.isBar()) {
-                int x = glyph.getLine()
-                             .xAtY(topLeft.y);
+                int x = glyph.getLine().xAtY(topLeft.y);
 
                 if (x > right) {
                     right = x;
@@ -239,7 +233,7 @@ public class Barline
         for (Glyph glyph : getGlyphs()) {
             if (glyph.isBar()) {
                 float thickness = (float) glyph.getWeight() / glyph.getLength(
-                    Orientation.VERTICAL);
+                        Orientation.VERTICAL);
                 g.setStroke(new BasicStroke(thickness));
                 glyph.renderLine(g);
             }
@@ -295,13 +289,9 @@ public class Barline
         sb.append("{Barline");
 
         try {
-            sb.append(" ")
-              .append(getShape())
-              .append(" center=")
-              .append(getCenter())
-              .append(" sig=")
-              .append(getSignature())
-              .append(Glyphs.toString(" glyphs", glyphs));
+            sb.append(" ").append(getShape()).append(" center=").append(
+                    getCenter()).append(" sig=").append(getSignature()).append(Glyphs.
+                    toString(" glyphs", glyphs));
         } catch (NullPointerException e) {
             sb.append(" INVALID");
         }
@@ -329,6 +319,7 @@ public class Barline
     //----------//
     /**
      * Report the sequence of chars that describes the provided shape
+     *
      * @param shape the provided shape
      * @return a sequence of chars
      */
@@ -341,36 +332,36 @@ public class Barline
         }
 
         switch (shape) {
-        case THICK_BARLINE :
+        case THICK_BARLINE:
             return "K";
 
-        case THIN_BARLINE :
-        case PART_DEFINING_BARLINE :
+        case THIN_BARLINE:
+        case PART_DEFINING_BARLINE:
             return "N";
 
-        case DOUBLE_BARLINE :
+        case DOUBLE_BARLINE:
             return "NN";
 
-        case FINAL_BARLINE :
+        case FINAL_BARLINE:
             return "NK";
 
-        case REVERSE_FINAL_BARLINE :
+        case REVERSE_FINAL_BARLINE:
             return "KN";
 
-        case LEFT_REPEAT_SIGN :
+        case LEFT_REPEAT_SIGN:
             return "KNO";
 
-        case RIGHT_REPEAT_SIGN :
+        case RIGHT_REPEAT_SIGN:
             return "ONK";
 
-        case BACK_TO_BACK_REPEAT_SIGN :
+        case BACK_TO_BACK_REPEAT_SIGN:
             return "ONKNO";
 
-        case DOT_set :
-        case REPEAT_DOT :
+        case DOT_set:
+        case REPEAT_DOT:
             return "O"; // Capital o (not zero)
 
-        default :
+        default:
             addError("Unknown bar component : " + shape);
 
             return null;
@@ -388,14 +379,13 @@ public class Barline
     private String getSignature ()
     {
         if (signature == null) {
-            final Measure       measure = (Measure) getParent();
-            final ScoreSystem   system = measure.getSystem();
+            final Measure measure = (Measure) getParent();
+            final ScoreSystem system = measure.getSystem();
             final StringBuilder sb = new StringBuilder();
-            final Staff         staffRef = measure.getPart()
-                                                  .getFirstStaff();
-            final int           topStaff = staffRef.getTopLeft().y;
-            final int           botStaff = topStaff + staffRef.getHeight();
-            String              last = null; // Last stick
+            final Staff staffRef = measure.getPart().getFirstStaff();
+            final int topStaff = staffRef.getTopLeft().y;
+            final int botStaff = topStaff + staffRef.getHeight();
+            String last = null; // Last stick
 
             for (Glyph glyph : getGlyphs()) {
                 String chars = getChars(glyph.getShape());
@@ -410,11 +400,11 @@ public class Barline
                         }
                     } else {
                         // BAR : Check overlap with staff reference
-                        PixelRectangle box = glyph.getContourBox();
+                        PixelRectangle box = glyph.getBounds();
 
                         if (Math.max(box.y, topStaff) > Math.min(
-                            box.y + box.height,
-                            botStaff)) {
+                                box.y + box.height,
+                                botStaff)) {
                             continue;
                         }
                     }
@@ -436,17 +426,13 @@ public class Barline
             }
 
             signature = sb.toString();
-
-            if (logger.isFineEnabled()) {
-                logger.fine("sig=" + sb);
-            }
+            logger.fine("sig={0}", sb);
         }
 
         return signature;
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //------------//
     // Signatures //
     //------------//
@@ -454,7 +440,7 @@ public class Barline
     {
         //~ Static fields/initializers -----------------------------------------
 
-        public static final Map<String, Shape> map = new HashMap<String, Shape>();
+        public static final Map<String, Shape> map = new HashMap<>();
 
         static {
             map.put("N", Shape.THIN_BARLINE);
@@ -468,6 +454,10 @@ public class Barline
             map.put("NKNO", Shape.BACK_TO_BACK_REPEAT_SIGN); // For convenience
             map.put("ONKN", Shape.BACK_TO_BACK_REPEAT_SIGN); // For convenience
             map.put("NKN", Shape.BACK_TO_BACK_REPEAT_SIGN); // For convenience
+        }
+
+        private Signatures ()
+        {
         }
     }
 }

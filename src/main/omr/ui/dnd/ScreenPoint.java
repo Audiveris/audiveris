@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -20,11 +20,11 @@ import java.awt.Rectangle;
 import javax.swing.SwingUtilities;
 
 /**
- * Class {@code ScreenPoint} encapsulates a point defined with respect to the
- * screen
+ * Class {@code ScreenPoint} encapsulates a point defined with respect
+ * to the screen.
  *
  * <p> This specialization is used to take benefit of compiler checks, to
- * prevent the use of points with incorrect meaning or units. </p>
+ * prevent the use of points with incorrect meaning. </p>
  *
  * @author Hervé Bitteur
  */
@@ -37,7 +37,7 @@ public class ScreenPoint
     // ScreenPoint //
     //-------------//
     /**
-     * Create a new ScreenPoint object
+     * Create a new ScreenPoint object.
      */
     public ScreenPoint ()
     {
@@ -62,8 +62,8 @@ public class ScreenPoint
     // ScreenPoint //
     //-------------//
     /**
-     * Creates a new ScreenPoint object, using a local component-based point
-     *
+     * Creates a new ScreenPoint object, using a local component-based
+     * point.
      * @param component the component to use as the base
      * @param localPoint the component-based point
      */
@@ -96,8 +96,8 @@ public class ScreenPoint
     // isInComponent //
     //---------------//
     /**
-     * Check whether this screen point lies within the bound of the provided
-     * component
+     * Check whether this screen point lies within the bound of the
+     * provided component.
      * @param component the provided component
      * @return true if within the component, false otherwise
      */

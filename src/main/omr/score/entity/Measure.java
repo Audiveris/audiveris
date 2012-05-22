@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -49,7 +49,7 @@ import java.util.TreeSet;
  * @author Hervé Bitteur
  */
 public class Measure
-    extends MeasureNode
+        extends MeasureNode
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -57,7 +57,6 @@ public class Measure
     private static final Logger logger = Logger.getLogger(Measure.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** To flag dummy barline instances */
     private boolean dummy;
 
@@ -116,12 +115,12 @@ public class Measure
     private List<Voice> voices;
 
     //~ Constructors -----------------------------------------------------------
-
     //---------//
     // Measure //
     //---------//
     /**
      * Create a measure with the specified parameters.
+     *
      * @param part the containing system part
      */
     public Measure (SystemPart part)
@@ -131,7 +130,6 @@ public class Measure
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------//
     // accept //
     //--------//
@@ -147,6 +145,7 @@ public class Measure
     /**
      * Override normal behavior, so that a given child is stored in its
      * proper type collection (clef to clef list, etc...).
+     *
      * @param node the child to insert into the measure
      */
     @Override
@@ -178,6 +177,7 @@ public class Measure
     //----------//
     /**
      * Add a beam goup to this measure.
+     *
      * @param group a beam group to add
      */
     public void addGroup (BeamGroup group)
@@ -210,7 +210,7 @@ public class Measure
         // The 'activeChords' collection gathers the chords that are "active"
         // (not terminated) at the time slot being considered. Initially, it
         // contains just the whole chords.
-        List<Chord> activeChords = new ArrayList<Chord>(getWholeChords());
+        List<Chord> activeChords = new ArrayList<>(getWholeChords());
         Collections.sort(activeChords);
 
         // Create voices for whole chords
@@ -226,8 +226,8 @@ public class Measure
             }
         } catch (Exception ex) {
             logger.warning(
-                "Error building voices in measure " + getPageId(),
-                ex);
+                    "Error building voices in measure " + getPageId(),
+                    ex);
         }
 
         // Debug
@@ -302,10 +302,10 @@ public class Measure
         //        texts = new TextList(this);
 
         // Should this be a MeasureNode ??? TODO
-        slots = new TreeSet<Slot>();
-        beamGroups = new ArrayList<BeamGroup>();
-        wholeChords = new ArrayList<Chord>();
-        voices = new ArrayList<Voice>();
+        slots = new TreeSet<>();
+        beamGroups = new ArrayList<>();
+        wholeChords = new ArrayList<>();
+        voices = new ArrayList<>();
     }
 
     //-----------------------//
@@ -314,6 +314,7 @@ public class Measure
     /**
      * Create a temporary initial measure to be exported right before
      * this measure, just to set up global parameters (clef, time, key).
+     *
      * @return the created dummy measure
      */
     public Measure createTemporaryBefore ()
@@ -326,11 +327,10 @@ public class Measure
         SystemPart part = this.getPart();
 
         for (TreeNode sn : part.getStaves()) {
-            Staff      staff = (Staff) sn;
-            int        right = getLeftX(); // Right of dummy = Left of current
-            int        midY = (staff.getTopLeft().y + (staff.getHeight() / 2)) -
-                              getSystem()
-                                  .getTopLeft().y;
+            Staff staff = (Staff) sn;
+            int right = getLeftX(); // Right of dummy = Left of current
+            int midY = (staff.getTopLeft().y + (staff.getHeight() / 2))
+                    - getSystem().getTopLeft().y;
             PixelPoint staffPoint = new PixelPoint(right, midY);
 
             // Clef?
@@ -338,12 +338,12 @@ public class Measure
 
             if (clef != null) {
                 new Clef(
-                    dummyMeasure,
-                    staff,
-                    clef.getShape(),
-                    new PixelPoint(right - 40, midY),
-                    clef.getPitchPosition(),
-                    null); // No glyph
+                        dummyMeasure,
+                        staff,
+                        clef.getShape(),
+                        new PixelPoint(right - 40, midY),
+                        clef.getPitchPosition(),
+                        null); // No glyph
             }
 
             // Key?
@@ -351,8 +351,8 @@ public class Measure
 
             if (key != null) {
                 key.createDummyCopy(
-                    dummyMeasure,
-                    new PixelPoint(right - 30, midY));
+                        dummyMeasure,
+                        new PixelPoint(right - 30, midY));
             }
 
             // Time?
@@ -360,8 +360,8 @@ public class Measure
 
             if (time != null) {
                 time.createDummyCopy(
-                    dummyMeasure,
-                    new PixelPoint(right - 20, midY));
+                        dummyMeasure,
+                        new PixelPoint(right - 20, midY));
             }
         }
 
@@ -374,6 +374,7 @@ public class Measure
     /**
      * Report the duration of this measure, as computed from its
      * contained voices.
+     *
      * @return the (actual) measure duration, or 0 if no rest / note exist in
      * this measure
      */
@@ -392,6 +393,7 @@ public class Measure
     //------------//
     /**
      * Report the ending bar line.
+     *
      * @return the ending bar line
      */
     public Barline getBarline ()
@@ -404,6 +406,7 @@ public class Measure
     //---------------//
     /**
      * Report the collection of beam groups.
+     *
      * @return the list of beam groups
      */
     public List<BeamGroup> getBeamGroups ()
@@ -416,6 +419,7 @@ public class Measure
     //----------//
     /**
      * Report the collection of beams.
+     *
      * @return the list of beams
      */
     public List<TreeNode> getBeams ()
@@ -428,6 +432,7 @@ public class Measure
     //-----------//
     /**
      * Report the collection of chords.
+     *
      * @return the list of chords
      */
     public List<TreeNode> getChords ()
@@ -441,20 +446,20 @@ public class Measure
     /**
      * Report the collection of chords whose head is located in the
      * staff above the provided point.
+     *
      * @param point the provided point
      * @return the (perhaps empty) collection of chords
      */
     public Collection<Chord> getChordsAbove (PixelPoint point)
     {
-        Staff             desiredStaff = getSystem()
-                                             .getStaffAbove(point);
-        Collection<Chord> found = new ArrayList<Chord>();
+        Staff desiredStaff = getSystem().getStaffAbove(point);
+        Collection<Chord> found = new ArrayList<>();
 
         for (TreeNode node : getChords()) {
             Chord chord = (Chord) node;
 
-            if ((chord.getStaff() == desiredStaff) &&
-                (chord.getHeadLocation().y < point.y)) {
+            if ((chord.getStaff() == desiredStaff)
+                    && (chord.getHeadLocation().y < point.y)) {
                 found.add(chord);
             }
         }
@@ -468,20 +473,20 @@ public class Measure
     /**
      * Report the collection of chords whose head is located in the
      * staff below the provided point.
+     *
      * @param point the provided point
      * @return the (perhaps empty) collection of chords
      */
     public Collection<Chord> getChordsBelow (PixelPoint point)
     {
-        Staff             desiredStaff = getSystem()
-                                             .getStaffBelow(point);
-        Collection<Chord> found = new ArrayList<Chord>();
+        Staff desiredStaff = getSystem().getStaffBelow(point);
+        Collection<Chord> found = new ArrayList<>();
 
         for (TreeNode node : getChords()) {
             Chord chord = (Chord) node;
 
-            if ((chord.getStaff() == desiredStaff) &&
-                (chord.getHeadLocation().y > point.y)) {
+            if ((chord.getStaff() == desiredStaff)
+                    && (chord.getHeadLocation().y > point.y)) {
                 found.add(chord);
             }
         }
@@ -496,6 +501,7 @@ public class Measure
      * Report the first clef, if any, defined after this measure point
      * (looking in end of the measure, then in next measures, then in
      * next systems) while staying in the same logical staff.
+     *
      * @param point the point after which to look
      * @return the first clef defined, or null
      */
@@ -503,17 +509,14 @@ public class Measure
     {
         // Which staff we are in
         Clef clef;
-        int  staffId = getPart()
-                           .getStaffAt(point)
-                           .getId();
+        int staffId = getPart().getStaffAt(point).getId();
 
         // Look in this measure, with same staff, going forward
         for (TreeNode cn : getClefs()) {
             clef = (Clef) cn;
 
-            if ((clef.getStaff()
-                     .getId() == staffId) &&
-                (clef.getCenter().x >= point.x)) {
+            if ((clef.getStaff().getId() == staffId)
+                    && (clef.getCenter().x >= point.x)) {
                 return clef;
             }
         }
@@ -538,12 +541,13 @@ public class Measure
     /**
      * Same functionally than the other method, but with a staff
      * provided.
+     *
      * @param point the point before which to look
      * @param staff the containing staff (if null, it is derived from center.y)
      * @return the latest clef defined, or null
      */
     public Clef getClefBefore (PixelPoint point,
-                               Staff      staff)
+                               Staff staff)
     {
         // First, look in this measure, with same staff, going backwards
         Clef clef = getMeasureClefBefore(point, staff);
@@ -553,7 +557,7 @@ public class Measure
         }
 
         // Which staff we are in
-        int     staffId = getStaffId(point, staff);
+        int staffId = getStaffId(point, staff);
 
         // Look in all preceding measures, with the same staff id
         Measure measure = this;
@@ -574,6 +578,7 @@ public class Measure
     //-------------//
     /**
      * Report the node that collect the clefs.
+     *
      * @return the clef list node
      */
     public Container getClefList ()
@@ -586,6 +591,7 @@ public class Measure
     //----------//
     /**
      * Report the collection of clefs.
+     *
      * @return the list of clefs
      */
     public List<TreeNode> getClefs ()
@@ -599,15 +605,16 @@ public class Measure
     /**
      * From a provided Chord collection, report the chord which has the
      * closest abscissa to a provided point.
+     *
      * @param chords the collection of chords to browse
-     * @param point the reference point
+     * @param point  the reference point
      * @return the abscissa-wise closest chord
      */
     public Chord getClosestChord (Collection<Chord> chords,
-                                  PixelPoint        point)
+                                  PixelPoint point)
     {
         Chord bestChord = null;
-        int   bestDx = Integer.MAX_VALUE;
+        int bestDx = Integer.MAX_VALUE;
 
         for (Chord chord : chords) {
             int dx = Math.abs(chord.getHeadLocation().x - point.x);
@@ -627,17 +634,18 @@ public class Measure
     /**
      * Report the chord of this measure which has the closest
      * abscissa to a provided point.
+     *
      * @param point the reference point
      * @return the abscissa-wise closest chord, perhaps null
      */
     public Chord getClosestChord (PixelPoint point)
     {
         Chord bestChord = null;
-        int   bestDx = Integer.MAX_VALUE;
+        int bestDx = Integer.MAX_VALUE;
 
         for (TreeNode node : getChords()) {
             Chord chord = (Chord) node;
-            int   dx = Math.abs(chord.getHeadLocation().x - point.x);
+            int dx = Math.abs(chord.getHeadLocation().x - point.x);
 
             if (dx < bestDx) {
                 bestDx = dx;
@@ -654,6 +662,7 @@ public class Measure
     /**
      * Report the chord above the provided point which has the closest
      * abscissa to the provided point.
+     *
      * @param point the reference point
      * @return the abscissa-wise closest chord among the chords above, if any.
      */
@@ -668,6 +677,7 @@ public class Measure
     /**
      * Report the chord below the provided point which has the closest
      * abscissa to the provided point.
+     *
      * @param point the reference point
      * @return the abscissa-wise closest chord among the chords below, if any.
      */
@@ -682,13 +692,14 @@ public class Measure
     /**
      * Report the time slot which has the closest abscissa to a
      * provided point.
+     *
      * @param point the reference point
      * @return the abscissa-wise closest slot
      */
     public Slot getClosestSlot (PixelPoint point)
     {
         Slot bestSlot = null;
-        int  bestDx = Integer.MAX_VALUE;
+        int bestDx = Integer.MAX_VALUE;
 
         for (Slot slot : getSlots()) {
             int dx = Math.abs(slot.getX() - point.x);
@@ -708,6 +719,7 @@ public class Measure
     /**
      * Report the whole chord above the provided point which has the
      * closest abscissa to the provided point.
+     *
      * @param point the reference point
      * @return the abscissa-wise closest chord among the chords below, if any.
      */
@@ -722,6 +734,7 @@ public class Measure
     /**
      * Report the whole chord below the provided point which has the
      * closest abscissa to the provided point.
+     *
      * @param point the reference point
      * @return the abscissa-wise closest chord among the chords below, if any.
      */
@@ -740,13 +753,14 @@ public class Measure
      * previous measure, even in preceding pages.
      * <p><b>NOTA</b>This method looks up for time sig in preceding pages
      * as well</p>
+     *
      * @return the current time signature, or null if not found at all
      */
     public TimeSignature getCurrentTimeSignature ()
     {
         // Backward from this measure to the beginning of the score
         Measure measure = this;
-        Page    page = getPage();
+        Page page = getPage();
 
         while (measure != null) {
             // Check in the measure
@@ -765,9 +779,7 @@ public class Measure
                 if (page == null) {
                     return null;
                 } else {
-                    measure = page.getLastSystem()
-                                  .getLastPart()
-                                  .getLastMeasure();
+                    measure = page.getLastSystem().getLastPart().getLastMeasure();
                 }
             }
         }
@@ -781,6 +793,7 @@ public class Measure
     /**
      * Retrieve the most suitable chord for a direction, looking at
      * staff above if any, otherwise the staff below.
+     *
      * @param point the system-based location
      * @return the most suitable chord, or null
      */
@@ -801,6 +814,7 @@ public class Measure
     //---------------//
     /**
      * Retrieve the most suitable chord to connect the event point to.
+     *
      * @param point the system-based location
      * @return the most suitable chord, or null
      */
@@ -811,12 +825,11 @@ public class Measure
 
         if (slot != null) {
             // Choose the y-closest staff
-            Staff     staff = getPart()
-                                  .getStaffAt(point);
+            Staff staff = getPart().getStaffAt(point);
 
             // Are we below or above the staff?
             StaffInfo staffInfo = staff.getInfo();
-            double    pitch = staffInfo.pitchPositionOf(point);
+            double pitch = staffInfo.pitchPositionOf(point);
 
             if (pitch > 0) {
                 return slot.getChordAbove(point);
@@ -833,6 +846,7 @@ public class Measure
     //-----------//
     /**
      * Report the excess duration of this measure, if any.
+     *
      * @return the duration in excess, or null
      */
     public Rational getExcess ()
@@ -846,16 +860,17 @@ public class Measure
     /**
      * Report the theoretical duration of this measure, based on
      * current time signature.
+     *
      * @return the expected measure duration
      * @throws InvalidTimeSignature
      */
     public Rational getExpectedDuration ()
-        throws InvalidTimeSignature
+            throws InvalidTimeSignature
     {
         try {
             if (expectedDuration == null) {
-                int           numerator;
-                int           denominator;
+                int numerator;
+                int denominator;
                 TimeSignature ts = getCurrentTimeSignature();
 
                 if (ts != null) {
@@ -879,8 +894,9 @@ public class Measure
     // getFirstMeasureClef //
     //---------------------//
     /**
-     * Report the first clef (if any) in this measure, tagged  with
+     * Report the first clef (if any) in this measure, tagged with
      * the provided staff.
+     *
      * @param staffId the imposed related staff id
      * @return the first clef, or null
      */
@@ -890,8 +906,7 @@ public class Measure
         for (TreeNode cn : getClefs()) {
             Clef clef = (Clef) cn;
 
-            if (clef.getStaff()
-                    .getId() == staffId) {
+            if (clef.getStaff().getId() == staffId) {
                 return clef;
             }
         }
@@ -905,6 +920,7 @@ public class Measure
     /**
      * Report the first key signature (if any) in this measure,
      * tagged with the provided staff.
+     *
      * @param staffId the imposed related staff id
      * @return the first key signature, or null
      */
@@ -913,8 +929,7 @@ public class Measure
         for (TreeNode kn : getKeySignatures()) {
             KeySignature key = (KeySignature) kn;
 
-            if (key.getStaff()
-                   .getId() == staffId) {
+            if (key.getStaff().getId() == staffId) {
                 return key;
             }
         }
@@ -928,6 +943,7 @@ public class Measure
     /**
      * Report the following measure of this one, either in this
      * system / part, or in the following system /part.
+     *
      * @return the following measure, or null if none
      */
     public Measure getFollowing ()
@@ -938,8 +954,7 @@ public class Measure
             return nextMeasure;
         }
 
-        SystemPart followingPart = getPart()
-                                       .getFollowing();
+        SystemPart followingPart = getPart().getFollowing();
 
         if (followingPart != null) {
             return followingPart.getFirstMeasure();
@@ -953,6 +968,7 @@ public class Measure
     //------------//
     /**
      * Report the numeric value of the measure id.
+     *
      * @return the numeric value of measure id
      */
     public int getIdValue ()
@@ -979,29 +995,27 @@ public class Measure
      * a key signature actually starts this measure in the same staff,
      * or whether a key signature was found in a previous measure,
      * for the same staff.
+     *
      * @param point the point before which to look
      * @param staff the containing staff (cannot be null)
      * @return the current key signature, or null if not found
      */
     public KeySignature getKeyBefore (PixelPoint point,
-                                      Staff      staff)
+                                      Staff staff)
     {
         if (point == null) {
             throw new NullPointerException();
         }
 
         KeySignature ks;
-        int          staffId = staff.getId();
+        int staffId = staff.getId();
 
         // Look in this measure, with same staff, going backwards
-        for (int ik = getKeySignatures()
-                          .size() - 1; ik >= 0; ik--) {
-            ks = (KeySignature) getKeySignatures()
-                                    .get(ik);
+        for (int ik = getKeySignatures().size() - 1; ik >= 0; ik--) {
+            ks = (KeySignature) getKeySignatures().get(ik);
 
-            if ((ks.getStaff()
-                   .getId() == staffId) &&
-                (ks.getCenter().x < point.x)) {
+            if ((ks.getStaff().getId() == staffId)
+                    && (ks.getCenter().x < point.x)) {
                 return ks;
             }
         }
@@ -1025,6 +1039,7 @@ public class Measure
     //---------------//
     /**
      * Report the list that collects the KeySignature instances.
+     *
      * @return the single instance of KeySigList
      */
     public Container getKeySigList ()
@@ -1037,6 +1052,7 @@ public class Measure
     //------------------//
     /**
      * Report the collection of KeySignature's.
+     *
      * @return the list of KeySignature's
      */
     public List<TreeNode> getKeySignatures ()
@@ -1048,21 +1064,19 @@ public class Measure
     // getLastMeasureClef //
     //--------------------//
     /**
-     * Report the last clef (if any) in this measure, tagged  with the
+     * Report the last clef (if any) in this measure, tagged with the
      * provided staff.
+     *
      * @param staffId the imposed related staff id
      * @return the last clef, or null
      */
     public Clef getLastMeasureClef (int staffId)
     {
         // Going backwards
-        for (int ic = getClefs()
-                          .size() - 1; ic >= 0; ic--) {
-            Clef clef = (Clef) getClefs()
-                                   .get(ic);
+        for (int ic = getClefs().size() - 1; ic >= 0; ic--) {
+            Clef clef = (Clef) getClefs().get(ic);
 
-            if (clef.getStaff()
-                    .getId() == staffId) {
+            if (clef.getStaff().getId() == staffId) {
                 return clef;
             }
         }
@@ -1076,19 +1090,17 @@ public class Measure
     /**
      * Report the last key signature (if any) in this measure,
      * tagged with the provided staff.
+     *
      * @param staffId the imposed related staff id
      * @return the last key signature, or null
      */
     public KeySignature getLastMeasureKey (int staffId)
     {
         // Going backwards
-        for (int ik = getKeySignatures()
-                          .size() - 1; ik >= 0; ik--) {
-            KeySignature key = (KeySignature) getKeySignatures()
-                                                  .get(ik);
+        for (int ik = getKeySignatures().size() - 1; ik >= 0; ik--) {
+            KeySignature key = (KeySignature) getKeySignatures().get(ik);
 
-            if (key.getStaff()
-                   .getId() == staffId) {
+            if (key.getStaff().getId() == staffId) {
                 return key;
             }
         }
@@ -1102,6 +1114,7 @@ public class Measure
     /**
      * Report the time, counted from beginning of this measure, when
      * sound stops which means that ending rests are not counted.
+     *
      * @return the relative time of last Midi "note off" in this measure
      */
     public Rational getLastSoundTime ()
@@ -1112,8 +1125,7 @@ public class Measure
             Chord chord = (Chord) chordNode;
 
             if (!chord.isAllRests()) {
-                Rational time = chord.getStartTime()
-                                     .plus(chord.getDuration());
+                Rational time = chord.getStartTime().plus(chord.getDuration());
 
                 if (time.compareTo(lastTime) > 0) {
                     lastTime = time;
@@ -1129,6 +1141,7 @@ public class Measure
     //----------//
     /**
      * Report the abscissa of the start of the measure.
+     *
      * @return abscissa of left side of the measure
      */
     public Integer getLeftX ()
@@ -1142,12 +1155,13 @@ public class Measure
     /**
      * Report the current clef, if any, defined within this measure
      * and staff, and located before this measure point.
+     *
      * @param point the point before which to look
      * @param staff the containing staff (if null, it is derived from point.y)
      * @return the measure clef defined, or null
      */
     public Clef getMeasureClefBefore (PixelPoint point,
-                                      Staff      staff)
+                                      Staff staff)
     {
         Clef clef = null;
 
@@ -1155,14 +1169,11 @@ public class Measure
         int staffId = getStaffId(point, staff);
 
         // Look in this measure, with same staff, going backwards
-        for (int ic = getClefs()
-                          .size() - 1; ic >= 0; ic--) {
-            clef = (Clef) getClefs()
-                              .get(ic);
+        for (int ic = getClefs().size() - 1; ic >= 0; ic--) {
+            clef = (Clef) getClefs().get(ic);
 
-            if ((clef.getStaff()
-                     .getId() == staffId) &&
-                (clef.getCenter().x <= point.x)) {
+            if ((clef.getStaff().getId() == staffId)
+                    && (clef.getCenter().x <= point.x)) {
                 return clef;
             }
         }
@@ -1175,6 +1186,7 @@ public class Measure
     //-----------//
     /**
      * Report the page-based measure id.
+     *
      * @return the page-based measure id
      */
     public MeasureId.PageBased getPageId ()
@@ -1189,6 +1201,7 @@ public class Measure
      * Report the preceding measure of this one, either in this
      * system / part, or in the preceding system /part, but still
      * in the same page.
+     *
      * @return the preceding measure, or null if not found in the page
      */
     public Measure getPrecedingInPage ()
@@ -1199,8 +1212,7 @@ public class Measure
             return prevMeasure;
         }
 
-        SystemPart precedingPart = getPart()
-                                       .getPrecedingInPage();
+        SystemPart precedingPart = getPart().getPrecedingInPage();
 
         if (precedingPart != null) {
             return precedingPart.getLastMeasure();
@@ -1215,6 +1227,7 @@ public class Measure
     /**
      * Report the abscissa of the end of the measure, relative to
      * system/part left edge.
+     *
      * @return part-based abscissa of right side of the measure
      */
     public Integer getRightX ()
@@ -1227,6 +1240,7 @@ public class Measure
     //------------//
     /**
      * Report the image of the score-based measure id.
+     *
      * @return the score-based measure id string
      */
     public String getScoreId ()
@@ -1239,6 +1253,7 @@ public class Measure
     //----------//
     /**
      * Report the ordered collection of slots.
+     *
      * @return the collection of slots
      */
     public SortedSet<Slot> getSlots ()
@@ -1251,17 +1266,16 @@ public class Measure
     //------------//
     /**
      * Report the id of the staff containing the provided point.
+     *
      * @param point the provided point
      * @param staff the staff if known, otherwise null
      * @return the staff id
      */
     public int getStaffId (PixelPoint point,
-                           Staff      staff)
+                           Staff staff)
     {
         return (staff != null) ? staff.getId()
-               : getPart()
-                     .getStaffAt(point)
-                     .getId();
+               : getPart().getStaffAt(point).getId();
     }
 
     //----------------//
@@ -1269,6 +1283,7 @@ public class Measure
     //----------------//
     /**
      * Report the node that collects the TimeSignature instances.
+     *
      * @return the node of TimeSignature instances
      */
     public Container getTimeSigList ()
@@ -1282,6 +1297,7 @@ public class Measure
     /**
      * Report the potential time signature in this measure for the
      * related staff.
+     *
      * @param staff the related staff
      * @return the time signature, or null if not found
      */
@@ -1304,6 +1320,7 @@ public class Measure
     /**
      * Report the potential time signature in this measure
      * (whatever the staff).
+     *
      * @return the time signature, or null if not found
      */
     public TimeSignature getTimeSignature ()
@@ -1328,6 +1345,7 @@ public class Measure
     //-----------------//
     /**
      * Report the number of voices in this measure.
+     *
      * @return the number fo voices computed
      */
     public int getVoicesNumber ()
@@ -1340,6 +1358,7 @@ public class Measure
     //----------------//
     /**
      * Report the collection of whole chords.
+     *
      * @return the whole chords of this measure
      */
     public Collection<Chord> getWholeChords ()
@@ -1353,18 +1372,18 @@ public class Measure
     /**
      * Report the collection of whole chords located in the
      * staff above the provided point.
+     *
      * @param point the provided point
      * @return the (perhaps empty) collection of chords
      */
     public Collection<Chord> getWholeChordsAbove (PixelPoint point)
     {
-        Staff             desiredStaff = getSystem()
-                                             .getStaffAbove(point);
-        Collection<Chord> found = new ArrayList<Chord>();
+        Staff desiredStaff = getSystem().getStaffAbove(point);
+        Collection<Chord> found = new ArrayList<>();
 
         for (Chord chord : getWholeChords()) {
-            if ((chord.getStaff() == desiredStaff) &&
-                (chord.getHeadLocation().y < point.y)) {
+            if ((chord.getStaff() == desiredStaff)
+                    && (chord.getHeadLocation().y < point.y)) {
                 found.add(chord);
             }
         }
@@ -1378,18 +1397,18 @@ public class Measure
     /**
      * Report the collection of whole chords located in the
      * staff below the provided point.
+     *
      * @param point the provided point
      * @return the (perhaps empty) collection of whole chords
      */
     public Collection<Chord> getWholeChordsBelow (PixelPoint point)
     {
-        Staff             desiredStaff = getSystem()
-                                             .getStaffBelow(point);
-        Collection<Chord> found = new ArrayList<Chord>();
+        Staff desiredStaff = getSystem().getStaffBelow(point);
+        Collection<Chord> found = new ArrayList<>();
 
         for (Chord chord : getWholeChords()) {
-            if ((chord.getStaff() == desiredStaff) &&
-                (chord.getHeadLocation().y > point.y)) {
+            if ((chord.getStaff() == desiredStaff)
+                    && (chord.getHeadLocation().y > point.y)) {
                 found.add(chord);
             }
         }
@@ -1402,6 +1421,7 @@ public class Measure
     //----------//
     /**
      * Report the width, in units, of the measure.
+     *
      * @return the measure width, or null in case of dummy measure
      */
     public Integer getWidth ()
@@ -1437,6 +1457,7 @@ public class Measure
     //------------//
     /**
      * Report whether this measure is implicit.
+     *
      * @return true if measure is implicit
      */
     public boolean isImplicit ()
@@ -1458,20 +1479,16 @@ public class Measure
     /**
      * Merge this measure with the content of the following measure on
      * the right.
+     *
      * @param right the following measure
      */
     public void mergeWithRight (Measure right)
     {
-        clefs.getChildren()
-             .addAll(right.clefs.getChildren());
-        keysigs.getChildren()
-               .addAll(right.keysigs.getChildren());
-        timesigs.getChildren()
-                .addAll(right.timesigs.getChildren());
-        chords.getChildren()
-              .addAll(right.chords.getChildren());
-        beams.getChildren()
-             .addAll(right.beams.getChildren());
+        clefs.getChildren().addAll(right.clefs.getChildren());
+        keysigs.getChildren().addAll(right.keysigs.getChildren());
+        timesigs.getChildren().addAll(right.timesigs.getChildren());
+        chords.getChildren().addAll(right.chords.getChildren());
+        beams.getChildren().addAll(right.beams.getChildren());
 
         slots.addAll(right.slots);
         beamGroups.addAll(right.beamGroups);
@@ -1489,6 +1506,7 @@ public class Measure
     //-------------//
     /**
      * Print the chords of this measure on standard output.
+     *
      * @param title a specific title, or null
      */
     public void printChords (String title)
@@ -1503,8 +1521,7 @@ public class Measure
 
         for (TreeNode cn : getChords()) {
             Chord chord = (Chord) cn;
-            sb.append("\n")
-              .append(chord);
+            sb.append("\n").append(chord);
         }
 
         logger.info(sb.toString());
@@ -1515,6 +1532,7 @@ public class Measure
     //------------//
     /**
      * Print the slots of this measure on standard output.
+     *
      * @param title a specific title, or null
      */
     public void printSlots (String title)
@@ -1528,8 +1546,7 @@ public class Measure
         sb.append(this);
 
         for (Slot slot : this.getSlots()) {
-            sb.append("\n")
-              .append(slot.toChordString());
+            sb.append("\n").append(slot.toChordString());
         }
 
         logger.info(sb.toString());
@@ -1540,6 +1557,7 @@ public class Measure
     //------------//
     /**
      * Print the voices of this measure on standard output.
+     *
      * @param title a potential title for this printout, or null
      */
     public void printVoices (String title)
@@ -1560,18 +1578,16 @@ public class Measure
 
             for (Slot slot : slots) {
                 if (slot.getStartTime() != null) {
-                    sb.append("|")
-                      .append(String.format("%-5s", slot.getStartTime()));
+                    sb.append("|").append(String.format("%-5s", slot.
+                            getStartTime()));
                 }
             }
 
-            sb.append("|")
-              .append(getCurrentDuration());
+            sb.append("|").append(getCurrentDuration());
         }
 
         for (Voice voice : voices) {
-            sb.append("\n")
-              .append(voice.toStrip());
+            sb.append("\n").append(voice.toStrip());
         }
 
         logger.info(sb.toString());
@@ -1598,6 +1614,7 @@ public class Measure
     //-------------------//
     /**
      * Register in this measure its actual duration.
+     *
      * @param actualDuration the duration value
      */
     public void setActualDuration (Rational actualDuration)
@@ -1618,6 +1635,7 @@ public class Measure
     //-----------//
     /**
      * Assign an excess duration for this measure.
+     *
      * @param excess the duration in excess
      */
     public void setExcess (Rational excess)
@@ -1670,10 +1688,11 @@ public class Measure
     //-----------//
     /**
      * Assign the proper page-based id to this measure.
-     * @param id the proper page-based measure id value
+     *
+     * @param id         the proper page-based measure id value
      * @param secondHalf true if the measure is the second half of a repeat
      */
-    public void setPageId (int     id,
+    public void setPageId (int id,
                            boolean secondHalf)
     {
         this.id = new MeasureId.PageBased(this, id, secondHalf);
@@ -1684,6 +1703,7 @@ public class Measure
     //-----------//
     /**
      * Assign the proper page-based id to this measure.
+     *
      * @param pageId the page-based id
      */
     public void setPageId (MeasureId.PageBased pageId)
@@ -1704,6 +1724,7 @@ public class Measure
     //---------//
     /**
      * Flag this measure as partial (shorter than expected duration).
+     *
      * @param shortening how much the measure duration is to be reduced
      */
     public void shorten (Rational shortening)
@@ -1719,25 +1740,18 @@ public class Measure
                         Chord chord = voice.getLastChord();
 
                         if (chord != null) {
-                            int nbMarks = chord.getMarks()
-                                               .size();
+                            int nbMarks = chord.getMarks().size();
 
                             if (nbMarks > 0) {
-                                Mark mark = chord.getMarks()
-                                                 .get(nbMarks - 1);
+                                Mark mark = chord.getMarks().get(nbMarks - 1);
 
-                                if (logger.isFineEnabled()) {
-                                    logger.fine(
-                                        getContextString() +
-                                        " Removing final forward: " +
-                                        (Rational) mark.getData());
-                                }
-
-                                chord.getMarks()
-                                     .remove(mark);
+                                logger.fine("{0} Removing final forward: {1}",
+                                            new Object[]{getContextString(),
+                                                         (Rational) mark.getData()});
+                                chord.getMarks().remove(mark);
                             } else {
                                 chord.addError(
-                                    "No final mark to remove in a partial measure");
+                                        "No final mark to remove in a partial measure");
 
                                 return;
                             }
@@ -1749,9 +1763,9 @@ public class Measure
                     }
                 } else {
                     addError(
-                        "Non consistent partial measure shortening:" +
-                        shortening.opposite() + " " + voice + ": " +
-                        duration.opposite());
+                            "Non consistent partial measure shortening:"
+                            + shortening.opposite() + " " + voice + ": "
+                            + duration.opposite());
 
                     return;
                 }
@@ -1775,15 +1789,13 @@ public class Measure
     protected void computeBox ()
     {
         // Start of the measure
-        int     leftX;
+        int leftX;
         Measure prevMeasure = (Measure) getPreviousSibling();
 
         if (prevMeasure == null) { // Very first measure in the staff
-            leftX = getSystem()
-                        .getTopLeft().x;
+            leftX = getSystem().getTopLeft().x;
         } else {
-            leftX = prevMeasure.getBarline()
-                               .getCenter().x;
+            leftX = prevMeasure.getBarline().getCenter().x;
         }
 
         // End of the measure
@@ -1797,10 +1809,9 @@ public class Measure
             rightX = system.getTopLeft().x + system.getDimension().width;
         }
 
-        PixelRectangle partBox = getPart()
-                                     .getBox();
+        PixelRectangle partBox = getPart().getBox();
         setBox(
-            new PixelRectangle(
+                new PixelRectangle(
                 leftX,
                 partBox.y,
                 rightX - leftX,
@@ -1825,6 +1836,7 @@ public class Measure
     //---------------//
     /**
      * Insert a note as a whole (or multi) rest.
+     *
      * @param glyph the underlying glyph
      */
     void addWholeChord (Glyph glyph)
@@ -1841,9 +1853,10 @@ public class Measure
     //--------------//
     /**
      * Insert a whole rest at provided center.
+     *
      * @param center the location for the rest note
      */
-    void addWholeRest (Staff      staff,
+    void addWholeRest (Staff staff,
                        PixelPoint center)
     {
         Chord chord = new Chord(this, null);
@@ -1861,8 +1874,8 @@ public class Measure
         for (Slot slot : getSlots()) {
             if (slot.getStartTime() != null) {
                 for (Chord chord : slot.getChords()) {
-                    Rational chordEnd = slot.getStartTime()
-                                            .plus(chord.getDuration());
+                    Rational chordEnd = slot.getStartTime().plus(chord.
+                            getDuration());
 
                     if (chordEnd.compareTo(measureDur) > 0) {
                         measureDur = chordEnd;
@@ -1871,8 +1884,7 @@ public class Measure
             }
         }
 
-        if (measureDur.equals(Rational.ZERO) && !getWholeChords()
-                                                     .isEmpty()) {
+        if (measureDur.equals(Rational.ZERO) && !getWholeChords().isEmpty()) {
             return "W";
         }
 

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -42,7 +42,10 @@ import java.util.List;
  * @author Hervé Bitteur
  */
 public class RunsTable
-    implements Cloneable, PixelSource, Oriented, EventSubscriber<LocationEvent>
+        implements Cloneable,
+                   PixelSource,
+                   Oriented,
+                   EventSubscriber<LocationEvent>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -50,13 +53,12 @@ public class RunsTable
     private static final Logger logger = Logger.getLogger(RunsTable.class);
 
     /** Events that can be published on the table run service */
-    public static final Class[] eventsWritten = new Class[] { RunEvent.class };
+    public static final Class[] eventsWritten = new Class[]{RunEvent.class};
 
     /** Events observed on location service */
-    public static final Class[] eventsRead = new Class[] { LocationEvent.class };
+    public static final Class[] eventsRead = new Class[]{LocationEvent.class};
 
     //~ Instance fields --------------------------------------------------------
-
     /** (Debugging) name of this runs table */
     private final String name;
 
@@ -73,21 +75,20 @@ public class RunsTable
     private final SelectionService runService;
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------//
     // RunsTable //
     //-----------//
     /**
      * Creates a new RunsTable object.
      *
-     * @param name name for debugging
+     * @param name        name for debugging
      * @param orientation orientation of each run
-     * @param dimension absolute dimensions of the table (width is horizontal,
+     * @param dimension   absolute dimensions of the table (width is horizontal,
      * height is vertical)
      */
-    public RunsTable (String      name,
+    public RunsTable (String name,
                       Orientation orientation,
-                      Dimension   dimension)
+                      Dimension dimension)
     {
         this.name = name;
         this.orientation = orientation;
@@ -97,10 +98,10 @@ public class RunsTable
 
         // Allocate the runs, according to orientation
         Rectangle rect = orientation.oriented(
-            new PixelRectangle(0, 0, dimension.width, dimension.height));
+                new PixelRectangle(0, 0, dimension.width, dimension.height));
 
         // Prepare the collections of runs, one collection per pos value
-        runs = new ArrayList<List<Run>>(rect.height);
+        runs = new ArrayList<>(rect.height);
 
         for (int i = 0; i < rect.height; i++) {
             runs.add(new ArrayList<Run>());
@@ -108,12 +109,12 @@ public class RunsTable
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-------//
     // clone //
     //-------//
     /**
      * Make a copy of the table, but sharing the run instances
+     *
      * @return another table on the same run instances
      */
     @Override
@@ -127,6 +128,7 @@ public class RunsTable
     //-------//
     /**
      * Make a copy of the table, but sharing the run instances
+     *
      * @param name a new name for the clone
      * @return another table on the same run instances
      */
@@ -151,6 +153,7 @@ public class RunsTable
     //------//
     /**
      * Print the image of the runs table onto the provided stream
+     *
      * @param out the output stream
      */
     public void dump (PrintStream out)
@@ -174,7 +177,7 @@ public class RunsTable
 
             for (int col = 0; col < buffer.getWidth(); col++) {
                 out.print(
-                    (buffer.getPixel(col, row) == BACKGROUND) ? '-' : 'X');
+                        (buffer.getPixel(col, row) == BACKGROUND) ? '-' : 'X');
             }
 
             out.println('|');
@@ -195,10 +198,12 @@ public class RunsTable
     /**
      * {@inheritDoc}
      *
-     * <br><b>Beware</b>, this implementation is not efficient enough for bulk
-     * operations. For such needs, a much more efficient way is to first
+     * <br><b>Beware</b>, this implementation is not efficient enough
+     * for bulk operations.
+     * For such needs, a much more efficient way is to first
      * retrieve a full buffer, via {@link #getBuffer()} method, then use this
      * temporary buffer as the {@link PixelSource} instead of this table.
+     *
      * @param x absolute abscissa
      * @param y absolute ordinate
      * @return the pixel gray level
@@ -220,7 +225,7 @@ public class RunsTable
      *
      * @param x absolute abscissa
      * @param y absolute ordinate
-     * @return  the run found, or null otherwise
+     * @return the run found, or null otherwise
      */
     public final Run getRunAt (int x,
                                int y)
@@ -252,6 +257,7 @@ public class RunsTable
     //-----------//
     /**
      * Fill a rectangular buffer with the runs
+     *
      * @return the filled buffer
      */
     public PixelsBuffer getBuffer ()
@@ -260,7 +266,7 @@ public class RunsTable
         PixelsBuffer buffer = new PixelsBuffer(dimension);
 
         switch (orientation) {
-        case HORIZONTAL :
+        case HORIZONTAL:
 
             for (int row = 0; row < getSize(); row++) {
                 List<Run> seq = getSequence(row);
@@ -274,14 +280,14 @@ public class RunsTable
 
             break;
 
-        case VERTICAL :
+        case VERTICAL:
 
             for (int row = 0; row < getSize(); row++) {
                 List<Run> seq = getSequence(row);
 
                 for (Run run : seq) {
                     for (int col = run.getStart(); col <= run.getStop();
-                         col++) {
+                            col++) {
                         buffer.setPixel(row, col, (char) 0);
                     }
                 }
@@ -298,6 +304,7 @@ public class RunsTable
     //-------------//
     /**
      * Report the sequence of runs at a given index
+     *
      * @param index the desired index
      * @return the MODIFIABLE sequence of rows
      */
@@ -311,6 +318,7 @@ public class RunsTable
     //---------//
     /**
      * Report the number of sequences of runs in the table
+     *
      * @return the table size (in terms of sequences)
      */
     public final int getSize ()
@@ -322,8 +330,9 @@ public class RunsTable
     // getDimension //
     //--------------//
     /**
-     * Report the absolute dimension of the table, width along x axis and height
-     * along the y axis.
+     * Report the absolute dimension of the table, width along x axis
+     * and height along the y axis.
+     *
      * @return the absolute dimension
      */
     public Dimension getDimension ()
@@ -377,6 +386,7 @@ public class RunsTable
     //-------------//
     /**
      * Count and return the total number of runs in this table
+     *
      * @return the run count
      */
     public int getRunCount ()
@@ -397,6 +407,7 @@ public class RunsTable
     //---------------//
     /**
      * Report the table run selection service
+     *
      * @return the run selection service
      */
     public SelectionService getRunService ()
@@ -418,23 +429,24 @@ public class RunsTable
     //---------//
     /**
      * Include the content of the provided table into this one
+     *
      * @param that the table of runs to include into this one
      */
     public void include (RunsTable that)
     {
         if (that == null) {
             throw new IllegalArgumentException(
-                "Cannot include a null runsTable");
+                    "Cannot include a null runsTable");
         }
 
         if (that.orientation != orientation) {
             throw new IllegalArgumentException(
-                "Cannot include a runsTable of different orientation");
+                    "Cannot include a runsTable of different orientation");
         }
 
         if (!that.dimension.equals(dimension)) {
             throw new IllegalArgumentException(
-                "Cannot include a runsTable of different dimension");
+                    "Cannot include a runsTable of different dimension");
         }
 
         for (int row = 0; row < getSize(); row++) {
@@ -463,6 +475,7 @@ public class RunsTable
     //-------------//
     /**
      * Field by field comparison (TODO: used by unit tests only!)
+     *
      * @param that the other RunsTable to compare with
      * @return true if identical
      */
@@ -473,9 +486,9 @@ public class RunsTable
             return false;
         }
 
-        if ((this.orientation == that.orientation) &&
-            this.dimension.equals(that.dimension) &&
-            this.name.equals(that.name)) {
+        if ((this.orientation == that.orientation)
+                && this.dimension.equals(that.dimension)
+                && this.name.equals(that.name)) {
             // Check runs
             for (int row = 0; row < getSize(); row++) {
                 List<Run> thisSeq = getSequence(row);
@@ -506,6 +519,7 @@ public class RunsTable
     //-----------//
     /**
      * Given an absolute point, retrieve the containing run if any
+     *
      * @param point coordinates of the given point
      * @return the run found, or null otherwise
      */
@@ -535,8 +549,10 @@ public class RunsTable
     //---------//
     /**
      * Interest on Location => Run
+     *
      * @param locationEvent the interesting event
      */
+    @Override
     public void onEvent (LocationEvent locationEvent)
     {
         try {
@@ -545,9 +561,7 @@ public class RunsTable
                 return;
             }
 
-            if (logger.isFineEnabled()) {
-                logger.fine("RunsTable " + name + ": " + locationEvent);
-            }
+            logger.fine("RunsTable {0}: {1}", new Object[]{name, locationEvent});
 
             if (locationEvent instanceof LocationEvent) {
                 // Location => Run
@@ -563,6 +577,7 @@ public class RunsTable
     //-------//
     /**
      * Purge a runs table of all runs that match the provided predicate
+     *
      * @param predicate the filter to detect runs to remove
      * @return this runs table, to allow easy chaining
      */
@@ -577,23 +592,24 @@ public class RunsTable
     /**
      * Purge a runs table of all runs that match the provided predicate, and
      * populate the provided 'removed' table with the removed runs.
+     *
      * @param predicate the filter to detect runs to remove
-     * @param removed a table to be filled, if not null, with purged runs
+     * @param removed   a table to be filled, if not null, with purged runs
      * @return this runs table, to allow easy chaining
      */
     public RunsTable purge (Predicate<Run> predicate,
-                            RunsTable      removed)
+                            RunsTable removed)
     {
         // Check parameters
         if (removed != null) {
             if (removed.orientation != orientation) {
                 throw new IllegalArgumentException(
-                    "'removed' table is of different orientation");
+                        "'removed' table is of different orientation");
             }
 
             if (!removed.dimension.equals(dimension)) {
                 throw new IllegalArgumentException(
-                    "'removed' table is of different dimension");
+                        "'removed' table is of different dimension");
             }
         }
 
@@ -607,8 +623,7 @@ public class RunsTable
                     it.remove();
 
                     if (removed != null) {
-                        removed.getSequence(i)
-                               .add(run);
+                        removed.getSequence(i).add(run);
                     }
                 }
             }
@@ -622,6 +637,7 @@ public class RunsTable
     //-----------//
     /**
      * Remove the provided run at indicated position
+     *
      * @param pos the position where run is to be found
      * @param run the run to remove
      */
@@ -632,7 +648,7 @@ public class RunsTable
 
         if (!seq.remove(run)) {
             throw new RuntimeException(
-                this + " Cannot find " + run + " at pos " + pos);
+                    this + " Cannot find " + run + " at pos " + pos);
         }
     }
 
@@ -664,16 +680,12 @@ public class RunsTable
         StringBuilder sb = new StringBuilder("{");
         sb.append(getClass().getSimpleName());
 
-        sb.append(" ")
-          .append(name);
+        sb.append(" ").append(name);
 
-        sb.append(" ")
-          .append(orientation);
+        sb.append(" ").append(orientation);
 
-        sb.append(" ")
-          .append(dimension.width)
-          .append("x")
-          .append(dimension.height);
+        sb.append(" ").append(dimension.width).append("x").append(
+                dimension.height);
 
         sb.append("}");
 
@@ -685,6 +697,7 @@ public class RunsTable
     //-------------//
     /**
      * Interest in location => Run
+     *
      * @param location
      */
     private void handleEvent (LocationEvent locationEvent)
@@ -698,8 +711,8 @@ public class RunsTable
         SelectionHint hint = locationEvent.hint;
         MouseMovement movement = locationEvent.movement;
 
-        if ((hint != SelectionHint.LOCATION_ADD) &&
-            (hint != SelectionHint.LOCATION_INIT)) {
+        if ((hint != SelectionHint.LOCATION_ADD)
+                && (hint != SelectionHint.LOCATION_INIT)) {
             return;
         }
 

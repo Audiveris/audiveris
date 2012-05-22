@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -12,6 +12,9 @@
 package omr.step;
 
 import omr.log.Logger;
+
+import omr.plugin.Plugin;
+import omr.plugin.PluginsManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,7 +41,7 @@ public class Steps
     public static final String             LOAD = "LOAD";
     public static final String             SCALE = "SCALE";
     public static final String             GRID = "GRID";
-    public static final String             SPLIT = "SPLIT";
+    public static final String             SYSTEMS = "SYSTEMS";
     public static final String             MEASURES = "MEASURES";
     public static final String             STICKS = "STICKS";
     public static final String             SYMBOLS = "SYMBOLS";
@@ -50,34 +53,46 @@ public class Steps
     public static final String             PLAY = "PLAY";
     public static final String             MIDI = "MIDI";
     public static final String             EXPORT = "EXPORT";
+    public static final String             PLUGIN = "PLUGIN";
 
     /** Ordered sequence of steps */
-    private static final List<Step> steps = new ArrayList<Step>();
+    private static final List<Step> steps = new ArrayList<>();
 
     /** Map of defined steps */
-    private static final Map<String, Step> stepMap = new HashMap<String, Step>();
+    private static final Map<String, Step> stepMap = new HashMap<>();
 
     static {
         // Mandatory steps in proper order
+        // -------------------------------
         addStep(new LoadStep());
         addStep(new ScaleStep());
         addStep(new GridStep());
-        addStep(new SplitStep());
+        addStep(new SystemsStep());
         addStep(new MeasuresStep());
         addStep(new SticksStep());
         addStep(new SymbolsStep());
         addStep(new PagesStep());
         addStep(new ScoreStep());
 
-        // Optional steps
+        // Optional steps, in whatever order
+        // ---------------------------------
         addStep(new PrintStep());
-        addStep(new PlayStep());
-        addStep(new MidiStep());
+        //        addStep(new PlayStep());
+        //        addStep(new MidiStep());
         addStep(new ExportStep());
+
+        // Plugin step depends on default plugin
+        Plugin plugin = PluginsManager.getInstance()
+                                      .getDefaultPlugin();
+
+        if (plugin != null) {
+            addStep(new PluginStep(plugin));
+        }
     }
 
     /** Compare steps WRT their position in the sequence of defined steps */
     public static final Comparator<Step> comparator = new Comparator<Step>() {
+        @Override
         public int compare (Step s1,
                             Step s2)
         {
@@ -181,7 +196,7 @@ public class Steps
     static SortedSet<Step> range (Step left,
                                   Step right)
     {
-        List<Step> stepList = new ArrayList<Step>();
+        List<Step> stepList = new ArrayList<>();
         boolean    started = false;
 
         for (Step step : steps) {
@@ -198,7 +213,7 @@ public class Steps
             }
         }
 
-        SortedSet<Step> sorted = new TreeSet<Step>(comparator);
+        SortedSet<Step> sorted = new TreeSet<>(comparator);
         sorted.addAll(stepList);
 
         return sorted;
@@ -285,5 +300,9 @@ public class Steps
         {
             return valueOf(str);
         }
+    }
+
+    private Steps ()
+    {
     }
 }

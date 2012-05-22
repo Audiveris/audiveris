@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -48,45 +48,45 @@ public class Actions
     private static volatile JAXBContext jaxbContext;
 
     /** The collection of all actions loaded so far */
-    private static final Set<ActionDescriptor> allDescriptors = new LinkedHashSet<ActionDescriptor>();
+    private static final Set<ActionDescriptor> allDescriptors = new LinkedHashSet<>();
 
     //~ Enumerations -----------------------------------------------------------
-
     /**
      * Predefined list of domain names.
-     * Through the action list files, the user will be able to add new domain names.
+     * Through the action list files, the user will be able to add new domain
+     * names.
      * This classification is mainly used to define the related pull-down menus.
      */
-    public static enum Domain {
+    public static enum Domain
+    {
         //~ Enumeration constant initializers ----------------------------------
-
 
         /** Domain of file actions */
         FILE,
         /** Domain of individual steps */
-        STEP, 
+        STEP,
         /** Domain of score actions */
-        SCORE, 
+        SCORE,
         /** Domain of MIDI features */
-        MIDI, 
+        MIDI,
         /** Domain of various view features */
-        VIEW, 
+        VIEW,
         /** Domain of utilities */
-        TOOL, 
+        TOOL,
         /** Domain of plugins */
-        PLUGIN, 
+        PLUGIN,
         /** Domain of help information */
         HELP;
     }
 
     //~ Instance fields --------------------------------------------------------
-
-    /** Collection of descriptors loaded by unmarshalling one file */
+    //
+    /** Collection of descriptors loaded by unmarshalling one file. */
     @XmlElement(name = "action")
-    private List<ActionDescriptor> descriptors = new ArrayList<ActionDescriptor>();
+    private List<ActionDescriptor> descriptors = new ArrayList<>();
 
     //~ Constructors -----------------------------------------------------------
-
+    //
     //---------//
     // Actions //
     //---------//
@@ -96,12 +96,12 @@ public class Actions
     }
 
     //~ Methods ----------------------------------------------------------------
-
+    //
     //-------------------//
     // getAllDescriptors //
     //-------------------//
     /**
-     * Report the collection of descriptors loaded so far
+     * Report the collection of descriptors loaded so far.
      * @return all the loaded action descriptors
      */
     public static Set<ActionDescriptor> getAllDescriptors ()
@@ -113,13 +113,13 @@ public class Actions
     // getDomainNames //
     //----------------//
     /**
-     * Report the whole collection of domain names, starting with the predefined
-     * ones
+     * Report the whole collection of domain names, starting with the 
+     * predefined ones.
      * @return the collection of domain names
      */
     public static Set<String> getDomainNames ()
     {
-        Set<String> names = new LinkedHashSet<String>();
+        Set<String> names = new LinkedHashSet<>();
 
         // Predefined ones, except HELP
         for (Domain domain : Domain.values()) {
@@ -151,7 +151,7 @@ public class Actions
      */
     public static SortedSet<Integer> getSections ()
     {
-        SortedSet<Integer> sections = new TreeSet<Integer>();
+        SortedSet<Integer> sections = new TreeSet<>();
 
         for (ActionDescriptor desc : allDescriptors) {
             sections.add(desc.section);
@@ -166,41 +166,39 @@ public class Actions
     /**
      * Unmarshal the provided XML stream to allocate the corresponding
      * collection of action descriptors.
-     *
+     * 
      * @param in the input stream that contains the collection of action
      * descriptors in XML format. The stream is not closed by this method
-     * @throws javax.xml.bind.JAXBException if unmarshalling fails
+     * @throws javax.xml.bind.JAXBException 
      */
     public static void loadActionsFrom (InputStream in)
-        throws JAXBException
+            throws JAXBException
     {
         if (jaxbContext == null) {
             jaxbContext = JAXBContext.newInstance(Actions.class);
         }
 
         Unmarshaller um = jaxbContext.createUnmarshaller();
-        Actions      actions = (Actions) um.unmarshal(in);
+        Actions actions = (Actions) um.unmarshal(in);
 
-        if (logger.isFineEnabled()) {
-            for (ActionDescriptor desc : actions.descriptors) {
-                logger.fine("Descriptor unmarshalled " + desc);
-            }
+        for (ActionDescriptor desc : actions.descriptors) {
+            logger.fine("Descriptor unmarshalled {0}", desc);
         }
 
         // Verify that all actions have a domain and a section assigned
         for (Iterator<ActionDescriptor> it = actions.descriptors.iterator();
-             it.hasNext();) {
+                it.hasNext();) {
             ActionDescriptor desc = it.next();
 
             if (desc.domain == null) {
-                logger.warning("No domain specified for " + desc);
+                logger.warning("No domain specified for {0}", desc);
                 it.remove();
 
                 continue;
             }
 
             if (desc.section == null) {
-                logger.warning("No section specified for " + desc);
+                logger.warning("No section specified for {0}", desc);
                 it.remove();
 
                 continue;

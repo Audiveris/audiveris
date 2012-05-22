@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -60,7 +60,7 @@ public class BoardsPane
     private final Panel component;
 
     /** Sequence of current boards, kept ordered by board preferred position */
-    private final List<Board> boards = new ArrayList<Board>();
+    private final List<Board> boards = new ArrayList<>();
 
     /** Unique (application-wide) name for this pane. */
     private String name;
@@ -347,6 +347,7 @@ public class BoardsPane
          * Triggered from popup menu.
          * @param e menu item event
          */
+        @Override
         public void itemStateChanged (ItemEvent e)
         {
             JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getItem();

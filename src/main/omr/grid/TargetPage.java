@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -31,7 +31,7 @@ public class TargetPage
     public final double height;
 
     /** Sequence of systems */
-    public final List<TargetSystem> systems = new ArrayList<TargetSystem>();
+    public final List<TargetSystem> systems = new ArrayList<>();
 
     //~ Constructors -----------------------------------------------------------
 

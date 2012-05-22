@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -30,6 +30,7 @@ import proxymusic.Syllabic;
 import proxymusic.UpDown;
 
 import java.lang.String; // Do not remove this line!
+import java.util.logging.Level;
 
 import javax.xml.bind.JAXBElement;
 
@@ -163,7 +164,7 @@ public class MusicXML
              */
         }
 
-        logger.severe("Unsupported ornament shape:" + shape);
+        logger.severe("Unsupported ornament shape:{0}", shape);
 
         return null;
     }
@@ -245,7 +246,7 @@ public class MusicXML
             return factory.createDynamicsSfz(empty);
         }
 
-        logger.severe("Unsupported dynamics shape:" + shape);
+        logger.severe("Unsupported dynamics shape:{0}", shape);
 
         return null;
     }
@@ -298,7 +299,7 @@ public class MusicXML
             return factory.createOrnamentsTurn(factory.createEmptyTrillSound());
         }
 
-        logger.severe("Unsupported ornament shape:" + shape);
+        logger.severe("Unsupported ornament shape:{0}", shape);
 
         return null;
     }

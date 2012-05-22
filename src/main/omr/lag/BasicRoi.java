@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -60,6 +60,7 @@ public class BasicRoi
     //--------------------//
     // getAbsoluteContour //
     //--------------------//
+    @Override
     public PixelRectangle getAbsoluteContour ()
     {
         return new PixelRectangle(absContour);
@@ -68,6 +69,7 @@ public class BasicRoi
     //-------------------//
     // getGlyphHistogram //
     //-------------------//
+    @Override
     public Histogram<Integer> getGlyphHistogram (Orientation       projection,
                                                  Collection<Glyph> glyphs)
     {
@@ -79,12 +81,13 @@ public class BasicRoi
     //-----------------//
     // getRunHistogram //
     //-----------------//
+    @Override
     public Histogram<Integer> getRunHistogram (Orientation projection,
                                                RunsTable   table)
     {
         final Orientation        tableOrient = table.getOrientation();
         final boolean            alongTheRuns = projection == tableOrient;
-        final Histogram<Integer> histo = new Histogram<Integer>();
+        final Histogram<Integer> histo = new Histogram<>();
         final Rectangle          tableContour = new Rectangle(
             table.getDimension());
         final PixelRectangle     inter = new PixelRectangle(
@@ -123,12 +126,13 @@ public class BasicRoi
     //---------------------//
     // getSectionHistogram //
     //---------------------//
+    @Override
     public Histogram<Integer> getSectionHistogram (Orientation         projection,
                                                    Collection<Section> sections)
     {
         // Split the sections into 2 populations along & across wrt projection
-        List<Section> along = new ArrayList<Section>();
-        List<Section> across = new ArrayList<Section>();
+        List<Section> along = new ArrayList<>();
+        List<Section> across = new ArrayList<>();
 
         for (Section section : sections) {
             if (section.isVertical() == projection.isVertical()) {
@@ -138,7 +142,7 @@ public class BasicRoi
             }
         }
 
-        final Histogram<Integer> histo = new Histogram<Integer>();
+        final Histogram<Integer> histo = new Histogram<>();
         populate(histo, projection, along, true);
         populate(histo, projection.opposite(), across, false);
 

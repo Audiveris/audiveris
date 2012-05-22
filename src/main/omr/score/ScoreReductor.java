@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -30,7 +30,7 @@ import java.util.TreeSet;
  * @author Hervé Bitteur
  */
 public class ScoreReductor
-    extends AbstractScoreVisitor
+        extends AbstractScoreVisitor
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -38,12 +38,10 @@ public class ScoreReductor
     private static final Logger logger = Logger.getLogger(ScoreReductor.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Set of all different duration values */
-    private final SortedSet<Rational> durations = new TreeSet<Rational>();
+    private final SortedSet<Rational> durations = new TreeSet<>();
 
     //~ Constructors -----------------------------------------------------------
-
     //---------------//
     // ScoreReductor //
     //---------------//
@@ -55,7 +53,6 @@ public class ScoreReductor
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-------------//
     // visit Chord //
     //-------------//
@@ -67,8 +64,7 @@ public class ScoreReductor
         try {
             // Special case for whole chords
             if (chord.isWholeDuration()) {
-                duration = chord.getMeasure()
-                                .getExpectedDuration();
+                duration = chord.getMeasure().getExpectedDuration();
             } else {
                 duration = chord.getDuration();
             }
@@ -80,8 +76,8 @@ public class ScoreReductor
             // Ignored here (TBC)
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + chord,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + chord,
+                    ex);
         }
 
         return false;
@@ -101,8 +97,8 @@ public class ScoreReductor
             score.setDurationDivisor(computeDurationDivisor());
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + score,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + score,
+                    ex);
         }
 
         return false;
@@ -114,14 +110,10 @@ public class ScoreReductor
     private int computeDurationDivisor ()
     {
         Rational[] durationArray = durations.toArray(
-            new Rational[durations.size()]);
-        Rational   divisor = Rational.gcd(durationArray);
-
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "durations=" + Arrays.deepToString(durationArray) +
-                " divisor=" + divisor);
-        }
+                new Rational[durations.size()]);
+        Rational divisor = Rational.gcd(durationArray);
+        logger.fine("durations={0} divisor={1}",
+                    new Object[]{Arrays.deepToString(durationArray), divisor});
 
         return divisor.den;
     }

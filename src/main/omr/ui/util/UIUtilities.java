@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur and Brenton Partridge 2000-2011.              //
+//  Copyright (C) Hervé Bitteur and Brenton Partridge 2000-2012.              //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -125,7 +125,7 @@ public class UIUtilities
             } else if (next instanceof AbstractButton) {
                 ((AbstractButton) next).setEnabled(bool);
             } else {
-                logger.warning("Neither Button nor Action : " + next);
+                logger.warning("Neither Button nor Action : {0}", next);
             }
         }
     }
@@ -299,5 +299,9 @@ public class UIUtilities
         }
 
         suppressBorders((Container) comp);
+    }
+
+    private UIUtilities ()
+    {
     }
 }

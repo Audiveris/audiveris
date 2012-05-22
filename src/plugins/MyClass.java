@@ -9,6 +9,7 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
+import omr.glyph.BasicNest;
 import omr.log.Logger;
 
 import omr.score.ui.ScoreDependent;
@@ -65,6 +66,17 @@ public class MyClass
         sheet.getScore()
              .accept(new ScoreDimensions());
     }
+
+//    /**
+//     * Print out Nest information
+//     */
+//    @Action(enabledProperty = "sheetAvailable")
+//    public void hackNest ()
+//    {
+//        Sheet sheet = SheetsController.getCurrentSheet();
+//        BasicNest nest = (BasicNest) sheet.getNest();
+//        nest.hack();
+//    }
 
     /**
      * Launch the utility to rip a symbol

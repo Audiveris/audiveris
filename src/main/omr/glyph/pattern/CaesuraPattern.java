@@ -4,13 +4,14 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2011. All rights reserved.               //
+//  Copyright (C) Herve Bitteur 2000-2012. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.pattern;
 
+import java.util.logging.Level;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
@@ -74,7 +75,7 @@ public class CaesuraPattern
             if (!measure.getChords()
                         .isEmpty()) {
                 if (glyph.isVip() || logger.isFineEnabled()) {
-                    logger.info("Cancelled caesura #" + glyph.getId());
+                    logger.info("Cancelled caesura #{0}", glyph.getId());
                 }
 
                 glyph.setShape(null);

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -56,6 +56,7 @@ public class Glyphs
 
     /** Predicate to check for a manual shape */
     public static final Predicate<Glyph> manualPredicate = new Predicate<Glyph>() {
+        @Override
         public boolean check (Glyph glyph)
         {
             return glyph.isManualShape();
@@ -64,6 +65,7 @@ public class Glyphs
 
     /** Predicate to check for a barline shape */
     public static final Predicate<Glyph> barPredicate = new Predicate<Glyph>() {
+        @Override
         public boolean check (Glyph glyph)
         {
             return glyph.isBar();
@@ -156,23 +158,23 @@ public class Glyphs
         return null;
     }
 
-    //---------------//
-    // getContourBox //
-    //---------------//
+    //-----------//
+    // getBounds //
+    //-----------//
     /**
      * Return the display bounding box of a collection of glyphs.
      * @param glyphs the provided collection of glyphs
      * @return the bounding contour
      */
-    public static PixelRectangle getContourBox (Collection<Glyph> glyphs)
+    public static PixelRectangle getBounds (Collection<Glyph> glyphs)
     {
         PixelRectangle box = null;
 
         for (Glyph glyph : glyphs) {
             if (box == null) {
-                box = new PixelRectangle(glyph.getContourBox());
+                box = new PixelRectangle(glyph.getBounds());
             } else {
-                box.add(glyph.getContourBox());
+                box.add(glyph.getBounds());
             }
         }
 
@@ -190,6 +192,7 @@ public class Glyphs
     public static Comparator<Glyph> getReverseLengthComparator (final Orientation orientation)
     {
         return new Comparator<Glyph>() {
+                @Override
                 public int compare (Glyph s1,
                                     Glyph s2)
                 {
@@ -246,14 +249,14 @@ public class Glyphs
         PixelRectangle absBox = null;
 
         if (section != null) {
-            absBox = section.getContourBox();
+            absBox = section.getBounds();
         }
 
         for (Glyph g : glyphs) {
             if (absBox == null) {
-                absBox = g.getContourBox();
+                absBox = g.getBounds();
             } else {
-                absBox.add(g.getContourBox());
+                absBox.add(g.getBounds());
             }
         }
 
@@ -317,7 +320,7 @@ public class Glyphs
      */
     public static Set<Glyph> glyphsOf (Collection<Section> sections)
     {
-        Set<Glyph> glyphs = new LinkedHashSet<Glyph>();
+        Set<Glyph> glyphs = new LinkedHashSet<>();
 
         for (Section section : sections) {
             Glyph glyph = section.getGlyph();
@@ -343,10 +346,10 @@ public class Glyphs
     public static Set<Glyph> lookupGlyphs (Collection<?extends Glyph> collection,
                                            PixelRectangle             rect)
     {
-        Set<Glyph> set = new LinkedHashSet<Glyph>();
+        Set<Glyph> set = new LinkedHashSet<>();
 
         for (Glyph glyph : collection) {
-            if (rect.contains(glyph.getContourBox())) {
+            if (rect.contains(glyph.getBounds())) {
                 set.add(glyph);
             }
         }
@@ -367,10 +370,10 @@ public class Glyphs
     public static Set<Glyph> lookupGlyphs (Collection<?extends Glyph> collection,
                                            Polygon                    polygon)
     {
-        Set<Glyph> set = new LinkedHashSet<Glyph>();
+        Set<Glyph> set = new LinkedHashSet<>();
 
         for (Glyph glyph : collection) {
-            if (polygon.contains(glyph.getContourBox())) {
+            if (polygon.contains(glyph.getBounds())) {
                 set.add(glyph);
             }
         }
@@ -392,7 +395,7 @@ public class Glyphs
     public static Set<Glyph> lookupGlyphs (Collection<?extends Glyph> collection,
                                            Predicate<Glyph>           predicate)
     {
-        Set<Glyph> set = new LinkedHashSet<Glyph>();
+        Set<Glyph> set = new LinkedHashSet<>();
 
         for (Glyph glyph : collection) {
             if ((predicate == null) || predicate.check(glyph)) {
@@ -416,10 +419,10 @@ public class Glyphs
     public static Set<Glyph> lookupIntersectedGlyphs (Collection<?extends Glyph> collection,
                                                       PixelRectangle             rect)
     {
-        Set<Glyph> set = new LinkedHashSet<Glyph>();
+        Set<Glyph> set = new LinkedHashSet<>();
 
         for (Glyph glyph : collection) {
-            if (rect.intersects(glyph.getContourBox())) {
+            if (rect.intersects(glyph.getBounds())) {
                 set.add(glyph);
             }
         }
@@ -482,7 +485,7 @@ public class Glyphs
      */
     public static Set<Section> sectionsOf (Collection<Glyph> glyphs)
     {
-        Set<Section> sections = new TreeSet<Section>();
+        Set<Section> sections = new TreeSet<>();
 
         for (Glyph glyph : glyphs) {
             sections.addAll(glyph.getMembers());
@@ -525,8 +528,11 @@ public class Glyphs
      */
     public static SortedSet<Glyph> sortedSet (Glyph... glyphs)
     {
-        SortedSet<Glyph> set = new TreeSet<Glyph>(Glyph.abscissaComparator);
-        set.addAll(Arrays.asList(glyphs));
+        SortedSet<Glyph> set = new TreeSet<>(Glyph.abscissaComparator);
+
+        if (glyphs.length > 0) {
+            set.addAll(Arrays.asList(glyphs));
+        }
 
         return set;
     }
@@ -541,7 +547,7 @@ public class Glyphs
      */
     public static SortedSet<Glyph> sortedSet (Collection<Glyph> glyphs)
     {
-        SortedSet<Glyph> set = new TreeSet<Glyph>(Glyph.abscissaComparator);
+        SortedSet<Glyph> set = new TreeSet<>(Glyph.abscissaComparator);
         set.addAll(glyphs);
 
         return set;
@@ -621,5 +627,9 @@ public class Glyphs
     public static String toString (Glyph... glyphs)
     {
         return toString("glyphs", glyphs);
+    }
+
+    private Glyphs ()
+    {
     }
 }

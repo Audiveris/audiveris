@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -45,7 +45,7 @@ import java.util.*;
  * @author Hervé Bitteur
  */
 public abstract class Slot
-    implements Comparable<Slot>
+        implements Comparable<Slot>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -53,19 +53,18 @@ public abstract class Slot
     private static final Logger logger = Logger.getLogger(Slot.class);
 
     /** Chord comparator to sort chords vertically within the same slot */
-    public static final Comparator<Chord> chordComparator = new Comparator<Chord>() {
+    public static final Comparator<Chord> chordComparator = new Comparator<Chord>()
+    {
+
+        @Override
         public int compare (Chord c1,
                             Chord c2)
         {
-            Note n1 = (Note) c1.getNotes()
-                               .get(0);
-            Note n2 = (Note) c2.getNotes()
-                               .get(0);
+            Note n1 = (Note) c1.getNotes().get(0);
+            Note n2 = (Note) c2.getNotes().get(0);
 
             // First : staff
-            int dStaff = n1.getStaff()
-                           .getId() - n2.getStaff()
-                                        .getId();
+            int dStaff = n1.getStaff().getId() - n2.getStaff().getId();
 
             if (dStaff != 0) {
                 return Integer.signum(dStaff);
@@ -83,10 +82,8 @@ public abstract class Slot
         }
     };
 
-
     //~ Instance fields --------------------------------------------------------
-
-    /** Id unique within the containing  measure */
+    /** Id unique within the containing measure */
     private int id;
 
     /** Reference point of the slot */
@@ -97,38 +94,36 @@ public abstract class Slot
     protected Measure measure;
 
     /** Collection of glyphs in the slot */
-    protected List<Glyph> glyphs = new ArrayList<Glyph>();
+    protected List<Glyph> glyphs = new ArrayList<>();
 
     /** Cached margin for abscissa alignment */
     protected final int xMargin;
 
     /** Collection of chords in this slot, sorted by staff, then by ordinate */
-    private List<Chord> chords = new ArrayList<Chord>();
+    private List<Chord> chords = new ArrayList<>();
 
     /** Time offset since measure start */
     private Rational startTime;
 
     //~ Constructors -----------------------------------------------------------
-
     //------//
     // Slot //
     //------//
     /**
      * Creates a new Slot object.
+     *
      * @param measure the containing measure
      */
     public Slot (Measure measure)
     {
         this.measure = measure;
 
-        double slotMargin = measure.getScore()
-                                   .getSlotMargin();
+        double slotMargin = measure.getScore().getSlotMargin();
         xMargin = (int) Math.rint(
-            measure.getScale().getInterline() * slotMargin);
+                measure.getScale().getInterline() * slotMargin);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------------//
     // dumpSystemSlots //
     //-----------------//
@@ -159,40 +154,39 @@ public abstract class Slot
     //----------//
     /**
      * Populate a slot with the provided note glyph.
-     * @param glyph a chord-relevant glyph (rest, note or notehead)
+     *
+     * @param glyph   a chord-relevant glyph (rest, note or notehead)
      * @param measure the containing measure
-     * @param policy the policy to use for slot positioning
+     * @param policy  the policy to use for slot positioning
      */
-    public static void populate (Glyph      glyph,
-                                 Measure    measure,
+    public static void populate (Glyph glyph,
+                                 Measure measure,
                                  SlotPolicy policy)
     {
         final boolean logging = glyph.isVip() || logger.isFineEnabled();
 
         if (logging) {
-            logger.info("Populating slot with " + glyph);
+            logger.info("Populating slot with {0}", glyph);
         }
 
         // Special case for measure rests: they don't belong to any time slot,
         // and their duration is the measure duration
-        if (glyph.getShape()
-                 .isMeasureRest()) {
+        if (glyph.getShape().isMeasureRest()) {
             measure.addWholeChord(glyph);
         } else {
             PixelPoint pt = null;
 
             // Use the stem abscissa or the note abscissa
             switch (policy) {
-            case STEM_BASED :
+            case STEM_BASED:
 
                 if (glyph.getStemNumber() == 1) {
-                    pt = glyph.getFirstStem()
-                              .getAreaCenter();
+                    pt = glyph.getFirstStem().getAreaCenter();
                 }
 
                 break;
 
-            case HEAD_BASED :
+            case HEAD_BASED:
                 pt = glyph.getAreaCenter();
 
                 break;
@@ -206,7 +200,8 @@ public abstract class Slot
             for (Slot slot : measure.getSlots()) {
                 if (slot.isAlignedWith(pt)) {
                     if (logging) {
-                        logger.info(measure + " Joining slot " + slot);
+                        logger.info("{0} Joining slot {1}", new Object[]{measure,
+                                                                         slot});
                     }
 
                     slot.addGlyph(glyph);
@@ -219,12 +214,12 @@ public abstract class Slot
             Slot slot = null;
 
             switch (policy) {
-            case STEM_BASED :
+            case STEM_BASED:
                 slot = new StemBasedSlot(measure, pt);
 
                 break;
 
-            case HEAD_BASED :
+            case HEAD_BASED:
                 slot = new HeadBasedSlot(measure);
 
                 break;
@@ -233,11 +228,11 @@ public abstract class Slot
             slot.addGlyph(glyph);
 
             if (logging) {
-                logger.info(measure + " Creating new slot " + slot);
+                logger.info("{0} Creating new slot {1}", new Object[]{measure,
+                                                                      slot});
             }
 
-            measure.getSlots()
-                   .add(slot);
+            measure.getSlots().add(slot);
         }
     }
 
@@ -246,6 +241,7 @@ public abstract class Slot
     //----------//
     /**
      * Insert a glyph (supposedly from a chord) into this slot.
+     *
      * @param glyph the glyph to insert
      */
     public void addGlyph (Glyph glyph)
@@ -289,6 +285,7 @@ public abstract class Slot
     //-------------//
     /**
      * Compute the various voices and start times in this slot.
+     *
      * @param activeChords the chords which were active right before this slot
      */
     public void buildVoices (List<Chord> activeChords)
@@ -296,31 +293,26 @@ public abstract class Slot
         // Sort chords vertically  within the slot
         Collections.sort(chords, chordComparator);
 
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "buildVoices for Slot#" + getId() + " Actives=" + activeChords +
-                " Chords=" + chords);
-        }
+        logger.fine("buildVoices for Slot#{0} Actives={1} Chords={2}",
+                    new Object[]{getId(), activeChords, chords});
 
         // Use the active chords before this slot to compute start time
         computeStartTime(activeChords);
 
         // Chords that are ending, with their voice available
-        List<Chord> endingChords = new ArrayList<Chord>();
+        List<Chord> endingChords = new ArrayList<>();
 
         // Chords that are ending, with voice not available (beam group)
-        List<Chord> passingChords = new ArrayList<Chord>();
+        List<Chord> passingChords = new ArrayList<>();
 
         for (Chord chord : activeChords) {
             // Look for chord that finishes at the slot at hand
             // Make sure voice is really available
             if (!chord.isWholeDuration()) {
-                if ((chord.getEndTime()
-                          .compareTo(startTime) <= 0)) {
+                if ((chord.getEndTime().compareTo(startTime) <= 0)) {
                     BeamGroup group = chord.getBeamGroup();
 
-                    if ((group == null) || (chord == group.getChords()
-                                                          .last())) {
+                    if ((group == null) || (chord == group.getChords().last())) {
                         endingChords.add(chord);
                     } else {
                         passingChords.add(chord);
@@ -331,30 +323,25 @@ public abstract class Slot
             }
         }
 
-        if (logger.isFineEnabled()) {
-            logger.fine("endingChords=" + endingChords);
-            logger.fine("passingChords=" + passingChords);
-            logger.fine("Chords=" + chords);
-        }
+        logger.fine("endingChords={0}", endingChords);
+        logger.fine("passingChords={0}", passingChords);
+        logger.fine("Chords={0}", chords);
 
         InjectionSolver solver = new InjectionSolver(
-            chords.size(),
-            endingChords.size() + chords.size(),
-            new MyDistance(chords, endingChords));
-        int[]           links = solver.solve();
+                chords.size(),
+                endingChords.size() + chords.size(),
+                new MyDistance(chords, endingChords));
+        int[] links = solver.solve();
 
         for (int i = 0; i < links.length; i++) {
             int index = links[i];
 
             // Map new chord to an ending chord?
             if (index < endingChords.size()) {
-                Voice voice = endingChords.get(index)
-                                          .getVoice();
-
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "Slot#" + getId() + " Reusing voice#" + voice.getId());
-                }
+                Voice voice = endingChords.get(index).getVoice();
+                logger.fine("Slot#{0} Reusing voice#{1}", new Object[]{getId(),
+                                                                       voice.
+                            getId()});
 
                 Chord ch = chords.get(i);
 
@@ -385,9 +372,11 @@ public abstract class Slot
     /**
      * Compare this slot to another, as needed to insert slots in an
      * ordered collection.
+     *
      * @param other another slot
      * @return -1, 0 or +1, according to their relative abscissae
      */
+    @Override
     public int compareTo (Slot other)
     {
         return Integer.signum(getX() - other.getX());
@@ -398,6 +387,7 @@ public abstract class Slot
     //------//
     /**
      * Report the abscissa of this slot.
+     *
      * @return the slot abscissa, wrt the page (and not measure)
      */
     public abstract int getX ();
@@ -408,6 +398,7 @@ public abstract class Slot
     /**
      * Report the chord which is just above the given point in this
      * slot.
+     *
      * @param point the given point
      * @return the chord above, or null
      */
@@ -433,6 +424,7 @@ public abstract class Slot
     /**
      * Report the chord which is just below the given point in this
      * slot.
+     *
      * @param point the given point
      * @return the chord below, or null
      */
@@ -454,6 +446,7 @@ public abstract class Slot
     //-----------//
     /**
      * Report the (sorted) collection of chords in this time slot.
+     *
      * @return the collection of chords
      */
     public List<Chord> getChords ()
@@ -466,14 +459,15 @@ public abstract class Slot
     //-------------------//
     /**
      * Report the chords whose notes stand in the given vertical range.
-     * @param top upper point of range
+     *
+     * @param top    upper point of range
      * @param bottom lower point of range
      * @return the collection of chords, which may be empty
      */
     public List<Chord> getEmbracedChords (PixelPoint top,
                                           PixelPoint bottom)
     {
-        List<Chord> embracedChords = new ArrayList<Chord>();
+        List<Chord> embracedChords = new ArrayList<>();
 
         for (Chord chord : getChords()) {
             if (chord.isEmbracedBy(top, bottom)) {
@@ -489,6 +483,7 @@ public abstract class Slot
     //-------//
     /**
      * Report the slot Id.
+     *
      * @return the slot id (for debug)
      */
     public int getId ()
@@ -501,13 +496,13 @@ public abstract class Slot
     //------------------//
     /**
      * Report a glyph that can be used to show the location of the slot.
+     *
      * @return a glyph from the slot
      */
     public Glyph getLocationGlyph ()
     {
         if (!glyphs.isEmpty()) {
-            return glyphs.iterator()
-                         .next();
+            return glyphs.iterator().next();
         } else {
             return null;
         }
@@ -519,6 +514,7 @@ public abstract class Slot
     /**
      * Report the time offset of this time slot since the beginning of
      * the measure.
+     *
      * @return the time offset of this time slot.
      */
     public Rational getStartTime ()
@@ -531,11 +527,12 @@ public abstract class Slot
     //----------//
     /**
      * Report the set of all stems that belong to this slot.
+     *
      * @return the set of related stems
      */
     public Set<Glyph> getStems ()
     {
-        Set<Glyph> stems = new HashSet<Glyph>();
+        Set<Glyph> stems = new HashSet<>();
 
         for (Chord chord : chords) {
             Glyph stem = chord.getStem();
@@ -553,6 +550,7 @@ public abstract class Slot
     //-------------//
     /**
      * Include the other slot into this one.
+     *
      * @param that the other slot to include
      */
     public void includeSlot (Slot that)
@@ -566,6 +564,7 @@ public abstract class Slot
     /**
      * Check whether a system point is roughly aligned with this slot
      * instance.
+     *
      * @param sysPt the system point to check
      * @return true if aligned
      */
@@ -588,15 +587,14 @@ public abstract class Slot
     /**
      * Assign the startTime since the beginning of the measure,
      * for all chords in this time slot.
+     *
      * @param startTime time offset since measure start
      */
     public void setStartTime (Rational startTime)
     {
         if (this.startTime == null) {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "setStartTime " + startTime + " for Slot #" + getId());
-            }
+            logger.fine("setStartTime {0} for Slot #{1}", new Object[]{startTime,
+                                                                       getId()});
 
             this.startTime = startTime;
 
@@ -620,11 +618,9 @@ public abstract class Slot
             }
         } else {
             if (!this.startTime.equals(startTime)) {
-                getChords()
-                    .get(0)
-                    .addError(
-                    "Reassigning startTime from " + this.startTime + " to " +
-                    startTime + " in " + this);
+                getChords().get(0).addError(
+                        "Reassigning startTime from " + this.startTime + " to "
+                        + startTime + " in " + this);
             }
         }
     }
@@ -635,12 +631,10 @@ public abstract class Slot
     public String toChordString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("slot#")
-          .append(getId());
+        sb.append("slot#").append(getId());
 
         if (getStartTime() != null) {
-            sb.append(" start=")
-              .append(String.format("%5s", getStartTime()));
+            sb.append(" start=").append(String.format("%5s", getStartTime()));
         }
 
         sb.append(" [");
@@ -668,25 +662,19 @@ public abstract class Slot
     public String toString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("{Slot#")
-          .append(id);
+        sb.append("{Slot#").append(id);
 
-        sb.append(" x=")
-          .append(getX());
+        sb.append(" x=").append(getX());
 
         if (startTime != null) {
-            sb.append(" start=")
-              .append(startTime);
+            sb.append(" start=").append(startTime);
         }
 
         sb.append(" glyphs=[");
 
         for (Glyph glyph : glyphs) {
-            sb.append("#")
-              .append(glyph.getId())
-              .append("/")
-              .append(glyph.getShape())
-              .append(" ");
+            sb.append("#").append(glyph.getId()).append("/").append(glyph.
+                    getShape()).append(" ");
         }
 
         sb.append("]");
@@ -701,20 +689,17 @@ public abstract class Slot
     public String toVoiceString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("slot#")
-          .append(getId())
-          .append(" start=")
-          .append(String.format("%5s", getStartTime()))
-          .append(" [");
+        sb.append("slot#").append(getId()).append(" start=").append(String.
+                format("%5s", getStartTime())).append(" [");
 
-        SortedMap<Integer, Chord> voiceChords = new TreeMap<Integer, Chord>();
+        SortedMap<Integer, Chord> voiceChords = new TreeMap<>();
 
         for (Chord chord : getChords()) {
             voiceChords.put(chord.getVoice().getId(), chord);
         }
 
         boolean started = false;
-        int     voiceMax = measure.getVoicesNumber();
+        int voiceMax = measure.getVoicesNumber();
 
         for (int iv = 1; iv <= voiceMax; iv++) {
             if (started) {
@@ -726,14 +711,11 @@ public abstract class Slot
             Chord chord = voiceChords.get(iv);
 
             if (chord != null) {
-                sb.append("V")
-                  .append(chord.getVoice().getId());
-                sb.append(" Ch#")
-                  .append(String.format("%02d", chord.getId()));
-                sb.append(" St")
-                  .append(chord.getStaff().getId());
-                sb.append(" Dur=")
-                  .append(String.format("%5s", chord.getDuration()));
+                sb.append("V").append(chord.getVoice().getId());
+                sb.append(" Ch#").append(String.format("%02d", chord.getId()));
+                sb.append(" St").append(chord.getStaff().getId());
+                sb.append(" Dur=").append(String.format("%5s",
+                                                        chord.getDuration()));
             } else {
                 sb.append("----------------------");
             }
@@ -747,6 +729,7 @@ public abstract class Slot
     /**
      * Assign available voices to the chords that have yet no voice
      * assigned.
+     *
      * @param chords the collection of chords to process for this slot
      */
     private void assignVoices (Collection<Chord> chords)
@@ -764,11 +747,9 @@ public abstract class Slot
                 }
 
                 if (chord.getVoice() == null) {
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            chord.getContextString() + " Slot#" + id +
-                            " creating voice for Ch#" + chord.getId());
-                    }
+                    logger.fine("{0} Slot#{1} creating voice for Ch#{2}",
+                                new Object[]{chord.getContextString(), id,
+                                             chord.getId()});
 
                     // Add a new voice
                     new Voice(chord);
@@ -783,6 +764,7 @@ public abstract class Slot
     /**
      * Based on the active chords before this slot, determine the next
      * expiration time, which governs this slot.
+     *
      * @param activeChords
      */
     private void computeStartTime (Collection<Chord> activeChords)
@@ -804,9 +786,7 @@ public abstract class Slot
             slotTime = Rational.ZERO;
         }
 
-        if (logger.isFineEnabled()) {
-            logger.fine("slotTime=" + slotTime);
-        }
+        logger.fine("slotTime={0}", slotTime);
 
         setStartTime(slotTime);
     }
@@ -817,6 +797,7 @@ public abstract class Slot
     /**
      * Given a stem, look up for a chord that already contains it,
      * otherwise create a brand new chord to host the stem.
+     *
      * @param stem the stem to look up
      * @return the existing/created chord that contains the stem
      */
@@ -839,26 +820,26 @@ public abstract class Slot
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //------------//
     // MyDistance //
     //------------//
     private static final class MyDistance
-        implements InjectionSolver.Distance
+            implements InjectionSolver.Distance
     {
         //~ Static fields/initializers -----------------------------------------
 
-        private static final int  NO_LINK = 20;
-        private static final int  STAFF_DIFF = 40;
-        private static final int  INCOMPATIBLE_VOICES = 10000; // Forbidden
+        private static final int NO_LINK = 20;
+
+        private static final int STAFF_DIFF = 40;
+
+        private static final int INCOMPATIBLE_VOICES = 10000; // Forbidden
 
         //~ Instance fields ----------------------------------------------------
-
         private final List<Chord> news;
+
         private final List<Chord> olds;
 
         //~ Constructors -------------------------------------------------------
-
         public MyDistance (List<Chord> news,
                            List<Chord> olds)
         {
@@ -867,7 +848,7 @@ public abstract class Slot
         }
 
         //~ Methods ------------------------------------------------------------
-
+        @Override
         public int getDistance (int in,
                                 int ip)
         {
@@ -879,19 +860,19 @@ public abstract class Slot
             Chord newChord = news.get(in);
             Chord oldChord = olds.get(ip);
 
-            if ((newChord.getVoice() != null) &&
-                (oldChord.getVoice() != null) &&
-                (newChord.getVoice() != oldChord.getVoice())) {
+            if ((newChord.getVoice() != null)
+                    && (oldChord.getVoice() != null)
+                    && (newChord.getVoice() != oldChord.getVoice())) {
                 return INCOMPATIBLE_VOICES;
             } else if (newChord.getStaff() != oldChord.getStaff()) {
                 return STAFF_DIFF;
             } else {
                 int dy = Math.abs(
-                    newChord.getHeadLocation().y -
-                    oldChord.getHeadLocation().y) / newChord.getScale()
-                                                            .getInterline();
+                        newChord.getHeadLocation().y
+                        - oldChord.getHeadLocation().y) / newChord.getScale().
+                        getInterline();
                 int dStem = Math.abs(
-                    newChord.getStemDir() - oldChord.getStemDir());
+                        newChord.getStemDir() - oldChord.getStemDir());
 
                 return dy + (2 * dStem);
             }

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -22,7 +22,7 @@ import static java.lang.Math.*;
  * @author Hervé Bitteur
  */
 public class BasicLine
-    implements Line
+        implements Line
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -30,7 +30,6 @@ public class BasicLine
     private static final Logger logger = Logger.getLogger(BasicLine.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Flag to indicate that data needs to be recomputed */
     private boolean dirty;
 
@@ -65,7 +64,6 @@ public class BasicLine
     private int n;
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------//
     // BasicLine //
     //-----------//
@@ -125,13 +123,13 @@ public class BasicLine
         // Checks for parameter validity
         if ((xVals == null) || (yVals == null)) {
             throw new IllegalArgumentException(
-                "Provided arrays may not be null");
+                    "Provided arrays may not be null");
         }
 
         // Checks for parameter validity
         if (xVals.length != yVals.length) {
             throw new IllegalArgumentException(
-                "Provided arrays have different lengths");
+                    "Provided arrays have different lengths");
         }
 
         // Checks for parameter validity
@@ -148,7 +146,6 @@ public class BasicLine
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // distanceOf //
     //------------//
@@ -181,16 +178,16 @@ public class BasicLine
         // Check we have at least 2 points
         if (n < 2) {
             throw new UndefinedLineException(
-                "Not enough defining points : " + n);
+                    "Not enough defining points : " + n);
         }
 
         checkLineParameters();
 
         // abs is used in case of rounding errors
         return sqrt(
-            abs(
-                (a * a * sx2) + (b * b * sy2) + (c * c * n) +
-                (2 * a * b * sxy) + (2 * a * c * sx) + (2 * b * c * sy)) / n);
+                abs(
+                (a * a * sx2) + (b * b * sy2) + (c * c * n)
+                + (2 * a * b * sxy) + (2 * a * c * sx) + (2 * b * c * sy)) / n);
     }
 
     //-------------------//
@@ -243,9 +240,7 @@ public class BasicLine
     public void includePoint (double x,
                               double y)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("includePoint x=" + x + " y=" + y);
-        }
+        logger.fine("includePoint x={0} y={1}", new Object[]{x, y});
 
         n += 1;
         sx += x;
@@ -297,8 +292,10 @@ public class BasicLine
     //--------------------//
     /**
      * Return a new line whose coordinates are swapped with respect to this one
+     *
      * @return a new X/Y swapped line
      */
+    @Override
     public Line swappedCoordinates ()
     {
         BasicLine that = new BasicLine();
@@ -338,22 +335,19 @@ public class BasicLine
                 sb.append(" ");
             }
 
-            sb.append((float) a)
-              .append("*x ");
+            sb.append((float) a).append("*x ");
 
             if (b >= 0) {
                 sb.append("+");
             }
 
-            sb.append((float) b)
-              .append("*y ");
+            sb.append((float) b).append("*y ");
 
             if (c >= 0) {
                 sb.append("+");
             }
 
-            sb.append((float) c)
-              .append("}");
+            sb.append((float) c).append("}");
 
             return sb.toString();
         } catch (UndefinedLineException ex) {
@@ -463,7 +457,7 @@ public class BasicLine
         // Make sure the parameters are available
         if (Double.isNaN(a) || Double.isNaN(b) || Double.isNaN(c)) {
             throw new UndefinedLineException(
-                "Line parameters not properly set");
+                    "Line parameters not properly set");
         }
     }
 
@@ -477,16 +471,13 @@ public class BasicLine
     {
         if (n < 2) {
             throw new UndefinedLineException(
-                "Not enough defining points : " + n);
+                    "Not enough defining points : " + n);
         }
 
         // Make a choice between horizontal vs vertical
         double hDen = (n * sx2) - (sx * sx);
         double vDen = (n * sy2) - (sy * sy);
-
-        if (logger.isFineEnabled()) {
-            logger.fine("hDen=" + hDen + " vDen=" + vDen);
-        }
+        logger.fine("hDen={0} vDen={1}", new Object[]{hDen, vDen});
 
         if (abs(hDen) >= abs(vDen)) {
             // Use a rather horizontal orientation, y = mx +p

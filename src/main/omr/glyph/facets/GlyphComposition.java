@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -17,15 +17,12 @@ import omr.lag.Section;
 
 import omr.sheet.SystemInfo;
 
-import java.util.Collection;
-import java.util.Set;
 import java.util.SortedSet;
 
 /**
- * Interface {@code GlyphComposition} defines the facet that handles the way a
- * glyph is composed of sections members, as well as the relationships with
- * sub-glyphs (parts) if any.
- *
+ * Interface {@code GlyphComposition} defines the facet that handles
+ * the way a glyph is composed of sections members, as well as the
+ * relationships with sub-glyphs (parts) if any.
  *
  * @author Hervé Bitteur
  */
@@ -48,44 +45,48 @@ public interface GlyphComposition
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * Report the top ancestor of this glyph (which is this glyph itself,
-     * when it has no parent (i.e. not been included into another one)).
+     * Report the top ancestor of this glyph.
+     * This is this glyph itself, when it has no parent (i.e. not been included
+     * into another one)
      * @return the glyph ancestor
      */
     public Glyph getAncestor ();
 
     /**
-     * Report the containing compound, if any.
-     * @return compound the containing compound if any
+     * Report the containing compound, if any, which has "stolen" the
+     * sections of this glyph.
+     * @return the containing compound if any
      */
     public Glyph getPartOf ();
 
     /**
-     * Record the link from this glyph as part of a larger compound.
-     * @param compound the containing compound
+     * Record the link to the compound which has "stolen" the sections
+     * of this glyph.
+     * @param compound the containing compound, if any
      */
     public void setPartOf (Glyph compound);
 
     /**
      * Add a section as a member of this glyph.
      * @param section The section to be included
-     * @param link While adding a section to this glyph members, should we also
+     * @param link    While adding a section to this glyph members, should we
+     *                also
      * set the link from section back to the glyph?
      */
     void addSection (Section section,
                      Linking link);
 
     /**
-     * Debug function that returns true if this glyph contains the section
-     * whose ID is provided.
+     * Debug function that returns true if this glyph contains the
+     * section whose ID is provided.
      * @param id the ID of interesting section
      * @return true if such section exists among glyph sections
      */
     boolean containsSection (int id);
 
     /**
-     * Cut the link to this glyph from its member sections, only if the sections
-     * actually point to this glyph.
+     * Cut the link to this glyph from its member sections, only if the
+     * sections actually point to this glyph.
      */
     void cutSections ();
 
@@ -97,7 +98,7 @@ public interface GlyphComposition
     SystemInfo getAlienSystem (SystemInfo system);
 
     /**
-     * Report the first section in the ordered collection of glyph members.
+     * Report the first section in the ordered collection of members.
      * @return the first section of the glyph
      */
     Section getFirstSection ();
@@ -115,44 +116,43 @@ public interface GlyphComposition
     Result getResult ();
 
     /**
-     * Include a whole other glyph into this one, and make its sections point
-     * into this one.
-     * @param that the filament or basic glyph to swallow
-     */
-    void include (Glyph that);
-
-    //    /**
-    //     * Record the parts that compose this compound glyph.
-    //     * @param parts the contained parts
-    //     */
-    //    public void setParts (Collection<?extends Glyph> parts);
-    //
-    //    /**
-    //     * Report the parts, if any, that compose this compound.
-    //     * @return the set of glyphs, perhaps empty, but never null
-    //     */
-    //    public Set<Glyph> getParts ();
-
-    /**
-     * Tests whether this glyph is active (all its member sections point to it).
+     * Tests whether this glyph is active.
+     * (all its member sections point to it)
      * @return true if glyph is active, false otherwise
      */
     boolean isActive ();
 
     /**
-     * Convenient method to check whether the glyph is successfully recognized.
+     * Check whether the glyph is successfully recognized.
      * @return true if the glyph is successfully recognized
      */
     boolean isSuccessful ();
 
     /**
-     * Make all the glyph's sections point back to this glyph
+     * Make all the glyph's sections point back to this glyph.
      */
     void linkAllSections ();
+
+    /**
+     * Remove a section from the glyph members
+     * @param section the section to remove
+     * @param link    should we update the link from section to glyph?
+     * @return true if the section was actually found and removed
+     */
+    boolean removeSection (Section section,
+                           Linking link);
 
     /**
      * Record the analysis result in the glyph itself.
      * @param result the assigned result
      */
     void setResult (Result result);
+
+    /**
+     * Include the sections from another glyph into this one, and make
+     * its sections point into this one.
+     * Doing so, the other glyph becomes inactive.
+     * @param that the glyph to swallow
+     */
+    void stealSections (Glyph that);
 }

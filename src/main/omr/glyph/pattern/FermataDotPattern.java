@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2011. All rights reserved.               //
+//  Copyright (C) Herve Bitteur 2000-2012. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -35,27 +35,27 @@ import java.util.Set;
  * @author Hervé Bitteur
  */
 public class FermataDotPattern
-    extends GlyphPattern
+        extends GlyphPattern
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
-        FermataDotPattern.class);
+            FermataDotPattern.class);
 
     /** Dot avatars */
     private static final List<Shape> dots = Arrays.asList(
-        Shape.DOT_set,
-        Shape.AUGMENTATION_DOT,
-        Shape.STACCATO);
+            Shape.DOT_set,
+            Shape.AUGMENTATION_DOT,
+            Shape.STACCATO);
 
     //~ Constructors -----------------------------------------------------------
-
     //-------------------//
     // FermataDotPattern //
     //-------------------//
     /**
      * Creates a new FermataDotPattern object.
+     *
      * @param system the system to process
      */
     public FermataDotPattern (SystemInfo system)
@@ -64,7 +64,6 @@ public class FermataDotPattern
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // runPattern //
     //------------//
@@ -74,46 +73,46 @@ public class FermataDotPattern
         int nb = 0;
 
         for (final Glyph fermata : system.getGlyphs()) {
-            if ((fermata.getShape() != Shape.FERMATA) &&
-                (fermata.getShape() != Shape.FERMATA_BELOW)) {
+            if ((fermata.getShape() != Shape.FERMATA)
+                    && (fermata.getShape() != Shape.FERMATA_BELOW)) {
                 continue;
             }
 
             if (fermata.isVip() || logger.isFineEnabled()) {
-                logger.info(
-                    "Checking fermata #" + fermata.getId() + " " +
-                    fermata.getEvaluation());
+                logger.info("Checking fermata #{0} {1}", new Object[]{fermata.
+                            getId(), fermata.getEvaluation()});
             }
 
             // Find related dot within glyph box
-            final PixelRectangle box = fermata.getContourBox();
+            final PixelRectangle box = fermata.getBounds();
 
-            Set<Glyph>           candidates = Glyphs.lookupGlyphs(
-                system.getGlyphs(),
-                new Predicate<Glyph>() {
+            Set<Glyph> candidates = Glyphs.lookupGlyphs(
+                    system.getGlyphs(),
+                    new Predicate<Glyph>()
+                    {
+
+                        @Override
                         public boolean check (Glyph glyph)
                         {
-                            return (glyph != fermata) &&
-                                   glyph.getContourBox()
-                                        .intersects(box) &&
-                                   dots.contains(glyph.getShape());
+                            return (glyph != fermata)
+                                    && glyph.getBounds().intersects(box)
+                                    && dots.contains(glyph.getShape());
                         }
                     });
 
             for (Glyph candidate : candidates) {
-                if (fermata.isVip() ||
-                    candidate.isVip() ||
-                    logger.isFineEnabled()) {
-                    logger.info("Dot candidate #" + candidate);
+                if (fermata.isVip()
+                        || candidate.isVip()
+                        || logger.isFineEnabled()) {
+                    logger.info("Dot candidate #{0}", candidate);
                 }
 
-                Glyph      compound = system.buildTransientCompound(
-                    Arrays.asList(fermata, candidate));
-                Evaluation eval = GlyphNetwork.getInstance()
-                                              .vote(
-                    compound,
-                    system,
-                    Grades.noMinGrade);
+                Glyph compound = system.buildTransientCompound(
+                        Arrays.asList(fermata, candidate));
+                Evaluation eval = GlyphNetwork.getInstance().vote(
+                        compound,
+                        system,
+                        Grades.noMinGrade);
 
                 if (eval != null) {
                     // Assign and insert into system & nest environments
@@ -121,9 +120,9 @@ public class FermataDotPattern
                     compound.setEvaluation(eval);
 
                     if (compound.isVip() || logger.isFineEnabled()) {
-                        logger.info(
-                            "Compound #" + compound.getId() + " built as " +
-                            compound.getEvaluation());
+                        logger.info("Compound #{0} built as {1}",
+                                    new Object[]{compound.getId(), compound.
+                                    getEvaluation()});
                     }
 
                     nb++;

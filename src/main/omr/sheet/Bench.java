@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -18,8 +18,9 @@ import omr.score.ScoreBench;
 import java.util.Properties;
 
 /**
- * Class {@code Bench} defines the general features of a bench, used by each
- * individual {@link SheetBench} and the containing {@link ScoreBench}.
+ * Class {@code Bench} defines the general features of a bench, used by
+ * each individual {@link SheetBench} and the containing {@link
+ * ScoreBench}.
  *
  * @author Hervé Bitteur
  */
@@ -31,12 +32,10 @@ public abstract class Bench
     private static final Logger logger = Logger.getLogger(Bench.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** The internal set of properties */
     protected final Properties props = new Properties();
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new Bench object.
      */
@@ -45,7 +44,6 @@ public abstract class Bench
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // flushBench //
     //------------//
@@ -58,8 +56,9 @@ public abstract class Bench
     // addProp //
     //---------//
     /**
-     * This is a specific setProperty functionality, that creates unique keys by
-     * appending numbered suffixes
+     * This is a specific setProperty functionality, that creates unique
+     * keys by appending numbered suffixes
+     *
      * @param radix the provided radix (to which proper suffix will be appended)
      * @param value the property value
      */
@@ -71,7 +70,7 @@ public abstract class Bench
         }
 
         String key = null;
-        int    index = 0;
+        int index = 0;
 
         do {
             key = keyOf(radix, ++index);
@@ -79,16 +78,14 @@ public abstract class Bench
 
         props.setProperty(key, value);
 
-        if (logger.isFineEnabled()) {
-            logger.fine("addProp key:" + key + " value:" + value);
-        }
+        logger.fine("addProp key:{0} value:{1}", new Object[]{key, value});
     }
 
     //-------//
     // keyOf //
     //-------//
     protected String keyOf (String radix,
-                            int    index)
+                            int index)
     {
         return String.format("%s.%02d", radix, index);
     }

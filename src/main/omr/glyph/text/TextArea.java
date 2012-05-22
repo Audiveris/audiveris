@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -15,12 +15,12 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
-import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Glyphs;
 import omr.glyph.Grades;
 import omr.glyph.Nest;
 import omr.glyph.Shape;
+import omr.glyph.ShapeEvaluator;
 import omr.glyph.facets.Glyph;
 
 import omr.lag.BasicRoi;
@@ -49,7 +49,7 @@ import java.util.Set;
 
 /**
  * Class {@code TextArea} handles a rectangular area likely to contain
- * some text
+ * some text.
  *
  * @author Hervé Bitteur
  */
@@ -64,7 +64,6 @@ public class TextArea
     private static final Logger logger = Logger.getLogger(TextArea.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** The containing system */
     @Navigable(false)
     private final SystemInfo system;
@@ -82,7 +81,7 @@ public class TextArea
     /**
      * The default orientation for this area
      * - Horizontal: we expect lines or words one below the other in this area
-     * - Vertical:   we expect words one beside the other in this area
+     * - Vertical: we expect words one beside the other in this area
      */
     private final Orientation orientation;
 
@@ -114,21 +113,20 @@ public class TextArea
     private int textGlyphNb = 0;
 
     //~ Constructors -----------------------------------------------------------
-
     //----------//
     // TextArea //
     //----------//
     /**
      * Creates a new TextArea object.
      *
-     * @param system the containing system, if any
-     * @param parent the containing text area if any
-     * @param roi the region of interest
+     * @param system      the containing system, if any
+     * @param parent      the containing text area if any
+     * @param roi         the region of interest
      * @param orientation the default orientation when splitting this area
      */
-    public TextArea (SystemInfo  system,
-                     TextArea    parent,
-                     Roi         roi,
+    public TextArea (SystemInfo system,
+                     TextArea parent,
+                     Roi roi,
                      Orientation orientation)
     {
         this.system = system;
@@ -143,18 +141,16 @@ public class TextArea
         this.roi = roi;
         this.orientation = orientation;
 
-        if (logger.isFineEnabled()) {
-            logger.fine("Creating " + this);
-        }
+        logger.fine("Creating {0}", this);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------------------//
     // getAbsoluteContour //
     //--------------------//
     /**
      * Report the rectangle that delimits this area
+     *
      * @return the area in pixels, from top left of sheet
      */
     public PixelRectangle getAbsoluteContour ()
@@ -167,6 +163,7 @@ public class TextArea
     //-------------//
     /**
      * Report the absolute baseline ordinate of the horizontal projection
+     *
      * @return the ordinate of the text baseline, in pixels from top of page
      */
     public int getBaseline ()
@@ -195,6 +192,7 @@ public class TextArea
     //---------------//
     /**
      * Report the absolute ordinate of the median line of the text area
+     *
      * @return the x-height limit, counted in pixels from top of page
      */
     public int getMedianLine ()
@@ -211,6 +209,7 @@ public class TextArea
     //------------//
     /**
      * Report the absolute topline ordinate of the horizontal projection
+     *
      * @return the ordinate of the text topline, in pixels from top of page
      */
     public int getTopline ()
@@ -227,6 +226,7 @@ public class TextArea
     //------------//
     /**
      * Report whether this area is actually a text glyph
+     *
      * @return true if area is a text glyph
      */
     public boolean isTextLeaf ()
@@ -238,16 +238,16 @@ public class TextArea
     // subdivide //
     //-----------//
     /**
-     * Subdivide the area in subareas and evaluate each of the (sub) areas as a
-     * potential textual glyph
+     * Subdivide the area in subareas and evaluate each of the (sub)
+     * areas as a potential textual glyph.
      */
     public void subdivide ()
     {
         if (splitArea(false) > 1) {
             // The area can still be divided
             splitArea(true);
-        } else if (logger.isFineEnabled()) {
-            logger.fine(this + " is Leaf ");
+        } else {
+            logger.fine("{0} is Leaf ", this);
         }
 
         // Recurse
@@ -258,9 +258,7 @@ public class TextArea
         }
 
         if (isTextualArea()) {
-            if (logger.isFineEnabled()) {
-                logger.fine("================ Text found in " + this);
-            }
+            logger.fine("================ Text found in {0}", this);
 
             setTextLeaf(true);
 
@@ -283,7 +281,7 @@ public class TextArea
         sb.append("{Area-");
 
         TextArea p = this;
-        int      level = 1;
+        int level = 1;
 
         while ((p = p.parent) != null) {
             level++;
@@ -297,8 +295,7 @@ public class TextArea
             sb.append(" horizontal");
         }
 
-        sb.append(" abs:")
-          .append(roi.getAbsoluteContour());
+        sb.append(" abs:").append(roi.getAbsoluteContour());
         sb.append("}");
 
         return sb.toString();
@@ -308,7 +305,7 @@ public class TextArea
     // computeLines //
     //--------------//
     /**
-     * Compute the ordinates of the baseline and the x-height line
+     * Compute the ordinates of the baseline and the x-height line.
      */
     private void computeLines ()
     {
@@ -318,25 +315,23 @@ public class TextArea
         // Retrieve max histogram value, and take threshold at half
         maxValue = histo.getMaxCount();
 
-        int                      mainThreshold = (int) Math.rint(
-            maxValue * constants.mainHistoThreshold.getValue());
+        int mainThreshold = (int) Math.rint(
+                maxValue * constants.mainHistoThreshold.getValue());
 
         // Use the main threshold for baseline
         List<PeakEntry<Integer>> mainPeaks = histo.getPeaks(
-            mainThreshold,
-            true,
-            false);
+                mainThreshold,
+                true,
+                false);
         List<PeakEntry<Integer>> topPeaks = histo.getPeaks(
-            (int) Math.rint(maxValue * constants.topHistoThreshold.getValue()),
-            true,
-            false);
+                (int) Math.rint(
+                maxValue * constants.topHistoThreshold.getValue()),
+                true,
+                false);
 
-        topline = topPeaks.get(0)
-                          .getKey().first;
-        medianLine = mainPeaks.get(0)
-                              .getKey().first;
-        baseline = mainPeaks.get(mainPeaks.size() - 1)
-                            .getKey().second;
+        topline = topPeaks.get(0).getKey().first;
+        medianLine = mainPeaks.get(0).getKey().first;
+        baseline = mainPeaks.get(mainPeaks.size() - 1).getKey().second;
 
         //        int minMedianLine = baseline -
         //                            (int) ((baseline - topline) * constants.maxMedianRatio.getValue());
@@ -357,10 +352,11 @@ public class TextArea
     // createSubarea //
     //---------------//
     /**
-     * Create a sub-area, using the packet that starts at 'packetStart' and ends
-     * right before 'gapStart'
+     * Create a sub-area, using the packet that starts at 'packetStart'
+     * and ends right before 'gapStart'
+     *
      * @param packetStart the index in histo at beginning of packet
-     * @param gapStart the index in histo just past the end of the packet
+     * @param gapStart    the index in histo just past the end of the packet
      * @return the created subarea
      */
     private TextArea createSubarea (int packetStart,
@@ -370,33 +366,33 @@ public class TextArea
 
         if (orientation.isVertical()) {
             return new TextArea(
-                system,
-                this,
-                new BasicRoi(
+                    system,
+                    this,
+                    new BasicRoi(
                     new PixelRectangle(
-                        contour.x + packetStart,
-                        contour.y,
-                        gapStart - packetStart,
-                        contour.height)),
-                Orientation.HORIZONTAL);
+                    contour.x + packetStart,
+                    contour.y,
+                    gapStart - packetStart,
+                    contour.height)),
+                    Orientation.HORIZONTAL);
         } else {
             return new TextArea(
-                system,
-                this,
-                new BasicRoi(
+                    system,
+                    this,
+                    new BasicRoi(
                     new PixelRectangle(
-                        contour.x,
-                        contour.y + packetStart,
-                        contour.width,
-                        gapStart - packetStart)),
-                Orientation.VERTICAL);
+                    contour.x,
+                    contour.y + packetStart,
+                    contour.width,
+                    gapStart - packetStart)),
+                    Orientation.VERTICAL);
         }
     }
 
     //------------//
     // createText //
     //------------//
-    private void createText (Glyph      glyph,
+    private void createText (Glyph glyph,
                              Evaluation eval)
     {
         system.computeGlyphFeatures(glyph);
@@ -405,9 +401,7 @@ public class TextArea
         // No! glyph.setTextArea(this);
         glyph.setEvaluation(eval);
 
-        if (logger.isFineEnabled()) {
-            logger.fine("Glyph#" + glyph.getId() + " TEXT recognized");
-        }
+        logger.fine("{0} TEXT recognized", glyph.idString());
     }
 
     //--------------//
@@ -415,6 +409,7 @@ public class TextArea
     //--------------//
     /**
      * Get the histogram for this area, in the specified orientation
+     *
      * @param orientation specific orientation desired for the histogram
      * @return the histogram of projected pixels
      */
@@ -429,7 +424,7 @@ public class TextArea
         if (orientation.isVertical()) {
             if (verticalHistogram == null) {
                 Set<Glyph> glyphs = nest.lookupIntersectedGlyphs(
-                    roi.getAbsoluteContour());
+                        roi.getAbsoluteContour());
                 verticalHistogram = roi.getGlyphHistogram(orientation, glyphs);
             }
 
@@ -437,10 +432,10 @@ public class TextArea
         } else {
             if (horizontalHistogram == null) {
                 Set<Glyph> glyphs = nest.lookupIntersectedGlyphs(
-                    roi.getAbsoluteContour());
+                        roi.getAbsoluteContour());
                 horizontalHistogram = roi.getGlyphHistogram(
-                    orientation,
-                    glyphs);
+                        orientation,
+                        glyphs);
             }
 
             return horizontalHistogram;
@@ -451,6 +446,7 @@ public class TextArea
     // getHistogram //
     //--------------//
     /** Get the histogram for this area, using the area default orientation
+     *
      * @return the area histogram in its default direction
      */
     private Histogram<Integer> getHistogram ()
@@ -463,12 +459,13 @@ public class TextArea
     //-------------//
     /**
      * Report the collection of subareas, perhaps empty but not null
+     *
      * @return the collection of subareas
      */
     private List<TextArea> getSubareas ()
     {
         if (subareas == null) {
-            subareas = new ArrayList<TextArea>();
+            subareas = new ArrayList<>();
         }
 
         return subareas;
@@ -483,11 +480,12 @@ public class TextArea
      * underlying glyph.
      * (either the only glyph in the area, or the compound glyph newly built for
      * this purpose)
+     *
      * @return true if check is positive
      */
     private boolean isTextualArea ()
     {
-        logger.fine(this + " isTextualArea");
+        logger.fine("{0} isTextualArea", this);
 
         // We cannot evaluate glyphs that do not belong to a system
         if (system == null) {
@@ -495,8 +493,8 @@ public class TextArea
         }
 
         // Retrieve glyphs in the provided rectangular area
-        Set<Glyph> glyphs = sheet.getNest()
-                                 .lookupGlyphs(roi.getAbsoluteContour());
+        Set<Glyph> glyphs = sheet.getNest().lookupGlyphs(
+                roi.getAbsoluteContour());
 
         // A system is not exactly a rectangular area
         // So some further glyph filtering is needed
@@ -521,10 +519,7 @@ public class TextArea
         }
 
         if (glyphs.isEmpty()) {
-            if (logger.isFineEnabled()) {
-                logger.fine("No glyph found");
-            }
-
+            logger.fine("No glyph found");
             return false;
         }
 
@@ -533,22 +528,21 @@ public class TextArea
         if (glyphs.size() > 1) {
             glyph = system.buildTransientCompound(glyphs);
         } else {
-            glyph = glyphs.iterator()
-                          .next();
+            glyph = glyphs.iterator().next();
         }
 
         // First, use the glyph evaluator
-        GlyphEvaluator evaluator = GlyphNetwork.getInstance();
-        Evaluation     vote = evaluator.vote(
-            glyph,
-            system,
-            Grades.textMinGrade);
+        ShapeEvaluator evaluator = GlyphNetwork.getInstance();
+        Evaluation vote = evaluator.vote(
+                glyph,
+                system,
+                Grades.textMinGrade);
 
         if (vote != null) {
             if (logger.isFineEnabled()) {
-                logger.info(
-                    "Vote: " + vote.toString() +
-                    Glyphs.toString(" for", glyphs));
+                logger.info("Vote: {0}{1}",
+                            new Object[]{vote.toString(),
+                                         Glyphs.toString(" for", glyphs)});
             }
 
             if (vote.shape.isText()) {
@@ -574,20 +568,22 @@ public class TextArea
     //-----------//
     /**
      * Try to perform a split of this area using the projection orientation
+     *
      * @param building should we actually create the subareas?
      * @return the number of subareas identified (whether they are actually
      * created or not)
      */
     private int splitArea (boolean building)
     {
-        logger.fine(this + " splitArea" + " building:" + building);
+        logger.fine("{0}" + " splitArea" + " building:{1}",
+                    new Object[]{this, building});
 
         // Make sure the histogram is available
         Histogram<Integer> histo = getHistogram();
-        int                children = 0;
-        Scale              scale = sheet.getScale();
-        Integer            packetStart = null;
-        int                packetEnd = 0;
+        int children = 0;
+        Scale scale = sheet.getScale();
+        Integer packetStart = null;
+        int packetEnd = 0;
 
         // Minimum gap (vertically between lines, or horizontally between words)
         final int minGap = orientation.isVertical()
@@ -611,8 +607,8 @@ public class TextArea
                         children++;
 
                         if (building) {
-                            getSubareas()
-                                .add(createSubarea(packetStart, packetEnd));
+                            getSubareas().add(createSubarea(packetStart,
+                                                            packetEnd));
                         }
                     }
 
@@ -630,8 +626,7 @@ public class TextArea
             children++;
 
             if (building) {
-                getSubareas()
-                    .add(createSubarea(packetStart, packetEnd));
+                getSubareas().add(createSubarea(packetStart, packetEnd));
             }
         }
 
@@ -639,41 +634,48 @@ public class TextArea
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Scale.Fraction maxFontSize = new Scale.Fraction(
-            1.8,
-            "Maximum value for text font size");
+                1.8,
+                "Maximum value for text font size");
+
         Scale.Fraction minVerticalGap = new Scale.Fraction(
-            0.1,
-            "Minimum value for a vertical gap between histogram packets");
+                0.1,
+                "Minimum value for a vertical gap between histogram packets");
+
         Scale.Fraction minHorizontalGap = new Scale.Fraction(
-            1.4,
-            "Minimum value for a horizontal gap between histogram packets");
+                1.4,
+                "Minimum value for a horizontal gap between histogram packets");
+
         Scale.Fraction minVerticalPacket = new Scale.Fraction(
-            0.5,
-            "Minimum value for a vertical packet");
+                0.5,
+                "Minimum value for a vertical packet");
+
         Scale.Fraction minHorizontalPacket = new Scale.Fraction(
-            0.5,
-            "Minimum value for a horizontal packet");
+                0.5,
+                "Minimum value for a horizontal packet");
+
         Constant.Ratio topHistoThreshold = new Constant.Ratio(
-            0.1,
-            "Threshold to detect top of characters");
+                0.1,
+                "Threshold to detect top of characters");
+
         Constant.Ratio mainHistoThreshold = new Constant.Ratio(
-            0.5,
-            "Main threhold to detect x-height of characters");
+                0.5,
+                "Main threhold to detect x-height of characters");
+
         Constant.Ratio maxMedianRatio = new Constant.Ratio(
-            0.75,
-            "Maximum ratio of x-height part in characters height");
+                0.75,
+                "Maximum ratio of x-height part in characters height");
+
         Constant.Ratio maxAspect = new Constant.Ratio(
-            3.0,
-            "Maximum aspect of chars (height / width)");
+                3.0,
+                "Maximum aspect of chars (height / width)");
     }
 }

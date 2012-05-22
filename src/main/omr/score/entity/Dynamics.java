@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -46,7 +46,7 @@ public class Dynamics
     private static final Constants constants = new Constants();
 
     /** Map Shape -> Signature. */
-    private static final Map<Shape, String> sigs = new HashMap<Shape, String>();
+    private static final Map<Shape, String> sigs = new HashMap<>();
 
     static {
         // Additional characters : m, r, s & z
@@ -82,7 +82,7 @@ public class Dynamics
     }
 
     /** Map Signature -> Shape. */
-    private static final Map<String, Shape> shapes = new HashMap<String, Shape>();
+    private static final Map<String, Shape> shapes = new HashMap<>();
 
     static {
         shapes.put("f", Shape.DYNAMICS_F);
@@ -111,7 +111,7 @@ public class Dynamics
     }
 
     /** Map Shape -> Sound. (TODO: complete the table) */
-    private static final Map<Shape, Integer> sounds = new HashMap<Shape, Integer>();
+    private static final Map<Shape, Integer> sounds = new HashMap<>();
 
     static {
         //        sounds.put(Shape.DYNAMICS_FFFFFF, "ffffff");

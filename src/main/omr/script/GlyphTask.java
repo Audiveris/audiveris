@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -75,7 +75,7 @@ public abstract class GlyphTask
                 getClass().getSimpleName() + " needs at least one glyph");
         }
 
-        this.glyphs = new TreeSet<Glyph>(Glyph.abscissaComparator);
+        this.glyphs = new TreeSet<>(Glyph.abscissaComparator);
         this.glyphs.addAll(glyphs);
     }
 
@@ -124,7 +124,7 @@ public abstract class GlyphTask
      */
     public SortedSet<SystemInfo> getImpactedSystems (Sheet sheet)
     {
-        SortedSet<SystemInfo> impactedSystems = new TreeSet<SystemInfo>();
+        SortedSet<SystemInfo> impactedSystems = new TreeSet<>();
         impactedSystems.addAll(initialSystems);
         impactedSystems.addAll(retrieveCurrentImpact(sheet));
 
@@ -215,7 +215,7 @@ public abstract class GlyphTask
      */
     protected SortedSet<SystemInfo> retrieveCurrentImpact (Sheet sheet)
     {
-        SortedSet<SystemInfo> impactedSystems = new TreeSet<SystemInfo>();
+        SortedSet<SystemInfo> impactedSystems = new TreeSet<>();
 
         for (Glyph glyph : glyphs) {
             SystemInfo system = sheet.getSystemOf(glyph);

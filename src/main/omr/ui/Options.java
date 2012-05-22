@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -78,6 +78,7 @@ public class Options
 
     /** Dump */
     private final AbstractAction dumping = new AbstractAction() {
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             UnitManager.getInstance()
@@ -87,6 +88,7 @@ public class Options
 
     /** Check */
     private final AbstractAction checking = new AbstractAction() {
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             UnitManager.getInstance()
@@ -96,6 +98,7 @@ public class Options
 
     /** Back */
     private final AbstractAction backSearch = new AbstractAction() {
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             setSelection();
@@ -114,6 +117,7 @@ public class Options
 
     /** Forward */
     private final AbstractAction forwardSearch = new AbstractAction() {
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             setSelection();

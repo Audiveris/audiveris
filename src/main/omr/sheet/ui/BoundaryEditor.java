@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2011. All rights reserved.               //
+//  Copyright (C) Herve Bitteur 2000-2012. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -16,6 +16,9 @@ import omr.log.Logger;
 import omr.sheet.Sheet;
 import omr.sheet.SystemBoundary;
 import omr.sheet.SystemInfo;
+
+import omr.step.Step;
+import omr.step.Steps;
 
 import omr.util.BrokenLine;
 import omr.util.VerticalSide;
@@ -33,7 +36,8 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 /**
- * Class {@code BoundaryEditor} handles the modification of systems boundaries.
+ * Class {@code BoundaryEditor} handles the modification of systems
+ * boundaries.
  *
  * @author Hervé Bitteur
  */
@@ -53,7 +57,7 @@ public class BoundaryEditor
     private final JMenu menu;
 
     /** Set of actions to update menu according to current selections */
-    private final Collection<DynAction> dynActions = new HashSet<DynAction>();
+    private final Collection<DynAction> dynActions = new HashSet<>();
 
     /** Acceptable distance since last reference point (while dragging) */
     private final int maxDraggingDelta = BrokenLine.getDefaultDraggingDistance();
@@ -62,7 +66,7 @@ public class BoundaryEditor
     private boolean sessionOngoing = false;
 
     /** Set of modified lines in an edition session */
-    private Set<BrokenLine> modifiedLines = new HashSet<BrokenLine>();
+    private Set<BrokenLine> modifiedLines = new HashSet<>();
 
     // Latest designated reference point, if any */
     private Point      lastPoint = null;
@@ -93,16 +97,6 @@ public class BoundaryEditor
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //------------//
-    // updateMenu //
-    //------------//
-    public final void updateMenu ()
-    {
-        for (DynAction action : dynActions) {
-            action.update();
-        }
-    }
 
     //---------//
     // getMenu //
@@ -201,6 +195,21 @@ public class BoundaryEditor
         return sessionOngoing;
     }
 
+    //------------//
+    // updateMenu //
+    //------------//
+    public final void updateMenu ()
+    {
+        // Enable the menu only once SYSTEMS has been performed
+        Step split = Steps.valueOf(Steps.SYSTEMS);
+        menu.setEnabled(split.isDone(sheet));
+
+        // Enable actions according to current session status
+        for (DynAction action : dynActions) {
+            action.update();
+        }
+    }
+
     //------------------//
     // updateSystemPair //
     //------------------//
@@ -280,6 +289,7 @@ public class BoundaryEditor
 
         //~ Methods ------------------------------------------------------------
 
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             logger.info("Boundaries edition started...");
@@ -317,6 +327,7 @@ public class BoundaryEditor
 
         //~ Methods ------------------------------------------------------------
 
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             if (!modifiedLines.isEmpty()) {

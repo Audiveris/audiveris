@@ -41,7 +41,7 @@ public class HistogramTest
     private IntegerHistogram              histo;
     private Set<Integer>                  keySet;
     private Set<Integer>                  valueSet;
-    private List<Entry<Integer, Integer>> expMaxima = new ArrayList<Entry<Integer, Integer>>();
+    private List<Entry<Integer, Integer>> expMaxima = new ArrayList<>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -185,8 +185,8 @@ public class HistogramTest
         instance.print(System.out);
 
         List<PeakEntry<Integer>> expResult = Arrays.asList(
-            new PeakEntry<Integer>(new Peak<Integer>(4, 5, 5), 12.0),
-            new PeakEntry<Integer>(new Peak<Integer>(10, 10, 10), 6.0));
+            new PeakEntry<>(new Peak<>(4, 5, 5), 12.0),
+            new PeakEntry<>(new Peak<>(10, 10, 10), 6.0));
         List<PeakEntry<Integer>> result = instance.getPeaks(
             minCount,
             true,
@@ -344,10 +344,10 @@ public class HistogramTest
         histo.increaseCount(10, 6);
         histo.increaseCount(11, 0);
 
-        keySet = new TreeSet<Integer>();
+        keySet = new TreeSet<>();
         keySet.addAll(Arrays.asList(3, 4, 5, 8, 10, 11));
 
-        valueSet = new LinkedHashSet<Integer>();
+        valueSet = new LinkedHashSet<>();
         valueSet.addAll(Arrays.asList(2, 10, 12, 3, 6, 0));
 
         return histo;

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2011. All rights reserved.               //
+//  Copyright (C) Herve Bitteur 2000-2012. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -33,7 +33,7 @@ import omr.util.HorizontalSide;
  * @author Hervé Bitteur
  */
 public class FlagPattern
-    extends GlyphPattern
+        extends GlyphPattern
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -44,12 +44,12 @@ public class FlagPattern
     private static final Logger logger = Logger.getLogger(FlagPattern.class);
 
     //~ Constructors -----------------------------------------------------------
-
     //-------------//
     // FlagPattern //
     //-------------//
     /**
      * Creates a new FlagPattern object.
+     *
      * @param system the system to process
      */
     public FlagPattern (SystemInfo system)
@@ -58,7 +58,6 @@ public class FlagPattern
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // runPattern //
     //------------//
@@ -68,20 +67,20 @@ public class FlagPattern
         int nb = 0;
 
         for (Glyph flag : system.getGlyphs()) {
-            if (!ShapeSet.Flags.contains(flag.getShape()) ||
-                flag.isManualShape()) {
+            if (!ShapeSet.Flags.contains(flag.getShape())
+                    || flag.isManualShape()) {
                 continue;
             }
 
             if (flag.isVip() || logger.isFineEnabled()) {
-                logger.info("Checking flag #" + flag.getId());
+                logger.info("Checking flag #{0}", flag.getId());
             }
 
             Glyph stem = flag.getStem(HorizontalSide.LEFT);
 
             if (stem == null) {
                 if (flag.isVip() || logger.isFineEnabled()) {
-                    logger.info("No left stem for flag #" + flag.getId());
+                    logger.info("No left stem for flag #{0}", flag.getId());
                 }
 
                 flag.setShape(null);
@@ -92,17 +91,18 @@ public class FlagPattern
 
             // Look for other stuff on the stem, whatever the side
             PixelRectangle stemBox = system.stemBoxOf(stem);
-            boolean        found = false;
+            boolean found = false;
 
             for (Glyph g : system.lookupIntersectedGlyphs(stemBox, stem, flag)) {
                 // We are looking for head (or some similar large stuff)
                 Shape shape = g.getShape();
 
-                if (ShapeSet.NoteHeads.contains(shape) ||
-                    ((shape == null) &&
-                    (g.getNormalizedWeight() >= constants.minStuffWeight.getValue()))) {
+                if (ShapeSet.NoteHeads.contains(shape)
+                        || ((shape == null)
+                            && (g.getNormalizedWeight() >= constants.minStuffWeight.
+                                getValue()))) {
                     if (flag.isVip() || logger.isFineEnabled()) {
-                        logger.info("Confirmed flag #" + flag.getId());
+                        logger.info("Confirmed flag #{0}", flag.getId());
                     }
 
                     found = true;
@@ -114,7 +114,7 @@ public class FlagPattern
             if (!found) {
                 // Deassign this flag w/ no head neighbor
                 if (flag.isVip() || logger.isFineEnabled()) {
-                    logger.info("Cancelled flag #" + flag.getId());
+                    logger.info("Cancelled flag #{0}", flag.getId());
                 }
 
                 flag.setShape(null);
@@ -126,18 +126,17 @@ public class FlagPattern
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         //
         Scale.AreaFraction minStuffWeight = new Scale.AreaFraction(
-            0.5,
-            "Minimum weight for a stem stuff");
+                0.5,
+                "Minimum weight for a stem stuff");
     }
 }

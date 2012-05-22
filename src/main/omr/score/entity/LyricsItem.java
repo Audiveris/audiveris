@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -14,8 +14,8 @@ package omr.score.entity;
 import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
+import omr.glyph.facets.GlyphContent;
 import omr.glyph.text.Sentence;
-import omr.glyph.text.TextInfo;
 
 import omr.log.Logger;
 
@@ -49,6 +49,7 @@ public class LyricsItem
 
     /** Comparator based on line number */
     public static final Comparator<LyricsItem> numberComparator = new Comparator<LyricsItem>() {
+        @Override
         public int compare (LyricsItem o1,
                             LyricsItem o2)
         {
@@ -140,11 +141,11 @@ public class LyricsItem
         this.width = width;
         this.content = content;
 
-        if (content.equals(TextInfo.ELISION_STRING)) {
+        if (content.equals(GlyphContent.ELISION_STRING)) {
             itemKind = ItemKind.Elision;
-        } else if (content.equals(TextInfo.EXTENSION_STRING)) {
+        } else if (content.equals(GlyphContent.EXTENSION_STRING)) {
             itemKind = ItemKind.Extension;
-        } else if (content.equals(TextInfo.HYPHEN_STRING)) {
+        } else if (content.equals(GlyphContent.HYPHEN_STRING)) {
             itemKind = ItemKind.Hyphen;
         } else {
             itemKind = ItemKind.Syllable;
@@ -165,6 +166,7 @@ public class LyricsItem
     //-----------//
     // compareTo //
     //-----------//
+    @Override
     public int compareTo (LyricsItem other)
     {
         if (this == other) {
@@ -203,7 +205,7 @@ public class LyricsItem
     @Override
     public PixelRectangle getBox ()
     {
-        return seed.getContourBox();
+        return seed.getBounds();
     }
 
     //------------//
@@ -336,7 +338,7 @@ public class LyricsItem
     @Override
     protected void computeReferencePoint ()
     {
-        PixelRectangle itemBox = seed.getContourBox();
+        PixelRectangle itemBox = seed.getBounds();
         setReferencePoint(
             new PixelPoint(itemBox.x, getSentence()
                                           .getLocation().y));
@@ -361,7 +363,7 @@ public class LyricsItem
         }
 
         if (mappedChord != null) {
-            sb.append(" mappedTo:Ch#" + mappedChord.getId());
+            sb.append(" mappedTo:Ch#").append(mappedChord.getId());
         }
 
         return sb.toString();

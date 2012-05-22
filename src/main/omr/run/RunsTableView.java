@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -31,12 +31,13 @@ import java.awt.Rectangle;
 import java.util.List;
 
 /**
- * Class {@code RunsTableView} displays a view on an underlying runs table
+ * Class {@code RunsTableView} displays a view on an underlying runs
+ * table.
  *
  * @author Hervé Bitteur
  */
 public class RunsTableView
-    extends RubberPanel
+        extends RubberPanel
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -44,12 +45,10 @@ public class RunsTableView
     private static final Logger logger = Logger.getLogger(RunsTableView.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** The underlying table of runs */
     private final RunsTable table;
 
     //~ Constructors -----------------------------------------------------------
-
     //---------------//
     // RunsTableView //
     //---------------//
@@ -58,7 +57,7 @@ public class RunsTableView
      *
      * @param table the underlying table of runs
      */
-    public RunsTableView (RunsTable        table,
+    public RunsTableView (RunsTable table,
                           SelectionService locationService)
     {
         this.table = table;
@@ -72,14 +71,14 @@ public class RunsTableView
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------//
     // onEvent //
     //---------//
     /**
-     * Notification about selection objects. We catch:
-     *
+     * Notification about selection objects.
+     * We catch:
      * SheetLocation (-> Run)
+     *
      * @param event the notified event
      */
     @Override
@@ -92,7 +91,7 @@ public class RunsTableView
                 return;
             }
 
-            // Default behavior : making point visible & drawing the markers
+            // Default behavior: making point visible & drawing the markers
             super.onEvent(event);
 
             if (event instanceof LocationEvent) { // Location => Section(s) & Run
@@ -107,8 +106,9 @@ public class RunsTableView
     // render //
     //--------//
     /**
-     * Render this lag in the provided Graphics context, which may be already
-     * scaled
+     * Render this lag in the provided Graphics context, which may be
+     * already scaled.
+     *
      * @param g the graphics context
      */
     @Override
@@ -125,7 +125,7 @@ public class RunsTableView
     // renderItems //
     //-------------//
     /**
-     * Room for rendering additional items, if any
+     * Room for rendering additional items, if any.
      *
      * @param g the graphic context
      */
@@ -142,10 +142,10 @@ public class RunsTableView
         Rectangle clip = g.getClipBounds();
 
         switch (table.getOrientation()) {
-        case HORIZONTAL : {
+        case HORIZONTAL: {
             int minRow = Math.max(clip.y, 0);
-            int maxRow = Math.min((clip.y + clip.height), table.getHeight()) -
-                         1;
+            int maxRow = Math.min((clip.y + clip.height), table.getHeight())
+                    - 1;
 
             for (int row = minRow; row <= maxRow; row++) {
                 List<Run> seq = table.getSequence(row);
@@ -159,7 +159,7 @@ public class RunsTableView
 
         break;
 
-        case VERTICAL : {
+        case VERTICAL: {
             int minRow = Math.max(clip.x, 0);
             int maxRow = Math.min((clip.x + clip.width), table.getWidth()) - 1;
 
@@ -192,13 +192,12 @@ public class RunsTableView
     //-------------//
     /**
      * Interest in Location => Run
+     *
      * @param locationEvent
      */
     private void handleEvent (LocationEvent locationEvent)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("sheetLocation: " + locationEvent);
-        }
+        logger.fine("sheetLocation: {0}", locationEvent);
 
         // Lookup for Run pointed by this pixel location
         // Search and forward run & section info
@@ -211,16 +210,15 @@ public class RunsTableView
         SelectionHint hint = locationEvent.hint;
         MouseMovement movement = locationEvent.movement;
 
-        if ((hint != SelectionHint.LOCATION_ADD) &&
-            (hint != SelectionHint.LOCATION_INIT)) {
+        if ((hint != SelectionHint.LOCATION_ADD)
+                && (hint != SelectionHint.LOCATION_INIT)) {
             return;
         }
 
         PixelPoint pt = rect.getLocation();
-        Run        run = table.lookupRun(pt);
+        Run run = table.lookupRun(pt);
 
         // Publish Run information
-        table.getRunService()
-             .publish(new RunEvent(this, hint, movement, run));
+        table.getRunService().publish(new RunEvent(this, hint, movement, run));
     }
 }

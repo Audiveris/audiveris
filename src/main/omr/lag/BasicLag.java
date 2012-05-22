@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -19,7 +19,6 @@ import omr.graph.BasicDigraph;
 import omr.log.Logger;
 
 import omr.run.Orientation;
-import omr.run.Oriented;
 import omr.run.Run;
 import omr.run.RunsTable;
 
@@ -55,8 +54,9 @@ import java.util.Set;
  * @author Hervé Bitteur
  */
 public class BasicLag
-    extends BasicDigraph<Lag, Section>
-    implements Lag, EventSubscriber<UserEvent>
+        extends BasicDigraph<Lag, Section>
+        implements Lag,
+                   EventSubscriber<UserEvent>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -64,19 +64,18 @@ public class BasicLag
     private static final Logger logger = Logger.getLogger(BasicLag.class);
 
     /** Events read on location service */
-    public static final Class[] locEventsRead = new Class[] { LocationEvent.class };
+    public static final Class[] locEventsRead = new Class[]{LocationEvent.class};
 
     /** Events read on run service */
-    public static final Class[] runEventsRead = new Class[] { RunEvent.class };
+    public static final Class[] runEventsRead = new Class[]{RunEvent.class};
 
     /** Events read on section service */
-    public static final Class[] sctEventsRead = new Class[] {
-                                                    SectionIdEvent.class,
-                                                    SectionEvent.class
-                                                };
+    public static final Class[] sctEventsRead = new Class[]{
+        SectionIdEvent.class,
+        SectionEvent.class
+    };
 
     //~ Instance fields --------------------------------------------------------
-
     /** Orientation of the lag */
     private final Orientation orientation;
 
@@ -93,16 +92,16 @@ public class BasicLag
     private SelectionService glyphService;
 
     //~ Constructors -----------------------------------------------------------
-
     //----------//
     // BasicLag //
     //----------//
     /**
      * Constructor with specified orientation
-     * @param name the distinguished name for this instance
+     *
+     * @param name        the distinguished name for this instance
      * @param orientation the desired orientation of the lag
      */
-    public BasicLag (String      name,
+    public BasicLag (String name,
                      Orientation orientation)
     {
         this(name, BasicSection.class, orientation);
@@ -113,12 +112,13 @@ public class BasicLag
     //----------//
     /**
      * Constructor with specified orientation and section class
-     * @param name the distinguished name for this instance
+     *
+     * @param name        the distinguished name for this instance
      * @param orientation the desired orientation of the lag
      */
-    public BasicLag (String                  name,
-                     Class<?extends Section> sectionClass,
-                     Orientation             orientation)
+    public BasicLag (String name,
+                     Class<? extends Section> sectionClass,
+                     Orientation orientation)
     {
         super(name, sectionClass);
         this.orientation = orientation;
@@ -126,7 +126,6 @@ public class BasicLag
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------//
     // addRuns //
     //---------//
@@ -220,8 +219,7 @@ public class BasicLag
     @Override
     public Section getSelectedSection ()
     {
-        return (Section) getSectionService()
-                             .getSelection(SectionEvent.class);
+        return (Section) getSectionService().getSelection(SectionEvent.class);
     }
 
     //-----------------------//
@@ -231,8 +229,8 @@ public class BasicLag
     @SuppressWarnings("unchecked")
     public Set<Section> getSelectedSectionSet ()
     {
-        return (Set<Section>) getSectionService()
-                                  .getSelection(SectionSetEvent.class);
+        return (Set<Section>) getSectionService().getSelection(
+                SectionSetEvent.class);
     }
 
     //------------//
@@ -240,6 +238,7 @@ public class BasicLag
     //------------//
     /**
      * Predicate on lag orientation
+     *
      * @return true if vertical, false if horizontal
      */
     public boolean isVertical ()
@@ -300,6 +299,7 @@ public class BasicLag
     //---------//
     /**
      * Publish on Lag selection service
+     *
      * @param event the event to publish
      */
     public void publish (LagEvent event)
@@ -312,13 +312,13 @@ public class BasicLag
     //---------//
     /**
      * Publish a RunEvent on RunsTable service
+     *
      * @param event the event to publish
      */
     public void publish (RunEvent event)
     {
         // Delegate to RunsTable
-        getRunService()
-            .publish(event);
+        getRunService().publish(event);
     }
 
     //---------//
@@ -336,16 +336,13 @@ public class BasicLag
     public List<Section> purgeSections (Predicate<Section> predicate)
     {
         // List of sections to be purged (to avoid concurrent modifications)
-        List<Section> purges = new ArrayList<Section>(2000);
+        List<Section> purges = new ArrayList<>(2000);
 
         // Iterate on all sections
         for (Section section : getSections()) {
             // Check predicate on the current section
             if (predicate.check(section)) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("Purging " + section);
-                }
-
+                logger.fine("Purging {0}", section);
                 purges.add(section);
             }
         }
@@ -396,8 +393,7 @@ public class BasicLag
         }
 
         for (Class eventClass : runEventsRead) {
-            getRunService()
-                .subscribeStrongly(eventClass, this);
+            getRunService().subscribeStrongly(eventClass, this);
         }
 
         for (Class eventClass : sctEventsRead) {
@@ -414,8 +410,7 @@ public class BasicLag
         StringBuilder sb = new StringBuilder(super.internalsString());
 
         // Orientation
-        sb.append(" ")
-          .append(orientation);
+        sb.append(" ").append(orientation);
 
         //        // Runs
         //        if (runsTable != null) {
@@ -430,13 +425,12 @@ public class BasicLag
     //-------------//
     /**
      * Interest in lasso SheetLocation => Section(s)
+     *
      * @param sheetLocation
      */
     private void handleEvent (LocationEvent locationEvent)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Lag. sheetLocation:" + locationEvent);
-        }
+        logger.fine("Lag. sheetLocation:{0}", locationEvent);
 
         PixelRectangle rect = locationEvent.getData();
 
@@ -447,14 +441,13 @@ public class BasicLag
         SelectionHint hint = locationEvent.hint;
         MouseMovement movement = locationEvent.movement;
 
-        if ((hint != SelectionHint.LOCATION_ADD) &&
-            (hint != SelectionHint.LOCATION_INIT)) {
+        if ((hint != SelectionHint.LOCATION_ADD)
+                && (hint != SelectionHint.LOCATION_INIT)) {
             return;
         }
 
         // Section selection mode?
-        if (ViewParameters.getInstance()
-                          .isSectionSelectionEnabled()) {
+        if (ViewParameters.getInstance().isSectionSelectionEnabled()) {
             // Non-degenerated rectangle? 
             if ((rect.width > 0) && (rect.height > 0)) {
                 // Look for enclosed sections
@@ -462,13 +455,12 @@ public class BasicLag
 
                 // Publish (first) Section found
                 Section section = sectionsFound.isEmpty() ? null
-                                  : sectionsFound.iterator()
-                                                 .next();
+                                  : sectionsFound.iterator().next();
                 publish(new SectionEvent(this, hint, movement, section));
 
                 // Publish whole SectionSet
                 publish(
-                    new SectionSetEvent(this, hint, movement, sectionsFound));
+                        new SectionSetEvent(this, hint, movement, sectionsFound));
             }
         }
     }
@@ -478,23 +470,22 @@ public class BasicLag
     //-------------//
     /**
      * Interest in Run => Section
+     *
      * @param run
      */
     private void handleEvent (RunEvent runEvent)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Lag. run:" + runEvent);
-        }
+        logger.fine("Lag. run:{0}", runEvent);
 
         // Lookup for Section linked to this Run
         // Search and forward section info
-        Run           run = runEvent.getData();
+        Run run = runEvent.getData();
 
         SelectionHint hint = runEvent.hint;
         MouseMovement movement = runEvent.movement;
 
-        if ((hint != SelectionHint.LOCATION_ADD) &&
-            (hint != SelectionHint.LOCATION_INIT)) {
+        if ((hint != SelectionHint.LOCATION_ADD)
+                && (hint != SelectionHint.LOCATION_INIT)) {
             return;
         }
 
@@ -508,6 +499,7 @@ public class BasicLag
     //-------------//
     /**
      * Interest in SectionId => Section
+     *
      * @param idEvent
      */
     private void handleEvent (SectionIdEvent idEvent)
@@ -533,32 +525,32 @@ public class BasicLag
     //-------------//
     /**
      * Interest in Section => section contour + update SectionSet
+     *
      * @param sectionEvent
      */
     private void handleEvent (SectionEvent sectionEvent)
     {
         SelectionHint hint = sectionEvent.hint;
         MouseMovement movement = sectionEvent.movement;
-        Section       section = sectionEvent.getData();
+        Section section = sectionEvent.getData();
 
         if (hint == SelectionHint.SECTION_INIT) {
             // Publish section contour
             publish(
-                new LocationEvent(
+                    new LocationEvent(
                     this,
                     hint,
                     null,
-                    (section != null) ? section.getContourBox() : null));
+                    (section != null) ? section.getBounds() : null));
         }
 
         // In section-selection mode, update section set
-        if (ViewParameters.getInstance()
-                          .isSectionSelectionEnabled()) {
+        if (ViewParameters.getInstance().isSectionSelectionEnabled()) {
             // Section mode: Update section set
             Set<Section> sections = getSelectedSectionSet();
 
             if (sections == null) {
-                sections = new LinkedHashSet<Section>();
+                sections = new LinkedHashSet<>();
             }
 
             if (hint == SelectionHint.LOCATION_ADD) {
@@ -592,15 +584,15 @@ public class BasicLag
 
         if (glyphService != null) {
             // Section -> Glyph
-            if ((hint == LOCATION_ADD) ||
-                (hint == LOCATION_INIT) ||
-                (hint == SECTION_INIT)) {
+            if ((hint == LOCATION_ADD)
+                    || (hint == LOCATION_INIT)
+                    || (hint == SECTION_INIT)) {
                 // Select related Glyph if any
                 Glyph glyph = (section != null) ? section.getGlyph() : null;
 
                 if (glyph != null) {
                     glyphService.publish(
-                        new GlyphEvent(this, hint, movement, glyph));
+                            new GlyphEvent(this, hint, movement, glyph));
                 }
             }
         }

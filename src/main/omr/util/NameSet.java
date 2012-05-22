@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -56,7 +56,7 @@ public class NameSet
     private final Constant.String constant;
 
     /** List of names in this set */
-    private final List<String> names = new ArrayList<String>();
+    private final List<String> names = new ArrayList<>();
 
     /** Max number of names in this set */
     private final int maxNameNb;
@@ -104,7 +104,7 @@ public class NameSet
      */
     public synchronized void add (String name)
     {
-        if ((name == null) || (name.equals(""))) {
+        if ((name == null) || (name.isEmpty())) {
             return;
         }
 
@@ -259,6 +259,7 @@ public class NameSet
 
         //~ Methods ------------------------------------------------------------
 
+        @Override
         protected void buildItems ()
         {
             // Regenerate proper menu items

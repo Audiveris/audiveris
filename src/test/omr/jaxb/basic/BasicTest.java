@@ -49,7 +49,7 @@ public class BasicTest
         waiter.firstName = "Robert";
         waiter.location = new Point(1234, 5678);
 
-        ArrayList<Day> days = new ArrayList<Day>();
+        ArrayList<Day> days = new ArrayList<>();
 
         Day            d1 = new Day();
         d1.label = Weekday.FRIDAY;

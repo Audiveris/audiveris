@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2011. All rights reserved.               //
+//  Copyright (C) Herve Bitteur 2000-2012. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -39,7 +39,7 @@ import java.util.Iterator;
  * @author Hervé Bitteur
  */
 public class SymbolsStep
-    extends AbstractSystemStep
+        extends AbstractSystemStep
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -50,7 +50,6 @@ public class SymbolsStep
     private static final Logger logger = Logger.getLogger(SymbolsStep.class);
 
     //~ Constructors -----------------------------------------------------------
-
     //-------------//
     // SymbolsStep //
     //-------------//
@@ -60,30 +59,27 @@ public class SymbolsStep
     public SymbolsStep ()
     {
         super(
-            Steps.SYMBOLS,
-            Level.SHEET_LEVEL,
-            Mandatory.MANDATORY,
-            Redoable.REDOABLE,
-            DATA_TAB,
-            "Apply specific glyph patterns");
+                Steps.SYMBOLS,
+                Level.SHEET_LEVEL,
+                Mandatory.MANDATORY,
+                Redoable.REDOABLE,
+                DATA_TAB,
+                "Apply specific glyph patterns");
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // displayUI //
     //-----------//
     @Override
     public void displayUI (Sheet sheet)
     {
-        sheet.getSymbolsEditor()
-             .refresh();
+        sheet.getSymbolsEditor().refresh();
 
         // Update glyph board if needed (to see OCR'ed data)
-        SelectionService service = sheet.getNest()
-                                        .getGlyphService();
-        GlyphEvent       glyphEvent = (GlyphEvent) service.getLastEvent(
-            GlyphEvent.class);
+        SelectionService service = sheet.getNest().getGlyphService();
+        GlyphEvent glyphEvent = (GlyphEvent) service.getLastEvent(
+                GlyphEvent.class);
 
         if (glyphEvent != null) {
             service.publish(glyphEvent);
@@ -95,17 +91,16 @@ public class SymbolsStep
     //----------//
     @Override
     public void doSystem (SystemInfo system)
-        throws StepException
+            throws StepException
     {
         // Cleanup system sentences
-        system.getSentences()
-              .clear();
+        system.getSentences().clear();
 
         // Cleanup system dummy parts
         ScoreSystem scoreSystem = system.getScoreSystem();
 
-        for (Iterator<TreeNode> it = scoreSystem.getParts()
-                                                .iterator(); it.hasNext();) {
+        for (Iterator<TreeNode> it = scoreSystem.getParts().iterator(); it.
+                hasNext();) {
             SystemPart part = (SystemPart) it.next();
 
             if (part.isDummy()) {
@@ -115,16 +110,13 @@ public class SymbolsStep
 
         // Iterate
         for (int iter = 1; iter <= constants.MaxPatternsIterations.getValue();
-             iter++) {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "System#" + system.getId() + " patterns iter #" + iter);
-            }
+                iter++) {
+            logger.fine("System#{0} patterns iter #{1}",
+                        new Object[]{system.getId(), iter});
 
             if (Main.getGui() != null) {
-                system.getSheet()
-                      .getErrorsEditor()
-                      .clearSystem(this, system.getId());
+                system.getSheet().getErrorsEditor().clearSystem(this, system.
+                        getId());
             }
 
             if (!system.runPatterns()) {
@@ -134,18 +126,17 @@ public class SymbolsStep
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         private final Constant.Integer MaxPatternsIterations = new Constant.Integer(
-            "count",
-            1,
-            "Maximum number of iterations for PATTERNS task");
+                "count",
+                1,
+                "Maximum number of iterations for PATTERNS task");
     }
 }

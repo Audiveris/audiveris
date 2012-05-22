@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -15,6 +15,8 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
+import static omr.glyph.Shape.*;
+import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 import omr.glyph.text.TextBlob;
 
@@ -29,6 +31,7 @@ import java.awt.Point;
 import java.awt.Polygon;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -66,6 +69,10 @@ public abstract class AbstractBlobPattern
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
         AbstractBlobPattern.class);
+
+    /** Shapes not accepted for candidates */
+    private static final EnumSet<Shape> excludedShapes = EnumSet.copyOf(
+        ShapeSet.shapesOf(TUPLET_THREE, TUPLET_SIX, BRACE, BRACKET));
 
     //~ Instance fields --------------------------------------------------------
 
@@ -124,7 +131,7 @@ public abstract class AbstractBlobPattern
     /**
      * Define the sequence of regions to process.
      */
-    protected abstract List<Region> buildRegions ();
+    protected abstract List<?extends Region> buildRegions ();
 
     //--------------//
     // buildPolygon //
@@ -132,7 +139,7 @@ public abstract class AbstractBlobPattern
     protected Polygon buildPolygon (List<Point> list,
                                     Point... points)
     {
-        List<Point> all = new ArrayList<Point>(list);
+        List<Point> all = new ArrayList<>(list);
         all.addAll(Arrays.asList(points));
 
         return buildPolygon(all);
@@ -176,10 +183,10 @@ public abstract class AbstractBlobPattern
         protected final Polygon polygon;
 
         /** Blobs which can still aggregate incoming glyphs */
-        protected List<TextBlob> pendingBlobs = new ArrayList<TextBlob>();
+        protected List<TextBlob> pendingBlobs = new ArrayList<>();
 
         /** Blobs not impacted by remaining glyphs (too far on right) */
-        protected List<TextBlob> completedBlobs = new ArrayList<TextBlob>();
+        protected List<TextBlob> completedBlobs = new ArrayList<>();
 
         /** To filter the candidates (already limited to the region) */
         protected Predicate<Glyph> additionalFilter = new Predicate<Glyph>() {
@@ -216,15 +223,14 @@ public abstract class AbstractBlobPattern
         //---------//
         public void process ()
         {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    system.getLogPrefix() + "Pattern " +
-                    AbstractBlobPattern.this.name + " Processing region " +
-                    name);
-            }
+            logger.fine(
+                "{0}Pattern {1} Processing region {2}",
+                new Object[] {
+                    system.getLogPrefix(), AbstractBlobPattern.this.name, name
+                });
 
             /** Glyphs too small to be used for initial blob definition */
-            List<Glyph> smallGlyphs = new ArrayList<Glyph>();
+            List<Glyph> smallGlyphs = new ArrayList<>();
 
             /** For debug */
             int blobIndex = 0;
@@ -245,15 +251,12 @@ public abstract class AbstractBlobPattern
 
                             // Done for this glyph
                             continue glyphLoop;
-                        } else if ((glyph.getContourBox().x - blob.getRight()) > blob.getMaxWordGap()) {
+                        } else if ((glyph.getBounds().x - blob.getRight()) > blob.getMaxWordGap()) {
                             // Since glyphs are sorted by abscissa, transfer
                             // this blob from "pending" to "completed".
                             it.remove();
                             completedBlobs.add(blob);
-
-                            if (logger.isFineEnabled()) {
-                                logger.fine("Ending " + blob);
-                            }
+                            logger.fine("Ending {0}", blob);
                         }
                     }
 
@@ -265,7 +268,7 @@ public abstract class AbstractBlobPattern
             // Terminate all blobs
             if (logger.isFineEnabled()) {
                 for (TextBlob blob : pendingBlobs) {
-                    logger.fine("Completing " + blob);
+                    logger.fine("Completing {0}", blob);
                 }
             }
 
@@ -291,14 +294,14 @@ public abstract class AbstractBlobPattern
         // retrieveGlyphs //
         //----------------//
         /**
-         * Retrieve among the system glyphs, the ones that belong to 
+         * Retrieve among the system glyphs, the ones that belong to
          * this region.
          * @param filter predicate to filter the glyphs candidate
          * @return the set of system glyphs within the region
          */
         public SortedSet<Glyph> retrieveGlyphs (final Predicate<Glyph> filter)
         {
-            SortedSet<Glyph> glyphs = new TreeSet<Glyph>(
+            SortedSet<Glyph> glyphs = new TreeSet<>(
                 Glyph.abscissaComparator);
 
             glyphs.addAll(
@@ -309,7 +312,7 @@ public abstract class AbstractBlobPattern
                             public boolean check (Glyph glyph)
                             {
                                 return ((polygon == null) ||
-                                       polygon.contains(glyph.getContourBox())) &&
+                                       polygon.contains(glyph.getBounds())) &&
                                        ((filter == null) ||
                                        filter.check(glyph));
                             }
@@ -345,14 +348,12 @@ public abstract class AbstractBlobPattern
                 return false;
             }
 
-            Shape shape = glyph.getShape();
-
-            if ((shape == Shape.TUPLET_SIX) || (shape == Shape.TUPLET_THREE)) {
+            if (excludedShapes.contains(glyph.getShape())) {
                 return false;
             }
 
             // Discard too tall glyphs
-            if (glyph.getContourBox().height > maxGlyphHeight) {
+            if (glyph.getBounds().height > maxGlyphHeight) {
                 return false;
             }
 
@@ -375,7 +376,7 @@ public abstract class AbstractBlobPattern
             }
 
             // Test on height
-            if (glyph.getContourBox().height < minGlyphHeight) {
+            if (glyph.getBounds().height < minGlyphHeight) {
                 return true;
             }
 
@@ -386,31 +387,35 @@ public abstract class AbstractBlobPattern
         // insertSmallGlyphs //
         //-------------------//
         /**
-         * Re-insert the small glyphs that had been left aside when initially
-         * building the blobs.
+         * Re-insert the small glyphs that had been left aside when
+         * initially building the blobs.
          * @param smallGlyphs the small glyphs to insert
          * @param blobs       the collection of blobs to update
          */
         private void insertSmallGlyphs (List<Glyph>    smallGlyphs,
                                         List<TextBlob> blobs)
         {
-            glyphLoop: 
-
-            // Look for a suitable blob
             for (Glyph glyph : smallGlyphs) {
-                for (TextBlob blob : blobs) {
-                    if (blob.tryToInsertSmallGlyph(glyph)) {
-                        if (logger.isFineEnabled()) {
-                            logger.fine("Small glyph inserted into " + blob);
-                        }
+                // Look for the best suitable blob, if any
+                Double   bestDistance = null;
+                TextBlob bestBlob = null;
 
-                        continue glyphLoop;
+                for (TextBlob blob : blobs) {
+                    Double dist = blob.distanceTo(glyph);
+
+                    if ((dist != null) &&
+                        ((bestDistance == null) || (bestDistance > dist))) {
+                        bestDistance = dist;
+                        bestBlob = blob;
                     }
                 }
 
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "Could not insert small glyph#" + glyph.getId());
+                if (bestBlob != null) {
+                    logger.fine("Small glyph inserted into {0}", bestBlob);
+
+                    bestBlob.insertSmallGlyph(glyph);
+                } else {
+                    logger.fine("Could not insert small {0}", glyph.idString());
                 }
             }
         }
@@ -430,18 +435,15 @@ public abstract class AbstractBlobPattern
                 int      blobWeight = blob.getWeight();
 
                 if (blobWeight < minBlobWeight) {
-                    if (logger.isFineEnabled()) {
-                        logger.info(
-                            "Purged " + blob + " weight:" +
-                            (float) scale.pixelsToAreaFrac(blobWeight));
-                    }
-
+                    logger.fine(
+                        "Purged {0} weight:{1}",
+                        new Object[] {
+                            blob, (float) scale.pixelsToAreaFrac(blobWeight)
+                        });
                     it.remove();
                 } else if (blob.getAverageLine()
                                .isVertical()) {
-                    if (logger.isFineEnabled()) {
-                        logger.info("Purged vertical " + blob);
-                    }
+                    logger.fine("Purged vertical {0}", blob);
 
                     it.remove();
                 }

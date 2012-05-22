@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -50,13 +50,13 @@ import java.util.List;
  * Class {@code FilamentsFactory} builds filaments (long series of
  * sections) out of a collection of sections.
  *
- * <p>These filaments are meant to represent good candidates for
- * (horizontal) staff lines or (vertical) bar lines. The factory aims at a given
- * orientation, though the input sections may exhibit mixed orientations.</p>
+ * <p>These filaments are meant to represent good candidates for (horizontal)
+ * staff lines or (vertical) bar lines. The factory aims at a given orientation,
+ * though the input sections may exhibit mixed orientations.</p>
  *
- * <p>Internal parameters have default values defined via a ConstantSet.
- * Before launching filaments retrieval by {@link #retrieveFilaments},
- * parameters can be modified individually by calling some setXXX() methods.</p>
+ * <p>Internal parameters have default values defined via a ConstantSet. Before
+ * launching filaments retrieval by {@link #retrieveFilaments}, parameters can
+ * be modified individually by calling some setXXX() methods.</p>
  *
  * @author Hervé Bitteur
  */
@@ -69,10 +69,9 @@ public class FilamentsFactory
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
-        FilamentsFactory.class);
+            FilamentsFactory.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Related scale */
     private final Scale scale;
 
@@ -84,48 +83,47 @@ public class FilamentsFactory
 
     /** Precise constructor for filaments */
     private final Constructor filamentConstructor;
-    private final Object[]    scaleArgs;
+
+    private final Object[] scaleArgs;
 
     /** Scale-dependent constants for horizontal stuff */
     private final Parameters params;
 
     /** Long filaments found, non sorted */
-    private final List<Glyph> filaments = new ArrayList<Glyph>();
+    private final List<Glyph> filaments = new ArrayList<>();
 
     //~ Constructors -----------------------------------------------------------
-
     //------------------//
     // FilamentsFactory //
     //------------------//
     /**
-     * Retrieve the frames of all staff lines
+     * Create a factory of filaments.
      *
-     * @param scale the related scale
-     * @param nest the nest to host created filaments
-     * @param orientation the target orientation
+     * @param scale         the related scale
+     * @param nest          the nest to host created filaments
+     * @param orientation   the target orientation
      * @param filamentClass precise Filament class to be use for creation
      * @throws Exception
      */
-    public FilamentsFactory (Scale                 scale,
-                             Nest                  nest,
-                             Orientation           orientation,
-                             Class<?extends Glyph> filamentClass)
-        throws Exception
+    public FilamentsFactory (Scale scale,
+                             Nest nest,
+                             Orientation orientation,
+                             Class<? extends Glyph> filamentClass)
+            throws Exception
     {
         this.scale = scale;
         this.nest = nest;
         this.orientation = orientation;
 
-        scaleArgs = new Object[] { scale };
+        scaleArgs = new Object[]{scale};
         filamentConstructor = filamentClass.getConstructor(
-            new Class[] { Scale.class });
+                new Class[]{Scale.class});
 
         params = new Parameters();
         params.initialize();
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------//
     // dump //
     //------//
@@ -138,8 +136,9 @@ public class FilamentsFactory
     // isSectionFat //
     //--------------//
     /**
-     * Detect if the provided section is a thick one
-     * (as seen in the context of the factory orientation).
+     * Detect if the provided section is a thick one.
+     * (as seen in the context of the factory orientation)
+     *
      * @param section the section to check
      * @return true if fat
      */
@@ -161,31 +160,30 @@ public class FilamentsFactory
                 }
 
                 // Check thickness
-                Rectangle bounds = orientation.oriented(
-                    section.getContourBox());
-                Line      line = orientation.switchRef(
-                    section.getAbsoluteLine());
+                Rectangle bounds = orientation.oriented(section.getBounds());
+                Line line = orientation.switchRef(
+                        section.getAbsoluteLine());
 
                 if (Math.abs(line.getSlope()) < (Math.PI / 4)) {
                     // Measure mean thickness on each half
-                    int       startCoord = bounds.x + (bounds.width / 4);
-                    int       startPos = line.yAtX(startCoord);
-                    int       stopCoord = bounds.x + ((3 * bounds.width) / 4);
-                    int       stopPos = line.yAtX(stopCoord);
+                    int startCoord = bounds.x + (bounds.width / 4);
+                    int startPos = line.yAtX(startCoord);
+                    int stopCoord = bounds.x + ((3 * bounds.width) / 4);
+                    int stopPos = line.yAtX(stopCoord);
 
                     // Start side
                     Rectangle oRoi = new Rectangle(startCoord, startPos, 0, 0);
                     final int halfWidth = Math.min(
-                        params.probeWidth / 2,
-                        bounds.width / 4);
+                            params.probeWidth / 2,
+                            bounds.width / 4);
                     oRoi.grow(halfWidth, params.maxSectionThickness);
 
                     PointsCollector collector = new PointsCollector(
-                        orientation.absolute(oRoi));
+                            orientation.absolute(oRoi));
                     section.cumulate(collector);
 
                     int startThickness = (int) Math.rint(
-                        (double) collector.getSize() / oRoi.width);
+                            (double) collector.getSize() / oRoi.width);
 
                     // Stop side
                     oRoi.translate(stopCoord - startCoord, stopPos - startPos);
@@ -193,11 +191,11 @@ public class FilamentsFactory
                     section.cumulate(collector);
 
                     int stopThickness = (int) Math.rint(
-                        (double) collector.getSize() / oRoi.width);
+                            (double) collector.getSize() / oRoi.width);
 
                     section.setFat(
-                        (startThickness > params.maxSectionThickness) ||
-                        (stopThickness > params.maxSectionThickness));
+                            (startThickness > params.maxSectionThickness)
+                            || (stopThickness > params.maxSectionThickness));
                 } else {
                     section.setFat(bounds.height > params.maxSectionThickness);
                 }
@@ -214,15 +212,15 @@ public class FilamentsFactory
     // retrieveFilaments //
     //-------------------//
     /**
-     * Aggregate the long and thin sections into filaments (glyphs)
+     * Aggregate the long and thin sections into filaments (glyphs).
      *
-     * @param source the section source for filaments
+     * @param source       the section source for filaments
      * @param useExpansion true to expand filaments with short sections left
      * over
      * @return the collection of retrieved filaments
      */
     public List<Glyph> retrieveFilaments (Collection<Section> source,
-                                          boolean             useExpansion)
+                                          boolean useExpansion)
     {
         StopWatch watch = new StopWatch("FilamentsFactory");
 
@@ -231,11 +229,9 @@ public class FilamentsFactory
             watch.start("createFilaments");
             createFilaments(source);
 
-            if (logger.isFineEnabled()) {
-                logger.info(
-                    orientation + " " + filaments.size() +
-                    " filaments created.");
-            }
+            logger.fine(
+                    "{0} {1} filaments created.",
+                    new Object[]{orientation, filaments.size()});
 
             // Merge filaments into larger filaments
             watch.start("mergeFilaments");
@@ -401,19 +397,20 @@ public class FilamentsFactory
     // canMerge //
     //----------//
     /**
-     * Check whether the two provided filaments could be merged
-     * @param one a filament
-     * @param two another filament
+     * Check whether the two provided filaments could be merged.
+     *
+     * @param one       a filament
+     * @param two       another filament
      * @param expanding true when expanding filaments with sections left over
      * @return true if test is positive
      */
-    private boolean canMerge (Glyph   one,
-                              Glyph   two,
+    private boolean canMerge (Glyph one,
+                              Glyph two,
                               boolean expanding)
     {
         // For VIP debugging
         final boolean areVips = one.isVip() && two.isVip();
-        String        vips = null;
+        String vips = null;
 
         if (areVips) {
             vips = one.getId() + "&" + two.getId() + ": "; // BP here!
@@ -422,13 +419,13 @@ public class FilamentsFactory
         try {
             // Start & Stop points for each filament
             Point2D oneStart = orientation.oriented(
-                one.getStartPoint(orientation));
+                    one.getStartPoint(orientation));
             Point2D oneStop = orientation.oriented(
-                one.getStopPoint(orientation));
+                    one.getStopPoint(orientation));
             Point2D twoStart = orientation.oriented(
-                two.getStartPoint(orientation));
+                    two.getStartPoint(orientation));
             Point2D twoStop = orientation.oriented(
-                two.getStopPoint(orientation));
+                    two.getStopPoint(orientation));
 
             // coord gap?
             double overlapStart = Math.max(oneStart.getX(), twoStart.getX());
@@ -438,8 +435,8 @@ public class FilamentsFactory
             if (coordGap > params.maxCoordGap) {
                 if (logger.isFineEnabled() || areVips) {
                     logger.info(
-                        vips + "Gap too long: " + coordGap + " vs " +
-                        params.maxCoordGap);
+                            "{0}Gap too long: {1} vs {2}",
+                            new Object[]{vips, coordGap, params.maxCoordGap});
                 }
 
                 return false;
@@ -458,8 +455,8 @@ public class FilamentsFactory
                 int valNb = (int) Math.min(3, 1 - (coordGap / 10));
 
                 for (int iq = 1; iq <= valNb; iq++) {
-                    double midCoord = overlapStart -
-                                      ((iq * coordGap) / (valNb + 1));
+                    double midCoord = overlapStart
+                            - ((iq * coordGap) / (valNb + 1));
                     double onePos = one.getPositionAt(midCoord, orientation);
                     double twoPos = two.getPositionAt(midCoord, orientation);
                     double posGap = Math.abs(onePos - twoPos);
@@ -467,8 +464,10 @@ public class FilamentsFactory
                     if (posGap > params.maxOverlapDeltaPos) {
                         if (logger.isFineEnabled() || areVips) {
                             logger.info(
-                                vips + "Delta pos too high for overlap: " +
-                                posGap + " vs " + params.maxOverlapDeltaPos);
+                                    "{0}Delta pos too high for overlap: {1} vs {2}",
+                                    new Object[]{
+                                        vips, posGap, params.maxOverlapDeltaPos
+                                    });
                         }
 
                         return false;
@@ -476,46 +475,51 @@ public class FilamentsFactory
 
                     // Check resulting thickness at middle of overlap
                     double thickness = Glyphs.getThicknessAt(
-                        midCoord,
-                        orientation,
-                        one,
-                        two);
+                            midCoord,
+                            orientation,
+                            one,
+                            two);
 
                     if (thickness > params.maxFilamentThickness) {
                         if (logger.isFineEnabled() || areVips) {
                             logger.info(
-                                vips + "Too thick: " + (float) thickness +
-                                " vs " + params.maxFilamentThickness + " " +
-                                one + " " + two);
+                                    "{0}Too thick: {1} vs {2} {3} {4}",
+                                    new Object[]{
+                                        vips, (float) thickness,
+                                        params.maxFilamentThickness, one, two
+                                    });
                         }
 
                         return false;
                     }
 
                     // Check thickness consistency
-                    if ((-coordGap <= params.maxInvolvingLength) &&
-                        (thickness > maxConsistentThickness)) {
+                    if ((-coordGap <= params.maxInvolvingLength)
+                            && (thickness > maxConsistentThickness)) {
                         if (logger.isFineEnabled() || areVips) {
                             logger.info(
-                                vips + "Non consistent thickness: " +
-                                (float) thickness + " vs " +
-                                (float) maxConsistentThickness + " " + one +
-                                " " + two);
+                                    "{0}Non consistent thickness: {1} vs {2} {3} {4}",
+                                    new Object[]{
+                                        vips, (float) thickness,
+                                        (float) maxConsistentThickness, one, two
+                                    });
                         }
 
                         return false;
                     }
 
                     // Check space between overlapped filaments
-                    double space = thickness -
-                                   (one.getThicknessAt(midCoord, orientation) +
-                                   two.getThicknessAt(midCoord, orientation));
+                    double space = thickness
+                            - (one.getThicknessAt(midCoord, orientation)
+                               + two.getThicknessAt(midCoord, orientation));
 
                     if (space > maxSpace) {
                         if (logger.isFineEnabled() || areVips) {
                             logger.info(
-                                vips + "Space too large: " + (float) space +
-                                " vs " + maxSpace + " " + one + " " + two);
+                                    "{0}Space too large: {1} vs {2} {3} {4}",
+                                    new Object[]{
+                                        vips, (float) space, maxSpace, one, two
+                                    });
                         }
 
                         return false;
@@ -538,19 +542,20 @@ public class FilamentsFactory
 
                 // Compute position gap, taking thickness into account
                 double oneThickness = one.getWeight() / one.getLength(
-                    orientation);
+                        orientation);
                 double twoThickness = two.getWeight() / two.getLength(
-                    orientation);
-                int    posMargin = (int) Math.rint(
-                    Math.max(oneThickness, twoThickness) / 2);
-                double posGap = Math.abs(stop.getY() - start.getY()) -
-                                posMargin;
+                        orientation);
+                int posMargin = (int) Math.rint(
+                        Math.max(oneThickness, twoThickness) / 2);
+                double posGap = Math.abs(stop.getY() - start.getY())
+                        - posMargin;
 
                 if (posGap > params.maxPosGap) {
                     if (logger.isFineEnabled() || areVips) {
                         logger.info(
-                            vips + "Delta pos too high for gap: " +
-                            (float) posGap + " vs " + params.maxPosGap);
+                                "{0}Delta pos too high for gap: {1} vs {2}",
+                                new Object[]{vips, (float) posGap,
+                                             params.maxPosGap});
                     }
 
                     return false;
@@ -563,8 +568,11 @@ public class FilamentsFactory
                     if (gapSlope > params.maxGapSlope) {
                         if (logger.isFineEnabled() || areVips) {
                             logger.info(
-                                vips + "Slope too high for gap: " +
-                                (float) gapSlope + " vs " + params.maxGapSlope);
+                                    "{0}Slope too high for gap: {1} vs {2}",
+                                    new Object[]{
+                                        vips, (float) gapSlope,
+                                        params.maxGapSlope
+                                    });
                         }
 
                         return false;
@@ -573,7 +581,7 @@ public class FilamentsFactory
             }
 
             if (logger.isFineEnabled() || areVips) {
-                logger.info(vips + "Compatible!");
+                logger.info("{0}Compatible!", vips);
             }
 
             return true;
@@ -587,7 +595,7 @@ public class FilamentsFactory
     // createFilament //
     //----------------//
     private Glyph createFilament (Section section)
-        throws Exception
+            throws Exception
     {
         Filament fil = (Filament) filamentConstructor.newInstance(scaleArgs);
         fil.addSection(section);
@@ -599,22 +607,22 @@ public class FilamentsFactory
     // createFilaments //
     //-----------------//
     /**
-     *   Aggregate long sections into initial filaments
+     * Aggregate long sections into initial filaments.
      */
     private void createFilaments (Collection<Section> source)
-        throws Exception
+            throws Exception
     {
         // Sort sections by decreasing length in the desired orientation
-        List<Section> sections = new ArrayList<Section>(source);
+        List<Section> sections = new ArrayList<>(source);
         Collections.sort(
-            sections,
-            Sections.getReverseLengthComparator(orientation));
+                sections,
+                Sections.getReverseLengthComparator(orientation));
 
         for (Section section : sections) {
             // Limit to main sections
             if (section.getLength(orientation) < params.minCoreSectionLength) {
                 if (section.isVip()) {
-                    logger.info("Too short " + section);
+                    logger.info("Too short {0}", section);
                 }
 
                 continue;
@@ -622,7 +630,7 @@ public class FilamentsFactory
 
             if (isSectionFat(section)) {
                 if (section.isVip()) {
-                    logger.info("Too fat " + section);
+                    logger.info("Too fat {0}", section);
                 }
 
                 continue;
@@ -632,7 +640,9 @@ public class FilamentsFactory
             filaments.add(fil);
 
             if (logger.isFineEnabled() || section.isVip() || nest.isVip(fil)) {
-                logger.info("Created " + fil + " with " + section);
+                logger.info(
+                        "Created {0} with {1}",
+                        new Object[]{fil, section});
 
                 if (section.isVip() || nest.isVip(fil)) {
                     fil.setVip();
@@ -640,10 +650,9 @@ public class FilamentsFactory
             }
         }
 
-        if (logger.isFineEnabled()) {
-            logger.info(
-                "createFilaments: " + filaments.size() + "/" + source.size());
-        }
+        logger.fine(
+                "createFilaments: {0}/{1}",
+                new Object[]{filaments.size(), source.size()});
     }
 
     //-----------------//
@@ -651,7 +660,8 @@ public class FilamentsFactory
     //-----------------//
     /**
      * Expand as much as possible the existing filaments with the
-     * provided sections
+     * provided sections.
+     *
      * @param source the source of available sections
      * @return the collection of expanded filaments
      */
@@ -659,7 +669,7 @@ public class FilamentsFactory
     {
         try {
             // Sort sections by first position 
-            List<Section> sections = new ArrayList<Section>();
+            List<Section> sections = new ArrayList<>();
 
             for (Section section : source) {
                 if (!section.isGlyphMember() && !isSectionFat(section)) {
@@ -667,82 +677,82 @@ public class FilamentsFactory
                 }
             }
 
-            if (logger.isFineEnabled()) {
-                logger.info(
-                    "expandFilaments: " + sections.size() + "/" +
-                    source.size());
-            }
+            logger.fine(
+                    "expandFilaments: {0}/{1}",
+                    new Object[]{sections.size(), source.size()});
 
             Collections.sort(sections, Section.posComparator);
 
-            List<Glyph> glyphs = new ArrayList<Glyph>(sections.size());
+            List<Glyph> glyphs = new ArrayList<>(sections.size());
 
             for (Section section : sections) {
                 Glyph glyph = new BasicGlyph(scale.getInterline());
                 glyph.addSection(
-                    section,
-                    GlyphComposition.Linking.NO_LINK_BACK);
+                        section,
+                        GlyphComposition.Linking.NO_LINK_BACK);
                 glyph = nest.addGlyph(glyph);
                 glyphs.add(glyph);
 
                 if (section.isVip() || nest.isVip(glyph)) {
-                    logger.info("VIP created " + glyph + " from " + section);
+                    logger.info(
+                            "VIP created {0} from {1}",
+                            new Object[]{glyph, section});
                     glyph.setVip();
                 }
             }
 
             // List of filaments, sorted by decreasing length
             Collections.sort(
-                filaments,
-                Glyphs.getReverseLengthComparator(orientation));
+                    filaments,
+                    Glyphs.getReverseLengthComparator(orientation));
 
             // Process each filament on turn
             for (Glyph fil : filaments) {
                 // Build filament fat box
                 final Rectangle filBounds = orientation.oriented(
-                    fil.getContourBox());
+                        fil.getBounds());
                 filBounds.grow(params.maxCoordGap, params.maxPosGap);
 
-                int     maxPos = filBounds.y + filBounds.height;
                 boolean expanding = true;
 
                 do {
                     expanding = false;
 
                     for (Iterator<Glyph> it = glyphs.iterator(); it.hasNext();) {
-                        Glyph     glyph = it.next();
+                        Glyph glyph = it.next();
                         Rectangle glyphBounds = orientation.oriented(
-                            glyph.getContourBox());
+                                glyph.getBounds());
 
                         if (filBounds.intersects(glyphBounds)) {
                             // Check more closely
                             if (canMerge(fil, glyph, true)) {
-                                if (logger.isFineEnabled() ||
-                                    fil.isVip() ||
-                                    glyph.isVip()) {
+                                if (logger.isFineEnabled()
+                                        || fil.isVip()
+                                        || glyph.isVip()) {
                                     logger.info(
-                                        "Merging " + fil + " w/ " +
-                                        Sections.toString(glyph.getMembers()));
+                                            "Merging {0} w/ {1}",
+                                            new Object[]{
+                                                fil,
+                                                Sections.toString(
+                                                glyph.getMembers())
+                                            });
 
                                     if (glyph.isVip()) {
                                         fil.setVip();
                                     }
                                 }
 
-                                fil.include(glyph);
+                                fil.stealSections(glyph);
                                 it.remove();
                                 expanding = true;
 
                                 break;
                             }
-
-                            //                        } else if (glyphBounds.y > maxPos) {
-                            //                            break; // Speedup
                         } else {
                             if (fil.isVip() && glyph.isVip()) {
                                 logger.info(
-                                    "No intersection between " + fil + " and " +
-                                    glyph);
+                                        "No intersection between {0} and {1}",
+                                        new Object[]{fil, glyph});
                             }
                         }
                     }
@@ -773,28 +783,29 @@ public class FilamentsFactory
     // mergeFilaments //
     //----------------//
     /**
-     * Aggregate single-section filaments into long multi-section filaments
+     * Aggregate single-section filaments into long multi-section
+     * filaments.
      */
     private void mergeFilaments ()
     {
         // List of filaments, sorted by decreasing length
         Collections.sort(
-            filaments,
-            Glyphs.getReverseLengthComparator(orientation));
+                filaments,
+                Glyphs.getReverseLengthComparator(orientation));
 
         // Browse by decreasing filament length
         for (Glyph current : filaments) {
             Glyph candidate = current;
 
             // Keep on working while we do have a candidate to check for merge
-            CandidateLoop: 
+            CandidateLoop:
             while (true) {
                 final Rectangle candidateBounds = orientation.oriented(
-                    candidate.getContourBox());
+                        candidate.getBounds());
                 candidateBounds.grow(params.maxCoordGap, params.maxPosGap);
 
                 // Check the candidate vs all filaments until current excluded
-                HeadsLoop: 
+                HeadsLoop:
                 for (Glyph head : filaments) {
                     if (head == current) {
                         break CandidateLoop; // Actual end of sub-list
@@ -802,24 +813,24 @@ public class FilamentsFactory
 
                     if ((head != candidate) && (head.getPartOf() == null)) {
                         Rectangle headBounds = orientation.oriented(
-                            head.getContourBox());
+                                head.getBounds());
 
                         if (headBounds.intersects(candidateBounds)) {
                             // Check for a possible merge
                             if (canMerge(head, candidate, false)) {
-                                if (logger.isFineEnabled() ||
-                                    head.isVip() ||
-                                    candidate.isVip()) {
+                                if (logger.isFineEnabled()
+                                        || head.isVip()
+                                        || candidate.isVip()) {
                                     logger.info(
-                                        "Merged " + candidate + " into " +
-                                        head);
+                                            "Merged {0} into {1}",
+                                            new Object[]{candidate, head});
 
                                     if (candidate.isVip()) {
                                         head.setVip();
                                     }
                                 }
 
-                                head.include(candidate);
+                                head.stealSections(candidate);
                                 candidate = head; // This is a new candidate
 
                                 break HeadsLoop;
@@ -833,8 +844,8 @@ public class FilamentsFactory
                         } else {
                             if (head.isVip() && candidate.isVip()) {
                                 logger.info(
-                                    "No intersection between " + candidate +
-                                    " and " + head);
+                                        "No intersection between {0} and {1}",
+                                        new Object[]{candidate, head});
                             }
                         }
                     }
@@ -861,71 +872,85 @@ public class FilamentsFactory
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
-        Constant.Double    maxGapSlope = new Constant.Double(
-            "tangent",
-            0.5,
-            "Maximum absolute slope for a gap");
-        Constant.Boolean   printWatch = new Constant.Boolean(
-            false,
-            "Should we print out the stop watch?");
-        Constant.Ratio     minSectionAspect = new Constant.Ratio(
-            3,
-            "Minimum section aspect (length / thixkness)");
-        Constant.Ratio     maxConsistentRatio = new Constant.Ratio(
-            1.7,
-            "Maximum thickness ratio for consistent merge");
+        Constant.Double maxGapSlope = new Constant.Double(
+                "tangent",
+                0.5,
+                "Maximum absolute slope for a gap");
 
+        Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
+
+        Constant.Ratio minSectionAspect = new Constant.Ratio(
+                3,
+                "Minimum section aspect (length / thixkness)");
+
+        Constant.Ratio maxConsistentRatio = new Constant.Ratio(
+                1.7,
+                "Maximum thickness ratio for consistent merge");
+
+        //
         // Constants specified WRT mean line thickness
         // -------------------------------------------
+        //
         Scale.LineFraction maxSectionThickness = new Scale.LineFraction(
-            1.5,
-            "Maximum horizontal section thickness WRT mean line height");
-        Scale.LineFraction maxFilamentThickness = new Scale.LineFraction(
-            1.5,
-            "Maximum filament thickness WRT mean line height");
-        Scale.LineFraction maxPosGap = new Scale.LineFraction(
-            0.75,
-            "Maximum delta position for a gap between filaments");
+                1.5,
+                "Maximum horizontal section thickness WRT mean line height");
 
+        Scale.LineFraction maxFilamentThickness = new Scale.LineFraction(
+                1.5,
+                "Maximum filament thickness WRT mean line height");
+
+        Scale.LineFraction maxPosGap = new Scale.LineFraction(
+                0.75,
+                "Maximum delta position for a gap between filaments");
+
+        //
         // Constants specified WRT mean interline
         // --------------------------------------
+        //
         Scale.Fraction minCoreSectionLength = new Scale.Fraction(
-            1,
-            "Minimum length for a section to be considered as core");
+                1,
+                "Minimum length for a section to be considered as core");
+
         Scale.Fraction maxOverlapDeltaPos = new Scale.Fraction(
-            0.5,
-            "Maximum delta position between two overlapping filaments");
+                0.5,
+                "Maximum delta position between two overlapping filaments");
+
         Scale.Fraction maxCoordGap = new Scale.Fraction(
-            1,
-            "Maximum delta coordinate for a gap between filaments");
+                1,
+                "Maximum delta coordinate for a gap between filaments");
+
         Scale.Fraction maxSpace = new Scale.Fraction(
-            0.16,
-            "Maximum space between overlapping filaments");
+                0.16,
+                "Maximum space between overlapping filaments");
+
         Scale.Fraction maxExpansionSpace = new Scale.Fraction(
-            0.02,
-            "Maximum space when expanding filaments");
+                0.02,
+                "Maximum space when expanding filaments");
+
         Scale.Fraction maxPosGapForSlope = new Scale.Fraction(
-            0.1,
-            "Maximum delta Y to check slope for a gap between filaments");
+                0.1,
+                "Maximum delta Y to check slope for a gap between filaments");
+
         Scale.Fraction maxInvolvingLength = new Scale.Fraction(
-            2,
-            "Maximum filament length to apply thickness test");
+                2,
+                "Maximum filament length to apply thickness test");
     }
 
     //------------//
     // Parameters //
     //------------//
     /**
-     * Class {@code Parameters} gathers all scale-dependent parameters
+     * Class {@code Parameters} gathers all scale-dependent parameters.
      */
     private class Parameters
     {
@@ -971,7 +996,6 @@ public class FilamentsFactory
         public double maxGapSlope;
 
         //~ Methods ------------------------------------------------------------
-
         public void dump ()
         {
             Main.dumping.dump(this);

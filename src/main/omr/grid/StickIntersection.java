@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -33,6 +33,7 @@ public class StickIntersection
 
     /** comparator on increasing abscissa */
     public static Comparator<StickIntersection> horiComparator = new Comparator<StickIntersection>() {
+        @Override
         public int compare (StickIntersection o1,
                             StickIntersection o2)
         {
@@ -49,6 +50,7 @@ public class StickIntersection
 
     /** comparator on increasing ordinate */
     public static Comparator<StickIntersection> vertComparator = new Comparator<StickIntersection>() {
+        @Override
         public int compare (StickIntersection o1,
                             StickIntersection o2)
         {
@@ -93,36 +95,11 @@ public class StickIntersection
 
     //~ Methods ----------------------------------------------------------------
 
-    //------------------//
-    // getStickAncestor //
-    //------------------//
-    /**
-     * @return the stick, in fact its ancestor
-     */
-    public Glyph getStickAncestor ()
-    {
-        return stick.getAncestor();
-    }
-
-    //----------//
-    // sticksOf //
-    //----------//
-    /** Conversion to a sequence of sticks */
-    public static List<Glyph> sticksOf (Collection<StickIntersection> sps)
-    {
-        List<Glyph> sticks = new ArrayList<Glyph>();
-
-        for (StickIntersection sp : sps) {
-            sticks.add(sp.getStickAncestor());
-        }
-
-        return sticks;
-    }
-
     //-----------//
     // compareTo //
     //-----------//
     /** For sorting sticks on abscissa, for a given staff */
+    @Override
     public int compareTo (StickIntersection that)
     {
         int dx = Double.compare(x, that.x);
@@ -136,12 +113,38 @@ public class StickIntersection
     }
 
     //----------//
+    // sticksOf //
+    //----------//
+    /** Conversion to a sequence of sticks */
+    public static List<Glyph> sticksOf (Collection<StickIntersection> sps)
+    {
+        List<Glyph> sticks = new ArrayList<>();
+
+        for (StickIntersection sp : sps) {
+            sticks.add(sp.getStickAncestor());
+        }
+
+        return sticks;
+    }
+
+    //------------------//
+    // getStickAncestor //
+    //------------------//
+    /**
+     * @return the stick, in fact its ancestor
+     */
+    public Glyph getStickAncestor ()
+    {
+        return stick.getAncestor();
+    }
+
+    //----------//
     // toString //
     //----------//
     @Override
     public String toString ()
     {
-        return "Glyph#" + getStickAncestor()
-                              .getId() + "@x:" + (float) x + ",y:" + (float) y;
+        return getStickAncestor()
+                   .idString() + "@x:" + (float) x + ",y:" + (float) y;
     }
 }

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -92,7 +92,7 @@ public class ShapeBoard
     /**
      * To force the height of the various shape panels (just a dirty hack)
      */
-    private static final Map<ShapeSet, Integer> heights = new HashMap<ShapeSet, Integer>();
+    private static final Map<ShapeSet, Integer> heights = new HashMap<>();
 
     static {
         heights.put(ShapeSet.Accidentals, 40);
@@ -127,6 +127,7 @@ public class ShapeBoard
      * replaced by the panel of shapes that compose the selected range.
      */
     private ActionListener rangeListener = new ActionListener() {
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             // Remove panel of ranges
@@ -161,6 +162,7 @@ public class ShapeBoard
      * range.
      */
     private ActionListener closeListener = new ActionListener() {
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             // Remove current panel of shapes
@@ -209,7 +211,7 @@ public class ShapeBoard
     private final Panel rangesPanel;
 
     /** Map of shape panels */
-    private final Map<ShapeSet, Panel> shapesPanels = new HashMap<ShapeSet, Panel>();
+    private final Map<ShapeSet, Panel> shapesPanels = new HashMap<>();
 
     /** Current panel of shapes */
     private Panel shapesPanel;
@@ -263,6 +265,7 @@ public class ShapeBoard
      * Unused in this board.
      * @param event unused
      */
+    @Override
     public void onEvent (UserEvent event)
     {
         // Empty
@@ -564,7 +567,7 @@ public class ShapeBoard
                         glassPane.setImage(image);
                     }
 
-                    prevComponent = new WeakReference<Component>(component);
+                    prevComponent = new WeakReference<>(component);
                 }
             } else if (prevComponent.get() != null) {
                 // No longer on a droppable target, reuse initial image & size
@@ -579,7 +582,7 @@ public class ShapeBoard
 
         public final void reset ()
         {
-            prevComponent = new WeakReference<Component>(null);
+            prevComponent = new WeakReference<>(null);
         }
     }
 }

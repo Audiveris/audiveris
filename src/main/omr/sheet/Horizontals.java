@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -28,10 +28,10 @@ public class Horizontals
     //~ Instance fields --------------------------------------------------------
 
     /** The collection of endings found */
-    private final List<Ending> endings = new ArrayList<Ending>();
+    private final List<Ending> endings = new ArrayList<>();
 
     /** The collection of ledgers found */
-    private final List<Ledger> ledgers = new ArrayList<Ledger>();
+    private final List<Ledger> ledgers = new ArrayList<>();
 
     //~ Constructors -----------------------------------------------------------
 

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -87,6 +87,7 @@ public abstract class AbstractStep
     // displayUI //
     //-----------//
     /** Make the related user interface visible for this step */
+    @Override
     public void displayUI (Sheet sheet)
     {
         // Void by default
@@ -100,21 +101,18 @@ public abstract class AbstractStep
      * @param systems systems to process (null means all systems)
      * @throws StepException raised if processing failed
      */
+    @Override
     public void doStep (Collection<SystemInfo> systems,
                         Sheet                  sheet)
         throws StepException
     {
-        if (logger.isFineEnabled()) {
-            logger.fine(sheet.getLogPrefix() + "Starting " + this);
-        }
+            logger.fine("{0}Starting {1}", new Object[]{sheet.getLogPrefix(), this});
 
         started(sheet);
         doit(systems, sheet);
         done(sheet);
 
-        if (logger.isFineEnabled()) {
-            logger.fine(sheet.getLogPrefix() + "Finished " + this);
-        }
+            logger.fine("{0}Finished {1}", new Object[]{sheet.getLogPrefix(), this});
     }
 
     //------//
@@ -123,6 +121,7 @@ public abstract class AbstractStep
     /**
      * Flag this step as done
      */
+    @Override
     public void done (Sheet sheet)
     {
         sheet.done(this);
@@ -135,6 +134,7 @@ public abstract class AbstractStep
      * Report a description of the step
      * @return a short description
      */
+    @Override
     public String getDescription ()
     {
         return description;
@@ -144,12 +144,14 @@ public abstract class AbstractStep
     // getName //
     //---------//
     /** Name of the step */
+    @Override
     public String getName ()
     {
         return name;
     }
 
     /** Related short tab label */
+    @Override
     public String getTab ()
     {
         return label;
@@ -162,6 +164,7 @@ public abstract class AbstractStep
      * Check whether this task has been done
      * @return true if started/done, false otherwise
      */
+    @Override
     public boolean isDone (Sheet sheet)
     {
         return sheet.isDone(this);
@@ -171,6 +174,7 @@ public abstract class AbstractStep
     // isMandatory //
     //-------------//
     /** Is the step mandatory? */
+    @Override
     public boolean isMandatory ()
     {
         return mandatory == Step.Mandatory.MANDATORY;
@@ -180,6 +184,7 @@ public abstract class AbstractStep
     // isRedoable //
     //------------//
     /** Is the step repeatable at will? */
+    @Override
     public boolean isRedoable ()
     {
         return redoable == Step.Redoable.REDOABLE;
@@ -188,6 +193,7 @@ public abstract class AbstractStep
     //--------------//
     // isScoreLevel //
     //--------------//
+    @Override
     public boolean isScoreLevel ()
     {
         return level == Step.Level.SCORE_LEVEL;
@@ -220,6 +226,7 @@ public abstract class AbstractStep
     //--------------//
     // toLongString //
     //--------------//
+    @Override
     public String toLongString ()
     {
         StringBuilder sb = new StringBuilder("{Step");

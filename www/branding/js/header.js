@@ -9,9 +9,8 @@ document.write("        <ul id='tabs'>");
 insert("Home",         "index.html");
 insert("Snapshots",    "docs/manual/snapshots.html");
 insert("Installation", "docs/manual/installation.html");
-insert("Example",      "docs/manual/example.html");
-insert("Operation",    "docs/manual/operation.html");
 insert("Releases",     "docs/manual/releases.html");
+insert("Handbook",     "docs/manual/handbook.html");
 document.write("        </ul>");
 document.write("    </nav>            ");
 

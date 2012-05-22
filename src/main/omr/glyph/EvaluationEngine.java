@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2011. All rights reserved.               //
+//  Copyright (C) Herve Bitteur 2000-2012. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -23,7 +23,7 @@ import java.util.Collection;
  * @author Hervé Bitteur
  */
 public interface EvaluationEngine
-    extends GlyphEvaluator
+    extends ShapeEvaluator
 {
     //~ Enumerations -----------------------------------------------------------
 

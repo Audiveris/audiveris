@@ -57,23 +57,22 @@
     <!-- ============================= -->
     <target name="global-replace"
         description="Modify token of every source file">
-
 	
-<!--        <replace encoding="utf8" dir="${train.dir}">
-            <replacetoken>"DOT"</replacetoken>
-            <replacevalue>"DOT_set"</replacevalue>
-            <include name="**/*.xml"/>
+<!--        <replace encoding="utf8" dir="${src.dir}">
+            <replacetoken>Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.</replacetoken>
+            <replacevalue>Copyright © Hervé Bitteur 2000-2012. All rights reserved.  </replacevalue>
+            <include name="**/*.properties"/>
         </replace>-->
 	     
 
 	<replaceregexp
 	    encoding="utf8"
-	    match="import omr.util.Implement;"
-	    replace=""
+	    match="logger.log\(\s*Level.WARNING,\s*"
+	    replace="logger.warning("
 	    flags="g"
 	    byline="true">
 	    <fileset dir="${src.dir}">
-		<include name="**/*.java"/>
+		<include name="**/BasicNest.java"/>
 	    </fileset>
         </replaceregexp>
 	
@@ -94,7 +93,7 @@
             destfile="${backup.dir}/${name}/${DSTAMP}-${machine.name}-src.zip" >
             <fileset dir="${basedir}"  
                      includes="build.xml, dev/**, src/**, settings/**, eval/**, symbols/**, www/**, train/*.def, nb/jp/**"
-                     excludes="${dist.excludes},www/docs/api/**,www/branding/**,nb/jp/dist/**"/>
+                     excludes="${dist.excludes},www/docs/api/**,www/branding/**,dev/externals/**,dev/tools/**"/>
         </zip>
 
     </target>

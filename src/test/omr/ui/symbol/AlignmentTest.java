@@ -34,7 +34,7 @@ public class AlignmentTest
     //~ Instance fields --------------------------------------------------------
 
     /** Map Alignment -> Point */
-    Map<Alignment, Point> points = new HashMap<Alignment, Point>();
+    Map<Alignment, Point> points = new HashMap<>();
 
     //~ Constructors -----------------------------------------------------------
 

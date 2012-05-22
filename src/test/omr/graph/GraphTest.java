@@ -196,7 +196,7 @@ public class GraphTest
     {
         createVertices();
 
-        Collection<MyVertex> ref = new ArrayList<MyVertex>();
+        Collection<MyVertex> ref = new ArrayList<>();
         ref.add(v1);
         ref.add(v3);
         ref.add(v2);

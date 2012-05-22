@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -35,7 +35,7 @@ import java.util.TreeSet;
  * @author Hervé Bitteur
  */
 public class LyricsLine
-    extends PartNode
+        extends PartNode
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -46,7 +46,10 @@ public class LyricsLine
     private static final Logger logger = Logger.getLogger(LyricsLine.class);
 
     /** For comparing (TreeNode) LyricsLine instances on their ordinate */
-    public static final Comparator<TreeNode> yComparator = new Comparator<TreeNode>() {
+    public static final Comparator<TreeNode> yComparator = new Comparator<TreeNode>()
+    {
+
+        @Override
         public int compare (TreeNode tn1,
                             TreeNode tn2)
         {
@@ -57,9 +60,7 @@ public class LyricsLine
         }
     };
 
-
     //~ Instance fields --------------------------------------------------------
-
     /** The line number */
     private int id;
 
@@ -67,10 +68,9 @@ public class LyricsLine
     private Integer y;
 
     /** The x-ordered collection of lyrics items */
-    private final SortedSet<LyricsItem> items = new TreeSet<LyricsItem>();
+    private final SortedSet<LyricsItem> items = new TreeSet<>();
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new LyricsLine object.
      *
@@ -82,7 +82,6 @@ public class LyricsLine
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // populate //
     //----------//
@@ -95,9 +94,7 @@ public class LyricsLine
     public static void populate (LyricsItem item,
                                  SystemPart part)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Populating LyricsLine with " + item);
-        }
+        logger.fine("Populating LyricsLine with {0}", item);
 
         // First look for a suitable lyrics line
         for (TreeNode node : part.getLyrics()) {
@@ -105,11 +102,7 @@ public class LyricsLine
 
             if (line.isAlignedWith(item.getReferencePoint())) {
                 line.addItem(item);
-
-                if (logger.isFineEnabled()) {
-                    logger.fine("Added " + item + " into " + line);
-                }
-
+                logger.fine("Added {0} into {1}", new Object[]{item, line});
                 return;
             }
         }
@@ -117,10 +110,7 @@ public class LyricsLine
         // No compatible line, create a brand new one
         LyricsLine line = new LyricsLine(part);
         line.addItem(item);
-
-        if (logger.isFineEnabled()) {
-            logger.fine("Created new " + line);
-        }
+        logger.fine("Created new {0}", line);
     }
 
     //------------------//
@@ -136,15 +126,12 @@ public class LyricsLine
         LyricsLine nextLine = null;
 
         // Check existence of similar line in following system part
-        SystemPart nextPart = getPart()
-                                  .getFollowing();
+        SystemPart nextPart = getPart().getFollowing();
 
         if (nextPart != null) {
             // Retrieve the same lyrics line in the next (system) part
-            if (nextPart.getLyrics()
-                        .size() >= id) {
-                nextLine = (LyricsLine) nextPart.getLyrics()
-                                                .get(id - 1);
+            if (nextPart.getLyrics().size() >= id) {
+                nextLine = (LyricsLine) nextPart.getLyrics().get(id - 1);
             }
         }
 
@@ -172,10 +159,8 @@ public class LyricsLine
         // Check existence of similar line in preceding system part
         SystemPart part = getPart();
 
-        if ((part != null) && (part.getLyrics()
-                                   .size() >= id)) {
-            return (LyricsLine) part.getLyrics()
-                                    .get(id - 1);
+        if ((part != null) && (part.getLyrics().size() >= id)) {
+            return (LyricsLine) part.getLyrics().get(id - 1);
         }
 
         return null;
@@ -263,13 +248,8 @@ public class LyricsLine
     {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("{LyricLine #")
-          .append(getId())
-          .append(" y:")
-          .append(y)
-          .append(" items:")
-          .append(items)
-          .append("}");
+        sb.append("{LyricLine #").append(getId()).append(" y:").append(y).append(
+                " items:").append(items).append("}");
 
         return sb.toString();
     }
@@ -308,22 +288,21 @@ public class LyricsLine
      */
     private boolean isAlignedWith (PixelPoint sysPt)
     {
-        return Math.abs(sysPt.y - getY()) <= getScale()
-                                                 .toPixels(constants.maxItemDy);
+        return Math.abs(sysPt.y - getY()) <= getScale().toPixels(
+                constants.maxItemDy);
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Scale.Fraction maxItemDy = new Scale.Fraction(
-            2,
-            "Maximum vertical distance between a lyrics line and a lyrics item");
+                2,
+                "Maximum vertical distance between a lyrics line and a lyrics item");
     }
 }

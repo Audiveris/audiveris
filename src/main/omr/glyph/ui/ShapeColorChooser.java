@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -214,6 +214,7 @@ public class ShapeColorChooser
         private PasteAction    paste = new PasteAction();
         private ActionListener selectionListener = new ActionListener() {
             // Called when a range has been selected
+            @Override
             public void actionPerformed (ActionEvent e)
             {
                 JMenuItem source = (JMenuItem) e.getSource();
@@ -258,6 +259,7 @@ public class ShapeColorChooser
         //~ Methods ------------------------------------------------------------
 
         // When color chooser selection has been made
+        @Override
         public void colorChanged ()
         {
             if (current != null) {
@@ -265,6 +267,7 @@ public class ShapeColorChooser
             }
         }
 
+        @Override
         protected void refreshBanner ()
         {
             if (current != null) {
@@ -292,6 +295,7 @@ public class ShapeColorChooser
 
             //~ Methods --------------------------------------------------------
 
+            @Override
             public void actionPerformed (ActionEvent e)
             {
                 current.setConstantColor(chosenColor);
@@ -316,6 +320,7 @@ public class ShapeColorChooser
 
             //~ Methods --------------------------------------------------------
 
+            @Override
             public void actionPerformed (ActionEvent e)
             {
                 JButton button = (JButton) e.getSource();
@@ -335,6 +340,7 @@ public class ShapeColorChooser
         public Shape           current;
         private ActionListener selectionListener = new ActionListener() {
             // Called when a shape has been selected
+            @Override
             public void actionPerformed (ActionEvent e)
             {
                 JMenuItem source = (JMenuItem) e.getSource();
@@ -388,6 +394,7 @@ public class ShapeColorChooser
         //~ Methods ------------------------------------------------------------
 
         // When color chooser selection has been made
+        @Override
         public void colorChanged ()
         {
             updateActions();
@@ -409,6 +416,7 @@ public class ShapeColorChooser
             paste.setEnabled(false);
         }
 
+        @Override
         protected void refreshBanner ()
         {
             if (current != null) {
@@ -469,6 +477,7 @@ public class ShapeColorChooser
 
             //~ Methods --------------------------------------------------------
 
+            @Override
             public void actionPerformed (ActionEvent e)
             {
                 colorChooser.setColor(current.getColor());
@@ -487,6 +496,7 @@ public class ShapeColorChooser
 
             //~ Methods --------------------------------------------------------
 
+            @Override
             public void actionPerformed (ActionEvent e)
             {
                 // Drop specific for default
@@ -511,6 +521,7 @@ public class ShapeColorChooser
 
             //~ Methods --------------------------------------------------------
 
+            @Override
             public void actionPerformed (ActionEvent e)
             {
                 // Set a specific color
@@ -535,6 +546,7 @@ public class ShapeColorChooser
 
             //~ Methods --------------------------------------------------------
 
+            @Override
             public void actionPerformed (ActionEvent e)
             {
                 JButton button = (JButton) e.getSource();

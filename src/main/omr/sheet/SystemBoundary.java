@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -50,7 +50,7 @@ public class SystemBoundary
     private final SystemInfo system;
 
     /** The north and south limits */
-    private final EnumMap<VerticalSide, BrokenLine> limits = new EnumMap<VerticalSide, BrokenLine>(
+    private final EnumMap<VerticalSide, BrokenLine> limits = new EnumMap<>(
         VerticalSide.class);
 
     /** Handling of the SystemBoundary is delegated to a Polygon */
@@ -210,7 +210,7 @@ public class SystemBoundary
         }
 
         // South (in reverse order)
-        List<Point> reverse = new ArrayList<Point>(
+        List<Point> reverse = new ArrayList<>(
             limits.get(VerticalSide.BOTTOM).getPoints());
         Collections.reverse(reverse);
 

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -65,17 +65,19 @@ public class FilamentLine
         }
     }
 
-    //---------------//
-    // getContourBox //
-    //---------------//
-    public PixelRectangle getContourBox ()
+    //-----------//
+    // getBounds //
+    //-----------//
+    @Override
+    public PixelRectangle getBounds ()
     {
-        return fil.getContourBox();
+        return fil.getBounds();
     }
 
     //-------------//
     // getEndPoint //
     //-------------//
+    @Override
     public Point2D getEndPoint (HorizontalSide side)
     {
         if (side == HorizontalSide.LEFT) {
@@ -96,6 +98,7 @@ public class FilamentLine
     //-------//
     // getId //
     //-------//
+    @Override
     public int getId ()
     {
         return fil.getId();
@@ -104,6 +107,7 @@ public class FilamentLine
     //--------------//
     // getLeftPoint //
     //--------------//
+    @Override
     public Point2D getLeftPoint ()
     {
         return getStartPoint();
@@ -112,6 +116,7 @@ public class FilamentLine
     //---------------//
     // getRightPoint //
     //---------------//
+    @Override
     public Point2D getRightPoint ()
     {
         return getStopPoint();
@@ -120,6 +125,7 @@ public class FilamentLine
     //-------------//
     // getSections //
     //-------------//
+    @Override
     public Collection<Section> getSections ()
     {
         throw new UnsupportedOperationException("Not supported yet.");
@@ -240,6 +246,7 @@ public class FilamentLine
     //-----//
     // yAt //
     //-----//
+    @Override
     public int yAt (int x)
     {
         return (int) Math.rint(yAt((double) x));
@@ -248,6 +255,7 @@ public class FilamentLine
     //-----//
     // yAt //
     //-----//
+    @Override
     public double yAt (double x)
     {
         return fil.getPositionAt(x, Orientation.HORIZONTAL);

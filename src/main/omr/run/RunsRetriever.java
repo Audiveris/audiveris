@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -179,13 +179,14 @@ public class RunsRetriever
             // Parallel (TODO: should use Java 7 fork/join someday...)
             try {
                 // Browse one dimension
-                List<Callable<Void>> tasks = new ArrayList<Callable<Void>>(
+                List<Callable<Void>> tasks = new ArrayList<>(
                     pMax - pMin + 1);
 
                 for (int p = pMin; p <= pMax; p++) {
                     final int pp = p;
                     tasks.add(
                         new Callable<Void>() {
+                        @Override
                                 public Void call ()
                                     throws Exception
                                 {

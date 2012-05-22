@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -81,9 +81,10 @@ public class BasicAlignment
     //-----------//
     // getAspect //
     //-----------//
+    @Override
     public final double getAspect (Orientation orientation)
     {
-        PixelRectangle box = glyph.getContourBox();
+        PixelRectangle box = glyph.getBounds();
 
         if (orientation == HORIZONTAL) {
             return (double) box.width / (double) box.height;
@@ -95,6 +96,7 @@ public class BasicAlignment
     //---------------//
     // getFirstStuck //
     //---------------//
+    @Override
     public int getFirstStuck ()
     {
         int stuck = 0;
@@ -124,6 +126,7 @@ public class BasicAlignment
     //--------------------------//
     // getInvertedSlope //
     //--------------------------//
+    @Override
     public double getInvertedSlope ()
     {
         checkLine();
@@ -135,6 +138,7 @@ public class BasicAlignment
     //--------------//
     // getLastStuck //
     //--------------//
+    @Override
     public int getLastStuck ()
     {
         int stuck = 0;
@@ -155,9 +159,10 @@ public class BasicAlignment
     //-----------//
     // getLength //
     //-----------//
+    @Override
     public final int getLength (Orientation orientation)
     {
-        PixelRectangle box = glyph.getContourBox();
+        PixelRectangle box = glyph.getBounds();
 
         if (orientation == HORIZONTAL) {
             return box.width;
@@ -169,6 +174,7 @@ public class BasicAlignment
     //-----------------//
     // getLine //
     //-----------------//
+    @Override
     public Line getLine ()
     {
         checkLine();
@@ -179,6 +185,7 @@ public class BasicAlignment
     //-----------------//
     // getMeanDistance //
     //-----------------//
+    @Override
     public double getMeanDistance ()
     {
         if (line == null) {
@@ -191,6 +198,7 @@ public class BasicAlignment
     //------------------//
     // getMeanThickness //
     //------------------//
+    @Override
     public double getMeanThickness (Orientation orientation)
     {
         return (double) glyph.getWeight() / getLength(orientation);
@@ -199,6 +207,7 @@ public class BasicAlignment
     //-----------//
     // getMidPos //
     //-----------//
+    @Override
     public int getMidPos (Orientation orientation)
     {
         if (orientation == VERTICAL) {
@@ -217,6 +226,7 @@ public class BasicAlignment
     //---------------//
     // getPositionAt //
     //---------------//
+    @Override
     public double getPositionAt (double      coord,
                                  Orientation orientation)
     {
@@ -238,6 +248,7 @@ public class BasicAlignment
      * @param absRoi the desired absolute region of interest
      * @return the absolute barycenter of the pixels found
      */
+    @Override
     public Point2D getRectangleCentroid (PixelRectangle absRoi)
     {
         Barycenter barycenter = new Barycenter();
@@ -256,6 +267,7 @@ public class BasicAlignment
     //---------------//
     // getStartPoint //
     //---------------//
+    @Override
     public Point2D getStartPoint (Orientation orientation)
     {
         checkLine();
@@ -280,6 +292,7 @@ public class BasicAlignment
     //--------------//
     // getStopPoint //
     //--------------//
+    @Override
     public Point2D getStopPoint (Orientation orientation)
     {
         checkLine();
@@ -304,9 +317,10 @@ public class BasicAlignment
     //--------------//
     // getThickness //
     //--------------//
+    @Override
     public final int getThickness (Orientation orientation)
     {
-        PixelRectangle box = glyph.getContourBox();
+        PixelRectangle box = glyph.getBounds();
 
         if (orientation == HORIZONTAL) {
             return box.height;
@@ -345,6 +359,7 @@ public class BasicAlignment
     //----------//
     // getSlope //
     //----------//
+    @Override
     public double getSlope ()
     {
         if (slope == null) {
@@ -360,6 +375,7 @@ public class BasicAlignment
     //----------------//
     // getThicknessAt //
     //----------------//
+    @Override
     public double getThicknessAt (double      coord,
                                   Orientation orientation)
     {
@@ -380,9 +396,10 @@ public class BasicAlignment
     //------------//
     // renderLine //
     //------------//
+    @Override
     public void renderLine (Graphics2D g)
     {
-        if (!glyph.getContourBox()
+        if (!glyph.getBounds()
                   .intersects(g.getClipBounds())) {
             return;
         }
@@ -399,6 +416,7 @@ public class BasicAlignment
     //-----------------//
     // setEndingPoints //
     //-----------------//
+    @Override
     public void setEndingPoints (Point2D pStart,
                                  Point2D pStop)
     {
@@ -409,7 +427,7 @@ public class BasicAlignment
         computeLine();
 
         // Enlarge contour box if needed
-        PixelRectangle box = glyph.getContourBox();
+        PixelRectangle box = glyph.getBounds();
         box.add(pStart);
         box.add(pStop);
         glyph.setContourBox(box);
@@ -439,7 +457,7 @@ public class BasicAlignment
             line.includeLine(section.getAbsoluteLine());
         }
 
-        PixelRectangle box = glyph.getContourBox();
+        PixelRectangle box = glyph.getBounds();
 
         // We have a problem if glyph is just 1 pixel: no computable slope!
         if (glyph.getWeight() <= 1) {

@@ -34,7 +34,7 @@ public class MomentsExtractorTest<D extends OrthogonalMoments>
 {
     //~ Instance fields --------------------------------------------------------
 
-    Map<Shape, D> descriptors = new EnumMap<Shape, D>(Shape.class);
+    Map<Shape, D> descriptors = new EnumMap<>(Shape.class);
     File          temp = new File("temp");
 
     //~ Constructors -----------------------------------------------------------
@@ -125,11 +125,11 @@ public class MomentsExtractorTest<D extends OrthogonalMoments>
     //----------------//
     private void printRelations ()
     {
-        List<ShapeRelations> allRelations = new ArrayList<ShapeRelations>();
+        List<ShapeRelations> allRelations = new ArrayList<>();
 
         for (Map.Entry<Shape, D> entry : descriptors.entrySet()) {
             Shape          shape = entry.getKey();
-            List<Relation> relations = new ArrayList<Relation>();
+            List<Relation> relations = new ArrayList<>();
 
             for (Map.Entry<Shape, D> e : descriptors.entrySet()) {
                 Shape s = e.getKey();

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -86,5 +86,9 @@ public class LineUtilities
         double y = ((v12 * (y3 - y4)) - ((y1 - y2) * v34)) / den;
 
         return new Point2D.Double(x, y);
+    }
+
+    private LineUtilities ()
+    {
     }
 }

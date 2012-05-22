@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -29,51 +29,50 @@ import java.util.concurrent.Callable;
  * @author Hervé Bitteur
  */
 public abstract class AbstractSystemStep
-    extends AbstractStep
+        extends AbstractStep
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
-        AbstractSystemStep.class);
+            AbstractSystemStep.class);
 
     //~ Constructors -----------------------------------------------------------
-
     //--------------------//
     // AbstractSystemStep //
     //--------------------//
     /**
      * Creates a new AbstractSystemStep object.
      *
-     * @param level score level only or sheet level
-     * @param mandatory step must be done before any output
-     * @param redoable step can be redone at will
-     * @param label The title of the related (or most relevant) view tab
+     * @param level       score level only or sheet level
+     * @param mandatory   step must be done before any output
+     * @param redoable    step can be redone at will
+     * @param label       The title of the related (or most relevant) view tab
      * @param description A step description for the end user
      */
-    public AbstractSystemStep (String    name,
-                               Level     level,
+    public AbstractSystemStep (String name,
+                               Level level,
                                Mandatory mandatory,
-                               Redoable  redoable,
-                               String    label,
-                               String    description)
+                               Redoable redoable,
+                               String label,
+                               String description)
     {
         super(name, level, mandatory, redoable, label, description);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // doSystem //
     //----------//
     /**
      * Actually perform the step on the given system. This method must be
      * actually defined for any concrete system step.
+     *
      * @param system the system to process
      * @throws StepException raised if processing failed
      */
     public abstract void doSystem (SystemInfo system)
-        throws StepException;
+            throws StepException;
 
     //------//
     // doit //
@@ -81,13 +80,15 @@ public abstract class AbstractSystemStep
     /**
      * Actually perform the step.
      * This method is run when this step is explicitly selected
+     *
      * @param systems systems to process (null means all systems)
-     * @param sheet the sheet to process
+     * @param sheet   the sheet to process
      * @throws StepException raised if processing failed
      */
+    @Override
     public void doit (Collection<SystemInfo> systems,
-                      Sheet                  sheet)
-        throws StepException
+                      Sheet sheet)
+            throws StepException
     {
         // Preliminary actions
         doProlog(systems, sheet);
@@ -104,12 +105,13 @@ public abstract class AbstractSystemStep
     //----------//
     /**
      * Final processing for this step, once all systems have been processed
+     *
      * @param systems the systems which have been updated
      * @throws StepException raised if processing failed
      */
     protected void doEpilog (Collection<SystemInfo> systems,
-                             Sheet                  sheet)
-        throws StepException
+                             Sheet sheet)
+            throws StepException
     {
         // Empty by default
     }
@@ -120,12 +122,13 @@ public abstract class AbstractSystemStep
     /**
      * Do preliminary common work before all systems processings are launched in
      * parallel
+     *
      * @param systems the systems which will be updated
      * @throws StepException raised if processing failed
      */
     protected void doProlog (Collection<SystemInfo> systems,
-                             Sheet                  sheet)
-        throws StepException
+                             Sheet sheet)
+            throws StepException
     {
         // Empty by default
     }
@@ -135,14 +138,15 @@ public abstract class AbstractSystemStep
     //---------------//
     /**
      * Launch the system processing in parallel, one task per system
+     *
      * @param systems the systems to process
-     * @param sheet the containing sheet
+     * @param sheet   the containing sheet
      */
     private void doitPerSystem (Collection<SystemInfo> systems,
-                                Sheet                  sheet)
+                                Sheet sheet)
     {
         try {
-            Collection<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
+            Collection<Callable<Void>> tasks = new ArrayList<>();
 
             if (systems == null) {
                 systems = sheet.getSystems();
@@ -151,22 +155,24 @@ public abstract class AbstractSystemStep
             for (SystemInfo info : systems) {
                 final SystemInfo system = info;
                 tasks.add(
-                    new Callable<Void>() {
+                        new Callable<Void>()
+                        {
+
+                            @Override
                             public Void call ()
-                                throws Exception
+                                    throws Exception
                             {
                                 try {
-                                    if (logger.isFineEnabled()) {
-                                        logger.fine(
-                                            AbstractSystemStep.this +
-                                            " doSystem #" + system.getId());
-                                    }
+                                    logger.fine("{0} doSystem #{1}",
+                                                new Object[]{
+                                                AbstractSystemStep.this, system.
+                                                getId()});
 
                                     doSystem(system);
                                 } catch (Exception ex) {
                                     logger.warning(
-                                        "Interrupt on " + system,
-                                        ex);
+                                            "Interrupt on " + system,
+                                            ex);
                                 }
 
                                 return null;
@@ -175,8 +181,7 @@ public abstract class AbstractSystemStep
             }
 
             // Launch all system tasks in parallel and wait for their completion
-            OmrExecutors.getLowExecutor()
-                        .invokeAll(tasks);
+            OmrExecutors.getLowExecutor().invokeAll(tasks);
         } catch (InterruptedException ex) {
             logger.warning("doitPerSystem got interrupted");
             throw new ProcessingCancellationException(ex);

@@ -40,6 +40,7 @@ public class AbstractCellEditor
      *
      * @param l DOCUMENT ME!
      */
+    @Override
     public void addCellEditorListener (CellEditorListener l)
     {
         listenerList.add(CellEditorListener.class, l);
@@ -51,6 +52,7 @@ public class AbstractCellEditor
     /**
      * DOCUMENT ME!
      */
+    @Override
     public void cancelCellEditing ()
     {
     }
@@ -63,6 +65,7 @@ public class AbstractCellEditor
      *
      * @return DOCUMENT ME!
      */
+    @Override
     public Object getCellEditorValue ()
     {
         return null;
@@ -78,6 +81,7 @@ public class AbstractCellEditor
      *
      * @return DOCUMENT ME!
      */
+    @Override
     public boolean isCellEditable (EventObject e)
     {
         return true;
@@ -91,6 +95,7 @@ public class AbstractCellEditor
      *
      * @param l DOCUMENT ME!
      */
+    @Override
     public void removeCellEditorListener (CellEditorListener l)
     {
         listenerList.remove(CellEditorListener.class, l);
@@ -106,6 +111,7 @@ public class AbstractCellEditor
      *
      * @return DOCUMENT ME!
      */
+    @Override
     public boolean shouldSelectCell (EventObject anEvent)
     {
         return false;
@@ -119,6 +125,7 @@ public class AbstractCellEditor
      *
      * @return DOCUMENT ME!
      */
+    @Override
     public boolean stopCellEditing ()
     {
         return true;

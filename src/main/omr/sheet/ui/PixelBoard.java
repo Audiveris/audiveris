@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -31,7 +31,6 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import org.bushe.swing.event.EventSubscriber;
 
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -49,7 +48,7 @@ import javax.swing.KeyStroke;
  * @author Hervé Bitteur
  */
 public class PixelBoard
-    extends Board
+        extends Board
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -57,75 +56,71 @@ public class PixelBoard
     private static final Logger logger = Logger.getLogger(PixelBoard.class);
 
     /** Events this entity is interested in */
-    private static final Class[] eventClasses = new Class[] {
-                                                    LocationEvent.class,
-                                                    PixelLevelEvent.class
-                                                };
+    private static final Class[] eventClasses = new Class[]{
+        LocationEvent.class,
+        PixelLevelEvent.class
+    };
 
     //~ Instance fields --------------------------------------------------------
-
     /** Abscissa of upper Left point */
     private final LIntegerField x = new LIntegerField(
-        "X",
-        "Abscissa of upper left corner");
+            "X",
+            "Abscissa of upper left corner");
 
     /** Ordinate of upper Left point */
     private final LIntegerField y = new LIntegerField(
-        "Y",
-        "Ordinate of upper left corner");
+            "Y",
+            "Ordinate of upper left corner");
 
     /** Width of rectangle */
     private final LIntegerField width = new LIntegerField(
-        "Width",
-        "Width of rectangle");
+            "Width",
+            "Width of rectangle");
 
     /** Height of rectangle */
     private final LIntegerField height = new LIntegerField(
-        "Height",
-        "Height of rectangle");
+            "Height",
+            "Height of rectangle");
 
     /** Pixel gray level */
     private final LIntegerField level = new LIntegerField(
-        false,
-        "Level",
-        "Pixel level");
+            false,
+            "Level",
+            "Pixel level");
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // PixelBoard //
     //------------//
     /**
      * Create a PixelBoard.
+     *
      * @param sheet the related sheet
      */
     public PixelBoard (Sheet sheet)
     {
         super(
-            Board.PIXEL,
-            sheet.getLocationService(),
-            eventClasses,
-            false,
-            true);
+                Board.PIXEL,
+                sheet.getLocationService(),
+                eventClasses,
+                false,
+                true);
 
         // Needed to process user input when RETURN/ENTER is pressed
-        getComponent()
-            .getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-            .put(KeyStroke.getKeyStroke("ENTER"), "ParamAction");
-        getComponent()
-            .getActionMap()
-            .put("ParamAction", new ParamAction());
+        getComponent().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).
+                put(KeyStroke.getKeyStroke("ENTER"), "ParamAction");
+        getComponent().getActionMap().put("ParamAction", new ParamAction());
 
         defineLayout();
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------//
     // onEvent //
     //---------//
     /**
      * Call-back triggered when Location Selection has been modified.
+     *
      * @param event the selection event
      */
     @Override
@@ -137,14 +132,12 @@ public class PixelBoard
                 return;
             }
 
-            if (logger.isFineEnabled()) {
-                logger.fine("PixelBoard: " + event);
-            }
+            logger.fine("PixelBoard: {0}", event);
 
             if (event instanceof LocationEvent) {
                 // Display rectangle attributes
                 LocationEvent sheetLocation = (LocationEvent) event;
-                Rectangle     rect = sheetLocation.getData();
+                Rectangle rect = sheetLocation.getData();
 
                 if (rect != null) {
                     x.setValue(rect.x);
@@ -162,7 +155,7 @@ public class PixelBoard
             } else if (event instanceof PixelLevelEvent) {
                 // Display pixel gray level
                 PixelLevelEvent pixelLevelEvent = (PixelLevelEvent) event;
-                final Integer   pixelLevel = pixelLevelEvent.getData();
+                final Integer pixelLevel = pixelLevelEvent.getData();
 
                 if (pixelLevel != null) {
                     level.setValue(pixelLevel);
@@ -184,21 +177,20 @@ public class PixelBoard
 
         // Specify that columns 1, 5 & 9 as well as 3, 7 & 11 have equal widths
         layout.setColumnGroups(
-            new int[][] {
-                { 1, 5, 9 },
-                { 3, 7, 11 }
-            });
+                new int[][]{
+                    {1, 5, 9},
+                    {3, 7, 11}
+                });
 
         PanelBuilder builder = new PanelBuilder(layout, getBody());
         builder.setDefaultDialogBorder();
 
         CellConstraints cst = new CellConstraints();
 
-        int             r = 1; // --------------------------------
+        int r = 1; // --------------------------------
         builder.add(x.getLabel(), cst.xy(1, r));
         builder.add(x.getField(), cst.xy(3, r));
-        x.getField()
-         .setColumns(5);
+        x.getField().setColumns(5);
 
         builder.add(width.getLabel(), cst.xy(5, r));
         builder.add(width.getField(), cst.xy(7, r));
@@ -215,32 +207,31 @@ public class PixelBoard
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-------------//
     // ParamAction //
     //-------------//
     private class ParamAction
-        extends AbstractAction
+            extends AbstractAction
     {
         //~ Methods ------------------------------------------------------------
 
         // Method run whenever user presses Return/Enter in one of the parameter
         // fields
+        @Override
         public void actionPerformed (ActionEvent e)
         {
             // Remember & forward the new pixel selection
             // A rectangle (which can be degenerated to a point)
-            getSelectionService()
-                .publish(
-                new LocationEvent(
+            getSelectionService().publish(
+                    new LocationEvent(
                     PixelBoard.this,
                     SelectionHint.LOCATION_INIT,
                     MouseMovement.PRESSING,
                     new PixelRectangle(
-                        x.getValue(),
-                        y.getValue(),
-                        width.getValue(),
-                        height.getValue())));
+                    x.getValue(),
+                    y.getValue(),
+                    width.getValue(),
+                    height.getValue())));
         }
     }
 }

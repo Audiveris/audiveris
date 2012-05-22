@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -27,15 +27,13 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import org.bushe.swing.event.EventSubscriber;
-
 /**
  * Class {@code RunBoard} is dedicated to display of Run information.
  *
  * @author Hervé Bitteur
  */
 public class RunBoard
-    extends Board
+        extends Board
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -43,39 +41,38 @@ public class RunBoard
     private static final Logger logger = Logger.getLogger(RunBoard.class);
 
     /** Events this entity is interested in */
-    private static final Class[] eventClasses = new Class[] { RunEvent.class };
+    private static final Class[] eventClasses = new Class[]{RunEvent.class};
 
     //~ Instance fields --------------------------------------------------------
-
     /** Field for run length */
     private final LIntegerField rLength = new LIntegerField(
-        false,
-        "Length",
-        "Length of run in pixels");
+            false,
+            "Length",
+            "Length of run in pixels");
 
     /** Field for run level */
     private final LIntegerField rLevel = new LIntegerField(
-        false,
-        "Level",
-        "Average pixel level on this run");
+            false,
+            "Level",
+            "Average pixel level on this run");
 
     /** Field for run start */
     private final LIntegerField rStart = new LIntegerField(
-        false,
-        "Start",
-        "Pixel coordinate at start of run");
+            false,
+            "Start",
+            "Pixel coordinate at start of run");
 
     //~ Constructors -----------------------------------------------------------
-
     //----------//
     // RunBoard //
     //----------//
     /**
      * Create a Run Board.
-     * @param lag the lag that encapsulates the runs table
+     *
+     * @param lag      the lag that encapsulates the runs table
      * @param expanded true for expanded, false for collapsed
      */
-    public RunBoard (Lag     lag,
+    public RunBoard (Lag lag,
                      boolean expanded)
     {
         this(lag.getRuns(), expanded);
@@ -86,12 +83,13 @@ public class RunBoard
     //----------//
     /**
      * Create a Run Board.
-     * @param suffix suffix for this board
-     * @param lag the lag that encapsulates the runs table
+     *
+     * @param suffix   suffix for this board
+     * @param lag      the lag that encapsulates the runs table
      * @param expanded true for expanded, false for collapsed
      */
-    public RunBoard (String  suffix,
-                     Lag     lag,
+    public RunBoard (String suffix,
+                     Lag lag,
                      boolean expanded)
     {
         this(suffix, lag.getRuns(), expanded);
@@ -102,11 +100,12 @@ public class RunBoard
     //----------//
     /**
      * Create a Run Board.
+     *
      * @param runsTable the table of runs
-     * @param expanded true for expanded, false for collapsed
+     * @param expanded  true for expanded, false for collapsed
      */
     public RunBoard (RunsTable runsTable,
-                     boolean   expanded)
+                     boolean expanded)
     {
         this("", runsTable, expanded);
     }
@@ -116,28 +115,28 @@ public class RunBoard
     //----------//
     /**
      * Create a Run Board.
+     *
      * @param runsTable the table of runs
-     * @param expanded true for expanded, false for collapsed
+     * @param expanded  true for expanded, false for collapsed
      */
-    public RunBoard (String    suffix,
+    public RunBoard (String suffix,
                      RunsTable runsTable,
-                     boolean   expanded)
+                     boolean expanded)
     {
         super(
-            Board.RUN.name +
-            ((runsTable.getOrientation() == Orientation.VERTICAL) ? " Vert"
-             : " Hori"),
-            Board.RUN.position +
-            ((runsTable.getOrientation() == Orientation.VERTICAL) ? 100 : 0),
-            runsTable.getRunService(),
-            eventClasses,
-            false,
-            expanded);
+                Board.RUN.name
+                + ((runsTable.getOrientation() == Orientation.VERTICAL) ? " Vert"
+                   : " Hori"),
+                Board.RUN.position
+                + ((runsTable.getOrientation() == Orientation.VERTICAL) ? 100 : 0),
+                runsTable.getRunService(),
+                eventClasses,
+                false,
+                expanded);
         defineLayout();
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------//
     // onEvent //
     //---------//
@@ -155,13 +154,11 @@ public class RunBoard
                 return;
             }
 
-            if (logger.isFineEnabled()) {
-                logger.fine("RunBoard: " + event);
-            }
+            logger.fine("RunBoard: {0}", event);
 
             if (event instanceof RunEvent) {
                 final RunEvent runEvent = (RunEvent) event;
-                final Run      run = runEvent.getData();
+                final Run run = runEvent.getData();
 
                 if (run != null) {
                     rStart.setValue(run.getStart());
@@ -181,12 +178,12 @@ public class RunBoard
     //--------------//
     private void defineLayout ()
     {
-        FormLayout   layout = Panel.makeFormLayout(1, 3);
+        FormLayout layout = Panel.makeFormLayout(1, 3);
         PanelBuilder builder = new PanelBuilder(layout, getBody());
         builder.setDefaultDialogBorder();
 
         CellConstraints cst = new CellConstraints();
-        int             r = 1; // --------------------------------
+        int r = 1; // --------------------------------
 
         builder.add(rStart.getLabel(), cst.xy(1, r));
         builder.add(rStart.getField(), cst.xy(3, r));

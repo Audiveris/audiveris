@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -19,8 +19,8 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Class {@code BarInfo} records the physical information about a bar line,
- * used especially as a vertical limit for a staff or system
+ * Class {@code BarInfo} records the physical information about a bar
+ * line, used especially as a vertical limit for a staff or system.
  *
  * @author Hervé Bitteur
  */
@@ -28,7 +28,7 @@ public class BarInfo
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** Composing sticks, ordered by their relative position (abscissa) */
+    /** Composing sticks, ordered by their relative abscissa. */
     private List<Glyph> sticks;
 
     //~ Constructors -----------------------------------------------------------
@@ -66,7 +66,7 @@ public class BarInfo
     //--------------------//
     public List<Glyph> getSticksAncestors ()
     {
-        List<Glyph> list = new ArrayList<Glyph>(sticks.size());
+        List<Glyph> list = new ArrayList<>(sticks.size());
 
         for (Glyph stick : sticks) {
             list.add(stick.getAncestor());
@@ -80,7 +80,7 @@ public class BarInfo
     //-----------//
     public final void setSticks (Collection<?extends Glyph> sticks)
     {
-        this.sticks = new ArrayList<Glyph>(sticks); // Copy
+        this.sticks = new ArrayList<>(sticks); // Copy
     }
 
     //----------//

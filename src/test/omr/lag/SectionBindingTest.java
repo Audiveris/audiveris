@@ -69,7 +69,7 @@ public class SectionBindingTest
             sh.append(createRun(hTable, p++, 102, 20));
             sh.append(createRun(hTable, p++, 102, 20));
     
-            SortedSet<Section> sections = new TreeSet<Section>();
+            SortedSet<Section> sections = new TreeSet<>();
             sections.add(sv);
             sections.add(sh);
     

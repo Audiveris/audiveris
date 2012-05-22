@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -73,7 +73,7 @@ public class ModelessOptionPane
                                                  int       optionType)
         throws HeadlessException
     {
-        final Exchanger<Integer> exchanger = new Exchanger<Integer>();
+        final Exchanger<Integer> exchanger = new Exchanger<>();
 
         final JOptionPane        pane = new JOptionPane(
             message,
@@ -126,6 +126,7 @@ public class ModelessOptionPane
                 });
         pane.addPropertyChangeListener(
             new PropertyChangeListener() {
+            @Override
                     public void propertyChange (PropertyChangeEvent event)
                     {
                         // Let the defaultCloseOperation handle the closing

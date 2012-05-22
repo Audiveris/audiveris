@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -165,6 +165,7 @@ public class UnitModel
      * @param i the child index in parent sequence
      * @return the child of {@code parent</code> at index <code>index}
      */
+    @Override
     public Object getChild (Object parent,
                             int    i)
     {
@@ -200,6 +201,7 @@ public class UnitModel
      *
      * @return the number of children of the node {@code parent}
      */
+    @Override
     public int getChildCount (Object parent)
     {
         if (parent instanceof PackageNode) {
@@ -252,6 +254,7 @@ public class UnitModel
      *
      * @return the table number of columns
      */
+    @Override
     public int getColumnCount ()
     {
         return Column.values().length;
@@ -267,6 +270,7 @@ public class UnitModel
      *
      * @return the column name
      */
+    @Override
     public String getColumnName (int column)
     {
         return Column.values()[column].header;
@@ -283,6 +287,7 @@ public class UnitModel
      *
      * @return the cell value
      */
+    @Override
     public Object getValueAt (Object node,
                               int    col)
     {

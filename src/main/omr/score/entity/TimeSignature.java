@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -37,13 +37,13 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class {@code TimeSignature} encapsulates a time signature, which may be
- * composed of one or several glyphs.
+ * Class {@code TimeSignature} encapsulates a time signature, 
+ * which may be composed of one or several glyphs.
  *
  * @author Hervé Bitteur
  */
 public class TimeSignature
-    extends MeasureNode
+        extends MeasureNode
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -54,8 +54,8 @@ public class TimeSignature
     private static final Logger logger = Logger.getLogger(TimeSignature.class);
 
     /** Rational value of each (full) time sig shape */
-    private static final Map<Shape, TimeRational> rationals = new EnumMap<Shape, TimeRational>(
-        Shape.class);
+    private static final Map<Shape, TimeRational> rationals = new EnumMap<>(
+            Shape.class);
 
     static {
         for (Shape s : ShapeSet.FullTimes) {
@@ -63,7 +63,7 @@ public class TimeSignature
                 TimeRational nd = rationalOf(s);
 
                 if (nd == null) {
-                    logger.severe("Rational for '" + s + "' is not defined");
+                    logger.severe("Rational for ''{0}'' is not defined", s);
                 } else {
                     rationals.put(s, nd);
                 }
@@ -72,7 +72,7 @@ public class TimeSignature
     }
 
     /** Set of acceptable N/D values for programmatic recognition */
-    private static final Set<TimeRational> acceptables = new HashSet<TimeRational>();
+    private static final Set<TimeRational> acceptables = new HashSet<>();
 
     static {
         // Predefined
@@ -89,15 +89,17 @@ public class TimeSignature
     }
 
     //~ Instance fields --------------------------------------------------------
-
     /** Flag a time sig not created out of its glyphs */
     private final boolean isDummy;
 
     /**
-     * Precise time signature shape (if any, since we may have no predefined
-     * shape for complex time signatures). Since a time signature may be
-     * composed incrementally through several glyphs, its shape is determined
-     * only when needed. In case of failure, a NO_LEGAL_TIME shape is assigned,
+     * Precise time signature shape (if any, since we may have no 
+     * predefined shape for complex time signatures). 
+     * 
+     * Since a time signature may be composed incrementally through several 
+     * glyphs, its shape is determined only when needed. 
+     * 
+     * In case of failure, a NO_LEGAL_TIME shape is assigned,
      * preventing any further computation until a reset is performed on this
      * item (such a reset is performed for example when an additional glyph is
      * added to the item).
@@ -108,26 +110,22 @@ public class TimeSignature
     private TimeRational timeRational;
 
     //~ Constructors -----------------------------------------------------------
-
     //---------------//
     // TimeSignature //
     //--------------//
     /**
      * Create a time signature, with containing measure and related staff
-     *
      * @param measure the containing measure
-     * @param staff the related staff
+     * @param staff   the related staff
      */
     public TimeSignature (Measure measure,
-                          Staff   staff)
+                          Staff staff)
     {
         super(measure);
         isDummy = false;
         setStaff(staff);
 
-        if (logger.isFineEnabled()) {
-            logger.fine("Created TS");
-        }
+        logger.fine("Created TS");
     }
 
     //---------------//
@@ -136,13 +134,12 @@ public class TimeSignature
     /**
      * Create a time signature, with containing measure and related staff, and
      * information copied from the provided time signature
-     *
      * @param measure the containing measure
-     * @param staff the related staff
-     * @param other the other time signature to clone
+     * @param staff   the related staff
+     * @param other   the other time signature to clone
      */
-    public TimeSignature (Measure       measure,
-                          Staff         staff,
+    public TimeSignature (Measure measure,
+                          Staff staff,
                           TimeSignature other)
     {
         super(measure);
@@ -155,135 +152,35 @@ public class TimeSignature
 
             if (!staff.isDummy()) {
                 setCenter(
-                    new PixelPoint(
+                        new PixelPoint(
                         other.getCenter().x,
-                        other.getCenter().y - other.getStaff().getTopLeft().y +
-                        staff.getTopLeft().y));
+                        other.getCenter().y - other.getStaff().getTopLeft().y
+                        + staff.getTopLeft().y));
             }
         } catch (InvalidTimeSignature ex) {
             logger.severe("Cannot duplicate TimeSignature", ex);
         }
 
-        if (logger.isFineEnabled()) {
-            logger.fine("Created TS copy");
-        }
+        logger.fine("Created TS copy");
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //----------//
-    // populate //
-    //----------//
+    //--------------//
+    // isAcceptable //
+    //--------------//
     /**
-     * Populate the score with a time signature built from the provided glyph
-     *
-     * @param glyph the source glyph
-     * @param measure containing measure
-     * @param staff the related staff
-     * @param center the glyph center wrt system
-     *
-     * @return true if population is successful, false otherwise
+     * Check whether the provided value is a rather common time signature
+     * @param timeRational
+     * @return true if the provided sig is acceptable
      */
-    public static boolean populate (Glyph      glyph,
-                                    Measure    measure,
-                                    Staff      staff,
-                                    PixelPoint center)
+    public static boolean isAcceptable (TimeRational timeRational)
     {
-        // First, some basic tests
-        // Horizontal distance since beginning of measure
-        int unitDx = center.x - measure.getLeftX();
-
-        if (unitDx < measure.getScale()
-                            .toPixels(constants.minTimeOffset)) {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "Too small offset for time signature" + " (glyph #" +
-                    glyph.getId() + ")");
-            }
-
-            return false;
-        }
-
-        // Then, processing depends on partial / full time-signature
-        Shape shape = glyph.getShape();
-
-        if (ShapeSet.PartialTimes.contains(shape)) {
-            return populatePartialTime(glyph, measure, staff);
-        } else {
-            return populateFullTime(glyph, measure, staff);
-        }
-    }
-
-    //------------------//
-    // populateFullTime //
-    //------------------//
-    /**
-     * We create a full time signature with just the provided glyph (assumed to
-     * be the whole signature, perhaps composed of several digits, for example
-     * one digit for the numerator and one digit for the denominator)
-     * @param glyph the provided (multi-digit) glyph
-     * @param measure the containing measure
-     * @param staff the related satff
-     * @return true if successful
-     */
-    public static boolean populateFullTime (Glyph   glyph,
-                                            Measure measure,
-                                            Staff   staff)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("populateFullTime with " + glyph);
-        }
-
-        TimeSignature ts = measure.getTimeSignature(staff);
-
-        if (ts == null) {
-            ts = new TimeSignature(measure, staff);
-            ts.addGlyph(glyph);
-            glyph.setTranslation(ts);
-
+        if (predefinedShape(timeRational) != null) {
             return true;
-        } else {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "Second whole time signature" + " (glyph#" + glyph.getId() +
-                    ")" + " in the same measure");
-            }
-
-            return false;
         }
-    }
 
-    //------------//
-    // rationalOf //
-    //------------//
-    /**
-     * Report the num/den pair of predefined timesig shapes
-     * @param shape the queried shape
-     * @return the related num/den or null
-     */
-    public static TimeRational rationalOf (Shape shape)
-    {
-        switch (shape) {
-        case COMMON_TIME :
-        case TIME_FOUR_FOUR :
-            return new TimeRational(4, 4);
-
-        case CUT_TIME :
-        case TIME_TWO_TWO :
-            return new TimeRational(2, 2);
-
-        case TIME_TWO_FOUR :
-            return new TimeRational(2, 4);
-
-        case TIME_THREE_FOUR :
-            return new TimeRational(3, 4);
-
-        case TIME_SIX_EIGHT :
-            return new TimeRational(6, 8);
-
-        default :
-            return null;
-        }
+        // Check other acceptable rational values
+        return acceptables.contains(timeRational);
     }
 
     //--------//
@@ -299,8 +196,8 @@ public class TimeSignature
     // copy //
     //------//
     /**
-     * Replaces in situ this time signature by the logical information
-     * of 'newSig'.
+     * Replaces in situ this time signature by the logical information of
+     * 'newSig'.
      * @param newSig the correct sig to assign in lieu of this one
      */
     public void copy (TimeSignature newSig)
@@ -315,7 +212,7 @@ public class TimeSignature
     //-----------------//
     // createDummyCopy //
     //-----------------//
-    public TimeSignature createDummyCopy (Measure    measure,
+    public TimeSignature createDummyCopy (Measure measure,
                                           PixelPoint center)
     {
         TimeSignature dummy = new TimeSignature(measure, null);
@@ -331,13 +228,12 @@ public class TimeSignature
     // getDenominator //
     //----------------//
     /**
-     * Report the bottom part of the time signature
-     *
+     * Report the bottom part of the time signature.
      * @return the bottom part
      * @throws InvalidTimeSignature
      */
     public Integer getDenominator ()
-        throws InvalidTimeSignature
+            throws InvalidTimeSignature
     {
         if (timeRational == null) {
             if (shape == NO_LEGAL_TIME) {
@@ -358,7 +254,7 @@ public class TimeSignature
     // getDenominatorShapes //
     //----------------------//
     /**
-     * Report the sequence of shapes that depict the denominator
+     * Report the sequence of shapes that depict the denominator.
      * @return for example: [1, 6] if denominator is 16
      */
     public List<Shape> getDenominatorShapes ()
@@ -374,13 +270,12 @@ public class TimeSignature
     // getNumerator //
     //--------------//
     /**
-     * Report the top part of the time signature
-     *
+     * Report the top part of the time signature.
      * @return the top part
      * @throws InvalidTimeSignature
      */
     public Integer getNumerator ()
-        throws InvalidTimeSignature
+            throws InvalidTimeSignature
     {
         if (timeRational == null) {
             if (shape == NO_LEGAL_TIME) {
@@ -401,7 +296,7 @@ public class TimeSignature
     // getNumeratorShapes //
     //--------------------//
     /**
-     * Report the sequence of shapes that depict the numerator
+     * Report the sequence of shapes that depict the numerator.
      * @return for example: [1, 2] if numerator is 12
      */
     public List<Shape> getNumeratorShapes ()
@@ -417,13 +312,13 @@ public class TimeSignature
     // getShape //
     //----------//
     /**
-     * Report the shape of this time signature
+     * Report the shape of this time signature.
      *
      * @return the (lazily determined) shape, which may be null
      * @throws omr.score.entity.TimeSignature.InvalidTimeSignature
      */
     public Shape getShape ()
-        throws InvalidTimeSignature
+            throws InvalidTimeSignature
     {
         if (shape == null) {
             computeTimeRational();
@@ -440,31 +335,13 @@ public class TimeSignature
      * @return the num/den time rational, or null
      */
     public TimeRational getTimeRational ()
-        throws InvalidTimeSignature
+            throws InvalidTimeSignature
     {
         if (timeRational == null) {
             computeTimeRational();
         }
 
         return timeRational;
-    }
-
-    //--------------//
-    // isAcceptable //
-    //--------------//
-    /**
-     * Check whether the provided value is a rather common time signature
-     * @param timeRational
-     * @return true if the provided sig is acceptable
-     */
-    public static boolean isAcceptable (TimeRational timeRational)
-    {
-        if (predefinedShape(timeRational) != null) {
-            return true;
-        }
-
-        // Check other acceptable rational values
-        return acceptables.contains(timeRational);
     }
 
     //---------//
@@ -495,13 +372,13 @@ public class TimeSignature
     // modify //
     //--------//
     /**
-     * Modify in situ this time signature using provided shape and
-     * rational. We use the intersected glyphs of the old sig as the glyphs
-     * for the newly built signature.
-     * @param shape the shape (perhaps null) of correct signature
+     * Modify in situ this time signature using provided shape and rational. We
+     * use the intersected glyphs of the old sig as the glyphs for the newly
+     * built signature.
+     * @param shape        the shape (perhaps null) of correct signature
      * @param timeRational the new sig rational value
      */
-    public void modify (Shape        shape,
+    public void modify (Shape shape,
                         TimeRational timeRational)
     {
         if (!isDummy()) {
@@ -513,10 +390,9 @@ public class TimeSignature
                 }
             }
 
-            SystemInfo systemInfo = getSystem()
-                                        .getInfo();
-            Glyph      compound = systemInfo.buildTransientCompound(
-                getGlyphs());
+            SystemInfo systemInfo = getSystem().getInfo();
+            Glyph compound = systemInfo.buildTransientCompound(
+                    getGlyphs());
             compound = systemInfo.addGlyph(compound);
             compound.setShape(shape, Evaluation.ALGORITHM);
 
@@ -524,19 +400,123 @@ public class TimeSignature
                 compound.setTimeRational(timeRational);
             }
 
-            if (logger.isFineEnabled()) {
-                logger.fine(shape + " assigned to glyph#" + compound.getId());
-            }
+            logger.fine("{0} assigned to {1}", new Object[]{shape, compound.
+                        idString()});
         }
 
         setRational(timeRational);
+    }
+
+    //----------//
+    // populate //
+    //----------//
+    /**
+     * Populate the score with a time signature built from the provided glyph
+     * @param glyph   the source glyph
+     * @param measure containing measure
+     * @param staff   the related staff
+     * @param center  the glyph center wrt system
+     * @return true if population is successful, false otherwise
+     */
+    public static boolean populate (Glyph glyph,
+                                    Measure measure,
+                                    Staff staff,
+                                    PixelPoint center)
+    {
+        // First, some basic tests
+        // Horizontal distance since beginning of measure
+        int unitDx = center.x - measure.getLeftX();
+
+        if (unitDx < measure.getScale().toPixels(constants.minTimeOffset)) {
+            logger.fine("Too small offset for time signature" + " (glyph #{0})",
+                        glyph.getId());
+
+            return false;
+        }
+
+        // Then, processing depends on partial / full time-signature
+        Shape shape = glyph.getShape();
+
+        if (ShapeSet.PartialTimes.contains(shape)) {
+            return populatePartialTime(glyph, measure, staff);
+        } else {
+            return populateFullTime(glyph, measure, staff);
+        }
+    }
+
+    //------------------//
+    // populateFullTime //
+    //------------------//
+    /**
+     * We create a full time signature with just the provided glyph.
+     * (assumed to be the whole signature, perhaps composed of several digits, 
+     * for example one digit for the numerator and one digit for the denominator)
+     * @param glyph   the provided (multi-digit) glyph
+     * @param measure the containing measure
+     * @param staff   the related satff
+     * @return true if successful
+     */
+    public static boolean populateFullTime (Glyph glyph,
+                                            Measure measure,
+                                            Staff staff)
+    {
+        logger.fine("populateFullTime with {0}", glyph);
+
+        TimeSignature ts = measure.getTimeSignature(staff);
+
+        if (ts == null) {
+            ts = new TimeSignature(measure, staff);
+            ts.addGlyph(glyph);
+            glyph.setTranslation(ts);
+
+            return true;
+        } else {
+            logger.fine("Second whole time signature ({0}" + ")"
+                    + " in the same measure", glyph.idString());
+
+            return false;
+        }
+    }
+
+    //------------//
+    // rationalOf //
+    //------------//
+    /**
+     * Report the num/den pair of predefined timesig shapes.
+     * @param shape the queried shape
+     * @return the related num/den or null
+     */
+    public static TimeRational rationalOf (Shape shape)
+    {
+        switch (shape) {
+            case COMMON_TIME:
+            case TIME_FOUR_FOUR:
+                return new TimeRational(4, 4);
+
+            case CUT_TIME:
+            case TIME_TWO_TWO:
+                return new TimeRational(2, 2);
+
+            case TIME_TWO_FOUR:
+                return new TimeRational(2, 4);
+
+            case TIME_THREE_FOUR:
+                return new TimeRational(3, 4);
+
+            case TIME_SIX_EIGHT:
+                return new TimeRational(6, 8);
+
+            default:
+                return null;
+        }
     }
 
     //-------//
     // reset //
     //-------//
     /**
-     * Invalidate cached data, so that it gets lazily recomputed when needed
+     * Invalidate cached data, so that it gets lazily recomputed when 
+     * needed.
      */
     @Override
     public void reset ()
@@ -551,7 +531,7 @@ public class TimeSignature
     // setTimeRational //
     //-------------//
     /**
-     * Force this time signature to align to the provided rational value
+     * Force this time signature to align to the provided rational value.
      * @param timeRational the forced value
      */
     public void setRational (TimeRational timeRational)
@@ -564,8 +544,7 @@ public class TimeSignature
     // toString //
     //----------//
     /**
-     * Report a readable description
-     *
+     * Report a readable description.
      * @return description
      */
     @Override
@@ -576,24 +555,18 @@ public class TimeSignature
 
         try {
             if (getNumerator() != null) {
-                sb.append(" ")
-                  .append(getNumerator())
-                  .append("/")
-                  .append(getDenominator());
+                sb.append(" ").append(getNumerator()).append("/").append(
+                        getDenominator());
             }
 
             if (getShape() != null) {
-                sb.append(" ")
-                  .append(getShape());
+                sb.append(" ").append(getShape());
             }
 
-            sb.append(" center=")
-              .append(getCenter());
+            sb.append(" center=").append(getCenter());
 
-            if (!getGlyphs()
-                     .isEmpty()) {
-                sb.append(" ")
-                  .append(Glyphs.toString(getGlyphs()));
+            if (!getGlyphs().isEmpty()) {
+                sb.append(" ").append(Glyphs.toString(getGlyphs()));
             }
         } catch (InvalidTimeSignature e) {
             sb.append(" INVALID");
@@ -614,39 +587,171 @@ public class TimeSignature
     }
 
     //-----------------//
-    // predefinedShape //
+    // getNumericShape //
     //-----------------//
-    /**
-     * Look for a predefined shape, if any, that would correspond to the current
-     * num and den values of this time sig
-     * @return the shape found or null
-     */
-    private static Shape predefinedShape (TimeRational timeRational)
+    private static Shape getNumericShape (int val)
     {
-        if (timeRational == null) {
-            return null; // Safer
+        switch (val) {
+            case 0:
+                return TIME_ZERO;
+
+            case 1:
+                return TIME_ONE;
+
+            case 2:
+                return TIME_TWO;
+
+            case 3:
+                return TIME_THREE;
+
+            case 4:
+                return TIME_FOUR;
+
+            case 5:
+                return TIME_FIVE;
+
+            case 6:
+                return TIME_SIX;
+
+            case 7:
+                return TIME_SEVEN;
+
+            case 8:
+                return TIME_EIGHT;
+
+            case 9:
+                return TIME_NINE;
+
+            case 12:
+                return TIME_TWELVE;
+
+            case 16:
+                return TIME_SIXTEEN;
+
+            default:
+                return null;
         }
+    }
 
-        for (Shape s : ShapeSet.FullTimes) {
-            TimeRational nd = rationals.get(s);
+    //-----------------//
+    // getNumericValue //
+    //-----------------//
+    private static Integer getNumericValue (Glyph glyph)
+    {
+        Shape shape = glyph.getShape();
 
-            if (timeRational.equals(nd)) {
-                return s;
+        if (shape != null) {
+            switch (shape) {
+                case TIME_ZERO:
+                    return 0;
+
+                case TIME_ONE:
+                    return 1;
+
+                case TIME_TWO:
+                    return 2;
+
+                case TIME_THREE:
+                    return 3;
+
+                case TIME_FOUR:
+                    return 4;
+
+                case TIME_FIVE:
+                    return 5;
+
+                case TIME_SIX:
+                    return 6;
+
+                case TIME_SEVEN:
+                    return 7;
+
+                case TIME_EIGHT:
+                    return 8;
+
+                case TIME_NINE:
+                    return 9;
+
+                case TIME_TWELVE:
+                    return 12;
+
+                case TIME_SIXTEEN:
+                    return 16;
             }
         }
 
         return null;
     }
 
+    //-----------//
+    // getShapes //
+    //-----------//
+    private List<Shape> getShapes (int val)
+    {
+        List<Shape> shapes = new ArrayList<>();
+
+        for (; val > 0; val /= 10) {
+            int digit = val % 10;
+            shapes.add(getNumericShape(digit));
+        }
+
+        Collections.reverse(shapes);
+
+        return shapes;
+    }
+
+    //---------------------//
+    // populatePartialTime //
+    //---------------------//
+    /**
+     * We add the provided glyph to a time signature composed of single
+     * digits.
+     * @param glyph   the provided (single-digit) glyph
+     * @param measure the containing measure
+     * @param staff   the related staff
+     * @return true if successful
+     */
+    private static boolean populatePartialTime (Glyph glyph,
+                                                Measure measure,
+                                                Staff staff)
+    {
+        logger.fine("populatePartialTime with {0}", glyph);
+
+        TimeSignature ts = measure.getTimeSignature(staff);
+
+        if (ts != null) {
+            // Check we are not too far from this first time signature part
+            PixelPoint center = measure.computeGlyphCenter(glyph);
+            double dist = center.distance(ts.getCenter());
+            double max = measure.getScale().toPixelsDouble(
+                    constants.maxTimeDistance);
+
+            if (dist > max) {
+                logger.fine("Time signature part ({0}" + ")"
+                        + " too far from previous one", glyph.idString());
+
+                return false;
+            }
+        } else {
+            // Start a brand new time sig
+            ts = new TimeSignature(measure, staff);
+        }
+
+        ts.addGlyph(glyph);
+        glyph.setTranslation(ts);
+
+        return true;
+    }
+
     //---------------------//
     // computeTimeRational //
     //---------------------//
     /**
-     * Compute the actual members of time rational
+     * Compute the actual members of time rational.
      * @throws InvalidTimeSignature
      */
     private void computeTimeRational ()
-        throws InvalidTimeSignature
+            throws InvalidTimeSignature
     {
         if (glyphs == null) {
             throw new InvalidTimeSignature();
@@ -685,15 +790,11 @@ public class TimeSignature
                 int denominator = 0;
 
                 for (Glyph glyph : glyphs) {
-                    int     pitch = (int) Math.rint(
-                        getStaff().pitchPositionOf(computeGlyphCenter(glyph)));
+                    int pitch = (int) Math.rint(
+                            getStaff().pitchPositionOf(computeGlyphCenter(glyph)));
                     Integer value = getNumericValue(glyph);
-
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            "pitch=" + pitch + " value=" + value + " glyph=" +
-                            glyph);
-                    }
+                    logger.fine("pitch={0} value={1} glyph={2}", new Object[]{
+                                pitch, value, glyph});
 
                     if (value != null) {
                         if (pitch < 0) {
@@ -702,14 +803,14 @@ public class TimeSignature
                             denominator = (10 * denominator) + value;
                         } else {
                             addError(
-                                glyph,
-                                "Multi-symbol time signature" +
-                                " with a component of pitch position 0");
+                                    glyph,
+                                    "Multi-symbol time signature"
+                                    + " with a component of pitch position 0");
                         }
                     } else {
                         addError(
-                            glyph,
-                            "Time signature component with no numeric value");
+                                glyph,
+                                "Time signature component with no numeric value");
                     }
                 }
 
@@ -721,179 +822,43 @@ public class TimeSignature
                 shape = predefinedShape();
             }
 
-            if (logger.isFineEnabled()) {
-                logger.fine("time rational: " + timeRational);
-            }
+            logger.fine("time rational: {0}", timeRational);
         }
-    }
-
-    //-----------------//
-    // getNumericShape //
-    //-----------------//
-    private static Shape getNumericShape (int val)
-    {
-        switch (val) {
-        case 0 :
-            return TIME_ZERO;
-
-        case 1 :
-            return TIME_ONE;
-
-        case 2 :
-            return TIME_TWO;
-
-        case 3 :
-            return TIME_THREE;
-
-        case 4 :
-            return TIME_FOUR;
-
-        case 5 :
-            return TIME_FIVE;
-
-        case 6 :
-            return TIME_SIX;
-
-        case 7 :
-            return TIME_SEVEN;
-
-        case 8 :
-            return TIME_EIGHT;
-
-        case 9 :
-            return TIME_NINE;
-
-        case 12 :
-            return TIME_TWELVE;
-
-        case 16 :
-            return TIME_SIXTEEN;
-
-        default :
-            return null;
-        }
-    }
-
-    //-----------------//
-    // getNumericValue //
-    //-----------------//
-    private static Integer getNumericValue (Glyph glyph)
-    {
-        Shape shape = glyph.getShape();
-
-        if (shape != null) {
-            switch (shape) {
-            case TIME_ZERO :
-                return 0;
-
-            case TIME_ONE :
-                return 1;
-
-            case TIME_TWO :
-                return 2;
-
-            case TIME_THREE :
-                return 3;
-
-            case TIME_FOUR :
-                return 4;
-
-            case TIME_FIVE :
-                return 5;
-
-            case TIME_SIX :
-                return 6;
-
-            case TIME_SEVEN :
-                return 7;
-
-            case TIME_EIGHT :
-                return 8;
-
-            case TIME_NINE :
-                return 9;
-
-            case TIME_TWELVE :
-                return 12;
-
-            case TIME_SIXTEEN :
-                return 16;
-            }
-        }
-
-        return null;
-    }
-
-    //---------------------//
-    // populatePartialTime //
-    //---------------------//
-    /**
-     * We add the provided glyph to a time signature composed of single digits
-     * @param glyph the provided (single-digit) glyph
-     * @param measure the containing measure
-     * @param staff the related staff
-     * @return true if successful
-     */
-    private static boolean populatePartialTime (Glyph   glyph,
-                                                Measure measure,
-                                                Staff   staff)
-    {
-        if (logger.isFineEnabled()) {
-            logger.fine("populatePartialTime with " + glyph);
-        }
-
-        TimeSignature ts = measure.getTimeSignature(staff);
-
-        if (ts != null) {
-            // Check we are not too far from this first time signature part
-            PixelPoint center = measure.computeGlyphCenter(glyph);
-            double     dist = center.distance(ts.getCenter());
-            double     max = measure.getScale()
-                                    .toPixelsDouble(constants.maxTimeDistance);
-
-            if (dist > max) {
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "Time signature part" + " (glyph#" + glyph.getId() +
-                        ")" + " too far from previous one");
-                }
-
-                return false;
-            }
-        } else {
-            // Start a brand new time sig
-            ts = new TimeSignature(measure, staff);
-        }
-
-        ts.addGlyph(glyph);
-        glyph.setTranslation(ts);
-
-        return true;
-    }
-
-    //-----------//
-    // getShapes //
-    //-----------//
-    private List<Shape> getShapes (int val)
-    {
-        List<Shape> shapes = new ArrayList<Shape>();
-
-        for (; val > 0; val /= 10) {
-            int digit = val % 10;
-            shapes.add(getNumericShape(digit));
-        }
-
-        Collections.reverse(shapes);
-
-        return shapes;
     }
 
     //-----------------//
     // predefinedShape //
     //-----------------//
     /**
-     * Look for a predefined shape, if any, that would correspond to the current
-     * num and den values of this time sig
+     * Look for a predefined shape, if any, that would correspond to the
+     * current <code>num</code> and <code>den</code> values of this time
+     * sig.
+     * @return the shape found or null
+     */
+    private static Shape predefinedShape (TimeRational timeRational)
+    {
+        if (timeRational == null) {
+            return null; // Safer
+        }
+
+        for (Shape s : ShapeSet.FullTimes) {
+            TimeRational nd = rationals.get(s);
+
+            if (timeRational.equals(nd)) {
+                return s;
+            }
+        }
+
+        return null;
+    }
+
+    //-----------------//
+    // predefinedShape //
+    //-----------------//
+    /**
+     * Look for a predefined shape, if any, that would correspond to the
+     * current <code>num</code> and <code>den</code> values of this time
+     * sig.
      * @return the shape found or null
      */
     private Shape predefinedShape ()
@@ -906,16 +871,16 @@ public class TimeSignature
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //----------------------//
     // InvalidTimeSignature //
     //----------------------//
     /**
-     * Used to signal that a time signature is invalid (for example because
-     * some of its parts are missing or incorrectly recognized)
+     * Used to signal that a time signature is invalid.
+     * (for example because some of its parts are missing or incorrectly 
+     * recognized)
      */
     public static class InvalidTimeSignature
-        extends Exception
+            extends Exception
     {
         //~ Constructors -------------------------------------------------------
 
@@ -929,17 +894,18 @@ public class TimeSignature
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Scale.Fraction maxTimeDistance = new Scale.Fraction(
-            4d,
-            "Maximum euclidian distance between two" +
-            " parts of a time signature");
+                4d,
+                "Maximum euclidian distance between two"
+                + " parts of a time signature");
+
         Scale.Fraction minTimeOffset = new Scale.Fraction(
-            1d,
-            "Minimum horizontal offset for a time" +
-            " signature since start of measure");
+                1d,
+                "Minimum horizontal offset for a time"
+                + " signature since start of measure");
     }
 }

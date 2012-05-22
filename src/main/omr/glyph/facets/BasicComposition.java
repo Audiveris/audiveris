@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -24,44 +24,37 @@ import omr.score.common.PixelPoint;
 
 import omr.sheet.SystemInfo;
 
+import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+
 /**
- * Class {@code BasicComposition} implements the composition facet of a glyph
- * made of sections. These member sections may belong to different lags.
+ * Class {@code BasicComposition} implements the composition facet of
+ * a glyph made of sections (and possibly of other sub-glyphs).
+ * These member sections may belong to different lags.
  *
  * @author Hervé Bitteur
  */
-class BasicComposition
-    extends BasicFacet
-    implements GlyphComposition
-{
-    //~ Static fields/initializers ---------------------------------------------
-
+class BasicComposition extends BasicFacet implements GlyphComposition {
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
-        BasicComposition.class);
-
-    //~ Instance fields --------------------------------------------------------
+    private static final Logger logger = Logger.getLogger(BasicComposition.class);
 
     /**
-     * Sections that compose this glyph. The collection is kept sorted
-     * on natural Section order (abscissa then ordinate, even with mixed
-     * section orientations).
+     * Sections that compose this glyph.
+     * The collection is kept sorted on natural Section order (abscissa then
+     * ordinate, even with mixed section orientations).
      */
-    private final SortedSet<Section> members = new TreeSet<Section>();
+    private final SortedSet<Section> members = new TreeSet<>();
 
-    //    /** Contained parts, if this glyph is a compound */
-    //    private final Set<Glyph> parts = new LinkedHashSet<Glyph>();
+    /** Unmodifiable view on members */
+    private final SortedSet<Section> unmodifiableMembers = Collections.unmodifiableSortedSet(members);
 
     /** Link to the compound, if any, this one is a part of */
     private Glyph partOf;
 
     /** Result of analysis wrt this glyph */
     private Result result;
-
-    //~ Constructors -----------------------------------------------------------
 
     //------------------//
     // BasicComposition //
@@ -70,21 +63,21 @@ class BasicComposition
      * Create a new BasicComposition object.
      * @param glyph our glyph
      */
-    public BasicComposition (Glyph glyph)
-    {
+    public BasicComposition(Glyph glyph) {
         super(glyph);
     }
-
-    //~ Methods ----------------------------------------------------------------
 
     //------------//
     // addSection //
     //------------//
-    public void addSection (Section section,
-                            Linking link)
-    {
+    @Override
+    public void addSection(Section section, Linking link) {
         if (section == null) {
             throw new IllegalArgumentException("Cannot add a null section");
+        }
+
+        if (!glyph.isTransient()) {
+            ////////////////////////////////////////////////////////////////////////////logger.severe("Adding section to registered glyph");
         }
 
         // Nota: We must include the section in the glyph members before
@@ -107,9 +100,7 @@ class BasicComposition
     //-------------//
     // addSections //
     //-------------//
-    public void addSections (Glyph   other,
-                             Linking linkSections)
-    {
+    public void addSections(Glyph other, Linking linkSections) {
         // Update glyph info in other sections
         for (Section section : other.getMembers()) {
             addSection(section, linkSections);
@@ -119,9 +110,9 @@ class BasicComposition
     //-----------------//
     // containsSection //
     //-----------------//
-    public boolean containsSection (int id)
-    {
-        for (Section section : getMembers()) {
+    @Override
+    public boolean containsSection(int id) {
+        for (Section section : glyph.getMembers()) {
             if (section.getId() == id) {
                 return true;
             }
@@ -133,9 +124,9 @@ class BasicComposition
     //-------------//
     // cutSections //
     //-------------//
-    public void cutSections ()
-    {
-        for (Section section : members) {
+    @Override
+    public void cutSections() {
+        for (Section section : glyph.getMembers()) {
             if (section.getGlyph() == glyph) {
                 section.setGlyph(null);
             }
@@ -146,34 +137,23 @@ class BasicComposition
     // dump //
     //------//
     @Override
-    public void dump ()
-    {
-        System.out.println("   members=" + getMembers());
+    public void dump() {
+        System.out.println("   members=" + members);
         System.out.println("   partOf=" + partOf);
-        System.out.println("   result=" + getResult());
+        System.out.println("   result=" + glyph.getResult());
     }
 
     //----------------//
     // getAlienSystem //
     //----------------//
-    public SystemInfo getAlienSystem (SystemInfo system)
-    {
+    @Override
+    public SystemInfo getAlienSystem(SystemInfo system) {
         // Direct members
-        for (Section section : members) {
+        for (Section section : glyph.getMembers()) {
             if (section.getSystem() != system) {
                 return section.getSystem();
             }
         }
-
-        //
-        //        // Parts if any, recursively
-        //        for (Glyph part : getParts()) {
-        //            SystemInfo alien = part.getAlienSystem(system);
-        //
-        //            if (alien != null) {
-        //                return alien;
-        //            }
-        //        }
 
         // No other system found
         return null;
@@ -182,71 +162,59 @@ class BasicComposition
     //-------------//
     // getAncestor //
     //-------------//
-    public Glyph getAncestor ()
-    {
-        Glyph glyph = this.glyph;
+    @Override
+    public Glyph getAncestor() {
+        Glyph g = this.glyph;
 
-        while (glyph.getPartOf() != null) {
-            glyph = glyph.getPartOf();
+        while (g.getPartOf() != null) {
+            g = g.getPartOf();
         }
 
-        return glyph;
+        return g;
     }
 
     //-----------------//
     // getFirstSection //
     //-----------------//
-    public Section getFirstSection ()
-    {
-        return members.first();
+    @Override
+    public Section getFirstSection() {
+        return glyph.getMembers().first();
     }
 
     //------------//
     // getMembers //
     //------------//
-    public SortedSet<Section> getMembers ()
-    {
-        return members;
+    @Override
+    public SortedSet<Section> getMembers() {
+        return unmodifiableMembers;
     }
 
     //-----------//
     // getPartOf //
     //-----------//
-    public Glyph getPartOf ()
-    {
+    @Override
+    public Glyph getPartOf() {
         return partOf;
     }
 
     //-----------//
     // getResult //
     //-----------//
-    public Result getResult ()
-    {
+    @Override
+    public Result getResult() {
         return result;
-    }
-
-    //---------//
-    // include //
-    //---------//
-    public void include (Glyph that)
-    {
-        for (Section section : that.getMembers()) {
-            addSection(section, Linking.LINK_BACK);
-        }
-
-        that.setPartOf(glyph);
     }
 
     //----------//
     // isActive //
     //----------//
-    public boolean isActive ()
-    {
+    @Override
+    public boolean isActive() {
         if (glyph.getShape() == Shape.GLYPH_PART) {
             return false;
         }
 
-        for (Section section : members) {
+        for (Section section : glyph.getMembers()) {
             if (section.getGlyph() != glyph) {
                 return false;
             }
@@ -258,35 +226,62 @@ class BasicComposition
     //--------------//
     // isSuccessful //
     //--------------//
-    public boolean isSuccessful ()
-    {
+    @Override
+    public boolean isSuccessful() {
         return result instanceof SuccessResult;
     }
 
     //-----------------//
     // linkAllSections //
     //-----------------//
-    public void linkAllSections ()
-    {
-        for (Section section : getMembers()) {
+    @Override
+    public void linkAllSections() {
+        for (Section section : glyph.getMembers()) {
             section.setGlyph(glyph);
         }
+    }
+
+    //---------------//
+    // removeSection //
+    //---------------//
+    @Override
+    public boolean removeSection(Section section, Linking link) {
+        if (link == Linking.LINK_BACK) {
+            section.setGlyph(null);
+        }
+
+        boolean bool = members.remove(section);
+        glyph.invalidateCache();
+
+        return bool;
     }
 
     //-----------//
     // setPartOf //
     //-----------//
-    public void setPartOf (Glyph compound)
-    {
+    @Override
+    public void setPartOf(Glyph compound) {
         partOf = compound;
     }
 
     //-----------//
     // setResult //
     //-----------//
-    public void setResult (Result result)
-    {
+    @Override
+    public void setResult(Result result) {
         this.result = result;
+    }
+
+    //---------------//
+    // stealSections //
+    //---------------//
+    @Override
+    public void stealSections(Glyph that) {
+        for (Section section : that.getMembers()) {
+            addSection(section, Linking.LINK_BACK);
+        }
+
+        that.setPartOf(glyph);
     }
 
     //-----------//
@@ -296,9 +291,8 @@ class BasicComposition
      * Apply the provided translation vector to all composing sections.
      * @param vector the provided translation vector
      */
-    public void translate (PixelPoint vector)
-    {
-        for (Section section : getMembers()) {
+    public void translate(PixelPoint vector) {
+        for (Section section : glyph.getMembers()) {
             section.translate(vector);
         }
     }

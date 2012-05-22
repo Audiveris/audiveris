@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -12,11 +12,11 @@
 package omr.glyph.ui.panel;
 
 import omr.glyph.Evaluation;
-import omr.glyph.GlyphEvaluator;
+import omr.glyph.ShapeEvaluator;
 import omr.glyph.GlyphRepository;
 import omr.glyph.Grades;
 import omr.glyph.facets.Glyph;
-import omr.glyph.ui.GlyphVerifier;
+import omr.glyph.ui.SampleVerifier;
 
 import omr.log.Logger;
 
@@ -36,6 +36,7 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -68,7 +69,7 @@ class ValidationPanel
     private ExecutorService executor = Executors.newSingleThreadExecutor();
 
     /** The evaluator to validate */
-    private final GlyphEvaluator evaluator;
+    private final ShapeEvaluator evaluator;
 
     /** User progress bar to visualize the validation process */
     private JProgressBar progressBar = new JProgressBar();
@@ -105,7 +106,7 @@ class ValidationPanel
         "Number of glyphs incorrectly recognized");
 
     /** Collection of glyph names leading to false positives */
-    private List<String> falsePositives = new ArrayList<String>();
+    private List<String> falsePositives = new ArrayList<>();
 
     /** User action to investigate on false positives */
     private FalsePositiveAction falsePositiveAction = new FalsePositiveAction();
@@ -117,7 +118,7 @@ class ValidationPanel
         "Number of glyphs not recognized");
 
     /** Collection of glyph names not recognized (negatives) */
-    private List<String> negatives = new ArrayList<String>();
+    private List<String> negatives = new ArrayList<>();
 
     /** User action to investigate on negatives */
     private NegativeAction negativeAction = new NegativeAction();
@@ -134,7 +135,7 @@ class ValidationPanel
      */
     public ValidationPanel (GlyphTrainer.Task task,
                             String            standardWidth,
-                            GlyphEvaluator    evaluator,
+                            ShapeEvaluator    evaluator,
                             SelectionPanel    selectionPanel,
                             TrainingPanel     trainingPanel)
     {
@@ -239,9 +240,7 @@ class ValidationPanel
     //---------------//
     private void runValidation ()
     {
-        logger.info(
-            "Validating " + evaluator.getName() + " evaluator on " +
-            (trainingPanel.useWhole() ? "whole" : "core") + " base ...");
+        logger.info("Validating {0} evaluator on {1} base ...", new Object[]{evaluator.getName(), trainingPanel.useWhole() ? "whole" : "core"});
 
         // Empty the display
         positiveValue.setText("");
@@ -296,9 +295,7 @@ class ValidationPanel
         int    total = gNames.size();
         double pc = ((double) positives * 100) / (double) total;
         String pcStr = String.format(" %5.2f%%", pc);
-        logger.info(
-            evaluator.getName() + "Evaluator. Ratio=" + pcStr + " : " +
-            positives + "/" + total);
+        logger.info("{0}Evaluator. Ratio={1} : {2}/{3}", new Object[]{evaluator.getName(), pcStr, positives, total});
         positiveValue.setValue(positives);
         pcValue.setValue(pc);
         negativeValue.setValue(negatives.size());
@@ -325,9 +322,9 @@ class ValidationPanel
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            GlyphVerifier.getInstance()
+            SampleVerifier.getInstance()
                          .verify(falsePositives);
-            GlyphVerifier.getInstance()
+            SampleVerifier.getInstance()
                          .setVisible(true);
         }
     }
@@ -350,9 +347,9 @@ class ValidationPanel
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            GlyphVerifier.getInstance()
+            SampleVerifier.getInstance()
                          .verify(negatives);
-            GlyphVerifier.getInstance()
+            SampleVerifier.getInstance()
                          .setVisible(true);
         }
     }

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -30,6 +30,9 @@ class BasicAdministration
 
     /** Glyph instance identifier (Unique in the containing nest) */
     protected int id;
+
+    /** Flag to remember processing has been done */
+    private boolean processed = false;
 
     /** VIP flag */
     protected boolean vip;
@@ -66,6 +69,7 @@ class BasicAdministration
     //-------//
     // getId //
     //-------//
+    @Override
     public int getId ()
     {
         return id;
@@ -74,22 +78,43 @@ class BasicAdministration
     //---------//
     // getNest //
     //---------//
+    @Override
     public Nest getNest ()
     {
         return nest;
     }
 
+    //----------//
+    // idString //
+    //----------//
+    @Override
+    public String idString ()
+    {
+        return "glyph#" + id;
+    }
+
+    //-------------//
+    // isProcessed //
+    //-------------//
+    @Override
+    public boolean isProcessed ()
+    {
+        return processed;
+    }
+
     //-------------//
     // isTransient //
     //-------------//
+    @Override
     public boolean isTransient ()
     {
-        return id == 0;
+        return nest == null;
     }
 
     //-------//
     // isVip //
     //-------//
+    @Override
     public boolean isVip ()
     {
         return vip;
@@ -98,6 +123,7 @@ class BasicAdministration
     //-----------//
     // isVirtual //
     //-----------//
+    @Override
     public boolean isVirtual ()
     {
         return false;
@@ -106,6 +132,7 @@ class BasicAdministration
     //-------//
     // setId //
     //-------//
+    @Override
     public void setId (int id)
     {
         this.id = id;
@@ -114,14 +141,25 @@ class BasicAdministration
     //---------//
     // setNest //
     //---------//
+    @Override
     public void setNest (Nest nest)
     {
         this.nest = nest;
     }
 
+    //--------------//
+    // setProcessed //
+    //--------------//
+    @Override
+    public void setProcessed (boolean processed)
+    {
+        this.processed = processed;
+    }
+
     //--------//
     // setVip //
     //--------//
+    @Override
     public void setVip ()
     {
         vip = true;

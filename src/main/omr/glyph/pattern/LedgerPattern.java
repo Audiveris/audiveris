@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2011. All rights reserved.               //
+//  Copyright (C) Herve Bitteur 2000-2012. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -52,7 +52,7 @@ import java.util.SortedSet;
  * @author Hervé Bitteur
  */
 public class LedgerPattern
-    extends GlyphPattern
+        extends GlyphPattern
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -64,7 +64,7 @@ public class LedgerPattern
 
     /** Shapes acceptable for a ledger neighbor */
     public static final EnumSet<Shape> ledgerNeighbors = EnumSet.noneOf(
-        Shape.class);
+            Shape.class);
 
     static {
         //        ledgerNeighbors.add(Shape.GRACE_NOTE_SLASH);
@@ -74,21 +74,21 @@ public class LedgerPattern
     }
 
     //~ Instance fields --------------------------------------------------------
-
     /** Companion in charge of building ledgers */
     private final HorizontalsBuilder builder;
 
     /** Scale-dependent parameters */
     final int interChunkDx;
+
     final int interChunkDy;
 
     //~ Constructors -----------------------------------------------------------
-
     //---------------//
     // LedgerPattern //
     //---------------//
     /**
      * Creates a new LedgerPattern object.
+     *
      * @param system the related system
      */
     public LedgerPattern (SystemInfo system)
@@ -100,7 +100,6 @@ public class LedgerPattern
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // runPattern //
     //------------//
@@ -112,12 +111,12 @@ public class LedgerPattern
         for (StaffInfo staff : system.getStaves()) {
             Map<Integer, SortedSet<Ledger>> ledgerMap = staff.getLedgerMap();
 
-            for (Iterator<Entry<Integer, SortedSet<Ledger>>> iter = ledgerMap.entrySet()
-                                                                             .iterator();
-                 iter.hasNext();) {
+            for (Iterator<Entry<Integer, SortedSet<Ledger>>> iter = ledgerMap.
+                    entrySet().iterator();
+                    iter.hasNext();) {
                 Entry<Integer, SortedSet<Ledger>> entry = iter.next();
-                SortedSet<Ledger>                 ledgerSet = entry.getValue();
-                List<Glyph>                       ledgerGlyphs = new ArrayList<Glyph>();
+                SortedSet<Ledger> ledgerSet = entry.getValue();
+                List<Glyph> ledgerGlyphs = new ArrayList<>();
 
                 for (Ledger ledger : ledgerSet) {
                     ledgerGlyphs.add(ledger.getStick());
@@ -125,17 +124,17 @@ public class LedgerPattern
 
                 // Process 
                 for (Iterator<Ledger> it = ledgerSet.iterator(); it.hasNext();) {
-                    Ledger     ledger = it.next();
-                    Glyph      glyph = ledger.getStick();
-                    Set<Glyph> neighbors = new HashSet<Glyph>();
+                    Ledger ledger = it.next();
+                    Glyph glyph = ledger.getStick();
+                    Set<Glyph> neighbors = new HashSet<>();
 
                     if (isInvalid(glyph, neighbors)) {
                         // Check if we can forge a ledger-compatible neighbor
                         Glyph compound = system.buildCompound(
-                            glyph,
-                            false,
-                            system.getGlyphs(),
-                            new LedgerAdapter(
+                                glyph,
+                                false,
+                                system.getGlyphs(),
+                                new LedgerAdapter(
                                 system,
                                 Grades.ledgerNoteMinGrade,
                                 ledgerNeighbors,
@@ -144,10 +143,7 @@ public class LedgerPattern
                         if (compound == null) {
                             // Here, we have not found any convincing neighbor
                             // Let's invalid this pseudo ledger
-                            if (logger.isFineEnabled()) {
-                                logger.info("Invalid ledger " + glyph);
-                            }
-
+                            logger.fine("Invalid ledger {0}", glyph);
                             glyph.setShape(null);
                             glyph.clearTranslations();
                             system.removeFromLedgersCollection(ledger);
@@ -177,12 +173,12 @@ public class LedgerPattern
     //-----------//
     // isInvalid //
     //-----------//
-    private boolean isInvalid (Glyph      ledgerGlyph,
+    private boolean isInvalid (Glyph ledgerGlyph,
                                Set<Glyph> neighborGlyphs)
     {
         // A short ledger must be stuck to either a note head or a stem 
         // (or a grace note)
-        List<Section> allSections = new ArrayList<Section>();
+        List<Section> allSections = new ArrayList<>();
 
         for (Section section : ledgerGlyph.getMembers()) {
             allSections.addAll(section.getSources());
@@ -216,23 +212,22 @@ public class LedgerPattern
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Scale.Fraction interChunkDx = new Scale.Fraction(
-            1.5,
-            "Max horizontal distance between ledger chunks");
+                1.5,
+                "Max horizontal distance between ledger chunks");
 
         //
         Scale.Fraction interChunkDy = new Scale.Fraction(
-            0.2,
-            "Max vertical distance between ledger chunks");
+                0.2,
+                "Max vertical distance between ledger chunks");
     }
 
     //---------------//
@@ -243,33 +238,32 @@ public class LedgerPattern
      * chunk.
      */
     private final class LedgerAdapter
-        extends CompoundBuilder.TopShapeAdapter
+            extends CompoundBuilder.TopShapeAdapter
     {
         //~ Instance fields ----------------------------------------------------
 
         private final List<Glyph> ledgerGlyphs;
 
         //~ Constructors -------------------------------------------------------
-
-        public LedgerAdapter (SystemInfo     system,
-                              double         minGrade,
+        public LedgerAdapter (SystemInfo system,
+                              double minGrade,
                               EnumSet<Shape> desiredShapes,
-                              List<Glyph>    ledgerGlyphs)
+                              List<Glyph> ledgerGlyphs)
         {
             super(system, minGrade, desiredShapes);
             this.ledgerGlyphs = ledgerGlyphs;
         }
 
         //~ Methods ------------------------------------------------------------
-
+        @Override
         public PixelRectangle computeReferenceBox ()
         {
-            Point2D        stop = seed.getStopPoint(Orientation.HORIZONTAL);
+            Point2D stop = seed.getStopPoint(Orientation.HORIZONTAL);
             PixelRectangle rect = new PixelRectangle(
-                (int) Math.rint(stop.getX()),
-                (int) Math.rint(stop.getY()),
-                interChunkDx,
-                0);
+                    (int) Math.rint(stop.getX()),
+                    (int) Math.rint(stop.getY()),
+                    interChunkDx,
+                    0);
             rect.grow(0, interChunkDy);
             seed.addAttachment("-", rect);
 
@@ -282,6 +276,7 @@ public class LedgerPattern
             return new Evaluation(chosenEvaluation.shape, Evaluation.ALGORITHM);
         }
 
+        @Override
         public boolean isCandidateSuitable (Glyph glyph)
         {
             return !ledgerGlyphs.contains(glyph);

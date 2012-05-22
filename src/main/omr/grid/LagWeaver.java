@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -51,37 +51,38 @@ public class LagWeaver
 
     /** Table dx/dy -> Heading */
     private static final Heading[][] headings = {
-                                                    { null, Heading.NORTH, null },
-                                                    {
-                                                        Heading.WEST, null,
-                                                        Heading.EAST
-                                                    },
-                                                    { null, Heading.SOUTH, null }
-                                                };
+        {null, Heading.NORTH, null},
+        {
+            Heading.WEST, null,
+            Heading.EAST
+        },
+        {null, Heading.SOUTH, null}
+    };
 
     //~ Enumerations -----------------------------------------------------------
-
-    private static enum Heading {
+    private static enum Heading
+    {
         //~ Enumeration constant initializers ----------------------------------
 
-        NORTH,EAST, SOUTH,
+        NORTH,
+        EAST,
+        SOUTH,
         WEST;
 
         //~ Methods ------------------------------------------------------------
-
         public boolean insideCornerTo (Heading next)
         {
             switch (this) {
-            case NORTH :
+            case NORTH:
                 return next == WEST;
 
-            case EAST :
+            case EAST:
                 return next == NORTH;
 
-            case SOUTH :
+            case SOUTH:
                 return next == EAST;
 
-            case WEST :
+            case WEST:
                 return next == SOUTH;
             }
 
@@ -90,7 +91,6 @@ public class LagWeaver
     }
 
     //~ Instance fields --------------------------------------------------------
-
     /** Related sheet */
     private final Sheet sheet;
 
@@ -104,21 +104,21 @@ public class LagWeaver
      * Actual points around current vLag section to check to hLag presence
      * (relevant only during horiWithVert)
      */
-    private final List<Point> pointsAside = new ArrayList<Point>();
+    private final List<Point> pointsAside = new ArrayList<>();
 
     /** Points to check for source sections above in hLag */
-    private final List<Point> pointsAbove = new ArrayList<Point>();
+    private final List<Point> pointsAbove = new ArrayList<>();
 
     /** Points to check for target sections below in hLag */
-    private final List<Point> pointsBelow = new ArrayList<Point>();
+    private final List<Point> pointsBelow = new ArrayList<>();
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------//
     // LagWeaver //
     //-----------//
     /**
      * Creates a new LagWeaver object.
+     *
      * @param sheet the related sheet, which holds the v & h lags
      */
     public LagWeaver (Sheet sheet)
@@ -130,7 +130,6 @@ public class LagWeaver
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // buildInfo //
     //-----------//
@@ -143,11 +142,8 @@ public class LagWeaver
 
         List<Section> staffLinesSections = removeStaffLines(hLag);
 
-        if (logger.isFineEnabled()) {
-            logger.info(
-                sheet.getLogPrefix() + "StaffLine sections removed: " +
-                staffLinesSections.size());
-        }
+        logger.fine("{0}StaffLine sections removed: {1}", new Object[]{sheet.
+                    getLogPrefix(), staffLinesSections.size()});
 
         watch.start("Hori <-> Hori");
         horiWithHori();
@@ -168,7 +164,7 @@ public class LagWeaver
     private void addPointAbove (int x,
                                 int y)
     {
-        logger.fine("addPointAbove " + x + "," + y);
+        logger.fine("addPointAbove {0},{1}", new Object[]{x, y});
         pointsAbove.add(new Point(x, y));
     }
 
@@ -188,7 +184,7 @@ public class LagWeaver
     private void addPointBelow (int x,
                                 int y)
     {
-        logger.fine("addPointBelow " + x + "," + y);
+        logger.fine("addPointBelow {0},{1}", new Object[]{x, y});
         pointsBelow.add(new Point(x, y));
     }
 
@@ -199,10 +195,9 @@ public class LagWeaver
     {
         // Group (unknown) sections into glyphs
         // Consider all unknown vertical & horizontal sections
-        List<Section> allSections = new ArrayList<Section>();
+        List<Section> allSections = new ArrayList<>();
 
-        for (Section section : sheet.getVerticalLag()
-                                    .getSections()) {
+        for (Section section : sheet.getVerticalLag().getSections()) {
             if (!section.isKnown()) {
                 section.setProcessed(false);
                 allSections.add(section);
@@ -211,8 +206,7 @@ public class LagWeaver
             }
         }
 
-        for (Section section : sheet.getHorizontalLag()
-                                    .getSections()) {
+        for (Section section : sheet.getHorizontalLag().getSections()) {
             if (!section.isKnown()) {
                 section.setProcessed(false);
                 allSections.add(section);
@@ -222,9 +216,9 @@ public class LagWeaver
         }
 
         GlyphsBuilder.retrieveGlyphs(
-            allSections,
-            sheet.getNest(),
-            sheet.getScale());
+                allSections,
+                sheet.getNest(),
+                sheet.getScale());
     }
 
     //------------------//
@@ -248,9 +242,11 @@ public class LagWeaver
         }
 
         if (added && logger.isFineEnabled()) {
-            logger.info(
-                "lSect#" + lSect.getId() + " checks:" + pointsAbove.size() +
-                Sections.toString(" sources", lSect.getSources()));
+            logger.info("lSect#{0} checks:{1}{2}",
+                        new Object[]{lSect.getId(),
+                                     pointsAbove.size(),
+                                     Sections.toString(" sources", lSect.
+                        getSources())});
         }
     }
 
@@ -276,9 +272,11 @@ public class LagWeaver
         }
 
         if (added && logger.isFineEnabled()) {
-            logger.info(
-                "vSect#" + vSect.getId() + " checks:" + pointsAside.size() +
-                Sections.toString(" hSects", vSect.getOppositeSections()));
+            logger.info("vSect#{0} checks:{1}{2}",
+                        new Object[]{vSect.getId(),
+                                     pointsAside.size(),
+                                     Sections.toString(" hSects", vSect.
+                        getOppositeSections())});
         }
     }
 
@@ -303,9 +301,10 @@ public class LagWeaver
         }
 
         if (added && logger.isFineEnabled()) {
-            logger.info(
-                "lSect#" + lSect.getId() + " checks:" + pointsBelow.size() +
-                Sections.toString(" targets", lSect.getTargets()));
+            logger.info("lSect#{0} checks:{1}{2}", new Object[]{lSect.getId(),
+                                                                pointsBelow.size(),
+                                                                Sections.
+                        toString(" targets", lSect.getTargets())});
         }
     }
 
@@ -342,16 +341,16 @@ public class LagWeaver
                 continue;
             }
 
-            final int       sectTop = lSect.getFirstPos();
-            final int       sectLeft = lSect.getStartCoord();
-            final int       sectBottom = lSect.getLastPos();
-            final double[]  coords = new double[2];
+            final int sectTop = lSect.getFirstPos();
+            final int sectLeft = lSect.getStartCoord();
+            final int sectBottom = lSect.getLastPos();
+            final double[] coords = new double[2];
             final boolean[] occupied = new boolean[lSect.getLength(
-                Orientation.HORIZONTAL)];
-            Point           prevPt = null;
-            Point           pt = null;
-            Heading         prevHeading = null;
-            Heading         heading = null;
+                    Orientation.HORIZONTAL)];
+            Point prevPt = null;
+            Point pt;
+            Heading prevHeading = null;
+            Heading heading = null;
             pointsAbove.clear();
             pointsBelow.clear();
 
@@ -361,13 +360,10 @@ public class LagWeaver
 
                 if (kind == SEG_LINETO) {
                     heading = getHeading(prevPt, pt);
-
-                    if (logger.isFineEnabled()) {
-                        logger.fine(prevPt + " " + heading + " " + pt);
-                    }
+                    logger.fine("{0} {1} {2}", new Object[]{prevPt, heading, pt});
 
                     switch (heading) {
-                    case NORTH :
+                    case NORTH:
 
                         // No pixel on right
                         if (prevHeading == Heading.WEST) {
@@ -376,7 +372,7 @@ public class LagWeaver
 
                         break;
 
-                    case WEST : {
+                    case WEST: {
                         int dir = -1;
 
                         // Check pixels on row above
@@ -413,7 +409,7 @@ public class LagWeaver
                         break;
                     }
 
-                    case SOUTH :
+                    case SOUTH:
 
                         // No pixel on left
                         if (prevHeading == Heading.EAST) {
@@ -422,7 +418,7 @@ public class LagWeaver
 
                         break;
 
-                    case EAST : {
+                    case EAST: {
                         int dir = +1;
 
                         // Check pixels on row below
@@ -443,8 +439,8 @@ public class LagWeaver
                                 Run run = adj.getFirstRun();
                                 int left = Math.max(run.getStart() - 1, xStart);
                                 int right = Math.min(
-                                    run.getStop() + 1,
-                                    xBreak - 1);
+                                        run.getStop() + 1,
+                                        xBreak - 1);
 
                                 for (int x = left; x <= right; x++) {
                                     occupied[x - sectLeft] = true;
@@ -480,16 +476,16 @@ public class LagWeaver
     {
         // Process each vertical section in turn
         for (Section vSect : vLag.getSections()) {
-            final int       sectTop = vSect.getStartCoord();
-            final int       sectLeft = vSect.getFirstPos();
-            final int       sectRight = vSect.getLastPos();
-            final double[]  coords = new double[2];
+            final int sectTop = vSect.getStartCoord();
+            final int sectLeft = vSect.getFirstPos();
+            final int sectRight = vSect.getLastPos();
+            final double[] coords = new double[2];
             final boolean[] occupied = new boolean[vSect.getLength(
-                Orientation.VERTICAL)];
-            Point           prevPt = null;
-            Point           pt = null;
-            Heading         prevHeading = null;
-            Heading         heading = null;
+                    Orientation.VERTICAL)];
+            Point prevPt = null;
+            Point pt = null;
+            Heading prevHeading = null;
+            Heading heading = null;
             pointsAside.clear();
 
             for (PathIterator it = vSect.getPathIterator(); !it.isDone();) {
@@ -501,7 +497,7 @@ public class LagWeaver
 
                     //logger.info(prevPt + " " + heading + " " + pt);
                     switch (heading) {
-                    case NORTH : {
+                    case NORTH: {
                         int dir = -1;
                         // Check pixels on left column
                         Arrays.fill(occupied, false);
@@ -537,7 +533,7 @@ public class LagWeaver
 
                     break;
 
-                    case WEST :
+                    case WEST:
 
                         // No pixel above
                         if (prevHeading == Heading.NORTH) {
@@ -546,7 +542,7 @@ public class LagWeaver
 
                         break;
 
-                    case SOUTH : {
+                    case SOUTH: {
                         int dir = +1;
                         // Check pixels on right column
                         Arrays.fill(occupied, false);
@@ -566,8 +562,8 @@ public class LagWeaver
                                 Run run = adj.getFirstRun();
                                 int top = Math.max(run.getStart() - 1, yStart);
                                 int bot = Math.min(
-                                    run.getStop() + 1,
-                                    yBreak - 1);
+                                        run.getStop() + 1,
+                                        yBreak - 1);
 
                                 for (int y = top; y <= bot; y++) {
                                     occupied[y - sectTop] = true;
@@ -584,7 +580,7 @@ public class LagWeaver
 
                     break;
 
-                    case EAST :
+                    case EAST:
 
                         // No pixel below
                         if (prevHeading == Heading.SOUTH) {
@@ -608,12 +604,12 @@ public class LagWeaver
     // removePoint //
     //-------------//
     private void removePoint (List<Point> points,
-                              int         x,
-                              int         y)
+                              int x,
+                              int y)
     {
         if (!points.isEmpty()) {
             ListIterator<Point> iter = points.listIterator(points.size());
-            Point               lastCorner = iter.previous();
+            Point lastCorner = iter.previous();
 
             if ((lastCorner.x == x) && (lastCorner.y == y)) {
                 iter.remove();
@@ -627,10 +623,7 @@ public class LagWeaver
     private void removePointAbove (int x,
                                    int y)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Removing corner above x:" + x + " y:" + y);
-        }
-
+        logger.fine("Removing corner above x:{0} y:{1}", new Object[]{x, y});
         removePoint(pointsAbove, x, y);
     }
 
@@ -649,10 +642,7 @@ public class LagWeaver
     private void removePointBelow (int x,
                                    int y)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Removing corner below x:" + x + " y:" + y);
-        }
-
+        logger.fine("Removing corner below x:{0} y:{1}", new Object[]{x, y});
         removePoint(pointsBelow, x, y);
     }
 
@@ -662,22 +652,25 @@ public class LagWeaver
     private List<Section> removeStaffLines (Lag hLag)
     {
         return hLag.purgeSections(
-            new Predicate<Section>() {
+                new Predicate<Section>()
+                {
+
+                    @Override
                     public boolean check (Section section)
                     {
                         Glyph glyph = section.getGlyph();
 
-                        if ((glyph != null) &&
-                            (glyph.getShape() == Shape.STAFF_LINE)) {
+                        if ((glyph != null)
+                                && (glyph.getShape() == Shape.STAFF_LINE)) {
                             /**
                              * Narrow horizontal section can be kept to avoid
                              * over-segmentation between vertical sections
                              */
-                            if ((section.getLength(Orientation.HORIZONTAL) == 1) &&
-                                (section.getLength(Orientation.VERTICAL) > 1)) {
+                            if ((section.getLength(Orientation.HORIZONTAL) == 1)
+                                    && (section.getLength(Orientation.VERTICAL) > 1)) {
                                 if (section.isVip() || logger.isFineEnabled()) {
-                                    logger.info(
-                                        "Keeping staffline section " + section);
+                                    logger.info("Keeping staffline section {0}",
+                                                section);
                                 }
 
                                 section.setGlyph(null);

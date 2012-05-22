@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -46,6 +46,7 @@ import omr.sheet.SystemInfo;
 import omr.util.TreeNode;
 
 import java.util.EnumSet;
+import java.util.logging.Level;
 
 /**
  * Class {@code TimeSignatureRetriever} checks carefully the first
@@ -115,10 +116,8 @@ public class TimeSignatureRetriever
             PixelRectangle roi = getRoi(firstMeasure);
 
             if (roi.width < timeSigWidth) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("No room for time sig: " + roi.width);
-                }
-
+                logger.fine("No room for time sig: {0}", roi.width);
+                
                 return false;
             }
 
@@ -211,17 +210,15 @@ public class TimeSignatureRetriever
                     Glyph accid = note.getAccidental();
 
                     if (accid != null) {
-                        right = Math.min(right, accid.getContourBox().x);
+                        right = Math.min(right, accid.getBounds().x);
                     } else {
                         right = Math.min(right, note.getBox().x);
                     }
                 }
             }
 
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "Staff:" + staffId + " left:" + left + " right:" + right);
-            }
+            logger.fine("Staff:{0} left:{1} right:{2}",
+                        new Object[]{staffId, left, right});
         }
 
         return new PixelRectangle(left, 0, right - left, 0);
@@ -300,6 +297,7 @@ public class TimeSignatureRetriever
 
         //~ Methods ------------------------------------------------------------
 
+        @Override
         public PixelRectangle computeReferenceBox ()
         {
             StaffInfo      staffInfo = staff.getInfo();
@@ -338,6 +336,7 @@ public class TimeSignatureRetriever
             return new Evaluation(chosenEvaluation.shape, Evaluation.ALGORITHM);
         }
 
+        @Override
         public boolean isCandidateSuitable (Glyph glyph)
         {
             return !glyph.isManualShape();

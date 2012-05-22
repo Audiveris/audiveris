@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -28,6 +28,9 @@ public class GlyphSignature
 {
     //~ Instance fields --------------------------------------------------------
 
+    /** Glyph (0) or GlyphChain (1) */
+    private final int chain;
+
     /** Glyph absolute weight */
     private final int weight;
 
@@ -45,6 +48,7 @@ public class GlyphSignature
      */
     public GlyphSignature (Glyph glyph)
     {
+        chain = (glyph instanceof GlyphChain) ? 1 : 0;
         weight = glyph.getWeight();
         moments = new GeometricMoments(glyph.getGeometricMoments());
     }
@@ -57,6 +61,7 @@ public class GlyphSignature
      */
     private GlyphSignature ()
     {
+        chain = 0;
         weight = 0;
         moments = null;
     }
@@ -69,6 +74,12 @@ public class GlyphSignature
     @Override
     public int compareTo (GlyphSignature other)
     {
+        if (chain < other.chain) {
+            return -1;
+        } else if (chain > other.chain) {
+            return 1;
+        }
+
         if (weight < other.weight) {
             return -1;
         } else if (weight > other.weight) {
@@ -126,6 +137,14 @@ public class GlyphSignature
         return hash;
     }
 
+    //---------//
+    // isChain //
+    //---------//
+    public boolean isChain ()
+    {
+        return chain == 1;
+    }
+
     //----------//
     // toString //
     //----------//
@@ -133,6 +152,10 @@ public class GlyphSignature
     public String toString ()
     {
         StringBuilder sb = new StringBuilder("{GSig");
+
+        sb.append(" chain=")
+          .append(chain);
+
         sb.append(" weight=")
           .append(weight);
 
@@ -142,25 +165,4 @@ public class GlyphSignature
 
         return sb.toString();
     }
-
-    //    //------------------//
-    //    // setXmlContourBox //
-    //    //------------------//
-    //    @XmlElement(name = "contour-box")
-    //    private void setXmlContourBox (RectangleFacade xr)
-    //    {
-    //        contourBox = xr.getRectangle();
-    //    }
-    //
-    //    //------------------//
-    //    // getXmlContourBox //
-    //    //------------------//
-    //    private RectangleFacade getXmlContourBox ()
-    //    {
-    //        if (contourBox != null) {
-    //            return new RectangleFacade(contourBox);
-    //        } else {
-    //            return null;
-    //        }
-    //    }
 }

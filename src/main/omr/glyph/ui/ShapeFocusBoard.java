@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -40,8 +40,6 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import org.bushe.swing.event.EventSubscriber;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -62,8 +60,9 @@ import javax.swing.event.ChangeListener;
 
 /**
  * Class {@code ShapeFocusBoard} handles a user iteration within a
- * collection of glyphs. The collection may be built from glyphs of a given
- * shape, or from glyphs similar to a given glyph, etc.
+ * collection of glyphs.
+ * The collection may be built from glyphs of a given shape,
+ * or from glyphs similar to a given glyph, etc.
  *
  * @author Hervé Bitteur
  */
@@ -112,7 +111,7 @@ public class ShapeFocusBoard
     private JButton selectButton = new JButton();
 
     /** Filter for known / unknown symbol display */
-    private JComboBox<Filter> filterButton = new JComboBox<Filter>(
+    private JComboBox<Filter> filterButton = new JComboBox<>(
         Filter.values());
 
     /** Popup menu to allow shape selection */
@@ -124,9 +123,8 @@ public class ShapeFocusBoard
     // ShapeFocusBoard //
     //-----------------//
     /**
-     * Create the instance to handle the shape focus, with pointers to needed
-     * companions
-     *
+     * Create the instance to handle the shape focus, with pointers to
+     * needed companions.
      * @param sheet the related sheet
      * @param controller the related glyph controller
      * @param filterListener the action linked to filter button
@@ -150,6 +148,7 @@ public class ShapeFocusBoard
         selectButton.setHorizontalAlignment(SwingConstants.LEFT);
         selectButton.addActionListener(
             new ActionListener() {
+                    @Override
                     public void actionPerformed (ActionEvent e)
                     {
                         pm.show(
@@ -169,6 +168,7 @@ public class ShapeFocusBoard
         noFocus.setToolTipText("Cancel any focus");
         noFocus.addActionListener(
             new ActionListener() {
+                    @Override
                     public void actionPerformed (ActionEvent e)
                     {
                         setCurrentShape(null);
@@ -178,6 +178,7 @@ public class ShapeFocusBoard
         ShapeSet.addAllShapes(
             pm,
             new ActionListener() {
+                    @Override
                     public void actionPerformed (ActionEvent e)
                     {
                         JMenuItem source = (JMenuItem) e.getSource();
@@ -197,25 +198,25 @@ public class ShapeFocusBoard
     // isDisplayed //
     //-------------//
     /**
-     * Report whether the glyph at hand is to be displayed, according to the
-     * current filter
-     * @param glyph the glyph at hande
+     * Report whether the glyph at hand is to be displayed, according to
+     * the current filter
+     * @param glyph the glyph at hand, perhaps null
      * @return true if to be displayed
      */
     public boolean isDisplayed (Glyph glyph)
     {
         switch ((Filter) filterButton.getSelectedItem()) {
         case KNOWN :
-            return glyph.isKnown();
+            return (glyph != null) && glyph.isKnown();
 
         case UNKNOWN :
-            return !glyph.isKnown();
+            return (glyph == null) || !glyph.isKnown();
 
         case TRANSLATED :
-            return glyph.isKnown() && glyph.isTranslated();
+            return (glyph != null) && glyph.isKnown() && glyph.isTranslated();
 
         case UNTRANSLATED :
-            return glyph.isKnown() && !glyph.isTranslated();
+            return (glyph != null) && glyph.isKnown() && !glyph.isTranslated();
 
         default :
         case ALL :
@@ -227,7 +228,7 @@ public class ShapeFocusBoard
     // onEvent //
     //---------//
     /**
-     * Notification about selection objects
+     * Notification about selection objects.
      * We used to use it on a just modified glyph, to set the new shape focus
      * But this conflicts with the ability to browse a collection of similar
      * glyphs and assign them on the fly
@@ -244,8 +245,7 @@ public class ShapeFocusBoard
     // setCurrentShape //
     //-----------------//
     /**
-     * Define the new current shape
-     *
+     * Define the new current shape.
      * @param currentShape the shape to be considered as current
      */
     public void setCurrentShape (Shape currentShape)
@@ -279,8 +279,9 @@ public class ShapeFocusBoard
     // setSimilarGlyph //
     //-----------------//
     /**
-     * Define the glyphs collection as all glyphs whose physical appearance is
-     * "similar" to the appearance of the provided glyph example
+     * Define the glyphs collection as all glyphs whose physical
+     * appearance is "similar" to the appearance of the provided glyph
+     * example.
      * @param example the provided example
      */
     public void setSimilarGlyph (Glyph example)
@@ -290,7 +291,7 @@ public class ShapeFocusBoard
         if (example != null) {
             GlyphRegression  evaluator = GlyphRegression.getInstance();
             double[]         pattern = ShapeDescription.features(example);
-            List<DistIdPair> pairs = new ArrayList<DistIdPair>();
+            List<DistIdPair> pairs = new ArrayList<>();
 
             // Retrieve the glyphs similar to the example
             for (Glyph glyph : sheet.getActiveGlyphs()) {
@@ -331,6 +332,7 @@ public class ShapeFocusBoard
             selectButton.setText("Glyphs similar to #" + example.getId());
             selectButton.setIcon(null);
 
+            setSelected(true);
             setVisible(true);
         } else {
             // Void the shape button
@@ -346,14 +348,11 @@ public class ShapeFocusBoard
     //--------------//
     private void defineLayout ()
     {
-        final String buttonWidth = Panel.getButtonWidth();
-        final String fieldInterval = Panel.getFieldInterval();
         final String fieldInterline = Panel.getFieldInterline();
 
+        String       colSpec = Panel.makeColumns(3);
         FormLayout   layout = new FormLayout(
-            buttonWidth + "," + fieldInterval + "," + buttonWidth + "," +
-            fieldInterval + "," + buttonWidth + "," + fieldInterval + "," +
-            buttonWidth,
+            colSpec,
             "pref," + fieldInterline + "," + "pref");
 
         PanelBuilder builder = new PanelBuilder(layout, getBody());
@@ -362,28 +361,57 @@ public class ShapeFocusBoard
         CellConstraints cst = new CellConstraints();
 
         int             r = 1; // --------------------------------
-        builder.add(selectButton, cst.xyw(3, r, 5));
+        builder.add(browser.count, cst.xy(1, r));
+        builder.add(browser.spinner, cst.xy(3, r));
+        builder.add(selectButton, cst.xywh(7, r, 5, 3));
 
         r += 2; // --------------------------------
-        builder.add(filterButton, cst.xy(1, r));
-
-        builder.add(browser.count, cst.xy(5, r));
-        builder.add(browser.spinner, cst.xy(7, r));
+        builder.add(filterButton, cst.xyw(1, r, 3));
     }
 
     //~ Inner Classes ----------------------------------------------------------
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
+    //------------//
+    // DistIdPair //
+    //------------//
+    /**
+     * Needed to sort glyphs id according to their distance
+     */
+    private static class DistIdPair
     {
+        //~ Static fields/initializers -----------------------------------------
+
+        private static final Comparator<DistIdPair> distComparator = new Comparator<DistIdPair>() {
+            @Override
+            public int compare (DistIdPair o1,
+                                DistIdPair o2)
+            {
+                return Double.compare(o1.dist, o2.dist);
+            }
+        };
+
+
         //~ Instance fields ----------------------------------------------------
 
-        Constant.Boolean printDistances = new Constant.Boolean(
-            false,
-            "Should we print out distance details when looking for similar glyphs?");
+        final double dist;
+        final int    id;
+
+        //~ Constructors -------------------------------------------------------
+
+        public DistIdPair (double dist,
+                           int    id)
+        {
+            this.dist = dist;
+            this.id = id;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public String toString ()
+        {
+            return "dist:" + dist + " glyph#" + id;
+        }
     }
 
     //---------//
@@ -395,7 +423,7 @@ public class ShapeFocusBoard
         //~ Instance fields ----------------------------------------------------
 
         // Spinner on these glyphs
-        ArrayList<Integer> ids = new ArrayList<Integer>();
+        ArrayList<Integer> ids = new ArrayList<>();
 
         // Number of glyphs
         JLabel   count = new JLabel("", SwingConstants.RIGHT);
@@ -468,45 +496,16 @@ public class ShapeFocusBoard
         }
     }
 
-    //------------//
-    // DistIdPair //
-    //------------//
-    /**
-     * Needed to sort glyphs id according to their distance
-     */
-    private static class DistIdPair
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+        extends ConstantSet
     {
-        //~ Static fields/initializers -----------------------------------------
-
-        private static final Comparator<DistIdPair> distComparator = new Comparator<DistIdPair>() {
-            public int compare (DistIdPair o1,
-                                DistIdPair o2)
-            {
-                return Double.compare(o1.dist, o2.dist);
-            }
-        };
-
-
         //~ Instance fields ----------------------------------------------------
 
-        final double dist;
-        final int    id;
-
-        //~ Constructors -------------------------------------------------------
-
-        public DistIdPair (double dist,
-                           int    id)
-        {
-            this.dist = dist;
-            this.id = id;
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public String toString ()
-        {
-            return "dist:" + dist + " glyph#" + id;
-        }
+        Constant.Boolean printDistances = new Constant.Boolean(
+            false,
+            "Should we print out distance details when looking for similar glyphs?");
     }
 }

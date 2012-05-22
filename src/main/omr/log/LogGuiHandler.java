@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -14,11 +14,12 @@ package omr.log;
 import omr.Main;
 
 import java.util.concurrent.BlockingQueue;
+import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
 /**
- * <p>Class {@code LogGuiAppender} is a specific Log Appender, to be used
- * with logging utility, and which logs directly into the GUI log pane.</p>
+ * Class {@code LogGuiAppender} is a specific Log Appender, to be used
+ * with logging utility, and which logs directly into the GUI log pane.
  *
  * <p>As a {@code Handler}, it should be added to the highest-level
  * logger instance, either programmatically or in a properties file.</p>
@@ -27,15 +28,15 @@ import java.util.logging.LogRecord;
  * @author Brenton Partridge
  */
 public class LogGuiHandler
-    extends java.util.logging.Handler
+        extends java.util.logging.Handler
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** The mailbox where log records are stored for display */
-    private final BlockingQueue<LogRecord> logMbx = Logger.getMailbox();
+    /** The mailbox where log records are stored for display. */
+    private final BlockingQueue<FormattedRecord> logMbx = Logger.getMailbox();
 
     //~ Constructors -----------------------------------------------------------
-
+    //
     //---------------//
     // LogGuiHandler //
     //---------------//
@@ -44,11 +45,12 @@ public class LogGuiHandler
      */
     public LogGuiHandler ()
     {
+        setFormatter(new MiniFormatter());
         setFilter(new LogEmptyMessageFilter());
     }
 
     //~ Methods ----------------------------------------------------------------
-
+    //
     //-------//
     // close //
     //-------//
@@ -78,20 +80,47 @@ public class LogGuiHandler
     //---------//
     /**
      * Publish one log record
+     *
      * @param record the record to be logged
      */
     @Override
     public void publish (LogRecord record)
     {
         if (isLoggable(record)) {
-            if (!logMbx.offer(record)) {
-                System.err.println("Logger Mailbox is full");
-            }
+            try {
+                String msg = getFormatter().formatMessage(record);
+                FormattedRecord formatted = new FormattedRecord(
+                        record.getLevel(), msg);
+                if (!logMbx.offer(formatted)) {
+                    System.err.println("Logger Mailbox is full");
+                }
 
-            if (Main.getGui() != null) {
-                Main.getGui()
-                    .notifyLog();
+                if (Main.getGui() != null) {
+                    Main.getGui().notifyLog();
+                }
+            } catch (Throwable ex) {
+                System.err.println("Error formatting log record");
+                ex.printStackTrace();
             }
+        }
+    }
+
+    //---------------//
+    // MiniFormatter //
+    //---------------//
+    /**
+     * A minimal formatter, since we just need the formatMessage()
+     * feature provided by the abstract Formatter class.
+     */
+    private class MiniFormatter
+            extends Formatter
+    {
+
+        @Override
+        public String format (LogRecord record)
+        {
+            // We don't use this feature
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 }

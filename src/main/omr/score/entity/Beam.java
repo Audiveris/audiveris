@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -45,8 +45,9 @@ import java.util.TreeSet;
  * @author Hervé Bitteur
  */
 public class Beam
-    extends MeasureNode
-    implements Comparable<Beam>, Vip
+        extends MeasureNode
+        implements Comparable<Beam>,
+                   Vip
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -57,7 +58,6 @@ public class Beam
     private static final Logger logger = Logger.getLogger(Beam.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** (Debug) flag this object as VIP */
     private boolean vip;
 
@@ -68,10 +68,10 @@ public class Beam
     private BeamGroup group;
 
     /** Items that compose this beam, sorted by abscissa */
-    private SortedSet<BeamItem> items = new TreeSet<BeamItem>();
+    private SortedSet<BeamItem> items = new TreeSet<>();
 
     /** Sequence of Chords that are linked by this beam, ordered by abscissa */
-    private SortedSet<Chord> chords = new TreeSet<Chord>();
+    private SortedSet<Chord> chords = new TreeSet<>();
 
     /** Line equation for the beam */
     private Line line;
@@ -83,11 +83,11 @@ public class Beam
     private PixelPoint right;
 
     //~ Constructors -----------------------------------------------------------
-
     //------//
     // Beam //
     //------//
     /** Creates a new instance of Beam.
+     *
      * @param measure the enclosing measure
      */
     public Beam (Measure measure)
@@ -96,23 +96,22 @@ public class Beam
 
         id = 1 + getChildIndex();
 
-        if (logger.isFineEnabled()) {
-            logger.fine(measure.getContextString() + " Created " + this);
-        }
+        logger.fine("{0} Created {1}", new Object[]{measure.getContextString(),
+                                                    this});
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // populate //
     //----------//
     /**
      * Populate a (or create a brand new) beam with this glyph.
-     * @param item a beam item
+     *
+     * @param item    a beam item
      * @param measure the containing measure
      */
     public static void populate (BeamItem item,
-                                 Measure  measure)
+                                 Measure measure)
     {
         ///logger.info("Populating " + glyph);
         Beam beam = null;
@@ -136,9 +135,7 @@ public class Beam
         beam.addItem(item);
 
         ////glyph.addTranslation(item);
-        if (logger.isFineEnabled()) {
-            logger.fine(beam.getContextString() + " " + beam);
-        }
+        logger.fine("{0} {1}", new Object[]{beam.getContextString(), beam});
     }
 
     //--------//
@@ -155,6 +152,7 @@ public class Beam
     //----------//
     /**
      * Insert a chord linked by this beam.
+     *
      * @param chord the linked chord
      */
     public void addChord (Chord chord)
@@ -174,9 +172,9 @@ public class Beam
         if (chords.isEmpty()) {
             addError("No chords connected to " + this);
         } else {
-            Chord            first = chords.first();
-            Chord            last = chords.last();
-            boolean          started = false;
+            Chord first = chords.first();
+            Chord last = chords.last();
+            boolean started = false;
 
             // Add interleaved chords if any, plus relevant chords of the group
             SortedSet<Chord> adds = Chord.lookupInterleavedChords(first, last);
@@ -205,12 +203,14 @@ public class Beam
     /**
      * Implement the order between two beams (of the same BeamGroup).
      * We use the order along the first common chord, starting from chord tail.
-     * Note that, apart from the trivial case where a beam is compared to itself,
+     * Note that, apart from the trivial case where a beam is compared to
+     * itself,
      * two beams of the same group cannot be equal.
      *
      * @param other the other beam to be compared with
      * @return -1, 0, +1 according to the comparison result
      */
+    @Override
     public int compareTo (Beam other)
     {
         // Process trivial case
@@ -221,16 +221,13 @@ public class Beam
         // Find a common chord, and use reverse order from head location
         for (Chord chord : chords) {
             if (other.chords.contains(chord)) {
-                int x = chord.getStem()
-                             .getLocation().x;
-                int y = getLine()
-                            .yAtX(x);
-                int yOther = other.getLine()
-                                  .yAtX(x);
+                int x = chord.getStem().getLocation().x;
+                int y = getLine().yAtX(x);
+                int yOther = other.getLine().yAtX(x);
                 int yHead = chord.getHeadLocation().y;
 
                 int result = Integer.signum(
-                    Math.abs(yHead - yOther) - Math.abs(yHead - y));
+                        Math.abs(yHead - yOther) - Math.abs(yHead - y));
 
                 if (result == 0) {
                     // This should not happen
@@ -262,20 +259,15 @@ public class Beam
     public void determineGroup ()
     {
         // Check if this beam should belong to an existing group
-        for (BeamGroup group : getMeasure()
-                                   .getBeamGroups()) {
+        for (BeamGroup group : getMeasure().getBeamGroups()) {
             for (Beam beam : group.getBeams()) {
                 for (Chord chord : beam.getChords()) {
                     if (this.chords.contains(chord)) {
                         // We have a chord in common with this beam, so we are
                         // part of the same group
                         switchGroup(group);
-
-                        if (logger.isFineEnabled()) {
-                            logger.fine(
-                                getContextString() + " Reused " + group +
-                                " for " + this);
-                        }
+                        logger.fine("{0} Reused {1} for {2}",
+                                    new Object[]{getContextString(), group, this});
 
                         return;
                     }
@@ -286,11 +278,8 @@ public class Beam
         // No compatible group found, let's build a new one
         switchGroup(new BeamGroup(getMeasure()));
 
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                getContextString() + " Created new " + getGroup() + " for " +
-                this);
-        }
+        logger.fine("{0} Created new {1} for {2}",
+                    new Object[]{getContextString(), getGroup(), this});
     }
 
     //------//
@@ -310,6 +299,7 @@ public class Beam
     //-----------//
     /**
      * Report the sequence of chords that are linked by this beam.
+     *
      * @return the sorted set of linked chords
      */
     public SortedSet<Chord> getChords ()
@@ -322,6 +312,7 @@ public class Beam
     //----------//
     /**
      * Report the containing group.
+     *
      * @return the containing group, if already set, or null
      */
     public BeamGroup getGroup ()
@@ -334,6 +325,7 @@ public class Beam
     //-------//
     /**
      * Report the unique id of the beam within its containing measure.
+     *
      * @return the beam id, starting from 1
      */
     public int getId ()
@@ -348,6 +340,7 @@ public class Beam
      * Report the ordered sequence of items (one or several BeamItem
      * instances of BEAM shape, or one glyph of BEAM_HOOK shape) that
      * compose this beam.
+     *
      * @return the ordered set of beam items
      */
     public SortedSet<BeamItem> getItems ()
@@ -361,12 +354,12 @@ public class Beam
     /**
      * Report the level of this beam within the containing BeamGroup,
      * starting from 1.
+     *
      * @return the beam level in its group
      */
     public int getLevel ()
     {
-        return getGroup()
-                   .getLevel(this);
+        return getGroup().getLevel(this);
     }
 
     //---------//
@@ -374,6 +367,7 @@ public class Beam
     //---------//
     /**
      * Report the line equation defined by the beam.
+     *
      * @return the line equation
      */
     public Line getLine ()
@@ -396,16 +390,15 @@ public class Beam
     //----------//
     /**
      * Report the point that define the desired edge of the beam.
+     *
      * @return the PixelPoint coordinates of the point on desired side
      */
     public PixelPoint getPoint (HorizontalSide side)
     {
         if (side == LEFT) {
-            return items.first()
-                        .getPoint(LEFT);
+            return items.first().getPoint(LEFT);
         } else {
-            return items.last()
-                        .getPoint(RIGHT);
+            return items.last().getPoint(RIGHT);
         }
     }
 
@@ -414,13 +407,13 @@ public class Beam
     //--------//
     public boolean isHook ()
     {
-        return items.first()
-                    .isHook();
+        return items.first().isHook();
     }
 
     //-------//
     // isVip //
     //-------//
+    @Override
     public boolean isVip ()
     {
         return vip;
@@ -450,6 +443,7 @@ public class Beam
     //-------------//
     /**
      * Remove a chord from this beam.
+     *
      * @param chord the chord to remove
      */
     public void removeChord (Chord chord)
@@ -460,6 +454,7 @@ public class Beam
     //--------//
     // setVip //
     //--------//
+    @Override
     public void setVip ()
     {
         vip = true;
@@ -476,10 +471,8 @@ public class Beam
      */
     public void switchGroup (BeamGroup group)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                "Switching " + this + " from " + this.group + " to " + group);
-        }
+        logger.fine("Switching {0} from {1} to {2}",
+                    new Object[]{this, this.group, group});
 
         // Trivial noop case
         if (this.group == group) {
@@ -505,6 +498,7 @@ public class Beam
     //--------------//
     /**
      * A rather lengthy version of toString().
+     *
      * @return a complete description string
      */
     public String toLongString ()
@@ -512,19 +506,15 @@ public class Beam
         StringBuilder sb = new StringBuilder();
         sb.append("{Beam");
 
-        sb.append(" #")
-          .append(id);
+        sb.append(" #").append(id);
 
         if (getGroup() != null) {
-            sb.append(" lv=")
-              .append(getLevel());
+            sb.append(" lv=").append(getLevel());
         }
 
-        sb.append(" left=")
-          .append(getPoint(LEFT));
+        sb.append(" left=").append(getPoint(LEFT));
 
-        sb.append(" right=")
-          .append(getPoint(LEFT));
+        sb.append(" right=").append(getPoint(LEFT));
 
         sb.append(BeamItem.toString(items));
         sb.append("}");
@@ -542,12 +532,10 @@ public class Beam
         sb.append("{Beam");
 
         try {
-            sb.append("#")
-              .append(id);
+            sb.append("#").append(id);
 
             if (getGroup() != null) {
-                sb.append(" lv=")
-                  .append(getLevel());
+                sb.append(" lv=").append(getLevel());
             }
 
             sb.append(BeamItem.toString(items));
@@ -571,7 +559,7 @@ public class Beam
     {
         getLine();
         setCenter(
-            new PixelPoint((left.x + right.x) / 2, (left.y + right.y) / 2));
+                new PixelPoint((left.x + right.x) / 2, (left.y + right.y) / 2));
     }
 
     //-------//
@@ -595,6 +583,7 @@ public class Beam
     //---------//
     /**
      * Insert a (BEAM/BEAM_HOOK) item as a component of this beam.
+     *
      * @param item the beam item to insert
      */
     private void addItem (BeamItem item)
@@ -607,9 +596,8 @@ public class Beam
         }
 
         if (isVip() || logger.isFineEnabled()) {
-            logger.info(
-                getMeasure().getContextString() + " Added " + item + " to " +
-                this);
+            logger.info("{0} Added {1} to {2}", new Object[]{getMeasure().
+                        getContextString(), item, this});
         }
     }
 
@@ -619,6 +607,7 @@ public class Beam
     /**
      * Check compatibility of a given BeamItem with this Beam instance.
      * We use alignment and distance criterias.
+     *
      * @param item the beam item to check for compatibility
      * @return true if compatible
      */
@@ -627,18 +616,17 @@ public class Beam
         boolean logging = isVip() || item.isVip() || logger.isFineEnabled();
 
         if (logging) {
-            logger.info("Check beam item " + item + " with " + this);
+            logger.info("Check beam item {0} with {1}", new Object[]{item, this});
         }
 
         // Check alignment, using distance to line
         PixelPoint gsp = item.getCenter();
-        double     dy = getScale()
-                            .pixelsToFrac(getLine().distanceOf(gsp.x, gsp.y));
+        double dy = getScale().pixelsToFrac(getLine().distanceOf(gsp.x, gsp.y));
 
         if (logging) {
-            logger.info(
-                "dy=" + (float) Math.abs(dy) + " vs " +
-                constants.maxDistance.getValue());
+            logger.info("dy={0} vs {1}", new Object[]{(float) Math.abs(dy),
+                                                      constants.maxDistance.
+                        getValue()});
         }
 
         if (Math.abs(dy) > constants.maxDistance.getValue()) {
@@ -647,14 +635,14 @@ public class Beam
 
         // Check distance along the same alignment
         for (HorizontalSide side : HorizontalSide.values()) {
-            double dx = getScale()
-                            .pixelsToFrac(
-                item.getPoint(side).distance(
+            double dx = getScale().pixelsToFrac(
+                    item.getPoint(side).distance(
                     getPoint((side == LEFT) ? RIGHT : LEFT)));
 
             if (logging) {
-                logger.info(
-                    "dx=" + (float) dx + " vs " + constants.maxGap.getValue());
+                logger.info("dx={0} vs {1}", new Object[]{(float) dx,
+                                                          constants.maxGap.
+                            getValue()});
             }
 
             if (dx <= constants.maxGap.getValue()) {
@@ -675,8 +663,8 @@ public class Beam
 
             if (stem != null) {
                 List<Chord> sideChords = Chord.getStemChords(
-                    getMeasure(),
-                    stem);
+                        getMeasure(),
+                        stem);
 
                 if (!sideChords.isEmpty()) {
                     for (Chord chord : sideChords) {
@@ -691,27 +679,20 @@ public class Beam
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
-        /**
-         * Maximum euclidian distance between glyph center and beam line
-         */
         Scale.Fraction maxDistance = new Scale.Fraction(
-            0.5,
-            "Maximum euclidian distance between glyph center and beam line");
+                0.5,
+                "Maximum euclidian distance between glyph center and beam line");
 
-        /**
-         * Maximum gap along alignment with beam left or right extremum
-         */
         Scale.Fraction maxGap = new Scale.Fraction(
-            0.5,
-            "Maximum gap along alignment with beam left or right extremum");
+                0.5,
+                "Maximum gap along alignment with beam left or right extremum");
     }
 }

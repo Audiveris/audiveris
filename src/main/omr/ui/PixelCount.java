@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -25,8 +25,7 @@ public class PixelCount
     // PixelCount //
     //------------//
     /**
-     * Specific constructor, where 'unit' and 'name' are assigned later
-     *
+     * Specific constructor, where 'unit' and 'name' are assigned later.
      * @param defaultValue the (int) default value
      * @param description  the semantic of the constant
      */

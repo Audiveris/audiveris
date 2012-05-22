@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -27,30 +27,30 @@ import java.util.TreeSet;
  * @author Hervé Bitteur
  */
 class IntersectionSequence
-    extends TreeSet<StickIntersection>
+        extends TreeSet<StickIntersection>
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
-        IntersectionSequence.class);
+            IntersectionSequence.class);
 
     //~ Constructors -----------------------------------------------------------
-
     //----------------------//
     // IntersectionSequence //
     //----------------------//
     /**
      * Creates a new IntersectionSequence object.
+     *
      * @param comparator the comparator (hori or vert) to use for the sequence
      */
-    public IntersectionSequence (Comparator<?super StickIntersection> comparator)
+    public IntersectionSequence (
+            Comparator<? super StickIntersection> comparator)
     {
         super(comparator);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // getSticks //
     //-----------//
@@ -74,16 +74,15 @@ class IntersectionSequence
                 }
 
                 if ((tail.x - head.x) <= maxDeltaPos) {
-                    if (logger.isFineEnabled() ||
-                        head.getStickAncestor()
-                            .isVip() ||
-                        tail.getStickAncestor()
-                            .isVip()) {
-                        logger.info("Merging verticals " + head + " & " + tail);
+                    if (logger.isFineEnabled()
+                            || head.getStickAncestor().isVip()
+                            || tail.getStickAncestor().isVip()) {
+                        logger.info("Merging verticals {0} & {1}", new Object[]{
+                                    head, tail});
                     }
 
                     Filament fil = (Filament) tail.getStickAncestor();
-                    fil.include(head.getStickAncestor());
+                    fil.stealSections(head.getStickAncestor());
                     headIt.remove();
 
                     break;

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -88,24 +88,24 @@ public class ActionDescriptor
     {
         StringBuilder sb = new StringBuilder();
         sb.append("{action");
-        sb.append(" class:")
-          .append(className)
-          .append(" method:")
-          .append(methodName);
+        sb.append(" class:").
+                append(className).
+                append(" method:").
+                append(methodName);
 
-        sb.append(" domain:")
-          .append(domain);
-        sb.append(" section:")
-          .append(section);
+        sb.append(" domain:").
+                append(domain);
+        sb.append(" section:").
+                append(section);
 
         if (itemClassName != null) {
-            sb.append(" item:")
-              .append(itemClassName);
+            sb.append(" item:").
+                    append(itemClassName);
         }
 
         if (buttonClassName != null) {
-            sb.append(" button:")
-              .append(buttonClassName);
+            sb.append(" button:").
+                    append(buttonClassName);
         }
 
         sb.append("}");

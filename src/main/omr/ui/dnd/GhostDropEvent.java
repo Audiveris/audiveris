@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -13,8 +13,8 @@ package omr.ui.dnd;
 
 
 /**
- * Class {@code GhostDropEvent} is the type of event that is handed to any
- * {@link GhostDropListener} instance.
+ * Class {@code GhostDropEvent} is the type of event that is handed to
+ * any {@link GhostDropListener} instance.
  *
  * @param <A> the precise type of the action carried by the drop
  * @author Hervé Bitteur (from Romain Guy's demo)
@@ -35,8 +35,7 @@ public class GhostDropEvent<A>
     // GhostDropEvent //
     //----------------//
     /**
-     * Create a new GhostDropEvent object
-     *
+     * Create a new GhostDropEvent object.
      * @param action the action carried by the drop
      * @param screenPoint the screen-based location of the drop
      */
@@ -53,7 +52,7 @@ public class GhostDropEvent<A>
     // getAction //
     //-----------//
     /**
-     * Report the action carried by the drop
+     * Report the action carried by the drop.
      * @return the carried action
      */
     public A getAction ()
@@ -65,7 +64,7 @@ public class GhostDropEvent<A>
     // getDropLocation //
     //-----------------//
     /**
-     * Report the drop location
+     * Report the drop location.
      * @return the screen-based location of the drop
      */
     public ScreenPoint getDropLocation ()

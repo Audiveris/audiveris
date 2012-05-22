@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -14,7 +14,6 @@ package omr.script;
 import omr.glyph.Glyphs;
 import omr.glyph.facets.Glyph;
 
-import omr.run.Orientation;
 
 import omr.score.common.PixelPoint;
 
@@ -36,13 +35,13 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 
 /**
- * Class {@code DeleteTask} deletes a set of (virtual) glyphs from the sheet
- * environment
+ * Class {@code DeleteTask} deletes a set of (virtual) glyphs from the
+ * sheet environment
  *
  * @author Hervé Bitteur
  */
 public class DeleteTask
-    extends GlyphTask
+        extends GlyphTask
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -55,23 +54,23 @@ public class DeleteTask
     private PointFacade[] points;
 
     //~ Constructors -----------------------------------------------------------
-
+    //
     //------------//
     // DeleteTask //
     //------------//
     /**
      * Create an glyph deletion task
      *
-     * @param sheet the sheet impacted
+     * @param sheet  the sheet impacted
      * @param glyphs the (virtual) glyphs to delete
      * @throws IllegalArgumentException if any of the arguments is not valid
      */
-    public DeleteTask (Sheet             sheet,
+    public DeleteTask (Sheet sheet,
                        Collection<Glyph> glyphs)
     {
         super(sheet, glyphs);
 
-        locations = new ArrayList<PixelPoint>();
+        locations = new ArrayList<>();
 
         for (Glyph glyph : glyphs) {
             locations.add(glyph.getAreaCenter());
@@ -87,13 +86,13 @@ public class DeleteTask
     }
 
     //~ Methods ----------------------------------------------------------------
-
+    //
     //------//
     // core //
     //------//
     @Override
     public void core (Sheet sheet)
-        throws Exception
+            throws Exception
     {
         //        switch (orientation) {
         //        case HORIZONTAL :
@@ -104,8 +103,7 @@ public class DeleteTask
         //            break;
         //
         //        case VERTICAL :
-        sheet.getSymbolsController()
-             .syncDelete(this);
+        sheet.getSymbolsController().syncDelete(this);
 
         //        }
     }
@@ -117,7 +115,7 @@ public class DeleteTask
     public void epilog (Sheet sheet)
     {
         super.epilog(sheet);
-        logger.info("Deletion of virtual " + Glyphs.toString(glyphs));
+        logger.info("Deletion of virtual {0}", Glyphs.toString(glyphs));
     }
 
     //-----------------//
@@ -133,8 +131,7 @@ public class DeleteTask
             sb.append(" locations[");
 
             for (PixelPoint point : locations) {
-                sb.append(" ")
-                  .append(point.toString());
+                sb.append(" ").append(point.toString());
             }
 
             sb.append("]");
@@ -151,7 +148,7 @@ public class DeleteTask
     @Override
     protected SortedSet<SystemInfo> retrieveCurrentImpact (Sheet sheet)
     {
-        SortedSet<SystemInfo> impactedSystems = new TreeSet<SystemInfo>();
+        SortedSet<SystemInfo> impactedSystems = new TreeSet<>();
 
         for (Glyph glyph : glyphs) {
             PixelPoint location = glyph.getAreaCenter();
@@ -162,8 +159,7 @@ public class DeleteTask
                 impactedSystems.add(system);
             }
 
-            if (glyph.getShape()
-                     .isPersistent()) {
+            if (glyph.getShape().isPersistent()) {
                 // Include all following systems as well
                 impactedSystems.addAll(remaining(system));
             }
@@ -181,17 +177,13 @@ public class DeleteTask
     @Override
     protected void retrieveGlyphs ()
     {
-        glyphs = new LinkedHashSet<Glyph>();
+        glyphs = new LinkedHashSet<>();
 
         for (PixelPoint location : locations) {
             Glyph glyph = null;
-            glyph = sheet.getNest()
-                         .lookupVirtualGlyph(location);
+            glyph = sheet.getNest().lookupVirtualGlyph(location);
             glyphs.add(glyph);
-
-            if (logger.isFineEnabled()) {
-                logger.fine("To be deleted: " + glyph);
-            }
+            logger.fine("To be deleted: {0}", glyph);
         }
     }
 
@@ -199,15 +191,16 @@ public class DeleteTask
     // afterUnmarshal //
     //----------------//
     /**
-     * Called after all the properties (except IDREF) are unmarshalled for this
-     * object, but before this object is set to the parent object.
+     * Called after all the properties (except IDREF) are unmarshalled
+     * for this object, but before this object is set to the parent
+     * object.
      */
     private void afterUnmarshal (Unmarshaller um,
-                                 Object       parent)
+                                 Object parent)
     {
         // Convert array of point facades -> locations
         if (locations == null) {
-            locations = new ArrayList<PixelPoint>();
+            locations = new ArrayList<>();
 
             for (PointFacade facade : points) {
                 locations.add(new PixelPoint(facade.getX(), facade.getY()));
@@ -225,7 +218,7 @@ public class DeleteTask
     {
         // Convert locations -> array of point facades
         if (points == null) {
-            List<PointFacade> facades = new ArrayList<PointFacade>();
+            List<PointFacade> facades = new ArrayList<>();
 
             for (PixelPoint point : locations) {
                 facades.add(new PointFacade(point));

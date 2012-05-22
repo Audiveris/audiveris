@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -132,7 +132,7 @@ public abstract class MeasureElement
         // Actual element class name
         String name = getClass()
                           .getName();
-        int    period = name.lastIndexOf(".");
+        int    period = name.lastIndexOf('.');
         sb.append("{")
           .append((period != -1) ? name.substring(period + 1) : name);
 

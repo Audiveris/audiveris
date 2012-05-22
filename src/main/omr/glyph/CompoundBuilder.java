@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -40,20 +40,19 @@ public class CompoundBuilder
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
-        CompoundBuilder.class);
+            CompoundBuilder.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Dedicated system */
     protected final SystemInfo system;
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------------//
     // CompoundBuilder //
     //-----------------//
     /**
      * Creates a new CompoundBuilder object.
+     *
      * @param system the containing system
      */
     public CompoundBuilder (SystemInfo system)
@@ -62,7 +61,6 @@ public class CompoundBuilder
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------------//
     // buildCompound //
     //---------------//
@@ -73,22 +71,22 @@ public class CompoundBuilder
      * <p>If successful, this method assigns the proper shape to the compound,
      * and inserts it in the system environment.
      *
-     * @param seed the initial glyph around which the compound is built
+     * @param seed        the initial glyph around which the compound is built
      * @param includeSeed true if seed must be included in compound
-     * @param suitables collection of potential glyphs
-     * @param adapter the specific behavior of the compound tests
+     * @param suitables   collection of potential glyphs
+     * @param adapter     the specific behavior of the compound tests
      * @return the compound built if successful, null otherwise
      */
-    public Glyph buildCompound (Glyph             seed,
-                                boolean           includeSeed,
+    public Glyph buildCompound (Glyph seed,
+                                boolean includeSeed,
                                 Collection<Glyph> suitables,
-                                CompoundAdapter   adapter)
+                                CompoundAdapter adapter)
     {
         // Set seed (and reference box)
         adapter.setSeed(seed);
 
         // Retrieve good neighbors among the suitable glyphs
-        Set<Glyph> neighbors = new HashSet<Glyph>();
+        Set<Glyph> neighbors = new HashSet<>();
 
         // Include the seed in the compound glyphs?
         int minCount = 1;
@@ -100,8 +98,8 @@ public class CompoundBuilder
 
         for (Glyph g : suitables) {
             if (includeSeed || (g != seed)) {
-                if (adapter.isCandidateSuitable(g) &&
-                    adapter.isCandidateClose(g)) {
+                if (adapter.isCandidateSuitable(g)
+                        && adapter.isCandidateClose(g)) {
                     neighbors.add(g);
                 }
             }
@@ -109,9 +107,8 @@ public class CompoundBuilder
 
         if (neighbors.size() >= minCount) {
             if (logger.isFineEnabled()) {
-                logger.finest(
-                    "neighbors=" + Glyphs.toString(neighbors) + " seed=" +
-                    seed);
+                logger.fine("neighbors={0} seed={1}", new Object[]{Glyphs.
+                            toString(neighbors), seed});
             }
 
             Glyph compound = system.buildTransientCompound(neighbors);
@@ -121,11 +118,8 @@ public class CompoundBuilder
                 compound = system.addGlyph(compound);
                 compound.setEvaluation(adapter.getChosenEvaluation());
 
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "Compound #" + compound.getId() + " built as " +
-                        compound.getShape());
-                }
+                logger.fine("Compound #{0} built as {1}", new Object[]{compound.
+                            getId(), compound.getShape()});
 
                 return compound;
             }
@@ -140,6 +134,7 @@ public class CompoundBuilder
     /**
      * A basic building, which simply takes all the provided glyphs
      * and build a persistent compound out of them.
+     *
      * @param parts the glyphs to merge
      * @return the compound built
      */
@@ -149,17 +144,16 @@ public class CompoundBuilder
             return null;
         }
 
-        List<Glyph> list = new ArrayList<Glyph>(parts);
+        List<Glyph> list = new ArrayList<>(parts);
 
         return buildCompound(
-            list.get(0),
-            true,
-            list.subList(1, list.size()),
-            new NoAdapter(system));
+                list.get(0),
+                true,
+                list.subList(1, list.size()),
+                new NoAdapter(system));
     }
 
     //~ Inner Interfaces -------------------------------------------------------
-
     //-----------------//
     // CompoundAdapter //
     //-----------------//
@@ -173,6 +167,7 @@ public class CompoundBuilder
 
         /**
          * Report the evaluation chosen for the compound.
+         *
          * @return the evaluation (shape + grade) chosen
          */
         Evaluation getChosenEvaluation ();
@@ -180,6 +175,7 @@ public class CompoundBuilder
         /**
          * Predicate to check whether a given candidate glyph is close
          * enough to the reference box.
+         *
          * @param glyph the glyph to check for proximity
          * @return true if glyph is close enough
          */
@@ -188,6 +184,7 @@ public class CompoundBuilder
         /**
          * Predicate for a glyph to be a potential part of the building
          * (the location criteria is handled by {@link #isCandidateClose}).
+         *
          * @param glyph the glyph to check
          * @return true if the glyph is suitable for inclusion
          */
@@ -196,6 +193,7 @@ public class CompoundBuilder
         /**
          * Predicate to check the validity of the newly built compound.
          * If valid, the chosenEvaluation is assigned accordingly.
+         *
          * @param compound the resulting compound glyph to check
          * @return true if the compound is found OK. The compound shape is not
          * assigned by this method, but can be later retrieved through
@@ -205,6 +203,7 @@ public class CompoundBuilder
 
         /**
          * Define the seed glyph around which the compound will be built.
+         *
          * @param seed the seed glyph
          * @return the computed reference box
          */
@@ -213,13 +212,13 @@ public class CompoundBuilder
         /**
          * Should we filter the provided candidates? (by calling
          * {@link #isCandidateSuitable} and {@link #isCandidateClose}).
+         *
          * @return true to apply filter
          */
         boolean shouldFilterCandidates ();
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------------//
     // AbstractAdapter //
     //-----------------//
@@ -228,7 +227,7 @@ public class CompoundBuilder
      * interface.
      */
     public abstract static class AbstractAdapter
-        implements CompoundAdapter
+            implements CompoundAdapter
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -248,33 +247,35 @@ public class CompoundBuilder
         protected Evaluation chosenEvaluation;
 
         //~ Constructors -------------------------------------------------------
-
         /**
          * Construct an AbstractAdapter.
-         * @param system the containing system
+         *
+         * @param system   the containing system
          * @param minGrade maximum acceptable grade for the compound shape
          */
         public AbstractAdapter (SystemInfo system,
-                                double     minGrade)
+                                double minGrade)
         {
             this.system = system;
             this.minGrade = minGrade;
         }
 
         //~ Methods ------------------------------------------------------------
-
+        @Override
         public Evaluation getChosenEvaluation ()
         {
             // By default, use shape and grade from evaluator
             return chosenEvaluation;
         }
 
+        @Override
         public boolean isCandidateClose (Glyph glyph)
         {
             // By default, use box intersection
-            return box.intersects(glyph.getContourBox());
+            return box.intersects(glyph.getBounds());
         }
 
+        @Override
         public PixelRectangle setSeed (Glyph seed)
         {
             this.seed = seed;
@@ -283,6 +284,7 @@ public class CompoundBuilder
             return box;
         }
 
+        @Override
         public boolean shouldFilterCandidates ()
         {
             // By default, filter candidates
@@ -303,7 +305,7 @@ public class CompoundBuilder
      * A passthrough fake adapter.
      */
     public static class NoAdapter
-        extends AbstractAdapter
+            extends AbstractAdapter
     {
         //~ Constructors -------------------------------------------------------
 
@@ -313,7 +315,6 @@ public class CompoundBuilder
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public Evaluation getChosenEvaluation ()
         {
@@ -359,7 +360,7 @@ public class CompoundBuilder
      * the top raw evaluations found for the compound.
      */
     public abstract static class TopRawAdapter
-        extends AbstractAdapter
+            extends AbstractAdapter
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -367,24 +368,26 @@ public class CompoundBuilder
         protected final EnumSet<Shape> desiredShapes;
 
         /** Specific predicate for desired shapes */
-        protected final Predicate<Shape> predicate = new Predicate<Shape>() {
+        protected final Predicate<Shape> predicate = new Predicate<Shape>()
+        {
+
+            @Override
             public boolean check (Shape shape)
             {
                 return desiredShapes.contains(shape);
             }
         };
 
-
         //~ Constructors -------------------------------------------------------
-
         /**
          * Create a TopRawAdapter instance.
-         * @param system the containing system
-         * @param minGrade maximum acceptable grade on compound shape
+         *
+         * @param system        the containing system
+         * @param minGrade      maximum acceptable grade on compound shape
          * @param desiredShapes the valid shapes for the compound
          */
-        public TopRawAdapter (SystemInfo     system,
-                              double         minGrade,
+        public TopRawAdapter (SystemInfo system,
+                              double minGrade,
                               EnumSet<Shape> desiredShapes)
         {
             super(system, minGrade);
@@ -392,16 +395,14 @@ public class CompoundBuilder
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public boolean isCompoundValid (Glyph compound)
         {
             // Check if a desired shape appears in the top raw evaluations
-            final Evaluation vote = GlyphNetwork.getInstance()
-                                                .rawVote(
-                compound,
-                minGrade,
-                predicate);
+            final Evaluation vote = GlyphNetwork.getInstance().rawVote(
+                    compound,
+                    minGrade,
+                    predicate);
 
             if (vote != null) {
                 chosenEvaluation = vote;
@@ -421,35 +422,34 @@ public class CompoundBuilder
      * the top evaluations found for the compound.
      */
     public abstract static class TopShapeAdapter
-        extends TopRawAdapter
+            extends TopRawAdapter
     {
         //~ Constructors -------------------------------------------------------
 
         /**
          * Create a TopShapeAdapter instance.
-         * @param system the containing system
-         * @param minGrade maximum acceptable grade on compound shape
+         *
+         * @param system        the containing system
+         * @param minGrade      maximum acceptable grade on compound shape
          * @param desiredShapes the valid shapes for the compound
          */
-        public TopShapeAdapter (SystemInfo     system,
-                                double         minGrade,
+        public TopShapeAdapter (SystemInfo system,
+                                double minGrade,
                                 EnumSet<Shape> desiredShapes)
         {
             super(system, minGrade, desiredShapes);
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public boolean isCompoundValid (Glyph compound)
         {
             // Check if a desired shape appears in the top evaluations
-            final Evaluation vote = GlyphNetwork.getInstance()
-                                                .vote(
-                compound,
-                system,
-                minGrade,
-                predicate);
+            final Evaluation vote = GlyphNetwork.getInstance().vote(
+                    compound,
+                    system,
+                    minGrade,
+                    predicate);
 
             if (vote != null) {
                 chosenEvaluation = vote;

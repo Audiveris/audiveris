@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -78,11 +78,11 @@ public class BrokenLine
     //~ Instance fields --------------------------------------------------------
 
     /** The ordered sequence of points */
-    private final List<Point> points = new ArrayList<Point>();
+    private final List<Point> points = new ArrayList<>();
 
     /** Dummy collection of points, just for (un) marshalling*/
     @XmlElement(name = "point")
-    private final List<PointFacade> xps = new ArrayList<PointFacade>();
+    private final List<PointFacade> xps = new ArrayList<>();
 
     /** Default sticky distance */
     private int stickyDistance = getDefaultStickyDistance();
@@ -139,7 +139,7 @@ public class BrokenLine
     public final void resetPoints (Collection<Point> points)
     {
         if (points != null) {
-            Collection<Point> newPoints = new ArrayList<Point>(points);
+            Collection<Point> newPoints = new ArrayList<>(points);
             this.points.clear();
             this.points.addAll(newPoints);
         }

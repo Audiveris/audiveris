@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -40,6 +40,7 @@ import org.jdesktop.application.Task;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.logging.Level;
 
 import javax.swing.JOptionPane;
 
@@ -136,7 +137,7 @@ public class SheetActions
             if (file.exists()) {
                 return new OpenTask(file);
             } else {
-                logger.warning("File not found " + file);
+                logger.warning("File not found {0}", file);
             }
         }
 

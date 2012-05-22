@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -34,7 +34,7 @@ public interface LineInfo
      * Report the absolute contour rectangle
      * @return the contour box (with minimum height of 1)
      */
-    public PixelRectangle getContourBox ();
+    public PixelRectangle getBounds ();
 
     /**
      * Selector for the left or right ending point of the line

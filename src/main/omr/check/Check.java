@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -323,8 +323,8 @@ public abstract class Check<C extends Checkable>
     {
         if (low.getValue() > high.getValue()) {
             logger.severe(
-                "Illegal low " + low.getValue() + " high " + high.getValue() +
-                " range for " + this);
+                "Illegal low {0} high {1} range for {2}",
+                new Object[] { low.getValue(), high.getValue(), this });
         }
     }
 

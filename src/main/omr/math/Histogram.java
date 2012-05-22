@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -74,7 +74,7 @@ public class Histogram<K extends Number>
      * - K for the type of entity to be accumulated
      * - Integer for the cumulated number in each bucket
      */
-    protected final SortedMap<K, Integer> map = new TreeMap<K, Integer>();
+    protected final SortedMap<K, Integer> map = new TreeMap<>();
 
     /** Total count */
     protected int totalCount = 0;
@@ -195,7 +195,7 @@ public class Histogram<K extends Number>
      */
     public List<PeakEntry<Double>> getDoublePeaks (int minCount)
     {
-        final List<PeakEntry<Double>> peaks = new ArrayList<PeakEntry<Double>>();
+        final List<PeakEntry<Double>> peaks = new ArrayList<>();
         K                             start = null;
         K                             stop = null;
         K                             best = null;
@@ -218,7 +218,7 @@ public class Histogram<K extends Number>
             } else {
                 if (isAbove) { // Above -> Below
                     peaks.add(
-                        new PeakEntry<Double>(
+                        new PeakEntry<>(
                             createDoublePeak(start, best, stop, minCount),
                             (double) bestCount / totalCount));
                     stop = start = best = null;
@@ -232,7 +232,7 @@ public class Histogram<K extends Number>
         // Last range
         if (isAbove) {
             peaks.add(
-                new PeakEntry<Double>(
+                new PeakEntry<>(
                     createDoublePeak(start, best, stop, minCount),
                     (double) bestCount / totalCount));
         }
@@ -252,7 +252,7 @@ public class Histogram<K extends Number>
      */
     public List<MaxEntry<K>> getLocalMaxima ()
     {
-        final List<MaxEntry<K>> maxima = new ArrayList<MaxEntry<K>>();
+        final List<MaxEntry<K>> maxima = new ArrayList<>();
         K                       prevKey = null;
         int                     prevValue = 0;
         boolean                 growing = false;
@@ -268,7 +268,7 @@ public class Histogram<K extends Number>
                     if (growing) {
                         // End of a local max
                         maxima.add(
-                            new MaxEntry<K>(
+                            new MaxEntry<>(
                                 prevKey,
                                 prevValue / (double) totalCount));
                     }
@@ -366,7 +366,7 @@ public class Histogram<K extends Number>
                                         boolean absolute,
                                         boolean sorted)
     {
-        final List<PeakEntry<K>> peaks = new ArrayList<PeakEntry<K>>();
+        final List<PeakEntry<K>> peaks = new ArrayList<>();
         K                        start = null;
         K                        stop = null;
         K                        best = null;
@@ -389,8 +389,8 @@ public class Histogram<K extends Number>
             } else {
                 if (isAbove) { // Above -> Below
                     peaks.add(
-                        new PeakEntry<K>(
-                            new Peak<K>(start, best, stop),
+                        new PeakEntry<>(
+                            new Peak<>(start, best, stop),
                             absolute ? bestCount : ((double) bestCount / totalCount)));
                     stop = start = best = null;
                     bestCount = null;
@@ -403,8 +403,8 @@ public class Histogram<K extends Number>
         // Last range
         if (isAbove) {
             peaks.add(
-                new PeakEntry<K>(
-                    new Peak<K>(start, best, stop),
+                new PeakEntry<>(
+                    new Peak<>(start, best, stop),
                     absolute ? bestCount : ((double) bestCount / totalCount)));
         }
 

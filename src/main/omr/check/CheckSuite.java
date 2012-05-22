@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -18,9 +18,11 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Class {@code CheckSuite} represents a suite of homogeneous checks, that
- * is checks working on the same type. Every check in the suite is assigned a
- * weight, to represent its relative importance in the suite.
+ * Class {@code CheckSuite} represents a suite of homogeneous checks,
+ * that is checks working on the same type.
+ *
+ * Every check in the suite is assigned a weight, to represent its relative
+ * importance in the suite.
  *
  * @param <C> the subtype of Checkable-compatible objects used in the
  * homogeneous collection of checks in this suite
@@ -35,7 +37,6 @@ public class CheckSuite<C extends Checkable>
     private static final Logger logger = Logger.getLogger(CheckSuite.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Name of this suite */
     protected String name;
 
@@ -43,23 +44,22 @@ public class CheckSuite<C extends Checkable>
     protected double threshold;
 
     /** List of checks in the suite */
-    private final List<Check<C>> checks = new ArrayList<Check<C>>();
+    private final List<Check<C>> checks = new ArrayList<>();
 
     /** List of related weights in the suite */
-    private final List<Double> weights = new ArrayList<Double>();
+    private final List<Double> weights = new ArrayList<>();
 
     /** Total checks weight */
     private double totalWeight = 0.0d;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // CheckSuite //
     //------------//
     /**
      * Create a suite of checks
      *
-     * @param name the name for the suite (for debug)
+     * @param name      the name for the suite (for debug)
      * @param threshold the threshold to test results
      */
     public CheckSuite (String name,
@@ -70,7 +70,6 @@ public class CheckSuite<C extends Checkable>
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----//
     // add //
     //-----//
@@ -80,7 +79,7 @@ public class CheckSuite<C extends Checkable>
      * @param weight the weight of this check in the suite
      * @param check  the check to add to the suite
      */
-    public void add (double   weight,
+    public void add (double weight,
                      Check<C> check)
     {
         checks.add(check);
@@ -129,20 +128,20 @@ public class CheckSuite<C extends Checkable>
         dumpSpecific();
 
         System.out.println(
-            "Weight    Name             Covariant    Low       High");
+                "Weight    Name             Covariant    Low       High");
         System.out.println(
-            "------    ----                ------    ---       ----");
+                "------    ----                ------    ---       ----");
 
         int index = 0;
 
         for (Check check : checks) {
             System.out.printf(
-                "%4.1f      %-19s  %5b  % 6.2f    % 6.2f \n",
-                weights.get(index++),
-                check.getName(),
-                check.isCovariant(),
-                check.getLow(),
-                check.getHigh());
+                    "%4.1f      %-19s  %5b  % 6.2f    % 6.2f \n",
+                    weights.get(index++),
+                    check.getName(),
+                    check.isCovariant(),
+                    check.getLow(),
+                    check.getHigh());
         }
     }
 
@@ -216,25 +215,22 @@ public class CheckSuite<C extends Checkable>
     // pass //
     //------//
     /**
-     * Pass sequentially the checks in the suite, stopping at the first test
-     * with red result.
+     * Pass sequentially the checks in the suite, stopping at the first
+     * test with red result.
      *
      * @param object the object to be checked
      * @return the computed grade.
      */
     public double pass (C object)
     {
-        boolean       debug = logger.isFineEnabled() || object.isVip();
-        double        grade = 0.0d;
-        CheckResult   result = new CheckResult();
+        boolean debug = logger.isFineEnabled() || object.isVip();
+        double grade = 0.0d;
+        CheckResult result = new CheckResult();
         StringBuilder sb = null;
 
         if (debug) {
             sb = new StringBuilder(512);
-            sb.append(name)
-              .append(" ")
-              .append(object)
-              .append(" ");
+            sb.append(name).append(" ").append(object).append(" ");
         }
 
         int index = 0;
@@ -244,7 +240,8 @@ public class CheckSuite<C extends Checkable>
 
             if (debug) {
                 sb.append(
-                    String.format("%15s:%5.2f", check.getName(), result.value));
+                        String.format("%15s:%5.2f", check.getName(),
+                                      result.value));
             }
 
             if (result.flag == Check.RED) {
@@ -278,15 +275,16 @@ public class CheckSuite<C extends Checkable>
     // passCollection //
     //----------------//
     /**
-     * Pass the whole collection of suites in a row and return the global result
+     * Pass the whole collection of suites in a row and return
+     * the global result
      *
-     * @param <T> The specific type of checked object
+     * @param <T>    The specific type of checked object
      * @param object the object to be checked
      * @param suites the collection of check suites to pass
      *
      * @return the global result
      */
-    public static <T extends Checkable> double passCollection (T                         object,
+    public static <T extends Checkable> double passCollection (T object,
                                                                Collection<CheckSuite<T>> suites)
     {
         double totalWeight = 0.0d;

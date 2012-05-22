@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -17,7 +17,11 @@ import omr.glyph.Evaluation;
 import omr.glyph.GlyphSignature;
 import omr.glyph.Nest;
 import omr.glyph.Shape;
-import omr.glyph.text.TextInfo;
+import omr.glyph.text.BasicContent;
+import omr.glyph.text.OcrChar;
+import omr.glyph.text.OcrLine;
+import omr.glyph.text.TextArea;
+import omr.glyph.text.TextRole;
 
 import omr.lag.Lag;
 import omr.lag.Section;
@@ -35,6 +39,7 @@ import omr.run.Orientation;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
+import omr.score.entity.Text.CreatorText.CreatorType;
 import omr.score.entity.TimeRational;
 
 import omr.sheet.SystemInfo;
@@ -49,25 +54,18 @@ import java.awt.image.BufferedImage;
 import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.logging.Level;
 
 /**
- * Class {@code BasicGlyph} is the basic Glyph implementation for any glyph
- * found, such as stem, ledger, accidental, note head, etc...
- *
- * <p>A Glyph is basically a collection of sections. It can be split into
- * smaller glyphs, which may later be re-assembled into another instance of
- * glyph. There is a means, based on a simple signature (weight and bounding
- * box), to detect if the glyph at hand is identical to a previous one, which is
- * then reused.
- *
- * <p>A Glyph can be stored on disk and reloaded
+ * Class {@code BasicGlyph} is the basic Glyph implementation.
  *
  * <p>From an implementation point of view, this {@code BasicGlyph} is just a
  * shell around specialized Glyph facets, and most of the methods are simply
- * forwarding to the proper facet.
+ * using delegation to the proper facet.
  *
  * @author Hervé Bitteur
  */
@@ -91,8 +89,11 @@ public class BasicGlyph
     final GlyphTranslation translation;
     final GlyphAlignment   alignment;
 
-    // Sequence of all facets
-    final Set<GlyphFacet> facets = new LinkedHashSet<GlyphFacet>();
+    // The content facet is not final to allow lazy allocation
+    protected GlyphContent content;
+
+    // Set all facets
+    final Set<GlyphFacet> facets = new LinkedHashSet<>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -100,7 +101,7 @@ public class BasicGlyph
     // BasicGlyph //
     //------------//
     /**
-     * Create a new BasicGlyph object
+     * Create a new BasicGlyph object.
      * @param interline the scaling interline value
      */
     public BasicGlyph (int interline)
@@ -119,28 +120,30 @@ public class BasicGlyph
     // BasicGlyph //
     //------------//
     /**
-     * Create a new BasicGlyph object from a GlyphValue instance (typically
-     * unmarshalled from XML)
+     * Create a new BasicGlyph object from a GlyphValue instance
+     * (typically unmarshalled from XML).
      * @param value the GlyphValue "builder" object
      */
     public BasicGlyph (GlyphValue value)
     {
         this(value.interline);
 
-        this.setId(value.id);
-        this.setShape(value.shape);
-        this.setStemNumber(value.stemNumber);
-        this.setWithLedger(value.withLedger);
-        this.setPitchPosition(value.pitchPosition);
-        this.getMembers()
-            .addAll(value.members);
+        setId(value.id);
+        setShape(value.shape);
+        setStemNumber(value.stemNumber);
+        setWithLedger(value.withLedger);
+        setPitchPosition(value.pitchPosition);
+
+        for (Section section : value.members) {
+            addSection(section, Linking.NO_LINK_BACK);
+        }
     }
 
     //------------//
     // BasicGlyph //
     //------------//
     /**
-     * Create a glyph with a specific alignment class
+     * Create a glyph with a specific alignment class.
      * @param interline      the scaling information
      * @param alignmentClass the specific alignment class
      */
@@ -163,9 +166,7 @@ public class BasicGlyph
             theAlignment = (GlyphAlignment) constructor.newInstance(
                 new Object[] { this });
         } catch (Exception ex) {
-            logger.severe(
-                "Cannot instantiate BasicGlyph with " + alignmentClass +
-                " ex:" + ex);
+            logger.severe("Cannot instantiate BasicGlyph with {0} ex:{1}", new Object[]{alignmentClass, ex});
         }
 
         addFacet(alignment = theAlignment);
@@ -304,6 +305,12 @@ public class BasicGlyph
     }
 
     @Override
+    public PixelRectangle getBounds ()
+    {
+        return geometry.getBounds();
+    }
+
+    @Override
     public PixelPoint getCentroid ()
     {
         return geometry.getCentroid();
@@ -327,10 +334,25 @@ public class BasicGlyph
         return environment.getConnectedNeighbors();
     }
 
-    @Override
-    public PixelRectangle getContourBox ()
+    //------------//
+    // getContent //
+    //------------//
+    public GlyphContent getContent ()
     {
-        return geometry.getContourBox();
+        // Lazy allocation, to avoid too many allocations
+        // (less than 3% of all glyphs need a content facet)
+        if (content == null) {
+            addFacet(content = new BasicContent(this));
+        }
+
+        return content;
+    }
+
+    @Override
+    public CreatorType getCreatorType ()
+    {
+        return getContent()
+                   .getCreatorType();
     }
 
     @Override
@@ -361,6 +383,13 @@ public class BasicGlyph
     public int getFirstStuck ()
     {
         return alignment.getFirstStuck();
+    }
+
+    @Override
+    public Float getFontSize ()
+    {
+        return getContent()
+                   .getFontSize();
     }
 
     @Override
@@ -424,6 +453,13 @@ public class BasicGlyph
     }
 
     @Override
+    public String getManualValue ()
+    {
+        return getContent()
+                   .getManualValue();
+    }
+
+    @Override
     public double getMeanDistance ()
     {
         return alignment.getMeanDistance();
@@ -472,6 +508,34 @@ public class BasicGlyph
     }
 
     @Override
+    public String getOcrLanguage ()
+    {
+        return getContent()
+                   .getOcrLanguage();
+    }
+
+    @Override
+    public OcrLine getOcrLine ()
+    {
+        return getContent()
+                   .getOcrLine();
+    }
+
+    @Override
+    public List<OcrLine> getOcrLines (String language)
+    {
+        return getContent()
+                   .getOcrLines(language);
+    }
+
+    @Override
+    public String getOcrValue ()
+    {
+        return getContent()
+                   .getOcrValue();
+    }
+
+    @Override
     public Glyph getPartOf ()
     {
         return composition.getPartOf();
@@ -497,9 +561,22 @@ public class BasicGlyph
     }
 
     @Override
+    public String getPseudoValue ()
+    {
+        return getContent()
+                   .getPseudoValue();
+    }
+
+    @Override
     public Point2D getRectangleCentroid (PixelRectangle absRoi)
     {
         return alignment.getRectangleCentroid(absRoi);
+    }
+
+    @Override
+    public GlyphSignature getRegisteredSignature ()
+    {
+        return geometry.getRegisteredSignature();
     }
 
     @Override
@@ -567,9 +644,44 @@ public class BasicGlyph
     }
 
     @Override
-    public TextInfo getTextInfo ()
+    public SystemInfo getSystem ()
     {
-        return recognition.getTextInfo();
+        return environment.getSystem();
+    }
+
+    @Override
+    public TextArea getTextArea ()
+    {
+        return getContent()
+                   .getTextArea();
+    }
+
+    @Override
+    public int getTextHeight ()
+    {
+        return getContent()
+                   .getTextHeight();
+    }
+
+    @Override
+    public TextRole getTextRole ()
+    {
+        return getContent()
+                   .getTextRole();
+    }
+
+    @Override
+    public PixelPoint getTextStart ()
+    {
+        return getContent()
+                   .getTextStart();
+    }
+
+    @Override
+    public String getTextValue ()
+    {
+        return getContent()
+                   .getTextValue();
     }
 
     @Override
@@ -604,9 +716,9 @@ public class BasicGlyph
     }
 
     @Override
-    public void include (Glyph that)
+    public String idString ()
     {
-        composition.include(that);
+        return administration.idString();
     }
 
     @Override
@@ -621,6 +733,7 @@ public class BasicGlyph
     @Override
     public void invalidateCache ()
     {
+        // Invalidate all allocated facets
         for (GlyphFacet facet : facets) {
             facet.invalidateCache();
         }
@@ -645,6 +758,27 @@ public class BasicGlyph
     }
 
     @Override
+    public boolean isElision ()
+    {
+        return getContent()
+                   .isElision();
+    }
+
+    @Override
+    public boolean isExtension ()
+    {
+        return getContent()
+                   .isExtension();
+    }
+
+    @Override
+    public boolean isHyphen ()
+    {
+        return getContent()
+                   .isHyphen();
+    }
+
+    @Override
     public boolean isKnown ()
     {
         return recognition.isKnown();
@@ -654,6 +788,12 @@ public class BasicGlyph
     public boolean isManualShape ()
     {
         return recognition.isManualShape();
+    }
+
+    @Override
+    public boolean isProcessed ()
+    {
+        return administration.isProcessed();
     }
 
     @Override
@@ -729,6 +869,19 @@ public class BasicGlyph
     }
 
     @Override
+    public int removeAttachments (String prefix)
+    {
+        return display.removeAttachments(prefix);
+    }
+
+    @Override
+    public boolean removeSection (Section section,
+                                  Linking link)
+    {
+        return composition.removeSection(section, link);
+    }
+
+    @Override
     public void renderAttachments (Graphics2D g)
     {
         display.renderAttachments(g);
@@ -747,6 +900,27 @@ public class BasicGlyph
     }
 
     @Override
+    public List<OcrLine> retrieveOcrLines (String language)
+    {
+        return getContent()
+                   .retrieveOcrLines(language);
+    }
+
+    @Override
+    public SortedSet<Section> retrieveSections (List<OcrChar> chars)
+    {
+        return getContent()
+                   .retrieveSections(chars);
+    }
+
+    @Override
+    public List<Glyph> retrieveWordGlyphs ()
+    {
+        return getContent()
+                   .retrieveWordGlyphs();
+    }
+
+    @Override
     public void setCircle (Circle circle)
     {
         geometry.setCircle(circle);
@@ -756,6 +930,13 @@ public class BasicGlyph
     public void setContourBox (PixelRectangle contourBox)
     {
         geometry.setContourBox(contourBox);
+    }
+
+    @Override
+    public void setCreatorType (CreatorType creatorType)
+    {
+        getContent()
+            .setCreatorType(creatorType);
     }
 
     @Override
@@ -778,9 +959,24 @@ public class BasicGlyph
     }
 
     @Override
+    public void setManualValue (String manualValue)
+    {
+        getContent()
+            .setManualValue(manualValue);
+    }
+
+    @Override
     public void setNest (Nest nest)
     {
         administration.setNest(nest);
+    }
+
+    @Override
+    public void setOcrLines (String        ocrLanguage,
+                             List<OcrLine> ocrLines)
+    {
+        getContent()
+            .setOcrLines(ocrLanguage, ocrLines);
     }
 
     @Override
@@ -793,6 +989,18 @@ public class BasicGlyph
     public void setPitchPosition (double pitchPosition)
     {
         environment.setPitchPosition(pitchPosition);
+    }
+
+    @Override
+    public void setProcessed (boolean processed)
+    {
+        administration.setProcessed(processed);
+    }
+
+    @Override
+    public void setRegisteredSignature (GlyphSignature sig)
+    {
+        geometry.setRegisteredSignature(sig);
     }
 
     @Override
@@ -828,6 +1036,13 @@ public class BasicGlyph
     }
 
     @Override
+    public void setTextRole (TextRole type)
+    {
+        getContent()
+            .setTextRole(type);
+    }
+
+    @Override
     public void setTimeRational (TimeRational timeRational)
     {
         recognition.setTimeRational(timeRational);
@@ -849,6 +1064,12 @@ public class BasicGlyph
     public void setWithLedger (boolean withLedger)
     {
         environment.setWithLedger(withLedger);
+    }
+
+    @Override
+    public void stealSections (Glyph that)
+    {
+        composition.stealSections(that);
     }
 
     //----------//
@@ -918,18 +1139,6 @@ public class BasicGlyph
                     .getPhysicalShape() != getShape()) {
                 sb.append(" physical=")
                   .append(getShape().getPhysicalShape());
-            }
-
-            if (getShape()
-                    .isText()) {
-                String textContent = getTextInfo()
-                                         .getContent();
-
-                if (textContent != null) {
-                    sb.append(" \"")
-                      .append(textContent)
-                      .append("\"");
-                }
             }
         }
 

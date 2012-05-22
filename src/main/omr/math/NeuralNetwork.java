@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -54,7 +54,6 @@ public class NeuralNetwork
     private static volatile JAXBContext jaxbContext;
 
     //~ Instance fields --------------------------------------------------------
-
     /** Size of input layer */
     @XmlAttribute(name = "input-size")
     private final int inputSize;
@@ -93,7 +92,6 @@ public class NeuralNetwork
     private transient volatile int epochs = 1000;
 
     //~ Constructors -----------------------------------------------------------
-
     //---------------//
     // NeuralNetwork //
     //---------------//
@@ -103,12 +101,12 @@ public class NeuralNetwork
      *
      * @param inputSize  number of cells in input layer
      * @param hiddenSize number of cells in hidden layer
-     * @param outputSize number of cells in output  layer
+     * @param outputSize number of cells in output layer
      * @param amplitude  amplitude ( <= 1.0) for initial random values
      */
-    public NeuralNetwork (int    inputSize,
-                          int    hiddenSize,
-                          int    outputSize,
+    public NeuralNetwork (int inputSize,
+                          int hiddenSize,
+                          int outputSize,
                           double amplitude)
     {
         // Cache parameters
@@ -134,23 +132,23 @@ public class NeuralNetwork
      * Create a neural network, with specified number of cells in each layer,
      * and specific parameters
      *
-     * @param inputSize  number of cells in input layer
-     * @param hiddenSize number of cells in hidden layer
-     * @param outputSize number of cells in output  layer
-     * @param amplitude  amplitude ( <= 1.0) for initial random values
+     * @param inputSize    number of cells in input layer
+     * @param hiddenSize   number of cells in hidden layer
+     * @param outputSize   number of cells in output layer
+     * @param amplitude    amplitude ( <= 1.0) for initial random values
      * @param learningRate learning rate factor
-     * @param momentum momentum from last adjustment
-     * @param maxError threshold to stop training
-     * @param epochs number of epochs in training
+     * @param momentum     momentum from last adjustment
+     * @param maxError     threshold to stop training
+     * @param epochs       number of epochs in training
      */
-    public NeuralNetwork (int    inputSize,
-                          int    hiddenSize,
-                          int    outputSize,
+    public NeuralNetwork (int inputSize,
+                          int hiddenSize,
+                          int outputSize,
                           double amplitude,
                           double learningRate,
                           double momentum,
                           double maxError,
-                          int    epochs)
+                          int epochs)
     {
         this(inputSize, hiddenSize, outputSize, amplitude);
 
@@ -164,7 +162,6 @@ public class NeuralNetwork
     //---------------//
     // NeuralNetwork //
     //---------------//
-
     /** Private no-arg constructor meant for the JAXB compiler only */
     private NeuralNetwork ()
     {
@@ -174,7 +171,6 @@ public class NeuralNetwork
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------//
     // backup //
     //--------//
@@ -254,6 +250,7 @@ public class NeuralNetwork
     //---------------//
     /**
      * Report the size of the output layer
+     *
      * @return the number of cells in the output layer
      */
     public int getOutputSize ()
@@ -266,14 +263,14 @@ public class NeuralNetwork
     //---------//
     /**
      * Marshal the NeuralNetwork to its XML file
+     *
      * @param os the XML output stream, which is not closed by this method
      * @exception JAXBException raised when marshalling goes wrong
      */
     public void marshal (OutputStream os)
-        throws JAXBException
+            throws JAXBException
     {
-        Marshaller m = getJaxbContext()
-                           .createMarshaller();
+        Marshaller m = getJaxbContext().createMarshaller();
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
         m.marshal(this, os);
         logger.fine("Network marshalled");
@@ -297,10 +294,10 @@ public class NeuralNetwork
         }
 
         // Make sure backup is compatible with this neural network
-        if ((backup.hiddenWeights.length != hiddenSize) ||
-            (backup.hiddenWeights[0].length != (inputSize + 1)) ||
-            (backup.outputWeights.length != outputSize) ||
-            (backup.outputWeights[0].length != (hiddenSize + 1))) {
+        if ((backup.hiddenWeights.length != hiddenSize)
+                || (backup.hiddenWeights[0].length != (inputSize + 1))
+                || (backup.outputWeights.length != outputSize)
+                || (backup.outputWeights[0].length != (hiddenSize + 1))) {
             throw new IllegalArgumentException("Incompatible backup");
         }
 
@@ -319,7 +316,7 @@ public class NeuralNetwork
      * @param inputs  the provided input values
      * @param hiddens provided buffer for hidden values, or null
      * @param outputs preallocated array for the computed output values, or null
-     *                if not already allocated
+     * if not already allocated
      *
      * @return the computed output values
      */
@@ -332,8 +329,8 @@ public class NeuralNetwork
             logger.severe("run method. inputs array is null");
         } else if (inputs.length != inputSize) {
             logger.severe(
-                "run method. input size " + inputs.length +
-                " not consistent with network input layer " + inputSize);
+                    "run method. input size {0} not consistent with network input layer {1}",
+                          new Object[]{inputs.length, inputSize});
         }
 
         // Allocate the hiddens if not provided
@@ -349,8 +346,8 @@ public class NeuralNetwork
             outputs = new double[outputSize];
         } else if (outputs.length != outputSize) {
             logger.severe(
-                "run method. output size " + outputs.length +
-                " not consistent with network output layer " + outputSize);
+                    "run method. output size {0} not consistent with network output layer {1}",
+                          new Object[]{outputs.length, outputSize});
         }
 
         // Then, compute the output values
@@ -364,6 +361,7 @@ public class NeuralNetwork
     //-----------//
     /**
      * set the number of iterations for training the network with a given input
+     *
      * @param epochs number of iterations
      */
     public void setEpochs (int epochs)
@@ -376,6 +374,7 @@ public class NeuralNetwork
     //-----------------//
     /**
      * Set the learning rate
+     *
      * @param learningRate the learning rate to use for each iteration
      * (typically in the 0.0 .. 1.0 range)
      */
@@ -389,6 +388,7 @@ public class NeuralNetwork
     //-------------//
     /**
      * Set the maximum error level
+     *
      * @param maxError maximum error
      */
     public void setMaxError (double maxError)
@@ -401,6 +401,7 @@ public class NeuralNetwork
     //-------------//
     /**
      * Set the momentum value
+     *
      * @param momentum the fraction of previous move to be reported on the next
      * correction
      */
@@ -430,15 +431,15 @@ public class NeuralNetwork
      * optimized for absolute speed, but rather for being able to keep the best
      * weights values.
      *
-     * @param inputs the provided patterns of values for input cells
+     * @param inputs         the provided patterns of values for input cells
      * @param desiredOutputs the corresponding desired values for output cells
-     * @param monitor a monitor interface to be kept informed (or null)
+     * @param monitor        a monitor interface to be kept informed (or null)
      *
      * @return mse, the final mean square error
      */
     public double train (double[][] inputs,
                          double[][] desiredOutputs,
-                         Monitor    monitor)
+                         Monitor monitor)
     {
         logger.fine("Network being trained");
         stopping = false;
@@ -457,12 +458,12 @@ public class NeuralNetwork
         }
 
         // Allocate needed arrays
-        double[]   gottenOutputs = new double[outputSize];
-        double[]   hiddenGrads = new double[hiddenSize];
-        double[]   outputGrads = new double[outputSize];
+        double[] gottenOutputs = new double[outputSize];
+        double[] hiddenGrads = new double[hiddenSize];
+        double[] outputGrads = new double[outputSize];
         double[][] hiddenDeltas = createMatrix(hiddenSize, inputSize + 1, 0);
         double[][] outputDeltas = createMatrix(outputSize, hiddenSize + 1, 0);
-        double[]   hiddens = new double[hiddenSize];
+        double[] hiddens = new double[hiddenSize];
 
         // Mean Square Error
         double mse = 0;
@@ -525,15 +526,15 @@ public class NeuralNetwork
                 // Now update the output weights
                 for (int o = outputSize - 1; o >= 0; o--) {
                     for (int h = hiddenSize - 1; h >= 0; h--) {
-                        double dw = (learningRate * outputGrads[o] * hiddens[h]) +
-                                    (momentum * outputDeltas[o][h + 1]);
+                        double dw = (learningRate * outputGrads[o] * hiddens[h])
+                                + (momentum * outputDeltas[o][h + 1]);
                         outputWeights[o][h + 1] += dw;
                         outputDeltas[o][h + 1] = dw;
                     }
 
                     // Bias
-                    double dw = (learningRate * outputGrads[o]) +
-                                (momentum * outputDeltas[o][0]);
+                    double dw = (learningRate * outputGrads[o])
+                            + (momentum * outputDeltas[o][0]);
                     outputWeights[o][0] += dw;
                     outputDeltas[o][0] = dw;
                 }
@@ -541,15 +542,15 @@ public class NeuralNetwork
                 // And the hidden weights
                 for (int h = hiddenSize - 1; h >= 0; h--) {
                     for (int i = inputSize - 1; i >= 0; i--) {
-                        double dw = (learningRate * hiddenGrads[h] * inputs[ip][i]) +
-                                    (momentum * hiddenDeltas[h][i + 1]);
+                        double dw = (learningRate * hiddenGrads[h] * inputs[ip][i])
+                                + (momentum * hiddenDeltas[h][i + 1]);
                         hiddenWeights[h][i + 1] += dw;
                         hiddenDeltas[h][i + 1] = dw;
                     }
 
                     // Bias
-                    double dw = (learningRate * hiddenGrads[h]) +
-                                (momentum * hiddenDeltas[h][0]);
+                    double dw = (learningRate * hiddenGrads[h])
+                            + (momentum * hiddenDeltas[h][0]);
                     hiddenWeights[h][0] += dw;
                     hiddenDeltas[h][0] = dw;
                 }
@@ -577,8 +578,8 @@ public class NeuralNetwork
 
             if (mse <= maxError) {
                 logger.info(
-                    "Network exiting training, remaining error limit reached");
-                logger.info("Network remaining error was : " + mse);
+                        "Network exiting training, remaining error limit reached");
+                logger.info("Network remaining error was : {0}", mse);
 
                 break;
             }
@@ -587,7 +588,7 @@ public class NeuralNetwork
         if (logger.isFineEnabled()) {
             long stopTime = System.currentTimeMillis();
             logger.fine(
-                String.format(
+                    String.format(
                     "Duration  %,d seconds, %d epochs on %d patterns",
                     (stopTime - startTime) / 1000,
                     ie,
@@ -611,10 +612,9 @@ public class NeuralNetwork
      * @exception JAXBException raised when unmarshalling goes wrong
      */
     public static NeuralNetwork unmarshal (InputStream in)
-        throws JAXBException
+            throws JAXBException
     {
-        Unmarshaller  um = getJaxbContext()
-                               .createUnmarshaller();
+        Unmarshaller um = getJaxbContext().createUnmarshaller();
         NeuralNetwork nn = (NeuralNetwork) um.unmarshal(in);
         logger.fine("Network unmarshalled");
 
@@ -633,8 +633,8 @@ public class NeuralNetwork
      */
     private static double[][] cloneMatrix (double[][] matrix)
     {
-        final int  rowNb = matrix.length;
-        final int  colNb = matrix[0].length;
+        final int rowNb = matrix.length;
+        final int colNb = matrix[0].length;
 
         double[][] clone = new double[rowNb][];
 
@@ -658,8 +658,8 @@ public class NeuralNetwork
      *
      * @return the properly initialized matrix
      */
-    private static double[][] createMatrix (int    rowNb,
-                                            int    colNb,
+    private static double[][] createMatrix (int rowNb,
+                                            int colNb,
                                             double amplitude)
     {
         double[][] matrix = new double[rowNb][];
@@ -680,7 +680,7 @@ public class NeuralNetwork
     // getJaxbContext //
     //----------------//
     private static JAXBContext getJaxbContext ()
-        throws JAXBException
+            throws JAXBException
     {
         // Lazy creation
         if (jaxbContext == null) {
@@ -729,14 +729,15 @@ public class NeuralNetwork
      * Re-entrant method
      *
      * @param ins
-     * @param weights
-     * @param outs
+    param weights
+param
+     *                                                                              outs
      */
-    private void forward (double[]   ins,
+    private void forward (double[] ins,
                           double[][] weights,
-                          double[]   outs)
+                          double[] outs)
     {
-        double   sum;
+        double sum;
         double[] ws;
 
         for (int o = outs.length - 1; o >= 0; o--) {
@@ -770,7 +771,6 @@ public class NeuralNetwork
     }
 
     //~ Inner Interfaces -------------------------------------------------------
-
     //---------//
     // Monitor //
     //---------//
@@ -785,24 +785,25 @@ public class NeuralNetwork
 
         /**
          * Entry called at end of each epoch during the training phase.
+         *
          * @param epochIndex the sequential index of completed epoch
-         * @param mse the remaining mean square error
+         * @param mse        the remaining mean square error
          */
-        void epochEnded (int    epochIndex,
+        void epochEnded (int epochIndex,
                          double mse);
 
         /**
          * Entry called at the beginning of the training phase, to allow
          * initial snap shots for example.
+         *
          * @param epochIndex the sequential index (0)
-         * @param mse the starting mean square error
+         * @param mse        the starting mean square error
          * */
-        void trainingStarted (final int    epochIndex,
+        void trainingStarted (final int epochIndex,
                               final double mse);
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //--------//
     // Backup //
     //--------//
@@ -819,10 +820,10 @@ public class NeuralNetwork
         //~ Instance fields ----------------------------------------------------
 
         private double[][] hiddenWeights;
+
         private double[][] outputWeights;
 
         //~ Constructors -------------------------------------------------------
-
         // Private constructor
         private Backup (double[][] hiddenWeights,
                         double[][] outputWeights)

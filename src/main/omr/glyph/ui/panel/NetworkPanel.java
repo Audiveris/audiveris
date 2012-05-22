@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -12,7 +12,7 @@
 package omr.glyph.ui.panel;
 
 import omr.glyph.EvaluationEngine;
-import omr.glyph.GlyphEvaluator;
+import omr.glyph.ShapeEvaluator;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.ui.panel.TrainingPanel.DumpAction;
 
@@ -30,6 +30,7 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.logging.Level;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -234,6 +235,7 @@ class NetworkPanel
         SwingUtilities.invokeLater(
             new Runnable() {
                     // This part is run on swing thread
+            @Override
                     public void run ()
                     {
                         // Update current values
@@ -294,6 +296,7 @@ class NetworkPanel
         SwingUtilities.invokeLater(
             new Runnable() {
                     // This part is run on swing thread
+            @Override
                     public void run ()
                     {
                         // Update best values
@@ -473,7 +476,7 @@ class NetworkPanel
             GlyphNetwork  glyphNetwork = (GlyphNetwork) engine;
             NeuralNetwork network = glyphNetwork.getNetwork();
             network.restore(bestSnap);
-            logger.info("Network remaining error : " + (float) bestMse);
+            logger.info("Network remaining error : {0}", (float) bestMse);
             glyphNetwork.marshal();
 
             // Let the user choose the other possibility
@@ -514,7 +517,7 @@ class NetworkPanel
             GlyphNetwork  glyphNetwork = (GlyphNetwork) engine;
             NeuralNetwork network = glyphNetwork.getNetwork();
             network.restore(lastSnap);
-            logger.info("Network remaining error : " + (float) lastMse);
+            logger.info("Network remaining error : {0}", (float) lastMse);
             glyphNetwork.marshal();
 
             // Let the user choose the other possibility

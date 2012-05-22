@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -75,10 +75,9 @@ public class ScoreTree
 
     /** The filter for relevant classes and fields */
     private static final Relevance filter = new PackageRelevance(
-        Main.class.getPackage());
+            Main.class.getPackage());
 
     //~ Instance fields --------------------------------------------------------
-
     /** Concrete UI component */
     private final JPanel component;
 
@@ -89,7 +88,7 @@ public class ScoreTree
     private final Score score;
 
     /** Cache to avoid recomputing sets of children */
-    private final HashMap<Object, List<Object>> nodeMap = new HashMap<Object, List<Object>>();
+    private final HashMap<Object, List<Object>> nodeMap = new HashMap<>();
 
     /** The tree model */
     private final Model model;
@@ -98,7 +97,6 @@ public class ScoreTree
     private JFrame frame;
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------//
     // ScoreTree //
     //-----------//
@@ -131,8 +129,8 @@ public class ScoreTree
         JScrollPane htmlView = new JScrollPane(htmlPane);
 
         // Allow only single selections
-        tree.getSelectionModel()
-            .setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        tree.getSelectionModel().setSelectionMode(
+                TreeSelectionModel.SINGLE_TREE_SELECTION);
 
         // Display lines to explicit relationships
         tree.putClientProperty("JTree.lineStyle", "Angled");
@@ -147,9 +145,9 @@ public class ScoreTree
 
         // Build split-pane view
         JSplitPane splitPane = new JSplitPane(
-            JSplitPane.HORIZONTAL_SPLIT,
-            treeView,
-            htmlView);
+                JSplitPane.HORIZONTAL_SPLIT,
+                treeView,
+                htmlView);
         splitPane.setName("treeHtmlSplitPane");
         splitPane.setContinuousLayout(true);
         splitPane.setBorder(null);
@@ -161,7 +159,6 @@ public class ScoreTree
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-------//
     // close //
     //-------//
@@ -178,6 +175,7 @@ public class ScoreTree
     //----------//
     /**
      * Report the enclosing frame of this entity
+     *
      * @return the frame of the score browser
      */
     public JFrame getFrame ()
@@ -190,12 +188,14 @@ public class ScoreTree
 
             // Add a REFRESH button
             JToolBar toolBar = new JToolBar(JToolBar.HORIZONTAL);
-            frame.getContentPane()
-                 .add(toolBar, BorderLayout.NORTH);
+            frame.getContentPane().add(toolBar, BorderLayout.NORTH);
 
             // Set up the views, and display it all
             JButton refreshButton = new JButton(
-                new AbstractAction() {
+                    new AbstractAction()
+                    {
+
+                        @Override
                         public void actionPerformed (ActionEvent e)
                         {
                             refresh();
@@ -206,12 +206,11 @@ public class ScoreTree
             frame.add(component);
 
             // Resources injection
-            ResourceMap resource = MainGui.getInstance()
-                                          .getContext()
-                                          .getResourceMap(ScoreTree.class);
+            ResourceMap resource = MainGui.getInstance().getContext().
+                    getResourceMap(ScoreTree.class);
             resource.injectComponents(frame);
             frame.setTitle(
-                resource.getString("frameTitleMask", score.getRadix()));
+                    resource.getString("frameTitleMask", score.getRadix()));
         }
 
         return frame;
@@ -229,19 +228,18 @@ public class ScoreTree
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         /** Should we hide empty dummy containers */
         Constant.Boolean hideEmptyDummies = new Constant.Boolean(
-            false,
-            "Should we hide empty dummy containers");
+                false,
+                "Should we hide empty dummy containers");
     }
 
     //-----------------//
@@ -251,12 +249,12 @@ public class ScoreTree
     {
         //~ Instance fields ----------------------------------------------------
 
-        private final String     name;
+        private final String name;
+
         private final Collection collection;
 
         //~ Constructors -------------------------------------------------------
-
-        public NamedCollection (String     name,
+        public NamedCollection (String name,
                                 Collection collection)
         {
             this.name = name;
@@ -264,7 +262,6 @@ public class ScoreTree
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public String toString ()
         {
@@ -280,10 +277,10 @@ public class ScoreTree
         //~ Instance fields ----------------------------------------------------
 
         private final String name;
+
         private final Object data;
 
         //~ Constructors -------------------------------------------------------
-
         public NamedData (String name,
                           Object data)
         {
@@ -292,7 +289,6 @@ public class ScoreTree
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public String toString ()
         {
@@ -305,15 +301,15 @@ public class ScoreTree
     //-------//
     // This adapter converts the current Score into a JTree model.
     private class Model
-        implements TreeModel
+            implements TreeModel
     {
         //~ Instance fields ----------------------------------------------------
 
-        private List<TreeModelListener> listeners = new ArrayList<TreeModelListener>();
-        private Score                   score;
+        private List<TreeModelListener> listeners = new ArrayList<>();
+
+        private Score score;
 
         //~ Constructors -------------------------------------------------------
-
         //---------//
         // Model //
         //---------//
@@ -323,7 +319,6 @@ public class ScoreTree
         }
 
         //~ Methods ------------------------------------------------------------
-
         //----------------------//
         // addTreeModelListener //
         //----------------------//
@@ -340,10 +335,9 @@ public class ScoreTree
         //----------//
         @Override
         public Object getChild (Object parent,
-                                int    index)
+                                int index)
         {
-            return getRelevantChildren(parent)
-                       .toArray()[index];
+            return getRelevantChildren(parent).toArray()[index];
         }
 
         //---------------//
@@ -352,8 +346,7 @@ public class ScoreTree
         @Override
         public int getChildCount (Object parent)
         {
-            return getRelevantChildren(parent)
-                       .size();
+            return getRelevantChildren(parent).size();
         }
 
         //-----------------//
@@ -365,8 +358,8 @@ public class ScoreTree
         {
             int i = 0;
 
-            for (Iterator it = getRelevantChildren(parent)
-                                   .iterator(); it.hasNext();) {
+            for (Iterator it = getRelevantChildren(parent).iterator(); it.
+                    hasNext();) {
                 if (it.next() == child) {
                     return i;
                 }
@@ -375,7 +368,7 @@ public class ScoreTree
             }
 
             throw new RuntimeException(
-                "'" + child + "' not child of '" + parent + "'");
+                    "'" + child + "' not child of '" + parent + "'");
         }
 
         //---------//
@@ -395,10 +388,8 @@ public class ScoreTree
         {
             // Determines whether the icon shows up to the left.
             // Return true for any node with no children
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "isLeaf. node=" + node + " " + (getChildCount(node) == 0));
-            }
+            logger.fine("isLeaf. node={0} {1}",
+                        new Object[]{node, getChildCount(node) == 0});
 
             return getChildCount(node) == 0;
         }
@@ -411,8 +402,8 @@ public class ScoreTree
             nodeMap.clear();
 
             TreeModelEvent modelEvent = new TreeModelEvent(
-                this,
-                new Object[] { score });
+                    this,
+                    new Object[]{score});
 
             for (TreeModelListener listener : listeners) {
                 listener.treeStructureChanged(modelEvent);
@@ -447,7 +438,7 @@ public class ScoreTree
         //---------------------//
         @Override
         public void valueForPathChanged (TreePath path,
-                                         Object   newValue)
+                                         Object newValue)
         {
             // Null. We won't be making changes in the GUI.  If we did, we would
             // ensure the new value was really new and then fire a
@@ -460,6 +451,7 @@ public class ScoreTree
         /**
          * Report the set of children of the provided node that are
          * relevant for display in the tree hierarchy (left pane)
+         *
          * @param node the node to investigate
          * @return the collection of relevant children
          */
@@ -473,16 +465,14 @@ public class ScoreTree
             }
 
             // Not found, so let's build it
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "Retrieving relevants of " + node + " " + node.getClass());
-            }
+            logger.fine("Retrieving relevants of {0} {1}",
+                        new Object[]{node, node.getClass()});
 
             // Case of Named Collection
             if (node instanceof NamedCollection) {
                 ///logger.info("named collection: " + node);
                 NamedCollection nc = (NamedCollection) node;
-                relevants = new ArrayList<Object>();
+                relevants = new ArrayList<>();
                 nodeMap.put(node, relevants);
 
                 for (Object n : nc.collection) {
@@ -492,7 +482,8 @@ public class ScoreTree
                 }
 
                 if (logger.isFineEnabled()) {
-                    logger.fine(node + " nb=" + relevants.size());
+                    logger.fine("{0} nb={1}", new Object[]{node,
+                                                           relevants.size()});
                 }
 
                 return relevants;
@@ -505,14 +496,15 @@ public class ScoreTree
                 nodeMap.put(node, relevants);
 
                 if (logger.isFineEnabled()) {
-                    logger.fine(node + " nb=" + relevants.size());
+                    logger.fine("{0} nb={1}", new Object[]{node,
+                                                           relevants.size()});
                 }
 
                 return relevants;
             }
 
             Class classe = node.getClass();
-            relevants = new ArrayList<Object>();
+            relevants = new ArrayList<>();
             nodeMap.put(node, relevants);
 
             // Walk up the inheritance tree
@@ -524,7 +516,7 @@ public class ScoreTree
 
                     if ((navigable != null) && (navigable.value() == false)) {
                         if (logger.isFineEnabled()) {
-                            logger.fine("skipping " + field);
+                            logger.fine("skipping {0}", field);
                         }
 
                         continue;
@@ -564,7 +556,8 @@ public class ScoreTree
 
                             if (!coll.isEmpty()) {
                                 relevants.add(
-                                    new NamedCollection(field.getName(), coll));
+                                        new NamedCollection(field.getName(),
+                                                            coll));
                             }
 
                             continue;
@@ -592,7 +585,7 @@ public class ScoreTree
             } while (filter.isClassRelevant(classe));
 
             if (logger.isFineEnabled()) {
-                logger.fine(node + " nb=" + relevants.size());
+                logger.fine("{0} nb={1}", new Object[]{node, relevants.size()});
             }
 
             return relevants;
@@ -606,9 +599,9 @@ public class ScoreTree
             //            return !isLeaf(node);
 
             // We display dummy containers only when they are not empty
-            if (constants.hideEmptyDummies.getValue() &&
-                (node instanceof NamedCollection ||
-                (node instanceof Container))) {
+            if (constants.hideEmptyDummies.getValue()
+                    && (node instanceof NamedCollection
+                        || (node instanceof Container))) {
                 return getChildCount(node) > 0;
             } else {
                 return true;
@@ -620,10 +613,11 @@ public class ScoreTree
     // SelectionListener //
     //-------------------//
     private class SelectionListener
-        implements TreeSelectionListener
+            implements TreeSelectionListener
     {
         //~ Methods ------------------------------------------------------------
 
+        @Override
         public void valueChanged (TreeSelectionEvent e)
         {
             TreePath p = e.getNewLeadSelectionPath();

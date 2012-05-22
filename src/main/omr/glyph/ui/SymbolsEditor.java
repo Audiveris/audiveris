@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -13,16 +13,19 @@ package omr.glyph.ui;
 
 import omr.constant.ConstantSet;
 
-import omr.glyph.GlyphEvaluator;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Glyphs;
 import omr.glyph.Nest;
+import omr.glyph.ShapeEvaluator;
+
 import omr.glyph.facets.Glyph;
+
 import omr.glyph.ui.NestView.ItemRenderer;
 
 import omr.lag.Lag;
 import omr.lag.Section;
 import omr.lag.Sections;
+
 import omr.lag.ui.SectionBoard;
 
 import omr.log.Logger;
@@ -32,9 +35,11 @@ import omr.run.RunBoard;
 import omr.score.common.PixelDimension;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
+
 import omr.score.entity.Measure;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Slot;
+
 import omr.score.ui.PageMenu;
 import omr.score.ui.PagePhysicalPainter;
 import omr.score.ui.PaintingParameters;
@@ -50,6 +55,7 @@ import omr.selection.UserEvent;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+
 import omr.sheet.ui.BoundaryEditor;
 import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.SheetPainter;
@@ -59,15 +65,21 @@ import omr.step.Step;
 import omr.ui.BoardsPane;
 import omr.ui.Colors;
 import omr.ui.PixelCount;
+
+import omr.ui.util.UIUtilities;
+
 import omr.ui.view.ScrollView;
 
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -76,6 +88,7 @@ import java.util.Set;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
+
 /**
  * Class {@code SymbolsEditor} defines, for a given sheet, a UI pane
  * from which all symbol processing actions can be launched and their
@@ -83,18 +96,12 @@ import javax.swing.SwingUtilities;
  *
  * @author Hervé Bitteur
  */
-public class SymbolsEditor
-    implements PropertyChangeListener
-{
-    //~ Static fields/initializers ---------------------------------------------
-
+public class SymbolsEditor implements PropertyChangeListener {
     /** Specific application parameters */
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(SymbolsEditor.class);
-
-    //~ Instance fields --------------------------------------------------------
 
     /** Related instance of symbols builder */
     private final SymbolsController symbolsController;
@@ -106,9 +113,9 @@ public class SymbolsEditor
     private final BoundaryEditor boundaryEditor;
 
     /** Evaluator to check for NOISE glyphs */
-    private final GlyphEvaluator evaluator = GlyphNetwork.getInstance();
+    private final ShapeEvaluator evaluator = GlyphNetwork.getInstance();
 
-    /** Related Lag view */
+    /** Related nest view */
     private final MyView view;
 
     /** Popup menu related to page selection */
@@ -116,8 +123,6 @@ public class SymbolsEditor
 
     /** The entity used for display focus */
     private ShapeFocusBoard focus;
-
-    //~ Constructors -----------------------------------------------------------
 
     //---------------//
     // SymbolsEditor //
@@ -128,9 +133,7 @@ public class SymbolsEditor
      * @param sheet the sheet whose glyphs are considered
      * @param symbolsController the symbols controller for this sheet
      */
-    public SymbolsEditor (Sheet             sheet,
-                          SymbolsController symbolsController)
-    {
+    public SymbolsEditor(Sheet sheet, SymbolsController symbolsController) {
         this.sheet = sheet;
         this.symbolsController = symbolsController;
         sheet.setBoundaryEditor(boundaryEditor = new BoundaryEditor(sheet));
@@ -140,40 +143,30 @@ public class SymbolsEditor
         view = new MyView(nest);
         view.setLocationService(sheet.getLocationService());
 
-        focus = new ShapeFocusBoard(
-            sheet,
-            symbolsController,
-            new ActionListener() {
+        focus = new ShapeFocusBoard(sheet, symbolsController,
+                new ActionListener() {
                     @Override
-                    public void actionPerformed (ActionEvent e)
-                    {
-                        //TODO /////////////////view.colorizeAllGlyphs();
+                    public void actionPerformed(ActionEvent e) {
+                        view.repaint();
                     }
-                },
-            false);
+                }, false);
 
-        pageMenu = new PageMenu(
-            sheet.getPage(),
-            new SymbolMenu(symbolsController, evaluator, focus));
+        pageMenu = new PageMenu(sheet.getPage(),
+                new SymbolMenu(symbolsController, evaluator, focus));
 
-        BoardsPane boardsPane = new BoardsPane(
-            new PixelBoard(sheet),
-            new RunBoard(sheet.getHorizontalLag(), false),
-            new SectionBoard(sheet.getHorizontalLag(), false),
-            new RunBoard(sheet.getVerticalLag(), false),
-            new SectionBoard(sheet.getVerticalLag(), false),
-            new SymbolGlyphBoard(symbolsController, true),
-            focus,
-            new EvaluationBoard(sheet, symbolsController, true),
-            new ShapeBoard(sheet, symbolsController, false));
+        BoardsPane boardsPane = new BoardsPane(new PixelBoard(sheet),
+                new RunBoard(sheet.getHorizontalLag(), false),
+                new SectionBoard(sheet.getHorizontalLag(), false),
+                new RunBoard(sheet.getVerticalLag(), false),
+                new SectionBoard(sheet.getVerticalLag(), false),
+                new SymbolGlyphBoard(symbolsController, true, true), focus,
+                new EvaluationBoard(sheet, symbolsController, true),
+                new ShapeBoard(sheet, symbolsController, false));
 
         // Create a hosting pane for the view
         ScrollView slv = new ScrollView(view);
-        sheet.getAssembly()
-             .addViewTab(Step.DATA_TAB, slv, boardsPane);
+        sheet.getAssembly().addViewTab(Step.DATA_TAB, slv, boardsPane);
     }
-
-    //~ Methods ----------------------------------------------------------------
 
     //-----------------//
     // addItemRenderer //
@@ -182,8 +175,7 @@ public class SymbolsEditor
      * Register an items renderer to render items.
      * @param renderer the additional renderer
      */
-    public void addItemRenderer (ItemRenderer renderer)
-    {
+    public void addItemRenderer(ItemRenderer renderer) {
         view.addItemRenderer(renderer);
     }
 
@@ -196,24 +188,20 @@ public class SymbolsEditor
      * @param measure the measure that contains the highlighted slot
      * @param slot the slot to highlight
      */
-    public void highLight (final Measure measure,
-                           final Slot    slot)
-    {
-        SwingUtilities.invokeLater(
-            new Runnable() {
-                    public void run ()
-                    {
-                        view.highLight(measure, slot);
-                    }
-                });
+    public void highLight(final Measure measure, final Slot slot) {
+        SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    view.highLight(measure, slot);
+                }
+            });
     }
 
     //----------------//
     // propertyChange //
     //----------------//
     @Override
-    public void propertyChange (PropertyChangeEvent evt)
-    {
+    public void propertyChange(PropertyChangeEvent evt) {
         view.repaint();
     }
 
@@ -224,45 +212,28 @@ public class SymbolsEditor
      * Refresh the UI display (reset the model values of all spinners,
      * update the colors of the glyphs).
      */
-    public void refresh ()
-    {
+    public void refresh() {
         view.refresh();
     }
-
-    //~ Inner Classes ----------------------------------------------------------
 
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
-        extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        PixelCount measureMargin = new PixelCount(
-            10,
-            "Number of pixels as margin when highlighting a measure");
+    private static final class Constants extends ConstantSet {
+        PixelCount measureMargin = new PixelCount(10,
+                "Number of pixels as margin when highlighting a measure");
     }
 
     //--------//
     // MyView //
     //--------//
-    private final class MyView
-        extends NestView
-    {
-        //~ Instance fields ----------------------------------------------------
-
+    private final class MyView extends NestView {
         // Currently highlighted slot & measure, if any
-        private Slot    highlightedSlot;
+        private Slot highlightedSlot;
         private Measure highlightedMeasure;
 
-        //~ Constructors -------------------------------------------------------
-
-        private MyView (Nest nest)
-        {
-            super(
-                nest,
-                symbolsController,
+        private MyView(Nest nest) {
+            super(nest, symbolsController,
                 Arrays.asList(sheet.getHorizontalLag(), sheet.getVerticalLag()));
             setName("SymbolsEditor-MyView");
 
@@ -273,19 +244,14 @@ public class SymbolsEditor
             }
         }
 
-        //~ Methods ------------------------------------------------------------
-
         //--------------//
         // contextAdded //
         //--------------//
         @Override
-        public void contextAdded (Point         pt,
-                                  MouseMovement movement)
-        {
+        public void contextAdded(Point pt, MouseMovement movement) {
             super.contextAdded(pt, movement);
 
-            if (ViewParameters.getInstance()
-                              .isSectionSelectionEnabled()) {
+            if (ViewParameters.getInstance().isSectionSelectionEnabled()) {
                 // Section mode
             } else {
                 // Glyph mode: Retrieve the selected glyphs
@@ -303,11 +269,8 @@ public class SymbolsEditor
         // contextSelected //
         //-----------------//
         @Override
-        public void contextSelected (Point         pt,
-                                     MouseMovement movement)
-        {
-            if (!ViewParameters.getInstance()
-                               .isSectionSelectionEnabled()) {
+        public void contextSelected(Point pt, MouseMovement movement) {
+            if (!ViewParameters.getInstance().isSectionSelectionEnabled()) {
                 // Glyph mode
                 pointSelected(pt, movement);
             }
@@ -323,9 +286,7 @@ public class SymbolsEditor
          * @param measure the current measure
          * @param slot the current slot
          */
-        public void highLight (Measure measure,
-                               Slot    slot)
-        {
+        public void highLight(Measure measure, Slot slot) {
             this.highlightedMeasure = measure;
             this.highlightedSlot = slot;
 
@@ -336,18 +297,16 @@ public class SymbolsEditor
                 return;
             }
 
-            ScoreSystem    system = measure.getSystem();
+            ScoreSystem system = measure.getSystem();
             PixelDimension dimension = system.getDimension();
-            PixelRectangle systemBox = new PixelRectangle(
-                system.getTopLeft().x,
-                system.getTopLeft().y,
-                dimension.width,
-                dimension.height +
-                system.getLastPart().getLastStaff().getHeight());
+            PixelRectangle systemBox = new PixelRectangle(system.getTopLeft().x,
+                    system.getTopLeft().y, dimension.width,
+                    dimension.height +
+                    system.getLastPart().getLastStaff().getHeight());
 
             // Make the measure rectangle visible
             PixelRectangle rect = measure.getBox();
-            int            margin = constants.measureMargin.getValue();
+            int margin = constants.measureMargin.getValue();
             // Actually, use the whole system height
             rect.y = systemBox.y;
             rect.height = systemBox.height;
@@ -368,8 +327,7 @@ public class SymbolsEditor
          * @param event the notified event
          */
         @Override
-        public void onEvent (UserEvent event)
-        {
+        public void onEvent(UserEvent event) {
             ///logger.info("*** " + getName() + " " + event);
             try {
                 // Ignore RELEASING
@@ -394,63 +352,75 @@ public class SymbolsEditor
         // render //
         //--------//
         @Override
-        public void render (Graphics2D g)
-        {
+        public void render(Graphics2D g) {
             PaintingParameters painting = PaintingParameters.getInstance();
 
             if (painting.isInputPainting()) {
-                super.render(g);
-            } else {
-                renderItems(g);
+                // Should we draw the section borders?
+                final boolean drawBorders = ViewParameters.getInstance()
+                                                          .isSectionSelectionEnabled();
+
+                // Stroke for borders
+                final Stroke oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
+
+                if (lags != null) {
+                    for (Lag lag : lags) {
+                        // Render all sections, using the colors they have been assigned
+                        for (Section section : lag.getVertices()) {
+                            Glyph glyph = section.getGlyph();
+
+                            if (focus.isDisplayed(glyph)) {
+                                section.render(g, drawBorders);
+                            }
+                        }
+                    }
+                }
+
+                // Restore stroke
+                g.setStroke(oldStroke);
             }
+
+            // Paint additional items, such as recognized items, etc...
+            renderItems(g);
         }
 
         //---------//
         // publish //
         //---------//
-        protected void publish (NestEvent event)
-        {
-            nest.getGlyphService()
-                .publish(event);
+        protected void publish(NestEvent event) {
+            nest.getGlyphService().publish(event);
         }
 
         //-------------//
         // renderItems //
         //-------------//
         @Override
-        protected void renderItems (Graphics2D g)
-        {
+        protected void renderItems(Graphics2D g) {
             PaintingParameters painting = PaintingParameters.getInstance();
 
             if (painting.isInputPainting()) {
                 // Render all sheet physical info known so far
                 sheet.getPage()
-                     .accept(
-                    new SheetPainter(g, boundaryEditor.isSessionOngoing()));
+                     .accept(new SheetPainter(g,
+                        boundaryEditor.isSessionOngoing()));
 
                 // Normal display of selected items
                 super.renderItems(g);
             }
 
             if (painting.isOutputPainting()) {
-                boolean             mixed = painting.isInputPainting();
+                boolean mixed = painting.isInputPainting();
 
                 // Render the recognized score entities
-                PagePhysicalPainter painter = new PagePhysicalPainter(
-                    g,
-                    mixed ? Colors.MUSIC_SYMBOLS : Colors.MUSIC_ALONE,
-                    mixed ? false : painting.isVoicePainting(),
-                    false,
-                    painting.isAnnotationPainting());
-                sheet.getPage()
-                     .accept(painter);
+                PagePhysicalPainter painter = new PagePhysicalPainter(g,
+                        mixed ? Colors.MUSIC_SYMBOLS : Colors.MUSIC_ALONE,
+                        mixed ? false : painting.isVoicePainting(), false,
+                        painting.isAnnotationPainting());
+                sheet.getPage().accept(painter);
 
                 // The slot being played, if any
                 if (highlightedSlot != null) {
-                    painter.drawSlot(
-                        true,
-                        highlightedMeasure,
-                        highlightedSlot,
+                    painter.drawSlot(true, highlightedMeasure, highlightedSlot,
                         Colors.SLOT_CURRENT);
                 }
             }
@@ -464,13 +434,12 @@ public class SymbolsEditor
          * @param locationEvent location event
          */
         @SuppressWarnings("unchecked")
-        private void handleEvent (LocationEvent locationEvent)
-        {
+        private void handleEvent(LocationEvent locationEvent) {
             super.onEvent(locationEvent);
 
             // Update system boundary?
             if ((locationEvent.hint == SelectionHint.LOCATION_INIT) &&
-                boundaryEditor.isSessionOngoing()) {
+                    boundaryEditor.isSessionOngoing()) {
                 Rectangle rect = locationEvent.getData();
 
                 if ((rect != null) && (rect.width == 0) && (rect.height == 0)) {
@@ -487,10 +456,8 @@ public class SymbolsEditor
          * @param sectionSetEvent
          */
         @SuppressWarnings("unchecked")
-        private void handleEvent (SectionSetEvent sectionSetEvent)
-        {
-            if (!ViewParameters.getInstance()
-                               .isSectionSelectionEnabled()) {
+        private void handleEvent(SectionSetEvent sectionSetEvent) {
+            if (!ViewParameters.getInstance().isSectionSelectionEnabled()) {
                 // Glyph selection mode
                 return;
             }
@@ -501,7 +468,7 @@ public class SymbolsEditor
 
             if (hint == SelectionHint.LOCATION_ADD) {
                 // Collect section sets from all lags
-                List<Section> allSections = new ArrayList<Section>();
+                List<Section> allSections = new ArrayList<>();
 
                 for (Lag lag : lags) {
                     Set<Section> selected = lag.getSelectedSectionSet();
@@ -517,32 +484,23 @@ public class SymbolsEditor
 
                 ///logger.info("SymbolsEditor got all " + Sections.toString(all));
                 try {
-                    Glyph      compound = null;
+                    Glyph compound = null;
                     SystemInfo system = sheet.getSystemOfSections(allSections);
 
                     if (system != null) {
                         compound = system.buildTransientGlyph(allSections);
                     }
 
-                    publish(
-                        new GlyphEvent(
-                            this,
-                            SelectionHint.GLYPH_TRANSIENT,
-                            movement,
-                            compound));
+                    publish(new GlyphEvent(this, SelectionHint.GLYPH_TRANSIENT,
+                            movement, compound));
 
-                    publish(
-                        new GlyphSetEvent(
-                            this,
-                            SelectionHint.GLYPH_TRANSIENT,
-                            movement,
+                    publish(new GlyphSetEvent(this,
+                            SelectionHint.GLYPH_TRANSIENT, movement,
                             Glyphs.sortedSet(compound)));
                 } catch (IllegalArgumentException ex) {
                     // All sections do not belong to the same system
                     // No compound is allowed and displayed
-                    logger.warning(
-                        "Sections from different systems " +
-                        Sections.toString(allSections));
+                    logger.warning("Sections from different systems {0}", Sections.toString(allSections));
                 }
             }
         }
@@ -550,15 +508,12 @@ public class SymbolsEditor
         //---------------//
         // showPagePopup //
         //---------------//
-        private void showPagePopup (Point pt)
-        {
+        private void showPagePopup(Point pt) {
             pageMenu.updateMenu(new PixelPoint(pt.x, pt.y));
 
             JPopupMenu popup = pageMenu.getPopup();
 
-            popup.show(
-                this,
-                getZoom().scaled(pt.x) + 20,
+            popup.show(this, getZoom().scaled(pt.x) + 20,
                 getZoom().scaled(pt.y) + 30);
         }
     }

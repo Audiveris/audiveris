@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -32,11 +32,11 @@ public class Symbols
     private static final Logger logger = Logger.getLogger(Symbols.class);
 
     /** Map of (simple) symbols */
-    private static final EnumMap<Shape, ShapeSymbol> sym = new EnumMap<Shape, ShapeSymbol>(
+    private static final EnumMap<Shape, ShapeSymbol> sym = new EnumMap<>(
         Shape.class);
 
     /** Map of decorated symbols */
-    private static final EnumMap<Shape, ShapeSymbol> dec = new EnumMap<Shape, ShapeSymbol>(
+    private static final EnumMap<Shape, ShapeSymbol> dec = new EnumMap<>(
         Shape.class);
 
     /** Symbol of '8' char for ottava sign (alta or bassa) on F & G clefs */

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2011. All rights reserved.               //
+//  Copyright (C) Herve Bitteur 2000-2012. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -66,6 +66,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -79,10 +80,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class {@code GlyphBrowser} gathers a navigator to move between selected
- * glyphs, a glyph board for glyph details, and a display for graphical glyph
- * view.
- * This is a (package private) companion of {@link GlyphVerifier}.
+ * Class {@code GlyphBrowser} gathers a navigator to move between
+ * selected glyphs, a glyph board for glyph details, and a display for 
+ * graphical glyph view.
+ * This is a (package private) companion of {@link SampleVerifier}.
  *
  * @author Hervé Bitteur
  */
@@ -111,8 +112,8 @@ class GlyphBrowser
     /** The concrete Swing component */
     private JPanel component = new JPanel();
 
-    /** Reference of GlyphVerifier */
-    private final GlyphVerifier verifier;
+    /** Reference of SampleVerifier */
+    private final SampleVerifier verifier;
 
     /** Repository of known glyphs */
     private final GlyphRepository repository = GlyphRepository.getInstance();
@@ -162,10 +163,10 @@ class GlyphBrowser
     // GlyphBrowser //
     //--------------//
     /**
-     * Create an instance, with back-reference to GlyphVerifier.
+     * Create an instance, with back-reference to SampleVerifier.
      * @param verifier ref back to verifier
      */
-    public GlyphBrowser (GlyphVerifier verifier)
+    public GlyphBrowser (SampleVerifier verifier)
     {
         this.verifier = verifier;
 
@@ -204,7 +205,8 @@ class GlyphBrowser
     // stateChanged //
     //--------------//
     /**
-     * Called when a new selection has been made in GlyphVerifier companion.
+     * Called when a new selection has been made in SampleVerifier 
+     * companion.
      * @param e not used
      */
     @Override
@@ -218,8 +220,8 @@ class GlyphBrowser
     // buildLeftPanel //
     //----------------//
     /**
-     * Build a panel composed vertically of a Navigator, a GlyphBoard and an
-     * EvaluationBoard.
+     * Build a panel composed vertically of a Navigator, a GlyphBoard 
+     * and an EvaluationBoard.
      * @return the UI component, ready to be inserted in Swing hierarchy
      */
     private JPanel buildLeftPanel ()
@@ -292,7 +294,7 @@ class GlyphBrowser
                 new BlackList(file.getParentFile()).add(new File(gName));
             }
 
-            logger.info("Removed " + gName);
+            logger.info("Removed {0}", gName);
 
             // Set new index ?
             if (index < names.size()) {
@@ -527,7 +529,7 @@ class GlyphBrowser
 
         public MyGlyphBoard (GlyphsController controller)
         {
-            super(controller, true);
+            super(controller, false, true);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -564,8 +566,7 @@ class GlyphBrowser
         // onEvent //
         //---------//
         /**
-         * Call-back triggered from (local) selection objects
-         *
+         * Call-back triggered from (local) selection objects.
          * @param event the notified event
          */
         @Override
@@ -608,7 +609,7 @@ class GlyphBrowser
                                     this,
                                     glyphEvent.hint,
                                     null,
-                                    glyph.getContourBox()));
+                                    glyph.getBounds()));
                         }
                     }
                 }
@@ -707,6 +708,7 @@ class GlyphBrowser
 
             all.addActionListener(
                 new ActionListener() {
+                @Override
                         public void actionPerformed (ActionEvent e)
                         {
                             // Load all (non icon) glyphs
@@ -727,6 +729,7 @@ class GlyphBrowser
 
             prev.addActionListener(
                 new ActionListener() {
+                @Override
                         public void actionPerformed (ActionEvent e)
                         {
                             setIndex(nameIndex - 1, GLYPH_INIT); // To prev
@@ -735,6 +738,7 @@ class GlyphBrowser
 
             next.addActionListener(
                 new ActionListener() {
+                @Override
                         public void actionPerformed (ActionEvent e)
                         {
                             setIndex(nameIndex + 1, GLYPH_INIT); // To next
@@ -797,6 +801,7 @@ class GlyphBrowser
         }
 
         // Just to please the Board interface
+        @Override
         public void onEvent (UserEvent event)
         {
             throw new UnsupportedOperationException("Not supported yet.");
@@ -834,7 +839,7 @@ class GlyphBrowser
                 }
 
                 // Extend view model size if needed
-                Rectangle box = glyph.getContourBox();
+                Rectangle box = glyph.getBounds();
                 modelRectangle = modelRectangle.union(box);
 
                 Dimension newSize = modelRectangle.getSize();

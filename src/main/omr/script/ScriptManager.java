@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -22,8 +22,8 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
 /**
- * Class {@code ScriptManager} is in charge of handling the storing and loading
- * of scripts
+ * Class {@code ScriptManager} is in charge of handling the storing and
+ * loading of scripts.
  *
  * @author Hervé Bitteur
  */
@@ -41,7 +41,6 @@ public class ScriptManager
     private static volatile JAXBContext jaxbContext;
 
     //~ Constructors -----------------------------------------------------------
-
     //---------------//
     // ScriptManager //
     //---------------//
@@ -53,12 +52,11 @@ public class ScriptManager
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-------------//
     // getInstance //
     //-------------//
     /**
-     * Report the single instance of ScriptManager in the application
+     * Report the single instance of ScriptManager in the application.
      *
      * @return the instance
      */
@@ -71,7 +69,7 @@ public class ScriptManager
     // load //
     //------//
     /**
-     * Load a script from an input stream
+     * Load a script from an input stream.
      *
      * @param input the input stream to be read
      * @return the loaded script, or null if failed
@@ -79,8 +77,7 @@ public class ScriptManager
     public Script load (InputStream input)
     {
         try {
-            Unmarshaller um = getJaxbContext()
-                                  .createUnmarshaller();
+            Unmarshaller um = getJaxbContext().createUnmarshaller();
 
             return (Script) um.unmarshal(input);
         } catch (JAXBException ex) {
@@ -94,22 +91,19 @@ public class ScriptManager
     // store //
     //-------//
     /**
-     * Store a script into an output stream
+     * Store a script into an output stream.
      *
      * @param script the script to store
      * @param output the output stream to be written
      * @throws JAXBException
      */
-    public void store (Script       script,
+    public void store (Script script,
                        OutputStream output)
-        throws JAXBException
+            throws JAXBException
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Storing " + script);
-        }
+        logger.fine("Storing {0}", script);
 
-        Marshaller m = getJaxbContext()
-                           .createMarshaller();
+        Marshaller m = getJaxbContext().createMarshaller();
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
         m.marshal(script, output);
 
@@ -121,7 +115,7 @@ public class ScriptManager
     // getJaxbContext //
     //----------------//
     private JAXBContext getJaxbContext ()
-        throws JAXBException
+            throws JAXBException
     {
         // Lazy creation
         if (jaxbContext == null) {
@@ -136,7 +130,6 @@ public class ScriptManager
     }
 
     //~ Inner Interfaces -------------------------------------------------------
-
     //--------//
     // Holder //
     //--------//

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -92,10 +92,10 @@ public class SectionSets
     public static SectionSets createFromGlyphs (Collection<Glyph> glyphs)
     {
         SectionSets sectionSets = new SectionSets();
-        sectionSets.sets = new ArrayList<Collection<Section>>();
+        sectionSets.sets = new ArrayList<>();
 
         for (Glyph glyph : glyphs) {
-            sectionSets.sets.add(new ArrayList<Section>(glyph.getMembers()));
+            sectionSets.sets.add(new ArrayList<>(glyph.getMembers()));
         }
 
         return sectionSets;
@@ -113,7 +113,7 @@ public class SectionSets
     public static SectionSets createFromSections (Collection<Section> sections)
     {
         SectionSets sectionSets = new SectionSets();
-        sectionSets.sets = new ArrayList<Collection<Section>>();
+        sectionSets.sets = new ArrayList<>();
         sectionSets.sets.add(sections);
 
         return sectionSets;
@@ -130,10 +130,10 @@ public class SectionSets
     public Collection<Collection<Section>> getSets (Sheet sheet)
     {
         if (sets == null) {
-            sets = new ArrayList<Collection<Section>>();
+            sets = new ArrayList<>();
 
             for (SectionDescSet idSet : descSets) {
-                List<Section> sectionSet = new ArrayList<Section>();
+                List<Section> sectionSet = new ArrayList<>();
 
                 for (SectionDesc sectionId : idSet.sections) {
                     Lag     lag = (sectionId.orientation == Orientation.VERTICAL)
@@ -192,7 +192,7 @@ public class SectionSets
     {
         // Convert sections -> ids
         if (sets != null) {
-            descSets = new ArrayList<SectionDescSet>();
+            descSets = new ArrayList<>();
 
             for (Collection<Section> set : sets) {
                 SectionDescSet descSet = new SectionDescSet();
@@ -282,6 +282,6 @@ public class SectionSets
         //        // Annotation to avoid any wrapper:
         //        @XmlValue
         @XmlElement(name = "section")
-        private Collection<SectionDesc> sections = new ArrayList<SectionDesc>();
+        private Collection<SectionDesc> sections = new ArrayList<>();
     }
 }

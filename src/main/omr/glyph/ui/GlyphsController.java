@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -39,7 +39,8 @@ import java.util.Set;
 
 /**
  * Class {@code GlyphsController} is a common basis for glyph handling,
- * used by any user interface which needs to act on the actual glyph data.
+ * used by any user interface which needs to act on the actual glyph
+ * data.
  *
  * <p>There are two main methods in this class ({@link #asyncAssignGlyphs} and
  * {@link #asyncDeassignGlyphs}). They share common characteristics:
@@ -61,10 +62,9 @@ public class GlyphsController
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
-        GlyphsController.class);
+            GlyphsController.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Related model */
     protected final GlyphsModel model;
 
@@ -72,13 +72,13 @@ public class GlyphsController
     protected final Sheet sheet;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------------//
     // GlyphsController //
     //------------------//
     /**
      * Create an instance of GlyphsController, with its underlying
      * GlyphsModel instance.
+     *
      * @param model the related glyphs model
      */
     public GlyphsController (GlyphsModel model)
@@ -89,38 +89,37 @@ public class GlyphsController
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-------------------//
     // asyncAssignGlyphs //
     //-------------------//
     /**
-     * Asynchronouly assign a shape to the selected collection of glyphs and
-     * record this action in the script
+     * Asynchronouly assign a shape to the selected collection of glyphs
+     * and record this action in the script.
      *
-     * @param glyphs the collection of glyphs to be assigned
-     * @param shape the shape to be assigned
+     * @param glyphs   the collection of glyphs to be assigned
+     * @param shape    the shape to be assigned
      * @param compound flag to build one compound, rather than assign each
-     *                 individual glyph
+     * individual glyph
      * @return the task that carries out the processing
      */
     public Task asyncAssignGlyphs (Collection<Glyph> glyphs,
-                                   Shape             shape,
-                                   boolean           compound)
+                                   Shape shape,
+                                   boolean compound)
     {
         // Safety check: we cannot alter virtual glyphs
         for (Glyph glyph : glyphs) {
             if (glyph.isVirtual()) {
-                logger.warning("Cannot alter VirtualGlyph#" + glyph.getId());
+                logger.warning("Cannot alter VirtualGlyph#{0}", glyph.getId());
 
                 return null;
             }
         }
 
-        if (ShapeSet.Barlines.contains(shape) ||
-            Glyphs.containsBarline(glyphs)) {
+        if (ShapeSet.Barlines.contains(shape)
+                || Glyphs.containsBarline(glyphs)) {
             // Special case for barlines
             return new BarlineTask(sheet, shape, compound, glyphs).launch(
-                sheet);
+                    sheet);
         } else {
             // Normal symbol processing
             return new AssignTask(sheet, shape, compound, glyphs).launch(sheet);
@@ -131,8 +130,8 @@ public class GlyphsController
     // asyncDeassignGlyphs //
     //---------------------//
     /**
-     * Asynchronously de-Assign a collection of glyphs and record this action
-     * in the script
+     * Asynchronously de-Assign a collection of glyphs and record this
+     * action in the script.
      *
      * @param glyphs the collection of glyphs to be de-assigned
      * @return the task that carries out the processing
@@ -154,7 +153,7 @@ public class GlyphsController
     // getGlyphById //
     //--------------//
     /**
-     * Retrieve a glyph, knowing its id
+     * Retrieve a glyph, knowing its id.
      *
      * @param id the glyph id
      * @return the glyph found, or null if not
@@ -168,7 +167,8 @@ public class GlyphsController
     // getLatestShape //
     //----------------//
     /**
-     * Report the latest non null shape that was assigned, or null if none
+     * Report the latest non null shape that was assigned, or null
+     * if none.
      *
      * @return latest shape assigned, or null if none
      */
@@ -181,22 +181,23 @@ public class GlyphsController
     // getLocationService //
     //--------------------//
     /**
-     * Report the event service to use for LocationEvent
+     * Report the event service to use for LocationEvent.
      * When no sheet is available, override this method to point to another
      * service
+     *
      * @return the event service to use for LocationEvent
      */
     public SelectionService getLocationService ()
     {
-        return model.getSheet()
-                    .getLocationService();
+        return model.getSheet().getLocationService();
     }
 
     //----------//
     // getModel //
     //----------//
     /**
-     * Report the underlying model
+     * Report the underlying model.
+     *
      * @return the underlying glpyhs model
      */
     public GlyphsModel getModel ()
@@ -208,7 +209,8 @@ public class GlyphsController
     // getNest //
     //---------//
     /**
-     * Report the underlying glyph nest
+     * Report the underlying glyph nest.
+     *
      * @return the related glyph nest
      */
     public Nest getNest ()
@@ -220,7 +222,7 @@ public class GlyphsController
     // setLatestShape //
     //----------------//
     /**
-     * Assign the latest shape
+     * Assign the latest shape.
      *
      * @param shape the latest shape
      */
@@ -233,35 +235,34 @@ public class GlyphsController
     // syncAssign //
     //------------//
     /**
-     * Process synchronously the assignment defined in the provided context
+     * Process synchronously the assignment defined in the provided
+     * context.
+     *
      * @param context the context of the assignment
      */
     public void syncAssign (AssignTask context)
     {
         final boolean compound = context.isCompound();
-        final Shape   shape = context.getAssignedShape();
-
-        if (logger.isFineEnabled()) {
-            logger.fine("syncAssign " + context + " compound:" + compound);
-        }
+        final Shape shape = context.getAssignedShape();
+        logger.fine("syncAssign {0} compound:{1}", new Object[]{context,
+                                                                compound});
 
         Set<Glyph> glyphs = context.getInitialGlyphs();
 
         if (shape != null) { // Assignment
-                             // Persistent?
+            // Persistent?
             model.assignGlyphs(
-                glyphs,
-                context.getAssignedShape(),
-                compound,
-                Evaluation.MANUAL);
+                    glyphs,
+                    context.getAssignedShape(),
+                    compound,
+                    Evaluation.MANUAL);
 
             // Publish modifications
             if (compound) {
                 publish(
-                    glyphs.iterator().next().getMembers().first().getGlyph());
+                        glyphs.iterator().next().getMembers().first().getGlyph());
             } else {
-                Glyph glyph = glyphs.iterator()
-                                    .next();
+                Glyph glyph = glyphs.iterator().next();
 
                 if (glyph != null) {
                     publish(glyph.getMembers().first().getGlyph());
@@ -279,14 +280,14 @@ public class GlyphsController
     // syncDelete //
     //------------//
     /**
-     * Process synchronously the deletion defined in the provided context
+     * Process synchronously the deletion defined in the provided
+     * context.
+     *
      * @param context the context of the deletion
      */
     public void syncDelete (DeleteTask context)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("syncDelete" + context);
-        }
+        logger.fine("syncDelete{0}", context);
 
         model.deleteGlyphs(context.getInitialGlyphs());
 
@@ -300,10 +301,9 @@ public class GlyphsController
     {
         // Update immediately the glyph info as displayed
         if (model.getSheet() != null) {
-            getNest()
-                .getGlyphService()
-                .publish(
-                new GlyphEvent(this, SelectionHint.GLYPH_MODIFIED, null, glyph));
+            getNest().getGlyphService().publish(
+                    new GlyphEvent(this, SelectionHint.GLYPH_MODIFIED, null,
+                                   glyph));
         }
     }
 
@@ -314,10 +314,8 @@ public class GlyphsController
     {
         // Update immediately the glyph info as displayed
         if (model.getSheet() != null) {
-            getNest()
-                .getGlyphService()
-                .publish(
-                new GlyphSetEvent(
+            getNest().getGlyphService().publish(
+                    new GlyphSetEvent(
                     this,
                     SelectionHint.GLYPH_MODIFIED,
                     null,

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -27,8 +27,8 @@ import omr.sheet.Scale;
 import java.util.Comparator;
 
 /**
- * Class {@code Filament} represents a long glyph that can be far from being a
- * straight line.
+ * Class {@code Filament} represents a long glyph that can be far from
+ * being a straight line.
  * It is used to handle candidate staff lines and bar lines.
  */
 public class Filament
@@ -43,23 +43,12 @@ public class Filament
      * For comparing Filament instances on their top ordinate
      */
     public static final Comparator<Filament> topComparator = new Comparator<Filament>() {
+        @Override
         public int compare (Filament f1,
                             Filament f2)
         {
             // Sort on top ordinate
-            return Integer.signum(f1.getContourBox().y - f2.getContourBox().y);
-        }
-    };
-
-    /**
-     * For comparing Filament instances on distance from reference axis
-     */
-    public static final Comparator<Filament> distanceComparator = new Comparator<Filament>() {
-        public int compare (Filament f1,
-                            Filament f2)
-        {
-            // Sort on distance from top edge
-            return Integer.signum(f1.refDist - f2.refDist);
+            return Integer.signum(f1.getBounds().y - f2.getBounds().y);
         }
     };
 
@@ -69,9 +58,6 @@ public class Filament
     /** Related scale */
     private final Scale scale;
 
-    /** Distance from reference axis */
-    private Integer refDist;
-
     //~ Constructors -----------------------------------------------------------
 
     //----------//
@@ -79,7 +65,6 @@ public class Filament
     //----------//
     /**
      * Creates a new Filament object.
-     *
      * @param scale scaling data
      */
     public Filament (Scale scale)
@@ -92,7 +77,6 @@ public class Filament
     //----------//
     /**
      * Creates a new Filament object.
-     *
      * @param scale scaling data
      */
     public Filament (Scale                             scale,
@@ -141,18 +125,6 @@ public class Filament
                    .getMeanCurvature();
     }
 
-    //----------------//
-    // getRefDistance //
-    //----------------//
-    /**
-     * Report the orthogonal distance from the filament to the reference axis
-     * @return distance from axis that takes global slope into acount
-     */
-    public Integer getRefDistance ()
-    {
-        return refDist;
-    }
-
     //----------//
     // getScale //
     //----------//
@@ -166,22 +138,11 @@ public class Filament
     }
 
     //-----------------//
-    // invalidateCache //
-    //-----------------//
-    @Override
-    public void invalidateCache ()
-    {
-        super.invalidateCache();
-
-        refDist = null;
-    }
-
-    //-----------------//
     // polishCurvature //
     //-----------------//
     /**
-     * Polish the filament by looking at local curvatures and removing sections
-     * when necessary.
+     * Polish the filament by looking at local curvatures and removing 
+     * sections when necessary.
      */
     public void polishCurvature ()
     {
@@ -203,18 +164,6 @@ public class Filament
     {
         return getAlignment()
                    .getPositionAt(coord, orientation);
-    }
-
-    //----------------//
-    // setRefDistance //
-    //----------------//
-    /**
-     * Remember the filament distance to reference axis
-     * @param refDist the orthogonal distance to reference axis
-     */
-    public void setRefDistance (int refDist)
-    {
-        this.refDist = refDist;
     }
 
     //---------//
@@ -256,33 +205,11 @@ public class Filament
     {
         StringBuilder sb = new StringBuilder();
 
-        //        sb.append(" lg:")
-        //          .append(getLength());
-
-        //        sb.append(" start[x=")
-        //          .append((float) getStartPoint().getX())
-        //          .append(",y=")
-        //          .append((float) getStartPoint().getY())
-        //          .append("]");
-        //
-        //        sb.append(" stop[x=")
-        //          .append((float) getStopPoint().getX())
-        //          .append(",y=")
-        //          .append((float) getStopPoint().getY())
-        //          .append("]");
-
-        //        sb.append(" meanDist:")
-        //          .append((float) getMeanDistance());
-        //
         if (getPartOf() != null) {
             sb.append(" anc:")
               .append(getAncestor());
         }
 
-        //        if (refDist != null) {
-        //            sb.append(" refDist:")
-        //              .append(refDist);
-        //        }
         if (getShape() != null) {
             sb.append(" ")
               .append(getShape());

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -41,7 +41,7 @@ public class WeakPropertyChangeListener
      */
     public WeakPropertyChangeListener (PropertyChangeListener listener)
     {
-        weakListener = new WeakReference<PropertyChangeListener>(listener);
+        weakListener = new WeakReference<>(listener);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -53,6 +53,7 @@ public class WeakPropertyChangeListener
      * Delegate the call-back to the concrete listener, if still there
      * @param evt the property change event
      */
+    @Override
     public void propertyChange (PropertyChangeEvent evt)
     {
         PropertyChangeListener listener = weakListener.get();

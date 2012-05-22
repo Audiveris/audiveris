@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -22,7 +22,8 @@ import java.util.List;
 
 /**
  * Class {@code SectionsBuilder} populates a full lag, by building the
- * lag sections and junctions, out of a provided {@link RunsTable} instance.
+ * lag sections and junctions, out of a provided {@link RunsTable} 
+ * instance.
  *
  * @author Hervé Bitteur
  */
@@ -32,10 +33,9 @@ public class SectionsBuilder
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
-        SectionsBuilder.class);
+            SectionsBuilder.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Policy for detection of junctions */
     private JunctionPolicy junctionPolicy;
 
@@ -60,7 +60,6 @@ public class SectionsBuilder
     private List<Section> prevActives;
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------------//
     // SectionsBuilder //
     //-----------------//
@@ -70,7 +69,7 @@ public class SectionsBuilder
      * @param lag            the lag to populate
      * @param junctionPolicy the policy to detect junctions
      */
-    public SectionsBuilder (Lag            lag,
+    public SectionsBuilder (Lag lag,
                             JunctionPolicy junctionPolicy)
     {
         this.lag = lag;
@@ -78,22 +77,22 @@ public class SectionsBuilder
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------------//
     // createSections //
     //----------------//
     /**
      * Populate a lag by creating sections from the provided table of runs
+     *
      * @param runsTable the table of runs
      * @return the list of created sections
      */
     public List<Section> createSections (RunsTable runsTable)
     {
         // Get brand new collections
-        created = new ArrayList<Section>();
-        nextActives = new ArrayList<Section>();
-        overlappingSections = new ArrayList<Section>();
-        prevActives = new ArrayList<Section>();
+        created = new ArrayList<>();
+        nextActives = new ArrayList<>();
+        overlappingSections = new ArrayList<>();
+        prevActives = new ArrayList<>();
 
         // All runs (if any) in first column start each their own section
         for (Run run : runsTable.getSequence(0)) {
@@ -109,22 +108,18 @@ public class SectionsBuilder
                 // Copy the former next actives sections
                 // as the new previous active sections
                 prevActives = nextActives;
-                nextActives = new ArrayList<Section>();
+                nextActives = new ArrayList<>();
 
                 // Process all sections of previous column, then prevActives
                 // will contain only active sections (that may be continued)
-                if (logger.isFineEnabled()) {
-                    logger.fine("Prev column");
-                }
+                logger.fine("Prev column");
 
                 for (Section section : prevActives) {
                     processPrevSide(section, runList);
                 }
 
                 // Process all runs of next column
-                if (logger.isFineEnabled()) {
-                    logger.fine("Next column");
-                }
+                logger.fine("Next column");
 
                 for (Run run : runList) {
                     processNextSide(col, run);
@@ -160,21 +155,21 @@ public class SectionsBuilder
     /**
      * Populate a lag by creating sections directly out of a pixel source
      *
-     * @param name a name assigned to the runs table
-     * @param source the source to read pixels from
+     * @param name         a name assigned to the runs table
+     * @param source       the source to read pixels from
      * @param minRunLength minimum length to consider a run
      * @return the list of created sections
      */
-    public List<Section> createSections (String      name,
+    public List<Section> createSections (String name,
                                          PixelSource source,
-                                         int         minRunLength)
+                                         int minRunLength)
     {
         // Define a proper table factory
         RunsTableFactory factory = new RunsTableFactory(
-            lag.getOrientation(),
-            source,
-            source.getMaxForeground(),
-            minRunLength);
+                lag.getOrientation(),
+                source,
+                source.getMaxForeground(),
+                minRunLength);
 
         // Create the runs table
         RunsTable table = factory.createTable(name);
@@ -187,11 +182,10 @@ public class SectionsBuilder
     // continueSection //
     //-----------------//
     private void continueSection (Section section,
-                                  Run     run)
+                                  Run run)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Continuing section " + section + " with " + run);
-        }
+        logger.fine("Continuing section {0} with {1}",
+                    new Object[]{section, run});
 
         section.append(run);
         nextActives.add(section);
@@ -235,9 +229,7 @@ public class SectionsBuilder
     private void processNextSide (int col,
                                   Run run)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("processNextSide for run " + run);
-        }
+        logger.fine("processNextSide for run {0}", run);
 
         int nextStart = run.getStart();
         int nextStop = run.getStop();
@@ -254,26 +246,22 @@ public class SectionsBuilder
             }
 
             if (lastRun.getStop() >= nextStart) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("Overlap from " + lastRun + " to " + run);
-                }
-
+                logger.fine("Overlap from {0} to {1}",
+                            new Object[]{lastRun, run});
                 overlappingSections.add(section);
             }
         }
 
         // Processing now depends on nb of overlapping runs
-        if (logger.isFineEnabled()) {
-            logger.fine("overlap=" + overlappingSections.size());
-        }
+        logger.fine("overlap={0}", overlappingSections.size());
 
         switch (overlappingSections.size()) {
-        case 0 : // Begin a brand new section
+        case 0: // Begin a brand new section
             nextActives.add(createSection(col, run));
 
             break;
 
-        case 1 : // Continuing sections (if not finished)
+        case 1: // Continuing sections (if not finished)
 
             Section prevSection = overlappingSections.get(0);
 
@@ -288,12 +276,9 @@ public class SectionsBuilder
 
             break;
 
-        default : // Converging sections, end them, start a new one
+        default: // Converging sections, end them, start a new one
 
-            if (logger.isFineEnabled()) {
-                logger.fine("Converging at " + run);
-            }
-
+            logger.fine("Converging at {0}", run);
             Section newSection = createSection(col, run);
             nextActives.add(newSection);
 
@@ -307,22 +292,19 @@ public class SectionsBuilder
     // processPrevSide //
     //-----------------//
     /**
-     * processPrevSide take care of the first column, at the given section/run,
+     * Take care of the first column, at the given section/run,
      * checking links to the nextColumnRuns that overlap this run.
      *
-     * @param section
-     * @param nextColumnRuns
+     * @param section        the section at hand
+     * @param nextColumnRuns runs of the next column
      */
-    private void processPrevSide (Section   section,
+    private void processPrevSide (Section section,
                                   List<Run> nextColumnRuns)
     {
         Run lastRun = section.getLastRun();
         int prevStart = lastRun.getStart();
         int prevStop = lastRun.getStop();
-
-        if (logger.isFineEnabled()) {
-            logger.fine("processPrevSide for section " + section);
-        }
+        logger.fine("processPrevSide for section {0}", section);
 
         // Check if overlap with a run in next column
         int overlapNb = 0;
@@ -334,50 +316,33 @@ public class SectionsBuilder
             }
 
             if (run.getStop() >= prevStart) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("Overlap from " + lastRun + " to " + run);
-                }
-
+                logger.fine("Overlap from {0} to {1}",
+                            new Object[]{lastRun, run});
                 overlapNb++;
                 overlapRun = run;
             }
         }
 
         // Now consider how many overlapping runs we have in next column
-        if (logger.isFineEnabled()) {
-            logger.fine("overlap=" + overlapNb);
-        }
+        logger.fine("overlap={0}", overlapNb);
 
         switch (overlapNb) {
-        case 0 : // Nothing : end of the section
-
-            if (logger.isFineEnabled()) {
-                logger.fine("Ending section " + section);
-            }
-
+        case 0: // Nothing : end of the section
+            logger.fine("Ending section {0}", section);
             break;
 
-        case 1 : // Continue if consistent
-
+        case 1: // Continue if consistent
             if (junctionPolicy.consistentRun(overlapRun, section)) {
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "Perhaps extending section " + section + " with run " +
-                        overlapRun);
-                }
+                logger.fine("Perhaps extending section {0} with run {1}",
+                            new Object[]{section, overlapRun});
             } else {
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        "Incompatible height between " + section + " and run " +
-                        overlapRun);
-                }
-
+                logger.fine("Incompatible height between {0} and run {1}",
+                            new Object[]{section, overlapRun});
                 finish(section);
             }
-
             break;
 
-        default : // Diverging, so conclude the section here
+        default: // Diverging, so conclude the section here
             finish(section);
         }
     }

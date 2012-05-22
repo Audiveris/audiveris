@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -49,6 +49,7 @@ public abstract class Dash
 
     /** A comparator based on abscissa of underlying glyph */
     public static final Comparator<Dash> abscissaComparator = new Comparator<Dash>() {
+        @Override
         public int compare (Dash o1,
                             Dash o2)
         {
@@ -72,7 +73,7 @@ public abstract class Dash
     private final Glyph stick;
 
     /** The patching sections */
-    private Set<Section> patches = new HashSet<Section>();
+    private Set<Section> patches = new HashSet<>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -91,21 +92,21 @@ public abstract class Dash
         this.staff = staff;
 
         line = stick.getLine();
-        box = stick.getContourBox();
+        box = stick.getBounds();
     }
 
     //~ Methods ----------------------------------------------------------------
 
-    //---------------//
-    // getContourBox //
-    //---------------//
+    //-----------//
+    // getBounds //
+    //-----------//
     /**
      * Report the contour box, horizontally oriented, and so directly usable for
      * display of intersection test.
      *
      * @return the contour box
      */
-    public Rectangle getContourBox ()
+    public Rectangle getBounds ()
     {
         return box;
     }
@@ -267,8 +268,8 @@ public abstract class Dash
         StringBuilder sb = new StringBuilder();
         sb.append(" staff#")
           .append(staff.getId());
-        sb.append(" glyph#")
-          .append(stick.getId());
+        sb.append(" ")
+          .append(stick.idString());
 
         return sb.toString();
     }

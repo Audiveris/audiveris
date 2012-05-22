@@ -103,6 +103,10 @@ public class TestUtilities
 
         return null;
     }
+
+    private TestUtilities ()
+    {
+    }
 }
 // vim: set ai sw=4 ts=4:
 

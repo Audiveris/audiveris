@@ -162,7 +162,7 @@ public class RunsTableTest
 
         int       index = 0;
         RunsTable instance = createHorizontalInstance();
-        List<Run> expResult = new ArrayList<Run>();
+        List<Run> expResult = new ArrayList<>();
         expResult.add(new Run(1, 2, level));
         expResult.add(new Run(5, 3, level));
 

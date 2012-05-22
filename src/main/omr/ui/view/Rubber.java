@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -39,9 +39,11 @@ import javax.swing.event.MouseInputAdapter;
 
 /**
  * Class {@code Rubber} keeps track of nothing more than a rectangle,
- * to define an area of interest. The rectangle can be degenerated to a
- * simple point, when both its width and height are zero. Moreover, the
- * display can be moved or resized (see the precise triggers below).
+ * to define an area of interest. 
+ * 
+ * The rectangle can be degenerated to a simple point, when both its width and 
+ * height are zero. Moreover, the display can be moved or resized 
+ * (see the precise triggers below).
  *
  * <p> The rubber data is rendered as a 'rubber', so the name, using a
  * rectangle, reflecting the dragged position of the mouse.
@@ -287,6 +289,7 @@ public class Rubber
                 vr.height);
             SwingUtilities.invokeLater(
                 new Runnable() {
+                @Override
                         public void run ()
                         {
                             component.scrollRectToVisible(vr);

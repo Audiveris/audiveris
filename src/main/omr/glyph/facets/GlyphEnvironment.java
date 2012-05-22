@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -15,6 +15,8 @@ import omr.lag.Lag;
 import omr.lag.Section;
 
 import omr.score.common.PixelRectangle;
+
+import omr.sheet.SystemInfo;
 
 import omr.util.HorizontalSide;
 import omr.util.Predicate;
@@ -102,6 +104,12 @@ interface GlyphEnvironment
     void getSymbolsBefore (Predicate<Glyph> predicate,
                            Set<Glyph>       goods,
                            Set<Glyph>       bads);
+
+    /**
+     * Report the containing system, if any.
+     * @return the system containing this glyph
+     */
+    SystemInfo getSystem ();
 
     /**
      * Report whether the glyph touches a ledger

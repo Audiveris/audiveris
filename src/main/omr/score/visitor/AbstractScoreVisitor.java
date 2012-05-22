@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -70,6 +70,7 @@ public class AbstractScoreVisitor
     //--------------------//
     // visit Articulation //
     //--------------------//
+    @Override
     public boolean visit (Articulation articulation)
     {
         return true;
@@ -78,6 +79,7 @@ public class AbstractScoreVisitor
     //------------------//
     // visit Arpeggiate //
     //------------------//
+    @Override
     public boolean visit (Arpeggiate arpeggiate)
     {
         return true;
@@ -86,6 +88,7 @@ public class AbstractScoreVisitor
     //---------------//
     // visit Barline //
     //---------------//
+    @Override
     public boolean visit (Barline barline)
     {
         return true;
@@ -94,6 +97,7 @@ public class AbstractScoreVisitor
     //------------//
     // visit Beam //
     //------------//
+    @Override
     public boolean visit (Beam beam)
     {
         return true;
@@ -102,6 +106,7 @@ public class AbstractScoreVisitor
     //-------------//
     // visit Chord //
     //-------------//
+    @Override
     public boolean visit (Chord chord)
     {
         return true;
@@ -110,6 +115,7 @@ public class AbstractScoreVisitor
     //------------//
     // visit Clef //
     //------------//
+    @Override
     public boolean visit (Clef clef)
     {
         return true;
@@ -118,6 +124,7 @@ public class AbstractScoreVisitor
     //------------//
     // visit Coda //
     //------------//
+    @Override
     public boolean visit (Coda coda)
     {
         return true;
@@ -126,6 +133,7 @@ public class AbstractScoreVisitor
     //--------------------------//
     // visit DirectionStatement //
     //--------------------------//
+    @Override
     public boolean visit (DirectionStatement words)
     {
         return true;
@@ -134,6 +142,7 @@ public class AbstractScoreVisitor
     //----------------//
     // visit Dynamics //
     //----------------//
+    @Override
     public boolean visit (Dynamics dynamics)
     {
         return true;
@@ -142,6 +151,7 @@ public class AbstractScoreVisitor
     //---------------//
     // visit Fermata //
     //---------------//
+    @Override
     public boolean visit (Fermata fermata)
     {
         return true;
@@ -150,6 +160,7 @@ public class AbstractScoreVisitor
     //--------------------//
     // visit KeySignature //
     //--------------------//
+    @Override
     public boolean visit (KeySignature keySignature)
     {
         return true;
@@ -158,6 +169,7 @@ public class AbstractScoreVisitor
     //---------------//
     // visit Measure //
     //---------------//
+    @Override
     public boolean visit (Measure measure)
     {
         return true;
@@ -166,6 +178,7 @@ public class AbstractScoreVisitor
     //----------------------//
     // visit MeasureElement //
     //----------------------//
+    @Override
     public boolean visit (MeasureElement measureElement)
     {
         return true;
@@ -174,6 +187,7 @@ public class AbstractScoreVisitor
     //-------------------//
     // visit MeasureNode //
     //-------------------//
+    @Override
     public boolean visit (MeasureNode measureNode)
     {
         return true;
@@ -182,6 +196,7 @@ public class AbstractScoreVisitor
     //------------//
     // visit Note //
     //------------//
+    @Override
     public boolean visit (Note note)
     {
         return true;
@@ -190,6 +205,7 @@ public class AbstractScoreVisitor
     //----------------//
     // visit Ornament //
     //----------------//
+    @Override
     public boolean visit (Ornament ornament)
     {
         return true;
@@ -198,6 +214,7 @@ public class AbstractScoreVisitor
     //------------//
     // visit Page //
     //------------//
+    @Override
     public boolean visit (Page page)
     {
         return true;
@@ -206,6 +223,7 @@ public class AbstractScoreVisitor
     //----------------//
     // visit PartNode //
     //----------------//
+    @Override
     public boolean visit (PartNode partNode)
     {
         return true;
@@ -214,6 +232,7 @@ public class AbstractScoreVisitor
     //-------------//
     // visit Pedal //
     //-------------//
+    @Override
     public boolean visit (Pedal pedal)
     {
         return true;
@@ -222,6 +241,7 @@ public class AbstractScoreVisitor
     //-----------------//
     // visit ScoreNode //
     //-----------------//
+    @Override
     public boolean visit (ScoreNode scoreNode)
     {
         return true;
@@ -230,6 +250,7 @@ public class AbstractScoreVisitor
     //-------------//
     // visit Score //
     //-------------//
+    @Override
     public boolean visit (Score score)
     {
         return true;
@@ -238,6 +259,7 @@ public class AbstractScoreVisitor
     //-------------//
     // visit Segno //
     //-------------//
+    @Override
     public boolean visit (Segno segno)
     {
         return true;
@@ -246,6 +268,7 @@ public class AbstractScoreVisitor
     //------------//
     // visit Slur //
     //------------//
+    @Override
     public boolean visit (Slur slur)
     {
         return true;
@@ -254,6 +277,7 @@ public class AbstractScoreVisitor
     //-------------//
     // visit Staff //
     //-------------//
+    @Override
     public boolean visit (Staff staff)
     {
         return true;
@@ -262,6 +286,7 @@ public class AbstractScoreVisitor
     //--------------//
     // visit System //
     //--------------//
+    @Override
     public boolean visit (ScoreSystem system)
     {
         return true;
@@ -270,6 +295,7 @@ public class AbstractScoreVisitor
     //------------------//
     // visit SystemPart //
     //------------------//
+    @Override
     public boolean visit (SystemPart systemPart)
     {
         return true;
@@ -278,6 +304,7 @@ public class AbstractScoreVisitor
     //------------//
     // visit Text //
     //------------//
+    @Override
     public boolean visit (Text text)
     {
         return true;
@@ -286,6 +313,7 @@ public class AbstractScoreVisitor
     //---------------------//
     // visit TimeSignature //
     //---------------------//
+    @Override
     public boolean visit (TimeSignature timeSignature)
     {
         return true;
@@ -294,6 +322,7 @@ public class AbstractScoreVisitor
     //--------------//
     // visit Tuplet //
     //--------------//
+    @Override
     public boolean visit (Tuplet tuplet)
     {
         return true;
@@ -302,6 +331,7 @@ public class AbstractScoreVisitor
     //---------------------//
     // visit VisitableNode //
     //---------------------//
+    @Override
     public boolean visit (VisitableNode node)
     {
         return true;
@@ -310,6 +340,7 @@ public class AbstractScoreVisitor
     //-------------//
     // visit Wedge //
     //-------------//
+    @Override
     public boolean visit (Wedge wedge)
     {
         return true;

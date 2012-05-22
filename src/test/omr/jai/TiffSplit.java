@@ -70,4 +70,8 @@ public class TiffSplit
 
         watch.print();
     }
+
+    private TiffSplit ()
+    {
+    }
 }

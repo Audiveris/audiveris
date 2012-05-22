@@ -4,13 +4,14 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
+import java.util.logging.Level;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
@@ -315,7 +316,7 @@ public class Clef
             return null;
 
         default :
-            logger.severe("No note step defined for " + this);
+            logger.severe("No note step defined for {0}", this);
 
             return null; // To keep compiler happy
         }
@@ -363,7 +364,7 @@ public class Clef
             return 0;
 
         default :
-            logger.severe("No note octave defined for " + this);
+            logger.severe("No note octave defined for {0}", this);
 
             return 0; // To keep compiler happy
         }

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -32,6 +32,7 @@ import omr.score.common.PixelRectangle;
 import omr.ui.symbol.ShapeSymbol;
 
 import java.awt.Rectangle;
+import java.util.logging.Level;
 
 /**
  * Class {@code BasicGeometry} is the basic implementation of the
@@ -68,11 +69,14 @@ class BasicGeometry
     /** Box center coordinates */
     private PixelPoint center;
 
-    /** Absolute display box */
-    private Rectangle contourBox;
+    /** Absolute contour box */
+    private Rectangle bounds;
 
-    /** A signature to retrieve this glyph */
+    /** Current signature */
     private GlyphSignature signature;
+
+    /** Signature used for registration */
+    private GlyphSignature registeredSignature;
 
     /** Approximating circle, if any */
     private Circle circle;
@@ -102,13 +106,12 @@ class BasicGeometry
     @Override
     public void dump ()
     {
+        System.out.println("   bounds=" + getBounds());
         System.out.println("   centroid=" + getCentroid());
-        System.out.println("   contourBox=" + getContourBox());
         System.out.println("   interline=" + getInterline());
         System.out.println("   location=" + getLocation());
         System.out.println("   geoMoments=" + getGeometricMoments());
         System.out.println("   artMoments=" + getARTMoments());
-        System.out.println("   signature=" + getSignature());
         System.out.println("   weight=" + getWeight());
         System.out.println("   circle=" + circle);
     }
@@ -133,13 +136,40 @@ class BasicGeometry
     public PixelPoint getAreaCenter ()
     {
         if (center == null) {
-            PixelRectangle box = glyph.getContourBox();
+            PixelRectangle box = glyph.getBounds();
             center = new PixelPoint(
                 box.x + (box.width / 2),
                 box.y + (box.height / 2));
         }
 
         return center;
+    }
+
+    //-----------//
+    // getBounds //
+    //-----------//
+    @Override
+    public PixelRectangle getBounds ()
+    {
+        if (bounds == null) {
+            PixelRectangle box = null;
+
+            for (Section section : glyph.getMembers()) {
+                if (box == null) {
+                    box = section.getBounds();
+                } else {
+                    box.add(section.getBounds());
+                }
+            }
+
+            bounds = box;
+        }
+
+        if (bounds != null) {
+            return new PixelRectangle(bounds); // Return a COPY
+        } else {
+            return null;
+        }
     }
 
     //-------------//
@@ -165,40 +195,13 @@ class BasicGeometry
         return circle;
     }
 
-    //---------------//
-    // getContourBox //
-    //---------------//
-    @Override
-    public PixelRectangle getContourBox ()
-    {
-        if (contourBox == null) {
-            PixelRectangle box = null;
-
-            for (Section section : glyph.getMembers()) {
-                if (box == null) {
-                    box = new PixelRectangle(section.getContourBox());
-                } else {
-                    box.add(section.getContourBox());
-                }
-            }
-
-            contourBox = box;
-        }
-
-        if (contourBox != null) {
-            return new PixelRectangle(contourBox); // Return a COPY
-        } else {
-            return null;
-        }
-    }
-
     //------------//
     // getDensity //
     //------------//
     @Override
     public double getDensity ()
     {
-        Rectangle rect = getContourBox();
+        Rectangle rect = getBounds();
         int       surface = (rect.width + 1) * (rect.height + 1);
 
         return (double) getWeight() / (double) surface;
@@ -241,15 +244,14 @@ class BasicGeometry
 
         // Text shape: use specific reference
         if (shape.isText()) {
-            return glyph.getTextInfo()
-                        .getTextStart();
+            return glyph.getTextStart();
         }
 
         // Other shape: check with the related symbol if any
         ShapeSymbol symbol = shape.getSymbol();
 
         if (symbol != null) {
-            return symbol.getRefPoint(getContourBox());
+            return symbol.getRefPoint(getBounds());
         }
 
         // Default: use area center
@@ -303,6 +305,15 @@ class BasicGeometry
         return collector;
     }
 
+    //------------------------//
+    // getRegisteredSignature //
+    //------------------------//
+    @Override
+    public GlyphSignature getRegisteredSignature ()
+    {
+        return registeredSignature;
+    }
+
     //--------------//
     // getSignature //
     //--------------//
@@ -340,10 +351,10 @@ class BasicGeometry
     public boolean intersects (PixelRectangle rectangle)
     {
         // First make a rough test
-        if (rectangle.intersects(glyph.getContourBox())) {
+        if (rectangle.intersects(glyph.getBounds())) {
             // Then make sure at least one section intersects the rectangle
             for (Section section : glyph.getMembers()) {
-                if (rectangle.intersects(section.getContourBox())) {
+                if (rectangle.intersects(section.getBounds())) {
                     return true;
                 }
             }
@@ -358,11 +369,12 @@ class BasicGeometry
     @Override
     public void invalidateCache ()
     {
+        signature = null;
         center = null;
         centroid = null;
-        contourBox = null;
+        bounds = null;
+        artMoments = null;
         geometricMoments = null;
-        signature = null;
         weight = null;
         circle = null;
     }
@@ -382,7 +394,16 @@ class BasicGeometry
     @Override
     public void setContourBox (PixelRectangle contourBox)
     {
-        this.contourBox = contourBox;
+        this.bounds = contourBox;
+    }
+
+    //------------------------//
+    // setRegisteredSignature //
+    //------------------------//
+    @Override
+    public void setRegisteredSignature (GlyphSignature sig)
+    {
+        registeredSignature = sig;
     }
 
     //-----------//
@@ -433,9 +454,7 @@ class BasicGeometry
                 collector.getSize(),
                 getInterline());
         } catch (Exception ex) {
-            logger.warning(
-                "Glyph #" + glyph.getId() +
-                " Cannot compute moments with unit set to 0");
+            logger.warning("Glyph #{0} Cannot compute moments with unit set to 0", glyph.getId());
         }
     }
 }

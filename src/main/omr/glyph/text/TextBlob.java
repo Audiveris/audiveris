@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -46,6 +46,10 @@ import java.util.List;
  * <li>Second phase concerns only the small glyphs left over during first phase.
  * Each is inserted into the proper existing blob, according to compatibility
  * rules.</li></ol>
+ *
+ * <p>TODO: Consider reengineering TextBlob to take advantage of Sentence class
+ *
+ * @author Hervé Bitteur
  */
 public class TextBlob
 {
@@ -58,29 +62,30 @@ public class TextBlob
     private static final Logger logger = Logger.getLogger(TextBlob.class);
 
     //~ Instance fields --------------------------------------------------------
-
     // Id for debug
-    private final int         id;
+    private final int id;
 
     // Related system
-    private final SystemInfo  system;
+    private final SystemInfo system;
 
     // System scale
-    private final Scale       scale;
+    private final Scale scale;
 
     // Glyphs added so far
-    private final List<Glyph> glyphs = new ArrayList<Glyph>();
+    private final List<Glyph> glyphs = new ArrayList<>();
 
     // Most important lines for a text area
-    private Line           averageLine;
+    private Line averageLine;
 
     // Population of glyphs tops & glyphs bottoms
-    private Population     tops = new Population();
-    private Population     bottoms = new Population();
+    private Population tops = new Population();
+
+    private Population bottoms = new Population();
 
     // Lastest values
-    private Integer        blobTop;
-    private Integer        blobBottom;
+    private Integer blobTop;
+
+    private Integer blobBottom;
 
     // Global blob contour
     private PixelRectangle blobBox = null;
@@ -92,79 +97,167 @@ public class TextBlob
     private Integer medianHeight = null;
 
     //~ Constructors -----------------------------------------------------------
-
     //----------//
     // TextBlob //
     //----------//
     /**
      * Creates a new TextBlob object.
      *
-     * @param id the assigned id (for debug)
-     * @param system the surrounding system
+     * @param id           the assigned id (for debug)
+     * @param system       the surrounding system
      * @param initialGlyph the glyph which is used to start this blob
      */
-    public TextBlob (int        id,
+    public TextBlob (int id,
                      SystemInfo system,
-                     Glyph      initialGlyph)
+                     Glyph initialGlyph)
     {
         this.id = id;
         this.system = system;
 
-        scale = system.getSheet()
-                      .getScale();
+        scale = system.getSheet().getScale();
 
         insertLargeGlyph(initialGlyph);
-
-        if (logger.isFineEnabled()) {
-            logger.fine("Created " + this);
-        }
+        logger.fine("Created {0}", this);
     }
 
     //~ Methods ----------------------------------------------------------------
+    //------------------//
+    // insertLargeGlyph //
+    //------------------//
+    /**
+     * Insert the provided (large) glyph to the blob collection of
+     * glyphs.
+     * @param glyph the glyph to insert
+     */
+    public final void insertLargeGlyph (Glyph glyph)
+    {
+        // Include the glyph in our blob
+        glyphs.add(glyph);
+
+        // Incrementally extend the lines
+        PixelRectangle gBox = glyph.getBounds();
+        int top = gBox.y;
+        int bottom = top + gBox.height;
+
+        // Adjust values
+        switch (glyphs.size()) {
+            case 1:
+                // Start with reasonable values & Fall through
+                blobBox = new PixelRectangle(gBox);
+
+            // Fall through wanted
+            case 2:
+                blobBox = blobBox.union(gBox);
+                // Cumulate tops & bottoms
+                tops.includeValue(top);
+                bottoms.includeValue(bottom);
+                blobTop = blobBox.y;
+                blobBottom = blobBox.y + blobBox.height;
+
+                break;
+
+            default:
+                blobBox = blobBox.union(gBox);
+                tops.includeValue(top);
+                bottoms.includeValue(bottom);
+                blobTop = (int) Math.rint(tops.getMeanValue());
+                blobBottom = (int) Math.rint(bottoms.getMeanValue());
+
+                break;
+        }
+
+        //
+        medianHeight = medianWidth = null;
+
+        if (glyphs.size() > 1) {
+            logger.fine("Added large glyph to {0}", this);
+        }
+    }
 
     //---------------------//
     // canInsertLargeGlyph //
     //---------------------//
     /**
-     * Check whether the provided (large) glyph can be inserted into 
+     * Check whether the provided (large) glyph can be inserted into
      * this blob.
      * @param glyph the candidate glyph
      * @return true if test is successful
      */
     public boolean canInsertLargeGlyph (Glyph glyph)
     {
-        PixelRectangle gBox = glyph.getContourBox();
-        int            left = gBox.x;
+        PixelRectangle gBox = glyph.getBounds();
+        int left = gBox.x;
 
         // Check abscissa gap
         int dx = left - getRight();
         int maxDx = getMaxWordGap();
 
         if (dx > maxDx) {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "B#" + id + " Too far on right " + dx + " vs " + maxDx);
-            }
-
+            logger.fine("B#{0} Too far on right {1} vs {2}", new Object[]{id, dx,
+                                                                          maxDx});
             return false;
         }
 
-        int    top = gBox.y;
-        int    bot = top + gBox.height;
+        int top = gBox.y;
+        int bot = top + gBox.height;
         double overlap = Math.min(bot, blobBottom) - Math.max(top, blobTop);
         double overlapRatio = overlap / (blobBottom - blobTop);
 
         if (overlapRatio < constants.minOverlapRatio.getValue()) {
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "B#" + id + " Too low overlapRatio " + overlapRatio +
-                    " vs " + constants.minOverlapRatio.getValue());
-            }
-
+            logger.fine("B#{0} Too low overlapRatio {1} vs {2}", new Object[]{id,
+                                                                              overlapRatio,
+                                                                              constants.minOverlapRatio.
+                        getValue()});
             return false;
         }
 
         return true;
+    }
+
+    //------------//
+    // distanceTo //
+    //------------//
+    /**
+     * Report the square distance between the provided glyph and this
+     * blob or null if the glyph is not in the blob neighborhood.
+     * @param glyph the (small) glyph to insert
+     * @return the square distance if applicable, null otherwise
+     */
+    public Double distanceTo (Glyph glyph)
+    {
+        try {
+            // Check whether the glyph is not too far from the blob
+            int smallXMargin = scale.toPixels(
+                    constants.smallXMargin);
+            PixelRectangle fatBox = glyph.getBounds();
+            fatBox.grow(
+                    smallXMargin,
+                    (int) Math.rint(
+                    getMedianHeight() * constants.smallYRatio.getValue()));
+
+            // x check
+            if (!fatBox.intersects(blobBox)) {
+                return null;
+            }
+
+            Line2D.Double l2D = new Line2D.Double(
+                    blobBox.x,
+                    getAverageLine().yAtX(blobBox.x),
+                    blobBox.x + blobBox.width,
+                    getAverageLine().yAtX(blobBox.x + blobBox.width));
+
+            if (l2D.intersects(fatBox.x, fatBox.y, fatBox.width, fatBox.height)) {
+                return l2D.ptLineDistSq(glyph.getCentroid());
+            }
+
+            return null;
+        } catch (Throwable ex) {
+            logger.warning(
+                    "tryToInsertSmallGlyph error blob: " + this + glyph.idString(),
+                    ex);
+
+            return null;
+        }
     }
 
     //-------------//
@@ -172,21 +265,17 @@ public class TextBlob
     //-------------//
     /**
      * Report the allowed text glyph if any
-     * @return the compound glyph if text if allowed for it, null otherwise
+     * @return the compound glyph if text is allowed for it, null otherwise
      */
     public Glyph getAllowedCompound ()
     {
         Glyph compound = (glyphs.size() > 1)
                          ? system.buildTransientCompound(glyphs)
-                         : glyphs.iterator()
-                                 .next();
+                         : glyphs.iterator().next();
 
         // Check that this glyph is not forbidden as text
         if (compound.isShapeForbidden(Shape.TEXT)) {
-            if (logger.isFineEnabled()) {
-                logger.fine("Shape TEXT blacklisted");
-            }
-
+            logger.fine("Shape TEXT blacklisted");
             return null;
         } else {
             return compound;
@@ -233,7 +322,7 @@ public class TextBlob
     public int getMaxWordGap ()
     {
         return (int) Math.rint(
-            getMedianHeight() * constants.maxWidthRatio.getValue());
+                getMedianHeight() * constants.maxWidthRatio.getValue());
     }
 
     //----------//
@@ -267,55 +356,15 @@ public class TextBlob
     }
 
     //------------------//
-    // insertLargeGlyph //
+    // insertSmallGlyph //
     //------------------//
     /**
-     * Insert the provided glyph to the blob collection of glyphs
-     * @param glyph the glyph to insertLargeGlyph
+     * Insert the provided (small) glyph to the blob collection of
+     * glyphs.
+     * @param glyph the glyph to insert
      */
-    public final void insertLargeGlyph (Glyph glyph)
+    public void insertSmallGlyph (Glyph glyph)
     {
-        // Include the glyph in our blob
-        glyphs.add(glyph);
-
-        // Incrementally extend the lines
-        PixelRectangle gBox = glyph.getContourBox();
-        int            top = gBox.y;
-        int            bottom = top + gBox.height;
-
-        // Adjust values
-        switch (glyphs.size()) {
-        case 1 :
-            // Start with reasonable values & Fall through
-            blobBox = new PixelRectangle(gBox);
-
-        // Fall through wanted
-        case 2 :
-            blobBox = blobBox.union(gBox);
-            // Cumulate tops & bottoms
-            tops.includeValue(top);
-            bottoms.includeValue(bottom);
-            blobTop = blobBox.y;
-            blobBottom = blobBox.y + blobBox.height;
-
-            break;
-
-        default :
-            blobBox = blobBox.union(gBox);
-            tops.includeValue(top);
-            bottoms.includeValue(bottom);
-            blobTop = (int) Math.rint(tops.getMeanValue());
-            blobBottom = (int) Math.rint(bottoms.getMeanValue());
-
-            break;
-        }
-
-        //
-        medianHeight = medianWidth = null;
-
-        if (logger.isFineEnabled() && (glyphs.size() > 1)) {
-            logger.fine("Added large glyph to " + this);
-        }
     }
 
     //----------//
@@ -328,13 +377,11 @@ public class TextBlob
         sb.append(id);
 
         if (blobTop != null) {
-            sb.append(" top:")
-              .append(blobTop);
+            sb.append(" top:").append(blobTop);
         }
 
         if (blobBottom != null) {
-            sb.append(" bot:")
-              .append(blobBottom);
+            sb.append(" bot:").append(blobBottom);
         }
 
         sb.append(Glyphs.toString(" glyphs", glyphs));
@@ -343,65 +390,16 @@ public class TextBlob
         return sb.toString();
     }
 
-    //-----------------------//
-    // tryToInsertSmallGlyph //
-    //-----------------------//
-    /**
-     * Try to insert the provided (small) glyph into the blob (if the glyph lies
-     * within the close neighborhood of the blob) and report success if any.
-     * @param glyph the (small) glyph to insert
-     * @return true if insertion has been done, false otherwise
-     */
-    public boolean tryToInsertSmallGlyph (Glyph glyph)
-    {
-        try {
-            // Check whether the glyph is not too far from the blob
-            int            smallXMargin = scale.toPixels(
-                constants.smallXMargin);
-            PixelRectangle fatBox = glyph.getContourBox();
-            fatBox.grow(
-                smallXMargin,
-                (int) Math.rint(
-                    getMedianHeight() * constants.smallYRatio.getValue()));
-
-            // x check
-            if (!fatBox.intersects(blobBox)) {
-                return false;
-            }
-
-            Line2D.Double l2D = new Line2D.Double(
-                blobBox.x,
-                getAverageLine().yAtX(blobBox.x),
-                blobBox.x + blobBox.width,
-                getAverageLine().yAtX(blobBox.x + blobBox.width));
-
-            if (l2D.intersects(fatBox.x, fatBox.y, fatBox.width, fatBox.height)) {
-                glyphs.add(glyph);
-
-                return true;
-            }
-
-            return false;
-        } catch (Throwable ex) {
-            logger.warning(
-                "tryToInsertSmallGlyph error blob: " + this + " glyph#" +
-                glyph.getId(),
-                ex);
-
-            return false;
-        }
-    }
-
     //-----------------//
     // getMedianHeight //
     //-----------------//
     private int getMedianHeight ()
     {
         if (medianHeight == null) {
-            List<Integer> heights = new ArrayList<Integer>();
+            List<Integer> heights = new ArrayList<>();
 
             for (Glyph glyph : glyphs) {
-                heights.add(glyph.getContourBox().height);
+                heights.add(glyph.getBounds().height);
             }
 
             Collections.sort(heights);
@@ -417,10 +415,10 @@ public class TextBlob
     private int getMedianWidth ()
     {
         if (medianWidth == null) {
-            List<Integer> widths = new ArrayList<Integer>();
+            List<Integer> widths = new ArrayList<>();
 
             for (Glyph glyph : glyphs) {
-                widths.add(glyph.getContourBox().width);
+                widths.add(glyph.getBounds().width);
             }
 
             Collections.sort(widths);
@@ -431,26 +429,28 @@ public class TextBlob
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Constant.Ratio maxWidthRatio = new Constant.Ratio(
-            1.0,
-            "Ratio for maximum horizontal gap versus character width");
+                1.0,
+                "Ratio for maximum horizontal gap versus character width");
+
         Constant.Ratio minOverlapRatio = new Constant.Ratio(
-            0.5,
-            "Ratio for minimum vertical overlap beween blob and glyph");
+                0.5,
+                "Ratio for minimum vertical overlap beween blob and glyph");
+
         Scale.Fraction smallXMargin = new Scale.Fraction(
-            1.0,
-            "Maximum abscissa gap for small glyphs");
+                1.0,
+                "Maximum abscissa gap for small glyphs");
+
         Constant.Ratio smallYRatio = new Constant.Ratio(
-            1.0,
-            "Maximum ordinate gap for small glyphs (as ratio of mean height)");
+                1.0,
+                "Maximum ordinate gap for small glyphs (as ratio of mean height)");
     }
 }

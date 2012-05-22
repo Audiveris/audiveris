@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -14,10 +14,11 @@ package omr.util;
 import omr.log.Logger;
 
 /**
- * Class {@code Worker} is a simple way to delegate processing to a worker
- * thread, and synchronize at the end of the work. This is actually derived from
- * the standard SwingWorker class, with the Swing part removed. The worker
- * thread is always assigned the minimum priority.
+ * Class {@code Worker} is a simple way to delegate processing to a
+ * worker thread, and synchronize at the end of the work.
+ *
+ * This is actually derived from the standard SwingWorker class, with the Swing
+ * part removed. The worker thread is always assigned the minimum priority.
  *
  * <p>Usage:<ol>
  * <li>To get a concrete Worker, you only have to subclass this abstract class
@@ -45,7 +46,6 @@ public abstract class Worker<T>
     protected static final Logger logger = Logger.getLogger(Worker.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** The work result, accessed only via getValue() and setValue() */
     private T value;
 
@@ -56,30 +56,29 @@ public abstract class Worker<T>
     private long startTime = System.currentTimeMillis();
 
     //~ Constructors -----------------------------------------------------------
-
     //--------//
     // Worker //
     //--------//
     /**
      * Prepare a Worker with a specified stack size
+     *
      * @param stackSize the worker stack size, specified in bytes
      */
     public Worker (long stackSize)
     {
-        Runnable doConstruct = new Runnable() {
+        Runnable doConstruct = new Runnable()
+        {
+
+            @Override
             public void run ()
             {
                 try {
                     setValue(construct());
                 } finally {
                     threadVar.clear();
-
-                    if (logger.isFineEnabled()) {
-                        logger.fine(
-                            Worker.this.getClass().getName() +
-                            " finished after " +
-                            (System.currentTimeMillis() - startTime) + " ms");
-                    }
+                    logger.fine("{0} finished after {1} ms",
+                                new Object[]{Worker.this.getClass().getName(),
+                                             System.currentTimeMillis() - startTime});
                 }
             }
         };
@@ -87,10 +86,7 @@ public abstract class Worker<T>
         Thread t = new Thread(null, doConstruct, "Worker", stackSize);
         t.setPriority(Thread.MIN_PRIORITY);
         threadVar = new ThreadVar(t);
-
-        if (logger.isFineEnabled()) {
-            logger.fine(getClass().getName() + " created");
-        }
+        logger.fine("{0} created", getClass().getName());
     }
 
     //--------//
@@ -108,12 +104,12 @@ public abstract class Worker<T>
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // construct //
     //-----------//
     /**
      * Compute the value to be returned by the {@code get} method.
+     *
      * @return the work result, if any
      */
     public abstract T construct ();
@@ -140,12 +136,10 @@ public abstract class Worker<T>
             try {
                 t.join();
             } catch (InterruptedException e) {
-                Thread.currentThread()
-                      .interrupt(); // propagate
-
-                if (logger.isFineEnabled()) {
-                    logger.fine(getClass().getName() + " interrupted");
-                }
+                Thread.currentThread().
+                        interrupt(); // propagate
+                logger.fine("{0} interrupted", getClass().
+                        getName());
 
                 return null;
             }
@@ -161,9 +155,8 @@ public abstract class Worker<T>
      */
     public void interrupt ()
     {
-        if (logger.isFineEnabled()) {
-            logger.fine(getClass().getName() + " interrupt");
-        }
+        logger.fine("{0} interrupt", getClass().
+                getName());
 
         Thread t = threadVar.get();
 
@@ -186,10 +179,8 @@ public abstract class Worker<T>
 
         if (t != null) {
             t.start();
-
-            if (logger.isFineEnabled()) {
-                logger.fine(getClass().getName() + " started");
-            }
+            logger.fine("{0} started", getClass().
+                    getName());
         }
     }
 
@@ -199,6 +190,7 @@ public abstract class Worker<T>
     /**
      * Get the value produced by the worker thread, or null if it hasn't been
      * constructed yet.
+     *
      * @return the work result
      */
     protected synchronized T getValue ()
@@ -218,7 +210,6 @@ public abstract class Worker<T>
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // ThreadVar //
     //-----------//
@@ -233,14 +224,12 @@ public abstract class Worker<T>
         private Thread thread;
 
         //~ Constructors -------------------------------------------------------
-
         ThreadVar (Thread t)
         {
             thread = t;
         }
 
         //~ Methods ------------------------------------------------------------
-
         synchronized void clear ()
         {
             thread = null;

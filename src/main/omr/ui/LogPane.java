@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -14,6 +14,7 @@ package omr.ui;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.log.FormattedRecord;
 import omr.log.Logger;
 
 import java.awt.Color;
@@ -51,20 +52,20 @@ public class LogPane
     private static final Logger logger = Logger.getLogger(LogPane.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** The scrolling text area */
     private JScrollPane component;
 
     /** Status/log area */
     private final JTextPane logArea;
-    private final AbstractDocument         document;
-    private final SimpleAttributeSet       attributes = new SimpleAttributeSet();
+
+    private final AbstractDocument document;
+
+    private final SimpleAttributeSet attributes = new SimpleAttributeSet();
 
     /** The mailbox where log records are retrieved for display */
-    private final BlockingQueue<LogRecord> logMbx = Logger.getMailbox();
+    private final BlockingQueue<FormattedRecord> logMbx = Logger.getMailbox();
 
     //~ Constructors -----------------------------------------------------------
-
     //---------//
     // LogPane //
     //---------//
@@ -87,7 +88,6 @@ public class LogPane
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // clearLog //
     //----------//
@@ -118,45 +118,47 @@ public class LogPane
     // notifyLog //
     //-----------//
     /**
-     * Tell LogPane that there is one or more log records in the Logger mailbox
+     * Notify that there is one or more log records in the Logger mailbox.
      */
     public void notifyLog ()
     {
         SwingUtilities.invokeLater(
-            new Runnable() {
+                new Runnable()
+                {
+
+                    @Override
                     public void run ()
                     {
                         while (logMbx.size() != 0) {
-                            LogRecord record = logMbx.poll();
+                            FormattedRecord record = logMbx.poll();
 
                             if (record != null) {
                                 // Message text
                                 StringBuilder sb = new StringBuilder(256);
-                                sb.append(record.getLevel().toString())
-                                  .append(" - ")
-                                  .append(record.getMessage())
-                                  .append("\n");
+                                sb.append(record.level.toString()).append(
+                                        " - ").append(record.formattedMessage).
+                                        append("\n");
 
                                 // Color
                                 StyleConstants.setForeground(
-                                    attributes,
-                                    getLevelColor(record.getLevel()));
+                                        attributes,
+                                        getLevelColor(record.level));
 
                                 // Font name
                                 StyleConstants.setFontFamily(
-                                    attributes,
-                                    constants.fontName.getValue());
+                                        attributes,
+                                        constants.fontName.getValue());
 
                                 // Font size
                                 StyleConstants.setFontSize(
-                                    attributes,
-                                    constants.fontSize.getValue());
+                                        attributes,
+                                        constants.fontSize.getValue());
 
                                 try {
                                     document.insertString(
-                                        document.getLength(),
-                                        sb.toString(),
-                                        attributes);
+                                            document.getLength(),
+                                            sb.toString(),
+                                            attributes);
                                 } catch (BadLocationException ex) {
                                     ex.printStackTrace();
                                 }
@@ -185,21 +187,21 @@ public class LogPane
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Constant.Integer fontSize = new Constant.Integer(
-            "Points",
-            10,
-            "Font size for log pane");
-        Constant.String  fontName = new Constant.String(
-            "Lucida Console",
-            "Font name for log pane");
+                "Points",
+                10,
+                "Font size for log pane");
+
+        Constant.String fontName = new Constant.String(
+                "Lucida Console",
+                "Font name for log pane");
     }
 }

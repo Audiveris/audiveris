@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -18,6 +18,7 @@ import omr.score.Score;
 import omr.util.TreeNode;
 
 import java.util.ListIterator;
+import java.util.logging.Level;
 
 /**
  * Class {@code MeasureId} is a non-mutable class meant to handle the
@@ -410,8 +411,7 @@ public abstract class MeasureId
             }
 
             // This should not happen
-            logger.severe(
-                "Cannot retrieve score index of page-based measure id " + this);
+            logger.severe("Cannot retrieve score index of page-based measure id {0}", this);
 
             return 0; // To keep the compiler happy
         }
@@ -505,6 +505,7 @@ public abstract class MeasureId
         //-----------//
         // compareTo //
         //-----------//
+        @Override
         public int compareTo (ScoreBased that)
         {
             if (this.score != that.score) {

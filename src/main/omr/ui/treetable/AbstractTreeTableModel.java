@@ -68,6 +68,7 @@ public abstract class AbstractTreeTableModel
      *
      * @param l DOCUMENT ME!
      */
+    @Override
     public void addTreeModelListener (TreeModelListener l)
     {
         listenerList.add(TreeModelListener.class, l);
@@ -83,6 +84,7 @@ public abstract class AbstractTreeTableModel
      *
      * @return DOCUMENT ME!
      */
+    @Override
     public Class getColumnClass (int column)
     {
         return Object.class;
@@ -100,6 +102,7 @@ public abstract class AbstractTreeTableModel
      *
      * @return DOCUMENT ME!
      */
+    @Override
     public int getIndexOfChild (Object parent,
                                 Object child)
     {
@@ -121,6 +124,7 @@ public abstract class AbstractTreeTableModel
      *
      * @return DOCUMENT ME!
      */
+    @Override
     public Object getRoot ()
     {
         return root;
@@ -131,6 +135,7 @@ public abstract class AbstractTreeTableModel
      * Making this column editable causes the JTable to forward mouse and
      * keyboard events in the Tree column to the underlying JTree.
      */
+    @Override
     public boolean isCellEditable (Object node,
                                    int    column)
     {
@@ -147,6 +152,7 @@ public abstract class AbstractTreeTableModel
      *
      * @return DOCUMENT ME!
      */
+    @Override
     public boolean isLeaf (Object node)
     {
         return getChildCount(node) == 0;
@@ -160,6 +166,7 @@ public abstract class AbstractTreeTableModel
      *
      * @param l DOCUMENT ME!
      */
+    @Override
     public void removeTreeModelListener (TreeModelListener l)
     {
         listenerList.remove(TreeModelListener.class, l);
@@ -175,6 +182,7 @@ public abstract class AbstractTreeTableModel
      * @param node DOCUMENT ME!
      * @param column DOCUMENT ME!
      */
+    @Override
     public void setValueAt (Object aValue,
                             Object node,
                             int    column)
@@ -190,6 +198,7 @@ public abstract class AbstractTreeTableModel
      * @param path DOCUMENT ME!
      * @param newValue DOCUMENT ME!
      */
+    @Override
     public void valueForPathChanged (TreePath path,
                                      Object   newValue)
     {

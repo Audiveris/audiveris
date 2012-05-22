@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -49,7 +49,7 @@ import java.util.TreeSet;
  * @author Hervé Bitteur
  */
 public class Note
-    extends MeasureNode
+        extends MeasureNode
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -63,23 +63,28 @@ public class Note
     public static final Rational QUARTER_DURATION = new Rational(1, 4);
 
     //~ Enumerations -----------------------------------------------------------
-
     /** Names of the various note steps */
-    public static enum Step {
+    public static enum Step
+    {
         //~ Enumeration constant initializers ----------------------------------
 
-
-        /** La */ A,
-        /** Si */ B, 
-        /** Do */ C, 
-        /** Re */ D, 
-        /** Mi */ E, 
-        /** Fa */ F, 
-        /** Sol */ G;
+        /** La */
+        A,
+        /** Si */
+        B,
+        /** Do */
+        C,
+        /** Re */
+        D,
+        /** Mi */
+        E,
+        /** Fa */
+        F,
+        /** Sol */
+        G;
     }
 
     //~ Instance fields --------------------------------------------------------
-
     /** The note shape */
     private final Shape shape;
 
@@ -117,13 +122,12 @@ public class Note
     private Integer octave;
 
     /** Tie / slurs */
-    private List<Slur> slurs = new ArrayList<Slur>();
+    private List<Slur> slurs = new ArrayList<>();
 
     /** Lyrics syllables (in different lines) */
     private SortedSet<LyricsItem> syllables;
 
     //~ Constructors -----------------------------------------------------------
-
     //------//
     // Note //
     //------//
@@ -136,11 +140,11 @@ public class Note
                  Glyph glyph)
     {
         this(
-            chord,
-            glyph,
-            getItemCenter(glyph, 0, chord.getScale().getInterline()),
-            1,
-            0);
+                chord,
+                glyph,
+                getItemCenter(glyph, 0, chord.getScale().getInterline()),
+                1,
+                0);
         glyph.setTranslation(this);
     }
 
@@ -154,7 +158,7 @@ public class Note
      * @param other the note to clone
      */
     public Note (Chord chord,
-                 Note  other)
+                 Note other)
     {
         super(chord);
 
@@ -184,16 +188,16 @@ public class Note
     //------//
     /** Create a new instance of Note with no underlying glyph
      *
-     * @param staff the containing staff
-     * @param chord the containing chord
-     * @param shape the provided shape
+     * @param staff         the containing staff
+     * @param chord         the containing chord
+     * @param shape         the provided shape
      * @param pitchPosition the pitchPosition
-     * @param center the center (PixelPoint) of the note
+     * @param center        the center (PixelPoint) of the note
      */
-    private Note (Staff      staff,
-                  Chord      chord,
-                  Shape      shape,
-                  double     pitchPosition,
+    private Note (Staff staff,
+                  Chord chord,
+                  Shape shape,
+                  double pitchPosition,
                   PixelPoint center)
     {
         super(chord);
@@ -213,13 +217,12 @@ public class Note
         // Location center?
         if (center != null) {
             setCenter(
-                new PixelPoint(
+                    new PixelPoint(
                     center.x,
                     (int) Math.rint(
-                        (staff.getTopLeft().y -
-                                                staff.getSystem().getTopLeft().y) +
-                        ((chord.getScale()
-                               .getInterline() * (4d + pitchPosition)) / 2))));
+                    (staff.getTopLeft().y
+                     - staff.getSystem().getTopLeft().y)
+                    + ((chord.getScale().getInterline() * (4d + pitchPosition)) / 2))));
         }
 
         // Note box
@@ -234,17 +237,17 @@ public class Note
     //------//
     /** Create a new instance of Note, as a chunk of a larger note pack.
      *
-     * @param chord the containing chord
-     * @param glyph the underlying glyph
-     * @param center the center of the note instance
-     * @param packCard the number of notes in the pack
+     * @param chord     the containing chord
+     * @param glyph     the underlying glyph
+     * @param center    the center of the note instance
+     * @param packCard  the number of notes in the pack
      * @param packIndex the zero-based index of this note in the pack
      */
-    private Note (Chord      chord,
-                  Glyph      glyph,
+    private Note (Chord chord,
+                  Glyph glyph,
                   PixelPoint center,
-                  int        packCard,
-                  int        packIndex)
+                  int packCard,
+                  int packIndex)
     {
         super(chord);
 
@@ -253,8 +256,7 @@ public class Note
         this.packIndex = packIndex;
 
         ScoreSystem system = getSystem();
-        int         interline = system.getScale()
-                                      .getInterline();
+        int interline = system.getScale().getInterline();
 
         // Rest?
         isRest = ShapeSet.Rests.contains(glyph.getShape());
@@ -269,15 +271,12 @@ public class Note
         shape = baseShapeOf(glyph.getShape());
 
         // Determine proper staff and pitch position, using ledgers if any.
-        NotePosition pos = getSystem()
-                               .getInfo()
-                               .getNoteStaffAt(getCenter());
+        NotePosition pos = getSystem().getInfo().getNoteStaffAt(getCenter());
         setStaff(pos.getStaff().getScoreStaff());
         pitchPosition = pos.getPitchPosition();
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // createPack //
     //------------//
@@ -290,21 +289,21 @@ public class Note
     public static void createPack (Chord chord,
                                    Glyph glyph)
     {
-        final int      card = packCardOf(glyph.getShape());
+        final int card = packCardOf(glyph.getShape());
 
         // Test on ordinates between stem (if any) and note
         // Be strict when glyph has 2 stems and more relaxed with just one stem
-        final Glyph    stem = chord.getStem();
+        final Glyph stem = chord.getStem();
         PixelRectangle stemBox = null;
-        Scale          scale = chord.getScale();
+        Scale scale = chord.getScale();
 
         if (stem != null) {
-            stemBox = stem.getContourBox();
+            stemBox = stem.getBounds();
             stemBox.grow(
-                scale.toPixels(constants.maxStemDx),
-                scale.toPixels(
+                    scale.toPixels(constants.maxStemDx),
+                    scale.toPixels(
                     (glyph.getStemNumber() >= 2) ? constants.maxMultiStemDy
-                                        : constants.maxSingleStemDy));
+                    : constants.maxSingleStemDy));
         }
 
         for (int i = 0; i < card; i++) {
@@ -317,8 +316,8 @@ public class Note
             }
 
             PixelPoint center = new PixelPoint(
-                itemBox.x + (itemBox.width / 2),
-                itemBox.y + (itemBox.height / 2));
+                    itemBox.x + (itemBox.width / 2),
+                    itemBox.y + (itemBox.height / 2));
             glyph.addTranslation(new Note(chord, glyph, center, card, i));
         }
     }
@@ -351,7 +350,7 @@ public class Note
     public void addSyllable (LyricsItem item)
     {
         if (syllables == null) {
-            syllables = new TreeSet<LyricsItem>(LyricsItem.numberComparator);
+            syllables = new TreeSet<>(LyricsItem.numberComparator);
         }
 
         syllables.add(item);
@@ -360,8 +359,8 @@ public class Note
     //-----------------//
     // createWholeRest //
     //-----------------//
-    public static Note createWholeRest (Staff      staff,
-                                        Chord      chord,
+    public static Note createWholeRest (Staff staff,
+                                        Chord chord,
                                         PixelPoint center)
     {
         return new Note(staff, chord, Shape.WHOLE_REST, -1.5, center);
@@ -371,25 +370,25 @@ public class Note
     // populateAccidental //
     //--------------------//
     /**
-     * Process the potential impact of an accidental glyph within the containing
-     * measure
+     * Process the potential impact of an accidental glyph within the
+     * containing measure
      *
-     * @param glyph the underlying glyph of the accidental
-     * @param measure the containing measure
+     * @param glyph       the underlying glyph of the accidental
+     * @param measure     the containing measure
      * @param accidCenter the center of the glyph
      */
-    public static void populateAccidental (Glyph      glyph,
-                                           Measure    measure,
+    public static void populateAccidental (Glyph glyph,
+                                           Measure measure,
                                            PixelPoint accidCenter)
     {
-        final Scale     scale = measure.getScale();
-        final int       minDx = scale.toPixels(constants.minAccidDx);
-        final int       maxDx = scale.toPixels(constants.maxAccidDx);
-        final int       maxDy = scale.toPixels(constants.maxAccidDy);
-        final Set<Note> candidates = new HashSet<Note>();
+        final Scale scale = measure.getScale();
+        final int minDx = scale.toPixels(constants.minAccidDx);
+        final int maxDx = scale.toPixels(constants.maxAccidDx);
+        final int maxDy = scale.toPixels(constants.maxAccidDy);
+        final Set<Note> candidates = new HashSet<>();
 
         // An accidental impacts the note right after (even if mirrored)
-        ChordLoop: 
+        ChordLoop:
         for (TreeNode node : measure.getChords()) {
             final Chord chord = (Chord) node;
 
@@ -399,33 +398,30 @@ public class Note
                 if (!note.isRest()) {
                     final PixelPoint noteRef = note.getCenterLeft();
                     final PixelPoint toNote = new PixelPoint(
-                        noteRef.x - accidCenter.x,
-                        noteRef.y - accidCenter.y);
-
-                    if (logger.isFineEnabled()) {
-                        logger.fine(measure.getContextString() + " " + toNote);
-                    }
+                            noteRef.x - accidCenter.x,
+                            noteRef.y - accidCenter.y);
+                    logger.fine("{0} {1}",
+                                new Object[]{measure.getContextString(), toNote});
 
                     if (toNote.x > (2 * maxDx)) {
                         break ChordLoop; // Other chords/notes will be too far
                     }
 
-                    if ((toNote.x >= minDx) &&
-                        (toNote.x <= maxDx) &&
-                        (Math.abs(toNote.y) <= maxDy)) {
+                    if ((toNote.x >= minDx)
+                            && (toNote.x <= maxDx)
+                            && (Math.abs(toNote.y) <= maxDy)) {
                         candidates.add(note);
                     }
                 }
             }
         }
 
-        if (logger.isFineEnabled()) {
-            logger.info(candidates.size() + " Candidates=" + candidates);
-        }
+        logger.fine("{0} Candidates={1}", new Object[]{candidates.size(),
+                                                       candidates});
 
         // Select the best note candidate, the one whose ordinate is closest
         if (!candidates.isEmpty()) {
-            int  bestDy = Integer.MAX_VALUE;
+            int bestDy = Integer.MAX_VALUE;
             Note bestNote = null;
             glyph.clearTranslations();
 
@@ -440,12 +436,10 @@ public class Note
 
             bestNote.accidental = glyph;
             glyph.addTranslation(bestNote);
-
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    bestNote.getContextString() + " accidental " +
-                    glyph.getShape() + " at " + bestNote.getCenter());
-            }
+            logger.fine("{0} accidental {1} at {2}", new Object[]{bestNote.
+                        getContextString(), glyph.getShape(),
+                                                                  bestNote.
+                        getCenter()});
 
             // Apply also to mirrored note if any
             Note mirrored = bestNote.getMirroredNote();
@@ -453,13 +447,9 @@ public class Note
             if (mirrored != null) {
                 mirrored.accidental = glyph;
                 glyph.addTranslation(mirrored);
-
-                if (logger.isFineEnabled()) {
-                    logger.fine(
-                        mirrored.getContextString() + " accidental " +
-                        glyph.getShape() + " at " + mirrored.getCenter() +
-                        " (mirrored)");
-                }
+                logger.fine("{0} accidental {1} at {2} (mirrored)",
+                            new Object[]{mirrored.getContextString(), glyph.
+                            getShape(), mirrored.getCenter()});
             }
         } else {
             // Deassign the glyph
@@ -484,45 +474,45 @@ public class Note
     // getActualShape //
     //----------------//
     public static Shape getActualShape (Shape base,
-                                        int   card)
+                                        int card)
     {
         switch (card) {
-        case 3 :
+        case 3:
 
             switch (base) {
-            case NOTEHEAD_VOID :
+            case NOTEHEAD_VOID:
                 return NOTEHEAD_VOID_3;
 
-            case NOTEHEAD_BLACK :
+            case NOTEHEAD_BLACK:
                 return NOTEHEAD_BLACK_3;
 
-            case WHOLE_NOTE :
+            case WHOLE_NOTE:
                 return WHOLE_NOTE_3;
 
-            default :
+            default:
                 return null;
             }
 
-        case 2 :
+        case 2:
 
             switch (base) {
-            case NOTEHEAD_VOID :
+            case NOTEHEAD_VOID:
                 return NOTEHEAD_VOID_2;
 
-            case NOTEHEAD_BLACK :
+            case NOTEHEAD_BLACK:
                 return NOTEHEAD_BLACK_2;
 
-            case WHOLE_NOTE :
+            case WHOLE_NOTE:
                 return WHOLE_NOTE_2;
 
-            default :
+            default:
                 return null;
             }
 
-        case 1 :
+        case 1:
             return base;
 
-        default :
+        default:
             return null;
         }
     }
@@ -543,23 +533,22 @@ public class Note
             if (accidental != null) {
                 // TODO: handle double flat & double sharp !!!
                 switch (accidental.getShape()) {
-                case SHARP :
+                case SHARP:
                     return alter = 1;
 
-                case FLAT :
+                case FLAT:
                     return alter = -1;
 
-                default :
+                default:
                 }
             }
 
             // Look for a previous accidental with the same note step in the measure
-            Collection<Slot> collection = getMeasure()
-                                              .getSlots();
-            Slot[]           slots = collection.toArray(
-                new Slot[collection.size()]);
+            Collection<Slot> collection = getMeasure().getSlots();
+            Slot[] slots = collection.toArray(
+                    new Slot[collection.size()]);
 
-            boolean          started = false;
+            boolean started = false;
 
             for (int is = slots.length - 1; is >= 0; is--) {
                 Slot slot = slots[is];
@@ -578,17 +567,16 @@ public class Note
                                 continue;
                             }
 
-                            if ((note.getStep() == getStep()) &&
-                                (note.getAccidental() != null)) {
-                                switch (note.getAccidental()
-                                            .getShape()) {
-                                case SHARP :
+                            if ((note.getStep() == getStep())
+                                    && (note.getAccidental() != null)) {
+                                switch (note.getAccidental().getShape()) {
+                                case SHARP:
                                     return alter = 1;
 
-                                case FLAT :
+                                case FLAT:
                                     return alter = -1;
 
-                                default :
+                                default:
                                 }
                             }
                         }
@@ -597,8 +585,7 @@ public class Note
             }
 
             // Finally, use the current key signature
-            KeySignature ks = getMeasure()
-                                  .getKeyBefore(getCenter(), getStaff());
+            KeySignature ks = getMeasure().getKeyBefore(getCenter(), getStaff());
 
             if (ks != null) {
                 return alter = ks.getAlterFor(getStep());
@@ -622,8 +609,8 @@ public class Note
     public PixelPoint getCenterBottom ()
     {
         return new PixelPoint(
-            getCenter().x,
-            getCenter().y + (getBox().height / 2));
+                getCenter().x,
+                getCenter().y + (getBox().height / 2));
     }
 
     //---------------//
@@ -637,8 +624,8 @@ public class Note
     public PixelPoint getCenterLeft ()
     {
         return new PixelPoint(
-            getCenter().x - (getBox().width / 2),
-            getCenter().y);
+                getCenter().x - (getBox().width / 2),
+                getCenter().y);
     }
 
     //----------------//
@@ -652,8 +639,8 @@ public class Note
     public PixelPoint getCenterRight ()
     {
         return new PixelPoint(
-            getCenter().x + (getBox().width / 2),
-            getCenter().y);
+                getCenter().x + (getBox().width / 2),
+                getCenter().y);
     }
 
     //--------------//
@@ -667,8 +654,8 @@ public class Note
     public PixelPoint getCenterTop ()
     {
         return new PixelPoint(
-            getCenter().x,
-            getCenter().y - (getBox().height / 2));
+                getCenter().x,
+                getCenter().y - (getBox().height / 2));
     }
 
     //----------//
@@ -697,43 +684,43 @@ public class Note
     public static Rational getTypeDuration (Shape shape)
     {
         switch (baseShapeOf(shape)) {
-        case LONG_REST : // 4 measures
+        case LONG_REST: // 4 measures
             return new Rational(4, 1);
 
-        case BREVE_REST : // 2 measures
-        case BREVE :
+        case BREVE_REST: // 2 measures
+        case BREVE:
             return new Rational(2, 1);
 
-        case WHOLE_REST : // 1 measure
-        case WHOLE_NOTE :
+        case WHOLE_REST: // 1 measure
+        case WHOLE_NOTE:
             return Rational.ONE;
 
-        case HALF_REST :
-        case NOTEHEAD_VOID :
+        case HALF_REST:
+        case NOTEHEAD_VOID:
             return new Rational(1, 2);
 
-        case QUARTER_REST :
-        case NOTEHEAD_BLACK :
+        case QUARTER_REST:
+        case NOTEHEAD_BLACK:
             return QUARTER_DURATION;
 
-        case EIGHTH_REST :
+        case EIGHTH_REST:
             return new Rational(1, 8);
 
-        case ONE_16TH_REST :
+        case ONE_16TH_REST:
             return new Rational(1, 16);
 
-        case ONE_32ND_REST :
+        case ONE_32ND_REST:
             return new Rational(1, 32);
 
-        case ONE_64TH_REST :
+        case ONE_64TH_REST:
             return new Rational(1, 64);
 
-        case ONE_128TH_REST :
+        case ONE_128TH_REST:
             return new Rational(1, 128);
 
-        default :
+        default:
             // Error
-            logger.severe("Illegal note type " + shape);
+            logger.severe("Illegal note type {0}", shape);
 
             return Rational.ZERO;
         }
@@ -744,6 +731,7 @@ public class Note
     //-------------//
     /**
      * Report the first augmentation dot, if any
+     *
      * @return first dot or null
      */
     public Glyph getFirstDot ()
@@ -758,6 +746,7 @@ public class Note
      * If any, report the note that is the mirror of this one.
      * This happens when the same note head is "shared" by 2 chords (because the
      * note head is shared by 2 stems or by 1 stem leading to 2 beam groups).
+     *
      * @return the mirrored note, or null if none.
      */
     public Note getMirroredNote ()
@@ -769,8 +758,7 @@ public class Note
             return null;
         }
 
-        Glyph glyph = glyphs.iterator()
-                            .next();
+        Glyph glyph = glyphs.iterator().next();
 
         for (Object obj : glyph.getTranslations()) {
             if ((obj != this) && obj instanceof Note) {
@@ -802,10 +790,7 @@ public class Note
 
         // Apply fraction if any (not for rests) due to beams or flags
         if (!isRest()) {
-            int fbn = getChord()
-                          .getFlagsNumber() + getChord()
-                                                  .getBeams()
-                                                  .size();
+            int fbn = getChord().getFlagsNumber() + getChord().getBeams().size();
 
             if (fbn > 0) {
                 /**
@@ -814,7 +799,7 @@ public class Note
                  * by a beam group.
                  * In the case of the beam/flag side of the mirror, strictly
                  * speaking, the note head should be considered as black.
-                 **/
+                 * */
                 if ((shape == NOTEHEAD_VOID) && (getMirroredNote() != null)) {
                     dur = getTypeDuration(NOTEHEAD_BLACK);
                 }
@@ -842,8 +827,8 @@ public class Note
     {
         if (octave == null) {
             octave = Clef.octaveOf(
-                getMeasure().getClefBefore(getCenter(), getStaff()),
-                (int) Math.rint(getPitchPosition()));
+                    getMeasure().getClefBefore(getCenter(), getStaff()),
+                    (int) Math.rint(getPitchPosition()));
         }
 
         return octave;
@@ -875,6 +860,7 @@ public class Note
     //--------------//
     /**
      * Report the second augmentation dot, if any
+     *
      * @return second dot or null
      */
     public Glyph getSecondDot ()
@@ -920,8 +906,8 @@ public class Note
     {
         if (step == null) {
             step = Clef.noteStepOf(
-                getMeasure().getClefBefore(getCenter(), getStaff()),
-                (int) Math.rint(getPitchPosition()));
+                    getMeasure().getClefBefore(getCenter(), getStaff()),
+                    (int) Math.rint(getPitchPosition()));
         }
 
         return step;
@@ -958,9 +944,7 @@ public class Note
      */
     public void moveTo (Chord chord)
     {
-        getParent()
-            .getChildren()
-            .remove(this);
+        getParent().getChildren().remove(this);
         chord.addChild(this);
 
         for (Glyph glyph : getGlyphs()) {
@@ -978,7 +962,7 @@ public class Note
     /**
      * Define the number of augmentation dots that impact this chord
      *
-     * @param first the glyph of first dot
+     * @param first  the glyph of first dot
      * @param second the glyph of second dot (if any)
      */
     public void setDots (Glyph first,
@@ -996,41 +980,30 @@ public class Note
     {
         StringBuilder sb = new StringBuilder();
         sb.append("{Note");
-        sb.append(" ")
-          .append(shape);
+        sb.append(" ").append(shape);
 
-        sb.append(" Ch#")
-          .append(getChord().getId());
+        sb.append(" Ch#").append(getChord().getId());
 
         if (packCard != 1) {
-            sb.append(" [")
-              .append(packIndex + 1) // For easier reading by end user
-
-              .append("/")
-              .append(packCard)
-              .append("]");
+            sb.append(" [").append(packIndex + 1) // For easier reading by end user
+                    .append("/").append(packCard).append("]");
         }
 
         if (accidental != null) {
-            sb.append(" accid=")
-              .append(accidental.getShape());
+            sb.append(" accid=").append(accidental.getShape());
         }
 
         if (isRest) {
-            sb.append(" ")
-              .append("rest");
+            sb.append(" ").append("rest");
         }
 
         if (alter != null) {
-            sb.append(" alter=")
-              .append(alter);
+            sb.append(" alter=").append(alter);
         }
 
-        sb.append(" pp=")
-          .append((float) pitchPosition);
+        sb.append(" pp=").append((float) pitchPosition);
 
-        sb.append(" ")
-          .append(Glyphs.toString(getGlyphs()));
+        sb.append(" ").append(Glyphs.toString(getGlyphs()));
 
         sb.append("}");
 
@@ -1043,22 +1016,22 @@ public class Note
     private static Shape baseShapeOf (Shape shape)
     {
         switch (shape) {
-        case NOTEHEAD_BLACK :
-        case NOTEHEAD_BLACK_2 :
-        case NOTEHEAD_BLACK_3 :
+        case NOTEHEAD_BLACK:
+        case NOTEHEAD_BLACK_2:
+        case NOTEHEAD_BLACK_3:
             return Shape.NOTEHEAD_BLACK;
 
-        case NOTEHEAD_VOID :
-        case NOTEHEAD_VOID_2 :
-        case NOTEHEAD_VOID_3 :
+        case NOTEHEAD_VOID:
+        case NOTEHEAD_VOID_2:
+        case NOTEHEAD_VOID_3:
             return Shape.NOTEHEAD_VOID;
 
-        case WHOLE_NOTE :
-        case WHOLE_NOTE_2 :
-        case WHOLE_NOTE_3 :
+        case WHOLE_NOTE:
+        case WHOLE_NOTE_2:
+        case WHOLE_NOTE_3:
             return Shape.WHOLE_NOTE;
 
-        default :
+        default:
             return shape;
         }
     }
@@ -1071,25 +1044,25 @@ public class Note
      * pack glyph
      */
     private static PixelRectangle getItemBox (Glyph glyph,
-                                              int   index,
-                                              int   interline)
+                                              int index,
+                                              int interline)
     {
-        final Shape          shape = glyph.getShape();
-        final int            card = packCardOf(shape);
-        final PixelRectangle box = glyph.getContourBox();
+        final Shape shape = glyph.getShape();
+        final int card = packCardOf(shape);
+        final PixelRectangle box = glyph.getBounds();
 
         // For true notes use centroid y, for rests use area center y
         if (ShapeSet.Rests.contains(shape)) {
-            return glyph.getContourBox();
+            return glyph.getBounds();
         } else {
             final PixelPoint centroid = glyph.getCentroid();
-            final int        top = centroid.y - ((card * interline) / 2);
+            final int top = centroid.y - ((card * interline) / 2);
 
             return new PixelRectangle(
-                box.x,
-                top + (index * interline),
-                box.width,
-                interline);
+                    box.x,
+                    top + (index * interline),
+                    box.width,
+                    interline);
         }
     }
 
@@ -1101,14 +1074,14 @@ public class Note
      * pack glyph
      */
     private static PixelPoint getItemCenter (Glyph glyph,
-                                             int   index,
-                                             int   interline)
+                                             int index,
+                                             int interline)
     {
         PixelRectangle box = getItemBox(glyph, index, interline);
 
         return new PixelPoint(
-            box.x + (box.width / 2),
-            box.y + (box.height / 2));
+                box.x + (box.width / 2),
+                box.y + (box.height / 2));
     }
 
     //------------//
@@ -1117,78 +1090,56 @@ public class Note
     private static int packCardOf (Shape shape)
     {
         switch (shape) {
-        case NOTEHEAD_VOID_3 :
-        case NOTEHEAD_BLACK_3 :
-        case WHOLE_NOTE_3 :
+        case NOTEHEAD_VOID_3:
+        case NOTEHEAD_BLACK_3:
+        case WHOLE_NOTE_3:
             return 3;
 
-        case NOTEHEAD_VOID_2 :
-        case NOTEHEAD_BLACK_2 :
-        case WHOLE_NOTE_2 :
+        case NOTEHEAD_VOID_2:
+        case NOTEHEAD_BLACK_2:
+        case WHOLE_NOTE_2:
             return 2;
 
-        default :
+        default:
             return 1;
         }
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
-        /**
-         * Minimum dx between accidental and note
-         */
         Scale.Fraction minAccidDx = new Scale.Fraction(
-            0.3d,
-            "Minimum dx between accidental and note");
+                0.3d,
+                "Minimum dx between accidental and note");
 
-        /**
-         * Maximum dx between accidental and note
-         */
         Scale.Fraction maxAccidDx = new Scale.Fraction(
-            4d,
-            "Maximum dx between accidental and note");
+                4d,
+                "Maximum dx between accidental and note");
 
-        /**
-         * Maximum absolute dy between note and accidental
-         */
         Scale.Fraction maxAccidDy = new Scale.Fraction(
-            0.5d,
-            "Maximum absolute dy between note and accidental");
+                0.5d,
+                "Maximum absolute dy between note and accidental");
 
-        /**
-         * Maximum absolute dx between note and stem
-         */
         Scale.Fraction maxStemDx = new Scale.Fraction(
-            0.25d,
-            "Maximum absolute dx between note and stem");
+                0.25d,
+                "Maximum absolute dx between note and stem");
 
-        /**
-         * Maximum absolute dy between note and single stem end
-         */
         Scale.Fraction maxSingleStemDy = new Scale.Fraction(
-            3d,
-            "Maximum absolute dy between note and single stem end");
+                3d,
+                "Maximum absolute dy between note and single stem end");
 
-        /**
-         * Maximum absolute dy between note and multi stem end
-         */
         Scale.Fraction maxMultiStemDy = new Scale.Fraction(
-            0.25d,
-            "Maximum absolute dy between note and multi stem end");
+                0.25d,
+                "Maximum absolute dy between note and multi stem end");
 
-        /**
-         * Maximum absolute dy between note center and centroid
-         */
         Scale.Fraction maxCenterDy = new Scale.Fraction(
-            0.1d,
-            "Maximum absolute dy between note center and centroid");
+                0.1d,
+                "Maximum absolute dy between note center and centroid");
     }
 }

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -28,7 +28,7 @@ import omr.score.visitor.AbstractScoreVisitor;
  * @author Hervé Bitteur
  */
 public class ScoreCleaner
-    extends AbstractScoreVisitor
+        extends AbstractScoreVisitor
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -36,7 +36,6 @@ public class ScoreCleaner
     private static final Logger logger = Logger.getLogger(ScoreCleaner.class);
 
     //~ Constructors -----------------------------------------------------------
-
     //--------------//
     // ScoreCleaner //
     //--------------//
@@ -48,7 +47,6 @@ public class ScoreCleaner
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------------//
     // visit System //
     //--------------//
@@ -56,13 +54,10 @@ public class ScoreCleaner
     public boolean visit (ScoreSystem system)
     {
         try {
-            if (logger.isFineEnabled()) {
-                logger.fine("Cleaning up " + system);
-            }
+            logger.fine("Cleaning up {0}", system);
 
             // Remove recorded translations for all system glyphs
-            for (Glyph glyph : system.getInfo()
-                                     .getGlyphs()) {
+            for (Glyph glyph : system.getInfo().getGlyphs()) {
                 if (glyph.getShape() != Shape.LEDGER) {
                     glyph.clearTranslations();
                 }
@@ -71,8 +66,8 @@ public class ScoreCleaner
             system.acceptChildren(this);
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + system,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + system,
+                    ex);
         }
 
         return false;
@@ -86,9 +81,7 @@ public class ScoreCleaner
     {
         try {
             if (systemPart.isDummy()) {
-                systemPart.getParent()
-                          .getChildren()
-                          .remove(systemPart);
+                systemPart.getParent().getChildren().remove(systemPart);
 
                 return false;
             } else {
@@ -99,8 +92,8 @@ public class ScoreCleaner
             }
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + systemPart,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + systemPart,
+                    ex);
         }
 
         return false;
@@ -116,8 +109,8 @@ public class ScoreCleaner
             measure.cleanupNode();
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + measure,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + measure,
+                    ex);
         }
 
         return false;

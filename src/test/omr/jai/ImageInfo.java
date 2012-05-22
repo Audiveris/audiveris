@@ -214,4 +214,8 @@ public class ImageInfo
         res = hist.getStandardDeviation();
         System.out.println("getStandardDeviation: " + Arrays.toString(res));
     }
+
+    private ImageInfo ()
+    {
+    }
 }

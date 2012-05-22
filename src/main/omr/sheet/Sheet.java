@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -95,13 +95,12 @@ public class Sheet
     private static final Logger logger = Logger.getLogger(Sheet.class);
 
     /** Events that can be published on a sheet service */
-    public static final Class[] allowedEvents = new Class[] {
-                                                    LocationEvent.class,
-                                                    PixelLevelEvent.class
-                                                };
+    public static final Class[] allowedEvents = new Class[]{
+        LocationEvent.class,
+        PixelLevelEvent.class
+    };
 
     //~ Instance fields --------------------------------------------------------
-
     /** Containing score */
     private final Score score;
 
@@ -121,7 +120,6 @@ public class Sheet
     private final List<SystemInfo> systems;
 
     //-- resettable members ----------------------------------------------------
-
     /** The related picture */
     private Picture picture;
 
@@ -150,7 +148,6 @@ public class Sheet
     private final SelectionService locationService;
 
     // Companion processors
-
     /** Scale */
     private final ScaleBuilder scaleBuilder;
 
@@ -191,7 +188,7 @@ public class Sheet
     private Step currentStep;
 
     /** All steps already done on this sheet */
-    private Set<Step> doneSteps = new HashSet<Step>();
+    private Set<Step> doneSteps = new HashSet<>();
 
     /** Id of last long horizontal section */
     private int lastLongHSectionId = -1;
@@ -200,7 +197,6 @@ public class Sheet
     private boolean hasSystemBoundaries = false;
 
     //~ Constructors -----------------------------------------------------------
-
     //-------//
     // Sheet //
     //-------//
@@ -209,12 +205,12 @@ public class Sheet
      * an image (the original pixel input) and a page (the score entities
      * output).
      *
-     * @param page the related score page
+     * @param page  the related score page
      * @param image the already loaded image
      */
-    public Sheet (Page          page,
+    public Sheet (Page page,
                   RenderedImage image)
-        throws StepException
+            throws StepException
     {
         this.page = page;
         this.score = page.getScore();
@@ -241,18 +237,16 @@ public class Sheet
 
         setImage(image);
 
-        if (logger.isFineEnabled()) {
-            logger.fine("Created " + this);
-        }
+        logger.fine("Created {0}", this);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------//
     // done //
     //------//
     /**
      * Remember that the provided step has been done on the sheet
+     *
      * @param step the provided step
      */
     public final void done (Step step)
@@ -265,17 +259,17 @@ public class Sheet
     //----------//
     /**
      * Register an error in the sheet ErrorsWindow
+     *
      * @param container the immediate container for the error location
-     * @param glyph the related glyph if any
-     * @param text the error message
+     * @param glyph     the related glyph if any
+     * @param text      the error message
      */
     public void addError (SystemNode container,
-                          Glyph      glyph,
-                          String     text)
+                          Glyph glyph,
+                          String text)
     {
         if (Main.getGui() != null) {
-            getErrorsEditor()
-                .addError(container, glyph, text);
+            getErrorsEditor().addError(container, glyph, text);
         }
     }
 
@@ -299,7 +293,6 @@ public class Sheet
     //            // Nothing to colorize ? TODO
     //        }
     //    }
-
     //----------------------------------//
     // createSymbolsControllerAndEditor //
     //----------------------------------//
@@ -391,6 +384,7 @@ public class Sheet
     //----------//
     /**
      * Report the related sheet bench
+     *
      * @return the related bench
      */
     public SheetBench getBench ()
@@ -414,6 +408,7 @@ public class Sheet
     //----------------//
     /**
      * Retrieve the step being processed "as we speak"
+     *
      * @return the current step
      */
     public Step getCurrentStep ()
@@ -426,6 +421,7 @@ public class Sheet
     //----------------------//
     /**
      * Report the default value of histogram threhold for staff detection
+     *
      * @return the default ratio of maximum histogram value
      */
     public static double getDefaultHistoRatio ()
@@ -481,6 +477,7 @@ public class Sheet
     /**
      * Get the sheet value of histogram threhold for staff detection.
      * If the value is not yet set, it is set to the default value and returned.
+     *
      * @return the ratio of maximum histogram value
      * @see #hasHistoRatio()
      */
@@ -532,6 +529,7 @@ public class Sheet
     //--------------//
     /**
      * Convenient method to report the scaling information of the sheet
+     *
      * @return the scale interline
      */
     public int getInterline ()
@@ -544,6 +542,7 @@ public class Sheet
     //--------------------//
     /**
      * Report the sheet selection service (for LocationEvent & PixelLevelEvent)
+     *
      * @return the sheet dedicated event service
      */
     public SelectionService getLocationService ()
@@ -556,6 +555,7 @@ public class Sheet
     //--------------//
     /**
      * Report the proper prefix to use when logging a message
+     *
      * @return the proper prefix
      */
     public String getLogPrefix ()
@@ -576,6 +576,7 @@ public class Sheet
     //---------------------//
     /**
      * Report the id of the last long horizontal section
+     *
      * @return the id of the last long horizontal section
      */
     public int getLongSectionMaxId ()
@@ -600,6 +601,7 @@ public class Sheet
     //---------//
     /**
      * Report the global nest for glyphs of this sheet
+     *
      * @return the nest for glyphs
      */
     public Nest getNest ()
@@ -676,12 +678,13 @@ public class Sheet
     /**
      * Report the collection of glyphs whose shape is identical to the provided
      * shape
+     *
      * @param shape the imposed shape
      * @return the (perhaps empty) collection of active glyphs with right shape
      */
     public Collection<Glyph> getShapedGlyphs (Shape shape)
     {
-        List<Glyph> found = new ArrayList<Glyph>();
+        List<Glyph> found = new ArrayList<>();
 
         for (Glyph glyph : getActiveGlyphs()) {
             if (glyph.getShape() == shape) {
@@ -696,7 +699,7 @@ public class Sheet
     // getSkew //
     //---------//
     /**
-     * Report the skew information for this sheet.  If not yet available,
+     * Report the skew information for this sheet. If not yet available,
      * processing is launched to compute the average skew in the sheet image.
      *
      * @return the skew information
@@ -752,6 +755,7 @@ public class Sheet
     //---------------//
     /**
      * Report the system info for which id is provided
+     *
      * @param id id of desired system
      * @return the desired system info
      */
@@ -776,6 +780,7 @@ public class Sheet
     //-------------//
     /**
      * Report the system info that contains the provided point
+     *
      * @param point the provided pixel point
      * @return the containing system info
      * (or null if there is no enclosing system)
@@ -799,18 +804,16 @@ public class Sheet
     /**
      * Report the system, if any, which contains the provided glyph
      * (as determined by the first section of the glyph)
+     *
      * @param glyph the provided glyph
      * @return the containing system, or null
      */
     public SystemInfo getSystemOf (Glyph glyph)
     {
-        if (glyph.isVirtual() || glyph.getMembers()
-                                      .isEmpty()) {
+        if (glyph.isVirtual() || glyph.getMembers().isEmpty()) {
             return getSystemOf(glyph.getAreaCenter());
         } else {
-            return glyph.getMembers()
-                        .first()
-                        .getSystem();
+            return glyph.getMembers().first().getSystem();
         }
     }
 
@@ -819,6 +822,7 @@ public class Sheet
     //-------------//
     /**
      * Report the system, if any, which contains the provided vertical section
+     *
      * @param section the provided section
      * @return the containing system, or null
      */
@@ -833,6 +837,7 @@ public class Sheet
     /**
      * Report the system that contains ALL glyphs provided.
      * If all glyphs do not belong to the same system, exception is thrown
+     *
      * @param glyphs the collection of glyphs
      * @return the containing system
      * @exception IllegalArgumentException raised if glyphs collection is not OK
@@ -841,11 +846,11 @@ public class Sheet
     {
         if ((glyphs == null) || glyphs.isEmpty()) {
             throw new IllegalArgumentException(
-                "getSystemOf. Glyphs collection is null or empty");
+                    "getSystemOf. Glyphs collection is null or empty");
         }
 
-        SystemInfo        system = null;
-        Collection<Glyph> toRemove = new ArrayList<Glyph>();
+        SystemInfo system = null;
+        Collection<Glyph> toRemove = new ArrayList<>();
 
         for (Glyph glyph : glyphs) {
             SystemInfo glyphSystem = glyph.isVirtual()
@@ -861,16 +866,16 @@ public class Sheet
                     // Make sure we are still in the same system
                     if (glyphSystem != system) {
                         throw new IllegalArgumentException(
-                            "getSystemOf. Glyphs from different systems (" +
-                            getSystemOf(glyph) + " and " + system + ") " +
-                            Glyphs.toString(glyphs));
+                                "getSystemOf. Glyphs from different systems ("
+                                + getSystemOf(glyph) + " and " + system + ") "
+                                + Glyphs.toString(glyphs));
                     }
                 }
             }
         }
 
         if (!toRemove.isEmpty()) {
-            logger.warning("No system for " + Glyphs.toString(toRemove));
+            logger.warning("No system for {0}", Glyphs.toString(toRemove));
             glyphs.removeAll(toRemove);
         }
 
@@ -883,19 +888,21 @@ public class Sheet
     /**
      * Report the system that contains ALL sections provided.
      * If all sections do not belong to the same system, exception is thrown
+     *
      * @param sections the collection of sections
      * @return the containing system
-     * @exception IllegalArgumentException raised if section collection is not OK
+     * @exception IllegalArgumentException raised if section collection is not
+     *                                     OK
      */
     public SystemInfo getSystemOfSections (Collection<Section> sections)
     {
         if ((sections == null) || sections.isEmpty()) {
             throw new IllegalArgumentException(
-                "getSystemOfSections. Sections collection is null or empty");
+                    "getSystemOfSections. Sections collection is null or empty");
         }
 
-        SystemInfo          system = null;
-        Collection<Section> toRemove = new ArrayList<Section>();
+        SystemInfo system = null;
+        Collection<Section> toRemove = new ArrayList<>();
 
         for (Section section : sections) {
             SystemInfo sectionSystem = section.getSystem();
@@ -909,16 +916,16 @@ public class Sheet
                     // Make sure we are still in the same system
                     if (sectionSystem != system) {
                         throw new IllegalArgumentException(
-                            "getSystemOfSections. Sections from different systems (" +
-                            section.getSystem() + " and " + system + ") " +
-                            Sections.toString(sections));
+                                "getSystemOfSections. Sections from different systems ("
+                                + section.getSystem() + " and " + system + ") "
+                                + Sections.toString(sections));
                     }
                 }
             }
         }
 
         if (!toRemove.isEmpty()) {
-            logger.warning("No system for " + Sections.toString(toRemove));
+            logger.warning("No system for {0}", Sections.toString(toRemove));
             sections.removeAll(toRemove);
         }
 
@@ -957,16 +964,20 @@ public class Sheet
     /**
      * Report the ordered list of systems containing or close to the provided
      * point
+     *
      * @param point the provided point
      * @return a collection of systems ordered by increasing distance from the
      * provided point
      */
     public List<SystemInfo> getSystemsNear (final Point point)
     {
-        List<SystemInfo> neighbors = new ArrayList<SystemInfo>(systems);
+        List<SystemInfo> neighbors = new ArrayList<>(systems);
         Collections.sort(
-            neighbors,
-            new Comparator<SystemInfo>() {
+                neighbors,
+                new Comparator<SystemInfo>()
+                {
+
+                    @Override
                     public int compare (SystemInfo s1,
                                         SystemInfo s2)
                     {
@@ -998,6 +1009,7 @@ public class Sheet
     //----------------//
     /**
      * Report the current vertical lag of the sheet
+     *
      * @return the current vertical lag
      */
     public Lag getVerticalLag ()
@@ -1031,6 +1043,7 @@ public class Sheet
     //---------------//
     /**
      * Check whether the parameter histoRatio has a value
+     *
      * @return true if so
      */
     public boolean hasHistoRatio ()
@@ -1051,6 +1064,7 @@ public class Sheet
     //---------------------//
     /**
      * Report whether the systems have their boundaries defined yet.
+     *
      * @return true if already defined
      */
     public boolean hasSystemBoundaries ()
@@ -1063,6 +1077,7 @@ public class Sheet
     //--------//
     /**
      * Report whether the specified step has been performed onn this sheet
+     *
      * @param step the step to check
      * @return true if already performed
      */
@@ -1076,6 +1091,7 @@ public class Sheet
     //--------------//
     /**
      * Check whether current step is SYMBOLS.
+     *
      * @return true if on SYMBOLS
      */
     public boolean isOnPatterns ()
@@ -1091,28 +1107,23 @@ public class Sheet
      */
     public void remove (boolean closing)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("remove sheet " + this + " closing:" + closing);
-        }
+        logger.fine("remove sheet {0} closing:{1}", new Object[]{this, closing});
 
         // Close related UI assembly if any
         if (assembly != null) {
-            SheetsController.getInstance()
-                            .removeAssembly(this);
+            SheetsController.getInstance().removeAssembly(this);
             assembly.close();
         }
 
         // Close the related page
-        getScore()
-            .remove(page);
+        getScore().remove(page);
 
         if (picture != null) {
             picture.close();
         }
 
         // If no sheet is left, force score closing
-        if (!closing && score.getPages()
-                             .isEmpty()) {
+        if (!closing && score.getPages().isEmpty()) {
             score.close();
         }
     }
@@ -1165,6 +1176,7 @@ public class Sheet
     //----------------------//
     /**
      * Set the default value of histogram threhold for staff detection
+     *
      * @param histoRatio the default ratio of maximum histogram value
      */
     public static void setDefaultHistoRatio (double histoRatio)
@@ -1185,6 +1197,7 @@ public class Sheet
     //---------------//
     /**
      * Set the sheet value of histogram threhold for staff detection
+     *
      * @param histoRatio the ratio of maximum histogram value
      */
     public void setHistoRatio (double histoRatio)
@@ -1223,7 +1236,7 @@ public class Sheet
     // setImage //
     //----------//
     public final void setImage (RenderedImage image)
-        throws StepException
+            throws StepException
     {
         // Reset most of all members
         reset();
@@ -1236,18 +1249,16 @@ public class Sheet
             }
 
             setPicture(picture);
-            getBench()
-                .recordImageDimension(picture.getWidth(), picture.getHeight());
+            getBench().recordImageDimension(picture.getWidth(), picture.
+                    getHeight());
 
             done(Steps.valueOf(Steps.LOAD));
         } catch (ImageFormatException ex) {
-            String msg = "Unsupported image format in file " +
-                         getScore()
-                             .getImagePath() + "\n" + ex.getMessage();
+            String msg = "Unsupported image format in file "
+                    + getScore().getImagePath() + "\n" + ex.getMessage();
 
             if (Main.getGui() != null) {
-                Main.getGui()
-                    .displayWarning(msg);
+                Main.getGui().displayWarning(msg);
             } else {
                 logger.warning(msg);
             }
@@ -1261,6 +1272,7 @@ public class Sheet
     //---------------------//
     /**
      * Remember the id of the last long horizontal section
+     *
      * @param id the id of the last long horizontal section
      */
     public void setLongSectionMaxId (int id)
@@ -1286,7 +1298,7 @@ public class Sheet
      * @throws StepException
      */
     public void setScale (Scale scale)
-        throws StepException
+            throws StepException
     {
         this.scale = scale;
         page.setScale(scale);
@@ -1305,10 +1317,8 @@ public class Sheet
         this.skew = skew;
 
         // Update displayed image if any
-        if (getPicture()
-                .isRotated() && (Main.getGui() != null)) {
-            assembly.getComponent()
-                    .repaint();
+        if (getPicture().isRotated() && (Main.getGui() != null)) {
+            assembly.getComponent().repaint();
         }
     }
 
@@ -1339,6 +1349,7 @@ public class Sheet
     //----------------//
     /**
      * Assign the current vertical lag for the sheet
+     *
      * @param vLag the current vertical lag
      * @return the previous vLag, or null
      */
@@ -1360,15 +1371,15 @@ public class Sheet
      * @param barSticks the collection of all bar sticks
      * @return the set of modified systems
      */
-    public Set<SystemInfo> splitBarSticks (Collection<?extends Glyph> barSticks)
+    public Set<SystemInfo> splitBarSticks (Collection<? extends Glyph> barSticks)
     {
-        Set<SystemInfo>                   modified = new LinkedHashSet<SystemInfo>();
-        Map<SystemInfo, SortedSet<Glyph>> glyphs = new HashMap<SystemInfo, SortedSet<Glyph>>();
+        Set<SystemInfo> modified = new LinkedHashSet<>();
+        Map<SystemInfo, SortedSet<Glyph>> glyphs = new HashMap<>();
 
         for (SystemInfo system : systems) {
             glyphs.put(
-                system,
-                new ConcurrentSkipListSet<Glyph>(system.getGlyphs()));
+                    system,
+                    new ConcurrentSkipListSet<>(system.getGlyphs()));
             system.clearGlyphs();
         }
 
@@ -1397,35 +1408,35 @@ public class Sheet
     //-------------------------//
     /**
      * Split the various horizontal sections among systems
+     *
      * @return the set of modified systems
      */
     public Set<SystemInfo> splitHorizontalSections ()
     {
-        Set<SystemInfo>                      modifiedSystems = new LinkedHashSet<SystemInfo>();
-        Map<SystemInfo, Collection<Section>> sections = new HashMap<SystemInfo, Collection<Section>>();
+        Set<SystemInfo> modifiedSystems = new LinkedHashSet<>();
+        Map<SystemInfo, Collection<Section>> sections = new HashMap<>();
 
         for (SystemInfo system : systems) {
-            Collection<Section> systemSections = system.getMutableHorizontalSections();
-            sections.put(system, new ArrayList<Section>(systemSections));
+            Collection<Section> systemSections = system.
+                    getMutableHorizontalSections();
+            sections.put(system, new ArrayList<>(systemSections));
             systemSections.clear();
         }
 
-        for (Section section : getHorizontalLag()
-                                   .getSections()) {
+        for (Section section : getHorizontalLag().getSections()) {
             SystemInfo system = getSystemOf(section.getCentroid());
             // Link section -> system
             section.setSystem(system);
 
             if (system != null) {
                 // Link system <>-> section
-                system.getMutableHorizontalSections()
-                      .add(section);
+                system.getMutableHorizontalSections().add(section);
             }
         }
 
         for (SystemInfo system : systems) {
             if (!(system.getMutableHorizontalSections().equals(
-                sections.get(system)))) {
+                  sections.get(system)))) {
                 modifiedSystems.add(system);
             }
         }
@@ -1438,35 +1449,35 @@ public class Sheet
     //-----------------------//
     /**
      * Split the various vertical sections among systems
+     *
      * @return the set of modified systems
      */
     public Set<SystemInfo> splitVerticalSections ()
     {
-        Set<SystemInfo>                      modifiedSystems = new LinkedHashSet<SystemInfo>();
-        Map<SystemInfo, Collection<Section>> sections = new HashMap<SystemInfo, Collection<Section>>();
+        Set<SystemInfo> modifiedSystems = new LinkedHashSet<>();
+        Map<SystemInfo, Collection<Section>> sections = new HashMap<>();
 
         for (SystemInfo system : systems) {
-            Collection<Section> systemSections = system.getMutableVerticalSections();
-            sections.put(system, new ArrayList<Section>(systemSections));
+            Collection<Section> systemSections = system.
+                    getMutableVerticalSections();
+            sections.put(system, new ArrayList<>(systemSections));
             systemSections.clear();
         }
 
-        for (Section section : getVerticalLag()
-                                   .getSections()) {
+        for (Section section : getVerticalLag().getSections()) {
             SystemInfo system = getSystemOf(section.getCentroid());
             // Link section -> system
             section.setSystem(system);
 
             if (system != null) {
                 // Link system <>-> section
-                system.getMutableVerticalSections()
-                      .add(section);
+                system.getMutableVerticalSections().add(section);
             }
         }
 
         for (SystemInfo system : systems) {
             if (!(system.getMutableVerticalSections().equals(
-                sections.get(system)))) {
+                  sections.get(system)))) {
                 modifiedSystems.add(system);
             }
         }
@@ -1504,7 +1515,7 @@ public class Sheet
         maxForeground = null;
         histoRatio = null;
         currentStep = null;
-        doneSteps = new HashSet<Step>();
+        doneSteps = new HashSet<>();
         systemManager.reset();
     }
 
@@ -1513,6 +1524,7 @@ public class Sheet
     //------------//
     /**
      * Set the picture of this sheet, that is the image to be processed.
+     *
      * @param picture the related picture
      */
     private void setPicture (Picture picture)
@@ -1525,30 +1537,29 @@ public class Sheet
         if (Main.getGui() != null) {
             PictureView pictureView = new PictureView(Sheet.this);
             assembly.addViewTab(
-                Step.PICTURE_TAB,
-                pictureView,
-                new BoardsPane(new PixelBoard(Sheet.this)));
+                    Step.PICTURE_TAB,
+                    pictureView,
+                    new BoardsPane(new PixelBoard(Sheet.this)));
         }
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Constant.Integer maxForegroundGrayLevel = new Constant.Integer(
-            "ByteLevel",
-            140,
-            "Maximum gray level for a pixel to be considered as foreground (black)");
+                "ByteLevel",
+                140,
+                "Maximum gray level for a pixel to be considered as foreground (black)");
 
         //
         Constant.Ratio defaultStaffThreshold = new Constant.Ratio(
-            0.44,
-            "Ratio of horizontal histogram to detect staves");
+                0.44,
+                "Ratio of horizontal histogram to detect staves");
     }
 }

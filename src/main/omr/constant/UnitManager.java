@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -61,10 +61,10 @@ public class UnitManager
     private final PackageNode root = new PackageNode("<root>", null);
 
     /** Map of PackageNodes and UnitNodes */
-    private final ConcurrentHashMap<String, Node> mapOfNodes = new ConcurrentHashMap<String, Node>();
+    private final ConcurrentHashMap<String, Node> mapOfNodes = new ConcurrentHashMap<>();
 
     /** Set of names of ConstantSets that still need to be initialized */
-    private final ConcurrentSkipListSet<String> dirtySets = new ConcurrentSkipListSet<String>();
+    private final ConcurrentSkipListSet<String> dirtySets = new ConcurrentSkipListSet<>();
 
     /**
      * Lists of all units known as containing a constantset.
@@ -143,7 +143,7 @@ public class UnitManager
      */
     public void checkAllUnits ()
     {
-        SortedSet<String> constants = new TreeSet<String>();
+        SortedSet<String> constants = new TreeSet<>();
 
         for (Node node : mapOfNodes.values()) {
             if (node instanceof UnitNode) {
@@ -225,7 +225,7 @@ public class UnitManager
         System.out.println("=======================");
 
         // Use alphabetical order for easier reading
-        List<Node> nodes = new ArrayList<Node>(mapOfNodes.values());
+        List<Node> nodes = new ArrayList<>(mapOfNodes.values());
         Collections.sort(nodes, Node.nameComparator);
 
         for (Node node : nodes) {
@@ -333,7 +333,7 @@ public class UnitManager
     public Set<Object> searchUnits (String string)
     {
         String      str = string.toLowerCase();
-        Set<Object> found = new LinkedHashSet<Object>();
+        Set<Object> found = new LinkedHashSet<>();
 
         for (Node node : mapOfNodes.values()) {
             if (node instanceof UnitNode) {
@@ -447,7 +447,7 @@ public class UnitManager
         } else if (node instanceof UnitNode) {
             return (UnitNode) node;
         } else if (node instanceof PackageNode) {
-            logger.severe("Unit with same name as package " + name);
+            logger.severe("Unit with same name as package {0}", name);
         }
 
         return null;

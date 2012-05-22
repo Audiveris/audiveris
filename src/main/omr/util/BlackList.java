@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -48,9 +48,8 @@ public class BlackList
     protected static final String BLACK_LIST_NAME = ".glyphignore";
 
     //~ Instance fields --------------------------------------------------------
-
     /** Set of black listed file names */
-    protected final SortedSet<String> bl = new TreeSet<String>();
+    protected final SortedSet<String> bl = new TreeSet<>();
 
     /** Containing directory */
     protected final File dir;
@@ -59,7 +58,9 @@ public class BlackList
     protected final File blackFile;
 
     /** Specific filter for blacklist */
-    protected final FileFilter blackFilter = new FileFilter() {
+    protected final FileFilter blackFilter = new FileFilter()
+    {
+
         @Override
         public boolean accept (File file)
         {
@@ -67,11 +68,10 @@ public class BlackList
         }
     };
 
-
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Create a BlackList object, related to provided directory.
+     *
      * @param dir the containing directory
      */
     public BlackList (File dir)
@@ -82,18 +82,17 @@ public class BlackList
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----//
     // add //
     //-----//
     /**
      * Blacklist a file.
+     *
      * @param file the file to blacklist
      */
     public void add (File file)
     {
-        String name = file.getName()
-                          .trim();
+        String name = file.getName().trim();
 
         if (!bl.contains(name)) {
             bl.add(name);
@@ -106,6 +105,7 @@ public class BlackList
     //---------//
     /**
      * Check whether a file is legal (not blacklisted).
+     *
      * @param file the file to check
      * @return true if legal
      */
@@ -120,6 +120,7 @@ public class BlackList
     /**
      * Report an array of files and directories that are not blacklisted
      * in the containing directory of this BlackList file.
+     *
      * @return an array of legal File instances
      */
     public File[] listFiles ()
@@ -139,13 +140,11 @@ public class BlackList
      */
     public File[] listFiles (FileFilter filter)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Retrieving legal slots in directory " + dir);
-        }
+        logger.fine("Retrieving legal slots in directory {0}", dir);
 
         // Getting all legal files & dirs, w/ additional filter if any
-        List<File> legals = new ArrayList<File>();
-        File[]     files = dir.listFiles(blackFilter);
+        List<File> legals = new ArrayList<>();
+        File[] files = dir.listFiles(blackFilter);
 
         if (files != null) {
             for (File file : files) {
@@ -154,7 +153,7 @@ public class BlackList
                 }
             }
         } else {
-            logger.info("Could not retrieve files out of dir " + dir);
+            logger.info("No files in dir {0}", dir);
         }
 
         // Return legals as an array
@@ -166,12 +165,12 @@ public class BlackList
     //--------//
     /**
      * Remove a file from the black list.
+     *
      * @param file the file to remove
      */
     public void remove (File file)
     {
-        String name = file.getName()
-                          .trim();
+        String name = file.getName().trim();
 
         if (bl.contains(name)) {
             bl.remove(name);
@@ -214,11 +213,11 @@ public class BlackList
 
                     in.close();
                 } catch (IOException ex) {
-                    logger.warning(
-                        "IO error while reading file '" + blackFile + "'");
+                    logger.warning("IO error while reading file ''{0}''",
+                                   blackFile);
                 }
             } catch (FileNotFoundException ex) {
-                logger.warning("Cannot find file '" + blackFile + "'");
+                logger.warning("Cannot find file ''{0}''", blackFile);
             } finally {
                 if (in != null) {
                     try {
@@ -243,13 +242,13 @@ public class BlackList
 
         try {
             out = new PrintWriter(
-                new BufferedWriter(new FileWriter(blackFile)));
+                    new BufferedWriter(new FileWriter(blackFile)));
 
             for (String name : bl) {
                 out.println(name);
             }
         } catch (IOException ex) {
-            logger.warning("IO error while writing file '" + blackFile + "'");
+            logger.warning("IO error while writing file ''{0}''", blackFile);
         } finally {
             if (out != null) {
                 out.close();

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -24,9 +24,9 @@ import java.util.Collections;
 import java.util.SortedSet;
 
 /**
- * Class {@code PartNode} is an abstract class that is subclassed for any
- * SystemNode that is contained in a system part. So this class encapsulates a
- * direct link to the enclosing part.
+ * Class {@code PartNode} is an abstract class that is subclassed for
+ * any SystemNode that is contained in a system part. 
+ * So this class encapsulates a direct link to the enclosing part.
  *
  * <p>A link to a related staff is provided as a potential tag only, since all
  * PartNode instances (Slur for example) are not related to a specific staff,
@@ -57,8 +57,7 @@ public abstract class PartNode
     // PartNode //
     //----------//
     /**
-     * Create a PartNode
-     *
+     * Create a PartNode.
      * @param container the (direct) container of the node
      */
     public PartNode (SystemNode container)
@@ -81,7 +80,7 @@ public abstract class PartNode
     // addGlyph //
     //----------//
     /**
-     * Insert a glyph into the collection of underlying glyphs
+     * Insert a glyph into the collection of underlying glyphs.
      * @param glyph the glyph to insert
      */
     public void addGlyph (Glyph glyph)
@@ -109,8 +108,7 @@ public abstract class PartNode
     // getGlyphs //
     //-----------//
     /**
-     * Report the collection of physical glyphs that compose this entity
-     *
+     * Report the collection of physical glyphs that compose this entity.
      * @return the collection of glyphs, which may be empty
      */
     public Collection<Glyph> getGlyphs ()
@@ -122,8 +120,7 @@ public abstract class PartNode
     // getPart //
     //---------//
     /**
-     * Report the containing part
-     *
+     * Report the containing part.
      * @return the containing part entity
      */
     public SystemPart getPart ()
@@ -141,10 +138,10 @@ public abstract class PartNode
     // getReferencePoint //
     //-------------------//
     /**
-     * Report the point of reference for this element, which is generally the
-     * element box center, but may be different. For example, the reference
-     * point of a DirectionStatement is located on the left side on the base
-     * line.
+     * Report the point of reference for this element, which is 
+     * generally the element box center, but may be different. 
+     * For example, the reference point of a DirectionStatement is located on 
+     * the left side on the base line.
      * @return the point of reference for this element
      */
     public PixelPoint getReferencePoint ()
@@ -160,8 +157,7 @@ public abstract class PartNode
     // getStaff //
     //----------//
     /**
-     * Report the related staff if any
-     *
+     * Report the related staff if any.
      * @return the related staff, or null
      */
     public Staff getStaff ()
@@ -181,8 +177,7 @@ public abstract class PartNode
     // setStaff //
     //----------//
     /**
-     * Assign the related staff
-     *
+     * Assign the related staff.
      * @param staff the related staff
      */
     public void setStaff (Staff staff)
@@ -194,7 +189,7 @@ public abstract class PartNode
     // computeBox //
     //------------//
     /**
-     * Compute the bounding box  of this entity, wrt to the system top-left corner.
+     * Compute the bounding box  of this entity.
      * Unless overridden, this method works on the glyphs collection
      */
     @Override

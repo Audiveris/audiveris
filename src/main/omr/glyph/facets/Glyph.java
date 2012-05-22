@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -17,13 +17,13 @@ import java.awt.Point;
 import java.util.Comparator;
 
 /**
- * Interface {@code Glyph} represents any glyph found, such as stem, ledger,
- * accidental, note head, etc...
+ * Interface {@code Glyph} represents any glyph found, such as stem,
+ * ledger, accidental, note head, word, text line, etc...
  *
  * <p>A Glyph is basically a collection of sections. It can be split into
  * smaller glyphs, which may later be re-assembled into another instance of
- * glyph. There is a means, based on a simple signature (weight and bounding
- * box), to detect if the glyph at hand is identical to a previous one, which is
+ * glyph. There is a means, based on a simple signature (weight and moments)
+ * to detect if the glyph at hand is identical to a previous one, which is
  * then reused.
  *
  * <p>A Glyph can be stored on disk and reloaded in order to train a glyph
@@ -41,21 +41,24 @@ public interface Glyph
 /** For physical appearance        */ GlyphGeometry, 
 /** For shape assignment           */ GlyphRecognition, 
 /** For transtation to score items */ GlyphTranslation, 
-/** For mean line                  */ GlyphAlignment
+/** For mean line                  */ GlyphAlignment, 
+/** For textual content            */ GlyphContent
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** For comparing glyphs according to their height */
     public static final Comparator<Glyph> heightComparator = new Comparator<Glyph>() {
+        @Override
         public int compare (Glyph o1,
                             Glyph o2)
         {
-            return o1.getContourBox().height - o2.getContourBox().height;
+            return o1.getBounds().height - o2.getBounds().height;
         }
     };
 
     /** For comparing glyphs according to their decreasing weight */
     public static final Comparator<Glyph> reverseWeightComparator = new Comparator<Glyph>() {
+        @Override
         public int compare (Glyph o1,
                             Glyph o2)
         {
@@ -65,6 +68,7 @@ public interface Glyph
 
     /** For comparing glyphs according to their id */
     public static final Comparator<Glyph> idComparator = new Comparator<Glyph>() {
+        @Override
         public int compare (Glyph o1,
                             Glyph o2)
         {
@@ -75,6 +79,7 @@ public interface Glyph
     /** For comparing glyphs according to their absolute abscissa,
      * then ordinate, then id */
     public static final Comparator<Glyph> abscissaComparator = new Comparator<Glyph>() {
+        @Override
         public int compare (Glyph o1,
                             Glyph o2)
         {
@@ -82,9 +87,9 @@ public interface Glyph
                 return 0;
             }
 
-            Point ref = o1.getContourBox()
+            Point ref = o1.getBounds()
                           .getLocation();
-            Point otherRef = o2.getContourBox()
+            Point otherRef = o2.getBounds()
                                .getLocation();
 
             // Are x values different?
@@ -109,6 +114,7 @@ public interface Glyph
     /** For comparing glyphs according to their absolute ordinate,
      * then abscissa, then id */
     public static final Comparator<Glyph> ordinateComparator = new Comparator<Glyph>() {
+        @Override
         public int compare (Glyph o1,
                             Glyph o2)
         {
@@ -116,9 +122,9 @@ public interface Glyph
                 return 0;
             }
 
-            Point ref = o1.getContourBox()
+            Point ref = o1.getBounds()
                           .getLocation();
-            Point otherRef = o2.getContourBox()
+            Point otherRef = o2.getBounds()
                                .getLocation();
 
             // Are y values different?

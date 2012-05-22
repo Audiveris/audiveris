@@ -191,6 +191,7 @@ public class JTreeTable
     {
         //~ Methods ------------------------------------------------------------
 
+        @Override
         public Component getTableCellEditorComponent (JTable  table,
                                                       Object  value,
                                                       boolean isSelected,
@@ -278,6 +279,7 @@ public class JTreeTable
         /**
          * TreeCellRenderer method. Overridden to update the visible row.
          */
+        @Override
         public Component getTableCellRendererComponent (JTable  table,
                                                         Object  value,
                                                         boolean isSelected,
@@ -483,6 +485,7 @@ public class JTreeTable
         {
             //~ Methods --------------------------------------------------------
 
+            @Override
             public void valueChanged (ListSelectionEvent e)
             {
                 updateSelectedPathsFromSelectedRows();

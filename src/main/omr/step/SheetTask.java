@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -32,7 +32,6 @@ public abstract class SheetTask
     private static final Logger logger = Logger.getLogger(SheetTask.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** The related step for this task */
     protected final Step step;
 
@@ -43,12 +42,12 @@ public abstract class SheetTask
     protected volatile boolean stepDone;
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------//
     // SheetTask //
     //-----------//
     /**
      * Creates a task at sheet level
+     *
      * @param step the step performed by the task
      */
     protected SheetTask (Step step)
@@ -57,17 +56,17 @@ public abstract class SheetTask
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------//
     // doit //
     //------//
     /**
      * Actually perform the step
+     *
      * @param systems the collection of systems to process
      * @throws StepException raised if processing failed
      */
     public abstract void doit (Collection<SystemInfo> systems)
-        throws StepException;
+            throws StepException;
 
     //-----------//
     // displayUI //
@@ -85,11 +84,12 @@ public abstract class SheetTask
     //--------//
     /**
      * Run the step
+     *
      * @param systems systems to process (null means all systems)
      * @throws StepException raised if processing failed
      */
     public void doStep (Collection<SystemInfo> systems)
-        throws StepException
+            throws StepException
     {
         started();
         doit(systems);
@@ -104,9 +104,7 @@ public abstract class SheetTask
      */
     public void done ()
     {
-        if (logger.isFineEnabled()) {
-            logger.fine(step + " done");
-        }
+        logger.fine("{0} done", step);
 
         stepDone = true;
     }
@@ -116,6 +114,7 @@ public abstract class SheetTask
     //--------//
     /**
      * Check whether this task has been done
+     *
      * @return true if started/done, false otherwise
      */
     public boolean isDone ()
@@ -128,6 +127,7 @@ public abstract class SheetTask
     //-----------//
     /**
      * Check whether this task has started
+     *
      * @return true if started, false otherwise
      */
     public boolean isStarted ()
@@ -143,9 +143,7 @@ public abstract class SheetTask
      */
     public void started ()
     {
-        if (logger.isFineEnabled()) {
-            logger.fine(step + " started ....................................");
-        }
+        logger.fine("{0} started ....................................", step);
 
         stepStarted = true;
     }

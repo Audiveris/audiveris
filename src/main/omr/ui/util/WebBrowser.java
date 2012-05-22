@@ -18,6 +18,7 @@ import omr.log.Logger;
 import com.centerkey.utils.BareBonesBrowserLaunch;
 
 import java.lang.reflect.Method;
+import java.util.logging.Level;
 
 /**
  * Class {@code WebBrowser} gathers functionality to
@@ -44,7 +45,6 @@ public class WebBrowser
     private static WebBrowser instance;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // WebBrowser //
     //------------//
@@ -53,12 +53,12 @@ public class WebBrowser
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // getBrowser //
     //------------//
     /**
      * Get the singleton WebBrowser implementation.
+     *
      * @return a WebBrowser implementation, not null
      * in normal operation
      */
@@ -76,6 +76,7 @@ public class WebBrowser
     //-------------//
     /**
      * Checks if web browsing is supported by this implementation.
+     *
      * @return false
      */
     public boolean isSupported ()
@@ -88,13 +89,13 @@ public class WebBrowser
     //--------//
     /**
      * Launches a web browser to browse a site.
+     *
      * @param urlString Location to which the browser should browse.
      */
     public void launch (String urlString)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Browsing " + urlString + " using " + toString());
-        }
+        logger.fine("Browsing {0} using {1}",
+                    new Object[]{urlString, toString()});
 
         // Delegate to BareBonesBrowserLaunch
         BareBonesBrowserLaunch.openURL(urlString);
@@ -119,18 +120,51 @@ public class WebBrowser
         try {
             final Class desktopClass = Class.forName("java.awt.Desktop");
 
-            return new WebBrowser() {
+            return new WebBrowser()
+            {
+
+                @Override
+                public boolean isSupported ()
+                {
+                    try {
+                        Method supported = desktopClass.getMethod(
+                                "isDesktopSupported");
+
+                        return (Boolean) supported.invoke(null);
+                    } catch (Exception e) {
+                        return false;
+                    }
+                }
+
+                @Override
+                public void launch (String urlString)
+                {
+                    super.launch(urlString);
+                }
+
+                @Override
+                public String toString ()
+                {
+                    return "WebBrowser(java.awt.Desktop)";
+                }
+            };
+        } catch (Exception e) {
+            logger.fine("java.awt.Desktop unsupported or error initializing");
+        }
+
+        //If it's not supported, see if we have the Mac FileManager
+        if (WellKnowns.MAC_OS_X) {
+            try {
+                final Class fileMgr = Class.forName(
+                        "com.apple.eio.FileManager");
+
+                return new WebBrowser()
+                {
+
                     @Override
                     public boolean isSupported ()
                     {
-                        try {
-                            Method supported = desktopClass.getMethod(
-                                "isDesktopSupported");
-
-                            return (Boolean) supported.invoke(null);
-                        } catch (Exception e) {
-                            return false;
-                        }
+                        return true;
                     }
 
                     @Override
@@ -142,38 +176,9 @@ public class WebBrowser
                     @Override
                     public String toString ()
                     {
-                        return "WebBrowser(java.awt.Desktop)";
+                        return "WebBrowser(com.apple.eio.FileManager)";
                     }
                 };
-        } catch (Exception e) {
-            logger.fine("java.awt.Desktop unsupported or error initializing");
-        }
-
-        //If it's not supported, see if we have the Mac FileManager
-        if (WellKnowns.MAC_OS_X) {
-            try {
-                final Class fileMgr = Class.forName(
-                    "com.apple.eio.FileManager");
-
-                return new WebBrowser() {
-                        @Override
-                        public boolean isSupported ()
-                        {
-                            return true;
-                        }
-
-                        @Override
-                        public void launch (String urlString)
-                        {
-                            super.launch(urlString);
-                        }
-
-                        @Override
-                        public String toString ()
-                        {
-                            return "WebBrowser(com.apple.eio.FileManager)";
-                        }
-                    };
             } catch (Exception e) {
                 logger.fine("Apple EIO FileManager unsupported");
             }

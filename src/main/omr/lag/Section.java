@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -77,6 +77,7 @@ public interface Section
 
     /** A section comparator, using section id */
     public static final Comparator<Section> idComparator = new Comparator<Section>() {
+        @Override
         public int compare (Section s1,
                             Section s2)
         {
@@ -86,6 +87,7 @@ public interface Section
 
     /** For comparing Section instances on their decreasing weight */
     public static final Comparator<Section> reverseWeightComparator = new Comparator<Section>() {
+        @Override
         public int compare (Section s1,
                             Section s2)
         {
@@ -95,6 +97,7 @@ public interface Section
 
     /** For comparing Section instances on their start value */
     public static final Comparator<Section> startComparator = new Comparator<Section>() {
+        @Override
         public int compare (Section s1,
                             Section s2)
         {
@@ -104,6 +107,7 @@ public interface Section
 
     /** For comparing Section instances on their pos value */
     public static final Comparator<Section> posComparator = new Comparator<Section>() {
+        @Override
         public int compare (Section s1,
                             Section s2)
         {
@@ -201,17 +205,18 @@ public interface Section
     public double getAspect (Orientation orientation);
 
     /**
+     * Return a COPY of the absolute bounding box.
+     * @return the absolute bounding box
+     */
+    @Override
+    public PixelRectangle getBounds ();
+
+    /**
      * Return the absolute point which is at the mass center of the
      * section, with all pixels considered of equal weight.
      * @return the mass center of the section, as a absolute point
      */
     public PixelPoint getCentroid ();
-
-    /**
-     * Return a COPY of the absolute bounding box.
-     * @return the absolute bounding box
-     */
-    public PixelRectangle getContourBox ();
 
     /**
      * Return the adjacency ratio on the incoming junctions.

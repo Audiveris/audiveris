@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -45,7 +45,7 @@ import java.util.List;
  * @author Hervé Bitteur
  */
 public class MeasureFixer
-    extends AbstractScoreVisitor
+        extends AbstractScoreVisitor
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -53,15 +53,18 @@ public class MeasureFixer
     private static final Logger logger = Logger.getLogger(MeasureFixer.class);
 
     //~ Instance fields --------------------------------------------------------
+    private int im; // Current measure index in system
 
-    private int           im; // Current measure index in system
     private List<Measure> verticals = null; // Current vertical measures
-    private Rational      measureTermination = null; // Current termination
-    private ScoreSystem   system; // Current system
+
+    private Rational measureTermination = null; // Current termination
+
+    private ScoreSystem system; // Current system
 
     // Information to remember from previous vertical measure
     private List<Measure> prevVerticals = null; // Previous vertical measures
-    private Rational      prevMeasureTermination = null; // Previous termination
+
+    private Rational prevMeasureTermination = null; // Previous termination
 
     /** The latest id assigned to a measure (in the previous system) */
     private Integer prevSystemLastId = null;
@@ -70,7 +73,6 @@ public class MeasureFixer
     private Integer lastId = null;
 
     //~ Constructors -----------------------------------------------------------
-
     //--------------//
     // MeasureFixer //
     //--------------//
@@ -82,17 +84,14 @@ public class MeasureFixer
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // visit Page //
     //------------//
     @Override
     public boolean visit (Page page)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine(getClass().getSimpleName() + " Visiting " + page);
-        }
-
+        logger.fine("{0} Visiting {1}", new Object[]{getClass().getSimpleName(),
+                                                     page});
         page.acceptChildren(this);
 
         // Remember the number of measures in this page
@@ -100,7 +99,7 @@ public class MeasureFixer
 
         // Remember the delta of measure ids in this page
         page.setDeltaMeasureId(
-            page.getLastSystem().getLastPart().getLastMeasure().getIdValue());
+                page.getLastSystem().getLastPart().getLastMeasure().getIdValue());
 
         return false;
     }
@@ -111,10 +110,8 @@ public class MeasureFixer
     @Override
     public boolean visit (Score score)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine(getClass().getSimpleName() + " Visiting " + score);
-        }
-
+        logger.fine("{0} Visiting {1}", new Object[]{getClass().getSimpleName(),
+                                                     score});
         score.acceptChildren(this);
 
         return false;
@@ -128,14 +125,14 @@ public class MeasureFixer
      * Such a vertical measure is the collection of measures, across all parts
      * of the system, one below the other. They share the same id and the
      * same status (such as implicit).
+     *
      * @return false
      */
     @Override
     public boolean visit (ScoreSystem system)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine(getClass().getSimpleName() + " Visiting " + system);
-        }
+        logger.fine("{0} Visiting {1}", new Object[]{getClass().getSimpleName(),
+                                                     system});
 
         this.system = system;
 
@@ -143,59 +140,46 @@ public class MeasureFixer
         system.acceptChildren(this);
 
         // Measure indices to remove
-        List<Integer> toRemove = new ArrayList<Integer>();
+        List<Integer> toRemove = new ArrayList<>();
 
         // Use a loop on "vertical" measures, across all system parts
-        final int imMax = system.getFirstRealPart()
-                                .getMeasures()
-                                .size() - 1;
+        final int imMax = system.getFirstRealPart().getMeasures().size() - 1;
 
         for (im = 0; im <= imMax; im++) {
-            if (logger.isFineEnabled()) {
-                logger.fine("im:" + im);
-            }
-
+            logger.fine("im:{0}", im);
             verticals = verticalsOf(system, im);
 
             // Check if all voices in all parts exhibit the same termination
             measureTermination = getMeasureTermination();
 
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "measureFinal:" + measureTermination +
-                    ((measureTermination != null) ? ("=" + measureTermination)
-                     : ""));
-            }
+            logger.fine("measureFinal:{0}{1}",
+                        new Object[]{measureTermination,
+                                     (measureTermination != null)
+                                     ? ("=" + measureTermination)
+                                     : ""});
 
             if (isEmpty()) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("empty");
-                }
+                logger.fine("empty");
 
                 // All this vertical measure is empty (no notes/rests)
                 // We will merge with the following measure, if any
                 if (im < imMax) {
                     setId(
-                        (lastId != null) ? (lastId + 1)
-                                                : ((prevSystemLastId != null)
-                                                   ? (prevSystemLastId + 1) : 1),
-                        false);
+                            (lastId != null) ? (lastId + 1)
+                            : ((prevSystemLastId != null)
+                               ? (prevSystemLastId + 1) : 1),
+                            false);
                 }
             } else if (isPickup()) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("pickup");
-                }
-
+                logger.fine("pickup");
                 setImplicit();
                 setId(
-                    (lastId != null) ? (-lastId)
-                                        : ((prevSystemLastId != null)
-                                           ? (-prevSystemLastId) : 0),
-                    false);
+                        (lastId != null) ? (-lastId)
+                        : ((prevSystemLastId != null)
+                           ? (-prevSystemLastId) : 0),
+                        false);
             } else if (isSecondRepeatHalf()) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("secondHalf");
-                }
+                logger.fine("secondHalf");
 
                 // Shorten actual duration for (non-implicit) previous measure
                 shortenFirstHalf();
@@ -203,23 +187,18 @@ public class MeasureFixer
                 setImplicit();
                 setId(lastId, true);
             } else if (isRealStart()) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("realStart");
-                }
-
+                logger.fine("realStart");
                 merge(); // Merge with previous vertical measure
                 toRemove.add(im);
             } else {
-                if (logger.isFineEnabled()) {
-                    logger.fine("normal");
-                }
+                logger.fine("normal");
 
                 // Normal measure
                 setId(
-                    (lastId != null) ? (lastId + 1)
-                                        : ((prevSystemLastId != null)
-                                           ? (prevSystemLastId + 1) : 1),
-                    false);
+                        (lastId != null) ? (lastId + 1)
+                        : ((prevSystemLastId != null)
+                           ? (prevSystemLastId + 1) : 1),
+                        false);
             }
 
             // For next measure
@@ -268,10 +247,7 @@ public class MeasureFixer
                     if (termination == null) {
                         termination = voiceTermination;
                     } else if (!voiceTermination.equals(termination)) {
-                        if (logger.isFineEnabled()) {
-                            logger.fine("Non-consistent voices terminations");
-                        }
-
+                        logger.fine("Non-consistent voices terminations");
                         return null;
                     }
                 }
@@ -286,13 +262,12 @@ public class MeasureFixer
     //---------//
     /**
      * Check for an empty measure: perhaps clef and key sig, but no note or rest
+     *
      * @return true if so
      */
     private boolean isEmpty ()
     {
-        return verticals.get(0)
-                        .getActualDuration()
-                        .equals(Rational.ZERO);
+        return verticals.get(0).getActualDuration().equals(Rational.ZERO);
     }
 
     //----------//
@@ -300,13 +275,14 @@ public class MeasureFixer
     //----------//
     /**
      * Check for an implicit pickup measure at the beginning of a system
+     *
      * @return true if so
      */
     private boolean isPickup ()
     {
-        return (system.getChildIndex() == 0) && (im == 0) &&
-               (measureTermination != null) &&
-               (measureTermination.compareTo(Rational.ZERO) < 0);
+        return (system.getChildIndex() == 0) && (im == 0)
+                && (measureTermination != null)
+                && (measureTermination.compareTo(Rational.ZERO) < 0);
     }
 
     //-------------//
@@ -319,9 +295,10 @@ public class MeasureFixer
      */
     private boolean isRealStart ()
     {
-        return (im == 1) &&
-               (prevVerticals.get(0).getActualDuration().equals(Rational.ZERO)) &&
-               (measureTermination != null);
+        return (im == 1)
+                && (prevVerticals.get(0).getActualDuration().equals(
+                    Rational.ZERO))
+                && (measureTermination != null);
     }
 
     //--------------------//
@@ -329,38 +306,37 @@ public class MeasureFixer
     //--------------------//
     /**
      * Check for an implicit measure as the second half of a repeat sequence
+     *
      * @return true if so
      */
     private boolean isSecondRepeatHalf ()
     {
         // Check for partial first half
-        if ((prevMeasureTermination == null) ||
-            (prevMeasureTermination.compareTo(Rational.ZERO) >= 0)) {
+        if ((prevMeasureTermination == null)
+                || (prevMeasureTermination.compareTo(Rational.ZERO) >= 0)) {
             return false;
         }
 
         // Check for partial second half
-        if ((measureTermination == null) ||
-            (measureTermination.compareTo(Rational.ZERO) >= 0)) {
+        if ((measureTermination == null)
+                || (measureTermination.compareTo(Rational.ZERO) >= 0)) {
             return false;
         }
 
         // Check for a suitable repeat barline in between
         Measure prevMeasure = prevVerticals.get(0);
         Barline barline = prevMeasure.getBarline();
-        Shape   shape = barline.getShape();
+        Shape shape = barline.getShape();
 
-        if ((shape != Shape.RIGHT_REPEAT_SIGN) &&
-            (shape != Shape.BACK_TO_BACK_REPEAT_SIGN)) {
+        if ((shape != Shape.RIGHT_REPEAT_SIGN)
+                && (shape != Shape.BACK_TO_BACK_REPEAT_SIGN)) {
             return false;
         }
 
         // Check for an exact duration sum (TODO: is this too strict?)
         try {
-            return prevMeasureTermination.plus(measureTermination)
-                                         .abs()
-                                         .equals(
-                prevMeasure.getExpectedDuration());
+            return prevMeasureTermination.plus(measureTermination).abs().equals(
+                    prevMeasure.getExpectedDuration());
         } catch (InvalidTimeSignature its) {
             return false;
         }
@@ -387,11 +363,12 @@ public class MeasureFixer
     //----------------//
     /**
      * Remove the vertical measures that correspond to the provided indices
+     *
      * @param toRemove sequence of indices to remove, perhaps empty
-     * @param system the containing system
+     * @param system   the containing system
      */
     private void removeMeasures (List<Integer> toRemove,
-                                 ScoreSystem   system)
+                                 ScoreSystem system)
     {
         if (toRemove.isEmpty()) {
             return;
@@ -400,10 +377,10 @@ public class MeasureFixer
         for (TreeNode pn : system.getParts()) {
             SystemPart part = (SystemPart) pn;
 
-            int        index = -1;
+            int index = -1;
 
-            for (Iterator<TreeNode> it = part.getMeasures()
-                                             .iterator(); it.hasNext();) {
+            for (Iterator<TreeNode> it = part.getMeasures().iterator(); it.
+                    hasNext();) {
                 index++;
                 it.next();
 
@@ -417,12 +394,10 @@ public class MeasureFixer
     //-------//
     // setId //
     //-------//
-    private void setId (int     id,
+    private void setId (int id,
                         boolean isSecondHalf)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("-> id=" + id + (isSecondHalf ? " SH" : ""));
-        }
+        logger.fine("-> id={0}{1}", new Object[]{id, isSecondHalf ? " SH" : ""});
 
         for (Measure measure : verticals) {
             measure.setPageId(id, isSecondHalf);
@@ -458,13 +433,14 @@ public class MeasureFixer
     //-------------//
     /**
      * Report the sequence of vertical measures for a given index
+     *
      * @param index the index in the parent part
      * @return the vertical collection of measure with the same index
      */
     private List<Measure> verticalsOf (ScoreSystem system,
-                                       int         index)
+                                       int index)
     {
-        List<Measure> measures = new ArrayList<Measure>();
+        List<Measure> measures = new ArrayList<>();
 
         for (TreeNode node : system.getParts()) {
             SystemPart part = (SystemPart) node;

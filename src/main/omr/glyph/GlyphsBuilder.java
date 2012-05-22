@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -147,7 +147,7 @@ public class GlyphsBuilder
                                               Nest          nest,
                                               Scale         scale)
     {
-        List<Glyph> created = new ArrayList<Glyph>();
+        List<Glyph> created = new ArrayList<>();
 
         // Reset section processed flag
         for (Section section : sections) {
@@ -220,7 +220,7 @@ public class GlyphsBuilder
     public Glyph buildTransientCompound (Collection<Glyph> parts)
     {
         // Gather all the sections involved
-        Collection<Section> sections = new HashSet<Section>();
+        Collection<Section> sections = new HashSet<>();
 
         for (Glyph part : parts) {
             sections.addAll(part.getMembers());
@@ -282,9 +282,9 @@ public class GlyphsBuilder
 
         for (HorizontalSide side : HorizontalSide.values()) {
             Glyph stem = lookupStem(side, system.getGlyphs(), glyph);
+            glyph.setStem(stem, side);
 
             if (stem != null) {
-                glyph.setStem(stem, side);
                 stemNb++;
             }
         }
@@ -295,7 +295,7 @@ public class GlyphsBuilder
         glyph.setWithLedger(
             checkDashIntersect(
                 system.getLedgers(),
-                ledgerBox(glyph.getContourBox())));
+                ledgerBox(glyph.getBounds())));
 
         // Vertical position wrt staff
         glyph.setPitchPosition(staff.pitchPositionOf(center));
@@ -317,7 +317,9 @@ public class GlyphsBuilder
         // Insert in nest, which assigns an id to the glyph
         Glyph oldGlyph = nest.registerGlyph(glyph);
 
-        system.addToGlyphsCollection(oldGlyph);
+        if (!(oldGlyph instanceof GlyphChain)) {
+            system.addToGlyphsCollection(oldGlyph);
+        }
 
         return oldGlyph;
     }
@@ -348,7 +350,7 @@ public class GlyphsBuilder
     public void retrieveGlyphs (boolean compute)
     {
         // Consider all unknown vertical & horizontal sections
-        List<Section> allSections = new ArrayList<Section>();
+        List<Section> allSections = new ArrayList<>();
         allSections.addAll(system.getVerticalSections());
         allSections.addAll(system.getHorizontalSections());
 
@@ -392,7 +394,7 @@ public class GlyphsBuilder
      */
     public PixelRectangle stemBoxOf (Glyph stem)
     {
-        PixelRectangle box = new PixelRectangle(stem.getContourBox());
+        PixelRectangle box = new PixelRectangle(stem.getBounds());
         box.grow(stemXMargin, stemYMargin);
 
         return box;
@@ -410,7 +412,7 @@ public class GlyphsBuilder
     public PixelRectangle stemBoxOf (Glyph          stem,
                                      HorizontalSide side)
     {
-        PixelRectangle box = stem.getContourBox();
+        PixelRectangle box = stem.getBounds();
         int            width = box.width;
         box.grow(stemXMargin, stemYMargin);
         box.width = 2 * stemXMargin;
@@ -466,7 +468,7 @@ public class GlyphsBuilder
                                         PixelRectangle  box)
     {
         for (Glyph item : items) {
-            if (item.getContourBox()
+            if (item.getBounds()
                     .intersects(box)) {
                 return true;
             }
@@ -502,8 +504,8 @@ public class GlyphsBuilder
 
         for (Glyph s : glyphs) {
             // Check bounding box intersection
-            if (s.isStem() && s.getContourBox()
-                               .intersects(box)) {
+            if (s.isStem() && s.isActive() && s.getBounds()
+                                               .intersects(box)) {
                 // Check close distance
                 PixelRectangle b = stemBoxOf(s);
 

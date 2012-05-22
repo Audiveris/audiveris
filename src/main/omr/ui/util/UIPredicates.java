@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2011. All rights reserved.               //
+//  Copyright (C) Herve Bitteur 2000-2012. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -13,7 +13,6 @@ package omr.ui.util;
 
 import omr.WellKnowns;
 
-import java.awt.Cursor;
 import static java.awt.event.InputEvent.*;
 import java.awt.event.MouseEvent;
 
@@ -127,5 +126,9 @@ public class UIPredicates
         int offmask = BUTTON2_DOWN_MASK | BUTTON3_DOWN_MASK;
 
         return (e.getModifiersEx() & (onmask | offmask)) == onmask;
+    }
+
+    private UIPredicates ()
+    {
     }
 }

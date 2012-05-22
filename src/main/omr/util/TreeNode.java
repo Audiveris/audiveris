@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -19,18 +19,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code TreeNode} handles a node in a tree hierarchy, which is
- * typically the tree organization of a score entity.
- *
- * <p/> A TreeNode has : <ul>
- *
- * <li> A parent (which may be null) to which the TreeNode belongs
- *
- * <li> A list (which may be empty) of contained chidren, for which the TreeNode
- * is the parent.
- *
- * </ul>
- *
+ * Class {@code TreeNode} handles a node in a tree hierarchy, which is typically
+ * the tree organization of a score entity.
+ * <p/>
+ * A TreeNode has : <ul> <li> A parent (which may be null) to which the TreeNode
+ * belongs <li> A list (which may be empty) of contained chidren, for which the
+ * TreeNode is the parent. </ul>
  * @author Hervé Bitteur
  */
 public abstract class TreeNode
@@ -41,11 +35,10 @@ public abstract class TreeNode
     private static final Logger logger = Logger.getLogger(TreeNode.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /**
      * Children : the list of nodes just below in the tree
      */
-    protected final List<TreeNode> children = new ArrayList<TreeNode>();
+    protected final List<TreeNode> children = new ArrayList<>();
 
     /**
      * Container : the node just above in the tree
@@ -54,21 +47,16 @@ public abstract class TreeNode
     protected TreeNode parent;
 
     //~ Constructors -----------------------------------------------------------
-
     //----------//
     // TreeNode //
     //----------//
     /**
-     * Create a node in the tree, given its parent
-     *
-     *
+     * Create a node in the tree, given its parent.
      * @param parent the containing node, or null otherwise
      */
     public TreeNode (TreeNode parent)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("new TreeNode parent=" + parent);
-        }
+        logger.fine("new TreeNode parent={0}", parent);
 
         if (parent != null) {
             parent.addChild(this);
@@ -76,20 +64,16 @@ public abstract class TreeNode
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // addChild //
     //----------//
     /**
-     * Add a child in the list of node children
-     *
+     * Add a child in the list of node children.
      * @param node the child to include
      */
     public synchronized void addChild (TreeNode node)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("addChild " + node + " for " + this);
-        }
+        logger.fine("addChild {0} for {1}", new Object[]{node, this});
 
         children.add(node);
         node.setParent(this);
@@ -99,8 +83,8 @@ public abstract class TreeNode
     // dumpChildren //
     //--------------//
     /**
-     * Utility to dump recursively all the children of this node, with no
-     * starting indentation
+     * Utility to dump recursively all the children of this node, 
+     * with no starting indentation.
      */
     public void dumpChildren ()
     {
@@ -111,9 +95,8 @@ public abstract class TreeNode
     // dumpChildren //
     //--------------//
     /**
-     * Utility to dump recursively all the children of this node, with the
-     * starting indentation specified
-     *
+     * Utility to dump recursively all the children of this node, 
+     * with the starting indentation specified.
      * @param level the starting indentation level
      */
     public void dumpChildren (final int level)
@@ -129,8 +112,7 @@ public abstract class TreeNode
     // dumpNode //
     //----------//
     /**
-     * Utility to dump the current node, with no indentation
-     *
+     * Utility to dump the current node, with no indentation.
      * @return true, so that processing continues
      */
     public boolean dumpNode ()
@@ -144,9 +126,7 @@ public abstract class TreeNode
     /**
      * Utility to dump the current node, with the specified level of
      * indentation.
-     *
      * @param level the desired indentation level
-     *
      * @return true, so that processing continues
      */
     public boolean dumpNode (int level)
@@ -160,8 +140,8 @@ public abstract class TreeNode
     // getChildIndex //
     //---------------//
     /**
-     * Report the index (counted from 0) of this node within the children
-     * sequence of its parent
+     * Report the index (counted from 0) of this node within the 
+     * children sequence of its parent.
      * @return the child index (or -1 if there is no parent)
      */
     public int getChildIndex ()
@@ -177,15 +157,12 @@ public abstract class TreeNode
     // getChildren //
     //-------------//
     /**
-     * Report the list of (direct) children
-     *
+     * Report the list of (direct) children.
      * @return the children
      */
     public List<TreeNode> getChildren ()
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("getChildren of " + this);
-        }
+        logger.fine("getChildren of {0}", this);
 
         return children;
     }
@@ -194,16 +171,13 @@ public abstract class TreeNode
     // getChildren //
     //-------------//
     /**
-     * Report the list of (direct) children
-     *
+     * Report the list of (direct) children.
      * @return the children
      */
     @SuppressWarnings("unchecked")
     public synchronized List<TreeNode> getChildrenCopy ()
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("getChildrenCopy of " + this);
-        }
+        logger.fine("getChildrenCopy of {0}", this);
 
         return new ArrayList(children);
     }
@@ -212,9 +186,7 @@ public abstract class TreeNode
     // getNextSibling //
     //----------------//
     /**
-     * Report the next node in the children of this node parent
-     *
-     *
+     * Report the next node in the children of this node parent.
      * @return the next sibling node, or null if none
      */
     public TreeNode getNextSibling ()
@@ -234,8 +206,7 @@ public abstract class TreeNode
     // getParent //
     //-----------//
     /**
-     * Report the parent of this node
-     *
+     * Report the parent of this node.
      * @return the node just higher in the tree, or null if none
      */
     public TreeNode getParent ()
@@ -247,9 +218,7 @@ public abstract class TreeNode
     // getPreviousSibling //
     //--------------------//
     /**
-     * Report the previous node in the children of this node parent
-     *
-     *
+     * Report the previous node in the children of this node parent.
      * @return the previous sibling node, or null if none
      */
     public TreeNode getPreviousSibling ()
@@ -269,13 +238,11 @@ public abstract class TreeNode
     // setChildrenParent //
     //-------------------//
     /**
-     * Register this node as the parent of all its children
+     * Register this node as the parent of all its children.
      */
     public void setChildrenParent ()
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("setChildrenParent of " + this);
-        }
+        logger.fine("setChildrenParent of {0}", this);
 
         // Make all children point to this node as parent
         for (TreeNode node : children) {
@@ -288,16 +255,12 @@ public abstract class TreeNode
     // setParent //
     //-----------//
     /**
-     * Modify the link to the parent of this node
-     *
+     * Modify the link to the parent of this node.
      * @param parent the (new) parent
      */
     public void setParent (TreeNode parent)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("setParent parent=" + parent + " for " + this);
-        }
-
+        logger.fine("setParent parent={0} for {1}", new Object[]{parent, this});
         this.parent = parent;
     }
 }

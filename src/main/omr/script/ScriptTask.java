@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -20,8 +20,8 @@ import omr.util.BasicTask;
 import org.jdesktop.application.Task;
 
 /**
- * Class {@code ScriptTask} is the root class of all possible tasks within a
- * score script.
+ * Class {@code ScriptTask} is the root class of all possible tasks
+ * within a score script.
  *
  * <p>The processing of any task is defined by its {@link #core} method. In
  * order to factorize pre and post processing, a subclass may also redefine the
@@ -121,6 +121,7 @@ public abstract class ScriptTask
     public Task launch (final Sheet sheet)
     {
         Task task = new BasicTask() {
+            @Override
             protected Void doInBackground ()
                 throws Exception
             {

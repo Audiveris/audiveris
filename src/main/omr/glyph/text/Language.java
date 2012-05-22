@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -51,7 +51,7 @@ public class Language
     private static final String LANG_FILE_NAME = "ISO639-3.xml";
 
     /** Map of language code -> language full name */
-    private static final SortedMap<String, String> codes = new TreeMap<String, String>();
+    private static final SortedMap<String, String> codes = new TreeMap<>();
 
     static {
         File inputFile = new File(WellKnowns.RES_FOLDER, LANG_FILE_NAME);
@@ -146,5 +146,9 @@ public class Language
         Constant.String defaultLanguageCode = new Constant.String(
             "eng",
             "3-letter code for the default sheet language");
+    }
+
+    private Language ()
+    {
     }
 }

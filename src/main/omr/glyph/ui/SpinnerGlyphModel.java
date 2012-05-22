@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -20,7 +20,6 @@ import static omr.ui.field.SpinnerUtilities.*;
 import omr.util.Predicate;
 
 import javax.swing.AbstractSpinnerModel;
-import javax.swing.SpinnerModel;
 
 /**
  * Class {@code SpinnerGlyphModel} is a spinner model backed by a {@link
@@ -33,16 +32,15 @@ import javax.swing.SpinnerModel;
  * @author Hervé Bitteur
  */
 public class SpinnerGlyphModel
-    extends AbstractSpinnerModel
+        extends AbstractSpinnerModel
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
-        SpinnerGlyphModel.class);
+            SpinnerGlyphModel.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Underlying glyph nest */
     private final Nest nest;
 
@@ -53,12 +51,12 @@ public class SpinnerGlyphModel
     private Integer currentId;
 
     //~ Constructors -----------------------------------------------------------
-
     //-------------------//
     // SpinnerGlyphModel //
     //-------------------//
     /**
      * Creates a new SpinnerGlyphModel object, on all nest glyphs
+     *
      * @param nest the underlying glyph nest
      */
     public SpinnerGlyphModel (Nest nest)
@@ -71,15 +69,16 @@ public class SpinnerGlyphModel
     //-------------------//
     /**
      * Creates a new SpinnerGlyphModel object, with a related glyph predicate
-     * @param nest the underlying glyph nest
+     *
+     * @param nest      the underlying glyph nest
      * @param predicate predicate of glyph, or null
      */
-    public SpinnerGlyphModel (Nest             nest,
+    public SpinnerGlyphModel (Nest nest,
                               Predicate<Glyph> predicate)
     {
         if (nest == null) {
             throw new IllegalArgumentException(
-                "SpinnerGlyphModel expects non-null glyph nest");
+                    "SpinnerGlyphModel expects non-null glyph nest");
         }
 
         this.nest = nest;
@@ -89,7 +88,6 @@ public class SpinnerGlyphModel
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------------//
     // getNextValue //
     //--------------//
@@ -104,10 +102,7 @@ public class SpinnerGlyphModel
     public Object getNextValue ()
     {
         final int cur = currentId.intValue();
-
-        if (logger.isFineEnabled()) {
-            logger.fine("getNextValue cur=" + cur);
-        }
+        logger.fine("getNextValue cur={0}", cur);
 
         if (cur == NO_VALUE) {
             // Return first suitable glyph in nest
@@ -141,7 +136,7 @@ public class SpinnerGlyphModel
     //------------------//
     /**
      * Return the legal glyph id in the sequence that comes before the glyph id
-     * returned by {@code getValue()}.  If the end of the sequence has been
+     * returned by {@code getValue()}. If the end of the sequence has been
      * reached then return null.
      *
      * @return the previous legal value or null if one doesn't exist
@@ -149,12 +144,9 @@ public class SpinnerGlyphModel
     @Override
     public Object getPreviousValue ()
     {
-        Glyph     prevGlyph = null;
+        Glyph prevGlyph = null;
         final int cur = currentId.intValue();
-
-        if (logger.isFineEnabled()) {
-            logger.fine("getPreviousValue cur=" + cur);
-        }
+        logger.fine("getPreviousValue cur={0}", cur);
 
         if (cur == NO_VALUE) {
             return NO_VALUE;
@@ -186,9 +178,7 @@ public class SpinnerGlyphModel
     @Override
     public Object getValue ()
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("getValue currentId=" + currentId);
-        }
+        logger.fine("getValue currentId={0}", currentId);
 
         return currentId;
     }
@@ -197,7 +187,7 @@ public class SpinnerGlyphModel
     // setValue //
     //----------//
     /**
-     * Changes current glyph id of the model.  If the glyph id is illegal then
+     * Changes current glyph id of the model. If the glyph id is illegal then
      * an {@code IllegalArgumentException} is thrown.
      *
      * @param value the value to set
@@ -206,9 +196,7 @@ public class SpinnerGlyphModel
     @Override
     public void setValue (Object value)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("setValue value=" + value);
-        }
+        logger.fine("setValue value={0}", value);
 
         Integer id = (Integer) value;
         boolean ok = false;
@@ -232,7 +220,7 @@ public class SpinnerGlyphModel
             currentId = id;
             fireStateChanged();
         } else {
-            logger.warning("Invalid glyph id: " + id);
+            logger.warning("Invalid glyph id: {0}", id);
         }
     }
 }

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -34,7 +34,7 @@ public class TargetStaff
     public final double top;
 
     /** Sequence of staff lines */
-    public final List<TargetLine> lines = new ArrayList<TargetLine>();
+    public final List<TargetLine> lines = new ArrayList<>();
 
     /** Containing system */
     public final TargetSystem system;

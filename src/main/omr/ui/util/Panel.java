@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -39,7 +39,7 @@ import javax.swing.JPanel;
  * @author Hervé Bitteur
  */
 public class Panel
-    extends JPanel
+        extends JPanel
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -53,12 +53,10 @@ public class Panel
     private static Insets DEFAULT_INSETS;
 
     //~ Instance fields --------------------------------------------------------
-
     /** Room for potential specific insets */
     private Insets insets;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new Panel object.
      */
@@ -70,9 +68,8 @@ public class Panel
     }
 
     //~ Methods ----------------------------------------------------------------
-
     /**
-     * Selector to the default button width
+     * Selector to the default button width.
      *
      * @return default distance in JGoodies/Forms units (such as DLUs)
      */
@@ -82,7 +79,7 @@ public class Panel
     }
 
     /**
-     * Selector to the default vertical interval between two rows
+     * Selector to the default vertical interval between two rows.
      *
      * @return default distance in JGoodies/Forms units (such as DLUs)
      */
@@ -92,7 +89,7 @@ public class Panel
     }
 
     /**
-     * Selector to the default interval between two label/field
+     * Selector to the default interval between two label/field.
      *
      * @return default distance in JGoodies/Forms units (such as DLUs)
      */
@@ -102,7 +99,7 @@ public class Panel
     }
 
     /**
-     * Selector to the default label width
+     * Selector to the default label width.
      *
      * @return default distance in JGoodies/Forms units (such as DLUs)
      */
@@ -112,7 +109,7 @@ public class Panel
     }
 
     /**
-     * Selector to the default label - field interval
+     * Selector to the default label - field interval.
      *
      * @return default distance in JGoodies/Forms units (such as DLUs)
      */
@@ -122,7 +119,7 @@ public class Panel
     }
 
     /**
-     * Selector to the default label width
+     * Selector to the default label width.
      *
      * @return default distance in JGoodies/Forms units (such as DLUs)
      */
@@ -132,7 +129,7 @@ public class Panel
     }
 
     /**
-     * Selector to the default vertical interval between two Panels
+     * Selector to the default vertical interval between two Panels.
      *
      * @return default distance in JGoodies/Forms units (such as DLUs)
      */
@@ -141,13 +138,51 @@ public class Panel
         return constants.panelInterline.getValue();
     }
 
+    //-------------//
+    // makeColumns //
+    //-------------//
+    public static String makeColumns (int cols)
+    {
+        return makeColumns(
+                cols,
+                "right:",
+                Panel.getLabelWidth(),
+                Panel.getFieldWidth());
+    }
+
+    //-------------//
+    // makeColumns //
+    //-------------//
+    public static String makeColumns (int cols,
+                                      String labelAlignment,
+                                      String labelWidth,
+                                      String fieldWidth)
+    {
+        final String labelInterval = Panel.getLabelInterval();
+        final String fieldInterval = Panel.getFieldInterval();
+
+        // Columns
+        StringBuilder sbc = new StringBuilder();
+
+        for (int i = cols - 1; i >= 0; i--) {
+            sbc.append(labelAlignment).append(labelWidth).append(",").append(
+                    labelInterval).append(",").append(fieldWidth);
+
+            if (i != 0) {
+                sbc.append(",").append(fieldInterval).append(",");
+            }
+        }
+
+        return sbc.toString();
+    }
+
     //----------------//
     // makeFormLayout //
     //----------------//
     /**
-     * Build a JGoodies Forms layout, based on the provided number of rows
-     * and number of columns, using default values for label alignment, and
-     * for widths of labels and fields
+     * Build a JGoodies Forms layout, based on the provided number of
+     * rows and number of columns, using default values for label
+     * alignment, and for widths of labels and fields.
      *
      * @param rows number of logical rows (not counting the interlines)
      * @param cols number of logical columns (counting the combination of a
@@ -158,81 +193,63 @@ public class Panel
                                              int cols)
     {
         return makeFormLayout(
-            rows,
-            cols,
-            "right:",
-            Panel.getLabelWidth(),
-            Panel.getFieldWidth());
+                rows,
+                cols,
+                "right:",
+                Panel.getLabelWidth(),
+                Panel.getFieldWidth());
     }
 
     //----------------//
     // makeFormLayout //
     //----------------//
     /**
-     * A more versatile way to prepare a JGoodies FormLayout
+     * A more versatile way to prepare a JGoodies FormLayout.
      *
-     * @param rows number of rows
-     * @param cols number of columns
+     * @param rows           number of rows
+     * @param cols           number of columns
      * @param labelAlignment horizontal alignment for labels
-     * @param labelWidth width for labels
-     * @param fieldWidth width for text fields
+     * @param labelWidth     width for labels
+     * @param fieldWidth     width for text fields
      * @return the FormLayout ready to use
      */
-    public static FormLayout makeFormLayout (int    rows,
-                                             int    cols,
+    public static FormLayout makeFormLayout (int rows,
+                                             int cols,
                                              String labelAlignment,
                                              String labelWidth,
                                              String fieldWidth)
     {
-        final String  labelInterval = Panel.getLabelInterval();
-        final String  fieldInterval = Panel.getFieldInterval();
-        final String  fieldInterline = Panel.getFieldInterline();
-
         // Columns
-        StringBuilder sbc = new StringBuilder();
-
-        for (int i = cols - 1; i >= 0; i--) {
-            sbc.append(labelAlignment)
-               .append(labelWidth)
-               .append(",")
-               .append(labelInterval)
-               .append(",")
-               .append(fieldWidth);
-
-            if (i != 0) {
-                sbc.append(",")
-                   .append(fieldInterval)
-                   .append(",");
-            }
-        }
+        final String colSpec = makeColumns(
+                cols,
+                labelAlignment,
+                labelWidth,
+                fieldWidth);
 
         // Rows
+        final String fieldInterline = Panel.getFieldInterline();
         StringBuilder sbr = new StringBuilder();
 
         for (int i = rows - 1; i >= 0; i--) {
             sbr.append("pref");
 
             if (i != 0) {
-                sbr.append(",")
-                   .append(fieldInterline)
-                   .append(",");
+                sbr.append(",").append(fieldInterline).append(",");
             }
         }
 
-        if (logger.isFineEnabled()) {
-            logger.fine("sbc=" + sbc);
-            logger.fine("sbr=" + sbr);
-        }
+        logger.fine("sbc={0}", colSpec);
+        logger.fine("sbr={0}", sbr);
 
-        return new FormLayout(sbc.toString(), sbr.toString());
+        return new FormLayout(colSpec, sbr.toString());
     }
 
     //-----------//
     // getInsets //
     //-----------//
     /**
-     * By this way, Swing will paint the component with its specific inset
-     * values
+     * By this way, Swing will paint the component with its specific
+     * inset values.
      *
      * @return the panel insets
      */
@@ -250,12 +267,12 @@ public class Panel
     // setInsets //
     //-----------//
     /**
-     * Set the panel insets (in number of pixels) on the four directions
+     * Set the panel insets (in number of pixels) on the four directions.
      *
-     * @param top inset on top side
-     * @param left inset on the left side
+     * @param top    inset on top side
+     * @param left   inset on the left side
      * @param bottom inset on the bottom side
-     * @param right inset on the right side
+     * @param right  inset on the right side
      */
     public void setInsets (int top,
                            int left,
@@ -269,7 +286,7 @@ public class Panel
     // setNoInsets //
     //-------------//
     /**
-     * A convenient method to set all 4 insets values to zero
+     * A convenient method to set all 4 insets values to zero.
      */
     public void setNoInsets ()
     {
@@ -281,7 +298,7 @@ public class Panel
     //----------------//
     /**
      * This method is redefined to give a chance to draw the cell
-     * boundaries if so desired
+     * boundaries if so desired.
      *
      * @param g the graphic context
      */
@@ -299,51 +316,60 @@ public class Panel
     {
         if (DEFAULT_INSETS == null) {
             DEFAULT_INSETS = new Insets(
-                constants.insetTop.getValue(),
-                constants.insetLeft.getValue(),
-                constants.insetBottom.getValue(),
-                constants.insetRight.getValue());
+                    constants.insetTop.getValue(),
+                    constants.insetLeft.getValue(),
+                    constants.insetBottom.getValue(),
+                    constants.insetRight.getValue());
         }
 
         return DEFAULT_INSETS;
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Constant.String buttonWidth = new Constant.String(
-            "45dlu",
-            "Width of a standard button");
+                "45dlu",
+                "Width of a standard button");
+
         Constant.String fieldInterline = new Constant.String(
-            "1dlu",
-            "Vertical Gap between two lines");
+                "1dlu",
+                "Vertical Gap between two lines");
+
         Constant.String fieldInterval = new Constant.String(
-            "3dlu",
-            "Horizontal gap between two fields");
+                "3dlu",
+                "Horizontal gap between two fields");
+
         Constant.String fieldWidth = new Constant.String(
-            "35dlu",
-            "Width of a field value");
-        PixelCount      insetBottom = new PixelCount(
-            6,
-            "Value of Bottom inset");
-        PixelCount      insetLeft = new PixelCount(6, "Value of Left inset");
-        PixelCount      insetRight = new PixelCount(6, "Value of Right inset");
-        PixelCount      insetTop = new PixelCount(6, "Value of Top inset");
+                "35dlu",
+                "Width of a field value");
+
+        PixelCount insetBottom = new PixelCount(
+                6,
+                "Value of Bottom inset");
+
+        PixelCount insetLeft = new PixelCount(6, "Value of Left inset");
+
+        PixelCount insetRight = new PixelCount(6, "Value of Right inset");
+
+        PixelCount insetTop = new PixelCount(6, "Value of Top inset");
+
         Constant.String labelInterval = new Constant.String(
-            "1dlu",
-            "Gap between a field label and its field value");
+                "1dlu",
+                "Gap between a field label and its field value");
+
         Constant.String labelWidth = new Constant.String(
-            "25dlu",
-            "Width of the label of a field");
+                "25dlu",
+                "Width of the label of a field");
+
         Constant.String panelInterline = new Constant.String(
-            "6dlu",
-            "Vertical Gap between two panels");
+                "6dlu",
+                "Vertical Gap between two panels");
     }
 }

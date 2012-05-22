@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -70,7 +70,7 @@ public class LineFilament
                          FilamentComb comb)
     {
         if (combs == null) {
-            combs = new TreeMap<Integer, FilamentComb>();
+            combs = new TreeMap<>();
         }
 
         combs.put(column, comb);
@@ -137,7 +137,7 @@ public class LineFilament
         if (combs != null) {
             return combs;
         } else {
-            return new TreeMap<Integer, FilamentComb>();
+            return new TreeMap<>();
         }
     }
 
@@ -150,7 +150,7 @@ public class LineFilament
      */
     public void include (LineFilament that)
     {
-        super.include(that);
+        super.stealSections(that);
 
         that.cluster = this.cluster;
         that.clusterPos = this.clusterPos;

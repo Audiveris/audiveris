@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -65,7 +65,7 @@ public class Wedge
         // Spread
         if ((start && (getShape() == Shape.DECRESCENDO)) ||
             (!start && (getShape() == Shape.CRESCENDO))) {
-            spread = glyph.getContourBox().height;
+            spread = glyph.getBounds().height;
         } else {
             spread = 0;
         }
@@ -89,7 +89,7 @@ public class Wedge
     {
         ScoreSystem    system = startingMeasure.getSystem();
         SystemPart     part = startingMeasure.getPart();
-        PixelRectangle box = glyph.getContourBox();
+        PixelRectangle box = glyph.getBounds();
 
         // Start
         glyph.setTranslation(

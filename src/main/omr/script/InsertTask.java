@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -46,7 +46,7 @@ import javax.xml.bind.annotation.XmlElementWrapper;
  * @author Hervé Bitteur
  */
 public class InsertTask
-    extends GlyphTask
+        extends GlyphTask
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -63,19 +63,19 @@ public class InsertTask
     private PointFacade[] points;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // InsertTask //
     //------------//
     /**
      * Create an glyph insertion task.
-     * @param sheet the sheet impacted
-     * @param shape the inserted shape
+     *
+     * @param sheet     the sheet impacted
+     * @param shape     the inserted shape
      * @param locations the locations for insertion
      * @throws IllegalArgumentException if any of the arguments is not valid
      */
-    public InsertTask (Sheet                  sheet,
-                       Shape                  shape,
+    public InsertTask (Sheet sheet,
+                       Shape shape,
                        Collection<PixelPoint> locations)
     {
         super(sheet);
@@ -83,16 +83,16 @@ public class InsertTask
         // Check parameters
         if (shape == null) {
             throw new IllegalArgumentException(
-                getClass().getSimpleName() + " needs a non-null shape");
+                    getClass().getSimpleName() + " needs a non-null shape");
         }
 
         if ((locations == null) || locations.isEmpty()) {
             throw new IllegalArgumentException(
-                getClass().getSimpleName() + " needs at least one location");
+                    getClass().getSimpleName() + " needs at least one location");
         }
 
         this.shape = shape;
-        this.locations = new ArrayList<PixelPoint>(locations);
+        this.locations = new ArrayList<>(locations);
     }
 
     //------------//
@@ -105,13 +105,12 @@ public class InsertTask
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------//
     // core //
     //------//
     @Override
     public void core (Sheet sheet)
-        throws Exception
+            throws Exception
     {
         // Nothing to do
     }
@@ -124,15 +123,11 @@ public class InsertTask
     {
         super.epilog(sheet);
 
-        if (logger.isFineEnabled()) {
-            logger.fine(toString());
-        }
+        logger.fine(toString());
 
         // Take inserted glyph(s) as selected glyph(s)
-        sheet.getNest()
-             .getGlyphService()
-             .publish(
-            new GlyphSetEvent(
+        sheet.getNest().getGlyphService().publish(
+                new GlyphSetEvent(
                 this,
                 SelectionHint.GLYPH_INIT,
                 MouseMovement.PRESSING,
@@ -144,6 +139,7 @@ public class InsertTask
     //------------------//
     /**
      * Report the inserted shape.
+     *
      * @return the insertedShape
      */
     public Shape getInsertedShape ()
@@ -160,15 +156,13 @@ public class InsertTask
         StringBuilder sb = new StringBuilder(super.internalsString());
         sb.append(" insert");
 
-        sb.append(" ")
-          .append(shape);
+        sb.append(" ").append(shape);
 
         if (!locations.isEmpty()) {
             sb.append(" locations[");
 
             for (PixelPoint point : locations) {
-                sb.append(" ")
-                  .append(point.toString());
+                sb.append(" ").append(point.toString());
             }
 
             sb.append("]");
@@ -185,7 +179,7 @@ public class InsertTask
     @Override
     protected SortedSet<SystemInfo> retrieveCurrentImpact (Sheet sheet)
     {
-        SortedSet<SystemInfo> impactedSystems = new TreeSet<SystemInfo>();
+        SortedSet<SystemInfo> impactedSystems = new TreeSet<>();
 
         for (PixelPoint location : locations) {
             SystemInfo system = sheet.getSystemOf(location);
@@ -214,13 +208,13 @@ public class InsertTask
     @Override
     protected void retrieveGlyphs ()
     {
-        glyphs = new LinkedHashSet<Glyph>();
+        glyphs = new LinkedHashSet<>();
 
         for (PixelPoint location : locations) {
-            Glyph      glyph = new VirtualGlyph(
-                shape,
-                sheet.getScale().getInterline(),
-                location);
+            Glyph glyph = new VirtualGlyph(
+                    shape,
+                    sheet.getScale().getInterline(),
+                    location);
 
             SystemInfo system = sheet.getSystemOf(glyph.getAreaCenter());
             glyph = system.addGlyph(glyph);
@@ -238,11 +232,11 @@ public class InsertTask
      * for this object, but before this object is set to the parent object.
      */
     private void afterUnmarshal (Unmarshaller um,
-                                 Object       parent)
+                                 Object parent)
     {
         // Convert array of point facades -> locations
         if (locations == null) {
-            locations = new ArrayList<PixelPoint>();
+            locations = new ArrayList<>();
 
             for (PointFacade facade : points) {
                 locations.add(new PixelPoint(facade.getX(), facade.getY()));
@@ -260,7 +254,7 @@ public class InsertTask
     {
         // Convert locations -> array of point facades
         if (points == null) {
-            List<PointFacade> facades = new ArrayList<PointFacade>();
+            List<PointFacade> facades = new ArrayList<>();
 
             for (PixelPoint point : locations) {
                 facades.add(new PointFacade(point));

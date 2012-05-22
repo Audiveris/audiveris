@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -48,42 +48,41 @@ public class OmrExecutors
     private static final Constants constants = new Constants();
 
     /** Number of processors available */
-    private static final int cpuCount = Runtime.getRuntime()
-                                               .availableProcessors();
+    private static final int cpuCount = Runtime.getRuntime().availableProcessors();
 
     static {
         if (constants.printEnvironment.getValue()) {
-            logger.info(
-                "Environment. CPU count: " + cpuCount +
-                ", Use of parallelism: " + useParallelism());
+            logger.info("Environment. CPU count: {0}, Use of parallelism: {1}",
+                        new Object[]{cpuCount, useParallelism()});
         }
     }
 
     // Specific pools
-    private static final Pool       highs = new Highs();
-    private static final Pool       lows = new Lows();
-    private static final Pool       cachedLows = new CachedLows();
-    private static final Pool       ocrs = new Ocrs();
+    private static final Pool highs = new Highs();
+
+    private static final Pool lows = new Lows();
+
+    private static final Pool cachedLows = new CachedLows();
+
+    private static final Pool ocrs = new Ocrs();
 
     /** To handle all the pools as a whole */
     private static Collection<Pool> allPools = Arrays.asList(
-        cachedLows,
-        lows,
-        highs,
-        ocrs);
+            cachedLows,
+            lows,
+            highs,
+            ocrs);
 
     /** To prevent parallel creation of pools when closing */
     private static volatile boolean creationAllowed = true;
 
     //~ Constructors -----------------------------------------------------------
-
     /** Not meant to be instantiated */
     private OmrExecutors ()
     {
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------------------//
     // getCachedLowExecutor //
     //----------------------//
@@ -154,13 +153,12 @@ public class OmrExecutors
     //----------//
     /**
      * Gracefully shut down all the executors launched
+     *
      * @param immediately set to true for an immediate shutdown
      */
     public static void shutdown (boolean immediately)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Closing all pools ...");
-        }
+        logger.fine("Closing all pools ...");
 
         // No creation of pools from now on!
         creationAllowed = false;
@@ -169,9 +167,7 @@ public class OmrExecutors
             if (pool.isActive()) {
                 pool.close(immediately);
             } else {
-                if (logger.isFineEnabled()) {
-                    logger.fine("Pool " + pool.getName() + " not active");
-                }
+                logger.fine("Pool {0} not active", pool.getName());
             }
         }
     }
@@ -190,16 +186,16 @@ public class OmrExecutors
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //------------//
     // CachedLows //
     //------------//
     /** Cached pool with low priority */
     private static class CachedLows
-        extends Pool
+            extends Pool
     {
         //~ Methods ------------------------------------------------------------
 
+        @Override
         public String getName ()
         {
             return "cachedLow";
@@ -209,7 +205,7 @@ public class OmrExecutors
         protected ExecutorService createPool ()
         {
             return Executors.newCachedThreadPool(
-                new Factory(getName(), Thread.MIN_PRIORITY, 0));
+                    new Factory(getName(), Thread.MIN_PRIORITY, 0));
         }
     }
 
@@ -217,57 +213,58 @@ public class OmrExecutors
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Constant.Boolean printEnvironment = new Constant.Boolean(
-            false,
-            "Should we print out current environment?");
+                false,
+                "Should we print out current environment?");
 
         //
         Constant.Boolean useParallelism = new Constant.Boolean(
-            true,
-            "Should we use parallelism when we have several processors?");
+                true,
+                "Should we use parallelism when we have several processors?");
 
         //
         Constant.Integer graceDelay = new Constant.Integer(
-            "seconds",
-            60, //15,
-            "Time to wait for terminating tasks");
+                "seconds",
+                60, //15,
+                "Time to wait for terminating tasks");
     }
 
     //---------//
     // Factory //
     //---------//
     private static class Factory
-        implements ThreadFactory
+            implements ThreadFactory
     {
         //~ Instance fields ----------------------------------------------------
 
-        private final ThreadGroup   group;
-        private final String        threadPrefix;
-        private final int           threadPriority;
-        private final long          stackSize;
+        private final ThreadGroup group;
+
+        private final String threadPrefix;
+
+        private final int threadPriority;
+
+        private final long stackSize;
+
         private final AtomicInteger threadNumber = new AtomicInteger(0);
 
         //~ Constructors -------------------------------------------------------
-
         Factory (String threadPrefix,
-                 int    threadPriority,
-                 long   stackSize)
+                 int threadPriority,
+                 long stackSize)
         {
             SecurityManager s = System.getSecurityManager();
             group = (s != null) ? s.getThreadGroup()
-                    : Thread.currentThread()
-                            .getThreadGroup();
+                    : Thread.currentThread().getThreadGroup();
             this.threadPrefix = threadPrefix;
             this.threadPriority = threadPriority;
             this.stackSize = stackSize;
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public Thread newThread (Runnable r)
         {
@@ -295,7 +292,7 @@ public class OmrExecutors
     //-------//
     /** Fixed pool with high priority */
     private static class Highs
-        extends Pool
+            extends Pool
     {
         //~ Methods ------------------------------------------------------------
 
@@ -309,8 +306,8 @@ public class OmrExecutors
         protected ExecutorService createPool ()
         {
             return Executors.newFixedThreadPool(
-                useParallelism() ? (cpuCount + 1) : 1,
-                new Factory(getName(), Thread.NORM_PRIORITY, 0));
+                    useParallelism() ? (cpuCount + 1) : 1,
+                    new Factory(getName(), Thread.NORM_PRIORITY, 0));
         }
     }
 
@@ -319,7 +316,7 @@ public class OmrExecutors
     //------//
     /** Fixed pool with low priority */
     private static class Lows
-        extends Pool
+            extends Pool
     {
         //~ Methods ------------------------------------------------------------
 
@@ -333,8 +330,8 @@ public class OmrExecutors
         protected ExecutorService createPool ()
         {
             return Executors.newFixedThreadPool(
-                useParallelism() ? (cpuCount + 1) : 1,
-                new Factory(getName(), Thread.MIN_PRIORITY, 0));
+                    useParallelism() ? (cpuCount + 1) : 1,
+                    new Factory(getName(), Thread.MIN_PRIORITY, 0));
         }
     }
 
@@ -343,7 +340,7 @@ public class OmrExecutors
     //------//
     /** One-thread pool with high priority, and large stack size */
     private static class Ocrs
-        extends Pool
+            extends Pool
     {
         //~ Methods ------------------------------------------------------------
 
@@ -357,8 +354,8 @@ public class OmrExecutors
         protected ExecutorService createPool ()
         {
             return Executors.newFixedThreadPool(
-                1,
-                new Factory(getName(), Thread.NORM_PRIORITY, 10000000L));
+                    1,
+                    new Factory(getName(), Thread.NORM_PRIORITY, 10000000L));
         }
     }
 
@@ -373,7 +370,6 @@ public class OmrExecutors
         protected ExecutorService pool;
 
         //~ Methods ------------------------------------------------------------
-
         /** Terminate the pool */
         public synchronized void close (boolean immediately)
         {
@@ -381,11 +377,9 @@ public class OmrExecutors
                 return;
             }
 
-            if (logger.isFineEnabled()) {
-                logger.fine(
-                    "Closing pool " + getName() +
-                    (immediately ? " immediately" : ""));
-            }
+            logger.fine("Closing pool {0}{1}",
+                        new Object[]{getName(),
+                                     immediately ? " immediately" : ""});
 
             if (!immediately) {
                 pool.shutdown(); // Disable new tasks from being submitted
@@ -393,28 +387,24 @@ public class OmrExecutors
                 try {
                     // Wait a while for existing tasks to terminate
                     if (!pool.awaitTermination(
-                        constants.graceDelay.getValue(),
-                        TimeUnit.SECONDS)) {
+                            constants.graceDelay.getValue(),
+                            TimeUnit.SECONDS)) {
                         // Cancel currently executing tasks
                         pool.shutdownNow();
-                        logger.warning(
-                            "Pool " + getName() + " did not terminate");
+                        logger.warning("Pool {0} did not terminate", getName());
                     }
                 } catch (InterruptedException ie) {
                     // (Re-)Cancel if current thread also got interrupted
                     pool.shutdownNow();
                     // Preserve interrupt status
-                    Thread.currentThread()
-                          .interrupt();
+                    Thread.currentThread().interrupt();
                 }
             } else {
                 // Cancel currently executing tasks
                 pool.shutdownNow();
             }
 
-            if (logger.isFineEnabled()) {
-                logger.fine("Pool " + getName() + " closed.");
-            }
+            logger.fine("Pool {0} closed.", getName());
         }
 
         /** Name the pool */
@@ -424,16 +414,13 @@ public class OmrExecutors
         public synchronized ExecutorService getPool ()
         {
             if (!creationAllowed) {
-                logger.info("No longer allowed to create pool: " + getName());
+                logger.info("No longer allowed to create pool: {0}", getName());
 
                 throw new ProcessingCancellationException("Executor closed");
             }
 
             if (!isActive()) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("Creating pool: " + getName());
-                }
-
+                logger.fine("Creating pool: {0}", getName());
                 pool = createPool();
             }
 

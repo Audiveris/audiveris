@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -12,7 +12,7 @@
 package omr.glyph.pattern;
 
 import omr.glyph.Evaluation;
-import omr.glyph.GlyphEvaluator;
+import omr.glyph.ShapeEvaluator;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
@@ -41,7 +41,7 @@ import java.util.Set;
  * @author Hervé Bitteur
  */
 public class StemPattern
-    extends GlyphPattern
+        extends GlyphPattern
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -49,22 +49,23 @@ public class StemPattern
     private static final Logger logger = Logger.getLogger(StemPattern.class);
 
     /** Predicate to filter only reliable symbols attached to a stem */
-    private static final Predicate<Glyph> reliableStemSymbols = new Predicate<Glyph>() {
+    private static final Predicate<Glyph> reliableStemSymbols = new Predicate<Glyph>()
+    {
+
+        @Override
         public boolean check (Glyph glyph)
         {
-            Shape   shape = glyph.getShape();
+            Shape shape = glyph.getShape();
 
-            boolean res = glyph.isWellKnown() &&
-                          ShapeSet.StemSymbols.contains(shape) &&
-                          (shape != Shape.BEAM_HOOK);
+            boolean res = glyph.isWellKnown()
+                    && ShapeSet.StemSymbols.contains(shape)
+                    && (shape != Shape.BEAM_HOOK);
 
             return res;
         }
     };
 
-
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new StemPattern object.
      *
@@ -76,38 +77,36 @@ public class StemPattern
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // runPattern //
     //------------//
     /**
      * In a specified system, look for all stems that should not be kept,
-     * rebuild surrounding glyphs and try to recognize them. If this action does
-     * not lead to some recognized symbol, then we restore the stems.
+     * rebuild surrounding glyphs and try to recognize them.
+     * If this action does not lead to some recognized symbol, then we restore 
+     * the stems.
      *
      * @return the number of symbols recognized
      */
     @Override
     public int runPattern ()
     {
-        int                    nb = 0;
+        int nb = 0;
 
-        Map<Glyph, Set<Glyph>> badsMap = new HashMap<Glyph, Set<Glyph>>();
+        Map<Glyph, Set<Glyph>> badsMap = new HashMap<>();
 
         // Collect all undue stems
-        List<Glyph>            SuspectedStems = new ArrayList<Glyph>();
+        List<Glyph> SuspectedStems = new ArrayList<>();
 
         for (Glyph glyph : system.getGlyphs()) {
             if (!glyph.isStem() || glyph.isManualShape() || !glyph.isActive()) {
-                Set<Glyph> goods = new HashSet<Glyph>();
-                Set<Glyph> bads = new HashSet<Glyph>();
+                Set<Glyph> goods = new HashSet<>();
+                Set<Glyph> bads = new HashSet<>();
                 glyph.getSymbolsBefore(reliableStemSymbols, goods, bads);
                 glyph.getSymbolsAfter(reliableStemSymbols, goods, bads);
 
                 if (goods.isEmpty()) {
-                    if (logger.isFineEnabled()) {
-                        logger.finest("Suspected Stem " + glyph);
-                    }
+                    logger.fine("Suspected Stem {0}", glyph);
 
                     SuspectedStems.add(glyph);
 
@@ -115,10 +114,7 @@ public class StemPattern
                     badsMap.put(glyph, bads);
 
                     for (Glyph g : bads) {
-                        if (logger.isFineEnabled()) {
-                            logger.finest("Deassigning bad glyph " + g);
-                        }
-
+                        logger.fine("Deassigning bad glyph {0}", g);
                         g.setShape((Shape) null);
                     }
                 }
@@ -134,24 +130,21 @@ public class StemPattern
         system.extractNewGlyphs();
 
         // Try to recognize each glyph in turn
-        List<Glyph>          symbols = new ArrayList<Glyph>();
-        final GlyphEvaluator evaluator = GlyphNetwork.getInstance();
+        List<Glyph> symbols = new ArrayList<>();
+        final ShapeEvaluator evaluator = GlyphNetwork.getInstance();
 
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.getShape() == null) {
                 Evaluation vote = evaluator.vote(
-                    glyph,
-                    system,
-                    Grades.patternsMinGrade);
+                        glyph,
+                        system,
+                        Grades.patternsMinGrade);
 
                 if (vote != null) {
                     glyph.setEvaluation(vote);
 
                     if (glyph.isWellKnown()) {
-                        if (logger.isFineEnabled()) {
-                            logger.finest("New symbol " + glyph);
-                        }
-
+                        logger.fine("New symbol {0}", glyph);
                         symbols.add(glyph);
                         nb++;
                     }
@@ -164,7 +157,7 @@ public class StemPattern
         for (Glyph stem : SuspectedStems) {
             // Check if one of its section is now part of a symbol
             boolean known = false;
-            Glyph   glyph = null;
+            Glyph glyph = null;
 
             for (Section section : stem.getMembers()) {
                 glyph = section.getGlyph();
@@ -192,9 +185,9 @@ public class StemPattern
                     for (Glyph g : bads) {
                         Shape shape = g.getShape();
 
-                        if ((shape != null) &&
-                            !g.isManualShape() &&
-                            !ShapeSet.StemSymbols.contains(shape)) {
+                        if ((shape != null)
+                                && !g.isManualShape()
+                                && !ShapeSet.StemSymbols.contains(shape)) {
                             g.setShape(null);
                         }
                     }

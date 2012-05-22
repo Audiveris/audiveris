@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -272,16 +272,19 @@ public class Staff
 
         //~ Methods ------------------------------------------------------------
 
+        @Override
         public boolean hasNext ()
         {
             return staffIterator.hasNext();
         }
 
+        @Override
         public Staff next ()
         {
             return (Staff) staffIterator.next();
         }
 
+        @Override
         public void remove ()
         {
             throw new UnsupportedOperationException("Not supported operation");
@@ -337,6 +340,7 @@ public class Staff
             return part;
         }
 
+        @Override
         public boolean hasNext ()
         {
             if (partStaffIterator == null) {
@@ -356,6 +360,7 @@ public class Staff
             }
         }
 
+        @Override
         public Staff next ()
         {
             if (hasNext()) {
@@ -365,6 +370,7 @@ public class Staff
             }
         }
 
+        @Override
         public void remove ()
         {
             throw new UnsupportedOperationException("Not supported operation.");

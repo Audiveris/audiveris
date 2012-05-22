@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -19,6 +19,7 @@ import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.logging.Level;
 
 /**
  * This abstract class handles a set of Constants as a whole. In particular,
@@ -244,7 +245,7 @@ public abstract class ConstantSet
      */
     private void initMap ()
     {
-        SortedMap<String, Constant> tempMap = new TreeMap<String, Constant>();
+        SortedMap<String, Constant> tempMap = new TreeMap<>();
 
         // Retrieve values of all fields
         Class cl = getClass();
@@ -269,10 +270,7 @@ public abstract class ConstantSet
                     constant.setUnitAndName(unit, name);
                     tempMap.put(name, constant);
                 } else {
-                    logger.severe(
-                        "ConstantSet in unit '" + unit +
-                        "' contains a non Constant field '" + name + "' obj= " +
-                        obj);
+                    logger.severe("ConstantSet in unit ''{0}'' contains a non Constant field ''{1}'' obj= {2}", new Object[]{unit, name, obj});
                 }
             }
 

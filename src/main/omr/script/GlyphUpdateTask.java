@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -89,7 +89,7 @@ public abstract class GlyphUpdateTask
     @Override
     protected void retrieveGlyphs ()
     {
-        glyphs = new TreeSet<Glyph>(Glyph.abscissaComparator);
+        glyphs = new TreeSet<>(Glyph.abscissaComparator);
 
         for (Collection<Section> set : sectionSets.getSets(sheet)) {
             Glyph      glyph = null;

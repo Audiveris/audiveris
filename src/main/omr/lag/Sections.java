@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -38,23 +38,23 @@ public class Sections
 
     //~ Methods ----------------------------------------------------------------
 
-    //---------------//
-    // getContourBox //
-    //---------------//
+    //-----------//
+    // getBounds //
+    //-----------//
     /**
      * Return the display bounding box of a collection of sections.
      * @param sections the provided collection of sections
      * @return the bounding contour
      */
-    public static PixelRectangle getContourBox (Collection<?extends Section> sections)
+    public static PixelRectangle getBounds (Collection<?extends Section> sections)
     {
         PixelRectangle box = null;
 
         for (Section section : sections) {
             if (box == null) {
-                box = new PixelRectangle(section.getContourBox());
+                box = new PixelRectangle(section.getBounds());
             } else {
-                box.add(section.getContourBox());
+                box.add(section.getBounds());
             }
         }
 
@@ -72,6 +72,7 @@ public class Sections
     public static Comparator<Section> getReverseLengthComparator (final Orientation orientation)
     {
         return new Comparator<Section>() {
+                @Override
                 public int compare (Section s1,
                                     Section s2)
                 {
@@ -94,7 +95,7 @@ public class Sections
     public static Set<Section> lookupIntersectedSections (PixelRectangle               rect,
                                                           Collection<?extends Section> sections)
     {
-        Set<Section> found = new LinkedHashSet<Section>();
+        Set<Section> found = new LinkedHashSet<>();
 
         for (Section section : sections) {
             if (section.intersects(rect)) {
@@ -118,10 +119,10 @@ public class Sections
     public static Set<Section> lookupSections (PixelRectangle               rect,
                                                Collection<?extends Section> sections)
     {
-        Set<Section> found = new LinkedHashSet<Section>();
+        Set<Section> found = new LinkedHashSet<>();
 
         for (Section section : sections) {
-            if (rect.contains(section.getContourBox())) {
+            if (rect.contains(section.getBounds())) {
                 found.add(section);
             }
         }
@@ -203,5 +204,9 @@ public class Sections
     public static String toString (Section... sections)
     {
         return toString("sections", sections);
+    }
+
+    private Sections ()
+    {
     }
 }

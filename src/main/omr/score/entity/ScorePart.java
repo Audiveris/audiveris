@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -37,7 +37,6 @@ public class ScorePart
     private static final Logger logger = Logger.getLogger(ScorePart.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /**
      * Distinguished id for this part (the same id is used by the corresponding
      * SystemPart in each System)
@@ -57,14 +56,13 @@ public class ScorePart
     private Integer midiProgram;
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------//
     // ScorePart //
     //-----------//
     /**
      * Creates a new instance of ScorePart
      *
-     * @param id the id for this part
+     * @param id         the id for this part
      * @param staffCount the count of staves within this part
      */
     public ScorePart (int id,
@@ -82,7 +80,6 @@ public class ScorePart
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-------//
     // getId //
     //-------//
@@ -113,13 +110,13 @@ public class ScorePart
     public String getDefaultName ()
     {
         switch (staffCount) {
-        case 1 :
+        case 1:
             return constants.defaultSingleStaffPartName.getValue();
 
-        case 2 :
+        case 2:
             return constants.defaultDoubleStaffPartName.getValue();
 
-        default :
+        default:
             return constants.defaultPartName.getValue();
         }
     }
@@ -129,18 +126,16 @@ public class ScorePart
     //-------------------//
     public Integer getDefaultProgram ()
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("Part #" + getId() + " count=" + staffCount);
-        }
+        logger.fine("Part #{0} count={1}", new Object[]{getId(), staffCount});
 
         switch (staffCount) {
-        case 1 :
+        case 1:
             return constants.defaultSingleStaffPartProgram.getValue();
 
-        case 2 :
+        case 2:
             return constants.defaultDoubleStaffPartProgram.getValue();
 
-        default :
+        default:
             return constants.defaultPartProgram.getValue();
         }
     }
@@ -257,21 +252,17 @@ public class ScorePart
         StringBuilder sb = new StringBuilder();
         sb.append("{ScorePart");
 
-        sb.append(" id=")
-          .append(id);
+        sb.append(" id=").append(id);
 
         if (name != null) {
-            sb.append(" name=")
-              .append(name);
+            sb.append(" name=").append(name);
         }
 
         if (abbreviation != null) {
-            sb.append(" abrv=")
-              .append(abbreviation);
+            sb.append(" abrv=").append(abbreviation);
         }
 
-        sb.append(" staffCount:")
-          .append(staffCount);
+        sb.append(" staffCount:").append(staffCount);
 
         sb.append("}");
 
@@ -279,38 +270,41 @@ public class ScorePart
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         // Default Part names
-        Constant.String  defaultSingleStaffPartName = new Constant.String(
-            "Voice",
-            "Default name for a part with one staff");
-        Constant.String  defaultDoubleStaffPartName = new Constant.String(
-            "Piano",
-            "Default name for a part with two staves");
-        Constant.String  defaultPartName = new Constant.String(
-            "NoName",
-            "Default name for a part with more than two staves");
+        Constant.String defaultSingleStaffPartName = new Constant.String(
+                "Voice",
+                "Default name for a part with one staff");
+
+        Constant.String defaultDoubleStaffPartName = new Constant.String(
+                "Piano",
+                "Default name for a part with two staves");
+
+        Constant.String defaultPartName = new Constant.String(
+                "NoName",
+                "Default name for a part with more than two staves");
 
         // Default Midi program numbers
         Constant.Integer defaultSingleStaffPartProgram = new Constant.Integer(
-            "MidiProgram",
-            54,
-            "Default program number for a part with one staff");
+                "MidiProgram",
+                54,
+                "Default program number for a part with one staff");
+
         Constant.Integer defaultDoubleStaffPartProgram = new Constant.Integer(
-            "MidiProgram",
-            1,
-            "Default program number for a part with two staves");
+                "MidiProgram",
+                1,
+                "Default program number for a part with two staves");
+
         Constant.Integer defaultPartProgram = new Constant.Integer(
-            "MidiProgram",
-            1,
-            "Default program number for a part with more than two staves");
+                "MidiProgram",
+                1,
+                "Default program number for a part with more than two staves");
     }
 }

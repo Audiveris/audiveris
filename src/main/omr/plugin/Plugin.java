@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2011. All rights reserved.               //
+//  Copyright (C) Herve Bitteur 2000-2012. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -34,10 +34,11 @@ import javax.script.ScriptEngineManager;
 
 /**
  * Class {@code Plugin} describes a plugin instance, encapsulating the
- * relationship with the  underlying javascript file.
+ * relationship with the underlying javascript file.
  *
  * <p>A plugin is meant to describe the connection between Audiveris and an
- * external program, which will consume the MusicXML file exported by Audiveris.</p>
+ * external program, which will consume the MusicXML file exported by
+ * Audiveris.</p>
  *
  * <p>A plugin is a javascript file, meant to export:
  * <dl>
@@ -51,6 +52,7 @@ import javax.script.ScriptEngineManager;
  * is not made by the javascript code, but by Audiveris itself for an easier
  * handling of input and output streams.</dd>
  * </dl>
+ *
  * @author Hervé Bitteur
  */
 public class Plugin
@@ -61,7 +63,6 @@ public class Plugin
     private static final Logger logger = Logger.getLogger(Plugin.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Related javascript file */
     private final File file;
 
@@ -75,12 +76,12 @@ public class Plugin
     private String tip;
 
     //~ Constructors -----------------------------------------------------------
-
     //--------//
     // Plugin //
     //--------//
     /**
      * Creates a new Plugin object.
+     *
      * @param file related javascript file
      */
     public Plugin (File file)
@@ -89,18 +90,16 @@ public class Plugin
 
         evaluateScript();
 
-        if (logger.isFineEnabled()) {
-            logger.info("Created " + this);
-        }
+        logger.fine("Created {0}", this);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------------//
     // getDescription //
     //----------------//
     /**
      * Report a descriptive sentence for this plugin.
+     *
      * @return a sentence meant for tool tip
      */
     public String getDescription ()
@@ -118,6 +117,7 @@ public class Plugin
     //-------//
     /**
      * Report a unique ID for this plugin.
+     *
      * @return plugin unique ID
      */
     public String getId ()
@@ -130,6 +130,7 @@ public class Plugin
     //---------//
     /**
      * Report the asynchronous plugin task on provided score.
+     *
      * @param score the score to process through this plugin
      */
     public Task getTask (Score score)
@@ -142,6 +143,7 @@ public class Plugin
     //----------//
     /**
      * Report a title meant for user interface.
+     *
      * @return a title for this plugin
      */
     public String getTitle ()
@@ -153,17 +155,88 @@ public class Plugin
         }
     }
 
-    //---------//
-    // perform //
-    //---------//
-    /**
-     * Perform this plugin on the provided score instance.
-     * @param score the score to process through this plugin
-     */
-    public void perform (Score score)
+    //-----------//
+    // runPlugin //
+    //-----------//
+    public Void runPlugin (Score score)
     {
-        getTask(score)
-            .execute();
+        // Make sure we have the export file
+        Step exportStep = Steps.valueOf(Steps.EXPORT);
+
+        if (!score.getFirstPage().getSheet().isDone(exportStep)) {
+            logger.info("Getting export from {0} ...", score);
+            Stepping.processScore(Collections.singleton(exportStep), score);
+        }
+
+        final File exportFile = score.getExportFile();
+
+        if (exportFile == null) {
+            logger.warning("Could not get export file");
+
+            return null;
+        }
+
+        // Retrieve proper sequence of command items
+        List<String> args;
+
+        try {
+            logger.fine("{0} doInBackground on {1}", new Object[]{
+                        Plugin.this, exportFile});
+
+            Invocable inv = (Invocable) engine;
+            Object obj = inv.invokeFunction(
+                    "pluginCli",
+                    exportFile.getAbsolutePath());
+
+            args = (List<String>) obj; // Unchecked by compiler
+
+            logger.fine("{0} command args: {1}", new Object[]{Plugin.this,
+                                                              args});
+        } catch (Exception ex) {
+            logger.warning(Plugin.this + " error invoking javascript", ex);
+
+            return null;
+        }
+
+        // Spawn the command
+        try {
+            logger.info("Launching {0} on {1}",
+                        new Object[]{Plugin.this.getTitle(), score.getRadix()});
+
+            ProcessBuilder pb = new ProcessBuilder(args);
+            pb = pb.redirectErrorStream(true);
+
+            Process process = pb.start();
+            InputStream is = process.getInputStream();
+            InputStreamReader isr = new InputStreamReader(is);
+            BufferedReader br = new BufferedReader(isr);
+
+            // Consume process output
+            String line;
+
+            while ((line = br.readLine()) != null) {
+                logger.fine(line);
+            }
+
+            // Wait to get exit value
+            try {
+                int exitValue = process.waitFor();
+
+                if (exitValue != 0) {
+                    logger.warning("{0} exited with value {1}",
+                                   new Object[]{Plugin.this, exitValue});
+                } else {
+                    logger.fine("{0} exit value is {1}",
+                                new Object[]{Plugin.this, exitValue});
+                }
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+        } catch (IOException ex) {
+            logger.warning(Plugin.this + " error launching editor", ex);
+        }
+
+        return null;
     }
 
     //----------//
@@ -175,8 +248,7 @@ public class Plugin
         StringBuilder sb = new StringBuilder("{");
         sb.append(getClass().getSimpleName());
 
-        sb.append(" ")
-          .append(getId());
+        sb.append(" ").append(getId());
 
         sb.append("}");
 
@@ -196,7 +268,7 @@ public class Plugin
 
         try {
             InputStream is = new FileInputStream(file);
-            Reader      reader = new InputStreamReader(is);
+            Reader reader = new InputStreamReader(is);
             engine.eval(reader);
 
             // Retrieve information from script
@@ -208,7 +280,6 @@ public class Plugin
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //------------//
     // PluginTask //
     //------------//
@@ -217,107 +288,25 @@ public class Plugin
      * The lifecycle of this instance is limited to the duration of the task.
      */
     private class PluginTask
-        extends BasicTask
+            extends BasicTask
     {
         //~ Instance fields ----------------------------------------------------
 
         private final Score score;
 
         //~ Constructors -------------------------------------------------------
-
         public PluginTask (Score score)
         {
             this.score = score;
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         @SuppressWarnings("unchecked")
         protected Void doInBackground ()
-            throws InterruptedException
+                throws InterruptedException
         {
-            // Make sure we have the export file
-            Step exportStep = Steps.valueOf(Steps.EXPORT);
-
-            if (!score.getFirstPage()
-                      .getSheet()
-                      .isDone(exportStep)) {
-                logger.info("Getting export from " + score + " ...");
-                Stepping.processScore(Collections.singleton(exportStep), score);
-            }
-
-            final File exportFile = score.getExportFile();
-
-            if (exportFile == null) {
-                logger.warning("Could not get export file");
-
-                return null;
-            }
-
-            // Retrieve proper sequence of command items
-            List<String> args;
-
-            try {
-                if (logger.isFineEnabled()) {
-                    logger.info(
-                        Plugin.this + " doInBackground on " + exportFile);
-                }
-
-                Invocable inv = (Invocable) engine;
-                Object    obj = inv.invokeFunction(
-                    "pluginCli",
-                    exportFile.getAbsolutePath());
-
-                args = (List<String>) obj; // Unchecked by compiler
-
-                if (logger.isFineEnabled()) {
-                    logger.info(Plugin.this + " command args: " + args);
-                }
-            } catch (Exception ex) {
-                logger.warning(Plugin.this + " error invoking javascript", ex);
-
-                return null;
-            }
-
-            // Spawn the command
-            try {
-                ProcessBuilder pb = new ProcessBuilder(args);
-                pb = pb.redirectErrorStream(true);
-
-                Process           process = pb.start();
-                InputStream       is = process.getInputStream();
-                InputStreamReader isr = new InputStreamReader(is);
-                BufferedReader    br = new BufferedReader(isr);
-
-                // Consume process output
-                String line;
-
-                while ((line = br.readLine()) != null) {
-                    if (logger.isFineEnabled()) {
-                        logger.fine(line);
-                    }
-                }
-
-                // Wait to get exit value
-                try {
-                    int exitValue = process.waitFor();
-
-                    if (exitValue != 0) {
-                        logger.warning(
-                            Plugin.this + " exited with value " + exitValue);
-                    } else if (logger.isFineEnabled()) {
-                        logger.info(
-                            Plugin.this + " exit value is " + exitValue);
-                    }
-                } catch (InterruptedException ex) {
-                    ex.printStackTrace();
-                }
-            } catch (IOException ex) {
-                logger.warning(Plugin.this + " error launching editor", ex);
-            }
-
-            return null;
+            return Plugin.this.runPlugin(score);
         }
     }
 }

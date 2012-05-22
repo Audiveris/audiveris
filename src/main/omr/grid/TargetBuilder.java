@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 import javax.imageio.ImageIO;
 import javax.media.jai.InterpolationBilinear;
@@ -94,13 +95,13 @@ public class TargetBuilder
     private TargetPage targetPage;
 
     /** All target lines */
-    private List<TargetLine> allTargetLines = new ArrayList<TargetLine>();
+    private List<TargetLine> allTargetLines = new ArrayList<>();
 
     /** Source points */
-    private List<Point2D> srcPoints = new ArrayList<Point2D>();
+    private List<Point2D> srcPoints = new ArrayList<>();
 
     /** Destination points */
-    private List<Point2D> dstPoints = new ArrayList<Point2D>();
+    private List<Point2D> dstPoints = new ArrayList<>();
 
     /** The dewarp grid */
     private Warp dewarpGrid;
@@ -430,9 +431,9 @@ public class TargetBuilder
         try {
             String path = file.getCanonicalPath();
             ImageIO.write(dewarpedImage, "png", file);
-            logger.info("Wrote " + path);
+            logger.info("Wrote {0}", path);
         } catch (IOException ex) {
-            logger.warning("Could not write " + file);
+            logger.warning("Could not write {0}", file);
         }
     }
 

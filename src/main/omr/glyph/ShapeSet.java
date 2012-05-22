@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2011. All rights reserved.               //
+//  Copyright (C) Herve Bitteur 2000-2012. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -389,7 +389,7 @@ public class ShapeSet
 
         // Keep a specific order?
         if (shapes instanceof List) {
-            this.sortedShapes = new ArrayList<Shape>(shapes);
+            this.sortedShapes = new ArrayList<>(shapes);
         } else {
             this.sortedShapes = null;
         }
@@ -661,7 +661,7 @@ public class ShapeSet
         if (sortedShapes != null) {
             return sortedShapes;
         } else {
-            return new ArrayList<Shape>(shapes);
+            return new ArrayList<>(shapes);
         }
     }
 
@@ -780,8 +780,8 @@ public class ShapeSet
     {
         //~ Static fields/initializers -----------------------------------------
 
-        static final Map<String, ShapeSet> map = new HashMap<String, ShapeSet>();
-        static final List<ShapeSet>        setList = new ArrayList<ShapeSet>();
+        static final Map<String, ShapeSet> map = new HashMap<>();
+        static final List<ShapeSet>        setList = new ArrayList<>();
 
         static {
             for (Field field : ShapeSet.class.getDeclaredFields()) {
@@ -795,6 +795,10 @@ public class ShapeSet
                     }
                 }
             }
+        }
+
+        private Sets ()
+        {
         }
     }
 }

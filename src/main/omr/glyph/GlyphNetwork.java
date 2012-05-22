@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -317,6 +317,7 @@ public class GlyphNetwork
      * @param mode the starting mode of the trainer (scratch or incremental)
      */
     @SuppressWarnings("unchecked")
+    @Override
     public void train (Collection<Glyph> glyphs,
                        Monitor           monitor,
                        StartingMode      mode)
@@ -333,7 +334,7 @@ public class GlyphNetwork
         List[] shapeGlyphs = new List[shapeCount];
 
         for (int i = 0; i < shapeGlyphs.length; i++) {
-            shapeGlyphs[i] = new ArrayList<Glyph>();
+            shapeGlyphs[i] = new ArrayList<>();
         }
 
         for (Glyph glyph : glyphs) {
@@ -342,7 +343,7 @@ public class GlyphNetwork
                              .ordinal()].add(glyph);
         }
 
-        List<Glyph> newGlyphs = new ArrayList<Glyph>();
+        List<Glyph> newGlyphs = new ArrayList<>();
 
         for (List l : shapeGlyphs) {
             int     card = 0;

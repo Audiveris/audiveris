@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Herve Bitteur 2000-2011. All rights reserved.               //
+//  Copyright (C) Herve Bitteur 2000-2012. All rights reserved.               //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -57,7 +57,7 @@ public class ScoreStep
             Mandatory.MANDATORY,
             Redoable.REDOABLE,
             DATA_TAB,
-            "Merge all pages into one score");
+            "Build the final score");
     }
 
     //~ Methods ----------------------------------------------------------------

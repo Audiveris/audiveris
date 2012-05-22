@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -21,8 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code OcrLine} defines an non-mutable structure to report useful
- * info on one OCR-decoded line
+ * Class {@code OcrLine} defines a non-mutable structure to report 
+ * all information on one OCR-decoded line.
  *
  * @author Hervé Bitteur
  */
@@ -37,13 +37,12 @@ public class OcrLine
     public final String value;
 
     /** Chars that compose this line */
-    private final List<OcrChar> chars = new ArrayList<OcrChar>();
+    private final List<OcrChar> chars = new ArrayList<>();
 
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new OcrLine object.
-     *
      * @param fontSize the detected font size, or -1 if not known
      * @param chars the sequence of character descriptors
      * @param value the string ascii value
@@ -74,26 +73,14 @@ public class OcrLine
         }
     }
 
-    //----------//
-    // getChars //
-    //----------//
-    /**
-     * Report the sequence of char descriptors
-     * @return the chars
-     */
-    public List<OcrChar> getChars ()
-    {
-        return chars;
-    }
-
-    //---------------//
-    // getContourBox //
-    //---------------//
+    //-----------//
+    // getBounds //
+    //-----------//
     /**
      * Report the contour box of the line
      * @return the contour box
      */
-    public PixelRectangle getContourBox ()
+    public PixelRectangle getBounds ()
     {
         PixelRectangle contour = null;
 
@@ -108,6 +95,18 @@ public class OcrLine
         }
 
         return contour;
+    }
+
+    //----------//
+    // getChars //
+    //----------//
+    /**
+     * Report the sequence of char descriptors
+     * @return the chars
+     */
+    public List<OcrChar> getChars ()
+    {
+        return chars;
     }
 
     //-----------------//

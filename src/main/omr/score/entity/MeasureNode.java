@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -34,6 +34,7 @@ public abstract class MeasureNode
      * according first to staff index, then to abscissa.
      */
     public static final Comparator<TreeNode> staffComparator = new Comparator<TreeNode>() {
+        @Override
         public int compare (TreeNode tn1,
                             TreeNode tn2)
         {

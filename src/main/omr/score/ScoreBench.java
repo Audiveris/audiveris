@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -122,6 +122,7 @@ public class ScoreBench
     /**
      * Flush the current content of bench to disk
      */
+    @Override
     public final synchronized void flushBench ()
     {
         ScoresManager.getInstance()
@@ -189,7 +190,7 @@ public class ScoreBench
         }
 
         // Sort and store to file
-        SortedSet<String> keys = new TreeSet<String>();
+        SortedSet<String> keys = new TreeSet<>();
 
         for (Object obj : externals.keySet()) {
             String key = (String) obj;
@@ -217,7 +218,7 @@ public class ScoreBench
         Properties  externals = new Properties();
 
         // Retrieve key radices
-        Set<String> radices = new HashSet<String>();
+        Set<String> radices = new HashSet<>();
 
         for (Object obj : props.keySet()) {
             String key = (String) obj;

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -14,11 +14,12 @@ package omr.glyph.facets;
 import omr.util.Navigable;
 
 /**
- * Class {@code BasicFacet} is the root for implementation on any glyph facet
+ * Class {@code BasicFacet} is the root for implementation on any 
+ * glyph facet.
  *
  * @author Hervé Bitteur
  */
-class BasicFacet
+public class BasicFacet
     implements GlyphFacet
 {
     //~ Instance fields --------------------------------------------------------
@@ -47,6 +48,7 @@ class BasicFacet
     //------//
     // dump //
     //------//
+    @Override
     public void dump ()
     {
         // void by default
@@ -55,6 +57,7 @@ class BasicFacet
     //-----------------//
     // invalidateCache //
     //-----------------//
+    @Override
     public void invalidateCache ()
     {
         // void by default

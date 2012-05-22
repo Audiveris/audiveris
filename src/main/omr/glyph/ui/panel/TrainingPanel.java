@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -21,8 +21,6 @@ import static omr.glyph.ui.panel.GlyphTrainer.Task.Activity.*;
 
 import omr.log.Logger;
 
-import omr.math.NeuralNetwork;
-
 import omr.ui.util.Panel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -30,7 +28,6 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -38,6 +35,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.logging.Level;
 
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
@@ -173,10 +171,12 @@ class TrainingPanel
         return component;
     }
 
+    @Override
     public void glyphProcessed (final Glyph glyph)
     {
     }
 
+    @Override
     public void trainingStarted (final int    epochIndex,
                                  final double mse)
     {
@@ -288,8 +288,7 @@ class TrainingPanel
                 if (physicalShape.isTrainable()) {
                     present[physicalShape.ordinal()] = true;
                 } else {
-                    logger.warning(
-                        "Removing non trainable shape:" + physicalShape);
+                    logger.warning("Removing non trainable shape:{0}", physicalShape);
                     it.remove();
                 }
             } catch (Exception ex) {
@@ -300,7 +299,7 @@ class TrainingPanel
 
         for (int i = 0; i < present.length; i++) {
             if (!present[i]) {
-                logger.warning("Missing shape: " + Shape.values()[i]);
+                logger.warning("Missing shape: {0}", Shape.values()[i]);
             }
         }
     }
@@ -390,7 +389,7 @@ class TrainingPanel
             progressBar.setValue(0);
             progressBar.setMaximum(network.getListEpochs());
 
-            List<Glyph> glyphs = new ArrayList<Glyph>();
+            List<Glyph> glyphs = new ArrayList<>();
 
             for (String gName : gNames) {
                 Glyph glyph = repository.getGlyph(gName, selectionPanel);
@@ -399,10 +398,10 @@ class TrainingPanel
                     if (glyph.getShape() != null) {
                         glyphs.add(glyph);
                     } else {
-                        logger.warning("Cannot infer shape from " + gName);
+                        logger.warning("Cannot infer shape from {0}", gName);
                     }
                 } else {
-                    logger.warning("Cannot get glyph " + gName);
+                    logger.warning("Cannot get glyph {0}", gName);
                 }
             }
 

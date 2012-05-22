@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -43,9 +43,9 @@ import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
 
 /**
- * Class {@code Stepping} handles the scheduling of step(s) on a score or a
- * sheet, with notification to the user interface when running in interactive
- * mode.
+ * Class {@code Stepping} handles the scheduling of step(s) on a score
+ * or a sheet, with notification to the user interface when running in
+ * interactive mode.
  *
  * @author Hervé Bitteur
  */
@@ -60,17 +60,16 @@ public class Stepping
     private static final Logger logger = Logger.getLogger(Stepping.class);
 
     //--------------------------------------------------------------------------
-
     /** Related progress monitor when used in interactive mode */
     private static volatile StepMonitor monitor;
 
     //~ Methods ----------------------------------------------------------------
-
     //---------------//
     // createMonitor //
     //---------------//
     /**
      * Allows to couple the steps with a UI.
+     *
      * @return the monitor to deal with steps
      */
     public static StepMonitor createMonitor ()
@@ -82,23 +81,20 @@ public class Stepping
     // doOneSheetStep //
     //----------------//
     /**
-     * At sheet level, do just one specified step, synchronously, with display
-     * of related UI and recording of the step into the script
+     * At sheet level, do just one specified step, synchronously, with
+     * display of related UI and recording of the step into the script.
      *
-     * @param step the step to perform
+     * @param step  the step to perform
      * @param sheet the sheet to be processed
      * @throws StepException
      */
-    public static void doOneSheetStep (final Step             step,
-                                       Sheet                  sheet,
+    public static void doOneSheetStep (final Step step,
+                                       Sheet sheet,
                                        Collection<SystemInfo> systems)
-        throws StepException
+            throws StepException
     {
         long startTime = System.currentTimeMillis();
-
-        if (logger.isFineEnabled()) {
-            logger.fine(sheet.getLogPrefix() + step + " starting");
-        }
+        logger.fine("{0}{1} starting", new Object[]{sheet.getLogPrefix(), step});
 
         // Standard processing on an existing sheet
         step.doStep(systems, sheet);
@@ -110,23 +106,19 @@ public class Stepping
 
         final long stopTime = System.currentTimeMillis();
         final long duration = stopTime - startTime;
-
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                sheet.getLogPrefix() + step + " completed in " + duration +
-                " ms");
-        }
+        logger.fine("{0}{1} completed in {2} ms", new Object[]{sheet.
+                    getLogPrefix(), step, duration});
 
         // Record this in sheet->score bench
-        sheet.getBench()
-             .recordStep(step, duration);
+        sheet.getBench().recordStep(step, duration);
     }
 
     //------------------------//
     // getLatestMandatoryStep //
     //------------------------//
     /**
-     * Report the latest mandatory step done so far with the related sheet
+     * Report the latest mandatory step done so far with the related sheet.
+     *
      * @return the latest mandatory step done, or null
      */
     public static Step getLatestMandatoryStep (Sheet sheet)
@@ -148,14 +140,15 @@ public class Stepping
     // getLatestStep //
     //---------------//
     /**
-     * Report the latest step done so far with the related sheet
+     * Report the latest step done so far with the related sheet.
+     *
      * @return the latest step done, or null
      */
     public static Step getLatestStep (Sheet sheet)
     {
-        for (ListIterator<Step> it = Steps.values()
-                                          .listIterator(Steps.values().size());
-             it.hasPrevious();) {
+        for (ListIterator<Step> it = Steps.values().listIterator(Steps.values().
+                size());
+                it.hasPrevious();) {
             Step step = it.previous();
 
             if (step.isDone(sheet)) {
@@ -171,27 +164,30 @@ public class Stepping
     //-----------------//
     /**
      * Notify the UI part that we have reached the provided step in the
-     * provided sheet
+     * provided sheet.
+     *
      * @param sheet the sheet concerned
-     * @param step the step just done
+     * @param step  the step just done
      */
     public static void notifyFinalStep (final Sheet sheet,
-                                        final Step  step)
+                                        final Step step)
     {
         if (monitor != null) {
             SwingUtilities.invokeLater(
-                new Runnable() {
+                    new Runnable()
+                    {
+
+                        @Override
                         public void run ()
                         {
                             // Update sheet view for this step
                             step.displayUI(sheet);
-                            sheet.getAssembly()
-                                 .selectViewTab(step);
+                            sheet.getAssembly().selectViewTab(step);
 
                             // Call attention to this sheet (only if displayed), 
                             // so that score-dependent actions can get enabled.
                             SheetsController ctrl = SheetsController.getInstance();
-                            Sheet            currentSheet = ctrl.getSelectedSheet();
+                            Sheet currentSheet = ctrl.getSelectedSheet();
 
                             if (currentSheet == sheet) {
                                 ctrl.callAboutSheet(sheet);
@@ -205,7 +201,8 @@ public class Stepping
     // notifyProgress //
     //----------------//
     /**
-     * When running interactively, move slightly the progress bar animation
+     * When running interactively, move slightly the progress bar
+     * animation.
      */
     public static void notifyProgress ()
     {
@@ -222,15 +219,14 @@ public class Stepping
      * intermediate steps).
      * <p>This method is used from the CLI, from a script or from the Step menu
      * (via the StepTask), and from the drag&drop handler.
+     *
      * @param desiredSteps the desired steps
-     * @param score the processed score (and its sheets)
+     * @param score        the processed score (and its sheets)
      */
     public static void processScore (Set<Step> desiredSteps,
-                                     Score     score)
+                                     Score score)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("processScore " + desiredSteps + " on " + score);
-        }
+        logger.fine("processScore {0} on {1}", new Object[]{desiredSteps, score});
 
         // Sanity checks
         if (score == null) {
@@ -242,29 +238,27 @@ public class Stepping
         }
 
         // Determine the precise ordered collection of steps to perform
-        SortedSet<Step> orderedSteps = new TreeSet<Step>(comparator);
+        SortedSet<Step> orderedSteps = new TreeSet<>(comparator);
         orderedSteps.addAll(desiredSteps);
 
         try {
             // Determine starting step and stopping step
-            Step start = null;
-            Step stop = null;
+            Step start;
+            Step stop;
 
-            if (score.getPages()
-                     .isEmpty()) {
+            if (score.getPages().isEmpty()) {
                 // Create score pages if not yet done
                 score.createPages();
                 start = first;
                 stop = orderedSteps.last();
             } else {
                 // Use a score sheet to retrieve the latest mandatory step
-                Sheet sheet = score.getFirstPage()
-                                   .getSheet();
-                Step  latest = getLatestMandatoryStep(sheet);
-                Step  firstDesired = orderedSteps.first();
+                Sheet sheet = score.getFirstPage().getSheet();
+                Step latest = getLatestMandatoryStep(sheet);
+                Step firstDesired = orderedSteps.first();
                 start = (latest == null) ? first
                         : ((latest == firstDesired) ? firstDesired : next(
-                    latest));
+                           latest));
                 stop = (Steps.compare(latest, orderedSteps.last()) >= 0)
                        ? latest : orderedSteps.last();
             }
@@ -290,8 +284,7 @@ public class Stepping
 
             // Record the step tasks to script
             for (Step step : desiredSteps) {
-                score.getScript()
-                     .addTask(new StepTask(step));
+                score.getScript().addTask(new StepTask(step));
             }
         } catch (ProcessingCancellationException pce) {
             throw pce;
@@ -304,24 +297,22 @@ public class Stepping
     // reprocessSheet //
     //----------------//
     /**
-     * For just a given sheet, update the steps already done, starting from the
-     * provided step.
+     * For just a given sheet, update the steps already done, starting 
+     * from the provided step.
      * This method will try to minimize the systems to rebuild in each step, by
      * processing only the provided "impacted" systems.
      *
-     * @param step the step to restart from
+     * @param step            the step to restart from
      * @param impactedSystems the ordered set of systems to rebuild, or null
      * if all systems must be rebuilt
-     * @param imposed flag to indicate that update is imposed
+     * @param imposed         flag to indicate that update is imposed
      */
-    public static void reprocessSheet (Step                   step,
-                                       Sheet                  sheet,
+    public static void reprocessSheet (Step step,
+                                       Sheet sheet,
                                        Collection<SystemInfo> impactedSystems,
-                                       boolean                imposed)
+                                       boolean imposed)
     {
-        if (logger.isFineEnabled()) {
-            logger.fine("reprocessSheet " + step + " on " + sheet);
-        }
+        logger.fine("reprocessSheet {0} on {1}", new Object[]{step, sheet});
 
         // Sanity checks
         if (SwingUtilities.isEventDispatchThread()) {
@@ -333,8 +324,7 @@ public class Stepping
         }
 
         // Check whether the update must really be done
-        if (!imposed && !ScoreActions.getInstance()
-                                     .isRebuildAllowed()) {
+        if (!imposed && !ScoreActions.getInstance().isRebuildAllowed()) {
             return;
         }
 
@@ -343,15 +333,12 @@ public class Stepping
             impactedSystems = sheet.getSystems();
         }
 
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                sheet.getLogPrefix() + "Rebuild launched from " + step + " on" +
-                SystemInfo.toString(impactedSystems));
-        }
+        logger.fine("{0}Rebuild launched from {1} on{2}", new Object[]{sheet.
+                    getLogPrefix(), step, SystemInfo.toString(impactedSystems)});
 
         // Rebuild from specified step, if needed
         if (shouldReprocessSheet(step, sheet)) {
-            Step            latest = getLatestMandatoryStep(sheet);
+            Step latest = getLatestMandatoryStep(sheet);
 
             // The range of steps to re-perform
             SortedSet<Step> stepRange = range(step, latest);
@@ -374,11 +361,13 @@ public class Stepping
     // shouldReprocessSheet //
     //----------------------//
     /**
-     * Check whether some steps need to be reperformed, starting from step 'from'
+     * Check whether some steps need to be reperformed, starting from step
+     * 'from'
+     *
      * @param from the step to rebuild from
      * @return true if some reprocessing must take place
      */
-    public static boolean shouldReprocessSheet (Step  from,
+    public static boolean shouldReprocessSheet (Step from,
                                                 Sheet sheet)
     {
         Step latest = getLatestMandatoryStep(sheet);
@@ -393,23 +382,19 @@ public class Stepping
      * At score level, do just one specified step, synchronously, with display
      * of related UI and recording of the step into the script
      *
-     * @param step the step to perform
+     * @param step  the step to perform
      * @param score the score to be processed
      * @throws StepException
      */
     private static void doOneScoreStep (final Step step,
-                                        Score      score)
-        throws StepException
+                                        Score score)
+            throws StepException
     {
         long startTime = System.currentTimeMillis();
-
-        if (logger.isFineEnabled()) {
-            logger.fine(step + " Starting");
-        }
+        logger.fine("{0} Starting", step);
 
         // Standard processing (using first sheet)
-        Sheet sheet = score.getFirstPage()
-                           .getSheet();
+        Sheet sheet = score.getFirstPage().getSheet();
         step.doStep(null, sheet);
 
         // Update user interface if any
@@ -419,14 +404,10 @@ public class Stepping
 
         final long stopTime = System.currentTimeMillis();
         final long duration = stopTime - startTime;
-
-        if (logger.isFineEnabled()) {
-            logger.fine(step + " completed in " + duration + " ms");
-        }
+        logger.fine("{0} completed in {1} ms", new Object[]{step, duration});
 
         // Record this in score bench
-        score.getBench()
-             .recordStep(step, duration);
+        score.getBench().recordStep(step, duration);
     }
 
     //----------------//
@@ -440,29 +421,32 @@ public class Stepping
      * the value of constant 'pagesInParallel'.</p>
      *
      * @param stepSet the set of steps
-     * @param score the score to be processed
+     * @param score   the score to be processed
      * @throws StepException
      */
     private static void doScoreStepSet (final SortedSet<Step> stepSet,
-                                        final Score           score)
+                                        final Score score)
     {
         if (score.isMultiPage()) {
             if (constants.pagesInParallel.getValue()) {
                 // Process all sheets in parallel
-                List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
+                List<Callable<Void>> tasks = new ArrayList<>();
 
-                for (TreeNode pn : new ArrayList<TreeNode>(score.getPages())) {
+                for (TreeNode pn : new ArrayList<>(score.getPages())) {
                     final Page page = (Page) pn;
 
                     tasks.add(
-                        new Callable<Void>() {
+                            new Callable<Void>()
+                            {
+
+                                @Override
                                 public Void call ()
-                                    throws StepException
+                                        throws StepException
                                 {
                                     doSheetStepSet(
-                                        stepSet,
-                                        page.getSheet(),
-                                        null);
+                                            stepSet,
+                                            page.getSheet(),
+                                            null);
 
                                     return null;
                                 }
@@ -470,14 +454,14 @@ public class Stepping
                 }
 
                 try {
-                    List<Future<Void>> futures = OmrExecutors.getCachedLowExecutor()
-                                                             .invokeAll(tasks);
+                    List<Future<Void>> futures = OmrExecutors.
+                            getCachedLowExecutor().invokeAll(tasks);
                 } catch (InterruptedException ex) {
                     logger.warning("Error in parallel doScoreStepSet", ex);
                 }
             } else {
                 // Process one sheet after the other
-                for (TreeNode pn : new ArrayList<TreeNode>(score.getPages())) {
+                for (TreeNode pn : new ArrayList<>(score.getPages())) {
                     Page page = (Page) pn;
 
                     doSheetStepSet(stepSet, page.getSheet(), null);
@@ -496,13 +480,14 @@ public class Stepping
      * At sheet level, perform a set of steps, with online progress monitor.
      * If any step in the step set throws {@link StepException} the processing
      * is stopped.
+     *
      * @param stepSet the set of steps
-     * @param sheet the sheet to be processed
+     * @param sheet   the sheet to be processed
      * @params systems the impacted systems (null for all of them)
      * @throws StepException if processing must stop
      */
-    private static void doSheetStepSet (SortedSet<Step>        stepSet,
-                                        Sheet                  sheet,
+    private static void doSheetStepSet (SortedSet<Step> stepSet,
+                                        Sheet sheet,
                                         Collection<SystemInfo> systems)
     {
         try {
@@ -511,9 +496,8 @@ public class Stepping
                 doOneSheetStep(step, sheet, systems);
             }
         } catch (StepException se) {
-            logger.info(
-                sheet.getLogPrefix() + "Processing stopped. " +
-                se.getMessage());
+            logger.info("{0}Processing stopped. {1}", new Object[]{sheet.
+                        getLogPrefix(), se.getMessage()});
         }
     }
 
@@ -524,7 +508,7 @@ public class Stepping
      * Notify a simple message, which may be not related to any step.
      *
      * @param msg the message to display on the UI window, or to write in the
-     *            log if there is no UI.
+     * log if there is no UI.
      */
     private static void notifyMsg (String msg)
     {
@@ -572,19 +556,20 @@ public class Stepping
      * some steps have specific requirements
      *
      * @param orderedSet the sequence of steps
-     * @param score the score to process
+     * @param score      the score to process
      */
     private static void scheduleScoreStepSet (SortedSet<Step> orderedSet,
-                                              Score           score)
+                                              Score score)
     {
         // Make a copy, so that we can modify the step set locally
-        SortedSet<Step> stepSet = new TreeSet<Step>(orderedSet);
+        SortedSet<Step> stepSet = new TreeSet<>(orderedSet);
 
         if (stepSet.isEmpty()) {
             return;
         }
-
-        logger.info(score.getRadix() + " scheduling " + stepSet);
+        
+        logger.info("{0}scheduling {1}",
+                    new Object[]{score.getLogPrefix(), stepSet});
 
         long startTime = System.currentTimeMillis();
         notifyStart();
@@ -595,22 +580,20 @@ public class Stepping
             Step scaleStep = Steps.valueOf(Steps.SCALE);
 
             if (stepSet.contains(scaleStep)) {
-                SortedSet<Step> single = new TreeSet<Step>(comparator);
+                SortedSet<Step> single = new TreeSet<>(comparator);
                 single.add(scaleStep);
                 stepSet.remove(scaleStep);
 
                 doScoreStepSet(single, score);
 
-                if (!score.isMultiPage() &&
-                    (score.getFirstPage()
-                          .getSheet()
-                          .getScale() == null)) {
+                if (!score.isMultiPage()
+                        && (score.getFirstPage().getSheet().getScale() == null)) {
                     throw new StepException("No scale available");
                 }
             }
 
             // Perform the remaining steps at sheet level, if any
-            SortedSet<Step> sheetSet = new TreeSet<Step>(comparator);
+            SortedSet<Step> sheetSet = new TreeSet<>(comparator);
 
             for (Step step : stepSet) {
                 if (!step.isScoreLevel()) {
@@ -639,31 +622,31 @@ public class Stepping
                 }
             }
         } catch (StepException se) {
-            logger.info("Processing stopped. " + se.getMessage());
+            logger.info("Processing stopped. {0}", se.getMessage());
         } finally {
             notifyStop();
         }
 
-        if (logger.isFineEnabled()) {
-            long stopTime = System.currentTimeMillis();
-            logger.fine(
-                "End of step set in " + (stopTime - startTime) + " ms.");
-        }
+        long stopTime = System.currentTimeMillis();
+        logger.fine("End of step set in {0} ms.", (stopTime - startTime));
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         /** Should we apply steps in parallel (vs in sequence) on score pages */
         Constant.Boolean pagesInParallel = new Constant.Boolean(
-            false,
-            "Should we process score pages in parallel?");
+                false,
+                "Should we process score pages in parallel?");
+    }
+
+    private Stepping ()
+    {
     }
 }
