@@ -54,7 +54,9 @@ public enum TextRole
     /** A creator (composer, etc...) */
     Creator,
     /** Copyright notice */
-    Rights;
+    Rights,
+    /** Chord mark */
+    Chord;
     /*  */
 
     /** Specific application parameters */

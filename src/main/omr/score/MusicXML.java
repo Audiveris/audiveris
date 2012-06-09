@@ -23,6 +23,7 @@ import proxymusic.AccidentalText;
 import proxymusic.BarStyle;
 import proxymusic.Empty;
 import proxymusic.EmptyPlacement;
+import proxymusic.KindValue;
 import proxymusic.ObjectFactory;
 import proxymusic.Step;
 import proxymusic.StrongAccent;
@@ -323,5 +324,18 @@ public class MusicXML
     public static Step stepOf (omr.score.entity.Note.Step step)
     {
         return Step.fromValue(step.toString());
+    }
+
+    //--------//
+    // kindOf //
+    //--------//
+    /**
+     * Convert from Audiveris ChordStatement.Type type to Proxymusic KindValue type
+     * @param type Audiveris enum ChordStatement.Type
+     * @return Proxymusic enum KindValue
+     */
+    public static KindValue kindOf (omr.score.entity.ChordStatement.Type type)
+    {
+        return KindValue.valueOf(type.toString());
     }
 }

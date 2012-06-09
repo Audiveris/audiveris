@@ -151,7 +151,11 @@ public class Chord
     /** Directions (loosely) related to this chord */
     private List<Direction> directions = new ArrayList<>();
 
+    /** Chord Statements related to this chord */
+    private List<ChordStatement> chordStatements = new ArrayList<>();
+
     //~ Constructors -----------------------------------------------------------
+
     //-------//
     // Chord //
     //-------//
@@ -424,6 +428,20 @@ public class Chord
         directions.add(direction);
     }
 
+    //-------------------//
+    // addChordStatement //
+    //-------------------//
+    /**
+     * Add a chord statement element that should appear right before
+     * the chord first note
+     *
+     * @param chordStatement the chord statement to add
+     */
+    public void addChordStatement (ChordStatement chordStatement)
+    {
+        chordStatements.add(chordStatement);
+    }
+
     //--------------//
     // addFlagGlyph //
     //--------------//
@@ -633,6 +651,19 @@ public class Chord
     public Collection<? extends Direction> getDirections ()
     {
         return directions;
+    }
+
+    //--------------------//
+    // getChordStatements //
+    //--------------------//
+    /**
+     * Report the chord statements loosely related to this chord
+     *
+     * @return the collection of related chord statements, perhaps empty
+     */
+    public Collection<? extends ChordStatement> getChordStatements ()
+    {
+        return chordStatements;
     }
 
     //---------------//

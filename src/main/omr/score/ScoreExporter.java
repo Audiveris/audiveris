@@ -28,6 +28,7 @@ import omr.score.entity.Articulation;
 import omr.score.entity.Barline;
 import omr.score.entity.Beam;
 import omr.score.entity.Chord;
+import omr.score.entity.ChordStatement;
 import omr.score.entity.Clef;
 import omr.score.entity.Coda;
 import omr.score.entity.DirectionStatement;
@@ -88,8 +89,10 @@ import proxymusic.Encoding;
 import proxymusic.FontStyle;
 import proxymusic.FormattedText;
 import proxymusic.Forward;
+import proxymusic.Harmony;
 import proxymusic.Identification;
 import proxymusic.Key;
+import proxymusic.Kind;
 import proxymusic.Lyric;
 import proxymusic.LyricFont;
 import proxymusic.MarginType;
@@ -107,6 +110,9 @@ import proxymusic.PartName;
 import proxymusic.Pitch;
 import proxymusic.Repeat;
 import proxymusic.RightLeftMiddle;
+import proxymusic.Root;
+import proxymusic.RootStep;
+import proxymusic.RootAlter;
 import proxymusic.Scaling;
 import proxymusic.ScoreInstrument;
 import proxymusic.ScorePartwise;
@@ -660,6 +666,79 @@ public class ScoreExporter
         return true;
     }
 
+    //----------------------//
+    // visit ChordStatement //
+    //----------------------//
+    @Override
+    public boolean visit (ChordStatement words)
+    {
+        try {
+            logger.fine("Visiting {0}", words);
+
+            String content = words.getText().getContent();
+            Staff staff = current.note.getStaff();
+
+            Harmony harmony = factory.createHarmony();
+
+            Kind kind = null;
+
+            // Root
+            Root root = factory.createRoot();
+            RootStep step = factory.createRootStep();
+            step.setValue(stepOf(words.getStep()));
+            step.setText(content);
+
+            step.setDefaultY(yOf(words.getReferencePoint(), staff));
+
+            // font-size
+            step.setFontSize(
+                    "" + (words.getText().getFontSize() * TextFont.TO_POINT));
+
+            // relative-x
+            step.setRelativeX(
+                    toTenths(
+                    words.getReferencePoint().x
+                    - current.note.getCenterLeft().x));
+
+            root.setRootStep(step);
+
+            // RootAlter
+            if (words.getAlter() != 0) {
+                RootAlter alter = factory.createRootAlter();
+                alter.setValue(new BigDecimal(words.getAlter()));
+                alter.setPrintObject(YesNo.NO);
+                root.setRootAlter(alter);
+            }
+
+            if (words.getType() != ChordStatement.Type.MAJOR) {
+                kind = factory.createKind();
+                kind.setValue(kindOf(words.getType()));
+                kind.setText("");
+            }
+
+            // Staff
+            insertStaffId(harmony, staff);
+
+            // Placement
+            harmony.setPlacement(
+                    (words.getReferencePoint().y < current.note.getCenter().y)
+                    ? AboveBelow.ABOVE : AboveBelow.BELOW);
+
+            // Everything is now OK
+            harmony.getHarmonyChord().add(root);
+            if (kind != null) {
+                harmony.getHarmonyChord().add(kind);
+            }
+            current.pmMeasure.getNoteOrBackupOrForward().add(harmony);
+        } catch (Exception ex) {
+            logger.warning(
+                    getClass().getSimpleName() + " Error visiting " + words,
+                    ex);
+        }
+
+        return true;
+    }
+
     //----------------//
     // visit Dynamics //
     //----------------//
@@ -1118,6 +1197,9 @@ public class ScoreExporter
             // Chord direction events for first note in chord
             if (chord.getNotes().indexOf(note) == 0) {
                 for (omr.score.entity.Direction node : chord.getDirections()) {
+                    node.accept(this);
+                }
+                for (omr.score.entity.ChordStatement node : chord.getChordStatements()) {
                     node.accept(this);
                 }
             }
@@ -1863,7 +1945,7 @@ public class ScoreExporter
             case UnknownRole:
                 break;
 
-            default: // LyricsItem, Direction
+            default: // LyricsItem, Direction, Chord
 
                 // Handle them through related Note
                 return false;

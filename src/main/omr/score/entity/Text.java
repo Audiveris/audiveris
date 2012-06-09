@@ -148,6 +148,7 @@ public abstract class Text
      * <li>a Creator</li>
      * <li>a Copyright</li>
      * <li>one or several LyricsItem entities</li>
+     * <li>a Chord Statement</li>
      * </ul>
      *
      * @param sentence the whole sentence
@@ -233,6 +234,18 @@ public abstract class Text
 
             case Rights:
                 sentence.setGlyphsTranslation(new RightsText(sentence));
+
+                break;
+
+            case Chord:
+                measure = systemPart.getMeasureAt(location);
+                sentence.setGlyphsTranslation(
+                        new ChordStatement(
+                        measure,
+                        location,
+                        measure.getEventChord(location),
+                        sentence,
+                        new ChordText(sentence)));
 
                 break;
 
@@ -501,6 +514,21 @@ public abstract class Text
         //~ Constructors -------------------------------------------------------
 
         public RightsText (Sentence sentence)
+        {
+            super(sentence);
+        }
+    }
+
+    //------------//
+    // ChordText //
+    //------------//
+    /** Subclass of Text, dedicated to a chord marker. */
+    public static class ChordText
+            extends Text
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public ChordText (Sentence sentence)
         {
             super(sentence);
         }

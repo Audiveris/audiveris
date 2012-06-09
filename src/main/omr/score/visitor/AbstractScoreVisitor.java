@@ -17,6 +17,7 @@ import omr.score.entity.Articulation;
 import omr.score.entity.Barline;
 import omr.score.entity.Beam;
 import omr.score.entity.Chord;
+import omr.score.entity.ChordStatement;
 import omr.score.entity.Clef;
 import omr.score.entity.Coda;
 import omr.score.entity.DirectionStatement;
@@ -135,6 +136,15 @@ public class AbstractScoreVisitor
     //--------------------------//
     @Override
     public boolean visit (DirectionStatement words)
+    {
+        return true;
+    }
+
+    //----------------------//
+    // visit ChordStatement //
+    //----------------------//
+    @Override
+    public boolean visit (ChordStatement words)
     {
         return true;
     }
