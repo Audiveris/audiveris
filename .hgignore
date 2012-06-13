@@ -43,5 +43,5 @@ dev/material/*.jpg
 train/core/*
 dev/externals
 dev/tools
-ocr/tessdata/*
+eval/backup-neural-network.xml
 run.properties
