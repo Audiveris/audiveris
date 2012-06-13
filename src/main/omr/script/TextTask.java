@@ -24,8 +24,8 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlAttribute;
 
 /**
- * Class {@code TextTask} records the assignment of textual characteristics to a
- * collection of glyphs
+ * Class {@code TextTask} records the assignment of textual 
+ * characteristics to a collection of glyphs.
  *
  * @author Hervé Bitteur
  */
@@ -92,14 +92,12 @@ public class TextTask
     public void core (Sheet sheet)
         throws Exception
     {
-        sheet.getSymbolsController()
-             .getModel()
-             .assignText(
-            getInitialGlyphs(),
-            type,
-            role,
-            content,
-            Evaluation.MANUAL);
+        sheet.getSymbolsController().getModel().assignText(
+                getInitialGlyphs(),
+                type,
+                role,
+                content,
+                Evaluation.MANUAL);
     }
 
     //-----------------//

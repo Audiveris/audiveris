@@ -33,8 +33,7 @@ import org.jdesktop.application.Task;
  * UI module should do.</p>
  *
  * <p>Running a task has the side-effect of writing this task in the current
- * score script, unless the task is defined as not recordable. This is the case
- * of the {@link PlayTask}.</p>
+ * score script, unless the task is defined as not recordable.</p>
  *
  * @author Hervé Bitteur
  */

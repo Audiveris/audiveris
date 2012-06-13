@@ -41,6 +41,7 @@ public class BasicGlyphChain
             BasicGlyphChain.class);
 
     //~ Instance fields --------------------------------------------------------
+    //
     /** Abscissa-ordered collection of items */
     private final SortedSet<Glyph> items = Glyphs.sortedSet();
 

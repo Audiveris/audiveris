@@ -304,7 +304,7 @@ public class UnitManager
             String unit = st.nextToken();
 
             try {
-                //log ("pre-loading '" + unit + "'...");
+                ///System.out.println ("pre-loading '" + unit + "'...");
                 Class.forName(unit); // This loads its ConstantSet and Logger
                                      //log ("unit '" + unit + "' pre-loaded");
             } catch (ClassNotFoundException ex) {

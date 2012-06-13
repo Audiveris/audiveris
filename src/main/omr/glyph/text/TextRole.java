@@ -31,7 +31,7 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 /**
- * Class {@code TextRole} describes the role of a piece of text 
+ * Class {@code TextRole} describes the role of a piece of text
  * (typically a sentence).
  *
  * @author Hervé Bitteur
@@ -57,7 +57,6 @@ public enum TextRole
     Rights,
     /** Chord mark */
     Chord;
-    /*  */
 
     /** Specific application parameters */
     private static final Constants constants = new Constants();
@@ -70,6 +69,7 @@ public enum TextRole
     //-----------------//
     /**
      * Forge a string to be used in lieu of real text value.
+     *
      * @param NbOfChars the number of characters desired
      * @return a dummy string of NbOfChars chars
      */
@@ -117,9 +117,10 @@ public enum TextRole
     // guessRole //
     //-----------//
     /**
-     * Try to infer the role of this textual item. 
+     * Try to infer the role of this textual item.
      * For the time being, this is a simple algorithm based on sentence location
      * within the page.
+     *
      * @param glyph      the (only) sentence glyph
      * @param systemInfo the containing system
      * @return the role information inferred for the provided sentence glyph
@@ -180,7 +181,10 @@ public enum TextRole
         boolean highText = box.height >= minTitleHeight;
 
         logger.fine(
-                "{0} firstSystem={1} lastSystem={2} systemPosition={3} partPosition={4} closeToStaff={5} leftOfStaves={6} pageCentered={7} rightAligned={8} shortSentence={9} highText={10}",
+                "{0} firstSystem={1} lastSystem={2} systemPosition={3}"
+                + " partPosition={4} closeToStaff={5} leftOfStaves={6}"
+                + " pageCentered={7} rightAligned={8} shortSentence={9}"
+                + " highText={10}",
                 new Object[]{glyph, firstSystem, lastSystem, systemPosition,
                              partPosition, closeToStaff, leftOfStaves,
                              pageCentered, rightAligned, shortSentence,
@@ -188,52 +192,52 @@ public enum TextRole
 
         // Decisions ...
         switch (systemPosition) {
-            case ABOVE_STAVES: // Title, Number, Creator, Direction (Accord)
+        case ABOVE_STAVES: // Title, Number, Creator, Direction (Chord)
 
-                if (tinySentence) {
-                    return new RoleInfo(TextRole.UnknownRole);
-                }
+            if (tinySentence) {
+                return new RoleInfo(TextRole.UnknownRole);
+            }
 
-                if (leftOfStaves) {
-                    return new RoleInfo(
-                            TextRole.Creator,
-                            Text.CreatorText.CreatorType.poet);
-                } else if (rightAligned) {
-                    return new RoleInfo(
-                            TextRole.Creator,
-                            Text.CreatorText.CreatorType.composer);
-                } else if (closeToStaff) {
-                    return new RoleInfo(TextRole.Direction);
-                } else if (pageCentered) { // Title, Number
+            if (leftOfStaves) {
+                return new RoleInfo(
+                        TextRole.Creator,
+                        Text.CreatorText.CreatorType.lyricist);
+            } else if (rightAligned) {
+                return new RoleInfo(
+                        TextRole.Creator,
+                        Text.CreatorText.CreatorType.composer);
+            } else if (closeToStaff) {
+                return new RoleInfo(TextRole.Direction);
+            } else if (pageCentered) { // Title, Number
 
-                    if (highText) {
-                        return new RoleInfo(TextRole.Title);
-                    } else {
-                        return new RoleInfo(TextRole.Number);
-                    }
-                }
-
-                break;
-
-            case WITHIN_STAVES: // Name, Lyrics, Direction
-
-                if (leftOfStaves) {
-                    return new RoleInfo(TextRole.Name);
-                } else if (partPosition == StaffPosition.BELOW_STAVES) {
-                    return new RoleInfo(TextRole.Lyrics);
+                if (highText) {
+                    return new RoleInfo(TextRole.Title);
                 } else {
-                    return new RoleInfo(TextRole.Direction);
+                    return new RoleInfo(TextRole.Number);
                 }
+            }
 
-            case BELOW_STAVES: // Copyright
+            break;
 
-                if (tinySentence) {
-                    return new RoleInfo(TextRole.UnknownRole);
-                }
+        case WITHIN_STAVES: // Name, Lyrics, Direction
 
-                if (pageCentered && shortSentence && lastSystem) {
-                    return new RoleInfo(TextRole.Rights);
-                }
+            if (leftOfStaves) {
+                return new RoleInfo(TextRole.Name);
+            } else if (partPosition == StaffPosition.BELOW_STAVES) {
+                return new RoleInfo(TextRole.Lyrics);
+            } else {
+                return new RoleInfo(TextRole.Direction);
+            }
+
+        case BELOW_STAVES: // Copyright
+
+            if (tinySentence) {
+                return new RoleInfo(TextRole.UnknownRole);
+            }
+
+            if (pageCentered && shortSentence && lastSystem) {
+                return new RoleInfo(TextRole.Rights);
+            }
         }
 
         // Default

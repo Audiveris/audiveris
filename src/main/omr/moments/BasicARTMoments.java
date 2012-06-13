@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.moments;
 
-import java.util.Locale;
-
 /**
  * Class {@code BasicARTMoments} implements a basic region-based
  * shape descriptor.

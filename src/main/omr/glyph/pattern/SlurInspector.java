@@ -369,7 +369,7 @@ public class SlurInspector
          * used to rebuild the stuck object(s).
          */
         if (oldSlur.isVip() || logger.isFineEnabled()) {
-            logger.info("Trimming slur #{0}", oldSlur.getId());
+            logger.info("Trimming slur {0}", oldSlur.idString());
         }
 
         // Get a COPY of the member list, sorted by decreasing weight */

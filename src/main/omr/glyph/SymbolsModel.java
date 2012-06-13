@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import omr.glyph.text.Sentence;
 
 /**
  * Class {@code SymbolsModel} is a GlyphsModel specifically meant for
@@ -84,13 +85,21 @@ public class SymbolsModel
     {
         // Do the job
         for (Glyph glyph : glyphs) {
+            Sentence sentence = glyph.getSentence();
+
             // Assign creator type?
             if (textRole == TextRole.Creator) {
                 glyph.setCreatorType(textType);
+                if (sentence != null) {
+                    sentence.setCreatorType(textType);
+                }
             }
 
             // Assign text role
             glyph.setTextRole(textRole);
+            if (sentence != null) {
+                sentence.setTextRole(textRole);
+            }
 
             // Assign text only if it is not empty
             if ((textContent != null) && (textContent.length() > 0)) {
@@ -144,7 +153,7 @@ public class SymbolsModel
          * and the neighboring (non-assigned) glyphs.
          */
         Set<SystemInfo> impactedSystems = new HashSet<>();
-
+        
         for (Glyph stem : stems) {
             SystemInfo system = sheet.getSystemOf(stem);
             system.removeGlyph(stem);
@@ -162,7 +171,7 @@ public class SymbolsModel
     // deassignGlyph //
     //---------------//
     /**
-     * Deassign the shape of a glyph. 
+     * Deassign the shape of a glyph.
      * This overrides the basic deassignment, in order to delegate the handling
      * of some specific shapes.
      *
@@ -181,17 +190,17 @@ public class SymbolsModel
         case STEM:
             logger.fine("Deassigning a Stem as glyph {0}", glyph.getId());
             cancelStems(Collections.singletonList(glyph));
-
+            
             break;
-
+        
         case NOISE:
             logger.info("Skipping Noise as glyph {0}", glyph.getId());
-
+            
             break;
-
+        
         default:
             super.deassignGlyph(glyph);
-
+            
             break;
         }
     }
@@ -203,7 +212,7 @@ public class SymbolsModel
                                boolean isShort)
     {
         deassignGlyphs(glyphs);
-
+        
         for (Glyph glyph : new ArrayList<>(glyphs)) {
             SystemInfo system = sheet.getSystemOf(glyph);
             system.segmentGlyphOnStems(glyph, isShort);
@@ -216,16 +225,16 @@ public class SymbolsModel
     public void trimSlurs (Collection<Glyph> glyphs)
     {
         List<Glyph> slurs = new ArrayList<>();
-
+        
         for (Glyph glyph : new ArrayList<>(glyphs)) {
             SystemInfo system = sheet.getSystemOf(glyph);
             Glyph slur = system.trimSlur(glyph);
-
+            
             if (slur != null) {
                 slurs.add(slur);
             }
         }
-
+        
         if (!slurs.isEmpty()) {
             assignGlyphs(slurs, Shape.SLUR, false, Evaluation.MANUAL);
         }
@@ -258,14 +267,14 @@ public class SymbolsModel
             // (since environment may have changed since the time they
             // have been computed)
             SystemInfo system = sheet.getSystemOf(glyph);
-
+            
             if (system != null) {
                 system.computeGlyphFeatures(glyph);
-
+                
                 return super.assignGlyph(glyph, shape, grade);
             }
         }
-
+        
         return glyph;
     }
 }

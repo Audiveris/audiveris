@@ -22,6 +22,7 @@ import omr.step.LogStepMonitorHandler;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.logging.ConsoleHandler;
@@ -48,7 +49,7 @@ import java.util.logging.LogManager;
  * @author Hervé Bitteur
  */
 public class Logger
-    extends java.util.logging.Logger
+        extends java.util.logging.Logger
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -65,7 +66,6 @@ public class Logger
     private static final int LOG_MBX_SIZE = 10000;
 
     //~ Constructors -----------------------------------------------------------
-
     //--------//
     // Logger // Not meant to be instantiated from outside
     //--------//
@@ -75,23 +75,13 @@ public class Logger
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //------//
-    // fine //
-    //------//
-    public void fine (String   msg,
-                      Object[] params)
-    {
-        super.log(Level.FINE, msg, params);
-    }
-
     //------//
     // fine //
     //------//
     public void fine (String msg,
-                      Object param1)
+                      Object... params)
     {
-        super.log(Level.FINE, msg, param1);
+        super.log(Level.FINE, msg, params);
     }
 
     //-----------//
@@ -100,6 +90,7 @@ public class Logger
     /**
      * Report (and possibly create) the logger related to the provided
      * class.
+     *
      * @param cl the related class
      * @return the logger
      */
@@ -114,6 +105,7 @@ public class Logger
     /**
      * Report (and possibly create) the logger related to the provided
      * name (usually the full class name).
+     *
      * @param name the logger name
      * @return the logger found or created
      */
@@ -133,8 +125,7 @@ public class Logger
             result = (Logger) manager.getLogger(name);
 
             // Insert in the hierarchy of units with logger
-            UnitManager.getInstance()
-                       .addLogger(result);
+            UnitManager.getInstance().addLogger(result);
         }
 
         return result;
@@ -146,6 +137,7 @@ public class Logger
     /**
      * Report the mailbox used as a buffer for log messages before they
      * get displayed by a GUI.
+     *
      * @return the GUI mailbox
      */
     public static synchronized BlockingQueue<FormattedRecord> getMailbox ()
@@ -155,20 +147,6 @@ public class Logger
         }
 
         return logMbx;
-    }
-
-    //------//
-    // info //
-    //------//
-    /**
-     * Log a message, with one object parameter.
-     * @param   msg     The string message (or a key in the message catalog)
-     * @param   param1  parameter to the message
-     */
-    public void info (String msg,
-                      Object param1)
-    {
-        super.log(Level.INFO, msg, param1);
     }
 
     //-----------------------//
@@ -193,12 +171,13 @@ public class Logger
     /**
      * Report the resulting level for the logger, which may be
      * inherited from parents higher in the hierarchy.
+     *
      * @return The effective logging level for this logger
      */
     public Level getEffectiveLevel ()
     {
         java.util.logging.Logger logger = this;
-        Level                    level = getLevel();
+        Level level = getLevel();
 
         while (level == null) {
             logger = logger.getParent();
@@ -223,11 +202,12 @@ public class Logger
      * level then a corresponding LogRecord is created and forwarded
      * to all the registered output Handler objects.
      * <p>
-     * @param   msg     The string message (or a key in the message catalog)
-     * @param   params  array of parameters to the message
+     *
+     * @param msg    The string message (or a key in the message catalog)
+     * @param params array of parameters to the message
      */
-    public void info (String   msg,
-                      Object[] params)
+    public void info (String msg,
+                      Object... params)
     {
         super.log(Level.INFO, msg, params);
     }
@@ -237,6 +217,7 @@ public class Logger
     //---------------//
     /**
      * Check if a Debug (Fine) would actually be logged.
+     *
      * @return true if to be logged
      */
     public boolean isFineEnabled ()
@@ -251,11 +232,12 @@ public class Logger
      * Assert the provided condition, and stop the application if the
      * condition is false, since this is supposed to detect a
      * programming error.
+     *
      * @param exp the expression to check
      * @param msg the related error message
      */
     public void logAssert (boolean exp,
-                           String  msg)
+                           String msg)
     {
         if (!exp) {
             severe(msg);
@@ -267,8 +249,9 @@ public class Logger
     //----------//
     /**
      * Set the logger level, using a level name.
+     *
      * @param levelStr the name of the level (case is irrelevant), such as Fine
-     * or INFO
+     *                 or INFO
      */
     public void setLevel (String levelStr)
     {
@@ -298,12 +281,12 @@ public class Logger
     //
     //        super.log(level, sb.toString());
     //    }
-
     //--------//
     // severe //
     //--------//
     /**
      * Log the provided message and stop.
+     *
      * @param msg the (severe) message
      */
     @Override
@@ -317,17 +300,7 @@ public class Logger
     // severe //
     //--------//
     public void severe (String msg,
-                        Object param1)
-    {
-        super.log(Level.SEVERE, msg, param1);
-        new Throwable().printStackTrace();
-    }
-
-    //--------//
-    // severe //
-    //--------//
-    public void severe (String   msg,
-                        Object[] params)
+                        Object... params)
     {
         super.log(Level.SEVERE, msg, params);
         new Throwable().printStackTrace();
@@ -338,13 +311,14 @@ public class Logger
     //--------//
     /**
      * Log the provided message and exception and stop the application.
+     *
      * @param msg    the (severe) message
      * @param thrown the exception
      */
-    public void severe (String    msg,
+    public void severe (String msg,
                         Throwable thrown)
     {
-        super.log(Level.SEVERE, "{0} [{1}]", new Object[] { msg, thrown });
+        super.log(Level.SEVERE, "{0} [{1}]", new Object[]{msg, thrown});
         thrown.printStackTrace();
     }
 
@@ -353,14 +327,15 @@ public class Logger
     //---------//
     /**
      * Log a warning with a related exception, then continue.
+     *
      * @param msg    the (warning) message
      * @param thrown the related exception, whose stack trace will be printed
-     * only if the constant flag 'printStackTraces' is set.
+     *               only if the constant flag 'printStackTraces' is set.
      */
-    public void warning (String    msg,
+    public void warning (String msg,
                          Throwable thrown)
     {
-        super.log(Level.WARNING, "{0} [{1}]", new Object[] { msg, thrown });
+        super.log(Level.WARNING, "{0} [{1}]", new Object[]{msg, thrown});
 
         if (constants.printStackOnWarning.isSet()) {
             thrown.printStackTrace();
@@ -372,18 +347,19 @@ public class Logger
     //---------//
     /**
      * Log a warning with a related exception, then continue.
+     *
      * @param msg    the (warning) message
      * @param thrown the related exception, whose stack trace will be printed
-     * only if the constant flag 'printStackTraces' is set.
+     *               only if the constant flag 'printStackTraces' is set.
      */
-    public void warning (String    msg,
-                         Object    param1,
+    public void warning (String msg,
+                         Object param1,
                          Throwable thrown)
     {
         super.log(
-            Level.WARNING,
-            "{0} {1} [{2}]",
-            new Object[] { msg, param1, thrown });
+                Level.WARNING,
+                "{0} {1} [{2}]",
+                new Object[]{msg, param1, thrown});
 
         if (constants.printStackOnWarning.isSet()) {
             thrown.printStackTrace();
@@ -422,12 +398,12 @@ public class Logger
             manager.reset();
 
             try {
-                // log file max size 10K, 3 rolling files, append-on-open
+                // log file max size 10K, 1 rolling file, append-on-open
                 Handler fileHandler = new FileHandler(
-                    redirection,
-                    10000,
-                    1,
-                    false);
+                        redirection,
+                        10_000,
+                        1,
+                        false);
                 fileHandler.setFormatter(new LogBasicFormatter()); //(new SimpleFormatter());
                 topLogger.addHandler(fileHandler);
 
@@ -441,17 +417,17 @@ public class Logger
                 }
 
                 // now rebind stdout/stderr to logger
-                Logger              logger;
+                Logger logger;
                 LoggingOutputStream los;
 
                 logger = Logger.getLogger("stdout");
                 los = new LoggingOutputStream(logger, StdOutErrLevel.STDOUT);
-                System.setOut(new PrintStream(los, true));
+                System.setOut(new PrintStream(los, true, WellKnowns.encoding));
 
                 logger = Logger.getLogger("stderr");
                 los = new LoggingOutputStream(logger, StdOutErrLevel.STDERR);
-                System.setErr(new PrintStream(los, true));
-            } catch (Exception ex) {
+                System.setErr(new PrintStream(los, true, WellKnowns.encoding));
+            } catch (IOException | SecurityException ex) {
                 ex.printStackTrace();
             }
         } else {
@@ -476,10 +452,11 @@ public class Logger
             consoleHandler.setFilter(new LogEmptyMessageFilter());
 
             try {
-                consoleHandler.setEncoding("UTF8");
-            } catch (Exception ex) {
-                System.err.println(
-                    "Cannot setEncoding to UTF8, exception: " + ex);
+                consoleHandler.setEncoding(WellKnowns.encoding);
+            } catch (SecurityException | UnsupportedEncodingException ex) {
+                System.err.
+                        println(
+                        "Cannot setEncoding to " + WellKnowns.encoding + " exception: " + ex);
             }
         }
 
@@ -494,22 +471,21 @@ public class Logger
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         final Constant.Boolean printStackOnWarning = new Constant.Boolean(
-            true,
-            "Should we print out the stack of any warning logged with exception?");
+                true,
+                "Should we print out the stack of any warning logged with exception?");
 
         //
         final Constant.Boolean printThreadName = new Constant.Boolean(
-            false,
-            "Should we print out the name of the originating thread?");
+                false,
+                "Should we print out the name of the originating thread?");
     }
 }

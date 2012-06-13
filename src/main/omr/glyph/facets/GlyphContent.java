@@ -23,6 +23,7 @@ import omr.score.entity.Text.CreatorText.CreatorType;
 
 import java.util.List;
 import java.util.SortedSet;
+import omr.glyph.text.Sentence;
 
 /**
  * Interface {@code GlyphContent} defines a facet that deals with
@@ -52,6 +53,18 @@ public interface GlyphContent
 
     //~ Methods ----------------------------------------------------------------
 
+    /**
+     * Report the containing sentence, if any
+     * @return the sentence
+     */
+    Sentence getSentence ();
+
+    /**
+     * Assign the containing sentence
+     * @param sentence the sentence to set
+     */
+    void setSentence (Sentence sentence);
+    
     /**
      * Report the creator type, if any.
      * @return the creatorType
@@ -144,24 +157,6 @@ public interface GlyphContent
     String getTextValue ();
 
     /**
-     * Check whether the glyph text value is the elision string.
-     * @return true if value is elision string
-     */
-    boolean isElision ();
-
-    /**
-     * Check whether the glyph text value is the extension string.
-     * @return true if value is extension string
-     */
-    boolean isExtension ();
-
-    /**
-     * Check whether the glyph text value is the hyphen string.
-     * @return true if value is hyphen string
-     */
-    boolean isHyphen ();
-
-    /**
      * Launch the OCR on this glyph, to retrieve the OcrLine instance(s)
      * this glyph represents.
      * @param language the probable language
@@ -179,11 +174,13 @@ public interface GlyphContent
     SortedSet<Section> retrieveSections (List<OcrChar> chars);
 
     /**
-     * Build the sequence of word glyphs that compose this sentence
-     * @return The sequence of (word) glyphs created, with exactly one glyph
-     * per word
+     * Decompose the glyph into a sequence of (sub) glyphs, either by
+     * word or by syllable.
+     * @param bySyllable true for split by syllable, false for split by word
+     * @return The sequence of (sub) glyphs created, with exactly one glyph
+     * per word (or syllable). Non null but perhaps empty.
      */
-    List<Glyph> retrieveWordGlyphs ();
+    List<Glyph> retrieveSubGlyphs (boolean bySyllable);
 
     /**
      * Set the creator type.

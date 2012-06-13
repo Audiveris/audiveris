@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
 
@@ -362,7 +363,7 @@ public class CLI
 
                 // Remove leading minus sign and switch to uppercase
                 // To recognize command
-                token = token.substring(1).toUpperCase();
+                token = token.substring(1).toUpperCase(Locale.ENGLISH);
 
                 boolean found = false;
 
@@ -541,7 +542,7 @@ public class CLI
                     "%n  %-36s %s",
                     String.format(
                     " [-%s%s]",
-                    command.toString().toLowerCase(),
+                    command.toString().toLowerCase(Locale.ENGLISH),
                     ((command.params != null) ? (" " + command.params) : "")),
                     command.description));
         }

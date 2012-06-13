@@ -59,7 +59,7 @@ public class ShapeDescriptorART
             }
         }
 
-        // We append weight & stem count
+        // We append weight, stem count, aspect
         ins[i++] = glyph.getNormalizedWeight();
         ins[i++] = glyph.getStemNumber();
         ins[i++] = glyph.getAspect(Orientation.VERTICAL);
@@ -126,12 +126,11 @@ public class ShapeDescriptorART
                 }
             }
 
-            // We append ledger presence, stem count and aspect
+            // We append weight, stem count and aspect
             labels[i++] = "weight";
             labels[i++] = "stemNb";
             labels[i++] = "aspect";
 
-            //
             for (int j = 0; j < labels.length; j++) {
                 indices.put(labels[j], j);
             }

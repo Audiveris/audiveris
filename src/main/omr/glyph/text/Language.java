@@ -55,13 +55,10 @@ public class Language
 
     static {
         File inputFile = new File(WellKnowns.RES_FOLDER, LANG_FILE_NAME);
-
-        try {
-            Properties  langNames = new Properties();
-            InputStream input = new FileInputStream(inputFile);
+        Properties langNames = new Properties();
+        
+        try (InputStream input = new FileInputStream(inputFile)) {
             langNames.loadFromXML(input);
-            input.close();
-
             for (String code : langNames.stringPropertyNames()) {
                 codes.put(code, langNames.getProperty(code, code));
             }
@@ -72,6 +69,13 @@ public class Language
 
     /** The related OCR */
     private static final OCR ocr = TesseractOCR.getInstance();
+    
+    //~ Constructors -----------------------------------------------------------
+    
+    /** Not meant to be instantiated */
+    private Language ()
+    {
+    }    
 
     //~ Methods ----------------------------------------------------------------
 
@@ -148,7 +152,4 @@ public class Language
             "3-letter code for the default sheet language");
     }
 
-    private Language ()
-    {
-    }
 }

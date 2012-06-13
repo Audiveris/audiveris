@@ -84,6 +84,9 @@ import java.awt.geom.AffineTransform;
 import java.util.ConcurrentModificationException;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import omr.glyph.text.OcrWord;
+import omr.score.entity.LyricsItem;
+import omr.ui.symbol.TextFont;
 
 /**
  * Class {@code PagePainter} is an abstract class that defines common
@@ -96,7 +99,7 @@ import java.util.Set;
  * @author Hervé Bitteur
  */
 public abstract class PagePainter
-    extends AbstractScoreVisitor
+        extends AbstractScoreVisitor
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -110,15 +113,16 @@ public abstract class PagePainter
     protected static final Alignment defaultAlignment = AREA_CENTER;
 
     /** A transformation to half scale (used for slot time annotation) */
-    protected static final AffineTransform halfAT = AffineTransform.getScaleInstance(
-        0.5,
-        0.5);
+    protected static final AffineTransform halfAT = AffineTransform.
+            getScaleInstance(
+            0.5,
+            0.5);
 
     /** Font for annotations */
     protected static final Font basicFont = new Font(
-        "Sans Serif",
-        Font.PLAIN,
-        constants.basicFontSize.getValue());
+            "Sans Serif",
+            Font.PLAIN,
+            constants.basicFontSize.getValue());
 
     /** Abscissa offset, in pixels, for annotation near system */
     protected static final int annotationDx = 15;
@@ -127,30 +131,30 @@ public abstract class PagePainter
     protected static final int annotationDy = 15;
 
     // Painting parameters
-    protected static final PaintingParameters parameters = PaintingParameters.getInstance();
+    protected static final PaintingParameters parameters = PaintingParameters.
+            getInstance();
 
     /** Sequence of colors for voices. TODO: Choose better colors, with alpha! */
     private static final int alpha = 150;
-    private static final Color[]              voiceColors = new Color[] {
-                                                                
-    /** Cyan */
-    new Color(0, 255, 255, alpha), 
-    /** Orange */
-    new Color(255, 200, 0, alpha), 
-    /** Pink */
-    new Color(255, 175, 175, alpha), 
-    /** Green */
-    new Color(0, 255, 0, alpha), 
-    /** Magenta */
-    new Color(255, 0, 255, alpha), 
-    /** Blue */
-    new Color(0, 0, 255, alpha), 
-    /** Yellow */
-    new Color(255, 255, 0, alpha)
-                                                            };
+
+    private static final Color[] voiceColors = new Color[]{
+        /** Cyan */
+        new Color(0, 255, 255, alpha),
+        /** Orange */
+        new Color(255, 200, 0, alpha),
+        /** Pink */
+        new Color(255, 175, 175, alpha),
+        /** Green */
+        new Color(0, 255, 0, alpha),
+        /** Magenta */
+        new Color(255, 0, 255, alpha),
+        /** Blue */
+        new Color(0, 0, 255, alpha),
+        /** Yellow */
+        new Color(255, 255, 0, alpha)
+    };
 
     //~ Instance fields --------------------------------------------------------
-
     /** Clipping area */
     protected final Rectangle oldClip;
 
@@ -161,7 +165,7 @@ public abstract class PagePainter
     protected final Graphics2D g;
 
     // Global color
-    protected final Color   defaultColor;
+    protected final Color defaultColor;
 
     // Painting voices with different colors?
     protected final boolean coloredVoices;
@@ -170,50 +174,54 @@ public abstract class PagePainter
     protected final boolean annotated;
 
     // Related score
-    protected Score       score;
+    protected Score score;
 
     // Specific font for music symbols
-    protected MusicFont   musicFont;
+    protected MusicFont musicFont;
 
     // Global scale
-    protected Scale       scale;
+    protected Scale scale;
 
     // For staff lines
-    protected int         lineThickness;
-    protected Stroke      lineStroke;
+    protected int lineThickness;
+
+    protected Stroke lineStroke;
 
     // For stems
-    protected float       stemThickness;
-    protected float       stemHalfThickness;
-    protected Stroke      stemStroke;
+    protected float stemThickness;
+
+    protected float stemHalfThickness;
+
+    protected Stroke stemStroke;
 
     // For beams
-    protected float       beamThickness;
-    protected float       beamHalfThickness;
+    protected float beamThickness;
+
+    protected float beamHalfThickness;
 
     // The system being currently painted
     protected ScoreSystem system;
-    protected SystemInfo  systemInfo;
+
+    protected SystemInfo systemInfo;
 
     //~ Constructors -----------------------------------------------------------
-
     //--------------//
     // PagePainter //
     //--------------//
     /**
      * Creates a new PagePainter object.
      *
-     * @param graphics Graphic context
-     * @param color the default color
+     * @param graphics      Graphic context
+     * @param color         the default color
      * @param coloredVoices true for voices with different colors
-     * @param linePainting true for painting staff lines
-     * @param annotated true if annotations are to be drawn
+     * @param linePainting  true for painting staff lines
+     * @param annotated     true if annotations are to be drawn
      */
     public PagePainter (Graphics graphics,
-                        Color    color,
-                        boolean  coloredVoices,
-                        boolean  linePainting,
-                        boolean  annotated)
+                        Color color,
+                        boolean coloredVoices,
+                        boolean linePainting,
+                        boolean annotated)
     {
         g = (Graphics2D) graphics.create();
 
@@ -229,15 +237,14 @@ public abstract class PagePainter
 
         // Anti-aliasing
         g.setRenderingHint(
-            RenderingHints.KEY_ANTIALIASING,
-            RenderingHints.VALUE_ANTIALIAS_ON);
+                RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
 
         // Default font for annotations
         g.setFont(basicFont);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------------//
     // visit Arpeggiate //
     //------------------//
@@ -252,20 +259,20 @@ public abstract class PagePainter
             box.height -= 2; // Gives better results
 
             // How many half arpeggiate symbols do we need?
-            final int        halfHeight = scale.getInterline();
-            final int        count = (int) Math.rint(
-                (double) box.height / halfHeight);
+            final int halfHeight = scale.getInterline();
+            final int count = (int) Math.rint(
+                    (double) box.height / halfHeight);
             final TextLayout layout = musicFont.layout(ARPEGGIATO);
-            final Point      start = new Point(box.x, box.y + box.height);
+            final Point start = new Point(box.x, box.y + box.height);
 
             // Draw count * half symbols, bottom up
             for (int i = 0; i < count; i++) {
                 // Define a clipping area
                 final Rectangle area = new Rectangle(
-                    start.x,
-                    start.y - halfHeight,
-                    box.width,
-                    halfHeight);
+                        start.x,
+                        start.y - halfHeight,
+                        box.width,
+                        halfHeight);
                 area.grow(6, 6); // Add some margin to avoid gaps
 
                 final Rectangle clip = oldClip.intersection(area);
@@ -285,8 +292,8 @@ public abstract class PagePainter
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + arpeggiate,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + arpeggiate,
+                    ex);
         }
 
         return true;
@@ -309,19 +316,17 @@ public abstract class PagePainter
     {
         try {
             final PixelPoint left = new PixelPoint(
-                beam.getPoint(HorizontalSide.LEFT));
+                    beam.getPoint(HorizontalSide.LEFT));
             final PixelPoint right = new PixelPoint(
-                beam.getPoint(HorizontalSide.RIGHT));
-            final int        dx = (int) Math.rint(stemHalfThickness);
-            final int        dy = (int) Math.rint(beamHalfThickness);
+                    beam.getPoint(HorizontalSide.RIGHT));
+            final int dx = (int) Math.rint(stemHalfThickness);
+            final int dy = (int) Math.rint(beamHalfThickness);
 
             // Compute precise abscissae values
             if (beam.isHook()) {
                 // Just a hook stuck to a stem on one side
-                if (!beam.getChords()
-                         .isEmpty()) {
-                    Chord chord = beam.getChords()
-                                      .first();
+                if (!beam.getChords().isEmpty()) {
+                    Chord chord = beam.getChords().first();
 
                     if (chord.getCenter().x < beam.getCenter().x) {
                         left.x -= dx;
@@ -367,8 +372,8 @@ public abstract class PagePainter
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + beam,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + beam,
+                    ex);
         }
 
         return true;
@@ -404,15 +409,15 @@ public abstract class PagePainter
                 // We draw from tail
                 boolean goesUp = head.y < tail.y;
                 paint(
-                    Chord.getFlagShape(fn, goesUp),
-                    location(tail, chord),
-                    goesUp ? BOTTOM_LEFT : TOP_LEFT);
+                        Chord.getFlagShape(fn, goesUp),
+                        location(tail, chord),
+                        goesUp ? BOTTOM_LEFT : TOP_LEFT);
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + chord,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + chord,
+                    ex);
         }
 
         return true;
@@ -429,8 +434,8 @@ public abstract class PagePainter
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + clef,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + clef,
+                    ex);
         }
 
         return true;
@@ -470,14 +475,14 @@ public abstract class PagePainter
     public boolean visit (KeySignature keySignature)
     {
         try {
-            final Staff          staff = keySignature.getStaff();
-            final Shape          clefKind = keySignature.getClefKind();
-            final int            key = keySignature.getKey();
-            final int            sign = Integer.signum(key);
-            final Shape          shape = (key < 0) ? FLAT : SHARP;
-            final TextLayout     layout = musicFont.layout(shape);
+            final Staff staff = keySignature.getStaff();
+            final Shape clefKind = keySignature.getClefKind();
+            final int key = keySignature.getKey();
+            final int sign = Integer.signum(key);
+            final Shape shape = (key < 0) ? FLAT : SHARP;
+            final TextLayout layout = musicFont.layout(shape);
             final PixelRectangle box = keySignature.getBox();
-            final int            unitDx = getKeySigItemDx();
+            final int unitDx = getKeySigItemDx();
 
             if (box == null) {
                 ///logger.warning("Null box for " + keySignature);
@@ -488,13 +493,13 @@ public abstract class PagePainter
             // Flats : use vertical stick on left
             // Sharps : use center of the two vertical sticks
             final Alignment alignment = new Alignment(
-                BASELINE,
-                (key < 0) ? LEFT : CENTER);
-            PixelPoint      point = new PixelPoint(box.x, 0);
+                    BASELINE,
+                    (key < 0) ? LEFT : CENTER);
+            PixelPoint point = new PixelPoint(box.x, 0);
 
             for (int i = 1; i <= (key * sign); i++) {
-                int     n = i * sign;
-                double  pitch = KeySignature.getItemPosition(n, clefKind);
+                int n = i * sign;
+                double pitch = KeySignature.getItemPosition(n, clefKind);
                 Integer ref = keySignature.getItemPixelAbscissa(n);
 
                 if (ref != null) {
@@ -508,8 +513,8 @@ public abstract class PagePainter
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + keySignature,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + keySignature,
+                    ex);
         }
 
         return true;
@@ -541,10 +546,10 @@ public abstract class PagePainter
             if (measureElement.getShape() != null) {
                 try {
                     paint(
-                        musicFont.layout(
+                            musicFont.layout(
                             measureElement.getShape(),
                             measureElement.getDimension()),
-                        measureElement.getReferencePoint());
+                            measureElement.getReferencePoint());
                 } catch (ConcurrentModificationException ignored) {
                 } catch (Exception ex) {
                     logger.warning("Cannot paint " + measureElement, ex);
@@ -553,9 +558,9 @@ public abstract class PagePainter
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " +
-                measureElement,
-                ex);
+                    getClass().getSimpleName() + " Error visiting "
+                    + measureElement,
+                    ex);
         }
 
         return true;
@@ -568,19 +573,18 @@ public abstract class PagePainter
     public boolean visit (Note note)
     {
         try {
-            final Chord      chord = note.getChord();
-            final Glyph      stem = chord.getStem();
-            final Shape      shape = note.getShape();
+            final Chord chord = note.getChord();
+            final Glyph stem = chord.getStem();
+            final Shape shape = note.getShape();
             final PixelPoint center = note.getCenter();
 
             // Note head
             if (stem != null) {
                 // Note is attached to a stem, link note display to the stem
-                paint(
-                    shape,
-                    noteLocation(note),
-                    (center.x < chord.getTailLocation().x) ? MIDDLE_RIGHT
-                                        : MIDDLE_LEFT);
+                paint(shape,
+                      noteLocation(note),
+                      (center.x < chord.getTailLocation().x) ? MIDDLE_RIGHT
+                      : MIDDLE_LEFT);
             } else {
                 // Standard display
                 paint(shape.getPhysicalShape(), noteLocation(note));
@@ -590,16 +594,15 @@ public abstract class PagePainter
             final Glyph accid = note.getAccidental();
 
             if (accid != null) {
-                paint(
-                    accid.getShape(),
-                    accidentalLocation(note, accid),
-                    BASELINE_CENTER);
+                paint(accid.getShape(),
+                      accidentalLocation(note, accid),
+                      BASELINE_CENTER);
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + note,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + note,
+                    ex);
         }
 
         return true;
@@ -648,10 +651,7 @@ public abstract class PagePainter
 
                 if (note != null) {
                     Chord chord = note.getChord();
-
-                    if (voice == null) {
-                        voice = chord.getVoice();
-                    }
+                    voice = chord.getVoice();
                 }
 
                 note = slur.getRightNote();
@@ -661,8 +661,8 @@ public abstract class PagePainter
 
                     if (voice == null) {
                         voice = chord.getVoice();
-                    } else if ((chord.getVoice() != null) &&
-                               (chord.getVoice() != voice)) {
+                    } else if ((chord.getVoice() != null)
+                            && (chord.getVoice() != voice)) {
                         ///slur.addError("Tie with different voices");
                     }
                 }
@@ -683,8 +683,8 @@ public abstract class PagePainter
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + slur,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + slur,
+                    ex);
         }
 
         return true;
@@ -708,30 +708,29 @@ public abstract class PagePainter
             if (part.getBrace() != null) {
                 // We have nice half braces in MusicalSymbols font
                 final PixelRectangle box = braceBox(part);
-                final PixelPoint     center = box.getCenter();
+                final PixelPoint center = box.getCenter();
                 final PixelDimension halfDim = new PixelDimension(
-                    box.width,
-                    box.height / 2);
+                        box.width,
+                        box.height / 2);
                 paint(
-                    musicFont.layout(SYMBOL_BRACE_UPPER_HALF, halfDim),
-                    center,
-                    BOTTOM_CENTER);
+                        musicFont.layout(SYMBOL_BRACE_UPPER_HALF, halfDim),
+                        center,
+                        BOTTOM_CENTER);
                 paint(
-                    musicFont.layout(SYMBOL_BRACE_LOWER_HALF, halfDim),
-                    center,
-                    TOP_CENTER);
+                        musicFont.layout(SYMBOL_BRACE_LOWER_HALF, halfDim),
+                        center,
+                        TOP_CENTER);
             }
 
             // Render the part starting barline, if any
             if (part.getStartingBarline() != null) {
-                part.getStartingBarline()
-                    .accept(this);
+                part.getStartingBarline().accept(this);
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + part,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + part,
+                    ex);
         }
 
         return true;
@@ -752,33 +751,58 @@ public abstract class PagePainter
     @Override
     public boolean visit (Text text)
     {
-        g.setColor(defaultColor);
-
         try {
-            // Force y alignment for items of the same sentence
-            final Sentence   sentence = text.getSentence();
-            final PixelPoint location = sentence.getLocation();
-            final PixelPoint refPoint = text.getReferencePoint();
-            final String     str = text.getContent();
-            final Font       font = text.getFont();
+            g.setColor(defaultColor);
 
-            if ((str != null) && !str.isEmpty() && (font != null)) {
-                final FontRenderContext frc = g.getFontRenderContext();
-                TextLayout              layout = new TextLayout(str, font, frc);
-
-                paint(
-                    layout,
-                    new PixelPoint(refPoint.x, location.y),
-                    BASELINE_LEFT);
+            if (text instanceof LyricsItem) {
+                // Just print the single LyricsItem word
+                paintWord(((LyricsItem) text).getWord());
+            } else {
+                Sentence sentence = text.getSentence();
+                Glyph compound = sentence.getCompound();
+                String manValue = compound.getManualValue();
+                
+                if (manValue != null) {
+                    // Handle manual text
+                    final FontRenderContext frc = g.getFontRenderContext();
+                    float size = TextFont.computeFontSize(manValue,
+                                                          compound.getBounds().width);
+                    Font font = TextFont.baseTextFont.deriveFont(size);
+                    TextLayout layout = new TextLayout(manValue, font, frc);
+                    paint(layout,
+                          text.getReferencePoint(),
+                          BASELINE_LEFT);
+                } else {
+                    // Print out each word separately for best mapping
+                    for (OcrWord word : compound.getOcrLine().getWords()) {
+                        paintWord(word);
+                    }
+                }
             }
+
+
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + text,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + text,
+                    ex);
         }
 
         return true;
+    }
+
+    //-----------//
+    // paintWord //
+    //-----------//
+    private void paintWord (OcrWord word)
+    {
+        float size = word.getPreciseFontSize();
+        Font font = TextFont.baseTextFont.deriveFont(size);
+        FontRenderContext frc = g.getFontRenderContext();
+        TextLayout layout = new TextLayout(word.getValue(), font, frc);
+        paint(layout,
+              new PixelPoint(word.getBounds().x, word.getBaseline()),
+              BASELINE_LEFT);
     }
 
     //---------------------//
@@ -790,10 +814,10 @@ public abstract class PagePainter
         g.setColor(defaultColor);
 
         try {
-            final Shape      shape = timeSignature.getShape();
+            final Shape shape = timeSignature.getShape();
             final PixelPoint center = timeSignature.getCenter();
-            final Staff      staff = timeSignature.getStaff();
-            final int        dy = staff.pitchToPixels(-2);
+            final Staff staff = timeSignature.getStaff();
+            final int dy = staff.pitchToPixels(-2);
 
             if (shape == Shape.NO_LEGAL_TIME) {
                 // If this is an illegal shape, do not draw anything.
@@ -807,13 +831,13 @@ public abstract class PagePainter
             } else {
                 // Paint numerator
                 paintTimeNumber(
-                    timeSignature.getNumerator(),
-                    new PixelPoint(center.x, center.y - dy));
+                        timeSignature.getNumerator(),
+                        new PixelPoint(center.x, center.y - dy));
 
                 // Paint denominator
                 paintTimeNumber(
-                    timeSignature.getDenominator(),
-                    new PixelPoint(center.x, center.y + dy));
+                        timeSignature.getDenominator(),
+                        new PixelPoint(center.x, center.y + dy));
             }
         } catch (InvalidTimeSignature ex) {
             logger.warning("Invalid time signature", ex);
@@ -837,12 +861,11 @@ public abstract class PagePainter
 
         try {
             if (wedge.isStart()) {
-                final PixelRectangle box = wedge.getGlyph()
-                                                .getBounds();
+                final PixelRectangle box = wedge.getGlyph().getBounds();
 
-                PixelPoint           single;
-                PixelPoint           top;
-                PixelPoint           bot;
+                PixelPoint single;
+                PixelPoint top;
+                PixelPoint bot;
 
                 if (wedge.getShape() == Shape.CRESCENDO) {
                     single = new PixelPoint(box.x, box.y + (box.height / 2));
@@ -850,8 +873,8 @@ public abstract class PagePainter
                     bot = new PixelPoint(box.x + box.width, box.y + box.height);
                 } else {
                     single = new PixelPoint(
-                        box.x + box.width,
-                        box.y + (box.height / 2));
+                            box.x + box.width,
+                            box.y + (box.height / 2));
                     top = new PixelPoint(box.x, box.y);
                     bot = new PixelPoint(box.x, box.y + box.height);
                 }
@@ -862,8 +885,8 @@ public abstract class PagePainter
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + wedge,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + wedge,
+                    ex);
         }
 
         return true;
@@ -875,11 +898,12 @@ public abstract class PagePainter
     /**
      * Report the precise location to be used for a given accidental sigh
      * (with respect to the related note)
-     * @param note the related note
+     *
+     * @param note       the related note
      * @param accidental the accidental glyph
      * @return the location to be used for painting
      */
-    protected abstract PixelPoint accidentalLocation (Note  note,
+    protected abstract PixelPoint accidentalLocation (Note note,
                                                       Glyph accidental);
 
     //----------//
@@ -887,6 +911,7 @@ public abstract class PagePainter
     //----------//
     /**
      * Report the precise box to be used for a given brace
+     *
      * @param part the related part
      * @return the box to be used for painting
      */
@@ -897,6 +922,7 @@ public abstract class PagePainter
     //--------------//
     /**
      * Report the precise location to be used for a given note
+     *
      * @param note the related note
      * @return the location to be used for painting
      */
@@ -908,16 +934,17 @@ public abstract class PagePainter
     /**
      * Build a TextLayout from a String of BasicFont characters (transformed by
      * the provided AffineTransform if any)
+     *
      * @param str the string of proper codes
      * @param fat potential affine transformation
      * @return the (sized) TextLayout ready to be drawn
      */
-    protected TextLayout basicLayout (String          str,
+    protected TextLayout basicLayout (String str,
                                       AffineTransform fat)
     {
         FontRenderContext frc = g.getFontRenderContext();
-        Font              font = (fat == null) ? basicFont
-                                 : basicFont.deriveFont(fat);
+        Font font = (fat == null) ? basicFont
+                    : basicFont.deriveFont(fat);
 
         return new TextLayout(str, font, frc);
     }
@@ -928,6 +955,7 @@ public abstract class PagePainter
     /**
      * Report the theoretical abscissa gap between items of one key signature
      * (the individual sharp or flat signs)
+     *
      * @return the theoretical dx between items
      */
     protected int getKeySigItemDx ()
@@ -947,17 +975,17 @@ public abstract class PagePainter
         // Determine staff lines parameters
         lineThickness = scale.getMainFore();
         lineStroke = new BasicStroke(
-            lineThickness,
-            BasicStroke.CAP_ROUND,
-            BasicStroke.JOIN_ROUND);
+                lineThickness,
+                BasicStroke.CAP_ROUND,
+                BasicStroke.JOIN_ROUND);
 
         // Determine stems parameters
         stemThickness = scale.getMainFore();
         stemHalfThickness = stemThickness / 2;
         stemStroke = new BasicStroke(
-            stemThickness,
-            BasicStroke.CAP_ROUND,
-            BasicStroke.JOIN_ROUND);
+                stemThickness,
+                BasicStroke.CAP_ROUND,
+                BasicStroke.JOIN_ROUND);
 
         // Set stroke for lines
         if (linePainting) {
@@ -974,20 +1002,21 @@ public abstract class PagePainter
      * Build the desired absolute drawing point, the abscissa being adjusted to
      * fit on the provided chord stem, and the ordinate being computed from the
      * pitch position with respect to the containing staff
+     *
      * @param sysPoint the (approximate) system-based drawing point
-     * @param chord the chord whose stem must be stuck to the (note) symbol
-     * @param staff the containing staff
-     * @param pitch the pitch position with respect to the staff
+     * @param chord    the chord whose stem must be stuck to the (note) symbol
+     * @param staff    the containing staff
+     * @param pitch    the pitch position with respect to the staff
      * @return the PixelPoint, as precise as possible in X & Y
      */
     protected PixelPoint location (PixelPoint sysPoint,
-                                   Chord      chord,
-                                   Staff      staff,
-                                   double     pitch)
+                                   Chord chord,
+                                   Staff staff,
+                                   double pitch)
     {
         return new PixelPoint(
-            preciseAbscissa(sysPoint, chord),
-            staff.getTopLeft().y + staff.pitchToPixels(pitch));
+                preciseAbscissa(sysPoint, chord),
+                staff.getTopLeft().y + staff.pitchToPixels(pitch));
     }
 
     //----------//
@@ -996,12 +1025,13 @@ public abstract class PagePainter
     /**
      * Build the desired absolute drawing point, the abscissa being adjusted to
      * fit on the provided chord stem
+     *
      * @param sysPoint the (approximate) system-based drawing point
-     * @param chord the chord whose stem must be stuck to the (note) symbol
+     * @param chord    the chord whose stem must be stuck to the (note) symbol
      * @return the PixelPoint, as precise as possible in X
      */
     protected PixelPoint location (PixelPoint sysPoint,
-                                   Chord      chord)
+                                   Chord chord)
     {
         return new PixelPoint(preciseAbscissa(sysPoint, chord), sysPoint.y);
     }
@@ -1012,18 +1042,19 @@ public abstract class PagePainter
     /**
      * Build the desired absolute drawing point, the ordinate being computed
      * from the pitch position with respect to the containing staff
+     *
      * @param sysPoint the (approximate) system-based drawing point
-     * @param staff the containing staff
-     * @param pitch the pitch position with respect to the staff
+     * @param staff    the containing staff
+     * @param pitch    the pitch position with respect to the staff
      * @return the PixelPoint, as precise as possible in Y
      */
     protected PixelPoint location (PixelPoint sysPoint,
-                                   Staff      staff,
-                                   double     pitch)
+                                   Staff staff,
+                                   double pitch)
     {
         return new PixelPoint(
-            sysPoint.x,
-            staff.getTopLeft().y + staff.pitchToPixels(pitch));
+                sysPoint.x,
+                staff.getTopLeft().y + staff.pitchToPixels(pitch));
     }
 
     //-------//
@@ -1032,13 +1063,14 @@ public abstract class PagePainter
     /**
      * This is the general paint method for drawing a symbol layout, at a
      * specified location, using a specified alignment
-     * @param layout what: the symbol, perhaps transformed
-     * @param location where: the precise location in the display
+     *
+     * @param layout    what: the symbol, perhaps transformed
+     * @param location  where: the precise location in the display
      * @param alignment how: the way the symbol is aligned wrt the location
      */
     protected void paint (TextLayout layout,
                           PixelPoint location,
-                          Alignment  alignment)
+                          Alignment alignment)
     {
         OmrFont.paint(g, layout, location, alignment);
     }
@@ -1047,8 +1079,10 @@ public abstract class PagePainter
     // paint //
     //-------//
     /**
-     * A convenient painting method, using default alignment (CENTER + MIDDLE)
-     * @param layout what: the symbol, perhaps transformed
+     * A convenient painting method, using default alignment
+     * (CENTER + MIDDLE)
+     *
+     * @param layout   what: the symbol, perhaps transformed
      * @param location where: the precise location in the display
      */
     protected void paint (TextLayout layout,
@@ -1062,13 +1096,14 @@ public abstract class PagePainter
     //-------//
     /**
      * Paint a symbol
-     * @param shape the symbol shape
-     * @param location the precise location
+     *
+     * @param shape     the symbol shape
+     * @param location  the precise location
      * @param alignment alignment wrt the symbol
      */
-    protected void paint (Shape      shape,
+    protected void paint (Shape shape,
                           PixelPoint location,
-                          Alignment  alignment)
+                          Alignment alignment)
     {
         ShapeSymbol symbol = Symbols.getSymbol(shape);
 
@@ -1082,10 +1117,11 @@ public abstract class PagePainter
     //-------//
     /**
      * Paint a symbol with default alignment
-     * @param shape the symbol shape
+     *
+     * @param shape    the symbol shape
      * @param location the precise location
      */
-    protected void paint (Shape      shape,
+    protected void paint (Shape shape,
                           PixelPoint location)
     {
         paint(shape, location, defaultAlignment);
@@ -1098,7 +1134,7 @@ public abstract class PagePainter
      * Draw a line from one PixelPoint to another PixelPoint
      *
      * @param from first point
-     * @param to second point
+     * @param to   second point
      */
     protected void paintLine (PixelPoint from,
                               PixelPoint to)
@@ -1120,10 +1156,10 @@ public abstract class PagePainter
      * @param number the number whose icon must be painted
      * @param center the center of desired location
      */
-    protected void paintTimeNumber (int        number,
+    protected void paintTimeNumber (int number,
                                     PixelPoint center)
     {
-        int[]  codes = ShapeSymbol.numberCodes(number);
+        int[] codes = ShapeSymbol.numberCodes(number);
         String str = new String(codes, 0, codes.length);
         MusicFont.paint(g, musicFont.layout(str), center, AREA_CENTER);
     }
@@ -1134,15 +1170,16 @@ public abstract class PagePainter
     /**
      * Compute the rather precise abscissa, adjacent to the provided chord stem,
      * on the side implied by the specified approximate sysPoint
+     *
      * @param sysPoint the (note) approximate center
-     * @param chord the chord/stem the note should be stuck to
+     * @param chord    the chord/stem the note should be stuck to
      * @return the precise value for x
      */
     protected int preciseAbscissa (PixelPoint sysPoint,
-                                   Chord      chord)
+                                   Chord chord)
     {
         // Compute symbol abscissa according to chord stem
-        int    stemX = chord.getTailLocation().x;
+        int stemX = chord.getTailLocation().x;
         double dx = stemHalfThickness - 2d; // slight adjustment
 
         if (sysPoint.x < stemX) {
@@ -1160,6 +1197,7 @@ public abstract class PagePainter
     /**
      * Report the color to use when painting elements related to the provided
      * voice
+     *
      * @param voice the provided voice
      * @return the color to use
      */
@@ -1176,24 +1214,23 @@ public abstract class PagePainter
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         /** Font for annotations */
         Constant.Integer basicFontSize = new Constant.Integer(
-            "points",
-            30,
-            "Standard font size for annotations");
+                "points",
+                30,
+                "Standard font size for annotations");
 
         /** dx between items in a key signature */
         final Scale.Fraction keySigItemDx = new Scale.Fraction(
-            1.1,
-            "dx between items in a key signature");
+                1.1,
+                "dx between items in a key signature");
     }
 }

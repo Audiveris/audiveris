@@ -227,7 +227,7 @@ public class NestView
 
                         if (ocrLine != null) {
                             for (OcrChar ch : ocrLine.getChars()) {
-                                Rectangle b = ch.getBox();
+                                Rectangle b = ch.getBounds();
                                 g.drawRect(b.x, b.y, b.width, b.height);
                             }
                         }

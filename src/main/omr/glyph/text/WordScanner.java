@@ -11,71 +11,93 @@
 // </editor-fold>
 package omr.glyph.text;
 
+import omr.log.Logger;
+
 import java.util.List;
 
 /**
- * Class {@code Class} is an abstract scanner to retrieve words.
+ * Class {@code WordScanner} is a scanner to retrieve words out of
+ * a string content, while mapping each word to a sequence of OcrChar
+ * instances.
  *
  * @author Hervé Bitteur
  */
 public abstract class WordScanner
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(WordScanner.class);
+
     //~ Instance fields --------------------------------------------------------
+    private final boolean bySyllable;
+
+    /** The content string */
+    private final String content;
+
+    /** The current index in the content string */
+    private int strIndex = -1;
 
     /** Precise description of each (non blank) character */
-    protected List<OcrChar> chars;
+    private List<OcrChar> chars;
 
-    /** Position in the sequence of chars */
-    protected int pos = -1;
-
-    /** Current word and its parameters */
+    /** Current word and its positions in chars sequence */
     private String currentWord = null;
-    private int    currentWordStart = 0;
-    private int    currentWordStop = 0;
 
-    /** Next word and its parameters */
+    private int currentWordStart = 0;
+
+    private int currentWordStop = 0;
+
+    /** Next word and its positions in chars sequence */
     private String nextWord = null;
-    protected int  nextWordStart = -1;
-    protected int  nextWordStop = -1;
+
+    private int nextWordStart = -1;
+
+    private int nextWordStop = -1;
 
     //~ Constructors -----------------------------------------------------------
-
     //-------------//
     // WordScanner //
     //-------------//
     /**
      * Creates a new WordScanner object.
-     * @param chars DOCUMENT ME!
+     *
+     * @param content the string value to scan
+     * @param chars   the sequence of chars descriptors
      */
-    public WordScanner (List<OcrChar> chars)
+    public WordScanner (String content,
+                        boolean bySyllable,
+                        List<OcrChar> chars)
     {
+        this.content = content;
+        this.bySyllable = bySyllable;
         this.chars = chars;
     }
 
     //~ Methods ----------------------------------------------------------------
-
+    //
     //--------------//
-    // getWordStart //
+    // getWordChars //
     //--------------//
-    /** Return the start position of the current word (as returned by next) */
-    public int getWordStart ()
+    /**
+     * Report the sequence of OcrChar instances that correspond to
+     * the current word.
+     *
+     * @return the word sequence of OcrChar's
+     */
+    public List<OcrChar> getWordChars ()
     {
-        return currentWordStart;
-    }
-
-    //-------------//
-    // getWordStop //
-    //-------------//
-    /** Return the stop position of the current word (as returned by next) */
-    public int getWordStop ()
-    {
-        return currentWordStop;
+        return chars.subList(currentWordStart, currentWordStop + 1);
     }
 
     //---------//
     // hasNext //
     //---------//
-    /** Tell whether there is a next word */
+    /**
+     * Tell whether there is a next word.
+     *
+     * @return true if not finished, false otherwise
+     */
     public boolean hasNext ()
     {
         return nextWord != null;
@@ -84,14 +106,20 @@ public abstract class WordScanner
     //------//
     // next //
     //------//
-    /** Make the next word current, and return it */
+    /**
+     * Make the next word current, and return it.
+     *
+     * @return the next word content
+     */
     public String next ()
     {
+        // Promote 'next' as 'current'
         currentWord = nextWord;
         currentWordStart = nextWordStart;
         currentWordStop = nextWordStop;
-        /** Look ahead */
-        nextWord = getNextWord();
+
+        // ¨Prepare the new 'next' if any
+        lookAhead();
 
         return currentWord;
     }
@@ -99,13 +127,166 @@ public abstract class WordScanner
     //-------------//
     // getNextWord //
     //-------------//
-    protected abstract String getNextWord ();
+    /**
+     * Retrieve positions for the next word, whose content is returned.
+     * The related OcrChar instances can now be retrieved through their range
+     * [getWordStart() .. getWordStop()].
+     *
+     * @return the next word content
+     */
+    protected String getNextWord ()
+    {
+        StringBuilder WordSb = new StringBuilder();
+
+        for (strIndex += 1; strIndex < content.length(); strIndex++) {
+            String charValue = content.substring(strIndex, strIndex + 1);
+
+            // Position in sequence of OcrChar instances
+            int charPos = stringToDesc(strIndex);
+
+            if (charValue.equals(" ")) {
+                // White space
+                if (WordSb.length() > 0) {
+                    return WordSb.toString();
+                }
+            } else if (bySyllable && BasicContent.isSeparator(charValue)) {
+                // Special characters (returned as stand-alone words)
+                if (WordSb.length() > 0) {
+                    strIndex--; // To get back to this index, next time
+                } else {
+                    nextWordStart = charPos;
+                    nextWordStop = charPos;
+                    WordSb.append(charValue);
+                }
+
+                return WordSb.toString();
+            } else {
+                // Standard word character
+                if (WordSb.length() == 0) {
+                    nextWordStart = charPos;
+                }
+
+                nextWordStop = charPos;
+                WordSb.append(charValue);
+            }
+        }
+
+        // We have reached the end
+        if (WordSb.length() > 0) {
+            return WordSb.toString();
+        } else {
+            return null;
+        }
+    }
 
     //-----------//
     // lookAhead //
     //-----------//
+    /**
+     * Prepare positions for the next word.
+     */
     protected void lookAhead ()
     {
         nextWord = getNextWord();
+    }
+
+    //--------------//
+    // stringToDesc //
+    //--------------//
+    /**
+     * Knowing the char strIndex in string content, determine the
+     * related position in the sequence of OcrChar instances
+     *
+     * @param strIndex strIndex in contant
+     * @return position in sequence of OcrChar instances
+     */
+    protected abstract int stringToDesc (int strIndex);
+
+    //~ Inner Classes ----------------------------------------------------------
+    //---------------//
+    // ManualScanner //
+    //---------------//
+    /**
+     * Class {@code ManualScanner} is a specific scanner using manual
+     * text content, whose length may be different from the sequence of
+     * OcrChar instances.
+     */
+    public static class ManualScanner
+            extends WordScanner
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Ratio of number of OcrChar instances / content length. */
+        private final double ratio;
+
+        //~ Constructors -------------------------------------------------------
+        /**
+         * Creates a new ManualScanner object.
+         *
+         * @param content the string value to scan
+         * @param chars   the sequence of chars descriptors
+         */
+        public ManualScanner (String content,
+                              boolean bySyllable,
+                              List<OcrChar> chars)
+        {
+            super(content, bySyllable, chars);
+
+            ratio = chars.size() / (double) content.length();
+
+            lookAhead();
+            logger.fine("ManualScanner on ''{0}''", content);
+        }
+
+        //~ Methods ------------------------------------------------------------
+        /**
+         * Compute charPos proportionally to strIndex.
+         */
+        @Override
+        protected int stringToDesc (int strIndex)
+        {
+            return (int) Math.rint(strIndex * ratio);
+        }
+    }
+
+    //------------//
+    // OcrScanner //
+    //------------//
+    /**
+     * Class {@code OcrScanner} is a basic scanner for which
+     * the sequence of OcrChar's is parallel to String content.
+     *
+     * @author Hervé Bitteur
+     */
+    public static class OcrScanner
+            extends WordScanner
+    {
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a new OcrScanner object.
+         *
+         * @param content the string value to scan
+         * @param chars   the sequence of chars descriptors
+         */
+        public OcrScanner (String content,
+                           boolean bySyllable,
+                           List<OcrChar> chars)
+        {
+            super(content, bySyllable, chars);
+
+            lookAhead();
+            logger.fine("OcrScanner on ''{0}''", content);
+        }
+
+        //~ Methods ------------------------------------------------------------
+        /**
+         * CharPos and strIndex are always equal.
+         */
+        @Override
+        protected int stringToDesc (int strIndex)
+        {
+            return strIndex;
+        }
     }
 }

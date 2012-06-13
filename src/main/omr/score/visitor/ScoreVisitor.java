@@ -45,16 +45,20 @@ import omr.score.entity.VisitableNode;
 import omr.score.entity.Wedge;
 
 /**
- * Interface {@code ScoreVisitor} is meant to visit any node of the Score
- * hierarchy.
+ * Interface {@code ScoreVisitor} is meant to visit any node of the 
+ * Score hierarchy.
  *
- * <p>The hierarchy is meant to be browsed "depth-first".
+ * <p>The hierarchy is meant to be browsed "depth-first".</p>
+ * <p>
  * All the polymorphic visit(node) methods return a boolean which
  * tells whether the visit shall continue to the children of this class.
- * It is true by default (the whole visitable hierarchy is meant to be visited).
- * Returning false avoids the automatic visit of the children of the class
+ * <ul>
+ * <li>It is true by default (the whole visitable hierarchy is meant to be 
+ * visited).</li>
+ * <li>Returning false avoids the automatic visit of the children of the class
  * for the specific visitor, it is then up to the caller to potentially handle
- * the children by another way.</p
+ * the children by another way.</li>
+ * </ul>
  *
  * @author Hervé Bitteur
  */

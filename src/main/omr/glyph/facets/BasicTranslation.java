@@ -71,7 +71,9 @@ class BasicTranslation
     @Override
     public void dump ()
     {
-        System.out.println("   translations=" + translations);
+        if (!translations.isEmpty()) {
+            System.out.println("   translations=" + translations);
+        }
     }
 
     //-----------------//

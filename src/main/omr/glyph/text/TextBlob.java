@@ -127,6 +127,7 @@ public class TextBlob
     /**
      * Insert the provided (large) glyph to the blob collection of
      * glyphs.
+     *
      * @param glyph the glyph to insert
      */
     public final void insertLargeGlyph (Glyph glyph)
@@ -141,29 +142,29 @@ public class TextBlob
 
         // Adjust values
         switch (glyphs.size()) {
-            case 1:
-                // Start with reasonable values & Fall through
-                blobBox = new PixelRectangle(gBox);
+        case 1:
+            // Start with reasonable values & Fall through
+            blobBox = new PixelRectangle(gBox);
 
-            // Fall through wanted
-            case 2:
-                blobBox = blobBox.union(gBox);
-                // Cumulate tops & bottoms
-                tops.includeValue(top);
-                bottoms.includeValue(bottom);
-                blobTop = blobBox.y;
-                blobBottom = blobBox.y + blobBox.height;
+        // Fall through wanted
+        case 2:
+            blobBox = blobBox.union(gBox);
+            // Cumulate tops & bottoms
+            tops.includeValue(top);
+            bottoms.includeValue(bottom);
+            blobTop = blobBox.y;
+            blobBottom = blobBox.y + blobBox.height;
 
-                break;
+            break;
 
-            default:
-                blobBox = blobBox.union(gBox);
-                tops.includeValue(top);
-                bottoms.includeValue(bottom);
-                blobTop = (int) Math.rint(tops.getMeanValue());
-                blobBottom = (int) Math.rint(bottoms.getMeanValue());
+        default:
+            blobBox = blobBox.union(gBox);
+            tops.includeValue(top);
+            bottoms.includeValue(bottom);
+            blobTop = (int) Math.rint(tops.getMeanValue());
+            blobBottom = (int) Math.rint(bottoms.getMeanValue());
 
-                break;
+            break;
         }
 
         //
@@ -180,6 +181,7 @@ public class TextBlob
     /**
      * Check whether the provided (large) glyph can be inserted into
      * this blob.
+     *
      * @param glyph the candidate glyph
      * @return true if test is successful
      */
@@ -193,21 +195,21 @@ public class TextBlob
         int maxDx = getMaxWordGap();
 
         if (dx > maxDx) {
-            logger.fine("B#{0} Too far on right {1} vs {2}", new Object[]{id, dx,
-                                                                          maxDx});
+            logger.fine("B#{0} Too far on right {1} vs {2}", id, dx, maxDx);
             return false;
         }
 
         int top = gBox.y;
         int bot = top + gBox.height;
         double overlap = Math.min(bot, blobBottom) - Math.max(top, blobTop);
-        double overlapRatio = overlap / (blobBottom - blobTop);
+        double overlapRatio = overlap / Math.min(gBox.height,
+                                                 blobBottom - blobTop);
 
         if (overlapRatio < constants.minOverlapRatio.getValue()) {
-            logger.fine("B#{0} Too low overlapRatio {1} vs {2}", new Object[]{id,
-                                                                              overlapRatio,
-                                                                              constants.minOverlapRatio.
-                        getValue()});
+            logger.fine("B#{0} Too low overlapRatio {1} vs {2}",
+                        id,
+                        overlapRatio,
+                        constants.minOverlapRatio.getValue());
             return false;
         }
 
@@ -220,6 +222,7 @@ public class TextBlob
     /**
      * Report the square distance between the provided glyph and this
      * blob or null if the glyph is not in the blob neighborhood.
+     *
      * @param glyph the (small) glyph to insert
      * @return the square distance if applicable, null otherwise
      */
@@ -253,7 +256,8 @@ public class TextBlob
             return null;
         } catch (Throwable ex) {
             logger.warning(
-                    "tryToInsertSmallGlyph error blob: " + this + glyph.idString(),
+                    "tryToInsertSmallGlyph error blob: " + this + glyph.
+                    idString(),
                     ex);
 
             return null;
@@ -265,6 +269,7 @@ public class TextBlob
     //-------------//
     /**
      * Report the allowed text glyph if any
+     *
      * @return the compound glyph if text is allowed for it, null otherwise
      */
     public Glyph getAllowedCompound ()
@@ -305,6 +310,7 @@ public class TextBlob
     //-----------//
     /**
      * Report the collection of glyphs that currently compose this blob
+     *
      * @return the (current) collection of glyphs
      */
     public List<Glyph> getGlyphs ()
@@ -317,6 +323,7 @@ public class TextBlob
     //---------------//
     /**
      * Report the maximum horizontal gap between words
+     *
      * @return the maximum word abscissa gap
      */
     public int getMaxWordGap ()
@@ -330,6 +337,7 @@ public class TextBlob
     //----------//
     /**
      * Report the abscissa of the right side of the blob
+     *
      * @return the (current) right abscissa
      */
     public int getRight ()
@@ -342,6 +350,7 @@ public class TextBlob
     //-----------//
     /**
      * Report the total weight (number of pixels) for this blob
+     *
      * @return the weight of the blob
      */
     public int getWeight ()
@@ -361,10 +370,12 @@ public class TextBlob
     /**
      * Insert the provided (small) glyph to the blob collection of
      * glyphs.
+     *
      * @param glyph the glyph to insert
      */
     public void insertSmallGlyph (Glyph glyph)
     {
+        glyphs.add(glyph);
     }
 
     //----------//
@@ -438,7 +449,7 @@ public class TextBlob
         //~ Instance fields ----------------------------------------------------
 
         Constant.Ratio maxWidthRatio = new Constant.Ratio(
-                1.0,
+                2.0, // 1.0,
                 "Ratio for maximum horizontal gap versus character width");
 
         Constant.Ratio minOverlapRatio = new Constant.Ratio(

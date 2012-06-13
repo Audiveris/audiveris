@@ -13,15 +13,12 @@ package omr.glyph.text;
 
 import omr.score.common.PixelRectangle;
 
-import omr.ui.symbol.TextFont;
-
-import java.awt.Font;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code OcrLine} defines a non-mutable structure to report 
+ * Class {@code OcrLine} defines a non-mutable structure to report
  * all information on one OCR-decoded line.
  *
  * @author Hervé Bitteur
@@ -30,46 +27,73 @@ public class OcrLine
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** Detected font size, defined in points. Null if invalid */
-    public final Float fontSize;
+    /** Line bounds */
+    private final PixelRectangle bounds;
 
     /** Detected line content */
-    public final String value;
+    private final String value;
 
-    /** Chars that compose this line */
-    private final List<OcrChar> chars = new ArrayList<>();
+    /** Words that compose this line */
+    private final List<OcrWord> words = new ArrayList<>();
 
     //~ Constructors -----------------------------------------------------------
 
+    //
+    //---------//
+    // OcrLine //
+    //---------//
     /**
      * Creates a new OcrLine object.
-     * @param fontSize the detected font size, or -1 if not known
-     * @param chars the sequence of character descriptors
-     * @param value the string ascii value
+     *
+     * @param bounds the line bounding box
+     * @param value  the string ascii value
+     * @param words  the seqeunce of words
      */
-    public OcrLine (float         fontSize,
-                    List<OcrChar> chars,
-                    String        value)
+    public OcrLine (Rectangle     bounds,
+                    String        value,
+                    List<OcrWord> words)
     {
-        this.fontSize = fontSize;
-        this.chars.addAll(chars);
+        this(bounds, value);
 
-        if (value != null) {
-            this.value = value;
-        } else {
-            this.value = computeValue();
+        for (OcrWord word : words) {
+            this.words.add(word);
         }
+    }
+
+    //---------//
+    // OcrLine //
+    //---------//
+    /**
+     * Creates a new OcrLine object.
+     *
+     * @param bounds the line bounding box
+     * @param value  the string ascii value
+     */
+    public OcrLine (Rectangle bounds,
+                    String    value)
+    {
+        this.bounds = new PixelRectangle(bounds);
+        this.value = value;
     }
 
     //~ Methods ----------------------------------------------------------------
 
+    //---------//
+    // addWord //
+    //---------//
+    public void addWord (OcrWord word)
+    {
+        words.add(word);
+    }
+
+    //
     //------//
     // dump //
     //------//
     public void dump ()
     {
-        for (OcrChar ch : chars) {
-            System.out.println(ch.toString());
+        for (OcrWord word : words) {
+            System.out.println(word.toString());
         }
     }
 
@@ -78,47 +102,69 @@ public class OcrLine
     //-----------//
     /**
      * Report the contour box of the line
-     * @return the contour box
+     *
+     * @return a COPY of the contour box
      */
     public PixelRectangle getBounds ()
     {
-        PixelRectangle contour = null;
-
-        for (OcrChar ch : chars) {
-            PixelRectangle box = ch.getBox();
-
-            if (contour == null) {
-                contour = box;
-            } else {
-                contour = contour.union(box);
-            }
-        }
-
-        return contour;
+        return new PixelRectangle(bounds);
     }
 
     //----------//
     // getChars //
     //----------//
     /**
-     * Report the sequence of char descriptors
+     * Report the sequence of chars descriptors (of words)
+     *
      * @return the chars
      */
     public List<OcrChar> getChars ()
     {
+        List<OcrChar> chars = new ArrayList<>();
+
+        for (OcrWord word : words) {
+            chars.addAll(word.getChars());
+        }
+
         return chars;
     }
 
-    //-----------------//
-    // isFontSizeValid //
-    //-----------------//
-    /**
-     * Report whether the font size field contains a valid value
-     * @return true if font size is valid
-     */
-    public boolean isFontSizeValid ()
+    //--------------//
+    // getFirstWord //
+    //--------------//
+    public OcrWord getFirstWord ()
     {
-        return fontSize != null;
+        if (!words.isEmpty()) {
+            return words.get(0);
+        } else {
+            return null;
+        }
+    }
+
+    //----------//
+    // getValue //
+    //----------//
+    /**
+     * Report the string value
+     *
+     * @return the value
+     */
+    public String getValue ()
+    {
+        return value;
+    }
+
+    //----------//
+    // getWords //
+    //----------//
+    /**
+     * Report the sequence of words descriptors
+     *
+     * @return the words
+     */
+    public List<OcrWord> getWords ()
+    {
+        return words;
     }
 
     //----------//
@@ -129,11 +175,17 @@ public class OcrLine
     {
         StringBuilder sb = new StringBuilder("{");
         sb.append(getClass().getSimpleName());
-        sb.append(" font:")
-          .append(fontSize);
+
         sb.append(" \"")
-          .append(value)
+          .append(getValue())
           .append("\"");
+
+        if (!words.isEmpty()) {
+            // TODO: Choose the most representative word, rather than first one?
+            sb.append(" ")
+              .append(words.get(0).getFontInfo());
+        }
+
         sb.append("}");
 
         return sb.toString();
@@ -143,67 +195,16 @@ public class OcrLine
     // translate //
     //-----------//
     /**
-     * Apply a translation to the coordinates of char descriptors
+     * Apply a translation to the coordinates of words descriptors
+     *
      * @param dx abscissa translation
      * @param dy ordinate translation
      */
     public void translate (int dx,
                            int dy)
     {
-        for (OcrChar ch : chars) {
-            ch.translate(dx, dy);
+        for (OcrWord word : words) {
+            word.translate(dx, dy);
         }
-    }
-
-    //--------------//
-    // computeValue //
-    //--------------//
-    /**
-     * Compute the string value of the line, using a smart positioning of the
-     * various chars, since the count of blanks as provided by Tesseract is
-     * often underestimated.
-     * @return the string value of this line
-     */
-    private String computeValue ()
-    {
-        // Font used for space computation only
-        Font          font = TextFont.baseTextFont.deriveFont((float) fontSize);
-
-        // Retrieve half standard space width with this font
-        double        halfSpace = TextFont.computeWidth(" ", font); // / 2;
-
-        // Abscissa of right side of previous char
-        int           lastRight = 0;
-
-        // Line content so far
-        StringBuilder sb = new StringBuilder();
-
-        // Loop on char descriptions
-        int index = 0;
-
-        for (OcrChar ch : chars) {
-            Rectangle box = ch.getBox();
-
-            // Do we need to insert spaces?
-            if ((index != 0) && ch.hasSpacesBefore()) {
-                StringBuilder spaces = new StringBuilder();
-                spaces.append(" "); // At least one!
-
-                // Add all spaces needed to insert char at target location
-                double gap = ch.getBox().x - lastRight - halfSpace;
-
-                while (TextFont.computeWidth(spaces.toString(), font) < gap) {
-                    spaces.append(" ");
-                }
-
-                sb.append(spaces);
-            }
-
-            sb.append(ch.content);
-            lastRight = box.x + box.width;
-            index++;
-        }
-
-        return sb.toString();
     }
 }

@@ -33,6 +33,7 @@ import java.awt.Dimension;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -91,38 +92,38 @@ public class GlyphChainTest
         }
     }
 
-    /**
-     * Test of direct section addition, of class BasicGlyphChain.
-     */
-    @Test
-    public void testAddDirectSection ()
-    {
-        GlyphChain instance = createInstance();
-        instance.addItem(second);
-
-        Run r4 = new Run(25, 10, 127);
-        vTable.getSequence(70)
-              .add(r4);
-
-        Section s4 = vLag.createSection(40, r4);
-        s4.append(r4);
-
-        int            weightBefore = instance.getWeight();
-        PixelRectangle boundsBefore = instance.getBounds();
-        second.addSection(s4, Linking.LINK_BACK);
-
-        int            weightAfter = instance.getWeight();
-        PixelRectangle boundsAfter = instance.getBounds();
-        assertFalse("Unmodified weight", weightAfter == weightBefore);
-        assertFalse("Unmodified bounds", boundsAfter.equals(boundsBefore));
-
-        int expectedWeight = weightBefore + s4.getWeight();
-        assertEquals(expectedWeight, weightAfter);
-
-        PixelRectangle expectedBounds = first.getBounds()
-                                             .union(second.getBounds());
-        assertEquals(expectedBounds, boundsAfter);
-    }
+//    /**
+//     * Test of direct section addition, of class BasicGlyphChain.
+//     */
+//    @Test
+//    public void testAddDirectSection ()
+//    {
+//        GlyphChain instance = createInstance();
+//        instance.addItem(second);
+//
+//        Run r4 = new Run(25, 10, 127);
+//        vTable.getSequence(70)
+//              .add(r4);
+//
+//        Section s4 = vLag.createSection(40, r4);
+//        s4.append(r4);
+//
+//        int            weightBefore = instance.getWeight();
+//        PixelRectangle boundsBefore = instance.getBounds();
+//        second.addSection(s4, Linking.LINK_BACK);
+//
+//        int            weightAfter = instance.getWeight();
+//        PixelRectangle boundsAfter = instance.getBounds();
+//        assertFalse("Unmodified weight", weightAfter == weightBefore);
+//        assertFalse("Unmodified bounds", boundsAfter.equals(boundsBefore));
+//
+//        int expectedWeight = weightBefore + s4.getWeight();
+//        assertEquals(expectedWeight, weightAfter);
+//
+//        PixelRectangle expectedBounds = first.getBounds()
+//                                             .union(second.getBounds());
+//        assertEquals(expectedBounds, boundsAfter);
+//    }
 
     /**
      * Test of addItem method, of class BasicGlyphChain.
@@ -171,56 +172,23 @@ public class GlyphChainTest
      * Test of addItem method, of class BasicGlyphChain.
      */
     @Test
-    public void testAddItself ()
-    {
-        try {
-            GlyphChain instance = createInstance();
-            instance.addItem(instance);
-            fail(
-                "IllegalArgumentException should be raised" +
-                " when attempting to add itself as an item");
-        } catch (IllegalArgumentException expected) {
-            checkException(expected);
-        }
-    }
-
-    /**
-     * Test of addItem method, of class BasicGlyphChain.
-     */
-    @Test
     public void testAddSharedItem ()
     {
         GlyphChain instance = createInstance(); // First
         GlyphChain otherInstance = createOtherInstance(); // Third
-        assertFalse(first.getChains().contains(otherInstance));
-        assertTrue(third.getChains().contains(otherInstance));
+        assertFalse(instance.getItems().contains(third));
+        assertTrue(otherInstance.getItems().contains(third));
 
         instance.addItem(third); // Third is added to instance
 
         assertEquals(2, instance.getItemCount());
         assertEquals(1, otherInstance.getItemCount());
-        assertFalse(first.getChains().contains(otherInstance));
-        assertTrue(third.getChains().contains(otherInstance));
-        assertTrue(first.getChains().contains(instance));
-        assertTrue(third.getChains().contains(instance));
-    }
-
-    /**
-     * Test of getBounds method, of class BasicGlyphChain.
-     */
-    @Test
-    public void testGetBounds ()
-    {
-        GlyphChain     instance = createInstance();
-        PixelRectangle expResult = first.getBounds();
-
-        PixelRectangle result = instance.getBounds();
-        assertEquals(expResult, result);
-
-        instance.addItem(second);
-        expResult.add(second.getBounds());
-        result = instance.getBounds();
-        assertEquals(expResult, result);
+        
+        assertFalse(otherInstance.getItems().contains(first));
+        assertTrue(otherInstance.getItems().contains(third));
+        
+        assertTrue(instance.getItems().contains(first));
+        assertTrue(instance.getItems().contains(third));
     }
 
     /**
@@ -370,9 +338,9 @@ public class GlyphChainTest
     @Test
     public void testGetMembers ()
     {
-        GlyphChain instance = createInstance();
-        SortedSet  expResult = first.getMembers();
-        SortedSet  result = instance.getMembers();
+        BasicGlyphChain instance = (BasicGlyphChain) createInstance();
+        SortedSet<Section>  expResult = first.getMembers();
+        SortedSet<Section>  result = instance.getMembers();
         assertEquals(expResult, result);
     }
 
@@ -382,7 +350,7 @@ public class GlyphChainTest
     @Test
     public void testGetMembers2 ()
     {
-        GlyphChain instance = createInstance();
+        BasicGlyphChain instance = (BasicGlyphChain) createInstance();
         instance.addItem(second);
 
         SortedSet expResult = new TreeSet<>();
@@ -390,44 +358,6 @@ public class GlyphChainTest
         expResult.addAll(second.getMembers());
 
         SortedSet result = instance.getMembers();
-        assertEquals(expResult, result);
-    }
-
-    /**
-     * Test of getWeight method, of class BasicGlyphChain.
-     */
-    @Test
-    public void testGetWeight ()
-    {
-        GlyphChain instance = createInstance();
-        int        expResult = first.getWeight();
-        int        result = instance.getWeight();
-        assertEquals(expResult, result);
-    }
-
-    /**
-     * Test of getWeight method, of class BasicGlyphChain.
-     */
-    @Test
-    public void testGetWeight2 ()
-    {
-        GlyphChain instance = createInstance();
-        instance.addItem(second);
-
-        int expResult = first.getWeight() + second.getWeight();
-        int result = instance.getWeight();
-        assertEquals(expResult, result);
-    }
-
-    /**
-     * Test of getWeight method, of class BasicGlyphChain.
-     */
-    @Test
-    public void testGetWeightEmpty ()
-    {
-        GlyphChain instance = createEmptyInstance();
-        int        expResult = 0;
-        int        result = instance.getWeight();
         assertEquals(expResult, result);
     }
 
@@ -471,8 +401,6 @@ public class GlyphChainTest
         GlyphChain instance = createInstance();
         instance.removeItem(first);
         assertEquals(0, instance.getItemCount());
-        assertEquals(0, instance.getWeight());
-        assertEquals(null, instance.getBounds());
     }
 
     /**
@@ -523,84 +451,28 @@ public class GlyphChainTest
     @Test
     public void testSetSharedItems ()
     {
-        GlyphChain instance = createInstance();
-        instance.addItem(second);
+        GlyphChain instance = createInstance(); // first
+        instance.addItem(second);                // + second
 
-        GlyphChain otherInstance = createOtherInstance();
+        GlyphChain otherInstance = createOtherInstance(); // third => first, second
 
-        assertTrue(first.getChains().contains(instance));
-        assertTrue(second.getChains().contains(instance));
-        assertTrue(third.getChains().contains(otherInstance));
+        assertTrue(instance.getItems().contains(first));
+        assertTrue(instance.getItems().contains(second));
+        assertTrue(otherInstance.getItems().contains(third));
 
         otherInstance.setItems(Arrays.asList(first, second));
 
         assertEquals(2, instance.getItemCount());
         assertEquals(2, otherInstance.getItemCount());
 
-        assertTrue(first.getChains().contains(instance));
-        assertTrue(second.getChains().contains(instance));
-        assertTrue(first.getChains().contains(otherInstance));
-        assertTrue(second.getChains().contains(otherInstance));
-        assertFalse(third.getChains().contains(instance));
-        assertFalse(third.getChains().contains(otherInstance));
-    }
+        assertTrue(instance.getItems().contains(first));
+        assertTrue(instance.getItems().contains(second));
+        
+        assertTrue(otherInstance.getItems().contains(first));
+        assertTrue(otherInstance.getItems().contains(second));
 
-    /**
-     * Test of setItems method, of class BasicGlyphChain.
-     */
-    @Test
-    public void testSetSharedItems2 ()
-    {
-        GlyphChain instance = createInstance(); // First
-        instance.addItem(second); // First + Second
-
-        GlyphChain otherInstance = createOtherInstance(); // Third
-
-        assertTrue(first.getChains().contains(instance));
-        assertTrue(second.getChains().contains(instance));
-        assertTrue(third.getChains().contains(otherInstance));
-
-        otherInstance.setItems(instance.getItems());
-
-        assertEquals(2, instance.getItemCount());
-        assertEquals(2, otherInstance.getItemCount());
-
-        assertTrue(first.getChains().contains(instance));
-        assertTrue(second.getChains().contains(instance));
-        assertTrue(first.getChains().contains(otherInstance));
-        assertTrue(second.getChains().contains(otherInstance));
-        assertFalse(third.getChains().contains(instance));
-        assertFalse(third.getChains().contains(otherInstance));
-    }
-
-    /**
-     * Test of setItems method, of class BasicGlyphChain.
-     */
-    @Test
-    public void testSetSharedItems3 ()
-    {
-        GlyphChain instance = createInstance();
-        instance.addItem(second);
-
-        GlyphChain otherInstance = createOtherInstance();
-
-        assertTrue(first.getChains().contains(instance));
-        assertTrue(second.getChains().contains(instance));
-        assertTrue(third.getChains().contains(otherInstance));
-
-        instance.setItems(otherInstance.getItems());
-
-        // instance: third
-        // otherInstance : third
-        assertEquals(1, instance.getItemCount());
-        assertEquals(1, otherInstance.getItemCount());
-
-        assertFalse(first.getChains().contains(instance));
-        assertFalse(second.getChains().contains(instance));
-        assertFalse(first.getChains().contains(otherInstance));
-        assertFalse(second.getChains().contains(otherInstance));
-        assertTrue(third.getChains().contains(instance));
-        assertTrue(third.getChains().contains(otherInstance));
+        assertFalse(instance.getItems().contains(third));        
+        assertFalse(otherInstance.getItems().contains(third));
     }
 
     //-------//
@@ -653,8 +525,8 @@ public class GlyphChainTest
     //---------------------//
     private GlyphChain createEmptyInstance ()
     {
-        BasicGlyphChain gc = new BasicGlyphChain();
-        gc.setId(100);
+        List<Glyph> empty = Collections.emptyList();
+        BasicGlyphChain gc = new BasicGlyphChain(empty);
 
         return gc;
     }
@@ -664,8 +536,7 @@ public class GlyphChainTest
     //----------------//
     private GlyphChain createInstance ()
     {
-        BasicGlyphChain gc = new BasicGlyphChain(first);
-        gc.setId(200);
+        BasicGlyphChain gc = new BasicGlyphChain(Arrays.asList(first));
 
         return gc;
     }
@@ -675,8 +546,7 @@ public class GlyphChainTest
     //---------------------//
     private GlyphChain createOtherInstance ()
     {
-        BasicGlyphChain gc = new BasicGlyphChain(third);
-        gc.setId(300);
+        BasicGlyphChain gc = new BasicGlyphChain(Arrays.asList(third));
 
         return gc;
     }

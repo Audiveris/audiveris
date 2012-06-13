@@ -91,11 +91,23 @@ class BasicEnvironment
     @Override
     public void dump ()
     {
-        System.out.println("   stemNumber=" + getStemNumber());
-        System.out.println("   leftStem=" + getStem(HorizontalSide.LEFT));
-        System.out.println("   rightStem=" + getStem(HorizontalSide.RIGHT));
+        if (stemNumber > 0) {
+            System.out.println("   stemNumber=" + stemNumber);
+        }
+        
+        if (leftStem != null) {
+            System.out.println("   leftStem=" + leftStem);
+        }
+        
+        if (rightStem != null) {
+            System.out.println("   rightStem=" + rightStem);
+        }
+        
         System.out.println("   pitchPosition=" + getPitchPosition());
-        System.out.println("   withLedger=" + isWithLedger());
+        
+        if (withLedger) {
+            System.out.println("   withLedger");
+        }
     }
 
     //--------------------//

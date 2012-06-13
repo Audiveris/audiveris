@@ -31,7 +31,6 @@ import proxymusic.Syllabic;
 import proxymusic.UpDown;
 
 import java.lang.String; // Do not remove this line!
-import java.util.logging.Level;
 
 import javax.xml.bind.JAXBElement;
 

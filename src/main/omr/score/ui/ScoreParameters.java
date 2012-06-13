@@ -46,7 +46,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
-import java.util.logging.Level;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -786,7 +785,7 @@ public class ScoreParameters
             String fullName = Language.nameOf(code);
 
             if (fullName != null) {
-                return code + " - " + fullName;
+                return code + " (" + fullName + ")";
             } else {
                 return code;
             }

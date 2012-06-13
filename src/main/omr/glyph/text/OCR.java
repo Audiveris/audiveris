@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.glyph.text;
 
+import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.Set;
@@ -22,10 +23,24 @@ import java.util.Set;
  */
 public interface OCR
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Enumerations -----------------------------------------------------------
 
+    /** Handling of image layout. */
+    enum LayoutMode
+    {
+        //~ Enumeration constant initializers ----------------------------------
+
+        /** Automatic discovery of multi block layout */
+        MULTI_BLOCK,
+        /** No layout processing, a single block is assumed */
+        SINGLE_BLOCK;
+    }
+
+    //~ Methods ----------------------------------------------------------------
+    //
     /**
      * Report the set of supported language codes
+     *
      * @return the set of supported 3-letter codes
      */
     Set<String> getSupportedLanguages ();
@@ -40,14 +55,19 @@ public interface OCR
      * specified.
      *
      * @param image        the provided image
-     * @param languageCode the code of the (dominant?) language of the text,
-     * or null if this language is unknown
+     * @param topLeft      absolute coordinates of the image top left corner
+     * @param languageCode language specification or null
+     * @param layoutMode   how the image layout should be analyzed
      * @param label        an optional label related to the image, null
-     * otherwise. This is meant for debugging the temporary files.
-     * @return a list of OcrLine instances, or null. The coordinates of any
-     * returned OcrLine are relative to the image top-left corner.
+     *                     otherwise. This is meant for keeping track of the
+     *                     temporary image files.
+     * @return a list of OcrLine instances, or null.
+     *         The coordinates of any returned OcrLine are absolute coordinates
+     *         thanks to the topLeft parameter.
      */
     List<OcrLine> recognize (BufferedImage image,
-                             String        languageCode,
-                             String        label);
+                             Point topLeft,
+                             String languageCode,
+                             LayoutMode layoutMode,
+                             String label);
 }

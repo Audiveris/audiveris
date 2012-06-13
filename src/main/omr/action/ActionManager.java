@@ -32,6 +32,7 @@ import org.jdesktop.application.ApplicationAction;
 import org.jdesktop.application.ResourceMap;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -100,8 +101,7 @@ public class ActionManager
     {
         // Stay informed on sheet selection, in order to enable sheet-dependent
         // actions accordingly
-        SheetsController.getInstance().
-                subscribe(this);
+        SheetsController.getInstance().subscribe(this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -110,6 +110,7 @@ public class ActionManager
     //-------------//
     /**
      * Report the single action manager instance.
+     *
      * @return the unique instance of this class
      */
     public static ActionManager getInstance ()
@@ -126,6 +127,7 @@ public class ActionManager
     //-------------------//
     /**
      * Retrieve an action knowing its methodName.
+     *
      * @param instance   the instance of the hosting class
      * @param methodName the method name
      * @return the action found, or null if none
@@ -133,9 +135,8 @@ public class ActionManager
     public ApplicationAction getActionInstance (Object instance,
                                                 String methodName)
     {
-        ActionMap actionMap = MainGui.getInstance().
-                getContext().
-                getActionMap(instance);
+        ActionMap actionMap = MainGui.getInstance().getContext().getActionMap(
+                instance);
 
         return (ApplicationAction) actionMap.get(methodName);
     }
@@ -145,6 +146,7 @@ public class ActionManager
     //---------//
     /**
      * Report the menu built for a given key.
+     *
      * @param key the given menu key
      * @return the related menu
      */
@@ -158,6 +160,7 @@ public class ActionManager
     //------------//
     /**
      * Report the bar containing all generated pull-down menus.
+     *
      * @return the menu bar
      */
     public JMenuBar getMenuBar ()
@@ -170,6 +173,7 @@ public class ActionManager
     //---------//
     /**
      * Report a describing name.
+     *
      * @return a describing name
      */
     public String getName ()
@@ -182,6 +186,7 @@ public class ActionManager
     //------------//
     /**
      * Report the tool bar containing all generated buttons.
+     *
      * @return the tool bar
      */
     public JToolBar getToolBar ()
@@ -194,6 +199,7 @@ public class ActionManager
     //------------//
     /**
      * Insert a predefined menu, either partly or fully built.
+     *
      * @param key  the menu unique name
      * @param menu the menu to inject
      */
@@ -217,18 +223,10 @@ public class ActionManager
             File file = new File(WellKnowns.SETTINGS_FOLDER, name);
 
             if (file.exists()) {
-                InputStream input = null;
-
-                try {
-                    input = new FileInputStream(file);
+                try (InputStream input = new FileInputStream(file)) {
                     Actions.loadActionsFrom(input);
-                } catch (FileNotFoundException | JAXBException ex) {
+                } catch (IOException | JAXBException ex) {
                     logger.warning("Error loading actions from {0}", name, ex);
-                } finally {
-                    try {
-                        input.close();
-                    } catch (Exception ignored) {
-                    }
                 }
             } else {
                 logger.severe("File not found {0}", file);
@@ -241,6 +239,7 @@ public class ActionManager
     //---------//
     /**
      * Notification of sheet selection, to update frame title.
+     *
      * @param sheetEvent the event about sheet selection
      */
     @Override
@@ -283,8 +282,7 @@ public class ActionManager
             }
 
             // Proper menu decoration
-            ResourceMap resource = MainGui.getInstance().
-                    getContext().
+            ResourceMap resource = MainGui.getInstance().getContext().
                     getResourceMap(Actions.class);
             menu.setText(domain); // As default
             menu.setName(domain);
@@ -334,6 +332,7 @@ public class ActionManager
      * Allocate and dress an instance of the provided class, then
      * register the action in the UI structure (menus and buttons)
      * according to the action descriptor parameters.
+     *
      * @param action the provided action class
      * @return the registered and decorated instance of the action class
      */
@@ -386,7 +385,9 @@ public class ActionManager
                         "Unknown action {0} in class {1}",
                         new Object[]{desc.methodName, desc.className});
             }
-        } catch (Throwable ex) {
+        } catch (ClassNotFoundException | SecurityException |
+                 IllegalAccessException | IllegalArgumentException |
+                 InvocationTargetException | InstantiationException ex) {
             logger.warning("Error while registering {0}", desc, ex);
         }
 

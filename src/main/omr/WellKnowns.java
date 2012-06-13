@@ -15,6 +15,7 @@ import omr.log.Logger;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.util.Locale;
 
 /**
  * Class {@code WellKnowns} gathers top public static final data to be
@@ -52,20 +53,23 @@ public class WellKnowns
     //----------//
     // PLATFORM //
     //----------//
+    
+    /** Character encoding */
+    public static final String encoding = "UTF-8";
 
     /** Are we using a Linux OS? */
     public static final boolean LINUX = System.getProperty("os.name")
-                                              .toLowerCase()
+                                              .toLowerCase(Locale.ENGLISH)
                                               .startsWith("linux");
 
     /** Are we using a Mac OS? */
     public static final boolean MAC_OS_X = System.getProperty("os.name")
-                                                 .toLowerCase()
+                                                 .toLowerCase(Locale.ENGLISH)
                                                  .startsWith("mac os x");
 
     /** Are we using a Windows OS? */
     public static final boolean WINDOWS = System.getProperty("os.name")
-                                                .toLowerCase()
+                                                .toLowerCase(Locale.ENGLISH)
                                                 .startsWith("windows");
 
     /** Precise OS architecture */
@@ -80,7 +84,7 @@ public class WellKnowns
         "line.separator");
 
     /** Redirection, if any, of standard out and err stream */
-    public static String STD_OUT_ERROR = System.getProperty("stdouterr");
+    public static final String STD_OUT_ERROR = System.getProperty("stdouterr");
 
     //---------//
     // PROGRAM //
@@ -96,7 +100,9 @@ public class WellKnowns
     public static final File RES_FOLDER = new File(PROGRAM_FOLDER, "res");
 
     /** The folder where Tesseract OCR material is stored */
-    public static final File OCR_FOLDER = new File(PROGRAM_FOLDER, "ocr");
+    public static final File OCR_FOLDER = LINUX
+                                          ? new File("/usr/local/share")
+                                          : new File(PROGRAM_FOLDER, "ocr");
 
     /** The folder where documentations files are stored */
     public static final File DOC_FOLDER = new File(PROGRAM_FOLDER, "www");
@@ -177,6 +183,15 @@ public class WellKnowns
     public static final File DEFAULT_SCORES_FOLDER = new File(
         DATA_FOLDER,
         "scores");
+    
+    //~ Constructors -----------------------------------------------------------
+    
+    //------------//
+    // WellKnowns // Not meant to be instantiated
+    //------------//
+    private WellKnowns ()
+    {
+    }
 
     //~ Methods ----------------------------------------------------------------
 
@@ -329,20 +344,19 @@ public class WellKnowns
         final String LOGGING_NAME = "logging.properties";
 
         // Set logging configuration file (if none already defined)
-        if (System.getProperty(LOGGING_KEY) == null) {
+        final String loggingProp = System.getProperty(LOGGING_KEY);
+        if (loggingProp == null) {
             // Check for a user file
             File loggingFile = new File(SETTINGS_FOLDER, LOGGING_NAME);
 
             if (loggingFile.exists()) {
                 System.setProperty(LOGGING_KEY, loggingFile.toString());
             }
+        } else {
+            System.out.println("Logging already defined by " + loggingProp);
         }
 
         /** Set up logger mechanism */
         Logger.getLogger(WellKnowns.class);
-    }
-
-    private WellKnowns ()
-    {
     }
 }

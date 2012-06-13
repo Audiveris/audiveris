@@ -13,6 +13,8 @@ package omr.glyph.text;
 
 import omr.score.common.PixelRectangle;
 
+import java.awt.Rectangle;
+
 /**
  * Class {@code OcrChar} manages information about a OCR-decoded
  * character.
@@ -23,76 +25,43 @@ public class OcrChar
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** Character value */
-    public final String content;
+    /** Character value. */
+    public final String value;
 
-    /** Character bounding box, relative to top-left image origin */
-    private final PixelRectangle box;
-
-    /** Font size of char */
-    public final int fontSize;
-
-    /* Number of spaces before this char */
-    public final int blanks;
+    /** Character bounds. */
+    private final PixelRectangle bounds;
 
     //~ Constructors -----------------------------------------------------------
-
+    //
     //---------//
     // OcrChar //
     //---------//
     /**
      * Creates a new OcrChar object.
      *
-     * @param content the character string value
-     * @param box the bounding box of this character wrt the decoded image
-     * @param fontSize the font size for this char
-     * @param blanks the number of spaces before this char
+     * @param bounds the bounding box of this character wrt the decoded image
+     * @param value  the character string value
      */
-    public OcrChar (String         content,
-                    PixelRectangle box,
-                    int            fontSize,
-                    int            blanks)
+    public OcrChar (Rectangle bounds,
+                    String value)
     {
-        this.content = content;
-        this.box = box;
-        this.fontSize = fontSize;
-        this.blanks = blanks;
+        this.bounds = new PixelRectangle(bounds);
+        this.value = value;
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //--------//
-    // getBox //
-    //--------//
+    //
+    //-----------//
+    // getBounds //
+    //-----------//
     /**
-     * Return the bounding box of the char
+     * Return the bounding box of the char.
+     *
      * @return (a copy of) the box
      */
-    public PixelRectangle getBox ()
+    public PixelRectangle getBounds ()
     {
-        return new PixelRectangle(box);
-    }
-
-    //-----------------//
-    // hasSpacesBefore //
-    //-----------------//
-    /**
-     * Report whether there must be one or several spaces before this character
-     * Note: the precise number of spaces, as reported by Tesseract, is not at
-     * all reliable
-     * @return true if at least one space is present
-     */
-    public boolean hasSpacesBefore ()
-    {
-        return (blanks > 0) || isDash();
-    }
-
-    //--------//
-    // isDash //
-    //--------//
-    public boolean isDash ()
-    {
-        return content.equals("-");
+        return new PixelRectangle(bounds);
     }
 
     //----------//
@@ -104,20 +73,9 @@ public class OcrChar
         StringBuilder sb = new StringBuilder("{");
         sb.append(getClass().getSimpleName());
 
-        sb.append(" \"")
-          .append(content)
-          .append("\"");
+        sb.append(" \"").append(value).append("\"");
 
-        sb.append(" ")
-          .append(getBox());
-
-        sb.append(" font:")
-          .append(fontSize);
-
-        if (blanks > 0) {
-            sb.append(" blanks:")
-              .append(blanks);
-        }
+        sb.append(" ").append(getBounds());
 
         sb.append("}");
 
@@ -129,12 +87,13 @@ public class OcrChar
     //-----------//
     /**
      * Apply a translation to the coordinates of this char descriptor
+     *
      * @param dx abscissa translation
      * @param dy ordinate translation
      */
     public void translate (int dx,
                            int dy)
     {
-        box.translate(dx, dy);
+        bounds.translate(dx, dy);
     }
 }

@@ -26,8 +26,8 @@ import java.awt.geom.Rectangle2D;
 import java.util.ConcurrentModificationException;
 
 /**
- * Class {@code OmrFont} is meant to simplify the use of rendering symbols
- * when using a Text or a Music font
+ * Class {@code OmrFont} is meant to simplify the use of rendering 
+ * symbols when using a Text or a Music font.
  *
  * @author Hervé Bitteur
  */
@@ -78,8 +78,8 @@ public abstract class OmrFont
     // paint //
     //-------//
     /**
-     * This is the general paint method for drawing a symbol layout, at a
-     * specified location, using a specified alignment
+     * This is the general paint method for drawing a symbol layout, at 
+     * a specified location, using a specified alignment.
      * @param g the graphics environment
      * @param layout what: the symbol, perhaps transformed
      * @param location where: the precise location in the display
@@ -110,8 +110,8 @@ public abstract class OmrFont
     // layout //
     //--------//
     /**
-     * Build a TextLayout from a String of OmrFont characters (transformed by
-     * the provided AffineTransform if any)
+     * Build a TextLayout from a String of OmrFont characters
+     * (transformed by the provided AffineTransform if any).
      * @param str the string of proper codes
      * @param fat potential affine transformation
      * @return the (sized) TextLayout ready to be drawn
@@ -128,7 +128,7 @@ public abstract class OmrFont
     // layout //
     //--------//
     /**
-     * Build a TextLayout from a String of OmrFont characters
+     * Build a TextLayout from a String of OmrFont characters.
      * @param str the string of proper codes
      * @return the TextLayout ready to be drawn
      */
@@ -141,7 +141,7 @@ public abstract class OmrFont
     // layout //
     //--------//
     /**
-     * Build a TextLayout from a ShapeSymbol
+     * Build a TextLayout from a ShapeSymbol.
      * @param symbol the symbol to draw
      * @return the TextLayout ready to be drawn
      */

@@ -29,8 +29,9 @@ import java.awt.Font;
  * Class {@code Text} handles any textual score entity.
  *
  * <p><b>Nota</b>: There is exactly one Text entity per sentence, except for
- * lyrics items for which we build one LyricsItem (subclass of Text) for each
- * textual glyph. The reason is that, except for lyrics, only the full sentence
+ * lyrics items for which we build one {@code LyricsItem} (subclass of Text)
+ * for each textual glyph.
+ * The reason is that, except for lyrics, only the full sentence
  * is meaningful: for example "Ludwig van Beethoven" is meaningful as a Creator
  * Text, but the various glyphs "Ludwig", "van", "Beethoven" are not.
  * For lyrics, since we can have very long sentences, and since the positioning
@@ -166,76 +167,75 @@ public abstract class Text
                     "Sentence with no role defined");
         }
 
-        logger.fine("Populating {0} {1} \"{2}\"", new Object[]{sentence, role,
-                                                               sentence.
-                    getTextContent()});
+        logger.fine("Populating {0} {1} \"{2}\"",
+                    sentence, role, sentence.getTextContent());
 
         if (role == null) {
             return;
         }
 
         switch (role) {
-            case Lyrics:
+        case Lyrics:
 
-                // Create as many lyrics items as needed
-                for (Glyph item : sentence.getItems()) {
-                    PixelRectangle itemBox = item.getBounds();
-                    String itemStr = item.getTextValue();
+            // Create as many lyrics items as needed
+            for (Glyph item : sentence.getItems()) {
+                PixelRectangle itemBox = item.getBounds();
+                String itemStr = item.getTextValue();
 
-                    if (itemStr == null) {
-                        int nbChar = (int) Math.rint(
-                                (double) itemBox.width / sentence.getTextHeight());
-                        itemStr = role.getStringHolder(nbChar);
-                    }
-
-                    item.setTranslation(
-                            new LyricsItem(
-                            sentence,
-                            new PixelPoint(itemBox.x, location.y),
-                            item,
-                            itemBox.width,
-                            itemStr));
+                if (itemStr == null) {
+                    int nbChar = (int) Math.rint(
+                            (double) itemBox.width / sentence.getTextHeight());
+                    itemStr = role.getStringHolder(nbChar);
                 }
 
-                break;
-
-            case Title:
-                sentence.setGlyphsTranslation(new TitleText(sentence));
-
-                break;
-
-            case Direction:
-
-                Measure measure = systemPart.getMeasureAt(location);
-                sentence.setGlyphsTranslation(
-                        new DirectionStatement(
-                        measure,
-                        location,
-                        measure.getDirectionChord(location),
+                item.setTranslation(
+                        new LyricsItem(
                         sentence,
-                        new DirectionText(sentence)));
+                        new PixelPoint(itemBox.x, location.y),
+                        item,
+                        itemBox.width,
+                        itemStr));
+            }
 
-                break;
+            break;
 
-            case Number:
-                sentence.setGlyphsTranslation(new NumberText(sentence));
+        case Title:
+            sentence.setGlyphsTranslation(new TitleText(sentence));
 
-                break;
+            break;
 
-            case Name:
-                sentence.setGlyphsTranslation(new NameText(sentence));
+        case Direction:
 
-                break;
+            Measure measure = systemPart.getMeasureAt(location);
+            sentence.setGlyphsTranslation(
+                    new DirectionStatement(
+                    measure,
+                    location,
+                    measure.getDirectionChord(location),
+                    sentence,
+                    new DirectionText(sentence)));
 
-            case Creator:
-                sentence.setGlyphsTranslation(new CreatorText(sentence));
+            break;
 
-                break;
+        case Number:
+            sentence.setGlyphsTranslation(new NumberText(sentence));
 
-            case Rights:
-                sentence.setGlyphsTranslation(new RightsText(sentence));
+            break;
 
-                break;
+        case Name:
+            sentence.setGlyphsTranslation(new NameText(sentence));
+
+            break;
+
+        case Creator:
+            sentence.setGlyphsTranslation(new CreatorText(sentence));
+
+            break;
+
+        case Rights:
+            sentence.setGlyphsTranslation(new RightsText(sentence));
+
+            break;
 
             case Chord:
                 measure = systemPart.getMeasureAt(location);
@@ -249,9 +249,9 @@ public abstract class Text
 
                 break;
 
-            case UnknownRole:
-            default:
-                sentence.setGlyphsTranslation(new DefaultText(sentence));
+        case UnknownRole:
+        default:
+            sentence.setGlyphsTranslation(new DefaultText(sentence));
         }
     }
 
@@ -352,8 +352,9 @@ public abstract class Text
 
         sb.append(" loc:").append(getReferencePoint());
 
-        sb.append(" S").append(getSystem().getId()).append("P").append(getPart().
-                getId());
+        sb.append(" S").append(getSystem().getId());
+        sb.append("P").append(getPart().getId());
+        
         sb.append("}");
 
         return sb.toString();
@@ -397,12 +398,9 @@ public abstract class Text
         {
             //~ Enumeration constant initializers ------------------------------
 
-            arranger,
             composer,
             lyricist,
-            poet,
-            transcriber,
-            translator;
+            arranger;
         }
 
         //~ Instance fields ----------------------------------------------------

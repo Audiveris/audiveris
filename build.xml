@@ -41,7 +41,7 @@
         <pathelement path="${build.classes.dir}"/>
     </path>
 
-    <!-- ===  Public Targets  =============================================== -->
+    <!-- ===  Public Targets  ============================================== -->
     
     <!-- =============== -->
     <!--  J A V A D O C  -->
@@ -50,18 +50,7 @@
             depends="init, -common.-javadoc-build, -javadoc-browse"
             description="Build Javadoc."/>
     
-    <!-- ======= -->
-    <!--  R U N  -->
-    <!-- ======= -->
-    <target name="run"
-	    depends="-pre-jar"
-	    description="Run the application">
-	<property name="run-sys-prop.java.util.logging.config.file"
-		  value="${config.dir}/logging.properties"/>
-	<antcall target="audiveris-impl.run" />
-    </target>
-    
-    <!-- ===  Internal Targets  ============================================= -->
+    <!-- ===  Internal Targets  ============================================ -->
 
     <!-- =============================== -->
     <!--  - J A V A D O C - B R O W S E  -->
@@ -90,7 +79,7 @@
     <target name="-post-clean"
             depends="-windows.clean" />
 
-    <!-- === Imports ======================================================== -->
+    <!-- === Imports ======================================================= -->
 
     <!-- Load NetBeans implementation targets -->
     <import file="nbproject/build-impl.xml"/>

@@ -59,7 +59,7 @@ import java.util.TreeSet;
  * @author Hervé Bitteur
  */
 public abstract class AbstractBlobPattern
-    extends GlyphPattern
+        extends GlyphPattern
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -68,14 +68,13 @@ public abstract class AbstractBlobPattern
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
-        AbstractBlobPattern.class);
+            AbstractBlobPattern.class);
 
     /** Shapes not accepted for candidates */
     private static final EnumSet<Shape> excludedShapes = EnumSet.copyOf(
-        ShapeSet.shapesOf(TUPLET_THREE, TUPLET_SIX, BRACE, BRACKET));
+            ShapeSet.shapesOf(TUPLET_THREE, TUPLET_SIX, BRACE, BRACKET));
 
     //~ Instance fields --------------------------------------------------------
-
     /** Number of glyphs successfully modified */
     protected int successCount = 0;
 
@@ -89,16 +88,16 @@ public abstract class AbstractBlobPattern
     protected final int minBlobWeight;
 
     //~ Constructors -----------------------------------------------------------
-
     //---------------------//
     // AbstractBlobPattern //
     //---------------------//
     /**
      * Creates a new AbstractBlobPattern object.
+     *
      * @param name   Unique name for this pattern
      * @param system The related system
      */
-    public AbstractBlobPattern (String     name,
+    public AbstractBlobPattern (String name,
                                 SystemInfo system)
     {
         super(name, system);
@@ -109,7 +108,6 @@ public abstract class AbstractBlobPattern
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // runPattern //
     //------------//
@@ -131,7 +129,7 @@ public abstract class AbstractBlobPattern
     /**
      * Define the sequence of regions to process.
      */
-    protected abstract List<?extends Region> buildRegions ();
+    protected abstract List<? extends Region> buildRegions ();
 
     //--------------//
     // buildPolygon //
@@ -168,7 +166,6 @@ public abstract class AbstractBlobPattern
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //--------//
     // Region //
     //--------//
@@ -189,7 +186,8 @@ public abstract class AbstractBlobPattern
         protected List<TextBlob> completedBlobs = new ArrayList<>();
 
         /** To filter the candidates (already limited to the region) */
-        protected Predicate<Glyph> additionalFilter = new Predicate<Glyph>() {
+        protected Predicate<Glyph> additionalFilter = new Predicate<Glyph>()
+        {
             @Override
             public boolean check (Glyph glyph)
             {
@@ -197,19 +195,18 @@ public abstract class AbstractBlobPattern
             }
         };
 
-
         //~ Constructors -------------------------------------------------------
-
         //--------//
         // Region //
         //--------//
         /**
          * Create a region.
+         *
          * @param name    a name for this region
          * @param polygon the limits within the system (a null polygon will be
-         * a pass-through for all system glyphs)
+         *                a pass-through for all system glyphs)
          */
-        public Region (String  name,
+        public Region (String name,
                        Polygon polygon)
         {
             this.name = name;
@@ -217,17 +214,14 @@ public abstract class AbstractBlobPattern
         }
 
         //~ Methods ------------------------------------------------------------
-
         //---------//
         // process //
         //---------//
         public void process ()
         {
             logger.fine(
-                "{0}Pattern {1} Processing region {2}",
-                new Object[] {
-                    system.getLogPrefix(), AbstractBlobPattern.this.name, name
-                });
+                    "{0}Pattern {1} Processing region {2}",
+                    system.getLogPrefix(), AbstractBlobPattern.this.name, name);
 
             /** Glyphs too small to be used for initial blob definition */
             List<Glyph> smallGlyphs = new ArrayList<>();
@@ -236,14 +230,14 @@ public abstract class AbstractBlobPattern
             int blobIndex = 0;
 
             // Separate the glyphs into small and large ones (and discard some)
-            glyphLoop: 
+            glyphLoop:
             for (Glyph glyph : retrieveGlyphs(additionalFilter)) {
                 if (isSmall(glyph)) {
                     smallGlyphs.add(glyph);
                 } else {
                     // Find the first compatible blob, if any, for this large
                     for (ListIterator<TextBlob> it = pendingBlobs.listIterator();
-                         it.hasNext();) {
+                            it.hasNext();) {
                         TextBlob blob = it.next();
 
                         if (blob.canInsertLargeGlyph(glyph)) {
@@ -251,7 +245,8 @@ public abstract class AbstractBlobPattern
 
                             // Done for this glyph
                             continue glyphLoop;
-                        } else if ((glyph.getBounds().x - blob.getRight()) > blob.getMaxWordGap()) {
+                        } else if ((glyph.getBounds().x - blob.getRight()) > blob.
+                                getMaxWordGap()) {
                             // Since glyphs are sorted by abscissa, transfer
                             // this blob from "pending" to "completed".
                             it.remove();
@@ -296,27 +291,29 @@ public abstract class AbstractBlobPattern
         /**
          * Retrieve among the system glyphs, the ones that belong to
          * this region.
+         *
          * @param filter predicate to filter the glyphs candidate
          * @return the set of system glyphs within the region
          */
         public SortedSet<Glyph> retrieveGlyphs (final Predicate<Glyph> filter)
         {
             SortedSet<Glyph> glyphs = new TreeSet<>(
-                Glyph.abscissaComparator);
+                    Glyph.abscissaComparator);
 
             glyphs.addAll(
-                Glyphs.lookupGlyphs(
+                    Glyphs.lookupGlyphs(
                     system.getGlyphs(),
-                    new Predicate<Glyph>() {
-                            @Override
-                            public boolean check (Glyph glyph)
-                            {
-                                return ((polygon == null) ||
-                                       polygon.contains(glyph.getBounds())) &&
-                                       ((filter == null) ||
-                                       filter.check(glyph));
-                            }
-                        }));
+                    new Predicate<Glyph>()
+                    {
+                        @Override
+                        public boolean check (Glyph glyph)
+                        {
+                            return ((polygon == null)
+                                    || polygon.contains(glyph.getBounds()))
+                                    && ((filter == null)
+                                        || filter.check(glyph));
+                        }
+                    }));
 
             return glyphs;
         }
@@ -326,12 +323,13 @@ public abstract class AbstractBlobPattern
         //-----------//
         /**
          * Check whether the constructed blob is actually a line of text
+         *
          * @param blob     the blob to check
          * @param compound the resulting allowed glyph
          * @return true if OK
          */
         protected abstract boolean checkBlob (TextBlob blob,
-                                              Glyph    compound);
+                                              Glyph compound);
 
         //----------------//
         // checkCandidate //
@@ -339,7 +337,7 @@ public abstract class AbstractBlobPattern
         protected boolean checkCandidate (Glyph glyph)
         {
             // Respect user choice!
-            if (glyph.isManualShape()) {
+            if (glyph.isManualShape() && !glyph.isText()) {
                 return false;
             }
 
@@ -365,6 +363,7 @@ public abstract class AbstractBlobPattern
         //---------//
         /**
          * Check whether a glyph is considered as small
+         *
          * @param glyph the glyph to check
          * @return true if small
          */
@@ -375,10 +374,10 @@ public abstract class AbstractBlobPattern
                 return true;
             }
 
-            // Test on height
-            if (glyph.getBounds().height < minGlyphHeight) {
-                return true;
-            }
+//            // Test on height
+//            if (glyph.getBounds().height < minGlyphHeight) {
+//                return true;
+//            }
 
             return false;
         }
@@ -389,22 +388,23 @@ public abstract class AbstractBlobPattern
         /**
          * Re-insert the small glyphs that had been left aside when
          * initially building the blobs.
+         *
          * @param smallGlyphs the small glyphs to insert
          * @param blobs       the collection of blobs to update
          */
-        private void insertSmallGlyphs (List<Glyph>    smallGlyphs,
+        private void insertSmallGlyphs (List<Glyph> smallGlyphs,
                                         List<TextBlob> blobs)
         {
             for (Glyph glyph : smallGlyphs) {
                 // Look for the best suitable blob, if any
-                Double   bestDistance = null;
+                Double bestDistance = null;
                 TextBlob bestBlob = null;
 
                 for (TextBlob blob : blobs) {
                     Double dist = blob.distanceTo(glyph);
 
-                    if ((dist != null) &&
-                        ((bestDistance == null) || (bestDistance > dist))) {
+                    if ((dist != null)
+                            && ((bestDistance == null) || (bestDistance > dist))) {
                         bestDistance = dist;
                         bestBlob = blob;
                     }
@@ -412,7 +412,6 @@ public abstract class AbstractBlobPattern
 
                 if (bestBlob != null) {
                     logger.fine("Small glyph inserted into {0}", bestBlob);
-
                     bestBlob.insertSmallGlyph(glyph);
                 } else {
                     logger.fine("Could not insert small {0}", glyph.idString());
@@ -425,6 +424,7 @@ public abstract class AbstractBlobPattern
         //--------------------//
         /**
          * Remove blobs that are vertical or too small
+         *
          * @param blobs the population to purge
          */
         private void purgeSpuriousBlobs (List<TextBlob> blobs)
@@ -432,17 +432,16 @@ public abstract class AbstractBlobPattern
             for (Iterator<TextBlob> it = blobs.iterator(); it.hasNext();) {
                 TextBlob blob = it.next();
 
-                int      blobWeight = blob.getWeight();
+                int blobWeight = blob.getWeight();
 
                 if (blobWeight < minBlobWeight) {
                     logger.fine(
-                        "Purged {0} weight:{1}",
-                        new Object[] {
-                            blob, (float) scale.pixelsToAreaFrac(blobWeight)
-                        });
+                            "Purged {0} weight:{1}",
+                            new Object[]{
+                                blob, (float) scale.pixelsToAreaFrac(blobWeight)
+                            });
                     it.remove();
-                } else if (blob.getAverageLine()
-                               .isVertical()) {
+                } else if (blob.getAverageLine().isVertical()) {
                     logger.fine("Purged vertical {0}", blob);
 
                     it.remove();
@@ -455,18 +454,20 @@ public abstract class AbstractBlobPattern
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
-        Scale.Fraction     minGlyphHeight = new Scale.Fraction(
-            0.8,
-            "Minimum height for characters");
-        Scale.Fraction     maxGlyphHeight = new Scale.Fraction(
-            4,
-            "Maximum height for a text glyph");
+        Scale.Fraction minGlyphHeight = new Scale.Fraction(
+                0.8,
+                "Minimum height for characters");
+
+        Scale.Fraction maxGlyphHeight = new Scale.Fraction(
+                4,
+                "Maximum height for a text glyph");
+
         Scale.AreaFraction minBlobWeight = new Scale.AreaFraction(
-            0.1,
-            "Minimum normalized weight for a blob character");
+                0.1,
+                "Minimum normalized weight for a blob character");
     }
 }

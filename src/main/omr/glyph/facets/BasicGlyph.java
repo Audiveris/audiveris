@@ -20,6 +20,7 @@ import omr.glyph.Shape;
 import omr.glyph.text.BasicContent;
 import omr.glyph.text.OcrChar;
 import omr.glyph.text.OcrLine;
+import omr.glyph.text.Sentence;
 import omr.glyph.text.TextArea;
 import omr.glyph.text.TextRole;
 
@@ -58,7 +59,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.logging.Level;
 
 /**
  * Class {@code BasicGlyph} is the basic Glyph implementation.
@@ -166,7 +166,8 @@ public class BasicGlyph
             theAlignment = (GlyphAlignment) constructor.newInstance(
                 new Object[] { this });
         } catch (Exception ex) {
-            logger.severe("Cannot instantiate BasicGlyph with {0} ex:{1}", new Object[]{alignmentClass, ex});
+            logger.severe("Cannot instantiate BasicGlyph with {0} ex:{1}",
+                          new Object[]{alignmentClass, ex});
         }
 
         addFacet(alignment = theAlignment);
@@ -758,27 +759,6 @@ public class BasicGlyph
     }
 
     @Override
-    public boolean isElision ()
-    {
-        return getContent()
-                   .isElision();
-    }
-
-    @Override
-    public boolean isExtension ()
-    {
-        return getContent()
-                   .isExtension();
-    }
-
-    @Override
-    public boolean isHyphen ()
-    {
-        return getContent()
-                   .isHyphen();
-    }
-
-    @Override
     public boolean isKnown ()
     {
         return recognition.isKnown();
@@ -914,10 +894,10 @@ public class BasicGlyph
     }
 
     @Override
-    public List<Glyph> retrieveWordGlyphs ()
+    public List<Glyph> retrieveSubGlyphs (boolean bySyllable)
     {
         return getContent()
-                   .retrieveWordGlyphs();
+                   .retrieveSubGlyphs(bySyllable);
     }
 
     @Override
@@ -1179,5 +1159,18 @@ public class BasicGlyph
     final void addFacet (GlyphFacet facet)
     {
         facets.add(facet);
+    }
+
+    @Override
+    public Sentence getSentence ()
+    {
+        return getContent()
+                   .getSentence();
+    }
+
+    @Override
+    public void setSentence (Sentence sentence)
+    {
+        getContent().setSentence(sentence);
     }
 }

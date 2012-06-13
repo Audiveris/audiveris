@@ -56,6 +56,7 @@ public class OcrTextVerifier
             true);
 
     //~ Methods ----------------------------------------------------------------
+    //
     //---------//
     // isValid //
     //---------//
@@ -75,35 +76,33 @@ public class OcrTextVerifier
         }
 
         // Check this is not a tuplet
-        if (ocrLine.value.equals("3")
+        if (ocrLine.getValue().equals("3")
                 && (glyph.getShape() == Shape.TUPLET_THREE)) {
-            logger.fine("This text is a tuplet 3 {0} {1}",
-                        new Object[]{ocrLine, glyph});
+            logger.fine("This text is a tuplet 3 {0} {1}", ocrLine, glyph);
             return false;
         }
 
-        if (ocrLine.value.equals("6")
+        if (ocrLine.getValue().equals("6")
                 && (glyph.getShape() == Shape.TUPLET_SIX)) {
-            logger.fine("This text is a tuplet 6{0} {1}",
-                        new Object[]{ocrLine, glyph});
+            logger.fine("This text is a tuplet 6 {0} {1}", ocrLine, glyph);
             return false;
         }
 
         // Check for abnormal characters
         WrappedBoolean stripped = new WrappedBoolean(false);
-        XmlUtilities.stripNonValidXMLCharacters(ocrLine.value, stripped);
+        XmlUtilities.stripNonValidXMLCharacters(ocrLine.getValue(), stripped);
 
         if (stripped.isSet()) {
-            logger.fine("This text contains invalid characters{0} {1}",
-                        new Object[]{ocrLine, glyph});
+            logger.fine("This text contains invalid characters {0} {1}",
+                        ocrLine, glyph);
             return false;
         }
 
         // Check that aspect (height/width) is similar between ocr & glyph
-        if (ocrLine.value.length() <= constants.maxCharCountForAspectCheck.
+        if (ocrLine.getValue().length() <= constants.maxCharCountForAspectCheck.
                 getValue()) {
             PixelRectangle box = ocrLine.getBounds();
-            String str = ocrLine.value;
+            String str = ocrLine.getValue();
             Font font = TextFont.baseTextFont;
             TextLayout layout = new TextLayout(str, font, frc);
             Rectangle2D rect = layout.getBounds();
@@ -111,13 +110,12 @@ public class OcrTextVerifier
             double yRatio = box.height / rect.getHeight();
             double aRatio = yRatio / xRatio;
             logger.fine("{0} xRatio:{1} yRatio:{2} aRatio:{3}",
-                        new Object[]{ocrLine.toString(), (float) xRatio,
-                                     (float) yRatio, aRatio});
+                        ocrLine, (float) xRatio, (float) yRatio, aRatio);
 
             // Sign of something wrong
             if ((aRatio < constants.minAspectRatio.getValue())
                     || (aRatio > constants.maxAspectRatio.getValue())) {
-                logger.fine("Invalid {0} {1}", new Object[]{ocrLine, glyph});
+                logger.fine("Invalid {0} {1}", ocrLine, glyph);
                 return false;
             }
         }
@@ -127,6 +125,7 @@ public class OcrTextVerifier
     }
 
     //~ Inner Classes ----------------------------------------------------------
+    //
     //-----------//
     // Constants //
     //-----------//
@@ -141,7 +140,7 @@ public class OcrTextVerifier
                 "Maximum character count to apply aspect check");
 
         Constant.Ratio minAspectRatio = new Constant.Ratio(
-                0.75,
+                0.5,
                 "Minimum ratio between ocr aspect and glyph aspect");
 
         Constant.Ratio maxAspectRatio = new Constant.Ratio(

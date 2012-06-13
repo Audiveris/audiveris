@@ -327,7 +327,7 @@ public class ScoreSystem
         Staff staff = getStaffAbove(point);
 
         if (staff == null) {
-            return getFirstPart();
+            return getFirstRealPart();
         } else {
             return staff.getPart();
         }

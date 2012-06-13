@@ -1,7 +1,14 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                     A b s t r a c t E x t r a c t o r                      //
+//                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
+//  This software is released under the GNU General Public License.           //
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
+//----------------------------------------------------------------------------//
+// </editor-fold>
 package omr.moments;
 
 import java.awt.geom.Point2D;
@@ -15,7 +22,7 @@ import java.awt.geom.Point2D;
  * @author Hervé Bitteur
  */
 public abstract class AbstractExtractor<D extends OrthogonalMoments>
-    implements MomentsExtractor<D>
+        implements MomentsExtractor<D>
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -38,29 +45,28 @@ public abstract class AbstractExtractor<D extends OrthogonalMoments>
     protected D descriptor;
 
     //~ Methods ----------------------------------------------------------------
-
     //---------//
     // extract //
     //---------//
     @Override
     public void extract (int[] xx,
                          int[] yy,
-                         int   mass)
+                         int mass)
     {
         // Check arguments
         if ((xx == null) || (yy == null)) {
             throw new IllegalArgumentException(
-                getClass().getSimpleName() + " cannot process a null array");
+                    getClass().getSimpleName() + " cannot process a null array");
         }
 
         if ((mass <= 0) || (mass > xx.length) || (mass > yy.length)) {
             throw new IllegalArgumentException(
-                getClass().getSimpleName() + " on inconsistent input");
+                    getClass().getSimpleName() + " on inconsistent input");
         }
 
         if (descriptor == null) {
             throw new IllegalArgumentException(
-                getClass().getSimpleName() + " has no target descriptor");
+                    getClass().getSimpleName() + " has no target descriptor");
         }
 
         this.xx = xx;
@@ -70,15 +76,7 @@ public abstract class AbstractExtractor<D extends OrthogonalMoments>
         findCenterOfMass();
         findRadius();
 
-        //        long start = System.currentTimeMillis();
-        //
-        //        for (int k = 0; k < 100; k++) {
         extractMoments();
-
-        //        }
-        //
-        //        long stop = System.currentTimeMillis();
-        //        System.out.println("100 runs : " + (stop - start) + " ms");
     }
 
     //---------------//
@@ -93,7 +91,9 @@ public abstract class AbstractExtractor<D extends OrthogonalMoments>
     //----------------//
     // extractMoments //
     //----------------//
-    /** Actual extraction core, to be provided by subclasses. */
+    /** 
+     * Actual extraction core, to be provided by subclasses. 
+     */
     protected abstract void extractMoments ();
 
     //------------------//
@@ -113,8 +113,8 @@ public abstract class AbstractExtractor<D extends OrthogonalMoments>
         }
 
         center = new Point2D.Double(
-            (double) m10 / (double) mass,
-            (double) m01 / (double) mass);
+                (double) m10 / (double) mass,
+                (double) m01 / (double) mass);
 
         ///System.out.println("center: " + center);
     }
@@ -123,7 +123,7 @@ public abstract class AbstractExtractor<D extends OrthogonalMoments>
     // findRadius //
     //------------//
     /**
-     * Compute the image contour, centered around its mass center
+     * Compute the image contour, centered around its mass center.
      */
     private void findRadius ()
     {

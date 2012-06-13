@@ -41,8 +41,8 @@ import java.util.logging.Level;
  * @author Hervé Bitteur
  */
 class BasicGeometry
-    extends BasicFacet
-    implements GlyphGeometry
+        extends BasicFacet
+        implements GlyphGeometry
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -50,7 +50,6 @@ class BasicGeometry
     private static final Logger logger = Logger.getLogger(BasicGeometry.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Interline of the containing staff (or sheet) */
     private final int interline;
 
@@ -82,24 +81,23 @@ class BasicGeometry
     private Circle circle;
 
     //~ Constructors -----------------------------------------------------------
-
     //---------------//
     // BasicGeometry //
     //---------------//
     /**
      * Create a new BasicGeometry object.
+     *
      * @param glyph     our glyph
      * @param interline the interline scaling value
      */
     public BasicGeometry (Glyph glyph,
-                          int   interline)
+                          int interline)
     {
         super(glyph);
         this.interline = interline;
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------//
     // dump //
     //------//
@@ -113,7 +111,10 @@ class BasicGeometry
         System.out.println("   geoMoments=" + getGeometricMoments());
         System.out.println("   artMoments=" + getARTMoments());
         System.out.println("   weight=" + getWeight());
-        System.out.println("   circle=" + circle);
+
+        if (circle != null) {
+            System.out.println("   circle=" + circle);
+        }
     }
 
     //---------------//
@@ -138,8 +139,8 @@ class BasicGeometry
         if (center == null) {
             PixelRectangle box = glyph.getBounds();
             center = new PixelPoint(
-                box.x + (box.width / 2),
-                box.y + (box.height / 2));
+                    box.x + (box.width / 2),
+                    box.y + (box.height / 2));
         }
 
         return center;
@@ -179,8 +180,7 @@ class BasicGeometry
     public PixelPoint getCentroid ()
     {
         if (centroid == null) {
-            centroid = getGeometricMoments()
-                           .getCentroid();
+            centroid = getGeometricMoments().getCentroid();
         }
 
         return centroid;
@@ -202,7 +202,7 @@ class BasicGeometry
     public double getDensity ()
     {
         Rectangle rect = getBounds();
-        int       surface = (rect.width + 1) * (rect.height + 1);
+        int surface = (rect.width + 1) * (rect.height + 1);
 
         return (double) getWeight() / (double) surface;
     }
@@ -264,8 +264,7 @@ class BasicGeometry
     @Override
     public double getNormalizedHeight ()
     {
-        return getGeometricMoments()
-                   .getHeight();
+        return getGeometricMoments().getHeight();
     }
 
     //---------------------//
@@ -274,8 +273,7 @@ class BasicGeometry
     @Override
     public double getNormalizedWeight ()
     {
-        return getGeometricMoments()
-                   .getWeight();
+        return getGeometricMoments().getWeight();
     }
 
     //--------------------//
@@ -284,8 +282,7 @@ class BasicGeometry
     @Override
     public double getNormalizedWidth ()
     {
-        return getGeometricMoments()
-                   .getWidth();
+        return getGeometricMoments().getWidth();
     }
 
     //--------------------//
@@ -433,9 +430,9 @@ class BasicGeometry
         BasicARTExtractor extractor = new BasicARTExtractor();
         extractor.setDescriptor(artMoments);
         extractor.extract(
-            collector.getXValues(),
-            collector.getYValues(),
-            collector.getSize());
+                collector.getXValues(),
+                collector.getYValues(),
+                collector.getSize());
     }
 
     //-------------------------//
@@ -449,12 +446,14 @@ class BasicGeometry
         // Then compute the geometric moments with this collector
         try {
             geometricMoments = new GeometricMoments(
-                collector.getXValues(),
-                collector.getYValues(),
-                collector.getSize(),
-                getInterline());
+                    collector.getXValues(),
+                    collector.getYValues(),
+                    collector.getSize(),
+                    getInterline());
         } catch (Exception ex) {
-            logger.warning("Glyph #{0} Cannot compute moments with unit set to 0", glyph.getId());
+            logger.warning(
+                    "Glyph #{0} Cannot compute moments with unit set to 0",
+                           glyph.getId());
         }
     }
 }

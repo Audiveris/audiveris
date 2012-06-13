@@ -66,7 +66,8 @@ import java.util.SortedSet;
 
 /**
  * Class {@code Sentence} encapsulates an ordered set of text glyphs
- * (loosely similar to words) that represents a whole text expression.
+ * that represents a whole text expression.
+ * Initial glyphs items may be only loosely similar to words.
  *
  * <p>Life cycle: <ol>
  * <li>A "physical" sentence instance can be created and expanded by gradually
@@ -81,9 +82,6 @@ import java.util.SortedSet;
  * </ol>
  * Each such logical instance is created with a single underlying glyph
  * built out of the corresponding sections.
- * In the special case of a (long) Lyrics sentence instance, the underlying
- * compound is actually decomposed in many "syllable" glyphs, to allow precise
- * syllable positioning.
  *
  * @author Hervé Bitteur
  */
@@ -140,6 +138,7 @@ public class Sentence
     };
 
     //~ Instance fields --------------------------------------------------------
+    //
     /** The containing system */
     @Navigable(false)
     protected final SystemInfo system;
@@ -193,6 +192,7 @@ public class Sentence
     private Boolean withinStaves;
 
     //~ Constructors -----------------------------------------------------------
+    //
     //----------//
     // Sentence //
     //----------//
@@ -511,6 +511,37 @@ public class Sentence
         return getCompound().getFontSize();
     }
 
+    //------------------------//
+    // computePreciseFontSize //
+    //------------------------//
+    /**
+     * Harmonize font size among all words of this sentence.
+     */
+    public void computePreciseFontSize ()
+    {
+        Glyph compound = getCompound();
+        OcrLine line = compound.getOcrLine();
+        if (line != null) {
+            // Use weighed average
+            float totalLength = 0;
+            float totalSize = 0;
+            
+            for (OcrWord word : line.getWords()) {
+                int length = word.getValue().length();
+                if (length > 0) {
+                    totalLength += length;
+                    totalSize += length * word.getPreciseFontSize();
+                }
+            }
+
+            float size = totalSize / totalLength;
+
+            for (OcrWord word : getCompound().getOcrLine().getWords()) {
+                word.setPreciseFontSize(size);
+            }
+        }
+    }
+
     //-------//
     // getId //
     //-------//
@@ -627,7 +658,11 @@ public class Sentence
     //--------------//
     public String getTextValue ()
     {
-        return getCompound().getTextValue();
+        if (!getItems().isEmpty()) {
+            return getValueFromGlyphs();
+        } else {
+            return getCompound().getTextValue();
+        }
     }
 
     //--------------------//
@@ -721,7 +756,9 @@ public class Sentence
 
         location = null;
         dskY = null;
-        withinStaves = null;
+        
+        // No need to reset 'withinStaves' since adding items won't modify this
+        ///withinStaves = null;
     }
 
     //-----------//
@@ -938,6 +975,22 @@ public class Sentence
         getCompound().setTextRole(role);
     }
 
+    //----------------//
+    // setCreatorType //
+    //----------------//
+    /**
+     * Set the creator type.
+     *
+     * @param creatorType the creatorType to set
+     */
+    public void setCreatorType (CreatorType creatorType)
+    {
+        getCompound().setCreatorType(creatorType);
+        for (Glyph item : getItems()) {
+            item.setCreatorType(creatorType);
+        }
+    }
+
     //--------//
     // setVip //
     //--------//
@@ -1020,28 +1073,28 @@ public class Sentence
         return sb.toString();
     }
 
-    //----------------//
-    // retrieveWordGlyphs //
-    //----------------//
+    //------------------------//
+    // splitSentenceIntoWords //
+    //------------------------//
     /**
      * Split the long glyph of this (Lyrics) sentence into word glyphs.
      */
     void splitSentenceIntoWords ()
     {
-        // Make sure the split hasn't been done yet
-        if (getItemCount() > 1) {
-            return;
-        } else if (getItems().isEmpty()) {
-            logger.severe("splitIntoWords. Sentence with no items: {0}", this);
-        } else {
-            logger.fine("Splitting lyrics of {0}", this);
-            List<Glyph> words = getCompound().retrieveWordGlyphs();
-
-            // Replace the single long item by this collection of word items
-            if ((words != null) && !words.isEmpty()) {
-                setItems(words);
-            }
-        }
+//        // Make sure the split hasn't been done yet
+//        if (getItemCount() > 1) {
+//            return;
+//        } else if (getItems().isEmpty()) {
+//            logger.severe("splitIntoWords. Sentence with no items: {0}", this);
+//        } else {
+//            logger.fine("Splitting lyrics of {0}", this);
+//            List<Glyph> words = getCompound().retrieveSubGlyphs();
+//
+//            // Replace the single long item by this collection of word items
+//            if ((words != null) && !words.isEmpty()) {
+//                setItems(words);
+//            }
+//        }
     }
 
     //--------------------//

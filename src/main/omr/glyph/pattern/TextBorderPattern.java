@@ -40,6 +40,7 @@ import omr.util.VerticalSide;
 
 import java.awt.Polygon;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -58,6 +59,11 @@ import java.util.List;
  * the TEXT shape to the corresponding glyphs.</li>
  * </ol>
  *
+ * <p>TODO: Rather than detecting text glyphs candidates and then calling OCR,
+ * we should redesign this class to let Tesseract 3 analyse the layout of each
+ * border zone by itself (using MULTI_BLOCK mode), and simply build the text
+ * items based on Tesseract results.</p>
+ *
  * @author Hervé Bitteur
  */
 public class TextBorderPattern
@@ -72,7 +78,15 @@ public class TextBorderPattern
     private static final Logger logger = Logger.getLogger(
             TextBorderPattern.class);
 
+//    /** Shapes considered as permanent text candidates */
+//    private static final EnumSet<Shape> permanentCandidates = EnumSet.of(
+//            Shape.TENUTO,
+//            Shape.BREATH_MARK,
+//            Shape.DOT_set,
+//            Shape.STACCATO);
+//
     //~ Instance fields --------------------------------------------------------
+    //
     /** The system contour box (just the union of staves) */
     private final PixelRectangle systemBox;
 
@@ -80,11 +94,13 @@ public class TextBorderPattern
     private final int maxFontSize;
 
     //~ Constructors -----------------------------------------------------------
+    //
     //-------------------//
     // TextBorderPattern //
     //-------------------//
     /**
      * Creates a new TextBorderPattern object.
+     *
      * @param system the containing system
      */
     public TextBorderPattern (SystemInfo system)
@@ -102,6 +118,7 @@ public class TextBorderPattern
     }
 
     //~ Methods ----------------------------------------------------------------
+    //
     //--------------//
     // buildRegions //
     //--------------//
@@ -140,7 +157,8 @@ public class TextBorderPattern
         sw.y += staffMarginBelow;
         se.y += staffMarginBelow;
 
-        return Arrays.asList(
+        return Arrays.
+                asList(
                 new MyRegion("North", buildPolygon(topLine.getPoints(), ne, nw)),
                 new MyRegion("South", buildPolygon(botLine.getPoints(), se, sw)),
                 new MyRegion(
@@ -174,14 +192,14 @@ public class TextBorderPattern
             for (OcrLine ocrLine : lines) {
                 i++;
 
-                String value = ocrLine.value;
-                float fontSize = ocrLine.fontSize;
+                String value = ocrLine.getValue();
+                float fontSize = ocrLine.getFirstWord().getFontInfo().pointsize;
                 PixelRectangle box = ocrLine.getBounds();
                 logger.fine("ocrLine:{0} {1} {2} w:{3} h:{4} aspect:{5}",
-                            new Object[]{i, box, ocrLine.toString(),
-                                         box.width / (fontSize * value.length()),
-                                         box.height / fontSize,
-                                         ((float) box.height * value.length()) / box.width});
+                            i, box, ocrLine.toString(),
+                            box.width / (fontSize * value.length()),
+                            box.height / fontSize,
+                            ((float) box.height * value.length()) / box.width);
             }
         }
 
@@ -200,8 +218,8 @@ public class TextBorderPattern
 
         OcrLine ocrLine = lines.get(0);
 
-        String value = ocrLine.value;
-        float fontSize = ocrLine.fontSize;
+        String value = ocrLine.getValue();
+        float fontSize = ocrLine.getFirstWord().getFontInfo().pointsize;
         PixelRectangle box = ocrLine.getBounds();
 
         if (box.height == 0) {
@@ -211,8 +229,8 @@ public class TextBorderPattern
         }
 
         if (fontSize > maxFontSize) {
-            logger.fine("Font size {0} exceeds maximum {1}", new Object[]{
-                        fontSize, maxFontSize});
+            logger.fine("Font size {0} exceeds maximum {1}",
+                        fontSize, maxFontSize);
 
             return null;
         }
@@ -221,8 +239,8 @@ public class TextBorderPattern
         final double minAspect = constants.minAspect.getValue();
 
         if (aspect < minAspect) {
-            logger.fine("Char aspect {0} lower than minimum {1}", new Object[]{
-                        aspect, minAspect});
+            logger.fine("Char aspect {0} lower than minimum {1}",
+                        aspect, minAspect);
 
             return null;
         }
@@ -230,8 +248,8 @@ public class TextBorderPattern
         final double maxAspect = constants.maxAspect.getValue();
 
         if (aspect > maxAspect) {
-            logger.fine("Char aspect {0} exceeds maximum {1}", new Object[]{
-                        aspect, maxAspect});
+            logger.fine("Char aspect {0} exceeds maximum {1}",
+                        aspect, maxAspect);
 
             return null;
         }
@@ -250,11 +268,11 @@ public class TextBorderPattern
         //~ Instance fields ----------------------------------------------------
 
         Scale.Fraction maxFontSize = new Scale.Fraction(
-                1.8,
+                3.0,
                 "Maximum value for text font size");
 
         Constant.Ratio minAspect = new Constant.Ratio(
-                1.0,
+                0.5,
                 "Minimum aspect of chars (height / width)");
 
         Constant.Ratio maxAspect = new Constant.Ratio(
@@ -310,7 +328,7 @@ public class TextBorderPattern
                             getLanguage();
 
                     ocrLine = borderOCR(compound, language);
-                    logger.fine("OCR on {0} {1}", new Object[]{blob, ocrLine});
+                    logger.fine("OCR on {0} {1}", blob, ocrLine);
 
                     if (ocrLine == null) {
                         return false;
@@ -320,8 +338,7 @@ public class TextBorderPattern
                 }
 
                 if (!OcrTextVerifier.isValid(compound, ocrLine)) {
-                    logger.fine("Invalid blob {0} {1}", new Object[]{ocrLine,
-                                                                     compound});
+                    logger.fine("Invalid blob {0} {1}", ocrLine, compound);
 
                     return false;
                 }
@@ -330,8 +347,8 @@ public class TextBorderPattern
                 compound = system.addGlyph(compound);
                 system.computeGlyphFeatures(compound);
                 compound.setShape(Shape.TEXT, Evaluation.ALGORITHM);
-                logger.fine("Border {0}=>\"{1}\"", new Object[]{compound.
-                            idString(), ocrLine.value});
+                logger.fine("Border {0} => \"{1}\"",
+                            compound.idString(), ocrLine.getValue());
 
                 return true;
             } else {
@@ -350,11 +367,12 @@ public class TextBorderPattern
                 return false;
             }
 
-            if (glyph.isKnown()
-                    && (glyph.getEvaluation().grade > constants.maxGrade.
-                        getValue())) {
-                return false;
-            }
+//            if (glyph.isKnown()
+//                    && !permanentCandidates.contains(glyph.getShape())
+//                    && (glyph.getEvaluation().grade > constants.maxGrade.
+//                        getValue())) {
+//                return false;
+//            }
 
             // We remove candidates that are stuck to a stem that goes into a
             // staff because these glyphs are not likely to be text items

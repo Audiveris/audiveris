@@ -28,8 +28,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Class {@code MusicFont} is meant to simplify the use of the underlying
- * music font when rendering picture or score views.
+ * Class {@code MusicFont} is meant to simplify the use of the 
+ * underlying music font when rendering picture or score views.
  *
  * <p>The strategy is to use a properly scaled instance of this class to carry
  * out the drawing of music symbols with the correct size. The scaling should
@@ -46,19 +46,7 @@ import java.util.Map;
  * <li>{@link #iconMusicFont} for icon symbols (scale = 1/2)</li></ul>
  *
  * <p>The underlying font is <b>MusicalSymbols</b>
- * (Note that previous versions of this class allowed the use of Maestro or
- * SToccata fonts as well, but this feature has been discarded.)
- * <ol>
- * <li>MusicalSymbols:
- * Download from http://simplythebest.net/fonts/fonts/musical_symbols.html</li>
- * <li>Maestro:
- * See http://www.fontyukle.net/en/</li>
- * <li>SToccata:
- * Download from
- * http://fonts.goldenweb.it/download2.php?d2=Freeware_fonts&c=s&file2=SToccata.ttf
- * See
- * http://fonts.goldenweb.it/pan_file/l/en/font2/SToccata.ttf/d2/Freeware_fonts/c/s/default.html</li>
- * </ol>
+ * downloadable from http://simplythebest.net/fonts/fonts/musical_symbols.html
  * </p>
  *
  * @author Hervé Bitteur
@@ -191,9 +179,7 @@ public class MusicFont
 
         if (font == null) {
             font = new MusicFont(4 * interline, interline);
-
             logger.fine("Adding music font for interline {0}", interline);
-
             sizeMap.put(interline, font);
         }
 

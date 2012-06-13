@@ -11,13 +11,11 @@
 // </editor-fold>
 package omr.glyph.text;
 
-import omr.constant.Constant;
-import omr.constant.ConstantSet;
-
 import omr.glyph.Shape;
 import omr.glyph.facets.BasicFacet;
 import omr.glyph.facets.Glyph;
 import omr.glyph.facets.GlyphContent;
+import omr.glyph.text.OCR.LayoutMode;
 import omr.glyph.text.TextRole.RoleInfo;
 
 import omr.lag.BasicRoi;
@@ -28,7 +26,6 @@ import omr.log.Logger;
 import omr.run.Orientation;
 
 import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import omr.score.entity.Text.CreatorText.CreatorType;
 
 import omr.sheet.SystemInfo;
@@ -49,18 +46,19 @@ import java.util.TreeSet;
 /**
  * Class {@code BasicContent} handles the textual aspects of a glyph.
  *
- * <p>It handles several text contents, by decreasing priority: <ol>
- * <li>manual content (entered manually by the user)</li>
- * <li>ocr content (as computed by the OCR engine)</li>
- * <li>pseudo content, meant to be used as a placeholder based on text type</li>
+ * <p>It handles several text values, by decreasing priority: <ol>
+ * <li>manual value (entered manually by the user)</li>
+ * <li>ocr value (as computed by the OCR engine)</li>
+ * <li>pseudo value, meant to be used as a placeholder based on text role
+ * when no other source (manual or OCR) is available</li>
  * </ol>
  *
- * <p>The {@link #getTextValue} method returns the manual content if any,
- * otherwise the ocr content. Access to the pseudo content is done only through
+ * <p>The {@link #getTextValue} method returns the manual value if any,
+ * otherwise the ocr value. Access to the pseudo value is done only through
  * the {@link #getPseudoValue} method.</p>
  *
  * <p>The font size is taken from OCR if available, otherwise it is computed
- * from physical characteristics.</p>
+ * from physical characteristics. TODO: check this statement!</p>
  *
  * @author Hervé Bitteur
  */
@@ -70,17 +68,15 @@ public class BasicContent
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Specific application parameters */
-    private static final Constants constants = new Constants();
-
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(BasicContent.class);
 
     //~ Instance fields --------------------------------------------------------
+    //
     /** Related text area parameters. */
     private TextArea textArea;
 
-    /** Manual content if any. */
+    /** Manual value if any. */
     private String manualValue;
 
     /** OCR data about this line. lang -> ocrLines */
@@ -92,16 +88,20 @@ public class BasicContent
     /** Role of this text item. */
     private TextRole role;
 
-    /** Dummy text content as placeholder, if any, depending on role. */
+    /** Dummy text value as placeholder, if any, depending on role. */
     private String pseudoValue;
 
     /** Creator type. (relevant only if role == Creator) */
     private CreatorType creatorType;
 
+    /** Sentence, if any, this textual glyph belongs to. */
+    private Sentence sentence;
+
     /** Font size. */
     private Float fontSize;
 
     //~ Constructors -----------------------------------------------------------
+    //
     //--------------//
     // BasicContent //
     //--------------//
@@ -116,6 +116,22 @@ public class BasicContent
     }
 
     //~ Methods ----------------------------------------------------------------
+    //
+    //-------------//
+    // isSeparator //
+    //-------------//
+    /**
+     * Predicate to detect a separator.
+     *
+     * @param str the character to check
+     * @return true if this is a separator
+     */
+    public static boolean isSeparator (String str)
+    {
+        return str.equals(EXTENSION_STRING) || str.equals(ELISION_STRING)
+                || str.equals(HYPHEN_STRING);
+    }
+
     //------//
     // dump //
     //------//
@@ -130,10 +146,36 @@ public class BasicContent
 
             for (OcrLine line : entry.getValue()) {
                 sb.append("   (").append(entry.getKey()).append(") \"").append(
-                        line.value).append("\"");
+                        line.getValue()).append("\"");
                 System.out.println(sb.toString());
             }
         }
+
+        if (manualValue != null) {
+            System.out.println("   manual=\"" + manualValue + "\"");
+        }
+        
+        if (sentence != null) {
+            System.out.println("   sentence=" + sentence);
+        }
+    }
+
+    //-------------//
+    // getSentence //
+    //-------------//
+    @Override
+    public Sentence getSentence ()
+    {
+        return sentence;
+    }
+
+    //-------------//
+    // setSentence //
+    //-------------//
+    @Override
+    public void setSentence (Sentence sentence)
+    {
+        this.sentence = sentence;
     }
 
     //----------------//
@@ -152,9 +194,6 @@ public class BasicContent
     public Float getFontSize ()
     {
         if (fontSize == null) {
-            //            if ((ocrLine != null) && (ocrLine.isFontSizeValid())) {
-            //                fontSize = ocrLine.fontSize;
-            //            } else {
             String value = getTextValue();
 
             if (value != null) {
@@ -167,21 +206,13 @@ public class BasicContent
         return fontSize;
     }
 
-    //------------------//
-    // getManualContent //
-    //------------------//
+    //----------------//
+    // getManualvalue //
+    //----------------//
     @Override
     public String getManualValue ()
     {
         return manualValue;
-    }
-
-    //-----------------------//
-    // getMinExtensionAspect //
-    //-----------------------//
-    public static double getMinExtensionAspect ()
-    {
-        return constants.minExtensionAspect.getValue();
     }
 
     //----------------//
@@ -196,6 +227,7 @@ public class BasicContent
     //------------//
     // getOcrLine //
     //------------//
+    @Override
     public OcrLine getOcrLine ()
     {
         if (ocrLanguage == null) {
@@ -229,15 +261,15 @@ public class BasicContent
         OcrLine ocrLine = getOcrLine();
 
         if (ocrLine != null) {
-            return ocrLine.value;
+            return ocrLine.getValue();
         } else {
             return null;
         }
     }
 
-    //------------------//
-    // getPseudoContent //
-    //------------------//
+    //----------------//
+    // getPseudovalue //
+    //----------------//
     @Override
     public String getPseudoValue ()
     {
@@ -341,42 +373,6 @@ public class BasicContent
         // TBD
     }
 
-    //-----------//
-    // isElision //
-    //-----------//
-    @Override
-    public boolean isElision ()
-    {
-        return getTextValue().equals(ELISION_STRING);
-    }
-
-    //-------------//
-    // isExtension //
-    //-------------//
-    @Override
-    public boolean isExtension ()
-    {
-        return getTextValue().equals(EXTENSION_STRING);
-    }
-
-    //----------//
-    // isHyphen //
-    //----------//
-    @Override
-    public boolean isHyphen ()
-    {
-        return getTextValue().equals(HYPHEN_STRING);
-    }
-
-    //-------------//
-    // isSeparator //
-    //-------------//
-    public static boolean isSeparator (String str)
-    {
-        return str.equals(EXTENSION_STRING) || str.equals(ELISION_STRING)
-                || str.equals(HYPHEN_STRING);
-    }
-
     //------------------//
     // retrieveOcrLines //
     //------------------//
@@ -388,19 +384,10 @@ public class BasicContent
 
         final List<OcrLine> lines = Language.getOcr().recognize(
                 glyph.getImage(),
+                glyph.getBounds().getLocation(),
                 language,
+                LayoutMode.SINGLE_BLOCK,
                 label);
-
-        // Convert from glyph-based coordinates to absolute coordinates
-        if (lines != null) {
-            PixelRectangle box = glyph.getBounds();
-
-            for (OcrLine ol : lines) {
-                ol.translate(box.x, box.y);
-
-                ///logger.info("OCR " + glyph.idString() + " '" + ol.value + "'");
-            }
-        }
 
         if (lines != null) {
             // Remember OCR results
@@ -419,24 +406,17 @@ public class BasicContent
     public SortedSet<Section> retrieveSections (List<OcrChar> chars)
     {
         SortedSet<Section> sections = new TreeSet<>();
-        PixelRectangle glyphBox = glyph.getBounds();
 
         for (OcrChar charDesc : chars) {
-            /*
-             * Nota: in Tesseract 2.04, ordinates of char boxes are not always
-             * reliable, so use only abscissae for basic checks.
-             */
-            Rectangle charBox = charDesc.getBox();
-            charBox.y = glyphBox.y;
-            charBox.height = glyphBox.height;
+            Rectangle charBox = charDesc.getBounds();
 
             for (Section section : glyph.getMembers()) {
-                if (!section.isProcessed()) {
-                    // Do we intersect a section not (yet) assigned?
-                    if (charBox.intersects(section.getBounds())) {
-                        sections.add(section);
-                        section.setProcessed(true);
-                    }
+                // Do we intersect a section not (yet) assigned?
+                if (!section.isProcessed()
+                        && charBox.intersects(section.getBounds())) {
+                    sections.add(section);
+                    section.setProcessed(true);
+
                 }
             }
         }
@@ -445,11 +425,12 @@ public class BasicContent
     }
 
     //--------------------//
-    // retrieveWordGlyphs //
+    // retrieveSubGlyphs //
     //--------------------//
     @Override
-    public List<Glyph> retrieveWordGlyphs ()
+    public List<Glyph> retrieveSubGlyphs (boolean bySyllable)
     {
+        List<Glyph> wordGlyphs = new ArrayList<>();
         OcrLine ocrLine = getOcrLine();
 
         if (ocrLine == null) {
@@ -457,34 +438,18 @@ public class BasicContent
                     + " with no OCR data";
             glyph.getSystem().getScoreSystem().addError(glyph, msg);
 
-            return null;
-        }
-
-        // Parse the content string, to extract words
-        List<OcrChar> glyphChars = ocrLine.getChars();
-        WordScanner scanner = new OcrScanner(glyphChars);
-        List<Word> words = new ArrayList<>();
-
-        while (scanner.hasNext()) {
-            String wordText = scanner.next();
-            List<OcrChar> wordChars = glyphChars.subList(
-                    scanner.getWordStart(),
-                    scanner.getWordStop() + 1);
-            words.add(new Word(wordText, wordChars));
+            return wordGlyphs; // Empty collection
         }
 
         // Further split words if needed, and assign a glyph to each word
-        assignWordGlyphs(words);
+        splitAllWords(ocrLine.getWords(), bySyllable);
+        assignAllWords(ocrLine.getWords());
 
         // Return the collection of glyphs
-        List<Glyph> wordGlyphs = new ArrayList<>();
-
-        for (Word word : words) {
-            if (word.glyph != null) {
-                wordGlyphs.add(word.glyph);
+        for (OcrWord word : ocrLine.getWords()) {
+            if (word.getGlyph() != null) {
+                wordGlyphs.add(word.getGlyph());
             }
-
-            logger.fine(word.toString());
         }
 
         return wordGlyphs;
@@ -499,9 +464,9 @@ public class BasicContent
         this.creatorType = creatorType;
     }
 
-    //------------------//
-    // setManualContent //
-    //------------------//
+    //----------------//
+    // setManualvalue //
+    //----------------//
     @Override
     public void setManualValue (String manualValue)
     {
@@ -581,154 +546,165 @@ public class BasicContent
         return sb.toString();
     }
 
-    //------------------//
-    // assignWordGlyphs //
-    //------------------//
+    //~ Private Methods --------------------------------------------------------
+    //
+    //----------------//
+    // assignAllWords //
+    //----------------//
     /**
-     * Assign a glyph to each word, while further splitting words if
-     * they contain a space or other separator.
+     * Assign a glyph to each word.
      *
-     * @param words the initial collection of words. The collection may get
-     * modified, because of addition of new (sub)words and removal of words
-     * getting split. At the end, each word of the collection should have a
-     * glyph assigned.
+     * @param words the collection of words to assign
+     *              At the end, each word of the collection should have a glyph assigned.
      */
-    private void assignWordGlyphs (List<Word> words)
+    private void assignAllWords (List<OcrWord> words)
     {
         SystemInfo system = glyph.getSystem();
 
+        // To make sure that the same section is not assigned to several words
         for (Section section : glyph.getMembers()) {
             section.setProcessed(false);
         }
 
-        while (true) {
-            // Sort words, so that shorter words come first
-            Collections.sort(words);
+        // Browse all words, starting by shorter ones
+        Collections.sort(words, OcrWord.sizeComparator);
 
-            Collection<Word> toAdd = new ArrayList<>();
-            Collection<Word> toRemove = new ArrayList<>();
+        for (OcrWord word : words) {
+            // Isolate proper word glyph from its enclosed sections
+            SortedSet<Section> sections = retrieveSections(word.getChars());
 
-            WordLoop:
-            for (Word word : words) {
-                ///logger.info("Word: '" + word.text + "'");
-                if (word.glyph == null) {
-                    // Isolate proper word glyph from its enclosed sections
-                    SortedSet<Section> sections = retrieveSections(
-                            word.getChars());
+            if (sections.isEmpty()) {
+                system.getScoreSystem().addError(
+                        glyph,
+                        "No section for word '" + word.getValue() + "'");
+                continue;
+            }
 
-                    if (!sections.isEmpty()) {
-                        word.glyph = system.addGlyph(
-                                system.buildGlyph(sections));
+            Glyph wordGlyph = system.addGlyph(system.buildGlyph(sections));
+            word.setGlyph(wordGlyph);
+            logger.fine("word {0} as ''{1}''",
+                        wordGlyph.idString(), word.getValue());
 
-                        // Perhaps, we have a user-provided content which
-                        // might contain a word separator
-                        String man = word.glyph.getManualValue();
+            wordGlyph.setOcrLines(
+                    this.ocrLanguage,
+                    Arrays.asList(
+                    new OcrLine(glyph.getBounds(),
+                                word.getValue(),
+                                Arrays.asList(word))));
+            wordGlyph.setTextRole(glyph.getTextRole());
+        }
 
-                        if (((man != null) && (man.length() > 1))
-                                && (man.contains(" ") || man.contains(
-                                    ELISION_STRING)
-                                    || man.contains(EXTENSION_STRING)
-                                    || man.contains(HYPHEN_STRING))) {
-                            toRemove.add(word);
-                            toAdd.addAll(
-                                    manualSplit(word.glyph, word.getChars()));
+        // Assign proper shape to each word glyph
+        for (OcrWord word : words) {
+            Glyph g = word.getGlyph();
+            if (g != null) {
+                boolean many = word.getValue().length() > 1;
+                g.setShape(many ? Shape.TEXT : Shape.CHARACTER);
 
-                            // Reset sections->glyph link
-                            for (Section section : sections) {
-                                section.setGlyph(this.glyph);
-                            }
+            }
+        }
 
-                            break WordLoop; // Immediately
-                        } else {
-                            word.glyph.setShape(Shape.TEXT);
+        // Sort words on abscissa
+        Collections.sort(words, OcrWord.abscissaComparator);
+    }
 
-                            // Build the BasicContent for this word glyph
-                            word.glyph.setOcrLines(
-                                    this.ocrLanguage,
-                                    Arrays.asList(
-                                    new OcrLine(
-                                    getFontSize(),
-                                    word.getChars(),
-                                    word.getText())));
-                            word.glyph.setTextRole(this.role);
+    //---------------//
+    // splitAllWords //
+    //---------------//
+    /**
+     * Check each word in the sequence and split it in place
+     * according to separating characters ('-' etc).
+     *
+     * @param words      the collection of words to check and split
+     * @param bySyllable true for syllable, false for plain words
+     *                   The collection of words may get modified, because of the addition of new
+     *                   (sub)words and the removal of words that got split.
+     */
+    private void splitAllWords (List<OcrWord> words,
+                                boolean bySyllable)
+    {
+        // To avoid concurrent modification errors
+        Collection<OcrWord> toAdd = new ArrayList<>();
+        Collection<OcrWord> toRemove = new ArrayList<>();
 
-                            logger.fine("LyricsItem \"{0}\" {1}",
-                                        new Object[]{word.getText(), word.glyph});
-                        }
-                    } else {
-                        system.getScoreSystem().addError(
-                                glyph,
-                                "No section for word '" + word.getText() + "'");
+        for (OcrWord word : words) {
+            List<OcrWord> subWords; // Results of split
+            Glyph wordGlyph = word.getGlyph();
+
+            if (wordGlyph != null) {
+                if (wordGlyph.getTextValue().equals(word.getValue())) {
+                    continue;
+                } else {
+                    // A manual text modification has occurred
+                    // Check for a separator in the new manual value
+                    logger.fine("Manual modif for {0}", wordGlyph.idString());
+                    subWords = splitWord(word,
+                                         new WordScanner.ManualScanner(
+                            wordGlyph.getTextValue(),
+                            bySyllable,
+                            word.getChars()));
+                    // If no subdivision was made, allocate a new OcrWord
+                    // to match the new manual value
+                    if (subWords.isEmpty()) {
+                        subWords.add(new OcrWord(
+                                word.getBaseline(),
+                                wordGlyph.getTextValue(),
+                                word.getFontInfo(),
+                                word.getChars()));
                     }
                 }
+            } else {
+                subWords = splitWord(
+                        word,
+                        new WordScanner.OcrScanner(word.getValue(),
+                                                   bySyllable,
+                                                   word.getChars()));
             }
 
-            if (!toRemove.isEmpty()) {
-                words.removeAll(toRemove);
-                words.addAll(toAdd);
-            } else {
-                return; // Normal exit
+            if (!subWords.isEmpty()) {
+                toRemove.add(word);
+                toAdd.addAll(subWords);
             }
+        }
+
+        // Now perform modification on the list of words, if so needed
+        if (!toRemove.isEmpty()) {
+            words.removeAll(toRemove);
+            words.addAll(toAdd);
         }
     }
 
-    //-------------//
-    // manualSplit //
-    //-------------//
+    //-----------//
+    // splitWord //
+    //-----------//
     /**
-     * Further split the provided text glyph, based on its manual
-     * content.
+     * Further split the provided word, based on the provided scanner
+     * to adapt to Ocr or Manual values.
      *
-     * @param glyph the provided glyph
-     * @param chars the underlying OCR chars
-     * @return the sequence of (sub)words
+     * @param word    the word to split
+     * @param scanner how to scan the word
+     * @return the sequence of created (sub)words, if any
      */
-    private List<Word> manualSplit (Glyph glyph,
-                                    List<OcrChar> chars)
+    private List<OcrWord> splitWord (OcrWord word,
+                                     WordScanner scanner)
     {
-        final List<Word> words = new ArrayList<>();
-        final String man = glyph.getManualValue();
-
-        if (logger.isFineEnabled()) {
-            logger.fine("Manual split of ''{0}'' in {1}", new Object[]{man,
-                                                                       glyph.
-                        idString()});
-
-            for (OcrChar ch : chars) {
-                logger.fine(ch.toString());
-            }
-        }
-
-        final WordScanner scanner = new ManualScanner(chars, man);
+        final List<OcrWord> subWords = new ArrayList<>();
+        final int contentLength = word.getValue().length();
 
         while (scanner.hasNext()) {
-            // The difficulty is to determine a precise cut for ocr chars
-            String wordText = scanner.next();
-            List<OcrChar> wordChars = chars.subList(
-                    scanner.getWordStart(),
-                    scanner.getWordStop() + 1);
+            String wordValue = scanner.next();
 
-            Word word = new Word(wordText, wordChars);
+            if (wordValue.length() < contentLength) {
+                // We have a real subword
+                List<OcrChar> wordChars = scanner.getWordChars();
+                OcrWord newWord = new OcrWord(word.getBaseline(), wordValue,
+                                              word.getFontInfo(), wordChars);
 
-            logger.fine(word.toString());
-
-            words.add(word);
+                logger.fine("subword ''{0}''", newWord.getValue());
+                subWords.add(newWord);
+            }
         }
 
-        return words;
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        Constant.Ratio minExtensionAspect = new Constant.Ratio(
-                10d,
-                "Minimum width/height ratio for an extension character");
+        return subWords;
     }
 }

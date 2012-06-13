@@ -153,7 +153,7 @@ public class CheckPanel<C extends Checkable>
                           get(index));
 
                 // Update proper field to display check result
-                JTextField field = null;
+                JTextField field;
 
                 switch (result.flag) {
                     case Check.RED:
@@ -178,6 +178,7 @@ public class CheckPanel<C extends Checkable>
 
                         break;
 
+                    default:
                     case Check.GREEN:
 
                         if (check.isCovariant()) {

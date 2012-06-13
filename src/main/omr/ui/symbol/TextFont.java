@@ -21,8 +21,8 @@ import java.awt.font.GlyphVector;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code TextFont} is meant to simplify the use of text font for pieces
- * of text such as titles, directions, lyrics, etc.
+ * Class {@code TextFont} is meant to simplify the use of text font for
+ * pieces of text such as titles, directions, lyrics, etc.
  *
  * @author Hervé Bitteur
  */
@@ -51,11 +51,13 @@ public class TextFont
     public static final float TO_POINT = 72f / 300f;
 
     //~ Constructors -----------------------------------------------------------
-
+    //----------//
+    // TextFont //
+    //----------//
     /**
      * Creates a new TextFont object.
      *
-     * @param sizePts DOCUMENT ME!
+     * @param sizePts the point size of the {@code Font}
      */
     public TextFont (int sizePts)
     {

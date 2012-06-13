@@ -17,7 +17,6 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.ShapeEvaluator.Condition;
 import static omr.glyph.ShapeEvaluator.Condition.*;
-
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -28,19 +27,13 @@ import omr.sheet.SystemInfo;
 import omr.util.Predicate;
 
 import java.io.*;
-
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-
-//import java.nio.file.Files;
-//import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.logging.Level;
 
 import javax.xml.bind.JAXBException;
-
 
 /**
  * Class {@code AbstractEvaluationEngine} is an abstract implementation
@@ -50,21 +43,25 @@ import javax.xml.bind.JAXBException;
  *
  * @author Hervé Bitteur
  */
-public abstract class AbstractEvaluationEngine implements EvaluationEngine {
+public abstract class AbstractEvaluationEngine
+        implements EvaluationEngine
+{
+
     /** Specific application parameters */
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(AbstractEvaluationEngine.class);
+    private static final Logger logger = Logger.getLogger(
+            AbstractEvaluationEngine.class);
 
     /** Number of shapes to differentiate. */
-    protected static final int shapeCount = 1 +
-        Shape.LAST_PHYSICAL_SHAPE.ordinal();
+    protected static final int shapeCount = 1
+            + Shape.LAST_PHYSICAL_SHAPE.ordinal();
 
     /** A special evaluation array, used to report NOISE. */
     protected static final Evaluation[] noiseEvaluations = {
-            new Evaluation(Shape.NOISE, Evaluation.ALGORITHM)
-        };
+        new Evaluation(Shape.NOISE, Evaluation.ALGORITHM)
+    };
 
     /** The glyph checker for additional specific checks. */
     protected ShapeChecker glyphChecker = ShapeChecker.getInstance();
@@ -73,9 +70,13 @@ public abstract class AbstractEvaluationEngine implements EvaluationEngine {
     // evaluate //
     //----------//
     @Override
-    public Evaluation[] evaluate(Glyph glyph, SystemInfo system, int count,
-        double minGrade, EnumSet<ShapeEvaluator.Condition> conditions,
-        Predicate<Shape> predicate) {
+    public Evaluation[] evaluate (Glyph glyph,
+                                  SystemInfo system,
+                                  int count,
+                                  double minGrade,
+                                  EnumSet<ShapeEvaluator.Condition> conditions,
+                                  Predicate<Shape> predicate)
+    {
         List<Evaluation> best = new ArrayList<>();
         Evaluation[] evals = getRawEvaluations(glyph);
 
@@ -91,8 +92,8 @@ public abstract class AbstractEvaluationEngine implements EvaluationEngine {
             }
 
             // Allowed?
-            if (conditions.contains(Condition.ALLOWED) &&
-                    glyph.isShapeForbidden(eval.shape)) {
+            if (conditions.contains(Condition.ALLOWED)
+                    && glyph.isShapeForbidden(eval.shape)) {
                 continue;
             }
 
@@ -108,9 +109,9 @@ public abstract class AbstractEvaluationEngine implements EvaluationEngine {
 
                 // In case the specific checks have changed eval shape
                 // we have to retest against the glyph blacklist
-                if ((eval.shape != oldEval.shape) &&
-                        conditions.contains(Condition.ALLOWED) &&
-                        glyph.isShapeForbidden(eval.shape)) {
+                if ((eval.shape != oldEval.shape)
+                        && conditions.contains(Condition.ALLOWED)
+                        && glyph.isShapeForbidden(eval.shape)) {
                     continue;
                 }
             }
@@ -126,7 +127,8 @@ public abstract class AbstractEvaluationEngine implements EvaluationEngine {
     // isBigEnough //
     //-------------//
     @Override
-    public boolean isBigEnough(Glyph glyph) {
+    public boolean isBigEnough (Glyph glyph)
+    {
         return glyph.getNormalizedWeight() >= constants.minWeight.getValue();
     }
 
@@ -137,15 +139,16 @@ public abstract class AbstractEvaluationEngine implements EvaluationEngine {
      * Store the engine in XML format, always as a user file.
      */
     @Override
-    public void marshal() {
+    public void marshal ()
+    {
         final File file = new File(WellKnowns.EVAL_FOLDER, getFileName());
 
         // First, make a backup copy of current file if it exists
         if (file.exists()) {
             try {
                 Files.move(file.toPath(),
-                    file.toPath().resolveSibling(getBackupName()),
-                    StandardCopyOption.REPLACE_EXISTING);
+                           file.toPath().resolveSibling(getBackupName()),
+                           StandardCopyOption.REPLACE_EXISTING);
             } catch (Exception ex) {
                 logger.warning("Could not backup " + file, ex);
             }
@@ -178,10 +181,12 @@ public abstract class AbstractEvaluationEngine implements EvaluationEngine {
     // rawVote //
     //---------//
     @Override
-    public Evaluation rawVote(Glyph glyph, double minGrade,
-        Predicate<Shape> predicate) {
+    public Evaluation rawVote (Glyph glyph,
+                               double minGrade,
+                               Predicate<Shape> predicate)
+    {
         Evaluation[] evals = evaluate(glyph, null, 1, minGrade,
-                EnumSet.of(ALLOWED), predicate);
+                                      EnumSet.of(ALLOWED), predicate);
 
         if (evals.length > 0) {
             return evals[0];
@@ -198,17 +203,22 @@ public abstract class AbstractEvaluationEngine implements EvaluationEngine {
      * By default, this is a no-op
      */
     @Override
-    public void stop() {
+    public void stop ()
+    {
     }
 
     //------//
     // Vote //
     //------//
     @Override
-    public Evaluation vote(Glyph glyph, SystemInfo system, double minGrade,
-        EnumSet<Condition> conditions, Predicate<Shape> predicate) {
+    public Evaluation vote (Glyph glyph,
+                            SystemInfo system,
+                            double minGrade,
+                            EnumSet<Condition> conditions,
+                            Predicate<Shape> predicate)
+    {
         Evaluation[] evals = evaluate(glyph, system, 1, minGrade, conditions,
-                predicate);
+                                      predicate);
 
         if (evals.length > 0) {
             return evals[0];
@@ -221,10 +231,13 @@ public abstract class AbstractEvaluationEngine implements EvaluationEngine {
     // vote //
     //------//
     @Override
-    public Evaluation vote(Glyph glyph, SystemInfo system, double minGrade,
-        Predicate<Shape> predicate) {
+    public Evaluation vote (Glyph glyph,
+                            SystemInfo system,
+                            double minGrade,
+                            Predicate<Shape> predicate)
+    {
         Evaluation[] evals = evaluate(glyph, system, 1, minGrade,
-                EnumSet.of(ALLOWED, CHECKED), predicate);
+                                      EnumSet.of(ALLOWED, CHECKED), predicate);
 
         if (evals.length > 0) {
             return evals[0];
@@ -237,9 +250,12 @@ public abstract class AbstractEvaluationEngine implements EvaluationEngine {
     // vote //
     //------//
     @Override
-    public Evaluation vote(Glyph glyph, SystemInfo system, double minGrade) {
+    public Evaluation vote (Glyph glyph,
+                            SystemInfo system,
+                            double minGrade)
+    {
         Evaluation[] evals = evaluate(glyph, system, 1, minGrade,
-                EnumSet.of(ALLOWED, CHECKED), null);
+                                      EnumSet.of(ALLOWED, CHECKED), null);
 
         if (evals.length > 0) {
             return evals[0];
@@ -256,25 +272,25 @@ public abstract class AbstractEvaluationEngine implements EvaluationEngine {
      * parent, which contains the marshalled data of the evaluator.
      * @return the file name
      */
-    protected abstract String getFileName();
+    protected abstract String getFileName ();
 
     //-------------------//
     // getRawEvaluations //
     //-------------------//
     /**
      * Run the evaluator with the specified glyph, and return a
-     * sequence of interpretations (ordered from best to  worst) with
+     * sequence of interpretations (ordered from best to worst) with
      * no additional check.
      * @param glyph the glyph to be examined
      * @return the ordered best evaluations
      */
-    protected abstract Evaluation[] getRawEvaluations(Glyph glyph);
+    protected abstract Evaluation[] getRawEvaluations (Glyph glyph);
 
     //---------//
     // marshal //
     //---------//
-    protected abstract void marshal(OutputStream os)
-        throws FileNotFoundException, IOException, JAXBException;
+    protected abstract void marshal (OutputStream os)
+            throws FileNotFoundException, IOException, JAXBException;
 
     //-----------//
     // unmarshal //
@@ -284,10 +300,11 @@ public abstract class AbstractEvaluationEngine implements EvaluationEngine {
      * @param is the input stream to read
      * @return the newly built evaluation engine
      * @throws JAXBException
-     * @throws IOException
+throws
+     *                                                                                                                                                                                                       IOException
      */
-    protected abstract Object unmarshal(InputStream is)
-        throws JAXBException, IOException;
+    protected abstract Object unmarshal (InputStream is)
+            throws JAXBException, IOException;
 
     //-----------//
     // unmarshal //
@@ -298,7 +315,8 @@ public abstract class AbstractEvaluationEngine implements EvaluationEngine {
      * backup file, if any, is tried.
      * @return the unmarshalled engine, or null if everything failed
      */
-    protected Object unmarshal() {
+    protected Object unmarshal ()
+    {
         // Try standard file
         File file = new File(WellKnowns.EVAL_FOLDER, getFileName());
         Object obj = unmarshal(file);
@@ -314,7 +332,8 @@ public abstract class AbstractEvaluationEngine implements EvaluationEngine {
         if (obj == null) {
             logger.warning("Could not load {0}", backup);
         } else {
-            logger.info("{0} unmarshalled from {1}", new Object[]{getName(), backup});
+            logger.info("{0} unmarshalled from {1}", new Object[]{getName(),
+                                                                  backup});
         }
 
         return obj;
@@ -323,7 +342,8 @@ public abstract class AbstractEvaluationEngine implements EvaluationEngine {
     //---------------//
     // getBackupName //
     //---------------//
-    private String getBackupName() {
+    private String getBackupName ()
+    {
         return "backup-" + getFileName();
     }
 
@@ -334,7 +354,8 @@ public abstract class AbstractEvaluationEngine implements EvaluationEngine {
      * Unmarshal the evaluation engine using provided file.
      * @return the unmarshalled engine, or null if failed
      */
-    private Object unmarshal(File file) {
+    private Object unmarshal (File file)
+    {
         try {
             InputStream input = new FileInputStream(file);
 
@@ -353,9 +374,12 @@ public abstract class AbstractEvaluationEngine implements EvaluationEngine {
     //-----------//
     // unmarshal //
     //-----------//
-    private Object unmarshal(InputStream is, String name) {
+    private Object unmarshal (InputStream is,
+                              String name)
+    {
         if (is == null) {
-            logger.warning("No data stream for {0} engine as {1}", new Object[]{getName(), name});
+            logger.warning("No data stream for {0} engine as {1}",
+                           new Object[]{getName(), name});
         } else {
             try {
                 Object engine = unmarshal(is);
@@ -377,8 +401,11 @@ public abstract class AbstractEvaluationEngine implements EvaluationEngine {
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants extends ConstantSet {
+    private static final class Constants
+            extends ConstantSet
+    {
+
         Scale.AreaFraction minWeight = new Scale.AreaFraction(0.08,
-                "Minimum normalized weight to be considered not a noise");
+                                                              "Minimum normalized weight to be considered not a noise");
     }
 }

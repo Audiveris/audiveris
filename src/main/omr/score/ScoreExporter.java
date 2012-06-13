@@ -239,8 +239,7 @@ public class ScoreExporter
      *
      * @param score the score to export (cannot be null)
      * @throws InterruptedException
-* throws
-     * ExecutionException
+     * @throws  ExecutionException
      */
     public ScoreExporter (Score score)
             throws InterruptedException, ExecutionException
@@ -325,8 +324,8 @@ public class ScoreExporter
      *
      * @param node            the DOM node to export to (cannot be null)
      * @param injectSignature should we inject our signature?
-     * @th * java.io.IOException
-     * @th * java.lang.Exception
+     * @throws java.io.IOException
+     * @throws java.lang.Exception
      */
     public void export (Node node,
                         boolean injectSignature)

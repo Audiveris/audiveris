@@ -34,6 +34,10 @@ import java.util.List;
  * Class {@code SentencePattern} gathers text-shaped glyphs found
  * within a system into proper sentences.
  *
+ * At the end, the underlying compound of each sentence is split into
+ * "word glyphs" (and for the specific case of Lyrics they are split into
+ * "syllable glyphs"), to allow precise display positioning and user edition.
+ *
  * @author Hervé Bitteur
  */
 public class SentencePattern
@@ -46,6 +50,7 @@ public class SentencePattern
             SentencePattern.class);
 
     //~ Instance fields --------------------------------------------------------
+    //
     /** The physical text lines built within this system. */
     private final List<Sentence> physicals = new ArrayList<>();
 
@@ -65,6 +70,7 @@ public class SentencePattern
     private final String language;
 
     //~ Constructors -----------------------------------------------------------
+    //
     //-----------------//
     // SentencePattern //
     //-----------------//
@@ -81,6 +87,7 @@ public class SentencePattern
     }
 
     //~ Methods ----------------------------------------------------------------
+    //
     //------------//
     // runPattern //
     //------------//
@@ -106,11 +113,11 @@ public class SentencePattern
         // Lyrics extraction
         extendLyrics();
 
-        // Check each sentence has just one text content
+        // Check each logical sentence has just one text content
         checkContents();
 
-        // Split lyrics sentences by words
-        splitLyrics();
+        // Split every logical sentence by words or syllables
+        splitSentences();
 
         // Record the final logicals as the system sentences
         system.resetSentences();
@@ -484,25 +491,29 @@ public class SentencePattern
         }
     }
 
-    //-------------//
-    // splitLyrics //
-    //-------------//
+    //----------------//
+    // splitSentences //
+    //----------------//
     /**
-     * For each lyrics sentence, replace the underlying series of items
-     * with a normalized sequence of word glyphs, with exactly one glyph
-     * per word.
+     * For each sentence, replace the underlying series of items by a
+     * normalized sequence of word glyphs or syllable glyphs.
      */
-    private void splitLyrics ()
+    private void splitSentences ()
     {
         for (Sentence sentence : logicals) {
-            if (sentence.getTextRole() == TextRole.Lyrics) {
-                List<Glyph> wordGlyphs = sentence.getCompound().
-                        retrieveWordGlyphs();
+            ///logger.info("before splitSentences for {0}", sentence);
+            List<Glyph> wordGlyphs = sentence.getCompound().retrieveSubGlyphs(
+                    sentence.getTextRole() == TextRole.Lyrics);
 
-                if ((wordGlyphs != null) && !wordGlyphs.isEmpty()) {
-                    sentence.setItems(wordGlyphs);
-                }
+            sentence.setItems(wordGlyphs);
+            sentence.computePreciseFontSize();
+            
+            // Link back Glyph -> Sentence
+            for (Glyph wordGlyph : wordGlyphs) {
+                wordGlyph.setSentence(sentence);
             }
+
+            ///logger.info("after  splitSentences for {0}", sentence);
         }
 
         dump("splitLyrics. final logicals", logicals);

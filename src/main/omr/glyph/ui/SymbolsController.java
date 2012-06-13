@@ -51,19 +51,18 @@ import java.util.logging.Level;
  * @author Hervé Bitteur
  */
 public class SymbolsController
-    extends GlyphsController
+        extends GlyphsController
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
-        SymbolsController.class);
+            SymbolsController.class);
 
     /** Color for hiding unknown glyphs when filter is ON */
     public static final Color hiddenColor = Color.white;
 
     //~ Constructors -----------------------------------------------------------
-
     //-------------------//
     // SymbolsController //
     //-------------------//
@@ -78,7 +77,6 @@ public class SymbolsController
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------------------//
     // asyncAssignRationals //
     //----------------------//
@@ -86,11 +84,11 @@ public class SymbolsController
      * Asynchronously assign a rational value to a collection of glyphs with
      * CUSTOM_TIME_SIGNATURE shape
      *
-     * @param glyphs the impacted glyphs
+     * @param glyphs       the impacted glyphs
      * @param timeRational the time sig rational value
      * @return the task that carries out the processing
      */
-    public Task asyncAssignRationals (Collection<Glyph>  glyphs,
+    public Task asyncAssignRationals (Collection<Glyph> glyphs,
                                       final TimeRational timeRational)
     {
         return new RationalTask(sheet, timeRational, glyphs).launch(sheet);
@@ -103,19 +101,19 @@ public class SymbolsController
      * Asynchronously assign text characteristics to a collection of textual
      * glyphs
      *
-     * @param glyphs the impacted glyphs
-     * @param textType the type of the creator, if relevant
-     * @param textRole the role of this textual element
+     * @param glyphs      the impacted glyphs
+     * @param textType    the type of the creator, if relevant
+     * @param textRole    the role of this textual element
      * @param textContent the content as a string (if not empty)
      * @return the task that carries out the processing
      */
     public Task asyncAssignTexts (Collection<Glyph> glyphs,
                                   final CreatorType textType,
-                                  final TextRole    textRole,
-                                  final String      textContent)
+                                  final TextRole textRole,
+                                  final String textContent)
     {
-        return new TextTask(sheet, textType, textRole, textContent, glyphs).launch(
-            sheet);
+        return new TextTask(sheet, textType, textRole, textContent, glyphs).
+                launch(sheet);
     }
 
     //-----------------------//
@@ -123,6 +121,7 @@ public class SymbolsController
     //-----------------------//
     /**
      * Asynchronously perform a modification in systems boundaries
+     *
      * @param modifiedLines the set of modified lines
      * @return the task that carries out the processing
      */
@@ -157,12 +156,12 @@ public class SymbolsController
     /**
      * Asynchronously segment a set of glyphs on their stems
      *
-     * @param glyphs glyphs to segment in order to retrieve stems
+     * @param glyphs  glyphs to segment in order to retrieve stems
      * @param isShort looking for short (or standard) stems
      * @return the task that carries out the processing
      */
     public Task asyncSegment (Collection<Glyph> glyphs,
-                              final boolean     isShort)
+                              final boolean isShort)
     {
         return new SegmentTask(sheet, isShort, glyphs).launch(sheet);
     }
@@ -186,6 +185,7 @@ public class SymbolsController
     //----------//
     /**
      * Report the underlying model
+     *
      * @return the underlying glyphs model
      */
     @Override
@@ -217,7 +217,6 @@ public class SymbolsController
     @Override
     public String toString ()
     {
-        return getClass()
-                   .getSimpleName();
+        return getClass().getSimpleName();
     }
 }

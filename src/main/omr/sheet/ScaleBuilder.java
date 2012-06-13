@@ -180,7 +180,8 @@ public class ScaleBuilder
         RunsRetriever runsBuilder = new RunsRetriever(
                 Orientation.VERTICAL,
                 adapter);
-        runsBuilder.retrieveRuns(
+        runsBuilder.
+                retrieveRuns(
                 new PixelRectangle(0, 0, picture.getWidth(), picture.getHeight()));
 
         // Retrieve the various histograms peaks
@@ -616,27 +617,22 @@ public class ScaleBuilder
                 11,
                 "Minimum resolution, expressed as number of pixels per interline");
 
-        //
         final Constant.Ratio quorumRatio = new Constant.Ratio(
                 0.1,
                 "Absolute ratio of total pixels for peak acceptance");
 
-        //
         final Constant.Ratio foreSpreadRatio = new Constant.Ratio(
                 0.15,
                 "Relative ratio of best count for foreground spread reading");
 
-        //
         final Constant.Ratio backSpreadRatio = new Constant.Ratio(
                 0.3,
                 "Relative ratio of best count for background spread reading");
 
-        //
         final Constant.Ratio spreadFactor = new Constant.Ratio(
                 1.0,
                 "Factor applied on line thickness spread");
 
-        //
         final Constant.Ratio minBeamLineRatio = new Constant.Ratio(
                 2.0,
                 "Minimum ratio between beam thickness and line thickness");

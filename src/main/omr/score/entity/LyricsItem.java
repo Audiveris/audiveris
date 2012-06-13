@@ -15,6 +15,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
 import omr.glyph.facets.GlyphContent;
+import omr.glyph.text.OcrWord;
 import omr.glyph.text.Sentence;
 
 import omr.log.Logger;
@@ -60,7 +61,9 @@ public class LyricsItem
 
     //~ Enumerations -----------------------------------------------------------
 
-    /** Describes the kind of this lyrics item */
+    /**
+     * Describes the kind of this lyrics item.
+     */
     public static enum ItemKind {
         //~ Enumeration constant initializers ----------------------------------
 
@@ -75,7 +78,9 @@ public class LyricsItem
         Syllable;
     }
 
-    /** Describes more precisely a syllable inside a word */
+    /**
+     * Describes more precisely a syllable inside a word.
+     */
     public static enum SyllabicType {
         //~ Enumeration constant initializers ----------------------------------
 
@@ -92,28 +97,31 @@ public class LyricsItem
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Lyrics kind */
+    /** Lyrics kind. */
     private ItemKind itemKind;
 
-    /** Characteristics of the lyrisc syllable, if any */
+    /** Characteristics of the lyrics syllable, if any. */
     private SyllabicType syllabicType;
 
-    /** The containing lyrics line */
+    /** The containing lyrics line. */
     private LyricsLine lyricsLine;
 
     /**
-     * The carried text for this item
+     * The carried text for this item.
      * (only a part of the containing sentence, as opposed to other texts)
      */
     private String content;
 
-    /** Width of the item */
+    /** The exact corresponding word. */
+    private OcrWord word;
+
+    /** Width of the item. */
     private final int width;
 
-    /** The glyph which contributed to the creation of this lyrics item */
+    /** The glyph which contributed to this lyrics item. */
     private final Glyph seed;
 
-    /** Mapped note/chord, if any */
+    /** Mapped note/chord, if any. */
     private Chord mappedChord;
 
     //~ Constructors -----------------------------------------------------------
@@ -126,9 +134,9 @@ public class LyricsItem
      *
      * @param sentence The containing sentence
      * @param location The starting point (left side, base line) wrt system
-     * @param seed The glyph that initiated the creation of this lyrics item
-     * @param width The width (in units) of the related item
-     * @param content The underlying text for this lyrics item
+     * @param seed     The glyph that initiated the creation of this lyrics item
+     * @param width    The width of the related item
+     * @param content  The underlying text for this lyrics item
      */
     public LyricsItem (Sentence   sentence,
                        PixelPoint location,
@@ -140,6 +148,9 @@ public class LyricsItem
         this.seed = seed;
         this.width = width;
         this.content = content;
+
+        word = seed.getOcrLine()
+                   .getFirstWord();
 
         if (content.equals(GlyphContent.ELISION_STRING)) {
             itemKind = ItemKind.Elision;
@@ -254,6 +265,14 @@ public class LyricsItem
         return width;
     }
 
+    //---------//
+    // getWord //
+    //---------//
+    public OcrWord getWord ()
+    {
+        return word;
+    }
+
     //-----------//
     // mapToNote //
     //----------//
@@ -363,7 +382,8 @@ public class LyricsItem
         }
 
         if (mappedChord != null) {
-            sb.append(" mappedTo:Ch#").append(mappedChord.getId());
+            sb.append(" mappedTo:Ch#")
+              .append(mappedChord.getId());
         }
 
         return sb.toString();
