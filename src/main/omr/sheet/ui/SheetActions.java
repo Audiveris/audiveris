@@ -12,7 +12,6 @@
 package omr.sheet.ui;
 
 import omr.Main;
-import omr.WellKnowns;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -40,7 +39,6 @@ import org.jdesktop.application.Task;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.util.logging.Level;
 
 import javax.swing.JOptionPane;
 
@@ -116,12 +114,12 @@ public class SheetActions
     // openImageFile //
     //---------------//
     /**
-     * Action that let the user select a image file interactively.
+     * Action that let the user select an image file interactively.
      * @param e the event that triggered this action
      * @return the asynchronous task, or null
      */
     @Action
-    public Task openImageFile (ActionEvent e)
+    public OpenTask openImageFile (ActionEvent e)
     {
         String suffixes = constants.validImageExtensions.getValue();
         String allSuffixes = suffixes + " " + suffixes.toUpperCase();
@@ -172,7 +170,7 @@ public class SheetActions
     // recordGlyphs //
     //--------------//
     @Action(enabledProperty = SHEET_AVAILABLE)
-    public Task recordGlyphs ()
+    public RecordGlyphsTask recordGlyphs ()
     {
         int answer = JOptionPane.showConfirmDialog(
             null,
@@ -286,11 +284,15 @@ public class SheetActions
 
         @Override
         protected Void doInBackground ()
-            throws InterruptedException
+                throws InterruptedException
         {
-            // Actually load the image file
-            Score score = new Score(file);
-            score.createPages();
+            if (file.exists()) {
+                // Actually load the image file
+                Score score = new Score(file);
+                score.createPages();
+            } else {
+                logger.warning("File {0} does not exist", file);
+            }
 
             return null;
         }

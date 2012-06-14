@@ -27,35 +27,26 @@ Target Program folders          WellKnowns.PROGRAM_FOLDER
 ./dist/lib/PDFRenderer.jar
 ./dist/lib/bsaf-1.9.1.jar
 ./dist/lib/clibwrapper_jiio.jar
-./dist/lib/forms-1.0.6.jar
 ./dist/lib/iText-5.0.4.jar
 ./dist/lib/jai_codec.jar
 ./dist/lib/jai_core.jar
 ./dist/lib/jai_imageio.jar
-./dist/lib/jcommon-1.0.16.jar
 ./dist/lib/jfreechart-1.0.13.jar
+./dist/lib/jgoodies-common-1.3.0.jar
+./dist/lib/jgoodies-forms-1.5.0.jar
+./dist/lib/jgoodies-looks-2.5.0.jar
 ./dist/lib/jlfgr-1_0.jar
-./dist/lib/looks-2.0.1.jar
 ./dist/lib/mlibwrapper_jai.jar
 ./dist/lib/proxymusic-2.0.jar
-./dist/lib/tesjeract.jar
-
-./dist/lib/playerdata.jar
-./dist/lib/gervill.jar
-./dist/lib/zong.jar
+./dist/lib/tesseract-3.jar
 
 ./ocr/                          WellKnowns.OCR_FOLDER
-./ocr/tesjeract.dll
-./ocr/tessdll.dll
-./ocr/tessdata/deu.DangAmbigs
-./ocr/tessdata/deu.freq-dawg
-./ocr/tessdata/deu.inttemp
-./ocr/tessdata/deu.normproto
-./ocr/tessdata/deu.pffmtable
-./ocr/tessdata/deu.unicharset
-./ocr/tessdata/deu.user-words
-./ocr/tessdata/deu.word-dawg
-./ocr/tessdata/etc...
+./ocr/tessdata/
+./ocr/tessdata/deu.traineddata
+./ocr/tessdata/eng.traineddata
+./ocr/tessdata/fra.traineddata
+./ocr/tessdata/ita.traineddata
+./ocr/tessdata/ [other files & languages on demand]
 
 ./res/                          WellKnowns.RES_FOLDER
 ./res/GPLv2.rtf
@@ -144,6 +135,12 @@ Development only folders
 ./dev/windows/-wix.xml
 ./dev/windows/audiveris.wxs
 ./dev/windows/vc.wxs
+
+./dev/windows/dll/
+./dev/windows/dll/jniTesseract3Bridge.dll
+./dev/windows/dll/jniTesseract3Bridge.dll.manifest
+./dev/windows/dll/liblept168.dll
+./dev/windows/dll/libtesseract302.dll
 
 ./dev/material/
 ./dev/material/MusicalSymbols.pdf

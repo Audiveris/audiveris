@@ -154,7 +154,7 @@ public class BasicContent
         if (manualValue != null) {
             System.out.println("   manual=\"" + manualValue + "\"");
         }
-        
+
         if (sentence != null) {
             System.out.println("   sentence=" + sentence);
         }
@@ -379,8 +379,8 @@ public class BasicContent
     @Override
     public List<OcrLine> retrieveOcrLines (String language)
     {
-        final String label = "s" + glyph.getSystem().getId() + "-g" + glyph.
-                getId();
+        final String label = "s" + glyph.getSystem().getId()
+                + "-g" + glyph.getId();
 
         final List<OcrLine> lines = Language.getOcr().recognize(
                 glyph.getImage(),

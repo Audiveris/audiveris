@@ -18,7 +18,7 @@
             h1.page-title {
                 text-align: center
             }
-            div.block  {
+            .block  {
                 width: 93%;
             }
             div#summary  {
@@ -124,12 +124,15 @@
                         Microsoft <b>Visual C++</b> 2008 SP1 Redistributable Package (x86)
                     </li>
                     <li>
+                        <b>Tesseract</b> and <b>Leptonica</b> libraries
+                    </li>
+                    <li>
                         <b>Java 7</b> runtime
                     </li>
                 </ul>
                 Audiveris application data and configuration information are
-                installed under the user location pointed by the %APPDATA% 
-                environment variable.
+                installed under the user location pointed by the 
+                <code>%APPDATA%</code> environment variable.
             </div>
 
             <div class="block" id="building">
@@ -221,7 +224,7 @@
                         install the font according to your system.
                         <br/>
                         (For your convenience, a copy of this font file is already
-                        available in the <code>dev/marerial</code> folder of the 
+                        available in the <code>dev/material</code> folder of the 
                         Audiveris directory).
                     </li>
                 </ul>
@@ -250,38 +253,19 @@
                     comes with Audiveris distribution.
                 </p>
                 <ul>
-                    <li>For Windows, the installer takes care of the C++
-                        runtime installation if needed.
+                    <li>For Windows, the installer takes care of the Microsoft 
+                        C++ runtime installation if needed.
                     </li>
-                    <li>For Linux, download the <code>tesjeract</code> source
+                    <li>
+                    For Linux, 
+                    <span style="text-decoration: line-through;">
+                    download the <code>tesjeract</code> source
                         from <a href="http://code.google.com/p/tesjeract/">http://code.google.com/p/tesjeract/</a>
                         and follow the provided instructions to build this interface.
-                    </li>
-                </ul>
-                <p>
-                    You can also decide to make no use of OCR features. 
-                    This will save you the need for C++ environment, but will
-                    also lower Audiveris recognition capabilities, so this is not
-                    recommended.
-                    If you do want to remove any use of OCR, you need to set the
-                    <code>useOCR</code> constant to false through one of the 
-                    following ways:
-                </p>
-                <ul>
-                    <li>
-                        Through graphic user interface, click on Tools | Options menu.
-                        Type the "<code>useOCR</code>" string (without the quotes) 
-                        in the search box or navigate in the table to 
-                        <code>omr.glyph.text.TextLine.useOCR</code> line and 
-                        uncheck the facing checkbox. 
                         <br/>
-                        This setting is persistent across program runs.
-                    </li>
-                    <li>
-                        Through command line interface, add the parameter:
-                        <code>-option omr.glyph.text.TextLine.useOCR=false</code>
-                        <br/>
-                        This setting is not persistent across program runs.
+                    </span>
+                        Documentation for Linux bridge to Tesseract V3 should be
+                        published shortly.
                     </li>
                 </ul>
             </div>

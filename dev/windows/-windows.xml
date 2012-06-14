@@ -7,95 +7,11 @@
 <project name="-windows" basedir="../..">
     
     <description>
-        Targets for Windows platform
+        All targets specific to Windows platform.
+        
+        Targets are presented in alphabetical order, regardless of initial '-'.
+        An initial '-' indicates an internal target.
     </description>
-    
-    <!-- =========================== -->
-    <!--  - G E T - M S I - N A M E  -->
-    <!-- =========================== -->
-    <target name="-get-msi-name"
-            depends="-hg-tip">
-        <property name="msi.name" value="${full.name}.${ant4hg.log.revision}.msi"/>        
-    </target>
-
-    <!-- =================================== -->
-    <!--  - L A U N C H 4 J - T A S K D E F  -->
-    <!-- =================================== -->
-    <target name="-launch4j-taskdef"
-            if="${is.windows}">
-        <!-- launch4j task definition -->
-        <taskdef name="launch4j"
-                 classname="net.sf.launch4j.ant.Launch4jTask">
-            <classpath>
-                <fileset dir="${launch4j.dir}" includes="launch4j.jar" />
-                <fileset dir="${launch4j.dir}/lib" includes="xstream.jar" />
-            </classpath>
-        </taskdef>
-    </target>
-
-    <!-- =========== -->
-    <!--  C L E A N  -->
-    <!-- =========== -->
-    <target name="clean"
-            if="${is.windows}">
-	<!-- Remove all the generated outputs for Windows -->
-        <delete verbose="${verbose}">
-            <fileset dir="${basedir}" includes="*.exe, *.bat"/>
-        </delete> 
-    </target>
-    
-    <!-- =================== -->
-    <!--  U N I N S T A L L  -->
-    <!-- =================== -->
-    <target name="uninstall"
-            depends="-get-msi-name"
-            if="${is.windows}">
-	<!-- Uninstall for Windows -->
-        <echo message="Windows uninstallation from ${msi.name}" />
-        <exec executable="msiexec"
-              dir="${dist.dir}">
-            <arg value="/x"/>
-            <arg value="${msi.name}"/>
-        </exec>
-    </target>        
-
-    <!-- =============== -->
-    <!--  I N S T A L L  -->
-    <!-- =============== -->
-    <target name="install"
-            depends="-get-msi-name"
-            if="${is.windows}">
-	<!-- Install for Windows -->
-        <property name="msi.name" value="${full.name}.${ant4hg.log.revision}.msi"/>
-        <echo message="Windows installation from ${msi.name}" />
-        <exec executable="msiexec"
-              dir="${dist.dir}">
-            <arg value="/i"/>
-            <arg value="${msi.name}"/>
-        </exec>
-    </target>
-
-    <!-- =================== -->
-    <!--  I N S T A L L E R  -->
-    <!-- =================== -->
-    <target name="installer"
-            depends="-wxs-generation, -do-installer, -wix-cleanup"/>
-    <!-- Build Windows installer -->
-
-    <!-- =========== -->
-    <!--  E X E C S  -->
-    <!-- =========== -->
-    <target name="execs"
-            depends="jar, -bat, -exe, -exe-console, -no-windows-execs"/>
-    <!-- Build all Windows executables -->
-
-    <!-- ================================== -->
-    <!--  - N O - W I N D O W S -E X E C S  -->
-    <!-- ================================== -->
-    <target name="-no-windows-execs"
-            unless="${is.windows}">
-        <echo message="Windows execs are generated only from Windows" />
-    </target>
     
     <!-- ========= -->
     <!--  - B A T  -->
@@ -109,6 +25,73 @@
             java -Xms512M -Xmx512M -jar dist/${full.name}.jar %1 %2 %3 %4 %5 %6 %7 %8 %9
             endlocal
         </echo>
+        
+    </target>
+
+    <!-- =========== -->
+    <!--  C L E A N  -->
+    <!-- =========== -->
+    <target name="clean"
+            if="${is.windows}">
+	<!-- Remove all the generated outputs for Windows -->
+        <delete verbose="${verbose}">
+            <fileset dir="${basedir}" includes="*.exe, *.bat"/>
+        </delete> 
+    </target>
+
+    <!-- =========================== -->
+    <!--  - D O - I N S T A L L E R  -->
+    <!-- =========================== -->
+    <target name="-do-installer"
+            depends="-get-msi-name"
+            if="${is.windows}">
+    
+        <!-- wix task definition (et al.) -->
+        <taskdef 
+            resource="org/apache/ant/dotnet/antlib.xml"
+            classpathref="tools.classpath" />
+
+        <!-- Compilation -->
+        <wix mode="candle"> 
+            <candleParameter name="myBuildVersion" value="${spec.version}.${ant4hg.log.revision}"/>
+            <candleParameter name="myCompany"      value="${Company}"/>            
+            <candleParameter name="myConsole"      value="${name}-console"/>
+            <candleParameter name="myDistLib"      value="${dist.dir}/lib"/>
+            <candleParameter name="myEval"         value="${eval.dir}"/>
+            <candleParameter name="myExamples"     value="${examples.dir}"/>
+            <candleParameter name="myFullName"     value="${full.name}"/>
+            <candleParameter name="myIconSource"   value="${res.dir}/all-icons-256.ico"/>
+            <candleParameter name="myJar"          value="${dist.jar}"/>
+            <candleParameter name="myMaterial"     value="${material.dir}"/>
+            <candleParameter name="myOcr"          value="${ocr.dir}"/>
+            <candleParameter name="myPlugins"      value="${basedir}/plugins"/>
+            <candleParameter name="myRes"          value="${res.dir}"/>
+            <candleParameter name="mySettings"     value="${settings.dir}"/>
+            <candleParameter name="mySoftware"     value="${name}"/>
+            <candleParameter name="myTrain"        value="${train.dir}"/>
+            <candleParameter name="myVersion"      value="${impl.version}"/>
+            <candleParameter name="myWww"          value="${www.dir}"/>
+            <candleParameter name="myDll"          value="${dll.dir}"/>
+            
+            <candleParameter name="myVC"           value="${env.COMMONPROGRAMFILES}/Merge Modules/Microsoft_VC90_CRT_x86.msm"/>
+            
+            <candleArg line="-out ${dist.dir}\"/>        
+            
+            <sources dir="${dev.windows.dir}">
+                <include name="*.wxs"/>
+            </sources>
+        </wix>
+
+        <!-- Link -->
+        <wix mode="light"
+             target="${dist.dir}/${msi.name}">
+            <lightArg line="-ext WixUIExtension" />
+            <lightArg line="-dWixUILicenseRtf=${res.dir}/GPLv2.rtf" />
+            <lightArg line="-sice:ICE91" />
+            <sources dir="${dist.dir}/">
+                <include name="*.wixobj"/>
+            </sources>
+        </wix>
         
     </target>
 
@@ -148,6 +131,101 @@
             </config>
         </launch4j>	
     </target>
+
+    <!-- =========== -->
+    <!--  E X E C S  -->
+    <!-- =========== -->
+    <target name="execs"
+            depends="jar, -bat, -exe, -exe-console, -no-windows-execs"/>
+    <!-- Build all Windows executables -->
+    
+    <!-- =========================== -->
+    <!--  - G E T - M S I - N A M E  -->
+    <!-- =========================== -->
+    <target name="-get-msi-name"
+            depends="-hg-tip">
+        <property name="msi.name" value="${full.name}.${ant4hg.log.revision}.msi"/>        
+    </target>
+
+    <!-- =============== -->
+    <!--  I N S T A L L  -->
+    <!-- =============== -->
+    <target name="install"
+            depends="-init, -get-msi-name"
+            if="${is.windows}">
+	<!-- Install for Windows -->
+        <property name="msi.name" value="${full.name}.${ant4hg.log.revision}.msi"/>
+        <echo message="Windows installation from ${msi.name}" />
+        <exec executable="msiexec"
+              dir="${dist.dir}">
+            <arg value="/i"/>
+            <arg value="${msi.name}"/>
+        </exec>
+    </target>
+
+    <!-- =================== -->
+    <!--  I N S T A L L E R  -->
+    <!-- =================== -->
+    <target name="installer"
+            depends="-init, -wxs-generation, -do-installer, -wix-cleanup"/>
+<!--            depends="-wxs-generation"/>-->
+    <!-- Build Windows installer -->
+
+    <!-- =================================== -->
+    <!--  - L A U N C H 4 J - T A S K D E F  -->
+    <!-- =================================== -->
+    <target name="-launch4j-taskdef"
+            if="${is.windows}">
+        <!-- launch4j task definition -->
+        <taskdef name="launch4j"
+                 classname="net.sf.launch4j.ant.Launch4jTask">
+            <classpath>
+                <fileset dir="${launch4j.dir}" includes="launch4j.jar" />
+                <fileset dir="${launch4j.dir}/lib" includes="xstream.jar" />
+            </classpath>
+        </taskdef>
+    </target>
+
+    <!-- ================================== -->
+    <!--  - N O - W I N D O W S -E X E C S  -->
+    <!-- ================================== -->
+    <target name="-no-windows-execs"
+            unless="${is.windows}">
+        <echo message="Windows execs are generated only from Windows" />
+    </target>
+    
+    <!-- =================== -->
+    <!--  U N I N S T A L L  -->
+    <!-- =================== -->
+    <target name="uninstall"
+            depends="-init, -get-msi-name"
+            if="${is.windows}">
+	<!-- Uninstall for Windows -->
+        <echo message="Windows uninstallation from ${msi.name}" />
+        <exec executable="msiexec"
+              dir="${dist.dir}">
+            <arg value="/x"/>
+            <arg value="${msi.name}"/>
+        </exec>
+    </target>        
+    
+    <!-- ========================= -->
+    <!--  - W I X - C L E A N U P  -->
+    <!-- ========================= -->
+    <target name="-wix-cleanup"
+            if="${is.windows}">
+        
+        <!-- Clean up temporary files in dist -->
+        <delete verbose="${verbose}"> 
+            <fileset dir="${dist.dir}" includes="*.wix*"/>
+        </delete>
+        
+        <!-- Clean up temporary files in dev/windows -->
+        <delete verbose="${verbose}"> 
+            <fileset dir="${dev.windows.dir}" includes="gen-*.*"/>
+        </delete>
+        
+    </target>
     
     <!-- =============================== -->
     <!--  - W X S - G E N E R A T I O N  -->
@@ -156,7 +234,7 @@
             if="${is.windows}">
 	<!-- Harvesting of directories -->
 	
-        <!-- Files for common location -->
+        <!-- Folders for common location -->
         
         <property name="heat.options" value="-nologo -gg -g1 -sfrag" />
         
@@ -204,7 +282,7 @@
             <arg line="-out ${dev.windows.dir}/gen-common-www.wxs"/>
         </exec>
         
-        <!-- Files for user location -->
+        <!-- Folders for user location -->
         
         <echo message="buiding ${dev.windows.dir}/gen-user-examples.wxs" />
         <exec executable="java">
@@ -255,79 +333,6 @@
             <arg line="-var var.myTrain"/> 
             <arg line="-out ${dev.windows.dir}/gen-user-train.wxs"/>
         </exec> 
-        
-    </target>
-
-    <!-- =========================== -->
-    <!--  - D O - I N S T A L L E R  -->
-    <!-- =========================== -->
-    <target name="-do-installer"
-            depends="-get-msi-name"
-            if="${is.windows}">
-    
-        <!-- wix task definition (et al.) -->
-        <taskdef 
-            resource="org/apache/ant/dotnet/antlib.xml"
-            classpathref="tools.classpath" />
-
-        <!-- Compilation -->
-        <wix mode="candle"> 
-            <candleParameter name="myBuildVersion" value="${spec.version}.${ant4hg.log.revision}"/>
-            <candleParameter name="myCompany"      value="${Company}"/>            
-            <candleParameter name="myConsole"      value="${name}-console"/>
-            <candleParameter name="myDistLib"      value="${dist.dir}/lib"/>
-            <candleParameter name="myEval"         value="${eval.dir}"/>
-            <candleParameter name="myExamples"     value="${examples.dir}"/>
-            <candleParameter name="myFullName"     value="${full.name}"/>
-            <candleParameter name="myIconSource"   value="${res.dir}/all-icons-256.ico"/>
-            <candleParameter name="myJar"          value="${dist.jar}"/>
-            <candleParameter name="myMaterial"     value="${material.dir}"/>
-            <candleParameter name="myOcr"          value="${ocr.dir}"/>
-            <candleParameter name="myPlugins"      value="${basedir}/plugins"/>
-            <candleParameter name="myRes"          value="${res.dir}"/>
-            <candleParameter name="mySettings"     value="${settings.dir}"/>
-            <candleParameter name="mySoftware"     value="${name}"/>
-            <candleParameter name="myTrain"        value="${train.dir}"/>
-            <candleParameter name="myVersion"      value="${impl.version}"/>
-            <candleParameter name="myWww"          value="${www.dir}"/>
-            
-            <candleParameter name="myVC"           value="${env.CommonProgramFiles}/Merge Modules/Microsoft_VC90_CRT_x86.msm"/>
-            
-            <candleArg line="-out ${dist.dir}\"/>        
-            
-            <sources dir="${dev.windows.dir}">
-                <include name="*.wxs"/>
-            </sources>
-        </wix>
-
-        <!-- Link -->
-        <wix mode="light"
-             target="${dist.dir}/${msi.name}">
-            <lightArg line="-ext WixUIExtension" />
-            <lightArg line="-dWixUILicenseRtf=${res.dir}/GPLv2.rtf" />
-            <lightArg line="-sice:ICE91" />
-            <sources dir="${dist.dir}/">
-                <include name="*.wixobj"/>
-            </sources>
-        </wix>
-        
-    </target>
-    
-    <!-- ========================= -->
-    <!--  - W I X - C L E A N U P  -->
-    <!-- ========================= -->
-    <target name="-wix-cleanup"
-            if="${is.windows}">
-        
-        <!-- Clean up temporary files in dist -->
-        <delete verbose="${verbose}"> 
-            <fileset dir="${dist.dir}" includes="*.wix*"/>
-        </delete>
-        
-        <!-- Clean up temporary files in dev/windows -->
-        <delete verbose="${verbose}"> 
-            <fileset dir="${dev.windows.dir}" includes="gen-*.*"/>
-        </delete>
         
     </target>
 

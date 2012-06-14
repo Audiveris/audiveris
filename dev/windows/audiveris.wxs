@@ -86,10 +86,27 @@
             <!-- Desktop -->
             <Directory Id="DesktopFolder" Name="Desktop" />
         
-            <!-- MusicalSymbols font -->
+            <!-- MusicalSymbols font (permanent) -->
             <Directory Id="FontsFolder">
-                <Component Id="fonts.CID" Guid="7ef37a03-35f7-4759-89d7-7ee047a9c737">
+                <Component Id="fonts.CID" Guid="7ef37a03-35f7-4759-89d7-7ee047a9c737" Permanent="yes">
                     <File Id="musicalSymbolsId" Source="$(var.myMaterial)/MusicalSymbols.ttf" TrueType="yes" />
+                </Component>
+            </Directory>
+            
+            <!-- Tesseract DLLs  to System folder -->
+            <Directory Id="SystemFolder">
+                <!-- Bridge as non permanent -->
+                <Component Id="bridge.CID" Guid="a66b5179-6a87-440f-b705-8eeda53a7a4c">
+                    <File Id='bridgeDLL'      Name='jniTesseract3Bridge.dll'          DiskId='1' Source='$(var.myDll)\jniTesseract3Bridge.dll' />
+                    <File Id='bridgeManifest' Name='jniTesseract3Bridge.dll.manifest' DiskId='1' Source='$(var.myDll)\jniTesseract3Bridge.dll.manifest' />
+                </Component>
+                <!-- Tesseract dll as permanent, in case other apps need it -->
+                <Component Id="tesseract.CID" Guid="3900d10b-0ca1-46b9-9580-11efa47f8c9e" Permanent="yes">
+                    <File Id='tesseractDLL'   Name='libtesseract302.dll'              DiskId='1' Source='$(var.myDll)\libtesseract302.dll' />
+                </Component>
+                <!-- Leptonica dll as permanent, in case other apps need it -->
+                <Component Id="leptonica.CID" Guid="e103c0fe-c43d-4a79-aa55-12971584a792" Permanent="yes">
+                    <File Id='leptonicaDLL'   Name='liblept168.dll'                   DiskId='1' Source='$(var.myDll)\liblept168.dll' />
                 </Component>
             </Directory>
             
@@ -210,6 +227,11 @@
                 <ComponentRef Id="scripts.CID" />
                 <ComponentRef Id="scores.CID" />
                 <ComponentRef Id="fonts.CID" />
+                
+                <ComponentRef Id="bridge.CID" />
+                <ComponentRef Id="tesseract.CID" />
+                <ComponentRef Id="leptonica.CID" />
+                
                 <ComponentGroupRef Id="lib.CID" />
                 <ComponentGroupRef Id="res.CID" />
                 <ComponentGroupRef Id="settings.CID" />

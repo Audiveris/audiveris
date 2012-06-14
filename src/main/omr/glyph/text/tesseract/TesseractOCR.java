@@ -114,8 +114,9 @@ public class TesseractOCR
                 String[] langs = TessBaseAPI.getInstalledLanguages(
                         WellKnowns.OCR_FOLDER.getPath());
                 return new TreeSet<>(Arrays.asList(langs));
-            } catch (Exception ex) {
+            } catch (Throwable ex) {
                 logger.warning("Error in loading languages", ex);
+                throw new OcrUnavailable();
             }
         }
 
@@ -180,12 +181,15 @@ public class TesseractOCR
                     ol.translate(topLeft.x, topLeft.y);
                 }
             }
-            
+
             return lines;
 
-        } catch (IOException | UnsatisfiedLinkError ex) {
+        } catch (IOException ex) {
             logger.warning("Could not create OCR order", ex);
             return null;
+        } catch (UnsatisfiedLinkError ex) {
+            logger.warning("OCR link error", ex);
+            throw new OcrUnavailable();
         }
     }
 
@@ -209,9 +213,20 @@ public class TesseractOCR
         }
     }
 
-//-----------//
-// Constants //
-//-----------//
+    //----------------//
+    // OcrUnavailable //
+    //----------------//
+    /**
+     * Exception used to signal that no OCR is actually available.
+     */
+    public static class OcrUnavailable
+            extends RuntimeException
+    {
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
     private static final class Constants
             extends ConstantSet
     {
