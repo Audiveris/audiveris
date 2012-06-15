@@ -657,7 +657,7 @@ public class ScoreParameters
         public void commit ()
         {
             /** Since this info is not registered in the ParametersTask */
-            Step step = (Step) stepCombo.getItemAt(
+            Step step = stepCombo.getItemAt(
                     stepCombo.getSelectedIndex());
             FileDropHandler.setDefaultStep(step);
         }
@@ -689,7 +689,7 @@ public class ScoreParameters
         //~ Instance fields ----------------------------------------------------
 
         /** ComboBox for text language */
-        final JComboBox langCombo;
+        final JComboBox<String> langCombo;
 
         //~ Constructors -------------------------------------------------------
         public LanguagePane ()
@@ -706,8 +706,7 @@ public class ScoreParameters
         {
             if (defaultBox.isSelected()) {
                 // Make the selected language the global default
-                String item = (String) langCombo.getItemAt(
-                        langCombo.getSelectedIndex());
+                String item = langCombo.getItemAt(langCombo.getSelectedIndex());
                 String code = codeOf(item);
 
                 if (!Language.getDefaultLanguage().equals(code)) {
@@ -734,8 +733,7 @@ public class ScoreParameters
         @Override
         public boolean isValid ()
         {
-            String item = (String) langCombo.getItemAt(
-                    langCombo.getSelectedIndex());
+            String item = langCombo.getItemAt(langCombo.getSelectedIndex());
             task.setLanguage(codeOf(item));
 
             return true;
@@ -748,7 +746,7 @@ public class ScoreParameters
         }
 
         /** Create a combo box filled with supported language items */
-        private JComboBox createLangCombo ()
+        private JComboBox<String> createLangCombo ()
         {
             // Build the item list, only with the supported languages
             List<String> items = new ArrayList<>();
@@ -1148,7 +1146,7 @@ public class ScoreParameters
         //~ Instance fields ----------------------------------------------------
 
         /** ComboBox for Slot policy */
-        final JComboBox policyCombo;
+        final JComboBox<SlotPolicy> policyCombo;
 
         /** Set as default? */
         final JCheckBox policyDefaultBox = new JCheckBox();
@@ -1179,7 +1177,8 @@ public class ScoreParameters
         @Override
         public void commit ()
         {
-            SlotPolicy policy = (SlotPolicy) policyCombo.getSelectedItem();
+            SlotPolicy policy = policyCombo.getItemAt(
+                    policyCombo.getSelectedIndex());
 
             if (policyDefaultBox.isSelected()) {
                 logger.info("Default slot policy is now {0}", policy);
@@ -1226,7 +1225,7 @@ public class ScoreParameters
         }
 
         /** Create a combo box filled with Slot Policy items */
-        private JComboBox createPolicyCombo ()
+        private JComboBox<SlotPolicy> createPolicyCombo ()
         {
             JComboBox<SlotPolicy> combo = new JComboBox<>(
                     SlotPolicy.values());

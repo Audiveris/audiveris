@@ -94,7 +94,7 @@ public class GlyphBoard
     private static final Logger logger = Logger.getLogger(GlyphBoard.class);
 
     /** Events this board is interested in */
-    private static final Class[] eventClasses = new Class[]{
+    private static final Class<?>[] eventClasses = new Class<?>[]{
         GlyphEvent.class,
         GlyphSetEvent.class
     };
@@ -500,7 +500,7 @@ public class GlyphBoard
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            List<Class> classes = Arrays.asList(eventClasses);
+            List<Class<?>> classes = Arrays.asList(eventClasses);
 
             if ((controller != null) && !classes.isEmpty()) {
                 // Do we have selections for glyph set, or just for glyph?

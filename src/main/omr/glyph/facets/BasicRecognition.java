@@ -265,10 +265,10 @@ class BasicRecognition
     public void setShape (Shape shape,
                           double grade)
     {
-        // Check status
-        if (glyph.isTransient()) {
-            logger.severe("Setting shape of a transient glyph");
-        }
+//        // Check status
+//        if (glyph.isTransient()) {
+//            logger.severe("Setting shape of a transient glyph");
+//        }
 
         // Blacklist the old shape if any
         Shape oldShape = getShape();

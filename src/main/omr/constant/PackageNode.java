@@ -65,7 +65,7 @@ public class PackageNode
      *
      * @param obj the child to add (sub-package or ConstantSet)
      */
-    public void addChild (Node obj)
+    public final void addChild (Node obj)
     {
         children.add(obj);
     }

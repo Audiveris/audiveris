@@ -75,8 +75,8 @@ public class SelectionService
     {
         logger.info("{0} subscriber:", toString());
 
-        for (Class eventClass : allowedEvents) {
-            List subscribers = getSubscribers(eventClass);
+        for (Class<?> eventClass : allowedEvents) {
+            List<?> subscribers = getSubscribers(eventClass);
 
             if (!subscribers.isEmpty()) {
                 UserEvent last = (UserEvent) getLastEvent(eventClass);
@@ -201,10 +201,10 @@ public class SelectionService
     //----------//
     // contains //
     //----------//
-    private boolean contains (Class[] classes,
-                              Class classe)
+    private boolean contains (Class<?>[] classes,
+                              Class<?> classe)
     {
-        for (Class cl : classes) {
+        for (Class<?> cl : classes) {
             if (cl == classe) {
                 return true;
             }

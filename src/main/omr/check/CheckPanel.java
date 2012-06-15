@@ -39,7 +39,7 @@ import javax.swing.KeyStroke;
  * check suite.
  *
  * @param <C> the subtype of Checkable-compatible objects used in the
- * homogeneous collection of checks of the suite
+ *            homogeneous collection of checks of the suite
  *
  * @author Hervé Bitteur
  */
@@ -65,6 +65,7 @@ public class CheckPanel<C extends Checkable>
     private static final int FIELD_WIDTH = 4;
 
     //~ Instance fields --------------------------------------------------------
+    //
     /** The related check suite (the model) */
     private CheckSuite<C> suite;
 
@@ -84,11 +85,12 @@ public class CheckPanel<C extends Checkable>
     private C object;
 
     //~ Constructors -----------------------------------------------------------
+    //
     //------------//
     // CheckPanel //
     //------------//
     /**
-     * Create a check panel for a given suite
+     * Create a check panel for a given suite.
      *
      * @param suite the suite whose results are to be displayed
      */
@@ -103,11 +105,12 @@ public class CheckPanel<C extends Checkable>
     }
 
     //~ Methods ----------------------------------------------------------------
+    //
     //--------------//
     // getComponent //
     //--------------//
     /**
-     * Report the UI component
+     * Report the UI component.
      *
      * @return the concrete component
      */
@@ -141,60 +144,58 @@ public class CheckPanel<C extends Checkable>
         boolean failed = false;
 
         // Fill one row per check
-        for (int index = 0; index < suite.getChecks().
-                size(); index++) {
-            Check<C> check = suite.getChecks().
-                    get(index);
+        for (int index = 0; index < suite.getChecks().size(); index++) {
+            Check<C> check = suite.getChecks().get(index);
 
             try {
                 // Run this check
                 check.pass(object, result, false);
-                grade += (result.flag * suite.getWeights().
-                          get(index));
+                grade += (result.flag * suite.getWeights().get(index));
 
                 // Update proper field to display check result
                 JTextField field;
 
                 switch (result.flag) {
-                    case Check.RED:
-                        failed = true;
+                case Check.RED:
+                    failed = true;
 
-                        if (check.isCovariant()) {
-                            field = values[index][0];
-                            field.setToolTipText("Value is too low");
-                        } else {
-                            field = values[index][2];
-                            field.setToolTipText("Value is too high");
-                        }
+                    if (check.isCovariant()) {
+                        field = values[index][0];
+                        field.setToolTipText("Value is too low");
+                    } else {
+                        field = values[index][2];
+                        field.setToolTipText("Value is too high");
+                    }
 
-                        field.setForeground(RED_COLOR);
+                    field.setForeground(RED_COLOR);
 
-                        break;
+                    break;
 
-                    case Check.ORANGE:
-                        field = values[index][1];
-                        field.setToolTipText("Value is acceptable");
-                        field.setForeground(ORANGE_COLOR);
+                case Check.ORANGE:
+                    field = values[index][1];
+                    field.setToolTipText("Value is acceptable");
+                    field.setForeground(ORANGE_COLOR);
 
-                        break;
+                    break;
 
-                    default:
-                    case Check.GREEN:
+                default:
+                case Check.GREEN:
 
-                        if (check.isCovariant()) {
-                            field = values[index][2];
-                        } else {
-                            field = values[index][0];
-                        }
+                    if (check.isCovariant()) {
+                        field = values[index][2];
+                    } else {
+                        field = values[index][0];
+                    }
 
-                        field.setToolTipText("Value is OK");
-                        field.setForeground(GREEN_COLOR);
+                    field.setToolTipText("Value is OK");
+                    field.setForeground(GREEN_COLOR);
 
-                        break;
+                    break;
                 }
 
                 field.setText(textOf(result.value));
-            } catch (Exception ex) {
+            } catch (Throwable ex) {
+                logger.warning("Failure in check " + check.getName(), ex);
                 failed = true;
             }
         }
@@ -227,7 +228,7 @@ public class CheckPanel<C extends Checkable>
      *
      * @param suite the (new) check suite to be used
      */
-    public void setSuite (CheckSuite<C> suite)
+    public final void setSuite (CheckSuite<C> suite)
     {
         this.suite = suite;
 
@@ -258,14 +259,12 @@ public class CheckPanel<C extends Checkable>
             component.getInputMap(
                     JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).
                     put(KeyStroke.getKeyStroke("ENTER"), "ParamAction");
-            component.getActionMap().
-                    put("ParamAction", new ParamAction());
+            component.getActionMap().put("ParamAction", new ParamAction());
         } else {
             component.removeAll();
         }
 
-        final int checkNb = suite.getChecks().
-                size();
+        final int checkNb = suite.getChecks().size();
         PanelBuilder b = new PanelBuilder(createLayout(checkNb), component);
         b.setDefaultDialogBorder();
 
@@ -275,7 +274,7 @@ public class CheckPanel<C extends Checkable>
         int ic = -1; // Check index
         int r = -1; // Row index
 
-        for (Check check : suite.getChecks()) {
+        for (Check<C> check : suite.getChecks()) {
             ic++;
             r += 2;
 
@@ -306,12 +305,10 @@ public class CheckPanel<C extends Checkable>
                 sb.append("<br/>");
 
                 if (constant.getQuantityUnit() != null) {
-                    sb.append("Unit=").
-                            append(constant.getQuantityUnit());
+                    sb.append("Unit=").append(constant.getQuantityUnit());
                 } else {
                     // Otherwise, simply tell the data type
-                    sb.append("Type=").
-                            append(constant.getShortTypeName());
+                    sb.append("Type=").append(constant.getShortTypeName());
                 }
 
                 sb.append("</html>");
@@ -344,13 +341,11 @@ public class CheckPanel<C extends Checkable>
     private void createBoundFields ()
     {
         // Allocate bound fields (2 per check)
-        final int checkNb = suite.getChecks().
-                size();
+        final int checkNb = suite.getChecks().size();
         bounds = new JTextField[checkNb][];
 
         for (int ic = 0; ic < checkNb; ic++) {
-            Check check = suite.getChecks().
-                    get(ic);
+            Check<C> check = suite.getChecks().get(ic);
             bounds[ic] = new JTextField[2];
 
             for (int i = 0; i <= 1; i++) {
@@ -376,30 +371,12 @@ public class CheckPanel<C extends Checkable>
     {
         // Build proper column specification
         StringBuilder sbc = new StringBuilder();
-        sbc.append("center:pref").
-                append(", ").
-                append(COLUMN_GAP).
-                append(", "); // Covariance
-        sbc.append(" right:40dlu").
-                append(", ").
-                append(COLUMN_GAP).
-                append(", "); // Name
-        sbc.append(" right:pref").
-                append(", ").
-                append(COLUMN_GAP).
-                append(", ");
-        sbc.append(" right:pref").
-                append(", ").
-                append(COLUMN_GAP).
-                append(", "); // Low limit
-        sbc.append(" right:pref").
-                append(", ").
-                append(COLUMN_GAP).
-                append(", ");
-        sbc.append(" right:pref").
-                append(", ").
-                append(COLUMN_GAP).
-                append(", "); // High Limit
+        sbc.append("center:pref").append(", ").append(COLUMN_GAP).append(", "); // Covariance
+        sbc.append(" right:40dlu").append(", ").append(COLUMN_GAP).append(", "); // Name
+        sbc.append(" right:pref").append(", ").append(COLUMN_GAP).append(", ");
+        sbc.append(" right:pref").append(", ").append(COLUMN_GAP).append(", "); // Low limit
+        sbc.append(" right:pref").append(", ").append(COLUMN_GAP).append(", ");
+        sbc.append(" right:pref").append(", ").append(COLUMN_GAP).append(", "); // High Limit
         sbc.append(" right:pref");
 
         // Build proper row specification
@@ -407,9 +384,7 @@ public class CheckPanel<C extends Checkable>
 
         for (int n = 0; n <= checkNb; n++) {
             if (n != 0) {
-                sbr.append(", ").
-                        append(LINE_GAP).
-                        append(", ");
+                sbr.append(", ").append(LINE_GAP).append(", ");
             }
 
             sbr.append("pref");
@@ -430,8 +405,7 @@ public class CheckPanel<C extends Checkable>
     private void createValueFields ()
     {
         // Allocate value fields (3 per check)
-        final int checkNb = suite.getChecks().
-                size();
+        final int checkNb = suite.getChecks().size();
         values = new JTextField[checkNb][];
 
         for (int n = 0; n < checkNb; n++) {
@@ -487,16 +461,19 @@ public class CheckPanel<C extends Checkable>
     }
 
     //~ Inner Classes ----------------------------------------------------------
+    //
     //-------------//
     // ParamAction //
     //-------------//
-    private class ParamAction
+    private  class ParamAction
             extends AbstractAction
     {
         //~ Methods ------------------------------------------------------------
 
-        // Method run whenever user presses Return/Enter in one of the parameter
-        // fields
+        /**
+         * Method run whenever user presses Return/Enter in one of 
+         * the parameter fields
+         */
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -505,21 +482,19 @@ public class CheckPanel<C extends Checkable>
             // take a snapshot of all constants values, before modifying any one
             Map<Constant.Double, Double> values = new HashMap<>();
 
-            for (Check check : suite.getChecks()) {
+            for (Check<C> check : suite.getChecks()) {
                 values.put(
                         check.getLowConstant(),
-                        check.getLowConstant().
-                        getValue());
+                        check.getLowConstant().getValue());
                 values.put(
                         check.getHighConstant(),
-                        check.getHighConstant().
-                        getValue());
+                        check.getHighConstant().getValue());
             }
 
             boolean modified = false;
             int ic = -1;
 
-            for (Check check : suite.getChecks()) {
+            for (Check<C> check : suite.getChecks()) {
                 ic++;
 
                 // Check the bounds wrt the corresponding fields
@@ -530,15 +505,12 @@ public class CheckPanel<C extends Checkable>
 
                     // Simplistic test to detect modification
                     final JTextField field = bounds[ic][i];
-                    final String oldString = textOf(values.get(constant)).
-                            trim();
-                    final String newString = field.getText().
-                            trim();
+                    final String oldString = textOf(values.get(constant)).trim();
+                    final String newString = field.getText().trim();
 
                     if (!oldString.equals(newString)) {
                         StringBuilder sb = new StringBuilder();
-                        sb.append("Check '").
-                                append(check.getName()).
+                        sb.append("Check '").append(check.getName()).
                                 append("':");
 
                         if (i == 0) {
@@ -547,9 +519,8 @@ public class CheckPanel<C extends Checkable>
                             sb.append(" High");
                         }
 
-                        sb.append(" bound '").
-                                append(constant.getName()).
-                                append("'");
+                        sb.append(" bound '").append(constant.getName()).append(
+                                "'");
 
                         final String context = sb.toString();
 
@@ -557,10 +528,8 @@ public class CheckPanel<C extends Checkable>
                         try {
                             constant.setValue(valueOf(newString));
                             modified = true;
-                            sb.append(" modified from ").
-                                    append(oldString).
-                                    append(" to ").
-                                    append(newString);
+                            sb.append(" modified from ").append(oldString).
+                                    append(" to ").append(newString);
                             logger.info(sb.toString());
                         } catch (Exception ex) {
                             logger.warning(

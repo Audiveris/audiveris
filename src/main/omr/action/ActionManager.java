@@ -226,7 +226,7 @@ public class ActionManager
                 try (InputStream input = new FileInputStream(file)) {
                     Actions.loadActionsFrom(input);
                 } catch (IOException | JAXBException ex) {
-                    logger.warning("Error loading actions from {0}", name, ex);
+                    logger.warning("Error loading actions from " + name, ex);
                 }
             } else {
                 logger.severe("File not found {0}", file);
@@ -255,7 +255,7 @@ public class ActionManager
             enableSheetActions(sheet != null);
             enableScoreActions((sheet != null) && (sheet.getScore() != null));
         } catch (Exception ex) {
-            logger.warning("{0} onEvent error", getClass().getName(), ex);
+            logger.warning("ActionManager. onEvent error", ex);
         }
     }
 
@@ -344,7 +344,7 @@ public class ActionManager
 
         try {
             // Retrieve proper class instance
-            Class classe = classLoader.loadClass(desc.className);
+            Class<?> classe = classLoader.loadClass(desc.className);
             Object instance = null;
 
             // Reuse existing instance through a 'getInstance()' method if any
@@ -388,7 +388,7 @@ public class ActionManager
         } catch (ClassNotFoundException | SecurityException |
                  IllegalAccessException | IllegalArgumentException |
                  InvocationTargetException | InstantiationException ex) {
-            logger.warning("Error while registering {0}", desc, ex);
+            logger.warning("Error while registering " + desc, ex);
         }
 
         return action;
@@ -438,7 +438,7 @@ public class ActionManager
                         }
                     } catch (ClassNotFoundException | InstantiationException |
                              IllegalAccessException ex) {
-                        logger.warning("Error with {0}", desc.itemClassName, ex);
+                        logger.warning("Error with " + desc.itemClassName, ex);
                     }
                 }
             }

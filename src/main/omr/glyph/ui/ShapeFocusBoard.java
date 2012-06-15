@@ -79,7 +79,7 @@ public class ShapeFocusBoard
         ShapeFocusBoard.class);
 
     /** Events this board is interested in */
-    private static final Class[] eventsRead = new Class[] { GlyphEvent.class };
+    private static final Class<?>[] eventsRead = new Class<?>[] { GlyphEvent.class };
 
     //~ Enumerations -----------------------------------------------------------
 

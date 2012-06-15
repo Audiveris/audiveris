@@ -96,7 +96,7 @@ public class Dumper
      * Class (beware, this variable is updated as we walk up the inheritance
      * tree)
      */
-    protected Class classe;
+    protected Class<?> classe;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -176,7 +176,7 @@ public class Dumper
     //----------------------//
     // printCollectionValue //
     //----------------------//
-    protected void printCollectionValue (Collection collection)
+    protected void printCollectionValue (Collection<?> collection)
     {
         sb.append("[");
 

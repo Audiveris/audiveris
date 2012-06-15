@@ -71,7 +71,7 @@ public class MacApplication
 
         try {
             //The class used to register hooks
-            Class  appClass = Class.forName("com.apple.eawt.Application");
+            Class<?>  appClass = Class.forName("com.apple.eawt.Application");
             Object app = appClass.newInstance();
 
             //Enable the about menu item and the preferences menu item
@@ -83,7 +83,7 @@ public class MacApplication
             }
 
             //The interface used to register hooks
-            Class  listenerClass = Class.forName(
+            Class<?>  listenerClass = Class.forName(
                 "com.apple.eawt.ApplicationListener");
 
             //Using the current class loader,
@@ -91,7 +91,7 @@ public class MacApplication
             //providing an instance of this class as a callback for any method invocation
             Object listenerProxy = Proxy.newProxyInstance(
                 MacApplication.class.getClassLoader(),
-                new Class[] { listenerClass },
+                new Class<?>[] { listenerClass },
                 new MacApplication());
 
             //Add the generated class as a hook

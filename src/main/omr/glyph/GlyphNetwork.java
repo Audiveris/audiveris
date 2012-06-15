@@ -28,7 +28,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JOptionPane;
 import javax.xml.bind.JAXBException;
@@ -54,7 +56,7 @@ import javax.xml.bind.JAXBException;
  * @author Hervé Bitteur
  */
 public class GlyphNetwork
-    extends AbstractEvaluationEngine
+        extends AbstractEvaluationEngine
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -71,12 +73,10 @@ public class GlyphNetwork
     private static final String BACKUP_FILE_NAME = "neural-network.xml";
 
     //~ Instance fields --------------------------------------------------------
-
     /** The underlying neural network */
     private NeuralNetwork engine;
 
     //~ Constructors -----------------------------------------------------------
-
     //--------------//
     // GlyphNetwork //
     //--------------//
@@ -91,8 +91,8 @@ public class GlyphNetwork
         // Basic check
         if (engine != null) {
             if (engine.getOutputSize() != shapeCount) {
-                final String msg = "Neural Network data is obsolete," +
-                                   " it must be retrained from scratch";
+                final String msg = "Neural Network data is obsolete,"
+                        + " it must be retrained from scratch";
                 logger.warning(msg);
                 JOptionPane.showMessageDialog(null, msg);
 
@@ -108,12 +108,12 @@ public class GlyphNetwork
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-------------//
     // getInstance //
     //-------------//
     /**
      * Report the single instance of GlyphNetwork in the application.
+     *
      * @return the instance
      */
     public static GlyphNetwork getInstance ()
@@ -146,6 +146,7 @@ public class GlyphNetwork
     //--------------//
     /**
      * Selector for the amplitude value (used in initial random values).
+     *
      * @return the amplitude value
      */
     public double getAmplitude ()
@@ -158,6 +159,7 @@ public class GlyphNetwork
     //-----------------//
     /**
      * Selector of the current value for network learning rate.
+     *
      * @return the current learning rate
      */
     public double getLearningRate ()
@@ -170,6 +172,7 @@ public class GlyphNetwork
     //---------------//
     /**
      * Selector on the maximum numner of training iterations.
+     *
      * @return the upper limit on iteration counter
      */
     public int getListEpochs ()
@@ -183,6 +186,7 @@ public class GlyphNetwork
     /**
      * Report the error threshold to potentially stop the training
      * process.
+     *
      * @return the threshold currently in use
      */
     public double getMaxError ()
@@ -195,6 +199,7 @@ public class GlyphNetwork
     //-------------//
     /**
      * Report the momentum training value currently in use.
+     *
      * @return the momentum in use
      */
     public double getMomentum ()
@@ -207,6 +212,7 @@ public class GlyphNetwork
     //---------//
     /**
      * Report a name for this network.
+     *
      * @return a simple name
      */
     @Override
@@ -220,6 +226,7 @@ public class GlyphNetwork
     //------------//
     /**
      * Selector to the encapsulated Neural Network.
+     *
      * @return the neural network
      */
     public NeuralNetwork getNetwork ()
@@ -232,6 +239,7 @@ public class GlyphNetwork
     //--------------//
     /**
      * Set the amplitude value for initial random values (UNUSED).
+     *
      * @param amplitude
      */
     public void setAmplitude (double amplitude)
@@ -245,6 +253,7 @@ public class GlyphNetwork
     /**
      * Dynamically modify the learning rate of the neural network for
      * its training task.
+     *
      * @param learningRate new learning rate to use
      */
     public void setLearningRate (double learningRate)
@@ -259,6 +268,7 @@ public class GlyphNetwork
     /**
      * Modify the upper limit on the number of epochs (training
      * iterations) for the training process.
+     *
      * @param listEpochs new value for iteration limit
      */
     public void setListEpochs (int listEpochs)
@@ -273,6 +283,7 @@ public class GlyphNetwork
     /**
      * Modify the error threshold to potentially stop the training
      * process.
+     *
      * @param maxError the new threshold value to use
      */
     public void setMaxError (double maxError)
@@ -287,6 +298,7 @@ public class GlyphNetwork
     /**
      * Modify the value for momentum used from learning epoch to the
      * other.
+     *
      * @param momentum the new momentum value to be used
      */
     public void setMomentum (double momentum)
@@ -312,15 +324,16 @@ public class GlyphNetwork
     //-------//
     /**
      * Train the network using the provided collection of glyphs.
+     *
      * @param glyphs  the provided collection of glyphs
      * @param monitor the monitoring entity if any
-     * @param mode the starting mode of the trainer (scratch or incremental)
+     * @param mode    the starting mode of the trainer (scratch or incremental)
      */
     @SuppressWarnings("unchecked")
     @Override
     public void train (Collection<Glyph> glyphs,
-                       Monitor           monitor,
-                       StartingMode      mode)
+                       Monitor monitor,
+                       StartingMode mode)
     {
         if (glyphs.isEmpty()) {
             logger.warning("No glyph to retrain Network Evaluator");
@@ -328,31 +341,31 @@ public class GlyphNetwork
             return;
         }
 
-        int    quorum = constants.quorum.getValue();
+        int quorum = constants.quorum.getValue();
 
         // Determine cardinality for each shape
-        List[] shapeGlyphs = new List[shapeCount];
-
-        for (int i = 0; i < shapeGlyphs.length; i++) {
-            shapeGlyphs[i] = new ArrayList<>();
-        }
+        EnumMap<Shape,List<Glyph>> shapeGlyphs = new EnumMap<>(Shape.class);
 
         for (Glyph glyph : glyphs) {
-            shapeGlyphs[glyph.getShape()
-                             .getPhysicalShape()
-                             .ordinal()].add(glyph);
+            Shape shape = glyph.getShape();
+            List<Glyph> list = shapeGlyphs.get(shape);
+            if (list == null) {
+                list = new ArrayList<>();
+                shapeGlyphs.put(shape, list);
+            }
+            list.add(glyph);
         }
 
         List<Glyph> newGlyphs = new ArrayList<>();
 
-        for (List l : shapeGlyphs) {
-            int     card = 0;
+        for (List<Glyph> list : shapeGlyphs.values()) {
+            int card = 0;
             boolean first = true;
 
-            if (!l.isEmpty()) {
+            if (!list.isEmpty()) {
                 while (card < quorum) {
-                    for (int i = 0; i < l.size(); i++) {
-                        newGlyphs.add((Glyph) l.get(i));
+                    for (int i = 0; i < list.size(); i++) {
+                        newGlyphs.add(list.get(i));
                         card++;
 
                         if (!first && (card >= quorum)) {
@@ -372,7 +385,7 @@ public class GlyphNetwork
         double[][] inputs = new double[newGlyphs.size()][];
         double[][] desiredOutputs = new double[newGlyphs.size()][];
 
-        int        ig = 0;
+        int ig = 0;
 
         for (Glyph glyph : newGlyphs) {
             double[] ins = ShapeDescription.features(glyph);
@@ -381,9 +394,7 @@ public class GlyphNetwork
             double[] des = new double[shapeCount];
             Arrays.fill(des, 0);
 
-            des[glyph.getShape()
-                     .getPhysicalShape()
-                     .ordinal()] = 1;
+            des[glyph.getShape().getPhysicalShape().ordinal()] = 1;
             desiredOutputs[ig] = des;
 
             ig++;
@@ -417,10 +428,10 @@ public class GlyphNetwork
         if (!isBigEnough(glyph)) {
             return noiseEvaluations;
         } else {
-            double[]     ins = ShapeDescription.features(glyph);
-            double[]     outs = new double[shapeCount];
+            double[] ins = ShapeDescription.features(glyph);
+            double[] outs = new double[shapeCount];
             Evaluation[] evals = new Evaluation[shapeCount];
-            Shape[]      values = Shape.values();
+            Shape[] values = Shape.values();
 
             engine.run(ins, null, outs);
 
@@ -442,7 +453,7 @@ public class GlyphNetwork
     //---------//
     @Override
     protected void marshal (OutputStream os)
-        throws FileNotFoundException, IOException, JAXBException
+            throws FileNotFoundException, IOException, JAXBException
     {
         engine.marshal(os);
     }
@@ -452,7 +463,7 @@ public class GlyphNetwork
     //-----------//
     @Override
     protected NeuralNetwork unmarshal (InputStream is)
-        throws JAXBException, IOException
+            throws JAXBException, IOException
     {
         return NeuralNetwork.unmarshal(is);
     }
@@ -465,50 +476,49 @@ public class GlyphNetwork
         // Note : We allocate a hidden layer with as many cells as the output
         // layer
         NeuralNetwork nn = new NeuralNetwork(
-            ShapeDescription.length(),
-            shapeCount,
-            shapeCount,
-            getAmplitude(),
-            getLearningRate(),
-            getMomentum(),
-            getMaxError(),
-            getListEpochs());
+                ShapeDescription.length(),
+                shapeCount,
+                shapeCount,
+                getAmplitude(),
+                getLearningRate(),
+                getMomentum(),
+                getMaxError(),
+                getListEpochs());
 
         return nn;
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
-        Constant.Ratio   amplitude = new Constant.Ratio(
-            0.5,
-            "Initial weight amplitude");
+        Constant.Ratio amplitude = new Constant.Ratio(
+                0.5,
+                "Initial weight amplitude");
 
         //
-        Constant.Ratio   learningRate = new Constant.Ratio(
-            0.2,
-            "Learning Rate");
+        Constant.Ratio learningRate = new Constant.Ratio(
+                0.2,
+                "Learning Rate");
 
         //
         Constant.Integer listEpochs = new Constant.Integer(
-            "Epochs",
-            4000,
-            "Number of epochs for training on list of glyphs");
+                "Epochs",
+                4000,
+                "Number of epochs for training on list of glyphs");
 
         //
         Constant.Integer quorum = new Constant.Integer(
-            "Glyphs",
-            10,
-            "Minimum number of glyphs for each shape");
+                "Glyphs",
+                10,
+                "Minimum number of glyphs for each shape");
 
         //
         Evaluation.Grade maxError = new Evaluation.Grade(
-            1E-3,
-            "Threshold to stop training");
+                1E-3,
+                "Threshold to stop training");
 
         //
         Constant.Ratio momentum = new Constant.Ratio(0.2, "Training momentum");

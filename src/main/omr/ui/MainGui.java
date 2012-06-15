@@ -30,6 +30,7 @@ import omr.score.ScoresManager;
 
 import omr.selection.MouseMovement;
 import omr.selection.SheetEvent;
+import omr.selection.UserEvent;
 
 import omr.sheet.Sheet;
 import omr.sheet.ui.SheetActions.OpenTask;
@@ -339,7 +340,6 @@ public class MainGui
             SwingUtilities.invokeLater(
                     new Runnable()
                     {
-
                         @Override
                         public void run ()
                         {
@@ -360,6 +360,7 @@ public class MainGui
                             frame.setTitle(sb.toString());
                         }
                     });
+
         } catch (Exception ex) {
             logger.warning(getClass().getName() + " onEvent error", ex);
         }

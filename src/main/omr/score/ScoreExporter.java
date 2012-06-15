@@ -2559,7 +2559,7 @@ public class ScoreExporter
                                 Staff staff)
     {
         if (current.scorePart.isMultiStaff()) {
-            Class classe = obj.getClass();
+            Class<?> classe = obj.getClass();
 
             try {
                 Method method = classe.getMethod("setStaff", BigInteger.class);

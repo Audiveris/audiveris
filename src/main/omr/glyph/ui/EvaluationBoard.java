@@ -77,7 +77,7 @@ class EvaluationBoard
         EvaluationBoard.class);
 
     /** Events this board is interested in */
-    private static final Class[] eventsRead = new Class[] { GlyphEvent.class };
+    private static final Class<?>[] eventsRead = new Class<?>[] { GlyphEvent.class };
 
     /** Color for well recognized glyphs */
     private static final Color EVAL_GOOD_COLOR = new Color(100, 200, 100);

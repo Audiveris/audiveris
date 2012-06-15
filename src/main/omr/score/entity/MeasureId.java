@@ -159,7 +159,7 @@ public abstract class MeasureId
     public static Page retrievePage (Score score,
                                      int   scoreBasedIdValue)
     {
-        for (ListIterator pageIt = score.getPages()
+        for (ListIterator<TreeNode> pageIt = score.getPages()
                                         .listIterator(score.getPages().size());
              pageIt.hasPrevious();) {
             Page page = (Page) pageIt.previous();

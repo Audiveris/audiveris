@@ -82,7 +82,7 @@ public class FilamentsFactory
     private final Orientation orientation;
 
     /** Precise constructor for filaments */
-    private final Constructor filamentConstructor;
+    private final Constructor<?> filamentConstructor;
 
     private final Object[] scaleArgs;
 
@@ -117,7 +117,7 @@ public class FilamentsFactory
 
         scaleArgs = new Object[]{scale};
         filamentConstructor = filamentClass.getConstructor(
-                new Class[]{Scale.class});
+                new Class<?>[]{Scale.class});
 
         params = new Parameters();
         params.initialize();

@@ -31,6 +31,8 @@ import java.util.List;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+import omr.WellKnowns;
 
 /**
  * Class {@code Plugin} describes a plugin instance, encapsulating the
@@ -133,7 +135,7 @@ public class Plugin
      *
      * @param score the score to process through this plugin
      */
-    public Task getTask (Score score)
+    public Task<Void, Void> getTask (Score score)
     {
         return new PluginTask(score);
     }
@@ -188,27 +190,30 @@ public class Plugin
                     "pluginCli",
                     exportFile.getAbsolutePath());
 
-            args = (List<String>) obj; // Unchecked by compiler
-
-            logger.fine("{0} command args: {1}", new Object[]{Plugin.this,
-                                                              args});
-        } catch (Exception ex) {
+            if (obj instanceof List) {
+                args = (List<String>) obj; // Unchecked by compiler
+                logger.fine("{0} command args: {1}", Plugin.this, args);
+            } else {
+                return null;
+            }
+        } catch (ScriptException | NoSuchMethodException ex) {
             logger.warning(Plugin.this + " error invoking javascript", ex);
 
             return null;
         }
 
         // Spawn the command
+        logger.info("Launching {0} on {1}",
+                    new Object[]{Plugin.this.getTitle(), score.getRadix()});
+
+        ProcessBuilder pb = new ProcessBuilder(args);
+        pb = pb.redirectErrorStream(true);
+
         try {
-            logger.info("Launching {0} on {1}",
-                        new Object[]{Plugin.this.getTitle(), score.getRadix()});
-
-            ProcessBuilder pb = new ProcessBuilder(args);
-            pb = pb.redirectErrorStream(true);
-
             Process process = pb.start();
             InputStream is = process.getInputStream();
-            InputStreamReader isr = new InputStreamReader(is);
+            InputStreamReader isr = new InputStreamReader(is,
+                                                          WellKnowns.encoding);
             BufferedReader br = new BufferedReader(isr);
 
             // Consume process output
@@ -268,13 +273,14 @@ public class Plugin
 
         try {
             InputStream is = new FileInputStream(file);
-            Reader reader = new InputStreamReader(is);
+            Reader reader = new InputStreamReader(is, WellKnowns.encoding);
             engine.eval(reader);
 
             // Retrieve information from script
             title = (String) engine.get("pluginTitle");
             tip = (String) engine.get("pluginTip");
-        } catch (Exception ex) {
+        } catch (FileNotFoundException | UnsupportedEncodingException |
+                 ScriptException ex) {
             logger.warning(this + " error", ex);
         }
     }

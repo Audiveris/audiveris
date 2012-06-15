@@ -58,7 +58,7 @@ public class ClassUtil
             StackTraceElement frame = stack[ix];
             String cname = frame.getClassName();
 
-            for (Class skipped : skippedClasses) {
+            for (Class<?> skipped : skippedClasses) {
                 if (cname.equals(skipped.getName())) {
                     break searchingForSkipped;
                 }
@@ -71,7 +71,7 @@ public class ClassUtil
             StackTraceElement frame = stack[ix];
             String cname = frame.getClassName();
 
-            for (Class skipped : skippedClasses) {
+            for (Class<?> skipped : skippedClasses) {
                 if (cname.equals(skipped.getName())) {
                     continue searchingForNonSkipped;
                 }
@@ -192,7 +192,7 @@ public class ClassUtil
     {
         StringBuilder sb = new StringBuilder();
 
-        for (Class cl = obj.getClass(); cl != null;
+        for (Class<?> cl = obj.getClass(); cl != null;
                 cl = cl.getEnclosingClass()) {
             if (sb.length() > 0) {
                 sb.insert(0, "-");

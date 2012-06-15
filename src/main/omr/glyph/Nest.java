@@ -58,17 +58,17 @@ public interface Nest
     //~ Static fields/initializers ---------------------------------------------
 
     /** Events that can be published on a nest service */
-    static final Class[] eventsWritten = new Class[] {
-                                             GlyphEvent.class,
-                                             GlyphIdEvent.class,
-                                             GlyphSetEvent.class
-                                         };
+    static final Class<?>[] eventsWritten = new Class<?>[]{
+        GlyphEvent.class,
+        GlyphIdEvent.class,
+        GlyphSetEvent.class
+    };
 
     //~ Methods ----------------------------------------------------------------
-
     /**
      * Register a glyph and make sure all its member sections point back
      * to it.
+     *
      * @param glyph the glyph to add to the nest
      * @return the actual glyph (already existing or brand new)
      */
@@ -76,24 +76,28 @@ public interface Nest
 
     /**
      * Print out major internal info about this glyph nest.
+     *
      * @param title a specific title to be used for the dump
      */
     void dump (String title);
 
     /**
      * Export the unmodifiable collection of active glyphs of the nest.
+     *
      * @return the collection of glyphs for which at least a section is assigned
      */
     Collection<Glyph> getActiveGlyphs ();
 
     /**
      * Export the whole unmodifiable collection of glyphs of the nest.
+     *
      * @return the collection of glyphs, both active and inactive
      */
     Collection<Glyph> getAllGlyphs ();
 
     /**
      * Retrieve a glyph via its Id among the collection of glyphs
+     *
      * @param id the glyph id to search for
      * @return the glyph found, or null otherwise
      */
@@ -101,22 +105,25 @@ public interface Nest
 
     /**
      * Report the nest selection service
+     *
      * @return the nest selection service (Glyph, GlyphSet, GlyphId)
      */
     SelectionService getGlyphService ();
 
     /**
-     * Get the pixel histogram for a collection of glyphs, in the 
+     * Get the pixel histogram for a collection of glyphs, in the
      * specified orientation.
+     *
      * @param orientation specific orientation desired for the histogram
-     * @param glyphs the provided collection of glyphs
+     * @param glyphs      the provided collection of glyphs
      * @return the histogram of projected pixels
      */
-    Histogram<Integer> getHistogram (Orientation       orientation,
+    Histogram<Integer> getHistogram (Orientation orientation,
                                      Collection<Glyph> glyphs);
 
     /**
      * Report a name for this nest instance
+     *
      * @return a (distinguished) name
      */
     String getName ();
@@ -124,14 +131,16 @@ public interface Nest
     /**
      * Return the original glyph, if any, that the provided glyph
      * duplicates.
+     *
      * @param glyph the provided glyph
      * @return the original for this glyph, if any, otherwise null
      */
     Glyph getOriginal (Glyph glyph);
 
     /**
-     * Return the original glyph, if any,  that corresponds to the
+     * Return the original glyph, if any, that corresponds to the
      * provided signature.
+     *
      * @param signature the provided signature
      * @return the original glyph for this signature, if any, otherwise null
      */
@@ -139,18 +148,21 @@ public interface Nest
 
     /**
      * Report the glyph currently selected, if any
+     *
      * @return the current glyph, or null
      */
     Glyph getSelectedGlyph ();
 
     /**
      * Report the glyph set currently selected, if any
+     *
      * @return the current glyph set, or null
      */
     Set<Glyph> getSelectedGlyphSet ();
 
     /**
      * Check whether the provided glyph is among the VIP ones
+     *
      * @param glyph the glyph (ID) to check
      * @return true if this is a vip glyph
      */
@@ -159,6 +171,7 @@ public interface Nest
     /**
      * Look up for <b>all</b> active glyphs contained in a provided
      * rectangle.
+     *
      * @param rect the coordinates rectangle
      * @return the glyphs found, which may be an empty list
      */
@@ -167,6 +180,7 @@ public interface Nest
     /**
      * Look up for <b>all</b> active glyphs intersected by a provided
      * rectangle.
+     *
      * @param rect the coordinates rectangle
      * @return the glyphs found, which may be an empty list
      */
@@ -174,6 +188,7 @@ public interface Nest
 
     /**
      * Look for a virtual glyph whose box contains the designated point
+     *
      * @param point the designated point
      * @return the virtual glyph found, or null
      */
@@ -183,15 +198,16 @@ public interface Nest
      * Map a section to a glyph, making the glyph active
      *
      * @param section the section to map
-     * @param glyph the assigned glyph
+     * @param glyph   the assigned glyph
      */
     void mapSection (Section section,
-                     Glyph   glyph);
+                     Glyph glyph);
 
     /**
      * Simply register a glyph in the graph, making sure we do not
      * duplicate any existing glyph.
      * (a glyph being really defined by the set of its member sections)
+     *
      * @param glyph the glyph to add to the nest
      * @return the actual glyph (already existing or brand new)
      */
@@ -199,12 +215,14 @@ public interface Nest
 
     /**
      * Remove the provided virtual glyph
+     *
      * @param glyph the virtual glyph to remove
      */
     void removeVirtualGlyph (VirtualGlyph glyph);
 
     /**
      * Inject dependency on location service, and trigger subscriptions
+     *
      * @param locationService the location service
      */
     void setServices (SelectionService locationService);

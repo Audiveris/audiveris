@@ -194,7 +194,6 @@ public class ScoreTree
             JButton refreshButton = new JButton(
                     new AbstractAction()
                     {
-
                         @Override
                         public void actionPerformed (ActionEvent e)
                         {
@@ -251,11 +250,11 @@ public class ScoreTree
 
         private final String name;
 
-        private final Collection collection;
+        private final Collection<?> collection;
 
         //~ Constructors -------------------------------------------------------
         public NamedCollection (String name,
-                                Collection collection)
+                                Collection<?> collection)
         {
             this.name = name;
             this.collection = collection;
@@ -358,8 +357,8 @@ public class ScoreTree
         {
             int i = 0;
 
-            for (Iterator it = getRelevantChildren(parent).iterator(); it.
-                    hasNext();) {
+            for (Iterator<Object> it = getRelevantChildren(parent).iterator();
+                    it.hasNext();) {
                 if (it.next() == child) {
                     return i;
                 }
@@ -503,7 +502,7 @@ public class ScoreTree
                 return relevants;
             }
 
-            Class classe = node.getClass();
+            Class<?> classe = node.getClass();
             relevants = new ArrayList<>();
             nodeMap.put(node, relevants);
 
@@ -540,7 +539,7 @@ public class ScoreTree
                             continue;
                         }
 
-                        Class objClass = object.getClass();
+                        Class<?> objClass = object.getClass();
 
                         ///System.out.print(" objClass=" + objClass.getName());
 
@@ -552,7 +551,7 @@ public class ScoreTree
 
                         // Special handling of collections
                         if (object instanceof Collection) {
-                            Collection coll = (Collection) object;
+                            Collection<?> coll = (Collection<?>) object;
 
                             if (!coll.isEmpty()) {
                                 relevants.add(

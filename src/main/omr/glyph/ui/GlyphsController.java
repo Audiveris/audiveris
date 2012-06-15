@@ -99,12 +99,12 @@ public class GlyphsController
      * @param glyphs   the collection of glyphs to be assigned
      * @param shape    the shape to be assigned
      * @param compound flag to build one compound, rather than assign each
-     * individual glyph
+     *                 individual glyph
      * @return the task that carries out the processing
      */
-    public Task asyncAssignGlyphs (Collection<Glyph> glyphs,
-                                   Shape shape,
-                                   boolean compound)
+    public Task<Void, Void> asyncAssignGlyphs (Collection<Glyph> glyphs,
+                                               Shape shape,
+                                               boolean compound)
     {
         // Safety check: we cannot alter virtual glyphs
         for (Glyph glyph : glyphs) {
@@ -136,7 +136,7 @@ public class GlyphsController
      * @param glyphs the collection of glyphs to be de-assigned
      * @return the task that carries out the processing
      */
-    public Task asyncDeassignGlyphs (Collection<Glyph> glyphs)
+    public Task<Void, Void> asyncDeassignGlyphs (Collection<Glyph> glyphs)
     {
         return asyncAssignGlyphs(glyphs, null, false);
     }
@@ -144,7 +144,7 @@ public class GlyphsController
     //--------------------------//
     // asyncDeleteVirtualGlyphs //
     //--------------------------//
-    public Task asyncDeleteVirtualGlyphs (Collection<Glyph> glyphs)
+    public Task<Void, Void> asyncDeleteVirtualGlyphs (Collection<Glyph> glyphs)
     {
         return new DeleteTask(sheet, glyphs).launch(sheet);
     }

@@ -256,7 +256,7 @@ public class UnitTreeTable
         }
 
         // Selection on tree side
-        tree.setSelectionPaths(paths.toArray(new TreePath[0]));
+        tree.setSelectionPaths(paths.toArray(new TreePath[paths.size()]));
 
         // Selection on table side
         clearSelection();
@@ -401,7 +401,7 @@ public class UnitTreeTable
     //---------------//
     // PixelRenderer //
     //---------------//
-    private class PixelRenderer
+    private static class PixelRenderer
             extends DefaultTableCellRenderer
     {
         //~ Methods ------------------------------------------------------------
@@ -432,7 +432,7 @@ public class UnitTreeTable
     //---------------//
     // ValueRenderer //
     //---------------//
-    private class ValueRenderer
+    private static class ValueRenderer
             extends DefaultTableCellRenderer
     {
         //~ Methods ------------------------------------------------------------

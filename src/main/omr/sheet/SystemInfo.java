@@ -1339,7 +1339,7 @@ public class SystemInfo
      * @param predicate the condition to be fulfilled to get selected
      * @return the sorted set of selected glyphs
      */
-    public SortedSet selectGlyphs (Collection<Glyph> glyphs,
+    public SortedSet<Glyph> selectGlyphs (Collection<Glyph> glyphs,
                                    Predicate<Glyph> predicate)
     {
         SortedSet<Glyph> selected = new TreeSet<>();

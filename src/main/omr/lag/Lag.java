@@ -59,11 +59,11 @@ public interface Lag
     //~ Static fields/initializers ---------------------------------------------
 
     /** Events that can be published on lag section service */
-    static final Class[] eventsWritten = new Class[] {
-                                             SectionIdEvent.class,
-                                             SectionEvent.class,
-                                             SectionSetEvent.class
-                                         };
+    static final Class<?>[] eventsWritten = new Class<?>[]{
+        SectionIdEvent.class,
+        SectionEvent.class,
+        SectionSetEvent.class
+    };
 
     //~ Methods ----------------------------------------------------------------
 

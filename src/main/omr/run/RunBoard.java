@@ -41,7 +41,7 @@ public class RunBoard
     private static final Logger logger = Logger.getLogger(RunBoard.class);
 
     /** Events this entity is interested in */
-    private static final Class[] eventClasses = new Class[]{RunEvent.class};
+    private static final Class<?>[] eventClasses = new Class<?>[]{RunEvent.class};
 
     //~ Instance fields --------------------------------------------------------
     /** Field for run length */

@@ -29,8 +29,8 @@ import org.jdesktop.application.AbstractBean;
  * @author Hervé Bitteur
  */
 public abstract class SheetDependent
-    extends AbstractBean
-    implements EventSubscriber<SheetEvent>
+        extends AbstractBean
+        implements EventSubscriber<SheetEvent>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -41,12 +41,10 @@ public abstract class SheetDependent
     public static final String SHEET_AVAILABLE = "sheetAvailable";
 
     //~ Instance fields --------------------------------------------------------
-
     /** Indicates whether there is a current sheet */
     protected boolean sheetAvailable = false;
 
     //~ Constructors -----------------------------------------------------------
-
     //----------------//
     // SheetDependent //
     //----------------//
@@ -57,17 +55,16 @@ public abstract class SheetDependent
     {
         // Stay informed on sheet status, in order to enable or disable all
         // sheet-dependent actions accordingly
-        SheetsController.getInstance()
-                        .subscribe(this);
+        SheetsController.getInstance().subscribe(this);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------------//
     // isSheetAvailable //
     //------------------//
     /**
      * Getter for sheetAvailable property
+     *
      * @return the current property value
      */
     public boolean isSheetAvailable ()
@@ -80,18 +77,19 @@ public abstract class SheetDependent
     //---------//
     /**
      * Notification of sheet selection.
+     *
      * @param event the notified sheet event
      */
     @Override
-    public void onEvent (SheetEvent event)
+    public void onEvent (SheetEvent sheetEvent)
     {
         try {
             // Ignore RELEASING
-            if (event.movement == MouseMovement.RELEASING) {
+            if (sheetEvent.movement == MouseMovement.RELEASING) {
                 return;
             }
 
-            Sheet sheet = event.getData();
+            Sheet sheet = sheetEvent.getData();
             setSheetAvailable(sheet != null);
         } catch (Exception ex) {
             logger.warning(getClass().getName() + " onEvent error", ex);
@@ -103,6 +101,7 @@ public abstract class SheetDependent
     //-------------------//
     /**
      * Setter for sheetAvailable property.
+     *
      * @param sheetAvailable the new property value
      */
     public void setSheetAvailable (boolean sheetAvailable)

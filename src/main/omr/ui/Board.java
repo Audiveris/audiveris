@@ -63,7 +63,8 @@ import javax.swing.JTextField;
  * @author Hervé Bitteur
  */
 public abstract class Board
-    implements EventSubscriber<UserEvent>, Comparable<Board>
+        implements EventSubscriber<UserEvent>,
+                   Comparable<Board>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -71,18 +72,25 @@ public abstract class Board
     private static final Logger logger = Logger.getLogger(Board.class);
 
     // Predefined boards names with preferred display positions
-    public static final Desc       PIXEL = new Desc("Pixel", 100);
-    public static final Desc       RUN = new Desc("Run", 200);
-    public static final Desc       SECTION = new Desc("Section", 250);
-    public static final Desc       SAMPLE = new Desc("Sample", 400);
-    public static final Desc       GLYPH = new Desc("Glyph", 500);
-    public static final Desc       FOCUS = new Desc("Focus", 600);
-    public static final Desc       EVAL = new Desc("Eval", 700);
-    public static final Desc       SHAPE = new Desc("Shape", 800);
-    public static final Desc       CHECK = new Desc("Check", 900);
+    public static final Desc PIXEL = new Desc("Pixel", 100);
+
+    public static final Desc RUN = new Desc("Run", 200);
+
+    public static final Desc SECTION = new Desc("Section", 250);
+
+    public static final Desc SAMPLE = new Desc("Sample", 400);
+
+    public static final Desc GLYPH = new Desc("Glyph", 500);
+
+    public static final Desc FOCUS = new Desc("Focus", 600);
+
+    public static final Desc EVAL = new Desc("Eval", 700);
+
+    public static final Desc SHAPE = new Desc("Shape", 800);
+
+    public static final Desc CHECK = new Desc("Check", 900);
 
     //~ Instance fields --------------------------------------------------------
-
     /** The board instance name */
     private final String name;
 
@@ -102,7 +110,7 @@ public abstract class Board
     private final SelectionService selectionService;
 
     /** The collection of event classes to be observed */
-    private final Class[] eventsRead;
+    private final Class<?>[] eventsRead;
 
     /** The preferred position in BoardsPane sequence */
     private final int position;
@@ -111,31 +119,31 @@ public abstract class Board
     private boolean selected;
 
     //~ Constructors -----------------------------------------------------------
-
     //-------//
     // Board //
     //-------//
     /**
      * Create a board.
-     * @param desc the board descriptor
+     *
+     * @param desc             the board descriptor
      * @param selectionService the related selection service for input & output
-     * @param eventList the collection of event classes to observe
-     * @param withDump true for a dump button
-     * @param selected true to make the board initially selected
+     * @param eventList        the collection of event classes to observe
+     * @param withDump         true for a dump button
+     * @param selected         true to make the board initially selected
      */
-    public Board (Desc             desc,
+    public Board (Desc desc,
                   SelectionService selectionService,
-                  Class[]          eventList,
-                  boolean          withDump,
-                  boolean          selected)
+                  Class<?>[] eventList,
+                  boolean withDump,
+                  boolean selected)
     {
         this(
-            desc.name,
-            desc.position,
-            selectionService,
-            eventList,
-            withDump,
-            selected);
+                desc.name,
+                desc.position,
+                selectionService,
+                eventList,
+                withDump,
+                selected);
     }
 
     //-------//
@@ -143,19 +151,20 @@ public abstract class Board
     //-------//
     /**
      * Create a board.
-     * @param name a name assigned to the board
-     * @param position the preferred position within BoardsPane display
+     *
+     * @param name             a name assigned to the board
+     * @param position         the preferred position within BoardsPane display
      * @param selectionService the related selection service for input & output
-     * @param eventList the collection of event classes to observe
-     * @param withDump true for a dump button
-     * @param selected true to make the board initially selected
+     * @param eventList        the collection of event classes to observe
+     * @param withDump         true for a dump button
+     * @param selected         true to make the board initially selected
      */
-    public Board (String           name,
-                  int              position,
+    public Board (String name,
+                  int position,
                   SelectionService selectionService,
-                  Class[]          eventList,
-                  boolean          withDump,
-                  boolean          selected)
+                  Class[] eventList,
+                  boolean withDump,
+                  boolean selected)
     {
         this.name = name;
         this.position = position;
@@ -169,12 +178,12 @@ public abstract class Board
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-------------//
     // emptyFields //
     //-------------//
     /**
      * Convenient method to empty all the text fields of a given JComponent.
+     *
      * @param component the component to "blank".
      */
     public static void emptyFields (JComponent component)
@@ -191,6 +200,7 @@ public abstract class Board
     //-----------//
     /**
      * Allow to sort boards according to their preferred display position.
+     *
      * @param that the other board to compare to
      * @return comparison result
      */
@@ -209,12 +219,12 @@ public abstract class Board
     public void connect ()
     {
         if (eventsRead != null) {
-            for (Class eventClass : eventsRead) {
+            for (Class<?> eventClass : eventsRead) {
                 selectionService.subscribeStrongly(eventClass, this);
 
                 // Refresh with latest data for this event class
                 UserEvent event = (UserEvent) selectionService.getLastEvent(
-                    eventClass);
+                        eventClass);
 
                 if (event != null) {
                     event.movement = null;
@@ -233,7 +243,7 @@ public abstract class Board
     public void disconnect ()
     {
         if (eventsRead != null) {
-            for (Class eventClass : eventsRead) {
+            for (Class<?> eventClass : eventsRead) {
                 selectionService.unsubscribe(eventClass, this);
             }
         }
@@ -244,6 +254,7 @@ public abstract class Board
     //--------------//
     /**
      * Report the UI component.
+     *
      * @return the concrete component
      */
     public JPanel getComponent ()
@@ -256,6 +267,7 @@ public abstract class Board
     //---------//
     /**
      * Report the name for this board instance.
+     *
      * @return an instance name
      */
     public String getName ()
@@ -268,6 +280,7 @@ public abstract class Board
     //------------//
     /**
      * Report whether this board is currently selected.
+     *
      * @return true if selected
      */
     public boolean isSelected ()
@@ -288,6 +301,7 @@ public abstract class Board
     //-------------//
     /**
      * Select or not this board in its containing BoardsPane.
+     *
      * @param bool true for selected
      */
     public void setSelected (boolean bool)
@@ -304,6 +318,7 @@ public abstract class Board
     //------------//
     /**
      * Make this board visible or not.
+     *
      * @param bool true for visible
      */
     public void setVisible (boolean bool)
@@ -325,6 +340,7 @@ public abstract class Board
     //---------//
     /**
      * Report the body part of the board.
+     *
      * @return the body
      */
     protected JPanel getBody ()
@@ -337,6 +353,7 @@ public abstract class Board
     //---------------//
     /**
      * Report the Dump button of the board, if any.
+     *
      * @return the dump button, or null
      */
     protected JButton getDumpButton ()
@@ -349,6 +366,7 @@ public abstract class Board
     //---------------------//
     /**
      * Report the selection service this board is linked to.
+     *
      * @return the selectionService
      */
     protected SelectionService getSelectionService ()
@@ -365,17 +383,16 @@ public abstract class Board
         body.setNoInsets();
 
         CellConstraints cst = new CellConstraints();
-        FormLayout      layout = new FormLayout(
-            "pref",
-            "pref," + Panel.getFieldInterline() + ",pref");
-        PanelBuilder    builder = new PanelBuilder(layout, component);
+        FormLayout layout = new FormLayout(
+                "pref",
+                "pref," + Panel.getFieldInterline() + ",pref");
+        PanelBuilder builder = new PanelBuilder(layout, component);
 
         builder.add(header, cst.xy(1, 1));
         builder.add(body, cst.xy(1, 3));
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //------//
     // Desc //
     //------//
@@ -393,9 +410,8 @@ public abstract class Board
         public final int position;
 
         //~ Constructors -------------------------------------------------------
-
         public Desc (String name,
-                     int    position)
+                     int position)
         {
             this.name = name;
             this.position = position;
@@ -410,7 +426,7 @@ public abstract class Board
      * and perhaps a dump button.
      */
     private static class Header
-        extends Panel
+            extends Panel
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -421,8 +437,7 @@ public abstract class Board
         public final JButton dumpButton;
 
         //~ Constructors -------------------------------------------------------
-
-        public Header (String  title,
+        public Header (String title,
                        boolean withDump)
         {
             this.title = title;
@@ -433,15 +448,14 @@ public abstract class Board
         }
 
         //~ Methods ------------------------------------------------------------
-
         private void defineLayout ()
         {
             CellConstraints cst = new CellConstraints();
-            FormLayout      layout = new FormLayout(
-                ((dumpButton != null)
-                 ? ("154dlu," + Panel.getFieldInterval() + ",35dlu") : "192dlu"),
-                "pref");
-            PanelBuilder    builder = new PanelBuilder(layout, this);
+            FormLayout layout = new FormLayout(
+                    ((dumpButton != null)
+                     ? ("154dlu," + Panel.getFieldInterval() + ",35dlu") : "192dlu"),
+                    "pref");
+            PanelBuilder builder = new PanelBuilder(layout, this);
 
             builder.addSeparator(title, cst.xy(1, 1));
 

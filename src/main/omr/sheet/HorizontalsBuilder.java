@@ -71,7 +71,8 @@ public class HorizontalsBuilder
             HorizontalsBuilder.class);
 
     /** Events this entity is interested in */
-    private static final Class[] eventClasses = new Class[]{GlyphEvent.class};
+    private static final Class<?>[] eventClasses = new Class<?>[]{
+        GlyphEvent.class};
 
     /** Success codes */
     private static final SuccessResult LEDGER = new SuccessResult("Ledger");
@@ -1270,9 +1271,11 @@ public class HorizontalsBuilder
             this.stick = stick;
 
             mid = new Point2D.Double(
-                    (stick.getStartPoint(HORIZONTAL).getX() + stick.getStopPoint(
+                    (stick.getStartPoint(HORIZONTAL).getX() + stick.
+                     getStopPoint(
                      HORIZONTAL).getX()) / 2,
-                    (stick.getStartPoint(HORIZONTAL).getY() + stick.getStopPoint(
+                    (stick.getStartPoint(HORIZONTAL).getY() + stick.
+                     getStopPoint(
                      HORIZONTAL).getY()) / 2);
             staff = sheet.getStaffManager().getStaffAt(mid);
 

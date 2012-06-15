@@ -281,7 +281,7 @@ public class FilamentAlignment
                 // Lookup corresponding section(s)
                 Scale scale = new Scale(glyph.getInterline());
                 int probeWidth = scale.toPixels(
-                        super.getProbeWidth());
+                        BasicAlignment.getProbeWidth());
                 Orientation orientation = getRoughOrientation();
                 final Point2D point = points.get(idx);
                 Point2D orientedPt = orientation.oriented(

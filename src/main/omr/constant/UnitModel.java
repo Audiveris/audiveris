@@ -41,7 +41,7 @@ import javax.swing.JOptionPane;
  * @author Hervé Bitteur
  */
 public class UnitModel
-    extends AbstractTreeTableModel
+        extends AbstractTreeTableModel
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -49,53 +49,46 @@ public class UnitModel
     private static final Logger logger = Logger.getLogger(UnitModel.class);
 
     //~ Enumerations -----------------------------------------------------------
-
     /**
      * Enumeration type to describe each column of the JTreeTable
      */
-    public static enum Column {
+    public static enum Column
+    {
         //~ Enumeration constant initializers ----------------------------------
-
 
         /**
          * The left column, assigned to tree structure, allows expansion and
          * collapsing of sub-tree portions
          */
         TREE("Unit", true, 280, TreeTableModel.class),
-
         /**
          * Editable column shared by {@link omr.log.Logger} entity if node
          * is a unit, and by modification flag if node is a constant. Empty
          * if node is a package.
          */
-        LOGMOD("Log/Mod", true, 50, String.class), 
-
+        LOGMOD("Log/Mod", true, 50, String.class),
         /**
          * Column that recalls the constant type, and thus the possible range of
          * values
          */
-        TYPE("Type", false, 70, String.class), 
-
+        TYPE("Type", false, 70, String.class),
         /**
          * Column for the units, if any, used for the value
          */
-        UNIT("Unit", false, 70, String.class), 
-
+        UNIT("Unit", false, 70, String.class),
         /**
          * Column relevant only for constants which are fractions of interline,
          * as defined by {@link omr.sheet.Scale.Fraction}: the equivalent
          * number of pixels is displayed, according to the scale of the
          * currently selected Sheet. If there is no current Sheet, then just a
-         * question mark (?)  is displayed
+         * question mark (?) is displayed
          */
-        PIXEL("Pixels", false, 30, String.class), 
-
+        PIXEL("Pixels", false, 30, String.class),
         /**
          * Editable column for constant current value, with related tool tip
          * retrieved from the constant declaration
          */
-        VALUE("Value", true, 100, String.class), 
-
+        VALUE("Value", true, 100, String.class),
         /**
          * Column dedicated to constant descrption
          */
@@ -105,7 +98,7 @@ public class UnitModel
         /**
          * Java class to handle column content
          */
-        final Class type;
+        final Class<?> type;
 
         /**
          * Is this column user editable?
@@ -123,14 +116,13 @@ public class UnitModel
         final int width;
 
         //~ Constructors -------------------------------------------------------
-
         //--------//
         // Column //
         //--------//
-        Column (String  header,
+        Column (String header,
                 boolean editable,
-                int     width,
-                Class   type)
+                int width,
+                Class<?> type)
         {
             this.header = header;
             this.editable = editable;
@@ -140,7 +132,6 @@ public class UnitModel
     }
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------//
     // UnitModel //
     //-----------//
@@ -153,21 +144,21 @@ public class UnitModel
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // getChild //
     //----------//
     /**
-     * Returns the child of {@code parent</code> at index <code>index} in
+     * Returns the child of {@code parent</code> at index
+     * <code>index} in
      * the parent's child array.
      *
      * @param parent a node in the tree, obtained from this data source
-     * @param i the child index in parent sequence
+     * @param i      the child index in parent sequence
      * @return the child of {@code parent</code> at index <code>index}
      */
     @Override
     public Object getChild (Object parent,
-                            int    i)
+                            int i)
     {
         if (parent instanceof PackageNode) {
             PackageNode pNode = (PackageNode) parent;
@@ -176,7 +167,7 @@ public class UnitModel
         }
 
         if (parent instanceof UnitNode) {
-            UnitNode    unit = (UnitNode) parent;
+            UnitNode unit = (UnitNode) parent;
             ConstantSet set = unit.getConstantSet();
 
             if (set != null) {
@@ -185,8 +176,8 @@ public class UnitModel
         }
 
         System.err.println(
-            "*** getChild. Unexpected node " + parent + ", type=" +
-            parent.getClass().getName());
+                "*** getChild. Unexpected node " + parent + ", type="
+                + parent.getClass().getName());
 
         return null;
     }
@@ -209,7 +200,7 @@ public class UnitModel
         }
 
         if (parent instanceof UnitNode) {
-            UnitNode    unit = (UnitNode) parent;
+            UnitNode unit = (UnitNode) parent;
             ConstantSet set = unit.getConstantSet();
 
             if (set != null) {
@@ -224,8 +215,8 @@ public class UnitModel
         }
 
         System.err.println(
-            "*** getChildCount. Unexpected node " + parent + ", type=" +
-            parent.getClass().getName());
+                "*** getChildCount. Unexpected node " + parent + ", type="
+                + parent.getClass().getName());
 
         return 0;
     }
@@ -241,7 +232,7 @@ public class UnitModel
      * @return the class for all cells in this column
      */
     @Override
-    public Class getColumnClass (int column)
+    public Class<?> getColumnClass (int column)
     {
         return Column.values()[column].type;
     }
@@ -283,25 +274,25 @@ public class UnitModel
      * Report the value of a cell
      *
      * @param node the desired node
-     * @param col the related column
+     * @param col  the related column
      *
      * @return the cell value
      */
     @Override
     public Object getValueAt (Object node,
-                              int    col)
+                              int col)
     {
         Column column = Column.values()[col];
 
         switch (column) {
-        case LOGMOD :
+        case LOGMOD:
 
             if (node instanceof UnitNode) {
                 UnitNode unit = (UnitNode) node;
-                Logger   logger = unit.getLogger();
+                Logger theLogger = unit.getLogger();
 
-                if (logger != null) {
-                    return logger.getEffectiveLevel();
+                if (theLogger != null) {
+                    return theLogger.getEffectiveLevel();
                 } else {
                     return "";
                 }
@@ -315,7 +306,7 @@ public class UnitModel
 
             return "";
 
-        case VALUE :
+        case VALUE:
 
             if (node instanceof Constant) {
                 Constant constant = (Constant) node;
@@ -331,7 +322,7 @@ public class UnitModel
                 return "";
             }
 
-        case TYPE :
+        case TYPE:
 
             if (node instanceof Constant) {
                 Constant constant = (Constant) node;
@@ -341,7 +332,7 @@ public class UnitModel
                 return "";
             }
 
-        case UNIT :
+        case UNIT:
 
             if (node instanceof Constant) {
                 Constant constant = (Constant) node;
@@ -352,14 +343,14 @@ public class UnitModel
                 return "";
             }
 
-        case PIXEL :
+        case PIXEL:
 
             if (node instanceof Constant) {
                 Constant constant = (Constant) node;
 
-                if (constant instanceof Scale.Fraction ||
-                    constant instanceof Scale.LineFraction ||
-                    constant instanceof Scale.AreaFraction) {
+                if (constant instanceof Scale.Fraction
+                        || constant instanceof Scale.LineFraction
+                        || constant instanceof Scale.AreaFraction) {
                     // Compute the equivalent in pixels of this interline-based
                     // fraction, line or area fraction, provided that we have a
                     // current sheet and its scale is available.
@@ -371,14 +362,15 @@ public class UnitModel
                         if (scale != null) {
                             if (constant instanceof Scale.Fraction) {
                                 return Integer.valueOf(
-                                    scale.toPixels((Scale.Fraction) constant));
+                                        scale.
+                                        toPixels((Scale.Fraction) constant));
                             } else if (constant instanceof Scale.LineFraction) {
                                 return Integer.valueOf(
-                                    scale.toPixels(
+                                        scale.toPixels(
                                         (Scale.LineFraction) constant));
                             } else if (constant instanceof Scale.AreaFraction) {
                                 return Integer.valueOf(
-                                    scale.toPixels(
+                                        scale.toPixels(
                                         (Scale.AreaFraction) constant));
                             }
                         }
@@ -390,7 +382,7 @@ public class UnitModel
 
             return "";
 
-        case DESC :
+        case DESC:
 
             if (node instanceof Constant) {
                 Constant constant = (Constant) node;
@@ -410,14 +402,14 @@ public class UnitModel
     /**
      * Predicate on cell being editable
      *
-     * @param node the related tree node
+     * @param node   the related tree node
      * @param column the related table column
      *
      * @return true if editable
      */
     @Override
     public boolean isCellEditable (Object node,
-                                   int    column)
+                                   int column)
     {
         Column col = Column.values()[column];
 
@@ -440,7 +432,8 @@ public class UnitModel
     // isLeaf //
     //--------//
     /**
-     * Returns {@code true</code> if <code>node} is a leaf.
+     * Returns {@code true</code> if
+     * <code>node} is a leaf.
      *
      * @param node a node in the tree, obtained from this data source
      *
@@ -469,27 +462,27 @@ public class UnitModel
      * Assign a value to a cell
      *
      * @param value the value to assign
-     * @param node the target node
-     * @param col the related column
+     * @param node  the target node
+     * @param col   the related column
      */
     @Override
     public void setValueAt (Object value,
                             Object node,
-                            int    col)
+                            int col)
     {
         if (node instanceof UnitNode) {
             UnitNode unit = (UnitNode) node;
-            Logger   logger = unit.getLogger();
+            Logger theLogger = unit.getLogger();
 
-            if (logger != null) {
-                logger.setLevel((String) value);
+            if (theLogger != null) {
+                theLogger.setLevel((String) value);
             }
         } else if (node instanceof Constant) {
             Constant constant = (Constant) node;
-            Column   column = Column.values()[col];
+            Column column = Column.values()[col];
 
             switch (column) {
-            case VALUE :
+            case VALUE:
 
                 try {
                     constant.setValue(value.toString());
@@ -497,30 +490,31 @@ public class UnitModel
                     // Forward modif to the modif status column and to the pixel
                     // column (brute force!)
                     fireTreeNodesChanged(
-                        this,
-                        new Object[] { getRoot() },
-                        null,
-                        null);
+                            this,
+                            new Object[]{getRoot()},
+                            null,
+                            null);
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(
-                        null,
-                        "Illegal number format");
+                            null,
+                            "Illegal number format");
                 }
 
                 break;
 
-            case LOGMOD :
+            case LOGMOD:
 
                 if (!((Boolean) value).booleanValue()) {
                     constant.reset();
                     fireTreeNodesChanged(
-                        this,
-                        new Object[] { getRoot() },
-                        null,
-                        null);
+                            this,
+                            new Object[]{getRoot()},
+                            null,
+                            null);
                 }
 
                 break;
+            default:
             }
         }
     }

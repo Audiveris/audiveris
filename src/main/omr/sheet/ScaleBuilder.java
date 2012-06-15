@@ -348,7 +348,7 @@ public class ScaleBuilder
     //---------//
     // getPeak //
     //---------//
-    private PeakEntry<Double> getPeak (Histogram histo,
+    private PeakEntry<Double> getPeak (Histogram<?> histo,
                                        double spreadRatio,
                                        int index)
     {

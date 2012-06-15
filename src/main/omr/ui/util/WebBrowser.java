@@ -118,7 +118,7 @@ public class WebBrowser
     {
         //First, try java.awt.Desktop
         try {
-            final Class desktopClass = Class.forName("java.awt.Desktop");
+            final Class<?> desktopClass = Class.forName("java.awt.Desktop");
 
             return new WebBrowser()
             {
@@ -155,7 +155,7 @@ public class WebBrowser
         //If it's not supported, see if we have the Mac FileManager
         if (WellKnowns.MAC_OS_X) {
             try {
-                final Class fileMgr = Class.forName(
+                final Class<?> fileMgr = Class.forName(
                         "com.apple.eio.FileManager");
 
                 return new WebBrowser()

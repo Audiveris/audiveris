@@ -40,8 +40,7 @@ public abstract class ConstantSet
     private static final Logger logger = Logger.getLogger(ConstantSet.class);
 
     //~ Instance fields --------------------------------------------------------
-
-    /**  Name of the containing unit/class */
+    /** Name of the containing unit/class */
     private final String unit;
 
     /**
@@ -54,7 +53,6 @@ public abstract class ConstantSet
     private volatile SortedMap<String, Constant> map;
 
     //~ Constructors -----------------------------------------------------------
-
     //-------------//
     // ConstantSet //
     //-------------//
@@ -64,21 +62,17 @@ public abstract class ConstantSet
      */
     public ConstantSet ()
     {
-        unit = getClass()
-                   .getDeclaringClass()
-                   .getName();
+        unit = getClass().getDeclaringClass().getName();
 
         //        System.out.println(
         //            "\n" + Thread.currentThread().getName() +
         //            ": Creating ConstantSet " + unit);
 
         // Register this instance
-        UnitManager.getInstance()
-                   .addSet(this);
+        UnitManager.getInstance().addSet(this);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------//
     // dump //
     //------//
@@ -89,17 +83,16 @@ public abstract class ConstantSet
     {
         System.out.println("\n[" + unit + "]");
 
-        for (Constant constant : getMap()
-                                     .values()) {
+        for (Constant constant : getMap().values()) {
             System.out.printf(
-                "%-25s %12s %-14s =[%3s] %-25s\t%s\n",
-                constant.getName(),
-                constant.getShortTypeName(),
-                (constant.getQuantityUnit() != null)
-                                ? ("(" + constant.getQuantityUnit() + ")") : "",
-                constant.getValueOrigin(),
-                constant.getCurrentString(),
-                constant.getDescription());
+                    "%-25s %12s %-14s =[%3s] %-25s\t%s%n",
+                    constant.getName(),
+                    constant.getShortTypeName(),
+                    (constant.getQuantityUnit() != null)
+                    ? ("(" + constant.getQuantityUnit() + ")") : "",
+                    constant.getValueOrigin(),
+                    constant.getCurrentString(),
+                    constant.getDescription());
         }
     }
 
@@ -115,8 +108,7 @@ public abstract class ConstantSet
      */
     public Constant getConstant (String name)
     {
-        return getMap()
-                   .get(name);
+        return getMap().get(name);
     }
 
     //-------------//
@@ -131,8 +123,8 @@ public abstract class ConstantSet
      */
     public Constant getConstant (int i)
     {
-        return Collections.list(Collections.enumeration(getMap().values()))
-                          .get(i);
+        return Collections.list(Collections.enumeration(getMap().values())).get(
+                i);
     }
 
     //---------//
@@ -154,6 +146,7 @@ public abstract class ConstantSet
     /**
      * Make sure this ConstantSet has properly been initialized (its map of
      * constants has been built)
+     *
      * @return true if initialized correctly, false otherwise
      */
     public boolean initialize ()
@@ -172,8 +165,7 @@ public abstract class ConstantSet
      */
     public boolean isModified ()
     {
-        for (Constant constant : getMap()
-                                     .values()) {
+        for (Constant constant : getMap().values()) {
             if (constant.isModified()) {
                 return true;
             }
@@ -192,8 +184,7 @@ public abstract class ConstantSet
      */
     public int size ()
     {
-        return getMap()
-                   .size();
+        return getMap().size();
     }
 
     //----------//
@@ -248,7 +239,7 @@ public abstract class ConstantSet
         SortedMap<String, Constant> tempMap = new TreeMap<>();
 
         // Retrieve values of all fields
-        Class cl = getClass();
+        Class<?> cl = getClass();
 
         try {
             for (Field field : cl.getDeclaredFields()) {
@@ -270,13 +261,16 @@ public abstract class ConstantSet
                     constant.setUnitAndName(unit, name);
                     tempMap.put(name, constant);
                 } else {
-                    logger.severe("ConstantSet in unit ''{0}'' contains a non Constant field ''{1}'' obj= {2}", new Object[]{unit, name, obj});
+                    logger.severe(
+                            "ConstantSet in unit ''{0}'' contains a non Constant field ''{1}'' obj= {2}",
+                                  new Object[]{unit, name, obj});
                 }
             }
 
             // Assign the constructed map atomically
             map = tempMap;
-        } catch (Exception ex) {
+        } catch (SecurityException | IllegalArgumentException |
+                 IllegalAccessException ex) {
             logger.warning("Error initializing map of ConstantSet " + this, ex);
         }
     }

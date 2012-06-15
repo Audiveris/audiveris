@@ -134,7 +134,8 @@ public class SampleVerifier
         frame.add(vertSplitPane);
 
         // Resource injection
-        ResourceMap resource = MainGui.getInstance().getContext().getResourceMap(
+        ResourceMap resource = MainGui.getInstance().getContext().
+                getResourceMap(
                 getClass());
         resource.injectComponents(frame);
     }
@@ -274,7 +275,7 @@ public class SampleVerifier
      * (either the sheets or samples directory or the symbols directory)
      *
      * @param folder the folder name, such as 'symbols' or 'sheets/batuque' or
-     * 'samples/batuque'
+     *               'samples/batuque'
      * @return the concrete directory
      */
     private File getActualDir (String folder)
@@ -388,7 +389,8 @@ public class SampleVerifier
         {
             final List<String> folders = folderSelector.list.
                     getSelectedValuesList();
-            final List<Shape> shapes = shapeSelector.list.getSelectedValuesList();
+            final List<Shape> shapes = shapeSelector.list.
+                    getSelectedValuesList();
 
             // Debug
             if (logger.isFineEnabled()) {
@@ -509,7 +511,6 @@ public class SampleVerifier
             list.addListSelectionListener(
                     new ListSelectionListener()
                     {
-
                         @Override
                         public void valueChanged (ListSelectionEvent e)
                         {
@@ -521,7 +522,6 @@ public class SampleVerifier
             selectAll.addActionListener(
                     new ActionListener()
                     {
-
                         @Override
                         public void actionPerformed (ActionEvent e)
                         {
@@ -533,7 +533,6 @@ public class SampleVerifier
             cancelAll.addActionListener(
                     new ActionListener()
                     {
-
                         @Override
                         public void actionPerformed (ActionEvent e)
                         {
@@ -586,7 +585,7 @@ public class SampleVerifier
         @Override
         public void stateChanged (ChangeEvent e)
         {
-            Selector selector = (Selector) e.getSource();
+            Selector<?> selector = (Selector<?>) e.getSource();
             int selNb = selector.list.getSelectedIndices().length;
             load.setEnabled(selNb > 0);
         }
@@ -646,11 +645,12 @@ public class SampleVerifier
          * to display the text and image.
          */
         @Override
-        public Component getListCellRendererComponent (JList list,
-                                                       Shape shape,
-                                                       int index,
-                                                       boolean isSelected,
-                                                       boolean cellHasFocus)
+        public Component getListCellRendererComponent (
+                JList<? extends Shape> list,
+                Shape shape,
+                int index,
+                boolean isSelected,
+                boolean cellHasFocus)
         {
             if (isSelected) {
                 setBackground(list.getSelectionBackground());

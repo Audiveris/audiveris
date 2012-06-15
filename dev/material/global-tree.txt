@@ -22,7 +22,7 @@ Target Program folders          WellKnowns.PROGRAM_FOLDER
 ./dist/audiveris-4.1beta.jar
 ./dist/lib/
 ./dist/lib/BareBonesBrowserLaunch.jar
-./dist/lib/EventBus-1.2.jar
+./dist/lib/eventbus-1.4.jar
 ./dist/lib/Jama-1.0.2.jar
 ./dist/lib/PDFRenderer.jar
 ./dist/lib/bsaf-1.9.1.jar

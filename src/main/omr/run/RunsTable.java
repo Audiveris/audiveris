@@ -53,10 +53,10 @@ public class RunsTable
     private static final Logger logger = Logger.getLogger(RunsTable.class);
 
     /** Events that can be published on the table run service */
-    public static final Class[] eventsWritten = new Class[]{RunEvent.class};
+    public static final Class<?>[] eventsWritten = new Class<?>[]{RunEvent.class};
 
     /** Events observed on location service */
-    public static final Class[] eventsRead = new Class[]{LocationEvent.class};
+    public static final Class<?>[] eventsRead = new Class<?>[]{LocationEvent.class};
 
     //~ Instance fields --------------------------------------------------------
     /** (Debugging) name of this runs table */
@@ -657,7 +657,7 @@ public class RunsTable
     //--------------------//
     public void setLocationService (SelectionService locationService)
     {
-        for (Class eventClass : eventsRead) {
+        for (Class<?> eventClass : eventsRead) {
             locationService.subscribeStrongly(eventClass, this);
         }
     }

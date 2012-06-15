@@ -21,7 +21,7 @@ import java.awt.geom.Point2D;
  *
  * @author Hervé Bitteur
  */
-public abstract class AbstractExtractor<D extends OrthogonalMoments>
+public abstract class AbstractExtractor<D extends OrthogonalMoments<D>>
         implements MomentsExtractor<D>
 {
     //~ Instance fields --------------------------------------------------------

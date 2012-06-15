@@ -146,7 +146,7 @@ public class ConstantManager
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
-        ConstantManager.class);
+            ConstantManager.class);
 
     /** Default properties file name */
     private static final String DEFAULT_FILE_NAME = "run.default.properties";
@@ -158,7 +158,6 @@ public class ConstantManager
     private static final ConstantManager INSTANCE = new ConstantManager();
 
     //~ Instance fields --------------------------------------------------------
-
     /**
      * Map of all constants created in the application, regardless whether these
      * constants are enclosed in a ConstantSet or defined as standalone entities
@@ -167,15 +166,14 @@ public class ConstantManager
 
     /** Default properties */
     private final DefaultHolder defaultHolder = new DefaultHolder(
-        new File(WellKnowns.SETTINGS_FOLDER, DEFAULT_FILE_NAME));
+            new File(WellKnowns.SETTINGS_FOLDER, DEFAULT_FILE_NAME));
 
     /** User properties */
     private final UserHolder userHolder = new UserHolder(
-        new File(WellKnowns.SETTINGS_FOLDER, USER_FILE_NAME),
-        defaultHolder);
+            new File(WellKnowns.SETTINGS_FOLDER, USER_FILE_NAME),
+            defaultHolder);
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------------//
     // ConstantManager //
     //-----------------//
@@ -184,13 +182,13 @@ public class ConstantManager
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------------//
     // getAllProperties //
     //------------------//
     /**
      * Report the whole collection of properties (coming from DEFAULT
      * and USER sources) backed up on disk.
+     *
      * @return the collection of constant properties
      */
     public Collection<String> getAllProperties ()
@@ -206,6 +204,7 @@ public class ConstantManager
     //-------------//
     /**
      * Report the singleton of this class.
+     *
      * @return the only ConstantManager instance
      */
     public static ConstantManager getInstance ()
@@ -219,23 +218,24 @@ public class ConstantManager
     /**
      * Register a brand new constant with a provided name to retrieve
      * a predefined value loaded from disk backup if any.
-     * @param qName the constant qualified name
+     *
+     * @param qName    the constant qualified name
      * @param constant the Constant instance to register
      * @return the loaded value if any, otherwise null
      */
-    public String addConstant (String   qName,
+    public String addConstant (String qName,
                                Constant constant)
     {
         if (qName == null) {
             throw new IllegalArgumentException(
-                "Attempt to add a constant with no qualified name");
+                    "Attempt to add a constant with no qualified name");
         }
 
         Constant old = constants.putIfAbsent(qName, constant);
 
         if ((old != null) && (old != constant)) {
             throw new IllegalArgumentException(
-                "Attempt to duplicate constant " + qName);
+                    "Attempt to duplicate constant " + qName);
         }
 
         // Value set at CLI level?
@@ -259,6 +259,7 @@ public class ConstantManager
     /**
      * Report the collection of DEFAULT properties that do not relate to
      * any known application Constant.
+     *
      * @return the potential old stuff in DEFAULT properties
      */
     public Collection<String> getUnusedDefaultProperties ()
@@ -272,6 +273,7 @@ public class ConstantManager
     /**
      * Report the collection of USER properties that do not relate to
      * any known application Constant.
+     *
      * @return the potential old stuff in USER properties
      */
     public Collection<String> getUnusedUserProperties ()
@@ -285,6 +287,7 @@ public class ConstantManager
     /**
      * Report the collection of used DEFAULT properties but whose
      * content is equal to the source value (and are thus useless).
+     *
      * @return the useless items in DEFAULT properties
      */
     public Collection<String> getUselessDefaultProperties ()
@@ -297,6 +300,7 @@ public class ConstantManager
     //----------------//
     /**
      * Remove a constant.
+     *
      * @param constant the constant to remove
      * @return the removed Constant, or null if not found
      */
@@ -304,7 +308,7 @@ public class ConstantManager
     {
         if (constant.getQualifiedName() == null) {
             throw new IllegalArgumentException(
-                "Attempt to remove a constant with no qualified name defined");
+                    "Attempt to remove a constant with no qualified name defined");
         }
 
         return constants.remove(constant.getQualifiedName());
@@ -340,7 +344,6 @@ public class ConstantManager
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //----------------//
     // AbstractHolder //
     //----------------//
@@ -355,14 +358,12 @@ public class ConstantManager
         protected Properties properties;
 
         //~ Constructors -------------------------------------------------------
-
         public AbstractHolder (File file)
         {
             this.file = file;
         }
 
         //~ Methods ------------------------------------------------------------
-
         public Collection<String> getKeys ()
         {
             Collection<String> strings = new ArrayList<>();
@@ -399,9 +400,8 @@ public class ConstantManager
             for (Entry<Object, Object> entry : properties.entrySet()) {
                 Constant constant = constants.get((String) entry.getKey());
 
-                if ((constant != null) &&
-                    constant.getSourceString()
-                            .equals(entry.getValue())) {
+                if ((constant != null)
+                        && constant.getSourceString().equals(entry.getValue())) {
                     props.add((String) entry.getKey());
                 }
             }
@@ -419,30 +419,18 @@ public class ConstantManager
 
         private void loadFromFile ()
         {
-            InputStream in = null;
 
-            try {
-                in = new FileInputStream(file);
+
+            try (InputStream in = new FileInputStream(file)) {
                 properties.load(in);
-                in.close();
-            } catch (FileNotFoundException ex) {
+            } catch (FileNotFoundException ignored) {
                 // This is not at all an error
-                logger.fine(
-                    "[{0}" + "]" + " No property file {1}",
-                    new Object[] {
-                        ConstantManager.class.getName(), file.getAbsolutePath()
-                    });
+                logger.fine("[{0}" + "]" + " No property file {1}",
+                            ConstantManager.class.getName(),
+                            file.getAbsolutePath());
             } catch (IOException ex) {
-                logger.severe(
-                    "Error loading constants file {0}",
-                    file.getAbsolutePath());
-            } finally {
-                if (in != null) {
-                    try {
-                        in.close();
-                    } catch (Exception ignored) {
-                    }
-                }
+                logger.severe("Error loading constants file {0}",
+                              file.getAbsolutePath());
             }
         }
     }
@@ -451,7 +439,7 @@ public class ConstantManager
     // DefaultHolder //
     //---------------//
     private class DefaultHolder
-        extends AbstractHolder
+            extends AbstractHolder
     {
         //~ Constructors -------------------------------------------------------
 
@@ -472,15 +460,14 @@ public class ConstantManager
      * Any modification made at run-time will be saved in the user part.
      */
     private class UserHolder
-        extends AbstractHolder
+            extends AbstractHolder
     {
         //~ Instance fields ----------------------------------------------------
 
         private final AbstractHolder defaultHolder;
 
         //~ Constructors -------------------------------------------------------
-
-        public UserHolder (File           file,
+        public UserHolder (File file,
                            AbstractHolder defaultHolder)
         {
             super(file);
@@ -490,7 +477,6 @@ public class ConstantManager
         }
 
         //~ Methods ------------------------------------------------------------
-
         /**
          * Remove from the USER collection the properties that are
          * already in the DEFAULT collection with identical value,
@@ -501,30 +487,30 @@ public class ConstantManager
         {
             // Browse all constant entries
             for (Entry<String, Constant> entry : constants.entrySet()) {
-                final String   key = entry.getKey();
+                final String key = entry.getKey();
                 final Constant constant = entry.getValue();
 
-                final String   current = constant.getCurrentString();
-                final String   def = defaultHolder.getProperty(key);
-                final String   source = constant.getSourceString();
+                final String current = constant.getCurrentString();
+                final String def = defaultHolder.getProperty(key);
+                final String source = constant.getSourceString();
 
                 if ((def != null) && current.equals(def)) {
                     if (properties.remove(key) != null) {
                         logger.fine(
-                            "Removing User value for key: {0} = {1}",
-                            new Object[] { key, current });
+                                "Removing User value for key: {0} = {1}",
+                                new Object[]{key, current});
                     }
                 } else if (!current.equals(source)) {
                     logger.fine(
-                        "Writing User value for key: {0} = {1}",
-                        new Object[] { key, current });
+                            "Writing User value for key: {0} = {1}",
+                            new Object[]{key, current});
 
                     properties.setProperty(key, current);
                 } else {
                     if (properties.remove(key) != null) {
                         logger.fine(
-                            "Removing User value for key: {0} = {1}",
-                            new Object[] { key, current });
+                                "Removing User value for key: {0} = {1}",
+                                new Object[]{key, current});
                     }
                 }
             }
@@ -536,38 +522,23 @@ public class ConstantManager
             cleanup();
 
             // Then, save the remaining values
-            FileOutputStream out = null;
+            logger.fine("Store constants into {0}", file);
 
-            try {
-                logger.fine("Store constants into {0}", file);
+            // First make sure the directory exists (Brenton patch)
+            if (file.getParentFile().mkdirs()) {
+                logger.info("Creating {0}", file);
+            }
 
-                // First make sure the directory exists (Brenton patch)
-                if (file.getParentFile()
-                        .mkdirs()) {
-                    logger.info("Creating {0}", file);
-                }
-
-                // Then write down the properties
-                out = new FileOutputStream(file);
-                properties.store(
-                    out,
-                    " Audiveris user properties file. Do not edit");
-                out.close();
+            // Then write down the properties
+            try (FileOutputStream out = new FileOutputStream(file)) {
+                properties.store(out,
+                                 " Audiveris user properties file. Do not edit");
             } catch (FileNotFoundException ex) {
-                logger.warning(
-                    "Property file {0} not found or not writable",
-                    file.getAbsolutePath());
+                logger.warning("Property file {0} not found or not writable",
+                               file.getAbsolutePath());
             } catch (IOException ex) {
-                logger.warning(
-                    "Error while storing the property file {0}",
-                    file.getAbsolutePath());
-            } finally {
-                if (out != null) {
-                    try {
-                        out.close();
-                    } catch (Exception ignored) {
-                    }
-                }
+                logger.warning("Error while storing the property file {0}",
+                               file.getAbsolutePath());
             }
         }
     }

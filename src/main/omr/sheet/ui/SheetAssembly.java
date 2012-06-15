@@ -618,8 +618,7 @@ public class SheetAssembly
             }
 
             // Force update of LocationEvent
-            LocationEvent locationEvent = (LocationEvent) locationService.
-                    getLastEvent(
+            LocationEvent locationEvent = locationService.getLastEvent(
                     LocationEvent.class);
             PixelRectangle location = (locationEvent != null)
                                       ? locationEvent.getData() : null;
@@ -661,7 +660,8 @@ public class SheetAssembly
         private void disconnectKeyboard ()
         {
             if (boardsPane != null) {
-                for (Component topComp : boardsPane.getComponent().getComponents()) {
+                for (Component topComp : boardsPane.getComponent().
+                        getComponents()) {
                     for (Component comp : ((Container) topComp).getComponents()) {
                         if (comp instanceof JComponent) {
                             ((JComponent) comp).resetKeyboardActions();

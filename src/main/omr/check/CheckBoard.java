@@ -62,13 +62,12 @@ public class CheckBoard<C extends Checkable>
                        SelectionService selectionService,
                        Class[] eventList)
     {
-        super(
-                name,
-                Board.CHECK.position,
-                selectionService,
-                eventList,
-                false, // Dump
-                false); // Selected
+        super(name,
+              Board.CHECK.position,
+              selectionService,
+              eventList,
+              false, // Dump
+              false); // Selected
         checkPanel = new CheckPanel<>(suite);
 
         if (suite != null) {
@@ -81,9 +80,9 @@ public class CheckBoard<C extends Checkable>
 
     //~ Methods ----------------------------------------------------------------
     //
-    //--------//
-    // update //
-    //--------//
+    //---------//
+    // onEvent //
+    //---------//
     /**
      * Call-back triggered when C Selection has been modified.
      *
@@ -131,7 +130,7 @@ public class CheckBoard<C extends Checkable>
      *
      * @param object the object whose check result is to be displayed
      */
-    protected void tellObject (C object)
+    protected final void tellObject (C object)
     {
         if (object == null) {
             setVisible(false);

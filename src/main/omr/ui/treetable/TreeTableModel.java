@@ -47,7 +47,7 @@ public interface TreeTableModel
     /**
      * Returns the type for column number {@code column}.
      */
-    public Class getColumnClass (int column);
+    public Class<?> getColumnClass (int column);
 
     /**
      * Returns the number ofs availible column.

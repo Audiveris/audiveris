@@ -88,8 +88,7 @@ public class ErrorsEditor
     public ErrorsEditor (Sheet sheet)
     {
         this.sheet = sheet;
-        //HB7 list = new JList<Record>(model);
-        list = new JList(model);
+        list = new JList<Record>(model);
         scrollPane = new JScrollPane(list);
         list.addListSelectionListener(listener);
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);

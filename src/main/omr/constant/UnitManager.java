@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
@@ -56,7 +57,6 @@ public class UnitManager
     private static final Logger logger = Logger.getLogger(UnitManager.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** The root node */
     private final PackageNode root = new PackageNode("<root>", null);
 
@@ -76,7 +76,6 @@ public class UnitManager
     private volatile boolean storeIt = false;
 
     //~ Constructors -----------------------------------------------------------
-
     //-------------//
     // UnitManager //
     //-------------//
@@ -87,12 +86,12 @@ public class UnitManager
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-------------//
     // getInstance //
     //-------------//
     /**
      * Report the single instance of this package.
+     *
      * @return the single instance
      */
     public static UnitManager getInstance ()
@@ -107,13 +106,13 @@ public class UnitManager
      * Add a Logger, which like addSet means perhaps adding a UnitNode
      * if not already allocated and setting its Logger reference to the
      * provided Logger.
+     *
      * @param logger the Logger to add to the hierarchy
      */
     public void addLogger (Logger logger)
     {
         //log ("addLogger logger=" + logger.getName());
-        retrieveUnit(logger.getName())
-            .setLogger(logger);
+        retrieveUnit(logger.getName()).setLogger(logger);
     }
 
     //--------//
@@ -123,13 +122,13 @@ public class UnitManager
      * Add a ConstantSet, which means perhaps adding a UnitNode if not
      * already allocated and setting its ConstantSet reference to the
      * provided ConstantSet.
+     *
      * @param set the ConstantSet to add to the hierarchy
      */
     public void addSet (ConstantSet set)
     {
         ///log ("addSet set=" + set.getName());
-        retrieveUnit(set.getName())
-            .setConstantSet(set);
+        retrieveUnit(set.getName()).setConstantSet(set);
 
         // Register this name in the dirty ones
         dirtySets.add(set.getName());
@@ -147,14 +146,14 @@ public class UnitManager
 
         for (Node node : mapOfNodes.values()) {
             if (node instanceof UnitNode) {
-                UnitNode    unit = (UnitNode) node;
+                UnitNode unit = (UnitNode) node;
                 ConstantSet set = unit.getConstantSet();
 
                 if (set != null) {
                     for (int i = 0; i < set.size(); i++) {
                         Constant constant = set.getConstant(i);
                         constants.add(
-                            unit.getName() + "." + constant.getName());
+                                unit.getName() + "." + constant.getName());
                     }
                 }
             }
@@ -162,22 +161,22 @@ public class UnitManager
 
         dumpStrings("constants", constants);
 
-        Collection<String> props = ConstantManager.getInstance()
-                                                  .getAllProperties();
+        Collection<String> props = ConstantManager.getInstance().
+                getAllProperties();
         props.removeAll(constants);
         dumpStrings("Non set-enclosed properties", props);
 
         dumpStrings(
-            "Unused User properties",
-            ConstantManager.getInstance().getUnusedUserProperties());
+                "Unused User properties",
+                ConstantManager.getInstance().getUnusedUserProperties());
 
         dumpStrings(
-            "Unused Default properties",
-            ConstantManager.getInstance().getUnusedDefaultProperties());
+                "Unused Default properties",
+                ConstantManager.getInstance().getUnusedDefaultProperties());
 
         dumpStrings(
-            "Useless Default properties",
-            ConstantManager.getInstance().getUselessDefaultProperties());
+                "Useless Default properties",
+                ConstantManager.getInstance().getUselessDefaultProperties());
     }
 
     //----------------//
@@ -201,8 +200,7 @@ public class UnitManager
             //                name);
             UnitNode unit = (UnitNode) getNode(name);
 
-            if (unit.getConstantSet()
-                    .initialize()) {
+            if (unit.getConstantSet().initialize()) {
                 it.remove();
             }
         }
@@ -230,7 +228,7 @@ public class UnitManager
 
         for (Node node : nodes) {
             if (node instanceof UnitNode) {
-                UnitNode    unit = (UnitNode) node;
+                UnitNode unit = (UnitNode) node;
 
                 // ConstantSet?
                 ConstantSet set = unit.getConstantSet();
@@ -247,6 +245,7 @@ public class UnitManager
     //---------//
     /**
      * Retrieves a node object, knowing its path name.
+     *
      * @param path fully qualified node name
      * @return the node object, or null if not found
      */
@@ -260,6 +259,7 @@ public class UnitManager
     //---------//
     /**
      * Return the PackageNode at the root of the node hierarchy.
+     *
      * @return the root PackageNode
      */
     public PackageNode getRoot ()
@@ -276,6 +276,7 @@ public class UnitManager
      * This will load the classes not already loaded.
      * This method is meant to be used by the UI which let the user browse and
      * modify the whole collection of constants.
+     *
      * @param main the application main class name
      */
     public void preLoadUnits (String main)
@@ -290,10 +291,10 @@ public class UnitManager
         }
 
         units = new Constant.String(
-            UNIT,
-            unitName,
-            "",
-            "List of units known as containing a ConstantSet and/or a Logger");
+                UNIT,
+                unitName,
+                "",
+                "List of units known as containing a ConstantSet and/or a Logger");
 
         // Initialize units using the constant 'units'
         StringTokenizer st = new StringTokenizer(units.getValue(), SEPARATOR);
@@ -306,9 +307,10 @@ public class UnitManager
             try {
                 ///System.out.println ("pre-loading '" + unit + "'...");
                 Class.forName(unit); // This loads its ConstantSet and Logger
-                                     //log ("unit '" + unit + "' pre-loaded");
+                //log ("unit '" + unit + "' pre-loaded");
             } catch (ClassNotFoundException ex) {
-                System.err.println("*** Cannot load ConstantSet " + unit);
+                System.err.println(
+                        "*** Cannot load ConstantSet " + unit + " " + ex);
             }
         }
 
@@ -326,13 +328,14 @@ public class UnitManager
     /**
      * Search for all the units for which the provided string is found
      * in the unit name or the unit description.
+     *
      * @param string the string to search for
      * @return the set (perhaps empty) of the matching units, a mix of UnitNode
-     * and Constant instances.
+     *         and Constant instances.
      */
     public Set<Object> searchUnits (String string)
     {
-        String      str = string.toLowerCase();
+        String str = string.toLowerCase(Locale.ENGLISH);
         Set<Object> found = new LinkedHashSet<>();
 
         for (Node node : mapOfNodes.values()) {
@@ -340,9 +343,8 @@ public class UnitManager
                 UnitNode unit = (UnitNode) node;
 
                 // Search in unit name itself
-                if (unit.getSimpleName()
-                        .toLowerCase()
-                        .contains(str)) {
+                if (unit.getSimpleName().toLowerCase(Locale.ENGLISH).contains(
+                        str)) {
                     found.add(unit);
                 }
 
@@ -353,12 +355,9 @@ public class UnitManager
                     for (int i = 0; i < set.size(); i++) {
                         Constant constant = set.getConstant(i);
 
-                        if (constant.getName()
-                                    .toLowerCase()
-                                    .contains(str) ||
-                            constant.getDescription()
-                                    .toLowerCase()
-                                    .contains(str)) {
+                        if (constant.getName().toLowerCase().contains(str)
+                                || constant.getDescription().toLowerCase().
+                                contains(str)) {
                             found.add(constant);
                         }
                     }
@@ -374,6 +373,7 @@ public class UnitManager
     //---------//
     /**
      * Include a Unit in the hierarchy.
+     *
      * @param unit the Unit to include
      */
     private void addUnit (UnitNode unit)
@@ -397,7 +397,7 @@ public class UnitManager
     //-------------//
     // dumpStrings //
     //-------------//
-    private void dumpStrings (String             title,
+    private void dumpStrings (String title,
                               Collection<String> strings)
     {
         System.out.println("\n" + title + ":");
@@ -424,13 +424,13 @@ public class UnitManager
     //    {
     //        System.out.println("UnitManager:: " + msg);
     //    }
-
     //--------------//
     // retrieveUnit //
     //--------------//
     /**
      * Looks for the unit with given name.
      * If the unit does not exist, it is created and inserted in the hierarchy.
+     *
      * @param name the name of the desired unit
      * @return the unit (found, or created)
      */
@@ -493,18 +493,19 @@ public class UnitManager
      * package names found in the fully qualified Unit name,
      * creating PackageNodes when needed, or adding a new child to an
      * existing PackageNode.
+     *
      * @param unit the Unit whose chain of parents is to be updated
      */
     private void updateParents (UnitNode unit)
     {
         String name = unit.getName();
-        int    length = name.length();
-        Node   child = unit;
+        int length = name.length();
+        Node child = unit;
 
         for (int i = name.lastIndexOf('.', length - 1); i >= 0;
-             i = name.lastIndexOf('.', i - 1)) {
+                i = name.lastIndexOf('.', i - 1)) {
             String parent = name.substring(0, i);
-            Node   obj = mapOfNodes.get(parent);
+            Node obj = mapOfNodes.get(parent);
 
             // Create a provision node for a future parent.
             if (obj == null) {
@@ -524,7 +525,7 @@ public class UnitManager
                 return;
             } else {
                 Exception e = new IllegalStateException(
-                    "unexpected node type " + obj.getClass() + " in map.");
+                        "unexpected node type " + obj.getClass() + " in map.");
                 e.printStackTrace();
 
                 return;
@@ -532,7 +533,6 @@ public class UnitManager
         }
 
         // No intermediate parent found, so hook it to the root itself
-        getRoot()
-            .addChild(child);
+        getRoot().addChild(child);
     }
 }

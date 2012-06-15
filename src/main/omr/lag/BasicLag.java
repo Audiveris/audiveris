@@ -64,13 +64,13 @@ public class BasicLag
     private static final Logger logger = Logger.getLogger(BasicLag.class);
 
     /** Events read on location service */
-    public static final Class[] locEventsRead = new Class[]{LocationEvent.class};
+    public static final Class[] locEventsRead = new Class<?>[]{LocationEvent.class};
 
     /** Events read on run service */
-    public static final Class[] runEventsRead = new Class[]{RunEvent.class};
+    public static final Class[] runEventsRead = new Class<?>[]{RunEvent.class};
 
     /** Events read on section service */
-    public static final Class[] sctEventsRead = new Class[]{
+    public static final Class[] sctEventsRead = new Class<?>[]{
         SectionIdEvent.class,
         SectionEvent.class
     };
@@ -388,15 +388,15 @@ public class BasicLag
 
         runsTable.setLocationService(locationService);
 
-        for (Class eventClass : locEventsRead) {
+        for (Class<?> eventClass : locEventsRead) {
             locationService.subscribeStrongly(eventClass, this);
         }
 
-        for (Class eventClass : runEventsRead) {
+        for (Class<?> eventClass : runEventsRead) {
             getRunService().subscribeStrongly(eventClass, this);
         }
 
-        for (Class eventClass : sctEventsRead) {
+        for (Class<?> eventClass : sctEventsRead) {
             lagService.subscribeStrongly(eventClass, this);
         }
     }

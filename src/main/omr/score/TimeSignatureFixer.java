@@ -127,9 +127,7 @@ public class TimeSignatureFixer
                 checkTimeSigs(startMeasure, stopMeasure);
             }
         } catch (Exception ex) {
-            logger.warning("{0} Error visiting {1}",
-                           new Object[]{getClass().getSimpleName(), page},
-                           ex);
+            logger.warning("TimeSignatureFixer. Error visiting " + page, ex);
         }
 
         // Don't go the standard way (part per part)

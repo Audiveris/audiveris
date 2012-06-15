@@ -53,8 +53,8 @@ import javax.swing.event.ChangeListener;
 
 /**
  * Class {@code SectionBoard} defines a board dedicated to the display
- * of {@link omr.lag.Section} information, it can also be used as an 
- * input means by directly entering the section id in the proper Id 
+ * of {@link omr.lag.Section} information, it can also be used as an
+ * input means by directly entering the section id in the proper Id
  * spinner.
  *
  * @author Hervé Bitteur
@@ -71,7 +71,7 @@ public class SectionBoard
     private static final Logger logger = Logger.getLogger(SectionBoard.class);
 
     /** Events this board is interested in */
-    private static final Class[] eventsRead = new Class[]{
+    private static final Class<?>[] eventsRead = new Class<?>[]{
         SectionEvent.class,
         SectionSetEvent.class
     };
@@ -176,7 +176,6 @@ public class SectionBoard
         dump.addActionListener(
                 new ActionListener()
                 {
-
                     @Override
                     public void actionPerformed (ActionEvent e)
                     {
@@ -197,7 +196,6 @@ public class SectionBoard
         id.addChangeListener(
                 new ChangeListener()
                 {
-
                     @Override
                     public void stateChanged (ChangeEvent e)
                     {

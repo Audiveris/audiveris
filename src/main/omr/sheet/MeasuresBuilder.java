@@ -218,7 +218,8 @@ public class MeasuresBuilder
                 for (TreeNode pnode : scoreSystem.getParts()) {
                     SystemPart prt = (SystemPart) pnode;
 
-                    for (Iterator sit = prt.getStaves().iterator(); sit.hasNext();) {
+                    for (Iterator<TreeNode> sit = prt.getStaves().iterator();
+                            sit.hasNext();) {
                         Staff stv = (Staff) sit.next();
                         stv.setWidth(scoreSystem.getDimension().width);
                     }
@@ -272,7 +273,8 @@ public class MeasuresBuilder
             SystemPart part = (SystemPart) node;
             Measure prevMeasure = null;
 
-            for (Iterator mit = part.getMeasures().iterator(); mit.hasNext();) {
+            for (Iterator<TreeNode> mit = part.getMeasures().iterator();
+                    mit.hasNext();) {
                 Measure measure = (Measure) mit.next();
 
                 if (prevMeasure != null) {
@@ -296,7 +298,8 @@ public class MeasuresBuilder
                                         prevMeasure.getBarline());
                         } else {
                             // No overlap => one above the other
-                            logger.fine(
+                            logger.
+                                    fine(
                                     "Two barlines segments one above the other in  {0}",
                                     measure.getBarline());
                         }
@@ -337,7 +340,8 @@ public class MeasuresBuilder
         if (dx < minWidth) {
             // Adjust system parameters if needed : topLeft and dimension
             if (dx != 0) {
-                logger.fine("Adjusting firstX={0} {1}", new Object[]{dx, system});
+                logger.fine("Adjusting firstX={0} {1}",
+                            new Object[]{dx, system});
 
                 scoreSystem.getTopLeft().translate(dx, 0);
                 scoreSystem.getDimension().width -= dx;

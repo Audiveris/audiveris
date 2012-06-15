@@ -161,8 +161,8 @@ public class BasicGlyph
         GlyphAlignment theAlignment = null;
 
         try {
-            Constructor constructor = alignmentClass.getConstructor(
-                new Class[] { Glyph.class });
+            Constructor<?> constructor = alignmentClass.getConstructor(
+                new Class<?>[] { Glyph.class });
             theAlignment = (GlyphAlignment) constructor.newInstance(
                 new Object[] { this });
         } catch (Exception ex) {

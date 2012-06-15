@@ -413,12 +413,12 @@ public class SymbolGlyphBoard
                                 new Object[]{textField.getText().trim(),
                                              roleCombo.getSelectedItem()});
 
-                    TextRole role = (TextRole) roleCombo.getSelectedItem();
+                    TextRole role = roleCombo.getSelectedItem();
                     SheetsController.getCurrentSheet().getSymbolsController().
                             asyncAssignTexts(
                             glyphs,
                             ((role == TextRole.Creator)
-                             ? (CreatorType) typeCombo.getSelectedItem() : null),
+                             ? typeCombo.getSelectedItem() : null),
                             role,
                             textField.getText());
                 } else // Custom time sig?
@@ -427,8 +427,8 @@ public class SymbolGlyphBoard
                     int den = timeDen.getValue();
 
                     if ((num != 0) && (den != 0)) {
-                        SheetsController.getCurrentSheet().getSymbolsController().
-                                asyncAssignRationals(
+                        SheetsController.getCurrentSheet().
+                                getSymbolsController().asyncAssignRationals(
                                 glyphs,
                                 new TimeRational(num, den));
                     } else {

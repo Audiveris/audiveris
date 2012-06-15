@@ -246,12 +246,12 @@ public class BarsChecker
     //---------------//
     // getCheckBoard //
     //---------------//
-    public CheckBoard getCheckBoard ()
+    public CheckBoard<GlyphContext> getCheckBoard ()
     {
         return new BarCheckBoard(
                 getSuite(),
                 sheet.getNest().getGlyphService(),
-                new Class[]{GlyphEvent.class});
+                new Class<?>[]{GlyphEvent.class});
     }
 
     //----------//

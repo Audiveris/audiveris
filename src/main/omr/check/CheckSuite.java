@@ -96,7 +96,7 @@ public class CheckSuite<C extends Checkable>
      * @param suite the suite of checks to be appended
      * @return the suite with checks appended, for easy chaining
      */
-    public CheckSuite addAll (CheckSuite<C> suite)
+    public CheckSuite<C> addAll (CheckSuite<C> suite)
     {
         int index = 0;
 
@@ -113,7 +113,7 @@ public class CheckSuite<C extends Checkable>
     // dump //
     //------//
     /**
-     * Dump a readable description of all checks that compose this suite
+     * Dump a readable description of all checks of this suite.
      */
     public void dump ()
     {
@@ -134,9 +134,9 @@ public class CheckSuite<C extends Checkable>
 
         int index = 0;
 
-        for (Check check : checks) {
+        for (Check<C> check : checks) {
             System.out.printf(
-                    "%4.1f      %-19s  %5b  % 6.2f    % 6.2f \n",
+                    "%4.1f      %-19s  %5b  % 6.2f    % 6.2f %n",
                     weights.get(index++),
                     check.getName(),
                     check.isCovariant(),
@@ -149,7 +149,7 @@ public class CheckSuite<C extends Checkable>
     // getChecks //
     //-----------//
     /**
-     * Report the collection of checks that compose this suite
+     * Report the collection of checks that compose this suite.
      *
      * @return the collection of checks
      */
@@ -162,7 +162,7 @@ public class CheckSuite<C extends Checkable>
     // getName //
     //---------//
     /**
-     * Report the name of this suite
+     * Report the name of this suite.
      *
      * @return suite name
      */
@@ -175,7 +175,7 @@ public class CheckSuite<C extends Checkable>
     // getThreshold //
     //--------------//
     /**
-     * Report the assigned threshold
+     * Report the assigned threshold.
      *
      * @return the assigned minimum result
      */
@@ -188,7 +188,7 @@ public class CheckSuite<C extends Checkable>
     // getTotalWeight //
     //----------------//
     /**
-     * Report the sum of all individual checks
+     * Report the sum of all individual checks.
      *
      * @return the total weight of the checks in the suite
      */
@@ -201,8 +201,8 @@ public class CheckSuite<C extends Checkable>
     // getWeights //
     //------------//
     /**
-     * Report the weights of the checks (collection parallel to the suite
-     * checks)
+     * Report the weights of the checks.
+     * (collection parallel to the suite checks)
      *
      * @return the collection of checks weights
      */
@@ -276,7 +276,7 @@ public class CheckSuite<C extends Checkable>
     //----------------//
     /**
      * Pass the whole collection of suites in a row and return
-     * the global result
+     * the global result.
      *
      * @param <T>    The specific type of checked object
      * @param object the object to be checked
@@ -312,7 +312,7 @@ public class CheckSuite<C extends Checkable>
     // setName //
     //---------//
     /**
-     * Assings a new name to the check suite
+     * Assings a new name to the check suite.
      *
      * @param name the new name
      */
@@ -325,7 +325,7 @@ public class CheckSuite<C extends Checkable>
     // setThreshold //
     //--------------//
     /**
-     * Allows to assign a new threshold for the suite
+     * Allows to assign a new threshold for the suite.
      *
      * @param threshold the new minimum result
      */
@@ -338,7 +338,7 @@ public class CheckSuite<C extends Checkable>
     // dumpSpecific //
     //--------------//
     /**
-     * Just an empty placeholder, meant to be overridden
+     * Just an empty placeholder, meant to be overridden.
      */
     protected void dumpSpecific ()
     {

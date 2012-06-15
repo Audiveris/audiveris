@@ -114,10 +114,10 @@ public class UIUtilities
      * @param actions list of actions to enable/disable as a whole
      * @param bool    true for enable, false for disable
      */
-    public static void enableActions (Collection actions,
+    public static void enableActions (Collection<?> actions,
                                       boolean    bool)
     {
-        for (Iterator it = actions.iterator(); it.hasNext();) {
+        for (Iterator<?> it = actions.iterator(); it.hasNext();) {
             Object next = it.next();
 
             if (next instanceof AbstractAction) {

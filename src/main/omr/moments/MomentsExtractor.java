@@ -21,7 +21,7 @@ import java.awt.image.WritableRaster;
  *
  * @author Hervé Bitteur
  */
-public interface MomentsExtractor<D extends OrthogonalMoments>
+public interface MomentsExtractor<D extends OrthogonalMoments<D>>
 {
     //~ Methods ----------------------------------------------------------------
 

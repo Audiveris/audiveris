@@ -20,7 +20,7 @@ package omr.moments;
  *
  * @author Hervé Bitteur
  */
-public interface OrthogonalMoments<D extends OrthogonalMoments>
+public interface OrthogonalMoments<D extends OrthogonalMoments<D>>
 {
     //~ Methods ----------------------------------------------------------------
 

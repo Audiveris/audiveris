@@ -179,7 +179,7 @@ public abstract class TreeNode
     {
         logger.fine("getChildrenCopy of {0}", this);
 
-        return new ArrayList(children);
+        return new ArrayList<TreeNode>(children);
     }
 
     //----------------//

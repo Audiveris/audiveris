@@ -122,13 +122,13 @@ public class GuiActions
     // defineOptions //
     //---------------//
     /**
-     * Action that opens a window where units options (logger level, constants)
-     * can be managed
+     * Action that opens a window where units options (logger level, 
+     * constants) can be managed.
      * @param e the event that triggered this action
      * @return the SAF task
      */
     @Action
-    public Task defineOptions (ActionEvent e)
+    public Task<Options, Void> defineOptions (ActionEvent e)
     {
         return new OptionsTask();
     }

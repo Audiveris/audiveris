@@ -122,7 +122,7 @@ public abstract class GhostDropAdapter<A>
      * Unregister a drop listener
      * @param listener the listener to remove
      */
-    public void removeDropListener (GhostDropListener listener)
+    public void removeDropListener (GhostDropListener<A> listener)
     {
         if (listener != null) {
             listeners.remove(listener);

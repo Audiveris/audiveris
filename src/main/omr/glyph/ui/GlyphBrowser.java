@@ -81,14 +81,14 @@ import javax.swing.event.ChangeListener;
 
 /**
  * Class {@code GlyphBrowser} gathers a navigator to move between
- * selected glyphs, a glyph board for glyph details, and a display for 
+ * selected glyphs, a glyph board for glyph details, and a display for
  * graphical glyph view.
  * This is a (package private) companion of {@link SampleVerifier}.
  *
  * @author Hervé Bitteur
  */
 class GlyphBrowser
-    implements ChangeListener
+        implements ChangeListener
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -99,7 +99,8 @@ class GlyphBrowser
     private static final Logger logger = Logger.getLogger(GlyphBrowser.class);
 
     /** Events that can be published on internal service (TODO: Check this!) */
-    private static final Class[] locEvents = new Class[] { LocationEvent.class };
+    private static final Class<?>[] locEvents = new Class<?>[]{
+        LocationEvent.class};
 
     /**
      * Field constant {@code NO_INDEX} is a specific value {@value} to
@@ -108,7 +109,6 @@ class GlyphBrowser
     private static final int NO_INDEX = -1;
 
     //~ Instance fields --------------------------------------------------------
-
     /** The concrete Swing component */
     private JPanel component = new JPanel();
 
@@ -158,12 +158,12 @@ class GlyphBrowser
     private GlyphBoard glyphBoard;
 
     //~ Constructors -----------------------------------------------------------
-
     //--------------//
     // GlyphBrowser //
     //--------------//
     /**
      * Create an instance, with back-reference to SampleVerifier.
+     *
      * @param verifier ref back to verifier
      */
     public GlyphBrowser (SampleVerifier verifier)
@@ -176,12 +176,12 @@ class GlyphBrowser
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------------//
     // getComponent //
     //--------------//
     /**
      * Report the UI component.
+     *
      * @return the concrete component
      */
     public JPanel getComponent ()
@@ -205,8 +205,9 @@ class GlyphBrowser
     // stateChanged //
     //--------------//
     /**
-     * Called when a new selection has been made in SampleVerifier 
+     * Called when a new selection has been made in SampleVerifier
      * companion.
+     *
      * @param e not used
      */
     @Override
@@ -220,8 +221,9 @@ class GlyphBrowser
     // buildLeftPanel //
     //----------------//
     /**
-     * Build a panel composed vertically of a Navigator, a GlyphBoard 
+     * Build a panel composed vertically of a Navigator, a GlyphBoard
      * and an EvaluationBoard.
+     *
      * @return the UI component, ready to be inserted in Swing hierarchy
      */
     private JPanel buildLeftPanel ()
@@ -232,16 +234,15 @@ class GlyphBrowser
         glyphBoard = new MyGlyphBoard(controller);
 
         glyphBoard.connect();
-        glyphBoard.getDeassignAction()
-                  .setEnabled(false);
+        glyphBoard.getDeassignAction().setEnabled(false);
 
         // Passive evaluation board
         EvaluationBoard evalBoard = new EvaluationBoard(controller, true);
         evalBoard.connect();
 
         // Layout
-        FormLayout      layout = new FormLayout("pref", "pref,pref,pref");
-        PanelBuilder    builder = new PanelBuilder(layout);
+        FormLayout layout = new FormLayout("pref", "pref,pref,pref");
+        PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cst = new CellConstraints();
         builder.setDefaultDialogBorder();
 
@@ -262,13 +263,13 @@ class GlyphBrowser
         if (index >= 0) {
             // Delete glyph designated by index
             String gName = names.get(index);
-            Glyph  glyph = navigator.getGlyph(gName);
+            Glyph glyph = navigator.getGlyph(gName);
 
             // User confirmation is required ?
             if (constants.confirmDeletions.getValue()) {
                 if (JOptionPane.showConfirmDialog(
-                    component,
-                    "Remove glyph '" + gName + "' ?") != JOptionPane.YES_OPTION) {
+                        component,
+                        "Remove glyph '" + gName + "' ?") != JOptionPane.YES_OPTION) {
                     return;
                 }
             }
@@ -344,7 +345,6 @@ class GlyphBrowser
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------------//
     // BasicController //
     //-----------------//
@@ -352,7 +352,7 @@ class GlyphBrowser
      * A very basic glyphs controller, with a sheet-less location service.
      */
     private class BasicController
-        extends GlyphsController
+            extends GlyphsController
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -360,8 +360,7 @@ class GlyphBrowser
         private final SelectionService locationService;
 
         //~ Constructors -------------------------------------------------------
-
-        public BasicController (Nest             nest,
+        public BasicController (Nest nest,
                                 SelectionService locationService)
         {
             super(new BasicModel(nest));
@@ -369,7 +368,6 @@ class GlyphBrowser
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public SelectionService getLocationService ()
         {
@@ -384,7 +382,7 @@ class GlyphBrowser
      * A very basic glyphs model, used to handle the deletion of glyphs.
      */
     private class BasicModel
-        extends GlyphsModel
+            extends GlyphsModel
     {
         //~ Constructors -------------------------------------------------------
 
@@ -394,7 +392,6 @@ class GlyphBrowser
         }
 
         //~ Methods ------------------------------------------------------------
-
         // Certainly not called ...
         @Override
         public void deassignGlyph (Glyph glyph)
@@ -407,21 +404,21 @@ class GlyphBrowser
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Constant.Boolean confirmDeletions = new Constant.Boolean(
-            true,
-            "Should user confirm each glyph deletion" +
-            " from training material");
+                true,
+                "Should user confirm each glyph deletion"
+                + " from training material");
     }
 
     //----------------//
     // DeassignAction //
     //----------------//
     private class DeassignAction
-        extends AbstractAction
+            extends AbstractAction
     {
         //~ Constructors -------------------------------------------------------
 
@@ -429,12 +426,11 @@ class GlyphBrowser
         {
             super("Remove");
             putValue(
-                Action.SHORT_DESCRIPTION,
-                "Remove that glyph from training material");
+                    Action.SHORT_DESCRIPTION,
+                    "Remove that glyph from training material");
         }
 
         //~ Methods ------------------------------------------------------------
-
         @SuppressWarnings("unchecked")
         @Override
         public void actionPerformed (ActionEvent e)
@@ -447,17 +443,19 @@ class GlyphBrowser
     // Display //
     //---------//
     private class Display
-        extends JPanel
+            extends JPanel
     {
         //~ Instance fields ----------------------------------------------------
 
-        LogSlider  slider;
-        Rubber     rubber;
+        LogSlider slider;
+
+        Rubber rubber;
+
         ScrollView slv;
-        Zoom       zoom;
+
+        Zoom zoom;
 
         //~ Constructors -------------------------------------------------------
-
         public Display ()
         {
             view = new MyView(controller);
@@ -484,7 +482,7 @@ class GlyphBrowser
     // LoadAction //
     //------------//
     private class LoadAction
-        extends AbstractAction
+            extends AbstractAction
     {
         //~ Constructors -------------------------------------------------------
 
@@ -494,7 +492,6 @@ class GlyphBrowser
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -523,7 +520,7 @@ class GlyphBrowser
     // MyGlyphBoard //
     //--------------//
     private class MyGlyphBoard
-        extends SymbolGlyphBoard
+            extends SymbolGlyphBoard
     {
         //~ Constructors -------------------------------------------------------
 
@@ -533,7 +530,6 @@ class GlyphBrowser
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public Action getDeassignAction ()
         {
@@ -549,7 +545,7 @@ class GlyphBrowser
     // MyView //
     //--------//
     private final class MyView
-        extends NestView
+            extends NestView
     {
         //~ Constructors -------------------------------------------------------
 
@@ -561,12 +557,12 @@ class GlyphBrowser
         }
 
         //~ Methods ------------------------------------------------------------
-
         //---------//
         // onEvent //
         //---------//
         /**
          * Call-back triggered from (local) selection objects.
+         *
          * @param event the notified event
          */
         @Override
@@ -588,9 +584,9 @@ class GlyphBrowser
                     if (sheetLocation.hint == SelectionHint.LOCATION_INIT) {
                         Rectangle rect = sheetLocation.getData();
 
-                        if ((rect != null) &&
-                            (rect.width == 0) &&
-                            (rect.height == 0)) {
+                        if ((rect != null)
+                                && (rect.width == 0)
+                                && (rect.height == 0)) {
                             // Look for pointed glyph
                             int index = glyphLookup(rect);
                             navigator.setIndex(index, sheetLocation.hint);
@@ -605,7 +601,7 @@ class GlyphBrowser
                         // Display glyph contour
                         if (glyph != null) {
                             locationService.publish(
-                                new LocationEvent(
+                                    new LocationEvent(
                                     this,
                                     glyphEvent.hint,
                                     null,
@@ -629,7 +625,7 @@ class GlyphBrowser
 
             if (index >= 0) {
                 String gName = names.get(index);
-                Glyph  glyph = navigator.getGlyph(gName);
+                Glyph glyph = navigator.getGlyph(gName);
                 g.setColor(Color.black);
                 g.setXORMode(Color.darkGray);
                 renderGlyphArea(glyph, g);
@@ -680,7 +676,7 @@ class GlyphBrowser
      * collection of glyphs (names).
      */
     private final class Navigator
-        extends Board
+            extends Board
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -689,14 +685,18 @@ class GlyphBrowser
 
         // Navigation actions & buttons
         LoadAction loadAction = new LoadAction();
-        JButton    load = new JButton(loadAction);
-        JButton    all = new JButton("All");
-        JButton    next = new JButton("Next");
-        JButton    prev = new JButton("Prev");
+
+        JButton load = new JButton(loadAction);
+
+        JButton all = new JButton("All");
+
+        JButton next = new JButton("Next");
+
+        JButton prev = new JButton("Prev");
+
         LTextField nameField = new LTextField("", "File where glyph is stored");
 
         //~ Constructors -------------------------------------------------------
-
         //-----------//
         // Navigator //
         //-----------//
@@ -707,8 +707,9 @@ class GlyphBrowser
             defineLayout();
 
             all.addActionListener(
-                new ActionListener() {
-                @Override
+                    new ActionListener()
+                    {
+                        @Override
                         public void actionPerformed (ActionEvent e)
                         {
                             // Load all (non icon) glyphs
@@ -728,8 +729,9 @@ class GlyphBrowser
                     });
 
             prev.addActionListener(
-                new ActionListener() {
-                @Override
+                    new ActionListener()
+                    {
+                        @Override
                         public void actionPerformed (ActionEvent e)
                         {
                             setIndex(nameIndex - 1, GLYPH_INIT); // To prev
@@ -737,8 +739,9 @@ class GlyphBrowser
                     });
 
             next.addActionListener(
-                new ActionListener() {
-                @Override
+                    new ActionListener()
+                    {
+                        @Override
                         public void actionPerformed (ActionEvent e)
                         {
                             setIndex(nameIndex + 1, GLYPH_INIT); // To next
@@ -757,7 +760,6 @@ class GlyphBrowser
         }
 
         //~ Methods ------------------------------------------------------------
-
         //----------//
         // getGlyph //
         //----------//
@@ -772,8 +774,7 @@ class GlyphBrowser
             if (glyph.getNest() != tNest) {
                 tNest.addGlyph(glyph);
 
-                Color color = glyph.getShape()
-                                   .getColor();
+                Color color = glyph.getShape().getColor();
 
                 for (Section section : glyph.getMembers()) {
                     Lag lag = section.isVertical() ? vtLag : htLag;
@@ -793,6 +794,7 @@ class GlyphBrowser
         //----------//
         /**
          * Report the current glyph index in the names collection.
+         *
          * @return the current index, which may be NO_INDEX
          */
         public final int getIndex ()
@@ -812,10 +814,11 @@ class GlyphBrowser
         //----------//
         /**
          * Only method allowed to designate a glyph.
+         *
          * @param index index of new current glyph
          * @param hint  related processing hint
          */
-        public void setIndex (int           index,
+        public void setIndex (int index,
                               SelectionHint hint)
         {
             Glyph glyph = null;
@@ -854,8 +857,8 @@ class GlyphBrowser
 
             nameIndex = index;
 
-            tNest.getGlyphService()
-                 .publish(new GlyphEvent(this, hint, null, glyph));
+            tNest.getGlyphService().publish(new GlyphEvent(this, hint, null,
+                                                           glyph));
 
             // Enable buttons according to glyph selection
             all.setEnabled(!names.isEmpty());
@@ -869,8 +872,8 @@ class GlyphBrowser
         private void defineLayout ()
         {
             CellConstraints cst = new CellConstraints();
-            FormLayout      layout = Panel.makeFormLayout(4, 3);
-            PanelBuilder    builder = new PanelBuilder(layout, super.getBody());
+            FormLayout layout = Panel.makeFormLayout(4, 3);
+            PanelBuilder builder = new PanelBuilder(layout, super.getBody());
             builder.setDefaultDialogBorder();
 
             int r = 1; // --------------------------------
@@ -886,8 +889,7 @@ class GlyphBrowser
             JLabel file = new JLabel("File", SwingConstants.RIGHT);
             builder.add(file, cst.xy(1, r));
 
-            nameField.getField()
-                     .setHorizontalAlignment(JTextField.LEFT);
+            nameField.getField().setHorizontalAlignment(JTextField.LEFT);
             builder.add(nameField.getField(), cst.xyw(3, r, 9));
         }
     }
@@ -899,18 +901,17 @@ class GlyphBrowser
      * A specific glyph nest, with no handling of signature.
      */
     private static class NoSigNest
-        extends BasicNest
+            extends BasicNest
     {
         //~ Constructors -------------------------------------------------------
 
         public NoSigNest (String name,
-                          Sheet  sheet)
+                          Sheet sheet)
         {
             super(name, sheet);
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public Glyph getOriginal (GlyphSignature signature)
         {

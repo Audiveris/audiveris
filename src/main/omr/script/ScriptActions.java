@@ -93,7 +93,7 @@ public class ScriptActions
                     "Save script for score " + script.getScore().getRadix() + "?");
 
             if (answer == JOptionPane.YES_OPTION) {
-                Task task = getInstance().storeScript(null);
+                Task<Void, Void> task = getInstance().storeScript(null);
 
                 if (task != null) {
                     task.execute();
@@ -144,7 +144,7 @@ public class ScriptActions
     // loadScript //
     //------------//
     @Action
-    public Task loadScript (ActionEvent e)
+    public Task<Void, Void> loadScript (ActionEvent e)
     {
         final File file = UIUtilities.fileChooser(
                 false,
@@ -183,7 +183,7 @@ public class ScriptActions
     // storeScript //
     //-------------//
     @Action(enabledProperty = SHEET_AVAILABLE)
-    public Task storeScript (ActionEvent e)
+    public Task<Void, Void> storeScript (ActionEvent e)
     {
         final Score score = ScoreController.getCurrentScore();
 
@@ -204,7 +204,7 @@ public class ScriptActions
     // storeScriptAs //
     //---------------//
     @Action(enabledProperty = SHEET_AVAILABLE)
-    public Task storeScriptAs (ActionEvent e)
+    public Task<Void, Void> storeScriptAs (ActionEvent e)
     {
         final Score score = ScoreController.getCurrentScore();
 

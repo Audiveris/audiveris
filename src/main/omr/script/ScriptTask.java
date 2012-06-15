@@ -117,9 +117,9 @@ public abstract class ScriptTask
      * @param sheet the sheet to run this task against
      * @return the launched SAF task
      */
-    public Task launch (final Sheet sheet)
+    public Task<Void, Void> launch (final Sheet sheet)
     {
-        Task task = new BasicTask() {
+        Task<Void, Void> task = new BasicTask() {
             @Override
             protected Void doInBackground ()
                 throws Exception

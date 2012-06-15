@@ -85,7 +85,7 @@ public abstract class AbstractTreeTableModel
      * @return DOCUMENT ME!
      */
     @Override
-    public Class getColumnClass (int column)
+    public Class<?> getColumnClass (int column)
     {
         return Object.class;
     }

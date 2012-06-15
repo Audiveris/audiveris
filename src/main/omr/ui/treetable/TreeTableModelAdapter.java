@@ -124,7 +124,7 @@ public class TreeTableModelAdapter
      * @return DOCUMENT ME!
      */
     @Override
-    public Class getColumnClass (int column)
+    public Class<?> getColumnClass (int column)
     {
         return treeTableModel.getColumnClass(column);
     }

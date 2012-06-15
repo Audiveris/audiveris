@@ -56,7 +56,7 @@ public class PixelBoard
     private static final Logger logger = Logger.getLogger(PixelBoard.class);
 
     /** Events this entity is interested in */
-    private static final Class[] eventClasses = new Class[]{
+    private static final Class<?>[] eventClasses = new Class<?>[]{
         LocationEvent.class,
         PixelLevelEvent.class
     };

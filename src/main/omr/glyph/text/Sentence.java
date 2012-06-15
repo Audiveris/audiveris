@@ -157,7 +157,7 @@ public class Sentence
     protected final SystemPart systemPart;
 
     /** Series of 3 horizontal Stripes. */
-    private final Map<Stripe.Kind, Stripe> stripes = new EnumMap(
+    private final Map<Stripe.Kind, Stripe> stripes = new EnumMap<>(
             Stripe.Kind.class);
 
     /** Related staff */

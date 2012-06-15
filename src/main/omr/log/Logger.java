@@ -94,7 +94,7 @@ public class Logger
      * @param cl the related class
      * @return the logger
      */
-    public static Logger getLogger (Class cl)
+    public static Logger getLogger (Class<?> cl)
     {
         return getLogger(cl.getName());
     }
@@ -345,34 +345,10 @@ public class Logger
     //---------//
     // warning //
     //---------//
-    /**
-     * Log a warning with a related exception, then continue.
-     *
-     * @param msg    the (warning) message
-     * @param thrown the related exception, whose stack trace will be printed
-     *               only if the constant flag 'printStackTraces' is set.
-     */
     public void warning (String msg,
-                         Object param1,
-                         Throwable thrown)
+                         Object... params)
     {
-        super.log(
-                Level.WARNING,
-                "{0} {1} [{2}]",
-                new Object[]{msg, param1, thrown});
-
-        if (constants.printStackOnWarning.isSet()) {
-            thrown.printStackTrace();
-        }
-    }
-
-    //---------//
-    // warning //
-    //---------//
-    public void warning (String msg,
-                         Object param1)
-    {
-        super.log(Level.WARNING, msg, param1);
+        super.log(Level.WARNING, msg, params);
     }
 
     //---------------------//

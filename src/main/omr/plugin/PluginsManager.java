@@ -193,7 +193,7 @@ public class PluginsManager
      * @param e the event that triggered this action
      */
     @Action(enabledProperty = SCORE_AVAILABLE)
-    public Task invokeDefaultPlugin (ActionEvent e)
+    public Task<Void,Void> invokeDefaultPlugin (ActionEvent e)
     {
         if (defaultPlugin == null) {
             logger.warning("No default plugin defined");

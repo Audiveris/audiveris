@@ -78,10 +78,11 @@ public class BasicNest
     private static final Logger logger = Logger.getLogger(BasicNest.class);
 
     /** Events read on location service */
-    public static final Class[] locEventsRead = new Class[]{LocationEvent.class};
+    public static final Class<?>[] locEventsRead = new Class<?>[]{
+        LocationEvent.class};
 
     /** Events read on nest (glyph) service */
-    public static final Class[] glyEventsRead = new Class[]{
+    public static final Class<?>[] glyEventsRead = new Class<?>[]{
         GlyphIdEvent.class,
         GlyphEvent.class,
         GlyphSetEvent.class
@@ -437,7 +438,8 @@ public class BasicNest
                     logger.fine("new avatar of #{0}{1}{2}",
                                 new Object[]{
                                 original.getId(),
-                                Sections.toString(" members", glyph.getMembers()),
+                                Sections.
+                                toString(" members", glyph.getMembers()),
                                 Sections.toString(" original", original.
                                 getMembers())
                             });
@@ -467,7 +469,8 @@ public class BasicNest
                     Glyph oldGlyph = originals.remove(oldSig);
 
                     if (oldGlyph != null) {
-                        logger.fine(
+                        logger.
+                                fine(
                                 "Updating registration of {0} oldGlyph:{1}",
                                 new Object[]{glyph.idString(), oldGlyph.getId()});
                     }
@@ -510,11 +513,11 @@ public class BasicNest
     {
         this.locationService = locationService;
 
-        for (Class eventClass : locEventsRead) {
+        for (Class<?> eventClass : locEventsRead) {
             locationService.subscribeStrongly(eventClass, this);
         }
 
-        for (Class eventClass : glyEventsRead) {
+        for (Class<?> eventClass : glyEventsRead) {
             glyphService.subscribeStrongly(eventClass, this);
         }
     }

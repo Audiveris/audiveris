@@ -56,7 +56,7 @@ public class Zip
             //ZipFile zf = new ZipFile(path + ".zip");
             ZipFile zf = new ZipFile(path);
 
-            for (Enumeration entries = zf.entries(); entries.hasMoreElements();) {
+            for (Enumeration<?> entries = zf.entries(); entries.hasMoreElements();) {
                 ZipEntry entry = (ZipEntry) entries.nextElement();
 
                 return zf.getInputStream(entry);
@@ -122,7 +122,7 @@ public class Zip
 
             ZipFile zf = new ZipFile(path + ".zip");
 
-            for (Enumeration entries = zf.entries(); entries.hasMoreElements();) {
+            for (Enumeration<?> entries = zf.entries(); entries.hasMoreElements();) {
                 ZipEntry    entry = (ZipEntry) entries.nextElement();
                 InputStream is = zf.getInputStream(entry);
 

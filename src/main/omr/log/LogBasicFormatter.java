@@ -28,7 +28,7 @@ import java.util.logging.LogRecord;
  * @author Hervé Bitteur
  */
 public class LogBasicFormatter
-    extends Formatter
+        extends Formatter
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -42,19 +42,19 @@ public class LogBasicFormatter
     private static final boolean PRINT_FRAME = true;
 
     /** Classes to skip when retrieving the actual caller of the log */
-    private static final Class[] logClasses = new Class[] {
-                                                  java.util.logging.Logger.class,
-                                                  omr.log.Logger.class
-                                              };
+    private static final Class<?>[] logClasses = new Class<?>[]{
+        java.util.logging.Logger.class,
+        omr.log.Logger.class
+    };
 
     //~ Instance fields --------------------------------------------------------
+    private Date dat = new Date();
 
-    private Date          dat = new Date();
     private MessageFormat formatter;
-    private Object[]      args = new Object[1];
+
+    private Object[] args = new Object[1];
 
     //~ Methods ----------------------------------------------------------------
-
     /**
      * Format the given LogRecord.
      *
@@ -85,8 +85,7 @@ public class LogBasicFormatter
             StackTraceElement frame = ClassUtil.getCallingFrame(logClasses);
 
             if (frame != null) {
-                sb.append(" ")
-                  .append(frame);
+                sb.append(" ").append(frame);
             }
         }
 
@@ -105,9 +104,8 @@ public class LogBasicFormatter
 
         if (record.getThrown() != null) {
             StringWriter sw = new StringWriter();
-            PrintWriter  pw = new PrintWriter(sw);
-            record.getThrown()
-                  .printStackTrace(pw);
+            PrintWriter pw = new PrintWriter(sw);
+            record.getThrown().printStackTrace(pw);
             pw.close();
             sb.append(sw.toString());
 

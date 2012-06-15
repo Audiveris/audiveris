@@ -275,7 +275,7 @@ public class Measure
     public void cleanupNode ()
     {
         // Remove all direct children except barlines
-        for (Iterator it = children.iterator(); it.hasNext();) {
+        for (Iterator<TreeNode> it = children.iterator(); it.hasNext();) {
             VisitableNode node = (VisitableNode) it.next();
 
             if (!(node instanceof Barline)) {

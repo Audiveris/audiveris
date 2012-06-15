@@ -167,7 +167,7 @@ public class Dumping
          * @param classe the class at stake
          * @return true if found relevant
          */
-        boolean isClassRelevant (Class classe);
+        boolean isClassRelevant (Class<?> classe);
 
         /**
          * Predicate to determine if a given field is worth being printed.
@@ -213,7 +213,7 @@ public class Dumping
         // isClassRelevant //
         //-----------------//
         @Override
-        public boolean isClassRelevant (Class classe)
+        public boolean isClassRelevant (Class<?> classe)
         {
             if (classe == null) {
                 return false;

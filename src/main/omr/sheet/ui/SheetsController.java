@@ -21,6 +21,7 @@ import omr.score.entity.Page;
 
 import omr.selection.SelectionService;
 import omr.selection.SheetEvent;
+import omr.selection.UserEvent;
 
 import omr.sheet.Sheet;
 
@@ -65,7 +66,8 @@ public class SheetsController
             SheetsController.class);
 
     /** Events that can be published on sheet service */
-    private static final Class[] eventsWritten = new Class[]{SheetEvent.class};
+    private static final Class<?>[] eventsWritten = new Class<?>[]{
+        SheetEvent.class};
 
     /** The single instance of this class */
     private static volatile SheetsController INSTANCE;
@@ -364,7 +366,7 @@ public class SheetsController
      *
      * @param subscriber The subscriber to accept the events when published.
      */
-    public void subscribe (EventSubscriber subscriber)
+    public void subscribe (EventSubscriber<SheetEvent> subscriber)
     {
         sheetService.subscribeStrongly(SheetEvent.class, subscriber);
     }
@@ -377,7 +379,7 @@ public class SheetsController
      *
      * @param subscriber the entity to unsubscribe
      */
-    public void unsubscribe (EventSubscriber subscriber)
+    public void unsubscribe (EventSubscriber<SheetEvent> subscriber)
     {
         sheetService.unsubscribe(SheetEvent.class, subscriber);
     }

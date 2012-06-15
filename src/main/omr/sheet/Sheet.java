@@ -95,7 +95,7 @@ public class Sheet
     private static final Logger logger = Logger.getLogger(Sheet.class);
 
     /** Events that can be published on a sheet service */
-    public static final Class[] allowedEvents = new Class[]{
+    public static final Class<?>[] allowedEvents = new Class<?>[]{
         LocationEvent.class,
         PixelLevelEvent.class
     };

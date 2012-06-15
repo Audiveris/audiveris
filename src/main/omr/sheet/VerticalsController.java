@@ -44,7 +44,7 @@ import java.util.Arrays;
  * @author Hervé Bitteur
  */
 public class VerticalsController
-    extends GlyphsController
+        extends GlyphsController
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -53,18 +53,17 @@ public class VerticalsController
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
-        VerticalsController.class);
+            VerticalsController.class);
 
     /** Events this entity is interested in */
-    private static final Class[] eventClasses = new Class[] { GlyphEvent.class };
+    private static final Class<?>[] eventClasses = new Class<?>[]{
+        GlyphEvent.class};
 
     //~ Instance fields --------------------------------------------------------
-
     /** Related user display if any */
     private MyView view;
 
     //~ Constructors -----------------------------------------------------------
-
     //---------------------//
     // VerticalsController //
     //---------------------//
@@ -77,14 +76,13 @@ public class VerticalsController
     {
         // We work with the sheet vertical lag
         super(
-            new GlyphsModel(
+                new GlyphsModel(
                 sheet,
                 sheet.getNest(),
                 Steps.valueOf(Steps.STICKS)));
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------//
     // refresh //
     //---------//
@@ -124,47 +122,47 @@ public class VerticalsController
         //                        new StemCheckBoard(
         //                            sheet.getNest().getGlyphService(),
         //                            eventClasses)));
-        sheet.getAssembly()
-             .addBoard(
-            Step.DATA_TAB,
-            new StemCheckBoard(sheet.getNest().getGlyphService(), eventClasses));
+        sheet.getAssembly().addBoard(
+                Step.DATA_TAB,
+                new StemCheckBoard(sheet.getNest().getGlyphService(),
+                                   eventClasses));
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Constant.Boolean displayFrame = new Constant.Boolean(
-            true,
-            "Should we display a frame on the stem sticks");
+                true,
+                "Should we display a frame on the stem sticks");
 
         //
         Constant.Double maxCoTangentForCheck = new Constant.Double(
-            "cotangent",
-            0.1,
-            "Maximum cotangent for checking a stem candidate");
+                "cotangent",
+                0.1,
+                "Maximum cotangent for checking a stem candidate");
     }
 
     //--------//
     // MyView //
     //--------//
     private final class MyView
-        extends NestView
+            extends NestView
     {
         //~ Constructors -------------------------------------------------------
 
         public MyView (Nest nest)
         {
             super(
-                nest,
-                VerticalsController.this,
-                Arrays.asList(sheet.getHorizontalLag(), sheet.getVerticalLag()));
+                    nest,
+                    VerticalsController.this,
+                    Arrays.asList(sheet.getHorizontalLag(), sheet.
+                    getVerticalLag()));
 
             setLocationService(sheet.getLocationService());
 
@@ -172,7 +170,6 @@ public class VerticalsController
         }
 
         //~ Methods ------------------------------------------------------------
-
         //-------------//
         // renderItems //
         //-------------//
@@ -180,8 +177,7 @@ public class VerticalsController
         public void renderItems (Graphics2D g)
         {
             // Render all physical info known so far
-            sheet.getPage()
-                 .accept(new SheetPainter(g, false));
+            sheet.getPage().accept(new SheetPainter(g, false));
 
             super.renderItems(g);
         }
@@ -191,18 +187,17 @@ public class VerticalsController
     // StemCheckBoard //
     //----------------//
     private class StemCheckBoard
-        extends CheckBoard<Glyph>
+            extends CheckBoard<Glyph>
     {
         //~ Constructors -------------------------------------------------------
 
         public StemCheckBoard (SelectionService eventService,
-                               Class[]          eventList)
+                               Class[] eventList)
         {
             super("StemCheck", null, eventService, eventList);
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public void onEvent (UserEvent event)
         {
@@ -214,13 +209,14 @@ public class VerticalsController
 
                 if (event instanceof GlyphEvent) {
                     GlyphEvent glyphEvent = (GlyphEvent) event;
-                    Glyph      glyph = glyphEvent.getData();
+                    Glyph glyph = glyphEvent.getData();
 
                     if (glyph instanceof Glyph) {
                         SystemInfo system = sheet.getSystemOf(glyph);
 
                         // Make sure this is a rather vertical stick
-                        if (Math.abs(glyph.getInvertedSlope()) <= constants.maxCoTangentForCheck.getValue()) {
+                        if (Math.abs(glyph.getInvertedSlope()) <= constants.maxCoTangentForCheck.
+                                getValue()) {
                             // Get a fresh suite
                             setSuite(system.createStemCheckSuite(true));
                             tellObject(glyph);

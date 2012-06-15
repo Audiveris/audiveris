@@ -88,8 +88,8 @@ public class SymbolsController
      * @param timeRational the time sig rational value
      * @return the task that carries out the processing
      */
-    public Task asyncAssignRationals (Collection<Glyph> glyphs,
-                                      final TimeRational timeRational)
+    public Task<Void, Void> asyncAssignRationals (Collection<Glyph> glyphs,
+                                                  TimeRational timeRational)
     {
         return new RationalTask(sheet, timeRational, glyphs).launch(sheet);
     }
@@ -107,10 +107,10 @@ public class SymbolsController
      * @param textContent the content as a string (if not empty)
      * @return the task that carries out the processing
      */
-    public Task asyncAssignTexts (Collection<Glyph> glyphs,
-                                  final CreatorType textType,
-                                  final TextRole textRole,
-                                  final String textContent)
+    public Task<Void, Void> asyncAssignTexts (Collection<Glyph> glyphs,
+                                              CreatorType textType,
+                                              TextRole textRole,
+                                              String textContent)
     {
         return new TextTask(sheet, textType, textRole, textContent, glyphs).
                 launch(sheet);
@@ -125,7 +125,7 @@ public class SymbolsController
      * @param modifiedLines the set of modified lines
      * @return the task that carries out the processing
      */
-    public Task asyncModifyBoundaries (Set<BrokenLine> modifiedLines)
+    public Task<Void, Void> asyncModifyBoundaries (Set<BrokenLine> modifiedLines)
     {
         List<BrokenLineContext> contexts = new ArrayList<>();
 
@@ -160,8 +160,8 @@ public class SymbolsController
      * @param isShort looking for short (or standard) stems
      * @return the task that carries out the processing
      */
-    public Task asyncSegment (Collection<Glyph> glyphs,
-                              final boolean isShort)
+    public Task<Void, Void> asyncSegment (Collection<Glyph> glyphs,
+                                          boolean isShort)
     {
         return new SegmentTask(sheet, isShort, glyphs).launch(sheet);
     }
@@ -175,7 +175,7 @@ public class SymbolsController
      * @param glyphs the slur glyphs to fix
      * @return the task that carries out the processing
      */
-    public Task asyncTrimSlurs (Collection<Glyph> glyphs)
+    public Task<Void, Void> asyncTrimSlurs (Collection<Glyph> glyphs)
     {
         return new SlurTask(sheet, glyphs).launch(sheet);
     }

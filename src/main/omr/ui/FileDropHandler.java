@@ -29,7 +29,6 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.logging.Level;
 
 import javax.swing.TransferHandler;
 import javax.swing.TransferHandler.TransferSupport;
@@ -119,11 +118,11 @@ public class FileDropHandler
         try {
             /* Fetch data */
             Object data = trsf.getTransferData(DataFlavor.javaFileListFlavor);
-            java.util.List fileList = (java.util.List) data;
+            java.util.List<File> fileList = (java.util.List<File>) data;
 
             /* Loop through the files */
-            for (Object obj : fileList) {
-                new DropTask((File) obj, getDefaultStep()).execute();
+            for (File file : fileList) {
+                new DropTask(file, getDefaultStep()).execute();
             }
         } catch (UnsupportedFlavorException ex) {
             logger.warning("Unsupported flavor in drag & drop", ex);
