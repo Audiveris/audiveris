@@ -346,7 +346,7 @@ public class FilamentAlignment
         }
 
         // Then the absolute defining points?
-        if (constants.showFilamentPoints.getValue() && (points != null)) {
+        if (constants.showFilamentPoints.isSet() && (points != null)) {
             // Point radius
             double r = glyph.getInterline() * constants.filamentPointSize.
                     getValue();

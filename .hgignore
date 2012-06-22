@@ -18,7 +18,6 @@ dist$
 externals
 jars$
 midi$
-nbproject$
 ocr-204$
 pdf$
 print$
@@ -32,9 +31,6 @@ www/docs/api
 syntax: glob
 
 audiveris.bat
-#build/*
-#build/**/*
-^build.xml
 # Ignore .jpg and .pdf under the src directory since they are produced via umlet
 # Images handled by conf management should use other suffix (.png for example)
 src/**/*.jpg

@@ -46,10 +46,9 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.logging.Level;
 
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
@@ -68,7 +67,7 @@ import javax.swing.text.JTextComponent;
  * @author Hervé Bitteur
  */
 public class GuiActions
-    extends ScoreDependent
+        extends ScoreDependent
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -82,10 +81,10 @@ public class GuiActions
     private static Options options;
 
     // Resource injection
-    private static ResourceMap          resource = Application.getInstance()
-                                                              .getContext()
-                                                              .getResourceMap(
-        GuiActions.class);
+    private static ResourceMap resource = Application.getInstance()
+            .getContext()
+            .getResourceMap(
+            GuiActions.class);
 
     /** Singleton */
     private static GuiActions INSTANCE;
@@ -103,27 +102,28 @@ public class GuiActions
     public static final String BOARDS_DISPLAYED = "boardsDisplayed";
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // clearLog //
     //----------//
     /**
      * Action to erase the content of the log display
+     *
      * @param e the event which triggered this action
      */
     @Action
     public void clearLog (ActionEvent e)
     {
         Main.getGui()
-            .clearLog();
+                .clearLog();
     }
 
     //---------------//
     // defineOptions //
     //---------------//
     /**
-     * Action that opens a window where units options (logger level, 
+     * Action that opens a window where units options (logger level,
      * constants) can be managed.
+     *
      * @param e the event that triggered this action
      * @return the SAF task
      */
@@ -137,7 +137,8 @@ public class GuiActions
     // defineShapeColors //
     //-------------------//
     /**
-     * Action that  allows to define the colors of predefined shapes
+     * Action that allows to define the colors of predefined shapes
+     *
      * @param e the event which triggered this action
      */
     @Action
@@ -151,13 +152,14 @@ public class GuiActions
     //-------------------//
     /**
      * Action to erase the dump the content of all event services
+     *
      * @param e the event which triggered this action
      */
     @Action(enabledProperty = SHEET_AVAILABLE)
     public void dumpEventServices (ActionEvent e)
     {
         SheetsController.getInstance()
-                        .dumpCurrentSheetServices();
+                .dumpCurrentSheetServices();
     }
 
     //------//
@@ -165,13 +167,14 @@ public class GuiActions
     //------//
     /**
      * Action to exit the application
+     *
      * @param e the event which triggered this action
      */
     @Action
     public void exit (ActionEvent e)
     {
         MainGui.getInstance()
-               .exit();
+                .exit();
     }
 
     //-------------//
@@ -204,12 +207,13 @@ public class GuiActions
     //--------------------//
     /**
      * Report whether the underlying platform can launch a browser
+     *
      * @return true if it can
      */
     public boolean isBrowserSupported ()
     {
         return WebBrowser.getBrowser()
-                         .isSupported();
+                .isSupported();
     }
 
     //-------------------//
@@ -278,6 +282,7 @@ public class GuiActions
     //-----------//
     /**
      * Show the 'about' data
+     *
      * @param e the event which triggered this action
      */
     @Action
@@ -295,32 +300,25 @@ public class GuiActions
     //------------//
     /**
      * Action to launch a browser on Audiveris handbook
+     *
      * @param e the event which triggered this action
      */
     @Action(enabledProperty = "browserSupported")
     public void showManual (ActionEvent e)
     {
-        try {
-            File   file = new File(
-                WellKnowns.DOC_FOLDER,
-                constants.manualUrl.getValue());
-            URI    uri = file.toURI();
-            URL    url = uri.toURL();
-            String str = "\"" + url + "\"";
-
-            logger.fine("Launching browser on {0}", str);
-            WebBrowser.getBrowser()
-                      .launch(str);
-        } catch (MalformedURLException ex) {
-            logger.warning("Error in documentation URL", ex);
-        }
+        File file = new File(WellKnowns.DOC_FOLDER,
+                             constants.manualUrl.getValue());
+        URI uri = file.toURI();
+        WebBrowser.getBrowser()
+                .launch(uri);
     }
 
     //------------//
     // showMemory //
     //------------//
     /**
-     * Action to desplay the current value of occupied  memory
+     * Action to desplay the current value of occupied memory
+     *
      * @param e the event that triggered this action
      */
     @Action
@@ -334,6 +332,7 @@ public class GuiActions
     //--------------//
     /**
      * Action that toggles the display of baords window
+     *
      * @param e the event that triggered this action
      */
     @Action(selectedProperty = BOARDS_DISPLAYED)
@@ -346,6 +345,7 @@ public class GuiActions
     //--------------//
     /**
      * Action that toggles the display of errors window
+     *
      * @param e the event that triggered this action
      */
     @Action(selectedProperty = ERRORS_DISPLAYED)
@@ -358,6 +358,7 @@ public class GuiActions
     //-----------//
     /**
      * Action that toggles the display of log window
+     *
      * @param e the event that triggered this action
      */
     @Action(selectedProperty = LOG_DISPLAYED)
@@ -378,7 +379,7 @@ public class GuiActions
     public void verifyTrainingMaterial (ActionEvent e)
     {
         SampleVerifier.getInstance()
-                     .setVisible(true);
+                .setVisible(true);
     }
 
     //--------------//
@@ -386,20 +387,23 @@ public class GuiActions
     //--------------//
     /**
      * Action to launch a browser on application web site
+     *
      * @param e the event which triggered this action
      */
     @Action(enabledProperty = "browserSupported")
     public void visitWebSite (ActionEvent e)
     {
         String str = constants.webSiteUrl.getValue();
-
-        logger.info("Launching browser on {0}", str);
-        WebBrowser.getBrowser()
-                  .launch(str);
+        try {
+            URI uri = new URI(str);
+            WebBrowser.getBrowser()
+                    .launch(uri);
+        } catch (URISyntaxException ex) {
+            logger.warning("Illegal site uri " + str, ex);
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-------------//
     // AboutAction //
     //-------------//
@@ -412,24 +416,22 @@ public class GuiActions
     {
         //~ Enumerations -------------------------------------------------------
 
-        private static enum Topic {
+        private static enum Topic
+        {
             //~ Enumeration constant initializers ------------------------------
-
 
             /** Longer application description */
             description(new JTextField()),
             /** Current version */
-            version(new JTextField()), 
+            version(new JTextField()),
             /** Current revision */
-            revision(new JTextField()), 
+            revision(new JTextField()),
             /** Precise classes */
-            classes(new JTextField()), 
+            classes(new JTextField()),
             /** Link to web site */
-            home(new JEditorPane("text/html", "")), 
-
+            home(new JEditorPane("text/html", "")),
             /** Link to project site */
-            project(new JEditorPane("text/html", "")), 
-
+            project(new JEditorPane("text/html", "")),
             /** License */
             license(new JTextField());
             //~ Instance fields ------------------------------------------------
@@ -437,7 +439,6 @@ public class GuiActions
             public final JTextComponent comp;
 
             //~ Constructors ---------------------------------------------------
-
             Topic (JTextComponent comp)
             {
                 this.comp = comp;
@@ -445,13 +446,12 @@ public class GuiActions
         }
 
         //~ Instance fields ----------------------------------------------------
-
         // Dialog
-        private JDialog           aboutBox = null;
+        private JDialog aboutBox = null;
+
         private HyperlinkListener linkListener = new LinkListener();
 
         //~ Methods ------------------------------------------------------------
-
         public void actionPerformed (ActionEvent e)
         {
             if (aboutBox == null) {
@@ -459,7 +459,7 @@ public class GuiActions
             }
 
             MainGui.getInstance()
-                   .show(aboutBox);
+                    .show(aboutBox);
         }
 
         private JDialog createAboutBox ()
@@ -471,18 +471,18 @@ public class GuiActions
             }
 
             // Layout
-            final FormLayout      layout = new FormLayout(
-                "right:pref, 5dlu, pref, 200dlu",
-                rows.toString());
-            final PanelBuilder    builder = new PanelBuilder(layout);
+            final FormLayout layout = new FormLayout(
+                    "right:pref, 5dlu, pref, 200dlu",
+                    rows.toString());
+            final PanelBuilder builder = new PanelBuilder(layout);
             final CellConstraints cst = new CellConstraints();
 
             builder.setDefaultDialogBorder();
 
-            int    iRow = 1;
+            int iRow = 1;
 
             JPanel logoPanel = new ImagePanel(
-                new File(WellKnowns.RES_FOLDER, "Splash.png").toString());
+                    new File(WellKnowns.RES_FOLDER, "Splash.png").toString());
             builder.add(logoPanel, cst.xyw(1, iRow, 4));
             iRow += 2;
 
@@ -503,7 +503,7 @@ public class GuiActions
 
                 if (topic.comp instanceof JEditorPane) {
                     ((JEditorPane) topic.comp).addHyperlinkListener(
-                        linkListener);
+                            linkListener);
                 }
 
                 builder.add(topic.comp, cst.xy(3, iRow));
@@ -526,19 +526,17 @@ public class GuiActions
         }
 
         //~ Inner Classes ------------------------------------------------------
-
         //------------//
         // ImagePanel //
         //------------//
         private static class ImagePanel
-            extends JPanel
+                extends JPanel
         {
             //~ Instance fields ------------------------------------------------
 
             private Image img;
 
             //~ Constructors ---------------------------------------------------
-
             public ImagePanel (String img)
             {
                 this(new ImageIcon(img).getImage());
@@ -549,8 +547,8 @@ public class GuiActions
                 this.img = img;
 
                 Dimension size = new Dimension(
-                    img.getWidth(null),
-                    img.getHeight(null));
+                        img.getWidth(null),
+                        img.getHeight(null));
                 setPreferredSize(size);
                 setMinimumSize(size);
                 setMaximumSize(size);
@@ -559,7 +557,6 @@ public class GuiActions
             }
 
             //~ Methods --------------------------------------------------------
-
             @Override
             public void paintComponent (Graphics g)
             {
@@ -568,7 +565,7 @@ public class GuiActions
         }
 
         private static class LinkListener
-            implements HyperlinkListener
+                implements HyperlinkListener
         {
             //~ Methods --------------------------------------------------------
 
@@ -576,12 +573,17 @@ public class GuiActions
             public void hyperlinkUpdate (HyperlinkEvent event)
             {
                 HyperlinkEvent.EventType type = event.getEventType();
-                final URL                url = event.getURL();
+                final URL url = event.getURL();
 
                 if (type == HyperlinkEvent.EventType.ACTIVATED) {
-                    //System.out.println("Activated URL " + url);
-                    WebBrowser.getBrowser()
-                              .launch(url.toString());
+                    try {
+                        //System.out.println("Activated URL " + url);
+                        URI uri = new URI(url.toString());
+                        WebBrowser.getBrowser()
+                                .launch(uri);
+                    } catch (URISyntaxException ex) {
+                        logger.warning("Illegal URI " + url, ex);
+                    }
                 }
             }
         }
@@ -591,40 +593,40 @@ public class GuiActions
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
-        Constant.String        webSiteUrl = new Constant.String(
-            "http://www.audiveris.org",
-            "URL of Audiveris home page");
+        Constant.String webSiteUrl = new Constant.String(
+                "http://www.audiveris.org",
+                "URL of Audiveris home page");
 
         //
-        Constant.String        manualUrl = new Constant.String(
-            "/docs/manual/handbook.html",
-            "URL of local Audiveris manual");
+        Constant.String manualUrl = new Constant.String(
+                "docs/manual/handbook.html",
+                "URL of local Audiveris manual");
 
         //
         final Constant.Boolean boardsDisplayed = new Constant.Boolean(
-            true,
-            "Should the boards window be displayed");
+                true,
+                "Should the boards window be displayed");
 
         //
         final Constant.Boolean logDisplayed = new Constant.Boolean(
-            true,
-            "Should the log window be displayed");
+                true,
+                "Should the log window be displayed");
 
         //
         final Constant.Boolean errorsDisplayed = new Constant.Boolean(
-            true,
-            "Should the errors window be displayed");
+                true,
+                "Should the errors window be displayed");
     }
 
     //-------------//
     // OptionsTask //
     //-------------//
     private static class OptionsTask
-        extends Task<Options, Void>
+            extends Task<Options, Void>
     {
         //~ Constructors -------------------------------------------------------
 
@@ -634,10 +636,9 @@ public class GuiActions
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         protected Options doInBackground ()
-            throws Exception
+                throws Exception
         {
             if (options == null) {
                 options = new Options();
@@ -651,7 +652,7 @@ public class GuiActions
         {
             if (options != null) {
                 MainGui.getInstance()
-                       .show(options.getComponent());
+                        .show(options.getComponent());
             }
         }
     }

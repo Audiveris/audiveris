@@ -15,10 +15,11 @@ import omr.WellKnowns;
 
 import omr.log.Logger;
 
-import com.centerkey.utils.BareBonesBrowserLaunch;
-
+import java.awt.Desktop;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.logging.Level;
+import java.net.URI;
 
 /**
  * Class {@code WebBrowser} gathers functionality to
@@ -41,10 +42,16 @@ public class WebBrowser
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(WebBrowser.class);
 
-    /** Singleton instance, initially null */
+    /** Major browsers. */
+    private static final String[] browsers = {
+        "firefox", "opera", "konqueror", "epiphany", "mozilla", "netscape"
+    };
+
+    /** Singleton instance, initially null. */
     private static WebBrowser instance;
 
     //~ Constructors -----------------------------------------------------------
+    //
     //------------//
     // WebBrowser //
     //------------//
@@ -60,7 +67,7 @@ public class WebBrowser
      * Get the singleton WebBrowser implementation.
      *
      * @return a WebBrowser implementation, not null
-     * in normal operation
+     *         in normal operation
      */
     public static synchronized WebBrowser getBrowser ()
     {
@@ -90,15 +97,27 @@ public class WebBrowser
     /**
      * Launches a web browser to browse a site.
      *
-     * @param urlString Location to which the browser should browse.
+     * @param uri URI the browser should open.
      */
-    public void launch (String urlString)
+    public void launch (URI uri)
     {
-        logger.fine("Browsing {0} using {1}",
-                    new Object[]{urlString, toString()});
+        String osName = System.getProperty("os.name");
 
-        // Delegate to BareBonesBrowserLaunch
-        BareBonesBrowserLaunch.openURL(urlString);
+        if (false) {
+            logger.info(
+                    "Desktop.browse {0} with {1} on {2}", uri, this, osName);
+
+            try {
+                Desktop desktop = Desktop.getDesktop();
+                desktop.browse(uri);
+            } catch (IOException ex) {
+                logger.warning("Could not launch browser " + uri, ex);
+            }
+        } else {
+            // Delegate to BareBonesBrowserLaunch-like code
+            logger.info("openURL {0} with {1} on {2}", uri, this, osName);
+            openURL(uri.toString());
+        }
     }
 
     //----------//
@@ -108,6 +127,49 @@ public class WebBrowser
     public String toString ()
     {
         return "WebBrowser(unimplemented fallback)";
+    }
+
+    //---------//
+    // openURL //
+    //---------//
+    /**
+     * Workaround copied from BareBonesBrowserLaunch.
+     *
+     * @param url
+     */
+    private static void openURL (String url)
+    {
+        try {
+            if (WellKnowns.MAC_OS_X) {
+                Class fileMgr = Class.forName("com.apple.eio.FileManager");
+                Method openURL = fileMgr.getDeclaredMethod(
+                        "openURL",
+                        new Class[]{String.class});
+                openURL.invoke(null, new Object[]{url});
+            } else if (WellKnowns.WINDOWS) {
+                Runtime.getRuntime()
+                        .exec("rundll32 url.dll,FileProtocolHandler " + url);
+            } else { //assume Unix or Linux
+
+                for (String browser : browsers) {
+                    if (Runtime.getRuntime()
+                            .exec(new String[]{"which", browser})
+                            .waitFor() == 0) {
+                        Runtime.getRuntime()
+                                .exec(new String[]{browser, url});
+
+                        return;
+                    }
+                }
+
+                logger.warning("Could not find any suitable web browser");
+            }
+        } catch (ClassNotFoundException | NoSuchMethodException |
+                 SecurityException | IllegalAccessException |
+                 IllegalArgumentException | InvocationTargetException |
+                 IOException | InterruptedException ex) {
+            logger.warning("Could not launch browser", ex);
+        }
     }
 
     //--------------//
@@ -122,7 +184,6 @@ public class WebBrowser
 
             return new WebBrowser()
             {
-
                 @Override
                 public boolean isSupported ()
                 {
@@ -134,12 +195,6 @@ public class WebBrowser
                     } catch (Exception e) {
                         return false;
                     }
-                }
-
-                @Override
-                public void launch (String urlString)
-                {
-                    super.launch(urlString);
                 }
 
                 @Override
@@ -160,17 +215,10 @@ public class WebBrowser
 
                 return new WebBrowser()
                 {
-
                     @Override
                     public boolean isSupported ()
                     {
                         return true;
-                    }
-
-                    @Override
-                    public void launch (String urlString)
-                    {
-                        super.launch(urlString);
                     }
 
                     @Override

@@ -139,14 +139,18 @@ public interface Line
     int yAtX (int x);
 
     //~ Inner Classes ----------------------------------------------------------
-
     /**
      * Specific exception raised when trying to invert a
      * non-invertible line.
      */
     static class NonInvertibleLineException
-        extends RuntimeException
+            extends RuntimeException
     {
+
+        NonInvertibleLineException (String message)
+        {
+            super(message);
+        }
     }
 
     /**

@@ -35,10 +35,10 @@ public abstract class ScoreDependent
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScoreDependent.class);
 
-    /** Is a Score available */
+    /** Is a Score available. */
     protected static final String SCORE_AVAILABLE = "scoreAvailable";
 
-    /** Is a Score merged (and ready for export, play, midi, etc) */
+    /** Is a Score merged. (and ready for export, print, plugin, etc) */
     protected static final String SCORE_MERGED = "scoreMerged";
 
     //~ Instance fields --------------------------------------------------------

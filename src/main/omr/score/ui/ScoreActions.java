@@ -201,6 +201,22 @@ public class ScoreActions
         return rebuildAllowed;
     }
 
+    //------------//
+    // buildScore //
+    //------------//
+    /**
+     * Translate all sheet glyphs to score entities.
+     * Actually, it's just a convenient way to launch the SCORE step
+     *
+     * @param e the event that triggered this action
+     * @return the task to launch in background
+     */
+    @Action(enabledProperty = SCORE_AVAILABLE)
+    public Task<Void, Void> buildScore (ActionEvent e)
+    {
+        return new BuildTask();
+    }
+
     //--------------//
     // rebuildScore //
     //--------------//
@@ -210,7 +226,7 @@ public class ScoreActions
      * @param e the event that triggered this action
      * @return the task to launch in background
      */
-    @Action(enabledProperty = SCORE_AVAILABLE)
+    @Action(enabledProperty = SCORE_MERGED)
     public Task<Void, Void> rebuildScore (ActionEvent e)
     {
         return new RebuildTask();
@@ -245,7 +261,7 @@ public class ScoreActions
      * @param e the event that triggered this action
      * @return the task to launch in background
      */
-    @Action(enabledProperty = SCORE_MERGED)
+    @Action(enabledProperty = SCORE_AVAILABLE)
     public Task<Void, Void> storeScore (ActionEvent e)
     {
         final Score score = ScoreController.getCurrentScore();
@@ -273,7 +289,7 @@ public class ScoreActions
      * @param e the event that triggered this action
      * @return the task to launch in background
      */
-    @Action(enabledProperty = SCORE_MERGED)
+    @Action(enabledProperty = SCORE_AVAILABLE)
     public Task<Void, Void> storeScoreAs (ActionEvent e)
     {
         final Score score = ScoreController.getCurrentScore();
@@ -519,6 +535,7 @@ public class ScoreActions
         protected Void doInBackground ()
                 throws InterruptedException
         {
+            Stepping.ensureScoreStep(Steps.valueOf(Steps.SCORE), score);
             ScoresManager.getInstance().writePhysicalPdf(score, pdfFile);
 
             return null;
@@ -536,6 +553,30 @@ public class ScoreActions
         Constant.Boolean promptParameters = new Constant.Boolean(
                 false,
                 "Should we prompt the user for score parameters?");
+    }
+
+    //-----------//
+    // BuildTask //
+    //-----------//
+    private static class BuildTask
+            extends BasicTask
+    {
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        protected Void doInBackground ()
+                throws InterruptedException
+        {
+            try {
+                Sheet sheet = SheetsController.getCurrentSheet();
+                Score score = sheet.getScore();
+                Stepping.ensureScoreStep(Steps.valueOf(Steps.SCORE), score);
+            } catch (Exception ex) {
+                logger.warning("Could not build score", ex);
+            }
+
+            return null;
+        }
     }
 
     //-------------//
@@ -590,6 +631,8 @@ public class ScoreActions
         protected Void doInBackground ()
                 throws InterruptedException
         {
+            Stepping.ensureScoreStep(Steps.valueOf(Steps.SCORE), score);
+
             if (checkParameters(score)) {
                 ScoresManager.getInstance().export(score, exportFile, null);
             }

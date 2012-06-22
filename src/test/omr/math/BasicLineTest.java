@@ -14,6 +14,8 @@ package omr.math;
 import omr.util.BaseTestCase;
 import static junit.framework.Assert.*;
 
+import org.junit.Test;
+
 /**
  * Class <code>BasicLineTest</code> performs unit tests on BasicLine class.
  *
@@ -35,18 +37,18 @@ public class BasicLineTest
     BasicLine l3 = new BasicLine(-0.80343527d, -0.5953921d, 385.66354d);
 
     //~ Methods ----------------------------------------------------------------
-
+    //@Test (expected = IllegalArgumentException.class)
     public void testDifferentPoints ()
     {
-        double[] xx = new double[] { 1d, 2d };
-        double[] yy = new double[] { 4d, 9d, 14d };
+        double[] my_xx = new double[]{1d, 2d};
+        double[] my_yy = new double[]{4d, 9d, 14d};
 
         try {
-            BasicLine l = new BasicLine(xx, yy);
-            print(l);
+            BasicLine line = new BasicLine(my_xx, my_yy);
+            print(line);
             fail(
-                "Exception should be raised" +
-                " when arrays have different lengths");
+                    "Exception should be raised"
+                    + " when arrays have different lengths");
         } catch (Exception expected) {
             checkException(expected);
         }

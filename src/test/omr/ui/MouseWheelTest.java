@@ -8,6 +8,8 @@ import omr.ui.field.LDoubleField;
 import omr.ui.view.LogSlider;
 import omr.ui.view.Zoom;
 
+import org.junit.Test;
+
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -92,6 +94,7 @@ public class MouseWheelTest
     //------//
     // play //
     //------//
+    @Test
     public void play ()
     {
         JFrame    frame = new JFrame(getClass().toString());
@@ -107,6 +110,7 @@ public class MouseWheelTest
         ldf.getField()
            .addActionListener(
             new ActionListener() {
+                    @Override
                     public void actionPerformed (ActionEvent e)
                     {
                         zoom.setRatio(ldf.getValue());
@@ -120,6 +124,7 @@ public class MouseWheelTest
 
         zoom.addChangeListener(
             new ChangeListener() {
+                    @Override
                     public void stateChanged (ChangeEvent e)
                     {
                         ldf.setValue(zoom.getRatio());

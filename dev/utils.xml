@@ -9,11 +9,8 @@
     <description>
         Standalone project for a collection of utility targets
     </description>
-    
-    <!-- Create the time stamp -->
-    <tstamp/>
 
-    <import file="${basedir}/dev/-prolog.xml"/>
+    <import file="${basedir}/build.xml"/>
 
     <!-- Just in case these properties are not already set -->
     <property name="backup.dir"    value="m:/backup" />
@@ -82,8 +79,7 @@
     <!--  S A V E -->
     <!-- ======== -->
     <target name="save"
-        depends="-init"
-        description="Backup all important files" >
+       description="Backup all important files" >
         
         <mkdir dir="${backup.dir}/${name}"/>
 

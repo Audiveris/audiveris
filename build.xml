@@ -8,87 +8,302 @@
 <!-- |                                                                     | -->
 <!-- +=====================================================================+ -->
 
-<!--    CookBook for NetBeans users:
-     
-     1/ Since you cannot create a NetBeans project in a folder which already
-     contains a file named 'build.xml', first create your NetBeans project here,
-     then rename this 'build-for-netbeans.xml' file as 'build.xml'.
-
-     2/ Then have NetBeans create a Java project with existing Java sources,
-     named audiveris, to be hosted in this directory (so in the creation wizard,
-     enter the name of the parent folder of this directory)
-
-     3/ Specify src/main and src/test as the respective source and test packages
-     repositories.
-
-     4/ Define the needed libraries (JAI, Jama, JavaLookAndFeel, JFreeChart,
-     JGoodiesForms, JGoodiesLooks, ProxyMusic)
-
-     5/ Clean and build the whole project
---> 
+<!-- Initial NetBeans comments: -->
+<!-- You may freely edit this file. See commented blocks below for -->
+<!-- some examples of how to customize the build. -->
+<!-- (If you delete it and reopen the project it will be recreated.) -->
+<!-- By default, only the Clean and Build commands use this build script. -->
+<!-- Commands such as Run, Debug, and Test only use this build script if -->
+<!-- the Compile on Save feature is turned off for the project. -->
+<!-- You can turn off the Compile on Save (or Deploy on Save) setting -->
+<!-- in the project's Project Properties dialog box.-->
 
 <project name="audiveris" default="default" basedir=".">
     <description>
-	Build, test, and run the Audiveris project via NetBeans
-	
-	This 'build.xml' file should be located in NetBeans project directory,
-        replacing the build.xml provided by NetBeans
+        Build, test, and run the Audiveris project
     </description>
 
-    <import file="${basedir}/dev/-prolog.xml"/>
+    <!-- Import NetBeans implementation targets -->
+    <import file="nbproject/build-impl.xml"/>
+    
+    <!-- Create the time stamp -->
+    <tstamp/>
 
+    <!-- Environment -->
+    <property name="dev.dir" location="${basedir}/dev"/>
+    <property file="${dev.dir}/build.properties"/>
+    <property file="${dev.dir}/build.default.properties"/>
+    <property environment="env"/>    
+    
+    <!-- Classpaths -->    
     <path id="build.classpath">
         <pathelement path="${build.classes.dir}"/>
     </path>
+    <path id="tools.classpath">
+        <fileset dir="${tools.dir}">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+    <path id="externals.classpath">
+        <fileset dir="${externals.dir}">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>        
+
+    <!-- Mercurial -->
+    <condition property="hg.present" else="false">
+        <available file="${hg.dir}" />
+    </condition>
+    <echo level="verbose" message="hg.present=${hg.present}" />
+            
+    <!-- Operating system -->
+    <condition property="is.windows" else="false">
+        <os family="windows"/>
+    </condition>
+    <echo level="verbose" message="is.windows=${is.windows}" />
+    <condition property="is.mac" else="false">
+        <os family="mac" />
+    </condition>
+    <echo level="verbose" message="is.mac=${is.mac}" />
+    <condition property="is.unix" else="false">
+        <os family="unix" />
+    </condition>
+    <echo level="verbose" message="is.unix=${is.unix}" />
+    
+    <!-- Import for Windows, if any -->
+<!--    <condition property="windows-import" else="none"
+               value="${dev.windows.dir}/-windows.xml">
+        <os family="windows"/>
+    </condition>
+    <echo message="windows-import=${windows-import}" />
+    <import optional="true" file="${windows-import}" />-->
+    <import optional="true" file="dev/windows/-windows.xml" />
+    
+    <!-- Import for Unix, if any -->
+    <import optional="true" file="dev/unix/-unix.xml" />
+    
+    <!-- Import for Mac, if any -->
+    <import optional="true" file="dev/mac/-mac.xml" />
+    
+    <!-- Needed for ant-contrib tasks -->
+    <taskdef resource="net/sf/antcontrib/antlib.xml"
+	     classpathref="tools.classpath" />
 
     <!-- ===  Public Targets  ============================================== -->
     
     <!-- =============== -->
-    <!--  J A V A D O C  -->
+    <!--  D E F A U L T  -->
     <!-- =============== -->
-    <target name="javadoc"
-            depends="init, -common.-javadoc-build, -javadoc-browse"
-            description="Build Javadoc."/>
+    <target name="default"
+            depends="audiveris-impl.default"
+            description="Build and test whole project." />
+
+    <!-- =================== -->
+    <!--  F U L L - D I S T  -->
+    <!-- =================== -->
+    <target name="full-dist"
+            depends="clean, windows-execs"
+            description="Build the full distribution">
+
+        <!-- Special copy for NetBeans -->
+        <copy
+            verbose="${verbose}"
+            todir="${basedir}">
+            <fileset dir="${basedir}">
+                <include name="build.xml" />
+            </fileset>
+            <globmapper from="build.xml" to="build-for-netbeans.xml"/>
+        </copy>
+        
+        <!-- Generate the global zip archive -->
+        <zip 
+            destfile="${dist.dir}/${full.name}.${ant4hg.log.revision}-src.zip" >
+
+            <!-- Build -->
+            <zipfileset dir="${basedir}" includes="build.xml"/>
+
+            <!-- NetBeans project -->
+            <zipfileset dir="${basedir}/nbproject" prefix="nbproject"
+                        includes="**"
+                        excludes="${dist.excludes}"/>
+        
+            <!-- Execs -->
+            <zipfileset dir="${basedir}"
+                        includes="*.bat, *.exe, *.ini"
+                        excludes="${dist.excludes}"/>
+        
+            <!-- Jar file -->
+            <zipfileset dir="${dist.dir}" prefix="dist"
+                        includes="*.jar"
+                        excludes="${dist.excludes}"/>
+
+            <!-- lib jar files -->
+            <zipfileset dir="${dist.dir}/lib" prefix="dist/lib"
+                        includes="**"
+                        excludes="${dist.excludes}"/>
+
+            <!-- ocr files -->
+            <zipfileset dir="${ocr.dir}" prefix="ocr"
+                        includes="**"
+                        excludes="${dist.excludes}"/>
+        
+            <!-- dev files -->
+            <zipfileset dir="${dev.dir}" prefix="dev"
+                        includes="**"
+                        excludes="${dist.excludes}"/>
+        
+            <!-- res files -->
+            <zipfileset dir="${res.dir}" prefix="res"
+                        includes="**"
+                        excludes="${dist.excludes}"/>
+        
+            <!-- eval files -->
+            <zipfileset dir="${eval.dir}" prefix="eval"
+                        includes="**"
+                        excludes="${dist.excludes}"/>
+        
+            <!-- settings files -->
+            <zipfileset dir="${settings.dir}" prefix="settings"
+                        includes="**"
+                        excludes="${dist.excludes}, **/run.properties"/>
+        
+            <!-- plugins files -->
+            <zipfileset dir="${basedir}/plugins" prefix="plugins"
+                        includes="**"
+                        excludes="${dist.excludes}"/>
+            
+            <!-- Source main and test files -->
+            <zipfileset dir="${basedir}/src" prefix="src"
+                        includes="**"
+                        excludes="${dist.excludes}"/>
+
+            <!-- Examples files -->
+            <zipfileset dir="${examples.dir}" prefix="examples"
+                        includes="**"
+                        excludes="${dist.excludes}"/>
+
+            <!-- Www (+ javadoc?) files -->
+            <zipfileset dir="${www.dir}" prefix="www"
+                        includes="**"
+                        excludes="${dist.excludes}"/>
+
+            <!-- Train files -->
+            <zipfileset dir="${train.dir}" prefix="train"
+                        includes="**/*.xml,**/.glyphignore"
+                        excludes="${dist.excludes}"/>
+        </zip>
+    </target>
     
     <!-- ===  Internal Targets  ============================================ -->
 
-    <!-- =============================== -->
-    <!--  - J A V A D O C - B R O W S E  -->
-    <!-- =============================== -->
-    <target name="-javadoc-browse"
-	    if="netbeans.home"
-	    unless="no.javadoc.preview">
-        <nbbrowse file="${dist.javadoc.dir}/index.html"/>
+    <!-- =============== -->
+    <!--  - H G - T I P  -->
+    <!-- =============== -->
+    <target name="-hg-tip"
+            if="${hg.present}">
+	<!-- description="Retrieve Hg tip revision" -->
+        
+        <taskdef name="hg"
+                 classpathref="tools.classpath"
+                 classname="net.sourceforge.ant4hg.taskdefs.HgTask"/>           
+        
+        <hg cmd="log" dir="${basedir}">
+            <arg value="-rtip"/>
+        </hg>
+<!--         <echo message="==========================" />
+         <echo message="revision=${ant4hg.log.revision}" />
+         <echo message="changeset=${ant4hg.log.changeset}" />
+         <echo message="tag=${ant4hg.log.tag}" />
+         <echo message="user=${ant4hg.log.user}" />
+         <echo message="date=${ant4hg.log.date}" />
+         <echo message="summary=${ant4hg.log.summary}" />-->
     </target>
+    
+    <!-- ============================= -->
+    <!--  - J A V A D O C - B U I L D  -->
+    <!-- ============================= -->
+    <target name="-javadoc-build"
+            depends="-uml, audiveris-impl.-javadoc-build"/>
+    <!-- Generate project documentation -->
 
     <!-- ================= -->
     <!--  - P R E - J A R  -->
     <!-- ================= -->
-    <target name="-pre-jar"
-	    depends="-common.-pre-jar" />
+    <target name="-pre-jar">
+
+        <!-- Copy resource properties to classes -->
+        <copy todir="${build.classes.dir}" verbose="$verbose">
+            <fileset dir="${src.dir}" includes="**/*.properties"/>
+            <fileset dir="${plugins.dir}" includes="**/*.properties"/>
+        </copy>
+
+        <!-- Copy icon files into the classes dir -->
+        <copy
+            verbose="${verbose}"
+            todir="${build.classes.dir}">
+            <fileset dir="${src.dir}"
+                     includes="**/icon*.png"/>
+        </copy>
+
+        <!-- Purge build/classes folder from documentation items -->
+        <delete
+            verbose="${verbose}"
+            includeEmptyDirs="true">
+            <fileset dir="${build.classes.dir}" 
+                     includes="**/*.html,**/doc-files/*,**/doc-files"/>
+        </delete>
+
+    </target>
 
     <!-- ===================== -->
     <!--  - P O S T - I N I T  -->
     <!-- ===================== -->
     <target name="-post-init"
-	    depends="-prolog.-init, -common.-hg-tip" />
+	    depends="-hg-tip" />
 
     <!-- ======================= -->
     <!--  - P O S T - C L E A N  -->
     <!-- ======================= -->
     <target name="-post-clean"
-            depends="-windows.clean" />
+            depends="windows.-clean" />
 
-    <!-- === Imports ======================================================= -->
-
-    <!-- Load NetBeans implementation targets -->
-    <import file="nbproject/build-impl.xml"/>
-
-    <!-- Next line will be inserted the first time you use the profiler -->    
-    <!-- <import file="nbproject/profiler-build-impl.xml"/>     -->
-    
-    <!-- Load internal targets common to Emacs/Ant and NetBeans -->
-    <import file="${dev.dir}/-common.xml"/>
+    <!-- ========= -->
+    <!--  - U M L  -->
+    <!-- ========= -->
+    <target name="-uml">
+	<!-- Generation of UML drawings with Umlet utility -->
+        
+        <for param="file">
+            <path>
+                <fileset dir="${src.dir}" includes="**/*.uxf">
+                    <depend targetdir="${src.dir}">
+                        <mapper type="glob" from="*.uxf" to="*.jpg"/>
+                    </depend>
+                </fileset>
+                <fileset dir="${material.dir}" includes="**/*.uxf">
+                    <depend targetdir="${material.dir}">
+                        <mapper type="glob" from="*.uxf" to="*.jpg"/>
+                    </depend>
+                </fileset>
+            </path>
+            <sequential>
+                <for list="jpg,pdf" param="format">
+                    <sequential>
+                        <echo>Umlet format=@{format} file=@{file}</echo>
+                        <java
+                            fork="true"
+			    classname="com.baselet.control.Main"
+			    classpathref="tools.classpath">
+ 			    <arg value="-action=convert" />
+                            <arg value="-format=@{format}" />
+                            <arg value="-filename=@{file}" />
+                        </java>
+                    </sequential>
+                </for>
+            </sequential>
+        </for>
+        
+    </target>
     
 <!--
 
@@ -151,5 +366,4 @@
     nbproject/build-impl.xml file. 
 
     -->
-    
 </project>

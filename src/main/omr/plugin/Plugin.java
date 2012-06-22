@@ -15,7 +15,6 @@ import omr.log.Logger;
 
 import omr.score.Score;
 
-import omr.step.Step;
 import omr.step.Stepping;
 import omr.step.Steps;
 
@@ -25,7 +24,6 @@ import omr.util.FileUtil;
 import org.jdesktop.application.Task;
 
 import java.io.*;
-import java.util.Collections;
 import java.util.List;
 
 import javax.script.Invocable;
@@ -163,12 +161,7 @@ public class Plugin
     public Void runPlugin (Score score)
     {
         // Make sure we have the export file
-        Step exportStep = Steps.valueOf(Steps.EXPORT);
-
-        if (!score.getFirstPage().getSheet().isDone(exportStep)) {
-            logger.info("Getting export from {0} ...", score);
-            Stepping.processScore(Collections.singleton(exportStep), score);
-        }
+        Stepping.ensureScoreStep(Steps.valueOf(Steps.EXPORT), score);
 
         final File exportFile = score.getExportFile();
 

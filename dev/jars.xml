@@ -9,12 +9,11 @@
     <description>
 	Standalone project for handling the 'jars' folder on Kenai
     </description>
-    
-    <!-- Create the time stamp -->
-    <tstamp/>
 
     <!-- Use jar definition from build.xml -->
-    <import file="${basedir}/dev/build.xml"/>
+    <import file="${basedir}/build.xml"/>
+
+    <!-- ===  Public Targets  ============================================== -->
 
     <!-- =================== -->
     <!--  F U L L - J A R S  -->
@@ -29,6 +28,8 @@
     <target name="check-jars"
 	    depends="-read-sigs, -print-todo, -tell-ok"
             description="Check if the remote jars are up to date"/>
+    
+    <!-- ===  Internal Targets  ============================================ -->
 
     <!-- ======================= -->
     <!--  - C L E A N - J A R S  -->

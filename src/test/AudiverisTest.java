@@ -9,6 +9,8 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -60,22 +62,21 @@ public class AudiverisTest
     @Test
     public void testMultipleCalls ()
     {
-        System.out.println("multipleCalls");
+        System.out.println("testMultipleCalls");
 
         String[] args1 = new String[] {
-                             "-batch", "-step", "EXPORT", "examples/chula.png"
+                             "-batch", "-step", "EXPORT", "-input", "examples/chula.png"
                          };
         String[] args2 = new String[] {
-                             "-batch", "-step", "EXPORT", "examples/batuque.png",
+                             "-batch", "-step", "EXPORT", "-input", "examples/batuque.png",
                              "examples/allegretto.png"
                          };
-        System.out.println("firstCall");
+        System.out.println("firstCall to Audiveris.main()");
+        Logger.getAnonymousLogger().log(Level.INFO, "firstCall to Audiveris.main()");
         Audiveris.main(args1);
-        System.out.println("secondCall");
+        System.out.println("secondCall to Audiveris.main()");
+        Logger.getAnonymousLogger().log(Level.INFO, "secondCall to Audiveris.main()");
         Audiveris.main(args2);
-        System.out.println("Finished");
-
-        // TODO review the generated test code and remove the default call to fail.
-        //fail("The test case is a prototype.");
+        System.out.println("finished");
     }
 }

@@ -4,7 +4,7 @@
 <!-- |                                                                     | -->
 <!-- +=====================================================================+ -->
 
-<project name="-windows" basedir="../..">
+<project name="windows" basedir="../..">
     
     <description>
         All targets specific to Windows platform.
@@ -12,6 +12,58 @@
         Targets are presented in alphabetical order, regardless of initial '-'.
         An initial '-' indicates an internal target.
     </description>
+
+    <!-- ===  Public Targets  ============================================== -->
+
+    <!-- =========================== -->
+    <!--  W I N D O W S - E X E C S  -->
+    <!-- =========================== -->
+    <target name="windows-execs"
+            depends="audiveris-impl.jar, -bat, -exe, -exe-console, -no-windows-execs"
+            if="${is.windows}"
+            description="Build all Windows executables" />
+
+    <!-- =============================== -->
+    <!--  W I N D O W S - I N S T A L L  -->
+    <!-- =============================== -->
+    <target name="windows-install"
+            depends="-get-msi-name"
+            if="${is.windows}"
+            description="Install for Windows">
+        <property name="msi.name" value="${full.name}.${ant4hg.log.revision}.msi"/>
+        <echo message="Windows installation from ${msi.name}" />
+        <exec executable="msiexec"
+              dir="${dist.dir}">
+            <arg value="/i"/>
+            <arg value="${msi.name}"/>
+        </exec>
+    </target>
+
+    <!-- =================================== -->
+    <!--  W I N D O W S - I N S T A L L E R  -->
+    <!-- =================================== -->
+    <target name="windows-installer"
+            depends="-wxs-generation, -do-installer, -wix-cleanup"
+            if="${is.windows}"
+            description="Build Windows installer" />
+    
+    <!-- =================================== -->
+    <!--  W I N D O W S - U N I N S T A L L  -->
+    <!-- =================================== -->
+    <target name="windows-uninstall"
+            depends="-get-msi-name"
+            if="${is.windows}"
+            description="Uninstall for Windows">
+        <echo message="Windows uninstallation from ${msi.name}" />
+        <exec executable="msiexec"
+              dir="${dist.dir}">
+            <arg value="/x"/>
+            <arg value="${msi.name}"/>
+        </exec>
+    </target>        
+    
+    <!-- ===  Internal Targets  ============================================ -->
+
     
     <!-- ========= -->
     <!--  - B A T  -->
@@ -28,12 +80,12 @@
         
     </target>
 
-    <!-- =========== -->
-    <!--  C L E A N  -->
-    <!-- =========== -->
-    <target name="clean"
+    <!-- ============= -->
+    <!--  - C L E A N  -->
+    <!-- ============= -->
+    <target name="-clean"
             if="${is.windows}">
-	<!-- Remove all the generated outputs for Windows -->
+        <!-- Remove all the generated outputs for Windows -->
         <delete verbose="${verbose}">
             <fileset dir="${basedir}" includes="*.exe, *.bat"/>
         </delete> 
@@ -102,7 +154,7 @@
             depends="-launch4j-taskdef"
             if="${is.windows}">                
                 
-	<!-- Build Windows executable without console -->
+        <!-- Build Windows executable without console -->
         <launch4j>
             <config headerType="gui"
                     outfile="${name}.exe"
@@ -131,45 +183,13 @@
             </config>
         </launch4j>	
     </target>
-
-    <!-- =========== -->
-    <!--  E X E C S  -->
-    <!-- =========== -->
-    <target name="execs"
-            depends="jar, -bat, -exe, -exe-console, -no-windows-execs"/>
-    <!-- Build all Windows executables -->
     
     <!-- =========================== -->
     <!--  - G E T - M S I - N A M E  -->
     <!-- =========================== -->
-    <target name="-get-msi-name"
-            depends="-hg-tip">
+    <target name="-get-msi-name">
         <property name="msi.name" value="${full.name}.${ant4hg.log.revision}.msi"/>        
     </target>
-
-    <!-- =============== -->
-    <!--  I N S T A L L  -->
-    <!-- =============== -->
-    <target name="install"
-            depends="-init, -get-msi-name"
-            if="${is.windows}">
-	<!-- Install for Windows -->
-        <property name="msi.name" value="${full.name}.${ant4hg.log.revision}.msi"/>
-        <echo message="Windows installation from ${msi.name}" />
-        <exec executable="msiexec"
-              dir="${dist.dir}">
-            <arg value="/i"/>
-            <arg value="${msi.name}"/>
-        </exec>
-    </target>
-
-    <!-- =================== -->
-    <!--  I N S T A L L E R  -->
-    <!-- =================== -->
-    <target name="installer"
-            depends="-init, -wxs-generation, -do-installer, -wix-cleanup"/>
-<!--            depends="-wxs-generation"/>-->
-    <!-- Build Windows installer -->
 
     <!-- =================================== -->
     <!--  - L A U N C H 4 J - T A S K D E F  -->
@@ -194,21 +214,6 @@
         <echo message="Windows execs are generated only from Windows" />
     </target>
     
-    <!-- =================== -->
-    <!--  U N I N S T A L L  -->
-    <!-- =================== -->
-    <target name="uninstall"
-            depends="-init, -get-msi-name"
-            if="${is.windows}">
-	<!-- Uninstall for Windows -->
-        <echo message="Windows uninstallation from ${msi.name}" />
-        <exec executable="msiexec"
-              dir="${dist.dir}">
-            <arg value="/x"/>
-            <arg value="${msi.name}"/>
-        </exec>
-    </target>        
-    
     <!-- ========================= -->
     <!--  - W I X - C L E A N U P  -->
     <!-- ========================= -->
@@ -232,7 +237,7 @@
     <!-- =============================== -->
     <target name="-wxs-generation"
             if="${is.windows}">
-	<!-- Harvesting of directories -->
+        <!-- Harvesting of directories -->
 	
         <!-- Folders for common location -->
         

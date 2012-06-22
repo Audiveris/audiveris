@@ -32,7 +32,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <li>lowExecutor: a fixed nb (#cpu+1) of threads with low priority</li>
  * <li>highExecutor: a fixed nb (#cpu+1) of threads with high priority</li>
  * <li>cachedLowExecutor: a varying nb of threads with low priority</li>
- * <li>ocrExecutor: one thread with high priority and large stack size</li>
  * </ul>
  *
  * @author Hervé Bitteur
@@ -47,13 +46,14 @@ public class OmrExecutors
     /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Number of processors available */
-    private static final int cpuCount = Runtime.getRuntime().availableProcessors();
+    /** Number of processors available. */
+    private static final int cpuCount = Runtime.getRuntime().
+            availableProcessors();
 
     static {
-        if (constants.printEnvironment.getValue()) {
+        if (constants.printEnvironment.isSet()) {
             logger.info("Environment. CPU count: {0}, Use of parallelism: {1}",
-                        new Object[]{cpuCount, useParallelism()});
+                        cpuCount, useParallelism());
         }
     }
 
@@ -64,20 +64,19 @@ public class OmrExecutors
 
     private static final Pool cachedLows = new CachedLows();
 
-    private static final Pool ocrs = new Ocrs();
-
     /** To handle all the pools as a whole */
     private static Collection<Pool> allPools = Arrays.asList(
             cachedLows,
             lows,
-            highs,
-            ocrs);
+            highs);
 
     /** To prevent parallel creation of pools when closing */
     private static volatile boolean creationAllowed = true;
 
     //~ Constructors -----------------------------------------------------------
-    /** Not meant to be instantiated */
+    /** 
+     * Not meant to be instantiated 
+     */
     private OmrExecutors ()
     {
     }
@@ -135,19 +134,18 @@ public class OmrExecutors
         return cpuCount;
     }
 
-    //----------------//
-    // getOcrExecutor //
-    //----------------//
+    //---------//
+    // restart //
+    //---------//
     /**
-     * Return the (single) pool of OCR threads
-     *
-     * @return the OCR pool, allocated if needed
+     * (re-)Allow the creation of pools.
      */
-    public static ExecutorService getOcrExecutor ()
+    public static void restart()
     {
-        return ocrs.getPool();
+        creationAllowed = true;
+        logger.fine("OmrExecutors open");
     }
-
+    
     //----------//
     // shutdown //
     //----------//
@@ -170,6 +168,7 @@ public class OmrExecutors
                 logger.fine("Pool {0} not active", pool.getName());
             }
         }
+        logger.fine("OmrExecutors closed");
     }
 
     //----------------//
@@ -186,6 +185,7 @@ public class OmrExecutors
     }
 
     //~ Inner Classes ----------------------------------------------------------
+    //
     //------------//
     // CachedLows //
     //------------//
@@ -336,30 +336,6 @@ public class OmrExecutors
     }
 
     //------//
-    // Ocrs //
-    //------//
-    /** One-thread pool with high priority, and large stack size */
-    private static class Ocrs
-            extends Pool
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public String getName ()
-        {
-            return "ocr";
-        }
-
-        @Override
-        protected ExecutorService createPool ()
-        {
-            return Executors.newFixedThreadPool(
-                    1,
-                    new Factory(getName(), Thread.NORM_PRIORITY, 10000000L));
-        }
-    }
-
-    //------//
     // Pool //
     //------//
     private abstract static class Pool
@@ -370,7 +346,10 @@ public class OmrExecutors
         protected ExecutorService pool;
 
         //~ Methods ------------------------------------------------------------
-        /** Terminate the pool */
+        //
+        /** 
+         * Terminate the pool.
+         */
         public synchronized void close (boolean immediately)
         {
             if (!isActive()) {
@@ -378,8 +357,7 @@ public class OmrExecutors
             }
 
             logger.fine("Closing pool {0}{1}",
-                        new Object[]{getName(),
-                                     immediately ? " immediately" : ""});
+                        getName(), immediately ? " immediately" : "");
 
             if (!immediately) {
                 pool.shutdown(); // Disable new tasks from being submitted
@@ -405,12 +383,19 @@ public class OmrExecutors
             }
 
             logger.fine("Pool {0} closed.", getName());
+            
+            // Let garbage collector work
+            pool = null;
         }
 
-        /** Name the pool */
+        /** 
+         * Name the pool.
+         */
         public abstract String getName ();
 
-        /** Get the pool ready to use */
+        /** 
+         * Get the pool ready to use.
+         */
         public synchronized ExecutorService getPool ()
         {
             if (!creationAllowed) {
@@ -427,13 +412,17 @@ public class OmrExecutors
             return pool;
         }
 
-        /** Is the pool active? */
+        /** 
+         * Is the pool active?. 
+         */
         public synchronized boolean isActive ()
         {
             return (pool != null) && !pool.isShutdown();
         }
 
-        /** Needed to create the concrete pool */
+        /** 
+         * Needed to create the concrete pool. 
+         */
         protected abstract ExecutorService createPool ();
     }
 }

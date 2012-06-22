@@ -78,7 +78,7 @@ public abstract class SheetDependent
     /**
      * Notification of sheet selection.
      *
-     * @param event the notified sheet event
+     * @param sheetEvent the notified sheet event
      */
     @Override
     public void onEvent (SheetEvent sheetEvent)

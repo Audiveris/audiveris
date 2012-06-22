@@ -24,21 +24,23 @@ import java.io.File;
 import java.util.*;
 
 import javax.imageio.ImageIO;
+import org.junit.Ignore;
 
 /**
  * Class {@code MomentsExtractorTest}
  *
  * @author Hervé Bitteur
  */
-public class MomentsExtractorTest<D extends OrthogonalMoments>
+@Ignore
+public class MomentsExtractorTest <D extends OrthogonalMoments<D>>
 {
     //~ Instance fields --------------------------------------------------------
 
     Map<Shape, D> descriptors = new EnumMap<>(Shape.class);
-    File          temp = new File("temp");
+
+    File temp = new File("temp");
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new MomentsExtractorTest object.
      */
@@ -47,7 +49,6 @@ public class MomentsExtractorTest<D extends OrthogonalMoments>
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------------//
     // testAllShapes //
     //---------------//
@@ -55,16 +56,13 @@ public class MomentsExtractorTest<D extends OrthogonalMoments>
      * Use a symbol glyph as input for each shape
      */
     public void testAllShapes (MomentsExtractor<D> extractor,
-                               Class<?extends D>   classe)
-        throws InstantiationException, IllegalAccessException
+                               Class<? extends D> classe)
+            throws InstantiationException, IllegalAccessException
     {
         temp.mkdirs();
 
         // Retrieve descriptor for each physical shape
         for (Shape shape : ShapeSet.allPhysicalShapes) {
-            //            if ((shape != Shape.G_CLEF)) {
-            //                continue; ///////////////////////////////////
-            //            }
             ShapeSymbol symbol = Symbols.getSymbol(shape);
 
             // If no plain symbol, use the decorated symbol as plan B
@@ -75,18 +73,18 @@ public class MomentsExtractorTest<D extends OrthogonalMoments>
             if (symbol != null) {
                 System.out.println("shape:" + shape);
 
-                Glyph           glyph = new SymbolGlyph(
-                    shape,
-                    symbol,
-                    MusicFont.DEFAULT_INTERLINE,
-                    null);
+                Glyph glyph = new SymbolGlyph(
+                        shape,
+                        symbol,
+                        MusicFont.DEFAULT_INTERLINE,
+                        null);
                 PointsCollector collector = glyph.getPointsCollector();
-                D               descriptor = classe.newInstance();
+                D descriptor = classe.newInstance();
                 extractor.setDescriptor(descriptor);
                 extractor.extract(
-                    collector.getXValues(),
-                    collector.getYValues(),
-                    collector.getSize());
+                        collector.getXValues(),
+                        collector.getYValues(),
+                        collector.getSize());
                 descriptors.put(shape, descriptor);
 
                 // Reconstruct
@@ -111,7 +109,7 @@ public class MomentsExtractorTest<D extends OrthogonalMoments>
         // Print moments per shape
         for (Map.Entry<Shape, D> entry : descriptors.entrySet()) {
             System.out.println(
-                String.format(
+                    String.format(
                     "%-30s %s",
                     entry.getKey().toString(),
                     entry.getValue().toString()));
@@ -128,7 +126,7 @@ public class MomentsExtractorTest<D extends OrthogonalMoments>
         List<ShapeRelations> allRelations = new ArrayList<>();
 
         for (Map.Entry<Shape, D> entry : descriptors.entrySet()) {
-            Shape          shape = entry.getKey();
+            Shape shape = entry.getKey();
             List<Relation> relations = new ArrayList<>();
 
             for (Map.Entry<Shape, D> e : descriptors.entrySet()) {
@@ -153,26 +151,26 @@ public class MomentsExtractorTest<D extends OrthogonalMoments>
 
             for (int i = 0; i < 5; i++) {
                 Relation rel = shapeRelations.relations.get(i);
-                sb.append(" ")
-                  .append(rel);
+                sb.append(" ").append(rel);
             }
 
             System.out.println(
-                String.format("%30s =>%s", shapeRelations.shape.toString(), sb));
+                    String.format("%30s =>%s", shapeRelations.shape.toString(),
+                                  sb));
         }
     }
 
     //-------------//
     // reconstruct //
     //-------------//
-    private void reconstruct (Shape               shape,
+    private void reconstruct (Shape shape,
                               MomentsExtractor<D> extractor)
     {
-        int            size = 200;
-        BufferedImage  img = new BufferedImage(
-            size,
-            size,
-            BufferedImage.TYPE_BYTE_GRAY);
+        int size = 200;
+        BufferedImage img = new BufferedImage(
+                size,
+                size,
+                BufferedImage.TYPE_BYTE_GRAY);
         WritableRaster raster = img.getRaster();
 
         extractor.reconstruct(raster);
@@ -185,32 +183,30 @@ public class MomentsExtractorTest<D extends OrthogonalMoments>
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //----------//
     // Relation //
     //----------//
     private class Relation
-        implements Comparable<Relation>
+            implements Comparable<Relation>
     {
         //~ Instance fields ----------------------------------------------------
 
-        final Shape  from;
-        final Shape  to;
+        final Shape from;
+
+        final Shape to;
+
         final double distance;
 
         //~ Constructors -------------------------------------------------------
-
-        public Relation (Shape from,
-                         Shape to)
+        Relation (Shape from,
+                  Shape to)
         {
             this.from = from;
             this.to = to;
-            distance = descriptors.get(from)
-                                  .distanceTo(descriptors.get(to));
+            distance = descriptors.get(from).distanceTo(descriptors.get(to));
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public int compareTo (Relation other)
         {
@@ -221,10 +217,10 @@ public class MomentsExtractorTest<D extends OrthogonalMoments>
         public String toString ()
         {
             return String.format(
-                Locale.US,
-                "%30s %5.3f ",
-                to.toString(),
-                distance);
+                    Locale.US,
+                    "%30s %5.3f ",
+                    to.toString(),
+                    distance);
         }
     }
 
@@ -232,30 +228,29 @@ public class MomentsExtractorTest<D extends OrthogonalMoments>
     // ShapeRelations //
     //----------------//
     private class ShapeRelations
-        implements Comparable<ShapeRelations>
+            implements Comparable<ShapeRelations>
     {
         //~ Instance fields ----------------------------------------------------
 
-        final Shape          shape;
+        final Shape shape;
+
         final List<Relation> relations; // Sorted
 
         //~ Constructors -------------------------------------------------------
-
-        public ShapeRelations (Shape          shape,
-                               List<Relation> relations)
+        ShapeRelations (Shape shape,
+                        List<Relation> relations)
         {
             this.shape = shape;
             this.relations = relations;
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public int compareTo (ShapeRelations that)
         {
             return Double.compare(
-                this.relations.get(0).distance,
-                that.relations.get(0).distance);
+                    this.relations.get(0).distance,
+                    that.relations.get(0).distance);
         }
     }
 }

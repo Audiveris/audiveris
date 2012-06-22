@@ -18,7 +18,6 @@ import omr.ui.field.IntegerListSpinner;
 import omr.ui.field.LDoubleField;
 import omr.ui.field.LIntegerSpinner;
 import omr.ui.field.LSpinner;
-import omr.ui.field.LTextField;
 import omr.ui.field.SpinnerUtilities;
 import omr.ui.util.Panel;
 import omr.ui.util.UILookAndFeel;
@@ -42,7 +41,6 @@ import java.awt.font.GlyphVector;
 import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.util.logging.Level;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -52,6 +50,7 @@ import javax.swing.SpinnerListModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import omr.ui.field.LHexaSpinner;
 
 /**
  * Class {@code SymbolRipper} is a stand-alone utility to generate the
@@ -73,7 +72,6 @@ public class SymbolRipper
     }
 
     //~ Instance fields --------------------------------------------------------
-
     /** Related frame */
     private final JFrame frame;
 
@@ -83,7 +81,8 @@ public class SymbolRipper
     //---------------//
     // paramListener //
     //---------------//
-    private ChangeListener     paramListener = new ChangeListener() {
+    private ChangeListener paramListener = new ChangeListener()
+    {
         @Override
         public void stateChanged (ChangeEvent e)
         {
@@ -102,11 +101,14 @@ public class SymbolRipper
                 } else if (s == pointCode.getSpinner()) {
                     // New point code
                     changeCode();
-                } else if ((s == xOffset.getSpinner()) ||
-                           (s == yOffset.getSpinner())) {
+                } else if (s == hexaCode.getSpinner()) {
+                    // New hexa point code
+                    changeHexaCode();
+                } else if ((s == xOffset.getSpinner())
+                        || (s == yOffset.getSpinner())) {
                     // New drawing offset
-                } else if ((s == width.getSpinner()) ||
-                           (s == height.getSpinner())) {
+                } else if ((s == width.getSpinner())
+                        || (s == height.getSpinner())) {
                     // New drawing dimension
                     resizeDrawing();
                 }
@@ -119,60 +121,60 @@ public class SymbolRipper
     };
 
     // Panel where the icon is drawn
-    private JPanel             drawing;
+    private JPanel drawing;
 
     // String used to draw the symbol
-    private String             string;
+    private String string;
 
     // Current music font
-    private Font               musicFont;
+    private Font musicFont;
 
     // Font name
-    private LSpinner           fontName = new LSpinner(
-        "Font",
-        "Name of the font");
+    private LSpinner fontName = new LSpinner(
+            "Font",
+            "Name of the font");
 
     // Font base
     private IntegerListSpinner fontBase = new IntegerListSpinner();
 
     // Font size
     private LIntegerSpinner fontSize = new LIntegerSpinner(
-        "Size",
-        "Font size in picas");
+            "Size",
+            "Font size in picas");
 
     // Point code
     private LIntegerSpinner pointCode = new LIntegerSpinner(
-        "Code",
-        "Point code");
+            "Code",
+            "Point code");
 
     // Hexa representation
-    private LTextField      hexaCode = new LTextField(
-        false,
-        "Hexa",
-        "Hexa value of the point code");
+    private LHexaSpinner hexaCode = new LHexaSpinner(
+            "Hexa",
+            "Hexa value of the point code");
 
     // X Offset
     private LIntegerSpinner xOffset = new LIntegerSpinner(
-        "xOffset",
-        "X offset");
+            "xOffset",
+            "X offset");
 
     // Width
     private LIntegerSpinner width = new LIntegerSpinner(
-        "Width",
-        "Drawing Width");
+            "Width",
+            "Drawing Width");
 
     // Y Offset
     private LIntegerSpinner yOffset = new LIntegerSpinner(
-        "yOffset",
-        "Y offset");
+            "yOffset",
+            "Y offset");
 
     // Height
     private LIntegerSpinner height = new LIntegerSpinner(
-        "Height",
-        "Drawing Height");
+            "Height",
+            "Drawing Height");
 
     // x symbol
     private final String f = "%.3f";
+
     private LDoubleField xSym = new LDoubleField(false, "xSym", "x symbol", f);
 
     // w symbol
@@ -185,7 +187,6 @@ public class SymbolRipper
     private LDoubleField hSym = new LDoubleField(false, "hSym", "h symbol", f);
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new SymbolRipper object.
      */
@@ -198,23 +199,24 @@ public class SymbolRipper
         // Actors
         drawing = new Drawing();
 
-        fontBase.setModel(new SpinnerListModel(new Integer[] { 0, 0xf000 }));
+        fontBase.setModel(new SpinnerListModel(new Integer[]{0, 0xf000}));
         SpinnerUtilities.setRightAlignment(fontBase);
         SpinnerUtilities.fixIntegerList(fontBase);
 
         fontName.setModel(
-            new SpinnerListModel(
-                GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()));
+                new SpinnerListModel(
+                GraphicsEnvironment.getLocalGraphicsEnvironment().
+                getAvailableFontFamilyNames()));
 
         // Initial values
-        fontName.getSpinner()
-                .setValue("MusicalSymbols");
-        fontBase.setValue(0xf000);
+        ///fontName.getSpinner().setValue("MusicalSymbols");
+        fontName.getSpinner().setValue("Symbola");
+        fontBase.setValue(0); //0);
         fontSize.setValue(200);
-        pointCode.setModel(new SpinnerNumberModel(38, 0, 255, 1));
-        width.setValue(300);
+        pointCode.setModel(new SpinnerNumberModel(0x1d100, 0, 0x1d1ff, 1));
+        width.setValue(400);
         height.setValue(500);
-        xOffset.setValue(30);
+        xOffset.setValue(200);
         yOffset.setValue(300);
         changeCode();
         defineFont();
@@ -224,6 +226,7 @@ public class SymbolRipper
         fontBase.addChangeListener(paramListener);
         fontSize.addChangeListener(paramListener);
         pointCode.addChangeListener(paramListener);
+        hexaCode.addChangeListener(paramListener);
         xOffset.addChangeListener(paramListener);
         yOffset.addChangeListener(paramListener);
         width.addChangeListener(paramListener);
@@ -235,8 +238,7 @@ public class SymbolRipper
         // Frame behavior
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
-        MainGui.getInstance()
-               .show(frame);
+        MainGui.getInstance().show(frame);
 
         // Actions
         image = buildImage();
@@ -244,7 +246,6 @@ public class SymbolRipper
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // getFrame //
     //----------//
@@ -275,24 +276,24 @@ public class SymbolRipper
     private BufferedImage buildImage ()
     {
         BufferedImage img = (BufferedImage) drawing.createImage(
-            width.getValue(),
-            height.getValue());
+                width.getValue(),
+                height.getValue());
 
-        Graphics2D    g2 = img.createGraphics();
+        Graphics2D g2 = img.createGraphics();
         g2.setBackground(Color.white);
         g2.setColor(Color.white);
         g2.fillRect(0, 0, width.getValue(), height.getValue());
         g2.setRenderingHint(
-            RenderingHints.KEY_ANTIALIASING,
-            RenderingHints.VALUE_ANTIALIAS_ON);
+                RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
 
         g2.setColor(Color.black);
         g2.setFont(musicFont);
         g2.drawString(string, xOffset.getValue(), yOffset.getValue());
 
         FontRenderContext frc = g2.getFontRenderContext();
-        TextLayout        layout = new TextLayout(string, musicFont, frc);
-        Rectangle2D       rect = layout.getBounds();
+        TextLayout layout = new TextLayout(string, musicFont, frc);
+        Rectangle2D rect = layout.getBounds();
         xSym.setValue(rect.getX());
         ySym.setValue(rect.getY());
         wSym.setValue(rect.getWidth());
@@ -307,10 +308,20 @@ public class SymbolRipper
     private void changeCode ()
     {
         int base = (Integer) fontBase.getValue();
-        int code = (Integer) pointCode.getSpinner()
-                                      .getValue();
-        hexaCode.setText(Integer.toString(base + code, 16));
+        int code = (Integer) pointCode.getSpinner().getValue();
         string = new String(Character.toChars(base + code));
+        hexaCode.setValue(base + code);
+    }
+
+    //----------------//
+    // changeHexaCode //
+    //----------------//
+    private void changeHexaCode ()
+    {
+        int base = (Integer) fontBase.getValue();
+        int hexa = (Integer) hexaCode.getSpinner().getValue();
+        string = new String(Character.toChars(hexa));
+        pointCode.setValue(hexa - base);
     }
 
     //------------//
@@ -318,9 +329,8 @@ public class SymbolRipper
     //------------//
     private void defineFont ()
     {
-        String name = (String) fontName.getSpinner()
-                                       .getValue();
-        int    val = fontSize.getValue();
+        String name = (String) fontName.getSpinner().getValue();
+        int val = fontSize.getValue();
         musicFont = new Font(name, Font.PLAIN, val);
     }
 
@@ -345,14 +355,15 @@ public class SymbolRipper
     //---------------//
     private JPanel getParamPanel ()
     {
-        FormLayout   layout = Panel.makeFormLayout(13, 2);
+        FormLayout layout = Panel.makeFormLayout(13, 2, "right:", "35dlu",
+                                                 "45dlu");
 
         PanelBuilder builder = new PanelBuilder(layout, new Panel());
         builder.setDefaultDialogBorder();
 
         CellConstraints cst = new CellConstraints();
 
-        int             r = 1; // --------------------------------
+        int r = 1; // --------------------------------
         builder.addSeparator("Font", cst.xyw(1, r, 7));
 
         r += 2; // --------------------------------
@@ -371,7 +382,7 @@ public class SymbolRipper
         builder.add(pointCode.getSpinner(), cst.xy(3, r));
 
         builder.add(hexaCode.getLabel(), cst.xy(5, r));
-        builder.add(hexaCode.getField(), cst.xy(7, r));
+        builder.add(hexaCode.getSpinner(), cst.xy(7, r));
 
         r += 2; // --------------------------------
         builder.addSeparator("Drawing", cst.xyw(1, r, 7));
@@ -416,17 +427,16 @@ public class SymbolRipper
     private void resizeDrawing ()
     {
         drawing.setPreferredSize(
-            new Dimension(width.getValue(), height.getValue()));
+                new Dimension(width.getValue(), height.getValue()));
         drawing.revalidate();
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //---------//
     // Drawing //
     //---------//
     private class Drawing
-        extends Panel
+            extends Panel
     {
         //~ Methods ------------------------------------------------------------
 
@@ -444,34 +454,35 @@ public class SymbolRipper
 
                 g.setColor(Color.BLUE);
                 g.drawLine(
-                    0,
-                    yOffset.getValue(),
-                    width.getValue(),
-                    yOffset.getValue());
+                        0,
+                        yOffset.getValue(),
+                        width.getValue(),
+                        yOffset.getValue());
                 g.drawLine(
-                    xOffset.getValue(),
-                    0,
-                    xOffset.getValue(),
-                    height.getValue());
+                        xOffset.getValue(),
+                        0,
+                        xOffset.getValue(),
+                        height.getValue());
 
                 g.setColor(Color.ORANGE);
                 g.drawRect(0, 0, width.getValue(), height.getValue());
 
                 FontRenderContext frc = g2.getFontRenderContext();
-                GlyphVector       glyphVector = musicFont.createGlyphVector(
-                    frc,
-                    string);
+                GlyphVector glyphVector = musicFont.createGlyphVector(
+                        frc,
+                        string);
 
-                Rectangle         rect = glyphVector.getPixelBounds(
-                    frc,
-                    xOffset.getValue(),
-                    yOffset.getValue());
+                Rectangle rect = glyphVector.getPixelBounds(
+                        frc,
+                        xOffset.getValue(),
+                        yOffset.getValue());
                 g.setColor(Color.RED);
                 g2.draw(rect);
 
                 // Debug
                 TextLayout layout = new TextLayout(string, musicFont, frc);
-                logger.info("getAdvance(): {0} getVisibleAdvance(): {1}", new Object[]{layout.getAdvance(), layout.getVisibleAdvance()});
+                logger.fine("getAdvance(): {0} getVisibleAdvance(): {1}",
+                            layout.getAdvance(), layout.getVisibleAdvance());
             }
         }
     }

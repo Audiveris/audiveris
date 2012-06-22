@@ -6,9 +6,16 @@
 | Documentation about the mapping of Audiveris folders                         |
 +------------------------------------------------------------------------------+
 
+Target System folders
+---------------------
 
+for Windows:
+<SystemFolder>/jniTesseract3Bridge.dll
+<SystemFolder>/jniTesseract3Bridge.dll.manifest
+<SystemFolder>/liblept168.dll
+<SystemFolder>/libtesseract302.dll
 
-Target Program folders          WellKnowns.PROGRAM_FOLDER
+Target Program folders                  WellKnowns.PROGRAM_FOLDER
 ----------------------
 
 ./
@@ -21,16 +28,16 @@ Target Program folders          WellKnowns.PROGRAM_FOLDER
 ./dist/
 ./dist/audiveris-4.1beta.jar
 ./dist/lib/
-./dist/lib/BareBonesBrowserLaunch.jar
-./dist/lib/eventbus-1.4.jar
 ./dist/lib/Jama-1.0.2.jar
 ./dist/lib/PDFRenderer.jar
 ./dist/lib/bsaf-1.9.1.jar
 ./dist/lib/clibwrapper_jiio.jar
+./dist/lib/eventbus-1.4.jar
 ./dist/lib/iText-5.0.4.jar
 ./dist/lib/jai_codec.jar
 ./dist/lib/jai_core.jar
 ./dist/lib/jai_imageio.jar
+./dist/lib/jcommon-1.0.16.jar
 ./dist/lib/jfreechart-1.0.13.jar
 ./dist/lib/jgoodies-common-1.3.0.jar
 ./dist/lib/jgoodies-forms-1.5.0.jar
@@ -40,7 +47,7 @@ Target Program folders          WellKnowns.PROGRAM_FOLDER
 ./dist/lib/proxymusic-2.0.jar
 ./dist/lib/tesseract-3.jar
 
-./ocr/                          WellKnowns.OCR_FOLDER
+./ocr/                                  WellKnowns.OCR_FOLDER
 ./ocr/tessdata/
 ./ocr/tessdata/deu.traineddata
 ./ocr/tessdata/eng.traineddata
@@ -48,36 +55,37 @@ Target Program folders          WellKnowns.PROGRAM_FOLDER
 ./ocr/tessdata/ita.traineddata
 ./ocr/tessdata/ [other files & languages on demand]
 
-./res/                          WellKnowns.RES_FOLDER
+./res/                                  WellKnowns.RES_FOLDER
 ./res/GPLv2.rtf
 ./res/ISO639-3.xml
 ./res/all-icons-256.ico
 ./res/splash.bmp
 ./res/splash.png
 
-./www/                          WellKnowns.DOC_FOLDER
+./www/                                  WellKnowns.DOC_FOLDER
 ./www/index.html
 ./www/branding
 ./www/docs
 
-Target User config folders      WellKnowns.CONFIG_FOLDER
+Target User config folders              WellKnowns.CONFIG_FOLDER
 --------------------------
 
-./settings/                     WellKnowns.SETTINGS_FOLDER
+./settings/                             WellKnowns.SETTINGS_FOLDER
 ./settings/logging.properties
 ./settings/run.properties
 ./settings/run.default.properties
 ./settings/system-actions.xml
 ./settings/user-actions.xml
 
-./plugins/                      WellKnowns.PLUGINS_FOLDER
+./plugins/                              WellKnowns.PLUGINS_FOLDER
 ./plugins/musescore.js
 ./plugins/finale.js
+./plugins/finale-notepad.js
 
-Target User data folders        WellKnowns.DATA_FOLDER
+Target User data folders                WellKnowns.DATA_FOLDER
 ------------------------
 
-./examples/                     WellKnowns.EXAMPLES_FOLDER
+./examples/                             WellKnowns.EXAMPLES_FOLDER
 ./examples/Dichterliebe01.pdf
 ./examples/SchbAvMaSample.pdf
 ./examples/Straight_Page_1.png
@@ -92,21 +100,21 @@ Target User data folders        WellKnowns.DATA_FOLDER
 ./examples/tzigane2.png
 ./examples/zizi.png
 
-./eval/                         WellKnowns.EVAL_FOLDER
+./eval/                                 WellKnowns.EVAL_FOLDER
 ./eval/linear-evaluator.xml     
 ./eval/neural-network.xml
 
-./train/                        WellKnowns.TRAIN_FOLDER
+./train/                                WellKnowns.TRAIN_FOLDER
 ./train/core
 ./train/samples
 ./train/sheets
 ./train/symbols
 
-./benches/  [user populated]    WellKnowns.BENCHES_FOLDER
-./midi/     [user populated]    WellKnowns.MIDI_FOLDER
-./print/    [user populated]    WellKnowns.PRINT_FOLDER
-./scripts/  [user populated]    WellKnowns.SCRIPTS_FOLDER
-./scores/   [user populated]    WellKnowns.SCORES_FOLDER
+./benches/  [user populated]            WellKnowns.BENCHES_FOLDER
+./midi/     [user populated]            WellKnowns.MIDI_FOLDER
+./print/    [user populated]            WellKnowns.PRINT_FOLDER
+./scripts/  [user populated]            WellKnowns.SCRIPTS_FOLDER
+./scores/   [user populated]            WellKnowns.SCORES_FOLDER
 
 Development only folders
 ------------------------
@@ -115,28 +123,23 @@ Development only folders
 ./.hgignore
 ./.hgtags
 
-./build-for-netbeans.xml
-./build.xml
+./build.xml                             [Main Ant build file]
 
-./dev/
-./dev/auto.xml
+./dev/                                  [Support for build]
 ./dev/build.default.properties
 ./dev/build.properties
-./dev/build.xml
-./dev/-prolog.xml
-./dev/-common.xml
+./dev/jars.xml
 ./dev/utils.xml
 
-./dev/jalopy/
+./dev/jalopy/                           [Source code formatting]
 ./dev/jalopy/java-convention.xml
 
-./dev/windows/
-./dev/windows/-execs.xml
-./dev/windows/-wix.xml
+./dev/windows/                          [Building Windows installer]
+./dev/windows/-windows.xml
 ./dev/windows/audiveris.wxs
 ./dev/windows/vc.wxs
 
-./dev/windows/dll/
+./dev/windows/dll/                      [Tesseract libraries]
 ./dev/windows/dll/jniTesseract3Bridge.dll
 ./dev/windows/dll/jniTesseract3Bridge.dll.manifest
 ./dev/windows/dll/liblept168.dll
@@ -146,15 +149,15 @@ Development only folders
 ./dev/material/MusicalSymbols.pdf
 ./dev/material/MusicalSymbols.ttf
 ./dev/material/global-tree.txt
+./dev/material/tasks-graph.uxf
 
-./dev/tools/
+./dev/tools/                            [jar files for build time]
 ./dev/tools/ant-contrib-1.0b3.jar
 ./dev/tools/ant-dotnet-1.1.LICENSE.txt
 ./dev/tools/ant-dotnet-1.1.jar
 ./dev/tools/ant4hg.jar
 ./dev/tools/jalopy-ant.jar
 ./dev/tools/jalopy.jar
-./dev/tools/jcip-annotations.jar
 ./dev/tools/junit-4.7.jar
 ./dev/tools/umlet.jar
 ./dev/tools/wix-heat-user.jar
@@ -172,18 +175,18 @@ Development only folders
 ./dev/tools/lib/ivy-1.3.1.jar
 ./dev/tools/lib/umlet.LICENCES.txt
 
-./dev/externals/
-./dev/externals/BareBonesBrowserLaunch.jar
-./dev/externals/EventBus-1.2.jar
+./dev/externals/                        [jar files for runtime]
 ./dev/externals/Jama-1.0.2.jar
 ./dev/externals/PDFRenderer.jar
 ./dev/externals/bsaf-1.9.1.jar
 ./dev/externals/clibwrapper_jiio.jar
-./dev/externals/gervill.jar
+./dev/externals/eventbus-1.4.jar
 ./dev/externals/iText-5.0.4.jar
 ./dev/externals/jai_codec.jar
 ./dev/externals/jai_core.jar
 ./dev/externals/jai_imageio.jar
+./dev/externals/javacpp.jar
+./dev/externals/jcip-annotations.jar
 ./dev/externals/jcommon-1.0.16.jar
 ./dev/externals/jfreechart-1.0.13.jar
 ./dev/externals/jgoodies-common-1.3.0.jar
@@ -191,10 +194,18 @@ Development only folders
 ./dev/externals/jgoodies-looks-2.5.0.jar
 ./dev/externals/jlfgr-1_0.jar
 ./dev/externals/mlibwrapper_jai.jar
-./dev/externals/playerdata.jar
 ./dev/externals/proxymusic-2.0.jar
-./dev/externals/tesjeract.jar
-./dev/externals/zong.jar
+./dev/externals/tesseract-3.jar
+
+./nbproject/                            [NetBeans project folder]
+./nbproject/build-impl.xml
+./nbproject/genfiles.properties
+./nbproject/project.properties
+./nbproject/project.xml
+./nbproject/private/
+./nbproject/private/config.properties
+./nbproject/private/private.properties
+./nbproject/private/private.xml
 
 ./src/
 ./src/...etc...
