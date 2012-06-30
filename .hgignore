@@ -1,6 +1,5 @@
 # First, use glob syntax -------------------------------------------------------
 syntax: regexp
-
 \.hgignore$
 \.chg\..*$
 \.conflict\~$
@@ -27,6 +26,13 @@ temp$
 tesseract\.log
 www/docs/api
 
+bin
+.DS_Store
+.project
+.settings
+manifest.mf
+nbbuild.xml
+.classpath
 # Now, switch to regexp syntax -------------------------------------------------
 syntax: glob
 
