@@ -35,8 +35,7 @@ class BasicRecognition
 {
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.
-            getLogger(BasicRecognition.class);
+    private static final Logger logger = Logger.getLogger(BasicRecognition.class);
 
     /** Current evaluation (shape + grade), if any */
     private Evaluation evaluation;
@@ -292,8 +291,7 @@ class BasicRecognition
         evaluation = new Evaluation(shape, grade);
 
         if (glyph.isVip()) {
-            logger.info("{0} assigned {1}", new Object[]{glyph.idString(),
-                                                         evaluation});
+            logger.info("{0} assigned {1}", glyph.idString(), evaluation);
         }
     }
 

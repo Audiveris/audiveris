@@ -15,6 +15,7 @@ import omr.glyph.facets.Glyph;
 
 import java.util.Collection;
 import java.util.SortedSet;
+import omr.util.Vip;
 
 /**
  * Interface {@code GlyphChain} defines a dynamic chain of active
@@ -25,13 +26,15 @@ import java.util.SortedSet;
  * @author Hervé Bitteur
  */
 public interface GlyphChain
+        extends Vip
 {
     //~ Methods ----------------------------------------------------------------
 
-    void addAllItems (Collection<?extends Glyph> glyphs);
+    void addAllItems (Collection<? extends Glyph> glyphs);
 
     /**
      * Add a glyph item to the chain.
+     *
      * @param glyph the glyph to add
      * @return true if glyph did not already exist in the chain
      */
@@ -39,6 +42,7 @@ public interface GlyphChain
 
     /**
      * Report the single compound glyph that gathers all sections.
+     *
      * @return the single compound glyph (which is the single item if there
      * is only one item, or a compound of all items otherwise).
      * This compound is a registered glyph, therefore it is unique.
@@ -47,6 +51,7 @@ public interface GlyphChain
 
     /**
      * Report the first item of the chain
+     *
      * @return chain first item
      */
     Glyph getFirstItem ();
@@ -54,6 +59,7 @@ public interface GlyphChain
     /**
      * Report the item right after the provided one in the chain of
      * items.
+     *
      * @param start the item whose successor is desired, or null if the very
      * first item is desired
      * @return the item that follow 'start', or null if none exists
@@ -63,6 +69,7 @@ public interface GlyphChain
     /**
      * Report the item right before the provided stop item in the chain
      * of items.
+     *
      * @param stop the item whose preceding instance is desired
      * @return the very last item found before the 'stop' item, or null
      */
@@ -70,24 +77,28 @@ public interface GlyphChain
 
     /**
      * Report the current number of items in the chain.
+     *
      * @return the current items nuumber
      */
     int getItemCount ();
 
     /**
      * Report the items, if any, that compose this compound.
+     *
      * @return the set of items, perhaps empty, but never null
      */
     SortedSet<Glyph> getItems ();
 
     /**
      * Report the last item of the chain
+     *
      * @return chain last item
      */
     Glyph getLastItem ();
 
     /**
      * Remove the provided item from this chain.
+     *
      * @param item the glyph to remove
      * @return true if the provided item was actually removed
      */
@@ -95,7 +106,8 @@ public interface GlyphChain
 
     /**
      * Record the items that compose this compound glyph.
+     *
      * @param items the contained items, perhaps empty but not null.
      */
-    void setItems (Collection<?extends Glyph> items);
+    void setItems (Collection<? extends Glyph> items);
 }

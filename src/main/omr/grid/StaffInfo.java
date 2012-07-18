@@ -50,6 +50,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import omr.score.common.PixelPoint;
 
 /**
  * Class {@code StaffInfo} handles the physical informations of a staff
@@ -60,7 +61,7 @@ import java.util.TreeSet;
  * @author Hervé Bitteur
  */
 public class StaffInfo
-    implements AttachmentHolder
+        implements AttachmentHolder
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -68,7 +69,6 @@ public class StaffInfo
     private static final Logger logger = Logger.getLogger(StaffInfo.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Sequence of the staff lines, from top to bottom */
     private final List<LineInfo> lines;
 
@@ -99,7 +99,7 @@ public class StaffInfo
     /** Right extrema */
     private double right;
 
-    /** The staff area */
+    /** The area around the staff */
     private GeoPath area;
 
     /** Map of ledgers nearby */
@@ -112,22 +112,22 @@ public class StaffInfo
     private AttachmentHolder attachments = new BasicAttachmentHolder();
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------//
     // StaffInfo //
     //-----------//
     /**
      * Create info about a staff, with its contained staff lines.
-     * @param id the id of the staff
-     * @param left abscissa of the left side
-     * @param right abscissa of the right side
+     *
+     * @param id            the id of the staff
+     * @param left          abscissa of the left side
+     * @param right         abscissa of the right side
      * @param specificScale specific scale detected for this staff
-     * @param lines the sequence of contained staff lines
+     * @param lines         the sequence of contained staff lines
      */
-    public StaffInfo (int            id,
-                      double         left,
-                      double         right,
-                      Scale          specificScale,
+    public StaffInfo (int id,
+                      double left,
+                      double right,
+                      Scale specificScale,
                       List<LineInfo> lines)
     {
         this.id = id;
@@ -138,13 +138,12 @@ public class StaffInfo
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------------//
     // addAttachment //
     //---------------//
     @Override
     public void addAttachment (String id,
-                               Shape  attachment)
+                               Shape attachment)
     {
         attachments.addAttachment(id, attachment);
     }
@@ -154,6 +153,7 @@ public class StaffInfo
     //-----------//
     /**
      * Add a ledger to the staff collection (which is lazily created)
+     *
      * @param ledger the ledger to add
      */
     public void addLedger (Ledger ledger)
@@ -162,7 +162,7 @@ public class StaffInfo
             throw new IllegalArgumentException("Cannot register a null ledger");
         }
 
-        int               pitch = ledger.getLineIndex();
+        int pitch = ledger.getLineIndex();
         SortedSet<Ledger> ledgerSet = ledgerMap.get(pitch);
 
         if (ledgerSet == null) {
@@ -171,9 +171,7 @@ public class StaffInfo
         }
 
         ledgerSet.add(ledger);
-        scoreStaff.getSystem()
-                  .getInfo()
-                  .addToLedgersCollection(ledger);
+        scoreStaff.getSystem().getInfo().addToLedgersCollection(ledger);
     }
 
     //------//
@@ -185,7 +183,7 @@ public class StaffInfo
     public void dump ()
     {
         System.out.println(
-            "StaffInfo" + getId() + " left=" + left + " right=" + right);
+                "StaffInfo" + getId() + " left=" + left + " right=" + right);
 
         int i = 0;
 
@@ -199,6 +197,7 @@ public class StaffInfo
     //-------------//
     /**
      * Report the staff abscissa, on the provided side.
+     *
      * @param side provided side
      * @return the staff abscissa
      */
@@ -216,6 +215,7 @@ public class StaffInfo
     //---------//
     /**
      * Report the lazily computed area defined by the staff limits.
+     *
      * @return the whole staff area
      */
     public GeoPath getArea ()
@@ -224,8 +224,8 @@ public class StaffInfo
             area = new GeoPath();
             area.append(topLimit, false);
             area.append(
-                ReversePathIterator.getReversePathIterator(bottomLimit),
-                true);
+                    ReversePathIterator.getReversePathIterator(bottomLimit),
+                    true);
         }
 
         return area;
@@ -236,12 +236,12 @@ public class StaffInfo
     //---------------//
     /**
      * Report the bounding box of the staff area.
+     *
      * @return the lazily computed bounding box
      */
     public Rectangle2D getAreaBounds ()
     {
-        return getArea()
-                   .getBounds2D();
+        return getArea().getBounds2D();
     }
 
     //----------------//
@@ -258,6 +258,7 @@ public class StaffInfo
     //--------//
     /**
      * Report the barline, if any, on the provided side
+     *
      * @param side proper horizontal side
      * @return the bar on the provided side, if any
      */
@@ -276,54 +277,52 @@ public class StaffInfo
     /**
      * Report the closest ledger (if any) between provided point and
      * this staff.
+     *
      * @param point the provided point
      * @return the closest ledger found, or null
      */
     public Ledger getClosestLedger (Point2D point)
     {
         Ledger bestLedger = null;
-        double top = getFirstLine()
-                         .yAt(point.getX());
-        double bottom = getLastLine()
-                            .yAt(point.getX());
-        double rawPitch = (4.0d * ((2 * point.getY()) - bottom - top)) / (bottom -
-                                                                         top);
+        double top = getFirstLine().yAt(point.getX());
+        double bottom = getLastLine().yAt(point.getX());
+        double rawPitch = (4.0d * ((2 * point.getY()) - bottom - top)) / (bottom
+                                                                          - top);
 
         if (Math.abs(rawPitch) <= 5) {
             return null;
         }
 
-        int         interline = specificScale.getInterline();
+        int interline = specificScale.getInterline();
         Rectangle2D searchBox;
 
         if (rawPitch < 0) {
             searchBox = new Rectangle2D.Double(
-                point.getX(),
-                point.getY(),
-                0,
-                top - point.getY() + 1);
+                    point.getX(),
+                    point.getY(),
+                    0,
+                    top - point.getY() + 1);
         } else {
             searchBox = new Rectangle2D.Double(
-                point.getX(),
-                bottom,
-                0,
-                point.getY() - bottom + 1);
+                    point.getX(),
+                    bottom,
+                    0,
+                    point.getY() - bottom + 1);
         }
 
         //searchBox.grow(interline, interline);
         searchBox.setRect(
-            searchBox.getX() - interline,
-            searchBox.getY() - interline,
-            searchBox.getWidth() + (2 * interline),
-            searchBox.getHeight() + (2 * interline));
+                searchBox.getX() - interline,
+                searchBox.getY() - interline,
+                searchBox.getWidth() + (2 * interline),
+                searchBox.getHeight() + (2 * interline));
 
         // Browse all staff ledgers
         Set<Ledger> foundLedgers = new HashSet<>();
 
         for (Set<Ledger> set : ledgerMap.values()) {
             for (Ledger ledger : set) {
-                if (ledger.getBounds()
-                          .intersects(searchBox)) {
+                if (ledger.getBounds().intersects(searchBox)) {
                     foundLedgers.add(ledger);
                 }
             }
@@ -334,9 +333,8 @@ public class StaffInfo
             double bestDist = Double.MAX_VALUE;
 
             for (Ledger ledger : foundLedgers) {
-                Point2D center = ledger.getStick()
-                                       .getAreaCenter();
-                double  dist = Math.abs(center.getY() - point.getY());
+                Point2D center = ledger.getStick().getAreaCenter();
+                double dist = Math.abs(center.getY() - point.getY());
 
                 if (dist < bestDist) {
                     bestDist = dist;
@@ -353,13 +351,14 @@ public class StaffInfo
     //----------------//
     /**
      * Report the staff line which is closest to the provided point.
+     *
      * @param point the provided point
      * @return the closest line found
      */
     public LineInfo getClosestLine (Point2D point)
     {
         double pos = pitchPositionOf(point);
-        int    idx = (int) Math.rint((pos + (lines.size() - 1)) / 2);
+        int idx = (int) Math.rint((pos + (lines.size() - 1)) / 2);
 
         if (idx < 0) {
             idx = 0;
@@ -370,6 +369,40 @@ public class StaffInfo
         return lines.get(idx);
     }
 
+    //----------//
+    // getGapTo //
+    //----------//
+    /**
+     * Report the vertical gap between staff and the provided glyph.
+     *
+     * @param glyph the provided glyph
+     * @return 0 if the glyph intersects the staff, otherwise the vertical
+     * distance from staff to closest edge of the glyph
+     */
+    public int getGapTo (Glyph glyph)
+    {
+        PixelPoint center = glyph.getAreaCenter();
+        int staffTop = getFirstLine().yAt(center.x);
+        int staffBot = getLastLine().yAt(center.x);
+        int glyphTop = glyph.getBounds().y;
+        int glyphBot = glyphTop + glyph.getBounds().height - 1;
+
+        // Check overlap
+        int top = Math.max(glyphTop, staffTop);
+        int bot = Math.min(glyphBot, staffBot);
+        if (top <= bot) {
+            return 0;
+        }
+
+        // No overlap, compute distance
+        int dist = Integer.MAX_VALUE;
+        dist = Math.min(dist, Math.abs(staffTop - glyphTop));
+        dist = Math.min(dist, Math.abs(staffTop - glyphBot));
+        dist = Math.min(dist, Math.abs(staffBot - glyphTop));
+        dist = Math.min(dist, Math.abs(staffBot - glyphBot));
+        return dist;
+    }
+
     //----------------//
     // getEndingSlope //
     //----------------//
@@ -377,6 +410,7 @@ public class StaffInfo
      * Report mean ending slope, on the provided side.
      * We discard highest and lowest absolute slopes, and return the average
      * values for the remaining ones.
+     *
      * @param side which side to select (left or right)
      * @return a "mean" value
      */
@@ -390,9 +424,11 @@ public class StaffInfo
         }
 
         Collections.sort(
-            slopes,
-            new Comparator<Double>() {
-            @Override
+                slopes,
+                new Comparator<Double>()
+                {
+
+                    @Override
                     public int compare (Double o1,
                                         Double o2)
                     {
@@ -414,6 +450,7 @@ public class StaffInfo
     //--------------//
     /**
      * Report the first line in the series.
+     *
      * @return the first line
      */
     public LineInfo getFirstLine ()
@@ -426,12 +463,12 @@ public class StaffInfo
     //-----------//
     /**
      * Report the mean height of the staff, between first and last line.
+     *
      * @return the mean staff height
      */
     public int getHeight ()
     {
-        return getSpecificScale()
-                   .getInterline() * (lines.size() - 1);
+        return getSpecificScale().getInterline() * (lines.size() - 1);
     }
 
     //-------//
@@ -439,6 +476,7 @@ public class StaffInfo
     //-------//
     /**
      * Report the staff id, counted from 1 in the sheet.
+     *
      * @return the staff id
      */
     public int getId ()
@@ -451,6 +489,7 @@ public class StaffInfo
     //-------------//
     /**
      * Report the last line in the series.
+     *
      * @return the last line
      */
     public LineInfo getLastLine ()
@@ -471,6 +510,7 @@ public class StaffInfo
     //------------//
     /**
      * Report the ordered set of ledgers, if any, for a given pitch value.
+     *
      * @param lineIndex the precise line index that specifies algebraic
      * distance from staff
      * @return the proper set of ledgers, or null
@@ -486,12 +526,13 @@ public class StaffInfo
     /**
      * Report the precise ordinate of staff area limit, on the provided
      * vertical side.
+     *
      * @param side the provided vertical side
-     * @param x the provided abscissa
+     * @param x    the provided abscissa
      * @return the ordinate of staff limit
      */
     public double getLimitAtX (VerticalSide side,
-                               double       x)
+                               double x)
     {
         GeoPath limit = (side == TOP) ? topLimit : bottomLimit;
 
@@ -503,6 +544,7 @@ public class StaffInfo
     //----------//
     /**
      * Report the sequence of lines.
+     *
      * @return the list of lines in this staff
      */
     public List<LineInfo> getLines ()
@@ -515,6 +557,7 @@ public class StaffInfo
     //-------------//
     /**
      * Report the ending abscissa of the staff lines.
+     *
      * @param side desired horizontal side
      * @return the abscissa corresponding to lines extrema
      */
@@ -533,8 +576,8 @@ public class StaffInfo
 
             for (LineInfo line : lines) {
                 linesRight = Math.max(
-                    linesRight,
-                    line.getEndPoint(RIGHT).getX());
+                        linesRight,
+                        line.getEndPoint(RIGHT).getX());
             }
 
             return linesRight;
@@ -547,16 +590,14 @@ public class StaffInfo
     /**
      * Report an approximate ordinate of staff ending, on the provided
      * horizontal side.
+     *
      * @param side provided side
      * @return the middle ordinate of staff ending
      */
     public double getMidOrdinate (HorizontalSide side)
     {
-        return (getFirstLine()
-                    .getEndPoint(side)
-                    .getY() + getLastLine()
-                                  .getEndPoint(side)
-                                  .getY()) / 2;
+        return (getFirstLine().getEndPoint(side).getY() + getLastLine().
+                getEndPoint(side).getY()) / 2;
     }
 
     //-----------------//
@@ -565,6 +606,7 @@ public class StaffInfo
     /**
      * Report the precise position for a note-like entity with respect
      * to this staff, taking ledgers (if any) into account.
+     *
      * @param point the absolute location of the provided note
      * @return the detailed note position
      */
@@ -578,10 +620,10 @@ public class StaffInfo
             bestLedger = getClosestLedger(point);
 
             if (bestLedger != null) {
-                Point2D center = bestLedger.getStick()
-                                           .getAreaCenter();
-                int     ledgerPitch = bestLedger.getPitchPosition();
-                double  deltaPitch = (2d * (point.getY() - center.getY())) / specificScale.getInterline();
+                Point2D center = bestLedger.getStick().getAreaCenter();
+                int ledgerPitch = bestLedger.getPitchPosition();
+                double deltaPitch = (2d * (point.getY() - center.getY())) / specificScale.
+                        getInterline();
                 pitch = ledgerPitch + deltaPitch;
             }
         }
@@ -594,6 +636,7 @@ public class StaffInfo
     //---------------//
     /**
      * Report the related score staff entity.
+     *
      * @return the corresponding scoreStaff
      */
     public Staff getScoreStaff ()
@@ -607,6 +650,7 @@ public class StaffInfo
     /**
      * Report the <b>specific</b> staff scale, which may have a
      * different interline value than the page average.
+     *
      * @return the staff scale
      */
     public Scale getSpecificScale ()
@@ -628,6 +672,7 @@ public class StaffInfo
     /**
      * Report the approximate point where a provided vertical stick
      * crosses this staff.
+     *
      * @param stick the rather vertical stick
      * @return the crossing point
      */
@@ -636,10 +681,10 @@ public class StaffInfo
         LineInfo midLine = lines.get(lines.size() / 2);
 
         return LineUtilities.intersection(
-            midLine.getEndPoint(LEFT),
-            midLine.getEndPoint(RIGHT),
-            stick.getStartPoint(Orientation.VERTICAL),
-            stick.getStopPoint(Orientation.VERTICAL));
+                midLine.getEndPoint(LEFT),
+                midLine.getEndPoint(RIGHT),
+                stick.getStartPoint(Orientation.VERTICAL),
+                stick.getStopPoint(Orientation.VERTICAL));
     }
 
     //-----------------//
@@ -649,18 +694,17 @@ public class StaffInfo
      * Compute an approximation of the pitch position of a pixel point,
      * since it is based only on distance to staff, with no
      * consideration for ledgers.
+     *
      * @param pt the pixel point
      * @return the pitch position
      */
     public double pitchPositionOf (Point2D pt)
     {
-        double top = getFirstLine()
-                         .yAt(pt.getX());
-        double bottom = getLastLine()
-                            .yAt(pt.getX());
+        double top = getFirstLine().yAt(pt.getX());
+        double bottom = getLastLine().yAt(pt.getX());
 
-        return ((lines.size() - 1) * ((2 * pt.getY()) - bottom - top)) / (bottom -
-                                                                         top);
+        return ((lines.size() - 1) * ((2 * pt.getY()) - bottom - top)) / (bottom
+                                                                          - top);
     }
 
     //-------------------//
@@ -677,6 +721,7 @@ public class StaffInfo
     //--------//
     /**
      * Paint the staff lines.
+     *
      * @param g the graphics context
      * @return true if something has been actually drawn
      */
@@ -686,8 +731,7 @@ public class StaffInfo
         LineInfo lastLine = getLastLine();
 
         if ((firstLine != null) && (lastLine != null)) {
-            if (g.getClipBounds()
-                 .intersects(getAreaBounds())) {
+            if (g.getClipBounds().intersects(getAreaBounds())) {
                 // Draw the left and right vertical lines
                 for (HorizontalSide side : HorizontalSide.values()) {
                     Point2D first = firstLine.getEndPoint(side);
@@ -721,11 +765,12 @@ public class StaffInfo
     //-------------//
     /**
      * Set the staff abscissa of the provided side.
+     *
      * @param side provided side
-     * @param val abscissa of staff end
+     * @param val  abscissa of staff end
      */
     public void setAbscissa (HorizontalSide side,
-                             double         val)
+                             double val)
     {
         if (side == HorizontalSide.LEFT) {
             left = val;
@@ -739,11 +784,12 @@ public class StaffInfo
     //--------//
     /**
      * Set a barline on the provided side
+     *
      * @param side proper horizontal side
-     * @param bar the bar to set
+     * @param bar  the bar to set
      */
     public void setBar (HorizontalSide side,
-                        BarInfo        bar)
+                        BarInfo bar)
     {
         if (side == HorizontalSide.LEFT) {
             this.leftBar = bar;
@@ -757,11 +803,12 @@ public class StaffInfo
     //----------//
     /**
      * Define the limit of the staff area, on the provided vertical side.
-     * @param side proper vertical side
+     *
+     * @param side  proper vertical side
      * @param limit assigned limit
      */
     public void setLimit (VerticalSide side,
-                          GeoPath      limit)
+                          GeoPath limit)
     {
         if (side == TOP) {
             topLimit = limit;
@@ -775,6 +822,7 @@ public class StaffInfo
     //---------------//
     /**
      * Remember the related score staff entity.
+     *
      * @param scoreStaff the corresponding scoreStaff to set
      */
     public void setScoreStaff (Staff scoreStaff)
@@ -789,27 +837,19 @@ public class StaffInfo
     public String toString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("{StaffInfo")
-          .append(" id=")
-          .append(getId())
-          .append(" left=")
-          .append((float) left)
-          .append(" right=")
-          .append((float) right);
+        sb.append("{StaffInfo").append(" id=").append(getId()).append(" left=").
+                append((float) left).append(" right=").append((float) right);
 
         if (specificScale != null) {
-            sb.append(" specificScale=")
-              .append(specificScale.getInterline());
+            sb.append(" specificScale=").append(specificScale.getInterline());
         }
 
         if (leftBar != null) {
-            sb.append(" leftBar:")
-              .append(leftBar);
+            sb.append(" leftBar:").append(leftBar);
         }
 
         if (rightBar != null) {
-            sb.append(" rightBar:")
-              .append(rightBar);
+            sb.append(" rightBar:").append(rightBar);
         }
 
         sb.append("}");

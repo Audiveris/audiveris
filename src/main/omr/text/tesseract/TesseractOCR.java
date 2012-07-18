@@ -9,20 +9,25 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.glyph.text.tesseract;
+package omr.text.tesseract;
 
 import omr.WellKnowns;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.text.OCR;
-import omr.glyph.text.OcrLine;
+import omr.glyph.facets.BasicGlyph;
+
+import omr.text.BasicContent;
+import omr.text.OCR;
+import omr.text.TextLine;
 
 import omr.log.Logger;
 
-import tesseract.Tesseract3Bridge.TessBaseAPI.SegmentationMode;
-import static tesseract.Tesseract3Bridge.*;
+import omr.util.ClassUtil;
+
+import tesseract.TessBridge.TessBaseAPI.SegmentationMode;
+import static tesseract.TessBridge.*;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;
@@ -35,10 +40,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
-import omr.glyph.facets.BasicGlyph;
-import omr.glyph.text.BasicContent;
-import omr.glyph.text.Sentence;
-import omr.util.ClassUtil;
+import omr.sheet.SystemInfo;
 
 /**
  * Class {@code TesseractOCR} is an OCR service built on the Google
@@ -103,11 +105,11 @@ public class TesseractOCR
         return INSTANCE;
     }
 
-    //-----------------------//
-    // getSupportedLanguages //
-    //-----------------------//
+    //--------------//
+    // getLanguages //
+    //--------------//
     @Override
-    public Set<String> getSupportedLanguages ()
+    public Set<String> getLanguages ()
     {
         if (isAvailable()) {
             try {
@@ -136,11 +138,12 @@ public class TesseractOCR
     // recognize //
     //-----------//
     @Override
-    public List<OcrLine> recognize (BufferedImage bufferedImage,
-                                    Point topLeft,
-                                    String languageCode,
-                                    LayoutMode layoutMode,
-                                    String label)
+    public List<TextLine> recognize (BufferedImage bufferedImage,
+                                     Point topLeft,
+                                     String languageCode,
+                                     LayoutMode layoutMode,
+                                     SystemInfo system,
+                                     String label)
     {
         // Make sure we have an OCR engine available
         if (!isAvailable()) {
@@ -157,7 +160,6 @@ public class TesseractOCR
                 StackTraceElement elem = ClassUtil.getCallingFrame(
                         BasicGlyph.class,
                         BasicContent.class,
-                        Sentence.class,
                         TesseractOCR.class);
 
                 if (elem != null) {
@@ -165,7 +167,8 @@ public class TesseractOCR
                 }
             }
 
-            order = new TesseractOrder(label + name,
+            order = new TesseractOrder(system,
+                                       label + name,
                                        serial.incrementAndGet(),
                                        constants.keepImages.isSet(),
                                        languageCode,
@@ -173,11 +176,11 @@ public class TesseractOCR
                                        bufferedImage);
 
             // Process the order
-            List<OcrLine> lines = order.process();
+            List<TextLine> lines = order.process();
 
             if (lines != null) {
                 // Translate relative coordinates to absolute ones
-                for (OcrLine ol : lines) {
+                for (TextLine ol : lines) {
                     ol.translate(topLeft.x, topLeft.y);
                 }
             }

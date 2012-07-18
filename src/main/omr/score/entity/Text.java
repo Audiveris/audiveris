@@ -12,14 +12,19 @@
 package omr.score.entity;
 
 import omr.glyph.facets.Glyph;
-import omr.glyph.text.Sentence;
-import omr.glyph.text.TextRole;
 
 import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.visitor.ScoreVisitor;
+
+import omr.sheet.SystemInfo;
+
+import omr.text.TextLine;
+import omr.text.TextRole;
+import omr.text.TextRoleInfo;
+import omr.text.TextWord;
 
 import omr.ui.symbol.TextFont;
 
@@ -56,10 +61,11 @@ public abstract class Text
     private static final Logger logger = Logger.getLogger(Text.class);
 
     //~ Instance fields --------------------------------------------------------
-    /** The containing sentence */
-    private final Sentence sentence;
+    //
+    /** The containing sentence. */
+    private final TextLine sentence;
 
-    /** The font to render this text entity */
+    /** The font to render this text entity. TODO: check actual interest! */
     protected Font font;
 
     //~ Constructors -----------------------------------------------------------
@@ -71,7 +77,7 @@ public abstract class Text
      *
      * @param sentence the larger sentence
      */
-    public Text (Sentence sentence)
+    public Text (TextLine sentence)
     {
         this(sentence, sentence.getLocation());
     }
@@ -86,7 +92,7 @@ public abstract class Text
      * @param sentence the larger sentence
      * @param location specific location
      */
-    public Text (Sentence sentence,
+    public Text (TextLine sentence,
                  PixelPoint location)
     {
         super(sentence.getSystemPart());
@@ -96,13 +102,8 @@ public abstract class Text
         setBox(sentence.getBounds());
 
         // Proper font ?
-        if (sentence.getFontSize() != null) {
-            font = TextFont.baseTextFont.deriveFont(
-                    (float) sentence.getFontSize());
-        } else {
-            addError("Text with no sentence font size at " + location);
-            font = TextFont.baseTextFont;
-        }
+        font = TextFont.baseTextFont.deriveFont(
+                (float) sentence.getMeanFontSize());
 
         ///determineFontSize();
         logger.fine("Created {0}", this);
@@ -155,20 +156,21 @@ public abstract class Text
      * @param sentence the whole sentence
      * @param location its starting reference wrt containing system
      */
-    public static void populate (Sentence sentence,
+    public static void populate (TextLine sentence,
                                  PixelPoint location)
     {
         final SystemPart systemPart = sentence.getSystemPart();
-        final TextRole role = sentence.getTextRole();
+        final TextRoleInfo roleInfo = sentence.getRole();
+        final TextRole role = roleInfo.role;
 
         if ((role == null) || (role == TextRole.UnknownRole)) {
             systemPart.addError(
-                    sentence.getCompound(),
+                    sentence.getFirstWord().getGlyph(),
                     "Sentence with no role defined");
         }
 
         logger.fine("Populating {0} {1} \"{2}\"",
-                    sentence, role, sentence.getTextContent());
+                    sentence, role, sentence.getValue());
 
         if (role == null) {
             return;
@@ -178,21 +180,24 @@ public abstract class Text
         case Lyrics:
 
             // Create as many lyrics items as needed
-            for (Glyph item : sentence.getItems()) {
-                PixelRectangle itemBox = item.getBounds();
-                String itemStr = item.getTextValue();
+            for (TextWord word : sentence.getWords()) {
+                Glyph glyph = word.getGlyph();
+                PixelRectangle itemBox = word.getBounds();
+                String itemStr = word.getValue();
 
                 if (itemStr == null) {
-                    int nbChar = (int) Math.rint(
-                            (double) itemBox.width / sentence.getTextHeight());
+                    // A very rough char count ...
+//                    int nbChar = (int) Math.rint(
+//                            (double) itemBox.width / sentence.getTextHeight());
+                    int nbChar = 5;
                     itemStr = role.getStringHolder(nbChar);
                 }
 
-                item.setTranslation(
+                glyph.setTranslation(
                         new LyricsItem(
                         sentence,
-                        new PixelPoint(itemBox.x, location.y),
-                        item,
+                        new PixelPoint(itemBox.x, location.y), // TODO: review!
+                        glyph,
                         itemBox.width,
                         itemStr));
             }
@@ -237,17 +242,17 @@ public abstract class Text
 
             break;
 
-            case Chord:
-                measure = systemPart.getMeasureAt(location);
-                sentence.setGlyphsTranslation(
-                        new ChordStatement(
-                        measure,
-                        location,
-                        measure.getEventChord(location),
-                        sentence,
-                        new ChordText(sentence)));
+        case Chord:
+            measure = systemPart.getMeasureAt(location);
+            sentence.setGlyphsTranslation(
+                    new ChordStatement(
+                    measure,
+                    location,
+                    measure.getEventChord(location),
+                    sentence,
+                    new ChordText(sentence)));
 
-                break;
+            break;
 
         case UnknownRole:
         default:
@@ -274,7 +279,7 @@ public abstract class Text
      */
     public String getContent ()
     {
-        return sentence.getTextContent();
+        return sentence.getValue();
     }
 
     //---------//
@@ -311,7 +316,7 @@ public abstract class Text
      *
      * @return the related sentence
      */
-    public Sentence getSentence ()
+    public TextLine getSentence ()
     {
         return sentence;
     }
@@ -339,8 +344,8 @@ public abstract class Text
     public String toString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("{Text ").append(sentence.getTextRole()).append(
-                internalsString());
+        sb.append("{Text").append(sentence.getRole());
+        sb.append(internalsString());
 
         if (font != null) {
             sb.append(" font:").append(font.getSize());
@@ -354,7 +359,7 @@ public abstract class Text
 
         sb.append(" S").append(getSystem().getId());
         sb.append("P").append(getPart().getId());
-        
+
         sb.append("}");
 
         return sb.toString();
@@ -403,36 +408,10 @@ public abstract class Text
             arranger;
         }
 
-        //~ Instance fields ----------------------------------------------------
-        /** Creator type, if any */
-        private CreatorType creatorType;
-
         //~ Constructors -------------------------------------------------------
-        public CreatorText (Sentence sentence)
+        public CreatorText (TextLine sentence)
         {
             super(sentence);
-            setCreatorType(sentence.getTextType());
-        }
-
-        //~ Methods ------------------------------------------------------------
-        public CreatorType getCreatorType ()
-        {
-            return creatorType;
-        }
-
-        public void setCreatorType (CreatorType creatorType)
-        {
-            this.creatorType = creatorType;
-        }
-
-        @Override
-        protected String internalsString ()
-        {
-            if (creatorType != null) {
-                return " " + creatorType;
-            } else {
-                return "";
-            }
         }
     }
 
@@ -447,7 +426,7 @@ public abstract class Text
     {
         //~ Constructors -------------------------------------------------------
 
-        public DefaultText (Sentence sentence)
+        public DefaultText (TextLine sentence)
         {
             super(sentence);
         }
@@ -462,7 +441,7 @@ public abstract class Text
     {
         //~ Constructors -------------------------------------------------------
 
-        public DirectionText (Sentence sentence)
+        public DirectionText (TextLine sentence)
         {
             super(sentence);
         }
@@ -477,7 +456,7 @@ public abstract class Text
     {
         //~ Constructors -------------------------------------------------------
 
-        public NameText (Sentence sentence)
+        public NameText (TextLine sentence)
         {
             super(sentence);
 
@@ -496,7 +475,7 @@ public abstract class Text
     {
         //~ Constructors -------------------------------------------------------
 
-        public NumberText (Sentence sentence)
+        public NumberText (TextLine sentence)
         {
             super(sentence);
         }
@@ -511,7 +490,7 @@ public abstract class Text
     {
         //~ Constructors -------------------------------------------------------
 
-        public RightsText (Sentence sentence)
+        public RightsText (TextLine sentence)
         {
             super(sentence);
         }
@@ -526,7 +505,7 @@ public abstract class Text
     {
         //~ Constructors -------------------------------------------------------
 
-        public ChordText (Sentence sentence)
+        public ChordText (TextLine sentence)
         {
             super(sentence);
         }
@@ -541,7 +520,7 @@ public abstract class Text
     {
         //~ Constructors -------------------------------------------------------
 
-        public TitleText (Sentence sentence)
+        public TitleText (TextLine sentence)
         {
             super(sentence);
         }

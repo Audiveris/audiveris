@@ -9,11 +9,9 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.glyph.text;
+package omr.text;
 
 import omr.constant.ConstantSet;
-
-import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
@@ -24,7 +22,6 @@ import omr.score.entity.Staff;
 import omr.score.entity.SystemNode.StaffPosition;
 import omr.score.entity.SystemPart;
 import omr.score.entity.Text;
-import omr.score.entity.Text.CreatorText.CreatorType;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
@@ -38,32 +35,37 @@ import omr.sheet.SystemInfo;
  */
 public enum TextRole
 {
+    //~ Enum constants ---------------------------------------------------------
 
-    /** No role known */
+    /** No role known. */
     UnknownRole,
-    /** (Part of) lyrics */
+    /** (Part of) lyrics. */
     Lyrics,
-    /** Title of the opus */
+    /** Title of the opus. */
     Title,
-    /** Playing instruction */
+    /** Playing instruction. */
     Direction,
-    /** Number for this opus */
+    /** Number for this opus. */
     Number,
-    /** Name for the part */
+    /** Name for the part. */
     Name,
-    /** A creator (composer, etc...) */
+    /** A creator (composer, etc...). */
     Creator,
-    /** Copyright notice */
+    /** Copyright notice. */
     Rights,
-    /** Chord mark */
+    /** Chord mark. */
     Chord;
 
-    /** Specific application parameters */
+    //~ Static fields/initializers ---------------------------------------------
+    //
+    /** Specific application parameters. */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
+    /** Usual logger utility. */
     private static final Logger logger = Logger.getLogger(TextRole.class);
 
+    //~ Methods ----------------------------------------------------------------
+    //
     //-----------------//
     // getStringHolder //
     //-----------------//
@@ -71,6 +73,7 @@ public enum TextRole
      * Forge a string to be used in lieu of real text value.
      *
      * @param NbOfChars the number of characters desired
+     *
      * @return a dummy string of NbOfChars chars
      */
     public String getStringHolder (int NbOfChars)
@@ -83,33 +86,11 @@ public enum TextRole
             StringBuilder sb = new StringBuilder("[");
 
             while (sb.length() < (NbOfChars - 1)) {
-                sb.append(toString()).append("-");
+                sb.append(toString())
+                        .append("-");
             }
 
             return sb.substring(0, Math.max(NbOfChars - 1, 0)) + "]";
-        }
-    }
-
-    //----------//
-    // RoleInfo //
-    //----------//
-    public static class RoleInfo
-    {
-
-        final TextRole role;
-
-        final Text.CreatorText.CreatorType creatorType;
-
-        public RoleInfo (TextRole role,
-                         CreatorType creatorType)
-        {
-            this.role = role;
-            this.creatorType = creatorType;
-        }
-
-        public RoleInfo (TextRole role)
-        {
-            this(role, null);
         }
     }
 
@@ -121,27 +102,29 @@ public enum TextRole
      * For the time being, this is a simple algorithm based on sentence location
      * within the page.
      *
-     * @param glyph      the (only) sentence glyph
+     * @param box        the sentence bounds
      * @param systemInfo the containing system
+     * @param isItalic   indicates if the item is (mainly) in italics
+     *                   (null if unknown)
      * @return the role information inferred for the provided sentence glyph
      */
-    static RoleInfo guessRole (Glyph glyph,
-                               SystemInfo systemInfo)
+    public static TextRoleInfo guessRole (PixelRectangle box,
+                                   SystemInfo systemInfo,
+                                   Boolean isItalic)
     {
         Sheet sheet = systemInfo.getSheet();
         ScoreSystem system = systemInfo.getScoreSystem();
         Scale scale = system.getScale();
-        PixelRectangle box = glyph.getBounds();
         PixelPoint left = new PixelPoint(box.x, box.y + (box.height / 2));
-        PixelPoint right = new PixelPoint(
-                box.x + box.width,
-                box.y + (box.height / 2));
+        PixelPoint right = new PixelPoint(box.x + box.width,
+                                          box.y + (box.height / 2));
 
         // First system in page?
         boolean firstSystem = system.getId() == 1;
 
         // Last system in page?
-        boolean lastSystem = sheet.getSystems().size() == system.getId();
+        boolean lastSystem = sheet.getSystems()
+                .size() == system.getId();
 
         // Vertical position wrt (system) staves
         StaffPosition systemPosition = system.getStaffPosition(left);
@@ -153,7 +136,8 @@ public enum TextRole
         // Vertical distance from staff?
         Staff staff = system.getStaffAt(left);
         int staffDy = Math.abs(staff.getTopLeft().y - box.y);
-        boolean closeToStaff = staffDy <= scale.toPixels(constants.maxStaffDy);
+        boolean closeToStaff = staffDy
+                <= scale.toPixels(constants.maxStaffDy);
 
         // Begins before the part?
         boolean leftOfStaves = system.isLeftOfStaves(left);
@@ -161,12 +145,14 @@ public enum TextRole
         // At the center of page width?
         int maxCenterDx = scale.toPixels(constants.maxCenterDx);
         int pageCenter = sheet.getWidth() / 2;
-        boolean pageCentered = Math.abs((box.x + (box.width / 2)) - pageCenter) <= maxCenterDx;
+        boolean pageCentered = Math.abs((box.x + (box.width / 2))
+                - pageCenter) <= maxCenterDx;
 
         // Right aligned with staves?
         int maxRightDx = scale.toPixels(constants.maxRightDx);
-        boolean rightAligned = Math.abs(
-                right.x - system.getTopLeft().x - system.getDimension().width) <= maxRightDx;
+        boolean rightAligned = Math.abs(right.x - system.getTopLeft().x
+                - system.getDimension().width)
+                <= maxRightDx;
 
         // Short Sentence?
         int maxShortLength = scale.toPixels(constants.maxShortLength);
@@ -180,41 +166,44 @@ public enum TextRole
         int minTitleHeight = scale.toPixels(constants.minTitleHeight);
         boolean highText = box.height >= minTitleHeight;
 
-        logger.fine(
-                "{0} firstSystem={1} lastSystem={2} systemPosition={3}"
+        logger.fine("{0} firstSystem={1} lastSystem={2} systemPosition={3}"
                 + " partPosition={4} closeToStaff={5} leftOfStaves={6}"
                 + " pageCentered={7} rightAligned={8} shortSentence={9}"
                 + " highText={10}",
-                new Object[]{glyph, firstSystem, lastSystem, systemPosition,
-                             partPosition, closeToStaff, leftOfStaves,
-                             pageCentered, rightAligned, shortSentence,
-                             highText});
+                    new Object[]{
+                    box, firstSystem, lastSystem, systemPosition,
+                    partPosition, closeToStaff, leftOfStaves, pageCentered,
+                    rightAligned, shortSentence, highText
+                });
 
         // Decisions ...
         switch (systemPosition) {
         case ABOVE_STAVES: // Title, Number, Creator, Direction (Chord)
 
             if (tinySentence) {
-                return new RoleInfo(TextRole.UnknownRole);
+                return new TextRoleInfo(TextRole.UnknownRole);
             }
 
-            if (leftOfStaves) {
-                return new RoleInfo(
-                        TextRole.Creator,
-                        Text.CreatorText.CreatorType.lyricist);
-            } else if (rightAligned) {
-                return new RoleInfo(
-                        TextRole.Creator,
-                        Text.CreatorText.CreatorType.composer);
-            } else if (closeToStaff) {
-                return new RoleInfo(TextRole.Direction);
-            } else if (pageCentered) { // Title, Number
-
-                if (highText) {
-                    return new RoleInfo(TextRole.Title);
-                } else {
-                    return new RoleInfo(TextRole.Number);
+            if (firstSystem) {
+                if (leftOfStaves) {
+                    return new TextRoleInfo(
+                            TextRole.Creator,
+                            Text.CreatorText.CreatorType.lyricist);
+                } else if (rightAligned) {
+                    return new TextRoleInfo(
+                            TextRole.Creator,
+                            Text.CreatorText.CreatorType.composer);
+                } else if (closeToStaff) {
+                    return new TextRoleInfo(TextRole.Direction);
+                } else if (pageCentered) { // Title, Number
+                    if (highText) {
+                        return new TextRoleInfo(TextRole.Title);
+                    } else {
+                        return new TextRoleInfo(TextRole.Number);
+                    }
                 }
+            } else {
+                return new TextRoleInfo(TextRole.Direction);
             }
 
             break;
@@ -222,34 +211,37 @@ public enum TextRole
         case WITHIN_STAVES: // Name, Lyrics, Direction
 
             if (leftOfStaves) {
-                return new RoleInfo(TextRole.Name);
-            } else if (partPosition == StaffPosition.BELOW_STAVES) {
-                return new RoleInfo(TextRole.Lyrics);
+                return new TextRoleInfo(TextRole.Name);
+            } else if (partPosition == StaffPosition.BELOW_STAVES
+                    && (isItalic == null || !isItalic)) {
+                return new TextRoleInfo(TextRole.Lyrics);
             } else {
-                return new RoleInfo(TextRole.Direction);
+                return new TextRoleInfo(TextRole.Direction);
             }
 
         case BELOW_STAVES: // Copyright
 
             if (tinySentence) {
-                return new RoleInfo(TextRole.UnknownRole);
+                return new TextRoleInfo(TextRole.UnknownRole);
             }
 
             if (pageCentered && shortSentence && lastSystem) {
-                return new RoleInfo(TextRole.Rights);
+                return new TextRoleInfo(TextRole.Rights);
             }
         }
 
         // Default
-        return new RoleInfo(TextRole.UnknownRole);
+        return new TextRoleInfo(TextRole.UnknownRole);
     }
 
+    //~ Inner Classes ----------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
 
         Scale.Fraction maxRightDx = new Scale.Fraction(
                 2,

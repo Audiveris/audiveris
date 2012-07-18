@@ -18,7 +18,7 @@ import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
-import omr.glyph.text.TextBlob;
+import omr.text.TextBlob;
 
 import omr.log.Logger;
 
@@ -42,7 +42,7 @@ import java.util.TreeSet;
  * Class {@code AbstractBlobPattern} is the basis for text patterns
  * that use underlying {@link TextBlob} instances.
  * The goal is to work on glyphs and to retrieve new TEXT-shaped glyphs, which
- * will later be gathered into {@link omr.glyph.text.Sentence} instances.
+ * will later be gathered into {@link omr.text.Sentence} instances.
  *
  * <p>Typical sequence:<ol>
  * <li> Define a set of regions within the system</li>

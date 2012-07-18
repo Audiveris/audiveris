@@ -25,17 +25,20 @@ class BasicAdministration
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** The containing glyph nest */
+    /** The containing glyph nest. */
     protected Nest nest;
 
-    /** Glyph instance identifier (Unique in the containing nest) */
+    /** Glyph instance identifier. (Unique in the containing nest) */
     protected int id;
 
-    /** Flag to remember processing has been done */
+    /** Flag to remember processing has been done. */
     private boolean processed = false;
 
-    /** VIP flag */
+    /** VIP flag. */
     protected boolean vip;
+    
+    /** Related id string (prebuilt once for all) */
+    protected String idString;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -88,9 +91,9 @@ class BasicAdministration
     // idString //
     //----------//
     @Override
-    public String idString ()
+    public final String idString ()
     {
-        return "glyph#" + id;
+        return idString;
     }
 
     //-------------//
@@ -136,6 +139,7 @@ class BasicAdministration
     public void setId (int id)
     {
         this.id = id;
+        idString = "glyph#" + id;
     }
 
     //---------//

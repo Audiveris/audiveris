@@ -12,14 +12,16 @@
 package omr.glyph.pattern;
 
 import omr.glyph.Grades;
-import omr.glyph.text.SentencePattern;
 
 import omr.log.Logger;
 
 import omr.sheet.SystemInfo;
 
+import omr.text.TextCheckerPattern;
+import omr.text.TextPattern;
+
 /**
- * Class {@code PatternsChecker} gathers for a gien system a series of
+ * Class {@code PatternsChecker} gathers for a given system a series of
  * specific patterns to process (verify, recognize, fix, ...) glyphs
  * in their sheet environment.
  *
@@ -34,13 +36,15 @@ public class PatternsChecker
             PatternsChecker.class);
 
     //~ Instance fields --------------------------------------------------------
-    /** Sequence of patterns to runPattern */
+    //
+    /** Sequence of patterns to run. */
     private final GlyphPattern[] patterns;
 
-    /** Dedicated system */
+    /** Dedicated system. */
     private final SystemInfo system;
 
     //~ Constructors -----------------------------------------------------------
+    //
     //-----------------//
     // PatternsChecker //
     //-----------------//
@@ -52,6 +56,7 @@ public class PatternsChecker
     public PatternsChecker (final SystemInfo system)
     {
         this.system = system;
+
         patterns = new GlyphPattern[]{
             //
             new CaesuraPattern(system),
@@ -74,10 +79,12 @@ public class PatternsChecker
             new RefreshPattern(system),
             //
             // Text patterns
-            new TextBorderPattern(system), // Glyphs -> Text
-            new TextGreedyPattern(system), // Glyphs -> Text
-            new TextAreaPattern(system), //   Glyphs -> Text
-            new SentencePattern(system), // Text -> sentences
+            //            new TextBorderPattern(system), // Glyphs -> Text
+            //            new TextGreedyPattern(system), // Glyphs -> Text
+            //            new TextAreaPattern(system), //   Glyphs -> Text
+            //            new SentencePattern(system), // Text -> sentences
+            new TextPattern(system),
+            new TextCheckerPattern(system), // Debug stuff
 
             ///new ArticulationPattern(system),
 
@@ -87,6 +94,7 @@ public class PatternsChecker
     }
 
     //~ Methods ----------------------------------------------------------------
+    //
     //-------------//
     // runPatterns //
     //-------------//
@@ -127,18 +135,19 @@ public class PatternsChecker
         system.inspectGlyphs(Grades.symbolMinGrade);
 
         if (totalModifs > 0) {
-            logger.fine("S#{0} Patterns{1}", new Object[]{system.getId(), sb});
+            logger.fine("S#{0} Patterns{1}", system.getId(), sb);
         }
 
         return totalModifs != 0;
     }
 
     //~ Inner Classes ----------------------------------------------------------
+    //
     //----------------//
     // RefreshPattern //
     //----------------//
     /**
-     * Dummy pattern, just to refresh the system glyphs
+     * Dummy pattern, just to refresh the system glyphs.
      */
     private static class RefreshPattern
             extends GlyphPattern

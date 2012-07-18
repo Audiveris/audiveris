@@ -19,7 +19,7 @@ import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.ShapeEvaluator;
 import omr.glyph.facets.Glyph;
-import omr.glyph.text.TextBlob;
+import omr.text.TextBlob;
 
 import omr.log.Logger;
 

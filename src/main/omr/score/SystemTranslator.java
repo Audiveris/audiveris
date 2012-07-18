@@ -15,7 +15,6 @@ import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import static omr.glyph.ShapeSet.*;
 import omr.glyph.facets.Glyph;
-import omr.glyph.text.Sentence;
 
 import omr.log.Logger;
 
@@ -60,6 +59,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import omr.text.TextLine;
 
 /**
  * Class {@code SystemTranslator} performs all translation tasks for
@@ -999,7 +999,7 @@ public class SystemTranslator
         @Override
         public void completeSystem ()
         {
-            for (Sentence sentence : system.getInfo().getSentences()) {
+            for (TextLine sentence : system.getInfo().getSentences()) {
                 Text.populate(sentence, sentence.getLocation());
             }
 
@@ -1018,7 +1018,7 @@ public class SystemTranslator
                     systemBox.x + (systemBox.width / 2),
                     systemBox.y + systemBox.height);
             currentStaff = system.getTextStaff(
-                    glyph.getTextRole(),
+                    glyph.getTextRole().role,
                     currentCenter);
             currentPart = currentStaff.getPart();
         }

@@ -1,0 +1,264 @@
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                           T e x t P a t t e r n                            //
+//                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
+//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
+//  This software is released under the GNU General Public License.           //
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
+//----------------------------------------------------------------------------//
+// </editor-fold>
+package omr.text;
+
+import omr.glyph.facets.Glyph;
+import omr.glyph.pattern.GlyphPattern;
+
+import omr.lag.Section;
+
+import omr.log.Logger;
+
+import omr.sheet.SystemInfo;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+/**
+ * Class {@code TextPattern} is in charge of updating the structure of
+ * text sentences.
+ *
+ * @author Hervé Bitteur
+ */
+public class TextPattern
+        extends GlyphPattern
+{
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(TextPattern.class);
+
+    //~ Instance fields --------------------------------------------------------
+    //
+    /** Text utility for this system */
+    TextBuilder textBuilder = system.getTextBuilder();
+
+    //~ Constructors -----------------------------------------------------------
+    //
+    //-------------//
+    // TextPattern //
+    //-------------//
+    public TextPattern (
+            SystemInfo system)
+    {
+        super("text", system);
+    }
+
+    //~ Methods ----------------------------------------------------------------
+    //
+    //------------//
+    // runPattern //
+    //------------//
+    /**
+     * Update sentences and text glyphs.
+     *
+     * @return nothing
+     */
+    @Override
+    public int runPattern ()
+    {
+        List<TextLine> toRemove = new ArrayList<>();
+        // Check each sentence for inactive, non-text glyph, modified value
+        for (TextLine line : system.getSentences()) {
+            checkModifiedValue(line);
+
+            purgeWords(line);
+
+            if (line.getWords().isEmpty()) {
+                logger.info("Removing sentence " + line);
+                toRemove.add(line);
+            }
+        }
+
+        system.getSentences().removeAll(toRemove);
+
+        // Look for active text glyphs left over (no word, or no line)
+        checkOrphanGlyphs();
+
+        // Global recomposition of all lines
+        textBuilder.recomposeLines(system.getSentences());
+
+        // Purge lines
+        purgeLines(system.getSentences());
+
+        // Dump current system sentences
+        //if (logger.isFineEnabled()) {
+//            logger.info("{0} final sentences:", system.idString());
+//            for (TextLine line : system.getSentences()) {
+//                logger.info("   {0}", line);
+//            }
+        //}
+        
+        return 0; // Useless
+    }
+
+    //-------------------//
+    // checkOrphanGlyphs //
+    //-------------------//
+    /**
+     * Look for orphan text glyphs and create the proper TextLine
+     * structure.
+     * Strategy: create a TextLine for each of these orphan glyphs then
+     * look for potential merge with other TextLine instances.
+     */
+    private void checkOrphanGlyphs ()
+    {
+        String language = system.getScoreSystem().getScore().getLanguage();
+        for (Glyph glyph : system.getGlyphs()) {
+            if (!isOrphan(glyph)) {
+                continue;
+            }
+
+            logger.info("Orphan text {0}", glyph.idString());
+
+            // Use OCR on this glyph
+            List<TextLine> lines = glyph.retrieveOcrLines(language);
+            if (lines != null) {
+                List<TextLine> newLines = textBuilder.recomposeLines(lines);
+
+                textBuilder.mapGlyphs(newLines,
+                                      glyph.getMembers(),
+                                      language);
+            } else {
+                logger.info("{0} No line", system.idString());
+            }
+        }
+
+    }
+
+    //----------//
+    // isOrphan //
+    //----------//
+    /**
+     * Check whether the provided glyph is an text orphan.
+     *
+     * @param glyph the glyph to check
+     * @return true if orphan
+     */
+    private boolean isOrphan (Glyph glyph)
+    {
+        if (glyph == null || !glyph.isText() || !glyph.isActive()) {
+            return false;
+        }
+
+        TextWord word = glyph.getTextWord();
+        if (word == null) {
+            return true;
+        }
+
+        TextLine line = word.getTextLine();
+        if (line == null) {
+            return true;
+        }
+
+        if (!line.getWords().contains(word)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    //--------------------//
+    // checkModifiedValue //
+    //--------------------//
+    /**
+     * Check a TextLine for a modified (manual) value and align the
+     * internal structure accordingly.
+     *
+     * @param line the TextLine to check and update if needed
+     */
+    private void checkModifiedValue (TextLine line)
+    {
+        String language = system.getScoreSystem().getScore().getLanguage();
+        boolean altered = false;
+        List<Section> lineSections = new ArrayList<>();
+
+        // Use a copy to avoid concurrent modifs
+        List<TextWord> words = new ArrayList<>(line.getWords());
+        for (TextWord word : words) {
+            Glyph glyph = word.getGlyph();
+
+            if (glyph == null) {
+                continue;
+            } else {
+                lineSections.addAll(glyph.getMembers());
+            }
+
+            if (!glyph.isActive() || !glyph.isText()) {
+                continue;
+            }
+
+            if (!glyph.getTextValue().equals(word.getInternalValue())) {
+                // Here the glyph (manual) value has been modified
+                altered = true;
+                textBuilder.splitWords(Arrays.asList(word),
+                                       line);
+            }
+        }
+
+        // Remap glyphs if line has been altered
+        if (altered) {
+            textBuilder.mapGlyphs(Arrays.asList(line),
+                                  lineSections,
+                                  language);
+        }
+    }
+
+    //------------//
+    // purgeWords //
+    //------------//
+    /**
+     * Purge a TextLine of its former words no longer linked to an
+     * active text glyph.
+     *
+     * @param line the TextLine to purge
+     */
+    private void purgeWords (TextLine line)
+    {
+        List<TextWord> toRemove = new ArrayList<>();
+
+        for (TextWord word : line.getWords()) {
+            Glyph glyph = word.getGlyph();
+
+            if (glyph == null || !glyph.isActive() || !glyph.isText()) {
+                logger.fine("Purging word {0}", word);
+                toRemove.add(word);
+            }
+        }
+
+        if (!toRemove.isEmpty()) {
+            line.removeWords(toRemove);
+        }
+    }
+
+    //------------//
+    // purgeLines //
+    //------------//
+    /**
+     * Remove the merged lines from the provided collection.
+     *
+     * @param sentences the collection to purge
+     */
+    private void purgeLines (Set<TextLine> lines)
+    {
+        for (Iterator<TextLine> it = lines.iterator(); it.hasNext();) {
+            TextLine line = it.next();
+            if (line.isProcessed()) {
+                logger.fine("Purging line {0}", line);
+                it.remove();
+            }
+        }
+    }
+}

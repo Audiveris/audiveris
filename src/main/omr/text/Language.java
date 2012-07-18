@@ -9,16 +9,16 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.glyph.text;
+package omr.text;
 
 import omr.WellKnowns;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.text.tesseract.TesseractOCR;
-
 import omr.log.Logger;
+
+import omr.text.tesseract.TesseractOCR;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -66,9 +66,6 @@ public class Language
             logger.severe("Error loading " + inputFile, ex);
         }
     }
-
-    /** The related OCR */
-    private static final OCR ocr = TesseractOCR.getInstance();
     
     //~ Constructors -----------------------------------------------------------
     
@@ -89,27 +86,6 @@ public class Language
     public static String getDefaultLanguage ()
     {
         return constants.defaultLanguageCode.getValue();
-    }
-
-    /**
-     * Report the related OCR engine, if one is available
-     * @return the ocr the available OCR engine, or null
-     */
-    public static OCR getOcr ()
-    {
-        return ocr;
-    }
-
-    //-----------------------//
-    // getSupportedLanguages //
-    //-----------------------//
-    /**
-     * Report the set of supported language codes
-     * @return the set of supported 3-letter codes
-     */
-    public static Set<String> getSupportedLanguages ()
-    {
-        return ocr.getSupportedLanguages();
     }
 
     //--------//

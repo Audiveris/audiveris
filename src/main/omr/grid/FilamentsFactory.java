@@ -823,7 +823,7 @@ public class FilamentsFactory
                                         || candidate.isVip()) {
                                     logger.info(
                                             "Merged {0} into {1}",
-                                            new Object[]{candidate, head});
+                                            candidate, head);
 
                                     if (candidate.isVip()) {
                                         head.setVip();
@@ -845,7 +845,7 @@ public class FilamentsFactory
                             if (head.isVip() && candidate.isVip()) {
                                 logger.info(
                                         "No intersection between {0} and {1}",
-                                        new Object[]{candidate, head});
+                                        candidate, head);
                             }
                         }
                     }

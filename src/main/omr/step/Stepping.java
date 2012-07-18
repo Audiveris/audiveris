@@ -247,7 +247,7 @@ public class Stepping
                 // Create score pages if not yet done
                 score.createPages();
                 start = first;
-                stop = orderedSteps.isEmpty()? first : orderedSteps.last();
+                stop = orderedSteps.isEmpty() ? first : orderedSteps.last();
             } else {
                 // Use a score sheet to retrieve the latest mandatory step
                 Sheet sheet = score.getFirstPage().getSheet();
@@ -289,7 +289,7 @@ public class Stepping
             logger.warning("Error in performing " + orderedSteps, ex);
         }
     }
-    
+
     //-----------------//
     // ensureScoreStep //
     //-----------------//
@@ -304,7 +304,7 @@ public class Stepping
     {
         if (!score.getFirstPage().getSheet().isDone(step)) {
             processScore(Collections.singleton(step), score);
-        }        
+        }
     }
 
     //----------------//
@@ -375,7 +375,7 @@ public class Stepping
     // shouldReprocessSheet //
     //----------------------//
     /**
-     * Check whether some steps need to be reperformed, starting from 
+     * Check whether some steps need to be reperformed, starting from
      * step 'from'.
      *
      * @param from the step to rebuild from
@@ -393,7 +393,7 @@ public class Stepping
     // doOneScoreStep //
     //----------------//
     /**
-     * At score level, do just one specified step, synchronously, with 
+     * At score level, do just one specified step, synchronously, with
      * display of related UI and recording of the step into the script.
      *
      * @param step  the step to perform
@@ -418,7 +418,7 @@ public class Stepping
 
         final long stopTime = System.currentTimeMillis();
         final long duration = stopTime - startTime;
-        logger.fine("{0} completed in {1} ms", new Object[]{step, duration});
+        logger.fine("{0} completed in {1} ms", step, duration);
 
         // Record this in score bench
         score.getBench().recordStep(step, duration);
@@ -565,8 +565,8 @@ public class Stepping
     // scheduleScoreStepSet //
     //----------------------//
     /**
-     * Organize the scheduling of steps at score level among the sheets, since
-     * some steps have specific requirements
+     * Organize the scheduling of steps at score level among the sheets,
+     * since some steps have specific requirements
      *
      * @param orderedSet the sequence of steps
      * @param score      the score to process
@@ -581,8 +581,7 @@ public class Stepping
             return;
         }
 
-        logger.info("{0}scheduling {1}",
-                    new Object[]{score.getLogPrefix(), stepSet});
+        logger.info("{0}scheduling {1}", score.getLogPrefix(), stepSet);
 
         long startTime = System.currentTimeMillis();
         notifyStart();

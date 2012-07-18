@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.score.entity;
 
-import omr.glyph.text.Sentence;
 import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
@@ -20,23 +19,26 @@ import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
 import omr.score.visitor.Visitable;
 
+import omr.text.TextLine;
+
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 /**
- * Class {@code ChordStatement} represents a chord statement in the score
+ * Class {@code ChordStatement} represents a chord statement in the 
+ * score.
  *
  * @author Hervé Bitteur
  */
 public class ChordStatement
-    extends MeasureElement
-    implements Visitable
+        extends MeasureElement
+        implements Visitable
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
-        ChordStatement.class);
+            ChordStatement.class);
 
     /** Regular expressions */
     private static Pattern[] regexps = null;
@@ -46,6 +48,7 @@ public class ChordStatement
     public static enum Type
     {
         //~ Enumeration constant initializers ----------------------------------
+
         MAJOR,
         MINOR,
         DOMINANT,
@@ -54,7 +57,6 @@ public class ChordStatement
     }
 
     //~ Instance fields --------------------------------------------------------
-
     /** The underlying text */
     private Text.ChordText text;
 
@@ -68,28 +70,28 @@ public class ChordStatement
     private Type type;
 
     //~ Constructors -----------------------------------------------------------
-
     //----------------//
     // ChordStatement //
     //----------------//
     /**
      * Creates a new instance of ChordStatement event
      *
-     * @param measure measure that contains this mark
+     * @param measure        measure that contains this mark
      * @param referencePoint the reference location of the mark
-     * @param chord the chord related to the mark, if any
-     * @param sentence the underlying sentence
-     * @param text the sentence text
+     * @param chord          the chord related to the mark, if any
+     * @param sentence       the underlying sentence
+     * @param text           the sentence text
      */
-    public ChordStatement (Measure            measure,
-                           PixelPoint         referencePoint,
-                           Chord              chord,
-                           Sentence           sentence,
-                           Text.ChordText     text)
+    public ChordStatement (Measure measure,
+                           PixelPoint referencePoint,
+                           Chord chord,
+                           TextLine sentence,
+                           Text.ChordText text)
     {
-        super(measure, true, referencePoint, chord, sentence.getCompound());
+        super(measure, true, referencePoint, chord, sentence.getFirstWord().
+                getGlyph());
 
-        Glyph glyph = sentence.getCompound();
+        Glyph glyph = sentence.getFirstWord().getGlyph();
 
         this.text = text;
 
@@ -107,7 +109,6 @@ public class ChordStatement
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------//
     // accept //
     //--------//
@@ -161,7 +162,8 @@ public class ChordStatement
     //----------//
     // getGroup //
     //----------//
-    private String getGroup (Matcher matcher, String name)
+    private String getGroup (Matcher matcher,
+                             String name)
     {
         String result = null;
         try {

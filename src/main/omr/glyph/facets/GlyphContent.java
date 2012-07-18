@@ -11,204 +11,146 @@
 // </editor-fold>
 package omr.glyph.facets;
 
-import omr.glyph.text.OcrChar;
-import omr.glyph.text.OcrLine;
-import omr.glyph.text.TextArea;
-import omr.glyph.text.TextRole;
-
 import omr.lag.Section;
 
 import omr.score.common.PixelPoint;
-import omr.score.entity.Text.CreatorText.CreatorType;
+
+import omr.text.TextArea;
+import omr.text.TextChar;
+import omr.text.TextLine;
+import omr.text.TextRoleInfo;
+import omr.text.TextWord;
 
 import java.util.List;
 import java.util.SortedSet;
-import omr.glyph.text.Sentence;
 
 /**
- * Interface {@code GlyphContent} defines a facet that deals with
- * the textual content, if any, of a glyph.
+ * Interface {@code GlyphContent} defines a facet that deals with the
+ * textual content, if any, of a glyph.
  *
  * @author Hervé Bitteur
  */
 public interface GlyphContent
-    extends GlyphFacet
+        extends GlyphFacet
 {
     //~ Instance fields --------------------------------------------------------
 
-    /**
-     * String equivalent of Character used for elision. (undertie)
-     */
+    /** String equivalent of Character used for elision. (undertie) */
     String ELISION_STRING = new String(Character.toChars(8255));
 
-    /**
-     * String equivalent of Character used for extension. (underscore)
-     */
+    /** String equivalent of Character used for extension. (underscore) */
     String EXTENSION_STRING = "_";
 
-    /**
-     * String equivalent of Character used for hyphen.
-     */
+    /** String equivalent of Character used for hyphen. */
     String HYPHEN_STRING = "-";
 
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * Report the containing sentence, if any
-     * @return the sentence
-     */
-    Sentence getSentence ();
-
-    /**
-     * Assign the containing sentence
-     * @param sentence the sentence to set
-     */
-    void setSentence (Sentence sentence);
-    
-    /**
-     * Report the creator type, if any.
-     * @return the creatorType
-     */
-    CreatorType getCreatorType ();
-
-    /**
-     * Report the proper font size for the textual glyph.
-     * @return the fontSize
-     */
-    Float getFontSize ();
-
-    /**
      * Report the manually assigned text, if any.
+     *
      * @return manualValue the manual string value for this glyph, or null
+     *
      * @see #setManualValue
      */
     String getManualValue ();
 
     /**
      * Report the current language, if any, defined for this glyph.
+     *
      * @return the current glyph language code, or null
      */
     String getOcrLanguage ();
 
     /**
-     * Return the single OCR line for this glyph, assuming that the
-     * glyph language is set and the OCR output consists in exactly
-     * one line.
-     * @return the single OCR line, if all conditions are met, null otherwise.
+     * Return the corresponding text word for this glyph, if any.
+     *
+     * @return the related text word, null otherwise.
+     * @see #setTextWord(java.lang.String, omr.text.TextWord) 
      */
-    OcrLine getOcrLine ();
-
-    /**
-     * Report the detailed OCR information for a given language.
-     * @return the ocrLine(s), if any, for this language.
-     * Nota, if more than 1 line is found, many methods such as {@link
-     * #getOcrValue} are not relevant.
-     * A null value indicates that no OCR data is available.
-     * @see #setOcrLines
-     */
-    List<OcrLine> getOcrLines (String language);
-
-    /**
-     * Report what the OCR has provided for this glyph using its
-     * current language.
-     * @return the text provided by the OCR engine, if any. Return null
-     * if no language is set or if the corresponding OCR output is not
-     * a single line.
-     */
-    String getOcrValue ();
+    TextWord getTextWord ();
 
     /**
      * Report a dummy content for this glyph (for lack of known content).
+     *
      * @return an artificial text content, based on the enclosing sentence type
      */
     String getPseudoValue ();
 
     /**
      * Report the text area that contains this glyph.
+     *
      * @return the text area for this glyph
      */
     TextArea getTextArea ();
 
     /**
      * Determine the uniform character height for this glyph.
+     *
      * @return the standard character height in pixels
      */
     int getTextHeight ();
 
     /**
-     * Report the text type (role) of the textual glyph within the score.
+     * Report the text role of the textual glyph within the score.
+     *
      * @return the role of this textual glyph
-     * @see #setTextRole
      */
-    TextRole getTextRole ();
+    TextRoleInfo getTextRole ();
 
     /**
      * Report the starting point of this text glyph, which is the left
      * side abscissa and the baseline ordinate.
+     *
      * @return the starting point of the text glyph, specified in pixels
      */
-    PixelPoint getTextStart ();
+    PixelPoint getTextLocation ();
 
     /**
      * Report the string value of this text glyph if any.
-     * @return the text meaning of this glyph if any, either entered manually
-     * or via an OCR function
+     *
+     * @return the text meaning of this glyph if any, which is the manual value
+     *         if any, or the ocr value otherwise.
      */
     String getTextValue ();
 
     /**
-     * Launch the OCR on this glyph, to retrieve the OcrLine instance(s)
-     * this glyph represents.
+     * Launch the OCR on this glyph, to retrieve the TextLine
+     * instance(s) this glyph represents.
+     *
      * @param language the probable language
-     * @return a list, not null but perhaps empty, of OcrLine instances with
-     * absolute coordinates.
+     *
+     * @return a list, not null but perhaps empty, of TextLine instances with
+     *         absolute coordinates.
      */
-    List<OcrLine> retrieveOcrLines (String language);
+    List<TextLine> retrieveOcrLines (String language);
 
     /**
-     * Retrieve the glyph sections that correspond to the collection
-     * of OCR char descriptors.
+     * Retrieve the glyph sections that correspond to the collection of
+     * text char descriptors.
+     *
      * @param chars the char descriptors
+     *
      * @return the set of corresponding sections
      */
-    SortedSet<Section> retrieveSections (List<OcrChar> chars);
-
-    /**
-     * Decompose the glyph into a sequence of (sub) glyphs, either by
-     * word or by syllable.
-     * @param bySyllable true for split by syllable, false for split by word
-     * @return The sequence of (sub) glyphs created, with exactly one glyph
-     * per word (or syllable). Non null but perhaps empty.
-     */
-    List<Glyph> retrieveSubGlyphs (boolean bySyllable);
-
-    /**
-     * Set the creator type.
-     * @param creatorType the creatorType to set
-     */
-    void setCreatorType (CreatorType creatorType);
+    SortedSet<Section> retrieveSections (List<TextChar> chars);
 
     /**
      * Manually assign a text meaning to the glyph.
+     *
      * @param manualValue the string value for this text glyph
+     *
      * @see #getManualValue
      */
     void setManualValue (String manualValue);
 
     /**
-     * Store the information as provided by the OCR engine or by the
-     * word-based split of (long) sentence.
+     * Set the related text word.
+     *
      * @param ocrLanguage the language provided to OCR engine for recognition
-     * @param ocrLines the sequence of OCR lines for this glyph
-     * @see #getOcrLines
+     * @param textWord    the TextWord for this glyph
+     * @see #getTextWord
      */
-    void setOcrLines (String        ocrLanguage,
-                      List<OcrLine> ocrLines);
-
-    /**
-     * Force the text type (role) of the textual glyph within the score.
-     * @param type the role of this textual item
-     * @see #getTextRole
-     */
-    void setTextRole (TextRole type);
+    void setTextWord (String ocrLanguage,
+                      TextWord textWord);
 }

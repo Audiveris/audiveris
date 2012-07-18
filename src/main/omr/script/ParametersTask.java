@@ -15,7 +15,6 @@ import omr.score.Score;
 import omr.score.entity.ScorePart;
 import omr.score.entity.SlotPolicy;
 
-import omr.sheet.Scale;
 import omr.sheet.Sheet;
 
 import omr.step.Step;
@@ -24,12 +23,14 @@ import omr.step.Steps;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import omr.score.entity.Page;
+import omr.sheet.SystemInfo;
+import omr.util.TreeNode;
 
 /**
  * Class {@code ParametersTask} handles the global parameters of a score,
@@ -41,7 +42,7 @@ import javax.xml.bind.annotation.XmlElement;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class ParametersTask
-    extends ScriptTask
+        extends ScriptTask
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -75,11 +76,12 @@ public class ParametersTask
 
     /** Remember if we have changed these items */
     private boolean foregroundChanged;
+
     private boolean languageChanged;
+
     private boolean slotChanged;
 
     //~ Constructors -----------------------------------------------------------
-
     //----------------//
     // ParametersTask //
     //----------------//
@@ -89,17 +91,17 @@ public class ParametersTask
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------//
     // addPart //
     //---------//
     /**
      * Add data for one part
-     * @param name the part name
+     *
+     * @param name    the part name
      * @param program the midi program
      */
     public void addPart (String name,
-                         int    program)
+                         int program)
     {
         parts.add(new PartData(name, program));
     }
@@ -109,40 +111,40 @@ public class ParametersTask
     //------//
     @Override
     public void core (Sheet sheet)
-        throws Exception
+            throws Exception
     {
-        Score         score = sheet.getScore();
+        Score score = sheet.getScore();
         StringBuilder sb = new StringBuilder();
 
         // Foreground
         if (foreground != null) {
-            if (!sheet.hasMaxForeground() ||
-                !foreground.equals(sheet.getMaxForeground())) {
+            if (!sheet.hasMaxForeground()
+                    || !foreground.equals(sheet.getMaxForeground())) {
                 sheet.setMaxForeground(foreground);
                 sb.append(" foreground:")
-                  .append(foreground);
+                        .append(foreground);
                 foregroundChanged = true;
             }
         }
 
         // Slot policy
         if (slotPolicy != null) {
-            if (!score.hasSlotPolicy() ||
-                !slotPolicy.equals(score.getSlotPolicy())) {
+            if (!score.hasSlotPolicy()
+                    || !slotPolicy.equals(score.getSlotPolicy())) {
                 score.setSlotPolicy(slotPolicy);
                 sb.append(" slotPolicy:")
-                  .append(slotPolicy);
+                        .append(slotPolicy);
                 slotChanged = true;
             }
         }
 
         // Slot margin
         if (slotMargin != null) {
-            if (!score.hasSlotMargin() ||
-                !slotMargin.equals(score.getSlotMargin())) {
+            if (!score.hasSlotMargin()
+                    || !slotMargin.equals(score.getSlotMargin())) {
                 score.setSlotMargin(slotMargin);
                 sb.append(" slotMargin:")
-                  .append(slotMargin);
+                        .append(slotMargin);
                 slotChanged = true;
             }
         }
@@ -152,7 +154,7 @@ public class ParametersTask
             if (!score.hasLanguage() || !language.equals(score.getLanguage())) {
                 score.setLanguage(language);
                 sb.append(" language:")
-                  .append(language);
+                        .append(language);
                 languageChanged = true;
             }
         }
@@ -162,7 +164,7 @@ public class ParametersTask
             if (!score.hasTempo() || !tempo.equals(score.getTempo())) {
                 score.setTempo(tempo);
                 sb.append(" tempo:")
-                  .append(tempo);
+                        .append(tempo);
             }
         }
 
@@ -171,7 +173,7 @@ public class ParametersTask
             if (!score.hasVolume() || !volume.equals(score.getVolume())) {
                 score.setVolume(volume);
                 sb.append(" volume:")
-                  .append(volume);
+                        .append(volume);
             }
         }
 
@@ -183,8 +185,8 @@ public class ParametersTask
         for (int i = 0; i < parts.size(); i++) {
             try {
                 ScorePart scorePart = score.getPartList()
-                                           .get(i);
-                PartData  data = parts.get(i);
+                        .get(i);
+                PartData data = parts.get(i);
 
                 // Part name
                 scorePart.setName(data.name);
@@ -193,8 +195,8 @@ public class ParametersTask
                 scorePart.setMidiProgram(data.program);
             } catch (Exception ex) {
                 logger.warning(
-                    "Error in script Parameters part#" + (i + 1),
-                    ex);
+                        "Error in script Parameters part#" + (i + 1),
+                        ex);
             }
         }
     }
@@ -204,6 +206,7 @@ public class ParametersTask
     //--------//
     /**
      * Determine from which step we should rebuild the current score
+     *
      * @param sheet the related sheet
      */
     @Override
@@ -217,6 +220,14 @@ public class ParametersTask
         }
 
         if (languageChanged) {
+            for (TreeNode pn : new ArrayList<>(sheet.getScore().getPages())) {
+                final Page page = (Page) pn;
+                final Sheet theSheet = page.getSheet();
+                for (SystemInfo system : theSheet.getSystems()) {
+                    system.getTextBuilder().switchLanguageTexts();
+                }
+            }
+
             from = Steps.valueOf(Steps.SYMBOLS);
         }
 
@@ -231,7 +242,7 @@ public class ParametersTask
         }
 
         if ((from != null) && Stepping.shouldReprocessSheet(from, sheet)) {
-            logger.info("Rebuilding from {0}", from);
+            logger.fine("Rebuilding from {0}", from);
             Stepping.reprocessSheet(from, sheet, null, true);
         }
 
@@ -314,44 +325,43 @@ public class ParametersTask
 
         if (foreground != null) {
             sb.append(" foreground:")
-              .append(foreground);
+                    .append(foreground);
         }
 
         if (slotPolicy != null) {
             sb.append(" slotPolicy:")
-              .append(slotPolicy);
+                    .append(slotPolicy);
         }
 
         if (slotMargin != null) {
             sb.append(" slotMargin:")
-              .append(slotMargin);
+                    .append(slotMargin);
         }
 
         if (language != null) {
             sb.append(" language:")
-              .append(language);
+                    .append(language);
         }
 
         if (tempo != null) {
             sb.append(" tempo:")
-              .append(tempo);
+                    .append(tempo);
         }
 
         if (volume != null) {
             sb.append(" volume:")
-              .append(volume);
+                    .append(volume);
         }
 
         for (PartData data : parts) {
             sb.append(" ")
-              .append(data);
+                    .append(data);
         }
 
         return sb.toString() + super.internalsString();
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //----------//
     // PartData //
     //----------//
@@ -368,9 +378,8 @@ public class ParametersTask
         private final String name;
 
         //~ Constructors -------------------------------------------------------
-
         public PartData (String name,
-                         int    program)
+                         int program)
         {
             this.name = name;
             this.program = program;
@@ -383,7 +392,6 @@ public class ParametersTask
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public String toString ()
         {

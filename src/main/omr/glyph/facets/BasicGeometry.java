@@ -244,7 +244,7 @@ class BasicGeometry
 
         // Text shape: use specific reference
         if (shape.isText()) {
-            return glyph.getTextStart();
+            return glyph.getTextLocation();
         }
 
         // Other shape: check with the related symbol if any

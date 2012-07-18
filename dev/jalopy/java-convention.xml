@@ -1,434 +1,1087 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<jalopy>
-<general>
-<compliance>
-<version>15</version>
-</compliance>
-<style>
-<description>Sun Java Coding Convention</description>
-<name>Sun</name>
-</style>
-</general>
-<inspector>
-<enable>false</enable>
-<naming>
-<classes>
-<abstract>[A-Z][a-zA-Z0-9]+</abstract>
-<general>[A-Z][a-zA-Z0-9]+</general>
-</classes>
-<fields>
-<default>[a-z][\w]+</default>
-<defaultStatic>[a-z][\w]+</defaultStatic>
-<defaultStaticFinal>[a-zA-Z][\w]+</defaultStaticFinal>
-<private>[a-z][\w]+</private>
-<privateStatic>[a-z][\w]+</privateStatic>
-<privateStaticFinal>[a-zA-Z][\w]+</privateStaticFinal>
-<protected>[a-z][\w]+</protected>
-<protectedStatic>[a-z][\w]+</protectedStatic>
-<protectedStaticFinal>[a-zA-Z][\w]+</protectedStaticFinal>
-<public>[a-z][\w]+</public>
-<publicStatic>[a-z][\w]+</publicStatic>
-<publicStaticFinal>[a-zA-Z][\w]+</publicStaticFinal>
-</fields>
-<interfaces>[A-Z][a-zA-Z0-9]+</interfaces>
-<labels>\w+</labels>
-<methods>
-<default>[a-z][\w]+</default>
-<defaultStatic>[a-z][\w]+</defaultStatic>
-<defaultStaticFinal>[a-z][\w]+</defaultStaticFinal>
-<private>[a-z][\w]+</private>
-<privateStatic>[a-z][\w]+</privateStatic>
-<privateStaticFinal>[a-z][\w]+</privateStaticFinal>
-<protected>[a-z][\w]+</protected>
-<protectedStatic>[a-z][\w]+</protectedStatic>
-<protectedStaticFinal>[a-z][\w]+</protectedStaticFinal>
-<public>[a-z][\w]+</public>
-<publicStatic>[a-z][\w]+</publicStatic>
-<publicStaticFinal>[a-z][\w]+</publicStaticFinal>
-</methods>
-<packages>[a-z]+(?:\.[a-z]+)*</packages>
-<parameters>
-<default>[a-z][\w]+</default>
-<final>[a-z][\w]+</final>
-</parameters>
-<variables>[a-z][\w]*</variables>
-</naming>
-<tips>
-<adhereToNamingConvention>false</adhereToNamingConvention>
-<alwaysOverrideHashCode>false</alwaysOverrideHashCode>
-<avoidThreadGroups>false</avoidThreadGroups>
-<declareCollectionComment>false</declareCollectionComment>
-<dontIgnoreExceptions>false</dontIgnoreExceptions>
-<dontSubstituteObjectEquals>false</dontSubstituteObjectEquals>
-<neverDeclareException>false</neverDeclareException>
-<neverDeclareThrowable>false</neverDeclareThrowable>
-<neverInvokeWaitOutsideLoop>false</neverInvokeWaitOutsideLoop>
-<neverReturnZeroArrays>false</neverReturnZeroArrays>
-<neverUseEmptyFinally>false</neverUseEmptyFinally>
-<obeyContractEquals>false</obeyContractEquals>
-<overrideToString>false</overrideToString>
-<referToObjectsByInterface>false</referToObjectsByInterface>
-<replaceStructureWithClass>false</replaceStructureWithClass>
-<stringLiterallI18n>false</stringLiterallI18n>
-<useInterfaceOnlyForTypes>false</useInterfaceOnlyForTypes>
-<wrongCollectionComment>false</wrongCollectionComment>
-</tips>
-</inspector>
-<internal>
-<version>6</version>
-</internal>
-<messages>
-<priority>
-<general>30000</general>
-<parser>30000</parser>
-<parserJavadoc>30000</parserJavadoc>
-<printer>30000</printer>
-<printerJavadoc>30000</printerJavadoc>
-<transform>30000</transform>
-</priority>
-<showErrorStackTrace>true</showErrorStackTrace>
-</messages>
-<misc>
-<threadCount>1</threadCount>
-</misc>
-<printer>
-<alignment>
-<methodCallChain>true</methodCallChain>
-<parameterMethodDeclaration>true</parameterMethodDeclaration>
-<ternaryOperator>false</ternaryOperator>
-<variableAssignment>false</variableAssignment>
-<variableDeclAssignment>false</variableDeclAssignment>
-<variableIdentifier>true</variableIdentifier>
-</alignment>
-<backup>
-<directory>bak</directory>
-<level>0</level>
-</backup>
-<blanklines>
-<after>
-<block>1</block>
-<braceLeft>0</braceLeft>
-<class>1</class>
-<declaration>0</declaration>
-<footer>1</footer>
-<header>0</header>
-<interface>1</interface>
-<lastImport>1</lastImport>
-<method>1</method>
-<package>1</package>
-</after>
-<before>
-<block>1</block>
-<braceRight>0</braceRight>
-<caseBlock>1</caseBlock>
-<comment>
-<javadoc>1</javadoc>
-<multiline>1</multiline>
-<singleline>1</singleline>
-</comment>
-<controlStatement>1</controlStatement>
-<declaration>1</declaration>
-<footer>0</footer>
-<header>0</header>
-<package>1</package>
-</before>
-<keepUpTo>1</keepUpTo>
-</blanklines>
-<brace>
-<comment>false</comment>
-</brace>
-<braces>
-<empty>
-<cuddle>false</cuddle>
-<insertStatement>false</insertStatement>
-</empty>
-<insert>
-<dowhile>true</dowhile>
-<for>true</for>
-<ifelse>true</ifelse>
-<while>true</while>
-</insert>
-<remove>
-<block>true</block>
-<dowhile>false</dowhile>
-<for>false</for>
-<ifelse>false</ifelse>
-<while>false</while>
-</remove>
-<treatDifferent>
-<methodClass>true</methodClass>
-<methodClassIfWrapped>false</methodClassIfWrapped>
-</treatDifferent>
-</braces>
-<chunks>
-<blanklines>false</blanklines>
-<comments>false</comments>
-</chunks>
-<comments>
-<format>
-<multiline>true</multiline>
-</format>
-<javadoc>
-<check>
-<innerclass>false</innerclass>
-<tags>false</tags>
-<throwsTags>true</throwsTags>
-</check>
-<fieldsShort>true</fieldsShort>
-<generate>
-<class>5</class>
-<constructor>5</constructor>
-<field>0</field>
-<method>0</method>
-</generate>
-<parseComments>false</parseComments>
-<parseDescription>false</parseDescription>
-<skip>
-<ifml>true</ifml>
-</skip>
-<tags>
-<in-line/>
-<standard/>
-</tags>
-<templates>
-<class>/**| * DOCUMENT ME!| *| * @author TBD| * @version TBD| */</class>
-<constructor>
-<bottom> */</bottom>
-<exception> * @throws $exceptionType$ DOCUMENT ME!</exception>
-<param> * @param $paramType$ DOCUMENT ME!</param>
-<top>/**| * Creates a new $objectType$ object.</top>
-</constructor>
-<interface>/**| * DOCUMENT ME!| *| * @author TBD| * @version TBD| */</interface>
-<method>
-<bottom> */</bottom>
-<exception> * @throws $exceptionType$ DOCUMENT ME!</exception>
-<param> * @param $paramType$ DOCUMENT ME!</param>
-<return> * @return DOCUMENT ME!</return>
-<top>/**| * DOCUMENT ME!</top>
-</method>
-<variable>/**| * DOCUMENT ME!| */</variable>
-</templates>
-</javadoc>
-<remove>
-<javadoc>false</javadoc>
-<multiline>false</multiline>
-<singleline>false</singleline>
-</remove>
-<separator>
-<fillCharacter>-</fillCharacter>
-<insert>true</insert>
-<insertRecursive>true</insertRecursive>
-<text>
-<annotation>Annotations</annotation>
-<class>Inner Classes</class>
-<constructor>Constructors</constructor>
-<enum>Enumerations</enum>
-<field>Instance fields</field>
-<initializer>Instance initializers</initializer>
-<interface>Inner Interfaces</interface>
-<method>Methods</method>
-<static>Static fields/initializers</static>
-</text>
-</separator>
-</comments>
-<environment/>
-<footer>
-<ignoreIfExists>false</ignoreIfExists>
-<keys/>
-<smartMode>0</smartMode>
-<use>false</use>
-</footer>
-<header>
-<ignoreIfExists>true</ignoreIfExists>
-<keys>author</keys>
-<smartMode>0</smartMode>
-<use>true</use>
-</header>
-<history>
-<method>adler32</method>
-<policy>file</policy>
-</history>
-<imports>
-<grouping>
-<defaultDepth>2</defaultDepth>
-<packages>omr:2|*:0|java:1|javax:1</packages>
-</grouping>
-<policy>disabled</policy>
-<sort>true</sort>
-</imports>
-<indentation>
-<caseFromSwitch>false</caseFromSwitch>
-<continuation>
-<block>false</block>
-<operator>false</operator>
-</continuation>
-<firstColumnComments>true</firstColumnComments>
-<label>true</label>
-<policy>
-<deep>true</deep>
-</policy>
-<sizes>
-<braceCuddled>1</braceCuddled>
-<braceLeft>1</braceLeft>
-<braceRight>0</braceRight>
-<braceRightAfter>1</braceRightAfter>
-<continuation>4</continuation>
-<deep>70</deep>
-<extends>4</extends>
-<general>4</general>
-<implements>4</implements>
-<leading>0</leading>
-<tabs>8</tabs>
-<throws>4</throws>
-<trailingComment>1</trailingComment>
-</sizes>
-<tabs>
-<enable>false</enable>
-<onlyLeading>false</onlyLeading>
-</tabs>
-</indentation>
-<misc>
-<arrayBracketsAfterIdent>false</arrayBracketsAfterIdent>
-<forceFinalModifier>false</forceFinalModifier>
-<forceFormatting>true</forceFormatting>
-<insertExpressionParentheses>true</insertExpressionParentheses>
-<insertLoggingConditional>true</insertLoggingConditional>
-<insertTrailingNewline>true</insertTrailingNewline>
-<insertUID>false</insertUID>
-<method>
-<forceFinalModifier>false</forceFinalModifier>
-</method>
-</misc>
-<sorting>
-<declaration>
-<annotation>true</annotation>
-<class>true</class>
-<constructor>true</constructor>
-<enable>true</enable>
-<enum>false</enum>
-<interface>true</interface>
-<method>true</method>
-<order>static|enum|field|initializer|constructor|method|interface|class|annotation</order>
-<variable>false</variable>
-</declaration>
-<modifier>
-<enable>true</enable>
-<order>public=true|protected=true|private=true|abstract=true|static=true|final=true|synchronized=true|transient=true|volatile=true|native=true|strictfp=true</order>
-</modifier>
-</sorting>
-<whitespace>
-<after>
-<comma>true</comma>
-<semicolon>true</semicolon>
-<typeCast>true</typeCast>
-</after>
-<before>
-<braces>true</braces>
-<brackets>false</brackets>
-<bracketsTypes>false</bracketsTypes>
-<caseColon>true</caseColon>
-<operator>
-<not>false</not>
-</operator>
-<parentheses>
-<methodCall>false</methodCall>
-<methodDeclaration>true</methodDeclaration>
-<statement>true</statement>
-</parentheses>
-</before>
-<padding>
-<braces>true</braces>
-<brackets>false</brackets>
-<operator>
-<assignment>true</assignment>
-<bitwise>true</bitwise>
-<logical>true</logical>
-<mathematical>true</mathematical>
-<relational>true</relational>
-<shift>true</shift>
-</operator>
-<parenthesis>false</parenthesis>
-<typeCast>false</typeCast>
-</padding>
-</whitespace>
-<wrapping>
-<always>
-<after>
-<arrayElement>0</arrayElement>
-<braceRight>false</braceRight>
-<extendsTypes>false</extendsTypes>
-<implementsTypes>false</implementsTypes>
-<label>true</label>
-<methodCallChained>true</methodCallChained>
-<ternaryOperator>
-<first>false</first>
-<second>false</second>
-</ternaryOperator>
-<throwsTypes>false</throwsTypes>
-</after>
-<before>
-<braceLeft>false</braceLeft>
-<extends>true</extends>
-<implements>true</implements>
-<throws>true</throws>
-</before>
-<parameter>
-<methodCall>false</methodCall>
-<methodCallNested>false</methodCallNested>
-<methodDeclaration>true</methodDeclaration>
-</parameter>
-</always>
-<anon>
-<align>
-<after>2147483647</after>
-</align>
-<lcurly>
-<newline>true</newline>
-</lcurly>
-</anon>
-<anondef>
-<align>
-<after>2147483647</after>
-</align>
-<lcurly>
-<nonewline>true</nonewline>
-</lcurly>
-</anondef>
-<enum>
-<align>
-<after>1</after>
-</align>
-<lcurly>
-<nonewline>false</nonewline>
-</lcurly>
-</enum>
-<general>
-<beforeOperator>false</beforeOperator>
-<enable>true</enable>
-<lineLength>80</lineLength>
-</general>
-<ondemand>
-<after>
-<assignment>false</assignment>
-<leftParenthesis>false</leftParenthesis>
-<parameter>true</parameter>
-<types>
-<extends>false</extends>
-<implements>false</implements>
-<throws>false</throws>
-</types>
-</after>
-<before>
-<rightParenthesis>false</rightParenthesis>
-</before>
-<deep>
-<parameter>true</parameter>
-</deep>
-<groupingParentheses>false</groupingParentheses>
-<hard>
-<parameter>true</parameter>
-</hard>
-</ondemand>
-</wrapping>
-</printer>
+<?xml version="1.0" encoding="UTF-8"?>
+<jalopy vendor="TRIEMAX">
+ <profile name="default">
+  <html>
+   <output>
+    <blankLines>
+     <keepUpTo>2</keepUpTo>
+    </blankLines>
+    <indent>
+     <size>2</size>
+    </indent>
+    <wrap>
+     <attributes>never</attributes>
+     <keepBreak>
+      <tags>false</tags>
+      <text>false</text>
+     </keepBreak>
+     <size>80</size>
+     <text>whenNecessary</text>
+    </wrap>
+   </output>
+  </html>
+  <internal>
+   <version>44</version>
+  </internal>
+  <java>
+   <general>
+    <compliance>
+     <version>15</version>
+    </compliance>
+   </general>
+   <inspector>
+    <enable>false</enable>
+    <naming>
+     <classes>
+      <abstract>[A-Z][a-zA-Z0-9]+</abstract>
+      <general>[A-Z][a-zA-Z0-9]+</general>
+      <inner>[A-Z][a-zA-Z0-9]+</inner>
+     </classes>
+     <fields>
+      <default>[a-z][\w]+</default>
+      <defaultFinal>[a-z]\w+</defaultFinal>
+      <defaultStatic>[a-z][\w]+</defaultStatic>
+      <defaultStaticFinal>[a-zA-Z][\w]+</defaultStaticFinal>
+      <private>[a-z][\w]+</private>
+      <privateFinal>[a-z]\w+</privateFinal>
+      <privateStatic>[a-z][\w]+</privateStatic>
+      <privateStaticFinal>[a-zA-Z][\w]+</privateStaticFinal>
+      <protected>[a-z][\w]+</protected>
+      <protectedFinal>[a-z]\w+</protectedFinal>
+      <protectedStatic>[a-z][\w]+</protectedStatic>
+      <protectedStaticFinal>[a-zA-Z][\w]+</protectedStaticFinal>
+      <public>[a-z][\w]+</public>
+      <publicFinal>[a-z]\w+</publicFinal>
+      <publicStatic>[a-z][\w]+</publicStatic>
+      <publicStaticFinal>[a-zA-Z][\w]+</publicStaticFinal>
+     </fields>
+     <interfaces>[A-Z][a-zA-Z0-9]+</interfaces>
+     <labels>\w+</labels>
+     <methods>
+      <default>[a-z][\w]+</default>
+      <defaultStatic>[a-z][\w]+</defaultStatic>
+      <defaultStaticFinal>[a-z][\w]+</defaultStaticFinal>
+      <private>[a-z][\w]+</private>
+      <privateStatic>[a-z][\w]+</privateStatic>
+      <privateStaticFinal>[a-z][\w]+</privateStaticFinal>
+      <protected>[a-z][\w]+</protected>
+      <protectedStatic>[a-z][\w]+</protectedStatic>
+      <protectedStaticFinal>[a-z][\w]+</protectedStaticFinal>
+      <public>[a-z][\w]+</public>
+      <publicStatic>[a-z][\w]+</publicStatic>
+      <publicStaticFinal>[a-z][\w]+</publicStaticFinal>
+     </methods>
+     <packages>[a-z]+(?:\.[a-z]+)*</packages>
+     <parameters>
+      <default>[a-z][\w]+</default>
+      <exception>\w+</exception>
+      <final>[a-z][\w]+</final>
+     </parameters>
+     <variables>
+      <local>[a-z][\w]*</local>
+      <localFinal>[a-z]\w*</localFinal>
+      <loop>[a-z]\w*</loop>
+     </variables>
+    </naming>
+    <tips>
+     <addCommentForCollections>false</addCommentForCollections>
+     <adhereToNamingConvention>false</adhereToNamingConvention>
+     <alwaysOverrideHashCode>false</alwaysOverrideHashCode>
+     <avoidThreadGroups>false</avoidThreadGroups>
+     <avoidVariableShadowing>false</avoidVariableShadowing>
+     <declareCollectionComment>false</declareCollectionComment>
+     <dontIgnoreExceptions>false</dontIgnoreExceptions>
+     <dontSubstituteObjectEquals>false</dontSubstituteObjectEquals>
+     <exceedLineLength>false</exceedLineLength>
+     <exceedLineLengthDisableWithinPragma>false</exceedLineLengthDisableWithinPragma>
+     <neverDeclareException>false</neverDeclareException>
+     <neverDeclareThrowable>false</neverDeclareThrowable>
+     <neverInvokeWaitOutsideLoop>false</neverInvokeWaitOutsideLoop>
+     <neverReturnZeroArrays>false</neverReturnZeroArrays>
+     <neverUseEmptyFinally>false</neverUseEmptyFinally>
+     <obeyContractEquals>false</obeyContractEquals>
+     <overrideToString>false</overrideToString>
+     <referToObjectsByInterface>false</referToObjectsByInterface>
+     <replaceStructureWithClass>false</replaceStructureWithClass>
+     <stringLiterallI18n>false</stringLiterallI18n>
+     <useInterfaceOnlyForTypes>false</useInterfaceOnlyForTypes>
+     <wrongCollectionComment>false</wrongCollectionComment>
+    </tips>
+   </inspector>
+   <logging>
+    <enable>false</enable>
+    <file>run.log</file>
+    <type>log</type>
+   </logging>
+   <messages>
+    <autoShow>true</autoShow>
+    <priority>
+     <general>30000</general>
+     <inspector>30000</inspector>
+     <parser>30000</parser>
+     <parserJavadoc>30000</parserJavadoc>
+     <printer>30000</printer>
+     <printerJavadoc>30000</printerJavadoc>
+     <progress>30000</progress>
+     <transform>30000</transform>
+    </priority>
+    <showStackTrace>true</showStackTrace>
+   </messages>
+   <printer>
+    <alignment>
+     <arrayInit>false</arrayInit>
+     <methodCallChain>true</methodCallChain>
+     <nestedMethodCallChain>false</nestedMethodCallChain>
+     <parameterMethodDeclaration>true</parameterMethodDeclaration>
+     <ternaryOperator>false</ternaryOperator>
+     <variableAssignment>false</variableAssignment>
+     <variableIdentifier>true</variableIdentifier>
+    </alignment>
+    <annotation>
+     <insert>false</insert>
+     <patterns />
+    </annotation>
+    <blanklines>
+     <abstractNone>false</abstractNone>
+     <after>
+      <annotation>1</annotation>
+      <assign>0</assign>
+      <block>1</block>
+      <braceLeft>0</braceLeft>
+      <braceLeftClass>-1</braceLeftClass>
+      <braceLeftMethod>-1</braceLeftMethod>
+      <braceLeftNewline>0</braceLeftNewline>
+      <class>1</class>
+      <comment>
+       <separator>1</separator>
+      </comment>
+      <declaration>0</declaration>
+      <enum>1</enum>
+      <footer>1</footer>
+      <header>0</header>
+      <imports>1</imports>
+      <interface>1</interface>
+      <method>1</method>
+      <package>1</package>
+      <sqlj>1</sqlj>
+     </after>
+     <before>
+      <annotation>0</annotation>
+      <block>1</block>
+      <braceRight>0</braceRight>
+      <caseBlock>1</caseBlock>
+      <class>0</class>
+      <comment>
+       <javadoc>1</javadoc>
+       <multiline>1</multiline>
+       <separator>1</separator>
+       <singleline>1</singleline>
+      </comment>
+      <controlStatement>1</controlStatement>
+      <declaration>1</declaration>
+      <enum>0</enum>
+      <footer>0</footer>
+      <header>0</header>
+      <interface>0</interface>
+      <method>0</method>
+      <section>1</section>
+      <sqlj>1</sqlj>
+     </before>
+     <headerKeepUpTo>1</headerKeepUpTo>
+     <ignoreSwitchBlock>false</ignoreSwitchBlock>
+     <ignoreSwitchBreak>false</ignoreSwitchBreak>
+     <keepUpTo>1</keepUpTo>
+    </blanklines>
+    <braces>
+     <anonInner>
+      <indentSizeBeforeLeft>1</indentSizeBeforeLeft>
+      <indentSizeBeforeRight>0</indentSizeBeforeRight>
+      <lineBreakLeft>false</lineBreakLeft>
+     </anonInner>
+     <array>
+      <indentSizeBeforeLeft>1</indentSizeBeforeLeft>
+      <indentSizeBeforeRight>0</indentSizeBeforeRight>
+      <lineBreakLeft>false</lineBreakLeft>
+     </array>
+     <catch>
+      <indentSizeAfterRight>1</indentSizeAfterRight>
+      <indentSizeBeforeLeft>1</indentSizeBeforeLeft>
+      <indentSizeBeforeRight>0</indentSizeBeforeRight>
+      <lineBreakLeft>false</lineBreakLeft>
+      <lineBreakRight>false</lineBreakRight>
+     </catch>
+     <class>
+      <indentSizeBeforeLeft>1</indentSizeBeforeLeft>
+      <indentSizeBeforeRight>0</indentSizeBeforeRight>
+      <lineBreakLeft>false</lineBreakLeft>
+     </class>
+     <comment>
+      <class>false</class>
+      <ctor>false</ctor>
+      <for>false</for>
+      <ifElse>false</ifElse>
+      <interface>false</interface>
+      <method>false</method>
+      <switch>false</switch>
+      <synchronized>false</synchronized>
+      <threshold>25</threshold>
+      <tryCatchFinally>false</tryCatchFinally>
+      <while>false</while>
+     </comment>
+     <compact>
+      <arrayInit>true</arrayInit>
+      <ctor>false</ctor>
+      <else>false</else>
+      <elseIf>false</elseIf>
+      <enum>false</enum>
+      <enumConstant>false</enumConstant>
+      <if>false</if>
+      <method>false</method>
+      <singleIf>false</singleIf>
+      <throwAndReturn>false</throwAndReturn>
+     </compact>
+     <empty>
+      <cuddle>false</cuddle>
+      <insertStatement>false</insertStatement>
+      <obeyBraceStyle>false</obeyBraceStyle>
+      <obeyBraceStyleArray>true</obeyBraceStyleArray>
+     </empty>
+     <enum>
+      <indentSizeBeforeLeft>1</indentSizeBeforeLeft>
+      <indentSizeBeforeRight>0</indentSizeBeforeRight>
+      <lineBreakLeft>false</lineBreakLeft>
+     </enum>
+     <globalStyle>true</globalStyle>
+     <initializer>
+      <indentSizeBeforeLeft>1</indentSizeBeforeLeft>
+      <indentSizeBeforeRight>0</indentSizeBeforeRight>
+      <lineBreakLeft>false</lineBreakLeft>
+     </initializer>
+     <insert>
+      <doWhile>true</doWhile>
+      <for>true</for>
+      <ifElse>true</ifElse>
+      <singleIf>true</singleIf>
+      <singleLine>false</singleLine>
+      <switch>false</switch>
+      <while>true</while>
+     </insert>
+     <method>
+      <indentSizeBeforeLeft>1</indentSizeBeforeLeft>
+      <indentSizeBeforeRight>0</indentSizeBeforeRight>
+      <lineBreakLeft>false</lineBreakLeft>
+     </method>
+     <remove>
+      <block>true</block>
+      <doWhile>false</doWhile>
+      <for>false</for>
+      <ifElse>false</ifElse>
+      <singleIf>false</singleIf>
+      <switch>true</switch>
+      <while>false</while>
+     </remove>
+     <statement>
+      <indentSizeAfterRight>1</indentSizeAfterRight>
+      <indentSizeBeforeLeft>1</indentSizeBeforeLeft>
+      <indentSizeBeforeRight>0</indentSizeBeforeRight>
+      <lineBreakLeft>false</lineBreakLeft>
+      <lineBreakRight>false</lineBreakRight>
+     </statement>
+     <treatDifferent>
+      <methodClass>true</methodClass>
+      <methodClassIfWrapped>false</methodClassIfWrapped>
+      <statementWrapped>false</statementWrapped>
+     </treatDifferent>
+    </braces>
+    <chunks>
+     <blankLines>false</blankLines>
+     <comments>false</comments>
+     <wrap>false</wrap>
+    </chunks>
+    <comments>
+     <format>
+      <multiLine>true</multiLine>
+      <singleLine>false</singleLine>
+     </format>
+     <javadoc>
+      <blankLines>
+       <xdoclet>0</xdoclet>
+      </blankLines>
+      <blockTagsShort>false</blockTagsShort>
+      <check>
+       <description>
+        <enabled>true</enabled>
+        <firstSentence>true</firstSentence>
+        <onlyWhenGenerate>false</onlyWhenGenerate>
+        <onlyWhenNoSee>false</onlyWhenNoSee>
+        <onlyWhenParamOrReturn>false</onlyWhenParamOrReturn>
+        <useReturnDescription>false</useReturnDescription>
+       </description>
+       <ignoreRuntimeExceptions>false</ignoreRuntimeExceptions>
+       <innerclass>false</innerclass>
+       <keepThrowsTags>false</keepThrowsTags>
+       <suppressWhenSee>false</suppressWhenSee>
+       <tags>
+        <enabled>true</enabled>
+        <missingDescription>false</missingDescription>
+        <missingTags>false</missingTags>
+        <onlyWhenGenerate>false</onlyWhenGenerate>
+        <onlyWhenParamOrReturn>false</onlyWhenParamOrReturn>
+        <useDescription>false</useDescription>
+       </tags>
+       <throwsTags>true</throwsTags>
+      </check>
+      <classShort>false</classShort>
+      <compact>
+       <attribute>false</attribute>
+      </compact>
+      <enumShort>false</enumShort>
+      <failOnError>false</failOnError>
+      <fieldsShort>true</fieldsShort>
+      <generate>
+       <bean>true</bean>
+       <class>5</class>
+       <constructor>5</constructor>
+       <enabled>true</enabled>
+       <excludeOverride>false</excludeOverride>
+       <exclusions />
+       <field>0</field>
+       <formatBeanProperty>false</formatBeanProperty>
+       <method>5</method>
+       <seeTag>false</seeTag>
+       <useExisting>false</useExisting>
+      </generate>
+      <html>
+       <indent>true</indent>
+       <verify>true</verify>
+      </html>
+      <methodsShort>false</methodsShort>
+      <normalizeWhitespace>true</normalizeWhitespace>
+      <parseComments>true</parseComments>
+      <removePreformattedStar>false</removePreformattedStar>
+      <tags>
+       <align>true</align>
+       <alignAttributes>false</alignAttributes>
+       <custom>
+        <html />
+        <inline />
+        <standard />
+        <xdoclet />
+       </custom>
+       <group>true</group>
+       <indent>true</indent>
+       <innerSpacing>1</innerSpacing>
+       <methodTypeParams>false</methodTypeParams>
+       <order>@param^param|@return^return|@throws^throws|@author^common|@version^common|@see^common|@since^common|@serial^common|@serialData^common|@serialField^common|@deprecated^common|@custom^common|@beaninfo^none|@@attribute^none|@invalid^common|@todo^common|@xdoclet^none|@jalopy.group^none|@call-tree^none</order>
+       <removeMisused>false</removeMisused>
+       <sort>true</sort>
+       <sortAttributes>false</sortAttributes>
+       <sortXDoclet>false</sortXDoclet>
+       <spelling>false</spelling>
+      </tags>
+      <templates>
+       <class><![CDATA[/**
+ * DOCUMENT ME!
+ *
+ * @author TBD
+ * @version TBD
+ */]]></class>
+       <constructor>
+        <bottom><![CDATA[ */]]></bottom>
+        <exception><![CDATA[ * @throws $exception.type$ DOCUMENT ME!]]></exception>
+        <param><![CDATA[ * @param $param.name$ DOCUMENT ME!]]></param>
+        <top><![CDATA[/**
+ * Creates a new $class.name$ object.]]></top>
+       </constructor>
+       <enum><![CDATA[/**
+ * DOCUMENT ME!
+ *
+ * @author TBD
+ * @version TBD
+ */]]></enum>
+       <getter>
+        <bottom><![CDATA[ */]]></bottom>
+        <exception><![CDATA[ * @throws $exception.type$ DOCUMENT ME!]]></exception>
+        <param><![CDATA[ * @param $param.name$ DOCUMENT ME!]]></param>
+        <return><![CDATA[ * @return DOCUMENT ME!]]></return>
+        <top><![CDATA[/**
+ * DOCUMENT ME!]]></top>
+       </getter>
+       <interface><![CDATA[/**
+ * DOCUMENT ME!
+ *
+ * @author TBD
+ * @version TBD
+ */]]></interface>
+       <method>
+        <bottom><![CDATA[ */]]></bottom>
+        <exception><![CDATA[ * @throws $exception.type$ DOCUMENT ME!]]></exception>
+        <param><![CDATA[ * @param $param.name$ DOCUMENT ME!]]></param>
+        <return><![CDATA[ * @return DOCUMENT ME!]]></return>
+        <top><![CDATA[/**
+ * DOCUMENT ME!]]></top>
+       </method>
+       <setter>
+        <bottom><![CDATA[ */]]></bottom>
+        <exception><![CDATA[ * @throws $exception.type$ DOCUMENT ME!]]></exception>
+        <param><![CDATA[ * @param $param.name$ DOCUMENT ME!]]></param>
+        <top><![CDATA[/**
+ * DOCUMENT ME!]]></top>
+       </setter>
+       <variable><![CDATA[/**
+ * DOCUMENT ME!
+ */]]></variable>
+      </templates>
+      <transform>false</transform>
+      <wrap>
+       <after>
+        <delim>
+         <class>true</class>
+         <ctor>true</ctor>
+         <field>false</field>
+         <interface>true</interface>
+         <method>true</method>
+        </delim>
+       </after>
+       <inline>false</inline>
+       <keepNewline>false</keepNewline>
+       <lineLength>80</lineLength>
+      </wrap>
+     </javadoc>
+     <keepFirstColumnAsIs>false</keepFirstColumnAsIs>
+     <moveAfterBrace>-1</moveAfterBrace>
+     <reflow>
+      <multiLine>false</multiLine>
+      <singeLine>false</singeLine>
+     </reflow>
+     <remove>
+      <javadoc>
+       <all>true</all>
+       <enable>false</enable>
+       <pattern />
+      </javadoc>
+      <multiLine>
+       <all>true</all>
+       <enable>false</enable>
+       <pattern />
+      </multiLine>
+      <singleLine>
+       <all>true</all>
+       <enable>false</enable>
+       <pattern />
+      </singleLine>
+     </remove>
+     <separator>
+      <fillCharacter>-</fillCharacter>
+      <insert>true</insert>
+      <insertAccess>false</insertAccess>
+      <insertMethodRecursive>false</insertMethodRecursive>
+      <insertMethods>false</insertMethods>
+      <insertRecursive>true</insertRecursive>
+      <length>80</length>
+      <methodTemplate>//~ ${fill.character}*</methodTemplate>
+      <template>//~ ${description} ${fill.character}*</template>
+      <text>
+       <annotation>Annotations</annotation>
+       <class>Inner Classes</class>
+       <constructor>Constructors</constructor>
+       <enum>Enumerations</enum>
+       <enumConstant>Enum constants</enumConstant>
+       <field>Instance fields</field>
+       <initializer>Instance initializers</initializer>
+       <interface>Inner Interfaces</interface>
+       <method>Methods</method>
+       <ordinary>Ordinary methods</ordinary>
+       <static>Static fields/initializers</static>
+      </text>
+     </separator>
+     <wrap>
+      <lineLength>80</lineLength>
+      <minSpace>20</minSpace>
+      <multiLine>false</multiLine>
+      <singleLine>false</singleLine>
+     </wrap>
+    </comments>
+    <environment />
+    <footer>
+     <keepTags>false</keepTags>
+     <keys />
+     <override>true</override>
+     <smartMode>0</smartMode>
+     <text />
+     <use>false</use>
+    </footer>
+    <header>
+     <keepTags>false</keepTags>
+     <keys>author</keys>
+     <override>true</override>
+     <smartMode>0</smartMode>
+     <text />
+     <use>true</use>
+    </header>
+    <imports>
+     <classRepositoryDirectory>repository</classRepositoryDirectory>
+     <grouping>
+      <defaultDepth>2</defaultDepth>
+      <packages>omr:2|*:0|java:1|javax:1</packages>
+      <static>none</static>
+     </grouping>
+     <policy>disabled</policy>
+     <sort>true</sort>
+     <useCustomImplementation>false</useCustomImplementation>
+    </imports>
+    <indentation>
+     <align>
+      <anonInnerClass>false</anonInnerClass>
+      <arrayInitializers>false</arrayInitializers>
+      <assert>false</assert>
+      <endlineComment>false</endlineComment>
+      <enumConstant>false</enumConstant>
+      <parenthesesRight>false</parenthesesRight>
+     </align>
+     <arrayInit>strictEndline</arrayInit>
+     <blockBody>true</blockBody>
+     <callArgs>strictEndline</callArgs>
+     <caseBody>true</caseBody>
+     <caseFromSwitch>false</caseFromSwitch>
+     <classBody>true</classBody>
+     <continuation>
+      <block>false</block>
+      <operator>false</operator>
+      <parameter>false</parameter>
+      <return>true</return>
+     </continuation>
+     <declParams>strictEndline</declParams>
+     <dottedExpr>false</dottedExpr>
+     <firstColumnComments>true</firstColumnComments>
+     <general>strictEndline</general>
+     <increaseHotSpots>true</increaseHotSpots>
+     <label>true</label>
+     <methodBody>true</methodBody>
+     <sizes>
+      <bigGapIndent>8</bigGapIndent>
+      <braceCuddled>1</braceCuddled>
+      <braceLeft>1</braceLeft>
+      <braceRight>0</braceRight>
+      <braceRightAfter>1</braceRightAfter>
+      <continuation>4</continuation>
+      <deep>80</deep>
+      <extends>4</extends>
+      <general>4</general>
+      <implements>4</implements>
+      <leading>0</leading>
+      <tabs>8</tabs>
+      <throws>4</throws>
+      <trailingComment>1</trailingComment>
+     </sizes>
+     <tabs>
+      <comments>false</comments>
+      <enable>false</enable>
+      <onlyLeading>false</onlyLeading>
+     </tabs>
+     <ternaryOperand>true</ternaryOperand>
+    </indentation>
+    <misc>
+     <arrayBracketsAfterIdent>false</arrayBracketsAfterIdent>
+     <booleanGetter>^(is)[A-Z]\w*</booleanGetter>
+     <callTree>false</callTree>
+     <insertExpressionParentheses>true</insertExpressionParentheses>
+     <insertImplicitConstructor>false</insertImplicitConstructor>
+     <insertLoggingConditional>true</insertLoggingConditional>
+     <insertOverride>false</insertOverride>
+     <insertParameterFinal>false</insertParameterFinal>
+     <insertParen>
+      <return>false</return>
+      <throw>false</throw>
+     </insertParen>
+     <insertSerialID>
+      <addComment>true</addComment>
+      <addDefault>false</addDefault>
+     </insertSerialID>
+     <insertTrailingNewline>true</insertTrailingNewline>
+     <insertUID>false</insertUID>
+     <insertVariableFinal>false</insertVariableFinal>
+     <javadocOnly>false</javadocOnly>
+     <keepSameLine>
+      <else>false</else>
+      <elseIf>false</elseIf>
+      <if>false</if>
+      <singleIf>false</singleIf>
+      <throwAndReturn>false</throwAndReturn>
+     </keepSameLine>
+     <removeRedundantModifier>false</removeRedundantModifier>
+     <requireBeanPropertyField>false</requireBeanPropertyField>
+     <splitMultiVariables>false</splitMultiVariables>
+    </misc>
+    <parser>
+     <stripQualification>false</stripQualification>
+    </parser>
+    <searchAndReplace>
+     <javadoc>false</javadoc>
+     <multiLine>false</multiLine>
+     <patterns />
+     <singleLine>false</singleLine>
+     <stringLiteral>false</stringLiteral>
+    </searchAndReplace>
+    <sorting>
+     <declaration>
+      <bean>
+       <enable>false</enable>
+       <keepTogether>false</keepTogether>
+       <order>foo|getFoo|isFoo|setFoo</order>
+      </bean>
+      <class>
+       <enable>true</enable>
+       <level>true</level>
+       <name>true</name>
+       <order>level|name</order>
+      </class>
+      <constructor>
+       <copy>false</copy>
+       <count>true</count>
+       <default>false</default>
+       <enable>true</enable>
+       <level>true</level>
+       <order>level|count|default|copy</order>
+      </constructor>
+      <enable>true</enable>
+      <enum>
+       <enable>false</enable>
+       <level>true</level>
+       <name>true</name>
+       <order>level|name</order>
+      </enum>
+      <enumConstant>
+       <count>true</count>
+       <enable>false</enable>
+       <name>true</name>
+       <order>name|count</order>
+      </enumConstant>
+      <field>
+       <enable>false</enable>
+       <level>true</level>
+       <name>true</name>
+       <order>level|name|type</order>
+       <type>true</type>
+      </field>
+      <interface>
+       <enable>true</enable>
+       <level>true</level>
+       <name>true</name>
+       <order>level|name</order>
+      </interface>
+      <method>
+       <bean>false</bean>
+       <count>true</count>
+       <custom>true</custom>
+       <enable>true</enable>
+       <level>true</level>
+       <name>true</name>
+       <order>level|name|count|bean|custom|regex</order>
+       <regex>
+        <enable>false</enable>
+        <order />
+       </regex>
+       <static>false</static>
+      </method>
+      <modifier>
+       <abstract>true</abstract>
+       <final>false</final>
+       <friendly>true</friendly>
+       <native>false</native>
+       <order>public|protected|friendly|private|abstract|static|final|native</order>
+       <private>true</private>
+       <protected>true</protected>
+       <public>true</public>
+       <static>true</static>
+      </modifier>
+      <order>staticField|staticInit|enum|field|initializer|constructor|staticMethod|method|interface|class|annotation|enumConstant</order>
+     </declaration>
+     <modifier>
+      <annotation>true</annotation>
+      <enable>true</enable>
+      <order>annotation|public|protected|private|abstract|static|final|synchronized|transient|volatile|native|strictfp</order>
+     </modifier>
+    </sorting>
+    <whitespace>
+     <after>
+      <ampersand>
+       <typeParam>true</typeParam>
+      </ampersand>
+      <colon>
+       <assert>true</assert>
+       <conditional>true</conditional>
+       <for>true</for>
+       <label>true</label>
+      </colon>
+      <comma>
+       <annotationArrayInit>true</annotationArrayInit>
+       <annotationMember>true</annotationMember>
+       <arrayInit>true</arrayInit>
+       <creatorCall>true</creatorCall>
+       <ctorCall>true</ctorCall>
+       <ctorDecl>true</ctorDecl>
+       <enumConstant>true</enumConstant>
+       <enumConstantArgument>true</enumConstantArgument>
+       <extends>true</extends>
+       <forInit>true</forInit>
+       <forUpdate>true</forUpdate>
+       <implements>true</implements>
+       <methodCall>true</methodCall>
+       <methodDecl>true</methodDecl>
+       <multiField>true</multiField>
+       <multiVar>true</multiVar>
+       <throwsCtor>true</throwsCtor>
+       <throwsMethod>true</throwsMethod>
+       <typeArgument>true</typeArgument>
+       <typeParam>true</typeParam>
+       <typeRef>true</typeRef>
+      </comma>
+      <ellipsis>true</ellipsis>
+      <lbrace>
+       <annotation>true</annotation>
+       <arrayInit>true</arrayInit>
+       <compactedBraces>true</compactedBraces>
+      </lbrace>
+      <lbracket>
+       <arrayAccess>false</arrayAccess>
+       <arrayCreator>false</arrayCreator>
+       <typeArgument>false</typeArgument>
+       <typeParam>false</typeParam>
+       <typeReference>false</typeReference>
+      </lbracket>
+      <lparen>
+       <annotationMember>false</annotationMember>
+       <catch>false</catch>
+       <creatorCall>false</creatorCall>
+       <ctorCall>false</ctorCall>
+       <ctorDecl>false</ctorDecl>
+       <enumConstant>false</enumConstant>
+       <expr>false</expr>
+       <for>false</for>
+       <if>false</if>
+       <methodCall>false</methodCall>
+       <methodDecl>false</methodDecl>
+       <return>false</return>
+       <switch>false</switch>
+       <synchronized>false</synchronized>
+       <throw>false</throw>
+       <typeCast>false</typeCast>
+       <while>false</while>
+      </lparen>
+      <operator>
+       <assign>
+        true
+        <annotation>true</annotation>
+       </assign>
+       <bitwise>true</bitwise>
+       <logical>true</logical>
+       <math>true</math>
+       <prefix>false</prefix>
+       <relational>true</relational>
+       <shift>true</shift>
+       <stringConcat>true</stringConcat>
+       <unary>false</unary>
+      </operator>
+      <question>
+       <conditional>true</conditional>
+       <typeArgument>false</typeArgument>
+       <typeParam>false</typeParam>
+      </question>
+      <rbracket>
+       <typeArgument>false</typeArgument>
+       <typeParam>false</typeParam>
+      </rbracket>
+      <semicolon>1</semicolon>
+      <typeCast>true</typeCast>
+     </after>
+     <before>
+      <ampersand>
+       <typeParam>true</typeParam>
+      </ampersand>
+      <bracketsTypes>false</bracketsTypes>
+      <colon>
+       <assert>true</assert>
+       <case>true</case>
+       <conditional>true</conditional>
+       <for>true</for>
+       <label>false</label>
+      </colon>
+      <comma>
+       <annotationArrayInit>false</annotationArrayInit>
+       <annotationMember>false</annotationMember>
+       <arrayInit>false</arrayInit>
+       <creatorCall>false</creatorCall>
+       <ctorCall>false</ctorCall>
+       <ctorDecl>false</ctorDecl>
+       <enumConstant>false</enumConstant>
+       <enumConstantArgument>false</enumConstantArgument>
+       <extends>false</extends>
+       <forInit>false</forInit>
+       <forUpdate>false</forUpdate>
+       <implements>false</implements>
+       <methodCall>false</methodCall>
+       <methodDecl>false</methodDecl>
+       <multiField>false</multiField>
+       <multiVar>false</multiVar>
+       <throwsCtor>false</throwsCtor>
+       <throwsMethod>false</throwsMethod>
+       <typeArgument>false</typeArgument>
+       <typeParam>false</typeParam>
+       <typeRef>false</typeRef>
+      </comma>
+      <ellipsis>false</ellipsis>
+      <lbrace>
+       <arrayInit>true</arrayInit>
+       <compactedBraces>true</compactedBraces>
+      </lbrace>
+      <lbracket>
+       <arrayAccess>false</arrayAccess>
+       <arrayCreator>false</arrayCreator>
+       <arrayDeclaration>false</arrayDeclaration>
+       <typeArgument>false</typeArgument>
+       <typeParam>false</typeParam>
+       <typeReference>false</typeReference>
+      </lbracket>
+      <lparen>
+       <return>true</return>
+       <throw>true</throw>
+      </lparen>
+      <operator>
+       <assign>
+        true
+        <annotation>true</annotation>
+       </assign>
+       <bitwise>true</bitwise>
+       <logical>true</logical>
+       <math>true</math>
+       <not>false</not>
+       <postfix>false</postfix>
+       <relational>true</relational>
+       <shift>true</shift>
+       <stringConcat>true</stringConcat>
+      </operator>
+      <parentheses>
+       <annotationMember>false</annotationMember>
+       <annotationTypeMember>false</annotationTypeMember>
+       <catch>true</catch>
+       <creator>false</creator>
+       <ctorCall>false</ctorCall>
+       <ctorDecl>true</ctorDecl>
+       <enumConstant>false</enumConstant>
+       <for>true</for>
+       <if>true</if>
+       <methodCall>false</methodCall>
+       <methodDeclaration>true</methodDeclaration>
+       <switch>true</switch>
+       <synchronized>true</synchronized>
+       <while>true</while>
+      </parentheses>
+      <question>
+       <conditional>true</conditional>
+       <typeArgument>false</typeArgument>
+       <typeParam>false</typeParam>
+      </question>
+      <rbrace>
+       <annotation>true</annotation>
+       <arrayInit>true</arrayInit>
+       <compactedBraces>true</compactedBraces>
+      </rbrace>
+      <rbracket>
+       <arrayAccess>false</arrayAccess>
+       <arrayCreator>false</arrayCreator>
+       <typeArgument>false</typeArgument>
+       <typeParam>false</typeParam>
+       <typeReference>false</typeReference>
+      </rbracket>
+      <rparen>
+       <annotationMember>false</annotationMember>
+       <catch>false</catch>
+       <creatorCall>false</creatorCall>
+       <ctorCall>false</ctorCall>
+       <ctorDecl>false</ctorDecl>
+       <enumConstant>false</enumConstant>
+       <expr>false</expr>
+       <for>false</for>
+       <if>false</if>
+       <methodCall>false</methodCall>
+       <methodDecl>false</methodDecl>
+       <return>false</return>
+       <switch>false</switch>
+       <synchronized>false</synchronized>
+       <throw>false</throw>
+       <typeCast>false</typeCast>
+       <while>false</while>
+      </rparen>
+      <semi>
+       <for>false</for>
+      </semi>
+     </before>
+     <compact>
+      <brackets>false</brackets>
+      <parentheses>false</parentheses>
+     </compact>
+     <emptyBraces>
+      <arrayInit>false</arrayInit>
+      <decl>false</decl>
+     </emptyBraces>
+     <emptyBracket>
+      <arrayCreator>false</arrayCreator>
+      <arrayDeclaration>false</arrayDeclaration>
+     </emptyBracket>
+     <emptyParen>
+      <annotationTypeMember>false</annotationTypeMember>
+      <creatorCall>false</creatorCall>
+      <ctorCall>false</ctorCall>
+      <ctorDecl>false</ctorDecl>
+      <emptyEnumParen>false</emptyEnumParen>
+      <methodCall>false</methodCall>
+      <methodDecl>false</methodDecl>
+     </emptyParen>
+    </whitespace>
+    <wrapping>
+     <after>
+      <annotationMember>whenNecessary</annotationMember>
+      <leftParenthesis>
+       <annotation>whenExceed</annotation>
+      </leftParenthesis>
+     </after>
+     <always>
+      <after>
+       <arrayElement>0</arrayElement>
+       <braceRight>false</braceRight>
+      </after>
+      <before>
+       <braceLeft>false</braceLeft>
+      </before>
+     </always>
+     <assign>whenNecessary</assign>
+     <before>
+      <rightParenthesis>
+       <annotation>whenExceed</annotation>
+      </rightParenthesis>
+     </before>
+     <callArgument>whenNecessary</callArgument>
+     <chainedCall>always</chainedCall>
+     <declarationKeyword>
+      <after>never</after>
+      <before>never</before>
+     </declarationKeyword>
+     <enumConstant>whenNecessary</enumConstant>
+     <expression>never</expression>
+     <extends>always</extends>
+     <extendsTypes>whenNecessary</extendsTypes>
+     <fieldMarkerAnnotation>whenNecessary</fieldMarkerAnnotation>
+     <fieldName>never</fieldName>
+     <general>
+      <avoidBareLeftParen>false</avoidBareLeftParen>
+      <beforeOperator>false</beforeOperator>
+      <concatOnlyWhenBothLiteral>false</concatOnlyWhenBothLiteral>
+      <disable>
+       <complexExpr>false</complexExpr>
+      </disable>
+      <enable>true</enable>
+      <keepLinebreak>false</keepLinebreak>
+      <keepLinebreakArray>false</keepLinebreakArray>
+      <keepLinebreakCallArgs>false</keepLinebreakCallArgs>
+      <keepLinebreakConcat>false</keepLinebreakConcat>
+      <keepLinebreakDeclParams>false</keepLinebreakDeclParams>
+      <lineLength>80</lineLength>
+      <strictlyObeyKeepLinebreak>false</strictlyObeyKeepLinebreak>
+     </general>
+     <implements>always</implements>
+     <implementsTypes>whenNecessary</implementsTypes>
+     <import>never</import>
+     <label>always</label>
+     <markerAnnotation>whenNecessary</markerAnnotation>
+     <methodName>never</methodName>
+     <multiVar>
+      <declarator>never</declarator>
+      <type>never</type>
+     </multiVar>
+     <nestedCallArgument>whenNecessary</nestedCallArgument>
+     <nestedChainedCall>whenNecessary</nestedChainedCall>
+     <ondemand>
+      <after>
+       <parameter>true</parameter>
+      </after>
+      <argsLower>false</argsLower>
+      <stringLiteral>false</stringLiteral>
+     </ondemand>
+     <operator>whenNecessary</operator>
+     <operatorIndex>whenNecessary</operatorIndex>
+     <parameter>always</parameter>
+     <parameterMarkerAnnotation>whenNecessary</parameterMarkerAnnotation>
+     <parenGrouping>whenNecessary</parenGrouping>
+     <parenLeft>whenNecessary</parenLeft>
+     <parenRight>whenNecessary</parenRight>
+     <preferLowerLevel>
+      <methodCallAssignments>false</methodCallAssignments>
+     </preferLowerLevel>
+     <qualifier>whenNecessary</qualifier>
+     <registryAssign>whenNecessary</registryAssign>
+     <return>whenNecessary</return>
+     <ternaryColon>whenNecessary</ternaryColon>
+     <ternaryQuestion>whenNecessary</ternaryQuestion>
+     <throws>
+      <after>always</after>
+      <before>always</before>
+     </throws>
+     <throwsTypes>whenNecessary</throwsTypes>
+     <typeParameter>never</typeParameter>
+    </wrapping>
+   </printer>
+  </java>
+  <shared>
+   <backup>
+    <directory>bak</directory>
+    <level>0</level>
+   </backup>
+   <convention>
+    <description>Sun Java Coding Convention</description>
+    <local />
+    <name>Sun</name>
+   </convention>
+   <exclusions />
+   <fileTypes><![CDATA[Java
+*.java
+*.sqlj
+---
+]]></fileTypes>
+   <history>
+    <location />
+    <method>adler32</method>
+   </history>
+   <locale>
+    <country>US</country>
+    <datePattern>M/d/yy</datePattern>
+    <language>en</language>
+    <timePattern>h:mm a</timePattern>
+   </locale>
+   <misc>
+    <checkout>false</checkout>
+    <encoding>UTF-8</encoding>
+    <forceEncoding>false</forceEncoding>
+    <forceFormatting>true</forceFormatting>
+    <forceLineSeparator>false</forceLineSeparator>
+    <formatOnCheckin>false</formatOnCheckin>
+    <formatOnGeneration>false</formatOnGeneration>
+    <formatOnLoad>false</formatOnLoad>
+    <formatOnSave>false</formatOnSave>
+    <keepEditorState>false</keepEditorState>
+    <lineSeparator>AUTO</lineSeparator>
+    <testFormatting>false</testFormatting>
+    <threadCount>1</threadCount>
+    <useEditorPreview>false</useEditorPreview>
+   </misc>
+   <project>
+    <autoSwitch>true</autoSwitch>
+   </project>
+   <repository>
+    <failOnError>false</failOnError>
+    <warnOnError>true</warnOnError>
+   </repository>
+  </shared>
+ </profile>
 </jalopy>
+

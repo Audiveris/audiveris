@@ -93,8 +93,8 @@ public class SymbolsStep
     public void doSystem (SystemInfo system)
             throws StepException
     {
-        // Cleanup system sentences
-        system.getSentences().clear();
+//        // Cleanup system sentences
+//        system.getSentences().clear();
 
         // Cleanup system dummy parts
         ScoreSystem scoreSystem = system.getScoreSystem();

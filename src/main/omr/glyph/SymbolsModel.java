@@ -12,11 +12,9 @@
 package omr.glyph;
 
 import omr.glyph.facets.Glyph;
-import omr.glyph.text.TextRole;
 
 import omr.log.Logger;
 
-import omr.score.entity.Text.CreatorText.CreatorType;
 import omr.score.entity.TimeRational;
 
 import omr.sheet.Sheet;
@@ -30,7 +28,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import omr.glyph.text.Sentence;
+import omr.text.TextLine;
+import omr.text.TextRoleInfo;
+import omr.text.TextWord;
 
 /**
  * Class {@code SymbolsModel} is a GlyphsModel specifically meant for
@@ -72,36 +72,26 @@ public class SymbolsModel
      * Assign a collection of glyphs as textual element
      *
      * @param glyphs      the collection of glyphs
-     * @param textType    Creator type if relevant
-     * @param textRole    the text role
+     * @param roleInfo    the text role
      * @param textContent the ascii content
      * @param grade       the grade wrt this assignment
      */
     public void assignText (Collection<Glyph> glyphs,
-                            CreatorType textType,
-                            TextRole textRole,
+                            TextRoleInfo roleInfo,
                             String textContent,
                             double grade)
     {
         // Do the job
         for (Glyph glyph : glyphs) {
-            Sentence sentence = glyph.getSentence();
+            TextWord word = glyph.getTextWord();
+            TextLine line = (word != null) ? word.getTextLine() : null;
 
-            // Assign creator type?
-            if (textRole == TextRole.Creator) {
-                glyph.setCreatorType(textType);
-                if (sentence != null) {
-                    sentence.setCreatorType(textType);
-                }
+            // Force text role
+            if (line != null) {
+                line.setRole(roleInfo);
             }
 
-            // Assign text role
-            glyph.setTextRole(textRole);
-            if (sentence != null) {
-                sentence.setTextRole(textRole);
-            }
-
-            // Assign text only if it is not empty
+            // Force text only if it is not empty
             if ((textContent != null) && (textContent.length() > 0)) {
                 glyph.setManualValue(textContent);
             }

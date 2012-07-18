@@ -48,6 +48,9 @@ public class BasicGlyphChain
     /** Resulting compound */
     private Glyph compound;
 
+    /** VIP flag */
+    private boolean vip;
+
     //~ Constructors -----------------------------------------------------------
     //-----------------//
     // BasicGlyphChain //
@@ -59,7 +62,7 @@ public class BasicGlyphChain
      */
     public BasicGlyphChain (List<Glyph> items)
     {
-        this.items.addAll(items);
+        setItems(items);
 
         logger.fine("Multi-glyph {0}", this);
     }
@@ -77,6 +80,15 @@ public class BasicGlyphChain
         }
 
         items.addAll(glyphs);
+
+        // VIP extension from glyph to containingsentence
+        for (Glyph item : glyphs) {
+            if (item.isVip()) {
+                setVip();
+                break;
+            }
+        }
+
 
         invalidateCache();
     }
@@ -232,6 +244,24 @@ public class BasicGlyphChain
         return allMembers;
     }
 
+    //-------//
+    // isVip //
+    //-------//
+    @Override
+    public boolean isVip ()
+    {
+        return vip;
+    }
+
+    //--------//
+    // setVip //
+    //--------//
+    @Override
+    public final void setVip ()
+    {
+        vip = true;
+    }
+
     //-----------------//
     // invalidateCache //
     //-----------------//
@@ -263,7 +293,7 @@ public class BasicGlyphChain
     // setItems //
     //----------//
     @Override
-    public void setItems (Collection<? extends Glyph> items)
+    public final void setItems (Collection<? extends Glyph> items)
     {
         if (items == null) {
             throw new IllegalArgumentException(
@@ -277,7 +307,7 @@ public class BasicGlyphChain
         this.items.clear();
 
         // Add the new links
-        addAllItems(items);
+        addAllItems(items);        
     }
 
     //----------//

@@ -9,24 +9,24 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.glyph.text.tesseract;
+package omr.text.tesseract;
 
 import omr.WellKnowns;
 
-import omr.glyph.text.FontInfo;
-import omr.glyph.text.OcrChar;
-import omr.glyph.text.OcrLine;
-import omr.glyph.text.OcrWord;
+import omr.text.FontInfo;
+import omr.text.TextChar;
+import omr.text.TextLine;
+import omr.text.TextWord;
 
 import omr.log.Logger;
 
-import tesseract.Tesseract3Bridge;
+import tesseract.TessBridge;
 
-import tesseract.Tesseract3Bridge.PIX;
-import tesseract.Tesseract3Bridge.ResultIterator;
-import tesseract.Tesseract3Bridge.ResultIterator.Level;
-import tesseract.Tesseract3Bridge.TessBaseAPI;
-import tesseract.Tesseract3Bridge.TessBaseAPI.SegmentationMode;
+import tesseract.TessBridge.PIX;
+import tesseract.TessBridge.ResultIterator;
+import tesseract.TessBridge.ResultIterator.Level;
+import tesseract.TessBridge.TessBaseAPI;
+import tesseract.TessBridge.TessBaseAPI.SegmentationMode;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -40,6 +40,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
+import omr.sheet.SystemInfo;
 
 /**
  * Class {@code TesseractOrder} carries a processing order submitted
@@ -59,6 +60,9 @@ public class TesseractOrder
 
     //~ Instance fields --------------------------------------------------------
     //
+    /** Containing system. */
+    private final SystemInfo system;
+
     /** Serial number for this order. */
     private final int serial;
 
@@ -88,6 +92,7 @@ public class TesseractOrder
     /**
      * Creates a new TesseractOrder object.
      *
+     * @param system        The containing system
      * @param label         A debugging label (such as glyph id)
      * @param serial        A unique id for this order instance
      * @param keepImage     True to keep a disk copy of the image
@@ -99,7 +104,8 @@ public class TesseractOrder
      * @throws IOException          When temporary Tiff buffer failed
      * @throws RuntimeException     When PIX image failed
      */
-    public TesseractOrder (String label,
+    public TesseractOrder (SystemInfo system,
+                           String label,
                            int serial,
                            boolean keepImage,
                            String lang,
@@ -107,6 +113,7 @@ public class TesseractOrder
                            BufferedImage bufferedImage)
             throws UnsatisfiedLinkError, IOException
     {
+        this.system = system;
         this.label = label;
         this.serial = serial;
         this.keepImage = keepImage;
@@ -129,9 +136,10 @@ public class TesseractOrder
     //---------//
     /**
      * Actually allocate a Tesseract API and recognize the image.
+     *
      * @return the sequence of lines found
      */
-    public List<OcrLine> process ()
+    public List<TextLine> process ()
     {
         try {
             api = new TessBaseAPI(WellKnowns.OCR_FOLDER.getPath());
@@ -179,10 +187,11 @@ public class TesseractOrder
     /**
      * A convenient way to cleanup Tesseract resources while ending
      * the current processing
+     *
      * @param lines the lines found, if any
      * @return the lines found, if nay
      */
-    private List<OcrLine> finish (List<OcrLine> lines)
+    private List<TextLine> finish (List<TextLine> lines)
     {
         if (image != null) {
             PIX.freeData(image);
@@ -200,37 +209,43 @@ public class TesseractOrder
     //---------//
     /**
      * Map Tesseract3 font attributes to our own FontInfo class.
-     * @param att Font attributes out of OCR
-     * @return our FontInfo structure
+     *
+     * @param att Font attributes out of OCR, perhap null
+     * @return our FontInfo structure, or null
      */
-    private FontInfo getFont (Tesseract3Bridge.FontAttributes att)
+    private FontInfo getFont (TessBridge.FontAttributes att)
     {
-        return new FontInfo(
-                att.isBold,
-                att.isItalic,
-                att.isUnderlined,
-                att.isMonospace,
-                att.isSerif,
-                att.isSmallcaps,
-                att.pointsize,
-                att.fontName);
+        if (att != null) {
+            return new FontInfo(
+                    att.isBold,
+                    att.isItalic,
+                    att.isUnderlined,
+                    att.isMonospace,
+                    att.isSerif,
+                    att.isSmallcaps,
+                    att.pointsize,
+                    att.fontName);
+        } else {
+            return null;
+        }
     }
 
     //----------//
     // getLines //
     //----------//
     /**
-     * Build the hierarchy of OcrLine / OcrWord / OcrChar instances
+     * Build the hierarchy of TextLine / TextWord / TextChar instances
      * out of the results of OCR recognition
+     *
      * @return the sequence of lines
      */
-    private List<OcrLine> getLines ()
+    private List<TextLine> getLines ()
     {
         ResultIterator it = api.GetIterator();
 
-        List<OcrLine> lines = new ArrayList<>(); // Lines built so far
-        OcrLine line = null; // Line being built
-        OcrWord word = null; // Word being built
+        List<TextLine> lines = new ArrayList<>(); // Lines built so far
+        TextLine line = null; // Line being built
+        TextWord word = null; // Word being built
 
         try {
             do {
@@ -241,22 +256,32 @@ public class TesseractOrder
 
                 // Start of line?
                 if (it.IsAtBeginningOf(Level.TEXTLINE)) {
-                    line = new OcrLine(
+                    line = new TextLine(
+                            system,
                             it.BoundingBox(Level.TEXTLINE),
-                            it.GetUTF8Text(Level.TEXTLINE).trim());
+                            it.GetUTF8Text(Level.TEXTLINE).trim(),
+                            it.Baseline(Level.TEXTLINE),
+                            (int) it.Confidence(Level.TEXTLINE));
                     logger.fine("{0} {1}", label, line);
                     lines.add(line);
                 }
 
                 // Start of word?
                 if (it.IsAtBeginningOf(Level.WORD)) {
-                    word = new OcrWord(
+                    FontInfo font = getFont(it.WordFontAttributes());
+                    if (font == null) {
+                        logger.fine("Null font on {0}", label);
+                        return null;
+                    }
+                    word = new TextWord(
                             it.BoundingBox(Level.WORD),
-                            (int) Math.rint(it.Baseline(Level.WORD).getY1()),
                             it.GetUTF8Text(Level.WORD),
-                            getFont(it.WordFontAttributes()));
+                            it.Baseline(Level.WORD),
+                            (int) it.Confidence(Level.WORD),
+                            font,
+                            line);
                     logger.fine("    {0}", word);
-                    line.addWord(word);
+                    line.appendWord(word);
 
                     //                        // Heuristic... (just to test)
                     //                        boolean isDict = it.WordIsFromDictionary();
@@ -271,7 +296,7 @@ public class TesseractOrder
 
                 // Char/symbol to be processed
                 word.addChar(
-                        new OcrChar(
+                        new TextChar(
                         it.BoundingBox(Level.SYMBOL),
                         it.GetUTF8Text(Level.SYMBOL)));
             } while (it.Next(Level.SYMBOL));
@@ -290,7 +315,7 @@ public class TesseractOrder
     // toTiffBuffer //
     //--------------//
     /**
-     * Convert the given image into a TIFF-formatted ByteBuffer for 
+     * Convert the given image into a TIFF-formatted ByteBuffer for
      * passing it directly to Tesseract.
      * A copy of the tiff buffer can be saved on disk, if so desired.
      *

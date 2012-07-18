@@ -47,10 +47,8 @@ public abstract class Constant
     private static final Logger logger = Logger.getLogger(Constant.class);
 
     //~ Instance fields --------------------------------------------------------
-
     // Data assigned at construction time
     //-----------------------------------
-
     /** Unit (if relevant) used by the quantity measured */
     private final java.lang.String quantityUnit;
 
@@ -62,7 +60,6 @@ public abstract class Constant
 
     // Data assigned at ConstantSet initMap time
     //------------------------------------------
-
     /** Name of the Constant */
     private volatile java.lang.String name;
 
@@ -71,7 +68,6 @@ public abstract class Constant
 
     // Data modified at any time
     //--------------------------
-
     /** Initial Value (used for reset) Assigned once */
     private java.lang.String initialString;
 
@@ -79,7 +75,6 @@ public abstract class Constant
     private AtomicReference<Tuple> tuple = new AtomicReference<>();
 
     //~ Constructors -----------------------------------------------------------
-
     //----------//
     // Constant //
     //----------//
@@ -87,10 +82,10 @@ public abstract class Constant
      * Creates a constant instance, while providing a default value, in case the
      * external property is not yet defined.
      *
-     * @param quantityUnit  Unit used as base for measure, if relevant
+     * @param quantityUnit Unit used as base for measure, if relevant
      * @param sourceString Source value, expressed by a string literal which
      * cannot be null
-     * @param description A quick description of the purpose of this constant
+     * @param description  A quick description of the purpose of this constant
      */
     protected Constant (java.lang.String quantityUnit,
                         java.lang.String sourceString,
@@ -98,10 +93,10 @@ public abstract class Constant
     {
         if (sourceString == null) {
             logger.warning(
-                "*** Constant with no sourceString. Description: {0}",
-                description);
+                    "*** Constant with no sourceString. Description: {0}",
+                    description);
             throw new IllegalArgumentException(
-                "Any constant must have a source-provided String");
+                    "Any constant must have a source-provided String");
         }
 
         this.quantityUnit = quantityUnit;
@@ -114,7 +109,6 @@ public abstract class Constant
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // setValue //
     //----------//
@@ -202,11 +196,10 @@ public abstract class Constant
      */
     public java.lang.String getShortTypeName ()
     {
-        final java.lang.String typeName = getClass()
-                                              .getName();
-        final int              separator = Math.max(
-            typeName.lastIndexOf('$'),
-            typeName.lastIndexOf('.'));
+        final java.lang.String typeName = getClass().getName();
+        final int separator = Math.max(
+                typeName.lastIndexOf('$'),
+                typeName.lastIndexOf('.'));
 
         if (separator != -1) {
             return typeName.substring(separator + 1);
@@ -241,8 +234,7 @@ public abstract class Constant
      */
     public boolean isModified ()
     {
-        return !getCurrentString()
-                    .equals(initialString);
+        return !getCurrentString().equals(initialString);
     }
 
     //---------------//
@@ -251,12 +243,12 @@ public abstract class Constant
     /**
      * Report whether the current constant value is the source one (not altered
      * by either properties read from disk, of value changed later)
+     *
      * @return true if still the source value, false otherwise
      */
     public boolean isSourceValue ()
     {
-        return getCurrentString()
-                   .equals(sourceString);
+        return getCurrentString().equals(sourceString);
     }
 
     //--------//
@@ -267,8 +259,7 @@ public abstract class Constant
      */
     public void remove ()
     {
-        ConstantManager.getInstance()
-                       .removeConstant(this);
+        ConstantManager.getInstance().removeConstant(this);
     }
 
     //-------//
@@ -303,8 +294,8 @@ public abstract class Constant
 
         // We can now try to register that constant
         try {
-            java.lang.String prop = ConstantManager.getInstance()
-                                                   .addConstant(qName, this);
+            java.lang.String prop = ConstantManager.getInstance().addConstant(
+                    qName, this);
 
             // Now we can assign a first current value
             if (prop != null) {
@@ -333,17 +324,14 @@ public abstract class Constant
     //------------------//
     /**
      * Report detailed data about this constant
+     *
      * @return data meant for end user
      */
     public java.lang.String toDetailedString ()
     {
         StringBuilder sb = new StringBuilder(getQualifiedName());
-        sb.append(" (")
-          .append(getCurrentString())
-          .append(")");
-        sb.append(" \"")
-          .append(getDescription())
-          .append("\"");
+        sb.append(" (").append(getCurrentString()).append(")");
+        sb.append(" \"").append(getDescription()).append("\"");
 
         return sb.toString();
     }
@@ -352,14 +340,15 @@ public abstract class Constant
     // toString //
     //----------//
     /**
-     * Used by ConstantTreeTable to display the name of the constant, so only
-     * the unqualified name is returned.
+     * Used by UnitTreeTable to display the name of the constant,
+     * so only the unqualified name is returned.
+     *
      * @return the (unqualified) constant name
      */
     @Override
     public java.lang.String toString ()
     {
-        return (name != null) ? name : " *no name*";
+        return (name != null) ? name : "*no name*";
     }
 
     //--------//
@@ -368,6 +357,7 @@ public abstract class Constant
     /**
      * Convert a given string to the proper object value, as implemented by each
      * subclass
+     *
      * @param str the encoded string
      * @return the decoded object
      */
@@ -378,6 +368,7 @@ public abstract class Constant
     //----------------//
     /**
      * Report the current value of the constant
+     *
      * @return the (cached) current value
      */
     protected Object getCachedValue ()
@@ -396,7 +387,7 @@ public abstract class Constant
      * @param val The new value (as an object)
      */
     protected void setTuple (java.lang.String str,
-                             Object           val)
+                             Object val)
     {
         while (true) {
             Tuple old = tuple.get();
@@ -422,11 +413,12 @@ public abstract class Constant
     /**
      * Convenient method, reporting the origin of the current value for this
      * constant, either SRC, DEF or USR.
+     *
      * @return a mnemonic for the value origin
      */
     java.lang.String getValueOrigin ()
     {
-        ConstantManager  mgr = ConstantManager.getInstance();
+        ConstantManager mgr = ConstantManager.getInstance();
         java.lang.String cur = getCurrentString();
         java.lang.String usr = mgr.getConstantUserValue(qualifiedName);
         java.lang.String def = mgr.getConstantDefaultValue(qualifiedName);
@@ -461,15 +453,14 @@ public abstract class Constant
         // Make sure everything is initialized properly
         while (qualifiedName == null) {
             i++;
-            UnitManager.getInstance()
-                       .checkDirtySets();
+            UnitManager.getInstance().checkDirtySets();
         }
 
         // For monitoring/debugging only
         if (i > 1) {
             System.out.println(
-                "*** " + Thread.currentThread().getName() +
-                " checkInitialized loop:" + i);
+                    "*** " + Thread.currentThread().getName()
+                    + " checkInitialized loop:" + i);
         }
     }
 
@@ -479,6 +470,7 @@ public abstract class Constant
     /**
      * Report the current tuple data, which may imply to trigger the assignment
      * of qualified name to the constant, in order to get property data
+     *
      * @return the current tuple data
      */
     private Tuple getTuple ()
@@ -489,7 +481,6 @@ public abstract class Constant
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-------//
     // Angle //
     //-------//
@@ -497,7 +488,7 @@ public abstract class Constant
      * A subclass of Double, meant to store an angle (in radians).
      */
     public static class Angle
-        extends Constant.Double
+            extends Constant.Double
     {
         //~ Constructors -------------------------------------------------------
 
@@ -507,7 +498,7 @@ public abstract class Constant
          * @param defaultValue the (double) default value
          * @param description  the semantic of the constant
          */
-        public Angle (double           defaultValue,
+        public Angle (double defaultValue,
                       java.lang.String description)
         {
             super("Radians", defaultValue, description);
@@ -521,7 +512,7 @@ public abstract class Constant
      * A subclass of Constant, meant to store a boolean value.
      */
     public static class Boolean
-        extends Constant
+            extends Constant
     {
         //~ Constructors -------------------------------------------------------
 
@@ -531,14 +522,13 @@ public abstract class Constant
          * @param defaultValue the (boolean) default value
          * @param description  the semantic of the constant
          */
-        public Boolean (boolean          defaultValue,
+        public Boolean (boolean defaultValue,
                         java.lang.String description)
         {
             super(null, java.lang.Boolean.toString(defaultValue), description);
         }
 
         //~ Methods ------------------------------------------------------------
-
         /**
          * Retrieve the current constant value
          *
@@ -551,6 +541,7 @@ public abstract class Constant
 
         /**
          * Convenient method to access this boolean value
+         *
          * @return true if set, false otherwise
          */
         public boolean isSet ()
@@ -594,7 +585,7 @@ public abstract class Constant
      * A subclass of Constant, meant to store a {@link java.awt.Color} value.
      */
     public static class Color
-        extends Constant
+            extends Constant
     {
         //~ Constructors -------------------------------------------------------
 
@@ -633,14 +624,13 @@ public abstract class Constant
          * @param defaultValue the (int) RGB default value
          * @param description  the semantic of the constant
          */
-        public Color (int              defaultValue,
+        public Color (int defaultValue,
                       java.lang.String description)
         {
             this(java.lang.Integer.toString(defaultValue), description);
         }
 
         //~ Methods ------------------------------------------------------------
-
         //-------------//
         // decodeColor //
         //-------------//
@@ -655,10 +645,10 @@ public abstract class Constant
         public static java.lang.String encodeColor (java.awt.Color color)
         {
             return java.lang.String.format(
-                "#%02x%02x%02x",
-                color.getRed(),
-                color.getGreen(),
-                color.getBlue());
+                    "#%02x%02x%02x",
+                    color.getRed(),
+                    color.getGreen(),
+                    color.getBlue());
         }
 
         /**
@@ -707,22 +697,21 @@ public abstract class Constant
      * A subclass of Constant, meant to store a double value.
      */
     public static class Double
-        extends Constant
+            extends Constant
     {
         //~ Constructors -------------------------------------------------------
 
         public Double (java.lang.String quantityUnit,
-                       double           defaultValue,
+                       double defaultValue,
                        java.lang.String description)
         {
             super(
-                quantityUnit,
-                java.lang.Double.toString(defaultValue),
-                description);
+                    quantityUnit,
+                    java.lang.Double.toString(defaultValue),
+                    description);
         }
 
         //~ Methods ------------------------------------------------------------
-
         public double getValue ()
         {
             return ((DoubleValue) getCachedValue()).doubleValue();
@@ -764,7 +753,7 @@ public abstract class Constant
      * A subclass of Constant, meant to store an int value.
      */
     public static class Integer
-        extends Constant
+            extends Constant
     {
         //~ Constructors -------------------------------------------------------
 
@@ -776,17 +765,16 @@ public abstract class Constant
          * @param description  the semantic of the constant
          */
         public Integer (java.lang.String quantityUnit,
-                        int              defaultValue,
+                        int defaultValue,
                         java.lang.String description)
         {
             super(
-                quantityUnit,
-                java.lang.Integer.toString(defaultValue),
-                description);
+                    quantityUnit,
+                    java.lang.Integer.toString(defaultValue),
+                    description);
         }
 
         //~ Methods ------------------------------------------------------------
-
         /**
          * Retrieve the current constant value
          *
@@ -833,7 +821,7 @@ public abstract class Constant
      * A subclass of Double, meant to store a ratio or percentage.
      */
     public static class Ratio
-        extends Constant.Double
+            extends Constant.Double
     {
         //~ Constructors -------------------------------------------------------
 
@@ -843,7 +831,7 @@ public abstract class Constant
          * @param defaultValue the (double) default value
          * @param description  the semantic of the constant
          */
-        public Ratio (double           defaultValue,
+        public Ratio (double defaultValue,
                       java.lang.String description)
         {
             super(null, defaultValue, description);
@@ -857,7 +845,7 @@ public abstract class Constant
      * A subclass of Constant, meant to store a string value.
      */
     public static class String
-        extends Constant
+            extends Constant
     {
         //~ Constructors -------------------------------------------------------
 
@@ -891,7 +879,6 @@ public abstract class Constant
         }
 
         //~ Methods ------------------------------------------------------------
-
         /**
          * Retrieve the current constant value. Actually this is synonymous with
          * currentString()
@@ -933,12 +920,12 @@ public abstract class Constant
         //~ Instance fields ----------------------------------------------------
 
         final java.lang.String currentString;
-        final Object           cachedValue;
+
+        final Object cachedValue;
 
         //~ Constructors -------------------------------------------------------
-
         public Tuple (java.lang.String currentString,
-                      Object           cachedValue)
+                      Object cachedValue)
         {
             /** Current string Value */
             this.currentString = currentString;
@@ -948,7 +935,6 @@ public abstract class Constant
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public java.lang.String toString ()
         {

@@ -15,8 +15,6 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
 import omr.glyph.facets.GlyphContent;
-import omr.glyph.text.OcrWord;
-import omr.glyph.text.Sentence;
 
 import omr.log.Logger;
 
@@ -25,6 +23,9 @@ import omr.score.common.PixelRectangle;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
+
+import omr.text.TextLine;
+import omr.text.TextWord;
 
 import omr.util.TreeNode;
 
@@ -37,8 +38,8 @@ import java.util.Comparator;
  * @author Hervé Bitteur
  */
 public class LyricsItem
-    extends Text
-    implements Comparable<LyricsItem>
+        extends Text
+        implements Comparable<LyricsItem>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -49,7 +50,8 @@ public class LyricsItem
     private static final Logger logger = Logger.getLogger(LyricsItem.class);
 
     /** Comparator based on line number */
-    public static final Comparator<LyricsItem> numberComparator = new Comparator<LyricsItem>() {
+    public static final Comparator<LyricsItem> numberComparator = new Comparator<LyricsItem>()
+    {
         @Override
         public int compare (LyricsItem o1,
                             LyricsItem o2)
@@ -58,22 +60,20 @@ public class LyricsItem
         }
     };
 
-
     //~ Enumerations -----------------------------------------------------------
-
     /**
      * Describes the kind of this lyrics item.
      */
-    public static enum ItemKind {
+    public static enum ItemKind
+    {
         //~ Enumeration constant initializers ----------------------------------
-
 
         /** Just an elision */
         Elision,
         /** Just an extension */
-        Extension, 
+        Extension,
         /** A hyphen between syllables */
-        Hyphen, 
+        Hyphen,
         /** A real syllable */
         Syllable;
     }
@@ -81,22 +81,21 @@ public class LyricsItem
     /**
      * Describes more precisely a syllable inside a word.
      */
-    public static enum SyllabicType {
+    public static enum SyllabicType
+    {
         //~ Enumeration constant initializers ----------------------------------
-
 
         /** Single-syllable word */
         SINGLE,
         /** Syllable that begins a word */
-        BEGIN, 
+        BEGIN,
         /** Syllable at the middle of a word */
-        MIDDLE, 
+        MIDDLE,
         /** Syllable that ends a word */
         END;
     }
 
     //~ Instance fields --------------------------------------------------------
-
     /** Lyrics kind. */
     private ItemKind itemKind;
 
@@ -113,7 +112,7 @@ public class LyricsItem
     private String content;
 
     /** The exact corresponding word. */
-    private OcrWord word;
+    private TextWord word;
 
     /** Width of the item. */
     private final int width;
@@ -125,7 +124,6 @@ public class LyricsItem
     private Chord mappedChord;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // LyricsItem //
     //------------//
@@ -138,19 +136,18 @@ public class LyricsItem
      * @param width    The width of the related item
      * @param content  The underlying text for this lyrics item
      */
-    public LyricsItem (Sentence   sentence,
+    public LyricsItem (TextLine sentence,
                        PixelPoint location,
-                       Glyph      seed,
-                       int        width,
-                       String     content)
+                       Glyph seed,
+                       int width,
+                       String content)
     {
         super(sentence, location);
         this.seed = seed;
         this.width = width;
         this.content = content;
 
-        word = seed.getOcrLine()
-                   .getFirstWord();
+        word = seed.getTextWord();
 
         if (content.equals(GlyphContent.ELISION_STRING)) {
             itemKind = ItemKind.Elision;
@@ -164,7 +161,6 @@ public class LyricsItem
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------//
     // accept //
     //--------//
@@ -186,7 +182,7 @@ public class LyricsItem
 
         // Comparison is based on abscissa only
         return Integer.signum(
-            getReferencePoint().x - other.getReferencePoint().x);
+                getReferencePoint().x - other.getReferencePoint().x);
     }
 
     //--------------------//
@@ -224,6 +220,7 @@ public class LyricsItem
     //------------//
     /**
      * Report the current string value of this text (just the lyrics item)
+     *
      * @return the string value of this text
      */
     @Override
@@ -268,7 +265,7 @@ public class LyricsItem
     //---------//
     // getWord //
     //---------//
-    public OcrWord getWord ()
+    public TextWord getWord ()
     {
         return word;
     }
@@ -284,11 +281,11 @@ public class LyricsItem
         }
 
         // Left is too far on left, middle is too far on right, we use width/4
-        int        centerX = getReferencePoint().x + (width / 4);
+        int centerX = getReferencePoint().x + (width / 4);
 
         SystemPart part = lyricsLine.getPart();
-        int        maxDx = part.getScale()
-                               .toPixels(constants.maxItemDx);
+        int maxDx = part.getScale()
+                .toPixels(constants.maxItemDx);
 
         for (TreeNode mNode : part.getMeasures()) {
             Measure measure = (Measure) mNode;
@@ -299,12 +296,12 @@ public class LyricsItem
             }
 
             if ((measure.getBarline()
-                        .getRightX() + maxDx) < centerX) {
+                 .getRightX() + maxDx) < centerX) {
                 continue;
             }
 
             // Look for best aligned chord in proper staff
-            int   bestDx = Integer.MAX_VALUE;
+            int bestDx = Integer.MAX_VALUE;
             Chord bestChord = null;
 
             for (Chord chord : measure.getChordsAbove(getReferencePoint())) {
@@ -359,8 +356,8 @@ public class LyricsItem
     {
         PixelRectangle itemBox = seed.getBounds();
         setReferencePoint(
-            new PixelPoint(itemBox.x, getSentence()
-                                          .getLocation().y));
+                new PixelPoint(itemBox.x, getSentence()
+                .getLocation().y));
     }
 
     //-----------------//
@@ -373,17 +370,17 @@ public class LyricsItem
 
         if (itemKind != null) {
             sb.append(" ")
-              .append(itemKind);
+                    .append(itemKind);
         }
 
         if (getSyllabicType() != null) {
             sb.append(" ")
-              .append(getSyllabicType());
+                    .append(getSyllabicType());
         }
 
         if (mappedChord != null) {
             sb.append(" mappedTo:Ch#")
-              .append(mappedChord.getId());
+                    .append(mappedChord.getId());
         }
 
         return sb.toString();
@@ -398,17 +395,16 @@ public class LyricsItem
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Scale.Fraction maxItemDx = new Scale.Fraction(
-            4,
-            "Maximum horizontal distance between a note and its lyrics item");
+                4,
+                "Maximum horizontal distance between a note and its lyrics item");
     }
 }

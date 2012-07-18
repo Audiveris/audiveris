@@ -13,12 +13,10 @@ package omr.glyph.ui;
 
 import omr.glyph.SymbolsModel;
 import omr.glyph.facets.Glyph;
-import omr.glyph.text.TextRole;
 
 import omr.log.Logger;
 
 import omr.score.entity.Note;
-import omr.score.entity.Text.CreatorText.CreatorType;
 import omr.score.entity.TimeRational;
 
 import omr.script.BoundaryTask;
@@ -31,6 +29,8 @@ import omr.sheet.BrokenLineContext;
 import omr.sheet.SystemBoundary;
 import omr.sheet.SystemInfo;
 
+import omr.text.TextRoleInfo;
+
 import omr.util.BrokenLine;
 import omr.util.VerticalSide;
 
@@ -41,7 +41,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 
 /**
  * Class {@code SymbolsController} is a GlyphsController specifically
@@ -102,17 +101,15 @@ public class SymbolsController
      * glyphs
      *
      * @param glyphs      the impacted glyphs
-     * @param textType    the type of the creator, if relevant
-     * @param textRole    the role of this textual element
+     * @param roleInfo    the role of this textual element
      * @param textContent the content as a string (if not empty)
      * @return the task that carries out the processing
      */
     public Task<Void, Void> asyncAssignTexts (Collection<Glyph> glyphs,
-                                              CreatorType textType,
-                                              TextRole textRole,
+                                              TextRoleInfo roleInfo,
                                               String textContent)
     {
-        return new TextTask(sheet, textType, textRole, textContent, glyphs).
+        return new TextTask(sheet, roleInfo, textContent, glyphs).
                 launch(sheet);
     }
 

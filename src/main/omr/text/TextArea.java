@@ -9,7 +9,7 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.glyph.text;
+package omr.text;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;

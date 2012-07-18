@@ -45,6 +45,7 @@ import omr.util.Predicate;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
+import omr.glyph.ShapeChecker;
 
 /**
  * Class {@code VerticalsBuilder} is in charge of retrieving all the
@@ -239,10 +240,17 @@ public class VerticalsBuilder
                 continue;
             }
 
+            // Check stem is not too far from nearest staff
+            if (!ShapeChecker.getInstance().checkStem(system, stick)) {
+                logger.fine("Too distant stem {0}", stick.idString());
+                continue;
+            }
+            
+            
             if (!stick.isShapeForbidden(Shape.STEM)) {
                 // Run the various Checks
                 double res = suite.pass(stick);
-                logger.fine("suite=> {0} for {1}", new Object[]{res, stick});
+                logger.fine("suite=> {0} for {1}", res, stick);
 
                 if (res >= minResult) {
                     stick.setResult(STEM);

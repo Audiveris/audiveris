@@ -23,8 +23,8 @@ import java.util.Collection;
 import java.util.concurrent.Callable;
 
 /**
- * Class {@code AbstractSystemStep} is a basis for any step working in parallel
- * on the sheet systems
+ * Class {@code AbstractSystemStep} is a basis for any step working in 
+ * parallel on the sheet systems.
  *
  * @author Hervé Bitteur
  */

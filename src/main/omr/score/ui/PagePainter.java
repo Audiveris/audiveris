@@ -17,7 +17,6 @@ import omr.constant.ConstantSet;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 import omr.glyph.facets.Glyph;
-import omr.glyph.text.Sentence;
 
 import omr.log.Logger;
 
@@ -84,8 +83,10 @@ import java.awt.geom.AffineTransform;
 import java.util.ConcurrentModificationException;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import omr.glyph.text.OcrWord;
+import omr.text.TextWord;
 import omr.score.entity.LyricsItem;
+import omr.text.FontInfo;
+import omr.text.TextLine;
 import omr.ui.symbol.TextFont;
 
 /**
@@ -291,7 +292,8 @@ public abstract class PagePainter
             g.setClip(oldClip);
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warning(
+            logger.
+                    warning(
                     getClass().getSimpleName() + " Error visiting " + arpeggiate,
                     ex);
         }
@@ -512,7 +514,8 @@ public abstract class PagePainter
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warning(
+            logger.
+                    warning(
                     getClass().getSimpleName() + " Error visiting " + keySignature,
                     ex);
         }
@@ -753,34 +756,18 @@ public abstract class PagePainter
     {
         try {
             g.setColor(defaultColor);
+            TextLine sentence = text.getSentence();
+            float meanFontSize = sentence.getMeanFontSize();
 
             if (text instanceof LyricsItem) {
-                // Just print the single LyricsItem word
-                paintWord(((LyricsItem) text).getWord());
+                // Just print the single LyricsItem word (and not the full line)
+                paintWord(((LyricsItem) text).getWord(), meanFontSize);
             } else {
-                Sentence sentence = text.getSentence();
-                Glyph compound = sentence.getCompound();
-                String manValue = compound.getManualValue();
-                
-                if (manValue != null) {
-                    // Handle manual text
-                    final FontRenderContext frc = g.getFontRenderContext();
-                    float size = TextFont.computeFontSize(manValue,
-                                                          compound.getBounds().width);
-                    Font font = TextFont.baseTextFont.deriveFont(size);
-                    TextLayout layout = new TextLayout(manValue, font, frc);
-                    paint(layout,
-                          text.getReferencePoint(),
-                          BASELINE_LEFT);
-                } else {
-                    // Print out each word separately for best mapping
-                    for (OcrWord word : compound.getOcrLine().getWords()) {
-                        paintWord(word);
-                    }
+                // Print the whole line
+                for (TextWord word : sentence.getWords()) {
+                    paintWord(word, meanFontSize);
                 }
             }
-
-
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warning(
@@ -794,15 +781,18 @@ public abstract class PagePainter
     //-----------//
     // paintWord //
     //-----------//
-    private void paintWord (OcrWord word)
+    private void paintWord (TextWord word,
+                            float meanFontSize)
     {
-        float size = word.getPreciseFontSize();
-        Font font = TextFont.baseTextFont.deriveFont(size);
+        FontInfo fontInfo = word.getFontInfo();
+        
+        float fontSize = word.getChars().size() > 1
+                         ? word.getPreciseFontSize() 
+                         : meanFontSize;
+        Font font = TextFont.baseTextFont.deriveFont(fontSize);
         FontRenderContext frc = g.getFontRenderContext();
         TextLayout layout = new TextLayout(word.getValue(), font, frc);
-        paint(layout,
-              new PixelPoint(word.getBounds().x, word.getBaseline()),
-              BASELINE_LEFT);
+        paint(layout, word.getLocation(), BASELINE_LEFT);
     }
 
     //---------------------//

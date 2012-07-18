@@ -17,10 +17,9 @@ import omr.constant.ConstantSet;
 import omr.glyph.Evaluation;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
-import omr.glyph.text.Language;
-import omr.glyph.text.OcrLine;
-import omr.glyph.text.OcrTextVerifier;
-import omr.glyph.text.TextBlob;
+import omr.text.TextLine;
+import omr.text.TextBuilder;
+import omr.text.TextBlob;
 
 import omr.grid.LineInfo;
 import omr.grid.StaffInfo;
@@ -40,7 +39,6 @@ import omr.util.VerticalSide;
 
 import java.awt.Polygon;
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -78,13 +76,6 @@ public class TextBorderPattern
     private static final Logger logger = Logger.getLogger(
             TextBorderPattern.class);
 
-//    /** Shapes considered as permanent text candidates */
-//    private static final EnumSet<Shape> permanentCandidates = EnumSet.of(
-//            Shape.TENUTO,
-//            Shape.BREATH_MARK,
-//            Shape.DOT_set,
-//            Shape.STACCATO);
-//
     //~ Instance fields --------------------------------------------------------
     //
     /** The system contour box (just the union of staves) */
@@ -180,16 +171,16 @@ public class TextBorderPattern
     //-----------//
     // borderOCR //
     //-----------//
-    private OcrLine borderOCR (Glyph compound,
+    private TextLine borderOCR (Glyph compound,
                                String language)
     {
-        List<OcrLine> lines = compound.retrieveOcrLines(language);
+        List<TextLine> lines = compound.retrieveOcrLines(language);
 
         // Debug
         if (logger.isFineEnabled()) {
             int i = 0;
 
-            for (OcrLine ocrLine : lines) {
+            for (TextLine ocrLine : lines) {
                 i++;
 
                 String value = ocrLine.getValue();
@@ -216,7 +207,7 @@ public class TextBorderPattern
             return null;
         }
 
-        OcrLine ocrLine = lines.get(0);
+        TextLine ocrLine = lines.get(0);
 
         String value = ocrLine.getValue();
         float fontSize = ocrLine.getFirstWord().getFontInfo().pointsize;
@@ -316,8 +307,9 @@ public class TextBorderPattern
                                      Glyph compound)
         {
             // Call the OCR?
-            if (Language.getOcr().isAvailable()) {
-                OcrLine ocrLine;
+            if (TextBuilder.getOcr().isAvailable()) {
+                TextBuilder textBuilder = system.getTextBuilder();
+                TextLine ocrLine = null;
 
                 if (compound.isTransient()) {
                     compound = system.registerGlyph(compound);
@@ -334,10 +326,10 @@ public class TextBorderPattern
                         return false;
                     }
                 } else {
-                    ocrLine = compound.getOcrLine();
+                    ///////////////////////////////////////////////////////////////////////////////////////////////ocrLine = compound.getTextLine();
                 }
 
-                if (!OcrTextVerifier.isValid(compound, ocrLine)) {
+                if (!textBuilder.isValid(compound, ocrLine)) {
                     logger.fine("Invalid blob {0} {1}", ocrLine, compound);
 
                     return false;
@@ -366,24 +358,21 @@ public class TextBorderPattern
             if (!super.checkCandidate(glyph)) {
                 return false;
             }
-
-//            if (glyph.isKnown()
-//                    && !permanentCandidates.contains(glyph.getShape())
-//                    && (glyph.getEvaluation().grade > constants.maxGrade.
-//                        getValue())) {
-//                return false;
-//            }
+            
+            if (glyph.isStem()) {
+                return false;
+            }
 
             // We remove candidates that are stuck to a stem that goes into a
             // staff because these glyphs are not likely to be text items
             for (HorizontalSide side : HorizontalSide.values()) {
                 Glyph stem = glyph.getStem(side);
-
-                if ((stem != null) && stem.getBounds().intersects(systemBox)) {
+                
+                if (stem != null) { //&& stem.getBounds().intersects(systemBox)) {
                     return false;
                 }
             }
-
+            
             return true;
         }
     }

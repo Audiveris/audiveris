@@ -13,62 +13,55 @@ package omr.script;
 
 import omr.glyph.Evaluation;
 import omr.glyph.facets.Glyph;
-import omr.glyph.text.TextRole;
-
-import omr.score.entity.Text.CreatorText.CreatorType;
 
 import omr.sheet.Sheet;
+
+import omr.text.TextRoleInfo;
 
 import java.util.Collection;
 
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 
 /**
- * Class {@code TextTask} records the assignment of textual 
+ * Class {@code TextTask} records the assignment of textual
  * characteristics to a collection of glyphs.
  *
  * @author Hervé Bitteur
  */
 public class TextTask
-    extends GlyphUpdateTask
+        extends GlyphUpdateTask
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** Type of the textual glyph */
-    @XmlAttribute
-    private final CreatorType type;
-
     /** Role of the textual glyph */
-    @XmlAttribute
-    private final TextRole role;
+    // TODO: Define proper mapping for RoleInfo class
+    @XmlElement(name = "role-info")
+    private final TextRoleInfo roleInfo;
 
     /** String content of the textual glyph */
     @XmlAttribute
     private final String content;
 
     //~ Constructors -----------------------------------------------------------
-
     //----------//
     // TextTask //
     //----------//
     /**
      * Creates a new TextTask object.
      *
-     * @param sheet the sheet impacted
-     * @param type the type of creator (if relevant, otherwise null)
-     * @param role the role of this text item
-     * @param content The content as a string
-     * @param glyphs the impacted glyph(s)
+     * @param sheet    the sheet impacted
+     * @param roleInfo the role of this text item
+     * @param content  The content as a string
+     * @param glyphs   the impacted glyph(s)
      */
-    public TextTask (Sheet             sheet,
-                     CreatorType       type,
-                     TextRole          role,
-                     String            content,
+    public TextTask (Sheet sheet,
+                     TextRoleInfo roleInfo,
+                     String content,
                      Collection<Glyph> glyphs)
     {
         super(sheet, glyphs);
-        this.type = type;
-        this.role = role;
+        this.roleInfo = roleInfo;
         this.content = content;
     }
 
@@ -78,24 +71,21 @@ public class TextTask
     /** No-arg constructor for JAXB only */
     private TextTask ()
     {
-        type = null;
-        role = null;
+        roleInfo = null;
         content = null;
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------//
     // core //
     //------//
     @Override
     public void core (Sheet sheet)
-        throws Exception
+            throws Exception
     {
         sheet.getSymbolsController().getModel().assignText(
                 getInitialGlyphs(),
-                type,
-                role,
+                roleInfo,
                 content,
                 Evaluation.MANUAL);
     }
@@ -109,17 +99,13 @@ public class TextTask
         StringBuilder sb = new StringBuilder(super.internalsString());
         sb.append(" text");
 
-        sb.append(" ")
-          .append(role);
+        sb.append(" ").append(roleInfo.role);
 
-        if (type != null) {
-            sb.append(" ")
-              .append(type);
+        if (roleInfo.creatorType != null) {
+            sb.append(" ").append(roleInfo.creatorType);
         }
 
-        sb.append(" \"")
-          .append(content)
-          .append("\"");
+        sb.append(" \"").append(content).append("\"");
 
         return sb.toString();
     }

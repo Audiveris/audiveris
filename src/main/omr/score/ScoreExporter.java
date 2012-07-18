@@ -50,7 +50,7 @@ import omr.score.entity.Slur;
 import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
 import omr.score.entity.Text;
-import omr.score.entity.Text.CreatorText;
+import omr.score.entity.Text.CreatorText.CreatorType;
 import omr.score.entity.TimeSignature;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
 import omr.score.entity.Tuplet;
@@ -1907,7 +1907,7 @@ public class ScoreExporter
         try {
             logger.fine("Visiting {0}", text);
 
-            switch (text.getSentence().getTextRole()) {
+            switch (text.getSentence().getRole().role) {
             case Title:
                 getWork().setWorkTitle(text.getContent());
 
@@ -1930,10 +1930,10 @@ public class ScoreExporter
                 TypedText typedText = factory.createTypedText();
                 typedText.setValue(text.getContent());
 
-                CreatorText creatorText = (CreatorText) text;
+                CreatorType type = text.getSentence().getRole().creatorType;
 
-                if (creatorText.getCreatorType() != null) {
-                    typedText.setType(creatorText.getCreatorType().toString());
+                if (type != null) {
+                    typedText.setType(type.toString());
                 }
 
                 scorePartwise.getIdentification().getCreator().add(typedText);

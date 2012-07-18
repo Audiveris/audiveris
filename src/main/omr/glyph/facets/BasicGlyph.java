@@ -17,12 +17,6 @@ import omr.glyph.Evaluation;
 import omr.glyph.GlyphSignature;
 import omr.glyph.Nest;
 import omr.glyph.Shape;
-import omr.glyph.text.BasicContent;
-import omr.glyph.text.OcrChar;
-import omr.glyph.text.OcrLine;
-import omr.glyph.text.Sentence;
-import omr.glyph.text.TextArea;
-import omr.glyph.text.TextRole;
 
 import omr.lag.Lag;
 import omr.lag.Section;
@@ -40,10 +34,16 @@ import omr.run.Orientation;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
-import omr.score.entity.Text.CreatorText.CreatorType;
 import omr.score.entity.TimeRational;
 
 import omr.sheet.SystemInfo;
+
+import omr.text.BasicContent;
+import omr.text.TextChar;
+import omr.text.TextLine;
+import omr.text.TextArea;
+import omr.text.TextRoleInfo;
+import omr.text.TextWord;
 
 import omr.util.HorizontalSide;
 import omr.util.Predicate;
@@ -244,17 +244,6 @@ public class BasicGlyph
         display.drawAscii();
     }
 
-    //------//
-    // dump //
-    //------//
-    @Override
-    public void dump ()
-    {
-        for (GlyphFacet facet : facets) {
-            facet.dump();
-        }
-    }
-
     @Override
     public void forbidShape (Shape shape)
     {
@@ -335,27 +324,6 @@ public class BasicGlyph
         return environment.getConnectedNeighbors();
     }
 
-    //------------//
-    // getContent //
-    //------------//
-    public GlyphContent getContent ()
-    {
-        // Lazy allocation, to avoid too many allocations
-        // (less than 3% of all glyphs need a content facet)
-        if (content == null) {
-            addFacet(content = new BasicContent(this));
-        }
-
-        return content;
-    }
-
-    @Override
-    public CreatorType getCreatorType ()
-    {
-        return getContent()
-                   .getCreatorType();
-    }
-
     @Override
     public double getDensity ()
     {
@@ -384,13 +352,6 @@ public class BasicGlyph
     public int getFirstStuck ()
     {
         return alignment.getFirstStuck();
-    }
-
-    @Override
-    public Float getFontSize ()
-    {
-        return getContent()
-                   .getFontSize();
     }
 
     @Override
@@ -513,27 +474,6 @@ public class BasicGlyph
     {
         return getContent()
                    .getOcrLanguage();
-    }
-
-    @Override
-    public OcrLine getOcrLine ()
-    {
-        return getContent()
-                   .getOcrLine();
-    }
-
-    @Override
-    public List<OcrLine> getOcrLines (String language)
-    {
-        return getContent()
-                   .getOcrLines(language);
-    }
-
-    @Override
-    public String getOcrValue ()
-    {
-        return getContent()
-                   .getOcrValue();
     }
 
     @Override
@@ -665,17 +605,17 @@ public class BasicGlyph
     }
 
     @Override
-    public TextRole getTextRole ()
+    public TextRoleInfo getTextRole ()
     {
         return getContent()
                    .getTextRole();
     }
 
     @Override
-    public PixelPoint getTextStart ()
+    public PixelPoint getTextLocation ()
     {
         return getContent()
-                   .getTextStart();
+                   .getTextLocation();
     }
 
     @Override
@@ -683,6 +623,12 @@ public class BasicGlyph
     {
         return getContent()
                    .getTextValue();
+    }
+
+    @Override
+    public TextWord getTextWord ()
+    {
+        return getContent().getTextWord();
     }
 
     @Override
@@ -726,18 +672,6 @@ public class BasicGlyph
     public boolean intersects (PixelRectangle rectangle)
     {
         return geometry.intersects(rectangle);
-    }
-
-    //-----------------//
-    // invalidateCache //
-    //-----------------//
-    @Override
-    public void invalidateCache ()
-    {
-        // Invalidate all allocated facets
-        for (GlyphFacet facet : facets) {
-            facet.invalidateCache();
-        }
     }
 
     @Override
@@ -880,24 +814,17 @@ public class BasicGlyph
     }
 
     @Override
-    public List<OcrLine> retrieveOcrLines (String language)
+    public List<TextLine> retrieveOcrLines (String language)
     {
         return getContent()
                    .retrieveOcrLines(language);
     }
 
     @Override
-    public SortedSet<Section> retrieveSections (List<OcrChar> chars)
+    public SortedSet<Section> retrieveSections (List<TextChar> chars)
     {
         return getContent()
                    .retrieveSections(chars);
-    }
-
-    @Override
-    public List<Glyph> retrieveSubGlyphs (boolean bySyllable)
-    {
-        return getContent()
-                   .retrieveSubGlyphs(bySyllable);
     }
 
     @Override
@@ -910,13 +837,6 @@ public class BasicGlyph
     public void setContourBox (PixelRectangle contourBox)
     {
         geometry.setContourBox(contourBox);
-    }
-
-    @Override
-    public void setCreatorType (CreatorType creatorType)
-    {
-        getContent()
-            .setCreatorType(creatorType);
     }
 
     @Override
@@ -952,11 +872,11 @@ public class BasicGlyph
     }
 
     @Override
-    public void setOcrLines (String        ocrLanguage,
-                             List<OcrLine> ocrLines)
+    public void setTextWord (String ocrLanguage,
+                             TextWord textWord)
     {
         getContent()
-            .setOcrLines(ocrLanguage, ocrLines);
+                .setTextWord(ocrLanguage, textWord);
     }
 
     @Override
@@ -1016,13 +936,6 @@ public class BasicGlyph
     }
 
     @Override
-    public void setTextRole (TextRole type)
-    {
-        getContent()
-            .setTextRole(type);
-    }
-
-    @Override
     public void setTimeRational (TimeRational timeRational)
     {
         recognition.setTimeRational(timeRational);
@@ -1052,6 +965,77 @@ public class BasicGlyph
         composition.stealSections(that);
     }
 
+    @Override
+    public void translate (PixelPoint vector)
+    {
+        geometry.translate(vector);
+    }
+
+    //----------//
+    // addFacet //
+    //----------//
+    /**
+     * Register a facet
+     * @param facet the facet to register
+     */
+    final void addFacet (GlyphFacet facet)
+    {
+        facets.add(facet);
+    }
+
+    //--------------//
+    // getAlignment //
+    //--------------//
+    protected GlyphAlignment getAlignment ()
+    {
+        return alignment;
+    }
+
+    //----------------//
+    // getComposition //
+    //----------------//
+    protected GlyphComposition getComposition ()
+    {
+        return composition;
+    }
+
+    //------------//
+    // getContent //
+    //------------//
+    protected GlyphContent getContent ()
+    {
+        // Lazy allocation, to avoid too many allocations
+        // (less than 3% of all glyphs need a content facet)
+        if (content == null) {
+            addFacet(content = new BasicContent(this));
+        }
+
+        return content;
+    }
+
+    //-----------------//
+    // invalidateCache //
+    //-----------------//
+    @Override
+    public void invalidateCache ()
+    {
+        // Invalidate all allocated facets
+        for (GlyphFacet facet : facets) {
+            facet.invalidateCache();
+        }
+    }
+
+    //------//
+    // dump //
+    //------//
+    @Override
+    public void dump ()
+    {
+        for (GlyphFacet facet : facets) {
+            facet.dump();
+        }
+    }
+
     //----------//
     // toString //
     //----------//
@@ -1070,31 +1054,6 @@ public class BasicGlyph
         sb.append("}");
 
         return sb.toString();
-    }
-
-    //-----------//
-    // translate //
-    //-----------//
-    @Override
-    public void translate (PixelPoint vector)
-    {
-        geometry.translate(vector);
-    }
-
-    //--------------//
-    // getAlignment //
-    //--------------//
-    protected GlyphAlignment getAlignment ()
-    {
-        return alignment;
-    }
-
-    //----------------//
-    // getComposition //
-    //----------------//
-    protected GlyphComposition getComposition ()
-    {
-        return composition;
     }
 
     //-----------------//
@@ -1147,30 +1106,5 @@ public class BasicGlyph
         }
 
         return sb.toString();
-    }
-
-    //----------//
-    // addFacet //
-    //----------//
-    /**
-     * Register a facet
-     * @param facet the facet to register
-     */
-    final void addFacet (GlyphFacet facet)
-    {
-        facets.add(facet);
-    }
-
-    @Override
-    public Sentence getSentence ()
-    {
-        return getContent()
-                   .getSentence();
-    }
-
-    @Override
-    public void setSentence (Sentence sentence)
-    {
-        getContent().setSentence(sentence);
     }
 }

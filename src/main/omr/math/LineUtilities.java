@@ -55,8 +55,8 @@ public class LineUtilities
     // intersection //
     //--------------//
     /**
-     * Return the intersection point between infinite line A defined by points
-     * p1 & p2 and infinite line B defined by points p3 & p4.
+     * Return the intersection point between infinite line A defined by
+     * points p1 & p2 and infinite line B defined by points p3 & p4.
      * @param p1 first point of line A
      * @param p2 second point of line A
      * @param p3 first point of line B

@@ -21,7 +21,6 @@ import omr.glyph.GlyphsBuilder;
 import omr.glyph.facets.Glyph;
 import omr.glyph.pattern.PatternsChecker;
 import omr.glyph.pattern.SlurInspector;
-import omr.glyph.text.Sentence;
 
 import omr.grid.BarAlignment;
 import omr.grid.BarInfo;
@@ -42,6 +41,9 @@ import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
 
 import omr.step.StepException;
+
+import omr.text.TextBuilder;
+import omr.text.TextLine;
 
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
@@ -87,6 +89,9 @@ public class SystemInfo
 
     /** Dedicated measure builder */
     private final MeasuresBuilder measuresBuilder;
+
+    /** Dedicated text builder */
+    private final TextBuilder textBuilder;
 
     /** Dedicated glyph builder */
     private final GlyphsBuilder glyphsBuilder;
@@ -169,8 +174,8 @@ public class SystemInfo
             unmodifiableSortedSet(
             glyphs);
 
-    /** Set of sentences made of text glyphs */
-    private Set<Sentence> sentences = new LinkedHashSet<>();
+    /** Set of lines made of text glyphs */
+    private Set<TextLine> textLines = new LinkedHashSet<>();
 
     /** Used to assign a unique ID to system sentences */
     private int sentenceCount = 0;
@@ -220,6 +225,7 @@ public class SystemInfo
         updateCoordinates();
 
         measuresBuilder = new MeasuresBuilder(this);
+        textBuilder = new TextBuilder(this);
         glyphsBuilder = new GlyphsBuilder(this);
         compoundBuilder = new CompoundBuilder(this);
         verticalsBuilder = new VerticalsBuilder(this);
@@ -961,9 +967,9 @@ public class SystemInfo
      *
      * @return the (perhaps empty) collection of sentences found
      */
-    public Set<Sentence> getSentences ()
+    public Set<TextLine> getSentences ()
     {
-        return sentences;
+        return textLines;
     }
 
     //----------//
@@ -1251,7 +1257,7 @@ public class SystemInfo
     //----------------//
     public void resetSentences ()
     {
-        sentences.clear();
+        textLines.clear();
         sentenceCount = 0;
     }
 
@@ -1572,5 +1578,13 @@ public class SystemInfo
         deltaY = (int) Math.rint(
                 lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
         bottom = (int) Math.rint(botLeft.getY());
+    }
+
+    //----------------//
+    // getTextBuilder //
+    //----------------//
+    public TextBuilder getTextBuilder ()
+    {
+        return textBuilder;
     }
 }

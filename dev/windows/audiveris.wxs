@@ -97,8 +97,8 @@
             <Directory Id="SystemFolder">
                 <!-- Bridge as non permanent -->
                 <Component Id="bridge.CID" Guid="a66b5179-6a87-440f-b705-8eeda53a7a4c">
-                    <File Id='bridgeDLL'      Name='jniTesseract3Bridge.dll'          DiskId='1' Source='$(var.myDll)\jniTesseract3Bridge.dll' />
-                    <File Id='bridgeManifest' Name='jniTesseract3Bridge.dll.manifest' DiskId='1' Source='$(var.myDll)\jniTesseract3Bridge.dll.manifest' />
+                    <File Id='bridgeDLL'      Name='jniTessBridge.dll'          DiskId='1' Source='$(var.myDll)\jniTessBridge.dll' />
+                    <File Id='bridgeManifest' Name='jniTessBridge.dll.manifest' DiskId='1' Source='$(var.myDll)\jniTessBridge.dll.manifest' />
                 </Component>
                 <!-- Tesseract dll as permanent, in case other apps need it -->
                 <Component Id="tesseract.CID" Guid="3900d10b-0ca1-46b9-9580-11efa47f8c9e" Permanent="yes">

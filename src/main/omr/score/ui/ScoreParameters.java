@@ -13,8 +13,8 @@ package omr.score.ui;
 
 import omr.constant.ConstantSet;
 
-import omr.glyph.text.Language;
-import omr.glyph.text.tesseract.TesseractOCR.OcrUnavailable;
+import omr.text.Language;
+import omr.text.tesseract.TesseractOCR.OcrUnavailable;
 
 import omr.log.Logger;
 
@@ -31,6 +31,8 @@ import omr.sheet.Sheet;
 
 import omr.step.Step;
 import omr.step.Steps;
+
+import omr.text.TextBuilder;
 
 import omr.ui.FileDropHandler;
 import omr.ui.field.LDoubleField;
@@ -752,7 +754,7 @@ public class ScoreParameters
             List<String> items = new ArrayList<>();
 
             for (String code : new TreeSet<>(
-                    Language.getSupportedLanguages())) {
+                    TextBuilder.getOcr().getLanguages())) {
                 items.add(itemOf(code));
             }
 

@@ -9,7 +9,9 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.glyph.text;
+package omr.text;
+
+import omr.sheet.SystemInfo;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;
@@ -43,7 +45,7 @@ public interface OCR
      *
      * @return the set of supported 3-letter codes
      */
-    Set<String> getSupportedLanguages ();
+    Set<String> getLanguages ();
 
     /**
      * Report whether the OCR engine is available.
@@ -58,16 +60,18 @@ public interface OCR
      * @param topLeft      absolute coordinates of the image top left corner
      * @param languageCode language specification or null
      * @param layoutMode   how the image layout should be analyzed
+     * @param system       the containing system
      * @param label        an optional label related to the image, null
      *                     otherwise. This is meant for keeping track of the
      *                     temporary image files.
-     * @return a list of OcrLine instances, or null.
-     *         The coordinates of any returned OcrLine are absolute coordinates
+     * @return a list of TextLine instances, or null.
+     *         The coordinates of any returned TextLine are absolute coordinates
      *         thanks to the topLeft parameter.
      */
-    List<OcrLine> recognize (BufferedImage image,
-                             Point topLeft,
-                             String languageCode,
-                             LayoutMode layoutMode,
-                             String label);
+    List<TextLine> recognize (BufferedImage image,
+                              Point topLeft,
+                              String languageCode,
+                              LayoutMode layoutMode,
+                              SystemInfo system,
+                              String label);
 }

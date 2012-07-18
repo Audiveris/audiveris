@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.glyph.pattern;
 
-import omr.glyph.text.TextArea;
+import omr.text.TextArea;
 
 import omr.lag.BasicRoi;
 

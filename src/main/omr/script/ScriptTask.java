@@ -60,8 +60,8 @@ public abstract class ScriptTask
     //-----//
     /**
      * Run this task synchronously (prolog + core + epilog)
-     * This is meant to be called by the script engine, to ensure that every
-     * task is completed before the next is run.
+     * This is meant to be called by the script engine, to ensure that 
+     * every task is completed before the next is run.
      * This method is final, subclasses should define core() and potentially
      * customize prolog() and epilog().
      *

@@ -9,7 +9,7 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.glyph.text;
+package omr.text;
 
 import omr.log.Logger;
 
@@ -17,7 +17,7 @@ import java.util.List;
 
 /**
  * Class {@code WordScanner} is a scanner to retrieve words out of
- * a string content, while mapping each word to a sequence of OcrChar
+ * a string content, while mapping each word to a sequence of TextChar
  * instances.
  *
  * @author Hervé Bitteur
@@ -39,7 +39,7 @@ public abstract class WordScanner
     private int strIndex = -1;
 
     /** Precise description of each (non blank) character */
-    private List<OcrChar> chars;
+    private List<TextChar> chars;
 
     /** Current word and its positions in chars sequence */
     private String currentWord = null;
@@ -67,7 +67,7 @@ public abstract class WordScanner
      */
     public WordScanner (String content,
                         boolean bySyllable,
-                        List<OcrChar> chars)
+                        List<TextChar> chars)
     {
         this.content = content;
         this.bySyllable = bySyllable;
@@ -80,12 +80,12 @@ public abstract class WordScanner
     // getWordChars //
     //--------------//
     /**
-     * Report the sequence of OcrChar instances that correspond to
+     * Report the sequence of TextChar instances that correspond to
      * the current word.
      *
-     * @return the word sequence of OcrChar's
+     * @return the word sequence of TextChar's
      */
-    public List<OcrChar> getWordChars ()
+    public List<TextChar> getWordChars ()
     {
         return chars.subList(currentWordStart, currentWordStop + 1);
     }
@@ -129,7 +129,7 @@ public abstract class WordScanner
     //-------------//
     /**
      * Retrieve positions for the next word, whose content is returned.
-     * The related OcrChar instances can now be retrieved through their range
+     * The related TextChar instances can now be retrieved through their range
      * [getWordStart() .. getWordStop()].
      *
      * @return the next word content
@@ -141,7 +141,7 @@ public abstract class WordScanner
         for (strIndex += 1; strIndex < content.length(); strIndex++) {
             String charValue = content.substring(strIndex, strIndex + 1);
 
-            // Position in sequence of OcrChar instances
+            // Position in sequence of TextChar instances
             int charPos = stringToDesc(strIndex);
 
             if (charValue.equals(" ")) {
@@ -195,10 +195,10 @@ public abstract class WordScanner
     //--------------//
     /**
      * Knowing the char strIndex in string content, determine the
-     * related position in the sequence of OcrChar instances
+     * related position in the sequence of TextChar instances
      *
      * @param strIndex strIndex in contant
-     * @return position in sequence of OcrChar instances
+     * @return position in sequence of TextChar instances
      */
     protected abstract int stringToDesc (int strIndex);
 
@@ -209,14 +209,14 @@ public abstract class WordScanner
     /**
      * Class {@code ManualScanner} is a specific scanner using manual
      * text content, whose length may be different from the sequence of
-     * OcrChar instances.
+     * TextChar instances.
      */
     public static class ManualScanner
             extends WordScanner
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** Ratio of number of OcrChar instances / content length. */
+        /** Ratio of number of TextChar instances / content length. */
         private final double ratio;
 
         //~ Constructors -------------------------------------------------------
@@ -228,7 +228,7 @@ public abstract class WordScanner
          */
         public ManualScanner (String content,
                               boolean bySyllable,
-                              List<OcrChar> chars)
+                              List<TextChar> chars)
         {
             super(content, bySyllable, chars);
 
@@ -254,7 +254,7 @@ public abstract class WordScanner
     //------------//
     /**
      * Class {@code OcrScanner} is a basic scanner for which
-     * the sequence of OcrChar's is parallel to String content.
+     * the sequence of TextChar's is parallel to String content.
      *
      * @author Hervé Bitteur
      */
@@ -271,7 +271,7 @@ public abstract class WordScanner
          */
         public OcrScanner (String content,
                            boolean bySyllable,
-                           List<OcrChar> chars)
+                           List<TextChar> chars)
         {
             super(content, bySyllable, chars);
 

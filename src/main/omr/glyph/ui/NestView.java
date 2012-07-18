@@ -13,8 +13,7 @@ package omr.glyph.ui;
 
 import omr.glyph.Nest;
 import omr.glyph.facets.Glyph;
-import omr.glyph.text.OcrChar;
-import omr.glyph.text.OcrLine;
+import omr.text.TextChar;
 
 import omr.graph.DigraphView;
 
@@ -24,6 +23,8 @@ import omr.lag.Section;
 import omr.log.Logger;
 
 import omr.score.ui.PaintingParameters;
+
+import omr.text.TextWord;
 
 import omr.ui.util.UIUtilities;
 import omr.ui.view.RubberPanel;
@@ -223,10 +224,10 @@ public class NestView
                 if (glyph.isText()) {
                     if (ViewParameters.getInstance()
                                       .isLetterBoxPainting()) {
-                        OcrLine ocrLine = glyph.getOcrLine();
+                        TextWord word = glyph.getTextWord();
 
-                        if (ocrLine != null) {
-                            for (OcrChar ch : ocrLine.getChars()) {
+                        if (word != null) {
+                            for (TextChar ch : word.getChars()) {
                                 Rectangle b = ch.getBounds();
                                 g.drawRect(b.x, b.y, b.width, b.height);
                             }

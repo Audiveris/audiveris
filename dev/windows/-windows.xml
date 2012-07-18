@@ -13,13 +13,24 @@
         An initial '-' indicates an internal target.
     </description>
 
+    <!-- Workaround for COMMONPROGRAMFILES vs CommonProgramFiles -->
+    <condition property="use.upper">
+        <isset property="env.COMMONPROGRAMFILES" />
+    </condition>
+    <!--    <echo message="use.upper=${use.upper}" />-->
+    
+    <condition property="use.camel">
+        <isset property="env.CommonProgramFiles" />
+    </condition>
+    <!--    <echo message="use.camel=${use.camel}" />-->
+    
     <!-- ===  Public Targets  ============================================== -->
 
     <!-- =========================== -->
     <!--  W I N D O W S - E X E C S  -->
     <!-- =========================== -->
     <target name="windows-execs"
-            depends="audiveris-impl.jar, -bat, -exe, -exe-console, -no-windows-execs"
+            depends="jar, -bat, -exe, -exe-console, -no-windows-execs"
             if="${is.windows}"
             description="Build all Windows executables" />
 
@@ -43,7 +54,7 @@
     <!--  W I N D O W S - I N S T A L L E R  -->
     <!-- =================================== -->
     <target name="windows-installer"
-            depends="-wxs-generation, -do-installer, -wix-cleanup"
+            depends="windows-execs, -wxs-generation, -do-installer, -wix-cleanup"
             if="${is.windows}"
             description="Build Windows installer" />
     
@@ -95,8 +106,11 @@
     <!--  - D O - I N S T A L L E R  -->
     <!-- =========================== -->
     <target name="-do-installer"
-            depends="-get-msi-name"
+            depends="-get-msi-name, -get-upper-cpf, -get-camel-cpf"
             if="${is.windows}">
+
+        <echo message="Using CommonProgramFiles at ${cpf}" />
+        <echo message="Beware, this task takes a couple of minutes..." />
     
         <!-- wix task definition (et al.) -->
         <taskdef 
@@ -125,7 +139,7 @@
             <candleParameter name="myWww"          value="${www.dir}"/>
             <candleParameter name="myDll"          value="${dll.dir}"/>
             
-            <candleParameter name="myVC"           value="${env.COMMONPROGRAMFILES}/Merge Modules/Microsoft_VC90_CRT_x86.msm"/>
+            <candleParameter name="myVC"           value="${cpf}/Merge Modules/Microsoft_VC90_CRT_x86.msm"/>
             
             <candleArg line="-out ${dist.dir}\"/>        
             
@@ -189,6 +203,20 @@
     <!-- =========================== -->
     <target name="-get-msi-name">
         <property name="msi.name" value="${full.name}.${ant4hg.log.revision}.msi"/>        
+    </target>
+
+    <!-- ============================= -->
+    <!--  - G E T - U P P E R - C P F  -->
+    <!-- ============================= -->
+    <target name="-get-upper-cpf" if="use.upper">
+        <property name="cpf" value="${env.COMMONPROGRAMFILES}" />
+    </target>
+
+    <!-- ============================= -->
+    <!--  - G E T - C A M E L - C P F  -->
+    <!-- ============================= -->
+    <target name="-get-camel-cpf" if="use.camel">
+        <property name="cpf" value="${env.CommonProgramFiles}" />
     </target>
 
     <!-- =================================== -->

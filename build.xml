@@ -22,9 +22,6 @@
     <description>
         Build, test, and run the Audiveris project
     </description>
-
-    <!-- Import NetBeans implementation targets -->
-    <import file="nbproject/build-impl.xml"/>
     
     <!-- Create the time stamp -->
     <tstamp/>
@@ -49,7 +46,7 @@
             <include name="**/*.jar"/>
         </fileset>
     </path>        
-
+    
     <!-- Mercurial -->
     <condition property="hg.present" else="false">
         <available file="${hg.dir}" />
@@ -84,6 +81,9 @@
     
     <!-- Import for Mac, if any -->
     <import optional="true" file="dev/mac/-mac.xml" />
+
+    <!-- Import NetBeans implementation targets -->
+    <import file="nbproject/build-impl.xml"/>
     
     <!-- Needed for ant-contrib tasks -->
     <taskdef resource="net/sf/antcontrib/antlib.xml"
@@ -91,29 +91,12 @@
 
     <!-- ===  Public Targets  ============================================== -->
     
-    <!-- =============== -->
-    <!--  D E F A U L T  -->
-    <!-- =============== -->
-    <target name="default"
-            depends="audiveris-impl.default"
-            description="Build and test whole project." />
-
     <!-- =================== -->
     <!--  F U L L - D I S T  -->
     <!-- =================== -->
     <target name="full-dist"
             depends="clean, windows-execs"
             description="Build the full distribution">
-
-        <!-- Special copy for NetBeans -->
-        <copy
-            verbose="${verbose}"
-            todir="${basedir}">
-            <fileset dir="${basedir}">
-                <include name="build.xml" />
-            </fileset>
-            <globmapper from="build.xml" to="build-for-netbeans.xml"/>
-        </copy>
         
         <!-- Generate the global zip archive -->
         <zip 

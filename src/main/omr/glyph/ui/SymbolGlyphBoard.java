@@ -14,7 +14,7 @@ package omr.glyph.ui;
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
-import omr.glyph.text.TextRole;
+import omr.text.TextRole;
 
 import omr.log.Logger;
 
@@ -28,6 +28,9 @@ import omr.selection.MouseMovement;
 import omr.selection.UserEvent;
 
 import omr.sheet.ui.SheetsController;
+
+import omr.text.TextRoleInfo;
+import omr.text.TextWord;
 
 import omr.ui.field.LComboBox;
 import omr.ui.field.LDoubleField;
@@ -81,6 +84,9 @@ public class SymbolGlyphBoard
 
     /** ComboBox for text role type */
     private LComboBox<CreatorType> typeCombo;
+
+    /** Output : textual confidence */
+    protected LIntegerField confField;
 
     /** Input/Output : textual content */
     protected LTextField textField;
@@ -164,7 +170,8 @@ public class SymbolGlyphBoard
                 CreatorType.values());
         typeCombo.addActionListener(paramAction);
 
-        // Text field
+        // Confidence and Text fields
+        confField = new LIntegerField(false, "Conf", "Confidence in text value");
         textField = new LTextField(true, "Text", "Content of a textual glyph");
         textField.getField().setHorizontalAlignment(JTextField.LEFT);
 
@@ -175,7 +182,8 @@ public class SymbolGlyphBoard
         defineSpecificLayout();
 
         // Needed to process user input when RETURN/ENTER is pressed
-        getComponent().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).
+        getComponent().
+                getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).
                 put(KeyStroke.getKeyStroke("ENTER"), "TextAction");
         getComponent().getActionMap().put("TextAction", paramAction);
     }
@@ -230,6 +238,7 @@ public class SymbolGlyphBoard
                 if (roleCombo != null) {
                     if ((shape != null) && shape.isText()) {
                         selfUpdatingText = true;
+                        confField.setVisible(false);
                         textField.setVisible(true);
                         roleCombo.setVisible(true);
                         typeCombo.setVisible(false);
@@ -239,17 +248,24 @@ public class SymbolGlyphBoard
 
                         if (glyph.getTextValue() != null) {
                             textField.setText(glyph.getTextValue());
+                            // Related word?
+                            TextWord word = glyph.getTextWord();
+                            if (word != null) {
+                                confField.setValue(word.getConfidence());
+                                confField.setVisible(true);
+                            }
                         } else {
                             textField.setText("");
                         }
 
-                        if (glyph.getTextRole() != null) {
-                            roleCombo.setSelectedItem(glyph.getTextRole());
 
-                            if (glyph.getTextRole() == TextRole.Creator) {
+                        if (glyph.getTextRole() != null) {
+                            roleCombo.setSelectedItem(glyph.getTextRole().role);
+
+                            if (glyph.getTextRole().role == TextRole.Creator) {
                                 typeCombo.setVisible(true);
                                 typeCombo.setSelectedItem(
-                                        glyph.getCreatorType());
+                                        glyph.getTextRole().creatorType);
                             }
                         } else {
                             roleCombo.setSelectedItem(TextRole.UnknownRole);
@@ -257,6 +273,7 @@ public class SymbolGlyphBoard
 
                         selfUpdatingText = false;
                     } else {
+                        confField.setVisible(false);
                         textField.setVisible(false);
                         roleCombo.setVisible(false);
                         typeCombo.setVisible(false);
@@ -305,7 +322,7 @@ public class SymbolGlyphBoard
     /**
      * Define a specific layout for this Symbol GlyphBoard
      */
-    protected void defineSpecificLayout ()
+    private void defineSpecificLayout ()
     {
         int r = 1; // --------------------------------
         // Glyph ---
@@ -341,8 +358,11 @@ public class SymbolGlyphBoard
         // Text information, first line
 
         if (textField != null) {
-            builder.add(textField.getLabel(), cst.xyw(1, r, 1));
-            builder.add(textField.getField(), cst.xyw(3, r, 9));
+            builder.add(confField.getLabel(), cst.xyw(1, r, 1));
+            builder.add(confField.getField(), cst.xyw(3, r, 1));
+            confField.setVisible(false);
+            builder.add(textField.getLabel(), cst.xyw(5, r, 1));
+            builder.add(textField.getField(), cst.xyw(7, r, 5));
             textField.setVisible(false);
         }
 
@@ -413,13 +433,16 @@ public class SymbolGlyphBoard
                                 new Object[]{textField.getText().trim(),
                                              roleCombo.getSelectedItem()});
 
+                    CreatorType type = null;
                     TextRole role = roleCombo.getSelectedItem();
+                    if (role == TextRole.Creator) {
+                        type = typeCombo.getSelectedItem();
+                    }
+                    TextRoleInfo roleInfo = new TextRoleInfo(role, type);
                     SheetsController.getCurrentSheet().getSymbolsController().
                             asyncAssignTexts(
                             glyphs,
-                            ((role == TextRole.Creator)
-                             ? typeCombo.getSelectedItem() : null),
-                            role,
+                            roleInfo,
                             textField.getText());
                 } else // Custom time sig?
                 if (shape == Shape.CUSTOM_TIME_SIGNATURE) {
