@@ -11,10 +11,9 @@
 // </editor-fold>
 package omr.sheet.picture;
 
-import omr.constant.Constant;
-import omr.constant.ConstantSet;
-
 import omr.log.Logger;
+
+import omr.ui.symbol.TextFont;
 
 import omr.util.FileUtil;
 
@@ -44,11 +43,13 @@ import javax.imageio.stream.ImageInputStream;
 import javax.media.jai.JAI;
 
 /**
- * PictureLoader separates static methods for loading an image from a file
- * from the image processing methods in the Picture class. It leverages
- * the JAI, ImageIO, and PDF Renderer libraries. While loading, if possible,
- * empty info strings will be sent to the logger, incrementing the step monitor
- * to show loading progress.
+ * PictureLoader separates static methods for loading an image from a
+ * file from the image processing methods in the Picture class.
+ *
+ * It leverages the JAI, ImageIO, and PDF Renderer libraries.
+ *
+ * While loading, if possible, empty info strings will be sent to the logger,
+ * incrementing the step monitor to show loading progress.
  *
  * @author Hervé Bitteur
  * @author Brenton Partridge
@@ -59,9 +60,6 @@ public class PictureLoader
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(PictureLoader.class);
-
-    /** Specific application parameters */
-    private static final Constants constants = new Constants();
 
     //~ Constructors -----------------------------------------------------------
     /**
@@ -84,9 +82,9 @@ public class PictureLoader
      *
      * @param imgFile the image file to load
      * @param index   if not null, specifies (counted from 1) which single image
-     * is desired
+     *                is desired
      * @return a sorted map of RenderedImage's (often but not always a
-     * BufferedImage), guaranteed not to be null, index counted from 1.
+     *         BufferedImage), guaranteed not to be null, index counted from 1.
      * @throws IllegalArgumentException if file does not exist
      * @throws RuntimeException         if all libraries are unable to load the
      *                                  file
@@ -132,7 +130,7 @@ public class PictureLoader
      *
      * @param imgFile the input image file
      * @param index   if not null, specifies (counted from 1) which single image
-     * is desired
+     *                is desired
      * @return a map of images, or null if failed to load
      */
     private static SortedMap<Integer, RenderedImage> loadImageIO (File imgFile,
@@ -240,13 +238,13 @@ public class PictureLoader
      *
      * @param imgFile the input PDF file
      * @param index   if not null, specifies (counted from 1) which single image
-     * is desired
+     *                is desired
      * @return a map of images, or null if failed to load
      */
     private static SortedMap<Integer, RenderedImage> loadPDF (File imgFile,
                                                               Integer index)
     {
-        double res = constants.pdfScale.getValue();
+        double res = 1.0 / TextFont.TO_POINT;
 
         try {
             // set up the PDF reading
@@ -307,8 +305,8 @@ public class PictureLoader
                         images.put(i, img);
 
                         logger.info("{0} loaded image #{1} ({2} x {3})",
-                                    new Object[]{imgFile.getName(), i, img.
-                                    getWidth(), img.getHeight()});
+                                    imgFile.getName(), i,
+                                    img.getWidth(), img.getHeight());
                     }
                 }
 
@@ -325,19 +323,5 @@ public class PictureLoader
 
             return null;
         }
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        Constant.Ratio pdfScale = new Constant.Ratio(
-                4,
-                "Upscaling of PDF resolution from default dimensions");
     }
 }

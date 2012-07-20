@@ -11,18 +11,10 @@
 // </editor-fold>
 package omr.glyph.facets;
 
-import omr.lag.Section;
-
 import omr.score.common.PixelPoint;
 
-import omr.text.TextArea;
-import omr.text.TextChar;
-import omr.text.TextLine;
 import omr.text.TextRoleInfo;
 import omr.text.TextWord;
-
-import java.util.List;
-import java.util.SortedSet;
 
 /**
  * Interface {@code GlyphContent} defines a facet that deals with the
@@ -45,7 +37,6 @@ public interface GlyphContent
     String HYPHEN_STRING = "-";
 
     //~ Methods ----------------------------------------------------------------
-
     /**
      * Report the manually assigned text, if any.
      *
@@ -66,30 +57,9 @@ public interface GlyphContent
      * Return the corresponding text word for this glyph, if any.
      *
      * @return the related text word, null otherwise.
-     * @see #setTextWord(java.lang.String, omr.text.TextWord) 
+     * @see #setTextWord(java.lang.String, omr.text.TextWord)
      */
     TextWord getTextWord ();
-
-    /**
-     * Report a dummy content for this glyph (for lack of known content).
-     *
-     * @return an artificial text content, based on the enclosing sentence type
-     */
-    String getPseudoValue ();
-
-    /**
-     * Report the text area that contains this glyph.
-     *
-     * @return the text area for this glyph
-     */
-    TextArea getTextArea ();
-
-    /**
-     * Determine the uniform character height for this glyph.
-     *
-     * @return the standard character height in pixels
-     */
-    int getTextHeight ();
 
     /**
      * Report the text role of the textual glyph within the score.
@@ -113,27 +83,6 @@ public interface GlyphContent
      *         if any, or the ocr value otherwise.
      */
     String getTextValue ();
-
-    /**
-     * Launch the OCR on this glyph, to retrieve the TextLine
-     * instance(s) this glyph represents.
-     *
-     * @param language the probable language
-     *
-     * @return a list, not null but perhaps empty, of TextLine instances with
-     *         absolute coordinates.
-     */
-    List<TextLine> retrieveOcrLines (String language);
-
-    /**
-     * Retrieve the glyph sections that correspond to the collection of
-     * text char descriptors.
-     *
-     * @param chars the char descriptors
-     *
-     * @return the set of corresponding sections
-     */
-    SortedSet<Section> retrieveSections (List<TextChar> chars);
 
     /**
      * Manually assign a text meaning to the glyph.

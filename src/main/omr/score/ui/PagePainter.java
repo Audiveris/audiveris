@@ -757,15 +757,14 @@ public abstract class PagePainter
         try {
             g.setColor(defaultColor);
             TextLine sentence = text.getSentence();
-            float meanFontSize = sentence.getMeanFontSize();
 
             if (text instanceof LyricsItem) {
                 // Just print the single LyricsItem word (and not the full line)
-                paintWord(((LyricsItem) text).getWord(), meanFontSize);
+                paintWord(((LyricsItem) text).getWord());
             } else {
                 // Print the whole line
                 for (TextWord word : sentence.getWords()) {
-                    paintWord(word, meanFontSize);
+                    paintWord(word);
                 }
             }
         } catch (ConcurrentModificationException ignored) {
@@ -781,17 +780,18 @@ public abstract class PagePainter
     //-----------//
     // paintWord //
     //-----------//
-    private void paintWord (TextWord word,
-                            float meanFontSize)
+    private void paintWord (TextWord word)
     {
-        FontInfo fontInfo = word.getFontInfo();
-        
+        // Use precise word font size for long enough words
+        // But prefer mean line font size for too short words
         float fontSize = word.getChars().size() > 1
-                         ? word.getPreciseFontSize() 
-                         : meanFontSize;
-        Font font = TextFont.baseTextFont.deriveFont(fontSize);
+                         ? word.getPreciseFontSize()
+                         : word.getTextLine().getMeanFontSize();
+
+        Font font = new TextFont(word.getFontInfo()).deriveFont(fontSize);
         FontRenderContext frc = g.getFontRenderContext();
         TextLayout layout = new TextLayout(word.getValue(), font, frc);
+
         paint(layout, word.getLocation(), BASELINE_LEFT);
     }
 

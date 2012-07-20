@@ -15,8 +15,8 @@ import java.util.Arrays;
 
 /**
  * Class {@code InjectionSolver} handles the injection of a collection
- * of elements (called domain) into another collection of elements (called
- * range, or codomain).
+ * of elements (called domain) into another collection of elements 
+ * (called range, or codomain).
  *
  * <p>It finds a mapping that minimizes the global mapping distance, given
  * the individual distance for each domain/range elements pair. This
@@ -70,7 +70,8 @@ public class InjectionSolver
     // solve //
     //-------//
     /**
-     * Report (one of) the mapping(s) for which the global distance is minimum
+     * Report (one of) the mapping(s) for which the global distance is 
+     * minimum.
      *
      * @return an array parallel to the domain collection, which for each
      * (domain) element gives the mapped range element
@@ -117,7 +118,7 @@ public class InjectionSolver
 
                 int newCost = cost + distance.getDistance(id, ir);
 
-                //                System.out.println("ir=" + ir + " newCost=" + newCost);
+                /// System.out.println("ir=" + ir + " newCost=" + newCost);
                 if (id < (domainSize - 1)) {
                     inspect(id + 1, newCost);
                 } else if (newCost < bestCost) {
@@ -144,8 +145,8 @@ public class InjectionSolver
         //~ Methods ------------------------------------------------------------
 
         /**
-         * Report the distance when mapping element id of domain to element
-         * ir of range
+         * Report the distance when mapping element 'id' of domain to 
+         * element 'ir' of range
          *
          * @param id index of domain element
          * @param ir index of range element

@@ -50,7 +50,7 @@ public class CustomNumDenSymbol
      */
     protected CustomNumDenSymbol (boolean isIcon)
     {
-        super(isIcon, Shape.CUSTOM_TIME_SIGNATURE, true);
+        super(isIcon, Shape.CUSTOM_TIME, true);
     }
 
     //~ Methods ----------------------------------------------------------------

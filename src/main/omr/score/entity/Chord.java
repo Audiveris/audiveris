@@ -67,7 +67,6 @@ public class Chord
     /** Compare two chords (slot first, then ordinate) within a measure */
     private static final Comparator<TreeNode> chordComparator = new Comparator<TreeNode>()
     {
-
         @Override
         public int compare (TreeNode tn1,
                             TreeNode tn2)
@@ -85,7 +84,6 @@ public class Chord
      */
     public static Comparator<TreeNode> noteHeadComparator = new Comparator<TreeNode>()
     {
-
         @Override
         public int compare (TreeNode tn1,
                             TreeNode tn2)
@@ -101,7 +99,8 @@ public class Chord
                 logger.severe("Ordering notes from different chords");
             }
 
-            return n1.getChord().getStemDir() * (n2.getCenter().y - n1.getCenter().y);
+            return n1.getChord().getStemDir() * (n2.getCenter().y - n1.
+                                                 getCenter().y);
         }
     };
 
@@ -155,7 +154,6 @@ public class Chord
     private List<ChordStatement> chordStatements = new ArrayList<>();
 
     //~ Constructors -----------------------------------------------------------
-
     //-------//
     // Chord //
     //-------//
@@ -212,7 +210,7 @@ public class Chord
      * @param measure the containing measure
      * @param stem    the given stem
      * @return the collection of related chords, which may be empty if no chord
-     * is yet attached to this stem
+     *         is yet attached to this stem
      */
     public static List<Chord> getStemChords (Measure measure,
                                              Glyph stem)
@@ -269,7 +267,8 @@ public class Chord
 
             // Additional check on stem dir, if left & right agree
             if (left.getStemDir() == right.getStemDir()) {
-                if (chord.getStemDir() != left.getStemDir()) {
+                if (chord.getReferencePoint() == null
+                        || chord.getStemDir() != left.getStemDir()) {
                     continue;
                 }
             }
@@ -494,7 +493,6 @@ public class Chord
         SplitOrder order = checkTies(
                 new TieRelation()
                 {
-
                     @Override
                     public Note getDistantNote (Slur slur)
                     {
@@ -518,7 +516,6 @@ public class Chord
         order = checkTies(
                 new TieRelation()
                 {
-
                     @Override
                     public Note getDistantNote (Slur slur)
                     {
@@ -673,7 +670,7 @@ public class Chord
      * Report the number of augmentation dots that impact this chord
      *
      * @return the number of dots (should be the same for all notes within this
-     * chord)
+     *         chord)
      */
     public int getDotsNumber ()
     {
@@ -1098,7 +1095,7 @@ public class Chord
      * Define the number of augmentation dots that impact this chord
      *
      * @param dotsNumber the number of dots (should be the same for all notes
-     * within this chord)
+     *                   within this chord)
      */
     public void setDotsNumber (int dotsNumber)
     {
@@ -1205,7 +1202,8 @@ public class Chord
 
                     // Check the tied chords belong to the same measure
                     if (this.getMeasure() == chord.getMeasure()) {
-                        logger.fine(
+                        logger.
+                                fine(
                                 "{0} Ch#{1} extending voice#{2} to tied chord#{3}",
                                 new Object[]{contextString, id,
                                              voice.getId(),
@@ -1223,7 +1221,8 @@ public class Chord
             }
         } else if (this.voice != voice) {
             addError(
-                    "Chord. Attempt to reassign voice from " + this.voice.getId()
+                    "Chord. Attempt to reassign voice from " + this.voice.
+                    getId()
                     + " to " + voice.getId() + " in " + this);
         }
     }
@@ -1474,8 +1473,9 @@ public class Chord
         }
 
         if (distantChords.size() > 1) {
-            logger.fine("{0} Ch#{1} with multiple tied chords: {2}",
-                        new Object[]{getContextString(), getId(), distantChords});
+            logger.
+                    fine("{0} Ch#{1} with multiple tied chords: {2}",
+                         new Object[]{getContextString(), getId(), distantChords});
 
             // Prepare the split of this chord, using the most distant note from
             // chord head
@@ -1546,7 +1546,7 @@ public class Chord
                 tailLocation = headLocation;
             }
         } else {
-            logger.warning("No notes in chord " + this, new Throwable("Stack"));
+            addError("No notes in chord " + this);
         }
     }
 
@@ -1739,7 +1739,7 @@ public class Chord
         /**
          *
          * @param chord
-         * param alienNote
+         *              param alienNote
          */
         public SplitOrder (Chord chord,
                            Note alienNote)

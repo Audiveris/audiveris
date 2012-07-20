@@ -14,7 +14,6 @@ package omr.score.ui;
 import omr.constant.ConstantSet;
 
 import omr.text.Language;
-import omr.text.tesseract.TesseractOCR.OcrUnavailable;
 
 import omr.log.Logger;
 
@@ -32,6 +31,7 @@ import omr.sheet.Sheet;
 import omr.step.Step;
 import omr.step.Steps;
 
+import omr.text.OCR.UnavailableOcrException;
 import omr.text.TextBuilder;
 
 import omr.ui.FileDropHandler;
@@ -62,10 +62,11 @@ import javax.swing.event.ChangeListener;
 /**
  * Class {@code ScoreParameters} is a dialog that manages information
  * as both a display and possible input from user for major Score/Sheet
- * parameters such as:<ul>
+ * parameters such as:
+ * <ul>
  * <li>Call-stack printed on exception</li>
  * <li>Prompt for saving script on closing</li>
- * <li>Step trigerred by drag and drop</li>
+ * <li>Step triggerred by drag and drop</li>
  * <li>Max value for foreground pixels</li>
  * <li>Histogram threshold for staff lines detection</li>
  * <li>Abscissa margin for time slots</li>
@@ -126,7 +127,7 @@ public class ScoreParameters
         // Caution: The language pane needs Tesseract up & running
         try {
             panes.add(new LanguagePane());
-        } catch (OcrUnavailable ex) {
+        } catch (UnavailableOcrException ex) {
             logger.info("No language pane for lack of OCR");
         } catch (Throwable ex) {
             logger.warning("Error creating language pane", ex);

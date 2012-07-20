@@ -11,15 +11,18 @@
 // </editor-fold>
 package omr.ui.symbol;
 
-import java.awt.Dimension;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
+import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
+import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
+import omr.text.FontInfo;
 
 /**
  * Class {@code TextFont} is meant to simplify the use of text font for
@@ -45,27 +48,64 @@ public class TextFont
     public static final TextFont baseTextFont = new TextFont(
             constants.textFontSize.getValue());
 
-    /** (So far empirical) ratio between width and point values */
-    public static final float FONT_WIDTH_POINT_RATIO = 4.4f;
-
     /** Ratio from a 300 DPI scan to font point-size (72 pt/inch) */
     public static final float TO_POINT = 72f / 300f;
 
     //~ Constructors -----------------------------------------------------------
+    //
     //----------//
     // TextFont //
     //----------//
     /**
      * Creates a new TextFont object.
      *
-     * @param sizePts the point size of the {@code Font}
+     * @param name  the font name. This can be a font face name or a font
+     *              family name, and may represent either a logical font or a physical
+     *              font found in this {@code GraphicsEnvironment}.
+     * @param style bit-mask style constant for the {@code Font}
+     * @param size  the point size of the {@code Font}
      */
-    public TextFont (int sizePts)
+    public TextFont (String fontName,
+                     int style,
+                     int size)
     {
-        super(fontName, Font.PLAIN, sizePts);
+        super(fontName, style, size);
+    }
+
+    //----------//
+    // TextFont //
+    //----------//
+    /**
+     * Creates a font based on OCR font information.
+     *
+     * @param info OCR-based font information
+     */
+    public TextFont (FontInfo info)
+    {
+        this(info.isSerif
+             ? Font.SERIF
+             : (info.isMonospace
+                ? Font.MONOSPACED
+                : Font.SANS_SERIF),
+             (info.isBold ? Font.BOLD : 0) | (info.isItalic ? Font.ITALIC : 0),
+             info.pointsize);
+    }
+
+    //----------//
+    // TextFont //
+    //----------//
+    /**
+     * Creates a new TextFont object.
+     *
+     * @param size the point size of the {@code Font}
+     */
+    public TextFont (int size)
+    {
+        super(fontName, Font.PLAIN, size);
     }
 
     //~ Methods ----------------------------------------------------------------
+    //
     //-----------------//
     // computeFontSize //
     //-----------------//
@@ -73,57 +113,29 @@ public class TextFont
      * Convenient method to compute a font size using a string content
      * and dimension.
      *
-     * @param content the string value
-     * @param dim     string dimension in pixels
+     * @param content  the string value
+     * @param fontInfo OCR-based font information
+     * @param dim      string dimension in pixels
      * @return the computed font size
      */
     public static Float computeFontSize (String content,
+                                         FontInfo fontInfo,
                                          Dimension dim)
     {
         if (content == null) {
             return null;
         }
 
-        GlyphVector glyphVector = baseTextFont.createGlyphVector(frc, content);
+        Font font = new TextFont(fontInfo);
+        float fontSize = font.getSize2D();
+        GlyphVector glyphVector = font.createGlyphVector(frc, content);
         Rectangle2D basicRect = glyphVector.getVisualBounds();
 
         if (dim.width >= dim.height) {
-            return baseTextFont.getSize2D() * (dim.width
-                                               / (float) basicRect.getWidth());
+            return fontSize * (dim.width / (float) basicRect.getWidth());
         } else {
-            return baseTextFont.getSize2D() * (dim.height
-                                               / (float) basicRect.getHeight());
+            return fontSize * (dim.height / (float) basicRect.getHeight());
         }
-        //        Font        font = baseTextFont.deriveFont(
-        //            baseTextFont.getSize2D() * (width / (float) basicRect.getWidth()));
-        //
-        //        if (logger.isFineEnabled()) {
-        //            GlyphVector newVector = font.createGlyphVector(frc, content);
-        //            Rectangle2D rect = newVector.getVisualBounds();
-        //            logger.warning(
-        //                "TextInfo " + content + " width:" + width +
-        //                " basicRect.width:" + basicRect.getWidth() + " rect.width:" +
-        //                rect.getWidth() + " fontSize:" + (font.getSize2D() * TO_POINT));
-        //        }
-        //
-        //        return font.getSize2D() * TO_POINT;
-    }
-
-    //--------------//
-    // computeWidth //
-    //--------------//
-    /**
-     * Convenient method to report the width of a string in a given font
-     *
-     * @param content the string value
-     * @param font    the provided font
-     * @return the computed width
-     */
-    public static double computeWidth (String content,
-                                       Font font)
-    {
-        return font.getStringBounds(content, frc)
-                .getWidth() * FONT_WIDTH_POINT_RATIO;
     }
 
     //~ Inner Classes ----------------------------------------------------------

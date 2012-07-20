@@ -24,23 +24,24 @@ import omr.score.common.PixelPoint;
  * @author Hervé Bitteur
  */
 public class HeadBasedSlot
-    extends Slot
+        extends Slot
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** Abscissae of all glyphs */
+    /** Abscissae of all glyphs. */
     private Population xPop = new Population();
 
-    /** Ordinates of all glyphs */
+    /** Ordinates of all glyphs. */
     private Population yPop = new Population();
 
     //~ Constructors -----------------------------------------------------------
-
+    //
     //---------------//
     // HeadBasedSlot //
     //---------------//
     /**
      * Creates a new HeadBasedSlot object.
+     *
      * @param measure the containing measure
      */
     public HeadBasedSlot (Measure measure)
@@ -49,13 +50,14 @@ public class HeadBasedSlot
     }
 
     //~ Methods ----------------------------------------------------------------
-
+    //
     //----------//
     // addGlyph //
     //----------//
     /**
      * Insert a glyph (supposedly from a chord) into this slot,
-     * invalidating the internal computed data.
+     * invalidating the internal reference point.
+     *
      * @param glyph the glyph to insert
      */
     @Override
@@ -73,18 +75,14 @@ public class HeadBasedSlot
     //------//
     // getX //
     //------//
-    /**
-     * Report the abscissa of this slot.
-     * @return the slot abscissa, wrt the containing system (and not measure)
-     */
     @Override
     public int getX ()
     {
         if (refPoint == null) {
             if (xPop.getCardinality() > 0) {
                 refPoint = new PixelPoint(
-                    (int) Math.rint(xPop.getMeanValue()),
-                    (int) Math.rint(yPop.getMeanValue()));
+                        (int) Math.rint(xPop.getMeanValue()),
+                        (int) Math.rint(yPop.getMeanValue()));
             }
         }
 

@@ -287,11 +287,11 @@ public class SymbolGlyphBoard
                         timeDen.setVisible(true);
 
                         timeNum.setEnabled(
-                                shape == Shape.CUSTOM_TIME_SIGNATURE);
+                                shape == Shape.CUSTOM_TIME);
                         timeDen.setEnabled(
-                                shape == Shape.CUSTOM_TIME_SIGNATURE);
+                                shape == Shape.CUSTOM_TIME);
 
-                        TimeRational timeRational = (shape == Shape.CUSTOM_TIME_SIGNATURE)
+                        TimeRational timeRational = (shape == Shape.CUSTOM_TIME)
                                                     ? glyph.getTimeRational()
                                                     : TimeSignature.rationalOf(
                                 shape);
@@ -445,7 +445,7 @@ public class SymbolGlyphBoard
                             roleInfo,
                             textField.getText());
                 } else // Custom time sig?
-                if (shape == Shape.CUSTOM_TIME_SIGNATURE) {
+                if (shape == Shape.CUSTOM_TIME) {
                     int num = timeNum.getValue();
                     int den = timeDen.getValue();
 

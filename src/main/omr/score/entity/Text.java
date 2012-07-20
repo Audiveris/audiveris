@@ -19,8 +19,6 @@ import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.visitor.ScoreVisitor;
 
-import omr.sheet.SystemInfo;
-
 import omr.text.TextLine;
 import omr.text.TextRole;
 import omr.text.TextRoleInfo;
@@ -38,10 +36,10 @@ import java.awt.Font;
  * for each textual glyph.
  * The reason is that, except for lyrics, only the full sentence
  * is meaningful: for example "Ludwig van Beethoven" is meaningful as a Creator
- * Text, but the various glyphs "Ludwig", "van", "Beethoven" are not.
+ * Text, but the various words "Ludwig", "van", "Beethoven" are not.
  * For lyrics, since we can have very long sentences, and since the positioning
  * of every syllable must be done with precision, we handle one LyricsItem Text
- * entity per isolated textual glyph.</p>
+ * entity per isolated word.</p>
  *
  * <p>Working at the sentence level also allows a better accuracy in the setting
  * of parameters (such as baseline or font) for the whole sentence.</p>
@@ -64,9 +62,6 @@ public abstract class Text
     //
     /** The containing sentence. */
     private final TextLine sentence;
-
-    /** The font to render this text entity. TODO: check actual interest! */
-    protected Font font;
 
     //~ Constructors -----------------------------------------------------------
     //------//
@@ -101,11 +96,6 @@ public abstract class Text
 
         setBox(sentence.getBounds());
 
-        // Proper font ?
-        font = TextFont.baseTextFont.deriveFont(
-                (float) sentence.getMeanFontSize());
-
-        ///determineFontSize();
         logger.fine("Created {0}", this);
     }
 
@@ -282,30 +272,18 @@ public abstract class Text
         return sentence.getValue();
     }
 
-    //---------//
-    // getFont //
-    //---------//
-    /**
-     * Report the font to render this text
-     *
-     * @return the font to render this text
-     */
-    public Font getFont ()
-    {
-        return font;
-    }
-
-    //-------------//
-    // getFontSize //
-    //-------------//
+    //---------------------//
+    // getExportedFontSize //
+    //---------------------//
     /**
      * Report the font size to be exported for this text
      *
      * @return the exported font size
      */
-    public float getFontSize ()
+    public int getExportedFontSize ()
     {
-        return font.getSize2D();
+        // Round it to nearest integer
+        return (int) Math.rint(sentence.getMeanFontSize() * TextFont.TO_POINT);
     }
 
     //-------------//
@@ -346,10 +324,6 @@ public abstract class Text
         StringBuilder sb = new StringBuilder();
         sb.append("{Text").append(sentence.getRole());
         sb.append(internalsString());
-
-        if (font != null) {
-            sb.append(" font:").append(font.getSize());
-        }
 
         if (getContent() != null) {
             sb.append(" \"").append(getContent()).append("\"");

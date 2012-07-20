@@ -313,7 +313,8 @@ public class BarsRetriever
             // Detect systems of staves aggregated via barlines
             buildSystems();
         } catch (Exception ex) {
-            logger.warning(
+            logger.
+                    warning(
                     sheet.getLogPrefix() + "BarsRetriever cannot retrieveSystems",
                     ex);
         }
@@ -378,7 +379,8 @@ public class BarsRetriever
                         Point2D pStart = firstStaff.getFirstLine().getEndPoint(
                                 side);
                         StaffInfo lastStaff = system.getLastStaff();
-                        Point2D pStop = lastStaff.getLastLine().getEndPoint(side);
+                        Point2D pStop = lastStaff.getLastLine().
+                                getEndPoint(side);
 
                         // Dirty programming, sorry
                         if (limit instanceof Filament) {
@@ -467,7 +469,8 @@ public class BarsRetriever
                             new Object[]{
                                 system.getId(),
                                 system.getLimit(LEFT).getClass().getSimpleName(),
-                                system.getLimit(RIGHT).getClass().getSimpleName()
+                                system.getLimit(RIGHT).getClass().
+                                getSimpleName()
                             });
                 }
 
@@ -857,13 +860,27 @@ public class BarsRetriever
             // If alignment is almost empty, remove it
             // otherwise, try to fill the holes
             int filled = align.getFilledCount();
-            double ratio = (double) filled / staffCount;
 
-            if (ratio < constants.minAlignmentRatio.getValue()) {
+//            double ratio = (double) filled / staffCount;
+////            if (ratio < constants.minAlignmentRatio.getValue()) {
+//                // We remove this alignment and deassign its sticks
+//                logger.fine("{0}Removing {1}", sheet.getLogPrefix(), align);
+//                it.remove();
+//
+//                for (StickIntersection inter : align.getIntersections()) {
+//                    if (inter != null) {
+//                        inter.getStickAncestor().setShape(null);
+//                    }
+//                }
+//            } else if (filled != staffCount) {
+//                // TODO: Should implement driven recognition here...
+//                logger.info("{0}Should fill {1}", sheet.getLogPrefix(), align);
+//            }
+            
+            // Strict: we require all staves to have a barline in this alignment
+            if (filled < staffCount) {
                 // We remove this alignment and deassign its sticks
-                logger.info(
-                        "{0}Removing {1}",
-                        new Object[]{sheet.getLogPrefix(), align});
+                logger.fine("{0}Removing {1}", sheet.getLogPrefix(), align);
                 it.remove();
 
                 for (StickIntersection inter : align.getIntersections()) {
@@ -871,12 +888,7 @@ public class BarsRetriever
                         inter.getStickAncestor().setShape(null);
                     }
                 }
-            } else if (filled != staffCount) {
-                // TODO: Should implement driven recognition here...
-                logger.info(
-                        "{0}Should fill {1}",
-                        new Object[]{sheet.getLogPrefix(), align});
-            }
+            }            
         }
     }
 
@@ -1434,7 +1446,7 @@ public class BarsRetriever
      * @param system the system to process
      * @param side   the side to process
      * @return the bar info for the system side, or null if no consistency
-     * could be ensured
+     *         could be ensured
      */
     private BarInfo retrieveSystemBar (SystemInfo system,
                                        HorizontalSide side)

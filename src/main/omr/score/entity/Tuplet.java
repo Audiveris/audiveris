@@ -82,6 +82,7 @@ public class Tuplet
     //----------//
     /**
      * Used by SystemTranslator to allocate the tuplet instances.
+     *
      * @param glyph   underlying glyph
      * @param measure containing measure
      * @param point   location for the sign
@@ -99,10 +100,11 @@ public class Tuplet
 
         for (TreeNode node : measure.getChords()) {
             Chord chord = (Chord) node;
-
-            // No tuplet on a whole
-            if (!chord.isWholeDuration()) {
-                candidates.add(chord);
+            if (chord.getReferencePoint() != null) {
+                // No tuplet on a whole
+                if (!chord.isWholeDuration()) {
+                    candidates.add(chord);
+                }
             }
         }
 
@@ -161,22 +163,23 @@ public class Tuplet
     /**
      * Report the number of basic items governed by the tuplet A given chord may
      * represent several basic items (chords of base duration)
+     *
      * @param shape the tuplet shape
      * @return 3 or 6
      */
     private static int expectedCount (Shape shape)
     {
         switch (shape) {
-            case TUPLET_THREE:
-                return 3;
+        case TUPLET_THREE:
+            return 3;
 
-            case TUPLET_SIX:
-                return 6;
+        case TUPLET_SIX:
+            return 6;
 
-            default:
-                logger.severe("Incorrect tuplet shape");
+        default:
+            logger.severe("Incorrect tuplet shape");
 
-                return 0;
+            return 0;
         }
     }
 
@@ -286,22 +289,23 @@ public class Tuplet
     //-----------//
     /**
      * Report the tuplet factor that corresponds to the provided tuplet sign
+     *
      * @param glyph the tuplet sign
      * @return the related factor
      */
     private static DurationFactor getFactor (Glyph glyph)
     {
         switch (glyph.getShape()) {
-            case TUPLET_THREE:
-                return new DurationFactor(2, 3);
+        case TUPLET_THREE:
+            return new DurationFactor(2, 3);
 
-            case TUPLET_SIX:
-                return new DurationFactor(4, 6);
+        case TUPLET_SIX:
+            return new DurationFactor(4, 6);
 
-            default:
-                logger.severe("Incorrect tuplet glyph shape");
+        default:
+            logger.severe("Incorrect tuplet glyph shape");
 
-                return null;
+            return null;
         }
     }
 

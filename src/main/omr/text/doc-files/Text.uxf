@@ -25,7 +25,7 @@ bg=#ffffaa
       <x>150</x>
       <y>270</y>
       <w>130</w>
-      <h>210</h>
+      <h>260</h>
     </coordinates>
     <panel_attributes>*TextLine*
 bg=#ffffaa
@@ -35,6 +35,9 @@ dskOrigin
 --
 translate()
 getValue()
+getBounds()
+getBaseline()
+getConfidence()
 isLyrics()
 getFirstWord()
 addWords()
@@ -58,9 +61,9 @@ getSystemPart()</panel_attributes>
     <type>com.umlet.element.Class</type>
     <coordinates>
       <x>320</x>
-      <y>500</y>
+      <y>540</y>
       <w>130</w>
-      <h>140</h>
+      <h>120</h>
     </coordinates>
     <panel_attributes>*Glyph (Content)*
 bg=#aaffff
@@ -68,7 +71,6 @@ bg=#aaffff
 manualValue
 ocrLanguage
 --
-getPseudoValue()
 getTextLocation()
 getTextRole()
 getTextValue()</panel_attributes>
@@ -110,10 +112,10 @@ getValue()</panel_attributes>
       <x>360</x>
       <y>360</y>
       <w>50</w>
-      <h>160</h>
+      <h>200</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>30;140;30;30</additional_attributes>
+    <additional_attributes>30;180;30;30</additional_attributes>
   </element>
   <element>
     <type>com.umlet.element.Class</type>
@@ -200,7 +202,7 @@ getLocation()</panel_attributes>
     <type>com.umlet.element.Class</type>
     <coordinates>
       <x>490</x>
-      <y>500</y>
+      <y>540</y>
       <w>80</w>
       <h>50</h>
     </coordinates>
@@ -213,7 +215,7 @@ bg=#aaffff
     <type>com.umlet.element.Relation</type>
     <coordinates>
       <x>420</x>
-      <y>480</y>
+      <y>520</y>
       <w>90</w>
       <h>50</h>
     </coordinates>
@@ -250,9 +252,9 @@ bg=#eeffff
       <x>50</x>
       <y>290</y>
       <w>290</w>
-      <h>240</h>
+      <h>280</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;&lt;-</panel_attributes>
-    <additional_attributes>30;30;30;220;270;220</additional_attributes>
+    <additional_attributes>30;30;30;260;270;260</additional_attributes>
   </element>
 </diagram>

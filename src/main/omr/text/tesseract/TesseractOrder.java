@@ -256,42 +256,37 @@ public class TesseractOrder
 
                 // Start of line?
                 if (it.IsAtBeginningOf(Level.TEXTLINE)) {
-                    line = new TextLine(
-                            system,
-                            it.BoundingBox(Level.TEXTLINE),
-                            it.GetUTF8Text(Level.TEXTLINE).trim(),
-                            it.Baseline(Level.TEXTLINE),
-                            (int) it.Confidence(Level.TEXTLINE));
+                    line = new TextLine(system);
                     logger.fine("{0} {1}", label, line);
                     lines.add(line);
                 }
 
                 // Start of word?
                 if (it.IsAtBeginningOf(Level.WORD)) {
-                    FontInfo font = getFont(it.WordFontAttributes());
-                    if (font == null) {
-                        logger.fine("Null font on {0}", label);
+                    FontInfo fontInfo = getFont(it.WordFontAttributes());
+                    if (fontInfo == null) {
+                        logger.warning("No font info on {0}", label);
                         return null;
                     }
                     word = new TextWord(
                             it.BoundingBox(Level.WORD),
                             it.GetUTF8Text(Level.WORD),
                             it.Baseline(Level.WORD),
-                            (int) it.Confidence(Level.WORD),
-                            font,
+                            (int) Math.rint(it.Confidence(Level.WORD)),
+                            fontInfo,
                             line);
                     logger.fine("    {0}", word);
                     line.appendWord(word);
 
-                    //                        // Heuristic... (just to test)
-                    //                        boolean isDict = it.WordIsFromDictionary();
-                    //                        boolean isNumeric = it.WordIsNumeric();
-                    //                        boolean isLatin = encoder.canEncode(wordContent);
-                    //                        int conf = (int) Math.rint(it.Confidence(WORD));
-                    //                        int len = wordContent.length();
-                    //                        boolean isValid = isLatin
-                    //                                && (conf >= 80
-                    //                                    || (conf >= 50 && ((isDict && len > 1) || isNumeric)));
+                    // // Heuristic... (just to test)
+                    // boolean isDict = it.WordIsFromDictionary();
+                    // boolean isNumeric = it.WordIsNumeric();
+                    // boolean isLatin = encoder.canEncode(wordContent);
+                    // int conf = (int) Math.rint(it.Confidence(WORD));
+                    // int len = wordContent.length();
+                    // boolean isValid = isLatin
+                    //         && (conf >= 80
+                    //   || (conf >= 50 && ((isDict && len > 1) || isNumeric)));
                 }
 
                 // Char/symbol to be processed

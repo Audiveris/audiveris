@@ -77,7 +77,7 @@ public class TextPattern
             purgeWords(line);
 
             if (line.getWords().isEmpty()) {
-                logger.info("Removing sentence " + line);
+                logger.fine("Removing empty line");
                 toRemove.add(line);
             }
         }
@@ -121,10 +121,10 @@ public class TextPattern
                 continue;
             }
 
-            logger.info("Orphan text {0}", glyph.idString());
+            logger.fine("Orphan text {0}", glyph.idString());
 
             // Use OCR on this glyph
-            List<TextLine> lines = glyph.retrieveOcrLines(language);
+            List<TextLine> lines = textBuilder.retrieveOcrLine(glyph, language);
             if (lines != null) {
                 List<TextLine> newLines = textBuilder.recomposeLines(lines);
 

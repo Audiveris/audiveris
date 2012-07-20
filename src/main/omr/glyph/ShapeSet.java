@@ -71,7 +71,7 @@ public class ShapeSet
         TIME_SIX_EIGHT,
         COMMON_TIME,
         CUT_TIME,
-        CUSTOM_TIME_SIGNATURE);
+        CUSTOM_TIME);
 
     /** All sorts of F clefs */
     public static final EnumSet<Shape> BassClefs = EnumSet.of(

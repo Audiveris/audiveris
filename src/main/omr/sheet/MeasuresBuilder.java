@@ -167,7 +167,7 @@ public class MeasuresBuilder
                     } else {
                         // TODO
                         logger.warning("No intersection at index {0} in {1}",
-                                       new Object[]{is, align});
+                                       is, align);
                     }
                 }
 

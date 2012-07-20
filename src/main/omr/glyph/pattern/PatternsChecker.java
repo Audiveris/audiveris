@@ -84,7 +84,7 @@ public class PatternsChecker
             //            new TextAreaPattern(system), //   Glyphs -> Text
             //            new SentencePattern(system), // Text -> sentences
             new TextPattern(system),
-            new TextCheckerPattern(system), // Debug stuff
+            ///new TextCheckerPattern(system), // Debug stuff
 
             ///new ArticulationPattern(system),
 

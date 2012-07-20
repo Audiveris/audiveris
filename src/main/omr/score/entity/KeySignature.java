@@ -214,7 +214,7 @@ public class KeySignature
             Clef clef = getMeasure().getMeasureClefBefore(getCenter(), null);
 
             if (clef != null) {
-                return clefKind = clefKindOf(clef.getShape());
+                return clefKind = getClefKind(clef.getShape());
             }
 
             // Second, guess the clef based on key position
@@ -755,41 +755,6 @@ public class KeySignature
         return false;
     }
 
-    //------------//
-    // clefKindOf //
-    //------------//
-    /**
-     * Report the kind of the provided clef
-     *
-     * @param clef the provided clef
-     * @return the kind of the clef
-     */
-    private static Shape clefKindOf (Shape clef)
-    {
-        switch (clef) {
-        case G_CLEF:
-        case G_CLEF_SMALL:
-        case G_CLEF_8VA:
-        case G_CLEF_8VB:
-            return G_CLEF;
-
-        case C_CLEF:
-            return C_CLEF;
-
-        case F_CLEF:
-        case F_CLEF_SMALL:
-        case F_CLEF_8VA:
-        case F_CLEF_8VB:
-            return F_CLEF;
-
-        case PERCUSSION_CLEF:
-            return null;
-
-        default:
-            return null;
-        }
-    }
-
     //-------------//
     // clefToDelta //
     //-------------//
@@ -906,6 +871,7 @@ public class KeySignature
             return PERCUSSION_CLEF;
 
         default:
+            logger.severe("No base kind defined for clef {0}", shape);
             return null;
         }
     }

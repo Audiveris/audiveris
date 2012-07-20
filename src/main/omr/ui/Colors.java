@@ -90,7 +90,7 @@ public class Colors
     public static final Color RUBBER_RECT = Color.black;
 
     /** Rubber rule / cross */
-    public static final Color RUBBER_RULE = new Color(255, 200, 0, 100);
+    public static final Color RUBBER_RULE = new Color(255, 0, 0, 100);
 
     /** Unknown shape */
     public static final Color SHAPE_UNKNOWN = Color.red;

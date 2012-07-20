@@ -16,12 +16,12 @@ import omr.glyph.facets.Glyph;
 import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
 
 import omr.sheet.SystemInfo;
 
-import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -29,7 +29,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import omr.score.common.PixelRectangle;
 
 /**
  * Class {@code TextLine} defines a non-mutable structure to report all
@@ -74,14 +73,14 @@ public class TextLine
     /** Containing system. */
     private final SystemInfo system;
 
-    /** Deskewed origin. */
-    private Point2D dskOrigin;
-
     /** Words that compose this line. */
     private final List<TextWord> words = new ArrayList<>();
 
     /** Unmodifiable view of the words sequence. */
     private final List<TextWord> wordsView = Collections.unmodifiableList(words);
+
+    /** Deskewed origin. */
+    private Point2D dskOrigin;
 
     /**
      * Role of this text line.
@@ -100,21 +99,13 @@ public class TextLine
     /**
      * Creates a new TextLine object.
      *
-     * @param system     the containing system
-     * @param bounds     the line bounding box
-     * @param value      the string ascii value
-     * @param baseline   line baseline
-     * @param confidence OCR confidence in this line content
-     * @param words      the sequence of words
+     * @param system the containing system
+     * @param words  the sequence of words
      */
     public TextLine (SystemInfo system,
-                     Rectangle bounds,
-                     String value,
-                     Line2D baseline,
-                     Integer confidence,
                      List<TextWord> words)
     {
-        this(system, bounds, value, baseline, confidence);
+        this(system);
 
         this.words.addAll(words);
 
@@ -127,41 +118,16 @@ public class TextLine
     // TextLine //
     //----------//
     /**
-     * Creates a new TextLine object.
-     *
-     * @param system the containing system
-     * @param words  the sequence of words
-     */
-    public TextLine (SystemInfo system,
-                     List<TextWord> words)
-    {
-        this(system, boundsOf(words), valueOf(words), baselineOf(words),
-             confidenceOf(words), words);
-    }
-
-    //----------//
-    // TextLine //
-    //----------//
-    /**
      * Creates a new TextLine object, without its contained words which
      * are assumed to be added later.
      *
-     * @param system     the containing system
-     * @param bounds     the line bounding box
-     * @param value      the string ascii value
-     * @param baseline   line baseline
-     * @param confidence OCR confidence in this line content
+     * @param system the containing system
      */
-    public TextLine (SystemInfo system,
-                     Rectangle bounds,
-                     String value,
-                     Line2D baseline,
-                     Integer confidence)
+    public TextLine (SystemInfo system)
     {
-        super(bounds, value, baseline, confidence);
+        super(null, null, null, null);
 
         this.system = system;
-        dskOrigin = system.getSkew().deskewed(baseline.getP1());
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -192,13 +158,13 @@ public class TextLine
     public void addWords (Collection<TextWord> words)
     {
         this.words.addAll(words);
-        
+
         for (TextWord word : words) {
             word.setTextLine(this);
         }
-        
+
         Collections.sort(this.words, TextWord.byAbscissa);
-        
+
         invalidateCache();
     }
 
@@ -305,10 +271,9 @@ public class TextLine
     {
         if (dskOrigin == null) {
             Line2D base = getBaseline();
-            if (base == null) {
-                logger.warning("BINGO no baseline");
+            if (base != null) {
+                dskOrigin = system.getSkew().deskewed(base.getP1());
             }
-            dskOrigin = system.getSkew().deskewed(getBaseline().getP1());
         }
 
         return dskOrigin;

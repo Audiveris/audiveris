@@ -109,9 +109,13 @@ public enum TextRole
      * @return the role information inferred for the provided sentence glyph
      */
     public static TextRoleInfo guessRole (PixelRectangle box,
-                                   SystemInfo systemInfo,
-                                   Boolean isItalic)
+                                          SystemInfo systemInfo,
+                                          Boolean isItalic)
     {
+        if (box == null) {
+            return null;
+        }
+        
         Sheet sheet = systemInfo.getSheet();
         ScoreSystem system = systemInfo.getScoreSystem();
         Scale scale = system.getScale();

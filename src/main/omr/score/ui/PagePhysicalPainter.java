@@ -236,20 +236,25 @@ public class PagePhysicalPainter
             // Draw the stem (physical)
             if (chord.getStem() != null) {
                 final PixelPoint tail = chord.getTailLocation();
-                final PixelPoint head = new PixelPoint(chord.getHeadLocation());
+                final PixelPoint head = chord.getHeadLocation();
+                if (tail == null || head == null) {
+                    chord.addError("Missing head or tail for " + chord);
+                    return false;
+                }
+                final PixelPoint headCopy = new PixelPoint(head);
 
                 // Slightly correct the ordinate on head side
                 final int dyFix = scale.getInterline() / 4;
 
-                if (tail.y < head.y) {
+                if (tail.y < headCopy.y) {
                     // Stem up
-                    head.y -= dyFix;
+                    headCopy.y -= dyFix;
                 } else {
                     // Stem down
-                    head.y += dyFix;
+                    headCopy.y += dyFix;
                 }
 
-                g.drawLine(head.x, head.y, tail.x, tail.y);
+                g.drawLine(headCopy.x, headCopy.y, tail.x, tail.y);
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {

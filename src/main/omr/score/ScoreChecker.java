@@ -805,7 +805,7 @@ public class ScoreChecker
             if (vote != null) {
                 compound = system.addGlyph(compound);
                 compound.setEvaluation(vote);
-                logger.info("{0} merged two note heads", compound.idString());
+                logger.fine("{0} merged two note heads", compound.idString());
             }
         }
     }

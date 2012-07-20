@@ -62,7 +62,7 @@ import omr.score.visitor.AbstractScoreVisitor;
 
 import omr.sheet.Scale;
 
-import omr.ui.symbol.TextFont;
+import omr.text.FontInfo;
 
 import omr.util.OmrExecutors;
 import omr.util.TreeNode;
@@ -87,6 +87,7 @@ import proxymusic.Empty;
 import proxymusic.EmptyPrintStyle;
 import proxymusic.Encoding;
 import proxymusic.FontStyle;
+import proxymusic.FontWeight;
 import proxymusic.FormattedText;
 import proxymusic.Forward;
 import proxymusic.Harmony;
@@ -183,7 +184,6 @@ public class ScoreExporter
             getCachedLowExecutor().submit(
             new Callable<Void>()
             {
-
                 @Override
                 public Void call ()
                         throws Exception
@@ -239,7 +239,7 @@ public class ScoreExporter
      *
      * @param score the score to export (cannot be null)
      * @throws InterruptedException
-     * @throws  ExecutionException
+     * @throws ExecutionException
      */
     public ScoreExporter (Score score)
             throws InterruptedException, ExecutionException
@@ -292,11 +292,12 @@ public class ScoreExporter
     //--------//
     /**
      * Export the score to an output stream.
-     * 
-     * @param os the output stream where XML data is written (cannot be null)
+     *
+     * @param os              the output stream where XML data is written
+     *                        (cannot be null)
      * @param injectSignature should we inject our signature?
      * @throws IOException
-     * @throws Exception 
+     * @throws Exception
      */
     public void export (OutputStream os,
                         boolean injectSignature)
@@ -381,7 +382,8 @@ public class ScoreExporter
     public BigDecimal toTenths (double dist)
     {
         return new BigDecimal(
-                "" + (int) Math.rint((10f * dist) / current.scale.getInterline()));
+                "" + (int) Math.
+                rint((10f * dist) / current.scale.getInterline()));
     }
 
     //- All Visiting Methods ---------------------------------------------------
@@ -407,7 +409,8 @@ public class ScoreExporter
             //
             getNotations().getTiedOrSlurOrTuplet().add(pmArpeggiate);
         } catch (Exception ex) {
-            logger.warning(
+            logger.
+                    warning(
                     getClass().getSimpleName() + " Error visiting " + arpeggiate,
                     ex);
         }
@@ -438,7 +441,8 @@ public class ScoreExporter
                     AboveBelow.class);
             method.invoke(
                     element.getValue(),
-                    (articulation.getReferencePoint().y < current.note.getCenter().y)
+                    (articulation.getReferencePoint().y < current.note.
+                     getCenter().y)
                     ? AboveBelow.ABOVE : AboveBelow.BELOW);
 
             // Default-Y
@@ -450,7 +454,8 @@ public class ScoreExporter
             // Include in Articulations
             getArticulations().getAccentOrStrongAccentOrStaccato().add(element);
         } catch (Exception ex) {
-            logger.warning(
+            logger.
+                    warning(
                     getClass().getSimpleName() + " Error visiting " + articulation,
                     ex);
         }
@@ -634,16 +639,16 @@ public class ScoreExporter
                 insertStaffId(direction, staff);
 
                 // Placement
-                direction.setPlacement(
-                        (words.getReferencePoint().y < current.note.getCenter().y)
-                        ? AboveBelow.ABOVE : AboveBelow.BELOW);
+                direction.
+                         setPlacement(
+                         (words.getReferencePoint().y < current.note.getCenter().y)
+                         ? AboveBelow.ABOVE : AboveBelow.BELOW);
 
                 // default-y
                 pmWords.setDefaultY(yOf(words.getReferencePoint(), staff));
 
-                // font-size
-                pmWords.setFontSize(
-                        "" + (words.getText().getFontSize() * TextFont.TO_POINT));
+                // Font information
+                setFontInfo(pmWords, words.getText());
 
                 // relative-x
                 pmWords.setRelativeX(
@@ -690,8 +695,7 @@ public class ScoreExporter
             step.setDefaultY(yOf(words.getReferencePoint(), staff));
 
             // font-size
-            step.setFontSize(
-                    "" + (words.getText().getFontSize() * TextFont.TO_POINT));
+            step.setFontSize("" + words.getText().getExportedFontSize());
 
             // relative-x
             step.setRelativeX(
@@ -829,7 +833,8 @@ public class ScoreExporter
             pmFermata.setDefaultY(yOf(dot, current.note.getStaff()));
 
             // Type
-            pmFermata.setType(
+            pmFermata.
+                    setType(
                     (fermata.getShape() == Shape.FERMATA) ? UprightInverted.UPRIGHT
                     : UprightInverted.INVERTED);
             // Everything is now OK
@@ -868,7 +873,8 @@ public class ScoreExporter
                 keys.add(key);
             }
         } catch (Exception ex) {
-            logger.warning(
+            logger.
+                    warning(
                     getClass().getSimpleName() + " Error visiting " + keySignature,
                     ex);
         }
@@ -933,7 +939,8 @@ public class ScoreExporter
                 // Allocate Print
                 boolean printUsed = false;
                 current.pmPrint = factory.createPrint();
-                current.pmMeasure.getNoteOrBackupOrForward().add(current.pmPrint);
+                current.pmMeasure.getNoteOrBackupOrForward().
+                        add(current.pmPrint);
 
                 if (isFirst.system) {
                     // New page?
@@ -950,7 +957,8 @@ public class ScoreExporter
                                 omr.score.entity.Note.QUARTER_DURATION)));
                     } catch (Exception ex) {
                         if (score.getDurationDivisor() == null) {
-                            logger.warning(
+                            logger.
+                                    warning(
                                     "Not able to infer division value for part {0}",
                                     current.scorePart.getPid());
                         } else {
@@ -1003,7 +1011,8 @@ public class ScoreExporter
                             direction.getDirectionType().add(directionType);
 
                             // Use a dummy words element
-                            FormattedText pmWords = factory.createFormattedText();
+                            FormattedText pmWords = factory.
+                                    createFormattedText();
                             directionType.getWords().add(pmWords);
                             pmWords.setValue("");
 
@@ -1198,7 +1207,8 @@ public class ScoreExporter
                 for (omr.score.entity.Direction node : chord.getDirections()) {
                     node.accept(this);
                 }
-                for (omr.score.entity.ChordStatement node : chord.getChordStatements()) {
+                for (omr.score.entity.ChordStatement node : chord.
+                        getChordStatements()) {
                     node.accept(this);
                 }
             }
@@ -1378,7 +1388,8 @@ public class ScoreExporter
 
                         TextElementData pmText = factory.createTextElementData();
                         pmText.setValue(syllable.getContent());
-                        pmLyric.getElisionAndSyllabicAndText().add(getSyllabic(syllable.
+                        pmLyric.getElisionAndSyllabicAndText().
+                                add(getSyllabic(syllable.
                                 getSyllabicType()));
                         pmLyric.getElisionAndSyllabicAndText().add(pmText);
 
@@ -1484,7 +1495,8 @@ public class ScoreExporter
             pmPedal.setLine(YesNo.NO);
 
             // Start / Stop type
-            pmPedal.setType(
+            pmPedal.
+                    setType(
                     pedal.isStart() ? StartStopChange.START : StartStopChange.STOP);
 
             // Staff ?
@@ -1610,9 +1622,9 @@ public class ScoreExporter
             pmLyricFont.setFontFamily(lyricFont.getName());
             pmLyricFont.setFontSize(
                     "" + omr.score.entity.Text.getLyricsFontSize());
-            pmLyricFont.setFontStyle(
-                    (lyricFont.getStyle() == Font.ITALIC) ? FontStyle.ITALIC
-                    : FontStyle.NORMAL);
+            if (lyricFont.isItalic()) {
+                pmLyricFont.setFontStyle(FontStyle.ITALIC);
+            }
             defaults.getLyricFont().add(pmLyricFont);
             scorePartwise.setDefaults(defaults);
 
@@ -1665,7 +1677,8 @@ public class ScoreExporter
             } else {
                 // Need to build an artificial system scorePart
                 // Or simply delegating to the series of artificial measures
-                SystemPart dummyPart = system.getFirstRealPart().createDummyPart(
+                SystemPart dummyPart = system.getFirstRealPart().
+                        createDummyPart(
                         current.scorePart.getId());
                 dummyPart.accept(this);
             }
@@ -1834,12 +1847,14 @@ public class ScoreExporter
                 }
 
                 // Type
-                pmSlur.setType(
+                pmSlur.
+                        setType(
                         isStart ? StartStopContinue.START : StartStopContinue.STOP);
 
                 // Placement
                 if (isStart) {
-                    pmSlur.setPlacement(
+                    pmSlur.
+                            setPlacement(
                             slur.isBelow() ? AboveBelow.BELOW : AboveBelow.ABOVE);
                 }
 
@@ -1890,7 +1905,8 @@ public class ScoreExporter
                 ((Measure) node).accept(this);
             }
         } catch (Exception ex) {
-            logger.warning(
+            logger.
+                    warning(
                     getClass().getSimpleName() + " Error visiting " + systemPart,
                     ex);
         }
@@ -1958,8 +1974,9 @@ public class ScoreExporter
 
             FormattedText creditWords = factory.createFormattedText();
             creditWords.setValue(text.getContent());
-            creditWords.setFontSize(
-                    "" + (text.getFontSize() * TextFont.TO_POINT));
+
+            // Font information
+            setFontInfo(creditWords, text);
 
             // Position is wrt page
             PixelPoint pt = text.getReferencePoint();
@@ -2114,14 +2131,16 @@ public class ScoreExporter
             // Start or stop ?
             if (wedge.isStart()) {
                 // Type
-                pmWedge.setType(
+                pmWedge.
+                        setType(
                         (wedge.getShape() == Shape.CRESCENDO) ? WedgeType.CRESCENDO
                         : WedgeType.DIMINUENDO);
 
                 // Placement
-                direction.setPlacement(
-                        (wedge.getReferencePoint().y < current.note.getCenter().y)
-                        ? AboveBelow.ABOVE : AboveBelow.BELOW);
+                direction.
+                         setPlacement(
+                         (wedge.getReferencePoint().y < current.note.getCenter().y)
+                         ? AboveBelow.ABOVE : AboveBelow.BELOW);
 
                 // default-y
                 pmWedge.setDefaultY(yOf(wedge.getReferencePoint(), staff));
@@ -2148,6 +2167,36 @@ public class ScoreExporter
         }
 
         return true;
+    }
+
+    //-------------//
+    // setFontInfo //
+    //-------------//
+    private void setFontInfo (FormattedText formattedText,
+                              Text text)
+    {
+        FontInfo fontInfo = text.getSentence().getFirstWord().getFontInfo();
+        formattedText.setFontSize("" + text.getExportedFontSize());
+
+        // Family
+        if (fontInfo.isSerif) {
+            formattedText.setFontFamily("serif");
+        } else if (fontInfo.isMonospace) {
+            formattedText.setFontFamily("monospace");
+        } else {
+            formattedText.setFontFamily("sans-serif");
+        }
+
+        // Italic?
+        if (fontInfo.isItalic) {
+            formattedText.setFontStyle(FontStyle.ITALIC);
+        }
+
+        // Bold?
+        if (fontInfo.isBold) {
+            formattedText.setFontWeight(FontWeight.BOLD);
+        }
+
     }
 
     //-----//
@@ -2301,6 +2350,7 @@ public class ScoreExporter
 
         switch (shape) {
         case G_CLEF:
+        case G_CLEF_SMALL:
             pmClef.setSign(ClefSign.G);
 
             break;
@@ -2323,6 +2373,7 @@ public class ScoreExporter
             break;
 
         case F_CLEF:
+        case F_CLEF_SMALL:
             pmClef.setSign(ClefSign.F);
 
             break;
@@ -2345,6 +2396,7 @@ public class ScoreExporter
             break;
 
         default:
+            logger.severe("Clef shape not exported {0}", shape);
         }
 
         return pmClef;
@@ -2733,7 +2785,8 @@ public class ScoreExporter
         /** We are writing the first system in the current page */
         boolean system;
 
-        /** We are writing the first measure in current system (in current scorePart) */
+        /** We are writing the first measure in current system (in current
+         * scorePart) */
         boolean measure;
 
         //~ Methods ------------------------------------------------------------
@@ -2815,7 +2868,6 @@ public class ScoreExporter
                         list,
                         new Comparator<Clef>()
                         {
-
                             @Override
                             public int compare (Clef o1,
                                                 Clef o2)

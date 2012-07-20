@@ -285,6 +285,7 @@ public class TextWord
     {
         if (preciseFontSize == null) {
             preciseFontSize = TextFont.computeFontSize(getValue(),
+                                                       fontInfo,
                                                        getBounds().getSize());
         }
 

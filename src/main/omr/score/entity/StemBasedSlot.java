@@ -20,7 +20,7 @@ import omr.score.common.PixelPoint;
  * @author Hervé Bitteur
  */
 public class StemBasedSlot
-    extends Slot
+        extends Slot
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -29,25 +29,23 @@ public class StemBasedSlot
     //---------------//
     /**
      * Create a new StemBasedSlot object.
-     * @param measure the containing measure
-     * @param refPoint the slot reference point
+     *
+     * @param measure  the containing measure
+     * @param refPoint the slot reference point (the stem location)
      */
-    public StemBasedSlot (Measure    measure,
+    public StemBasedSlot (Measure measure,
                           PixelPoint refPoint)
     {
         super(measure);
+
         this.refPoint = new PixelPoint(refPoint);
     }
 
     //~ Methods ----------------------------------------------------------------
-
+    //
     //------//
     // getX //
     //------//
-    /**
-     * Report the abscissa of this slot.
-     * @return the slot abscissa, wrt the containing system (and not measure)
-     */
     @Override
     public int getX ()
     {

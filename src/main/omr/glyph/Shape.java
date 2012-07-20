@@ -521,7 +521,7 @@ public enum Shape {
     /** A glyph which is nothing but part of a larger glyph */
     GLYPH_PART("Part of a larger glyph"), 
     /** A time signature whose values are defined by the user */
-    CUSTOM_TIME_SIGNATURE, 
+    CUSTOM_TIME, 
     /**
      * Specific value, meaning that we have not been able to determine a
      * time signature shape

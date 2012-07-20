@@ -18,13 +18,10 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
-import omr.text.tesseract.TesseractOCR;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -56,7 +53,7 @@ public class Language
     static {
         File inputFile = new File(WellKnowns.RES_FOLDER, LANG_FILE_NAME);
         Properties langNames = new Properties();
-        
+
         try (InputStream input = new FileInputStream(inputFile)) {
             langNames.loadFromXML(input);
             for (String code : langNames.stringPropertyNames()) {
@@ -66,21 +63,20 @@ public class Language
             logger.severe("Error loading " + inputFile, ex);
         }
     }
-    
+
     //~ Constructors -----------------------------------------------------------
-    
     /** Not meant to be instantiated */
     private Language ()
     {
-    }    
+    }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------------------//
     // getDefaultLanguage //
     //--------------------//
     /**
      * Report the global default language code
+     *
      * @return the global default language code
      */
     public static String getDefaultLanguage ()
@@ -93,6 +89,7 @@ public class Language
     //--------//
     /**
      * Report the language name mapped to a language code
+     *
      * @param code the language code
      * @return the language full name, or null if unknown
      */
@@ -106,6 +103,7 @@ public class Language
     //--------------------//
     /**
      * Assign the new global default language code
+     *
      * @param code global default language code
      */
     public static void setDefaultLanguage (String code)
@@ -114,18 +112,16 @@ public class Language
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Constant.String defaultLanguageCode = new Constant.String(
-            "eng",
-            "3-letter code for the default sheet language");
+                "eng",
+                "3-letter code for the default sheet language");
     }
-
 }

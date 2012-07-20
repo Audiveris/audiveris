@@ -229,7 +229,7 @@ public class Symbols
 
         //        STEM?
         map(COMMON_TIME, 99);
-        sym.put(CUSTOM_TIME_SIGNATURE, new CustomNumDenSymbol());
+        sym.put(CUSTOM_TIME, new CustomNumDenSymbol());
         map(CUT_TIME, 67);
         map(C_CLEF, 66);
         map(DAL_SEGNO, 100);

@@ -122,15 +122,11 @@ public class TextScanner
         }
 
         // Perform OCR on image
-//        OCR.LayoutMode mode = system.getId() == 1
-//                              ? OCR.LayoutMode.MULTI_BLOCK
-//                              : OCR.LayoutMode.SINGLE_BLOCK;
-        OCR.LayoutMode mode = OCR.LayoutMode.MULTI_BLOCK;
         final List<TextLine> lines = TextBuilder.getOcr().recognize(
                 image,
                 bounds.getLocation(),
                 language,
-                mode,
+                OCR.LayoutMode.MULTI_BLOCK,
                 system,
                 "s" + system.getId());
 

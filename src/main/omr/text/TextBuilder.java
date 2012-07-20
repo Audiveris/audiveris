@@ -51,8 +51,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class {@code TextBuilder} provide helper features to check and build
- * text items, including calling the OCR engine.
+ * Class {@code TextBuilder} provide features to check, build and 
+ * reorganize text items, including interacting with the OCR engine.
  *
  * @author Hervé Bitteur
  */
@@ -141,82 +141,81 @@ public class TextBuilder
         return italicWords * 2 >= reliableWords;
     }
 
-    //---------//
-    // isValid //
-    //---------//
-    /**
-     * Check the ocr line with respect to the input glyph.
-     *
-     * @param glyph    the input glyph
-     * @param textLine the ocr output
-     * @return true if valid, false otherwise
-     */
-    public boolean isValid (Glyph glyph,
-                            TextLine textLine)
-    {
-        // Always trust the user
-        if (glyph.isText() && glyph.isManualShape()) {
-            return true;
-        }
-
-        // Check this is not a tuplet
-        if (textLine.getValue().equals("3")
-                && (glyph.getShape() == Shape.TUPLET_THREE)) {
-            logger.fine("This text is a tuplet 3 {0} {1}", textLine, glyph);
-
-            return false;
-        }
-
-        if (textLine.getValue().equals("6")
-                && (glyph.getShape() == Shape.TUPLET_SIX)) {
-            logger.fine("This text is a tuplet 6 {0} {1}", textLine, glyph);
-
-            return false;
-        }
-
-        // Check for abnormal characters
-        WrappedBoolean stripped = new WrappedBoolean(false);
-        XmlUtilities.stripNonValidXMLCharacters(textLine.getValue(), stripped);
-
-        if (stripped.isSet()) {
-            logger.fine("This text contains invalid characters {0} {1}",
-                        textLine, glyph);
-
-            return false;
-        }
-
-        // Check that aspect (height/width) is similar between ocr & glyph
-        //        if (textLine.getValue().length() <= constants.maxCharCountForAspectCheck.
-        //                getValue()) {
-        PixelRectangle box = textLine.getBounds();
-        String str = textLine.getValue();
-        Font font = TextFont.baseTextFont;
-        TextLayout layout = new TextLayout(str, font, frc);
-        Rectangle2D rect = layout.getBounds();
-        double xRatio = box.width / rect.getWidth();
-        double yRatio = box.height / rect.getHeight();
-        double aRatio = yRatio / xRatio;
-        logger.fine("{0} xRatio:{1} yRatio:{2} aRatio:{3}", textLine,
-                    (float) xRatio, (float) yRatio, aRatio);
-
-        // Sign of something wrong
-        if ((aRatio < constants.minAspectRatio.getValue())
-                || (aRatio > constants.maxAspectRatio.getValue())) {
-            logger.fine("Invalid {0} {1}", textLine, glyph);
-
-            return false;
-        }
-        //        }
-
-        // Check font size of each word
-        if (!isValidFontSize(textLine)) {
-            return false;
-        }
-
-        // All test are OK, so...
-        return true;
-    }
-
+//    //---------//
+//    // isValid //
+//    //---------//
+//    /**
+//     * Check the ocr line with respect to the input glyph.
+//     *
+//     * @param glyph    the input glyph
+//     * @param textLine the ocr output
+//     * @return true if valid, false otherwise
+//     */
+//    public boolean isValid (Glyph glyph,
+//                            TextLine textLine)
+//    {
+//        // Always trust the user
+//        if (glyph.isText() && glyph.isManualShape()) {
+//            return true;
+//        }
+//
+//        // Check this is not a tuplet
+//        if (textLine.getValue().equals("3")
+//                && (glyph.getShape() == Shape.TUPLET_THREE)) {
+//            logger.fine("This text is a tuplet 3 {0} {1}", textLine, glyph);
+//
+//            return false;
+//        }
+//
+//        if (textLine.getValue().equals("6")
+//                && (glyph.getShape() == Shape.TUPLET_SIX)) {
+//            logger.fine("This text is a tuplet 6 {0} {1}", textLine, glyph);
+//
+//            return false;
+//        }
+//
+//        // Check for abnormal characters
+//        WrappedBoolean stripped = new WrappedBoolean(false);
+//        XmlUtilities.stripNonValidXMLCharacters(textLine.getValue(), stripped);
+//
+//        if (stripped.isSet()) {
+//            logger.fine("This text contains invalid characters {0} {1}",
+//                        textLine, glyph);
+//
+//            return false;
+//        }
+//
+//        // Check that aspect (height/width) is similar between ocr & glyph
+//        //        if (textLine.getValue().length() <= constants.maxCharCountForAspectCheck.
+//        //                getValue()) {
+//        PixelRectangle box = textLine.getBounds();
+//        String str = textLine.getValue();
+//        Font font = TextFont.baseTextFont;
+//        TextLayout layout = new TextLayout(str, font, frc);
+//        Rectangle2D rect = layout.getBounds();
+//        double xRatio = box.width / rect.getWidth();
+//        double yRatio = box.height / rect.getHeight();
+//        double aRatio = yRatio / xRatio;
+//        logger.fine("{0} xRatio:{1} yRatio:{2} aRatio:{3}", textLine,
+//                    (float) xRatio, (float) yRatio, aRatio);
+//
+//        // Sign of something wrong
+//        if ((aRatio < constants.minAspectRatio.getValue())
+//                || (aRatio > constants.maxAspectRatio.getValue())) {
+//            logger.fine("Invalid {0} {1}", textLine, glyph);
+//
+//            return false;
+//        }
+//        //        }
+//
+//        // Check font size of each word
+//        if (!isValidFontSize(textLine)) {
+//            return false;
+//        }
+//
+//        // All test are OK, so...
+//        return true;
+//    }
     //---------//
     // isValid //
     //---------//
@@ -265,27 +264,27 @@ public class TextBuilder
     //---------//
     public boolean isValid (TextWord word)
     {
-        PixelRectangle box = word.getBounds();
-        String str = word.getValue();
-        Font font = TextFont.baseTextFont;
-        TextLayout layout = new TextLayout(str, font, frc);
-        Rectangle2D rect = layout.getBounds();
-        double xRatio = box.width / rect.getWidth();
-        double yRatio = box.height / rect.getHeight();
-        double aRatio = yRatio / xRatio;
-//        logger.fine("{0} xRatio:{1} yRatio:{2} aRatio:{3}", textLine,
-//                    (float) xRatio, (float) yRatio, aRatio);
-
-        // Sign of something wrong
-        if ((aRatio < constants.minAspectRatio.getValue())
-                || (aRatio > constants.maxAspectRatio.getValue())) {
-            logger.fine("      Invalid ratio {0} vs [{1}-{2}] for {3}",
-                        aRatio,
-                        constants.minAspectRatio.getValue(),
-                        constants.maxAspectRatio.getValue(), word);
-            return false;
-        }
-
+//        PixelRectangle box = word.getBounds();
+//        String str = word.getValue();
+//        Font font = new TextFont(word.getFontInfo());
+//        TextLayout layout = new TextLayout(str, font, frc);
+//        Rectangle2D rect = layout.getBounds();
+//        double xRatio = box.width / rect.getWidth();
+//        double yRatio = box.height / rect.getHeight();
+//        double aRatio = yRatio / xRatio;
+////        logger.fine("{0} xRatio:{1} yRatio:{2} aRatio:{3}", textLine,
+////                    (float) xRatio, (float) yRatio, aRatio);
+//
+//        // Sign of something wrong
+//        if ((aRatio < constants.minAspectRatio.getValue())
+//                || (aRatio > constants.maxAspectRatio.getValue())) {
+//            logger.fine("      Invalid ratio {0} vs [{1}-{2}] for {3}",
+//                        aRatio,
+//                        constants.minAspectRatio.getValue(),
+//                        constants.maxAspectRatio.getValue(), word);
+//            return false;
+//        }
+//
         return true;
     }
 
@@ -490,13 +489,22 @@ public class TextBuilder
     //-----------------//
     // retrieveOcrLine //
     //-----------------//
+    /**
+     * Launch the OCR on the provided glyph, to retrieve the TextLine
+     * instance(s) this glyph represents.
+     *
+     * @param glyph    the glyph to OCR
+     * @param language the probable language
+     * @return a list, not null but perhaps empty, of TextLine instances with
+     *         absolute coordinates.
+     */
     public List<TextLine> retrieveOcrLine (Glyph glyph,
                                            String language)
     {
         final String label = "s" + glyph.getSystem()
                 .getId() + "-g" + glyph.getId();
 
-        return TextBuilder.getOcr()
+        return getOcr()
                 .recognize(glyph.getImage(),
                            glyph.getBounds().getLocation(),
                            language,
@@ -997,7 +1005,7 @@ public class TextBuilder
     // switchLanguageTexts //
     //---------------------//
     /**
-     * Use a new language to update existing words when a better OCR 
+     * Use a new language to update existing words when a better OCR
      * result has been found.
      */
     public void switchLanguageTexts ()
@@ -1016,14 +1024,14 @@ public class TextBuilder
                              : system.
                     registerGlyph(system.buildTransientCompound(glyphs));
 
-            List<TextLine> lines = compound.retrieveOcrLines(language);
+            List<TextLine> lines = retrieveOcrLine(compound, language);
             if (lines == null || lines.size() != 1) {
                 logger.fine("{0} No valid replacement for {1}",
                             system.idString(), oldLine);
             } else {
                 TextLine newLine = lines.get(0);
                 recutStandardWords(newLine);
-                
+
                 if (logger.isFineEnabled()) {
                     logger.info("{0} refreshing {1} by {2}",
                                 system.idString(), oldLine, newLine);

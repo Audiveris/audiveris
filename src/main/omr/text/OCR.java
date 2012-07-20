@@ -38,8 +38,17 @@ public interface OCR
         SINGLE_BLOCK;
     }
 
+    /**
+     * Exception used to signal that no OCR is actually available.
+     */
+    static class UnavailableOcrException
+            extends RuntimeException
+    {
+    }
+    
     //~ Methods ----------------------------------------------------------------
     //
+
     /**
      * Report the set of supported language codes
      *

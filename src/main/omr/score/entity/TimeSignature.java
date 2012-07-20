@@ -59,7 +59,7 @@ public class TimeSignature
 
     static {
         for (Shape s : ShapeSet.FullTimes) {
-            if (s != CUSTOM_TIME_SIGNATURE) {
+            if (s != CUSTOM_TIME) {
                 TimeRational nd = rationalOf(s);
 
                 if (nd == null) {
@@ -386,7 +386,7 @@ public class TimeSignature
                 shape = predefinedShape(timeRational);
 
                 if (shape == null) {
-                    shape = Shape.CUSTOM_TIME_SIGNATURE;
+                    shape = Shape.CUSTOM_TIME;
                 }
             }
 
@@ -396,7 +396,7 @@ public class TimeSignature
             compound = systemInfo.addGlyph(compound);
             compound.setShape(shape, Evaluation.ALGORITHM);
 
-            if (shape == Shape.CUSTOM_TIME_SIGNATURE) {
+            if (shape == Shape.CUSTOM_TIME) {
                 compound.setTimeRational(timeRational);
             }
 
@@ -765,7 +765,7 @@ public class TimeSignature
 
                 if (theShape != null) {
                     if (ShapeSet.FullTimes.contains(theShape)) {
-                        TimeRational theRational = (theShape == CUSTOM_TIME_SIGNATURE)
+                        TimeRational theRational = (theShape == CUSTOM_TIME)
                                                    ? theGlyph.getTimeRational()
                                                    : rationalOf(theShape);
 

@@ -55,7 +55,6 @@ public abstract class Slot
     /** Chord comparator to sort chords vertically within the same slot */
     public static final Comparator<Chord> chordComparator = new Comparator<Chord>()
     {
-
         @Override
         public int compare (Chord c1,
                             Chord c2)
@@ -83,29 +82,31 @@ public abstract class Slot
     };
 
     //~ Instance fields --------------------------------------------------------
-    /** Id unique within the containing measure */
+    //
+    /** Id unique within the containing measure. */
     private int id;
 
-    /** Reference point of the slot */
+    /** Reference point of the slot. */
     protected PixelPoint refPoint;
 
-    /** The containing measure */
+    /** The containing measure. */
     @Navigable(false)
     protected Measure measure;
 
-    /** Collection of glyphs in the slot */
+    /** Collection of glyphs in the slot. */
     protected List<Glyph> glyphs = new ArrayList<>();
 
-    /** Cached margin for abscissa alignment */
+    /** Cached margin for abscissa alignment. */
     protected final int xMargin;
 
-    /** Collection of chords in this slot, sorted by staff, then by ordinate */
+    /** Chords in this slot, sorted by staff, then by ordinate. */
     private List<Chord> chords = new ArrayList<>();
 
-    /** Time offset since measure start */
+    /** Time offset since measure start. */
     private Rational startTime;
 
     //~ Constructors -----------------------------------------------------------
+    //
     //------//
     // Slot //
     //------//
@@ -124,6 +125,7 @@ public abstract class Slot
     }
 
     //~ Methods ----------------------------------------------------------------
+    //
     //-----------------//
     // dumpSystemSlots //
     //-----------------//
@@ -174,34 +176,17 @@ public abstract class Slot
         if (glyph.getShape().isMeasureRest()) {
             measure.addWholeChord(glyph);
         } else {
-            PixelPoint pt = null;
+            // Use the stem abscissa or the note abscissa, according to policy
+            PixelPoint pt = (policy == SlotPolicy.STEM_BASED
+                             && glyph.getStemNumber() == 1)
+                            ? glyph.getFirstStem().getAreaCenter()
+                            : glyph.getAreaCenter();
 
-            // Use the stem abscissa or the note abscissa
-            switch (policy) {
-            case STEM_BASED:
-
-                if (glyph.getStemNumber() == 1) {
-                    pt = glyph.getFirstStem().getAreaCenter();
-                }
-
-                break;
-
-            case HEAD_BASED:
-                pt = glyph.getAreaCenter();
-
-                break;
-            }
-
-            if (pt == null) {
-                pt = glyph.getAreaCenter();
-            }
-
-            // First look for a compatible slot
+            // First, look for a compatible slot
             for (Slot slot : measure.getSlots()) {
                 if (slot.isAlignedWith(pt)) {
                     if (logging) {
-                        logger.info("{0} Joining slot {1}", new Object[]{measure,
-                                                                         slot});
+                        logger.info("{0} Joining slot {1}", measure, slot);
                     }
 
                     slot.addGlyph(glyph);
@@ -211,25 +196,14 @@ public abstract class Slot
             }
 
             // No compatible slot found, so let's create a brand new one
-            Slot slot = null;
-
-            switch (policy) {
-            case STEM_BASED:
-                slot = new StemBasedSlot(measure, pt);
-
-                break;
-
-            case HEAD_BASED:
-                slot = new HeadBasedSlot(measure);
-
-                break;
-            }
+            Slot slot = (policy == SlotPolicy.STEM_BASED)
+                        ? new StemBasedSlot(measure, pt)
+                        : new HeadBasedSlot(measure);
 
             slot.addGlyph(glyph);
 
             if (logging) {
-                logger.info("{0} Creating new slot {1}", new Object[]{measure,
-                                                                      slot});
+                logger.info("{0} Creating new slot {1}", measure, slot);
             }
 
             measure.getSlots().add(slot);
@@ -244,7 +218,7 @@ public abstract class Slot
      *
      * @param glyph the glyph to insert
      */
-    public void addGlyph (Glyph glyph)
+    protected void addGlyph (Glyph glyph)
     {
         glyphs.add(glyph);
     }
@@ -290,11 +264,16 @@ public abstract class Slot
      */
     public void buildVoices (List<Chord> activeChords)
     {
+        // Safer
+        if (!allChordsHaveNotes()) {
+            return;
+        }
+
         // Sort chords vertically  within the slot
         Collections.sort(chords, chordComparator);
 
         logger.fine("buildVoices for Slot#{0} Actives={1} Chords={2}",
-                    new Object[]{getId(), activeChords, chords});
+                    getId(), activeChords, chords);
 
         // Use the active chords before this slot to compute start time
         computeStartTime(activeChords);
@@ -339,9 +318,8 @@ public abstract class Slot
             // Map new chord to an ending chord?
             if (index < endingChords.size()) {
                 Voice voice = endingChords.get(index).getVoice();
-                logger.fine("Slot#{0} Reusing voice#{1}", new Object[]{getId(),
-                                                                       voice.
-                            getId()});
+                logger.fine("Slot#{0} Reusing voice#{1}",
+                            getId(), voice.getId());
 
                 Chord ch = chords.get(i);
 
@@ -355,7 +333,7 @@ public abstract class Slot
             }
         }
 
-        // Assign remaining non-mapped chords, using 1st voice available
+        // Assign remaining non-mapped chords, using first voice available
         assignVoices(chords);
 
         // Purge collection of active chords for this slot
@@ -364,6 +342,26 @@ public abstract class Slot
         activeChords.removeAll(passingChords); // ?????
         activeChords.addAll(chords);
         Collections.sort(activeChords, chordComparator);
+    }
+
+    //--------------------//
+    // allChordsHaveNotes //
+    //--------------------//
+    /**
+     * Check that each of the chords have notes, and thus can be used
+     *
+     * @return true if OK
+     */
+    private boolean allChordsHaveNotes ()
+    {
+        for (Chord chord : chords) {
+            if (chord.getNotes().isEmpty()) {
+                chord.addError("Chord without note " + chord);
+                return false;
+            }
+        }
+
+        return true;
     }
 
     //-----------//
@@ -379,7 +377,7 @@ public abstract class Slot
     @Override
     public int compareTo (Slot other)
     {
-        return Integer.signum(getX() - other.getX());
+        return Integer.compare(getX(), other.getX());
     }
 
     //------//
@@ -388,7 +386,7 @@ public abstract class Slot
     /**
      * Report the abscissa of this slot.
      *
-     * @return the slot abscissa, wrt the page (and not measure)
+     * @return the slot abscissa (page-based, not measure-based)
      */
     public abstract int getX ();
 
@@ -408,7 +406,8 @@ public abstract class Slot
 
         // We look for the chord just above
         for (Chord chord : getChords()) {
-            if (chord.getHeadLocation().y < point.y) {
+            PixelPoint head = chord.getHeadLocation();
+            if (head != null && head.y < point.y) {
                 chordAbove = chord;
             } else {
                 break;
@@ -432,7 +431,8 @@ public abstract class Slot
     {
         // We look for the chord just below
         for (Chord chord : getChords()) {
-            if (chord.getHeadLocation().y > point.y) {
+            PixelPoint head = chord.getHeadLocation();
+            if (head != null && head.y > point.y) {
                 return chord;
             }
         }
@@ -512,10 +512,10 @@ public abstract class Slot
     // getStartTime //
     //--------------//
     /**
-     * Report the time offset of this time slot since the beginning of
+     * Report the time offset of this slot since the beginning of
      * the measure.
      *
-     * @return the time offset of this time slot.
+     * @return the time offset of this slot.
      */
     public Rational getStartTime ()
     {
@@ -593,9 +593,7 @@ public abstract class Slot
     public void setStartTime (Rational startTime)
     {
         if (this.startTime == null) {
-            logger.fine("setStartTime {0} for Slot #{1}", new Object[]{startTime,
-                                                                       getId()});
-
+            logger.fine("setStartTime {0} for Slot #{1}", startTime, getId());
             this.startTime = startTime;
 
             // Assign to all chords of this slot first
@@ -726,6 +724,9 @@ public abstract class Slot
         return sb.toString();
     }
 
+    //--------------//
+    // assignVoices //
+    //--------------//
     /**
      * Assign available voices to the chords that have yet no voice
      * assigned.
@@ -734,7 +735,7 @@ public abstract class Slot
      */
     private void assignVoices (Collection<Chord> chords)
     {
-        // Assign remaining non-mapped chords, using 1st voice available
+        // Assign remaining non-mapped chords, using first voice available
         for (Chord chord : chords) {
             // Process only the chords that have no voice assigned yet
             if (chord.getVoice() == null) {
@@ -748,8 +749,7 @@ public abstract class Slot
 
                 if (chord.getVoice() == null) {
                     logger.fine("{0} Slot#{1} creating voice for Ch#{2}",
-                                new Object[]{chord.getContextString(), id,
-                                             chord.getId()});
+                                chord.getContextString(), id, chord.getId());
 
                     // Add a new voice
                     new Voice(chord);
@@ -810,7 +810,7 @@ public abstract class Slot
             }
         }
 
-        // Not found, let's create it
+        // Not found, so let's create it
         Chord chord = new Chord(measure, this);
         chords.add(chord);
         chord.setStem(stem);
@@ -820,6 +820,7 @@ public abstract class Slot
     }
 
     //~ Inner Classes ----------------------------------------------------------
+    //
     //------------//
     // MyDistance //
     //------------//

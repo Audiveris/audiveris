@@ -482,7 +482,7 @@ public class SystemTranslator
                 purging = false;
 
                 // Allocate proper chords in every slot
-                measure.getChords().clear();
+                measure.getChords().retainAll(measure.getWholeChords());
 
                 int id = 0;
 
@@ -508,9 +508,9 @@ public class SystemTranslator
                         if (!stems.isEmpty()) {
                             logger.fine(
                                     "{0} merging slots #{1} & #{2} around {3}",
-                                    new Object[]{measure.getContextString(),
-                                                 prevSlot.getId(), slot.getId(),
-                                                 Glyphs.toString("stems", stems)});
+                                    measure.getContextString(),
+                                    prevSlot.getId(), slot.getId(),
+                                    Glyphs.toString("stems", stems));
 
                             prevSlot.includeSlot(slot);
                             it.remove();
@@ -728,7 +728,8 @@ public class SystemTranslator
             if (stem != null) {
                 super.computeLocation(stem);
             } else {
-                system.addError(
+                system.
+                        addError(
                         glyph,
                         "Flag glyph " + glyph.getId() + " with no attached stem");
                 super.computeLocation(glyph);

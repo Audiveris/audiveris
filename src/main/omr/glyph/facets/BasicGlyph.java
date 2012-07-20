@@ -39,9 +39,6 @@ import omr.score.entity.TimeRational;
 import omr.sheet.SystemInfo;
 
 import omr.text.BasicContent;
-import omr.text.TextChar;
-import omr.text.TextLine;
-import omr.text.TextArea;
 import omr.text.TextRoleInfo;
 import omr.text.TextWord;
 
@@ -55,7 +52,6 @@ import java.awt.image.BufferedImage;
 import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -502,13 +498,6 @@ public class BasicGlyph
     }
 
     @Override
-    public String getPseudoValue ()
-    {
-        return getContent()
-                   .getPseudoValue();
-    }
-
-    @Override
     public Point2D getRectangleCentroid (PixelRectangle absRoi)
     {
         return alignment.getRectangleCentroid(absRoi);
@@ -588,20 +577,6 @@ public class BasicGlyph
     public SystemInfo getSystem ()
     {
         return environment.getSystem();
-    }
-
-    @Override
-    public TextArea getTextArea ()
-    {
-        return getContent()
-                   .getTextArea();
-    }
-
-    @Override
-    public int getTextHeight ()
-    {
-        return getContent()
-                   .getTextHeight();
     }
 
     @Override
@@ -811,20 +786,6 @@ public class BasicGlyph
     public void resetEvaluation ()
     {
         recognition.resetEvaluation();
-    }
-
-    @Override
-    public List<TextLine> retrieveOcrLines (String language)
-    {
-        return getContent()
-                   .retrieveOcrLines(language);
-    }
-
-    @Override
-    public SortedSet<Section> retrieveSections (List<TextChar> chars)
-    {
-        return getContent()
-                   .retrieveSections(chars);
     }
 
     @Override

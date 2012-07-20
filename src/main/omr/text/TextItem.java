@@ -45,7 +45,10 @@ public abstract class TextItem
     public TextItem (Rectangle bounds,
                      String value)
     {
-        this.bounds = new PixelRectangle(bounds);
+        if (bounds != null) {
+            this.bounds = new PixelRectangle(bounds);
+        }
+        
         this.value = value;
     }
 

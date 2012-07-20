@@ -118,7 +118,7 @@ public class TesseractOCR
                 return new TreeSet<>(Arrays.asList(langs));
             } catch (Throwable ex) {
                 logger.warning("Error in loading languages", ex);
-                throw new OcrUnavailable();
+                throw new UnavailableOcrException();
             }
         }
 
@@ -192,7 +192,7 @@ public class TesseractOCR
             return null;
         } catch (UnsatisfiedLinkError ex) {
             logger.warning("OCR link error", ex);
-            throw new OcrUnavailable();
+            throw new UnavailableOcrException();
         }
     }
 
@@ -214,17 +214,6 @@ public class TesseractOCR
         case SINGLE_BLOCK:
             return SegmentationMode.SINGLE_BLOCK;
         }
-    }
-
-    //----------------//
-    // OcrUnavailable //
-    //----------------//
-    /**
-     * Exception used to signal that no OCR is actually available.
-     */
-    public static class OcrUnavailable
-            extends RuntimeException
-    {
     }
 
     //-----------//
