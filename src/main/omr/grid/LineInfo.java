@@ -20,6 +20,7 @@ import omr.util.HorizontalSide;
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
 import java.util.Collection;
+import omr.math.Line;
 
 /**
  * Interface {@code LineInfo} describes the handling of one staff line.
@@ -32,12 +33,14 @@ public interface LineInfo
 
     /**
      * Report the absolute contour rectangle
+     *
      * @return the contour box (with minimum height of 1)
      */
     public PixelRectangle getBounds ();
 
     /**
      * Selector for the left or right ending point of the line
+     *
      * @param side proper horizontal side
      * @return left point
      */
@@ -45,36 +48,42 @@ public interface LineInfo
 
     /**
      * Report the id of this line
+     *
      * @return the line id (debugging info)
      */
     public int getId ();
 
     /**
      * Selector for the left point of the line
+     *
      * @return left point
      */
     public Point2D getLeftPoint ();
 
     /**
      * Selector for the right point of the line
+     *
      * @return right point
      */
     public Point2D getRightPoint ();
 
     /**
      * Report the lag sections that compose the staff line
+     *
      * @return a collection of the line sections
      */
     public Collection<Section> getSections ();
 
     /**
      * Paint the computed line on the provided environment.
-     * @param g     the graphics context
+     *
+     * @param g the graphics context
      */
     public void render (Graphics2D g);
 
     /**
-     * Retrieve the staff line ordinate at given abscissa x, using int values
+     * Retrieve the staff line ordinate at given abscissa x, using int
+     * values
      *
      * @param x the given abscissa
      * @return the corresponding y value
@@ -82,10 +91,19 @@ public interface LineInfo
     public int yAt (int x);
 
     /**
-     * Retrieve the staff line ordinate at given abscissa x, using double values
+     * Retrieve the staff line ordinate at given abscissa x, using
+     * double values
      *
      * @param x the given abscissa
      * @return the corresponding y value
      */
     public double yAt (double x);
+
+    /**
+     * Retrieve the precise intersection with a rather vertical line.
+     *
+     * @param vertical the rather vertical line
+     * @return the precise intersection
+     */
+    public Point2D verticalIntersection (Line vertical);
 }

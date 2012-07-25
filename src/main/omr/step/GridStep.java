@@ -11,18 +11,13 @@
 // </editor-fold>
 package omr.step;
 
-import omr.Main;
-
-import omr.grid.GridBuilder;
-
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import java.util.Collection;
 
 /**
- * Class {@code GridStep} determine the systems frames of the picture.
- * This is a temporary attempt, to be evaluated and refined is successful.
+ * Class {@code GridStep} determine the systems frames of a sheet.
  *
  * @author Hervé Bitteur
  */
@@ -58,6 +53,6 @@ public class GridStep
                       Sheet                  sheet)
         throws StepException
     {
-        new GridBuilder(sheet).buildInfo();
+        sheet.getGridBuilder().buildInfo();
     }
 }

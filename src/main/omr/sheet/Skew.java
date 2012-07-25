@@ -39,14 +39,14 @@ public class Skew
     private final double deskewedHeight;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new Skew object.
+     *
      * @param slope the sheet global slope
      * @param sheet the related sheet
      */
     public Skew (double slope,
-                 Sheet  sheet)
+                 Sheet sheet)
     {
         this.slope = slope;
 
@@ -57,13 +57,13 @@ public class Skew
         at = AffineTransform.getRotateInstance(deskewAngle);
 
         // Origin translation for deskew
-        int     w = sheet.getWidth();
-        int     h = sheet.getHeight();
+        int w = sheet.getWidth();
+        int h = sheet.getHeight();
         Point2D topRight = at.transform(new Point2D.Double(w, 0), null);
         Point2D bottomLeft = at.transform(new Point2D.Double(0, h), null);
         Point2D bottomRight = at.transform(new Point2D.Double(w, h), null);
-        double  dx = 0;
-        double  dy = 0;
+        double dx = 0;
+        double dy = 0;
 
         if (deskewAngle <= 0) { // Counter-clockwise deskew
             deskewedWidth = bottomRight.getX();
@@ -79,13 +79,13 @@ public class Skew
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // deskewed //
     //----------//
     /**
      * Apply rotation OPPOSITE to the measured global angle and use the
      * new sheet origin.
+     *
      * @param point the initial (skewed) point
      * @return the deskewed point
      */
@@ -99,6 +99,7 @@ public class Skew
     //----------//
     /**
      * Report the skew angle.
+     *
      * @return the angle value, expressed in radians
      */
     public double getAngle ()

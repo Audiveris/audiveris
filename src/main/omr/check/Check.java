@@ -51,7 +51,6 @@ public abstract class Check<C extends Checkable>
     public static final int GREEN = 1;
 
     //~ Instance fields --------------------------------------------------------
-
     /**
      * Specifies the FailureResult to be assigned to the Checkable object, if
      * the result of the check end in the RED range.
@@ -83,26 +82,25 @@ public abstract class Check<C extends Checkable>
     private Constant.Double high;
 
     //~ Constructors -----------------------------------------------------------
-
     //-------//
     // Check //
     //-------//
     /**
      * Creates a new Check object.
      *
-     * @param name short name for this check
+     * @param name        short name for this check
      * @param description longer description
-     * @param low lower bound of orange zone
-     * @param high upper bound of orange zone
-     * @param covariant true if higher is better, false otherwise
-     * @param redResult result code to be assigned when result is RED
+     * @param low         lower bound of orange zone
+     * @param high        upper bound of orange zone
+     * @param covariant   true if higher is better, false otherwise
+     * @param redResult   result code to be assigned when result is RED
      */
-    protected Check (String          name,
-                     String          description,
+    protected Check (String name,
+                     String description,
                      Constant.Double low,
                      Constant.Double high,
-                     boolean         covariant,
-                     FailureResult   redResult)
+                     boolean covariant,
+                     FailureResult redResult)
     {
         this.name = name;
         this.description = description;
@@ -115,7 +113,6 @@ public abstract class Check<C extends Checkable>
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------------//
     // getDescription //
     //----------------//
@@ -211,7 +208,7 @@ public abstract class Check<C extends Checkable>
     // pass //
     //------//
     /**
-     * Actually run the check on the provided object, and return the result.  As
+     * Actually run the check on the provided object, and return the result. As
      * a side-effect, a check that totally fails (RED result) assigns this
      * failure into the candidate object.
      *
@@ -221,11 +218,11 @@ public abstract class Check<C extends Checkable>
      *
      * @return the result composed of the numerical value, plus a flag ({@link
      * #RED}, {@link #ORANGE}, {@link #GREEN}) that characterizes the result of
-     * passing the check on this object
+     *         passing the check on this object
      */
-    public CheckResult pass (C           obj,
+    public CheckResult pass (C obj,
                              CheckResult result,
-                             boolean     update)
+                             boolean update)
     {
         if (result == null) {
             result = new CheckResult();
@@ -269,7 +266,7 @@ public abstract class Check<C extends Checkable>
      * Allows to set the pair of low and high value. They are set in one shot to
      * allow the sanity check of 'low' less than or equal to 'high'
      *
-     * @param low the new low value
+     * @param low  the new low value
      * @param high the new high value
      */
     public void setLowHigh (Constant.Double low,
@@ -291,13 +288,13 @@ public abstract class Check<C extends Checkable>
     {
         StringBuilder sb = new StringBuilder(128);
         sb.append("{Check ")
-          .append(name);
+                .append(name);
         sb.append(" Covariant:")
-          .append(covariant);
+                .append(covariant);
         sb.append(" Low:")
-          .append(low);
+                .append(low);
         sb.append(" High:")
-          .append(high);
+                .append(high);
         sb.append("}");
 
         return sb.toString();
@@ -323,13 +320,12 @@ public abstract class Check<C extends Checkable>
     {
         if (low.getValue() > high.getValue()) {
             logger.severe(
-                "Illegal low {0} high {1} range for {2}",
-                new Object[] { low.getValue(), high.getValue(), this });
+                    "Illegal low {0} high {1} range for {2}",
+                    low.getValue(), high.getValue(), this);
         }
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-------//
     // Grade //
     //-------//
@@ -337,7 +333,7 @@ public abstract class Check<C extends Checkable>
      * A subclass of Constant.Double, meant to store a check result grade.
      */
     public static class Grade
-        extends Constant.Double
+            extends Constant.Double
     {
         //~ Constructors -------------------------------------------------------
 
@@ -347,7 +343,7 @@ public abstract class Check<C extends Checkable>
          * @param defaultValue the (double) default value
          * @param description  the semantic of the constant
          */
-        public Grade (double           defaultValue,
+        public Grade (double defaultValue,
                       java.lang.String description)
         {
             super("Grade", defaultValue, description);

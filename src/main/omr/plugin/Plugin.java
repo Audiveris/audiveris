@@ -85,6 +85,7 @@ public class Plugin
      * @param file related javascript file
      */
     public Plugin (File file)
+            throws JavascriptUnavailableException
     {
         this.file = file;
 
@@ -260,21 +261,26 @@ public class Plugin
      * Evaluate the plugin script to get precise information built.
      */
     private void evaluateScript ()
+            throws JavascriptUnavailableException
     {
         ScriptEngineManager mgr = new ScriptEngineManager();
         engine = mgr.getEngineByName("JavaScript");
 
-        try {
-            InputStream is = new FileInputStream(file);
-            Reader reader = new InputStreamReader(is, WellKnowns.encoding);
-            engine.eval(reader);
+        if (engine != null) {
+            try {
+                InputStream is = new FileInputStream(file);
+                Reader reader = new InputStreamReader(is, WellKnowns.encoding);
+                engine.eval(reader);
 
-            // Retrieve information from script
-            title = (String) engine.get("pluginTitle");
-            tip = (String) engine.get("pluginTip");
-        } catch (FileNotFoundException | UnsupportedEncodingException |
-                 ScriptException ex) {
-            logger.warning(this + " error", ex);
+                // Retrieve information from script
+                title = (String) engine.get("pluginTitle");
+                tip = (String) engine.get("pluginTip");
+            } catch (FileNotFoundException | UnsupportedEncodingException |
+                     ScriptException ex) {
+                logger.warning(this + " error", ex);
+            }
+        } else {
+            throw new JavascriptUnavailableException();
         }
     }
 

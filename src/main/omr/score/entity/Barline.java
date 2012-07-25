@@ -98,8 +98,8 @@ public class Barline
     //------------//
     /**
      * Normally, shape should be inferred from the signature of stick
-     * combination that compose the bar line, so this method is provided only
-     * for the (rare) cases when we want to force the bar line shape.
+     * combination that compose the bar line, so this method is provided
+     * only for the (rare) cases when we want to force the barline shape
      *
      * @param shape the forced shape
      */
@@ -221,8 +221,8 @@ public class Barline
     // render //
     //--------//
     /**
-     * Render the bar contour, with proper strokes according to the thickness of
-     * each barline component
+     * Render the bar contour, with proper strokes according to the 
+     * thickness of each barline component
      *
      * @param g the graphics context
      */

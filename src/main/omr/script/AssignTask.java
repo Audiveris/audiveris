@@ -24,8 +24,8 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlAttribute;
 
 /**
- * Class {@code AssignTask} assigns (or deassign) a shape to a collection of
- * glyphs.
+ * Class {@code AssignTask} assigns (or deassign) a shape to a
+ * collection of glyphs.
  *
  * <p>Il the compound flag is set, a compound glyph is composed from the
  * provided glyphs and assigned the shape. Otherwise, each provided glyph is
@@ -34,7 +34,7 @@ import javax.xml.bind.annotation.XmlAttribute;
  * @author Hervé Bitteur
  */
 public class AssignTask
-    extends GlyphUpdateTask
+        extends GlyphUpdateTask
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -47,22 +47,22 @@ public class AssignTask
     private final boolean compound;
 
     //~ Constructors -----------------------------------------------------------
-
+    //
     //------------//
     // AssignTask //
     //------------//
     /**
      * Create an assignment task
      *
-     * @param shape the assigned shape (or null for a de-assignment)
+     * @param shape    the assigned shape (or null for a de-assignment)
      * @param compound true if all glyphs are to be merged into one compound
-     * which is assigned to the given shape, false if each and every glyph is to
-     * be assigned to the given shape
-     * @param glyphs the collection of concerned glyphs
+     *                 which is assigned to the given shape, false if each and
+     *                 every glyph is to be assigned to the given shape
+     * @param glyphs   the collection of concerned glyphs
      */
-    public AssignTask (Sheet             sheet,
-                       Shape             shape,
-                       boolean           compound,
+    public AssignTask (Sheet sheet,
+                       Shape shape,
+                       boolean compound,
                        Collection<Glyph> glyphs)
     {
         super(sheet, glyphs);
@@ -78,7 +78,7 @@ public class AssignTask
      *
      * @param glyphs the collection of glyphs to deassign
      */
-    public AssignTask (Sheet             sheet,
+    public AssignTask (Sheet sheet,
                        Collection<Glyph> glyphs)
     {
         this(sheet, null, false, glyphs);
@@ -95,7 +95,7 @@ public class AssignTask
     }
 
     //~ Methods ----------------------------------------------------------------
-
+    //
     //------//
     // core //
     //------//
@@ -104,10 +104,10 @@ public class AssignTask
      */
     @Override
     public void core (Sheet sheet)
-        throws Exception
+            throws Exception
     {
         sheet.getSymbolsController()
-             .syncAssign(this);
+                .syncAssign(this);
     }
 
     //--------//
@@ -121,10 +121,10 @@ public class AssignTask
     {
         // We rebuild from SYMBOLS
         Stepping.reprocessSheet(
-            Steps.valueOf(Steps.SYMBOLS),
-            sheet,
-            getImpactedSystems(sheet),
-            false);
+                Steps.valueOf(Steps.SYMBOLS),
+                sheet,
+                getImpactedSystems(sheet),
+                false);
     }
 
     //------------------//
@@ -132,6 +132,7 @@ public class AssignTask
     //------------------//
     /**
      * Report the assigned shape (for an assignment impact)
+     *
      * @return the assignedShape (null for a deassignment)
      */
     public Shape getAssignedShape ()
@@ -144,6 +145,7 @@ public class AssignTask
     //------------//
     /**
      * Report whether the assignment is a compound
+     *
      * @return true for a compound assignment, false otherwise
      */
     public boolean isCompound ()
@@ -166,7 +168,7 @@ public class AssignTask
 
         if (shape != null) {
             sb.append(" ")
-              .append(shape);
+                    .append(shape);
         } else {
             sb.append(" no-shape");
         }

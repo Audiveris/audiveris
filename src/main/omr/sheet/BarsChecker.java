@@ -72,11 +72,11 @@ public class BarsChecker
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(BarsChecker.class);
 
-    /** Successful bar that embraces a whole system */
+    /** Successful bar that embraces a whole system or part */
     public static final SuccessResult BAR_PART_DEFINING = new SuccessResult(
             "Bar-PartDefining");
 
-    /** Successful bar that embraces only part of a part */
+    /** Successful bar that embraces only a portion of a part */
     private static final SuccessResult BAR_NOT_PART_DEFINING = new SuccessResult(
             "Bar-NotPartDefining");
 
@@ -155,7 +155,7 @@ public class BarsChecker
      *
      * @param sheet the sheet to process
      * @param rough true for rough tests (when retrieving staff frames),
-     * false for precise tests
+     *              false for precise tests
      */
     public BarsChecker (Sheet sheet,
                         boolean rough)
@@ -193,18 +193,21 @@ public class BarsChecker
             double res = suite.pass(context);
 
             if (logger.isFineEnabled() || stick.isVip()) {
-                logger.info("suite => {0}{1} for {2}", new Object[]{(float) res,
-                                                                    (stick.
-                                                                     getResult() != null) ? (" " + stick.
-                                                                                             getResult()) : "",
-                                                                    stick});
+                logger.info("suite => {0}{1} for {2}",
+                            (float) res,
+                            (stick.getResult() != null)
+                            ? (" " + stick.getResult()) : "",
+                            stick);
             }
 
-            if (res >= minResult) {
+            if ((stick.isBar() && stick.isManualShape()) || res >= minResult) {
                 // OK, we flag this candidate with proper barline shape
                 contexts.put(stick, context);
-                stick.setShape(
-                        isThickBar(stick) ? Shape.THICK_BARLINE : Shape.THIN_BARLINE);
+                if ((!stick.isBar() || !stick.isManualShape())) {
+                    stick.setShape(
+                            isThickBar(stick)
+                            ? Shape.THICK_BARLINE : Shape.THIN_BARLINE);
+                }
 
                 // Additional processing for Bars that define a system or a part
                 // (they start AND end with precise staves horizontal limits)
@@ -214,18 +217,17 @@ public class BarsChecker
                     // (since glyphs are sorted by increasing abscissa)
                     stick.setResult(BAR_PART_DEFINING);
 
-                    logger.fine(
-                            "Part-defining Bar line from staff {0} to staff {1} {2}",
-                                new Object[]{context.topStaff, context.botStaff,
-                                             stick});
+                    logger.
+                            fine(
+                            "Part-defining Barline from staff {0} to staff {1} {2}",
+                            context.topStaff, context.botStaff, stick);
                 } else {
                     if (logger.isFineEnabled()) {
                         logger.fine("Non-Part-defining Bar line {0}{1}",
-                                    new Object[]{
                                     (context.topStaff != -1)
                                     ? (" topIdx=" + context.topStaff) : "",
                                     (context.botStaff != -1)
-                                    ? (" botIdx=" + context.botStaff) : ""});
+                                    ? (" botIdx=" + context.botStaff) : "");
                     }
 
                     stick.setResult(BAR_NOT_PART_DEFINING);
@@ -233,8 +235,8 @@ public class BarsChecker
             } else {
                 if (stick.isBar()) {
                     if (logger.isFineEnabled() || stick.isVip()) {
-                        logger.info("Purged {0} {1}", new Object[]{stick.
-                                    idString(), stick.getShape()});
+                        logger.info("Purged {0} {1}",
+                                    stick.idString(), stick.getShape());
                     }
 
                     stick.setShape(null);
@@ -276,7 +278,6 @@ public class BarsChecker
     {
         Predicate<Section> predicate = new Predicate<Section>()
         {
-
             @Override
             public boolean check (Section section)
             {
@@ -344,6 +345,7 @@ public class BarsChecker
     }
 
     //~ Inner Classes ----------------------------------------------------------
+    //
     //--------------//
     // StaffAnchors //
     //--------------//
@@ -626,7 +628,8 @@ public class BarsChecker
 
             // How far are we from the stop of the staff?
             double staffBottom = staff.getLastLine().yAt(stop.getX());
-            double dy = sheet.getScale().pixelsToFrac(Math.abs(staffBottom - stop.
+            double dy = sheet.getScale().pixelsToFrac(Math.
+                    abs(staffBottom - stop.
                     getY()));
 
             // Change limits according to rough & partDefining
@@ -811,8 +814,8 @@ public class BarsChecker
                                               Orientation.VERTICAL));
 
             logger.fine("{0} {1} aliens:{2} area:{3} ratio:{4}",
-                        new Object[]{stick.idString(), getName(), aliens, area,
-                                     (float) ratio});
+                        stick.idString(), getName(), aliens, area,
+                        (float) ratio);
 
             return ratio;
         }
@@ -833,7 +836,7 @@ public class BarsChecker
         {
             super(
                     "BLChunk",
-                    "Check there is no big chunk stuck on lower left side of stick",
+                    "Check for no big chunk stuck on lower left side of stick",
                     BOTTOM_LEFT_CHUNK);
         }
 
@@ -868,7 +871,7 @@ public class BarsChecker
         {
             super(
                     "BRChunk",
-                    "Check there is no big chunk stuck on lower right side of stick",
+                    "Check for no big chunk stuck on lower right side of stick",
                     BOTTOM_RIGHT_CHUNK);
         }
 
@@ -974,7 +977,7 @@ public class BarsChecker
     // LongCheck //
     //-----------//
     /**
-     * This kind of check allows to force the result in certain circumstances
+     * This kind of check allows to force the result in certain cases.
      */
     private abstract class LongCheck
             extends Check<GlyphContext>
@@ -1160,7 +1163,7 @@ public class BarsChecker
         {
             super(
                     "TLChunk",
-                    "Check there is no big chunk stuck on upper left side of stick",
+                    "Check for no big chunk stuck on upper left side of stick",
                     TOP_LEFT_CHUNK);
         }
 
@@ -1193,10 +1196,9 @@ public class BarsChecker
 
         protected TopRightChunkCheck ()
         {
-            super(
-                    "TRChunk",
-                    "Check there is no big chunk stuck on upper right side of stick",
-                    TOP_RIGHT_CHUNK);
+            super("TRChunk",
+                  "Check for no big chunk stuck on upper right side of stick",
+                  TOP_RIGHT_CHUNK);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -1225,13 +1227,12 @@ public class BarsChecker
 
         protected VerticalCheck ()
         {
-            super(
-                    "Vertical",
-                    "Check that stick is vertical, according to global slope",
-                    constants.maxSlopeLow,
-                    constants.maxSlopeHigh,
-                    false,
-                    NON_VERTICAL);
+            super("Vertical",
+                  "Check that stick is vertical, according to global slope",
+                  constants.maxSlopeLow,
+                  constants.maxSlopeHigh,
+                  false,
+                  NON_VERTICAL);
         }
 
         //~ Methods ------------------------------------------------------------

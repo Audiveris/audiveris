@@ -85,7 +85,6 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import omr.text.TextWord;
 import omr.score.entity.LyricsItem;
-import omr.text.FontInfo;
 import omr.text.TextLine;
 import omr.ui.symbol.TextFont;
 

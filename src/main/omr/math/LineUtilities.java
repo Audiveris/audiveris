@@ -15,7 +15,8 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code LineUtilities} is a collection of utilities related to lines
+ * Class {@code LineUtilities} is a collection of utilities related to
+ * lines.
  *
  * @author Hervé Bitteur
  */
@@ -28,6 +29,7 @@ public class LineUtilities
     //----------//
     /**
      * Return the bisector (french: médiatrice) of the provided segment
+     *
      * @param segment the provided segment
      * @return (a segment on) the bisector
      */
@@ -57,6 +59,7 @@ public class LineUtilities
     /**
      * Return the intersection point between infinite line A defined by
      * points p1 & p2 and infinite line B defined by points p3 & p4.
+     *
      * @param p1 first point of line A
      * @param p2 second point of line A
      * @param p3 first point of line B

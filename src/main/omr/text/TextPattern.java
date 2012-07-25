@@ -81,9 +81,8 @@ public class TextPattern
                 toRemove.add(line);
             }
         }
-
         system.getSentences().removeAll(toRemove);
-
+        
         // Look for active text glyphs left over (no word, or no line)
         checkOrphanGlyphs();
 
@@ -92,14 +91,6 @@ public class TextPattern
 
         // Purge lines
         purgeLines(system.getSentences());
-
-        // Dump current system sentences
-        //if (logger.isFineEnabled()) {
-//            logger.info("{0} final sentences:", system.idString());
-//            for (TextLine line : system.getSentences()) {
-//                logger.info("   {0}", line);
-//            }
-        //}
         
         return 0; // Useless
     }

@@ -13,11 +13,15 @@ package omr.grid;
 
 import omr.lag.Section;
 
+import omr.math.Line;
+import omr.math.LineUtilities;
+
 import omr.run.Orientation;
 
 import omr.score.common.PixelRectangle;
 
 import omr.util.HorizontalSide;
+import static omr.util.HorizontalSide.*;
 
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
@@ -259,5 +263,29 @@ public class FilamentLine
     public double yAt (double x)
     {
         return fil.getPositionAt(x, Orientation.HORIZONTAL);
+    }
+
+    //----------------------//
+    // verticalIntersection //
+    //----------------------//
+    @Override
+    public Point2D verticalIntersection (Line vertical)
+    {
+        // We need two points on the rather vertical line
+        Point2D startPoint = new Point2D.Double(vertical.xAtY(0.0), 0.0);
+        Point2D stopPoint = new Point2D.Double(vertical.xAtY(1000.0), 1000.0);
+
+        // First, get a rough intersection
+        Point2D pt = LineUtilities.intersection(getEndPoint(LEFT),
+                                                getEndPoint(RIGHT),
+                                                startPoint, stopPoint);
+
+        // Second, get a precise ordinate
+        double y = yAt(pt.getX());
+
+        // Third, get a precise abscissa
+        double x = vertical.xAtY(y);
+
+        return new Point2D.Double(x, y);
     }
 }

@@ -77,12 +77,11 @@ class IntersectionSequence
                     if (logger.isFineEnabled()
                             || head.getStickAncestor().isVip()
                             || tail.getStickAncestor().isVip()) {
-                        logger.info("Merging verticals {0} & {1}", new Object[]{
-                                    head, tail});
+                        logger.info("Merging verticals {0} & {1}", head, tail);
                     }
 
-                    Filament fil = (Filament) tail.getStickAncestor();
-                    fil.stealSections(head.getStickAncestor());
+                    Glyph tailAncestor =  tail.getStickAncestor();
+                    tailAncestor.stealSections(head.getStickAncestor());
                     headIt.remove();
 
                     break;

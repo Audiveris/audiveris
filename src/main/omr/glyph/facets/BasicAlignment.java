@@ -123,9 +123,9 @@ public class BasicAlignment
         return (int) Math.rint(getPositionAt(coord, orientation));
     }
 
-    //--------------------------//
+    //------------------//
     // getInvertedSlope //
-    //--------------------------//
+    //------------------//
     @Override
     public double getInvertedSlope ()
     {

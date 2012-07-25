@@ -49,13 +49,14 @@ import javax.swing.event.MenuListener;
  * One of these plugins can be set as the default editor plugin and directly
  * launched by the dedicated toolbar button.
  *
- * <p>Any file, with the ".js" extension, found in the <code>plugins</code>
+ * <p>Any file, with the ".js" extension, found in the
+ * <code>plugins</code>
  * folder will lead to the creation of a corresponding Plugin instance.</p>
  *
  * @author Hervé Bitteur
  */
 public class PluginsManager
-    extends ScoreDependent
+        extends ScoreDependent
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -69,7 +70,8 @@ public class PluginsManager
     private static PluginsManager INSTANCE;
 
     /** Filter for plugin script files */
-    private static final FileFilter pluginFilter = new FileFilter() {
+    private static final FileFilter pluginFilter = new FileFilter()
+    {
         @Override
         public boolean accept (File pathname)
         {
@@ -84,9 +86,7 @@ public class PluginsManager
         }
     };
 
-
     //~ Instance fields --------------------------------------------------------
-
     /** The concrete UI menu */
     private JMenu menu;
 
@@ -97,13 +97,13 @@ public class PluginsManager
     private Plugin defaultPlugin;
 
     //~ Constructors -----------------------------------------------------------
-
     //----------------//
     // PluginsManager //
     //----------------//
     /**
      * Generates the menu to be inserted in the plugin menu hierarchy,
      * based on the script files discovered in the plugin folder.
+     *
      * @param menu the hosting menu, or null
      */
     private PluginsManager ()
@@ -113,13 +113,18 @@ public class PluginsManager
 
         if (pluginDir.exists() && pluginDir.isDirectory()) {
             for (File file : pluginDir.listFiles(pluginFilter)) {
-                Plugin plugin = new Plugin(file);
-                map.put(plugin.getId(), plugin);
+                try {
+                    Plugin plugin = new Plugin(file);
+                    map.put(plugin.getId(), plugin);
+                } catch (Exception ex) {
+                    logger.warning("Could not process plugin file {0} [{1}]",
+                                   file, ex);
+                }
             }
 
             // Default plugin, if any is defined
             String defaultId = constants.defaultPlugin.getValue()
-                                                      .trim();
+                    .trim();
             defaultPlugin = findDefaultPlugin(defaultId);
 
             if (!defaultId.isEmpty() && (defaultPlugin == null)) {
@@ -129,12 +134,12 @@ public class PluginsManager
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------------//
     // getDefaultPlugin //
     //------------------//
     /**
      * Return the default plugin if any.
+     *
      * @return the default plugin, or null if none is defined
      */
     public Plugin getDefaultPlugin ()
@@ -147,6 +152,7 @@ public class PluginsManager
     //-------------//
     /**
      * Report the class singleton.
+     *
      * @return the unique instance of this class
      */
     public static synchronized PluginsManager getInstance ()
@@ -163,6 +169,7 @@ public class PluginsManager
     //---------//
     /**
      * Report the concrete UI menu of all plugins
+     *
      * @param menu a preallocated menu instance, or null
      * @return the populated menu entity
      */
@@ -189,10 +196,11 @@ public class PluginsManager
     //--------------//
     /**
      * Action to invoke the default score editor
+     *
      * @param e the event that triggered this action
      */
     @Action(enabledProperty = SCORE_AVAILABLE)
-    public Task<Void,Void> invokeDefaultPlugin (ActionEvent e)
+    public Task<Void, Void> invokeDefaultPlugin (ActionEvent e)
     {
         if (defaultPlugin == null) {
             logger.warning("No default plugin defined");
@@ -217,7 +225,7 @@ public class PluginsManager
     {
         for (Plugin plugin : map.values()) {
             if (plugin.getId()
-                      .equalsIgnoreCase(constants.defaultPlugin.getValue())) {
+                    .equalsIgnoreCase(constants.defaultPlugin.getValue())) {
                 return plugin;
             }
         }
@@ -226,18 +234,17 @@ public class PluginsManager
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Constant.String defaultPlugin = new Constant.String(
-            "musescore",
-            "Name of default plugin");
+                "musescore",
+                "Name of default plugin");
     }
 
     //----------------//
@@ -248,7 +255,7 @@ public class PluginsManager
      * This is meant to enable menu items only when a sheet is selected.
      */
     private class MyMenuListener
-        implements MenuListener
+            implements MenuListener
     {
         //~ Methods ------------------------------------------------------------
 

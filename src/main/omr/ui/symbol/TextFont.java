@@ -18,9 +18,7 @@ import omr.log.Logger;
 
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
-import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import omr.text.FontInfo;
 
@@ -59,11 +57,11 @@ public class TextFont
     /**
      * Creates a new TextFont object.
      *
-     * @param name  the font name. This can be a font face name or a font
-     *              family name, and may represent either a logical font or a physical
-     *              font found in this {@code GraphicsEnvironment}.
-     * @param style bit-mask style constant for the {@code Font}
-     * @param size  the point size of the {@code Font}
+     * @param fontName the font name. This can be a font face name or a font
+     *                 family name, and may represent either a logical font or
+     *                 a physical font found in this {@code GraphicsEnvironment}.
+     * @param style    bit-mask style constant for the {@code Font}
+     * @param size     the point size of the {@code Font}
      */
     public TextFont (String fontName,
                      int style,

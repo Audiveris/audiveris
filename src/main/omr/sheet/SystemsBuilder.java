@@ -174,6 +174,7 @@ public class SystemsBuilder
         final Integer[] partTops = systemManager.getPartTops();
 
         for (SystemInfo system : systemManager.getSystems()) {
+            system.getParts().clear(); // Start from scratch
             int partTop = -1;
             PartInfo part = null;
 

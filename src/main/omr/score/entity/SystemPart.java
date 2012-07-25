@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import omr.sheet.PartInfo;
 
 /**
  * Class {@code SystemPart} handles each of the various parts found in
@@ -44,7 +45,6 @@ public class SystemPart
     /** For comparing (TreeNode) SystemPart instances according to their id */
     public static final Comparator<TreeNode> idComparator = new Comparator<TreeNode>()
     {
-
         @Override
         public int compare (TreeNode o1,
                             TreeNode o2)
@@ -67,6 +67,9 @@ public class SystemPart
 
     /** Name, if any, that faces this system part */
     private String name;
+    
+    /** The related information */
+    private final PartInfo info;
 
     /** The corresponding ScorePart */
     private ScorePart scorePart;
@@ -103,10 +106,14 @@ public class SystemPart
      * Create a new instance of SystemPart.
      *
      * @param system the containing system
+     * @param info   the counterpart in sheet
      */
-    public SystemPart (ScoreSystem system)
+    public SystemPart (ScoreSystem system,
+                       PartInfo info)
     {
         super(system);
+        
+        this.info = info;
 
         // Allocate specific children
         staves = new Container(this, "Staves");
@@ -190,7 +197,7 @@ public class SystemPart
      * with the orphan slurs at the end of the provided preceding part.
      *
      * @param precedingPart the part to connect to, either in the preceding
-     * system, or in the last system of the preceding page
+     *                      system, or in the last system of the preceding page
      */
     public void connectSlursWith (SystemPart precedingPart)
     {
@@ -231,7 +238,8 @@ public class SystemPart
             // Check previous orphans
             for (Slur prevSlur : precedingOrphans) {
                 if (prevSlur.getRightExtension() == null) {
-                    prevSlur.addError(
+                    prevSlur.
+                            addError(
                             " Could not right-connect slur #" + prevSlur.getId());
                 }
             }
@@ -282,7 +290,7 @@ public class SystemPart
             }
         }
 
-        SystemPart dummyPart = new SystemPart(getSystem());
+        SystemPart dummyPart = new SystemPart(getSystem(), null);
         dummyPart.setId(id);
         dummyPart.setDummy(true);
         dummyPart.setScorePart(nextPart.getScorePart());
@@ -906,5 +914,17 @@ public class SystemPart
         }
 
         setBox(newBox);
+    }
+
+    //---------//
+    // getInfo //
+    //---------//
+    /**
+     * Report the corresponding info within sheet structure
+     * @return the info
+     */
+    public PartInfo getInfo ()
+    {
+        return info;
     }
 }

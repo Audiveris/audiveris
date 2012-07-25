@@ -76,6 +76,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentSkipListSet;
+import omr.grid.GridBuilder;
 
 /**
  * Class {@code Sheet} is the corner stone for Sheet processing,
@@ -153,6 +154,9 @@ public class Sheet
 
     /** Staves */
     private final StaffManager staffManager;
+
+    /** Grid */
+    private GridBuilder gridBuilder;
 
     /** Systems */
     private final SystemManager systemManager;
@@ -658,6 +662,21 @@ public class Sheet
         return scaleBuilder;
     }
 
+    //----------------//
+    // getGridBuilder //
+    //----------------//
+    /**
+     * @return the gridBuilder
+     */
+    public GridBuilder getGridBuilder ()
+    {
+        if (gridBuilder == null) {
+            gridBuilder = new GridBuilder(this);
+        }
+
+        return gridBuilder;
+    }
+
     //----------//
     // getScore //
     //----------//
@@ -783,7 +802,7 @@ public class Sheet
      *
      * @param point the provided pixel point
      * @return the containing system info
-     * (or null if there is no enclosing system)
+     *         (or null if there is no enclosing system)
      */
     public SystemInfo getSystemOf (PixelPoint point)
     {
@@ -967,7 +986,7 @@ public class Sheet
      *
      * @param point the provided point
      * @return a collection of systems ordered by increasing distance from the
-     * provided point
+     *         provided point
      */
     public List<SystemInfo> getSystemsNear (final Point point)
     {
@@ -976,7 +995,6 @@ public class Sheet
                 neighbors,
                 new Comparator<SystemInfo>()
                 {
-
                     @Override
                     public int compare (SystemInfo s1,
                                         SystemInfo s2)

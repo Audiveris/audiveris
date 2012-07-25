@@ -18,10 +18,15 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.ui.SymbolsEditor;
 
-import omr.lag.Section;
 
 import omr.log.Logger;
 import static omr.run.Orientation.*;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.logging.Level;
+import omr.glyph.Glyphs;
+import omr.glyph.facets.Glyph;
 import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
 
@@ -30,8 +35,6 @@ import omr.sheet.Sheet;
 import omr.step.StepException;
 
 import omr.util.StopWatch;
-
-import java.util.List;
 
 /**
  * Class {@code GridBuilder} computes the grid of systems of a sheet
@@ -57,26 +60,25 @@ public class GridBuilder
     private static final Logger logger = Logger.getLogger(GridBuilder.class);
 
     //~ Instance fields --------------------------------------------------------
-
-    /** Related sheet */
+    /** Related sheet. */
     private final Sheet sheet;
 
-    /** Companion in charge of staff lines */
+    /** Companion in charge of staff lines. */
     private final LinesRetriever linesRetriever;
 
-    /** Companion in charge of bar lines */
+    /** Companion in charge of bar lines. */
     private final BarsRetriever barsRetriever;
 
-    /** For runs display, if any */
+    /** For runs display, if any. */
     private final RunsViewer runsViewer;
 
     //~ Constructors -----------------------------------------------------------
-
     //-------------//
     // GridBuilder //
     //-------------//
     /**
      * Retrieve the frames of all staff lines.
+     *
      * @param sheet the sheet to process
      */
     public GridBuilder (Sheet sheet)
@@ -87,11 +89,11 @@ public class GridBuilder
         linesRetriever = new LinesRetriever(sheet, barsRetriever);
 
         runsViewer = (Main.getGui() != null)
-                     ? new RunsViewer(sheet, linesRetriever, barsRetriever) : null;
+                     ? new RunsViewer(sheet, linesRetriever, barsRetriever)
+                     : null;
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // buildInfo //
     //-----------//
@@ -99,7 +101,7 @@ public class GridBuilder
      * Compute and display the system frames of the sheet picture.
      */
     public void buildInfo ()
-        throws StepException
+            throws StepException
     {
         StopWatch watch = new StopWatch("GridBuilder");
 
@@ -119,12 +121,12 @@ public class GridBuilder
 
             // Retrieve the major vertical barlines and thus the systems
             watch.start("retrieveSystemBars");
-            barsRetriever.retrieveSystemBars();
+            barsRetriever.retrieveSystemBars(Collections.EMPTY_SET,
+                                             Collections.EMPTY_SET);
 
             // Complete the staff lines w/ short sections & filaments left over
             watch.start("completeLines");
-
-            List<Section> newSections = linesRetriever.completeLines();
+            linesRetriever.completeLines();
 
             // Retrieve minor barlines (for measures)
             barsRetriever.retrieveMeasureBars();
@@ -143,7 +145,6 @@ public class GridBuilder
             }
         } catch (Throwable ex) {
             logger.warning(sheet.getLogPrefix() + "Error in GridBuilder", ex);
-            ex.printStackTrace();
         } finally {
             if (constants.printWatch.isSet()) {
                 watch.print();
@@ -151,9 +152,36 @@ public class GridBuilder
 
             if (Main.getGui() != null) {
                 sheet.getSymbolsEditor()
-                     .refresh();
+                        .refresh();
             }
         }
+    }
+
+    //------------//
+    // updateBars //
+    //------------//
+    /**
+     * Update the collection of bar candidates, removing the discarded
+     * ones and adding the new ones, and rebuild the barlines.
+     *
+     * @param oldSticks former glyphs to discard
+     * @param newSticks new glyphs to take as manual bar sticks
+     */
+    public void updateBars (Collection< Glyph> oldSticks,
+                            Collection< Glyph> newSticks)
+    {
+        logger.info("updateBars");
+        logger.info("Old {0}", Glyphs.toString(oldSticks));
+        logger.info("New {0}", Glyphs.toString(newSticks));
+
+        try {
+            barsRetriever.retrieveSystemBars(oldSticks, newSticks);
+        } catch (Exception ex) {
+            logger.warning("updateBars. retrieveSystemBars", ex);
+        }
+
+        barsRetriever.retrieveMeasureBars();
+        barsRetriever.adjustSystemBars();
     }
 
     //--------------//
@@ -165,8 +193,8 @@ public class GridBuilder
      */
     private void buildAllLags ()
     {
-        final boolean   showRuns = constants.showRuns.isSet() &&
-                                   (Main.getGui() != null);
+        final boolean showRuns = constants.showRuns.isSet()
+                && (Main.getGui() != null);
         final StopWatch watch = new StopWatch("buildAllLags");
 
         try {
@@ -174,10 +202,10 @@ public class GridBuilder
             watch.start("wholeVertTable");
 
             RunsTable wholeVertTable = new RunsTableFactory(
-                VERTICAL,
-                sheet.getPicture(),
-                sheet.getPicture().getMaxForeground(),
-                0).createTable("whole");
+                    VERTICAL,
+                    sheet.getPicture(),
+                    sheet.getPicture().getMaxForeground(),
+                    0).createTable("whole");
 
             // Note: from that point on, we could simply discard the sheet picture
             // and save memory, since wholeVertTable contains all foreground pixels.
@@ -193,8 +221,8 @@ public class GridBuilder
             watch.start("linesRetriever.buildLag");
 
             RunsTable longVertTable = linesRetriever.buildLag(
-                wholeVertTable,
-                showRuns);
+                    wholeVertTable,
+                    showRuns);
 
             // vLag creation
             watch.start("barsRetriever.buildLag");
@@ -221,28 +249,27 @@ public class GridBuilder
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         //
         Constant.Boolean showRuns = new Constant.Boolean(
-            false,
-            "Should we show view on runs?");
+                false,
+                "Should we show view on runs?");
 
         //
         Constant.Boolean printWatch = new Constant.Boolean(
-            false,
-            "Should we print out the stop watch?");
+                false,
+                "Should we print out the stop watch?");
 
         //
         Constant.Boolean buildDewarpedTarget = new Constant.Boolean(
-            false,
-            "Should we build a dewarped target?");
+                false,
+                "Should we build a dewarped target?");
     }
 }

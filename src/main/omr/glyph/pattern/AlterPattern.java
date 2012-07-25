@@ -356,7 +356,7 @@ public class AlterPattern
 
         //
         Scale.Fraction maxAlterStemLength = new Scale.Fraction(
-                3d,
+                3.5,
                 "Maximum length for pseudo-stem(s) in alteration sign");
 
         //

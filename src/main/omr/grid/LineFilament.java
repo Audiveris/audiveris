@@ -24,7 +24,7 @@ import java.util.TreeMap;
  * a candidate staff line.
  */
 public class LineFilament
-    extends Filament
+        extends Filament
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -32,7 +32,7 @@ public class LineFilament
     private static final Logger logger = Logger.getLogger(LineFilament.class);
 
     //~ Instance fields --------------------------------------------------------
-
+    //
     /** Combs where this filament appears. map (column index -> comb) */
     private SortedMap<Integer, FilamentComb> combs;
 
@@ -43,12 +43,13 @@ public class LineFilament
     private int clusterPos;
 
     //~ Constructors -----------------------------------------------------------
-
+    //
     //--------------//
     // LineFilament //
     //--------------//
     /**
      * Creates a new LineFilament object.
+     *
      * @param scale scaling data
      */
     public LineFilament (Scale scale)
@@ -57,16 +58,17 @@ public class LineFilament
     }
 
     //~ Methods ----------------------------------------------------------------
-
+    //
     //---------//
     // addComb //
     //---------//
     /**
      * Add a comb where this filament appears
+     *
      * @param column the sheet column index of the comb
-     * @param comb the comb which contains this filament
+     * @param comb   the comb which contains this filament
      */
-    public void addComb (int          column,
+    public void addComb (int column,
                          FilamentComb comb)
     {
         if (combs == null) {
@@ -92,15 +94,16 @@ public class LineFilament
     // fillHoles //
     //-----------//
     /**
-     * Fill large holes (due to missing intermediate points) in this filament,
-     * by interpolating (or extrapolating) from the collection of rather
-     * parallel fils, this filament is part of (at provided clusterPos)
+     * Fill large holes (due to missing intermediate points) in this
+     * filament, by interpolating (or extrapolating) from the
+     * collection of rather parallel fils, this filament is part of
+     * (at provided clusterPos).
+     *
      * @param fils the provided collection of parallel filaments
      */
     public void fillHoles (List<LineFilament> fils)
     {
-        getAlignment()
-            .fillHoles(clusterPos, fils);
+        getAlignment().fillHoles(clusterPos, fils);
     }
 
     //------------//
@@ -108,6 +111,7 @@ public class LineFilament
     //------------//
     /**
      * Report the line cluster, if any, this filament is part of
+     *
      * @return the containing cluster, or null
      */
     public LineCluster getCluster ()
@@ -146,6 +150,7 @@ public class LineFilament
     //---------//
     /**
      * Include a whole other filament into this one
+     *
      * @param that the filament to swallow
      */
     public void include (LineFilament that)
@@ -161,11 +166,12 @@ public class LineFilament
     //------------//
     /**
      * Assign this filament to a line cluster
+     *
      * @param cluster the containing cluster
-     * @param pos the relative line position within the cluster
+     * @param pos     the relative line position within the cluster
      */
     public void setCluster (LineCluster cluster,
-                            int         pos)
+                            int pos)
     {
         this.cluster = cluster;
         clusterPos = pos;
@@ -190,9 +196,9 @@ public class LineFilament
 
         if (cluster != null) {
             sb.append(" cluster:")
-              .append(cluster.getId())
-              .append("p")
-              .append(clusterPos);
+                    .append(cluster.getId())
+                    .append("p")
+                    .append(clusterPos);
         }
 
         return sb.toString();

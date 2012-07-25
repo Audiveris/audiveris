@@ -252,7 +252,7 @@ public class SystemInfo
      *
      * @param glyph the brand new glyph
      * @return the original glyph as inserted in the glyph nest. Use this entity
-     * instead of the provided one.
+     *         instead of the provided one.
      * @see #registerGlyph
      */
     public Glyph addGlyph (Glyph glyph)
@@ -320,7 +320,7 @@ public class SystemInfo
         int partId = 0;
 
         for (PartInfo partInfo : getParts()) {
-            SystemPart part = new SystemPart(scoreSystem);
+            SystemPart part = new SystemPart(scoreSystem, partInfo);
             part.setId(--partId); // Temporary id
 
             // Allocate the staves in this part
@@ -1243,8 +1243,10 @@ public class SystemInfo
             }
         }
 
-        logger.fine("removeInactiveGlyphs: {0} {1}", new Object[]{
-                    toRemove.size(), Glyphs.toString(toRemove)});
+        if (logger.isFineEnabled()) {
+            logger.fine("removeInactiveGlyphs: {0} {1}",
+                        toRemove.size(), Glyphs.toString(toRemove));
+        }
 
         for (Glyph glyph : toRemove) {
             // Remove glyph from system & cut sections links to it
@@ -1341,12 +1343,12 @@ public class SystemInfo
      *
      * @param glyphs    the provided collection of glyphs candidates, or the
      *                  full
-     * system collection if null
+     *                  system collection if null
      * @param predicate the condition to be fulfilled to get selected
      * @return the sorted set of selected glyphs
      */
     public SortedSet<Glyph> selectGlyphs (Collection<Glyph> glyphs,
-                                   Predicate<Glyph> predicate)
+                                          Predicate<Glyph> predicate)
     {
         SortedSet<Glyph> selected = new TreeSet<>();
 
@@ -1576,7 +1578,8 @@ public class SystemInfo
         top = (int) Math.rint(topLeft.getY());
         width = (int) Math.rint(topRight.getX() - topLeft.getX());
         deltaY = (int) Math.rint(
-                lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
+                lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.
+                getY());
         bottom = (int) Math.rint(botLeft.getY());
     }
 

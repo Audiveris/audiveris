@@ -15,11 +15,19 @@ import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 import omr.glyph.facets.Glyph;
 
+import omr.grid.LineInfo;
+import omr.grid.StaffInfo;
+
 import omr.log.Logger;
 
+import omr.math.BasicLine;
 import omr.math.Rational;
 
-import omr.run.Orientation;
+import omr.sheet.Ending;
+import omr.sheet.Ledger;
+import omr.sheet.Sheet;
+import omr.sheet.Skew;
+import omr.sheet.SystemInfo;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -33,11 +41,6 @@ import omr.score.entity.Slot;
 import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
 
-import omr.sheet.Ending;
-import omr.sheet.Ledger;
-import omr.sheet.Sheet;
-import omr.sheet.SystemInfo;
-
 import omr.ui.Colors;
 import static omr.ui.symbol.Alignment.*;
 import omr.ui.symbol.MusicFont;
@@ -45,11 +48,11 @@ import omr.ui.util.UIUtilities;
 
 import omr.util.VerticalSide;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Stroke;
+import java.awt.geom.Point2D;
 import java.util.ConcurrentModificationException;
 
 /**
@@ -63,53 +66,53 @@ import java.util.ConcurrentModificationException;
  * @author Hervé Bitteur
  */
 public class PagePhysicalPainter
-    extends PagePainter
+        extends PagePainter
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
-        PagePhysicalPainter.class);
+            PagePhysicalPainter.class);
 
     //~ Constructors -----------------------------------------------------------
-
     //---------------------//
     // PagePhysicalPainter //
     //---------------------//
     /**
      * Creates a new PagePhysicalPainter object.
-     * @param graphics Graphic context
-     * @param color the color to be used for foreground
+     *
+     * @param graphics      Graphic context
+     * @param color         the color to be used for foreground
      * @param coloredVoices true for voices with different colors
-     * @param linePainting true for painting staff lines
-     * @param annotated true if annotations are to be drawn
+     * @param linePainting  true for painting staff lines
+     * @param annotated     true if annotations are to be drawn
      */
     public PagePhysicalPainter (Graphics graphics,
-                                Color    color,
-                                boolean  coloredVoices,
-                                boolean  linePainting,
-                                boolean  annotated)
+                                Color color,
+                                boolean coloredVoices,
+                                boolean linePainting,
+                                boolean annotated)
     {
         super(graphics, color, coloredVoices, linePainting, annotated);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // drawSlot //
     //----------//
     /**
      * Draw a time slot in the score display.
+     *
      * @param wholeSystem if true, the slot will embrace the whole system,
-     * otherwise only the part is embraced
-     * @param measure the containing measure
-     * @param slot the slot to draw
-     * @param color the color to use in drawing
+     *                    otherwise only the part is embraced
+     * @param measure     the containing measure
+     * @param slot        the slot to draw
+     * @param color       the color to use in drawing
      */
     public void drawSlot (boolean wholeSystem,
                           Measure measure,
-                          Slot    slot,
-                          Color   color)
+                          Slot slot,
+                          Color color)
     {
         final Color oldColor = g.getColor();
         g.setColor(color);
@@ -124,28 +127,28 @@ public class PagePhysicalPainter
                 system = measure.getSystem();
 
                 int top = system.getFirstPart()
-                                .getFirstStaff()
-                                .getInfo()
-                                .getFirstLine()
-                                .yAt(x);
+                        .getFirstStaff()
+                        .getInfo()
+                        .getFirstLine()
+                        .yAt(x);
                 int bottom = system.getLastPart()
-                                   .getLastStaff()
-                                   .getInfo()
-                                   .getLastLine()
-                                   .yAt(x);
+                        .getLastStaff()
+                        .getInfo()
+                        .getLastLine()
+                        .yAt(x);
 
                 g.drawLine(x, top, x, bottom);
             } else {
                 // Draw for just the part height
                 SystemPart part = measure.getPart();
-                int        top = part.getFirstStaff()
-                                     .getInfo()
-                                     .getFirstLine()
-                                     .yAt(x);
-                int        bottom = part.getLastStaff()
-                                        .getInfo()
-                                        .getLastLine()
-                                        .yAt(x);
+                int top = part.getFirstStaff()
+                        .getInfo()
+                        .getFirstLine()
+                        .yAt(x);
+                int bottom = part.getLastStaff()
+                        .getInfo()
+                        .getLastLine()
+                        .yAt(x);
                 g.drawLine(x, top, x, bottom);
 
                 // Draw slot start time
@@ -153,20 +156,21 @@ public class PagePhysicalPainter
 
                 if (slotStartTime != null) {
                     paint(
-                        basicLayout(slotStartTime.toString(), halfAT),
-                        new PixelPoint(x, top - annotationDy),
-                        BOTTOM_CENTER);
+                            basicLayout(slotStartTime.toString(), halfAT),
+                            new PixelPoint(x, top - annotationDy),
+                            BOTTOM_CENTER);
                 }
             }
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error drawing " + slot,
-                ex);
+                    getClass().getSimpleName() + " Error drawing " + slot,
+                    ex);
         }
 
         g.setStroke(oldStroke);
         g.setColor(oldColor);
     }
+//
 
     //---------------//
     // visit Barline //
@@ -174,8 +178,7 @@ public class PagePhysicalPainter
     @Override
     public boolean visit (Barline barline)
     {
-        if (!barline.getBox()
-                    .intersects(oldClip)) {
+        if (!barline.getBox().intersects(oldClip)) {
             return false;
         }
 
@@ -184,38 +187,64 @@ public class PagePhysicalPainter
         try {
             Stroke oldStroke = g.getStroke();
 
-            for (Glyph glyph : barline.getGlyphs()) {
-                Shape shape = glyph.getShape();
+            // This drawing is driven by the barline shape
+            Shape shape = barline.getShape();
+            PixelRectangle box = barline.getBox();
+            PixelPoint center = barline.getCenter();
+            SystemPart part = barline.getPart();
 
-                if (glyph.isBar()) {
-                    float thickness = (float) glyph.getWeight() / glyph.getLength(
-                        Orientation.VERTICAL);
-                    g.setStroke(new BasicStroke(thickness));
+            // Top and bottom limits of the barline, using staff lines
+            StaffInfo topStaff = systemInfo.getStaffAt(box.getLocation());
+            LineInfo topLine = topStaff.getFirstLine();
+            StaffInfo botStaff = systemInfo.getStaffAt(
+                    new Point(box.x, box.y + box.height));
+            LineInfo botLine = botStaff.getLastLine();
 
-                    // Stroke is now OK for thickness but will draw beyond start
-                    // and stop points of the bar. So use clipping to fix this.
-                    final PixelRectangle box = glyph.getBounds();
-                    box.y = (int) Math.floor(
-                        glyph.getStartPoint(Orientation.VERTICAL).getY());
-                    box.height = (int) Math.ceil(
-                        glyph.getStopPoint(Orientation.VERTICAL).getY()) -
-                                 box.y;
-                    g.setClip(oldClip.intersection(box));
+            Skew skew = systemInfo.getSkew();
+            double slope = skew.getSlope();
+            BasicLine bar = new BasicLine();
+            bar.includePoint(center.x, center.y);
+            bar.includePoint(center.x - (100 * slope), center.y + 100);
+            Point2D topCenter = topLine.verticalIntersection(bar);
+            Point2D botCenter = botLine.verticalIntersection(bar);
 
-                    glyph.renderLine(g);
+            BarPainter barPainter = BarPainter.getBarPainter(shape);
+            barPainter.draw(g, topCenter, botCenter, part);
 
-                    g.setClip(oldClip);
-                } else if ((shape == REPEAT_DOT) || (shape == DOT_set)) {
-                    paint(DOT_set, glyph.getCentroid());
-                }
-            }
+            // This drawing is driven by the underlying glyphs
+//            for (Glyph glyph : barline.getGlyphs()) {
+//                Shape shape = glyph.getShape();
+//
+//                if (glyph.isBar()) {
+//                    float thickness = (float) glyph.getWeight() / glyph.
+//                            getLength(
+//                            Orientation.VERTICAL);
+//                    g.setStroke(new BasicStroke(thickness));
+//
+//                    // Stroke is now OK for thickness but will draw beyond start
+//                    // and stop points of the bar. So use clipping to fix this.
+//                    final PixelRectangle box = glyph.getBounds();
+//                    box.y = (int) Math.floor(
+//                            glyph.getStartPoint(Orientation.VERTICAL).getY());
+//                    box.height = (int) Math.ceil(
+//                            glyph.getStopPoint(Orientation.VERTICAL).getY())
+//                            - box.y;
+//                    g.setClip(oldClip.intersection(box));
+//
+//                    glyph.renderLine(g);
+//
+//                    g.setClip(oldClip);
+//                } else if ((shape == REPEAT_DOT) || (shape == DOT_set)) {
+//                    paint(DOT_set, glyph.getCentroid());
+//                }
+//            }
 
             g.setStroke(oldStroke);
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + barline,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + barline,
+                    ex);
         }
 
         return true;
@@ -259,8 +288,8 @@ public class PagePhysicalPainter
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + chord,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + chord,
+                    ex);
         }
 
         return true;
@@ -275,24 +304,25 @@ public class PagePhysicalPainter
         if (annotated) {
             if (!measure.isDummy()) {
                 final SystemPart part = measure.getPart();
-                final Color      oldColor = g.getColor();
+                final Color oldColor = g.getColor();
 
                 // Write the score-based measure id, on first real part only
                 if (part == measure.getSystem()
-                                   .getFirstRealPart()) {
+                        .getFirstRealPart()) {
                     g.setColor(Colors.ANNOTATION);
                     paint(
-                        basicLayout(measure.getScoreId(), null),
-                        new PixelPoint(
+                            basicLayout(measure.getScoreId(), null),
+                            new PixelPoint(
                             measure.getLeftX(),
-                            measure.getPart().getFirstStaff().getInfo().getFirstLine().yAt(
-                                measure.getLeftX()) - annotationDy),
-                        BOTTOM_CENTER);
+                            measure.getPart().getFirstStaff().getInfo().
+                            getFirstLine().yAt(
+                            measure.getLeftX()) - annotationDy),
+                            BOTTOM_CENTER);
                 }
 
                 // Draw slot vertical lines ?
-                if (parameters.isSlotPainting() &&
-                    (measure.getSlots() != null)) {
+                if (parameters.isSlotPainting()
+                        && (measure.getSlots() != null)) {
                     for (Slot slot : measure.getSlots()) {
                         drawSlot(false, measure, slot, Colors.SLOT);
                     }
@@ -342,8 +372,8 @@ public class PagePhysicalPainter
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + note,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + note,
+                    ex);
         }
 
         return true;
@@ -375,7 +405,7 @@ public class PagePhysicalPainter
             }
 
             if (!page.getSystems()
-                     .isEmpty()) {
+                    .isEmpty()) {
                 // Normal (full) rendering of the score
                 page.acceptChildren(this);
             } else {
@@ -384,20 +414,20 @@ public class PagePhysicalPainter
 
                 // Staff lines
                 sheet.getStaffManager()
-                     .render(g);
+                        .render(g);
 
                 if (sheet.getHorizontals() != null) {
                     // Horizontals
 
                     // Ledgers
                     for (Ledger ledger : sheet.getHorizontals()
-                                              .getLedgers()) {
+                            .getLedgers()) {
                         ledger.render(g);
                     }
 
                     // Endings
                     for (Ending ending : sheet.getHorizontals()
-                                              .getEndings()) {
+                            .getEndings()) {
                         ending.render(g);
                     }
                 }
@@ -405,8 +435,8 @@ public class PagePhysicalPainter
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + page,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + page,
+                    ex);
         }
 
         return false;
@@ -431,12 +461,12 @@ public class PagePhysicalPainter
             g.setColor(Colors.ANNOTATION);
 
             Point ul = systemInfo.getBoundary()
-                                 .getLimit(VerticalSide.TOP)
-                                 .getPoint(0);
+                    .getLimit(VerticalSide.TOP)
+                    .getPoint(0);
             paint(
-                basicLayout("S" + system.getId(), null),
-                new PixelPoint(ul.x + annotationDx, ul.y + annotationDy),
-                TOP_LEFT);
+                    basicLayout("S" + system.getId(), null),
+                    new PixelPoint(ul.x + annotationDx, ul.y + annotationDy),
+                    TOP_LEFT);
             g.setColor(oldColor);
         }
 
@@ -449,6 +479,7 @@ public class PagePhysicalPainter
     /**
      * This specific version paints the staff lines as closely as
      * possible to the physical sheet lines.
+     *
      * @param staff the staff to handle
      * @return true if actually painted
      */
@@ -461,12 +492,12 @@ public class PagePhysicalPainter
             }
 
             staff.getInfo()
-                 .render(g);
+                    .render(g);
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + staff,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + staff,
+                    ex);
         }
 
         return true;
@@ -501,9 +532,10 @@ public class PagePhysicalPainter
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warning(
-                getClass().getSimpleName() + " Error visiting " + systemInfo,
-                ex);
+            logger.
+                    warning(
+                    getClass().getSimpleName() + " Error visiting " + systemInfo,
+                    ex);
         }
 
         return true;
@@ -513,7 +545,7 @@ public class PagePhysicalPainter
     // accidentalLocation //
     //--------------------//
     @Override
-    protected PixelPoint accidentalLocation (Note  note,
+    protected PixelPoint accidentalLocation (Note note,
                                              Glyph accidental)
     {
         return new PixelPoint(accidental.getAreaCenter().x, note.getCenter().y);
@@ -526,18 +558,18 @@ public class PagePhysicalPainter
     protected PixelRectangle braceBox (SystemPart part)
     {
         PixelRectangle braceBox = part.getBrace()
-                                      .getBounds();
+                .getBounds();
 
         // Cheat a little, so that top and bottom are aligned with part extrema
         int leftX = braceBox.x + braceBox.width;
         int top = part.getFirstStaff()
-                      .getInfo()
-                      .getFirstLine()
-                      .yAt(leftX);
+                .getInfo()
+                .getFirstLine()
+                .yAt(leftX);
         int bot = part.getLastStaff()
-                      .getInfo()
-                      .getLastLine()
-                      .yAt(leftX);
+                .getInfo()
+                .getLastLine()
+                .yAt(leftX);
         braceBox.y = top;
         braceBox.height = bot - top + 1;
 
@@ -551,8 +583,8 @@ public class PagePhysicalPainter
     protected PixelPoint noteLocation (Note note)
     {
         final PixelPoint center = note.getCenter();
-        final Chord      chord = note.getChord();
-        final Glyph      stem = chord.getStem();
+        final Chord chord = note.getChord();
+        final Glyph stem = chord.getStem();
 
         if (stem != null) {
             return location(center, chord);

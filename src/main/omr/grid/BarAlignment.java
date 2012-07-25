@@ -20,9 +20,9 @@ import omr.util.Navigable;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code BarAlignment} is used to collect all bar lines within a system
- * which should be vertically aligned (typically at the end of a measure), and
- * to check for proper alignment.
+ * Class {@code BarAlignment} is used to collect all bar lines within a
+ * system which should be vertically aligned (typically at the end of a
+ * measure), and to check for proper alignment.
  *
  * @author Hervé Bitteur
  */
@@ -30,38 +30,41 @@ public class BarAlignment
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** Related sheet */
+    /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
 
-    /** Vertical sequence of bars intersections with staves */
+    /** Used to flag a manually defined alignment. */
+    private boolean manual;
+
+    /** Vertical sequence of bars intersections with staves. */
     private final StickIntersection[] inters;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new BarAlignment object.
-     * @param sheet the related sheet
+     *
+     * @param sheet      the related sheet
      * @param staffCount the number of staves to check for consistency
      */
     public BarAlignment (Sheet sheet,
-                         int   staffCount)
+                         int staffCount)
     {
         this.sheet = sheet;
         inters = new StickIntersection[staffCount];
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // addInter //
     //----------//
     /**
      * Record an intersection for the given (staff) index
+     *
      * @param index the (staff) index
      * @param inter the intersection to record
      */
-    public void addInter (int               index,
+    public void addInter (int index,
                           StickIntersection inter)
     {
         inters[index] = inter;
@@ -73,12 +76,13 @@ public class BarAlignment
     /**
      * Compute the horizontal distance between the provided intersection and
      * this alignment, taking the global sheet skew into account.
+     *
      * @param index the provided (staff) index
      * @param inter the provided intersection
      * @return the relative abscissa distance from this alignment to the
-     * provided intersection
+     *         provided intersection
      */
-    public Double distance (int               index,
+    public Double distance (int index,
                             StickIntersection inter)
     {
         for (int i = index - 1; i >= 0; i--) {
@@ -86,10 +90,10 @@ public class BarAlignment
 
             if (si != null) {
                 Point2D dskSi = sheet.getSkew()
-                                     .deskewed(new Point2D.Double(si.x, si.y));
+                        .deskewed(new Point2D.Double(si.x, si.y));
                 Point2D dskIt = sheet.getSkew()
-                                     .deskewed(
-                    new Point2D.Double(inter.x, inter.y));
+                        .deskewed(
+                        new Point2D.Double(inter.x, inter.y));
 
                 return dskIt.getX() - dskSi.getX();
             }
@@ -104,6 +108,7 @@ public class BarAlignment
     //----------------//
     /**
      * Report the number of intersections found for this bar alignment
+     *
      * @return the percentage filled
      */
     public int getFilledCount ()
@@ -124,8 +129,9 @@ public class BarAlignment
     //------------------//
     /**
      * Report the array of intersections found, one cell per staff.
+     *
      * @return the intersections found (with null array cells for missing
-     * intersections)
+     *         intersections)
      */
     public StickIntersection[] getIntersections ()
     {
@@ -142,19 +148,19 @@ public class BarAlignment
         sb.append(getClass().getSimpleName());
 
         sb.append(" ")
-          .append(getFilledCount())
-          .append("/")
-          .append(inters.length);
+                .append(getFilledCount())
+                .append("/")
+                .append(inters.length);
 
         for (int i = 0; i < inters.length; i++) {
             sb.append(" ")
-              .append(i)
-              .append(":");
+                    .append(i)
+                    .append(":");
 
             if (inters[i] != null) {
                 Glyph stick = inters[i].getStickAncestor();
                 sb.append("#")
-                  .append(stick.getId());
+                        .append(stick.getId());
             } else {
                 sb.append("null");
             }
@@ -163,5 +169,31 @@ public class BarAlignment
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //----------//
+    // isManual //
+    //----------//
+    /**
+     * Report whether this alignment is manually defined or not.
+     *
+     * @return the manual flag
+     */
+    public boolean isManual ()
+    {
+        return manual;
+    }
+
+    //-----------//
+    // setManual //
+    //-----------//
+    /**
+     * Flag this alignment as a manual one.
+     *
+     * @param manual the manual flag to set
+     */
+    public void setManual (boolean manual)
+    {
+        this.manual = manual;
     }
 }

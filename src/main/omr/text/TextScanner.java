@@ -161,6 +161,9 @@ public class TextScanner
             pathMap.put(staff, getStaffContour(staff));
         }
 
+        // Safer
+        system.removeInactiveGlyphs();
+        
         // Discard glyphs that intersect a stave core area
         return Glyphs.lookupGlyphs(system.getGlyphs(),
                                    new Predicate<Glyph>()
@@ -168,6 +171,16 @@ public class TextScanner
             @Override
             public boolean check (Glyph glyph)
             {
+                // Reject manual non-text glyphs
+                if (glyph.isManualShape() && !glyph.isText()) {
+                    return false;
+                }
+
+                // Keep known text
+                if (glyph.isText()) {
+                    return true;
+                }
+                
                 // Check position wrt closest staff
                 StaffInfo staff = system.getStaffAt(glyph.getAreaCenter());
                 GeoPath contour = pathMap.get(staff);
@@ -253,7 +266,7 @@ public class TextScanner
         contour.closePath();
 
         // For visual check
-        staff.addAttachment("core", contour);
+        ///staff.addAttachment("core", contour);
         ///logger.info("Staff#{0} contour:{1}", staff.getId(), contour.toString());
 
         return contour;

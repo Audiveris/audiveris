@@ -234,8 +234,8 @@ public class SymbolsModel
     // assignGlyph //
     //-------------//
     /**
-     * Assign a Shape to a glyph, inserting the glyph to its containing system
-     * and lag if it is still transient
+     * Assign a Shape to a glyph, inserting the glyph to its containing 
+     * system and lag if it is still transient
      *
      * @param glyph the glyph to be assigned
      * @param shape the assigned shape, which may be null

@@ -49,83 +49,83 @@ public class ShapeSet
 
     /** Specific single symbol for part of time signature (such as 4) */
     public static final List<Shape> PartialTimes = Arrays.asList(
-        TIME_ZERO,
-        TIME_ONE,
-        TIME_TWO,
-        TIME_THREE,
-        TIME_FOUR,
-        TIME_FIVE,
-        TIME_SIX,
-        TIME_SEVEN,
-        TIME_EIGHT,
-        TIME_NINE,
-        TIME_TWELVE,
-        TIME_SIXTEEN);
+            TIME_ZERO,
+            TIME_ONE,
+            TIME_TWO,
+            TIME_THREE,
+            TIME_FOUR,
+            TIME_FIVE,
+            TIME_SIX,
+            TIME_SEVEN,
+            TIME_EIGHT,
+            TIME_NINE,
+            TIME_TWELVE,
+            TIME_SIXTEEN);
 
     /** Specific multi-symbol for full time signature (such as 4/4 or C) */
     public static final EnumSet<Shape> FullTimes = EnumSet.of(
-        TIME_FOUR_FOUR,
-        TIME_TWO_TWO,
-        TIME_TWO_FOUR,
-        TIME_THREE_FOUR,
-        TIME_SIX_EIGHT,
-        COMMON_TIME,
-        CUT_TIME,
-        CUSTOM_TIME);
+            TIME_FOUR_FOUR,
+            TIME_TWO_TWO,
+            TIME_TWO_FOUR,
+            TIME_THREE_FOUR,
+            TIME_SIX_EIGHT,
+            COMMON_TIME,
+            CUT_TIME,
+            CUSTOM_TIME);
 
     /** All sorts of F clefs */
     public static final EnumSet<Shape> BassClefs = EnumSet.of(
-        F_CLEF,
-        F_CLEF_SMALL,
-        F_CLEF_8VA,
-        F_CLEF_8VB);
+            F_CLEF,
+            F_CLEF_SMALL,
+            F_CLEF_8VA,
+            F_CLEF_8VB);
 
     /** All sorts of G clefs */
     public static final EnumSet<Shape> TrebleClefs = EnumSet.of(
-        G_CLEF,
-        G_CLEF_SMALL,
-        G_CLEF_8VA,
-        G_CLEF_8VB);
+            G_CLEF,
+            G_CLEF_SMALL,
+            G_CLEF_8VA,
+            G_CLEF_8VB);
 
     /** All sorts of flag sets */
     public static final EnumSet<Shape> FlagSets = EnumSet.of(
-        FLAG_1_set,
-        FLAG_2_set,
-        FLAG_3_set,
-        FLAG_4_set,
-        FLAG_5_set);
+            FLAG_1_set,
+            FLAG_2_set,
+            FLAG_3_set,
+            FLAG_4_set,
+            FLAG_5_set);
 
     /** All SHARP-based keys */
     public static final EnumSet<Shape> SharpKeys = EnumSet.of(
-        KEY_SHARP_1,
-        KEY_SHARP_2,
-        KEY_SHARP_3,
-        KEY_SHARP_4,
-        KEY_SHARP_5,
-        KEY_SHARP_6,
-        KEY_SHARP_7);
+            KEY_SHARP_1,
+            KEY_SHARP_2,
+            KEY_SHARP_3,
+            KEY_SHARP_4,
+            KEY_SHARP_5,
+            KEY_SHARP_6,
+            KEY_SHARP_7);
 
     /** All FLAT-based keys */
     public static final EnumSet<Shape> FlatKeys = EnumSet.of(
-        KEY_FLAT_1,
-        KEY_FLAT_2,
-        KEY_FLAT_3,
-        KEY_FLAT_4,
-        KEY_FLAT_5,
-        KEY_FLAT_6,
-        KEY_FLAT_7);
+            KEY_FLAT_1,
+            KEY_FLAT_2,
+            KEY_FLAT_3,
+            KEY_FLAT_4,
+            KEY_FLAT_5,
+            KEY_FLAT_6,
+            KEY_FLAT_7);
 
     /** All black note heads */
     public static final EnumSet<Shape> BlackNoteHeads = EnumSet.of(
-        NOTEHEAD_BLACK,
-        NOTEHEAD_BLACK_2,
-        NOTEHEAD_BLACK_3);
+            NOTEHEAD_BLACK,
+            NOTEHEAD_BLACK_2,
+            NOTEHEAD_BLACK_3);
 
     /** All void note heads */
     public static final EnumSet<Shape> VoidNoteHeads = EnumSet.of(
-        NOTEHEAD_VOID,
-        NOTEHEAD_VOID_2,
-        NOTEHEAD_VOID_3);
+            NOTEHEAD_VOID,
+            NOTEHEAD_VOID_2,
+            NOTEHEAD_VOID_3);
 
     /**
      * Predefined instances of ShapeSet.
@@ -135,13 +135,12 @@ public class ShapeSet
      * which lists precisely all set members.
      */
     public static final ShapeSet Accidentals = new ShapeSet(
-        SHARP,
-        shapesOf(FLAT, NATURAL, SHARP, DOUBLE_SHARP, DOUBLE_FLAT));
+            SHARP,
+            shapesOf(FLAT, NATURAL, SHARP, DOUBLE_SHARP, DOUBLE_FLAT));
 
-    //
-    public static final ShapeSet       Articulations = new ShapeSet(
-        ARPEGGIATO,
-        shapesOf(
+    public static final ShapeSet Articulations = new ShapeSet(
+            ARPEGGIATO,
+            shapesOf(
             ACCENT,
             TENUTO,
             STACCATO,
@@ -149,10 +148,9 @@ public class ShapeSet
             STRONG_ACCENT,
             ARPEGGIATO));
 
-    //
-    public static final ShapeSet       Barlines = new ShapeSet(
-        LEFT_REPEAT_SIGN,
-        shapesOf(
+    public static final ShapeSet Barlines = new ShapeSet(
+            LEFT_REPEAT_SIGN,
+            shapesOf(
             PART_DEFINING_BARLINE,
             THIN_BARLINE,
             THICK_BARLINE,
@@ -163,20 +161,17 @@ public class ShapeSet
             RIGHT_REPEAT_SIGN,
             BACK_TO_BACK_REPEAT_SIGN));
 
-    //
-    public static final ShapeSet       Beams = new ShapeSet(
-        BEAM,
-        shapesOf(BEAM, BEAM_2, BEAM_3, BEAM_HOOK));
+    public static final ShapeSet Beams = new ShapeSet(
+            BEAM,
+            shapesOf(BEAM, BEAM_2, BEAM_3, BEAM_HOOK));
 
-    //
-    public static final ShapeSet       Clefs = new ShapeSet(
-        G_CLEF,
-        shapesOf(TrebleClefs, BassClefs, shapesOf(C_CLEF, PERCUSSION_CLEF)));
+    public static final ShapeSet Clefs = new ShapeSet(
+            G_CLEF,
+            shapesOf(TrebleClefs, BassClefs, shapesOf(C_CLEF, PERCUSSION_CLEF)));
 
-    //
-    public static final ShapeSet       Dynamics = new ShapeSet(
-        DYNAMICS_F,
-        shapesOf(
+    public static final ShapeSet Dynamics = new ShapeSet(
+            DYNAMICS_F,
+            shapesOf(
             DYNAMICS_CHAR_M,
             DYNAMICS_CHAR_R,
             DYNAMICS_CHAR_S,
@@ -201,10 +196,9 @@ public class ShapeSet
             CRESCENDO,
             DECRESCENDO));
 
-    //
-    public static final ShapeSet       Flags = new ShapeSet(
-        FLAG_1,
-        shapesOf(
+    public static final ShapeSet Flags = new ShapeSet(
+            FLAG_1,
+            shapesOf(
             FLAG_1,
             FLAG_1_UP,
             FLAG_2,
@@ -216,20 +210,17 @@ public class ShapeSet
             FLAG_5,
             FLAG_5_UP));
 
-    //
-    public static final ShapeSet       Keys = new ShapeSet(
-        KEY_SHARP_3,
-        shapesOf(FlatKeys, SharpKeys));
+    public static final ShapeSet Keys = new ShapeSet(
+            KEY_SHARP_3,
+            shapesOf(FlatKeys, SharpKeys));
 
-    //
-    public static final ShapeSet       NoteHeads = new ShapeSet(
-        NOTEHEAD_BLACK,
-        shapesOf(BlackNoteHeads, VoidNoteHeads));
+    public static final ShapeSet NoteHeads = new ShapeSet(
+            NOTEHEAD_BLACK,
+            shapesOf(BlackNoteHeads, VoidNoteHeads));
 
-    //
-    public static final ShapeSet       Markers = new ShapeSet(
-        CODA,
-        shapesOf(
+    public static final ShapeSet Markers = new ShapeSet(
+            CODA,
+            shapesOf(
             DAL_SEGNO,
             DA_CAPO,
             SEGNO,
@@ -239,15 +230,13 @@ public class ShapeSet
             BRACE,
             BRACKET));
 
-    //
-    public static final ShapeSet       Notes = new ShapeSet(
-        BREVE,
-        shapesOf(BREVE, WHOLE_NOTE, WHOLE_NOTE_2, WHOLE_NOTE_3));
+    public static final ShapeSet Notes = new ShapeSet(
+            BREVE,
+            shapesOf(BREVE, WHOLE_NOTE, WHOLE_NOTE_2, WHOLE_NOTE_3));
 
-    //
-    public static final ShapeSet       Ornaments = new ShapeSet(
-        MORDENT,
-        shapesOf(
+    public static final ShapeSet Ornaments = new ShapeSet(
+            MORDENT,
+            shapesOf(
             GRACE_NOTE_SLASH,
             GRACE_NOTE,
             TR,
@@ -258,10 +247,9 @@ public class ShapeSet
             MORDENT,
             INVERTED_MORDENT));
 
-    //
-    public static final ShapeSet       Rests = new ShapeSet(
-        QUARTER_REST,
-        shapesOf(
+    public static final ShapeSet Rests = new ShapeSet(
+            QUARTER_REST,
+            shapesOf(
             LONG_REST,
             BREVE_REST,
             WHOLE_REST,
@@ -273,15 +261,13 @@ public class ShapeSet
             ONE_64TH_REST,
             ONE_128TH_REST));
 
-    //
-    public static final ShapeSet       Times = new ShapeSet(
-        TIME_FOUR_FOUR,
-        shapesOf(PartialTimes, FullTimes));
+    public static final ShapeSet Times = new ShapeSet(
+            TIME_FOUR_FOUR,
+            shapesOf(PartialTimes, FullTimes));
 
-    //
-    public static final ShapeSet       Others = new ShapeSet(
-        PEDAL_MARK,
-        shapesOf(
+    public static final ShapeSet Others = new ShapeSet(
+            PEDAL_MARK,
+            shapesOf(
             OTTAVA_ALTA,
             OTTAVA_BASSA,
             PEDAL_MARK,
@@ -291,53 +277,51 @@ public class ShapeSet
             SLUR,
             STEM));
 
-    //
-    public static final ShapeSet       Physicals = new ShapeSet(
-        TEXT,
-        shapesOf(TEXT, CHARACTER, CLUTTER, DOT_set));
+    public static final ShapeSet Physicals = new ShapeSet(
+            TEXT,
+            shapesOf(TEXT, CHARACTER, CLUTTER, DOT_set));
 
-    //
-    public static final ShapeSet       Logicals = new ShapeSet(
-        REPEAT_DOT,
-        shapesOf(REPEAT_DOT, AUGMENTATION_DOT, ENDING));
+    public static final ShapeSet Logicals = new ShapeSet(
+            REPEAT_DOT,
+            shapesOf(REPEAT_DOT, AUGMENTATION_DOT, ENDING));
 
     // =========================================================================
     // Below are EnumSet instances, used programmatically.
     // They do not lead to shape submenus as the ShapeSet instances do.
     // =========================================================================
-
     /** All physical shapes. Here the use of EnumSet.range is OK */
     public static final EnumSet<Shape> allPhysicalShapes = EnumSet.range(
-        Shape.values()[0],
-        LAST_PHYSICAL_SHAPE);
+            Shape.values()[0],
+            LAST_PHYSICAL_SHAPE);
 
     /** Symbols that can be attached to a stem */
-    public static final EnumSet<Shape> StemSymbols = EnumSet.copyOf(
-        shapesOf(NoteHeads.getShapes(), Flags.getShapes(), Beams.getShapes()));
+    public static final EnumSet<Shape> StemSymbols = EnumSet.
+            copyOf(
+            shapesOf(NoteHeads.getShapes(), Flags.getShapes(), Beams.getShapes()));
 
     /** Pedals */
     public static final EnumSet<Shape> Pedals = EnumSet.of(
-        PEDAL_MARK,
-        PEDAL_UP_MARK);
+            PEDAL_MARK,
+            PEDAL_UP_MARK);
 
     /** Tuplets */
     public static final EnumSet<Shape> Tuplets = EnumSet.of(
-        TUPLET_THREE,
-        TUPLET_SIX);
+            TUPLET_THREE,
+            TUPLET_SIX);
 
     /** All variants of dot */
     public static final EnumSet<Shape> Dots = EnumSet.of(
-        DOT_set,
-        AUGMENTATION_DOT,
-        STACCATO,
-        REPEAT_DOT);
+            DOT_set,
+            AUGMENTATION_DOT,
+            STACCATO,
+            REPEAT_DOT);
 
     /** Clefs ottava (alta or bassa) */
     public static final EnumSet<Shape> OttavaClefs = EnumSet.of(
-        G_CLEF_8VA,
-        G_CLEF_8VB,
-        F_CLEF_8VA,
-        F_CLEF_8VB);
+            G_CLEF_8VA,
+            G_CLEF_8VB,
+            F_CLEF_8VA,
+            F_CLEF_8VB);
 
     static {
         // Make sure all the shape colors are defined
@@ -348,7 +332,6 @@ public class ShapeSet
     }
 
     //~ Instance fields --------------------------------------------------------
-
     /** Name of the set */
     private String name;
 
@@ -368,16 +351,16 @@ public class ShapeSet
     private Constant.Color constantColor;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // ShapeSet //
     //------------//
     /**
      * Creates a new ShapeSet object from a collection of shapes.
-     * @param rep the representative shape
+     *
+     * @param rep    the representative shape
      * @param shapes the provided collection of shapes
      */
-    public ShapeSet (Shape             rep,
+    public ShapeSet (Shape rep,
                      Collection<Shape> shapes)
     {
         // The representative shape
@@ -396,25 +379,25 @@ public class ShapeSet
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------------//
     // addAllShapeSets //
     //-----------------//
     /**
      * Populate the given menu with all ShapeSet instances defined
      * in this class.
-     * @param top the JComponent to populate (typically a JMenu or a
-     * JPopupMenu)
+     *
+     * @param top      the JComponent to populate (typically a JMenu or a
+     *                 JPopupMenu)
      * @param listener the listener for notification of user selection
      */
-    public static void addAllShapeSets (JComponent     top,
+    public static void addAllShapeSets (JComponent top,
                                         ActionListener listener)
     {
         // All ranges of glyph shapes
         for (Field field : ShapeSet.class.getDeclaredFields()) {
             if (field.getType() == ShapeSet.class) {
                 JMenuItem menuItem = new JMenuItem(field.getName());
-                ShapeSet  set = valueOf(field.getName());
+                ShapeSet set = valueOf(field.getName());
                 addColoredItem(top, menuItem, set.getColor());
                 menuItem.addActionListener(listener);
             }
@@ -427,18 +410,19 @@ public class ShapeSet
     /**
      * Populate the given menu with a hierarchy of all shapes,
      * organized by defined ShapeSets.
+     *
      * @param top      the JComponent to populate (typically a JMenu or a
      *                 JPopupMenu)
      * @param listener the listener for notification of user selection
      */
-    public static void addAllShapes (JComponent     top,
+    public static void addAllShapes (JComponent top,
                                      ActionListener listener)
     {
         // All ranges of glyph shapes
         for (Field field : ShapeSet.class.getDeclaredFields()) {
             if (field.getType() == ShapeSet.class) {
                 ShapeSet set = ShapeSet.valueOf(field.getName());
-                JMenu    menu = new JMenu(field.getName());
+                JMenu menu = new JMenu(field.getName());
 
                 if (set.rep != null) {
                     menu.setIcon(set.rep.getDecoratedSymbol());
@@ -458,20 +442,21 @@ public class ShapeSet
     /**
      * Populate the given menu with a list of all shapes that belong
      * to the given ShapeSet.
+     *
      * @param set      the set for which shape menu items must be buit
      * @param top      the JComponent to populate (typically a JMenu or a
      *                 JPopupMenu)
      * @param listener the listener for notification of user selection
      */
-    public static void addSetShapes (ShapeSet       set,
-                                     JComponent     top,
+    public static void addSetShapes (ShapeSet set,
+                                     JComponent top,
                                      ActionListener listener)
     {
         // All shapes in the given range
         for (Shape shape : set.getSortedShapes()) {
             JMenuItem menuItem = new JMenuItem(
-                shape.toString(),
-                shape.getDecoratedSymbol());
+                    shape.toString(),
+                    shape.getDecoratedSymbol());
             addColoredItem(top, menuItem, shape.getColor());
 
             menuItem.setToolTipText(shape.getDescription());
@@ -485,6 +470,7 @@ public class ShapeSet
     /**
      * Convenient method to check if encapsulated shapes set does
      * contain the provided object.
+     *
      * @param shape the Shape object to check for inclusion
      * @return true if contained, false otherwise
      */
@@ -498,6 +484,7 @@ public class ShapeSet
     //----------//
     /**
      * Report the color currently assigned to the range, if any.
+     *
      * @return the related color, or null
      */
     public Color getColor ()
@@ -510,6 +497,7 @@ public class ShapeSet
     //---------//
     /**
      * Report the name of the set.
+     *
      * @return the set name
      */
     public String getName ()
@@ -522,6 +510,7 @@ public class ShapeSet
     //--------//
     /**
      * Report the representative shape of the set, if any.
+     *
      * @return the rep shape, or null
      */
     public Shape getRep ()
@@ -550,6 +539,7 @@ public class ShapeSet
     //----------//
     /**
      * Convenient way to build a collection of shapes.
+     *
      * @param col a collection of shapes
      * @return a single collection
      */
@@ -569,6 +559,7 @@ public class ShapeSet
     //----------//
     /**
      * Convenient way to build a collection of shapes.
+     *
      * @param col1 a first collection of shapes
      * @param col2 a second collection of shapes
      * @return a single collection
@@ -591,6 +582,7 @@ public class ShapeSet
     //----------//
     /**
      * Convenient way to build a collection of shapes.
+     *
      * @param col1 a first collection of shapes
      * @param col2 a second collection of shapes
      * @param col3 a third collection of shapes
@@ -616,6 +608,7 @@ public class ShapeSet
     //----------//
     /**
      * Convenient way to build a collection of shapes.
+     *
      * @param shapes an array of shapes
      * @return a single collection
      */
@@ -629,6 +622,7 @@ public class ShapeSet
     //---------//
     /**
      * Retrieve a set knowing its name (just like an enumeration).
+     *
      * @param str the provided set name
      * @return the range found, or null otherwise
      */
@@ -642,6 +636,7 @@ public class ShapeSet
     //-----------//
     /**
      * Exports the set of shapes.
+     *
      * @return the proper enum set
      */
     public EnumSet<Shape> getShapes ()
@@ -654,6 +649,7 @@ public class ShapeSet
     //-----------------//
     /**
      * Exports the sorted collection of shapes.
+     *
      * @return the proper enum set
      */
     public List<Shape> getSortedShapes ()
@@ -670,6 +666,7 @@ public class ShapeSet
     //----------//
     /**
      * Assign a display color to the shape set.
+     *
      * @param color the display color
      */
     public void setColor (Color color)
@@ -682,6 +679,7 @@ public class ShapeSet
     //------------------//
     /**
      * Define a specific color for the set.
+     *
      * @param color the specified color
      */
     public void setConstantColor (Color color)
@@ -737,8 +735,8 @@ public class ShapeSet
     // addColoredItem //
     //----------------//
     private static void addColoredItem (JComponent top,
-                                        JMenuItem  item,
-                                        Color      color)
+                                        JMenuItem item,
+                                        Color color)
     {
         if (color != null) {
             item.setForeground(color);
@@ -756,10 +754,10 @@ public class ShapeSet
     {
         this.name = name;
         constantColor = new Constant.Color(
-            getClass().getName(),
-            name + ".color",
-            "#000000",
-            "Color code for set " + name);
+                getClass().getName(),
+                name + ".color",
+                "#000000",
+                "Color code for set " + name);
 
         // Assign the set display color
         if (!constantColor.isSourceValue()) {
@@ -771,7 +769,6 @@ public class ShapeSet
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //------//
     // Sets //
     //------//
@@ -781,7 +778,8 @@ public class ShapeSet
         //~ Static fields/initializers -----------------------------------------
 
         static final Map<String, ShapeSet> map = new HashMap<>();
-        static final List<ShapeSet>        setList = new ArrayList<>();
+
+        static final List<ShapeSet> setList = new ArrayList<>();
 
         static {
             for (Field field : ShapeSet.class.getDeclaredFields()) {

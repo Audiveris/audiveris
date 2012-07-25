@@ -475,7 +475,15 @@ public class UnitModel
             Logger theLogger = unit.getLogger();
 
             if (theLogger != null) {
-                theLogger.setLevel((String) value);
+                String val = (String) value;
+                val = val.trim();
+                if (!val.isEmpty()) {
+                    try {
+                        theLogger.setLevel(val);
+                    } catch (IllegalArgumentException ex) {
+                        logger.warning("Illegal logger level {0}", val);
+                    }
+                }
             }
         } else if (node instanceof Constant) {
             Constant constant = (Constant) node;

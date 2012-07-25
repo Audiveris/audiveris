@@ -11,20 +11,25 @@
 // </editor-fold>
 package omr.script;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
+import omr.glyph.Glyphs;
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
+import omr.glyph.ShapeSet;
 
 import omr.sheet.Sheet;
 
-import omr.step.StepException;
 import omr.step.Stepping;
 import omr.step.Steps;
 
-import java.util.Collection;
+import omr.glyph.facets.Glyph;
+import omr.grid.GridBuilder;
 
 /**
- * Class {@code BarlineTask} assigns (or deassign) a barline shape to a
- * collection of glyphs.
+ * Class {@code BarlineTask} assigns (or deassigns) a barline shape to
+ * a collection of glyphs.
  *
  * <p>If the compound flag is set, a compound glyph is composed from the
  * provided glyphs and assigned the shape. Otherwise, each provided glyph is
@@ -33,7 +38,7 @@ import java.util.Collection;
  * @author Hervé Bitteur
  */
 public class BarlineTask
-    extends AssignTask
+        extends AssignTask
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -41,17 +46,18 @@ public class BarlineTask
     // BarlineTask //
     //-------------//
     /**
-     * Create a barline assignment task
+     * Create a barline assignment task.
      *
-     * @param shape the assigned shape (or null for a de-assignment)
+     * @param sheet    the containing sheet
+     * @param shape    the assigned shape (or null for a de-assignment)
      * @param compound true if all glyphs are to be merged into one compound
-     * which is assigned to the given shape, false if each and every glyph is to
-     * be assigned to the given shape
-     * @param glyphs the collection of concerned glyphs
+     *                 which is assigned to the given shape, false if each and
+     *                 every glyph is to be assigned to the given shape
+     * @param glyphs   the collection of concerned glyphs
      */
-    public BarlineTask (Sheet             sheet,
-                        Shape             shape,
-                        boolean           compound,
+    public BarlineTask (Sheet sheet,
+                        Shape shape,
+                        boolean compound,
                         Collection<Glyph> glyphs)
     {
         super(sheet, shape, compound, glyphs);
@@ -61,11 +67,11 @@ public class BarlineTask
     // BarlineTask //
     //-------------//
     /**
-     * Convenient way to create a barline deassignment task
+     * Convenient way to create a barline deassignment task.
      *
      * @param glyphs the collection of glyphs to deassign
      */
-    public BarlineTask (Sheet             sheet,
+    public BarlineTask (Sheet sheet,
                         Collection<Glyph> glyphs)
     {
         super(sheet, glyphs);
@@ -80,25 +86,49 @@ public class BarlineTask
     }
 
     //~ Methods ----------------------------------------------------------------
-
+    //
     //--------//
     // epilog //
     //--------//
+    /**
+     * The amount or work depends on what is impacted by the barline(s)
+     * assignment or deassignment.
+     * <p>If the modifications do not concern system-defining barlines but only
+     * measure or parts, the systems limits are not impacted.
+     * Otherwise, the whole systems structure has to be redone ...!!!!
+     *
+     * @param sheet the impacted sheet
+     */
     @Override
     public void epilog (Sheet sheet)
     {
-        if (sheet.getSystemsBuilder() != null) {
-            try {
-                sheet.getSystemsBuilder()
-                     .buildSystems();
-                Stepping.reprocessSheet(
-                    Steps.valueOf(Steps.MEASURES),
+        try {
+            GridBuilder gridBuilder = sheet.getGridBuilder();
+
+            if (getAssignedShape() != null) {
+                // Assignment
+                if (isCompound()) {
+                    Glyph firstGlyph = glyphs.iterator().next();
+                    Glyph compound = firstGlyph.getMembers().first().getGlyph();
+                    gridBuilder.updateBars(glyphs,
+                                           Arrays.asList(compound));
+                } else {
+                    gridBuilder.updateBars(glyphs, glyphs);
+                }
+            } else {
+                // Deassignment
+                Set<Glyph> emptySet = Collections.emptySet();
+                gridBuilder.updateBars(glyphs, emptySet);
+            }
+
+            // Following steps
+            Stepping.reprocessSheet(
+                    Steps.valueOf(Steps.SYSTEMS),
                     sheet,
                     sheet.getSystems(),
                     false);
-            } catch (StepException ex) {
-                logger.warning("Error in BarlineTask", ex);
-            }
+        } catch (Exception ex) {
+            logger.warning("Error in BarlineTask", ex);
         }
     }
 

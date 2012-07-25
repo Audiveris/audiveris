@@ -616,7 +616,7 @@ public class Beam
         boolean logging = isVip() || item.isVip() || logger.isFineEnabled();
 
         if (logging) {
-            logger.info("Check beam item {0} with {1}", new Object[]{item, this});
+            logger.info("Check beam item {0} with {1}", item, this);
         }
 
         // Check alignment, using distance to line
@@ -624,9 +624,8 @@ public class Beam
         double dy = getScale().pixelsToFrac(getLine().distanceOf(gsp.x, gsp.y));
 
         if (logging) {
-            logger.info("dy={0} vs {1}", new Object[]{(float) Math.abs(dy),
-                                                      constants.maxDistance.
-                        getValue()});
+            logger.info("dy={0} vs {1}", (float) Math.abs(dy),
+                        constants.maxDistance.getValue());
         }
 
         if (Math.abs(dy) > constants.maxDistance.getValue()) {
@@ -640,15 +639,15 @@ public class Beam
                     getPoint((side == LEFT) ? RIGHT : LEFT)));
 
             if (logging) {
-                logger.info("dx={0} vs {1}", new Object[]{(float) dx,
-                                                          constants.maxGap.
-                            getValue()});
+                logger.info("dx={0} vs {1}", (float) dx,
+                            constants.maxGap.getValue());
             }
 
             if (dx <= constants.maxGap.getValue()) {
                 return true;
             }
         }
+
 
         return false;
     }
@@ -673,6 +672,8 @@ public class Beam
                     }
                 } else {
                     addError("Beam with no chord on " + side + " stem");
+
+
                 }
             }
         }

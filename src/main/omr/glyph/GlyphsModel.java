@@ -107,7 +107,7 @@ public class GlyphsModel
     {
         if (compound) {
             // Build & insert one compound
-            Glyph glyph = null;
+            Glyph glyph;
 
             SystemInfo system = sheet.getSystemOf(glyphs);
 
@@ -316,13 +316,6 @@ public class GlyphsModel
                 && ScoreActions.getInstance().isManualPersisted()) {
             // Record the glyph description to disk
             GlyphRepository.getInstance().recordOneGlyph(glyph, sheet);
-
-            //            GlyphChecker.getInstance()
-            //                        .relax(
-            //                shape,
-            //                glyph,
-            //                ShapeDescription.features(glyph),
-            //                sheet);
         }
 
         return glyph;

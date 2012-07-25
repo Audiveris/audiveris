@@ -30,28 +30,24 @@ import omr.sheet.SystemInfo;
 
 import omr.text.tesseract.TesseractOCR;
 
-import omr.ui.symbol.TextFont;
-
 import omr.util.WrappedBoolean;
 import omr.util.XmlUtilities;
 
-import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.font.FontRenderContext;
-import java.awt.font.TextLayout;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class {@code TextBuilder} provide features to check, build and 
+ * Class {@code TextBuilder} provide features to check, build and
  * reorganize text items, including interacting with the OCR engine.
  *
  * @author Hervé Bitteur
@@ -68,11 +64,6 @@ public class TextBuilder
 
     /** The related OCR. */
     private static final OCR ocr = TesseractOCR.getInstance();
-
-    /** Needed for font size computation. */
-    private static final FontRenderContext frc = new FontRenderContext(null,
-                                                                       true,
-                                                                       true);
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -141,81 +132,6 @@ public class TextBuilder
         return italicWords * 2 >= reliableWords;
     }
 
-//    //---------//
-//    // isValid //
-//    //---------//
-//    /**
-//     * Check the ocr line with respect to the input glyph.
-//     *
-//     * @param glyph    the input glyph
-//     * @param textLine the ocr output
-//     * @return true if valid, false otherwise
-//     */
-//    public boolean isValid (Glyph glyph,
-//                            TextLine textLine)
-//    {
-//        // Always trust the user
-//        if (glyph.isText() && glyph.isManualShape()) {
-//            return true;
-//        }
-//
-//        // Check this is not a tuplet
-//        if (textLine.getValue().equals("3")
-//                && (glyph.getShape() == Shape.TUPLET_THREE)) {
-//            logger.fine("This text is a tuplet 3 {0} {1}", textLine, glyph);
-//
-//            return false;
-//        }
-//
-//        if (textLine.getValue().equals("6")
-//                && (glyph.getShape() == Shape.TUPLET_SIX)) {
-//            logger.fine("This text is a tuplet 6 {0} {1}", textLine, glyph);
-//
-//            return false;
-//        }
-//
-//        // Check for abnormal characters
-//        WrappedBoolean stripped = new WrappedBoolean(false);
-//        XmlUtilities.stripNonValidXMLCharacters(textLine.getValue(), stripped);
-//
-//        if (stripped.isSet()) {
-//            logger.fine("This text contains invalid characters {0} {1}",
-//                        textLine, glyph);
-//
-//            return false;
-//        }
-//
-//        // Check that aspect (height/width) is similar between ocr & glyph
-//        //        if (textLine.getValue().length() <= constants.maxCharCountForAspectCheck.
-//        //                getValue()) {
-//        PixelRectangle box = textLine.getBounds();
-//        String str = textLine.getValue();
-//        Font font = TextFont.baseTextFont;
-//        TextLayout layout = new TextLayout(str, font, frc);
-//        Rectangle2D rect = layout.getBounds();
-//        double xRatio = box.width / rect.getWidth();
-//        double yRatio = box.height / rect.getHeight();
-//        double aRatio = yRatio / xRatio;
-//        logger.fine("{0} xRatio:{1} yRatio:{2} aRatio:{3}", textLine,
-//                    (float) xRatio, (float) yRatio, aRatio);
-//
-//        // Sign of something wrong
-//        if ((aRatio < constants.minAspectRatio.getValue())
-//                || (aRatio > constants.maxAspectRatio.getValue())) {
-//            logger.fine("Invalid {0} {1}", textLine, glyph);
-//
-//            return false;
-//        }
-//        //        }
-//
-//        // Check font size of each word
-//        if (!isValidFontSize(textLine)) {
-//            return false;
-//        }
-//
-//        // All test are OK, so...
-//        return true;
-//    }
     //---------//
     // isValid //
     //---------//
@@ -240,6 +156,7 @@ public class TextBuilder
         if (!isValidFontSize(textLine)) {
             return false;
         }
+
         // Check for abnormal characters
         WrappedBoolean stripped = new WrappedBoolean(false);
         XmlUtilities.stripNonValidXMLCharacters(textLine.getValue(), stripped);
@@ -367,8 +284,62 @@ public class TextBuilder
                 }
             }
 
-            logger.fine("  *** mapGlyphs adding {0}", line);
+            logger.fine("  mapGlyphs adding {0}", line);
             system.getSentences().add(line);
+        }
+
+        // Purge duplications, if any, in system sentences
+        purgeSentences();
+    }
+
+    //----------------//
+    // purgeSentences //
+    //----------------//
+    /**
+     * Remove words whose glyphs no longer point back to them,
+     * and finally remove sentences which have no word left.
+     */
+    public void purgeSentences ()
+    {
+        for (Iterator<TextLine> itLine = system.getSentences().iterator();
+                itLine.hasNext();) {
+            TextLine line = itLine.next();
+
+            List<TextWord> toRemove = new ArrayList<>();
+            for (TextWord word : line.getWords()) {
+                Glyph glyph = word.getGlyph();
+
+                if (glyph.getTextWord() != word) {
+                    logger.fine("{0} purging old {1}", system.idString(), word);
+                    toRemove.add(word);;
+                }
+            }
+
+            if (!toRemove.isEmpty()) {
+                line.removeWords(toRemove);
+            }
+
+            if (line.getWords().isEmpty()) {
+                logger.fine("{0} purging empty {1}", system.idString(), line);
+                itLine.remove();
+            }
+        }
+    }
+
+    //---------------//
+    // dumpSentences //
+    //---------------//
+    /**
+     * Debug method to list current system sentences.
+     */
+    public void dumpSentences (String title)
+    {
+        Set<TextLine> sentences = system.getSentences();
+        logger.info("{0} {1} sentences: {2}",
+                    title, system.idString(), sentences.size());
+
+        for (TextLine sentence : sentences) {
+            logger.info("   {0}", sentence);
         }
     }
 

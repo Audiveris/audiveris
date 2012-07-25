@@ -76,6 +76,7 @@ public class LinesRetriever
     private static final Logger logger = Logger.getLogger(LinesRetriever.class);
 
     //~ Instance fields --------------------------------------------------------
+    //
     /** related sheet */
     private final Sheet sheet;
 
@@ -91,7 +92,7 @@ public class LinesRetriever
     /** Filaments factory */
     private FilamentsFactory factory;
 
-    /** Long filaments found, non sorted */
+    /** Long horizontal filaments found, non sorted */
     private final List<LineFilament> filaments = new ArrayList<>();
 
     /** Second collection of filaments */
@@ -119,6 +120,7 @@ public class LinesRetriever
     private final RunsViewer runsViewer;
 
     //~ Constructors -----------------------------------------------------------
+    //
     //----------------//
     // LinesRetriever //
     //----------------//
@@ -178,7 +180,6 @@ public class LinesRetriever
         RunsTable shortVertTable = wholeVertTable.clone("short-vert").purge(
                 new Predicate<Run>()
                 {
-
                     @Override
                     public final boolean check (Run run)
                     {
@@ -208,7 +209,6 @@ public class LinesRetriever
         RunsTable longHoriTable = wholeHoriTable.clone("long-hori").purge(
                 new Predicate<Run>()
                 {
-
                     @Override
                     public final boolean check (Run run)
                     {
@@ -252,7 +252,7 @@ public class LinesRetriever
      *          + canIncludeSection(fil, sct)
      * </pre>
      */
-    public List<Section> completeLines ()
+    public void completeLines ()
     {
         StopWatch watch = new StopWatch("completeLines");
 
@@ -293,8 +293,6 @@ public class LinesRetriever
             for (SystemInfo system : sheet.getSystemManager().getSystems()) {
                 system.updateCoordinates();
             }
-
-            return shortSections;
         } finally {
             if (constants.printWatch.getValue()) {
                 watch.print();
@@ -375,8 +373,8 @@ public class LinesRetriever
     // retrieveLines //
     //---------------//
     /**
-     * Organize the long and thin horizontal sections into filaments (glyphs)
-     * that will be good candidates for staff lines.
+     * Organize the long and thin horizontal sections into filaments
+     * (glyphs) that will be good candidates for staff lines.
      * <ol>
      * <li>First, retrieve long horizontal sections and merge them into
      * filaments.</li>
@@ -411,8 +409,8 @@ public class LinesRetriever
             watch.start("retrieveGlobalSlope");
             globalSlope = retrieveGlobalSlope();
             sheet.setSkew(new Skew(globalSlope, sheet));
-            logger.info("{0}Global slope: {1}", new Object[]{
-                        sheet.getLogPrefix(), (float) globalSlope});
+            logger.info("{0}Global slope: {1}",
+                        sheet.getLogPrefix(), (float) globalSlope);
 
             // Retrieve regular patterns of filaments and pack them into clusters
             clustersRetriever = new ClustersRetriever(
@@ -431,7 +429,7 @@ public class LinesRetriever
                 secondFilaments = discardedFilaments;
                 Collections.sort(secondFilaments, Glyph.idComparator);
                 logger.info("{0}Searching clusters with secondInterline: {1}",
-                            new Object[]{sheet.getLogPrefix(), secondInterline});
+                            sheet.getLogPrefix(), secondInterline);
                 secondClustersRetriever = new ClustersRetriever(
                         sheet,
                         secondFilaments,
@@ -545,8 +543,7 @@ public class LinesRetriever
         if (height > params.maxStickerThickness) {
             if (logger.isFineEnabled() || isVip) {
                 logger.info("{0}SSS height:{1} vs {2}",
-                            new Object[]{vips, height,
-                                         params.maxStickerThickness});
+                            vips, height, params.maxStickerThickness);
             }
 
             return false;
@@ -560,8 +557,7 @@ public class LinesRetriever
         if (gap > params.maxStickerGap) {
             if (logger.isFineEnabled() || isVip) {
                 logger.info("{0}GGG gap:{1} vs {2}",
-                            new Object[]{vips, (float) gap,
-                                         (float) params.maxStickerGap});
+                            vips, (float) gap, (float) params.maxStickerGap);
             }
 
             return false;
@@ -575,8 +571,7 @@ public class LinesRetriever
         if (extension > params.maxStickerExtension) {
             if (logger.isFineEnabled() || isVip) {
                 logger.info("{0}XXX ext:{1} vs {2}",
-                            new Object[]{vips, (float) extension,
-                                         params.maxStickerExtension});
+                            vips, (float) extension, params.maxStickerExtension);
             }
 
             return false;
@@ -602,8 +597,7 @@ public class LinesRetriever
         if (thickness > params.maxStickerThickness) {
             if (logger.isFineEnabled() || isVip) {
                 logger.info("{0}RRR thickness:{1} vs {2}",
-                            new Object[]{vips, (float) thickness,
-                                         params.maxStickerExtension});
+                            vips, (float) thickness, params.maxStickerExtension);
             }
 
             return false;
@@ -752,11 +746,12 @@ public class LinesRetriever
     // includeSections //
     //-----------------//
     /**
-     * Include "sticker" sections into their related lines, when applicable
+     * Include "sticker" sections into their related lines, when 
+     * applicable
      *
      * @param sections List of sections that are stickers candidates
      * @param update   should we update the line geometry with stickers (this
-     * should be limited to large sections).
+     *                 should be limited to large sections).
      */
     private void includeSections (List<Section> sections,
                                   boolean update)

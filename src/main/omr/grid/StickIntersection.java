@@ -20,9 +20,10 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Class {@code StickIntersection} records the intersection point of a stick
- * with a crossing line
- * (typical example is a vertical barline stick crosses a horizontal staff line)
+ * Class {@code StickIntersection} records the intersection point of a 
+ * stick with a crossing line.
+ * (A typical example is a vertical barline stick that crosses a horizontal 
+ * staff line)
  *
  * @author Hervé Bitteur
  */
@@ -31,8 +32,8 @@ public class StickIntersection
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** comparator on increasing abscissa */
-    public static Comparator<StickIntersection> horiComparator = new Comparator<StickIntersection>() {
+    /** Comparator on increasing abscissa */
+    public static Comparator<StickIntersection> byAbscissa = new Comparator<StickIntersection>() {
         @Override
         public int compare (StickIntersection o1,
                             StickIntersection o2)
@@ -48,8 +49,8 @@ public class StickIntersection
         }
     };
 
-    /** comparator on increasing ordinate */
-    public static Comparator<StickIntersection> vertComparator = new Comparator<StickIntersection>() {
+    /** Comparator on increasing ordinate */
+    public static Comparator<StickIntersection> byOrdinate = new Comparator<StickIntersection>() {
         @Override
         public int compare (StickIntersection o1,
                             StickIntersection o2)

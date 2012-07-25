@@ -40,9 +40,11 @@ import omr.ui.Colors;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.awt.Stroke;
 import java.awt.geom.PathIterator;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
@@ -61,6 +63,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
+import omr.ui.util.UIUtilities;
 
 /**
  * Class {@code BasicSection} is a basic implementation of {@link Section}.
@@ -1279,11 +1282,14 @@ public class BasicSection
         Rectangle rect = getBounds();
 
         if (clip.intersects(rect)) {
+            Graphics2D g2 = (Graphics2D) g;
+            final Stroke oldStroke = UIUtilities.setAbsoluteStroke(g2, 1f);
             Polygon polygon = getPolygon();
             g.setColor(Color.white);
             g.fillPolygon(polygon.xpoints, polygon.ypoints, polygon.npoints);
             g.setColor(Color.black);
             g.drawPolygon(polygon.xpoints, polygon.ypoints, polygon.npoints);
+            g2.setStroke(oldStroke);
 
             return true;
         } else {
