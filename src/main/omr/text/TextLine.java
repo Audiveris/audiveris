@@ -157,15 +157,17 @@ public class TextLine
      */
     public void addWords (Collection<TextWord> words)
     {
-        this.words.addAll(words);
+        if (words != null && !words.isEmpty()) {
+            this.words.addAll(words);
 
-        for (TextWord word : words) {
-            word.setTextLine(this);
+            for (TextWord word : words) {
+                word.setTextLine(this);
+            }
+
+            Collections.sort(this.words, TextWord.byAbscissa);
+
+            invalidateCache();
         }
-
-        Collections.sort(this.words, TextWord.byAbscissa);
-
-        invalidateCache();
     }
 
     //------//
@@ -302,9 +304,9 @@ public class TextLine
     /**
      * Compute a mean font size on representative words.
      *
-     * @return the mean font size
+     * @return the mean font size, ,or null if not available
      */
-    public float getMeanFontSize ()
+    public Float getMeanFontSize ()
     {
         float sumSize = 0;
         int wordCount = 0;
@@ -320,7 +322,15 @@ public class TextLine
         if (wordCount > 0) {
             return sumSize / wordCount;
         } else {
-            return getFirstWord().getFontInfo().pointsize;
+            if (getFirstWord() == null) {
+                logger.warning("No word in {0}", this);
+            }
+            FontInfo fontInfo = getFirstWord().getFontInfo();
+            if (fontInfo != null) {
+                return (float) fontInfo.pointsize;
+            } else {
+                return null;
+            }
         }
     }
 
@@ -499,8 +509,10 @@ public class TextLine
      */
     public void removeWords (Collection<TextWord> words)
     {
-        this.words.removeAll(words);
-        invalidateCache();
+        if (words != null && !words.isEmpty()) {
+            this.words.removeAll(words);
+            invalidateCache();
+        }
     }
 
     //----------------------//

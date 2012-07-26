@@ -82,7 +82,7 @@ public class TextPattern
             }
         }
         system.getSentences().removeAll(toRemove);
-        
+
         // Look for active text glyphs left over (no word, or no line)
         checkOrphanGlyphs();
 
@@ -91,7 +91,7 @@ public class TextPattern
 
         // Purge lines
         purgeLines(system.getSentences());
-        
+
         return 0; // Useless
     }
 
@@ -112,18 +112,23 @@ public class TextPattern
                 continue;
             }
 
-            logger.fine("Orphan text {0}", glyph.idString());
-
             // Use OCR on this glyph
+            logger.fine("Orphan text {0}", glyph.idString());
             List<TextLine> lines = textBuilder.retrieveOcrLine(glyph, language);
             if (lines != null) {
-                List<TextLine> newLines = textBuilder.recomposeLines(lines);
+                lines = textBuilder.recomposeLines(lines);
 
-                textBuilder.mapGlyphs(newLines,
+                textBuilder.mapGlyphs(lines,
                                       glyph.getMembers(),
                                       language);
-            } else {
-                logger.info("{0} No line", system.idString());
+
+            }
+            if (lines == null || lines.isEmpty()) {
+                logger.fine("{0} No valid text in {1}",
+                            system.idString(), glyph.idString());
+                if (!glyph.isManualShape()) {
+                    glyph.setShape(null);
+                }
             }
         }
 

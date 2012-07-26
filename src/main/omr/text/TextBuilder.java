@@ -65,6 +65,9 @@ public class TextBuilder
     /** The related OCR. */
     private static final OCR ocr = TesseractOCR.getInstance();
 
+    /** Abnormal characters. */
+    private static final char[] ABNORMAL_CHARS = new char[]{'\\'};
+
     //~ Instance fields --------------------------------------------------------
     //
     /** Related system. */
@@ -157,15 +160,6 @@ public class TextBuilder
             return false;
         }
 
-        // Check for abnormal characters
-        WrappedBoolean stripped = new WrappedBoolean(false);
-        XmlUtilities.stripNonValidXMLCharacters(textLine.getValue(), stripped);
-
-        if (stripped.isSet()) {
-            logger.warning("Invalid chars in {0}", textLine);
-            return false;
-        }
-
         // Check each word
         for (TextWord word : textLine.getWords()) {
             if (!isValid(word)) {
@@ -181,6 +175,26 @@ public class TextBuilder
     //---------//
     public boolean isValid (TextWord word)
     {
+        final String value = word.getValue();
+
+        // Check for abnormal characters
+        for (char ch : ABNORMAL_CHARS) {
+            if (value.indexOf(ch) != -1) {
+                logger.fine("Abnormal char {0} in {1}", ch, word);
+                return false;
+            }
+        }
+        
+        // Check for invalid XML characters
+        WrappedBoolean stripped = new WrappedBoolean(false);
+        XmlUtilities.stripNonValidXMLCharacters(value, stripped);
+
+        if (stripped.isSet()) {
+            logger.warning("Invalid XML chars in {0}", word);
+            return false;
+        }
+
+
 //        PixelRectangle box = word.getBounds();
 //        String str = word.getValue();
 //        Font font = new TextFont(word.getFontInfo());
@@ -252,6 +266,7 @@ public class TextBuilder
             // Browse all words, starting by shorter ones
             List<TextWord> sortedWords = new ArrayList<>(line.getWords());
             Collections.sort(sortedWords, TextWord.bySize);
+            List<TextWord> toRemove = new ArrayList<>();
 
             for (TextWord word : sortedWords) {
                 // Isolate proper word glyph from its enclosed sections
@@ -271,11 +286,15 @@ public class TextBuilder
                     wordGlyph.setTextWord(language, word);
                 } else {
                     logger.warning("No section found for {0}", word);
+                    toRemove.add(word);
                 }
             }
 
+            // Purge words if any
+            line.removeWords(toRemove);
+
             // Assign proper shape to each word glyph
-            for (TextWord word : sortedWords) {
+            for (TextWord word : line.getWords()) {
                 Glyph g = word.getGlyph();
 
                 if (g != null) {

@@ -164,7 +164,7 @@ public abstract class TextItem
     {
         StringBuilder sb = new StringBuilder("{");
         sb.append(getClass().getSimpleName());
-        ///sb.append('@').append(Integer.toHexString(hashCode()));
+        sb.append('@').append(Integer.toHexString(hashCode()));
 
         sb.append(internalsString());
 

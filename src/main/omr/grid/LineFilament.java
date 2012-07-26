@@ -36,10 +36,13 @@ public class LineFilament
     /** Combs where this filament appears. map (column index -> comb) */
     private SortedMap<Integer, FilamentComb> combs;
 
-    /** The line cluster this filament is part of, if any */
+    /** The line cluster this filament is part of, if any. */
     private LineCluster cluster;
 
-    /** Relative position in cluster (relevant only if cluster is not null) */
+    /**
+     * Relative position in cluster.
+     * (relevant only if cluster is not null) 
+     */
     private int clusterPos;
 
     //~ Constructors -----------------------------------------------------------

@@ -23,8 +23,8 @@ import java.io.File;
 import java.util.Collection;
 
 /**
- * Class {@code LoadStep} reloads the image for a sheet, from a provided image
- * file.
+ * Class {@code LoadStep} reloads the image for a sheet, 
+ * from a provided image file.
  * <p>This is simply a RE-loading, triggered by the user. The initial loading
  * is always done in {@link Score#createPages()}.</p>
  *

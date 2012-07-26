@@ -40,11 +40,12 @@ public class TextFont
     private static final Logger logger = Logger.getLogger(TextFont.class);
 
     /** Name of the chosen underlying text font */
-    private static final String fontName = constants.textFontName.getValue();
+    private static final String fontName = constants.defaultTextFontName.
+            getValue();
 
     /** The base font used for text entities */
     public static final TextFont baseTextFont = new TextFont(
-            constants.textFontSize.getValue());
+            constants.defaultTextFontSize.getValue());
 
     /** Ratio from a 300 DPI scan to font point-size (72 pt/inch) */
     public static final float TO_POINT = 72f / 300f;
@@ -145,13 +146,13 @@ public class TextFont
     {
         //~ Instance fields ----------------------------------------------------
 
-        Constant.String textFontName = new Constant.String(
-                "Times New Roman", //"Serif" or "Sans Serif",
-                "Standard font name for texts");
+        Constant.String defaultTextFontName = new Constant.String(
+                "Serif",
+                "Default font name for texts");
 
-        Constant.Integer textFontSize = new Constant.Integer(
+        Constant.Integer defaultTextFontSize = new Constant.Integer(
                 "points",
                 10,
-                "Standard font point size for texts");
+                "Default font point size for texts");
     }
 }

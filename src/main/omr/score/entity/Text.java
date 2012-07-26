@@ -322,7 +322,12 @@ public abstract class Text
     public String toString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("{Text").append(sentence.getRole());
+        sb.append("{Text");
+        
+        if (sentence.getRole() != null) {
+            sb.append(" ").append(sentence.getRole());
+        }
+        
         sb.append(internalsString());
 
         if (getContent() != null) {

@@ -350,12 +350,14 @@ public class BasicAlignment
     @Override
     public void dump ()
     {
-        if (startPoint != null)
-        System.out.println("   start=" + startPoint);
-        if (stopPoint != null)
-        System.out.println("   stop=" + stopPoint);
+        if (startPoint != null) {
+            System.out.println("   start=" + startPoint);
+        }
+        if (stopPoint != null) {
+            System.out.println("   stop=" + stopPoint);
+        }
+        
         System.out.println("   line=" + getLine());
-        System.out.println("   dist=" + getMeanDistance());
     }
 
     //----------//

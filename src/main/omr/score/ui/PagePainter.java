@@ -756,6 +756,11 @@ public abstract class PagePainter
         try {
             g.setColor(defaultColor);
             TextLine sentence = text.getSentence();
+            if (sentence.getWords().isEmpty()) {
+                // This may occur with obsolete Text, linked to old sentence
+                // When painting between TEXTS and PAGES steps
+                return false;
+            }
 
             if (text instanceof LyricsItem) {
                 // Just print the single LyricsItem word (and not the full line)
@@ -783,11 +788,14 @@ public abstract class PagePainter
     {
         // Use precise word font size for long enough words
         // But prefer mean line font size for too short words
-        float fontSize = word.getChars().size() > 1
+        Float fontSize = word.getChars().size() > 1
                          ? word.getPreciseFontSize()
                          : word.getTextLine().getMeanFontSize();
 
-        Font font = new TextFont(word.getFontInfo()).deriveFont(fontSize);
+        Font font = (fontSize != null && word.getFontInfo() != null)
+                    ? new TextFont(word.getFontInfo()).deriveFont(fontSize)
+                    : TextFont.baseTextFont;
+
         FontRenderContext frc = g.getFontRenderContext();
         TextLayout layout = new TextLayout(word.getValue(), font, frc);
 

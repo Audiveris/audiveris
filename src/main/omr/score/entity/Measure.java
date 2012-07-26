@@ -1253,7 +1253,12 @@ public class Measure
      */
     public String getScoreId ()
     {
-        return id.toScoreString();
+        MeasureId.PageBased mid = id;
+        if (mid != null) {
+            return mid.toScoreString();
+        } else {
+            return null;
+        }
     }
 
     //----------//

@@ -178,7 +178,8 @@ public class PagePhysicalPainter
     @Override
     public boolean visit (Barline barline)
     {
-        if (!barline.getBox().intersects(oldClip)) {
+        if (!barline.getBox().intersects(oldClip)
+                || systemInfo.getSheet().getStaffManager().getStaves().isEmpty()) {
             return false;
         }
 
@@ -201,6 +202,9 @@ public class PagePhysicalPainter
             LineInfo botLine = botStaff.getLastLine();
 
             Skew skew = systemInfo.getSkew();
+            if (skew == null) { // Safer
+                return false;
+            }
             double slope = skew.getSlope();
             BasicLine bar = new BasicLine();
             bar.includePoint(center.x, center.y);
@@ -241,6 +245,7 @@ public class PagePhysicalPainter
 
             g.setStroke(oldStroke);
         } catch (ConcurrentModificationException ignored) {
+            return false;
         } catch (Exception ex) {
             logger.warning(
                     getClass().getSimpleName() + " Error visiting " + barline,
@@ -309,15 +314,17 @@ public class PagePhysicalPainter
                 // Write the score-based measure id, on first real part only
                 if (part == measure.getSystem()
                         .getFirstRealPart()) {
-                    g.setColor(Colors.ANNOTATION);
-                    paint(
-                            basicLayout(measure.getScoreId(), null),
-                            new PixelPoint(
-                            measure.getLeftX(),
-                            measure.getPart().getFirstStaff().getInfo().
-                            getFirstLine().yAt(
-                            measure.getLeftX()) - annotationDy),
-                            BOTTOM_CENTER);
+                    String mid = measure.getScoreId();
+                    if (mid != null) {
+                        g.setColor(Colors.ANNOTATION);
+                        StaffInfo staff = measure.getPart().getFirstStaff().
+                                getInfo();
+                        PixelPoint loc = new PixelPoint(
+                                measure.getLeftX(),
+                                staff.getFirstLine().yAt(
+                                measure.getLeftX()) - annotationDy);
+                        paint(basicLayout(mid, null), loc, BOTTOM_CENTER);
+                    }
                 }
 
                 // Draw slot vertical lines ?

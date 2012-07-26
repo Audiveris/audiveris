@@ -746,7 +746,7 @@ public class LinesRetriever
     // includeSections //
     //-----------------//
     /**
-     * Include "sticker" sections into their related lines, when 
+     * Include "sticker" sections into their related lines, when
      * applicable
      *
      * @param sections List of sections that are stickers candidates

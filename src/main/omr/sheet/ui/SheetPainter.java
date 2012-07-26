@@ -37,6 +37,8 @@ import omr.ui.util.UIUtilities;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
+import java.util.ConcurrentModificationException;
+import omr.sheet.Scale;
 
 /**
  * Class {@code SheetPainter} defines for every node in Page hierarchy
@@ -49,7 +51,7 @@ import java.awt.Stroke;
  * @author Hervé Bitteur
  */
 public class SheetPainter
-    extends AbstractScoreVisitor
+        extends AbstractScoreVisitor
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -57,7 +59,6 @@ public class SheetPainter
     private static final Logger logger = Logger.getLogger(SheetPainter.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Graphic context */
     private final Graphics2D g;
 
@@ -71,18 +72,17 @@ public class SheetPainter
     private MusicFont musicFont;
 
     //~ Constructors -----------------------------------------------------------
-
     //--------------//
     // SheetPainter //
     //--------------//
     /**
      * Creates a new SheetPainter object.
      *
-     * @param g Graphic context
+     * @param g                  Graphic context
      * @param editableBoundaries flag to draw editable boundaries
      */
     public SheetPainter (Graphics g,
-                         boolean  editableBoundaries)
+                         boolean editableBoundaries)
     {
         this.g = (Graphics2D) g;
         this.editableBoundaries = editableBoundaries;
@@ -91,7 +91,6 @@ public class SheetPainter
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------------//
     // visit Measure //
     //---------------//
@@ -102,12 +101,13 @@ public class SheetPainter
             // Render the measure ending barline
             if (measure.getBarline() != null) {
                 measure.getBarline()
-                       .renderLine(g);
+                        .renderLine(g);
             }
+        } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + measure,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + measure,
+                    ex);
         }
 
         // Nothing lower than measure
@@ -123,25 +123,29 @@ public class SheetPainter
         try {
             Sheet sheet = page.getSheet();
 
-            // Determine proper font
-            musicFont = MusicFont.getFont(sheet.getInterline());
-
             // Use specific color
             g.setColor(Colors.ENTITY_MINOR);
 
             if (!page.getSystems()
-                     .isEmpty()) {
+                    .isEmpty()) {
+                // Small protection about changing data...
+                if (sheet.getScale() == null) {
+                    return false;
+                }
+                // Determine proper font
+                musicFont = MusicFont.getFont(sheet.getInterline());
                 // Normal (full) rendering of the score
                 page.acceptChildren(this);
             } else {
                 // Render what we have got so far
                 sheet.getStaffManager()
-                     .render(g);
+                        .render(g);
             }
+        } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + page,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + page,
+                    ex);
         } finally {
             g.setStroke(oldStroke);
         }
@@ -159,12 +163,13 @@ public class SheetPainter
             // Render the part starting barline, if any
             if (part.getStartingBarline() != null) {
                 part.getStartingBarline()
-                    .renderLine(g);
+                        .renderLine(g);
             }
+        } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + part,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + part,
+                    ex);
         }
 
         return true;
@@ -182,10 +187,12 @@ public class SheetPainter
             }
 
             return visit(system.getInfo());
+        } catch (ConcurrentModificationException ignored) {
+            return false;
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + system,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + system,
+                    ex);
 
             return false;
         }
@@ -209,7 +216,7 @@ public class SheetPainter
 
                 // System boundary
                 systemInfo.getBoundary()
-                          .render(g, editableBoundaries);
+                        .render(g, editableBoundaries);
 
                 // Staff lines
                 for (StaffInfo staff : systemInfo.getStaves()) {
@@ -228,10 +235,13 @@ public class SheetPainter
 
                 return true;
             }
+        } catch (ConcurrentModificationException ignored) {
+            return false;
         } catch (Exception ex) {
-            logger.warning(
-                getClass().getSimpleName() + " Error visiting " + systemInfo,
-                ex);
+            logger.
+                    warning(
+                    getClass().getSimpleName() + " Error visiting " + systemInfo,
+                    ex);
         }
 
         return false;
@@ -242,6 +252,7 @@ public class SheetPainter
     //--------------------//
     /**
      * Paint the virtual glyphs on the sheet view
+     *
      * @param systemInfo the containing system
      */
     private void paintVirtualGlyphs (SystemInfo systemInfo)
@@ -252,10 +263,10 @@ public class SheetPainter
             if (glyph.isVirtual()) {
                 ShapeSymbol symbol = Symbols.getSymbol(glyph.getShape());
                 symbol.paintSymbol(
-                    g,
-                    musicFont,
-                    glyph.getAreaCenter(),
-                    Alignment.AREA_CENTER);
+                        g,
+                        musicFont,
+                        glyph.getAreaCenter(),
+                        Alignment.AREA_CENTER);
             }
         }
     }

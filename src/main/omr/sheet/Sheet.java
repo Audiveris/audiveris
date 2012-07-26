@@ -102,6 +102,7 @@ public class Sheet
     };
 
     //~ Instance fields --------------------------------------------------------
+    //
     /** Containing score */
     private final Score score;
 
@@ -121,6 +122,7 @@ public class Sheet
     private final List<SystemInfo> systems;
 
     //-- resettable members ----------------------------------------------------
+    //
     /** The related picture */
     private Picture picture;
 
@@ -140,7 +142,7 @@ public class Sheet
     private Lag vLag;
 
     /** Global glyph nest */
-    private final Nest nest;
+    private Nest nest;
 
     /**
      * Non-lag & non-glyph related selections for this sheet
@@ -149,8 +151,9 @@ public class Sheet
     private final SelectionService locationService;
 
     // Companion processors
+    //
     /** Scale */
-    private final ScaleBuilder scaleBuilder;
+    private ScaleBuilder scaleBuilder;
 
     /** Staves */
     private final StaffManager staffManager;
@@ -221,12 +224,6 @@ public class Sheet
 
         locationService = new SelectionService("sheet", allowedEvents);
 
-        // Beware: Nest must subscribe to location before any lag,
-        // to allow cleaning up of glyph data, before publication by a lag
-        nest = new BasicNest("gNest", this);
-        nest.setServices(locationService);
-
-        scaleBuilder = new ScaleBuilder(this);
         staffManager = new StaffManager(this);
         systemManager = new SystemManager(this);
         bench = new SheetBench(this);
@@ -420,19 +417,6 @@ public class Sheet
         return currentStep;
     }
 
-    //----------------------//
-    // getDefaultHistoRatio //
-    //----------------------//
-    /**
-     * Report the default value of histogram threhold for staff detection
-     *
-     * @return the default ratio of maximum histogram value
-     */
-    public static double getDefaultHistoRatio ()
-    {
-        return constants.defaultStaffThreshold.getValue();
-    }
-
     //-------------------------//
     // getDefaultMaxForeground //
     //-------------------------//
@@ -473,25 +457,6 @@ public class Sheet
     public int getHeight ()
     {
         return picture.getHeight();
-    }
-
-    //---------------//
-    // getHistoRatio //
-    //---------------//
-    /**
-     * Get the sheet value of histogram threhold for staff detection.
-     * If the value is not yet set, it is set to the default value and returned.
-     *
-     * @return the ratio of maximum histogram value
-     * @see #hasHistoRatio()
-     */
-    public double getHistoRatio ()
-    {
-        if (!hasHistoRatio()) {
-            setHistoRatio(getDefaultHistoRatio());
-        }
-
-        return histoRatio;
     }
 
     //------------------//
@@ -1189,19 +1154,6 @@ public class Sheet
         currentStep = step;
     }
 
-    //----------------------//
-    // setDefaultHistoRatio //
-    //----------------------//
-    /**
-     * Set the default value of histogram threhold for staff detection
-     *
-     * @param histoRatio the default ratio of maximum histogram value
-     */
-    public static void setDefaultHistoRatio (double histoRatio)
-    {
-        constants.defaultStaffThreshold.setValue(histoRatio);
-    }
-
     //-------------------------//
     // setDefaultMaxForeground //
     //-------------------------//
@@ -1259,6 +1211,13 @@ public class Sheet
         // Reset most of all members
         reset();
 
+        // Beware: Glyph nest must subscribe to location before any lag,
+        // to allow cleaning up of glyph data, before publication by a lag
+        nest = new BasicNest("gNest", this);
+        nest.setServices(locationService);
+        
+        scaleBuilder = new ScaleBuilder(this);
+        
         try {
             picture = new Picture(image, locationService);
 
@@ -1526,6 +1485,12 @@ public class Sheet
         horizontals = null;
         hLag = null;
         vLag = null;
+        nest = null;
+        
+        scaleBuilder = null;
+        staffManager.reset();
+        gridBuilder = null;
+        systemManager.reset();
         systemsBuilder = null;
         symbolsController = null;
         verticalsController = null;
@@ -1534,7 +1499,7 @@ public class Sheet
         histoRatio = null;
         currentStep = null;
         doneSteps = new HashSet<>();
-        systemManager.reset();
+        
     }
 
     //------------//
@@ -1574,10 +1539,5 @@ public class Sheet
                 "ByteLevel",
                 140,
                 "Maximum gray level for a pixel to be considered as foreground (black)");
-
-        //
-        Constant.Ratio defaultStaffThreshold = new Constant.Ratio(
-                0.44,
-                "Ratio of horizontal histogram to detect staves");
     }
 }
