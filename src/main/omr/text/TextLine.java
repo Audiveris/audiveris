@@ -22,6 +22,8 @@ import omr.score.entity.SystemPart;
 
 import omr.sheet.SystemInfo;
 
+import omr.util.Navigable;
+
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -71,6 +73,7 @@ public class TextLine
     //~ Instance fields --------------------------------------------------------
     //
     /** Containing system. */
+    @Navigable(false)
     private final SystemInfo system;
 
     /** Words that compose this line. */
@@ -313,7 +316,7 @@ public class TextLine
 
         for (TextWord word : words) {
             // Discard one-char words, they are not reliable
-            if (word.getChars().size() > 1) {
+            if (word.getLength() > 1) {
                 wordCount++;
                 sumSize += word.getPreciseFontSize();
             }

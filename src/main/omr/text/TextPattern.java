@@ -87,10 +87,12 @@ public class TextPattern
         checkOrphanGlyphs();
 
         // Global recomposition of all lines
-        textBuilder.recomposeLines(system.getSentences());
+        List<TextLine> lines = textBuilder.recomposeLines(system.getSentences());
+        system.getSentences().addAll(lines);
 
         // Purge lines
         purgeLines(system.getSentences());
+        textBuilder.purgeSentences();
 
         return 0; // Useless
     }
@@ -107,27 +109,40 @@ public class TextPattern
     private void checkOrphanGlyphs ()
     {
         String language = system.getScoreSystem().getScore().getLanguage();
+
         for (Glyph glyph : system.getGlyphs()) {
             if (!isOrphan(glyph)) {
                 continue;
             }
 
-            // Use OCR on this glyph
-            logger.fine("Orphan text {0}", glyph.idString());
-            List<TextLine> lines = textBuilder.retrieveOcrLine(glyph, language);
-            if (lines != null) {
+            if (glyph.getManualValue() != null) {
+                // Build a TextLine/TextWord manually
+                TextWord word = TextWord.createManualWord(
+                        glyph, glyph.getManualValue());
+                glyph.setTextWord(language, word);
+                TextLine line = new TextLine(system, Arrays.asList(word));
+                List<TextLine> lines = Arrays.asList(line);
                 lines = textBuilder.recomposeLines(lines);
+                system.getSentences().addAll(lines);
+                textBuilder.purgeSentences();
+            } else {
+                // Use OCR on this glyph
+                logger.fine("Orphan text {0}", glyph.idString());
+                List<TextLine> lines = textBuilder.retrieveOcrLine(glyph,
+                                                                   language);
+                if (lines != null) {
+                    lines = textBuilder.recomposeLines(lines);
+                    textBuilder.mapGlyphs(lines,
+                                          glyph.getMembers(),
+                                          language);
 
-                textBuilder.mapGlyphs(lines,
-                                      glyph.getMembers(),
-                                      language);
-
-            }
-            if (lines == null || lines.isEmpty()) {
-                logger.fine("{0} No valid text in {1}",
-                            system.idString(), glyph.idString());
-                if (!glyph.isManualShape()) {
-                    glyph.setShape(null);
+                }
+                if (lines == null || lines.isEmpty()) {
+                    logger.fine("{0} No valid text in {1}",
+                                system.idString(), glyph.idString());
+                    if (!glyph.isManualShape()) {
+                        glyph.setShape(null);
+                    }
                 }
             }
         }

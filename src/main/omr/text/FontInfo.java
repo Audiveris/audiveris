@@ -16,7 +16,12 @@ package omr.text;
  */
 public class FontInfo
 {
+    //~ Static fields/initializers ---------------------------------------------
 
+    /** A default FontInfo instance when we absolutely need one. */
+    public static final FontInfo DEFAULT = createDefault(36);
+
+    //~ Instance fields --------------------------------------------------------
     /** True if bold. */
     public final boolean isBold;
 
@@ -41,9 +46,23 @@ public class FontInfo
     /** Font name. */
     public final String fontName;
 
+    //~ Constructors -----------------------------------------------------------
+    //
     //----------//
     // FontInfo //
     //----------//
+    /**
+     * Creates a new FontInfo object.
+     *
+     * @param isBold       
+     * @param isItalic     
+     * @param isUnderlined 
+     * @param isMonospace  
+     * @param isSerif      
+     * @param isSmallcaps  
+     * @param pointsize    
+     * @param fontName     
+     */
     public FontInfo (boolean isBold,
                      boolean isItalic,
                      boolean isUnderlined,
@@ -63,35 +82,62 @@ public class FontInfo
         this.fontName = fontName;
     }
 
+    //~ Methods ----------------------------------------------------------------
+    //
+    //---------------//
+    // createDefault //
+    //---------------//
+    /**
+     * Create a default font using provided fontSize.
+     *
+     * @param fontSize the size to use
+     * @return the FontInfo instance
+     */
+    public static FontInfo createDefault (int fontSize)
+    {
+        return new FontInfo(
+            false, false, false, false, true, false, fontSize, "Serif");
+    }
+    
     //----------//
     // toString //
     //----------//
+
     @Override
     public String toString ()
     {
         StringBuilder sb = new StringBuilder("{");
-        sb.append(fontName).append(' ');
+        sb.append(fontName)
+                .append(' ');
 
         if (isBold) {
             sb.append('B');
         }
+
         if (isItalic) {
             sb.append('I');
         }
+
         if (isUnderlined) {
             sb.append('U');
         }
+
         if (isMonospace) {
             sb.append('M');
         }
+
         if (isSerif) {
             sb.append('S');
         }
+
         if (isSmallcaps) {
             sb.append('C');
         }
-        sb.append('-').append(pointsize);
+
+        sb.append('-')
+                .append(pointsize);
         sb.append("}");
+
         return sb.toString();
     }
 }

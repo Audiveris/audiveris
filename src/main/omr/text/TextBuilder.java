@@ -123,7 +123,8 @@ public class TextBuilder
         int italicWords = 0;
 
         for (TextWord word : line.getWords()) {
-            if (word.getConfidence() >= constants.minConfidence.getValue()) {
+            if (word.getConfidence() >= constants.minConfidence.getValue()
+                    && word.getLength() > 1) {
                 reliableWords++;
                 if (word.getFontInfo().isItalic) {
                     italicWords++;
@@ -132,7 +133,11 @@ public class TextBuilder
         }
 
         // Check for majority among reliable words
-        return italicWords * 2 >= reliableWords;
+        if (reliableWords != 0) {
+            return italicWords * 2 >= reliableWords;
+        } else {
+            return false;
+        }
     }
 
     //---------//
@@ -184,7 +189,7 @@ public class TextBuilder
                 return false;
             }
         }
-        
+
         // Check for invalid XML characters
         WrappedBoolean stripped = new WrappedBoolean(false);
         XmlUtilities.stripNonValidXMLCharacters(value, stripped);
@@ -285,7 +290,7 @@ public class TextBuilder
                     // Link Glyph -> TextWord
                     wordGlyph.setTextWord(language, word);
                 } else {
-                    logger.warning("No section found for {0}", word);
+                    logger.fine("No section found for {0}", word);
                     toRemove.add(word);
                 }
             }
@@ -376,8 +381,11 @@ public class TextBuilder
         List<TextWord> words = new ArrayList<>();
 
         for (TextLine line : lines) {
+            line.setProcessed(true);
             words.addAll(line.getWords());
         }
+
+        Collections.sort(words, TextWord.byAbscissa);
 
         return new TextLine(system, words);
     }
@@ -415,6 +423,9 @@ public class TextBuilder
         lyrics = purgeInvalidLines(lyrics);
         lyrics = mergeLyricsLines(lyrics);
 
+        if (logger.isFineEnabled()) {
+            logger.info("{0} splitWords for lyrics", system.idString());
+        }
         for (TextLine line : lyrics) {
             splitWords(line.getWords(), line);
         }
@@ -459,7 +470,9 @@ public class TextBuilder
         for (TextLine line : lines) {
             if (line.getValue().trim().isEmpty()) {
                 logger.fine("Empty line {0}", line);
+                line.setProcessed(true);
             } else {
+                line.setProcessed(false);
                 if (line.isLyrics()) {
                     lyrics.add(line);
                 } else {
@@ -552,8 +565,10 @@ public class TextBuilder
         if (chunks.size() == 1) {
             line = chunks.get(0);
         } else {
-            for (TextLine chunk : chunks) {
-                logger.fine("   chunk {0}", chunk);
+            if (logger.isFineEnabled()) {
+                for (TextLine chunk : chunks) {
+                    logger.fine("   chunk {0}", chunk);
+                }
             }
             line = mergeLines(chunks);
             logger.fine("      result {0}", line);
@@ -787,28 +802,31 @@ public class TextBuilder
                 if (!wordGlyph.getTextValue().equals(word.getInternalValue())) {
                     // A manual text modification has occurred
                     // Check for a separator in the new manual value
-                    logger.fine("Manual modif for {0}", wordGlyph.idString());
-                    subWords = getSubWords(word,
-                                           line,
-                                           new WordScanner.ManualScanner(
-                            wordGlyph.getTextValue(),
-                            line.isLyrics(),
-                            word.getChars()));
+                    if (!word.getChars().isEmpty()) {
+                        logger.fine("Manual modif for {0}",
+                                    wordGlyph.idString());
+                        subWords = getSubWords(word,
+                                               line,
+                                               new WordScanner.ManualScanner(
+                                wordGlyph.getTextValue(),
+                                line.isLyrics(),
+                                word.getChars()));
 
-                    // If no subdivision was made, allocate a new TextWord
-                    // just to match the new manual value
-                    if (subWords.isEmpty()) {
-                        TextWord newWord = new TextWord(word.getBaseline(),
-                                                        wordGlyph.getTextValue(),
-                                                        word.getFontInfo(),
-                                                        word.getConfidence(),
-                                                        word.getChars(), line);
-                        newWord.setGlyph(wordGlyph);
-                        subWords.add(newWord);
-                        wordGlyph.setTextWord(wordGlyph.getOcrLanguage(),
-                                              newWord);
-                    } else {
-                        // Assign subglyphs to subwords
+                        // If no subdivision was made, allocate a new TextWord
+                        // just to match the new manual value
+                        if (subWords.isEmpty()) {
+                            TextWord newWord = new TextWord(
+                                    word.getBaseline(),
+                                    wordGlyph.getTextValue(),
+                                    word.getFontInfo(),
+                                    word.getConfidence(),
+                                    word.getChars(),
+                                    line);
+                            newWord.setGlyph(wordGlyph);
+                            subWords.add(newWord);
+                            wordGlyph.setTextWord(wordGlyph.getOcrLanguage(),
+                                                  newWord);
+                        }
                     }
                 }
             } else {
@@ -919,8 +937,7 @@ public class TextBuilder
                                         WordScanner scanner)
     {
         final List<TextWord> subWords = new ArrayList<>();
-        final int contentLength = word.getValue()
-                .length();
+        final int contentLength = word.getValue().length();
 
         while (scanner.hasNext()) {
             String subValue = scanner.next();
@@ -982,8 +999,11 @@ public class TextBuilder
             if (isValid(line)) {
                 newLines.add(line);
             } else {
-                for (TextWord word : line.getWords()) {
-                    logger.fine("      {0}", word);
+                line.setProcessed(true);
+                if (logger.isFineEnabled()) {
+                    for (TextWord word : line.getWords()) {
+                        logger.fine("      {0}", word);
+                    }
                 }
             }
         }

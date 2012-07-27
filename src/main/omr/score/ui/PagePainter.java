@@ -788,7 +788,7 @@ public abstract class PagePainter
     {
         // Use precise word font size for long enough words
         // But prefer mean line font size for too short words
-        Float fontSize = word.getChars().size() > 1
+        Float fontSize = word.getLength() > 1
                          ? word.getPreciseFontSize()
                          : word.getTextLine().getMeanFontSize();
 

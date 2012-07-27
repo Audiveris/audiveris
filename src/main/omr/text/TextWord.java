@@ -13,6 +13,8 @@ package omr.text;
 
 import omr.glyph.facets.Glyph;
 
+import omr.score.common.PixelRectangle;
+
 import omr.ui.symbol.TextFont;
 
 import java.awt.Rectangle;
@@ -131,6 +133,41 @@ public class TextWord
 
     //~ Methods ----------------------------------------------------------------
     //
+    //------------------//
+    // createManualWord //
+    //------------------//
+    /**
+     * Create a TextWord instance manually, out of a given glyph and
+     * value.
+     * TODO: Perhaps we could improve the baseline, according to the precise
+     * string value provided.
+     *
+     * @param glyph the underlying glyph
+     * @param value the provided string value
+     */
+    public static TextWord createManualWord (Glyph glyph,
+                                             String value)
+    {
+        PixelRectangle box = glyph.getBounds();
+        int fontSize = (int) Math.
+                rint(
+                TextFont.computeFontSize(value, FontInfo.DEFAULT, box.getSize()));
+        TextWord word = new TextWord(
+                box,
+                value,
+                new Line2D.Double(box.x,
+                                  box.y + box.height,
+                                  box.x + box.width,
+                                  box.y + box.height),
+                100, // Confidence
+                FontInfo.createDefault(fontSize),
+                null);
+
+        word.setGlyph(glyph);
+
+        return word;
+    }
+
     //----------//
     // getValue //
     //----------//
@@ -156,6 +193,17 @@ public class TextWord
     public String getInternalValue ()
     {
         return super.getValue();
+    }
+    
+    /**
+     * Report the length of this word value, expressed in a number of 
+     * chars.
+     * @return the length of the manual value of the associated glyph if any,
+     * otherwise the length of the internal value.
+     */
+    public int getLength()
+    {
+        return getValue().length();
     }
 
     //-------------//

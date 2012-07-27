@@ -174,8 +174,8 @@ public class SystemInfo
             unmodifiableSortedSet(
             glyphs);
 
-    /** Set of lines made of text glyphs */
-    private Set<TextLine> textLines = new LinkedHashSet<>();
+    /** Set of sentence made of text glyphs */
+    private Set<TextLine> sentences = new LinkedHashSet<>();
 
     /** Used to assign a unique ID to system sentences */
     private int sentenceCount = 0;
@@ -969,7 +969,7 @@ public class SystemInfo
      */
     public Set<TextLine> getSentences ()
     {
-        return textLines;
+        return sentences;
     }
 
     //----------//
@@ -1259,7 +1259,7 @@ public class SystemInfo
     //----------------//
     public void resetSentences ()
     {
-        textLines.clear();
+        sentences.clear();
         sentenceCount = 0;
     }
 
