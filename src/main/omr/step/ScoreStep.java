@@ -76,7 +76,8 @@ public class ScoreStep
     // doStep //
     //--------//
     /**
-     * Notify the completion to ALL sheets of the merge & not just the first one
+     * Notify the completion to ALL sheets of the merge and not just 
+     * the first one.
      */
     @Override
     public void doStep (Collection<SystemInfo> systems,

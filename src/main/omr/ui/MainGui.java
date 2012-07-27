@@ -30,7 +30,6 @@ import omr.score.ScoresManager;
 
 import omr.selection.MouseMovement;
 import omr.selection.SheetEvent;
-import omr.selection.UserEvent;
 
 import omr.sheet.Sheet;
 import omr.sheet.ui.SheetActions.OpenTask;

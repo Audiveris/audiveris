@@ -45,17 +45,17 @@ public class StepMenu
     private static final Logger logger = Logger.getLogger(StepMenu.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** The concrete UI menu */
     private final JMenu menu;
 
     //~ Constructors -----------------------------------------------------------
-
     //----------//
     // StepMenu //
     //----------//
     /**
-     * Generates the menu to be inserted in the application menu hierarchy.
+     * Generates the menu to be inserted in the application pull-down
+     * menus.
+     *
      * @param menu the hosting menu, or null
      */
     public StepMenu (JMenu menu)
@@ -68,8 +68,8 @@ public class StepMenu
 
         // List of Steps classes in proper order
         for (Step step : Steps.values()) {
-            if ((prevStep != null) &&
-                (prevStep.isMandatory() != step.isMandatory())) {
+            if ((prevStep != null)
+                    && (prevStep.isMandatory() != step.isMandatory())) {
                 menu.addSeparator();
             }
 
@@ -84,12 +84,12 @@ public class StepMenu
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------//
     // getMenu //
     //---------//
     /**
      * Report the concrete UI menu.
+     *
      * @return the menu entity
      */
     public JMenu getMenu ()
@@ -98,7 +98,6 @@ public class StepMenu
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //----------------//
     // MyMenuListener //
     //----------------//
@@ -109,7 +108,7 @@ public class StepMenu
      * The steps already done are flagged as such.
      */
     private class MyMenuListener
-        implements MenuListener
+            implements MenuListener
     {
         //~ Methods ------------------------------------------------------------
 
@@ -127,6 +126,7 @@ public class StepMenu
         public void menuSelected (MenuEvent e)
         {
             Sheet sheet = SheetsController.getCurrentSheet();
+            boolean isIdle = sheet != null && sheet.getCurrentStep() == null;
 
             for (int i = 0; i < menu.getItemCount(); i++) {
                 JMenuItem menuItem = menu.getItem(i);
@@ -134,7 +134,7 @@ public class StepMenu
                 // Adjust the status for each step
                 if (menuItem instanceof StepItem) {
                     StepItem item = (StepItem) menuItem;
-                    item.displayState(sheet);
+                    item.displayState(sheet, isIdle);
                 }
             }
         }
@@ -147,7 +147,7 @@ public class StepMenu
      * Action to be performed when the related step item is selected.
      */
     private static class StepAction
-        extends AbstractAction
+            extends AbstractAction
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -155,7 +155,6 @@ public class StepMenu
         final Step step;
 
         //~ Constructors -------------------------------------------------------
-
         public StepAction (Step step)
         {
             super(step.toString());
@@ -164,39 +163,39 @@ public class StepMenu
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
             final Sheet sheet = SheetsController.getCurrentSheet();
-            new BasicTask() {
-                    @Override
-                    protected Void doInBackground ()
+            new BasicTask()
+            {
+                @Override
+                protected Void doInBackground ()
                         throws Exception
-                    {
-                        Step sofar = Stepping.getLatestMandatoryStep(sheet);
+                {
+                    Step sofar = Stepping.getLatestMandatoryStep(sheet);
 
-                        if ((sofar == null) ||
-                            (Steps.compare(sofar, step) <= 0)) {
-                            // Here we progress on all sheets of the score
-                            new StepTask(step).run(sheet);
-                        } else {
-                            // There we rebuild just the current sheet
-                            Stepping.reprocessSheet(step, sheet, null, true);
-                        }
-
-                        return null;
+                    if ((sofar == null)
+                            || (Steps.compare(sofar, step) <= 0)) {
+                        // Here we progress on all sheets of the score
+                        new StepTask(step).run(sheet);
+                    } else {
+                        // There we rebuild just the current sheet
+                        Stepping.reprocessSheet(step, sheet, null, true);
                     }
 
-                    @Override
-                    protected void finished ()
-                    {
-                        // Select the assembly tab related to the target step
-                        if ((sheet != null) && sheet.isDone(step)) {
-                            Stepping.notifyFinalStep(sheet, step);
-                        }
+                    return null;
+                }
+
+                @Override
+                protected void finished ()
+                {
+                    // Select the assembly tab related to the target step
+                    if (sheet != null) {
+                        Stepping.notifyStep(sheet, step);
                     }
-                }.execute();
+                }
+            }.execute();
         }
     }
 
@@ -208,7 +207,7 @@ public class StepMenu
      * to a given step.
      */
     private static class StepItem
-        extends JCheckBoxMenuItem
+            extends JCheckBoxMenuItem
     {
         //~ Constructors -------------------------------------------------------
 
@@ -218,8 +217,8 @@ public class StepMenu
         }
 
         //~ Methods ------------------------------------------------------------
-
-        public void displayState (Sheet sheet)
+        public void displayState (Sheet sheet,
+                                  boolean isIdle)
         {
             StepAction action = (StepAction) getAction();
 
@@ -241,6 +240,10 @@ public class StepMenu
                     setState(false);
 
                     action.setEnabled(true);
+                }
+
+                if (!isIdle) {
+                    action.setEnabled(false);
                 }
             }
         }

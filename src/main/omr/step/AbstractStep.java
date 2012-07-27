@@ -21,13 +21,13 @@ import omr.sheet.SystemInfo;
 import java.util.Collection;
 
 /**
- * Abstract class {@code AbstractStep} provides a convenient basis for {@link
- * Step} implementation.
+ * Abstract class {@code AbstractStep} provides a convenient basis for
+ * {@link Step} implementation.
  *
  * @author Hervé Bitteur
  */
 public abstract class AbstractStep
-    implements Step
+        implements Step
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -35,7 +35,6 @@ public abstract class AbstractStep
     private static final Logger logger = Logger.getLogger(AbstractStep.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Step name */
     protected final String name;
 
@@ -55,23 +54,23 @@ public abstract class AbstractStep
     protected final String description;
 
     //~ Constructors -----------------------------------------------------------
-
+    //
     /**
      * Creates a new AbstractStep object.
      *
-     * @param name the step name
-     * @param level score level only or sheet level
-     * @param mandatory step must be done before any output
-     * @param redoable step can be redone at will
-     * @param label The title of the related (or most relevant) view tab
+     * @param name        the step name
+     * @param level       score level only or sheet level
+     * @param mandatory   step must be done before any output
+     * @param redoable    step can be redone at will
+     * @param label       The title of the related (or most relevant) view tab
      * @param description A step description for the end user
      */
-    public AbstractStep (String    name,
-                         Level     level,
+    public AbstractStep (String name,
+                         Level level,
                          Mandatory mandatory,
-                         Redoable  redoable,
-                         String    label,
-                         String    description)
+                         Redoable redoable,
+                         String label,
+                         String description)
     {
         this.name = name;
         this.level = level;
@@ -82,11 +81,10 @@ public abstract class AbstractStep
     }
 
     //~ Methods ----------------------------------------------------------------
-
+    //
     //-----------//
     // displayUI //
     //-----------//
-    /** Make the related user interface visible for this step */
     @Override
     public void displayUI (Sheet sheet)
     {
@@ -96,31 +94,30 @@ public abstract class AbstractStep
     //--------//
     // doStep //
     //--------//
-    /**
-     * Run the step
-     * @param systems systems to process (null means all systems)
-     * @throws StepException raised if processing failed
-     */
     @Override
     public void doStep (Collection<SystemInfo> systems,
-                        Sheet                  sheet)
-        throws StepException
+                        Sheet sheet)
+            throws StepException
     {
-            logger.fine("{0}Starting {1}", new Object[]{sheet.getLogPrefix(), this});
-
-        started(sheet);
-        doit(systems, sheet);
-        done(sheet);
-
-            logger.fine("{0}Finished {1}", new Object[]{sheet.getLogPrefix(), this});
+        try {
+            logger.fine("{0}Starting {1}", sheet.getLogPrefix(), this);
+            started(sheet);
+            Stepping.notifyStep(sheet, this); // Start
+            doit(systems, sheet);
+            done(sheet); // Full completion
+            logger.fine("{0}Finished {1}", sheet.getLogPrefix(), this);
+        } finally {
+            // Make sure we reset the sheet "current" step, always.
+            if (sheet != null) {
+                sheet.setCurrentStep(null);
+                Stepping.notifyStep(sheet, this); // Stop
+            }
+        }
     }
 
     //------//
     // done //
     //------//
-    /**
-     * Flag this step as done
-     */
     @Override
     public void done (Sheet sheet)
     {
@@ -130,10 +127,6 @@ public abstract class AbstractStep
     //----------------//
     // getDescription //
     //----------------//
-    /**
-     * Report a description of the step
-     * @return a short description
-     */
     @Override
     public String getDescription ()
     {
@@ -143,14 +136,15 @@ public abstract class AbstractStep
     //---------//
     // getName //
     //---------//
-    /** Name of the step */
     @Override
     public String getName ()
     {
         return name;
     }
 
-    /** Related short tab label */
+    //--------//
+    // getTab //
+    //--------//
     @Override
     public String getTab ()
     {
@@ -160,10 +154,6 @@ public abstract class AbstractStep
     //--------//
     // isDone //
     //--------//
-    /**
-     * Check whether this task has been done
-     * @return true if started/done, false otherwise
-     */
     @Override
     public boolean isDone (Sheet sheet)
     {
@@ -173,7 +163,6 @@ public abstract class AbstractStep
     //-------------//
     // isMandatory //
     //-------------//
-    /** Is the step mandatory? */
     @Override
     public boolean isMandatory ()
     {
@@ -183,7 +172,6 @@ public abstract class AbstractStep
     //------------//
     // isRedoable //
     //------------//
-    /** Is the step repeatable at will? */
     @Override
     public boolean isRedoable ()
     {
@@ -197,19 +185,6 @@ public abstract class AbstractStep
     public boolean isScoreLevel ()
     {
         return level == Step.Level.SCORE_LEVEL;
-    }
-
-    //-----------//
-    // isStarted //
-    //-----------//
-    /**
-     * Check whether this task has started
-     * @return true if started, false otherwise
-     */
-    public boolean isStarted (Sheet sheet,
-                              Score score)
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     //---------//
@@ -231,15 +206,15 @@ public abstract class AbstractStep
     {
         StringBuilder sb = new StringBuilder("{Step");
         sb.append(" ")
-          .append(name);
+                .append(name);
         sb.append(" ")
-          .append(level);
+                .append(level);
         sb.append(" ")
-          .append(mandatory);
+                .append(mandatory);
         sb.append(" ")
-          .append(redoable);
+                .append(redoable);
         sb.append(" label:")
-          .append(label);
+                .append(label);
         sb.append("}");
 
         return sb.toString();
@@ -258,13 +233,14 @@ public abstract class AbstractStep
     // doit //
     //------//
     /**
-     * Actually perform the step. This method must be defined for any concrete
-     * Step.
+     * Actually perform the step.
+     * This method must be defined for any concrete Step.
+     *
      * @param systems the collection of systems to process, or null
-     * @param sheet the related sheet
+     * @param sheet   the related sheet
      * @throws StepException raised if processing failed
      */
     protected abstract void doit (Collection<SystemInfo> systems,
-                                  Sheet                  sheet)
-        throws StepException;
+                                  Sheet sheet)
+            throws StepException;
 }

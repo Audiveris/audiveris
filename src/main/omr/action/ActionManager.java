@@ -15,23 +15,19 @@ import omr.WellKnowns;
 
 import omr.log.Logger;
 
-import omr.selection.MouseMovement;
-import omr.selection.SheetEvent;
-
-import omr.sheet.Sheet;
-import omr.sheet.ui.SheetsController;
-
 import omr.ui.MainGui;
 import omr.ui.util.SeparableMenu;
 import omr.ui.util.SeparableToolBar;
 import omr.ui.util.UIUtilities;
 
-import org.bushe.swing.event.EventSubscriber;
 
 import org.jdesktop.application.ApplicationAction;
 import org.jdesktop.application.ResourceMap;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -58,7 +54,6 @@ import javax.xml.bind.JAXBException;
  * @author Hervé Bitteur
  */
 public class ActionManager
-        implements EventSubscriber<SheetEvent>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -74,19 +69,19 @@ public class ActionManager
 
     //~ Instance fields --------------------------------------------------------
     //
-    /** The map of all menus, so that we can directly provide some */
+    /** The map of all menus, so that we can directly provide some. */
     private final Map<String, JMenu> menuMap = new HashMap<>();
 
-    /** Collection of actions enabled only when a sheet is selected */
+    /** Collection of actions enabled only when a sheet is selected. */
     private final Collection<Action> sheetDependentActions = new ArrayList<>();
 
-    /** Collection of actions enabled only when current score is available */
+    /** Collection of actions enabled only when current score is available. */
     private final Collection<Action> scoreDependentActions = new ArrayList<>();
 
-    /** The tool bar that hosts some actions */
+    /** The tool bar that hosts some actions. */
     private final JToolBar toolBar = new SeparableToolBar();
 
-    /** The menu bar for all actions */
+    /** The menu bar for all actions. */
     private final JMenuBar menuBar = new JMenuBar();
 
     //~ Constructors -----------------------------------------------------------
@@ -99,9 +94,6 @@ public class ActionManager
      */
     private ActionManager ()
     {
-        // Stay informed on sheet selection, in order to enable sheet-dependent
-        // actions accordingly
-        SheetsController.getInstance().subscribe(this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -234,31 +226,6 @@ public class ActionManager
         }
     }
 
-    //---------//
-    // onEvent //
-    //---------//
-    /**
-     * Notification of sheet selection, to update frame title.
-     *
-     * @param sheetEvent the event about sheet selection
-     */
-    @Override
-    public void onEvent (SheetEvent sheetEvent)
-    {
-        try {
-            // Ignore RELEASING
-            if (sheetEvent.movement == MouseMovement.RELEASING) {
-                return;
-            }
-
-            final Sheet sheet = sheetEvent.getData();
-            enableSheetActions(sheet != null);
-            enableScoreActions((sheet != null) && (sheet.getScore() != null));
-        } catch (Exception ex) {
-            logger.warning("ActionManager. onEvent error", ex);
-        }
-    }
-
     //--------------------//
     // registerAllActions //
     //--------------------//
@@ -371,9 +338,9 @@ public class ActionManager
             if (action != null) {
                 // Insertion of a button on Tool Bar?
                 if (desc.buttonClassName != null) {
-                    Class<? extends AbstractButton> buttonClass = (Class<? extends AbstractButton>) classLoader.
-                            loadClass(
-                            desc.buttonClassName);
+                    Class<? extends AbstractButton> buttonClass =
+                            (Class<? extends AbstractButton>) classLoader.
+                            loadClass(desc.buttonClassName);
                     AbstractButton button = buttonClass.newInstance();
                     button.setAction(action);
                     toolBar.add(button);
@@ -381,9 +348,8 @@ public class ActionManager
                     button.setText("");
                 }
             } else {
-                logger.severe(
-                        "Unknown action {0} in class {1}",
-                        new Object[]{desc.methodName, desc.className});
+                logger.severe("Unknown action {0} in class {1}",
+                              desc.methodName, desc.className);
             }
         } catch (ClassNotFoundException | SecurityException |
                  IllegalAccessException | IllegalArgumentException |

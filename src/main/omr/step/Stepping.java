@@ -60,11 +60,19 @@ public class Stepping
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Stepping.class);
 
-    //--------------------------------------------------------------------------
-    /** Related progress monitor when used in interactive mode */
+    /** Related progress monitor when used in interactive mode. */
     private static volatile StepMonitor monitor;
 
+    //~ Constructors -----------------------------------------------------------
+    /**
+     * Not meant to be instantiated.
+     */
+    private Stepping ()
+    {
+    }
+
     //~ Methods ----------------------------------------------------------------
+    //
     //---------------//
     // createMonitor //
     //---------------//
@@ -95,20 +103,15 @@ public class Stepping
             throws StepException
     {
         long startTime = System.currentTimeMillis();
-        logger.fine("{0}{1} starting", new Object[]{sheet.getLogPrefix(), step});
+        logger.fine("{0}{1} starting", sheet.getLogPrefix(), step);
 
         // Standard processing on an existing sheet
         step.doStep(systems, sheet);
 
-        // Update user interface if any
-        if (sheet.isDone(step)) {
-            notifyFinalStep(sheet, step);
-        }
-
         final long stopTime = System.currentTimeMillis();
         final long duration = stopTime - startTime;
-        logger.fine("{0}{1} completed in {2} ms", new Object[]{sheet.
-                    getLogPrefix(), step, duration});
+        logger.fine("{0}{1} completed in {2} ms",
+                    sheet.getLogPrefix(), step, duration);
 
         // Record this in sheet->score bench
         sheet.getBench().recordStep(step, duration);
@@ -160,29 +163,32 @@ public class Stepping
         return null;
     }
 
-    //-----------------//
-    // notifyFinalStep //
-    //-----------------//
+    //------------//
+    // notifyStep //
+    //------------//
     /**
-     * Notify the UI part that we have reached the provided step in the
-     * provided sheet.
+     * Notify the UI part that the provided step has started or stopped
+     * in the provided sheet.
      *
      * @param sheet the sheet concerned
-     * @param step  the step just done
+     * @param step  the step notified
      */
-    public static void notifyFinalStep (final Sheet sheet,
-                                        final Step step)
+    public static void notifyStep (final Sheet sheet,
+                                   final Step step)
     {
         if (monitor != null) {
+            final boolean finished = sheet.getCurrentStep() == null;
             SwingUtilities.invokeLater(
                     new Runnable()
                     {
                         @Override
                         public void run ()
                         {
-                            // Update sheet view for this step
-                            step.displayUI(sheet);
-                            sheet.getAssembly().selectViewTab(step);
+                            // Update sheet view for this step?
+                            if (finished) {
+                                step.displayUI(sheet);
+                                sheet.getAssembly().selectViewTab(step);
+                            }
 
                             // Call attention to this sheet (only if displayed), 
                             // so that score-dependent actions can get enabled.
@@ -276,7 +282,6 @@ public class Stepping
             }
 
             // Schedule the steps on each sheet
-            ///logger.info("orderedSteps: " + orderedSteps);
             scheduleScoreStepSet(orderedSteps, score);
 
             // Record the step tasks to script
@@ -326,7 +331,7 @@ public class Stepping
                                        Collection<SystemInfo> impactedSystems,
                                        boolean imposed)
     {
-        logger.fine("reprocessSheet {0} on {1}", new Object[]{step, sheet});
+        logger.fine("reprocessSheet {0} on {1}", step, sheet);
 
         // Sanity checks
         if (SwingUtilities.isEventDispatchThread()) {
@@ -347,8 +352,10 @@ public class Stepping
             impactedSystems = sheet.getSystems();
         }
 
-        logger.fine("{0}Rebuild launched from {1} on{2}", new Object[]{sheet.
-                    getLogPrefix(), step, SystemInfo.toString(impactedSystems)});
+        logger.fine("{0}Rebuild launched from {1} on{2}",
+                    sheet.getLogPrefix(),
+                    step,
+                    SystemInfo.toString(impactedSystems));
 
         // Rebuild from specified step, if needed
         if (shouldReprocessSheet(step, sheet)) {
@@ -410,11 +417,6 @@ public class Stepping
         // Standard processing (using first sheet)
         Sheet sheet = score.getFirstPage().getSheet();
         step.doStep(null, sheet);
-
-        // Update user interface if any
-        if (sheet.isDone(step)) {
-            notifyFinalStep(sheet, step);
-        }
 
         final long stopTime = System.currentTimeMillis();
         final long duration = stopTime - startTime;
@@ -656,9 +658,5 @@ public class Stepping
         Constant.Boolean pagesInParallel = new Constant.Boolean(
                 false,
                 "Should we process score pages in parallel?");
-    }
-
-    private Stepping ()
-    {
     }
 }

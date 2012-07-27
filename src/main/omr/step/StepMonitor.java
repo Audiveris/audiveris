@@ -22,16 +22,17 @@ import omr.log.Logger;
 import omr.ui.util.UIUtilities;
 
 import java.awt.Graphics;
-import java.util.logging.Level;
 
 import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 
 /**
- * Class {@code StepMonitor} is the user interface entity that allows to
- * monitor step progression, and to require manually that a step be performed.
+ * Class {@code StepMonitor} is the user interface entity that allows
+ * to monitor step progression, and to require manually that a step be
+ * performed.
  *
- * @author Hervé Bitteur and Brenton Partridge
+ * @author Hervé Bitteur
+ * @author Brenton Partridge
  */
 public class StepMonitor
 {
@@ -44,7 +45,7 @@ public class StepMonitor
     private static final Constants constants = new Constants();
 
     //~ Instance fields --------------------------------------------------------
-
+    //
     /** Progress bar for actions performed on sheet */
     private final JProgressBar bar = new MyJProgressBar();
 
@@ -52,14 +53,16 @@ public class StepMonitor
     private int actives = 0;
 
     //~ Constructors -----------------------------------------------------------
-
+    //
     //-------------//
     // StepMonitor //
     //-------------//
     /**
-     * Create a user monitor on step processing. This also starts a background
-     * working task to take care of all lengthy processing. This is exactly one
-     * instance of this class (and zero instance when running in batch mode)
+     * Create a user monitor on step processing.
+     * This also starts a background working task to take care of all lengthy
+     * processing.
+     * There is exactly one instance of this class (and no instance when
+     * running in batch mode)
      */
     public StepMonitor ()
     {
@@ -75,7 +78,7 @@ public class StepMonitor
     }
 
     //~ Methods ----------------------------------------------------------------
-
+    //
     //--------------//
     // getComponent //
     //--------------//
@@ -100,7 +103,8 @@ public class StepMonitor
     public void notifyMsg (final String msg)
     {
         SwingUtilities.invokeLater(
-            new Runnable() {
+                new Runnable()
+                {
                     @Override
                     public void run ()
                     {
@@ -114,8 +118,9 @@ public class StepMonitor
     //------------------//
     /**
      * Switch on or off the display of the progress bar
+     *
      * @param animating If false, deactivates all animation of the progress
-     *                  bar.  If true, activates an indeterminate or
+     *                  bar. If true, activates an indeterminate or
      *                  pseudo-indeterminate animation.
      */
     final synchronized void displayAnimation (final boolean animating)
@@ -146,7 +151,8 @@ public class StepMonitor
     void animate ()
     {
         SwingUtilities.invokeLater(
-            new Runnable() {
+                new Runnable()
+                {
                     @Override
                     public void run ()
                     {
@@ -155,7 +161,7 @@ public class StepMonitor
                         if (old > bar.getMinimum()) {
                             int diff = bar.getMaximum() - old;
                             int increment = (int) Math.round(
-                                diff * constants.ratio.getValue());
+                                    diff * constants.ratio.getValue());
                             bar.setIndeterminate(false);
                             bar.setValue(old + increment);
                         }
@@ -168,12 +174,14 @@ public class StepMonitor
     //--------//
     /**
      * Sets the progress bar to show a percentage.
+     *
      * @param amount percentage, in decimal form, from 0.0 to 1.0
      */
     private void setBar (final double amount)
     {
         SwingUtilities.invokeLater(
-            new Runnable() {
+                new Runnable()
+                {
                     @Override
                     public void run ()
                     {
@@ -188,29 +196,29 @@ public class StepMonitor
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Constant.Integer divisions = new Constant.Integer(
-            "divisions",
-            1000,
-            "Number of divisions (amount of precision) of step monitor, minimum 10");
-        Ratio            ratio = new Ratio(
-            0.1,
-            "Amount by which to increase step monitor percentage per animation, between 0 and 1");
+                "divisions",
+                1000,
+                "Number of divisions (amount of precision) of step monitor, minimum 10");
+
+        Ratio ratio = new Ratio(
+                0.1,
+                "Amount by which to increase step monitor percentage per animation, between 0 and 1");
     }
 
     //----------------//
     // MyJProgressBar //
     //----------------//
     private static class MyJProgressBar
-        extends JProgressBar
+            extends JProgressBar
     {
         //~ Methods ------------------------------------------------------------
 

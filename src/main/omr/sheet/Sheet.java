@@ -246,7 +246,7 @@ public class Sheet
     // done //
     //------//
     /**
-     * Remember that the provided step has been done on the sheet
+     * Remember that the provided step has been completed on the sheet.
      *
      * @param step the provided step
      */
@@ -1149,6 +1149,11 @@ public class Sheet
     //----------------//
     // setCurrentStep //
     //----------------//
+    /**
+     * This records the starting of a step.
+     *
+     * @param step the starting step
+     */
     public void setCurrentStep (Step step)
     {
         currentStep = step;
@@ -1215,9 +1220,9 @@ public class Sheet
         // to allow cleaning up of glyph data, before publication by a lag
         nest = new BasicNest("gNest", this);
         nest.setServices(locationService);
-        
+
         scaleBuilder = new ScaleBuilder(this);
-        
+
         try {
             picture = new Picture(image, locationService);
 
@@ -1486,7 +1491,7 @@ public class Sheet
         hLag = null;
         vLag = null;
         nest = null;
-        
+
         scaleBuilder = null;
         staffManager.reset();
         gridBuilder = null;
@@ -1499,7 +1504,7 @@ public class Sheet
         histoRatio = null;
         currentStep = null;
         doneSteps = new HashSet<>();
-        
+
     }
 
     //------------//

@@ -25,13 +25,13 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 
 /**
- * Class {@code StepTask} performs a step on a whole score
+ * Class {@code StepTask} performs a step on a whole score.
  *
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class StepTask
-    extends ScriptTask
+        extends ScriptTask
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -39,12 +39,11 @@ public class StepTask
     private Step step;
 
     //~ Constructors -----------------------------------------------------------
-
     //----------//
     // StepTask //
     //----------//
     /**
-     * Create a task to apply a given step to the related sheet
+     * Create a task to apply a given step to the related sheet.
      *
      * @param step the step to apply
      */
@@ -62,13 +61,12 @@ public class StepTask
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------//
     // core //
     //------//
     @Override
     public void core (final Sheet sheet)
-        throws StepException
+            throws StepException
     {
         Stepping.processScore(Collections.singleton(step), sheet.getScore());
     }
@@ -86,8 +84,10 @@ public class StepTask
     // isRecordable //
     //--------------//
     /**
-     * This is an implementation trick, because of a "chicken and egg problem"
-     * to allow to run the LOAD step while the sheet does not exist yet!
+     * This is an implementation trick, because of a "chicken and egg
+     * problem" to allow to run the LOAD step while the sheet does not exist
+     * yet!
+     *
      * @return false!
      */
     @Override

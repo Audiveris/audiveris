@@ -14,12 +14,13 @@ package omr.selection;
 import omr.sheet.Sheet;
 
 /**
- * Class {@code SheetEvent} represent a Sheet selection event.
+ * Class {@code SheetEvent} represent a Sheet selection event, used to 
+ * call attention about a selected sheet.
  *
  * @author Hervé Bitteur
  */
 public class SheetEvent
-    extends UserEvent
+        extends UserEvent
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -27,28 +28,27 @@ public class SheetEvent
     private final Sheet sheet;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // SheetEvent //
     //------------//
     /**
      * Creates a new SheetEvent object.
-     * @param source the entity that created this event
-     * @param hint hint about event origin
+     *
+     * @param source   the entity that created this event
+     * @param hint     hint about event origin
      * @param movement the mouse movement
-     * @param sheet the selected sheet (or null)
+     * @param sheet    the selected sheet (or null)
      */
-    public SheetEvent (Object        source,
+    public SheetEvent (Object source,
                        SelectionHint hint,
                        MouseMovement movement,
-                       Sheet         sheet)
+                       Sheet sheet)
     {
         super(source, null, null);
         this.sheet = sheet;
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // getEntity //
     //-----------//

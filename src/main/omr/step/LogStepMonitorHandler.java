@@ -52,8 +52,8 @@ public class LogStepMonitorHandler
     // close //
     //-------//
     /**
-     * Called when the handler must be closed. It's a void routine for the time
-     * being.
+     * Called when the handler must be closed. 
+     * It's a void routine for the time being.
      */
     @Override
     public void close ()
@@ -64,7 +64,8 @@ public class LogStepMonitorHandler
     // close //
     //-------//
     /**
-     * Flush any buffered output. It's a void routine for the time being.
+     * Flush any buffered output. 
+     * It's a void routine for the time being.
      */
     @Override
     public void flush ()

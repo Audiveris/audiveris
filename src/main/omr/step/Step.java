@@ -32,31 +32,33 @@ public interface Step
 
     /** Labels for view in tabbed panel */
     public static final String PICTURE_TAB = "Picture";
+
     public static final String DATA_TAB = "Data";
 
     //~ Enumerations -----------------------------------------------------------
-
-    public enum Mandatory {
+    public enum Mandatory
+    {
         //~ Enumeration constant initializers ----------------------------------
-
 
         /** Must be performed before any output */
         MANDATORY,
         /** Non mandatory */
         OPTIONAL;
     }
-    public enum Redoable {
-        //~ Enumeration constant initializers ----------------------------------
 
+    public enum Redoable
+    {
+        //~ Enumeration constant initializers ----------------------------------
 
         /** Step can be redone at will */
         REDOABLE,
         /** Step cannot be redone at will (but a previous step may be) */
         NON_REDOABLE;
     }
-    public enum Level {
-        //~ Enumeration constant initializers ----------------------------------
 
+    public enum Level
+    {
+        //~ Enumeration constant initializers ----------------------------------
 
         /** Step makes sense at score level only */
         SCORE_LEVEL,
@@ -65,44 +67,79 @@ public interface Step
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    /** Make the related user interface visible for this step */
+    //
+    /** Make the related user interface visible for this step. */
     public void displayUI (Sheet sheet);
 
     /**
      * Run the step and mark it as started then done
+     *
      * @param systems systems to process (null means all systems)
-     * @param sheet the sheet to work upon
+     * @param sheet   the sheet to work upon
      * @throws StepException if processing had to stop at this step
      */
     public void doStep (Collection<SystemInfo> systems,
-                        Sheet                  sheet)
-        throws StepException;
+                        Sheet sheet)
+            throws StepException;
 
-    /** Flag this step as done */
+    /**
+     * Flag this step as done.
+     */
     public void done (Sheet sheet);
 
-    /** Report a description of the step */
+    /**
+     * Report a description of the step.
+     *
+     * @return a short description
+     */
     public String getDescription ();
 
-    /** Name of the step */
+    /**
+     * Name of the step.
+     *
+     * @return the name of the step
+     */
     public String getName ();
 
-    /** Related short tab */
+    /**
+     * Related assembly view tab, selected when steps completes
+     *
+     * @return the related view tab
+     */
     public String getTab ();
 
-    /** Check whether this step has been done for the specified sheet */
+    /**
+     * Check whether this step has been done for the specified sheet.
+     *
+     * @return true if started/done, false otherwise
+     */
     public boolean isDone (Sheet sheet);
 
-    /** Is the step mandatory? */
+    /**
+     * Is the step mandatory?.
+     *
+     * @return true for mandatory
+     */
     public boolean isMandatory ();
 
-    /** Is the step repeatable at will? */
+    /**
+     * Is the step repeatable at will?.
+     *
+     * @return true for redoable
+     */
     public boolean isRedoable ();
 
-    /** Does the step need to be performed at score level only? */
+    /**
+     * Does the step need to be performed at score level only?
+     *
+     * @return true for score-level step, false for sheet-level step
+     */
     public boolean isScoreLevel ();
 
-    /** A detailed description */
+    /**
+     * A detailed description.
+     *
+     * @return a tip for the step
+     */
     public String toLongString ();
 }

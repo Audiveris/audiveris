@@ -512,6 +512,28 @@ public class Score
     {
         return multiPage;
     }
+    
+    //--------//
+    // isIdle //
+    //--------//
+    /**
+     * Check whether this score is idle or not.
+     * The score is busy when at least one of its pages/sheets is under a step
+     * processing.
+     *
+     * @return true if idle, false if busy
+     */
+    public boolean isIdle ()
+    {
+        for (TreeNode pn : getPages()) {
+            Page page = (Page) pn;
+            Sheet sh = page.getSheet();
+            if (sh != null && sh.getCurrentStep() != null) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     //----------------------//
     // setDefaultSlotMargin //

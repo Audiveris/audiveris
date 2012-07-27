@@ -19,8 +19,6 @@ import omr.selection.SheetEvent;
 import omr.sheet.Sheet;
 import omr.sheet.ui.SheetDependent;
 
-import omr.step.Steps;
-
 /**
  * Class {@code ScoreDependent} handles the dependency on score
  * availability
@@ -28,7 +26,7 @@ import omr.step.Steps;
  * @author Hervé Bitteur
  */
 public abstract class ScoreDependent
-    extends SheetDependent
+        extends SheetDependent
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -38,19 +36,19 @@ public abstract class ScoreDependent
     /** Is a Score available. */
     protected static final String SCORE_AVAILABLE = "scoreAvailable";
 
-    /** Is a Score merged. (and ready for export, print, plugin, etc) */
-    protected static final String SCORE_MERGED = "scoreMerged";
+    /** Is the Score idle. (available, but not being processed by a step) */
+    protected static final String SCORE_IDLE = "scoreIdle";
 
     //~ Instance fields --------------------------------------------------------
-
-    /** Indicates whether there is a current score */
+    //
+    /** Indicates whether there is a current score. */
     protected boolean scoreAvailable = false;
 
-    /** Indicates whether the current score has been merged */
-    protected boolean scoreMerged = false;
+    /** Indicates whether there the current score is non busy. */
+    protected boolean scoreIdle = false;
 
     //~ Constructors -----------------------------------------------------------
-
+    //
     //----------------//
     // ScoreDependent //
     //----------------//
@@ -62,12 +60,13 @@ public abstract class ScoreDependent
     }
 
     //~ Methods ----------------------------------------------------------------
-
+    //
     //------------------//
     // isScoreAvailable //
     //------------------//
     /**
      * Getter for scoreAvailable property
+     *
      * @return the current property value
      */
     public boolean isScoreAvailable ()
@@ -75,16 +74,17 @@ public abstract class ScoreDependent
         return scoreAvailable;
     }
 
-    //---------------//
-    // isScoreMerged //
-    //---------------//
+    //-------------//
+    // isScoreIdle //
+    //-------------//
     /**
-     * Getter for scoreMerged property
+     * Getter for scoreIdle property
+     *
      * @return the current property value
      */
-    public boolean isScoreMerged ()
+    public boolean isScoreIdle ()
     {
-        return scoreMerged;
+        return scoreIdle;
     }
 
     //---------//
@@ -92,6 +92,7 @@ public abstract class ScoreDependent
     //---------//
     /**
      * Notification of sheet selection (and thus related score if any).
+     *
      * @param event the notified sheet event
      */
     @Override
@@ -103,12 +104,21 @@ public abstract class ScoreDependent
                 return;
             }
 
+            // This updates sheetAvailable
             super.onEvent(event);
 
             Sheet sheet = event.getData();
+
+            // Update scoreAvailable
             setScoreAvailable((sheet != null) && (sheet.getScore() != null));
-            setScoreMerged(
-                (sheet != null) && sheet.isDone(Steps.valueOf(Steps.SCORE)));
+
+            // Update scoreIdle
+            if (isScoreAvailable()) {
+                setScoreIdle(sheet.getScore().isIdle());
+            } else {
+                setScoreIdle(false);
+            }
+
         } catch (Exception ex) {
             logger.warning(getClass().getName() + " onEvent error", ex);
         }
@@ -119,6 +129,7 @@ public abstract class ScoreDependent
     //-------------------//
     /**
      * Setter for scoreAvailable property
+     *
      * @param scoreAvailable the new property value
      */
     public void setScoreAvailable (boolean scoreAvailable)
@@ -128,17 +139,18 @@ public abstract class ScoreDependent
         firePropertyChange(SCORE_AVAILABLE, oldValue, this.scoreAvailable);
     }
 
-    //----------------//
-    // setScoreMerged //
-    //----------------//
+    //--------------//
+    // setScoreIdle //
+    //--------------//
     /**
-     * Setter for scoreMerged property
-     * @param scoreMerged the new property value
+     * Setter for scoreIdle property
+     *
+     * @param scoreIdle the new property value
      */
-    public void setScoreMerged (boolean scoreMerged)
+    public void setScoreIdle (boolean scoreIdle)
     {
-        boolean oldValue = this.scoreMerged;
-        this.scoreMerged = scoreMerged;
-        firePropertyChange(SCORE_MERGED, oldValue, this.scoreMerged);
+        boolean oldValue = this.scoreIdle;
+        this.scoreIdle = scoreIdle;
+        firePropertyChange(SCORE_IDLE, oldValue, this.scoreIdle);
     }
 }

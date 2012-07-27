@@ -21,7 +21,6 @@ import omr.score.entity.Page;
 
 import omr.selection.SelectionService;
 import omr.selection.SheetEvent;
-import omr.selection.UserEvent;
 
 import omr.sheet.Sheet;
 
@@ -151,7 +150,6 @@ public class SheetsController
                     null,
                     comp,
                     sheet.getScore().getImagePath());
-            sheetIndex = tabbedPane.indexOfComponent(assembly.getComponent());
         }
     }
 
@@ -435,7 +433,6 @@ public class SheetsController
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** Initial zoom ratio for displayed sheet pictures */
         Constant.Ratio initialZoomRatio = new Constant.Ratio(
                 0.5,
                 "Initial zoom ratio for displayed sheet pictures");

@@ -42,7 +42,6 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.logging.Level;
 
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
@@ -73,6 +72,7 @@ public class ScoreActions
     private static ScoreActions INSTANCE;
 
     //~ Instance fields --------------------------------------------------------
+    //
     /** Flag to allow automatic score rebuild on every user edition action */
     private boolean rebuildAllowed = true;
 
@@ -80,6 +80,7 @@ public class ScoreActions
     private boolean manualPersisted = false;
 
     //~ Constructors -----------------------------------------------------------
+    //
     //--------------//
     // ScoreActions //
     //--------------//
@@ -91,6 +92,7 @@ public class ScoreActions
     }
 
     //~ Methods ----------------------------------------------------------------
+    //
     //-------------//
     // browseScore //
     //-------------//
@@ -205,31 +207,24 @@ public class ScoreActions
     // buildScore //
     //------------//
     /**
-     * Translate all sheet glyphs to score entities.
-     * Actually, it's just a convenient way to launch the SCORE step
+     * Translate all sheet glyphs to score entities, or rebuild the
+     * sheet at end if SCORE step has already been reached.
+     * Actually, it's just a convenient way to launch the SCORE step 
+     * or relaunch from the SYMBOLS step.
      *
      * @param e the event that triggered this action
      * @return the task to launch in background
      */
-    @Action(enabledProperty = SCORE_AVAILABLE)
+    @Action(enabledProperty = SCORE_IDLE)
     public Task<Void, Void> buildScore (ActionEvent e)
     {
-        return new BuildTask();
-    }
-
-    //--------------//
-    // rebuildScore //
-    //--------------//
-    /**
-     * Re-translate all sheet glyphs to score entities.
-     *
-     * @param e the event that triggered this action
-     * @return the task to launch in background
-     */
-    @Action(enabledProperty = SCORE_MERGED)
-    public Task<Void, Void> rebuildScore (ActionEvent e)
-    {
-        return new RebuildTask();
+        Sheet sheet = SheetsController.getCurrentSheet();
+        
+        if (sheet.isDone(Steps.valueOf(Steps.SCORE))) {
+            return new RebuildTask(sheet);
+        } else {
+            return new BuildTask(sheet);
+        }
     }
 
     //--------------------//
@@ -561,14 +556,20 @@ public class ScoreActions
     private static class BuildTask
             extends BasicTask
     {
-        //~ Methods ------------------------------------------------------------
 
+        private final Sheet sheet;
+
+        public BuildTask (Sheet sheet)
+        {
+            this.sheet = sheet;
+        }
+
+        //~ Methods ------------------------------------------------------------
         @Override
         protected Void doInBackground ()
                 throws InterruptedException
         {
             try {
-                Sheet sheet = SheetsController.getCurrentSheet();
                 Score score = sheet.getScore();
                 Stepping.ensureScoreStep(Steps.valueOf(Steps.SCORE), score);
             } catch (Exception ex) {
@@ -585,14 +586,20 @@ public class ScoreActions
     private static class RebuildTask
             extends BasicTask
     {
-        //~ Methods ------------------------------------------------------------
 
+        private final Sheet sheet;
+
+        public RebuildTask (Sheet sheet)
+        {
+            this.sheet = sheet;
+        }
+
+        //~ Methods ------------------------------------------------------------
         @Override
         protected Void doInBackground ()
                 throws InterruptedException
         {
             try {
-                Sheet sheet = SheetsController.getCurrentSheet();
                 Stepping.reprocessSheet(
                         Steps.valueOf(Steps.SYMBOLS),
                         sheet,
