@@ -14,28 +14,18 @@
     </description>
   
   <!--
-      CookBook to generate 32-bit and 64-bit Windows installers
-      (This is just a list of items harvested on the web)
+      To generate 32-bit and 64-bit Windows installers      
+      Symbolic folders names to use:
       
-      Symbolic folder names to use:
       for 32-bit package (w/ their target on Win64)
-      CommonFilesFolder  - C:\Program Files (x86)\Common Files\ 
-      ProgramFilesFolder - C:\Program Files (x86)\
-      SystemFolder       - C:\Windows\SysWOW64\
+        CommonFilesFolder  - C:\Program Files (x86)\Common Files\ 
+        ProgramFilesFolder - C:\Program Files (x86)\
+        SystemFolder       - C:\Windows\SysWOW64\
+        
       for 64-bit package
-      CommonFiles64Folder  - C:\Program Files\Common Files\
-      ProgramFiles64Folder - C:\Program Files\
-      System64Folder       - C:\Windows\system32\
-      
-      In order to prevent the 32-bit MSI from installing on a 64-bit OS
-      (which will work by default, but that we do not want to work once
-      we have a specific 64-bit MSI to install on a 64-bit OS), I added
-      a custom action to the 32-bit MSI and scheduled it in the
-      InstallExecuteSequence and InstallUiSequence tables.  The custom
-      action checks to see if the Windows Installer 64-bit property is
-      set (which indicates that the MSI is being invoked on a 64-bit
-      system), and if that is set, it will block the MSI from installing
-      
+        CommonFiles64Folder  - C:\Program Files\Common Files\
+        ProgramFiles64Folder - C:\Program Files\
+        System64Folder       - C:\Windows\system32\
     -->    
   
     <!-- Workaround for COMMONPROGRAMFILES vs CommonProgramFiles -->

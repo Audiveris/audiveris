@@ -16,17 +16,17 @@ Assumption: myArch is set to either x64 or x86
 -->
 
 <?if $(var.myArch)=x64 ?>
-    <!-- This Product GUID must be changed for each release shipped -->
-    <?define myProductId  = "e7fe4613-845a-4c3d-9a0c-57dedafb36e2" ?>
-    <?define mySystemRef  = "System64Folder" ?>
-    <?define myProgramRef = "ProgramFiles64Folder" ?>
-    <?define myFullDll    = "$(var.myDll)\x64" ?>
+<!-- This Product GUID must be changed for each release shipped -->
+<?define myProductId  = "e7fe4613-845a-4c3d-9a0c-57dedafb36e2" ?>
+<?define mySystemRef  = "System64Folder" ?>
+<?define myProgramRef = "ProgramFiles64Folder" ?>
+<?define myFullDll    = "$(var.myDll)\x64" ?>
 <?else ?>
-    <!-- This Product GUID must be changed for each release shipped -->
-    <?define myProductId  = "ce9d386e-8061-41fb-83ca-38419cd471bc" ?>
-    <?define mySystemRef  = "SystemFolder" ?>
-    <?define myProgramRef = "ProgramFilesFolder" ?>
-    <?define myFullDll    = "$(var.myDll)\x86" ?>
+<!-- This Product GUID must be changed for each release shipped -->
+<?define myProductId  = "ce9d386e-8061-41fb-83ca-38419cd471bc" ?>
+<?define mySystemRef  = "SystemFolder" ?>
+<?define myProgramRef = "ProgramFilesFolder" ?>
+<?define myFullDll    = "$(var.myDll)\x86" ?>
 <?endif ?>
 
 <!-- This Upgrade GUID is to allow major upgrades. Never change this GUID -->
@@ -35,37 +35,26 @@ Assumption: myArch is set to either x64 or x86
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   
     <Product Id="$(var.myProductId)" 
-           UpgradeCode="$(var.myUpgradeCode)" 
-           Name="$(var.myProductName) $(var.myImplVersion) ($(var.myArch))"
-           Language="1033" 
-           Codepage="1252" 
-           Version="$(var.myImplVersion)" 
-           Manufacturer="$(var.myCompany)">
+             UpgradeCode="$(var.myUpgradeCode)" 
+             Name="$(var.myProductName) $(var.myImplVersion) ($(var.myArch))"
+             Language="1033" 
+             Codepage="1252" 
+             Version="$(var.myImplVersion)" 
+             Manufacturer="$(var.myCompany)">
     
         <Package Id="*"
-             Keywords="Installer"
-             Description="$(var.myCompany)'s $(var.myProductName) Installer"
-             Manufacturer="$(var.myCompany)"
-             InstallerVersion="300"
-             Languages="1033"
-             Compressed="yes"
-             SummaryCodepage="1252" />
+                 Keywords="Installer"
+                 Description="$(var.myCompany)'s $(var.myProductName) Installer"
+                 Manufacturer="$(var.myCompany)"
+                 InstallerVersion="300"
+                 Languages="1033"
+                 Compressed="yes"
+                 SummaryCodepage="1252" />
     
         <!-- Support for major upgrades -->
         <!-- Prevent downgrades -->
         <MajorUpgrade
-            DowngradeErrorMessage="A later version of [ProductName] is already installed. Setup will now exit."/>
-        
-        <!-- This information enables Windows Installer major upgrade functionality so users can seamlessly  -->
-        <!-- install a new version of the product and have the old version automatically uninstall behind    -->
-        <!-- the scenes. See the following topic in the MSDN Library for additional information:             -->
-        <!-- http://msdn.microsoft.com/library/default.asp?url=/library/en-us/msi/setup/major_upgrades.asp   -->
-        <!--
-            <Upgrade Id="$(var.myUpgradeCode)">
-            <UpgradeVersion Minimum="$(var.myImplVersion)" IncludeMinimum="no" OnlyDetect="yes" Property="NEWERVERSIONDETECTED" />
-            <UpgradeVersion Minimum="1.0.0.0" IncludeMinimum="yes" Maximum="$(var.myImplVersion)" IncludeMaximum="no" Property="OLDERVERSIONBEINGUPGRADED" />
-            </Upgrade>
-        -->
+            DowngradeErrorMessage="A later version of $(var.myProductName) is already installed. Setup will now exit."/>
     
         <Media Id="1" Cabinet="Sample.cab" EmbedCab="yes" />
     
@@ -126,9 +115,9 @@ Assumption: myArch is set to either x64 or x86
             <Component Id="mainExec.CID" Guid="6c534d31-29ff-4d78-a107-bf0ab542fb7e">
                 <File Id="exeId" Name="$(var.mySoftware).exe" DiskId="1" Source="$(var.mySoftware).exe" KeyPath="yes">
                     <Shortcut Id="startmenuExeId" Directory="programMenuDirId" Name="$(var.mySoftware) application" 
-                    WorkingDirectory="INSTALLDIR" Icon="myIcon.exe" IconIndex="0" Advertise="yes" />
+                              WorkingDirectory="INSTALLDIR" Icon="myIcon.exe" IconIndex="0" Advertise="yes" />
                     <Shortcut Id="desktopExeId" Directory="DesktopFolder" Name="$(var.myProductName)" 
-                    WorkingDirectory="INSTALLDIR" Icon="myIcon.exe" IconIndex="0" Advertise="yes" />
+                              WorkingDirectory="INSTALLDIR" Icon="myIcon.exe" IconIndex="0" Advertise="yes" />
                 </File>
                 <File Id="exeIniId" Name="audiveris.l4j.ini" DiskId="1" Source="audiveris.l4j.ini"/>
         
@@ -185,7 +174,7 @@ Assumption: myArch is set to either x64 or x86
                 <RemoveFolder Id='adProductDirId' Directory='adProductDirId' On='uninstall'/>
                 <RemoveFolder Id='adManufacturerDirId' Directory='adManufacturerDirId' On='uninstall'/>
                 <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" 
-                       Name="data" Type="string" Value="installed" KeyPath="yes" />
+                               Name="data" Type="string" Value="installed" KeyPath="yes" />
             </Component>
       
             <!-- settings (in separate gen-user-settings.wxs) -->
@@ -198,7 +187,7 @@ Assumption: myArch is set to either x64 or x86
             <Directory Id="benchesDirId" Name="benches" >
                 <Component Id="benches.CID" Guid="a7981cb8-3c22-4da4-a764-48803eb45458">                                
                     <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" 
-                         Name="benches" Type="string" Value="installed" KeyPath="yes" />
+                                   Name="benches" Type="string" Value="installed" KeyPath="yes" />
                     <CreateFolder />
                     <RemoveFolder Id="benchesDirId" On="uninstall" />                                
                 </Component>
@@ -208,7 +197,7 @@ Assumption: myArch is set to either x64 or x86
             <Directory Id="midiDirId" Name="midi" >
                 <Component Id="midi.CID" Guid="927b3d25-b64c-4b90-8e3d-61b7207e66ee">
                     <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" 
-                         Name="midi" Type="string" Value="installed" KeyPath="yes" />
+                                   Name="midi" Type="string" Value="installed" KeyPath="yes" />
                     <CreateFolder />
                     <RemoveFolder Id="midiDirId" On="uninstall" />                                
                 </Component>
@@ -218,7 +207,7 @@ Assumption: myArch is set to either x64 or x86
             <Directory Id="printDirId" Name="print" >
                 <Component Id="print.CID" Guid="969331fb-1b9a-4df0-8952-67e184ee9006">
                     <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" 
-                         Name="print" Type="string" Value="installed" KeyPath="yes" />
+                                   Name="print" Type="string" Value="installed" KeyPath="yes" />
                     <CreateFolder />
                     <RemoveFolder Id="printDirId" On="uninstall" />                                
                 </Component>
@@ -228,7 +217,7 @@ Assumption: myArch is set to either x64 or x86
             <Directory Id="scoresDirId" Name="scores" >
                 <Component Id="scores.CID" Guid="4c458e06-4c2b-4b75-a2e3-c5a46b88a7c0">
                     <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" 
-                         Name="scores" Type="string" Value="installed" KeyPath="yes" />
+                                   Name="scores" Type="string" Value="installed" KeyPath="yes" />
                     <CreateFolder />
                     <RemoveFolder Id="scoresDirId" On="uninstall" />                                
                 </Component>
@@ -238,7 +227,7 @@ Assumption: myArch is set to either x64 or x86
             <Directory Id="scriptsDirId" Name="scripts" >
                 <Component Id="scripts.CID" Guid="fa1bb9d9-db27-48a2-bd99-7c5661d7bdb4">
                     <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" 
-                         Name="scripts" Type="string" Value="installed" KeyPath="yes" />
+                                   Name="scripts" Type="string" Value="installed" KeyPath="yes" />
                     <CreateFolder />
                     <RemoveFolder Id="scriptsDirId" On="uninstall" />                                
                 </Component>
@@ -249,12 +238,12 @@ Assumption: myArch is set to either x64 or x86
         <DirectoryRef Id="programMenuDirId">
             <Component Id="consoleShortcut.CID" Guid="f82fd137-8342-4ad2-a481-5913043bd0ca">
                 <Shortcut Id="startmenuConsole"
-                  Name="$(var.mySoftware) console"
-                  Description="Application Console"
-                  Target="[INSTALLDIR]audiveris-console.exe"
-                  WorkingDirectory="INSTALLDIR"/>
+                          Name="$(var.mySoftware) console"
+                          Description="Application Console"
+                          Target="[INSTALLDIR]audiveris-console.exe"
+                          WorkingDirectory="INSTALLDIR"/>
                 <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" 
-                       Name="console" Type="string" Value="installed" KeyPath="yes" />
+                               Name="console" Type="string" Value="installed" KeyPath="yes" />
             </Component>
         </DirectoryRef>        
     
@@ -275,7 +264,7 @@ Assumption: myArch is set to either x64 or x86
         <!-- Features -->
         <!-- ======== -->
         <Feature Id="Complete" Title="$(var.myProductName) features" Description="The complete package."
-             Display="expand" Level="1" ConfigurableDirectory="INSTALLDIR">
+                 Display="expand" Level="1" ConfigurableDirectory="INSTALLDIR">
             <Feature Id="MainProgram" Title="Program" Description="The main executable" Level="1">
                 <ComponentRef Id="mainExec.CID" />
                 <ComponentRef Id="mainConsole.CID" />
@@ -303,39 +292,35 @@ Assumption: myArch is set to either x64 or x86
       
             <!-- vc is in vc.wxs (this leads to many warnings) -->
             <!-- uncomment following line to actually handle VC++ redist -->
-            <!--BINGO
-                <FeatureRef Id="VCFeature" /> 
-            -->
+            <FeatureRef Id="VCFeature" /> 
       
             <Feature Id="OcrFeature" Title="OCR" 
-               Description="Optical Character Recognition" Level="1">
+                     Description="Optical Character Recognition" Level="1">
                 <ComponentGroupRef Id="ocr.CID" />
             </Feature>
       
             <Feature Id="WwwFeature" Title="Documentation" 
-               Description="$(var.mySoftware) documentation" Level="1">
+                     Description="$(var.mySoftware) documentation" Level="1">
                 <ComponentGroupRef Id="www.CID" />
                 <!-- <ComponentRef Id="documentationShortcut.CID" />-->
             </Feature>
       
             <Feature Id="ExamplesFeature" Title="Examples" 
-               Description="$(var.mySoftware) examples" Level="10">
+                     Description="$(var.mySoftware) examples" Level="10">
                 <ComponentGroupRef Id="examples.CID" />
             </Feature>
       
             <Feature Id="PluginsFeature" Title="Plugins" 
-               Description="$(var.mySoftware) plugins" Level="10">
+                     Description="$(var.mySoftware) plugins" Level="10">
                 <ComponentGroupRef Id="plugins.CID" />
             </Feature>
       
             <!-- All training material (lots of stuff!) -->
             <!-- uncomment for final distribution -->
-            <!--BINGO
-                <Feature Id="TrainFeature" Title="Training material" 
-                Description="$(var.mySoftware) training material" Level="10">
+            <Feature Id="TrainFeature" Title="Training material" 
+                     Description="$(var.mySoftware) training material" Level="10">
                 <ComponentGroupRef Id="train.CID" />
-                </Feature>
-            -->
+            </Feature>
       
         </Feature>
     
