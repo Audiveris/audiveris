@@ -17,13 +17,13 @@ Assumption: myArch is set to either x64 or x86
 
 <?if $(var.myArch)=x64 ?>
     <!-- This Product GUID must be changed for each release shipped -->
-    <?define myProductId  = "3bb7c98e-e673-4cdf-aa3c-087e5cdb42a8" ?>
+    <?define myProductId  = "e7fe4613-845a-4c3d-9a0c-57dedafb36e2" ?>
     <?define mySystemRef  = "System64Folder" ?>
     <?define myProgramRef = "ProgramFiles64Folder" ?>
     <?define myFullDll    = "$(var.myDll)\x64" ?>
 <?else ?>
     <!-- This Product GUID must be changed for each release shipped -->
-    <?define myProductId  = "51e936e3-3222-4f5d-88cf-b643089f134c" ?>
+    <?define myProductId  = "ce9d386e-8061-41fb-83ca-38419cd471bc" ?>
     <?define mySystemRef  = "SystemFolder" ?>
     <?define myProgramRef = "ProgramFilesFolder" ?>
     <?define myFullDll    = "$(var.myDll)\x86" ?>
