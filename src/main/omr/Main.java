@@ -452,7 +452,7 @@ public class Main
 
         // Tool build
         final Package thisPackage = Main.class.getPackage();
-        toolBuild = thisPackage.getImplementationVersion();
+        toolBuild = thisPackage.getSpecificationVersion();
     }
 
     //---------//

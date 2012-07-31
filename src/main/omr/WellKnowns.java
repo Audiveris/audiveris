@@ -33,22 +33,16 @@ public class WellKnowns
     //----------//
     // IDENTITY //
     //----------//
-
-    /** Application version: {@value} */
-    public static final String TOOL_VERSION = "4.1beta";
-
+    
     /** Application name: {@value} */
     public static final String TOOL_NAME = "audiveris";
-
-    /** Application full name: {@value} */
-    public static final String TOOL_FULL_NAME = TOOL_NAME + "-" + TOOL_VERSION;
 
     /** Application company name: {@value} */
     public static final String TOOL_COMPANY = "AudiverisLtd";
 
     /** Specific prefix for application folders */
-    private static final String TOOL_PREFIX = "/" + TOOL_COMPANY + "/" +
-                                              TOOL_FULL_NAME;
+    private static final String TOOL_PREFIX = "/" + TOOL_COMPANY + "/"
+            + TOOL_NAME;
 
     //----------//
     // PLATFORM //

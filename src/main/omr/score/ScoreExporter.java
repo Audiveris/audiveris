@@ -1563,7 +1563,7 @@ public class ScoreExporter
             scorePartwise.setIdentification(identification);
 
             // [Encoding]/Software
-            java.lang.String soft = WellKnowns.TOOL_FULL_NAME;
+            java.lang.String soft = WellKnowns.TOOL_NAME;
 
             if ((Main.getToolBuild() != null)
                     && !Main.getToolBuild().isEmpty()) {
@@ -1571,8 +1571,8 @@ public class ScoreExporter
             }
 
             if ((soft != null) && (soft.length() > 0)) {
-                encoding.getEncodingDateOrEncoderOrSoftware().add(factory.
-                        createEncodingSoftware(soft));
+                encoding.getEncodingDateOrEncoderOrSoftware().add(
+                        factory.createEncodingSoftware(soft));
             }
 
             // [Encoding]/EncodingDate

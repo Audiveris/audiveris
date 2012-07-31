@@ -107,8 +107,7 @@ public class ScoreBench
 
         addProp("date", date.toString());
         addProp("program", WellKnowns.TOOL_NAME);
-        addProp("version", WellKnowns.TOOL_VERSION);
-        addProp("revision", Main.getToolBuild());
+        addProp("version", Main.getToolBuild());
         addProp("image", score.getImagePath());
 
         flushBench();

@@ -424,8 +424,6 @@ public class GuiActions
             description(new JTextField()),
             /** Current version */
             version(new JTextField()),
-            /** Current revision */
-            revision(new JTextField()),
             /** Precise classes */
             classes(new JTextField()),
             /** Link to web site */
@@ -518,7 +516,7 @@ public class GuiActions
 
             // Manual injection
             resource.injectComponents(dialog);
-            Topic.revision.comp.setText(Main.getToolBuild());
+            Topic.version.comp.setText(Main.getToolBuild());
             Topic.classes.comp.setText(" " + WellKnowns.CLASS_CONTAINER);
             Topic.license.comp.setText(" " + "GNU GPL V2");
 

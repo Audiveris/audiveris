@@ -9,7 +9,7 @@ fontsize=14
   <element>
     <type>com.umlet.element.Class</type>
     <coordinates>
-      <x>490</x>
+      <x>500</x>
       <y>270</y>
       <w>80</w>
       <h>50</h>
@@ -81,8 +81,8 @@ getTextValue()</panel_attributes>
     <coordinates>
       <x>320</x>
       <y>270</y>
-      <w>130</w>
-      <h>120</h>
+      <w>140</w>
+      <h>160</h>
     </coordinates>
     <panel_attributes>*TextWord*
 bg=#ffffaa
@@ -92,13 +92,16 @@ preciseFontSize
 --
 translate()
 getInternalValue()
-getValue()</panel_attributes>
+getValue()
+getLength()
+--
+createManualWord()</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <type>com.umlet.element.Relation</type>
     <coordinates>
-      <x>420</x>
+      <x>430</x>
       <y>250</y>
       <w>90</w>
       <h>50</h>
@@ -110,12 +113,12 @@ getValue()</panel_attributes>
     <type>com.umlet.element.Relation</type>
     <coordinates>
       <x>360</x>
-      <y>360</y>
+      <y>400</y>
       <w>50</w>
-      <h>200</h>
+      <h>160</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>30;180;30;30</additional_attributes>
+    <additional_attributes>30;140;30;30</additional_attributes>
   </element>
   <element>
     <type>com.umlet.element.Class</type>

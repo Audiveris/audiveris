@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Built-By: ${build.owner}
+Specification-Title: Audiveris
+Specification-Vendor: Audiveris Ltd.
+Specification-Version: 4.2.3187

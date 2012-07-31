@@ -25,6 +25,12 @@
     
     <!-- Create the time stamp -->
     <tstamp/>
+    
+    <!-- Mercurial -->
+    <condition property="hg.present" else="false">
+        <available file="${basedir}/.hg" />
+    </condition>
+    <echo level="verbose" message="hg.present=${hg.present}" />
 
     <!-- Environment -->
     <property name="dev.dir" location="${basedir}/dev"/>
@@ -46,12 +52,6 @@
             <include name="**/*.jar"/>
         </fileset>
     </path>        
-    
-    <!-- Mercurial -->
-    <condition property="hg.present" else="false">
-        <available file="${hg.dir}" />
-    </condition>
-    <echo level="verbose" message="hg.present=${hg.present}" />
             
     <!-- Operating system -->
     <condition property="is.windows" else="false">
@@ -100,7 +100,7 @@
         
         <!-- Generate the global zip archive -->
         <zip 
-            destfile="${dist.dir}/${full.name}.${ant4hg.log.revision}-src.zip" >
+            destfile="${dist.dir}/${impl.name}-src.zip" >
 
             <!-- Build -->
             <zipfileset dir="${basedir}" includes="build.xml"/>
@@ -184,7 +184,7 @@
     <!-- =============== -->
     <target name="-hg-tip"
             if="${hg.present}">
-	<!-- description="Retrieve Hg tip revision" -->
+        <!-- description="Retrieve Hg tip revision" -->
         
         <taskdef name="hg"
                  classpathref="tools.classpath"
@@ -193,13 +193,32 @@
         <hg cmd="log" dir="${basedir}">
             <arg value="-rtip"/>
         </hg>
-<!--         <echo message="==========================" />
-         <echo message="revision=${ant4hg.log.revision}" />
-         <echo message="changeset=${ant4hg.log.changeset}" />
-         <echo message="tag=${ant4hg.log.tag}" />
-         <echo message="user=${ant4hg.log.user}" />
-         <echo message="date=${ant4hg.log.date}" />
-         <echo message="summary=${ant4hg.log.summary}" />-->
+        
+        <!-- 
+        <echo message="==========================" />
+        <echo message="revision=${ant4hg.log.revision}" />
+        <echo message="changeset=${ant4hg.log.changeset}" />
+        <echo message="tag=${ant4hg.log.tag}" />
+        <echo message="user=${ant4hg.log.user}" />
+        <echo message="date=${ant4hg.log.date}" />
+        <echo message="summary=${ant4hg.log.summary}" />
+        -->
+         
+        <property name="impl.version" value="${spec.version}.${ant4hg.log.revision}" />
+        <property name="impl.name" value="${name}-${impl.version}" />
+
+    </target>
+
+    <!-- ===================== -->
+    <!--  - N O - H G - T I P  -->
+    <!-- ===================== -->
+    <target name="-no-hg-tip"
+            unless="${hg.present}">
+        <!-- description="Cope with no tip revision" -->
+         
+        <property name="impl.version" value="${spec.version}" />
+        <property name="impl.name" value="${name}-${spec.version}" />
+
     </target>
     
     <!-- ============================= -->
@@ -209,10 +228,43 @@
             depends="-uml, audiveris-impl.-javadoc-build"/>
     <!-- Generate project documentation -->
 
+    <!-- ======================= -->
+    <!--  - P O S T - C L E A N  -->
+    <!-- ======================= -->
+    <target name="-post-clean"
+            depends="windows.-clean" />
+
+    <!-- ===================== -->
+    <!--  - P O S T - I N I T  -->
+    <!-- ===================== -->
+    <target name="-post-init"
+	    depends="-hg-tip, -no-hg-tip">
+        <echo level="verbose" message="-post-init impl.name=${impl.name}" />
+    </target>
+
+    <!-- =================== -->
+    <!--  - P O S T - J A R  -->
+    <!-- =================== -->
+    <target name="-post-jar">
+        <delete verbose="${verbose}">
+            <fileset dir="${dist.dir}" 
+                     includes="README.TXT"/>
+        </delete>
+    </target>
+
     <!-- ================= -->
     <!--  - P R E - J A R  -->
     <!-- ================= -->
     <target name="-pre-jar">
+      
+        <!-- Prepare a (half) manifest -->
+        <property name="manifest.file" value="manifest.mf" />
+        <echo file="${manifest.file}" append="false">Manifest-Version: 1.0
+Built-By: ${build.owner}
+Specification-Title: ${Name}
+Specification-Vendor: ${Company}
+Specification-Version: ${impl.version}
+</echo>
 
         <!-- Copy resource properties to classes -->
         <copy todir="${build.classes.dir}" verbose="$verbose">
@@ -237,18 +289,6 @@
         </delete>
 
     </target>
-
-    <!-- ===================== -->
-    <!--  - P O S T - I N I T  -->
-    <!-- ===================== -->
-    <target name="-post-init"
-	    depends="-hg-tip" />
-
-    <!-- ======================= -->
-    <!--  - P O S T - C L E A N  -->
-    <!-- ======================= -->
-    <target name="-post-clean"
-            depends="windows.-clean" />
 
     <!-- ========= -->
     <!--  - U M L  -->
@@ -287,7 +327,62 @@
         </for>
         
     </target>
-    
+
+
+    <!-- Properties set: unix-like (if it is unix or linux), x64 (if it is 64-bits),
+         register- size (32 or 64) -->
+    <target name="check-architecture" depends="check-family,check-register" >
+        <echo>Register size: ${register-size}</echo>
+        <echo>OS Family: ${os-family}</echo>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Checking the architecture -->
+    <target name="check-family" >
+        <condition property="os-family" value="unix" else="windows">
+            <os family="unix" />
+        </condition>
+
+        <condition property="unix">
+            <os family="unix" />
+        </condition>
+    </target>
+
+    <target name="check-register" depends="reg-unix,reg-windows">
+    </target>
+
+    <!-- Test under GNU/Linux -->
+    <target name="reg-unix" if="unix">
+        <exec dir="." executable="uname" outputproperty="result">
+            <arg line="-m"/>
+        </exec>
+
+        <!-- String ends in 64 -->
+        <condition property="x64">
+            <matches string="${result}" pattern="^.*64$"/>
+        </condition>
+
+        <condition property="register-size" value="64" else="32">
+            <isset property="x64"/>
+        </condition>
+    </target>
+
+    <!-- Test under MS/Windows-->
+    <target name="reg-windows" unless="unix">
+        <!-- 64 bit Windows versions have the variable "ProgramFiles(x86)" -->
+        <exec dir="." executable="cmd" outputproperty="result">
+            <arg line="/c SET ProgramFiles(x86)"/>
+        </exec>
+
+    <!-- String ends in "Program Files (x86)" -->
+        <condition property="x64">
+            <matches string="${result}" pattern="^.*=.*Program Files \(x86\)"/>
+        </condition>
+
+        <condition property="register-size" value="64" else="32">
+            <isset property="x64"/>
+        </condition>
+    </target> 
 <!--
 
     There exist several targets which are by default empty and which can be 
