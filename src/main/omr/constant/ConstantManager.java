@@ -170,7 +170,7 @@ public class ConstantManager
 
     /** User properties */
     private final UserHolder userHolder = new UserHolder(
-            new File(WellKnowns.SETTINGS_FOLDER, USER_FILE_NAME),
+            new File(WellKnowns.USER_FOLDER, USER_FILE_NAME),
             defaultHolder);
 
     //~ Constructors -----------------------------------------------------------

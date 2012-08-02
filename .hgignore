@@ -1,4 +1,4 @@
-# First, use glob syntax -------------------------------------------------------
+# First, use regexp syntax -------------------------------------------------------
 syntax: regexp
 
 \.hgignore$
@@ -17,7 +17,6 @@ syntax: regexp
 benches$
 build$
 dist$
-externals
 jars$
 midi$
 ocr-204$
@@ -29,7 +28,7 @@ temp$
 tesseract\.log
 www/docs/api
 
-# Now, switch to regexp syntax -------------------------------------------------
+# Now, switch to glob syntax -------------------------------------------------
 syntax: glob
 
 audiveris.bat
@@ -40,8 +39,6 @@ src/**/*.jpg
 src/**/*.pdf
 dev/material/*.jpg
 train/core/*
-dev/externals
-dev/tools
 ocr/tessdata/*
 eval/backup-neural-network.xml
 settings/run.properties

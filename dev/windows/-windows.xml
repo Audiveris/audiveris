@@ -28,18 +28,6 @@
         System64Folder       - C:\Windows\system32\
     -->    
   
-    <!-- Workaround for COMMONPROGRAMFILES vs CommonProgramFiles -->
-    
-    <condition property="use.upper">
-        <isset property="env.COMMONPROGRAMFILES" />
-    </condition>
-    <!--    <echo message="use.upper=${use.upper}" />-->
-  
-    <condition property="use.camel">
-        <isset property="env.CommonProgramFiles" />
-    </condition>
-    <!--    <echo message="use.camel=${use.camel}" />-->
-  
     <!-- ===  Public Targets  ============================================== -->
   
     <!-- =========================== -->
@@ -50,22 +38,6 @@
             if="${is.windows}"
             description="Build all Windows executables" />
   
-    <!-- =============================== -->
-    <!--  W I N D O W S - I N S T A L L  -->
-    <!-- =============================== -->
-<!--    <target name="windows-install"
-            depends="-get-msi-name"
-            if="${is.windows}"
-            description="Install for Windows">
-        <property name="msi.name" value="${impl.name}.msi"/>
-        <echo message="Windows installation from ${msi.name}" />
-        <exec executable="msiexec"
-              dir="${dist.dir}">
-            <arg value="/i"/>
-            <arg value="${msi.name}"/>
-        </exec>
-    </target>-->
-  
     <!-- ===================================== -->
     <!--  W I N D O W S - I N S T A L L E R S  -->
     <!-- ===================================== -->
@@ -73,21 +45,6 @@
             depends="windows-execs, -wxs-generation, -do-installers, -wix-cleanup, -wxs-cleanup"
             if="${is.windows}"
             description="Build Windows installers for x86 and x64 architectures" />
-  
-    <!-- =================================== -->
-    <!--  W I N D O W S - U N I N S T A L L  -->
-    <!-- =================================== -->
-<!--    <target name="windows-uninstall"
-            depends="-get-msi-name"
-            if="${is.windows}"
-            description="Uninstall for Windows">
-        <echo message="Windows uninstallation from ${msi.name}" />
-        <exec executable="msiexec"
-              dir="${dist.dir}">
-            <arg value="/x"/>
-            <arg value="${msi.name}"/>
-        </exec>
-    </target>        -->
   
     <!-- ===  Internal Targets  ============================================ --> 
   
@@ -113,9 +70,8 @@
             depends="-wix-cleanup"
             if="${is.windows}">
     
-        <echo message="Using CommonProgramFiles at ${cpf}" />
+        <echo message="Building msi installer for arch ${arch}" />
         <echo message="Beware, this task takes a couple of minutes..." />    
-        <echo message="arch=${arch}" />
     
         <!-- Compilation -->
         <wix mode="candle"> 
@@ -132,15 +88,14 @@
             <candleParameter name="myImplVersion"  value="${impl.version}"/>
             <candleParameter name="myJar"          value="${dist.jar}"/>
             <candleParameter name="myMaterial"     value="${material.dir}"/>
+            <candleParameter name="myMsmDir"       value="${dev.windows.dir}"/>
             <candleParameter name="myOcr"          value="${ocr.dir}"/>
-            <candleParameter name="myPlugins"      value="${plugins}"/>
+            <candleParameter name="myPlugins"      value="${plugins.dir}"/>
             <candleParameter name="myRes"          value="${res.dir}"/>
             <candleParameter name="mySettings"     value="${settings.dir}"/>
             <candleParameter name="mySoftware"     value="${name}"/>
             <candleParameter name="myTrain"        value="${train.dir}"/>
             <candleParameter name="myWww"          value="${www.dir}"/>
-      
-            <candleParameter name="myVC"           value="${cpf}/Merge Modules/Microsoft_VC90_CRT_x86.msm"/>      
       
             <candleArg line="-out ${dist.dir}\"/>             
             <candleArg line="-arch ${arch}"/>        
@@ -156,6 +111,7 @@
             <lightArg line="-ext WixUIExtension" />
             <lightArg line="-dWixUILicenseRtf=${res.dir}/GPLv2.rtf" />
             <lightArg line="-sice:ICE91" />
+            
             <sources dir="${dist.dir}/">
                 <include name="*.wixobj"/>
             </sources>
@@ -178,8 +134,13 @@
     <!--  - D O - I N S T A L L E R S  -->
     <!-- ============================= -->
     <target name="-do-installers"
-            depends="-wix-taskdef, -hg-tip, -get-upper-cpf, -get-camel-cpf"
+            depends="-hg-tip"
             if="${is.windows}">
+        
+        <!-- wix task definition (et al.) -->
+        <taskdef 
+            resource="org/apache/ant/dotnet/antlib.xml"
+            classpathref="tools.classpath" />
     
         <!-- Build for x86 -->
         <antcall target="-build-msi">
@@ -228,28 +189,6 @@
                 <jre minVersion="${jre.min}"/>
             </config>
         </launch4j>	
-    </target>
-  
-    <!-- =========================== -->
-    <!--  - G E T - M S I - N A M E  -->
-    <!-- =========================== -->
-<!--    <target name="-get-msi-name">
-       WRONG: need arch suffix!!!! 
-        <property name="msi.name" value="${impl.name}.msi"/>        
-    </target>-->
-  
-    <!-- ============================= -->
-    <!--  - G E T - U P P E R - C P F  -->
-    <!-- ============================= -->
-    <target name="-get-upper-cpf" if="use.upper">
-        <property name="cpf" value="${env.COMMONPROGRAMFILES}" />
-    </target>
-  
-    <!-- ============================= -->
-    <!--  - G E T - C A M E L - C P F  -->
-    <!-- ============================= -->
-    <target name="-get-camel-cpf" if="use.camel">
-        <property name="cpf" value="${env.CommonProgramFiles}" />
     </target>
   
     <!-- =================================== -->
@@ -301,17 +240,6 @@
             <fileset dir="${dev.windows.dir}" includes="gen-*.*"/>
         </delete>
     
-    </target>
-    
-    <!-- ========================= -->
-    <!--  - W I X - T A S K D E F  -->
-    <!-- ========================= -->
-    <target name="-wix-taskdef"
-            if="${is.windows}">    
-        <!-- wix task definition (et al.) -->
-        <taskdef 
-            resource="org/apache/ant/dotnet/antlib.xml"
-            classpathref="tools.classpath" />
     </target>
 
     <!-- =============================== -->
@@ -404,7 +332,7 @@
         <echo message="buiding ${dev.windows.dir}/gen-user-plugins.wxs" />
         <exec executable="java">
             <arg line="-jar ${tools.dir}/wix-heat-user.jar"/>
-            <arg value="${plugins}"/>
+            <arg value="${plugins.dir}"/>
             <arg line="-dr adProductDirId"/>
             <arg line="-cg plugins.CID"/>
             <arg line="-var var.myPlugins"/>

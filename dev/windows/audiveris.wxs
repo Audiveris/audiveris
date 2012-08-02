@@ -16,17 +16,23 @@ Assumption: myArch is set to either x64 or x86
 -->
 
 <?if $(var.myArch)=x64 ?>
+
 <!-- This Product GUID must be changed for each release shipped -->
 <?define myProductId  = "e7fe4613-845a-4c3d-9a0c-57dedafb36e2" ?>
 <?define mySystemRef  = "System64Folder" ?>
 <?define myProgramRef = "ProgramFiles64Folder" ?>
 <?define myFullDll    = "$(var.myDll)\x64" ?>
+<?define myVC         = "$(var.myMsmDir)\Microsoft_VC90_CRT_x86_x64.msm" ?>
+
 <?else ?>
+
 <!-- This Product GUID must be changed for each release shipped -->
 <?define myProductId  = "ce9d386e-8061-41fb-83ca-38419cd471bc" ?>
 <?define mySystemRef  = "SystemFolder" ?>
 <?define myProgramRef = "ProgramFilesFolder" ?>
 <?define myFullDll    = "$(var.myDll)\x86" ?>
+<?define myVC         = "$(var.myMsmDir)\Microsoft_VC90_CRT_x86.msm" ?>
+
 <?endif ?>
 
 <!-- This Upgrade GUID is to allow major upgrades. Never change this GUID -->
@@ -258,6 +264,16 @@ Assumption: myArch is set to either x64 or x86
         </Component>
         </DirectoryRef>        -->
     
+        <!-- ============ -->
+        <!-- VC++ runtime -->
+        <!-- ============ -->
+        <DirectoryRef Id="TARGETDIR">
+            <Merge Id="VCRedist.MID" 
+                   SourceFile="$(var.myVC)" 
+                   DiskId="1" 
+                   Language="0"/>
+        </DirectoryRef>            
+    
         <!-- ======== -->
         <!-- Features -->
         <!-- ======== -->
@@ -288,9 +304,15 @@ Assumption: myArch is set to either x64 or x86
                 <ComponentGroupRef Id="eval.CID" />
             </Feature>
       
-            <!-- vc is in vc.wxs (this leads to many warnings) -->
-            <!-- uncomment following line to actually handle VC++ redist -->
-<!--            <FeatureRef Id="VCFeature" /> -->
+            <!-- VC++ runtime (this leads to many warnings) -->
+            <!-- uncomment to actually handle VC++ redist -->
+            <Feature Id="VCFeature" 
+                 Title="Visual C++ 8.0 Runtime" 
+                 AllowAdvertise="no" 
+                 Display="hidden" 
+                 Level="1">
+                <MergeRef Id="VCRedist.MID"/>
+            </Feature>
       
             <Feature Id="OcrFeature" Title="OCR" 
                      Description="Optical Character Recognition" Level="1">
@@ -304,12 +326,12 @@ Assumption: myArch is set to either x64 or x86
             </Feature>
       
             <Feature Id="ExamplesFeature" Title="Examples" 
-                     Description="$(var.mySoftware) examples" Level="10">
+                     Description="$(var.mySoftware) examples" Level="1">
                 <ComponentGroupRef Id="examples.CID" />
             </Feature>
       
             <Feature Id="PluginsFeature" Title="Plugins" 
-                     Description="$(var.mySoftware) plugins" Level="10">
+                     Description="$(var.mySoftware) plugins" Level="1">
                 <ComponentGroupRef Id="plugins.CID" />
             </Feature>
       

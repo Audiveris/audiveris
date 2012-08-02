@@ -1,0 +1,37 @@
+--------------------------------------------
+BASELET
+--------------------------------------------
+
+batik*
+Licence:  Apache License 2.0
+Used for: Export to "eps" and "svg"
+
+jlibeps
+Licence:  GPL2+
+Used for: Export to "eps" and "svg"
+
+iText
+Licence:  AGPL
+Used for: Export to "pdf"
+
+JavaMail (mailapi.jar, smtp.jar)
+Licence:  GPLv2 with "GPL linking exception"
+Used for: Sending mails from Umlet/Plotlet
+
+log4j
+Licence:  Apache License 2.0
+Used for: Logging
+
+JSyntaxpane:
+Licence:  Apache License 2.0
+Used for: Editor and Text Panes
+Changes:  META-INF/services/jsyntaxpane/defaultsyntaxkit/config.properties -> adapted default settings
+          jsyntaxpane/actions/ComboCompletionAction.java setItems method changed to the following code "public void setItems(String items) {this.items = Arrays.asList(items.split(";"));}" to allow a semikolon-separated list as items argument for combocompletion
+
+--------------------------------------------
+UMLET
+--------------------------------------------
+
+Eclipse JDT Core Compiler (org.eclipse.jdt.core_3.5.1.v_972_R35x.jar)
+Licence:  Eclipse Public Licence
+Used for: Compiling custom elements in Umlet

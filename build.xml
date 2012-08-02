@@ -31,12 +31,38 @@
         <available file="${basedir}/.hg" />
     </condition>
     <echo level="verbose" message="hg.present=${hg.present}" />
+            
+    <!-- Operating system -->
+    <condition property="is.windows" else="false">
+        <os family="windows"/>
+    </condition>
+    <echo level="verbose" message="is.windows=${is.windows}" />
+    <condition property="is.mac" else="false">
+        <os family="mac" />
+    </condition>
+    <echo level="verbose" message="is.mac=${is.mac}" />
+    <condition property="is.unix" else="false">
+        <os family="unix" />
+    </condition>
+    <echo level="verbose" message="is.unix=${is.unix}" />
 
     <!-- Environment -->
-    <property name="dev.dir" location="${basedir}/dev"/>
-    <property file="${dev.dir}/build.properties"/>
-    <property file="${dev.dir}/build.default.properties"/>
+    <property name="name"      value="audiveris" />
+    <property name="Name"      value="Audiveris" />
+    <property name="Company"   value="${Name} Ltd." />
+    <property name="CompanyId" value="${Name}Ltd" />
     <property environment="env"/>    
+    
+    <!-- Environment (user) for Windows variants -->
+    <property file="${env.APPDATA}/${CompanyId}/${name}/build.properties"/>        
+    
+    <!-- Environment (user) for Linux variants -->
+    <property file="${env.XDG_CONFIG_HOME}/${CompanyId}/${name}/build.properties"/>        
+    <property file="${env.HOME}/.config/${CompanyId}/${name}/build.properties"/>        
+    
+    <!-- Environment (default) -->
+    <property name="dev.dir"   location="${basedir}/dev"/>
+    <property file="${dev.dir}/build.default.properties"/>
     
     <!-- Classpaths -->    
     <path id="build.classpath">
@@ -52,35 +78,30 @@
             <include name="**/*.jar"/>
         </fileset>
     </path>        
-            
-    <!-- Operating system -->
-    <condition property="is.windows" else="false">
-        <os family="windows"/>
-    </condition>
-    <echo level="verbose" message="is.windows=${is.windows}" />
-    <condition property="is.mac" else="false">
-        <os family="mac" />
-    </condition>
-    <echo level="verbose" message="is.mac=${is.mac}" />
-    <condition property="is.unix" else="false">
-        <os family="unix" />
-    </condition>
-    <echo level="verbose" message="is.unix=${is.unix}" />
     
     <!-- Import for Windows, if any -->
-<!--    <condition property="windows-import" else="none"
-               value="${dev.windows.dir}/-windows.xml">
+    <condition property="windows-import" else="none"
+               value="dev/windows/-windows.xml">
         <os family="windows"/>
     </condition>
-    <echo message="windows-import=${windows-import}" />
-    <import optional="true" file="${windows-import}" />-->
-    <import optional="true" file="dev/windows/-windows.xml" />
+    <echo level="verbose" message="windows-import=${windows-import}" />
+    <import optional="true" file="${windows-import}" />
     
     <!-- Import for Unix, if any -->
-    <import optional="true" file="dev/unix/-unix.xml" />
+    <condition property="unix-import" else="none"
+               value="dev/unix/-unix.xml">
+        <os family="unix"/>
+    </condition>
+    <echo level="verbose" message="unix-import=${unix-import}" />
+    <import optional="true" file="${unix-import}" />
     
     <!-- Import for Mac, if any -->
-    <import optional="true" file="dev/mac/-mac.xml" />
+    <condition property="mac-import" else="none"
+               value="dev/mac/-mac.xml">
+        <os family="mac"/>
+    </condition>
+    <echo level="verbose" message="mac-import=${mac-import}" />
+    <import optional="true" file="${mac-import}" />
 
     <!-- Import NetBeans implementation targets -->
     <import file="nbproject/build-impl.xml"/>
@@ -91,10 +112,10 @@
 
     <!-- ===  Public Targets  ============================================== -->
     
-    <!-- ================= -->
-    <!--  S R C - D I S T  -->
-    <!-- ================= -->
-    <target name="src-dist"
+    <!-- ======= -->
+    <!--  S R C  -->
+    <!-- ======= -->
+    <target name="src"
             depends="clean"
             description="Pack the source distribution">
         
@@ -111,20 +132,10 @@
                         includes="**"
                         excludes="${dist.excludes}, **/configs/*"/>
         
-            <!-- Execs -->
+            <!-- Ini Launch4J files -->
             <zipfileset dir="${basedir}" prefix="${name}"
-                        includes="*.bat, *.exe, *.ini"
+                        includes="*.ini"
                         excludes="${dist.excludes}"/>
-        
-<!--             Jar file 
-            <zipfileset dir="${dist.dir}" prefix="${name}/dist"
-                        includes="*.jar"
-                        excludes="${dist.excludes}"/>
-
-             lib jar files 
-            <zipfileset dir="${dist.dir}/lib" prefix="${name}/dist/lib"
-                        includes="**"
-                        excludes="${dist.excludes}"/>-->
 
             <!-- ocr files -->
             <zipfileset dir="${ocr.dir}" prefix="${name}/ocr"

@@ -108,10 +108,13 @@ public class WellKnowns
     // CONFIG //
     //--------//
 
+    /** The folder where user specific data is stored */
+    public static final File USER_FOLDER = getUserConfigFolder();
+
     /** Base folder for config */
     private static final File CONFIG_FOLDER = getConfigFolder();
 
-    /** The folder where configuration data is stored */
+    /** The folder where global configuration data is stored */
     public static final File SETTINGS_FOLDER = new File(
         CONFIG_FOLDER,
         "settings");
@@ -239,10 +242,19 @@ public class WellKnowns
         if (isProject) {
             // For development environment CONFIG = DATA = PROGRAM
             return PROGRAM_FOLDER;
+        } else {
+            // Standard case: config data is in user appdata
+            return USER_FOLDER;
         }
+    }
 
+    //---------------------//
+    // getUserConfigFolder //
+    //---------------------//
+    private static File getUserConfigFolder ()
+    {
         if (WINDOWS) {
-            return getDataFolder();
+            return getUserDataFolder();
         } else if (MAC_OS_X) {
             throw new UnsupportedOperationException("Not yet implemented");
         } else if (LINUX) {
@@ -272,8 +284,15 @@ public class WellKnowns
         if (isProject) {
             // For development environment CONFIG = DATA = PROGRAM
             return PROGRAM_FOLDER;
-        }
+        } else 
+            return getUserDataFolder();
+    }
 
+    //-------------------//
+    // getUserDataFolder //
+    //-------------------//
+    private static File getUserDataFolder ()
+    {
         if (WINDOWS) {
             String appdata = System.getenv("APPDATA");
 
