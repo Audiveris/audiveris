@@ -18,55 +18,42 @@
             <img src="doc-files/Text.jpg" alt="Text"
                  title="Text data model" />
         </p>
+        
         <h2>
             How textual glyphs are handled
         </h2>
+        <p>
+            The text strategy has significantly evolved since the integration
+            of new Tesseract OCR (version 3).
+        </p>
+        
+        <h3>
+            Detection of text items
+        </h3>
+        <p>
+            The purpose of the TEXTS step is to run Tesseract OCR on a system
+            image, before glyphs get further decomposed into stems and leaves.
+            The OCR is thus performed on each system in parallel.
+        </p>
+        <p>
+            We use the SegmentationMode.AUTO mode of OCR, which thus performs
+            the image layout analysis and then interprets each of the detected 
+            lines. 
+            The OCR output (lines, words and chars) is then translated to 
+            Audiveris TextLine, TextWord and TextChar instances which are
+            recomposed (lines and words may get merged and split).
+            The final TextLines are kept at SystemInfo level.
+        </p>
+        
         <h3>
             Detection of text-shaped glyphs
         </h3>
         <p>
-            The general idea is to come up with glyphs that are very likely to
-            correspond to real text. Such glyphs are assigned a textual Shape,
-            that is either the Shape TEXT or the Shape CHARACTER. Glyph
-            candidates come from several sources:
+            Later, in SYMBOLS step, some glyphs might be recognized as TEXT
+            shaped glyphs (or have been manually assigned the TEXT shape).
+            The OCR is then launched in SINGLE_BLOCK mode on just the glyph 
+            image, and the resulting line is then recomposed with the other
+            SystemInfo TextLine instances.
         </p>
-        <ul>
-            <li>{@link omr.glyph.GlyphsBuilder#retrieveGlyphs} implements 
-                standard glyph creation by section aggregation or glyph
-                aggregation in a bottom-up strategy.
-            </li>
-            <li>{@link omr.glyph.pattern.TextGreedyPattern} tries to grow 
-                existing text-shaped glyphs by adding neighbors.
-            </li>
-            <li>{@link omr.glyph.pattern.TextAreaPattern} implements specific 
-                area division, starting from rectangular area at
-                system level, then subdividing along horizontal and vertical 
-                axes, in a  top-down strategy.
-            </li>
-            <li>Individual glyph assignment by user manual interaction.
-            </li>
-        </ul>
-        <h3>
-            Use of OCR tool
-        </h3>
-        <ul>
-            <li>{@link omr.glyph.ui.SampleVerifier} uses OCR content-based 
-                verification of tuplet-shaped glyphs (TUPLET_SIX and 
-                TUPLET_THREE).
-            </li>
-            <li>{@link omr.glyph.pattern.TextBorderPattern} inpects the regions
-                around any system (above, below, left and right) and tries to
-                detect blobs that can be gathered as text-shaped glyphs.
-                Note that Glyph evaluator is bypassed, and that OCR is used to
-                validate glyph candidates.
-            </li>
-            <li>{@link omr.text.SentencePattern} gathers lines of text
-                shaped glyphs, expanded with alien glyphs if any, then calls
-                OCR of these "physical" lines. The resulting OcrLines are then
-                used to create as many "logical" sentences, which will be 
-                finally translated to score entities during the {@link 
-                omr.score.SystemTranslator}.
-            </li>
-        </ul>
     </body>
 </html>

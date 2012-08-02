@@ -29,6 +29,7 @@
     -->    
   
     <!-- Workaround for COMMONPROGRAMFILES vs CommonProgramFiles -->
+    
     <condition property="use.upper">
         <isset property="env.COMMONPROGRAMFILES" />
     </condition>
@@ -52,7 +53,7 @@
     <!-- =============================== -->
     <!--  W I N D O W S - I N S T A L L  -->
     <!-- =============================== -->
-    <target name="windows-install"
+<!--    <target name="windows-install"
             depends="-get-msi-name"
             if="${is.windows}"
             description="Install for Windows">
@@ -63,7 +64,7 @@
             <arg value="/i"/>
             <arg value="${msi.name}"/>
         </exec>
-    </target>
+    </target>-->
   
     <!-- ===================================== -->
     <!--  W I N D O W S - I N S T A L L E R S  -->
@@ -71,12 +72,12 @@
     <target name="windows-installers"
             depends="windows-execs, -wxs-generation, -do-installers, -wix-cleanup, -wxs-cleanup"
             if="${is.windows}"
-            description="Build Windows installer" />
+            description="Build Windows installers for x86 and x64 architectures" />
   
     <!-- =================================== -->
     <!--  W I N D O W S - U N I N S T A L L  -->
     <!-- =================================== -->
-    <target name="windows-uninstall"
+<!--    <target name="windows-uninstall"
             depends="-get-msi-name"
             if="${is.windows}"
             description="Uninstall for Windows">
@@ -86,10 +87,9 @@
             <arg value="/x"/>
             <arg value="${msi.name}"/>
         </exec>
-    </target>        
+    </target>        -->
   
-    <!-- ===  Internal Targets  ============================================ -->
-  
+    <!-- ===  Internal Targets  ============================================ --> 
   
     <!-- ========= -->
     <!--  - B A T  -->
@@ -119,32 +119,30 @@
     
         <!-- Compilation -->
         <wix mode="candle"> 
-            <candleParameter name="myImplVersion"  value="${impl.version}"/>
+            <candleParameter name="myArch"         value="${arch}"/>
             <candleParameter name="myCompany"      value="${Company}"/>            
             <candleParameter name="myCompanyId"    value="${CompanyId}"/>            
             <candleParameter name="myConsole"      value="${name}-console"/>
+            <candleParameter name="myDll"          value="${dll.dir}"/>
             <candleParameter name="myDistLib"      value="${dist.dir}/lib"/>
             <candleParameter name="myEval"         value="${eval.dir}"/>
             <candleParameter name="myExamples"     value="${examples.dir}"/>
             <candleParameter name="myProductName"  value="${name}"/>
             <candleParameter name="myIconSource"   value="${res.dir}/all-icons-256.ico"/>
+            <candleParameter name="myImplVersion"  value="${impl.version}"/>
             <candleParameter name="myJar"          value="${dist.jar}"/>
             <candleParameter name="myMaterial"     value="${material.dir}"/>
             <candleParameter name="myOcr"          value="${ocr.dir}"/>
-            <candleParameter name="myPlugins"      value="${basedir}/plugins"/>
+            <candleParameter name="myPlugins"      value="${plugins}"/>
             <candleParameter name="myRes"          value="${res.dir}"/>
             <candleParameter name="mySettings"     value="${settings.dir}"/>
             <candleParameter name="mySoftware"     value="${name}"/>
             <candleParameter name="myTrain"        value="${train.dir}"/>
             <candleParameter name="myWww"          value="${www.dir}"/>
-            <candleParameter name="myDll"          value="${dll.dir}"/>
       
-            <candleParameter name="myVC"           value="${cpf}/Merge Modules/Microsoft_VC90_CRT_x86.msm"/>
+            <candleParameter name="myVC"           value="${cpf}/Merge Modules/Microsoft_VC90_CRT_x86.msm"/>      
       
-            <candleParameter name="myArch"         value="${arch}"/>
-      
-            <candleArg line="-out ${dist.dir}\"/>        
-      
+            <candleArg line="-out ${dist.dir}\"/>             
             <candleArg line="-arch ${arch}"/>        
       
             <sources dir="${dev.windows.dir}">
@@ -235,10 +233,10 @@
     <!-- =========================== -->
     <!--  - G E T - M S I - N A M E  -->
     <!-- =========================== -->
-    <target name="-get-msi-name">
-      <!-- WRONG: need arch suffix!!!! -->
+<!--    <target name="-get-msi-name">
+       WRONG: need arch suffix!!!! 
         <property name="msi.name" value="${impl.name}.msi"/>        
-    </target>
+    </target>-->
   
     <!-- ============================= -->
     <!--  - G E T - U P P E R - C P F  -->
@@ -282,7 +280,7 @@
     <!-- ========================= -->
     <target name="-wix-cleanup"
             if="${is.windows}">
-        <echo message="Cleaning up the wix stuff in dist" />
+        <echo message="Cleaning up WiX temporary files in ${dist.dir}" />
     
         <!-- Clean up temporary files in dist -->
         <delete verbose="${verbose}"> 
@@ -296,7 +294,7 @@
     <!-- ========================= -->
     <target name="-wxs-cleanup"
             if="${is.windows}">
-        <echo message="Cleaning up the generated wxs files" />
+        <echo message="Cleaning up generated wxs files in ${dev.windows.dir}"/>
     
         <!-- Clean up temporary files in dev/windows -->
         <delete verbose="${verbose}"> 
@@ -308,7 +306,8 @@
     <!-- ========================= -->
     <!--  - W I X - T A S K D E F  -->
     <!-- ========================= -->
-    <target name="-wix-taskdef">    
+    <target name="-wix-taskdef"
+            if="${is.windows}">    
         <!-- wix task definition (et al.) -->
         <taskdef 
             resource="org/apache/ant/dotnet/antlib.xml"
@@ -405,7 +404,7 @@
         <echo message="buiding ${dev.windows.dir}/gen-user-plugins.wxs" />
         <exec executable="java">
             <arg line="-jar ${tools.dir}/wix-heat-user.jar"/>
-            <arg value="${basedir}/plugins"/>
+            <arg value="${plugins}"/>
             <arg line="-dr adProductDirId"/>
             <arg line="-cg plugins.CID"/>
             <arg line="-var var.myPlugins"/>

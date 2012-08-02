@@ -41,8 +41,7 @@ import javax.swing.JMenuItem;
 
 /**
  * Abstract class {@code GlyphMenu} is the base for all glyph-based 
- * menus such as {@link DashMenu}, {@link BarMenu} and 
- * {@link SymbolMenu}.
+ * menus such as {@link SymbolMenu}.
  * It also provides implementation for basic actions: copy, paste, assign,
  * compound, deassign and dump.
  *

@@ -22,6 +22,8 @@ import omr.score.Score;
 import omr.score.ScoresManager;
 import omr.score.entity.ScorePart;
 
+import omr.script.Script;
+
 import omr.sheet.Sheet;
 import omr.sheet.ui.SheetsController;
 
@@ -153,6 +155,24 @@ public class ScoreActions
             //            } catch (Exception ex) {
             //                logger.warning("Cannot reset Midi sequence", ex);
             //            }
+        }
+    }
+
+    /**
+     * Dump the script of the sheet currently selected
+     */
+    @Action(enabledProperty = "sheetAvailable")
+    public void dumpCurrentScript ()
+    {
+        Sheet sheet = SheetsController.getCurrentSheet();
+
+        if (sheet != null) {
+            Script script = sheet.getScore()
+                                 .getScript();
+
+            if (script != null) {
+                script.dump();
+            }
         }
     }
 

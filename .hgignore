@@ -13,6 +13,7 @@ syntax: regexp
 \.orig$
 \.orig\..*$
 \.rej$
+\.zip$
 benches$
 build$
 dist$
@@ -43,5 +44,5 @@ dev/externals
 dev/tools
 ocr/tessdata/*
 eval/backup-neural-network.xml
-run.properties
+settings/run.properties
 nbproject/configs

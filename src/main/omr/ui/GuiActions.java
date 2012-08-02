@@ -27,6 +27,8 @@ import omr.score.ui.ScoreDependent;
 
 import omr.sheet.ui.SheetsController;
 
+import omr.ui.symbol.SymbolRipper;
+
 import omr.ui.util.WebBrowser;
 
 import omr.util.Memory;
@@ -160,6 +162,18 @@ public class GuiActions
     {
         SheetsController.getInstance()
                 .dumpCurrentSheetServices();
+    }
+
+    //--------------------//
+    // launchSymbolRipper //
+    //--------------------//
+    /**
+     * Launch the utility to rip a symbol
+     */
+    @Action
+    public void launchSymbolRipper ()
+    {
+        SymbolRipper.main();
     }
 
     //------//

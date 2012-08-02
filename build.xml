@@ -91,87 +91,88 @@
 
     <!-- ===  Public Targets  ============================================== -->
     
-    <!-- =================== -->
-    <!--  F U L L - D I S T  -->
-    <!-- =================== -->
-    <target name="full-dist"
-            depends="clean, windows-execs"
-            description="Build the full distribution">
+    <!-- ================= -->
+    <!--  S R C - D I S T  -->
+    <!-- ================= -->
+    <target name="src-dist"
+            depends="clean"
+            description="Pack the source distribution">
         
         <!-- Generate the global zip archive -->
         <zip 
-            destfile="${dist.dir}/${impl.name}-src.zip" >
+            destfile="${basedir}/${impl.name}-src.zip" >
 
             <!-- Build -->
-            <zipfileset dir="${basedir}" includes="build.xml"/>
+            <zipfileset dir="${basedir}"  prefix="${name}"
+                        includes="build.xml"/>
 
             <!-- NetBeans project -->
-            <zipfileset dir="${basedir}/nbproject" prefix="nbproject"
+            <zipfileset dir="${basedir}/nbproject" prefix="${name}/nbproject"
                         includes="**"
-                        excludes="${dist.excludes}"/>
+                        excludes="${dist.excludes}, **/configs/*"/>
         
             <!-- Execs -->
-            <zipfileset dir="${basedir}"
+            <zipfileset dir="${basedir}" prefix="${name}"
                         includes="*.bat, *.exe, *.ini"
                         excludes="${dist.excludes}"/>
         
-            <!-- Jar file -->
-            <zipfileset dir="${dist.dir}" prefix="dist"
+<!--             Jar file 
+            <zipfileset dir="${dist.dir}" prefix="${name}/dist"
                         includes="*.jar"
                         excludes="${dist.excludes}"/>
 
-            <!-- lib jar files -->
-            <zipfileset dir="${dist.dir}/lib" prefix="dist/lib"
+             lib jar files 
+            <zipfileset dir="${dist.dir}/lib" prefix="${name}/dist/lib"
                         includes="**"
-                        excludes="${dist.excludes}"/>
+                        excludes="${dist.excludes}"/>-->
 
             <!-- ocr files -->
-            <zipfileset dir="${ocr.dir}" prefix="ocr"
+            <zipfileset dir="${ocr.dir}" prefix="${name}/ocr"
                         includes="**"
                         excludes="${dist.excludes}"/>
         
             <!-- dev files -->
-            <zipfileset dir="${dev.dir}" prefix="dev"
+            <zipfileset dir="${dev.dir}" prefix="${name}/dev"
                         includes="**"
                         excludes="${dist.excludes}"/>
         
             <!-- res files -->
-            <zipfileset dir="${res.dir}" prefix="res"
+            <zipfileset dir="${res.dir}" prefix="${name}/res"
                         includes="**"
                         excludes="${dist.excludes}"/>
         
             <!-- eval files -->
-            <zipfileset dir="${eval.dir}" prefix="eval"
+            <zipfileset dir="${eval.dir}" prefix="${name}/eval"
                         includes="**"
                         excludes="${dist.excludes}"/>
         
             <!-- settings files -->
-            <zipfileset dir="${settings.dir}" prefix="settings"
+            <zipfileset dir="${settings.dir}" prefix="${name}/settings"
                         includes="**"
                         excludes="${dist.excludes}, **/run.properties"/>
         
             <!-- plugins files -->
-            <zipfileset dir="${basedir}/plugins" prefix="plugins"
+            <zipfileset dir="${plugins.dir}" prefix="${name}/plugins"
                         includes="**"
                         excludes="${dist.excludes}"/>
             
             <!-- Source main and test files -->
-            <zipfileset dir="${basedir}/src" prefix="src"
+            <zipfileset dir="${basedir}/src" prefix="${name}/src"
                         includes="**"
                         excludes="${dist.excludes}"/>
 
             <!-- Examples files -->
-            <zipfileset dir="${examples.dir}" prefix="examples"
+            <zipfileset dir="${examples.dir}" prefix="${name}/examples"
                         includes="**"
                         excludes="${dist.excludes}"/>
 
-            <!-- Www (+ javadoc?) files -->
-            <zipfileset dir="${www.dir}" prefix="www"
+            <!-- Www (without API javadoc) files -->
+            <zipfileset dir="${www.dir}" prefix="${name}/www"
                         includes="**"
-                        excludes="${dist.excludes}"/>
+                        excludes="${dist.excludes}, docs/api/**"/>
 
             <!-- Train files -->
-            <zipfileset dir="${train.dir}" prefix="train"
+            <zipfileset dir="${train.dir}" prefix="${name}/train"
                         includes="**/*.xml,**/.glyphignore"
                         excludes="${dist.excludes}"/>
         </zip>
@@ -225,14 +226,18 @@
     <!--  - J A V A D O C - B U I L D  -->
     <!-- ============================= -->
     <target name="-javadoc-build"
-            depends="-uml, audiveris-impl.-javadoc-build"/>
+            depends="-uml, audiveris-impl.-javadoc-build, -publish-doc"/>
     <!-- Generate project documentation -->
 
     <!-- ======================= -->
     <!--  - P O S T - C L E A N  -->
     <!-- ======================= -->
     <target name="-post-clean"
-            depends="windows.-clean" />
+            depends="windows.-clean">
+        <delete verbose="${verbose}">
+            <fileset dir="${basedir}" includes="*.zip"/>
+        </delete> 
+    </target>
 
     <!-- ===================== -->
     <!--  - P O S T - I N I T  -->
@@ -256,10 +261,9 @@
     <!--  - P R E - J A R  -->
     <!-- ================= -->
     <target name="-pre-jar">
-      
+
         <!-- Prepare a (half) manifest -->
-        <property name="manifest.file" value="manifest.mf" />
-        <echo file="${manifest.file}" append="false">Manifest-Version: 1.0
+        <echo file="${basedir}/manifest.mf" append="false">Manifest-Version: 1.0
 Built-By: ${build.owner}
 Specification-Title: ${Name}
 Specification-Vendor: ${Company}
@@ -269,7 +273,6 @@ Specification-Version: ${impl.version}
         <!-- Copy resource properties to classes -->
         <copy todir="${build.classes.dir}" verbose="$verbose">
             <fileset dir="${src.dir}" includes="**/*.properties"/>
-            <fileset dir="${plugins.dir}" includes="**/*.properties"/>
         </copy>
 
         <!-- Copy icon files into the classes dir -->
@@ -288,6 +291,17 @@ Specification-Version: ${impl.version}
                      includes="**/*.html,**/doc-files/*,**/doc-files"/>
         </delete>
 
+    </target>
+
+    <!-- ========================= -->
+    <!--  - P U B L I S H - D O C  -->
+    <!-- ========================= -->
+    <target name="-publish-doc">
+        <!-- Copy JavaDoc from dist folder to the www folder -->
+        <mkdir dir="${www.dir}/docs/api"/>
+        <copy todir="${www.dir}/docs/api/" verbose="$verbose">
+            <fileset dir="${dist.javadoc.dir}" includes="**/*"/>
+        </copy>
     </target>
 
     <!-- ========= -->
@@ -328,16 +342,16 @@ Specification-Version: ${impl.version}
         
     </target>
 
-
-    <!-- Properties set: unix-like (if it is unix or linux), x64 (if it is 64-bits),
-         register- size (32 or 64) -->
+<!--
+     Properties set: unix-like (if it is unix or linux), x64 (if it is 64-bits),
+         register- size (32 or 64) 
     <target name="check-architecture" depends="check-family,check-register" >
         <echo>Register size: ${register-size}</echo>
         <echo>OS Family: ${os-family}</echo>
     </target>
 
-    <!-- =================================================================== -->
-    <!-- Checking the architecture -->
+     =================================================================== 
+     Checking the architecture 
     <target name="check-family" >
         <condition property="os-family" value="unix" else="windows">
             <os family="unix" />
@@ -351,13 +365,13 @@ Specification-Version: ${impl.version}
     <target name="check-register" depends="reg-unix,reg-windows">
     </target>
 
-    <!-- Test under GNU/Linux -->
+     Test under GNU/Linux 
     <target name="reg-unix" if="unix">
         <exec dir="." executable="uname" outputproperty="result">
             <arg line="-m"/>
         </exec>
 
-        <!-- String ends in 64 -->
+         String ends in 64 
         <condition property="x64">
             <matches string="${result}" pattern="^.*64$"/>
         </condition>
@@ -367,14 +381,14 @@ Specification-Version: ${impl.version}
         </condition>
     </target>
 
-    <!-- Test under MS/Windows-->
+     Test under MS/Windows
     <target name="reg-windows" unless="unix">
-        <!-- 64 bit Windows versions have the variable "ProgramFiles(x86)" -->
+         64 bit Windows versions have the variable "ProgramFiles(x86)" 
         <exec dir="." executable="cmd" outputproperty="result">
             <arg line="/c SET ProgramFiles(x86)"/>
         </exec>
 
-    <!-- String ends in "Program Files (x86)" -->
+     String ends in "Program Files (x86)" 
         <condition property="x64">
             <matches string="${result}" pattern="^.*=.*Program Files \(x86\)"/>
         </condition>
@@ -382,7 +396,7 @@ Specification-Version: ${impl.version}
         <condition property="register-size" value="64" else="32">
             <isset property="x64"/>
         </condition>
-    </target> 
+    </target> -->
 <!--
 
     There exist several targets which are by default empty and which can be 

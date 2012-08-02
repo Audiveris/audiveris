@@ -52,16 +52,14 @@ Assumption: myArch is set to either x64 or x86
                  SummaryCodepage="1252" />
     
         <!-- Support for major upgrades -->
-        <!-- Prevent downgrades -->
+        <!-- Prevent downgrades         -->
         <MajorUpgrade
             DowngradeErrorMessage="A later version of $(var.myProductName) is already installed. Setup will now exit."/>
     
         <Media Id="1" Cabinet="Sample.cab" EmbedCab="yes" />
     
-        <!--
-            List of directories used by this product.
-            This defines all folders referenced later in this file
-        -->
+        <!-- List of directories used by this product.              -->
+        <!-- This defines all folders referenced later in this file -->
         <Directory Id="TARGETDIR" Name="SourceDir">
       
             <!-- Program install directory -->
@@ -292,7 +290,7 @@ Assumption: myArch is set to either x64 or x86
       
             <!-- vc is in vc.wxs (this leads to many warnings) -->
             <!-- uncomment following line to actually handle VC++ redist -->
-            <FeatureRef Id="VCFeature" /> 
+<!--            <FeatureRef Id="VCFeature" /> -->
       
             <Feature Id="OcrFeature" Title="OCR" 
                      Description="Optical Character Recognition" Level="1">

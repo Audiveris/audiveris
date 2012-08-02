@@ -6,7 +6,6 @@
             <name>audiveris</name>
             <source-roots>
                 <root id="src.dir"/>
-                <root id="plugins.dir"/>
             </source-roots>
             <test-roots>
                 <root id="test.src.dir"/>
