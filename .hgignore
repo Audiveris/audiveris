@@ -12,6 +12,7 @@ syntax: regexp
 \.orig$
 \.orig\..*$
 \.rej$
+\.settings$
 benches$
 build$
 dist$
@@ -31,9 +32,15 @@ www/docs/api
 syntax: glob
 
 audiveris.bat
+bin
+.classpath
+.project
+.DS_Store
+manifest.mf
 #build/*
 #build/**/*
 ^build.xml
+nbbuild.xml
 # Ignore .jpg and .pdf under the src directory since they are produced via umlet
 # Images handled by conf management should use other suffix (.png for example)
 src/**/*.jpg
