@@ -24,12 +24,12 @@
 
         <style type="text/css">
             /*<![CDATA[*/
-/*            @page { 
-                margin-left: 1cm; 
-                margin-right: 1cm; 
-                margin-top: 2cm; 
-                margin-bottom: 1cm 
-            }*/
+            /*            @page { 
+                            margin-left: 1cm; 
+                            margin-right: 1cm; 
+                            margin-top: 2cm; 
+                            margin-bottom: 1cm 
+                        }*/
 
             div.main {
                 margin-top: 0px;
@@ -76,6 +76,7 @@
     </head>
     <body>
         <div id="navigation">
+            <br/>
             <a href="#content">Handbook</a>
             <ol>
                 <li><a href="#getting-started">Getting started</a>
@@ -142,6 +143,7 @@
                         <li><a href="#grid-step">Grid</a></li>
                         <li><a href="#systems-step">Systems</a></li>
                         <li><a href="#measures-step">Measures</a></li>
+                        <li><a href="#texts-step">Texts</a></li>
                         <li><a href="#sticks-step">Sticks</a></li>
                         <li><a href="#symbols-step">Symbols</a></li>
                         <li><a href="#pages-step">Pages</a></li>
@@ -161,7 +163,7 @@
                 <h1>
                     Handbook
                 </h1>
-                This documentation applies to Audiveris version 4.1 and above.
+                This documentation applies to Audiveris version 4.2 and above.
             </div>
             <!-- =========================================================== -->
             <h2 id="getting-started" class="chapter">
@@ -234,7 +236,7 @@
             </p>
             <div class="code">
                 <code>Start</code> | <code>All Programs</code> | 
-                <code>audiveris-4.1</code> | <code>audiveris application</code>
+                <code>audiveris</code> | <code>audiveris application</code>
             </div>
             <p>
                 There are other ways to launch Audiveris, for example to open a
@@ -347,8 +349,8 @@
                      src="../images/StepForward16.gif" />
             </p>
             <br class="clear"/>
-            
-            <img class="right" title="Step selection" width="175" height="310"
+
+            <img class="right" title="Step selection" width="177" height="363"
                  alt="score-step" src="../images/chula-score-step.png" />
             <p>
                 You can as well select the SCORE target through the menu 
@@ -1046,21 +1048,33 @@
             <p>
                 Text-shaped items are processed by the OCR engine to retrieve
                 their actual content.
+            </p>
+            <p>
                 Make sure to select the proper language to get the best OCR 
                 results.
+                You can still change the language afterwards to automatically
+                recall OCR on the detected words, but the best results are 
+                achieved when the right language is chosen upfront.
             </p>
             <p>
                 Even with proper language selected, some texts are not correctly
-                OCR'ed. 
-                In the Chula example at hand, the upper left corner contains the
-                word "<code>propose</code>" which is incorrectly OCR'ed as 
-                "<code>pI'©p© SC</code>".
-                The only solution is to manually assign the text value.
-                To do so, select the glyph and in the text field of the Glyph 
-                board, directly type the word "<code>propose</code>". 
-                You can also modify other attributes of the textual glyph, such
-                as the text role or the text type.
+                OCR'ed.
             </p>
+            <ul>
+                <li>In the Chula example at hand, the number "<code>31</code>"
+                    was not detected in the the upper right corner. 
+                    The solution is to select the glyph by a "lasso" and assign
+                    the TEXT shape. This triggers the OCR, which should 
+                    recognize the proper digits.
+                </li>
+                <li>
+                    Some words may be assigned a wrong OCR value.
+                    To fix this, select the related glyph and in the text field
+                    of the Glyph board, directly type the correct word value. 
+                    You can also modify other attributes of the textual glyph,
+                    such as the text role or the text type.
+                </li>
+            </ul>
 
 
             <!-- =========================================================== -->
@@ -1094,6 +1108,7 @@ Known step names are in order (non case-sensitive):
    GRID        : Retrieve the grid of all systems
    SYSTEMS     : Split all data per system
    MEASURES    : Retrieve Measures from Bar sticks
+   TEXTS       : Retrieve texts items in each system area
    STICKS      : Extract vertical & horizontal sticks
    SYMBOLS     : Apply specific glyph patterns
    PAGES       : Translate glyphs to score items
@@ -1336,7 +1351,7 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                         settings/run.default.properties</code>
                 </li>
                 <li>USER: The value, if any, found in file <code>
-                        settings/run.properties</code>
+                        run.properties</code>
                 </li>
                 <li>CLI: The value, if any, specified in the command line by a
                     <code>-option key=value</code>. 
@@ -1731,6 +1746,27 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                 build and check the measures of every system. 
                 Global measure consistency is further checked for systems that
                 contain more than a single staff.
+            </p>
+
+            <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+            <h3 id="texts-step">
+                Texts step
+            </h3>
+            <img title="Texts" class="right" width="612" height="205"
+                 src="../images/chula-system-text.png" />
+            <p>
+                The <code>TEXTS</code> step works on each system in 
+                parallel.
+            </p>
+            <p>
+                It first builds an image of the system area, hiding all glyphs 
+                which are too wide or too high, or which intersect a staff 
+                interior.
+            </p>
+            <p>
+                It then hands this filtered system image over to the OCR engine,
+                which performs a layout analysis of the image and the 
+                transcription of the detected text blocks.
             </p>
 
             <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->

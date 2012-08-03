@@ -93,8 +93,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * named <em><b>"run.properties"</b></em>.
  * This file is modified every time the user updates the value of a constant by
  * means of the provided Constant user interface at run-time.
- * The file is not mandatory, and is located in the same folder as the file
- * for DEFAULT values.
+ * The file is not mandatory, and is located in the user application data folder.
  * Its values override the SOURCE (and DEFAULT if any) corresponding constants.
  * Typically, these USER values represent some modification made by the end user
  * at run-time and thus saved from one run to the other.

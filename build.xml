@@ -87,6 +87,9 @@
     <echo level="verbose" message="windows-import=${windows-import}" />
     <import optional="true" file="${windows-import}" />
     
+    <!-- A trick, so that netBeans can display windows targets -->
+    <import file="dev/windows/-windows.xml" />
+    
     <!-- Import for Unix, if any -->
     <condition property="unix-import" else="none"
                value="dev/unix/-unix.xml">

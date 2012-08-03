@@ -337,6 +337,11 @@ public class TesseractOrder
         if (keepImage) {
             String name = String.format("%03d-", serial) + ((label != null) ? label : "");
             File file = new File(WellKnowns.TEMP_FOLDER, name + ".tif");
+
+            // Make sure the TEMP directory exists
+            if (!WellKnowns.TEMP_FOLDER.exists()) {
+                WellKnowns.TEMP_FOLDER.mkdir();
+            }
             try (final FileOutputStream fos = new FileOutputStream(
                             file.getAbsolutePath())) {
                 fos.write(bytes);

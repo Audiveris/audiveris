@@ -75,9 +75,12 @@ body {
 /* Navigation */
 #navigation {
     position: fixed;
-    top: 50px;
+    /*    top: 20px;*/
+    padding-left: 10px;
     width: 15%;
     float: left;
+    font-size: 0.75em; 
+    line-height: 0.75;
 }
 #navigation ul {
     margin: 0;
