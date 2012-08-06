@@ -28,24 +28,6 @@
         System64Folder       - C:\Windows\system32\
     -->    
   
-    <!-- ===  Public Targets  ============================================== -->
-  
-    <!-- =========================== -->
-    <!--  W I N D O W S - E X E C S  -->
-    <!-- =========================== -->
-    <target name="windows-execs"
-            depends="jar, -bat, -exe, -exe-console, -no-windows-execs"
-            if="${is.windows}"
-            description="Build all Windows executables" />
-  
-    <!-- ===================================== -->
-    <!--  W I N D O W S - I N S T A L L E R S  -->
-    <!-- ===================================== -->
-    <target name="windows-installers"
-            depends="windows-execs, -wxs-generation, -do-installers, -wix-cleanup, -wxs-cleanup"
-            if="${is.windows}"
-            description="Build Windows installers for x86 and x64 architectures" />
-  
     <!-- ===  Internal Targets  ============================================ --> 
   
     <!-- ========= -->
@@ -191,6 +173,14 @@
         </launch4j>	
     </target>
   
+    <!-- ======================= -->
+    <!--  - I N S T A L L E R S  -->
+    <!-- ======================= -->
+    <!-- Build Windows installers for x86 and x64 architectures-->
+    <target name="-installers"
+            depends="-execs, -wxs-generation, -do-installers, -wix-cleanup, -wxs-cleanup"
+            if="${is.windows}"/>
+  
     <!-- =================================== -->
     <!--  - L A U N C H 4 J - T A S K D E F  -->
     <!-- =================================== -->
@@ -206,13 +196,13 @@
         </taskdef>
     </target>
   
-    <!-- ================================== -->
-    <!--  - N O - W I N D O W S -E X E C S  -->
-    <!-- ================================== -->
-    <target name="-no-windows-execs"
-            unless="${is.windows}">
-        <echo message="Windows execs are generated only from Windows" />
-    </target>
+    <!-- ============= -->
+    <!--  - E X E C S  -->
+    <!-- ============= -->
+    <!-- Build all Windows executables -->
+    <target name="-execs"
+            depends="-bat, -exe, -exe-console"
+            if="${is.windows}"/>
   
     <!-- ========================= -->
     <!--  - W I X - C L E A N U P  -->
