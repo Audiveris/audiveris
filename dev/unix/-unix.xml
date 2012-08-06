@@ -1,0 +1,44 @@
+<!-- +=====================================================================+ -->
+<!-- |                                                                     | -->
+<!-- |                         - u n i x . x m l                           | -->
+<!-- |                                                                     | -->
+<!-- +=====================================================================+ -->
+
+<project name="unix" basedir="../..">
+  
+    <description>
+        All targets specific to Unix platform.
+    
+        Targets are presented in alphabetical order, regardless of initial '-'.
+        An initial '-' indicates an internal target.
+        (and all targets here should be internal)
+    </description>
+  
+    <!--
+      TODO: Populate this skeleton as needed.
+    -->    
+  
+    <!-- ===  Internal Targets  ============================================ --> 
+  
+  
+    <!-- ============= -->
+    <!--  - C L E A N  -->
+    <!-- ============= -->
+    <target name="-clean"
+            if="${is.unix}">
+        <!-- Remove all the generated outputs for Unix -->
+        <echo message="unix.-clean is void for the time being" />
+    </target>
+  
+  
+    <!-- ======================= -->
+    <!--  - I N S T A L L E R S  -->
+    <!-- ======================= -->
+    <!-- Build Unix installers for x86 and x64 architectures-->
+    <target name="-installers"
+            depends=""
+            if="${is.unix}">
+        <echo message="unix.-installers is void for the time being" />
+    </target>
+  
+</project>
