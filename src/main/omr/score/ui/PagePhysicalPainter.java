@@ -170,7 +170,6 @@ public class PagePhysicalPainter
         g.setStroke(oldStroke);
         g.setColor(oldColor);
     }
-//
 
     //---------------//
     // visit Barline //
@@ -212,8 +211,12 @@ public class PagePhysicalPainter
             Point2D topCenter = topLine.verticalIntersection(bar);
             Point2D botCenter = botLine.verticalIntersection(bar);
 
-            BarPainter barPainter = BarPainter.getBarPainter(shape);
-            barPainter.draw(g, topCenter, botCenter, part);
+            if (shape != null) {
+                BarPainter barPainter = BarPainter.getBarPainter(shape);
+                barPainter.draw(g, topCenter, botCenter, part);
+            } else {
+                barline.addError("Barline with no recognized shape");
+            }
 
             // This drawing is driven by the underlying glyphs
 //            for (Glyph glyph : barline.getGlyphs()) {

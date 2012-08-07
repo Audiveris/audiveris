@@ -307,8 +307,7 @@ public class HorizontalsBuilder
     //---------------//
     // staffDistance //
     //---------------//
-    private static double staffDistance (Sheet sheet,
-                                         Glyph stick)
+    private double staffDistance (Glyph stick)
     {
         // Compute the (algebraic) distance from the stick to the nearest
         // staff. Distance is negative if the stick is within the staff,
@@ -318,12 +317,12 @@ public class HorizontalsBuilder
                  HORIZONTAL).getX()) / 2,
                 (stick.getStartPoint(HORIZONTAL).getY() + stick.getStopPoint(
                  HORIZONTAL).getY()) / 2);
-        final StaffInfo staff = sheet.getStaffManager().getStaffAt(mid);
+        final StaffInfo staff = system.getStaffAt(mid);
         final double top = staff.getFirstLine().yAt(mid.getX());
         final double bottom = staff.getLastLine().yAt(mid.getX());
         final double dist = Math.max(top - mid.getY(), mid.getY() - bottom);
 
-        return sheet.getScale().pixelsToFrac(dist);
+        return system.getSheet().getScale().pixelsToFrac(dist);
     }
 
     //------------------//
@@ -1277,7 +1276,7 @@ public class HorizontalsBuilder
                     (stick.getStartPoint(HORIZONTAL).getY() + stick.
                      getStopPoint(
                      HORIZONTAL).getY()) / 2);
-            staff = sheet.getStaffManager().getStaffAt(mid);
+            staff = system.getStaffAt(mid);
 
             double toTop = scale.pixelsToFrac(
                     staff.getFirstLine().yAt(mid.getX()) - mid.getY());
@@ -1398,7 +1397,7 @@ public class HorizontalsBuilder
         @Override
         protected double getValue (Glyph stick)
         {
-            return staffDistance(sheet, stick);
+            return staffDistance(stick);
         }
     }
 
@@ -1483,7 +1482,7 @@ public class HorizontalsBuilder
         @Override
         protected double getValue (Glyph stick)
         {
-            return staffDistance(sheet, stick);
+            return staffDistance(stick);
         }
     }
 

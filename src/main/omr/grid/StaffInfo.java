@@ -69,49 +69,51 @@ public class StaffInfo
     private static final Logger logger = Logger.getLogger(StaffInfo.class);
 
     //~ Instance fields --------------------------------------------------------
-    /** Sequence of the staff lines, from top to bottom */
+    //
+    /** Sequence of the staff lines. (from top to bottom) */
     private final List<LineInfo> lines;
 
     /**
-     * Scale specific to this staff, since different staves in a page may
-     * exhibit different scales
+     * Scale specific to this staff. [not used actually]
+     * (since different staves in a page may exhibit different scales)
      */
     private Scale specificScale;
 
-    /** Top limit of staff related area (left to right) */
+    /** Top limit of staff related area. (left to right) */
     private GeoPath topLimit = null;
 
-    /** Bottom limit of staff related area (left to right) */
+    /** Bottom limit of staff related area. (left to right) */
     private GeoPath bottomLimit = null;
 
-    /** Staff id, counted from 1 within the sheet */
+    /** Staff id. counted from 1 within the sheet */
     private final int id;
 
-    /** Information about left bar line */
+    /** Information about left bar line. */
     private BarInfo leftBar;
 
-    /** Left extrema */
+    /** Left extrema. */
     private double left;
 
-    /** Information about right bar line */
+    /** Information about right bar line. */
     private BarInfo rightBar;
 
-    /** Right extrema */
+    /** Right extrema. */
     private double right;
 
-    /** The area around the staff */
+    /** The area around the staff, lazily computed. */
     private GeoPath area;
 
-    /** Map of ledgers nearby */
+    /** Map of ledgers nearby. */
     private final Map<Integer, SortedSet<Ledger>> ledgerMap = new TreeMap<>();
 
-    /** Corresponding staff entity in the score hierarchy */
+    /** Corresponding staff entity in the score hierarchy. */
     private Staff scoreStaff;
 
-    /** Potential attachments */
+    /** Potential attachments. */
     private AttachmentHolder attachments = new BasicAttachmentHolder();
 
     //~ Constructors -----------------------------------------------------------
+    //
     //-----------//
     // StaffInfo //
     //-----------//
@@ -138,6 +140,7 @@ public class StaffInfo
     }
 
     //~ Methods ----------------------------------------------------------------
+    //
     //---------------//
     // addAttachment //
     //---------------//
@@ -152,7 +155,7 @@ public class StaffInfo
     // addLedger //
     //-----------//
     /**
-     * Add a ledger to the staff collection (which is lazily created)
+     * Add a ledger to the collection (which is lazily created)
      *
      * @param ledger the ledger to add
      */
@@ -226,6 +229,7 @@ public class StaffInfo
             area.append(
                     ReversePathIterator.getReversePathIterator(bottomLimit),
                     true);
+            area.closePath();
         }
 
         return area;
@@ -377,7 +381,7 @@ public class StaffInfo
      *
      * @param glyph the provided glyph
      * @return 0 if the glyph intersects the staff, otherwise the vertical
-     * distance from staff to closest edge of the glyph
+     *         distance from staff to closest edge of the glyph
      */
     public int getGapTo (Glyph glyph)
     {
@@ -427,7 +431,6 @@ public class StaffInfo
                 slopes,
                 new Comparator<Double>()
                 {
-
                     @Override
                     public int compare (Double o1,
                                         Double o2)
@@ -512,7 +515,7 @@ public class StaffInfo
      * Report the ordered set of ledgers, if any, for a given pitch value.
      *
      * @param lineIndex the precise line index that specifies algebraic
-     * distance from staff
+     *                  distance from staff
      * @return the proper set of ledgers, or null
      */
     public SortedSet<Ledger> getLedgers (int lineIndex)
@@ -810,11 +813,16 @@ public class StaffInfo
     public void setLimit (VerticalSide side,
                           GeoPath limit)
     {
+        logger.fine("staff#{0} setLimit {1} {2}", id, side, limit);
+        
         if (side == TOP) {
             topLimit = limit;
         } else {
             bottomLimit = limit;
         }
+
+        // Invalidate area, so that it gets recomputed when needed
+        area = null;
     }
 
     //---------------//
@@ -836,9 +844,11 @@ public class StaffInfo
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder();
-        sb.append("{StaffInfo").append(" id=").append(getId()).append(" left=").
-                append((float) left).append(" right=").append((float) right);
+        StringBuilder sb = new StringBuilder("{StaffInfo");
+        
+        sb.append(" id=").append(getId());
+        sb.append(" left=").append((float) left);
+        sb.append(" right=").append((float) right);
 
         if (specificScale != null) {
             sb.append(" specificScale=").append(specificScale.getInterline());

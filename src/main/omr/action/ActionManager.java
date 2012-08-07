@@ -211,17 +211,21 @@ public class ActionManager
     public void loadAllDescriptors ()
     {
         // Load classes first for system actions, then for user actions
-        for (String name : new String[]{"system-actions.xml", "user-actions.xml"}) {
-            File file = new File(WellKnowns.SETTINGS_FOLDER, name);
+        File[] files = new File[]{
+            new File(WellKnowns.SETTINGS_FOLDER, "system-actions.xml"),
+            new File(WellKnowns.USER_FOLDER, "user-actions.xml")};
 
+        for (int i = 0; i < files.length; i++) {
+            File file = files[i];
             if (file.exists()) {
                 try (InputStream input = new FileInputStream(file)) {
                     Actions.loadActionsFrom(input);
                 } catch (IOException | JAXBException ex) {
-                    logger.warning("Error loading actions from " + name, ex);
+                    logger.warning("Error loading actions from " + file, ex);
                 }
-            } else {
-                logger.severe("File not found {0}", file);
+            } else if (i == 0) {
+                // Only the first file is mandatory
+                logger.severe("Mandatory file not found {0}", file);
             }
         }
     }
@@ -349,11 +353,11 @@ public class ActionManager
                 }
             } else {
                 logger.severe("Unknown action {0} in class {1}",
-                              desc.methodName, desc.className);
+                        desc.methodName, desc.className);
             }
         } catch (ClassNotFoundException | SecurityException |
-                 IllegalAccessException | IllegalArgumentException |
-                 InvocationTargetException | InstantiationException ex) {
+                IllegalAccessException | IllegalArgumentException |
+                InvocationTargetException | InstantiationException ex) {
             logger.warning("Error while registering " + desc, ex);
         }
 
@@ -376,7 +380,7 @@ public class ActionManager
 
             for (ActionDescriptor desc : Actions.getAllDescriptors()) {
                 if (desc.domain.equalsIgnoreCase(domain)
-                        && (desc.section == section)) {
+                    && (desc.section == section)) {
                     logger.fine("Registering {0}", desc);
 
                     try {
@@ -403,7 +407,7 @@ public class ActionManager
                             logger.warning("Could not register {0}", desc);
                         }
                     } catch (ClassNotFoundException | InstantiationException |
-                             IllegalAccessException ex) {
+                            IllegalAccessException ex) {
                         logger.warning("Error with " + desc.itemClassName, ex);
                     }
                 }

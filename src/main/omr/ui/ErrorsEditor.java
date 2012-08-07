@@ -130,7 +130,6 @@ public class ErrorsEditor
                 new Runnable()
                 {
                     // This part is run on swing thread
-
                     @Override
                     public void run ()
                     {
@@ -158,7 +157,6 @@ public class ErrorsEditor
                 new Runnable()
                 {
                     // This part is run on swing thread
-
                     @Override
                     public void run ()
                     {
@@ -182,7 +180,6 @@ public class ErrorsEditor
                 new Runnable()
                 {
                     // This part is run on swing thread
-
                     @Override
                     public void run ()
                     {
@@ -223,7 +220,6 @@ public class ErrorsEditor
                 new Runnable()
                 {
                     // This part is run on swing thread
-
                     @Override
                     public void run ()
                     {
@@ -232,7 +228,7 @@ public class ErrorsEditor
                             Record record = it.next();
 
                             if ((record.step == step)
-                                    && (record.node.getSystem().getId() == systemId)) {
+                                && (record.node.getSystem().getId() == systemId)) {
                                 it.remove();
                             }
                         }
@@ -325,7 +321,9 @@ public class ErrorsEditor
                 sb.append(" [").append(glyph.idString()).append("]");
             }
 
-            sb.append(" ").append(step);
+            if (step != null) {
+                sb.append(" ").append(step);
+            }
 
             sb.append(" ").append(text);
 

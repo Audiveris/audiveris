@@ -51,6 +51,7 @@ import omr.util.Navigable;
 import omr.util.Predicate;
 
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -61,6 +62,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentSkipListSet;
+import omr.math.GeoPath;
+import omr.util.VerticalSide;
 
 /**
  * Class {@code SystemInfo} gathers information from the original
@@ -878,8 +881,7 @@ public class SystemInfo
      */
     public NotePosition getNoteStaffAt (PixelPoint point)
     {
-        StaffManager manager = sheet.getStaffManager();
-        StaffInfo staff = manager.getStaffAt(point);
+        StaffInfo staff = getStaffAt(point);
         NotePosition pos = staff.getNotePosition(point);
 
         logger.fine("{0} -> {1}", new Object[]{point, pos});
@@ -1010,14 +1012,15 @@ public class SystemInfo
     // getStaffAt //
     //------------//
     /**
-     * Given a point, retrieve the closest staff within the system.
+     * Retrieve the staff, <b>within</b> the  system, whose area 
+     * contains the provided point.
      *
      * @param point the provided point
      * @return the "containing" staff
      */
     public StaffInfo getStaffAt (Point2D point)
     {
-        return sheet.getStaffManager().getStaffAt(point);
+        return StaffManager.getStaffAt(point, staves);
     }
 
     //-----------//
@@ -1245,7 +1248,7 @@ public class SystemInfo
 
         if (logger.isFineEnabled()) {
             logger.fine("removeInactiveGlyphs: {0} {1}",
-                        toRemove.size(), Glyphs.toString(toRemove));
+                    toRemove.size(), Glyphs.toString(toRemove));
         }
 
         for (Glyph glyph : toRemove) {
@@ -1407,7 +1410,18 @@ public class SystemInfo
      */
     public void setBoundary (SystemBoundary boundary)
     {
+        logger.fine("{0} setBoundary {1}", idString(), boundary);
         this.boundary = boundary;
+
+        // We have a new system boundary on north and south sides
+
+        // So update top limit of first staff
+        GeoPath topPath = boundary.getLimit(VerticalSide.TOP).toGeoPath();
+        getFirstStaff().setLimit(VerticalSide.TOP, topPath);
+
+        // And update bottom limit of last staff
+        GeoPath bottomPath = boundary.getLimit(VerticalSide.BOTTOM).toGeoPath();
+        getLastStaff().setLimit(VerticalSide.BOTTOM, bottomPath);
     }
 
     //----------//
