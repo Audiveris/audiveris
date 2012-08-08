@@ -412,7 +412,6 @@ public class ScaleBuilder
     private void retrievePeaks ()
     {
         StringBuilder sb = new StringBuilder(sheet.getLogPrefix());
-
         // Foreground peak
         forePeak = getPeak(foreHisto, foreSpreadRatio, 0);
         sb.append("fore:").append(forePeak);
@@ -463,6 +462,8 @@ public class ScaleBuilder
      * It handles the precise foreground and background run lengths retrieves
      * the various peaks and is able to display a chart on the related
      * populations if so asked by the user.
+     * 
+     * Major change: convert the adapter to local threshold adapter by ryo/twitter @xiaot_Tag
      */
     private class Adapter
             implements RunsRetriever.Adapter
@@ -474,7 +475,8 @@ public class ScaleBuilder
         private final int[] fore; // (black) foreground runs
 
         private final int[] back; // (white) background runs
-
+        
+        @Deprecated
         private int maxForeground; // Threshold black / white
 
         //~ Constructors -------------------------------------------------------
@@ -484,12 +486,12 @@ public class ScaleBuilder
         public Adapter (int hMax)
         {
             picture = sheet.getPicture();
-
-            if (picture.getMaxForeground() != -1) {
-                maxForeground = picture.getMaxForeground();
-            } else {
-                maxForeground = sheet.getMaxForeground();
-            }
+            picture.computerintegral();
+//            if (picture.getMaxForeground() != -1) {
+//                maxForeground = picture.getMaxForeground();
+//            } else {
+//                maxForeground = sheet.getMaxForeground();
+//            }
 
             // Allocate histogram counters
             fore = new int[hMax + 2];
@@ -538,12 +540,28 @@ public class ScaleBuilder
         //--------//
         // isFore //
         //--------//
+    	/**
+    	 * @deprecated
+    	 */
         @Override
         public boolean isFore (int level)
         {
             // Assuming black=0, white=255
             return level <= maxForeground;
         }
+        
+    	@Override
+    	public boolean isForelocaltres(int y, int x) {
+    		double var = 0, mean = 0, sqmean = 0;
+    		mean = picture.getMean(x, y, WINDOWSIZE);
+    		sqmean = picture.getSqrMean(x, y, WINDOWSIZE);
+    		var = Math.abs(sqmean - mean * mean);
+    		int originPixValue = getLevel(y, x);
+    		double threshold = 255 - (255 - mean)
+    				* (1 + K * (Math.sqrt(var) / 128 - 1));
+    		boolean isFore = originPixValue < threshold;
+    		return isFore;
+    	}
 
         //-----------//
         // terminate //
@@ -601,6 +619,7 @@ public class ScaleBuilder
 
             return histo;
         }
+
     }
 
     //-----------//

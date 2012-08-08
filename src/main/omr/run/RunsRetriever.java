@@ -116,7 +116,7 @@ public class RunsRetriever
             final int level = adapter.getLevel(c, p);
 
             ///logger.info("p:" + p + " c:" + c + " level:" + level);
-            if (adapter.isFore(level)) {
+            if (adapter.isForelocaltres(c, p)) {
                 // We are on a foreground pixel
                 if (isFore) {
                     // Append to the foreground run in progress
@@ -223,7 +223,13 @@ public class RunsRetriever
      */
     public static interface Adapter
     {
-        //~ Methods ------------------------------------------------------------
+        /** Default value window size */
+        public static final int WINDOWSIZE = 35;
+        
+        /** local threshold K mean */
+        public static final double K = 0.25;
+    	
+    	//~ Methods ------------------------------------------------------------
 
         //---------//
         // backRun //
@@ -282,7 +288,12 @@ public class RunsRetriever
          *
          * @return true if pixel is foreground, false otherwise
          */
+        @Deprecated
         boolean isFore (int level);
+        
+        
+        
+        boolean isForelocaltres(int y, int x);
 
         //-----------//
         // terminate //
