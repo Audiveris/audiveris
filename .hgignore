@@ -1,7 +1,6 @@
 # First, use regexp syntax -------------------------------------------------------
 syntax: regexp
 
-\..*~$
 \.hgignore$
 \.chg\..*$
 \.conflict\~$
@@ -10,6 +9,7 @@ syntax: regexp
 \.mf$
 \.mid$
 \.msi$
+\.msm$
 \.orig$
 \.orig\..*$
 \.rej$
@@ -19,27 +19,28 @@ build$
 dist$
 jars$
 midi$
+bin
+ocr-204$
 pdf$
 print$
 scores$
 scripts$
 temp$
 tesseract\.log
+www/docs/api
 
 # Now, switch to glob syntax -------------------------------------------------
 syntax: glob
 
+audiveris.bat
+manifest.mf
 # Ignore .jpg and .pdf under the src directory since they are produced via umlet
 # Images handled by conf management should use other suffix (.png for example)
 src/**/*.jpg
 src/**/*.pdf
 dev/material/*.jpg
-
-audiveris.bat
-manifest.mf
 train/core/*
-eval/backup-neural-network.xml
-nbproject/configs
-www/docs/api
 ocr/tessdata/*
-ocr/tessdata
+eval/backup-neural-network.xml
+settings/run.properties
+nbproject/configs

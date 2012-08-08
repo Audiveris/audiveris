@@ -62,8 +62,6 @@
 
     <action domain="PLUGIN" section="10" class="omr.plugin.PluginsManager" method="invokeDefaultPlugin" button="javax.swing.JButton" />
 
-    <action domain="DEBUG" section="30" class="omr.score.ui.ScoreActions" method="browseScore"/>
-    
     <action domain="HELP" section="20"  class="omr.ui.GuiActions" method="showManual" />
     <action domain="HELP" section="20"  class="omr.ui.GuiActions" method="visitWebSite" />
     <action domain="HELP" section="40"  class="omr.ui.GuiActions" method="showAbout" />

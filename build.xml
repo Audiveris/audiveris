@@ -53,13 +53,10 @@
     <property name="CompanyId" value="${Name}Ltd" />
     <property environment="env"/>    
     
-    <!-- Environment (user) for Mac variants -->
-    <!-- TODO: implement this for Mac -->        
-    
     <!-- Environment (user) for Windows variants -->
     <property file="${env.APPDATA}/${CompanyId}/${name}/build.properties"/>        
     
-    <!-- Environment (user) for Unix variants -->
+    <!-- Environment (user) for Linux variants -->
     <property file="${env.XDG_CONFIG_HOME}/${CompanyId}/${name}/build.properties"/>        
     <property file="${env.HOME}/.config/${CompanyId}/${name}/build.properties"/>        
     
@@ -82,13 +79,13 @@
         </fileset>
     </path>        
     
-    <!-- Import for Mac, if any -->
-    <condition property="mac-import" else="none"
-               value="dev/mac/-mac.xml">
-        <os family="mac"/>
+    <!-- Import for Windows, if any -->
+    <condition property="windows-import" else="none"
+               value="dev/windows/-windows.xml">
+        <os family="windows"/>
     </condition>
-    <echo level="verbose" message="mac-import=${mac-import}" />
-    <import optional="true" file="${mac-import}" />
+    <echo level="verbose" message="windows-import=${windows-import}" />
+    <import optional="true" file="${windows-import}" />
     
     <!-- Import for Unix, if any -->
     <condition property="unix-import" else="none"
@@ -98,13 +95,13 @@
     <echo level="verbose" message="unix-import=${unix-import}" />
     <import optional="true" file="${unix-import}" />
     
-    <!-- Import for Windows, if any -->
-    <condition property="windows-import" else="none"
-               value="dev/windows/-windows.xml">
-        <os family="windows"/>
+    <!-- Import for Mac, if any -->
+    <condition property="mac-import" else="none"
+               value="dev/mac/-mac.xml">
+        <os family="mac"/>
     </condition>
-    <echo level="verbose" message="windows-import=${windows-import}" />
-     <import optional="true" file="${windows-import}" /> 
+    <echo level="verbose" message="mac-import=${mac-import}" />
+    <import optional="true" file="${mac-import}" />
 
     <!-- Import NetBeans implementation targets -->
     <import file="nbproject/build-impl.xml"/>
@@ -114,14 +111,6 @@
 	     classpathref="tools.classpath" />
 
     <!-- ===  Public Targets  ============================================== -->
-    
-    <!-- ===================== -->
-    <!--  I N S T A L L E R S  -->
-    <!-- ===================== -->
-    <target name="installers"
-            depends="jar, -installers-mac, -installers-unix, -installers-windows"
-            description="Build the OS-dependent installers for each architecture">
-    </target>
     
     <!-- ======= -->
     <!--  S R C  -->
@@ -202,33 +191,12 @@
     
     <!-- ===  Internal Targets  ============================================ -->
 
-    <!-- ===================== -->
-    <!--  - C L E A N - M A C  -->
-    <!-- ===================== -->
-    <target name="-clean-mac" if="${is.mac}">
-      <antcall target="mac.-clean" />
-    </target>
-
-    <!-- ======================= -->
-    <!--  - C L E A N - U N I X  -->
-    <!-- ======================= -->
-    <target name="-clean-unix" if="${is.unix}">
-      <antcall target="unix.-clean" />
-    </target>
-
-    <!-- ============================= -->
-    <!--  - C L E A N - W I N D O W S  -->
-    <!-- ============================= -->
-    <target name="-clean-windows" if="${is.windows}">
-      <antcall target="windows.-clean" />
-    </target>
-
     <!-- =============== -->
     <!--  - H G - T I P  -->
     <!-- =============== -->
-    <!-- Retrieve Hg tip revision -->
     <target name="-hg-tip"
             if="${hg.present}">
+        <!-- description="Retrieve Hg tip revision" -->
         
         <taskdef name="hg"
                  classpathref="tools.classpath"
@@ -253,53 +221,30 @@
 
     </target>
 
-    <!-- =============================== -->
-    <!--  - I N S T A L L E R S - M A C  -->
-    <!-- =============================== -->
-    <target name="-installers-mac" if="${is.mac}">
-      <antcall target="mac.-installers" />
-    </target>
-
-    <!-- ================================= -->
-    <!--  - I N S T A L L E R S - U N I X  -->
-    <!-- ================================= -->
-    <target name="-installers-unix" if="${is.unix}">
-      <antcall target="unix.-installers" />
-    </target>
-
-    <!-- ======================================= -->
-    <!--  - I N S T A L L E R S - W I N D O W S  -->
-    <!-- ======================================= -->
-    <target name="-installers-windows" if="${is.windows}">
-      <antcall target="windows.-installers" />
-    </target>
-    
-    <!-- ============================= -->
-    <!--  - J A V A D O C - B U I L D  -->
-    <!-- ============================= -->
-    <!-- Generate project documentation -->
-    <target name="-javadoc-build"
-            depends="-uml, audiveris-impl.-javadoc-build, -publish-doc"/>
-
     <!-- ===================== -->
     <!--  - N O - H G - T I P  -->
     <!-- ===================== -->
-    <!-- Cope with no tip revision -->
     <target name="-no-hg-tip"
             unless="${hg.present}">
+        <!-- description="Cope with no tip revision" -->
          
         <property name="impl.version" value="${spec.version}" />
         <property name="impl.name" value="${name}-${spec.version}" />
 
     </target>
+    
+    <!-- ============================= -->
+    <!--  - J A V A D O C - B U I L D  -->
+    <!-- ============================= -->
+    <target name="-javadoc-build"
+            depends="-uml, audiveris-impl.-javadoc-build, -publish-doc"/>
+    <!-- Generate project documentation -->
 
     <!-- ======================= -->
     <!--  - P O S T - C L E A N  -->
     <!-- ======================= -->
-    <!-- Performs the cleanup depending on OS -->
     <target name="-post-clean"
-            depends="-clean-mac, -clean-unix, -clean-windows">
-        <!-- Non OS dependent part -->
+            depends="windows.-clean">
         <delete verbose="${verbose}">
             <fileset dir="${basedir}" includes="*.zip"/>
         </delete> 
@@ -373,8 +318,8 @@ Specification-Version: ${impl.version}
     <!-- ========= -->
     <!--  - U M L  -->
     <!-- ========= -->
-    <!-- Generate UML drawings with Umlet utility -->
     <target name="-uml">
+	<!-- Generation of UML drawings with Umlet utility -->
         
         <for param="file">
             <path>

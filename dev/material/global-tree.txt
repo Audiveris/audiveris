@@ -6,16 +6,16 @@
 | Documentation about the mapping of Audiveris folders                         |
 +------------------------------------------------------------------------------+
 
-Target System folders (read-only)
+Target System folders
 ---------------------
 
 for Windows:
-<SystemFolder or System64Folder>/jniTesseract3Bridge.dll
-<SystemFolder or System64Folder>/jniTesseract3Bridge.dll.manifest
-<SystemFolder or System64Folder>/liblept168.dll
-<SystemFolder or System64Folder>/libtesseract302.dll
+<SystemFolder>/jniTesseract3Bridge.dll
+<SystemFolder>/jniTesseract3Bridge.dll.manifest
+<SystemFolder>/liblept168.dll
+<SystemFolder>/libtesseract302.dll
 
-Target Program folders                  WellKnowns.PROGRAM_FOLDER (read-only)
+Target Program folders                  WellKnowns.PROGRAM_FOLDER
 ----------------------
 
 ./
@@ -26,7 +26,7 @@ Target Program folders                  WellKnowns.PROGRAM_FOLDER (read-only)
 ./audiveris.bat
 
 ./dist/
-./dist/audiveris.jar
+./dist/audiveris-4.1beta.jar
 ./dist/lib/
 ./dist/lib/Jama-1.0.2.jar
 ./dist/lib/PDFRenderer.jar
@@ -47,7 +47,7 @@ Target Program folders                  WellKnowns.PROGRAM_FOLDER (read-only)
 ./dist/lib/proxymusic-2.0.jar
 ./dist/lib/tesseract-3.jar
 
-./ocr/                                  WellKnowns.OCR_FOLDER (read-only?)
+./ocr/                                  WellKnowns.OCR_FOLDER
 ./ocr/tessdata/
 ./ocr/tessdata/deu.traineddata
 ./ocr/tessdata/eng.traineddata
@@ -55,14 +55,14 @@ Target Program folders                  WellKnowns.PROGRAM_FOLDER (read-only)
 ./ocr/tessdata/ita.traineddata
 ./ocr/tessdata/ [other files & languages on demand]
 
-./res/                                  WellKnowns.RES_FOLDER (read-only)
+./res/                                  WellKnowns.RES_FOLDER
 ./res/GPLv2.rtf
 ./res/ISO639-3.xml
 ./res/all-icons-256.ico
 ./res/splash.bmp
 ./res/splash.png
 
-./www/                                  WellKnowns.DOC_FOLDER (read-only?)
+./www/                                  WellKnowns.DOC_FOLDER
 ./www/index.html
 ./www/branding
 ./www/docs
@@ -70,17 +70,14 @@ Target Program folders                  WellKnowns.PROGRAM_FOLDER (read-only)
 Target User config folders              WellKnowns.CONFIG_FOLDER
 --------------------------
 
-./settings/                             WellKnowns.SETTINGS_FOLDER (read-only)
+./settings/                             WellKnowns.SETTINGS_FOLDER
+./settings/logging.properties
+./settings/run.properties
 ./settings/run.default.properties
 ./settings/system-actions.xml
+./settings/user-actions.xml
 
-[APP_DATA]                              WellKnowns.USER_FOLDER (read-write)
-[APP_DATA]/logging.properties
-[APP_DATA]/run.properties
-[APP_DATA]/build.properties
-[APP_DATA]/user-actions.xml
-
-./plugins/                              WellKnowns.PLUGINS_FOLDER (read-write?)
+./plugins/                              WellKnowns.PLUGINS_FOLDER
 ./plugins/musescore.js
 ./plugins/finale.js
 ./plugins/finale-notepad.js
@@ -88,7 +85,7 @@ Target User config folders              WellKnowns.CONFIG_FOLDER
 Target User data folders                WellKnowns.DATA_FOLDER
 ------------------------
 
-./examples/                             WellKnowns.EXAMPLES_FOLDER (read-write)
+./examples/                             WellKnowns.EXAMPLES_FOLDER
 ./examples/Dichterliebe01.pdf
 ./examples/SchbAvMaSample.pdf
 ./examples/Straight_Page_1.png
@@ -98,27 +95,26 @@ Target User data folders                WellKnowns.DATA_FOLDER
 ./examples/chula.1bit.bmp
 ./examples/chula.png
 ./examples/cucaracha.png
-./examples/estudio.png
+./examples/estudio.pngdd
 ./examples/hove.png
 ./examples/tzigane2.png
 ./examples/zizi.png
 
-./eval/                                 WellKnowns.EVAL_FOLDER (read-write)
+./eval/                                 WellKnowns.EVAL_FOLDER
 ./eval/linear-evaluator.xml     
 ./eval/neural-network.xml
-But we should have a backup of them...
 
-./train/                                WellKnowns.TRAIN_FOLDER (read-write)
+./train/                                WellKnowns.TRAIN_FOLDER
 ./train/core
 ./train/samples
 ./train/sheets
 ./train/symbols
 
-./benches/  [user populated]            WellKnowns.BENCHES_FOLDER (r-w)
-./midi/     [user populated]            WellKnowns.MIDI_FOLDER    (r-w)
-./print/    [user populated]            WellKnowns.PRINT_FOLDER   (r-w)
-./scripts/  [user populated]            WellKnowns.SCRIPTS_FOLDER (r-w)
-./scores/   [user populated]            WellKnowns.SCORES_FOLDER  (r-w)
+./benches/  [user populated]            WellKnowns.BENCHES_FOLDER
+./midi/     [user populated]            WellKnowns.MIDI_FOLDER
+./print/    [user populated]            WellKnowns.PRINT_FOLDER
+./scripts/  [user populated]            WellKnowns.SCRIPTS_FOLDER
+./scores/   [user populated]            WellKnowns.SCORES_FOLDER
 
 Development only folders
 ------------------------
@@ -138,31 +134,18 @@ Development only folders
 ./dev/jalopy/                           [Source code formatting]
 ./dev/jalopy/java-convention.xml
 
-./dev/mac/                              [Mac targets]
-./dev/mac/-mac.xml
-
-./dev/unix/                             [Unix targets]
-./dev/unix/-unix.xml
-
-./dev/windows/                          [Windows targets]
+./dev/windows/                          [Building Windows installer]
 ./dev/windows/-windows.xml
 ./dev/windows/audiveris.wxs
-./dev/windows/Microsoft_VC90_CRT_x86.msm
-./dev/windows/Microsoft_VC90_CRT_x86_X=x64.msm
+./dev/windows/vc.wxs
 
 ./dev/windows/dll/                      [Tesseract libraries]
-./dev/windows/dll/x64/
-./dev/windows/dll/x64/jniTesseract3Bridge.dll
-./dev/windows/dll/x64/jniTesseract3Bridge.dll.manifest
-./dev/windows/dll/x64/liblept168.dll
-./dev/windows/dll/x64/libtesseract302.dll
-./dev/windows/dll/x86/
-./dev/windows/dll/x86/jniTesseract3Bridge.dll
-./dev/windows/dll/x86/jniTesseract3Bridge.dll.manifest
-./dev/windows/dll/x86/liblept168.dll
-./dev/windows/dll/x86/libtesseract302.dll
+./dev/windows/dll/jniTesseract3Bridge.dll
+./dev/windows/dll/jniTesseract3Bridge.dll.manifest
+./dev/windows/dll/liblept168.dll
+./dev/windows/dll/libtesseract302.dll
 
-./dev/material/                         [Miscellaneous]
+./dev/material/
 ./dev/material/MusicalSymbols.pdf
 ./dev/material/MusicalSymbols.ttf
 ./dev/material/global-tree.txt

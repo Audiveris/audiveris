@@ -16,6 +16,9 @@ a {
 a:hover, a:focus {
     color: #FF4C00;
 }
+code {
+    color: #aa4400;
+}
 code.key {
     color: #0000FF;
     background: white;
@@ -72,12 +75,9 @@ body {
 /* Navigation */
 #navigation {
     position: fixed;
-    /*    top: 20px;*/
-    padding-left: 10px;
+    top: 50px;
     width: 15%;
     float: left;
-    font-size: 0.75em; 
-    line-height: 0.75;
 }
 #navigation ul {
     margin: 0;

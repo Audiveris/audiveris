@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.text;
 
-import java.awt.Point;
 import omr.constant.ConstantSet;
 import omr.glyph.Glyphs;
 import omr.glyph.facets.Glyph;
@@ -136,8 +135,8 @@ public class TextScanner
             List<TextLine> newLines = textBuilder.recomposeLines(lines);
 
             textBuilder.mapGlyphs(newLines,
-                    allSections,
-                    language);
+                                  allSections,
+                                  language);
         } else {
             logger.info("{0} No line", system.idString());
         }
@@ -164,46 +163,47 @@ public class TextScanner
 
         // Safer
         system.removeInactiveGlyphs();
-
+        
         // Discard glyphs that intersect a stave core area
         return Glyphs.lookupGlyphs(system.getGlyphs(),
-                new Predicate<Glyph>()
-                {
-                    @Override
-                    public boolean check (Glyph glyph)
-                    {
-                        // Reject manual non-text glyphs
-                        if (glyph.isManualShape() && !glyph.isText()) {
-                            return false;
-                        }
+                                   new Predicate<Glyph>()
+        {
+            @Override
+            public boolean check (Glyph glyph)
+            {
+                // Reject manual non-text glyphs
+                if (glyph.isManualShape() && !glyph.isText()) {
+                    return false;
+                }
 
-                        // Keep known text
-                        if (glyph.isText()) {
-                            return true;
-                        }
-                        
-                        // Check position wrt closest staff
-                        StaffInfo staff = system.getStaffAt(glyph.getAreaCenter());
-                        GeoPath contour = pathMap.get(staff);
-                        if (contour.intersects(glyph.getBounds())) {
-                            return false;
-                        }
+                // Keep known text
+                if (glyph.isText()) {
+                    return true;
+                }
+                
+                // Check position wrt closest staff
+                StaffInfo staff = system.getStaffAt(glyph.getAreaCenter());
+                GeoPath contour = pathMap.get(staff);
 
-                        // Discard too large glyphs
-                        PixelRectangle bounds = glyph.getBounds();
+                if (contour.intersects(glyph.getBounds())) {
+                    return false;
+                }
 
-                        if (bounds.width > params.maxGlyphWidth) {
-                            return false;
-                        }
+                // Discard too large glyphs
+                PixelRectangle bounds = glyph.getBounds();
 
-                        if (bounds.height > params.maxGlyphHeight) {
-                            return false;
-                        }
+                if (bounds.width > params.maxGlyphWidth) {
+                    return false;
+                }
 
-                        // All tests are OK
-                        return true;
-                    }
-                });
+                if (bounds.height > params.maxGlyphHeight) {
+                    return false;
+                }
+
+                // All tests are OK
+                return true;
+            }
+        });
     }
 
     //----------------//
@@ -255,14 +255,14 @@ public class TextScanner
     private GeoPath getStaffContour (StaffInfo staff)
     {
         GeoPath topLimit = getSampledLine(staff.getFirstLine(),
-                -params.marginAbove);
+                                          -params.marginAbove);
         GeoPath botLimit = getSampledLine(staff.getLastLine(),
-                params.marginBelow);
+                                          params.marginBelow);
 
         GeoPath contour = new GeoPath();
         contour.append(topLimit, false);
         contour.append(ReversePathIterator.getReversePathIterator(botLimit),
-                true);
+                       true);
         contour.closePath();
 
         // For visual check
@@ -308,7 +308,6 @@ public class TextScanner
         Scale.Fraction maxGlyphHeight = new Scale.Fraction(
                 4,
                 "Maximum glyph height");
-
     }
 
     //------------//

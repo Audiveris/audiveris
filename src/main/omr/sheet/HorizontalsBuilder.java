@@ -307,7 +307,8 @@ public class HorizontalsBuilder
     //---------------//
     // staffDistance //
     //---------------//
-    private double staffDistance (Glyph stick)
+    private static double staffDistance (Sheet sheet,
+                                         Glyph stick)
     {
         // Compute the (algebraic) distance from the stick to the nearest
         // staff. Distance is negative if the stick is within the staff,
@@ -317,12 +318,12 @@ public class HorizontalsBuilder
                  HORIZONTAL).getX()) / 2,
                 (stick.getStartPoint(HORIZONTAL).getY() + stick.getStopPoint(
                  HORIZONTAL).getY()) / 2);
-        final StaffInfo staff = system.getStaffAt(mid);
+        final StaffInfo staff = sheet.getStaffManager().getStaffAt(mid);
         final double top = staff.getFirstLine().yAt(mid.getX());
         final double bottom = staff.getLastLine().yAt(mid.getX());
         final double dist = Math.max(top - mid.getY(), mid.getY() - bottom);
 
-        return system.getSheet().getScale().pixelsToFrac(dist);
+        return sheet.getScale().pixelsToFrac(dist);
     }
 
     //------------------//
@@ -1276,7 +1277,7 @@ public class HorizontalsBuilder
                     (stick.getStartPoint(HORIZONTAL).getY() + stick.
                      getStopPoint(
                      HORIZONTAL).getY()) / 2);
-            staff = system.getStaffAt(mid);
+            staff = sheet.getStaffManager().getStaffAt(mid);
 
             double toTop = scale.pixelsToFrac(
                     staff.getFirstLine().yAt(mid.getX()) - mid.getY());
@@ -1397,7 +1398,7 @@ public class HorizontalsBuilder
         @Override
         protected double getValue (Glyph stick)
         {
-            return staffDistance(stick);
+            return staffDistance(sheet, stick);
         }
     }
 
@@ -1482,7 +1483,7 @@ public class HorizontalsBuilder
         @Override
         protected double getValue (Glyph stick)
         {
-            return staffDistance(stick);
+            return staffDistance(sheet, stick);
         }
     }
 
