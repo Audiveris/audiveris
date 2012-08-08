@@ -41,7 +41,9 @@ public interface PixelSource
      * foreground.
      *
      * @return the maximum foreground pixel value
+     * @Deprecated no use since starting using local thresholding global foreground shall be deprecated
      */
+    @Deprecated
     int getMaxForeground ();
 
     /**
@@ -67,6 +69,27 @@ public interface PixelSource
      * Assign a new maximum value for foreground (black) pixels
      *
      * @param level the new maximum foreground pixel value
+     * @Deprecated no use since starting using local thresholding global foreground shall be deprecated
      */
+    @Deprecated
     void setMaxForeground (int level);
+    
+    /**
+     * get local pixel mean
+     * @param x abscissa value
+     * @param y ordinate value
+     * @param windowsize is the choosen area to get mean
+     */
+    double getMean(int x, int y, int windowSize);
+    
+    
+    /**
+     * get square pixel mean
+     * @param x abscissa value
+     * @param y ordinate value
+     * @param windowsize is the choosen area to get mean
+     */
+    double getSqrMean(int x, int y, int windowSize);
+    
+    
 }

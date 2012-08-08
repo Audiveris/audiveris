@@ -14,6 +14,7 @@ package omr.sheet.picture;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.lag.AbstractPixelSource;
 import omr.lag.PixelSource;
 
 import omr.log.Logger;
@@ -69,7 +70,7 @@ import javax.media.jai.RenderedImageAdapter;
  *
  * TODO: work on grayFactor
  */
-public class Picture
+public class Picture extends AbstractPixelSource
         implements PixelSource,
                    EventSubscriber<LocationEvent>
 {
@@ -119,6 +120,7 @@ public class Picture
     /** The current maximum value for foreground pixels, null if not set */
     private Integer maxForeground;
 
+    
     //~ Constructors -----------------------------------------------------------
     //---------//
     // Picture //
@@ -257,7 +259,7 @@ public class Picture
     //------------------//
     // getMaxForeground //
     //------------------//
-    @Override
+    @Override @Deprecated
     public int getMaxForeground ()
     {
         if (maxForeground != null) {
@@ -304,6 +306,7 @@ public class Picture
         }
     }
 
+    
     //----------//
     // getWidth //
     //----------//
@@ -464,7 +467,7 @@ public class Picture
     //------------------//
     // setMaxForeground //
     //------------------//
-    @Override
+    @Override @Deprecated
     public void setMaxForeground (int level)
     {
         this.maxForeground = level;

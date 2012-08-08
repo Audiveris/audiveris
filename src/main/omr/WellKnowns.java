@@ -256,7 +256,20 @@ public class WellKnowns
         if (WINDOWS) {
             return getUserDataFolder();
         } else if (MAC_OS_X) {
-            throw new UnsupportedOperationException("Not yet implemented");
+        	// temporary make it work for debuging on ios
+        	String config = System.getenv("XDG_CONFIG_HOME");
+            if (config != null) {
+                return new File(config + System.getProperty("user.dir"));
+            }
+
+            String home = System.getenv("HOME");
+           
+
+            if (home != null) {
+                return new File(System.getProperty("user.dir"));
+            }
+
+            throw new RuntimeException("HOME environment variable is not set");
         } else if (LINUX) {
             String config = System.getenv("XDG_CONFIG_HOME");
 
@@ -303,7 +316,18 @@ public class WellKnowns
             throw new RuntimeException(
                 "APPDATA environment variable is not set");
         } else if (MAC_OS_X) {
-            throw new UnsupportedOperationException("Not yet implemented");
+        	// temporary make it work for debuging on ios
+          	 String data = System.getenv("XDG_DATA_HOME");
+
+             if (data != null) {
+                 return new File(System.getProperty("user.dir"));
+             }
+             String home = System.getenv("HOME");
+             if (home != null) {
+                 return new File(System.getProperty("user.dir"));
+             }
+             throw new RuntimeException("HOME environment variable is not set");
+        	
         } else if (LINUX) {
             String data = System.getenv("XDG_DATA_HOME");
 
@@ -343,9 +367,16 @@ public class WellKnowns
         // are running from the development folder (with data & settings as
         // subfolders) rather than from a standard folder (installed with 
         // distinct location for application data & config).
+    	// There are other possible "src" symoble does not work for example other program invoking audiveris.jar file
+    	// so added one more condition to check if class_container having .jar extension
         File devFolder = new File(PROGRAM_FOLDER, "src");
-
-        return devFolder.exists();
+        String s = CLASS_CONTAINER.getName();
+        String ext=null;
+        int i = s.lastIndexOf('.');
+        	if (i > 0 &&  i < s.length() - 1) {
+            ext=s.substring(i+1).toLowerCase();
+        }
+        return devFolder.exists()||ext=="jar";
     }
 
     //------------//

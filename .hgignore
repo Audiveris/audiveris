@@ -1,6 +1,5 @@
 # First, use regexp syntax -------------------------------------------------------
 syntax: regexp
-
 \.hgignore$
 \.chg\..*$
 \.conflict\~$
@@ -29,9 +28,17 @@ temp$
 tesseract\.log
 www/docs/api
 
+
 # Now, switch to glob syntax -------------------------------------------------
 syntax: glob
 
+bin
+.DS_Store
+.project
+.settings
+manifest.mf
+nbbuild.xml
+.classpath
 audiveris.bat
 manifest.mf
 # Ignore .jpg and .pdf under the src directory since they are produced via umlet

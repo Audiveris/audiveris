@@ -724,4 +724,14 @@ public class RunsTable
             runService.publish(new RunEvent(this, hint, movement, run));
         }
     }
+
+	@Override
+	public double getMean(int x, int y, int windowSize) {
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	@Override
+	public double getSqrMean(int x, int y, int windowSize) {
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
 }

@@ -158,6 +158,7 @@ public class Main
 
             // At this point all tasks have completed (normally or not)
             // So shutdown immediately the executors
+
             OmrExecutors.shutdown(true);
 
             // Store latest constant values on disk?
