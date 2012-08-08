@@ -16,9 +16,6 @@ a {
 a:hover, a:focus {
     color: #FF4C00;
 }
-code {
-    color: #aa4400;
-}
 code.key {
     color: #0000FF;
     background: white;
