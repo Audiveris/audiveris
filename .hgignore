@@ -25,7 +25,13 @@ scores$
 scripts$
 temp$
 tesseract\.log
-
+bin
+.DS_Store
+.project
+.settings
+manifest.mf
+nbbuild.xml
+.classpath
 # Now, switch to glob syntax -------------------------------------------------
 syntax: glob
 
