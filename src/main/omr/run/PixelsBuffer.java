@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.run;
 
+import omr.lag.AbstractPixelSource;
 import omr.lag.PixelSource;
 
 import java.awt.Dimension;
@@ -22,8 +23,8 @@ import java.util.Arrays;
  *
  * @author Hervé Bitteur
  */
-public class PixelsBuffer
-    implements PixelSource
+public class PixelsBuffer extends AbstractPixelSource
+    implements PixelSource 
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -35,6 +36,7 @@ public class PixelsBuffer
 
     /** Underlying buffer */
     private final char[] buffer;
+    
 
     //~ Constructors -----------------------------------------------------------
 
@@ -54,6 +56,7 @@ public class PixelsBuffer
 
         // Initialize the whole buffer with background color value
         Arrays.fill(buffer, (char) BACKGROUND);
+        
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -98,7 +101,7 @@ public class PixelsBuffer
     //------------------//
     // setMaxForeground //
     //------------------//
-    @Override
+    @Override @Deprecated
     public void setMaxForeground (int level)
     {
         throw new UnsupportedOperationException("Not supported yet.");
@@ -112,5 +115,6 @@ public class PixelsBuffer
                           char val)
     {
         buffer[(y * width) + x] = val;
-    }
+    } 
+    
 }

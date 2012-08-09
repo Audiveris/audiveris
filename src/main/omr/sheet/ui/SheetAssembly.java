@@ -618,7 +618,7 @@ public class SheetAssembly
             }
 
             // Force update of LocationEvent
-            LocationEvent locationEvent = locationService.getLastEvent(
+            LocationEvent locationEvent = (LocationEvent) locationService.getLastEvent(
                     LocationEvent.class);
             PixelRectangle location = (locationEvent != null)
                                       ? locationEvent.getData() : null;

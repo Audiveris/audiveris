@@ -14,6 +14,7 @@ package omr.sheet.picture;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.lag.AbstractPixelSource;
 import omr.lag.PixelSource;
 
 import omr.log.Logger;
@@ -41,7 +42,6 @@ import java.awt.image.ColorConvertOp;
 import java.awt.image.ColorModel;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
-import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.awt.image.renderable.ParameterBlock;
 
@@ -64,16 +64,13 @@ import javax.media.jai.RenderedImageAdapter;
  * <li> To <b>read</b> or to <b>write</b> a pixel knowing its location in the
  * current image </li>
  * </ul> </p>
- * 
- * <p>TODO: Rather than the custom grayfactor trick, consider using the standard 
- * normalized form of ColorModel.
- * <p>TODO: When an alpha channel is involved, perform the alpha multiplication
- * if the components are not yet premultiplied.
- * 
+ *
  * @author Hervé Bitteur
  * @author Brenton Partridge
+ *
+ * TODO: work on grayFactor
  */
-public class Picture
+public class Picture extends AbstractPixelSource
         implements PixelSource,
                    EventSubscriber<LocationEvent>
 {
@@ -93,7 +90,6 @@ public class Picture
     private static final AffineTransform identity = new AffineTransform();
 
     //~ Instance fields --------------------------------------------------------
-    //
     /** Dimension of current image */
     private PixelDimension dimension;
 
@@ -107,6 +103,8 @@ public class Picture
     /** Remember if we have actually rotated the image */
     private boolean rotated = false;
 
+    /** Cached dimension */
+    ///private int dimensionWidth;
     /** The image (writable) raster */
     private WritableRaster raster;
 
@@ -119,11 +117,11 @@ public class Picture
      */
     private Integer implicitForeground;
 
-    /** The current maximum value for foreground pixels, null if not set. */
+    /** The current maximum value for foreground pixels, null if not set */
     private Integer maxForeground;
 
+    
     //~ Constructors -----------------------------------------------------------
-    //
     //---------//
     // Picture //
     //---------//
@@ -143,7 +141,6 @@ public class Picture
     }
 
     //~ Methods ----------------------------------------------------------------
-    //
     //-------//
     // close //
     //-------//
@@ -262,7 +259,7 @@ public class Picture
     //------------------//
     // getMaxForeground //
     //------------------//
-    @Override
+    @Override @Deprecated
     public int getMaxForeground ()
     {
         if (maxForeground != null) {
@@ -309,6 +306,7 @@ public class Picture
         }
     }
 
+    
     //----------//
     // getWidth //
     //----------//
@@ -337,9 +335,9 @@ public class Picture
         return rotated;
     }
 
-    //---------//
-    // onEvent //
-    //---------//
+    //--------//
+    // update //
+    //--------//
     /**
      * Call-back triggered when sheet location has been modified.
      * Based on sheet location, we forward the pixel gray level to whoever is
@@ -366,9 +364,9 @@ public class Picture
 
                 // Check that we are not pointing outside the image
                 if ((pt.x >= 0)
-                    && (pt.x < getWidth())
-                    && (pt.y >= 0)
-                    && (pt.y < getHeight())) {
+                        && (pt.x < getWidth())
+                        && (pt.y >= 0)
+                        && (pt.y < getHeight())) {
                     level = Integer.valueOf(getPixel(pt.x, pt.y));
                 }
             }
@@ -402,7 +400,7 @@ public class Picture
      * <p>Experience with JAI shows that we must use bytes rather than bits
      *
      * @param theta the desired rotation angle, in radians, positive for
-     *              clockwise, negative for counter-clockwise
+     * clockwise, negative for counter-clockwise
      * @throws ImageFormatException
      */
     public void rotate (double theta)
@@ -462,13 +460,14 @@ public class Picture
         rotated = true;
         updateParams();
 
-        logger.info("Image rotated {0} x {1}", getWidth(), getHeight());
+        logger.info("Image rotated {0} x {1}", new Object[]{getWidth(),
+                                                            getHeight()});
     }
 
     //------------------//
     // setMaxForeground //
     //------------------//
-    @Override
+    @Override @Deprecated
     public void setMaxForeground (int level)
     {
         this.maxForeground = level;
@@ -478,7 +477,8 @@ public class Picture
     // setPixel //
     //----------//
     /**
-     * Write a pixel at the provided location.
+     * Write a pixel at the provided location, in the currently writable
+     * data buffer.
      *
      * @param pt  pixel coordinates
      * @param val pixel value
@@ -522,7 +522,7 @@ public class Picture
     //------------//
     private static PlanarImage RGBAToGray (PlanarImage image)
     {
-        logger.info("Discarding alpha band ...");
+        logger.fine("Discarding alpha band ...");
 
         PlanarImage pi = JAI.create("bandselect", image, new int[]{0, 1, 2});
 
@@ -655,10 +655,7 @@ public class Picture
     private void checkImageFormat ()
             throws ImageFormatException
     {
-        ColorModel colorModel = image.getColorModel();
-        int pixelSize = colorModel.getPixelSize();
-        boolean hasAlpha = colorModel.hasAlpha();
-        logger.fine("{0}", colorModel);
+        int pixelSize = image.getColorModel().getPixelSize();
 
         if (pixelSize == 1) {
             ///image = binaryToGray(image); // Only if rotation is needed!
@@ -666,27 +663,19 @@ public class Picture
         }
 
         // Check nb of bands
-        SampleModel sampleModel= image.getSampleModel();
-        int numBands = sampleModel.getNumBands();
-        logger.fine("numBands={0}", numBands);
+        int numBands = image.getSampleModel().getNumBands();
+        logger.fine("checkImageFormat. numBands={0}", numBands);
 
-        if (numBands == 1) {
-            // Pixel gray value. Nothing to do
-        } else if (numBands == 2 && hasAlpha) {
-            // Pixel + alpha
-            // Discard alpha (TODO: check if premultiplied!!!)
-            image = JAI.create("bandselect", image, new int[]{0});
-        } else if (numBands == 3 && !hasAlpha) {
-            // RGB
-            image = RGBToGray(image);
-        } else if (numBands == 4 && hasAlpha) {
-            // RGB + alpha
-            image = RGBAToGray(image);
-        } else {
-            throw new ImageFormatException(
-                    "Unsupported sample model numBands=" + numBands);
+        if (numBands != 1) {
+            if (numBands == 3) {
+                image = RGBToGray(image);
+            } else if (numBands == 4) {
+                image = RGBAToGray(image);
+            } else {
+                throw new ImageFormatException(
+                        "Unsupported sample model" + " numBands=" + numBands);
+            }
         }
-
     }
 
     //-------------//
@@ -695,8 +684,8 @@ public class Picture
     private void printBounds ()
     {
         logger.info("minX:{0} minY:{1} maxX:{2} maxY:{3}",
-                image.getMinX(), image.getMinY(), 
-                image.getMaxX(), image.getMaxY());
+                    new Object[]{image.getMinX(), image.getMinY(),
+                                 image.getMaxX(), image.getMaxY()});
     }
 
     //----------//
@@ -726,21 +715,27 @@ public class Picture
                 null);
         logger.fine("raster={0}", raster);
 
-        // Check pixel size and compute grayFactor accordingly
+        ///dataBuffer = raster.getDataBuffer();
+
+        // Check pixel size
         ColorModel colorModel = image.getColorModel();
         int pixelSize = colorModel.getPixelSize();
-        logger.fine("colorModel={0} pixelSize={1}", colorModel, pixelSize);
+        logger.fine("colorModel={0} pixelSize={1}", new Object[]{colorModel,
+                                                                 pixelSize});
 
         if (pixelSize == 1) {
             grayFactor = 1;
         } else if (pixelSize <= 8) {
             grayFactor = (int) Math.rint(128 / Math.pow(2, pixelSize - 1));
-        } else if (pixelSize <= 16) {
-            grayFactor = (int) Math.rint(32768 / Math.pow(2, pixelSize - 1));
         } else {
-            throw new RuntimeException("Unsupported pixel size: " + pixelSize);
+            throw new RuntimeException("Unsupported pixel size:" + pixelSize);
         }
 
+        //        if (pixelSize != 8) {
+        //            logger.warning(
+        //                "The input image has a pixel size of " + pixelSize + " bits." +
+        //                "\nConsider converting to a format with pixel color on 8 bits (1 byte)");
+        //        }
         logger.fine("grayFactor={0}", grayFactor);
     }
 
@@ -758,10 +753,10 @@ public class Picture
                 "Should we use max channel rather than standard luminance in "
                 + "RGAtoGray transform");
 
+        //
         Constant.Ratio binaryToGrayscaleSubsampling = new Constant.Ratio(
                 1,
                 "Subsampling ratio between 0 and 1, or 1 for no subsampling "
                 + "(memory intensive)");
-
     }
 }

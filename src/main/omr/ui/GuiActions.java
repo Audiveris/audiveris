@@ -494,7 +494,7 @@ public class GuiActions
             int iRow = 1;
 
             JPanel logoPanel = new ImagePanel(
-                    new File(WellKnowns.RES_FOLDER, "Splash.png").toString());
+            		new File(WellKnowns.RES_FOLDER, "splash.png").toString());
             builder.add(logoPanel, cst.xyw(1, iRow, 4));
             iRow += 2;
 

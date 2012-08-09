@@ -118,4 +118,24 @@ public class SymbolPicture
     {
         this.maxForeground = level;
     }
+
+    //------------------//
+    // getMean //
+    //------------------//
+    /** could extend {@code AbstractPixelSource if necessary}
+     */
+	@Override
+	public double getMean(int x, int y, int windowSize) {
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+    //------------------//
+    // getSqrMean //
+    //------------------//
+    /** could extend {@code AbstractPixelSource if necessary}
+     */
+	@Override
+	public double getSqrMean(int x, int y, int windowSize) {
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
 }
