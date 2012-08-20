@@ -42,6 +42,7 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import java.awt.Point;
+import java.awt.geom.Point2D;
 import java.util.Arrays;
 import java.util.List;
 
@@ -174,7 +175,7 @@ public class ScaleBuilder
             throws StepException
     {
         Picture picture = sheet.getPicture();
-        adapter = new Adapter(picture.getHeight() - 1);
+        adapter = new Adapter(picture.getHeight() - 1,Orientation.VERTICAL);
 
         // Read the picture runs and retrieve the key run peaks
         RunsRetriever runsBuilder = new RunsRetriever(
@@ -472,7 +473,7 @@ public class ScaleBuilder
         //~ Instance fields ----------------------------------------------------
 
         private final Picture picture;
-
+        private final Orientation orientation;
         private final int[] fore; // (black) foreground runs
 
         private final int[] back; // (white) background runs
@@ -484,10 +485,11 @@ public class ScaleBuilder
         //---------//
         // Adapter //
         //---------//
-        public Adapter (int hMax)
+        public Adapter (int hMax, Orientation orientation)
         {
             picture = sheet.getPicture();
             picture.computerintegral();
+            this.orientation = orientation;
 //            if (picture.getMaxForeground() != -1) {
 //                maxForeground = picture.getMaxForeground();
 //            } else {
@@ -552,12 +554,19 @@ public class ScaleBuilder
         }
         
     	@Override
-    	public boolean isForelocaltres(int y, int x) {
+    	public boolean isForelocaltres(int coord,int pos) {
     		double var = 0, mean = 0, sqmean = 0;
-    		mean = picture.getMean(x, y, WINDOWSIZE);
-    		sqmean = picture.getSqrMean(x, y, WINDOWSIZE);
+    		 switch (orientation) {
+    	        case HORIZONTAL :
+    	        	mean = picture.getMean(coord, pos, WINDOWSIZE);
+    	    		sqmean = picture.getSqrMean(coord, pos, WINDOWSIZE);
+    	        case VERTICAL :
+    	        	mean = picture.getMean(pos, coord, WINDOWSIZE);
+    	    		sqmean = picture.getSqrMean(pos, coord, WINDOWSIZE);
+    	        default :   
+    	        }
     		var = Math.abs(sqmean - mean * mean);
-    		int originPixValue = getLevel(y, x);
+    		int originPixValue = getLevel(coord, pos);
     		double threshold = 255 - (255 - mean)
     				* (1 + K * (Math.sqrt(var) / 128 - 1));
     		boolean isFore = originPixValue < threshold;

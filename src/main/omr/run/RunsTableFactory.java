@@ -237,12 +237,17 @@ public class RunsTableFactory {
 		 * TODO: need to move to an abstract adapter class to reduce the duplication with {@code ScaleBuilder} Adapter
 		 */
 		@Override
-		public boolean isForelocaltres(int y, int x) {
+		public boolean isForelocaltres(int coord, int pos) {
 			double var = 0, mean = 0, sqmean = 0;
-			mean = source.getMean(x, y, WINDOWSIZE);
-			sqmean = source.getSqrMean(x, y, WINDOWSIZE);
+			if (swapNeeded) {			
+				mean = source.getMean(pos, coord, WINDOWSIZE);
+				sqmean = source.getSqrMean(pos, coord, WINDOWSIZE);
+			} else {			
+				mean = source.getMean(coord, pos, WINDOWSIZE);
+				sqmean = source.getSqrMean(coord, pos, WINDOWSIZE);
+			}
 			var = Math.abs(sqmean - mean * mean);
-			int originPixValue = getLevel(y, x);
+			int originPixValue = getLevel(coord, pos);
 			double threshold = 255 - (255 - mean)
 					* (1 + K * (Math.sqrt(var) / 128 - 1));
 			boolean isFore = originPixValue < threshold;

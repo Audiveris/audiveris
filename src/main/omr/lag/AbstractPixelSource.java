@@ -22,30 +22,30 @@ public abstract class AbstractPixelSource implements PixelSource {
      * get integral image sum pixels
      */
 	private int[][] getSumPixs(){
-	    	int picrow = getWidth();
-	    	int piccolumn = getHeight();
-			int[][] sums = new int[picrow][piccolumn];
+	    	int picx = getWidth();
+	    	int picy = getHeight();
+			int[][] sums = new int[picx][picy];
 			int srcPixelValue;
-			for (int row = 0; row < picrow; row++) {
-				for (int column = 0; column < piccolumn; column++) {
-					srcPixelValue = getPixel(row, column);
+			for (int x = 0; x < picx; x++) {
+				for (int y = 0; y < picy; y++) {
+					srcPixelValue = getPixel(x, y);
 					// For the leftmost pixel, just copy value from original
-					if (row == 0 && column == 0) {
-						sums[row][column] = srcPixelValue;
+					if (x == 0 && y == 0) {
+						sums[x][y] = srcPixelValue;
 					}
 
-					// For the first row, just add the value to the left of this
+					// For the first x, just add the value to the left of this
 					// pixel
-					else if (row == 0) {
-						sums[row][column] = srcPixelValue
-								+ sums[row][column - 1];
+					else if (x == 0) {
+						sums[x][y] = srcPixelValue
+								+ sums[x][y - 1];
 					}
 
-					// For the first column, just add the value to the top of this
+					// For the first y, just add the value to the top of this
 					// pixel
-					else if (column == 0) {
-						sums[row][column] = srcPixelValue
-								+ sums[row - 1][column];
+					else if (y == 0) {
+						sums[x][y] = srcPixelValue
+								+ sums[x - 1][y];
 					}
 
 					// For a pixel that has pixels to its left, above it, and to the
@@ -53,10 +53,10 @@ public abstract class AbstractPixelSource implements PixelSource {
 					// add the left and above values and subtract the value to the
 					// left and above diagonally
 					else {
-						sums[row][column] = srcPixelValue
-								+ sums[row][column - 1]
-								+ sums[row - 1][column]
-								- sums[row - 1][column - 1];
+						sums[x][y] = srcPixelValue
+								+ sums[x][y - 1]
+								+ sums[x - 1][y]
+								- sums[x - 1][y - 1];
 					}
 				}
 			}
@@ -72,10 +72,10 @@ public abstract class AbstractPixelSource implements PixelSource {
 	    private int[][] getSqrSumPixs() {
 			int [][] sum  = this.sumpixs;
 			int [][] sqrsums = new int[sum.length][];	
-			for (int row = 0; row < sqrsums.length; row++) {
-				sqrsums[row] = new int[sum[row].length];
-				for (int column = 0; column < sqrsums[row].length; column++) {
-					sqrsums[row][column] = sum[row][column]*sum[row][column];
+			for (int x = 0; x < sqrsums.length; x++) {
+				sqrsums[x] = new int[sum[x].length];
+				for (int y = 0; y < sqrsums[x].length; y++) {
+					sqrsums[x][y] = sum[x][y]*sum[x][y];
 				}
 			}
 			return sqrsums;
@@ -90,7 +90,6 @@ public abstract class AbstractPixelSource implements PixelSource {
 		// getMean //
     	//-------------//
 		public double getMean(int x, int y, int windowSize) {
-			int [][] sumpixs = this.sumpixs;
 			double mean = 0;
 			int x1 = x-windowSize/2;
 			int x2 = x+windowSize/2;
@@ -123,7 +122,7 @@ public abstract class AbstractPixelSource implements PixelSource {
 			x1 = Math.max(x-windowSize/2, 0);
 			x2 = Math.min(x+windowSize/2+1, sumpixs.length);
 			y1 = Math.max(y-windowSize/2, 0);
-			y2 = Math.min(y+windowSize/2+1, sqrsumpixs[x2-1].length);
+			y2 = Math.min(y+windowSize/2+1, sumpixs[x2-1].length);
 			mean =  (a + d - b - c)/((y2-y1)*(x2-x1));
 			return mean;
 		}
@@ -132,7 +131,6 @@ public abstract class AbstractPixelSource implements PixelSource {
 		// getSqrMean //
     	//-------------//
 		public double getSqrMean(int x, int y, int windowSize){
-			int [][] sqrsumpixs = this.sqrsumpixs;
 			double sqmean = 0;
 			int x1 = x-windowSize/2;
 			int x2 = x+windowSize/2;
