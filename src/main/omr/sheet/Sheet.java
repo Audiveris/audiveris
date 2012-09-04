@@ -35,6 +35,8 @@ import omr.lag.Sections;
 
 import omr.log.Logger;
 
+import omr.run.RunsTable;
+
 import omr.score.Score;
 import omr.score.ScoresManager;
 import omr.score.common.PixelDimension;
@@ -128,7 +130,10 @@ public class Sheet
 
     /** Global scale for this sheet */
     private Scale scale;
-
+    
+    /** Table of all vertical (foreground) runs */
+    private RunsTable wholeVerticalTable;
+    
     /** Initial skew value */
     private Skew skew;
 
@@ -1226,9 +1231,9 @@ public class Sheet
         try {
             picture = new Picture(image, locationService);
 
-            if (picture.getImplicitForeground() == null) {
-                picture.setMaxForeground(getMaxForeground());
-            }
+//            if (picture.getImplicitForeground() == null) {
+//                picture.setMaxForeground(getMaxForeground());
+//            }
 
             setPicture(picture);
             getBench().recordImageDimension(picture.getWidth(), picture.
@@ -1529,6 +1534,32 @@ public class Sheet
                     pictureView,
                     new BoardsPane(new PixelBoard(Sheet.this)));
         }
+    }
+
+    //-----------------------//
+    // getWholeVerticalTable //
+    //-----------------------//
+    /**
+     * Get access to the whole table of vertical runs.
+     * 
+     * @return the wholeVerticalTable
+     */
+    public RunsTable getWholeVerticalTable ()
+    {
+        return wholeVerticalTable;
+    }
+
+    //-----------------------//
+    // setWholeVerticalTable //
+    //-----------------------//
+    /**
+     * Remember the whole table of vertical runs.
+     * 
+     * @param wholeVerticalTable the wholeVerticalTable to set
+     */
+    public void setWholeVerticalTable (RunsTable wholeVerticalTable)
+    {
+        this.wholeVerticalTable = wholeVerticalTable;
     }
 
     //~ Inner Classes ----------------------------------------------------------

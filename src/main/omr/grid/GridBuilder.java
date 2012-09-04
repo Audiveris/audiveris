@@ -198,14 +198,8 @@ public class GridBuilder
         final StopWatch watch = new StopWatch("buildAllLags");
 
         try {
-            // Retrieve all foreground pixels into vertical runs
-            watch.start("wholeVertTable");
-
-            RunsTable wholeVertTable = new RunsTableFactory(
-                    VERTICAL,
-                    sheet.getPicture(),
-                    sheet.getPicture().getMaxForeground(),
-                    0).createTable("whole");
+            // We already have all foreground pixels as vertical runs
+            RunsTable wholeVertTable = sheet.getWholeVerticalTable();
 
             // Note: from that point on, we could simply discard the sheet picture
             // and save memory, since wholeVertTable contains all foreground pixels.

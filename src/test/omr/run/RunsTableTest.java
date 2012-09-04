@@ -29,10 +29,10 @@ public class RunsTableTest
     //~ Static fields/initializers ---------------------------------------------
 
     private static final Dimension dim = new Dimension(10, 5);
-    private static final int       level = 0;
+
+    private static final int level = 0;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new RunsTableTest object.
      */
@@ -41,7 +41,6 @@ public class RunsTableTest
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // testClone //
     //-----------//
@@ -50,7 +49,7 @@ public class RunsTableTest
      */
     @Test
     public void testClone ()
-        throws Exception
+            throws Exception
     {
         System.out.println("clone");
 
@@ -111,8 +110,8 @@ public class RunsTableTest
         System.out.println("getHeight");
 
         RunsTable instance = createHorizontalInstance();
-        int       expResult = dim.height;
-        int       result = instance.getHeight();
+        int expResult = dim.height;
+        int result = instance.getHeight();
         assertEquals(expResult, result);
     }
 
@@ -127,7 +126,7 @@ public class RunsTableTest
     {
         System.out.println("getOrientation");
 
-        RunsTable   instance = createHorizontalInstance();
+        RunsTable instance = createHorizontalInstance();
         Orientation expResult = HORIZONTAL;
         Orientation result = instance.getOrientation();
         assertEquals(expResult, result);
@@ -141,11 +140,11 @@ public class RunsTableTest
     {
         System.out.println("getPixel");
 
-        int       x = 1;
-        int       y = 0;
+        int x = 1;
+        int y = 0;
         RunsTable instance = createHorizontalInstance();
-        int       expResult = level;
-        int       result = instance.getPixel(x, y);
+        int expResult = level;
+        int result = instance.getPixel(x, y);
         assertEquals(expResult, result);
     }
 
@@ -160,7 +159,7 @@ public class RunsTableTest
     {
         System.out.println("getSequence");
 
-        int       index = 0;
+        int index = 0;
         RunsTable instance = createHorizontalInstance();
         List<Run> expResult = new ArrayList<>();
         expResult.add(new Run(1, 2, level));
@@ -189,8 +188,8 @@ public class RunsTableTest
         System.out.println("getSize");
 
         RunsTable instance = createHorizontalInstance();
-        int       expResult = 5;
-        int       result = instance.getSize();
+        int expResult = 5;
+        int result = instance.getSize();
         assertEquals(expResult, result);
     }
 
@@ -203,8 +202,8 @@ public class RunsTableTest
         System.out.println("getWidth");
 
         RunsTable instance = createHorizontalInstance();
-        int       expResult = dim.width;
-        int       result = instance.getWidth();
+        int expResult = dim.width;
+        int result = instance.getWidth();
         assertEquals(expResult, result);
     }
 
@@ -232,7 +231,6 @@ public class RunsTableTest
     //        assertEquals(expResult, result);
     //        fail("The test case is a prototype.");
     //    }
-
 //    /**
 //     * Test of isIdentical method, of class RunsTable.
 //     */
@@ -247,7 +245,6 @@ public class RunsTableTest
 //        boolean   result = instance.isIdentical(that);
 //        assertEquals(expResult, result);
 //    }
-
 //    //-----------//
 //    // testPurge //
 //    //-----------//
@@ -285,7 +282,6 @@ public class RunsTableTest
 //        purge.dump(System.out);
 //        instance.dump(System.out);
 //    }
-
     //--------------//
     // testToString //
     //--------------//
@@ -298,8 +294,8 @@ public class RunsTableTest
         System.out.println("toString");
 
         RunsTable instance = createHorizontalInstance();
-        String    expResult = "{RunsTable hori HORIZONTAL 10x5}";
-        String    result = instance.toString();
+        String expResult = "{RunsTable hori HORIZONTAL 10x5}";
+        String result = instance.toString();
         assertEquals(expResult, result);
     }
 
@@ -341,8 +337,9 @@ public class RunsTableTest
     //------------------------//
     private RunsTable createVerticalInstance ()
     {
-        RunsTable        hori = createHorizontalInstance();
-        RunsTableFactory factory = new RunsTableFactory(VERTICAL, hori, 127, 0);
+        RunsTable hori = createHorizontalInstance();
+        RunsTableFactory factory = new RunsTableFactory(
+                VERTICAL, new BinaryPixelSource(hori, 127), 0);
 
         return factory.createTable("vert");
     }

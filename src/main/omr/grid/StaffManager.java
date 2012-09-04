@@ -209,7 +209,7 @@ public class StaffManager
             if (point.getY() < box.getMinY()) {
                 // Point above first staff, use first staff
                 // TODO: this decision is questionable
-                return staff;
+                return null; //staff;
             }
 
             // If the point is ON the area boundary, it is NOT contained.
@@ -222,7 +222,7 @@ public class StaffManager
 
         // Point below last staff, use last staff
         // TODO: this decision is questionable
-        return theStaves.get(theStaves.size() - 1);
+        return null; //theStaves.get(theStaves.size() - 1);
     }
 
     //------------//

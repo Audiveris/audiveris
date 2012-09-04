@@ -11,17 +11,16 @@
 // </editor-fold>
 package omr.ui.symbol;
 
-import omr.lag.PixelSource;
+import omr.run.PixelSource;
 
 import omr.log.Logger;
 
-import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 
 /**
- * Class {@code SymbolPicture} is an adapter which wraps a ShapeSymbol in
- * order to use it as a source of pixels.
+ * Class {@code SymbolPicture} is an adapter which wraps a ShapeSymbol
+ * in order to use it as a source of pixels.
  *
  * @author Hervé Bitteur
  */
@@ -49,7 +48,7 @@ public class SymbolPicture
      * Anything from 0 (black) up to 192 included (light gray) is considered as black
      * Anything brighter than gray is considered as white (background)
      */
-    private int maxForeground = 216; // Was Color.LIGHT_GRAY.getRed();
+    private final int maxForeground = 216; // Was Color.LIGHT_GRAY.getRed();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -66,6 +65,16 @@ public class SymbolPicture
     }
 
     //~ Methods ----------------------------------------------------------------
+    //
+    // -------//
+    // isFore //
+    // -------//
+    @Override
+    public boolean isFore (int x,
+                           int y)
+    {
+        return getPixel(x, y) <= maxForeground;
+    }
 
     //-----------//
     // getHeight //
@@ -74,15 +83,6 @@ public class SymbolPicture
     public final int getHeight ()
     {
         return height;
-    }
-
-    //------------------//
-    // getMaxForeground //
-    //------------------//
-    @Override
-    public final int getMaxForeground ()
-    {
-        return maxForeground;
     }
 
     //----------//
@@ -109,33 +109,4 @@ public class SymbolPicture
     {
         return width;
     }
-
-    //------------------//
-    // setMaxForeground //
-    //------------------//
-    @Override
-    public void setMaxForeground (int level)
-    {
-        this.maxForeground = level;
-    }
-
-    //------------------//
-    // getMean //
-    //------------------//
-    /** could extend {@code AbstractPixelSource if necessary}
-     */
-	@Override
-	public double getMean(int x, int y, int windowSize) {
-		throw new UnsupportedOperationException("Not supported yet.");
-	}
-
-    //------------------//
-    // getSqrMean //
-    //------------------//
-    /** could extend {@code AbstractPixelSource if necessary}
-     */
-	@Override
-	public double getSqrMean(int x, int y, int windowSize) {
-		throw new UnsupportedOperationException("Not supported yet.");
-	}
 }

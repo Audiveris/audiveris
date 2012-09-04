@@ -38,7 +38,7 @@ import java.awt.image.BufferedImage;
  * @author Hervé Bitteur
  */
 public class SymbolGlyph
-    extends BasicGlyph
+        extends BasicGlyph
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -46,7 +46,6 @@ public class SymbolGlyph
     private static final Logger logger = Logger.getLogger(SymbolGlyph.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** The underlying symbol, with generic size */
     private final ShapeSymbol symbol;
 
@@ -54,7 +53,6 @@ public class SymbolGlyph
     private final BufferedImage image;
 
     //~ Constructors -----------------------------------------------------------
-
     //-------------//
     // SymbolGlyph //
     //-------------//
@@ -68,9 +66,9 @@ public class SymbolGlyph
      * @param interline  the related interline scaling value
      * @param descriptor additional features, if any
      */
-    public SymbolGlyph (Shape                 shape,
-                        ShapeSymbol           symbol,
-                        int                   interline,
+    public SymbolGlyph (Shape shape,
+                        ShapeSymbol symbol,
+                        int interline,
                         SymbolGlyphDescriptor descriptor)
     {
         super(interline);
@@ -78,13 +76,16 @@ public class SymbolGlyph
         image = symbol.buildImage(MusicFont.getFont(interline));
 
         /** Build a dedicated SymbolPicture */
-        SymbolPicture picture = new SymbolPicture(image);
+        SymbolPicture symbolPicture = new SymbolPicture(image);
 
         /** Build related vertical lag */
         Lag iLag = new BasicLag("iLag", Orientation.VERTICAL);
 
         new SectionsBuilder(iLag, new JunctionAllPolicy()) // catch all
-        .createSections("symbol", picture, 0); // minRunLength
+                .createSections(
+                "symbol",
+                symbolPicture,
+                /* minRunLength => */ 0);
 
         // Retrieve the whole glyph made of all sections
         for (Section section : iLag.getSections()) {

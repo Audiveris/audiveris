@@ -24,10 +24,12 @@ import omr.math.Histogram.MaxEntry;
 import omr.math.Histogram.PeakEntry;
 
 import omr.run.Orientation;
-import omr.run.RunsRetriever;
+import omr.run.Run;
+import omr.run.RunsTable;
+import omr.run.RunsTableFactory;
+import omr.run.SlidingPixelSource;
 
 import omr.score.Score;
-import omr.score.common.PixelRectangle;
 
 import omr.sheet.picture.Picture;
 import omr.sheet.ui.SheetsController;
@@ -42,7 +44,6 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import java.awt.Point;
-import java.awt.geom.Point2D;
 import java.util.Arrays;
 import java.util.List;
 
@@ -94,8 +95,9 @@ public class ScaleBuilder
     private static final Logger logger = Logger.getLogger(ScaleBuilder.class);
 
     //~ Instance fields --------------------------------------------------------
-    /** Adapter for reading runs */
-    private Adapter adapter;
+    //
+    /** Keeper of run length histograms, for foreground & background */
+    private HistoKeeper histoKeeper;
 
     /** Related sheet */
     private Sheet sheet;
@@ -153,8 +155,8 @@ public class ScaleBuilder
      */
     public void displayChart ()
     {
-        if (adapter != null) {
-            adapter.writePlot();
+        if (histoKeeper != null) {
+            histoKeeper.writePlot();
         } else {
             logger.warning("No scale data available");
         }
@@ -175,15 +177,22 @@ public class ScaleBuilder
             throws StepException
     {
         Picture picture = sheet.getPicture();
-        adapter = new Adapter(picture.getHeight() - 1,Orientation.VERTICAL);
+        histoKeeper = new HistoKeeper(picture.getHeight() - 1);
 
-        // Read the picture runs and retrieve the key run peaks
-        RunsRetriever runsBuilder = new RunsRetriever(
+        // Retrieve the whole table of foreground runs
+        RunsTableFactory factory = new RunsTableFactory(
                 Orientation.VERTICAL,
-                adapter);
-        runsBuilder.
-                retrieveRuns(
-                new PixelRectangle(0, 0, picture.getWidth(), picture.getHeight()));
+                //new AdaptivePixelSource(sheet.getPicture()),
+                new SlidingPixelSource(sheet.getPicture()),
+                0);
+        RunsTable wholeVertTable = factory.createTable("whole");
+        sheet.setWholeVerticalTable(wholeVertTable);
+
+        // Build the two histograms
+        histoKeeper.buildHistograms(
+                wholeVertTable,
+                picture.getWidth(),
+                picture.getHeight());
 
         // Retrieve the various histograms peaks
         retrievePeaks();
@@ -194,7 +203,7 @@ public class ScaleBuilder
         // Check we have acceptable resolution.  If not, throw StepException
         checkResolution();
 
-        // Here, we keep going on scale data
+        // Here, we keep going on with scale data
         scale = new Scale(
                 computeLine(),
                 computeInterline(),
@@ -397,8 +406,8 @@ public class ScaleBuilder
         }
 
         if ((Main.getGui() == null)
-                || (Main.getGui().displayModelessConfirm(
-                    msg + LINE_SEPARATOR + "OK for discarding this sheet?") == JOptionPane.OK_OPTION)) {
+            || (Main.getGui().displayModelessConfirm(
+                msg + LINE_SEPARATOR + "OK for discarding this sheet?") == JOptionPane.OK_OPTION)) {
             if (score.isMultiPage()) {
                 sheet.remove(false);
                 throw new StepException("Sheet removed");
@@ -422,7 +431,7 @@ public class ScaleBuilder
         backPeak = getPeak(backHisto, backSpreadRatio, 0);
         sb.append(" back:").append(backPeak);
 
-        // Second foreground peak (beam)? 
+        // Second foreground peak (beam)?
         if ((forePeak != null) && (backPeak != null)) {
             // Take first local max for which key (beam thickness) is larger
             // than twice the mean line thickness
@@ -456,139 +465,48 @@ public class ScaleBuilder
     }
 
     //~ Inner Classes ----------------------------------------------------------
-    //---------//
-    // Adapter //          
-    //---------//
+    //
+    //-------------//
+    // HistoKeeper //
+    //-------------//
     /**
-     * This adapter customizes RunsRetriever for our scaling purpose.
-     * It handles the precise foreground and background run lengths retrieves
-     * the various peaks and is able to display a chart on the related
-     * populations if so asked by the user.
-     * 
-     * Major change: convert the adapter to local threshold adapter by ryo/twitter @xiaot_Tag
+     * This class builds the precise foreground and background run
+     * lengths, it retrieves the various peaks and is able to display a
+     * chart on the related populations if so asked by the user.
+     * It first builds the whole table of foreground vertical runs, which will
+     * be reused in following step (GRID).
      */
-    private class Adapter
-            implements RunsRetriever.Adapter
+    private class HistoKeeper
     {
         //~ Instance fields ----------------------------------------------------
 
-        private final Picture picture;
-        private final Orientation orientation;
         private final int[] fore; // (black) foreground runs
 
         private final int[] back; // (white) background runs
-        
-        @Deprecated
-        private int maxForeground; // Threshold black / white
 
         //~ Constructors -------------------------------------------------------
-        //---------//
-        // Adapter //
-        //---------//
-        public Adapter (int hMax, Orientation orientation)
+        //
+        //-------------//
+        // HistoKeeper //
+        //-------------//
+        /**
+         * Create an instance of histoKeeper.
+         *
+         * @param hMax the maximum possible run length
+         */
+        public HistoKeeper (int hMax)
         {
-            picture = sheet.getPicture();
-            picture.computerintegral();
-            this.orientation = orientation;
-//            if (picture.getMaxForeground() != -1) {
-//                maxForeground = picture.getMaxForeground();
-//            } else {
-//                maxForeground = sheet.getMaxForeground();
-//            }
-
             // Allocate histogram counters
             fore = new int[hMax + 2];
             back = new int[hMax + 2];
 
-            // Useful? 
+            // Useful?
             Arrays.fill(fore, 0);
             Arrays.fill(back, 0);
         }
 
         //~ Methods ------------------------------------------------------------
-        //---------//
-        // backRun //
-        //---------//
-        @Override
-        public void backRun (int w,
-                             int h,
-                             int length)
-        {
-            back[length]++;
-        }
-
-        //---------//
-        // foreRun //
-        //---------//
-        @Override
-        public void foreRun (int w,
-                             int h,
-                             int length,
-                             int cumul)
-        {
-            fore[length]++;
-        }
-
-        //----------//
-        // getLevel //
-        //----------//
-        @Override
-        public int getLevel (int coord,
-                             int pos)
-        {
-            // Swap pos & coord since we work on vertical runs
-            return picture.getPixel(pos, coord);
-        }
-
-        //--------//
-        // isFore //
-        //--------//
-    	/**
-    	 * @deprecated
-    	 */
-        @Override
-        public boolean isFore (int level)
-        {
-            // Assuming black=0, white=255
-            return level <= maxForeground;
-        }
-        
-    	@Override
-    	public boolean isForelocaltres(int coord,int pos) {
-    		double var = 0, mean = 0, sqmean = 0;
-    		 switch (orientation) {
-    	        case HORIZONTAL :
-    	        	mean = picture.getMean(coord, pos, WINDOWSIZE);
-    	    		sqmean = picture.getSqrMean(coord, pos, WINDOWSIZE);
-    	        case VERTICAL :
-    	        	mean = picture.getMean(pos, coord, WINDOWSIZE);
-    	    		sqmean = picture.getSqrMean(pos, coord, WINDOWSIZE);
-    	        default :   
-    	        }
-    		var = Math.abs(sqmean - mean * mean);
-    		int originPixValue = getLevel(coord, pos);
-    		double threshold = 255 - (255 - mean)
-    				* (1 + K * (Math.sqrt(var) / 128 - 1));
-    		boolean isFore = originPixValue < threshold;
-    		return isFore;
-    	}
-
-        //-----------//
-        // terminate //
-        //-----------//
-        @Override
-        public void terminate ()
-        {
-            if (logger.isFineEnabled()) {
-                logger.fine("fore values: {0}", Arrays.toString(fore));
-                logger.fine("back values: {0}", Arrays.toString(back));
-            }
-
-            // Create foreground & background histograms
-            foreHisto = createHistogram(fore);
-            backHisto = createHistogram(back);
-        }
-
+        //
         //-----------//
         // writePlot //
         //-----------//
@@ -630,6 +548,49 @@ public class ScaleBuilder
             return histo;
         }
 
+        //-----------------//
+        // buildHistograms //
+        //-----------------//
+        private void buildHistograms (RunsTable wholeVertTable,
+                                      int width,
+                                      int height)
+        {
+            for (int x = 0; x < width; x++) {
+                List<Run> runSeq = wholeVertTable.getSequence(x);
+                // Ordinate of first pixel not yet processed
+                int yLast = 0;
+
+                for (Run run : runSeq) {
+                    int y = run.getStart();
+
+                    if (y > yLast) {
+                        // Process the background run before this run
+                        int backLength = y - yLast;
+                        back[backLength]++;
+                    }
+
+                    // Process this foreground run
+                    int foreLength = run.getLength();
+                    fore[foreLength]++;
+                    yLast = y + foreLength;
+                }
+
+                // Process a last background run, if any
+                if (yLast < height) {
+                    int backLength = height - yLast;
+                    back[backLength]++;
+                }
+            }
+
+            if (logger.isFineEnabled()) {
+                logger.fine("fore values: {0}", Arrays.toString(fore));
+                logger.fine("back values: {0}", Arrays.toString(back));
+            }
+
+            // Create foreground & background histograms
+            foreHisto = createHistogram(fore);
+            backHisto = createHistogram(back);
+        }
     }
 
     //-----------//

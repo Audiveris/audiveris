@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.run;
 
-import omr.lag.PixelSource;
 
 import omr.log.Logger;
 
@@ -37,13 +36,14 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class {@code RunsTable} handles a rectangular assembly of oriented runs
+ * Class {@code RunsTable} handles a rectangular assembly of oriented 
+ * runs.
  *
  * @author Hervé Bitteur
  */
 public class RunsTable
         implements Cloneable,
-                   PixelSource,
+                   RawPixelSource,
                    Oriented,
                    EventSubscriber<LocationEvent>
 {
@@ -202,7 +202,7 @@ public class RunsTable
      * for bulk operations.
      * For such needs, a much more efficient way is to first
      * retrieve a full buffer, via {@link #getBuffer()} method, then use this
-     * temporary buffer as the {@link PixelSource} instead of this table.
+     * temporary buffer as the {@link RawPixelSource} instead of this table.
      *
      * @param x absolute abscissa
      * @param y absolute ordinate
@@ -347,15 +347,6 @@ public class RunsTable
     public int getHeight ()
     {
         return dimension.height;
-    }
-
-    //------------------//
-    // getMaxForeground //
-    //------------------//
-    @Override
-    public int getMaxForeground ()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     //---------//
@@ -662,15 +653,6 @@ public class RunsTable
         }
     }
 
-    //------------------//
-    // setMaxForeground //
-    //------------------//
-    @Override
-    public void setMaxForeground (int level)
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     //----------//
     // toString //
     //----------//
@@ -724,14 +706,4 @@ public class RunsTable
             runService.publish(new RunEvent(this, hint, movement, run));
         }
     }
-
-	@Override
-	public double getMean(int x, int y, int windowSize) {
-		throw new UnsupportedOperationException("Not supported yet.");
-	}
-
-	@Override
-	public double getSqrMean(int x, int y, int windowSize) {
-		throw new UnsupportedOperationException("Not supported yet.");
-	}
 }

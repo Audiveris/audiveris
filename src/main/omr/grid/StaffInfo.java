@@ -68,6 +68,17 @@ public class StaffInfo
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(StaffInfo.class);
 
+    /** To sort by staff id. */
+    public static final Comparator<StaffInfo> byId = new Comparator<StaffInfo>()
+    {
+        @Override
+        public int compare (StaffInfo o1,
+                            StaffInfo o2)
+        {
+            return Integer.compare(o1.id, o2.id);
+        }
+    };
+    
     //~ Instance fields --------------------------------------------------------
     //
     /** Sequence of the staff lines. (from top to bottom) */
@@ -814,7 +825,7 @@ public class StaffInfo
                           GeoPath limit)
     {
         logger.fine("staff#{0} setLimit {1} {2}", id, side, limit);
-        
+
         if (side == TOP) {
             topLimit = limit;
         } else {
@@ -845,7 +856,7 @@ public class StaffInfo
     public String toString ()
     {
         StringBuilder sb = new StringBuilder("{StaffInfo");
-        
+
         sb.append(" id=").append(getId());
         sb.append(" left=").append((float) left);
         sb.append(" right=").append((float) right);

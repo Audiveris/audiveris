@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.lag;
 
+import omr.run.PixelSource;
 import omr.log.Logger;
 
 import omr.run.Run;
@@ -168,7 +169,6 @@ public class SectionsBuilder
         RunsTableFactory factory = new RunsTableFactory(
                 lag.getOrientation(),
                 source,
-                source.getMaxForeground(),
                 minRunLength);
 
         // Create the runs table

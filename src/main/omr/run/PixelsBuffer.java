@@ -11,19 +11,18 @@
 // </editor-fold>
 package omr.run;
 
-import omr.lag.AbstractPixelSource;
-import omr.lag.PixelSource;
 
 import java.awt.Dimension;
 import java.util.Arrays;
 
 /**
- * Class {@code PixelsBuffer} handles a plain rectangular buffer of chars.
+ * Class {@code PixelsBuffer} handles a plain rectangular buffer of 
+ * chars.
  * It is an efficient {@link PixelSource} both for writing and for reading.
  *
  * @author Hervé Bitteur
  */
-public class PixelsBuffer extends AbstractPixelSource
+public class PixelsBuffer
     implements PixelSource 
 {
     //~ Instance fields --------------------------------------------------------
@@ -55,8 +54,7 @@ public class PixelsBuffer extends AbstractPixelSource
         buffer = new char[dimension.width * dimension.height];
 
         // Initialize the whole buffer with background color value
-        Arrays.fill(buffer, (char) BACKGROUND);
-        
+        Arrays.fill(buffer, (char) BACKGROUND);        
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -68,15 +66,6 @@ public class PixelsBuffer extends AbstractPixelSource
     public int getHeight ()
     {
         return height;
-    }
-
-    //------------------//
-    // getMaxForeground //
-    //------------------//
-    @Override
-    public int getMaxForeground ()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     //----------//
@@ -98,15 +87,6 @@ public class PixelsBuffer extends AbstractPixelSource
         return width;
     }
 
-    //------------------//
-    // setMaxForeground //
-    //------------------//
-    @Override @Deprecated
-    public void setMaxForeground (int level)
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     //----------//
     // setPixel //
     //----------//
@@ -116,5 +96,13 @@ public class PixelsBuffer extends AbstractPixelSource
     {
         buffer[(y * width) + x] = val;
     } 
-    
-}
+
+    //--------//
+    // isFore //
+    //--------//
+    @Override
+    public boolean isFore (int x,
+                           int y)
+    {
+        return getPixel(x,y) != BACKGROUND;
+    }

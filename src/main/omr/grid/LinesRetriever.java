@@ -197,7 +197,6 @@ public class LinesRetriever
         RunsTable wholeHoriTable = new RunsTableFactory(
                 HORIZONTAL,
                 shortVertTable.getBuffer(),
-                sheet.getPicture().getMaxForeground(),
                 0).createTable("whole-hori");
 
         // To record the purged horizontal runs

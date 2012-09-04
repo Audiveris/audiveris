@@ -14,8 +14,7 @@ package omr.sheet.picture;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.lag.AbstractPixelSource;
-import omr.lag.PixelSource;
+import omr.run.RawPixelSource;
 
 import omr.log.Logger;
 
@@ -75,8 +74,7 @@ import javax.media.jai.RenderedImageAdapter;
  * @author Brenton Partridge
  */
 public class Picture
-        extends AbstractPixelSource
-        implements PixelSource,
+        implements RawPixelSource,
                    EventSubscriber<LocationEvent>
 {
     //~ Static fields/initializers ---------------------------------------------
@@ -259,20 +257,6 @@ public class Picture
     public Integer getImplicitForeground ()
     {
         return implicitForeground;
-    }
-
-    //------------------//
-    // getMaxForeground //
-    //------------------//
-    @Override
-    @Deprecated
-    public int getMaxForeground ()
-    {
-        if (maxForeground != null) {
-            return maxForeground;
-        } else {
-            return implicitForeground;
-        }
     }
 
     //---------//
@@ -466,16 +450,6 @@ public class Picture
         updateParams();
 
         logger.info("Image rotated {0} x {1}", getWidth(), getHeight());
-    }
-
-    //------------------//
-    // setMaxForeground //
-    //------------------//
-    @Override
-    @Deprecated
-    public void setMaxForeground (int level)
-    {
-        this.maxForeground = level;
     }
 
     //----------//
