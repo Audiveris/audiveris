@@ -17,6 +17,7 @@ import omr.score.common.PixelRectangle;
 
 import omr.step.ProcessingCancellationException;
 
+import omr.util.Concurrency;
 import omr.util.OmrExecutors;
 
 import java.awt.Rectangle;
@@ -26,8 +27,9 @@ import java.util.concurrent.Callable;
 
 /**
  * Class {@code RunsRetriever} is in charge of reading a source of pixels
- * and retrieving foreground runs and background runs from it. What is done
- * with the retrieved runs is essentially the purpose of the provided adapter.
+ * and retrieving foreground runs and background runs from it.
+ * What is done with the retrieved runs is essentially the purpose of the
+ * provided adapter.
  *
  * @author Hervé Bitteur
  */
@@ -56,8 +58,8 @@ public class RunsRetriever
      *
      * @param orientation the desired orientation
      * @param adapter     an adapter to provide pixel access as well as specific
-     *                    call-back actions when a run (either foreground or background) has just
-     *                    been read.
+     *                    call-back actions when a run (either foreground or
+     *                    background) has just been read.
      */
     public RunsRetriever (Orientation orientation,
                           Adapter adapter)
@@ -93,7 +95,8 @@ public class RunsRetriever
     // processPosition //
     //-----------------//
     /**
-     * Process the pixels in position 'p' between coordinates 'cMin' & 'cMax'
+     * Process the pixels in position 'p' between coordinates 'cMin'
+     * and 'cMax'
      *
      * @param p    the position in the pixels array (x for vertical)
      * @param cMin the starting coordinate (y for vertical)
@@ -171,7 +174,7 @@ public class RunsRetriever
                                     final int cMin,
                                     final int cMax)
     {
-        if (!OmrExecutors.useParallelism()) {
+        if (!OmrExecutors.useParallelism() || !adapter.isThreadSafe()) {
             // Sequential
             for (int p = pMin; p <= pMax; p++) {
                 processPosition(p, cMin, cMax);
@@ -220,23 +223,16 @@ public class RunsRetriever
     // Adapter //
     //---------//
     /**
-     * Interface <code>Adapter</code> is used to plug call-backs to a run
+     * Interface {@code Adapter} is used to plug call-backs to a run
      * retrieval process.
      */
     public static interface Adapter
+            extends Concurrency
     {
-
-        /** Default value window size */
-        public static final int WINDOWSIZE = 35;
-
-        /** local threshold K mean */
-        public static final double K = 0.25;
-
-        //~ Methods ------------------------------------------------------------
-        //
         //---------//
         // backRun //
         //---------//
+
         /**
          * Called at end of a background run, with the related coordinates
          *

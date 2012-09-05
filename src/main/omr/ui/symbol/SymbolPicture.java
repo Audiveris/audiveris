@@ -15,6 +15,8 @@ import omr.run.PixelSource;
 
 import omr.log.Logger;
 
+import net.jcip.annotations.ThreadSafe;
+
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 
@@ -24,6 +26,7 @@ import java.awt.image.DataBuffer;
  *
  * @author Hervé Bitteur
  */
+@ThreadSafe
 public class SymbolPicture
     implements PixelSource
 {

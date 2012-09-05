@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                           P i x e l S o u r c e                            //
+//                           C o n c u r r e n c y                            //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -9,28 +9,22 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.run;
-
-import omr.util.Concurrency;
+package omr.util;
 
 /**
- * Interface {@code PixelSource} reports the foreground pixels of a
- * {@link RawPixelSource}.
+ * Interface {@code Concurrency} declares if an entity (class
+ * instance) can be used by concurrent threads.
+ * This complements the JCIP annotations in a more dynamic way.
  *
  * @author Hervé Bitteur
  */
-public interface PixelSource
-        extends RawPixelSource
+public interface Concurrency
 {
 
     /**
-     * Report whether the pixel at location (x,y) is a foreground pixel
-     * or not.
+     * Report whether the entity can be used concurrently
      *
-     * @param x abscissa value
-     * @param y ordinate value
-     * @return true for a foreground pixel, false for a background pixel
+     * @return true if thread safe, false otherwise
      */
-    boolean isFore (int x,
-                    int y);
+    boolean isThreadSafe ();
 }

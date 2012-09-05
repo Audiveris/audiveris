@@ -11,12 +11,15 @@
 // </editor-fold>
 package omr.run;
 
+import net.jcip.annotations.ThreadSafe;
+
 /**
  * Class {@code BinaryPixelSource} implements Interface
  * {@code PixelSource} by using a global threshold on pixel value.
  *
  * @author Hervé Bitteur
  */
+@ThreadSafe
 public class BinaryPixelSource
         implements PixelSource
 {

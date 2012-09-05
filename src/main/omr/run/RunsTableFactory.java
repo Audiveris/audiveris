@@ -11,10 +11,12 @@
 // </editor-fold>
 package omr.run;
 
-
 import omr.log.Logger;
 
 import omr.score.common.PixelRectangle;
+
+import net.jcip.annotations.NotThreadSafe;
+import net.jcip.annotations.ThreadSafe;
 
 import java.awt.Dimension;
 
@@ -165,13 +167,42 @@ public class RunsTableFactory
             }
         }
 
-        // -----------//
+        // ----------//
         // terminate //
-        // -----------//
+        // ----------//
         @Override
         public final void terminate ()
         {
             logger.fine("{0} Retrieved runs: {1}", table, table.getRunCount());
+        }
+
+        //--------------//
+        // isThreadSafe //
+        //--------------//
+        /**
+         * The concurrency aspects of the adapter depends on the
+         * underlying PixelSource.
+         * @return true if safe, false otherwise
+         */
+        @Override
+        public boolean isThreadSafe ()
+        {
+            Class<?> classe = source.getClass();
+            
+            // Check for @ThreadSafe annotation
+            ThreadSafe safe = classe.getAnnotation(ThreadSafe.class);
+            if (safe != null) {
+                return true;
+            }
+            
+            // Check for @NonThreadSafe annotation
+            NotThreadSafe notSafe = classe.getAnnotation(NotThreadSafe.class);
+            if (notSafe != null) {
+                return false;
+            }
+            
+            // No annotation: it's safer to assume no thread safety
+            return false;
         }
     }
 }

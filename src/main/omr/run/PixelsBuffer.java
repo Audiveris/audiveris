@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.run;
 
+import net.jcip.annotations.ThreadSafe;
 
 import java.awt.Dimension;
 import java.util.Arrays;
@@ -22,6 +23,7 @@ import java.util.Arrays;
  *
  * @author Hervé Bitteur
  */
+@ThreadSafe
 public class PixelsBuffer
     implements PixelSource 
 {
@@ -105,4 +107,5 @@ public class PixelsBuffer
                            int y)
     {
         return getPixel(x,y) != BACKGROUND;
-    }
+    }    
+}
