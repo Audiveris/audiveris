@@ -24,10 +24,12 @@ import omr.math.Histogram.MaxEntry;
 import omr.math.Histogram.PeakEntry;
 
 import omr.run.Orientation;
+import omr.run.BinaryPixelSource;
+import omr.run.RandomAdaptivePixelSource;
 import omr.run.Run;
 import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
-import omr.run.SlidingPixelSource;
+import omr.run.VerticalAdaptivePixelSource;
 
 import omr.score.Score;
 
@@ -35,6 +37,8 @@ import omr.sheet.picture.Picture;
 import omr.sheet.ui.SheetsController;
 
 import omr.step.StepException;
+
+import omr.util.StopWatch;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartFrame;
@@ -180,13 +184,17 @@ public class ScaleBuilder
         histoKeeper = new HistoKeeper(picture.getHeight() - 1);
 
         // Retrieve the whole table of foreground runs
+        StopWatch watch = new StopWatch("Runs retrieval");
+        watch.start("retrieveRuns");
         RunsTableFactory factory = new RunsTableFactory(
                 Orientation.VERTICAL,
-                //new AdaptivePixelSource(sheet.getPicture()),
-                new SlidingPixelSource(sheet.getPicture()),
+                //new BinaryPixelSource(sheet.getPicture(), 140),
+                //new RandomAdaptivePixelSource(sheet.getPicture()),
+                new VerticalAdaptivePixelSource(sheet.getPicture()),
                 0);
         RunsTable wholeVertTable = factory.createTable("whole");
         sheet.setWholeVerticalTable(wholeVertTable);
+        watch.print();
 
         // Build the two histograms
         histoKeeper.buildHistograms(

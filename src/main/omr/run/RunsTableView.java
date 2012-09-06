@@ -106,7 +106,7 @@ public class RunsTableView
     // render //
     //--------//
     /**
-     * Render this lag in the provided Graphics context, which may be
+     * Render the table in the provided Graphics context, which may be
      * already scaled.
      *
      * @param g the graphics context

@@ -15,7 +15,7 @@ package omr.run;
  * Interface {@code RawPixelSource} defines the operations expected 
  * from a rectangular pixel source, limited by its width and height.
  * <p>It is a <b>raw</b> pixel source, because just the pixel gray value
- * is returned, with no interpretation as foregroung or background.
+ * is returned, with no interpretation as foreground or background.
  * This additional interpretation is reported by a {@link PixelSource}.
  *
  * @author Hervé Bitteur

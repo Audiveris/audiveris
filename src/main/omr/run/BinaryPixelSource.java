@@ -21,12 +21,10 @@ import net.jcip.annotations.ThreadSafe;
  */
 @ThreadSafe
 public class BinaryPixelSource
+        extends RawPixelSourceWrapper
         implements PixelSource
 {
     //~ Instance fields --------------------------------------------------------
-    //
-    /** Underlying raw pixel source. */
-    private final RawPixelSource source;
 
     /** Global threshold. */
     private final int maxForeground;
@@ -39,13 +37,14 @@ public class BinaryPixelSource
     /**
      * Create a binary wrapper on a raw pixel source.
      *
-     * @param source the underlying source of raw pixels
+     * @param source        the underlying source of raw pixels
      * @param maxForeground maximum gray level of foreground pixel
      */
     public BinaryPixelSource (RawPixelSource source,
                               int maxForeground)
     {
-        this.source = source;
+        super(source);
+
         this.maxForeground = maxForeground;
     }
 
@@ -59,33 +58,5 @@ public class BinaryPixelSource
                            int y)
     {
         return source.getPixel(x, y) <= maxForeground;
-    }
-
-    //-----------//
-    // getHeight //
-    //-----------//
-    @Override
-    public int getHeight ()
-    {
-        return source.getHeight();
-    }
-
-    //----------//
-    // getPixel //
-    //----------//
-    @Override
-    public int getPixel (int x,
-                         int y)
-    {
-        return source.getPixel(x, y);
-    }
-
-    //----------//
-    // getWidth //
-    //----------//
-    @Override
-    public int getWidth ()
-    {
-        return source.getWidth();
     }
 }

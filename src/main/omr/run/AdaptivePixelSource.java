@@ -11,82 +11,92 @@
 // </editor-fold>
 package omr.run;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.log.Logger;
 
-import net.jcip.annotations.ThreadSafe;
-
-import java.awt.Rectangle;
+import java.util.Arrays;
 
 /**
- * Class {@code AdaptivePixelSource} implements Interface
- * {@code PixelSource} to provide foreground information based on
+ * Class {@code AdaptivePixelSource} is an abstract implementation of
+ * {@code PixelSource} which provides foreground information based on
  * mean value and standard deviation in pixel neighborhood.
- * <p>
- * This implementation uses a table of integrals, so that it can calculate local
- * threshold in constant time at random location.
- * <p>
- * This class is thread-safe and can be efficiently used by several threads in
- * parallel. The main drawback is the memory used by the two tables, which 
- * amounts to 16 bytes per pixel (2 long's per pixel). 
- * For a image of size 2000 * 3000 (thus typically 6 MBytes for the image), the
- * tables represent 96 MBytes, which is a lot.
+ *
+ * <p>See <a href="http://www.mediateam.oulu.fi/publications/pdf/24.p">
+ * work of Sauvola et al.</a>
+ *
+ * <p>The mean value and the standard deviation value are provided thanks to
+ * underlying integrals {@link Tile} instances.
+ * The precise tile size and behavior is the responsibility of subclasses of
+ * this abstract class.
+ *
+ * <p> See <a
+ * href="http://www.dfki.uni-kl.de/~shafait/papers/Shafait-efficient-binarization-SPIE08.pdf">
+ * work of Shafait et al.</a>
+ *
+ * <pre>
+ * 0---------------------------------------------+---------------+
+ * |                                             |               |
+ * |                                             |               |
+ * |                                             |               |
+ * |                                            a|              b|
+ * +---------------------------------------------+---------------+
+ * |                                             |               |
+ * |                                             |               |
+ * |                                             |               |
+ * |                                             |               |
+ * |                                             |               |
+ * |                                            c|              d|
+ * +---------------------------------------------+---------------+
+ * </pre>
+ * Key table features:
+ * <ul>
+ * <li>Assumption: The integral of any rectangle with origin at (0,0) is stored
+ * in the bottom right cell of the rectangle.</li>
+ *
+ * <li>As a consequence the integral of any rectangle, whatever its origin,
+ * can be simply computed as:
+ * <code>a + d - b - c</code>
+ * </li>
+ *
+ * <li>In particular if lower right rectangle is reduced to a single cell, then
+ * <code>d = pixel_value + top + left - topLeft</code><br/>
+ * This property is used to incrementally populate the table.</li>
+ * </ul>
  *
  * @author ryo/twitter &#64;xiaot_Tag
  * @author Hervé Bitteur
  */
-@ThreadSafe
-public class AdaptivePixelSource
+public abstract class AdaptivePixelSource
+        extends RawPixelSourceWrapper
         implements PixelSource
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
+
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(AdaptivePixelSource.class);
 
-    /** Default value for (half of) window size. */
-    public static final int HALF_WINDOW_SIZE = 18;
-
-    /** Coefficient of mean value. */
-    public static final double MEAN_COEFF = 0.67;
-
-    /** Coefficient of standard deviation. */
-    public static final double STD_DEV_COEFF = 1;
-
     //~ Instance fields --------------------------------------------------------
     //
-    /** Underlying raw pixel source. */
-    private final RawPixelSource source;
+    /** Default value for (half of) window size. */
+    protected final int HALF_WINDOW_SIZE = constants.halfWindowSize.getValue();
 
-    /** hold integral image sum pixs for calculating mean. */
-    private long[][] sumPixs;
+    /** Coefficient of mean value. */
+    private final double MEAN_COEFF = constants.meanCoeff.getValue();
 
-    /** hold integral image square sum pixs for calculating mean. */
-    private long[][] sqrSumPixs;
+    /** Coefficient of standard deviation. */
+    private final double STD_DEV_COEFF = constants.stdDevCoeff.getValue();
 
-    // 0---------------------------------------------+---------------+
-    // |                                             |               |
-    // |                                             |               |
-    // |                                             |               |
-    // |                                            a|              b|
-    // +---------------------------------------------+---------------+
-    // |                                             |               |
-    // |                                             |               |
-    // |                                             |               |
-    // |                                             |               |
-    // |                                             |               |
-    // |                                            c|              d|
-    // +---------------------------------------------+---------------+
-    /*
-     * Assumption: The integral of any rectangle with origin at (0,0) is stored
-     * in the bottom right cell of the rectangle.
-     *
-     * Consequence: The integral of any rectangle, whatever its origin,
-     * can be simply computed as: a + d - b - c
-     * 
-     * In particular: If lower right rectangle is reduced to a single cell,
-     * d = pixel value + top + left - topLeft
-     * This property is used to populate the table.
-     */
+    /** Vertical tile for plain value. */
+    protected Tile tile;
+
+    /** Vertical tile for squared value. */
+    protected Tile sqrTile;
+
     //~ Constructors -----------------------------------------------------------
     //
     //---------------------//
@@ -99,11 +109,7 @@ public class AdaptivePixelSource
      */
     public AdaptivePixelSource (RawPixelSource source)
     {
-        this.source = source;
-
-        // Compute integrals
-        sumPixs = getSumPixs(/* squared => */false);
-        sqrSumPixs = getSumPixs(/* squared => */true);
+        super(source);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -115,135 +121,182 @@ public class AdaptivePixelSource
     public boolean isFore (int x,
                            int y)
     {
-        double mean = getMean(x, y, sumPixs);
-        double sqrMean = getMean(x, y, sqrSumPixs);
+        double mean = tile.getMean(x, y);
+        double sqrMean = sqrTile.getMean(x, y);
         double var = Math.abs(sqrMean - mean * mean);
         double stdDev = Math.sqrt(var);
+
+        // This is the key formula
         double threshold = MEAN_COEFF * mean + STD_DEV_COEFF * stdDev;
 
-        int originPixValue = source.getPixel(x, y);
-        boolean isFore = originPixValue <= threshold;
+        int pixValue = source.getPixel(x, y);
+        boolean isFore = pixValue <= threshold;
 
         return isFore;
     }
 
-    //-----------//
-    // getHeight //
-    //-----------//
-    @Override
-    public final int getHeight ()
-    {
-        return source.getHeight();
-    }
-
-    //----------//
-    // getPixel //
-    //----------//
-    @Override
-    public final int getPixel (int x,
-                               int y)
-    {
-        return source.getPixel(x, y);
-    }
-
-    //----------//
-    // getWidth //
-    //----------//
-    @Override
-    public final int getWidth ()
-    {
-        return source.getWidth();
-    }
-
-    //------------//
-    // getSumPixs //
-    //------------//
+    //~ Inner Classes ----------------------------------------------------------
+    //
+    //------//
+    // Tile //
+    //------//
     /**
-     * Compute integral image sum pixels
-     *
-     * @param squared true for summing square values, false for summing values
+     * Handles a vertical tile of integrals.
      */
-    private long[][] getSumPixs (boolean squared)
+    protected class Tile
     {
-        final int width = getWidth();
-        final int height = getHeight();
-        final long[][] sums = new long[width][height];
 
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                // Retrieve picture cell value
-                long value = getPixel(x, y);
-                if (squared) {
-                    value *= value;
-                }
+        /** Width of the tile circular buffer. */
+        protected final int TILE_WIDTH;
 
-                // Add rectangle above, if any
-                if (y > 0) {
-                    value += sums[x][y - 1];
-                }
+        /** Remember if we handle squared values or plain values. */
+        protected final boolean squared;
 
-                // Add rectangle on left, if any
-                if (x > 0) {
-                    value += sums[x - 1][y];
+        /** Height of the tile = height of the image. */
+        protected final int height;
 
-                    // Substract rectangle on upper left, if any
-                    if (y > 0) {
-                        value -= sums[x - 1][y - 1];
-                    }
-                }
+        /** Abscissa corresponding to the right side of the tile. */
+        protected int xRight = -1;
 
-                // Store rectangle integral into cell
-                sums[x][y] = value;
-            }
+        /** Circular buffer for integrals. */
+        protected final long[][] sums;
+
+        /**
+         * Create a tile instance.
+         *
+         * @param tileWitdh tile width
+         * @param height    tile height = image height
+         * @param squared   true for squared values, false for plain values
+         */
+        public Tile (int tileWidth,
+                     int height,
+                     boolean squared)
+        {
+            this.TILE_WIDTH = tileWidth;
+            this.height = height;
+            this.squared = squared;
+
+            // Allocate buffer of integrals
+            sums = new long[TILE_WIDTH][height];
+
+            // Initialize the "previous" column
+            Arrays.fill(sums[TILE_WIDTH - 1], 0);
         }
 
-        return sums;
+        /**
+         * Make sure that the sliding window is positioned around the
+         * provided location, and return mean data.
+         *
+         * @param x provided abscissa
+         * @param y provided ordinate
+         * @return the average value around the provided location
+         */
+        public double getMean (int x,
+                               int y)
+        {
+
+            // Compute actual borders of the window
+            final int imageWidth = getWidth();
+
+            int x1 = Math.max(-1, x - HALF_WINDOW_SIZE - 1);
+            int x2 = Math.min(imageWidth - 1, x + HALF_WINDOW_SIZE);
+
+            int y1 = Math.max(-1, y - HALF_WINDOW_SIZE - 1);
+            int y2 = Math.min(height - 1, y + HALF_WINDOW_SIZE);
+
+            // Make sure the tile is positioned correctly
+            shiftTile(x2);
+
+            // Upper left
+            long a = (x1 >= 0 && y1 >= 0) ? sums[x1 % TILE_WIDTH][y1] : 0;
+
+            // Above
+            long b = (y1 >= 0) ? sums[x2 % TILE_WIDTH][y1] : 0;
+
+            // Left
+            long c = (x1 >= 0) ? sums[x1 % TILE_WIDTH][y2] : 0;
+
+            // Lower right
+            long d = sums[x2 % TILE_WIDTH][y2];
+
+            // Integral for window rectangle
+            double sum = a + d - b - c;
+
+            // Area = number of values
+            int area = (y2 - y1) * (x2 - x1);
+
+            // Return mean value
+            return sum / area;
+
+        }
+
+        /**
+         * Make sure the column at abscissa 'x2' lies within the tile.
+         *
+         * @param x2 the abscissa to check
+         */
+        protected void shiftTile (int x2)
+        {
+            // Void by default
+        }
+
+        /**
+         * Populate the provided column with proper integrals, building
+         * on the content of previous column.
+         *
+         * @param x the column to populate
+         */
+        protected void populateColumn (int x)
+        {
+            // Translate the absolute column to circular buffer column
+            final int tx = x % TILE_WIDTH;
+            final long[] column = sums[tx];
+
+            // The column to the left (modulo tile width)
+            final int prevTx = (x + TILE_WIDTH - 1) % TILE_WIDTH;
+            final long[] prevColumn = sums[prevTx];
+
+            long top = 0;
+            long topLeft = 0;
+
+            for (int y = 0; y < height; y++) {
+                long left = prevColumn[y];
+
+                long pix = getPixel(x, y);
+                if (squared) {
+                    pix *= pix;
+                }
+
+                long val = pix + left + top - topLeft;
+                column[y] = val;
+
+                // For next iteration
+                top = val;
+                topLeft = left;
+            }
+        }
     }
 
-    //---------//
-    // getMean //
-    //---------//
-    /**
-     * Compute the mean value (or squared value) in a standard window
-     * around the provided location.
-     *
-     * @param x    provided abscissa
-     * @param y    provided ordinate
-     * @param sums the proper table to use (sumPixs or sqrSumPixs)
-     * @return the average [squared] value over the standard window
-     */
-    private double getMean (int x,
-                            int y,
-                            long[][] sums)
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
     {
-        final int width = getWidth();
-        final int height = getHeight();
+        //~ Instance fields ----------------------------------------------------
 
-        int x1 = Math.max(-1, x - HALF_WINDOW_SIZE - 1);
-        int x2 = Math.min(width - 1, x + HALF_WINDOW_SIZE);
+        Constant.Integer halfWindowSize = new Constant.Integer(
+                "Pixels",
+                18,
+                "Half size of window around a given pixel");
 
-        int y1 = Math.max(-1, y - HALF_WINDOW_SIZE - 1);
-        int y2 = Math.min(height - 1, y + HALF_WINDOW_SIZE);
+        Constant.Ratio meanCoeff = new Constant.Ratio(
+                0.67,
+                "Threshold formula coefficient for mean pixel value");
 
-        // Upper left
-        long a = (x1 >= 0 && y1 >= 0) ? sums[x1][y1] : 0;
+        Constant.Ratio stdDevCoeff = new Constant.Ratio(
+                1.0,
+                "Threshold formula coefficient for pixel standard deviation");
 
-        // Above
-        long b = (y1 >= 0) ? sums[x2][y1] : 0;
-
-        // Left
-        long c = (x1 >= 0) ? sums[x1][y2] : 0;
-
-        // Lower right
-        long d = sums[x2][y2];
-
-        // Integral for window rectangle
-        double sum = a + d - b - c;
-
-        // Area = number of values
-        int area = (y2 - y1) * (x2 - x1);
-
-        // Return mean value
-        return sum / area;
     }
 }
