@@ -302,7 +302,7 @@ public class TextScanner
                 "Minimum distance right of staff");
 
         Scale.Fraction maxGlyphWidth = new Scale.Fraction(
-                5,
+                7,
                 "Maximum glyph width");
 
         Scale.Fraction maxGlyphHeight = new Scale.Fraction(

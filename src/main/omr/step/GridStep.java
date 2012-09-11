@@ -53,6 +53,6 @@ public class GridStep
                       Sheet                  sheet)
         throws StepException
     {
-        sheet.getGridBuilder().buildInfo();
+        sheet.getGridBuilder(true).buildInfo();
     }
 }

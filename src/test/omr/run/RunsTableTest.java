@@ -339,7 +339,7 @@ public class RunsTableTest
     {
         RunsTable hori = createHorizontalInstance();
         RunsTableFactory factory = new RunsTableFactory(
-                VERTICAL, new BinaryPixelSource(hori, 127), 0);
+                VERTICAL, new GlobalFilter(hori, 127), 0);
 
         return factory.createTable("vert");
     }

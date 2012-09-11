@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//           V e r t i c a l A d a p t i v e P i x e l S o u r c e            //
+//                        V e r t i c a l F i l t e r                         //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -16,8 +16,8 @@ import omr.log.Logger;
 import net.jcip.annotations.NotThreadSafe;
 
 /**
- * Class {@code VerticalAdaptivePixelSource} is a specialization of
- * {@link AdaptivePixelSource} which computes mean and standard
+ * Class {@code VerticalFilter} is a specialization of
+ * {@link AdaptiveFilter} which computes mean and standard
  * deviation values based on vertical tiles of integrals.
  *
  * <p>This implementation is meant to be functionally equivalent to
@@ -58,37 +58,57 @@ import net.jcip.annotations.NotThreadSafe;
  * @author Hervé Bitteur
  */
 @NotThreadSafe
-public class VerticalAdaptivePixelSource
-        extends AdaptivePixelSource
-        implements PixelSource
+public class VerticalFilter
+        extends AdaptiveFilter
+        implements PixelFilter
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(VerticalAdaptivePixelSource.class);
+    private static final Logger logger = Logger.getLogger(VerticalFilter.class);
 
     //~ Constructors -----------------------------------------------------------
     //
-    //-----------------------------//
-    // VerticalAdaptivePixelSource //
-    //-----------------------------//
+    //----------------//
+    // VerticalFilter //
+    //----------------//
     /**
      * Create an adaptive wrapper on a raw pixel source.
      *
-     * @param source the underlying source of raw pixels
+     * @param source      the underlying source of raw pixels
+     * @param meanCoeff   the coefficient for mean value
+     * @param stdDevCoeff the coefficient for standard deviation value
      */
-    public VerticalAdaptivePixelSource (RawPixelSource source)
+    public VerticalFilter (PixelSource source,
+                           double meanCoeff,
+                           double stdDevCoeff)
     {
-        super(source);
+        super(source, meanCoeff, stdDevCoeff);
+    }
 
+    //~ Methods ----------------------------------------------------------------
+    //
+    //------------//
+    // initialize //
+    //------------//
+    @Override
+    public void initialize ()
+    {
         // Prepare tiles
         tile = new MyTile(/* squared => */false);
         sqrTile = new MyTile(/* squared => */true);
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //
+    //----------------------//
+    // getDefaultDescriptor //
+    //----------------------//
+    public static FilterDescriptor getDefaultDescriptor ()
+    {
+        return  AdaptiveDescriptor.getDefault();
+    }
 
+    //~ Inner Classes ----------------------------------------------------------
+    //
     //--------//
     // MyTile //
     //--------//

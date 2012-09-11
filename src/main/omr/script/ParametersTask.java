@@ -11,15 +11,23 @@
 // </editor-fold>
 package omr.script;
 
+import omr.run.AdaptiveDescriptor;
+import omr.run.FilterDescriptor;
+import omr.run.GlobalDescriptor;
+
 import omr.score.Score;
+import omr.score.entity.Page;
 import omr.score.entity.ScorePart;
 import omr.score.entity.SlotPolicy;
 
 import omr.sheet.Sheet;
+import omr.sheet.SystemInfo;
 
 import omr.step.Step;
 import omr.step.Stepping;
 import omr.step.Steps;
+
+import omr.util.TreeNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,9 +36,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import omr.score.entity.Page;
-import omr.sheet.SystemInfo;
-import omr.util.TreeNode;
+import javax.xml.bind.annotation.XmlElements;
 
 /**
  * Class {@code ParametersTask} handles the global parameters of a score,
@@ -46,9 +52,14 @@ public class ParametersTask
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** Max foreground value */
-    @XmlAttribute(name = "foreground")
-    private Integer foreground;
+    /** Pixel filter */
+    @XmlElements({
+        @XmlElement(name = "global-filter",
+                    type = GlobalDescriptor.class),
+        @XmlElement(name = "adaptive-filter",
+                    type = AdaptiveDescriptor.class)
+    })
+    private FilterDescriptor filterDescriptor;
 
     /** Language code */
     @XmlAttribute(name = "language")
@@ -75,7 +86,7 @@ public class ParametersTask
     private List<PartData> parts = new ArrayList<>();
 
     /** Remember if we have changed these items */
-    private boolean foregroundChanged;
+    private boolean filterChanged;
 
     private boolean languageChanged;
 
@@ -116,14 +127,15 @@ public class ParametersTask
         Score score = sheet.getScore();
         StringBuilder sb = new StringBuilder();
 
-        // Foreground
-        if (foreground != null) {
-            if (!sheet.hasMaxForeground()
-                    || !foreground.equals(sheet.getMaxForeground())) {
-                sheet.setMaxForeground(foreground);
-                sb.append(" foreground:")
-                        .append(foreground);
-                foregroundChanged = true;
+        // Binarization
+        // TODO: handle the page level as well !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        if (filterDescriptor != null) {
+            if (!score.hasFilterDescriptor()
+                    || !filterDescriptor.equals(score.getFilterDescriptor())) {
+                score.setFilterDescriptor(filterDescriptor);
+                sb.append(" filter:")
+                        .append(filterDescriptor);
+                filterChanged = true;
             }
         }
 
@@ -231,33 +243,44 @@ public class ParametersTask
             from = Steps.valueOf(Steps.SYMBOLS);
         }
 
-        Step loadStep = Steps.valueOf(Steps.LOAD);
+        Step scaleStep = Steps.valueOf(Steps.SCALE);
 
-        if (foregroundChanged) {
-            if (Steps.compare(latestStep, loadStep) > 0) {
-                from = loadStep;
+        if (filterChanged) {
+            if (Steps.compare(latestStep, scaleStep) >= 0) {
+                from = scaleStep;
             } else {
                 from = null;
             }
         }
 
         if ((from != null) && Stepping.shouldReprocessSheet(from, sheet)) {
-            logger.fine("Rebuilding from {0}", from);
+            logger.info("Rebuilding from {0}", from);
             Stepping.reprocessSheet(from, sheet, null, true);
         }
 
         super.epilog(sheet);
     }
 
-    //---------------//
-    // setForeground //
-    //---------------//
+    //-----------//
+    // setFilter //
+    //-----------//
     /**
-     * @param foreground the maximum pixel value for foreground
+     * @param filterDescriptor the filter to use for pixels binarization
      */
-    public void setForeground (int foreground)
+    public void setFilter (FilterDescriptor filterDescriptor)
     {
-        this.foreground = foreground;
+        this.filterDescriptor = filterDescriptor;
+    }
+
+    //-----------//
+    // getFilter //
+    //-----------//
+    /**
+     * @return the filter to use for pixels binarization
+     */
+    public FilterDescriptor getFilter ()
+    {
+        return filterDescriptor;
     }
 
     //-------------//
@@ -323,9 +346,9 @@ public class ParametersTask
     {
         StringBuilder sb = new StringBuilder(" parameters");
 
-        if (foreground != null) {
-            sb.append(" foreground:")
-                    .append(foreground);
+        if (filterDescriptor != null) {
+            sb.append(" filter:")
+                    .append(filterDescriptor);
         }
 
         if (slotPolicy != null) {

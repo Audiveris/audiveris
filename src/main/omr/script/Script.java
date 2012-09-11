@@ -73,9 +73,7 @@ public class Script
         @XmlElement(name = "insert",
                     type = InsertTask.class),
         @XmlElement(name = "parameters",
-                    type = ParametersTask.class) //        , @XmlElement(name = "midi", type = MidiWriteTask.class)
-        //        , @XmlElement(name = "play", type = PlayTask.class)
-        ,
+                    type = ParametersTask.class),
         @XmlElement(name = "print",
                     type = PrintTask.class),
         @XmlElement(name = "rational",

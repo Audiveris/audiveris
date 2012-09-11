@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                           P i x e l S o u r c e                            //
+//                        R a w P i x e l S o u r c e                         //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -11,26 +11,47 @@
 // </editor-fold>
 package omr.run;
 
-import omr.util.Concurrency;
-
 /**
- * Interface {@code PixelSource} reports the foreground pixels of a
- * {@link RawPixelSource}.
+ * Interface {@code PixelSource} defines the operations expected 
+ * from a rectangular pixel source, limited by its width and height.
+ * <p>It is a <b>raw</b> pixel source, because just the pixel gray value
+ * is returned, with no interpretation as foreground or background.
+ * This additional interpretation is reported by a {@link PixelSource}.
  *
  * @author Hervé Bitteur
  */
 public interface PixelSource
-        extends RawPixelSource
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Default value for background pixel. */
+    public static final int BACKGROUND = 255;
+
+    //~ Methods ----------------------------------------------------------------
+    /**
+     * Report the height of the rectangular source
+     *
+     * @return the source height
+     */
+    int getHeight ();
 
     /**
-     * Report whether the pixel at location (x,y) is a foreground pixel
-     * or not.
+     * Report the pixel element, as read at location (x, y) in the 
+     * source.
      *
      * @param x abscissa value
      * @param y ordinate value
-     * @return true for a foreground pixel, false for a background pixel
+     *
+     * @return the pixel value using range 0..255 (0/black for foreground,
+     *         255/white for background)
      */
-    boolean isFore (int x,
-                    int y);
+    int getPixel (int x,
+                  int y);
+
+    /**
+     * Report the width of the rectangular source.
+     *
+     * @return the source width
+     */
+    int getWidth ();
 }

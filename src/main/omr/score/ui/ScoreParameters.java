@@ -17,6 +17,11 @@ import omr.text.Language;
 
 import omr.log.Logger;
 
+import omr.run.AdaptiveDescriptor;
+import omr.run.FilterDescriptor;
+import omr.run.FilterKind;
+import omr.run.GlobalDescriptor;
+
 import omr.score.Score;
 import omr.score.entity.ScorePart;
 import omr.score.entity.SlotPolicy;
@@ -38,23 +43,29 @@ import omr.ui.FileDropHandler;
 import omr.ui.field.LDoubleField;
 import omr.ui.field.LIntegerField;
 import omr.ui.field.LTextField;
+import omr.ui.field.SpinnerUtilities;
 import omr.ui.util.Panel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import java.awt.event.ActionEvent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -67,13 +78,10 @@ import javax.swing.event.ChangeListener;
  * <li>Call-stack printed on exception</li>
  * <li>Prompt for saving script on closing</li>
  * <li>Step triggerred by drag and drop</li>
- * <li>Max value for foreground pixels</li>
- * <li>Histogram threshold for staff lines detection</li>
- * <li>Abscissa margin for time slots</li>
+ * <li>Binarization parameters</li>
+ * <li>Policy and abscissa margin for time slots</li>
  * <li>Text language</li>
- * <li><strike>Midi volume and tempo</strike></li>
  * <li>Parts name and instrument</li>
- * <li><strike>Measure range selection</strike></li>
  * </ul>
  *
  * @author Hervé Bitteur
@@ -90,6 +98,7 @@ public class ScoreParameters
             ScoreParameters.class);
 
     //~ Instance fields --------------------------------------------------------
+    //
     /** The swing component of this panel */
     private final Panel component;
 
@@ -103,6 +112,7 @@ public class ScoreParameters
     private ParametersTask task;
 
     //~ Constructors -----------------------------------------------------------
+    //
     //-----------------//
     // ScoreParameters //
     //-----------------//
@@ -121,7 +131,7 @@ public class ScoreParameters
         panes.add(new StackPane());
         panes.add(new ScriptPane());
         panes.add(new DnDPane());
-        panes.add(new ForegroundPane());
+        panes.add(new BinarizationPane());
         panes.add(new SlotPane());
 
         // Caution: The language pane needs Tesseract up & running
@@ -133,21 +143,9 @@ public class ScoreParameters
             logger.warning("Error creating language pane", ex);
         }
 
-        ///        panes.add(new VolumePane());
-        ///        panes.add(new TempoPane());
-
         if ((score != null) && (score.getPartList() != null)) {
             // Part by part information
             panes.add(new ScorePane());
-
-            //            // Add measure pane iff we have measures
-            //            if (!score.getFirstPage()
-            //                      .getFirstSystem()
-            //                      .getFirstPart()
-            //                      .getMeasures()
-            //                      .isEmpty()) {
-            //                panes.add(new MeasurePane());
-            //            }
         }
 
         // Layout
@@ -155,6 +153,7 @@ public class ScoreParameters
     }
 
     //~ Methods ----------------------------------------------------------------
+    //
     //--------//
     // commit //
     //--------//
@@ -256,6 +255,7 @@ public class ScoreParameters
     }
 
     //~ Inner Classes ----------------------------------------------------------
+    //
     //-------------//
     // BooleanPane //
     //-------------//
@@ -334,56 +334,242 @@ public class ScoreParameters
         }
     }
 
-    //----------------//
-    // ForegroundPane //
-    //----------------//
+    //----------//
+    // SpinData //
+    //----------//
     /**
-     * Pane to define the upper limit for foreground pixels.
+     * A line with a checkBox and a parameter handled by a spinner.
      */
-    private class ForegroundPane
-            extends SliderPane
+    private class SpinData
     {
-        //~ Constructors -------------------------------------------------------
 
-        public ForegroundPane ()
+        /** Set as default? */
+        protected final JCheckBox box;
+
+        protected final JLabel label;
+
+        protected final JSpinner spinner;
+
+        public SpinData (String label,
+                         String tip,
+                         double value,
+                         double minimum,
+                         double maximum,
+                         double stepSize,
+                         boolean withBox)
         {
-            super(
-                    "Foreground Pixels",
-                    new LIntegerField(
-                    false,
-                    "Level",
-                    "Max level for foreground pixels"),
-                    0,
-                    255,
-                    ((score != null)
-                     && score.getFirstPage().getSheet().hasMaxForeground())
-                    ? score.getFirstPage().getSheet().getMaxForeground()
-                    : Sheet.getDefaultMaxForeground());
+            if (withBox) {
+                box = new JCheckBox();
+                box.setText("Set as default");
+                box.setToolTipText(
+                        "Check to set parameter as global default");
+
+                // If no current score, push for a global setting
+                box.setSelected(score == null);
+            } else {
+                box = null;
+            }
+
+            this.label = new JLabel(label, SwingConstants.RIGHT);
+
+            SpinnerNumberModel model = new SpinnerNumberModel(
+                    value, minimum, maximum, stepSize);
+            spinner = new JSpinner(model);
+            SpinnerUtilities.setRightAlignment(spinner);
+            SpinnerUtilities.setEditable(spinner, true);
+            spinner.setToolTipText(tip);
+        }
+
+        public int defineLayout (PanelBuilder builder,
+                                 CellConstraints cst,
+                                 int r)
+        {
+            if (box != null) {
+                builder.add(box, cst.xyw(3, r, 3));
+            }
+            builder.add(label, cst.xyw(7, r, 3));
+            builder.add(spinner, cst.xyw(11, r, 1));
+
+            r += 2;
+            return r;
+        }
+
+        public void setVisible (boolean bool)
+        {
+            if (box != null) {
+                box.setVisible(bool);
+            }
+            label.setVisible(bool);
+            spinner.setVisible(bool);
+        }
+    }
+
+    //------------------//
+    // BinarizationPane //
+    //------------------//
+    /**
+     * Pane to define the pixel binarization parameters.
+     */
+    private class BinarizationPane
+            extends Pane
+    {
+
+        /** ComboBox for filter */
+        final JComboBox<FilterKind> filterCombo;
+
+        /** Set as default? */
+        final JCheckBox defaultBox = new JCheckBox();
+
+        /** Handling of entered / selected values */
+        private final Action paramAction;
+
+        // Data for global
+        final SpinData globalData;
+
+        // Data for local
+        final SpinData localDataMean;
+
+        final SpinData localDataDev;
+
+        //~ Constructors -------------------------------------------------------
+        public BinarizationPane ()
+        {
+            super("Binarization");
+
+            FilterDescriptor desc =
+                    ((score != null) && score.hasFilterDescriptor())
+                    ? score.getFilterDescriptor()
+                    : FilterDescriptor.getDefault();
+
+            // Global data
+            GlobalDescriptor globalDesc = (desc instanceof GlobalDescriptor)
+                    ? (GlobalDescriptor) desc
+                    : GlobalDescriptor.getDefault();
+            globalData = new SpinData("Threshold",
+                    "Global threshold for foreground pixels",
+                    globalDesc.threshold, 0, 255, 1, false);
+            globalData.setVisible(false);
+
+            // Local data
+            AdaptiveDescriptor localDesc = (desc instanceof AdaptiveDescriptor)
+                    ? (AdaptiveDescriptor) desc
+                    : AdaptiveDescriptor.getDefault();
+            localDataMean = new SpinData("Coeff for Mean",
+                    "Coefficient for mean pixel value",
+                    localDesc.meanCoeff, 0.5, 1.5, 0.1, false);
+            localDataMean.setVisible(false);
+
+            localDataDev = new SpinData("Coeff for StdDev",
+                    "Coefficient for standard deviation value",
+                    localDesc.stdDevCoeff, 0.2, 1.5, 0.1, false);
+            localDataDev.setVisible(false);
+
+            // Filter default box
+            defaultBox.setSelected(score == null);
+            defaultBox.setText("Set as default");
+            defaultBox.setToolTipText(
+                    "Check to set parameter as global default");
+
+            // ComboBox for filter
+            filterCombo = new JComboBox<>(FilterKind.values());
+            filterCombo.setToolTipText("Specific filter on image pixels");
+
+            // At the end, so that proper lines are made visible
+            paramAction = new ParamAction();
+            filterCombo.addActionListener(paramAction);
+            filterCombo.setSelectedItem(desc.getKind());
         }
 
         //~ Methods ------------------------------------------------------------
         @Override
         public void commit ()
         {
-            if (defaultBox.isSelected()
-                    && (intValue() != Sheet.getDefaultMaxForeground())) {
-                Sheet.setDefaultMaxForeground(intValue());
-                logger.info("Default max foreground is now {0}", intValue());
+            if (defaultBox.isSelected()) {
+                FilterDescriptor desc = task.getFilter();
+                if (!FilterDescriptor.getDefault().equals(desc)) {
+                    FilterDescriptor.setDefault(desc);
+                    logger.info("Default pixel filter is now {0}", desc);
+                }
             }
+        }
+
+        @Override
+        public int defineLayout (PanelBuilder builder,
+                                 CellConstraints cst,
+                                 int r)
+        {
+            builder.add(defaultBox, cst.xyw(3, r, 3));
+
+            JLabel filterLabel = new JLabel("Filter", SwingConstants.RIGHT);
+            builder.add(filterLabel, cst.xyw(5, r, 3));
+            builder.add(filterCombo, cst.xyw(9, r, 3));
+            r += 2;
+
+            // Set global and local data as mutual overlays
+            globalData.defineLayout(builder, cst, r);
+            r = localDataMean.defineLayout(builder, cst, r);
+            r = localDataDev.defineLayout(builder, cst, r);
+
+            return r;
         }
 
         @Override
         public int getLogicalRowCount ()
         {
-            return 3;
+            return 4;
         }
 
         @Override
         public boolean isValid ()
         {
-            task.setForeground(intValue());
+            FilterDescriptor desc = null;
+            FilterKind kind = filterCombo.getItemAt(filterCombo.getSelectedIndex());
+            switch (kind) {
+            case GLOBAL:
+                desc = new GlobalDescriptor((int) Math.rint(
+                        (Double) globalData.spinner.getValue()));
+                break;
+            case ADAPTIVE:
+                desc = new AdaptiveDescriptor(
+                        (Double) localDataMean.spinner.getValue(),
+                        (Double) localDataDev.spinner.getValue());
+                break;
+            default:
+            }
+
+            task.setFilter(desc);
 
             return true;
+        }
+
+        //-------------//
+        // ParamAction //
+        //-------------//
+        private class ParamAction
+                extends AbstractAction
+        {
+            // Method run whenever user make a combo selection
+
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                FilterKind kind = filterCombo.getItemAt(
+                        filterCombo.getSelectedIndex());
+                switch (kind) {
+                case GLOBAL:
+                    globalData.setVisible(true);
+                    localDataMean.setVisible(false);
+                    localDataDev.setVisible(false);
+                    break;
+
+                case ADAPTIVE:
+                    globalData.setVisible(false);
+                    localDataMean.setVisible(true);
+                    localDataDev.setVisible(true);
+                    break;
+                default:
+                }
+            }
         }
     }
 
@@ -429,14 +615,14 @@ public class ScoreParameters
                                           CellConstraints cst,
                                           int r);
 
-        /** Report the separator label if any */
+        /** Report the separator label if any. */
         public String getLabel ()
         {
             return label;
         }
 
         /**
-         * Report the count of needed logical rows
+         * Report the count of needed logical rows.
          * Typically 2 (the label separator plus 1 line of data)
          */
         public int getLogicalRowCount ()
@@ -468,6 +654,7 @@ public class ScoreParameters
         final Scale.Fraction maxSlotMargin = new Scale.Fraction(
                 2.5,
                 "Maximum value for slot margin");
+
     }
 
     //----------//
@@ -520,8 +707,8 @@ public class ScoreParameters
 
             // Initial setting for part midi program
             int prog = (scorePart.getMidiProgram() != null)
-                       ? scorePart.getMidiProgram()
-                       : scorePart.getDefaultProgram();
+                    ? scorePart.getMidiProgram()
+                    : scorePart.getDefaultProgram();
             midiBox.setSelectedIndex(prog - 1);
         }
 
@@ -615,7 +802,7 @@ public class ScoreParameters
         public StackPane ()
         {
             super(
-                    "Call-Stack",
+                    "On error",
                     "Print call-stack",
                     "Should we print the call-stack when an exception occurs",
                     Logger.isPrintStackOnWarning());
@@ -764,8 +951,8 @@ public class ScoreParameters
             combo.setToolTipText("Dominant language for textual items");
 
             final String code = ((score != null) && score.hasLanguage())
-                                ? score.getLanguage()
-                                : Language.getDefaultLanguage();
+                    ? score.getLanguage()
+                    : Language.getDefaultLanguage();
             combo.setSelectedItem(itemOf(code));
 
             return combo;
@@ -784,182 +971,6 @@ public class ScoreParameters
         }
     }
 
-    //    //-------------//
-    //    // MeasurePane //
-    //    //-------------//
-    //    private class MeasurePane
-    //        extends Pane
-    //        implements ItemListener
-    //    {
-    //        //~ Instance fields ----------------------------------------------------
-    //
-    //        /** Range selection */
-    //        final JCheckBox rangeBox = new JCheckBox();
-    //
-    //        /** First measure Id */
-    //        final LTextField firstId = new LTextField(
-    //            true,
-    //            "first Id",
-    //            "First measure id of measure range");
-    //
-    //        /** Last measure Id */
-    //        final LTextField lastId = new LTextField(
-    //            true,
-    //            "last Id",
-    //            "Last measure id of measure range");
-    //
-    //        //~ Constructors -------------------------------------------------------
-    //
-    //        public MeasurePane ()
-    //        {
-    //            super("Measure range");
-    //
-    //            // rangeBox
-    //            rangeBox.setText("Select");
-    //            rangeBox.setToolTipText("Check to enable measure selection");
-    //            rangeBox.addItemListener(this);
-    //
-    //            // Default measure range bounds
-    //            MeasureId.MeasureRange range = score.getMeasureRange();
-    //
-    //            if (range != null) {
-    //                rangeBox.setSelected(true);
-    //                firstId.setEnabled(true);
-    //                firstId.setText(range.getFirstId().toString());
-    //                lastId.setEnabled(true);
-    //                lastId.setText(range.getLastId().toString());
-    //            } else {
-    //                rangeBox.setSelected(false);
-    //                firstId.setEnabled(false);
-    //                lastId.setEnabled(false);
-    //
-    //                try {
-    //                    firstId.setText(
-    //                        score.getFirstPage().getFirstSystem().getFirstPart().getFirstMeasure().getScoreId());
-    //                    lastId.setText(
-    //                        score.getLastPage().getLastSystem().getLastPart().getLastMeasure().getScoreId());
-    //                } catch (Exception ex) {
-    //                    logger.warning("Error on score measure range", ex);
-    //                    rangeBox.setEnabled(false); // Safer
-    //                }
-    //            }
-    //        }
-    //
-    //        //~ Methods ------------------------------------------------------------
-    //
-    //        @Override
-    //        public void commit ()
-    //        {
-    //            /** Since this info is not registered in the ParametersTask */
-    //            if (rangeBox.isSelected()) {
-    //                score.setMeasureRange(
-    //                    new MeasureRange(
-    //                        score,
-    //                        firstId.getText().trim(),
-    //                        lastId.getText().trim()));
-    //            } else {
-    //                score.setMeasureRange(null);
-    //            }
-    //        }
-    //
-    //        @Override
-    //        public int defineLayout (PanelBuilder    builder,
-    //                                 CellConstraints cst,
-    //                                 int             r)
-    //        {
-    //            builder.add(rangeBox, cst.xy(3, r));
-    //            builder.add(firstId.getLabel(), cst.xy(5, r));
-    //            builder.add(firstId.getField(), cst.xy(7, r));
-    //            builder.add(lastId.getLabel(), cst.xy(9, r));
-    //            builder.add(lastId.getField(), cst.xy(11, r));
-    //
-    //            return r + 2;
-    //        }
-    //
-    //        @Override
-    //        public boolean isValid ()
-    //        {
-    //            // Measure range
-    //            if (rangeBox.isSelected() &&
-    //                (score.getLastPage()
-    //                      .getLastSystem() != null)) {
-    //                ScoreBased minId = new ScoreBased(
-    //                    score.getFirstPage().getFirstSystem().getFirstPart().getFirstMeasure().getPageId());
-    //                ScoreBased maxId = new ScoreBased(
-    //                    score.getLastPage().getLastSystem().getLastPart().getLastMeasure().getPageId());
-    //
-    //                // Check values are valid
-    //                ScoreBased first = null;
-    //
-    //                try {
-    //                    first = MeasureId.createScoreBased(
-    //                        score,
-    //                        firstId.getText());
-    //                } catch (Exception ex) {
-    //                    logger.warning(
-    //                        "Illegal first measure id: '" + firstId.getText() +
-    //                        "'",
-    //                        ex);
-    //
-    //                    return false;
-    //                }
-    //
-    //                ScoreBased last = null;
-    //
-    //                try {
-    //                    last = MeasureId.createScoreBased(score, lastId.getText());
-    //                } catch (NumberFormatException ex) {
-    //                    logger.warning(
-    //                        "Illegal last measure id: '" + lastId.getText() + "'",
-    //                        ex);
-    //
-    //                    return false;
-    //                }
-    //
-    //                // First Measure
-    //                if ((first.compareTo(minId) < 0) ||
-    //                    (first.compareTo(maxId) > 0)) {
-    //                    logger.warning(
-    //                        "First measure Id is not within [" + minId + ".." +
-    //                        maxId + "]: " + first);
-    //
-    //                    return false;
-    //                }
-    //
-    //                // Last Measure
-    //                if ((last.compareTo(minId) < 0) || (last.compareTo(maxId) > 0)) {
-    //                    logger.warning(
-    //                        "Last measure Id is not within [" + minId + ".." +
-    //                        maxId + "]: " + last);
-    //
-    //                    return false;
-    //                }
-    //
-    //                // First & last consistency
-    //                if (first.compareTo(last) > 0) {
-    //                    logger.warning(
-    //                        "First measure Id " + first +
-    //                        " is greater than last measure Id " + last);
-    //
-    //                    return false;
-    //                }
-    //            }
-    //
-    //            return true;
-    //        }
-    //
-    //        @Override
-    //        public void itemStateChanged (ItemEvent e)
-    //        {
-    //            if (rangeBox.isSelected()) {
-    //                firstId.setEnabled(true);
-    //                lastId.setEnabled(true);
-    //            } else {
-    //                firstId.setEnabled(false);
-    //                lastId.setEnabled(false);
-    //            }
-    //        }
-    //    }
     //-----------//
     // ScorePane //
     //-----------//
@@ -1144,7 +1155,7 @@ public class ScoreParameters
      * Pane to define the abscissa margin around a common time slot.
      */
     private class SlotPane
-            extends SliderPane
+            extends Pane
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -1154,26 +1165,28 @@ public class ScoreParameters
         /** Set as default? */
         final JCheckBox policyDefaultBox = new JCheckBox();
 
+        /** Margin data */
+        final SpinData marginData;
+
         //~ Constructors -------------------------------------------------------
         public SlotPane ()
         {
-            super(
-                    "Time Slots",
-                    new LDoubleField(
-                    false,
-                    "Margin",
-                    "Horizontal margin around Slots, in interline fractions",
-                    "%.2f"),
-                    0,
-                    (int) (constants.maxSlotMargin.getValue() * 100),
-                    ((score != null) && score.hasSlotMargin())
-                    ? score.getSlotMargin()
-                    : Score.getDefaultSlotMargin());
+            super("Time Slots");
+
             policyCombo = createPolicyCombo();
             policyDefaultBox.setText("Set as default");
             policyDefaultBox.setToolTipText(
                     "Check to set parameter as global default");
-            defaultBox.setSelected(score == null);
+            policyDefaultBox.setSelected(score == null);
+
+            marginData = new SpinData("Margin",
+                    "Horizontal margin around Slots, in interline fractions",
+                    ((score != null) && score.hasSlotMargin())
+                    ? score.getSlotMargin()
+                    : Score.getDefaultSlotMargin(),
+                    0, constants.maxSlotMargin.getValue(), 0.1,
+                    true);
+            marginData.box.setSelected(score == null);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -1183,15 +1196,16 @@ public class ScoreParameters
             SlotPolicy policy = policyCombo.getItemAt(
                     policyCombo.getSelectedIndex());
 
-            if (policyDefaultBox.isSelected()) {
+            if (policyDefaultBox.isSelected()
+                && (policy != Score.getDefaultSlotPolicy())) {
                 logger.info("Default slot policy is now {0}", policy);
                 Score.setDefaultSlotPolicy(policy);
             }
 
-            double val = dblValue();
+            double val = (Double) marginData.spinner.getValue();
 
-            if (defaultBox.isSelected()
-                    && (Math.abs(Score.getDefaultSlotMargin() - val) > .001)) {
+            if (marginData.box.isSelected()
+                && (Math.abs(Score.getDefaultSlotMargin() - val) > .001)) {
                 logger.info("Default slot margin is now {0}", val);
                 Score.setDefaultSlotMargin(val);
             }
@@ -1209,20 +1223,20 @@ public class ScoreParameters
             builder.add(policyCombo, cst.xyw(9, r, 3));
             r += 2;
 
-            return super.defineLayout(builder, cst, r);
+            return marginData.defineLayout(builder, cst, r);
         }
 
         @Override
         public int getLogicalRowCount ()
         {
-            return 4;
+            return 3;
         }
 
         @Override
         public boolean isValid ()
         {
-            task.setSlotPolicy((SlotPolicy) policyCombo.getSelectedItem());
-            task.setSlotMargin(dblValue());
+            task.setSlotPolicy(policyCombo.getItemAt(policyCombo.getSelectedIndex()));
+            task.setSlotMargin((Double) marginData.spinner.getValue());
 
             return true;
         }
@@ -1242,125 +1256,4 @@ public class ScoreParameters
             return combo;
         }
     }
-    //
-    //    //-----------//
-    //    // TempoPane //
-    //    //-----------//
-    //    /**
-    //     * Pane for MIDI tempo
-    //     */
-    //    private class TempoPane
-    //        extends DefaultPane
-    //    {
-    //        //~ Instance fields ----------------------------------------------------
-    //
-    //        /** Tempo */
-    //        final LIntegerField tempo = new LIntegerField(
-    //            "Tempo",
-    //            "Tempo value in number of quarters per minute");
-    //
-    //        //~ Constructors -------------------------------------------------------
-    //
-    //        public TempoPane ()
-    //        {
-    //            super("Midi Tempo");
-    //
-    //            tempo.setValue(
-    //                ((score != null) && score.hasTempo()) ? score.getTempo()
-    //                                : Score.getDefaultTempo());
-    //        }
-    //
-    //        //~ Methods ------------------------------------------------------------
-    //
-    //        @Override
-    //        public void commit ()
-    //        {
-    //            int val = tempo.getValue();
-    //
-    //            if (defaultBox.isSelected() && (val != Score.getDefaultTempo())) {
-    //                Score.setDefaultTempo(val);
-    //                logger.info("Default MIDI tempo is now " + val);
-    //            }
-    //        }
-    //
-    //        @Override
-    //        public int defineLayout (PanelBuilder    builder,
-    //                                 CellConstraints cst,
-    //                                 int             r)
-    //        {
-    //            r = super.defineLayout(builder, cst, r);
-    //            builder.add(tempo.getLabel(), cst.xy(9, r));
-    //            builder.add(tempo.getField(), cst.xy(11, r));
-    //
-    //            return r + 2;
-    //        }
-    //
-    //        @Override
-    //        public boolean isValid ()
-    //        {
-    //            int val = tempo.getValue();
-    //
-    //            if ((val < 0) || (val > 1000)) {
-    //                logger.warning("Tempo value should be in 0..1000 range");
-    //
-    //                return false;
-    //            }
-    //
-    //            task.setTempo(val);
-    //
-    //            return true;
-    //        }
-    //    }
-    //
-    //    //------------//
-    //    // VolumePane //
-    //    //------------//
-    //    /**
-    //     * Pane for MIDI volume
-    //     */
-    //    private class VolumePane
-    //        extends SliderPane
-    //    {
-    //        //~ Constructors -------------------------------------------------------
-    //
-    //        public VolumePane ()
-    //        {
-    //            super(
-    //                "Midi Volume",
-    //                new LIntegerField(false, "Volume", "Volume for playback"),
-    //                0,
-    //                255,
-    //                ((score != null) && score.hasVolume()) ? score.getVolume()
-    //                                : Score.getDefaultVolume());
-    //        }
-    //
-    //        //~ Methods ------------------------------------------------------------
-    //
-    //        @Override
-    //        public void commit ()
-    //        {
-    //            int val = intValue();
-    //
-    //            if (defaultBox.isSelected() && (val != Score.getDefaultVolume())) {
-    //                Score.setDefaultVolume(val);
-    //                logger.info("Default MIDI volume is now " + val);
-    //            }
-    //        }
-    //
-    //        @Override
-    //        public boolean isValid ()
-    //        {
-    //            int val = intValue();
-    //
-    //            if ((val < 0) || (val > 127)) {
-    //                logger.warning("Volume value should be in 0..127 range");
-    //
-    //                return false;
-    //            }
-    //
-    //            task.setVolume(val);
-    //
-    //            return true;
-    //        }
-    //    }
 }

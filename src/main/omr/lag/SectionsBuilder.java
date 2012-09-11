@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.lag;
 
-import omr.run.PixelSource;
+import omr.run.PixelFilter;
 import omr.log.Logger;
 
 import omr.run.Run;
@@ -162,7 +162,7 @@ public class SectionsBuilder
      * @return the list of created sections
      */
     public List<Section> createSections (String name,
-                                         PixelSource source,
+                                         PixelFilter source,
                                          int minRunLength)
     {
         // Define a proper table factory

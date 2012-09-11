@@ -51,6 +51,7 @@ import omr.selection.SelectionService;
 import omr.sheet.picture.ImageFormatException;
 import omr.sheet.picture.Picture;
 import omr.sheet.picture.PictureView;
+import omr.sheet.ui.BinarizationBoard;
 import omr.sheet.ui.BoundaryEditor;
 import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.SheetAssembly;
@@ -79,6 +80,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentSkipListSet;
 import omr.grid.GridBuilder;
+import omr.run.PixelFilter;
 
 /**
  * Class {@code Sheet} is the corner stone for Sheet processing,
@@ -117,6 +119,9 @@ public class Sheet
     /** Related assembly instance, if any */
     private SheetAssembly assembly;
 
+    /** Selections for this sheet (SheetLocation and PixelLevel) */
+    private final SelectionService locationService;
+
     /** Related errors symbolsEditor */
     private ErrorsEditor errorsEditor;
 
@@ -128,12 +133,15 @@ public class Sheet
     /** The related picture */
     private Picture picture;
 
+    /** Pixel filter on picture */
+    private PixelFilter pixelFilter;
+
     /** Global scale for this sheet */
     private Scale scale;
-    
+
     /** Table of all vertical (foreground) runs */
     private RunsTable wholeVerticalTable;
-    
+
     /** Initial skew value */
     private Skew skew;
 
@@ -148,12 +156,6 @@ public class Sheet
 
     /** Global glyph nest */
     private Nest nest;
-
-    /**
-     * Non-lag & non-glyph related selections for this sheet
-     * (SheetLocation and PixelLevel)
-     */
-    private final SelectionService locationService;
 
     // Companion processors
     //
@@ -188,7 +190,7 @@ public class Sheet
     private SymbolsEditor symbolsEditor;
 
     /** Related boundary editor */
-    private BoundaryEditor boundaryEditor;
+    private BoundaryEditor boundaryEditor; // ??????????????
 
     /** The current maximum value for foreground pixels */
     private Integer maxForeground;
@@ -636,11 +638,12 @@ public class Sheet
     // getGridBuilder //
     //----------------//
     /**
+     * @param create true for a fresh instance, false for reuse if any
      * @return the gridBuilder
      */
-    public GridBuilder getGridBuilder ()
+    public GridBuilder getGridBuilder (boolean create)
     {
-        if (gridBuilder == null) {
+        if (create || gridBuilder == null) {
             gridBuilder = new GridBuilder(this);
         }
 
@@ -843,8 +846,8 @@ public class Sheet
 
         for (Glyph glyph : glyphs) {
             SystemInfo glyphSystem = glyph.isVirtual()
-                                     ? getSystemOf(glyph.getAreaCenter())
-                                     : getSystemOf(glyph);
+                    ? getSystemOf(glyph.getAreaCenter())
+                    : getSystemOf(glyph);
 
             if (glyphSystem == null) {
                 toRemove.add(glyph);
@@ -1230,11 +1233,6 @@ public class Sheet
 
         try {
             picture = new Picture(image, locationService);
-
-//            if (picture.getImplicitForeground() == null) {
-//                picture.setMaxForeground(getMaxForeground());
-//            }
-
             setPicture(picture);
             getBench().recordImageDimension(picture.getWidth(), picture.
                     getHeight());
@@ -1242,7 +1240,7 @@ public class Sheet
             done(Steps.valueOf(Steps.LOAD));
         } catch (ImageFormatException ex) {
             String msg = "Unsupported image format in file "
-                    + getScore().getImagePath() + "\n" + ex.getMessage();
+                         + getScore().getImagePath() + "\n" + ex.getMessage();
 
             if (Main.getGui() != null) {
                 Main.getGui().displayWarning(msg);
@@ -1302,11 +1300,6 @@ public class Sheet
     public void setSkew (Skew skew)
     {
         this.skew = skew;
-
-        // Update displayed image if any
-        if (getPicture().isRotated() && (Main.getGui() != null)) {
-            assembly.getComponent().repaint();
-        }
     }
 
     //---------------------//
@@ -1423,7 +1416,7 @@ public class Sheet
 
         for (SystemInfo system : systems) {
             if (!(system.getMutableHorizontalSections().equals(
-                  sections.get(system)))) {
+                    sections.get(system)))) {
                 modifiedSystems.add(system);
             }
         }
@@ -1464,7 +1457,7 @@ public class Sheet
 
         for (SystemInfo system : systems) {
             if (!(system.getMutableVerticalSections().equals(
-                  sections.get(system)))) {
+                    sections.get(system)))) {
                 modifiedSystems.add(system);
             }
         }
@@ -1490,7 +1483,9 @@ public class Sheet
     private void reset ()
     {
         picture = null;
+        pixelFilter = null;
         scale = null;
+        wholeVerticalTable = null;
         skew = null;
         horizontals = null;
         hLag = null;
@@ -1501,15 +1496,16 @@ public class Sheet
         staffManager.reset();
         gridBuilder = null;
         systemManager.reset();
+        barsChecker = null;
         systemsBuilder = null;
         symbolsController = null;
         verticalsController = null;
+        targetBuilder = null;
         symbolsEditor = null;
         maxForeground = null;
         histoRatio = null;
         currentStep = null;
         doneSteps = new HashSet<>();
-
     }
 
     //------------//
@@ -1532,7 +1528,9 @@ public class Sheet
             assembly.addViewTab(
                     Step.PICTURE_TAB,
                     pictureView,
-                    new BoardsPane(new PixelBoard(Sheet.this)));
+                    new BoardsPane(
+                    new PixelBoard(this),
+                    new BinarizationBoard(this)));
         }
     }
 
@@ -1541,7 +1539,7 @@ public class Sheet
     //-----------------------//
     /**
      * Get access to the whole table of vertical runs.
-     * 
+     *
      * @return the wholeVerticalTable
      */
     public RunsTable getWholeVerticalTable ()
@@ -1554,12 +1552,28 @@ public class Sheet
     //-----------------------//
     /**
      * Remember the whole table of vertical runs.
-     * 
+     *
      * @param wholeVerticalTable the wholeVerticalTable to set
      */
     public void setWholeVerticalTable (RunsTable wholeVerticalTable)
     {
         this.wholeVerticalTable = wholeVerticalTable;
+    }
+
+    //----------------//
+    // setPixelFilter //
+    //----------------//
+    void setPixelFilter (PixelFilter pixelFilter)
+    {
+        this.pixelFilter = pixelFilter;
+    }
+
+    //----------------//
+    // getPixelFilter //
+    //----------------//
+    public PixelFilter getPixelFilter ()
+    {
+        return pixelFilter;
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -1575,5 +1589,6 @@ public class Sheet
                 "ByteLevel",
                 140,
                 "Maximum gray level for a pixel to be considered as foreground (black)");
+
     }
 }

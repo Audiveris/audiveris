@@ -15,6 +15,8 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
+import omr.run.FilterDescriptor;
+
 import omr.score.Score;
 import omr.score.common.PixelDimension;
 import omr.score.common.PixelPoint;
@@ -29,7 +31,6 @@ import omr.util.TreeNode;
 
 import java.awt.image.RenderedImage;
 import java.util.List;
-import java.util.logging.Level;
 
 /**
  * Class {@code Page} represents a page in the score hierarchy,
@@ -72,6 +73,9 @@ public class Page
 
     /** Progression of measure id within this page */
     private Integer deltaMeasureId;
+    
+    /** The (page-level) pixel filter descriptor */
+    private FilterDescriptor filterDescriptor;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -450,6 +454,34 @@ public class Page
     public String toString ()
     {
         return "{Page " + id + "}";
+    }
+
+    //---------------------//
+    // getFilterDescriptor //
+    //---------------------//
+    public FilterDescriptor getFilterDescriptor ()
+    {
+        if (!hasFilterDescriptor()) {
+            filterDescriptor = FilterDescriptor.getDefault();
+        }
+
+        return filterDescriptor;
+    }
+
+    //---------------------//
+    // setFilterDescriptor //
+    //---------------------//
+    public void setFilterDescriptor (FilterDescriptor filterDescriptor)
+    {
+        this.filterDescriptor = filterDescriptor;
+    }
+
+    //---------------------//
+    // hasFilterDescriptor //
+    //---------------------//
+    public boolean hasFilterDescriptor()
+    {
+        return filterDescriptor != null;
     }
 
     //~ Inner Classes ----------------------------------------------------------

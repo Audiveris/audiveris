@@ -31,7 +31,6 @@ import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
 import omr.sheet.SystemInfo;
-import omr.sheet.picture.Picture;
 
 import omr.stick.SectionRole;
 import omr.stick.StickRelation;
@@ -1491,25 +1490,6 @@ public class BasicSection
 
         // Force update
         invalidateCache();
-    }
-
-    //-------//
-    // write //
-    //-------//
-    @Override
-    public void write (Picture picture,
-                       int pixel)
-    {
-        Point pt = new Point();
-        pt.y = getFirstPos();
-
-        for (Run run : runs) {
-            for (pt.x = run.getStart(); pt.x <= run.getStop(); pt.x++) {
-                picture.setPixel(orientation.absolute(pt), pixel);
-            }
-
-            pt.y++;
-        }
     }
 
     //----------------//

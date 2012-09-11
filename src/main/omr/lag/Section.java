@@ -29,7 +29,6 @@ import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
 import omr.sheet.SystemInfo;
-import omr.sheet.picture.Picture;
 
 import omr.stick.StickRelation;
 
@@ -536,14 +535,6 @@ public interface Section
      * @param vector the translation vector
      */
     public void translate (PixelPoint vector);
-
-    /**
-     * Write the pixels of the section in the given picture.
-     * @param picture the picture to update
-     * @param pixel   the gray level to be used for the pixels
-     */
-    public void write (Picture picture,
-                       int     pixel);
 
     /**
      * Predicate to check whether the given absolute rectangle is

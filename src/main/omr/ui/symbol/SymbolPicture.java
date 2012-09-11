@@ -11,14 +11,18 @@
 // </editor-fold>
 package omr.ui.symbol;
 
-import omr.run.PixelSource;
-
 import omr.log.Logger;
+
+import omr.run.GlobalFilter;
+import omr.run.PixelFilter;
+import omr.run.FilterDescriptor;
+import omr.run.FilterKind;
 
 import net.jcip.annotations.ThreadSafe;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
+import omr.run.GlobalDescriptor;
 
 /**
  * Class {@code SymbolPicture} is an adapter which wraps a ShapeSymbol
@@ -28,7 +32,7 @@ import java.awt.image.DataBuffer;
  */
 @ThreadSafe
 public class SymbolPicture
-    implements PixelSource
+    implements PixelFilter
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -111,5 +115,42 @@ public class SymbolPicture
     public final int getWidth ()
     {
         return width;
+    }
+
+    //------------//
+    // getContext //
+    //------------//
+    @Override
+    public Context getContext (int x,
+                               int y)
+    {
+        return new Context(maxForeground);
+    }
+
+    //------------//
+    // initialize //
+    //------------//
+    @Override
+    public void initialize ()
+    {
+        // Void
+    }
+
+    //---------//
+    // dispose //
+    //---------//
+    @Override
+    public void dispose ()
+    {
+        // Void
+    }
+
+    //-----------------------------//
+    // getImplementationDescriptor //
+    //-----------------------------//
+    @Override
+    public FilterDescriptor getImplementationDescriptor ()
+    {
+        return new GlobalDescriptor(maxForeground);
     }
 }

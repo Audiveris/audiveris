@@ -24,12 +24,9 @@ import omr.math.Histogram.MaxEntry;
 import omr.math.Histogram.PeakEntry;
 
 import omr.run.Orientation;
-import omr.run.BinaryPixelSource;
-import omr.run.RandomAdaptivePixelSource;
 import omr.run.Run;
 import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
-import omr.run.VerticalAdaptivePixelSource;
 
 import omr.score.Score;
 
@@ -53,6 +50,8 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
+import omr.run.PixelFilter;
+import omr.run.FilterDescriptor;
 
 /**
  * Class {@code ScaleBuilder} encapsulates the computation of a sheet
@@ -183,18 +182,34 @@ public class ScaleBuilder
         Picture picture = sheet.getPicture();
         histoKeeper = new HistoKeeper(picture.getHeight() - 1);
 
-        // Retrieve the whole table of foreground runs
-        StopWatch watch = new StopWatch("Runs retrieval");
-        watch.start("retrieveRuns");
+        // Binarization: Retrieve the whole table of foreground runs
+        StopWatch watch = new StopWatch("Binarization");
+        watch.start("Vertical runs");
+
+        FilterDescriptor desc;
+        if (sheet.getPage().hasFilterDescriptor()) {
+            desc = sheet.getPage().getFilterDescriptor();
+        } else if (sheet.getScore().hasFilterDescriptor()) {
+            desc = sheet.getScore().getFilterDescriptor();
+        } else {
+            desc = FilterDescriptor.getDefault();
+        }
+
+        PixelFilter pixelFilter = desc.getFilter(picture);
+        pixelFilter.initialize();
+        sheet.setPixelFilter(pixelFilter);
+
         RunsTableFactory factory = new RunsTableFactory(
                 Orientation.VERTICAL,
-                //new BinaryPixelSource(sheet.getPicture(), 140),
-                //new RandomAdaptivePixelSource(sheet.getPicture()),
-                new VerticalAdaptivePixelSource(sheet.getPicture()),
+                pixelFilter,
                 0);
         RunsTable wholeVertTable = factory.createTable("whole");
+        pixelFilter.dispose();
         sheet.setWholeVerticalTable(wholeVertTable);
-        watch.print();
+        
+        if (constants.printBinarizationWatch.isSet()) {
+            watch.print();
+        }
 
         // Build the two histograms
         histoKeeper.buildHistograms(
@@ -633,6 +648,11 @@ public class ScaleBuilder
         final Constant.Ratio minBeamLineRatio = new Constant.Ratio(
                 2.0,
                 "Minimum ratio between beam thickness and line thickness");
+
+        final Constant.Boolean printBinarizationWatch = new Constant.Boolean(
+                false,
+                "Should we print the StopWatch on binarization?");
+
     }
 
     //---------//

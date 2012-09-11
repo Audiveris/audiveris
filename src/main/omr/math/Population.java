@@ -130,7 +130,8 @@ public class Population
             throw new RuntimeException("Not enough cumulated values : " + n);
         }
 
-        return Math.max(0d, (s2 - ((s * s) / (double) n)) / (double) (n - 1));
+        ///return Math.max(0d, (s2 - ((s * s) / n)) / (n - 1)); // Unbiased
+        return Math.max(0d, (s2 - ((s * s) / n)) / n); // Biased
     }
 
     //-------------------//

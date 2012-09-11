@@ -154,7 +154,8 @@ public class SymbolsEditor implements PropertyChangeListener {
         pageMenu = new PageMenu(sheet.getPage(),
                 new SymbolMenu(symbolsController, evaluator, focus));
 
-        BoardsPane boardsPane = new BoardsPane(new PixelBoard(sheet),
+        BoardsPane boardsPane = new BoardsPane(
+                new PixelBoard(sheet),
                 new RunBoard(sheet.getHorizontalLag(), false),
                 new SectionBoard(sheet.getHorizontalLag(), false),
                 new RunBoard(sheet.getVerticalLag(), false),

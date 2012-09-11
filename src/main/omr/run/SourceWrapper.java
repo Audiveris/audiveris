@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                  R a w P i x e l S o u r c e W r a p p e r                 //
+//                          S o u r c e W r a p p e r                         //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -12,24 +12,24 @@
 package omr.run;
 
 /**
- * Class {@code RawPixelSourceWrapper} wraps a RawPixelSource.
+ * Class {@code SourceWrapper} wraps a PixelSource.
  *
  * @author Hervé Bitteur
  */
-public class RawPixelSourceWrapper
-        implements RawPixelSource
+public class SourceWrapper
+        implements PixelSource
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** Underlying raw pixel source. */
-    protected final RawPixelSource source;
+    /** Underlying pixel source. */
+    protected final PixelSource source;
 
     //~ Constructors -----------------------------------------------------------
     //
-    //-----------------------//
-    // RawPixelSourceWrapper //
-    //-----------------------//
-    public RawPixelSourceWrapper (RawPixelSource source)
+    //---------------//
+    // SourceWrapper //
+    //---------------//
+    public SourceWrapper (PixelSource source)
     {
         this.source = source;
     }

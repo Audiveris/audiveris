@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//             R a n d o m A d a p t i v e P i x e l S o u r c e              //
+//                          R a n d o m F i l t e r                           //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -16,8 +16,8 @@ import omr.log.Logger;
 import net.jcip.annotations.ThreadSafe;
 
 /**
- * Class {@code RandomAdaptivePixelSource} is a specialization of
- * {@link AdaptivePixelSource} which computes mean and standard
+ * Class {@code RandomFilter} is a specialization of
+ * {@link AdaptiveFilter} which computes mean and standard
  * deviation values based on pre-populated tables of integrals.
  *
  * <p>This implementation is ThreadSafe and provides fast random access to any
@@ -29,35 +29,48 @@ import net.jcip.annotations.ThreadSafe;
  * @author Hervé Bitteur
  */
 @ThreadSafe
-public class RandomAdaptivePixelSource
-        extends AdaptivePixelSource
-        implements PixelSource
+public class RandomFilter
+        extends AdaptiveFilter
+        implements PixelFilter
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(omr.run.AdaptivePixelSource.class);
+    private static final Logger logger = Logger.getLogger(RandomFilter.class);
 
     //~ Constructors -----------------------------------------------------------
     //
-    //---------------------------//
-    // RandomAdaptivePixelSource //
-    //---------------------------//
+    //--------------//
+    // RandomFilter //
+    //--------------//
     /**
      * Create an adaptive wrapper on a raw pixel source.
      *
-     * @param source the underlying source of raw pixels
+     * @param source      the underlying source of raw pixels
+     * @param meanCoeff   the coefficient for mean value
+     * @param stdDevCoeff the coefficient for standard deviation value
      */
-    public RandomAdaptivePixelSource (RawPixelSource source)
+    public RandomFilter (PixelSource source,
+                         double meanCoeff,
+                         double stdDevCoeff)
     {
-        super(source);
+        super(source, meanCoeff, stdDevCoeff);
+    }
 
+    //~ Methods ----------------------------------------------------------------
+    //
+    //------------//
+    // initialize //
+    //------------//
+    @Override
+    public void initialize ()
+    {
         // Prepare tiles
         tile = new MyTile(/* squared => */false);
         sqrTile = new MyTile(/* squared => */true);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Inner Classes ----------------------------------------------------------
     //
     //--------//
     // MyTile //

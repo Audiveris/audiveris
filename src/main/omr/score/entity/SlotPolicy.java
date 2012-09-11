@@ -13,11 +13,10 @@ package omr.score.entity;
 
 
 /**
- * Class {@code SlotPolicy} defines the policy to be used for determining time
- * slots within a measure
+ * Class {@code SlotPolicy} defines the policy to be used for 
+ * determining time slots within a measure.
  *
- * @author Herv&eacute Bitteur
- * @version $Id$
+ * @author Hervé Bitteur
  */
 public enum SlotPolicy {
     /** Use Stems as key for slot position */

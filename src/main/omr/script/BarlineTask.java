@@ -11,21 +11,20 @@
 // </editor-fold>
 package omr.script;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
-import omr.glyph.Glyphs;
 import omr.glyph.Shape;
-import omr.glyph.ShapeSet;
+import omr.glyph.facets.Glyph;
+
+import omr.grid.GridBuilder;
 
 import omr.sheet.Sheet;
 
 import omr.step.Stepping;
 import omr.step.Steps;
 
-import omr.glyph.facets.Glyph;
-import omr.grid.GridBuilder;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * Class {@code BarlineTask} assigns (or deassigns) a barline shape to
@@ -103,15 +102,14 @@ public class BarlineTask
     public void epilog (Sheet sheet)
     {
         try {
-            GridBuilder gridBuilder = sheet.getGridBuilder();
+            GridBuilder gridBuilder = sheet.getGridBuilder(false);
 
             if (getAssignedShape() != null) {
                 // Assignment
                 if (isCompound()) {
                     Glyph firstGlyph = glyphs.iterator().next();
                     Glyph compound = firstGlyph.getMembers().first().getGlyph();
-                    gridBuilder.updateBars(glyphs,
-                                           Arrays.asList(compound));
+                    gridBuilder.updateBars(glyphs, Arrays.asList(compound));
                 } else {
                     gridBuilder.updateBars(glyphs, glyphs);
                 }

@@ -37,7 +37,7 @@ public class RunsTableFactory
     //~ Instance fields --------------------------------------------------------
     //
     /** The source to read runs of pixels from */
-    private final PixelSource source;
+    private final PixelFilter source;
 
     /** The desired orientation */
     private final Orientation orientation;
@@ -67,7 +67,7 @@ public class RunsTableFactory
      * @param minLength   the minimum length for each run
      */
     public RunsTableFactory (Orientation orientation,
-                             PixelSource source,
+                             PixelFilter source,
                              int minLength)
     {
         this.orientation = orientation;
@@ -181,7 +181,7 @@ public class RunsTableFactory
         //--------------//
         /**
          * The concurrency aspects of the adapter depends on the
-         * underlying PixelSource.
+         * underlying PixelFilter.
          * @return true if safe, false otherwise
          */
         @Override

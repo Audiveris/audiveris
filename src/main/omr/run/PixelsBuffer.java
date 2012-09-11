@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.run;
 
+import omr.run.GlobalDescriptor;
+
 import net.jcip.annotations.ThreadSafe;
 
 import java.awt.Dimension;
@@ -19,13 +21,13 @@ import java.util.Arrays;
 /**
  * Class {@code PixelsBuffer} handles a plain rectangular buffer of 
  * chars.
- * It is an efficient {@link PixelSource} both for writing and for reading.
+ * It is an efficient {@link PixelFilter} both for writing and for reading.
  *
  * @author Hervé Bitteur
  */
 @ThreadSafe
 public class PixelsBuffer
-    implements PixelSource 
+    implements PixelFilter 
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -36,7 +38,7 @@ public class PixelsBuffer
     private final int height;
 
     /** Underlying buffer */
-    private final char[] buffer;
+    private char[] buffer;
     
 
     //~ Constructors -----------------------------------------------------------
@@ -53,13 +55,30 @@ public class PixelsBuffer
     {
         width = dimension.width;
         height = dimension.height;
-        buffer = new char[dimension.width * dimension.height];
+    }
+
+    //~ Methods ----------------------------------------------------------------
+
+    //------------//
+    // initialize //
+    //------------//
+    @Override
+    public void initialize ()
+    {
+        buffer = new char[width * height];
 
         // Initialize the whole buffer with background color value
         Arrays.fill(buffer, (char) BACKGROUND);        
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //---------//
+    // dispose //
+    //---------//
+    @Override
+    public void dispose ()
+    {
+        buffer = null;
+    }
 
     //-----------//
     // getHeight //
@@ -108,4 +127,20 @@ public class PixelsBuffer
     {
         return getPixel(x,y) != BACKGROUND;
     }    
+
+    //------------//
+    // getContext //
+    //------------//
+    @Override
+    public Context getContext (int x,
+                               int y)
+    {
+        return new Context(BACKGROUND/2);
+    }
+
+    @Override
+    public FilterDescriptor getImplementationDescriptor ()
+    {
+        return new GlobalDescriptor(BACKGROUND/2);
+    }
 }

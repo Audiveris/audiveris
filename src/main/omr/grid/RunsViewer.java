@@ -16,6 +16,7 @@ import omr.run.RunsTable;
 import omr.run.RunsTableView;
 
 import omr.sheet.Sheet;
+import omr.sheet.ui.BinarizationBoard;
 import omr.sheet.ui.PixelBoard;
 
 import omr.ui.BoardsPane;
@@ -25,8 +26,8 @@ import omr.ui.view.ScrollView;
 import java.awt.Graphics2D;
 
 /**
- * Class {@code RunsViewer} handles the display of a {@link RunsTable}
- * in the assembly of the related sheet.
+ * Class {@code RunsViewer} handles the display of instance(s) of 
+ * {@link RunsTable} in the assembly of the related sheet.
  *
  * @author Hervé Bitteur
  */
@@ -44,19 +45,19 @@ public class RunsViewer
     private final BarsRetriever barsRetriever;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // RunsViewer //
     //------------//
     /**
      * Creates a new RunsViewer object.
-     * @param sheet the related sheet
+     *
+     * @param sheet          the related sheet
      * @param linesRetriever the related lines retriever
-     * @param barsRetriever the related bars retriever
+     * @param barsRetriever  the related bars retriever
      */
-    public RunsViewer (Sheet          sheet,
+    public RunsViewer (Sheet sheet,
                        LinesRetriever linesRetriever,
-                       BarsRetriever  barsRetriever)
+                       BarsRetriever barsRetriever)
     {
         this.sheet = sheet;
         this.linesRetriever = linesRetriever;
@@ -64,12 +65,12 @@ public class RunsViewer
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------//
     // display //
     //---------//
     /**
      * Display a view on provided runs table
+     *
      * @param table the runs to display
      */
     public void display (RunsTable table)
@@ -79,15 +80,15 @@ public class RunsViewer
         view.setPreferredSize(table.getDimension());
 
         BoardsPane boards = new BoardsPane(
-            new PixelBoard(sheet),
-            new RunBoard(table, true));
+                new PixelBoard(sheet),
+                new BinarizationBoard(sheet),
+                new RunBoard(table, true));
 
         sheet.getAssembly()
-             .addViewTab(table.getName(), new ScrollView(view), boards);
+                .addViewTab(table.getName(), new ScrollView(view), boards);
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------------//
     // MyRunsTableView //
     //-----------------//
@@ -96,7 +97,7 @@ public class RunsViewer
      * on top of the runs.
      */
     private class MyRunsTableView
-        extends RunsTableView
+            extends RunsTableView
     {
         //~ Constructors -------------------------------------------------------
 
@@ -106,7 +107,6 @@ public class RunsViewer
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         protected void renderItems (Graphics2D g)
         {

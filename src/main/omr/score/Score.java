@@ -22,6 +22,8 @@ import omr.log.Logger;
 
 import omr.math.Rational;
 
+import omr.run.FilterDescriptor;
+
 import omr.score.entity.MeasureId.MeasureRange;
 import omr.score.entity.Page;
 import omr.score.entity.ScoreNode;
@@ -126,6 +128,9 @@ public class Score
 
     /** The (score) slot horizontal margin, expressed in interline fraction */
     private Double slotMargin;
+    
+    /** The (score) pixel filter descriptor */
+    private FilterDescriptor filterDescriptor;
 
     //~ Constructors -----------------------------------------------------------
     //-------//
@@ -269,7 +274,7 @@ public class Score
         System.out.println(
                 "----------------------------------------------------------------");
     }
-
+    
     //----------------------//
     // getDefaultSlotMargin //
     //----------------------//
@@ -728,6 +733,34 @@ public class Score
         return script;
     }
 
+    //---------------------//
+    // getFilterDescriptor //
+    //---------------------//
+    public FilterDescriptor getFilterDescriptor ()
+    {
+        if (!hasFilterDescriptor()) {
+            filterDescriptor = FilterDescriptor.getDefault();
+        }
+
+        return filterDescriptor;
+    }
+
+    //---------------------//
+    // setFilterDescriptor //
+    //---------------------//
+    public void setFilterDescriptor (FilterDescriptor filterDescriptor)
+    {
+        this.filterDescriptor = filterDescriptor;
+    }
+
+    //---------------------//
+    // hasFilterDescriptor //
+    //---------------------//
+    public boolean hasFilterDescriptor()
+    {
+        return filterDescriptor != null;
+    }
+
     //---------------//
     // getScriptFile //
     //---------------//
@@ -807,7 +840,7 @@ public class Score
 
         return volume;
     }
-
+    
     //-------------//
     // hasLanguage //
     //-------------//

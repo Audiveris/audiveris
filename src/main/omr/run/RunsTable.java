@@ -43,7 +43,7 @@ import java.util.List;
  */
 public class RunsTable
         implements Cloneable,
-                   RawPixelSource,
+                   PixelSource,
                    Oriented,
                    EventSubscriber<LocationEvent>
 {
@@ -202,7 +202,7 @@ public class RunsTable
      * for bulk operations.
      * For such needs, a much more efficient way is to first
      * retrieve a full buffer, via {@link #getBuffer()} method, then use this
-     * temporary buffer as the {@link RawPixelSource} instead of this table.
+     * temporary buffer as the {@link PixelSource} instead of this table.
      *
      * @param x absolute abscissa
      * @param y absolute ordinate
@@ -264,6 +264,7 @@ public class RunsTable
     {
         // Prepare output buffer
         PixelsBuffer buffer = new PixelsBuffer(dimension);
+        buffer.initialize();
 
         switch (orientation) {
         case HORIZONTAL:
