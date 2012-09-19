@@ -88,7 +88,6 @@ import java.util.Set;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
-
 /**
  * Class {@code SymbolsEditor} defines, for a given sheet, a UI pane
  * from which all symbol processing actions can be launched and their
@@ -96,7 +95,10 @@ import javax.swing.SwingUtilities;
  *
  * @author Hervé Bitteur
  */
-public class SymbolsEditor implements PropertyChangeListener {
+public class SymbolsEditor
+        implements PropertyChangeListener
+{
+
     /** Specific application parameters */
     private static final Constants constants = new Constants();
 
@@ -130,10 +132,13 @@ public class SymbolsEditor implements PropertyChangeListener {
     /**
      * Create a view in the sheet assembly tabs, dedicated to the
      * display and handling of glyphs.
-     * @param sheet the sheet whose glyphs are considered
+     *
+     * @param sheet             the sheet whose glyphs are considered
      * @param symbolsController the symbols controller for this sheet
      */
-    public SymbolsEditor(Sheet sheet, SymbolsController symbolsController) {
+    public SymbolsEditor (Sheet sheet,
+                          SymbolsController symbolsController)
+    {
         this.sheet = sheet;
         this.symbolsController = symbolsController;
         sheet.setBoundaryEditor(boundaryEditor = new BoundaryEditor(sheet));
@@ -144,9 +149,11 @@ public class SymbolsEditor implements PropertyChangeListener {
         view.setLocationService(sheet.getLocationService());
 
         focus = new ShapeFocusBoard(sheet, symbolsController,
-                new ActionListener() {
+                new ActionListener()
+                {
                     @Override
-                    public void actionPerformed(ActionEvent e) {
+                    public void actionPerformed (ActionEvent e)
+                    {
                         view.repaint();
                     }
                 }, false);
@@ -174,9 +181,11 @@ public class SymbolsEditor implements PropertyChangeListener {
     //-----------------//
     /**
      * Register an items renderer to render items.
+     *
      * @param renderer the additional renderer
      */
-    public void addItemRenderer(ItemRenderer renderer) {
+    public void addItemRenderer (ItemRenderer renderer)
+    {
         view.addItemRenderer(renderer);
     }
 
@@ -186,23 +195,29 @@ public class SymbolsEditor implements PropertyChangeListener {
     /**
      * Highlight the corresponding slot within the score display,
      * using the values of measure and slot.
+     *
      * @param measure the measure that contains the highlighted slot
-     * @param slot the slot to highlight
+     * @param slot    the slot to highlight
      */
-    public void highLight(final Measure measure, final Slot slot) {
-        SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    view.highLight(measure, slot);
-                }
-            });
+    public void highLight (final Measure measure,
+                           final Slot slot)
+    {
+        SwingUtilities.invokeLater(new Runnable()
+        {
+            @Override
+            public void run ()
+            {
+                view.highLight(measure, slot);
+            }
+        });
     }
 
     //----------------//
     // propertyChange //
     //----------------//
     @Override
-    public void propertyChange(PropertyChangeEvent evt) {
+    public void propertyChange (PropertyChangeEvent evt)
+    {
         view.repaint();
     }
 
@@ -213,35 +228,45 @@ public class SymbolsEditor implements PropertyChangeListener {
      * Refresh the UI display (reset the model values of all spinners,
      * update the colors of the glyphs).
      */
-    public void refresh() {
+    public void refresh ()
+    {
         view.refresh();
     }
 
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants extends ConstantSet {
+    private static final class Constants
+            extends ConstantSet
+    {
+
         PixelCount measureMargin = new PixelCount(10,
                 "Number of pixels as margin when highlighting a measure");
+
     }
 
     //--------//
     // MyView //
     //--------//
-    private final class MyView extends NestView {
+    private final class MyView
+            extends NestView
+    {
         // Currently highlighted slot & measure, if any
+
         private Slot highlightedSlot;
+
         private Measure highlightedMeasure;
 
-        private MyView(Nest nest) {
+        private MyView (Nest nest)
+        {
             super(nest, symbolsController,
-                Arrays.asList(sheet.getHorizontalLag(), sheet.getVerticalLag()));
+                    Arrays.asList(sheet.getHorizontalLag(), sheet.getVerticalLag()));
             setName("SymbolsEditor-MyView");
 
             // Subscribe to all lags for SectionSet events
             for (Lag lag : lags) {
                 lag.getSectionService()
-                   .subscribeStrongly(SectionSetEvent.class, this);
+                        .subscribeStrongly(SectionSetEvent.class, this);
             }
         }
 
@@ -249,7 +274,9 @@ public class SymbolsEditor implements PropertyChangeListener {
         // contextAdded //
         //--------------//
         @Override
-        public void contextAdded(Point pt, MouseMovement movement) {
+        public void contextAdded (Point pt,
+                                  MouseMovement movement)
+        {
             super.contextAdded(pt, movement);
 
             if (ViewParameters.getInstance().isSectionSelectionEnabled()) {
@@ -270,7 +297,9 @@ public class SymbolsEditor implements PropertyChangeListener {
         // contextSelected //
         //-----------------//
         @Override
-        public void contextSelected(Point pt, MouseMovement movement) {
+        public void contextSelected (Point pt,
+                                     MouseMovement movement)
+        {
             if (!ViewParameters.getInstance().isSectionSelectionEnabled()) {
                 // Glyph mode
                 pointSelected(pt, movement);
@@ -284,10 +313,13 @@ public class SymbolsEditor implements PropertyChangeListener {
         //-----------//
         /**
          * Make the provided slot stand out.
+         *
          * @param measure the current measure
-         * @param slot the current slot
+         * @param slot    the current slot
          */
-        public void highLight(Measure measure, Slot slot) {
+        public void highLight (Measure measure,
+                               Slot slot)
+        {
             this.highlightedMeasure = measure;
             this.highlightedSlot = slot;
 
@@ -302,8 +334,8 @@ public class SymbolsEditor implements PropertyChangeListener {
             PixelDimension dimension = system.getDimension();
             PixelRectangle systemBox = new PixelRectangle(system.getTopLeft().x,
                     system.getTopLeft().y, dimension.width,
-                    dimension.height +
-                    system.getLastPart().getLastStaff().getHeight());
+                    dimension.height
+                    + system.getLastPart().getLastStaff().getHeight());
 
             // Make the measure rectangle visible
             PixelRectangle rect = measure.getBox();
@@ -328,7 +360,8 @@ public class SymbolsEditor implements PropertyChangeListener {
          * @param event the notified event
          */
         @Override
-        public void onEvent(UserEvent event) {
+        public void onEvent (UserEvent event)
+        {
             ///logger.info("*** " + getName() + " " + event);
             try {
                 // Ignore RELEASING
@@ -353,13 +386,14 @@ public class SymbolsEditor implements PropertyChangeListener {
         // render //
         //--------//
         @Override
-        public void render(Graphics2D g) {
+        public void render (Graphics2D g)
+        {
             PaintingParameters painting = PaintingParameters.getInstance();
 
             if (painting.isInputPainting()) {
                 // Should we draw the section borders?
                 final boolean drawBorders = ViewParameters.getInstance()
-                                                          .isSectionSelectionEnabled();
+                        .isSectionSelectionEnabled();
 
                 // Stroke for borders
                 final Stroke oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
@@ -388,7 +422,8 @@ public class SymbolsEditor implements PropertyChangeListener {
         //---------//
         // publish //
         //---------//
-        protected void publish(NestEvent event) {
+        protected void publish (NestEvent event)
+        {
             nest.getGlyphService().publish(event);
         }
 
@@ -396,13 +431,14 @@ public class SymbolsEditor implements PropertyChangeListener {
         // renderItems //
         //-------------//
         @Override
-        protected void renderItems(Graphics2D g) {
+        protected void renderItems (Graphics2D g)
+        {
             PaintingParameters painting = PaintingParameters.getInstance();
 
             if (painting.isInputPainting()) {
                 // Render all sheet physical info known so far
                 sheet.getPage()
-                     .accept(new SheetPainter(g,
+                        .accept(new SheetPainter(g,
                         boundaryEditor.isSessionOngoing()));
 
                 // Normal display of selected items
@@ -422,7 +458,7 @@ public class SymbolsEditor implements PropertyChangeListener {
                 // The slot being played, if any
                 if (highlightedSlot != null) {
                     painter.drawSlot(true, highlightedMeasure, highlightedSlot,
-                        Colors.SLOT_CURRENT);
+                            Colors.SLOT_CURRENT);
                 }
             }
         }
@@ -432,15 +468,17 @@ public class SymbolsEditor implements PropertyChangeListener {
         //-------------//
         /**
          * Interest in LocationEvent => system boundary modification?
+         *
          * @param locationEvent location event
          */
         @SuppressWarnings("unchecked")
-        private void handleEvent(LocationEvent locationEvent) {
+        private void handleEvent (LocationEvent locationEvent)
+        {
             super.onEvent(locationEvent);
 
             // Update system boundary?
-            if ((locationEvent.hint == SelectionHint.LOCATION_INIT) &&
-                    boundaryEditor.isSessionOngoing()) {
+            if ((locationEvent.hint == SelectionHint.LOCATION_INIT)
+                && boundaryEditor.isSessionOngoing()) {
                 Rectangle rect = locationEvent.getData();
 
                 if ((rect != null) && (rect.width == 0) && (rect.height == 0)) {
@@ -454,10 +492,12 @@ public class SymbolsEditor implements PropertyChangeListener {
         //-------------//
         /**
          * Interest in SectionSetEvent => transient Glyph.
+         *
          * @param sectionSetEvent
          */
         @SuppressWarnings("unchecked")
-        private void handleEvent(SectionSetEvent sectionSetEvent) {
+        private void handleEvent (SectionSetEvent sectionSetEvent)
+        {
             if (!ViewParameters.getInstance().isSectionSelectionEnabled()) {
                 // Glyph selection mode
                 return;
@@ -509,13 +549,14 @@ public class SymbolsEditor implements PropertyChangeListener {
         //---------------//
         // showPagePopup //
         //---------------//
-        private void showPagePopup(Point pt) {
+        private void showPagePopup (Point pt)
+        {
             pageMenu.updateMenu(new PixelPoint(pt.x, pt.y));
 
             JPopupMenu popup = pageMenu.getPopup();
 
             popup.show(this, getZoom().scaled(pt.x) + 20,
-                getZoom().scaled(pt.y) + 30);
+                    getZoom().scaled(pt.y) + 30);
         }
     }
 }

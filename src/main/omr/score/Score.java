@@ -42,6 +42,7 @@ import omr.sheet.ui.SheetsController;
 
 import omr.step.StepException;
 
+import omr.util.Param;
 import omr.util.FileUtil;
 import omr.util.TreeNode;
 
@@ -53,6 +54,7 @@ import java.util.Map.Entry;
 import java.util.SortedMap;
 
 import javax.swing.JFrame;
+import omr.script.ParametersTask.PartData;
 
 /**
  * Class {@code Score} handles a score hierarchy, composed of one or
@@ -87,7 +89,7 @@ public class Score
     /** The recording of key processing data */
     private ScoreBench bench;
 
-    /** Dominant text language */
+    /** Dominant text language in the score */
     private String language;
 
     /** Greatest duration divisor */
@@ -128,9 +130,18 @@ public class Score
 
     /** The (score) slot horizontal margin, expressed in interline fraction */
     private Double slotMargin;
-    
-    /** The (score) pixel filter descriptor */
-    private FilterDescriptor filterDescriptor;
+
+    /** Handling of binarization filter parameter. */
+    private final Param<FilterDescriptor> filterParam =
+            new Param<>(FilterDescriptor.defaultFilter);
+
+    /** Handling of language parameter. */
+    private final Param<String> textParam =
+            new Param<>(Language.defaultLanguage);
+
+    /** Handling of parts name and program. */
+    private final Param<List<PartData>> partsParam =
+            new PartsParam();
 
     //~ Constructors -----------------------------------------------------------
     //-------//
@@ -274,7 +285,31 @@ public class Score
         System.out.println(
                 "----------------------------------------------------------------");
     }
-    
+
+    //----------------//
+    // getFilterParam //
+    //----------------//
+    public Param<FilterDescriptor> getFilterParam ()
+    {
+        return filterParam;
+    }
+
+    //--------------//
+    // getTextParam //
+    //--------------//
+    public Param<String> getTextParam ()
+    {
+        return textParam;
+    }
+
+    //---------------//
+    // getPartsParam //
+    //---------------//
+    public Param<List<PartData>> getPartsParam ()
+    {
+        return partsParam;
+    }
+
     //----------------------//
     // getDefaultSlotMargin //
     //----------------------//
@@ -517,7 +552,7 @@ public class Score
     {
         return multiPage;
     }
-    
+
     //--------//
     // isIdle //
     //--------//
@@ -717,7 +752,7 @@ public class Score
         if (ScoresManager.isMultiScore()) {
             return "[" + radix + "] ";
         } else {
-                return "";
+            return "";
         }
     }
 
@@ -731,34 +766,6 @@ public class Score
         }
 
         return script;
-    }
-
-    //---------------------//
-    // getFilterDescriptor //
-    //---------------------//
-    public FilterDescriptor getFilterDescriptor ()
-    {
-        if (!hasFilterDescriptor()) {
-            filterDescriptor = FilterDescriptor.getDefault();
-        }
-
-        return filterDescriptor;
-    }
-
-    //---------------------//
-    // setFilterDescriptor //
-    //---------------------//
-    public void setFilterDescriptor (FilterDescriptor filterDescriptor)
-    {
-        this.filterDescriptor = filterDescriptor;
-    }
-
-    //---------------------//
-    // hasFilterDescriptor //
-    //---------------------//
-    public boolean hasFilterDescriptor()
-    {
-        return filterDescriptor != null;
     }
 
     //---------------//
@@ -840,7 +847,7 @@ public class Score
 
         return volume;
     }
-    
+
     //-------------//
     // hasLanguage //
     //-------------//
@@ -1077,8 +1084,8 @@ public class Score
      * duration divisor of the score.
      *
      * @param value the raw duration
-     * @return the simple duration expression, in the context of proper
-     * divisions
+     * @return the simple duration expression, in the param of proper
+     *         divisions
      */
     public int simpleDurationOf (Rational value)
     {
@@ -1140,5 +1147,57 @@ public class Score
         Scale.Fraction defaultSlotMargin = new Scale.Fraction(
                 0.5,
                 "Default horizontal margin between a slot and a glyph candidate");
+
+    }
+
+    //------------//
+    // PartsParam //
+    //------------//
+    private class PartsParam
+            extends Param<List<PartData>>
+    {
+
+        @Override
+        public List<PartData> getSpecific ()
+        {
+            List<PartData> data = new ArrayList<>();
+            for (ScorePart scorePart : getPartList()) {
+                
+                // Initial setting for part midi program
+                int prog = (scorePart.getMidiProgram() != null)
+                        ? scorePart.getMidiProgram()
+                        : scorePart.getDefaultProgram();
+
+                data.add(new PartData(scorePart.getName(), prog));
+            }
+            return data;
+        }
+
+        @Override
+        public boolean setSpecific (List<PartData> specific)
+        {
+            ///if (!getSpecific().equals(specific)) {
+            try {
+                for (int i = 0; i < specific.size(); i++) {
+                    PartData data = specific.get(i);
+                    ScorePart scorePart = getPartList().get(i);
+
+                    // Part name
+                    scorePart.setName(data.name);
+
+                    // Part midi program
+                    scorePart.setMidiProgram(data.program);
+                }
+
+                logger.info("Score parts have been updated");
+
+                return true;
+            } catch (Exception ex) {
+                logger.warning("Error updating score parts", ex);
+            }
+            ///}
+
+            return false;
+        }
     }
 }

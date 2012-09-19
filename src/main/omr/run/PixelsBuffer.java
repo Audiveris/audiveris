@@ -55,30 +55,14 @@ public class PixelsBuffer
     {
         width = dimension.width;
         height = dimension.height;
-    }
-
-    //~ Methods ----------------------------------------------------------------
-
-    //------------//
-    // initialize //
-    //------------//
-    @Override
-    public void initialize ()
-    {
+        
         buffer = new char[width * height];
 
         // Initialize the whole buffer with background color value
         Arrays.fill(buffer, (char) BACKGROUND);        
     }
 
-    //---------//
-    // dispose //
-    //---------//
-    @Override
-    public void dispose ()
-    {
-        buffer = null;
-    }
+    //~ Methods ----------------------------------------------------------------
 
     //-----------//
     // getHeight //
@@ -136,11 +120,5 @@ public class PixelsBuffer
                                int y)
     {
         return new Context(BACKGROUND/2);
-    }
-
-    @Override
-    public FilterDescriptor getImplementationDescriptor ()
-    {
-        return new GlobalDescriptor(BACKGROUND/2);
     }
 }

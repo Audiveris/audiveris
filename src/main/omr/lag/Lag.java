@@ -168,4 +168,9 @@ public interface Lag
      */
     void setServices (SelectionService locationService,
                       SelectionService sceneService);
+
+    /**
+     * Cut dependency about other services for lag.
+     */
+    void cutServices ();
 }

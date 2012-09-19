@@ -193,6 +193,28 @@ public class Steps
         return null;
     }
 
+    //----------//
+    // previous //
+    //----------//
+    /**
+     * Report the step right before the provided one
+     *
+     * @return the preceding step, or null if none
+     */
+    static Step previous (Step step)
+    {
+        Step prev = null;
+
+        for (Step s : steps) {
+            if (s == step) {
+                return prev;
+            }
+            prev = s;
+        }
+
+        return null;
+    }
+
     //-------//
     // range //
     //-------//

@@ -102,9 +102,6 @@ public class BarsRetriever
     /** Related staff manager. */
     private final StaffManager staffManager;
 
-    /** Related system manager. */
-    private final SystemManager systemManager;
-
     /** Long vertical filaments found, non sorted. */
     private final List<Glyph> filaments = new ArrayList<>();
 
@@ -142,7 +139,6 @@ public class BarsRetriever
 
         // Companions
         staffManager = sheet.getStaffManager();
-        systemManager = sheet.getSystemManager();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -261,7 +257,7 @@ public class BarsRetriever
         recheckBarCandidates();
 
         // Check bars consistency within the same system
-        for (SystemInfo system : systemManager.getSystems()) {
+        for (SystemInfo system : sheet.getSystems()) {
             checkBarsAlignment(system);
         }
 
@@ -273,7 +269,7 @@ public class BarsRetriever
                 sheet.getLogPrefix(), Arrays.toString(partTops));
 
         // Refine ending points for each bar line
-        for (SystemInfo system : systemManager.getSystems()) {
+        for (SystemInfo system : sheet.getSystems()) {
             refineBarsEndings(system);
         }
     }
@@ -376,7 +372,7 @@ public class BarsRetriever
      */
     void adjustSystemBars ()
     {
-        for (SystemInfo system : systemManager.getSystems()) {
+        for (SystemInfo system : sheet.getSystems()) {
             try {
                 for (HorizontalSide side : HorizontalSide.values()) {
                     Object limit = system.getLimit(side);
@@ -464,7 +460,7 @@ public class BarsRetriever
      */
     private void adjustSides ()
     {
-        for (SystemInfo system : systemManager.getSystems()) {
+        for (SystemInfo system : sheet.getSystems()) {
             try {
                 for (HorizontalSide side : HorizontalSide.values()) {
                     // Determine the side limit of the system
@@ -586,7 +582,7 @@ public class BarsRetriever
                     Arrays.toString(systemTops));
 
             // Create system frames using staves tops
-            systemManager.setSystems(createSystems(systemTops));
+            sheet.setSystems(createSystems(systemTops));
 
             // Merge of systems as much as possible
             if (mergeSystems()) {
@@ -640,7 +636,7 @@ public class BarsRetriever
     private boolean canConnectSystems (SystemInfo prevSystem,
                                        SystemInfo nextSystem)
     {
-        List<SystemInfo> systems = systemManager.getSystems();
+        List<SystemInfo> systems = sheet.getSystems();
         Skew skew = sheet.getSkew();
 
         if (logger.isFineEnabled()) {
@@ -1020,7 +1016,7 @@ public class BarsRetriever
     //--------------//
     private boolean mergeSystems ()
     {
-        List<SystemInfo> systems = systemManager.getSystems();
+        List<SystemInfo> systems = sheet.getSystems();
         boolean modified = false;
 
         // Check connection of left barSticks across systems
@@ -1300,8 +1296,8 @@ public class BarsRetriever
      */
     private Integer[] retrievePartTops ()
     {
-        systemManager.setPartTops(partTops = new Integer[staffManager
-                .getStaffCount()]);
+        staffManager.setPartTops(partTops =
+                new Integer[staffManager.getStaffCount()]);
 
         for (StaffInfo staff : staffManager.getStaves()) {
             ///logger.info("Staff#" + staff.getId());
@@ -1547,8 +1543,8 @@ public class BarsRetriever
      */
     private Integer[] retrieveSystemTops ()
     {
-        systemManager.setSystemTops(systemTops = new Integer[staffManager
-                .getStaffCount()]);
+        staffManager.setSystemTops(systemTops =
+                new Integer[staffManager.getStaffCount()]);
 
         for (StaffInfo staff : staffManager.getStaves()) {
             int bot = staff.getId();
@@ -1770,6 +1766,7 @@ public class BarsRetriever
         Constant.String verticalVipSections = new Constant.String(
                 "",
                 "(Debug) Comma-separated list of VIP sections");
+
     }
 
     //------------//

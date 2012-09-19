@@ -21,7 +21,6 @@ import omr.glyph.facets.Glyph;
 
 import omr.grid.LineInfo;
 import omr.grid.StaffInfo;
-import omr.grid.SystemManager;
 
 import omr.log.Logger;
 
@@ -80,6 +79,7 @@ public class SystemsBuilder
     private static final Logger logger = Logger.getLogger(SystemsBuilder.class);
 
     //~ Instance fields --------------------------------------------------------
+    //
     /** Sheet retrieved systems */
     private final List<SystemInfo> systems;
 
@@ -170,10 +170,9 @@ public class SystemsBuilder
      */
     private void buildParts ()
     {
-        final SystemManager systemManager = sheet.getSystemManager();
-        final Integer[] partTops = systemManager.getPartTops();
+        final Integer[] partTops = sheet.getStaffManager().getPartTops();
 
-        for (SystemInfo system : systemManager.getSystems()) {
+        for (SystemInfo system : sheet.getSystems()) {
             system.getParts().clear(); // Start from scratch
             int partTop = -1;
             PartInfo part = null;

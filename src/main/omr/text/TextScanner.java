@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.text;
 
-import java.awt.Point;
 import omr.constant.ConstantSet;
 import omr.glyph.Glyphs;
 import omr.glyph.facets.Glyph;
@@ -40,6 +39,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import omr.score.entity.Page;
+import omr.util.Param;
 
 /**
  * Class {@code TextScanner} retrieves the text lines by using OCR on
@@ -102,8 +103,11 @@ public class TextScanner
      */
     public void scanSystem ()
     {
-        final String language = system.getSheet().getScore().getLanguage();
+        final Page page = system.getSheet().getPage();
+        final Param<String> textParam = page.getTextParam();
+        final String language = textParam.getTarget();
         logger.fine("scanSystem lan:{0} on {1}", language, system.idString());
+        textParam.setActual(language);
 
         // Retrieve glyphs
         allGlyphs = retrieveRegionGlyphs();

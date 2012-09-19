@@ -46,6 +46,9 @@ public class OmrExecutors
     /** Specific application parameters */
     private static final Constants constants = new Constants();
 
+    /** Default parameter. */
+    public static final Param<Boolean> defaultParallelism = new Default();
+
     /** Number of processors available. */
     private static final int cpuCount = Runtime.getRuntime().
             availableProcessors();
@@ -53,7 +56,7 @@ public class OmrExecutors
     static {
         if (constants.printEnvironment.isSet()) {
             logger.info("Environment. CPU count: {0}, Use of parallelism: {1}",
-                        cpuCount, useParallelism());
+                    cpuCount, defaultParallelism.getTarget());
         }
     }
 
@@ -74,8 +77,8 @@ public class OmrExecutors
     private static volatile boolean creationAllowed = true;
 
     //~ Constructors -----------------------------------------------------------
-    /** 
-     * Not meant to be instantiated 
+    /**
+     * Not meant to be instantiated
      */
     private OmrExecutors ()
     {
@@ -140,12 +143,12 @@ public class OmrExecutors
     /**
      * (re-)Allow the creation of pools.
      */
-    public static void restart()
+    public static void restart ()
     {
         creationAllowed = true;
         logger.fine("OmrExecutors open");
     }
-    
+
     //----------//
     // shutdown //
     //----------//
@@ -171,24 +174,12 @@ public class OmrExecutors
         logger.fine("OmrExecutors closed");
     }
 
-    //----------------//
-    // useParallelism //
-    //----------------//
-    /**
-     * Report whether we should try to use parallelism as much as possible
-     *
-     * @return true for parallel
-     */
-    public static boolean useParallelism ()
-    {
-        return constants.useParallelism.getValue();
-    }
-
     //~ Inner Classes ----------------------------------------------------------
     //
     //------------//
     // CachedLows //
     //------------//
+
     /** Cached pool with low priority */
     private static class CachedLows
             extends Pool
@@ -231,6 +222,7 @@ public class OmrExecutors
                 "seconds",
                 60, //15,
                 "Time to wait for terminating tasks");
+
     }
 
     //---------//
@@ -306,7 +298,7 @@ public class OmrExecutors
         protected ExecutorService createPool ()
         {
             return Executors.newFixedThreadPool(
-                    useParallelism() ? (cpuCount + 1) : 1,
+                    defaultParallelism.getTarget() ? (cpuCount + 1) : 1,
                     new Factory(getName(), Thread.NORM_PRIORITY, 0));
         }
     }
@@ -330,7 +322,7 @@ public class OmrExecutors
         protected ExecutorService createPool ()
         {
             return Executors.newFixedThreadPool(
-                    useParallelism() ? (cpuCount + 1) : 1,
+                    defaultParallelism.getTarget() ? (cpuCount + 1) : 1,
                     new Factory(getName(), Thread.MIN_PRIORITY, 0));
         }
     }
@@ -347,7 +339,7 @@ public class OmrExecutors
 
         //~ Methods ------------------------------------------------------------
         //
-        /** 
+        /**
          * Terminate the pool.
          */
         public synchronized void close (boolean immediately)
@@ -357,7 +349,7 @@ public class OmrExecutors
             }
 
             logger.fine("Closing pool {0}{1}",
-                        getName(), immediately ? " immediately" : "");
+                    getName(), immediately ? " immediately" : "");
 
             if (!immediately) {
                 pool.shutdown(); // Disable new tasks from being submitted
@@ -383,17 +375,17 @@ public class OmrExecutors
             }
 
             logger.fine("Pool {0} closed.", getName());
-            
+
             // Let garbage collector work
             pool = null;
         }
 
-        /** 
+        /**
          * Name the pool.
          */
         public abstract String getName ();
 
-        /** 
+        /**
          * Get the pool ready to use.
          */
         public synchronized ExecutorService getPool ()
@@ -412,17 +404,43 @@ public class OmrExecutors
             return pool;
         }
 
-        /** 
-         * Is the pool active?. 
+        /**
+         * Is the pool active?.
          */
         public synchronized boolean isActive ()
         {
             return (pool != null) && !pool.isShutdown();
         }
 
-        /** 
-         * Needed to create the concrete pool. 
+        /**
+         * Needed to create the concrete pool.
          */
         protected abstract ExecutorService createPool ();
+    }
+
+    //---------//
+    // Default //
+    //---------//
+    private static class Default
+            extends Param<Boolean>
+    {
+        @Override
+        public Boolean getSpecific ()
+        {
+            return constants.useParallelism.getValue();
+        }
+
+        @Override
+        public boolean setSpecific (Boolean specific)
+        {
+            if (!getSpecific().equals(specific)) {
+                constants.useParallelism.setValue(specific);
+                logger.info("Parallelism is {0} allowed",
+                        specific ? "now" : "no longer");
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
 }

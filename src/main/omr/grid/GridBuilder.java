@@ -148,8 +148,7 @@ public class GridBuilder
             }
 
             if (Main.getGui() != null) {
-                sheet.getSymbolsEditor()
-                        .refresh();
+                sheet.getSymbolsEditor().refresh();
             }
         }
     }

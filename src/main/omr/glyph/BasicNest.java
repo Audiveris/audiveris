@@ -160,6 +160,7 @@ public class BasicNest
     }
 
     //~ Methods ----------------------------------------------------------------
+    
     //----------//
     // addGlyph //
     //----------//
@@ -519,6 +520,21 @@ public class BasicNest
 
         for (Class<?> eventClass : glyEventsRead) {
             glyphService.subscribeStrongly(eventClass, this);
+        }
+    }
+
+    //-------------//
+    // setServices //
+    //-------------//
+    @Override
+    public void cutServices (SelectionService locationService)
+    {
+        for (Class<?> eventClass : locEventsRead) {
+            locationService.unsubscribe(eventClass, this);
+        }
+
+        for (Class<?> eventClass : glyEventsRead) {
+            glyphService.unsubscribe(eventClass, this);
         }
     }
 

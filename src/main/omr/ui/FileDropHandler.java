@@ -22,6 +22,7 @@ import omr.step.Stepping;
 import omr.step.Steps;
 
 import omr.util.BasicTask;
+import omr.util.Param;
 
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -40,7 +41,7 @@ import javax.swing.TransferHandler.TransferSupport;
  * @author Hervé Bitteur
  */
 public class FileDropHandler
-    extends TransferHandler
+        extends TransferHandler
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -49,10 +50,12 @@ public class FileDropHandler
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
-        FileDropHandler.class);
+            FileDropHandler.class);
+
+    /** Default parameter. */
+    public static final Param<Step> defaultStep = new Default();
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // canImport //
     //-----------//
@@ -87,18 +90,6 @@ public class FileDropHandler
         return false;
     }
 
-    //----------------//
-    // getDefaultStep //
-    //----------------//
-    /**
-     * Report the current default step on DnD
-     * @return the current default step
-     */
-    public static Step getDefaultStep ()
-    {
-        return constants.defaultStep.getValue();
-    }
-
     //------------//
     // importData //
     //------------//
@@ -122,7 +113,7 @@ public class FileDropHandler
 
             /* Loop through the files */
             for (File file : fileList) {
-                new DropTask(file, getDefaultStep()).execute();
+                new DropTask(file, defaultStep.getTarget()).execute();
             }
         } catch (UnsupportedFlavorException ex) {
             logger.warning("Unsupported flavor in drag & drop", ex);
@@ -137,49 +128,34 @@ public class FileDropHandler
         return true;
     }
 
-    //----------------//
-    // setDefaultStep //
-    //----------------//
-    /**
-     * Assign the new default step on DnD
-     * @param step the new default step
-     */
-    public static void setDefaultStep (Step step)
-    {
-        if (step != getDefaultStep()) {
-            logger.info("Default drop step is now {0}", step);
-            constants.defaultStep.setValue(step);
-        }
-    }
-
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         private final Steps.Constant defaultStep = new Steps.Constant(
-            Steps.valueOf(Steps.LOAD),
-            "Default step executed when a file is dropped");
+                Steps.valueOf(Steps.LOAD),
+                "Default step executed when a file is dropped");
+
     }
 
     //----------//
     // DropTask //
     //----------//
     private static class DropTask
-        extends BasicTask
+            extends BasicTask
     {
         //~ Instance fields ----------------------------------------------------
 
         private final File file;
+
         private final Step target;
 
         //~ Constructors -------------------------------------------------------
-
         public DropTask (File file,
                          Step target)
         {
@@ -188,10 +164,9 @@ public class FileDropHandler
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         protected Void doInBackground ()
-            throws Exception
+                throws Exception
         {
             logger.info("Dropping file {0}", file);
 
@@ -199,6 +174,33 @@ public class FileDropHandler
             Stepping.processScore(Collections.singleton(target), score);
 
             return null;
+        }
+    }
+
+    //---------//
+    // Default //
+    //---------//
+    private static class Default
+            extends Param<Step>
+    {
+
+        @Override
+        public Step getSpecific ()
+        {
+            return constants.defaultStep.getValue();
+        }
+
+        @Override
+        public boolean setSpecific (Step specific)
+        {
+            if (!getSpecific().equals(specific)) {
+                constants.defaultStep.setValue(specific);
+                logger.info("Default drop step is now ''{0}''", specific);
+
+                return true;
+            }
+
+            return false;
         }
     }
 }

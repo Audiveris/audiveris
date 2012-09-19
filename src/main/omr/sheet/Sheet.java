@@ -25,8 +25,8 @@ import omr.glyph.facets.Glyph;
 import omr.glyph.ui.SymbolsController;
 import omr.glyph.ui.SymbolsEditor;
 
+import omr.grid.GridBuilder;
 import omr.grid.StaffManager;
-import omr.grid.SystemManager;
 import omr.grid.TargetBuilder;
 
 import omr.lag.Lag;
@@ -79,8 +79,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentSkipListSet;
-import omr.grid.GridBuilder;
-import omr.run.PixelFilter;
 
 /**
  * Class {@code Sheet} is the corner stone for Sheet processing,
@@ -107,34 +105,37 @@ public class Sheet
 
     //~ Instance fields --------------------------------------------------------
     //
-    /** Containing score */
-    private final Score score;
-
-    /** Corresponding page */
+    /** Corresponding page. */
     private final Page page;
 
-    /** The recording of key processing data */
-    private SheetBench bench;
+    /** Containing score. */
+    private final Score score;
 
-    /** Related assembly instance, if any */
-    private SheetAssembly assembly;
-
-    /** Selections for this sheet (SheetLocation and PixelLevel) */
+    /** Selections for this sheet. (SheetLocation and PixelLevel) */
     private final SelectionService locationService;
 
-    /** Related errors symbolsEditor */
-    private ErrorsEditor errorsEditor;
+    /** The recording of key processing data. */
+    private final SheetBench bench;
 
-    /** Retrieved systems (populated by SYSTEMS/SystemsBuilder) */
-    private final List<SystemInfo> systems;
+    /** Related assembly instance, if any. */
+    private final SheetAssembly assembly;
+
+    /** Related errors editor, if any. */
+    private final ErrorsEditor errorsEditor;
+
+    /** Retrieved systems. */
+    private final List<SystemInfo> systems = new ArrayList<>();
 
     //-- resettable members ----------------------------------------------------
     //
     /** The related picture */
     private Picture picture;
 
-    /** Pixel filter on picture */
-    private PixelFilter pixelFilter;
+    /** All steps already done on this sheet */
+    private Set<Step> doneSteps = new HashSet<>();
+
+    /** The step being done on this sheet */
+    private Step currentStep;
 
     /** Global scale for this sheet */
     private Scale scale;
@@ -168,9 +169,6 @@ public class Sheet
     /** Grid */
     private GridBuilder gridBuilder;
 
-    /** Systems */
-    private final SystemManager systemManager;
-
     /** Bars checker */
     private volatile BarsChecker barsChecker;
 
@@ -192,18 +190,6 @@ public class Sheet
     /** Related boundary editor */
     private BoundaryEditor boundaryEditor; // ??????????????
 
-    /** The current maximum value for foreground pixels */
-    private Integer maxForeground;
-
-    /** The histogram ratio to be used on this sheet to retrieve staves */
-    private Double histoRatio;
-
-    /** The step being done on this sheet */
-    private Step currentStep;
-
-    /** All steps already done on this sheet */
-    private Set<Step> doneSteps = new HashSet<>();
-
     /** Id of last long horizontal section */
     private int lastLongHSectionId = -1;
 
@@ -211,6 +197,7 @@ public class Sheet
     private boolean hasSystemBoundaries = false;
 
     //~ Constructors -----------------------------------------------------------
+    //
     //-------//
     // Sheet //
     //-------//
@@ -232,15 +219,15 @@ public class Sheet
         locationService = new SelectionService("sheet", allowedEvents);
 
         staffManager = new StaffManager(this);
-        systemManager = new SystemManager(this);
         bench = new SheetBench(this);
-
-        systems = systemManager.getSystems();
 
         // Update UI information if so needed
         if (Main.getGui() != null) {
             errorsEditor = new ErrorsEditor(this);
-            Main.getGui().sheetsController.createAssembly(this);
+            assembly = Main.getGui().sheetsController.createAssembly(this);
+        } else {
+            errorsEditor = null;
+            assembly = null;
         }
 
         setImage(image);
@@ -249,6 +236,35 @@ public class Sheet
     }
 
     //~ Methods ----------------------------------------------------------------
+    //------------//
+    // getSystems //
+    //------------//
+    /**
+     * Report an unmodifiable view on current systems.
+     *
+     * @return a view on systems list
+     */
+    public List<SystemInfo> getSystems ()
+    {
+        return Collections.unmodifiableList(systems);
+    }
+
+    //------------//
+    // setSystems //
+    //------------//
+    /**
+     * Assign the whole sequence of systems
+     *
+     * @param systems the (new) systems
+     */
+    public void setSystems (Collection<SystemInfo> systems)
+    {
+        if (this.systems != systems) {
+            this.systems.clear();
+            this.systems.addAll(systems);
+        }
+    }
+
     //------//
     // done //
     //------//
@@ -360,7 +376,7 @@ public class Sheet
      */
     public Collection<Glyph> getActiveGlyphs ()
     {
-        return nest.getActiveGlyphs();
+        return getNest().getActiveGlyphs();
     }
 
     //-------------//
@@ -560,18 +576,6 @@ public class Sheet
         return lastLongHSectionId;
     }
 
-    //------------------//
-    // getMaxForeground //
-    //------------------//
-    public int getMaxForeground ()
-    {
-        if (!hasMaxForeground()) {
-            maxForeground = getDefaultMaxForeground();
-        }
-
-        return maxForeground;
-    }
-
     //---------//
     // getNest //
     //---------//
@@ -582,6 +586,13 @@ public class Sheet
      */
     public Nest getNest ()
     {
+        if (nest == null) {
+            // Beware: Glyph nest must subscribe to location before any lag,
+            // to allow cleaning up of glyph data, before publication by a lag
+            nest = new BasicNest("gNest", this);
+            nest.setServices(locationService);
+        }
+
         return nest;
     }
 
@@ -631,6 +642,10 @@ public class Sheet
      */
     public ScaleBuilder getScaleBuilder ()
     {
+        if (scaleBuilder == null) {
+            scaleBuilder = new ScaleBuilder(this);
+        }
+
         return scaleBuilder;
     }
 
@@ -638,12 +653,11 @@ public class Sheet
     // getGridBuilder //
     //----------------//
     /**
-     * @param create true for a fresh instance, false for reuse if any
      * @return the gridBuilder
      */
-    public GridBuilder getGridBuilder (boolean create)
+    public GridBuilder getGridBuilder ()
     {
-        if (create || gridBuilder == null) {
+        if (gridBuilder == null) {
             gridBuilder = new GridBuilder(this);
         }
 
@@ -754,17 +768,6 @@ public class Sheet
     public SystemInfo getSystemById (int id)
     {
         return systems.get(id - 1);
-    }
-
-    //------------------//
-    // getSystemManager //
-    //------------------//
-    /**
-     * @return the systemManager
-     */
-    public SystemManager getSystemManager ()
-    {
-        return systemManager;
     }
 
     //-------------//
@@ -924,19 +927,6 @@ public class Sheet
         return system;
     }
 
-    //------------//
-    // getSystems //
-    //------------//
-    /**
-     * Report the retrieved systems (infos)
-     *
-     * @return the list of SystemInfo's
-     */
-    public List<SystemInfo> getSystems ()
-    {
-        return systems;
-    }
-
     //-------------------//
     // getSystemsBuilder //
     //-------------------//
@@ -1029,27 +1019,6 @@ public class Sheet
         return picture.getWidth();
     }
 
-    //---------------//
-    // hasHistoRatio //
-    //---------------//
-    /**
-     * Check whether the parameter histoRatio has a value
-     *
-     * @return true if so
-     */
-    public boolean hasHistoRatio ()
-    {
-        return histoRatio != null;
-    }
-
-    //------------------//
-    // hasMaxForeground //
-    //------------------//
-    public boolean hasMaxForeground ()
-    {
-        return maxForeground != null;
-    }
-
     //---------------------//
     // hasSystemBoundaries //
     //---------------------//
@@ -1119,19 +1088,6 @@ public class Sheet
         }
     }
 
-    //-------------//
-    // setAssembly //
-    //-------------//
-    /**
-     * Remember the link to the related sheet display assembly
-     *
-     * @param assembly the related sheet assembly
-     */
-    public void setAssembly (SheetAssembly assembly)
-    {
-        this.assembly = assembly;
-    }
-
     //----------------//
     // setBarsChecker //
     //----------------//
@@ -1175,19 +1131,6 @@ public class Sheet
         constants.maxForegroundGrayLevel.setValue(level);
     }
 
-    //---------------//
-    // setHistoRatio //
-    //---------------//
-    /**
-     * Set the sheet value of histogram threhold for staff detection
-     *
-     * @param histoRatio the ratio of maximum histogram value
-     */
-    public void setHistoRatio (double histoRatio)
-    {
-        this.histoRatio = histoRatio;
-    }
-
     //------------------//
     // setHorizontalLag //
     //------------------//
@@ -1198,8 +1141,12 @@ public class Sheet
      */
     public void setHorizontalLag (Lag hLag)
     {
+        if (this.hLag != null) {
+            this.hLag.cutServices();
+        }
+
         this.hLag = hLag;
-        hLag.setServices(locationService, nest.getGlyphService());
+        hLag.setServices(locationService, getNest().getGlyphService());
     }
 
     //----------------//
@@ -1221,15 +1168,8 @@ public class Sheet
     public final void setImage (RenderedImage image)
             throws StepException
     {
-        // Reset most of all members
-        reset();
-
-        // Beware: Glyph nest must subscribe to location before any lag,
-        // to allow cleaning up of glyph data, before publication by a lag
-        nest = new BasicNest("gNest", this);
-        nest.setServices(locationService);
-
-        scaleBuilder = new ScaleBuilder(this);
+        // Reset most of members
+        reset(Steps.LOAD);
 
         try {
             picture = new Picture(image, locationService);
@@ -1263,14 +1203,6 @@ public class Sheet
     public void setLongSectionMaxId (int id)
     {
         lastLongHSectionId = id;
-    }
-
-    //------------------//
-    // setMaxForeground //
-    //------------------//
-    public void setMaxForeground (int level)
-    {
-        this.maxForeground = level;
     }
 
     //----------//
@@ -1331,15 +1263,11 @@ public class Sheet
      * Assign the current vertical lag for the sheet
      *
      * @param vLag the current vertical lag
-     * @return the previous vLag, or null
      */
-    public Lag setVerticalLag (Lag vLag)
+    public void setVerticalLag (Lag vLag)
     {
-        Lag old = this.vLag;
         this.vLag = vLag;
-        vLag.setServices(locationService, nest.getGlyphService());
-
-        return old;
+        vLag.setServices(locationService, getNest().getGlyphService());
     }
 
     //----------------//
@@ -1478,34 +1406,51 @@ public class Sheet
     // reset //
     //-------//
     /**
-     * Reinitialize all sheet members
+     * Reinitialize the sheet members, according to step needs.
      */
-    private void reset ()
+    public void reset (String stepName)
     {
-        picture = null;
-        pixelFilter = null;
-        scale = null;
-        wholeVerticalTable = null;
-        skew = null;
-        horizontals = null;
-        hLag = null;
-        vLag = null;
-        nest = null;
+        switch (stepName) {
 
-        scaleBuilder = null;
-        staffManager.reset();
-        gridBuilder = null;
-        systemManager.reset();
-        barsChecker = null;
-        systemsBuilder = null;
-        symbolsController = null;
-        verticalsController = null;
-        targetBuilder = null;
-        symbolsEditor = null;
-        maxForeground = null;
-        histoRatio = null;
-        currentStep = null;
-        doneSteps = new HashSet<>();
+        case Steps.LOAD:
+            picture = null;
+            doneSteps = new HashSet<>();
+            currentStep = null;
+
+        case Steps.SCALE:
+            scaleBuilder = null;
+            scale = null;
+            wholeVerticalTable = null;
+
+        case Steps.GRID:
+            if (nest != null) {
+                nest.cutServices(locationService);
+                nest = null;
+            }
+
+            skew = null;
+            horizontals = null;
+
+            if (hLag != null) {
+                hLag.cutServices();
+                hLag = null;
+            }
+            if (vLag != null) {
+                vLag.cutServices();
+                vLag = null;
+            }
+
+            systems.clear();
+            gridBuilder = null;
+
+            staffManager.reset();
+            barsChecker = null;
+            systemsBuilder = null;
+            symbolsController = null;
+            verticalsController = null;
+            targetBuilder = null;
+            symbolsEditor = null;
+        }
     }
 
     //------------//
@@ -1558,22 +1503,6 @@ public class Sheet
     public void setWholeVerticalTable (RunsTable wholeVerticalTable)
     {
         this.wholeVerticalTable = wholeVerticalTable;
-    }
-
-    //----------------//
-    // setPixelFilter //
-    //----------------//
-    void setPixelFilter (PixelFilter pixelFilter)
-    {
-        this.pixelFilter = pixelFilter;
-    }
-
-    //----------------//
-    // getPixelFilter //
-    //----------------//
-    public PixelFilter getPixelFilter ()
-    {
-        return pixelFilter;
     }
 
     //~ Inner Classes ----------------------------------------------------------

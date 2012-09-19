@@ -73,20 +73,21 @@ public class SelectionService
     //-----------------//
     public void dumpSubscribers ()
     {
-        logger.info("{0} subscriber:", toString());
+        logger.info("{0} subscribers:", this);
 
         for (Class<?> eventClass : allowedEvents) {
             List<?> subscribers = getSubscribers(eventClass);
 
             if (!subscribers.isEmpty()) {
                 UserEvent last = (UserEvent) getLastEvent(eventClass);
-                logger.info("-- {0}: {1}{2}",
-                            new Object[]{eventClass.getSimpleName(),
-                                         subscribers.size(),
-                                         (last != null) ? (" " + last) : ""});
+                logger.info("   {0}: {1}{2}",
+                        eventClass.getSimpleName(),
+                        subscribers.size(),
+                        (last != null) ? (" " + last) : "");
 
                 for (Object obj : subscribers) {
-                    logger.info("      {0}", obj);
+                    logger.info("      @{0} {1}",
+                            Integer.toHexString(obj.hashCode()), obj);
                 }
             }
         }
@@ -132,15 +133,14 @@ public class SelectionService
     @Override
     public void publish (Object event)
     {
-        logger.fine("{0} published: {1}", new Object[]{this, event});
+        logger.fine("{0} published: {1}", this, event);
 
         // Check whether the event may be published on this service
         if (!constants.checkPublishedEvents.isSet()
-                || contains(allowedEvents, event.getClass())) {
+            || contains(allowedEvents, event.getClass())) {
             super.publish(event);
         } else {
-            logger.severe("Unexpected event {0} published on {1}",
-                          new Object[]{event, name});
+            logger.severe("Unexpected event {0} published on {1}", event, name);
         }
     }
 
@@ -162,11 +162,21 @@ public class SelectionService
         if (contains(allowedEvents, type)) {
             return super.subscribeStrongly(type, es);
         } else {
-            logger.severe("event class {0} not available on {1}", new Object[]{
-                        type, name});
+            logger.severe("event class {0} not available on {1}", type, name);
 
             return false;
         }
+    }
+
+    @Override
+    public boolean unsubscribe (Class cl,
+                                EventSubscriber eh)
+    {
+        boolean res = super.unsubscribe(cl, eh);
+        logger.fine("{0} unsubscribe {1} subscriber:{2}@{3} res:{4}",
+                this, cl.getName(), eh, Integer.toHexString(eh.hashCode()), res);
+
+        return res;
     }
 
     //------------------//
@@ -225,5 +235,6 @@ public class SelectionService
         Constant.Boolean checkPublishedEvents = new Constant.Boolean(
                 true,
                 "(debug) Should we check published events?");
+
     }
 }

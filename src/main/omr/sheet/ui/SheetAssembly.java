@@ -145,9 +145,7 @@ public class SheetAssembly
     {
         logger.fine("creating SheetAssembly on {0}", sheet);
 
-        // Cross links between sheet and its assembly
         this.sheet = sheet;
-        sheet.setAssembly(this);
 
         // Service for sheet location events
         locationService = sheet.getLocationService();
@@ -215,8 +213,7 @@ public class SheetAssembly
         }
 
         logger.fine("addViewTab begin {0} boardsPane={1} comp=@{2}",
-                    new Object[]{label, boardsPane, Integer.toHexString(scroll.
-                    hashCode())});
+                label, boardsPane, Integer.toHexString(scroll.hashCode()));
 
         // Remove any existing viewTab with the same label
         for (ViewTab tab : tabs.values()) {
@@ -236,8 +233,7 @@ public class SheetAssembly
         // Select this new tab
         viewsPane.setSelectedComponent(scroll);
 
-        logger.fine("addViewTab end {0} boardsPane={1}",
-                    new Object[]{label, boardsPane});
+        logger.fine("addViewTab end {0} boardsPane={1}", label, boardsPane);
     }
 
     //------------------//
@@ -405,7 +401,7 @@ public class SheetAssembly
     {
         ViewTab currentTab = getCurrentViewTab();
         logger.fine("SheetAssembly stateChanged previousTab:{0} currentTab:{1}",
-                    new Object[]{previousTab, currentTab});
+                new Object[]{previousTab, currentTab});
 
         if (currentTab != previousTab) {
             if (previousTab != null) {
@@ -558,7 +554,7 @@ public class SheetAssembly
         public void deselected ()
         {
             logger.fine("SheetAssembly: {0} viewTab.deselected for {1}",
-                        new Object[]{sheet.getId(), this});
+                    new Object[]{sheet.getId(), this});
 
             // Disconnection of events
             RubberPanel rubberPanel = scrollView.getView();
@@ -598,7 +594,7 @@ public class SheetAssembly
         public void selected ()
         {
             logger.fine("SheetAssembly: {0} viewTabSelected for {1} dim:{2}",
-                        new Object[]{sheet.getId(), this, scrollView.getView().
+                    new Object[]{sheet.getId(), this, scrollView.getView().
                         getPreferredSize()});
 
             // Link rubber with proper view
@@ -621,12 +617,12 @@ public class SheetAssembly
             LocationEvent locationEvent = (LocationEvent) locationService.getLastEvent(
                     LocationEvent.class);
             PixelRectangle location = (locationEvent != null)
-                                      ? locationEvent.getData() : null;
+                    ? locationEvent.getData() : null;
 
             if (location != null) {
                 locationService.publish(
                         new LocationEvent(this, locationEvent.hint, null,
-                                          location));
+                        location));
             }
 
             // Keep the same scroll bar positions as with previous tab

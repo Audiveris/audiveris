@@ -177,7 +177,7 @@ public class LinesRetriever
                 new Dimension(sheet.getWidth(), sheet.getHeight()));
 
         // Remove runs whose height is larger than line thickness
-        RunsTable shortVertTable = wholeVertTable.clone("short-vert").purge(
+        RunsTable shortVertTable = wholeVertTable.copy("short-vert").purge(
                 new Predicate<Run>()
                 {
                     @Override
@@ -205,7 +205,7 @@ public class LinesRetriever
                 HORIZONTAL,
                 new Dimension(sheet.getWidth(), sheet.getHeight()));
 
-        RunsTable longHoriTable = wholeHoriTable.clone("long-hori").purge(
+        RunsTable longHoriTable = wholeHoriTable.copy("long-hori").purge(
                 new Predicate<Run>()
                 {
                     @Override
@@ -289,7 +289,7 @@ public class LinesRetriever
             includeSections(thinSections, false);
 
             // Update system coordinates
-            for (SystemInfo system : sheet.getSystemManager().getSystems()) {
+            for (SystemInfo system : sheet.getSystems()) {
                 system.updateCoordinates();
             }
         } finally {
@@ -694,7 +694,7 @@ public class LinesRetriever
         int iMin = 0;
         int iMax = discardedFilaments.size() - 1;
 
-        for (SystemInfo system : sheet.getSystemManager().getSystems()) {
+        for (SystemInfo system : sheet.getSystems()) {
             for (StaffInfo staff : system.getStaves()) {
                 for (LineInfo l : staff.getLines()) {
                     FilamentLine line = (FilamentLine) l;
@@ -762,7 +762,7 @@ public class LinesRetriever
         // Inclusion on the fly would imply recomputation of filament at each
         // section inclusion. So we need to retrieve all "stickers" for a given
         // staff line, and perform a global inclusion at the end only.
-        for (SystemInfo system : sheet.getSystemManager().getSystems()) {
+        for (SystemInfo system : sheet.getSystems()) {
             for (StaffInfo staff : system.getStaves()) {
                 for (LineInfo l : staff.getLines()) {
                     FilamentLine line = (FilamentLine) l;

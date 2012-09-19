@@ -18,6 +18,8 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
+import omr.util.Param;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -64,6 +66,9 @@ public class Language
         }
     }
 
+    /** Default parameter. */
+    public static final Param<String> defaultLanguage = new Default();
+
     //~ Constructors -----------------------------------------------------------
     /** Not meant to be instantiated */
     private Language ()
@@ -71,6 +76,15 @@ public class Language
     }
 
     //~ Methods ----------------------------------------------------------------
+    //
+    //-------------//
+    // getConstant //
+    //-------------//
+    public static Constant.String getConstant ()
+    {
+        return constants.defaultLanguageCode;
+    }
+
     //--------------------//
     // getDefaultLanguage //
     //--------------------//
@@ -123,5 +137,33 @@ public class Language
         Constant.String defaultLanguageCode = new Constant.String(
                 "eng",
                 "3-letter code for the default sheet language");
+
+    }
+
+    //---------//
+    // Default //
+    //---------//
+    private static class Default
+            extends Param<String>
+    {
+
+        @Override
+        public String getSpecific ()
+        {
+            return constants.defaultLanguageCode.getValue();
+        }
+
+        @Override
+        public boolean setSpecific (String specific)
+        {
+            if (!getSpecific().equals(specific)) {
+                constants.defaultLanguageCode.setValue(specific);
+                logger.info("Default language is now ''{0}''", specific);
+
+                return true;
+            }
+
+            return false;
+        }
     }
 }

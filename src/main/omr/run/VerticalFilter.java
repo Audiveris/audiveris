@@ -84,21 +84,14 @@ public class VerticalFilter
                            double stdDevCoeff)
     {
         super(source, meanCoeff, stdDevCoeff);
-    }
-
-    //~ Methods ----------------------------------------------------------------
-    //
-    //------------//
-    // initialize //
-    //------------//
-    @Override
-    public void initialize ()
-    {
+        
         // Prepare tiles
         tile = new MyTile(/* squared => */false);
         sqrTile = new MyTile(/* squared => */true);
     }
 
+    //~ Methods ----------------------------------------------------------------
+    //
     //----------------------//
     // getDefaultDescriptor //
     //----------------------//

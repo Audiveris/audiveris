@@ -78,9 +78,6 @@ public class TargetBuilder
     /** Related sheet */
     private final Sheet sheet;
 
-    /** Related systems */
-    private final SystemManager systemManager;
-
     /** Target width */
     private double targetWidth;
 
@@ -120,7 +117,6 @@ public class TargetBuilder
     public TargetBuilder (Sheet sheet)
     {
         this.sheet = sheet;
-        systemManager = sheet.getSystemManager();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -177,7 +173,7 @@ public class TargetBuilder
         g.setStroke(systemStroke);
         g.setColor(Colors.SYSTEM_BRACKET);
 
-        for (SystemInfo system : systemManager.getSystems()) {
+        for (SystemInfo system : sheet.getSystems()) {
             for (HorizontalSide side : HorizontalSide.values()) {
                 Point2D top = system.getFirstStaff()
                         .getFirstLine()
@@ -253,7 +249,7 @@ public class TargetBuilder
         TargetLine prevLine = null; // Latest staff line
 
         // Target system parameters
-        for (SystemInfo system : systemManager.getSystems()) {
+        for (SystemInfo system : sheet.getSystems()) {
             StaffInfo firstStaff = system.getFirstStaff();
             LineInfo firstLine = firstStaff.getFirstLine();
             Point2D dskLeft = skew.deskewed(firstLine.getEndPoint(LEFT));

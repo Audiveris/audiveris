@@ -18,8 +18,6 @@ import omr.log.Logger;
 
 import omr.math.Population;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Constructor;
 import java.util.Arrays;
 
 /**
@@ -155,16 +153,6 @@ public class AdaptiveFilter
         constants.stdDevCoeff.setValue(stdDevCoeff);
     }
 
-    //---------//
-    // dispose //
-    //---------//
-    @Override
-    public void dispose ()
-    {
-        tile = null;
-        sqrTile = null;
-    }
-
     //------------//
     // getContext //
     //------------//
@@ -199,24 +187,6 @@ public class AdaptiveFilter
         } else {
             return null;
         }
-    }
-
-    //-----------------------------//
-    // getImplementationDescriptor //
-    //-----------------------------//
-    @Override
-    public FilterDescriptor getImplementationDescriptor ()
-    {
-        return new AdaptiveDescriptor(MEAN_COEFF, STD_DEV_COEFF);
-    }
-
-    //------------//
-    // initialize //
-    //------------//
-    @Override
-    public void initialize ()
-    {
-        // void
     }
 
     //

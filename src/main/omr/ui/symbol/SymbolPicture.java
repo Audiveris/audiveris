@@ -13,10 +13,8 @@ package omr.ui.symbol;
 
 import omr.log.Logger;
 
-import omr.run.GlobalFilter;
 import omr.run.PixelFilter;
 import omr.run.FilterDescriptor;
-import omr.run.FilterKind;
 
 import net.jcip.annotations.ThreadSafe;
 
@@ -125,32 +123,5 @@ public class SymbolPicture
                                int y)
     {
         return new Context(maxForeground);
-    }
-
-    //------------//
-    // initialize //
-    //------------//
-    @Override
-    public void initialize ()
-    {
-        // Void
-    }
-
-    //---------//
-    // dispose //
-    //---------//
-    @Override
-    public void dispose ()
-    {
-        // Void
-    }
-
-    //-----------------------------//
-    // getImplementationDescriptor //
-    //-----------------------------//
-    @Override
-    public FilterDescriptor getImplementationDescriptor ()
-    {
-        return new GlobalDescriptor(maxForeground);
     }
 }

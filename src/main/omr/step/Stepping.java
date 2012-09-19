@@ -111,7 +111,7 @@ public class Stepping
         final long stopTime = System.currentTimeMillis();
         final long duration = stopTime - startTime;
         logger.fine("{0}{1} completed in {2} ms",
-                    sheet.getLogPrefix(), step, duration);
+                sheet.getLogPrefix(), step, duration);
 
         // Record this in sheet->score bench
         sheet.getBench().recordStep(step, duration);
@@ -261,9 +261,9 @@ public class Stepping
                 Step firstDesired = orderedSteps.first();
                 start = (latest == null) ? first
                         : ((latest == firstDesired) ? firstDesired : next(
-                           latest));
+                        latest));
                 stop = (Steps.compare(latest, orderedSteps.last()) >= 0)
-                       ? latest : orderedSteps.last();
+                        ? latest : orderedSteps.last();
             }
 
             // Add all intermediate mandatory steps
@@ -331,6 +331,30 @@ public class Stepping
                                        Collection<SystemInfo> impactedSystems,
                                        boolean imposed)
     {
+        reprocessSheet(step, sheet, impactedSystems, imposed, true);
+    }
+
+    //----------------//
+    // reprocessSheet //
+    //----------------//
+    /**
+     * For just a given sheet, update the steps already done, starting
+     * from the provided step.
+     * This method will try to minimize the systems to rebuild in each step, by
+     * processing only the provided "impacted" systems.
+     *
+     * @param step            the step to restart from
+     * @param impactedSystems the ordered set of systems to rebuild, or null
+     *                        if all systems must be rebuilt
+     * @param imposed         flag to indicate that update is imposed
+     * @param merge           true if step SCORE (merge of pages) is allowed
+     */
+    public static void reprocessSheet (Step step,
+                                       Sheet sheet,
+                                       Collection<SystemInfo> impactedSystems,
+                                       boolean imposed,
+                                       boolean merge)
+    {
         logger.fine("reprocessSheet {0} on {1}", step, sheet);
 
         // Sanity checks
@@ -353,14 +377,20 @@ public class Stepping
         }
 
         logger.fine("{0}Rebuild launched from {1} on{2}",
-                    sheet.getLogPrefix(),
-                    step,
-                    SystemInfo.toString(impactedSystems));
+                sheet.getLogPrefix(),
+                step,
+                SystemInfo.toString(impactedSystems));
 
         // Rebuild from specified step, if needed
-        if (shouldReprocessSheet(step, sheet)) {
-            Step latest = getLatestMandatoryStep(sheet);
+        Step latest = getLatestMandatoryStep(sheet);
 
+        // Avoid SCORE step?
+        Step scoreStep = Steps.valueOf(Steps.SCORE);
+        if (!merge && latest == scoreStep) {
+            latest = Steps.previous(latest);
+        }
+
+        if ((latest == null) || (compare(latest, step) >= 0)) {
             // The range of steps to re-perform
             SortedSet<Step> stepRange = range(step, latest);
 
@@ -385,13 +415,21 @@ public class Stepping
      * Check whether some steps need to be reperformed, starting from
      * step 'from'.
      *
-     * @param from the step to rebuild from
+     * @param from  the step to rebuild from
+     * @param sheet the sheet to check
+     * @param merge true if SCORE (merge) step is allowed
      * @return true if some reprocessing must take place
      */
     public static boolean shouldReprocessSheet (Step from,
-                                                Sheet sheet)
+                                                Sheet sheet,
+                                                boolean merge)
     {
         Step latest = getLatestMandatoryStep(sheet);
+        Step scoreStep = Steps.valueOf(Steps.SCORE);
+
+        if (!merge && latest == scoreStep) {
+            latest = Steps.previous(latest);
+        }
 
         return (latest == null) || (compare(latest, from) >= 0);
     }
@@ -601,7 +639,7 @@ public class Stepping
                 doScoreStepSet(single, score);
 
                 if (!score.isMultiPage()
-                        && (score.getFirstPage().getSheet().getScale() == null)) {
+                    && (score.getFirstPage().getSheet().getScale() == null)) {
                     throw new StepException("No scale available");
                 }
             }
@@ -658,5 +696,6 @@ public class Stepping
         Constant.Boolean pagesInParallel = new Constant.Boolean(
                 false,
                 "Should we process score pages in parallel?");
+
     }
 }

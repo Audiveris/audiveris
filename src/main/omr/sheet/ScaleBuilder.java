@@ -183,31 +183,23 @@ public class ScaleBuilder
         histoKeeper = new HistoKeeper(picture.getHeight() - 1);
 
         // Binarization: Retrieve the whole table of foreground runs
-        StopWatch watch = new StopWatch("Binarization");
+
+        FilterDescriptor desc = sheet.getPage().getFilterParam().getTarget();
+        logger.info("{0}{1} {2}", sheet.getLogPrefix(), "Binarization", desc);
+        sheet.getPage().getFilterParam().setActual(desc);
+        StopWatch watch = new StopWatch("Binarization "
+                                        + sheet.getPage().getId() + " " + desc);
         watch.start("Vertical runs");
-
-        FilterDescriptor desc;
-        if (sheet.getPage().hasFilterDescriptor()) {
-            desc = sheet.getPage().getFilterDescriptor();
-        } else if (sheet.getScore().hasFilterDescriptor()) {
-            desc = sheet.getScore().getFilterDescriptor();
-        } else {
-            desc = FilterDescriptor.getDefault();
-        }
-
-        PixelFilter pixelFilter = desc.getFilter(picture);
-        pixelFilter.initialize();
-        sheet.setPixelFilter(pixelFilter);
 
         RunsTableFactory factory = new RunsTableFactory(
                 Orientation.VERTICAL,
-                pixelFilter,
+                desc.getFilter(picture),
                 0);
         RunsTable wholeVertTable = factory.createTable("whole");
-        pixelFilter.dispose();
         sheet.setWholeVerticalTable(wholeVertTable);
-        
-        if (constants.printBinarizationWatch.isSet()) {
+        factory = null;
+
+        if (constants.printWatch.isSet()) {
             watch.print();
         }
 
@@ -649,7 +641,7 @@ public class ScaleBuilder
                 2.0,
                 "Minimum ratio between beam thickness and line thickness");
 
-        final Constant.Boolean printBinarizationWatch = new Constant.Boolean(
+        final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print the StopWatch on binarization?");
 

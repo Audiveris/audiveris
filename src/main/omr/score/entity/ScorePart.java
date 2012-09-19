@@ -126,7 +126,7 @@ public class ScorePart
     //-------------------//
     public Integer getDefaultProgram ()
     {
-        logger.fine("Part #{0} count={1}", new Object[]{getId(), staffCount});
+        logger.fine("Part #{0} count={1}", getId(), staffCount);
 
         switch (staffCount) {
         case 1:

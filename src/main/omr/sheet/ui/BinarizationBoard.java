@@ -30,6 +30,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import java.awt.Rectangle;
 import omr.run.AdaptiveFilter;
 import omr.run.AdaptiveFilter.AdaptiveContext;
+import omr.run.FilterDescriptor;
 import omr.run.PixelFilter;
 
 /**
@@ -121,7 +122,8 @@ public class BinarizationBoard
                 Rectangle rect = sheetLocation.getData();
 
                 if (rect != null) {
-                    PixelFilter source = sheet.getPixelFilter();
+                    FilterDescriptor desc = sheet.getPage().getFilterParam().getTarget();
+                    PixelFilter source = desc.getFilter(sheet.getPicture());
                     if (source == null) {
                         source = new AdaptiveFilter(sheet.getPicture(),
                                 AdaptiveFilter.getDefaultMeanCoeff(),

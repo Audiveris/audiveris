@@ -92,12 +92,6 @@ public interface Digraph<D extends Digraph<D, V>, V extends Vertex>
     Collection<V> getVertices ();
 
     /**
-     * Give access to the (unmodifiable) collection of related views if any
-     * @return the unmodifiable collection of views
-     */
-    Collection<DigraphView> getViews ();
-
-    /**
      * (package access from Vertex) to remove the vertex from the graph, the
      * removed vertex will now be stored in the oldVertices map.
      * @param vertex the vertex to be removed

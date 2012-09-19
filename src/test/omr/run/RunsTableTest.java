@@ -45,7 +45,7 @@ public class RunsTableTest
     // testClone //
     //-----------//
     /**
-     * Test of clone method, of class RunsTable.
+     * Test of copy method, of class RunsTable.
      */
     @Test
     public void testClone ()
@@ -55,7 +55,7 @@ public class RunsTableTest
 
         RunsTable instance = createHorizontalInstance();
         RunsTable expResult = instance;
-        RunsTable result = instance.clone();
+        RunsTable result = instance.copy();
 
         if (!expResult.isIdentical(result)) {
             fail("Clone not identical to original");

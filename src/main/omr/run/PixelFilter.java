@@ -35,16 +35,6 @@ public interface PixelFilter
                     int y);
 
     /**
-     * Initialize the various data elements needed by the source.
-     */
-    void initialize ();
-
-    /**
-     * Dispose of the various data elements of the source.
-     */
-    void dispose ();
-
-    /**
      * Report the source context at provided location.
      * This is meant for administration and display purposes, it does not need
      * to be very efficient.
@@ -71,11 +61,4 @@ public interface PixelFilter
             this.threshold = threshold;
         }
     }
-
-    /**
-     * Report a management descriptor of this implementation.
-     *
-     * @return the related descriptor
-     */
-    FilterDescriptor getImplementationDescriptor ();
 }

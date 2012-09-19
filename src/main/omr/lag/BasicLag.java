@@ -133,7 +133,7 @@ public class BasicLag
     public void addRuns (RunsTable runsTable)
     {
         if (this.runsTable == null) {
-            this.runsTable = runsTable.clone();
+            this.runsTable = runsTable.copy();
         } else {
             // Add runs into the existing table
             this.runsTable.include(runsTable);
@@ -398,6 +398,27 @@ public class BasicLag
 
         for (Class<?> eventClass : sctEventsRead) {
             lagService.subscribeStrongly(eventClass, this);
+        }
+    }
+
+    //-------------//
+    // cutServices //
+    //-------------//
+    @Override
+    public void cutServices ()
+    {
+        runsTable.cutLocationService(locationService);
+
+        for (Class<?> eventClass : locEventsRead) {
+            locationService.unsubscribe(eventClass, this);
+        }
+
+        for (Class<?> eventClass : runEventsRead) {
+            getRunService().unsubscribe(eventClass, this);
+        }
+
+        for (Class<?> eventClass : sctEventsRead) {
+            lagService.unsubscribe(eventClass, this);
         }
     }
 

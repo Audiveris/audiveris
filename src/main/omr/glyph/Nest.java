@@ -226,4 +226,11 @@ public interface Nest
      * @param locationService the location service
      */
     void setServices (SelectionService locationService);
+
+    /**
+     * Remove link and subscription to locationService
+     *
+     * @param locationService thte location service
+     */
+    void cutServices (SelectionService locationService);
 }

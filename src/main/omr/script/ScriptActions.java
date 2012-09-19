@@ -41,6 +41,7 @@ import java.io.IOException;
 
 import javax.swing.JOptionPane;
 import javax.xml.bind.JAXBException;
+import omr.util.Param;
 
 /**
  * Class {@code ScriptActions} gathers UI actions related to script
@@ -62,6 +63,9 @@ public class ScriptActions
 
     /** Singleton */
     private static ScriptActions INSTANCE;
+
+    /** Default parameter. */
+    public static final Param<Boolean> defaultPrompt = new Default();
 
     //~ Constructors -----------------------------------------------------------
     //---------------//
@@ -87,7 +91,7 @@ public class ScriptActions
      */
     public static boolean checkStored (Script script)
     {
-        if (script.isModified() && isConfirmOnClose()) {
+        if (script.isModified() && defaultPrompt.getSpecific()) {
             int answer = JOptionPane.showConfirmDialog(
                     null,
                     "Save script for score " + script.getScore().getRadix() + "?");
@@ -132,14 +136,6 @@ public class ScriptActions
         return INSTANCE;
     }
 
-    //------------------//
-    // isConfirmOnClose //
-    //------------------//
-    public static boolean isConfirmOnClose ()
-    {
-        return constants.closeConfirmation.getValue();
-    }
-
     //------------//
     // loadScript //
     //------------//
@@ -158,24 +154,6 @@ public class ScriptActions
             return new LoadScriptTask(file);
         } else {
             return null;
-        }
-    }
-
-    //-------------------//
-    // setConfirmOnClose //
-    //-------------------//
-    public static void setConfirmOnClose (boolean bool)
-    {
-        if (bool != isConfirmOnClose()) {
-            if (bool) {
-                logger.info(
-                        "You will now be prompted for Script saving on close");
-            } else {
-                logger.info(
-                        "You will no longer be prompted for Script saving on close");
-            }
-
-            constants.closeConfirmation.setValue(bool);
         }
     }
 
@@ -240,7 +218,7 @@ public class ScriptActions
     private File getDefaultScriptFile (Score score)
     {
         return (score.getScriptFile() != null) ? score.getScriptFile()
-               : new File(
+                : new File(
                 constants.defaultScriptDirectory.getValue(),
                 score.getRadix() + ScriptManager.SCRIPT_EXTENSION);
     }
@@ -263,6 +241,7 @@ public class ScriptActions
         Constant.Boolean closeConfirmation = new Constant.Boolean(
                 true,
                 "Should we ask confirmation for closing a sheet with unsaved script?");
+
     }
 
     //----------------//
@@ -363,6 +342,33 @@ public class ScriptActions
             }
 
             return null;
+        }
+    }
+
+    //---------//
+    // Default //
+    //---------//
+    private static class Default
+            extends Param<Boolean>
+    {
+
+        @Override
+        public Boolean getSpecific ()
+        {
+            return constants.closeConfirmation.getValue();
+        }
+
+        @Override
+        public boolean setSpecific (Boolean specific)
+        {
+            if (!getSpecific().equals(specific)) {
+                constants.closeConfirmation.setValue(specific);
+                logger.info("You will {0} be prompted to save script when"
+                            + " closing score", specific ? "now" : "no longer");
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 }

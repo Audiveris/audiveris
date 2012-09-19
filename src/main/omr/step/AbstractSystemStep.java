@@ -104,7 +104,8 @@ public abstract class AbstractSystemStep
     // doEpilog //
     //----------//
     /**
-     * Final processing for this step, once all systems have been processed
+     * Final processing for this step, once all systems have been
+     * processed.
      *
      * @param systems the systems which have been updated
      * @throws StepException raised if processing failed
@@ -120,8 +121,8 @@ public abstract class AbstractSystemStep
     // doProlog //
     //----------//
     /**
-     * Do preliminary common work before all systems processings are launched in
-     * parallel
+     * Do preliminary common work before all systems processings are
+     * launched in parallel.
      *
      * @param systems the systems which will be updated
      * @throws StepException raised if processing failed

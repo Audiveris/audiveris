@@ -18,6 +18,7 @@ import omr.log.Logger;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import omr.util.Param;
 
 /**
  * Management data meant to describe an implementation instance of
@@ -33,6 +34,9 @@ public abstract class FilterDescriptor
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(FilterDescriptor.class);
+
+    /** Default param. */
+    public static final Param<FilterDescriptor> defaultFilter = new Default();
 
     //~ Methods ----------------------------------------------------------------
     //
@@ -60,69 +64,6 @@ public abstract class FilterDescriptor
     public static void setDefaultKind (FilterKind kind)
     {
         constants.defaultKind.setValue(kind);
-    }
-
-    //------------//
-    // getDefault //
-    //------------//
-    /**
-     * Report the default descriptor.
-     *
-     * @return the default descriptor
-     */
-    public static FilterDescriptor getDefault ()
-    {
-        final String method = "getDefaultDescriptor";
-
-        try {
-            FilterKind kind = getDefaultKind();
-
-            // Access the underlying class
-            Method getDesc = kind.classe.getMethod(method, (Class[]) null);
-
-            if (Modifier.isStatic(getDesc.getModifiers())) {
-                return (FilterDescriptor) getDesc.invoke(null);
-            } else {
-                logger.severe(method + " must be static");
-            }
-
-        } catch (NoSuchMethodException |
-                SecurityException |
-                IllegalAccessException |
-                IllegalArgumentException |
-                InvocationTargetException ex) {
-            logger.warning("Could not call " + method, ex);
-        }
-
-        return null;
-    }
-
-    //------------//
-    // setDefault //
-    //------------//
-    /**
-     * Record the default descriptor from now on.
-     *
-     * @param desc the default descriptor
-     */
-    public static void setDefault (FilterDescriptor desc)
-    {
-        if (desc != null) {
-            FilterKind kind = desc.getKind();
-            FilterDescriptor.setDefaultKind(kind);
-            switch (kind) {
-            case GLOBAL:
-                GlobalDescriptor gDesc = (GlobalDescriptor) desc;
-                GlobalFilter.setDefaultThreshold(gDesc.threshold);
-                break;
-            case ADAPTIVE:
-                AdaptiveDescriptor aDesc = (AdaptiveDescriptor) desc;
-                AdaptiveFilter.setDefaultMeanCoeff(aDesc.meanCoeff);
-                AdaptiveFilter.setDefaultStdDevCoeff(aDesc.stdDevCoeff);
-                break;
-            }
-        }
-
     }
 
     //-----------//
@@ -163,7 +104,6 @@ public abstract class FilterDescriptor
     public String toString ()
     {
         StringBuilder sb = new StringBuilder("{");
-        ///sb.append(getClass().getSimpleName());
         sb.append(internalsString());
         sb.append('}');
 
@@ -192,8 +132,71 @@ public abstract class FilterDescriptor
         //~ Instance fields ----------------------------------------------------
 
         FilterKind.Constant defaultKind = new FilterKind.Constant(
-                FilterKind.ADAPTIVE,
+                FilterKind.GLOBAL,
                 "Default kind of PixelFilter");
 
+    }
+
+    //---------//
+    // Default //
+    //---------//
+    private static class Default
+            extends Param<FilterDescriptor>
+    {
+
+        @Override
+        public FilterDescriptor getSpecific ()
+        {
+            final String method = "getDefaultDescriptor";
+
+            try {
+                FilterKind kind = getDefaultKind();
+
+                // Access the underlying class
+                Method getDesc = kind.classe.getMethod(method, (Class[]) null);
+
+                if (Modifier.isStatic(getDesc.getModifiers())) {
+                    return (FilterDescriptor) getDesc.invoke(null);
+                } else {
+                    logger.severe(method + " must be static");
+                }
+
+            } catch (NoSuchMethodException |
+                    SecurityException |
+                    IllegalAccessException |
+                    IllegalArgumentException |
+                    InvocationTargetException ex) {
+                logger.warning("Could not call " + method, ex);
+            }
+
+            return null;
+        }
+
+        @Override
+        public boolean setSpecific (FilterDescriptor specific)
+        {
+            if (!getSpecific().equals(specific)) {
+                FilterKind kind = specific.getKind();
+                FilterDescriptor.setDefaultKind(kind);
+
+                switch (kind) {
+                case GLOBAL:
+                    GlobalDescriptor gDesc = (GlobalDescriptor) specific;
+                    GlobalFilter.setDefaultThreshold(gDesc.threshold);
+                    break;
+                case ADAPTIVE:
+                    AdaptiveDescriptor aDesc = (AdaptiveDescriptor) specific;
+                    AdaptiveFilter.setDefaultMeanCoeff(aDesc.meanCoeff);
+                    AdaptiveFilter.setDefaultStdDevCoeff(aDesc.stdDevCoeff);
+                    break;
+                }
+
+                logger.info("Default filter is now ''{0}''", specific);
+
+                return true;
+            }
+
+            return false;
+        }
     }
 }

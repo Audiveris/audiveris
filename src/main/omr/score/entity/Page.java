@@ -27,6 +27,7 @@ import omr.sheet.Sheet;
 
 import omr.step.StepException;
 
+import omr.util.Param;
 import omr.util.TreeNode;
 
 import java.awt.image.RenderedImage;
@@ -53,29 +54,32 @@ public class Page
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Index of page */
+    /** Index of page, counted from 1, in the image file. */
     private final int index;
 
-    /** Page ID */
+    /** Page ID. */
     private final String id;
 
-    /** Link with image */
+    /** Related sheet. */
     private Sheet sheet;
 
-    /** Page global scale */
+    /** Page global scale. */
     private Scale scale;
 
-    /** ScorePart list for the page */
+    /** ScorePart list for the page. */
     private List<ScorePart> partList;
 
-    /** Number of measures in this page */
+    /** Number of measures in this page. */
     private Integer measureCount;
 
-    /** Progression of measure id within this page */
+    /** Progression of measure id within this page. */
     private Integer deltaMeasureId;
     
-    /** The (page-level) pixel filter descriptor */
-    private FilterDescriptor filterDescriptor;
+    /** Param for pixel filter. */
+    private final Param<FilterDescriptor> filterContext;
+    
+    /** Param for text language. */
+    private final Param<String> textContext;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -85,6 +89,8 @@ public class Page
     /**
      * Creates a new Page object.
      * @param score the containing score
+     * @param index page initial index in the containing image file, counted
+     * from 1.
      */
     public Page (Score         score,
                  int           index,
@@ -100,10 +106,29 @@ public class Page
             id = score.getRadix();
         }
 
+        filterContext = new Param<>(score.getFilterParam());
+        textContext = new Param<>(score.getTextParam());
+        
         sheet = new Sheet(this, image);
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    //----------------//
+    // getFilterParam //
+    //----------------//
+    public Param<FilterDescriptor> getFilterParam ()
+    {
+        return filterContext;
+    }
+
+    //--------------//
+    // getTextParam //
+    //--------------//
+    public Param<String> getTextParam ()
+    {
+        return textContext;
+    }
 
     //-------------------//
     // getMinSlotSpacing //
@@ -454,34 +479,6 @@ public class Page
     public String toString ()
     {
         return "{Page " + id + "}";
-    }
-
-    //---------------------//
-    // getFilterDescriptor //
-    //---------------------//
-    public FilterDescriptor getFilterDescriptor ()
-    {
-        if (!hasFilterDescriptor()) {
-            filterDescriptor = FilterDescriptor.getDefault();
-        }
-
-        return filterDescriptor;
-    }
-
-    //---------------------//
-    // setFilterDescriptor //
-    //---------------------//
-    public void setFilterDescriptor (FilterDescriptor filterDescriptor)
-    {
-        this.filterDescriptor = filterDescriptor;
-    }
-
-    //---------------------//
-    // hasFilterDescriptor //
-    //---------------------//
-    public boolean hasFilterDescriptor()
-    {
-        return filterDescriptor != null;
     }
 
     //~ Inner Classes ----------------------------------------------------------

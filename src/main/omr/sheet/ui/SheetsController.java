@@ -124,8 +124,9 @@ public class SheetsController
      * Create the assembly that relates to the specified sheet.
      *
      * @param sheet the sheet to be viewed (sheet cannot be null).
+     * @return the created assembly
      */
-    public synchronized void createAssembly (Sheet sheet)
+    public synchronized SheetAssembly createAssembly (Sheet sheet)
     {
         logger.fine("createAssembly {0}", sheet.getId());
 
@@ -151,6 +152,8 @@ public class SheetsController
                     comp,
                     sheet.getScore().getImagePath());
         }
+        
+        return assembly;
     }
 
     //-------------------//

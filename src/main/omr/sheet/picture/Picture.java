@@ -107,9 +107,6 @@ public class Picture
      */
     private Integer implicitForeground;
 
-    /** The current maximum value for foreground pixels, null if not set. */
-    private Integer maxForeground;
-
     //~ Constructors -----------------------------------------------------------
     //
     //---------//

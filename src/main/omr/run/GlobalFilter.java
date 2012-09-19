@@ -57,15 +57,6 @@ public class GlobalFilter
 
     //~ Methods ----------------------------------------------------------------
     //
-    //---------//
-    // dispose //
-    //---------//
-    @Override
-    public void dispose ()
-    {
-        // Void
-    }
-
     //------------//
     // getContext //
     //------------//
@@ -90,24 +81,6 @@ public class GlobalFilter
     public static int getDefaultThreshold ()
     {
         return constants.defaultThreshold.getValue();
-    }
-
-    //-----------------------------//
-    // getImplementationDescriptor //
-    //-----------------------------//
-    @Override
-    public FilterDescriptor getImplementationDescriptor ()
-    {
-        return new GlobalDescriptor(threshold);
-    }
-
-    //------------//
-    // initialize //
-    //------------//
-    @Override
-    public void initialize ()
-    {
-        // Void
     }
 
     //

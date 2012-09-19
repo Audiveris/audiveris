@@ -15,10 +15,8 @@ import omr.log.Logger;
 
 import net.jcip.annotations.ThreadSafe;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -46,15 +44,8 @@ public class BasicDigraph<D extends Digraph<D, V>, V extends Vertex>
     /** All current Vertices of the graph, handled by a map: Id -> Vertex */
     private final ConcurrentHashMap<Integer, V> vertices = new ConcurrentHashMap<>();
 
-    /** Removed vertices */
-    private final ConcurrentHashMap<Integer, V> oldVertices = new ConcurrentHashMap<>();
-
     /** Global id to uniquely identify a vertex */
     private final AtomicInteger globalVertexId = new AtomicInteger(0);
-
-    /** All Views on this graph, handled by a sequential collection */
-    private final List<DigraphView> views = Collections.synchronizedList(
-            new ArrayList<DigraphView>());
 
     //~ Constructors -----------------------------------------------------------
     //--------------//
@@ -159,13 +150,7 @@ public class BasicDigraph<D extends Digraph<D, V>, V extends Vertex>
     @Override
     public V getVertexById (int id)
     {
-        V vertex = vertices.get(id);
-
-        if (vertex != null) {
-            return vertex;
-        } else {
-            return oldVertices.get(id);
-        }
+        return vertices.get(id);
     }
 
     //----------------//
@@ -186,15 +171,6 @@ public class BasicDigraph<D extends Digraph<D, V>, V extends Vertex>
         return Collections.unmodifiableCollection(vertices.values());
     }
 
-    //----------//
-    // getViews //
-    //----------//
-    @Override
-    public Collection<DigraphView> getViews ()
-    {
-        return Collections.unmodifiableCollection(views);
-    }
-
     //--------------//
     // removeVertex //
     //--------------//
@@ -211,8 +187,6 @@ public class BasicDigraph<D extends Digraph<D, V>, V extends Vertex>
         if (vertices.remove(vertex.getId()) == null) { // Atomic removal
             throw new RuntimeException(
                     "Trying to remove an unknown vertex: " + vertex);
-        } else {
-            oldVertices.put(vertex.getId(), vertex);
         }
     }
 

@@ -19,8 +19,9 @@ import omr.sheet.Sheet;
 import omr.sheet.ui.SheetsController;
 
 /**
- * Class {@code ScoreController} is only a convenient way to retrieve the
- * current score (which contains the sheet currently selected by the user)
+ * Class {@code ScoreController} is only a convenient way to retrieve
+ * the current score (which contains the sheet currently selected by 
+ * the user).
  *
  * @author Hervé Bitteur
  */

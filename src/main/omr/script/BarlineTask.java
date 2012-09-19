@@ -102,7 +102,7 @@ public class BarlineTask
     public void epilog (Sheet sheet)
     {
         try {
-            GridBuilder gridBuilder = sheet.getGridBuilder(false);
+            GridBuilder gridBuilder = sheet.getGridBuilder();
 
             if (getAssignedShape() != null) {
                 // Assignment

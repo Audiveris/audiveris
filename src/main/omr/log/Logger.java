@@ -19,6 +19,8 @@ import omr.constant.UnitManager;
 
 import omr.step.LogStepMonitorHandler;
 
+import omr.util.Param;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -55,6 +57,9 @@ public class Logger
 
     /** Specific application parameters */
     private static final Constants constants = new Constants();
+    
+    /** Parameter that governs call-stack printing. */
+    public static final Param<Boolean> defaultStack = new DefaultStack();
 
     /** Cache this log manager */
     private static LogManager manager;
@@ -463,5 +468,34 @@ public class Logger
         final Constant.Boolean printThreadName = new Constant.Boolean(
                 false,
                 "Should we print out the name of the originating thread?");
+
+    }
+
+    //--------------//
+    // DefaultStack //
+    //--------------//
+    private static class DefaultStack
+            extends Param<Boolean>
+    {
+
+        @Override
+        public Boolean getSpecific ()
+        {
+            return constants.printStackOnWarning.getValue();
+        }
+
+        @Override
+        public boolean setSpecific (Boolean specific)
+        {
+            if (!getSpecific().equals(specific)) {
+                constants.printStackOnWarning.setValue(specific);
+                getAnonymousLogger().log(Level.INFO,
+                        "A call stack will {0} be printed on exception",
+                        specific ? "now" : "no longer");
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
 }

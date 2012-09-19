@@ -20,10 +20,10 @@ import net.jcip.annotations.ThreadSafe;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * This abstract class handles the mapping between one application variable and
- * a property name and value. It is meant essentially to handle any kind of
- * symbolic constant, whose value may have to be tuned and saved for future runs
- * of the application.
+ * This abstract class handles the mapping between one application
+ * variable and a property name and value. 
+ * It is meant essentially to handle any kind of symbolic constant, whose value
+ * may have to be tuned and saved for future runs of the application.
  *
  * <p>Please refer to {@link ConstantManager} for a detailed explanation on how
  * the current value of any given Constant is determined at run-time.
@@ -47,6 +47,7 @@ public abstract class Constant
     private static final Logger logger = Logger.getLogger(Constant.class);
 
     //~ Instance fields --------------------------------------------------------
+    //
     // Data assigned at construction time
     //-----------------------------------
     /** Unit (if relevant) used by the quantity measured */

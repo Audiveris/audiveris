@@ -45,6 +45,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import omr.score.entity.Page;
+import omr.util.Param;
 
 /**
  * Class {@code TextBuilder} provide features to check, build and
@@ -1020,11 +1022,14 @@ public class TextBuilder
      */
     public void switchLanguageTexts ()
     {
-        String language = system.getSheet().getScore().getLanguage();
+        final Page page = system.getSheet().getPage();
+        final Param<String> textParam = page.getTextParam();
+        final String language = textParam.getTarget();
         if (logger.isFineEnabled()) {
             logger.info("{0} switchLanguageTexts lan:{1}",
                         system.idString(), language);
         }
+        textParam.setActual(language);
 
         for (TextLine oldLine : new ArrayList<>(system.getSentences())) {
             // Launch OCR on the whole line image

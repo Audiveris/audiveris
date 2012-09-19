@@ -28,7 +28,6 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -56,6 +55,12 @@ public class StaffManager
 
     /** The sequence of staves, from top to bottom */
     private final List<StaffInfo> staves = new ArrayList<>();
+
+    /** The systems tops per staff */
+    private Integer[] systemTops;
+
+    /** The parts tops per staff */
+    private Integer[] partTops;
 
     //~ Constructors -----------------------------------------------------------
     //
@@ -136,18 +141,6 @@ public class StaffManager
         prevStaff.setLimit(
                 BOTTOM,
                 new GeoPath(new Line2D.Double(0, height, width, height)));
-    }
-
-    //---------------//
-    // getFirstStaff //
-    //---------------//
-    public StaffInfo getFirstStaff ()
-    {
-        if (staves.isEmpty()) {
-            return null;
-        } else {
-            return staves.get(0);
-        }
     }
 
     //------------//
@@ -281,6 +274,49 @@ public class StaffManager
             staff.renderAttachments(g);
         }
     }
+    //-------------//
+    // getPartTops //
+    //-------------//
+    /**
+     * @return the partTops
+     */
+    public Integer[] getPartTops ()
+    {
+        return partTops;
+    }
+
+    //-------------//
+    // setPartTops //
+    //-------------//
+    /**
+     * @param partTops the partTops to set
+     */
+    public void setPartTops (Integer[] partTops)
+    {
+        this.partTops = partTops;
+    }
+
+    //---------------//
+    // getSystemTops //
+    //---------------//
+    /**
+     * @return the systemTops
+     */
+    public Integer[] getSystemTops ()
+    {
+        return systemTops;
+    }
+
+    //---------------//
+    // setSystemTops //
+    //---------------//
+    /**
+     * @param systemTops the systemTops to set
+     */
+    public void setSystemTops (Integer[] systemTops)
+    {
+        this.systemTops = systemTops;
+    }
 
     //-------//
     // reset //
@@ -293,21 +329,8 @@ public class StaffManager
         staves.clear();
     }
 
-    //-----------//
-    // setStaves //
-    //-----------//
-    /**
-     * Assign the whole sequence of staves.
-     *
-     * @param staves the (new) staves
-     */
-    public void setStaves (Collection<StaffInfo> staves)
-    {
-        reset();
-        this.staves.addAll(staves);
-    }
-
     //~ Inner Classes ----------------------------------------------------------
+    //
     //-----------//
     // Constants //
     //-----------//

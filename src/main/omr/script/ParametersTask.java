@@ -18,7 +18,6 @@ import omr.run.GlobalDescriptor;
 import omr.score.Score;
 import omr.score.entity.Page;
 import omr.score.entity.ScorePart;
-import omr.score.entity.SlotPolicy;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
@@ -27,6 +26,7 @@ import omr.step.Step;
 import omr.step.Stepping;
 import omr.step.Steps;
 
+import omr.util.Param;
 import omr.util.TreeNode;
 
 import java.util.ArrayList;
@@ -39,10 +39,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 
 /**
- * Class {@code ParametersTask} handles the global parameters of a score,
- * together with {@link omr.score.ui.ScoreParameters}
- *
- * @see omr.score.ui.ScoreParameters
+ * Class {@code ParametersTask} handles global parameters as the
+ * results of dialog {@link omr.score.ui.ScoreParameters}.
  *
  * @author Hervé Bitteur
  */
@@ -52,7 +50,11 @@ public class ParametersTask
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** Pixel filter */
+    /** Language code. */
+    @XmlElement(name = "language")
+    private String language;
+
+    /** Pixel filter. */
     @XmlElements({
         @XmlElement(name = "global-filter",
                     type = GlobalDescriptor.class),
@@ -61,38 +63,16 @@ public class ParametersTask
     })
     private FilterDescriptor filterDescriptor;
 
-    /** Language code */
-    @XmlAttribute(name = "language")
-    private String language;
-
-    /** Slot horizontal margin */
-    @XmlAttribute(name = "slot-margin")
-    private Double slotMargin;
-
-    /** Slot policy */
-    @XmlAttribute(name = "slot-policy")
-    private SlotPolicy slotPolicy;
-
-    /** MIDI volume */
-    @XmlAttribute(name = "volume")
-    private Integer volume;
-
-    /** MIDI tempo */
-    @XmlAttribute(name = "tempo")
-    private Integer tempo;
-
-    /** Description data for each part */
+    /** Description data for each part. */
     @XmlElement(name = "part")
     private List<PartData> parts = new ArrayList<>();
 
-    /** Remember if we have changed these items */
-    private boolean filterChanged;
-
-    private boolean languageChanged;
-
-    private boolean slotChanged;
+    /** Specific page parameters. */
+    @XmlElement(name = "page")
+    private List<PageParameters> pages = new ArrayList<>();
 
     //~ Constructors -----------------------------------------------------------
+    //
     //----------------//
     // ParametersTask //
     //----------------//
@@ -102,6 +82,7 @@ public class ParametersTask
     }
 
     //~ Methods ----------------------------------------------------------------
+    //
     //---------//
     // addPart //
     //---------//
@@ -120,6 +101,12 @@ public class ParametersTask
     //------//
     // core //
     //------//
+    /**
+     * This is the place where non-default settings are performed.
+     *
+     * @param sheet the current sheet, if any
+     * @throws Exception
+     */
     @Override
     public void core (Sheet sheet)
             throws Exception
@@ -127,77 +114,26 @@ public class ParametersTask
         Score score = sheet.getScore();
         StringBuilder sb = new StringBuilder();
 
-        // Binarization
-        // TODO: handle the page level as well !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // Score Binarization
         if (filterDescriptor != null) {
-            if (!score.hasFilterDescriptor()
-                    || !filterDescriptor.equals(score.getFilterDescriptor())) {
-                score.setFilterDescriptor(filterDescriptor);
+            if (score.getFilterParam().setSpecific(filterDescriptor)) {
                 sb.append(" filter:")
                         .append(filterDescriptor);
-                filterChanged = true;
             }
         }
 
-        // Slot policy
-        if (slotPolicy != null) {
-            if (!score.hasSlotPolicy()
-                    || !slotPolicy.equals(score.getSlotPolicy())) {
-                score.setSlotPolicy(slotPolicy);
-                sb.append(" slotPolicy:")
-                        .append(slotPolicy);
-                slotChanged = true;
-            }
-        }
-
-        // Slot margin
-        if (slotMargin != null) {
-            if (!score.hasSlotMargin()
-                    || !slotMargin.equals(score.getSlotMargin())) {
-                score.setSlotMargin(slotMargin);
-                sb.append(" slotMargin:")
-                        .append(slotMargin);
-                slotChanged = true;
-            }
-        }
-
-        // Language
+        // Score Language
         if (language != null) {
-            if (!score.hasLanguage() || !language.equals(score.getLanguage())) {
-                score.setLanguage(language);
+            if (score.getTextParam().setSpecific(language)) {
                 sb.append(" language:")
                         .append(language);
-                languageChanged = true;
             }
         }
 
-        // Midi tempo
-        if (tempo != null) {
-            if (!score.hasTempo() || !tempo.equals(score.getTempo())) {
-                score.setTempo(tempo);
-                sb.append(" tempo:")
-                        .append(tempo);
-            }
-        }
-
-        // Midi volume
-        if (volume != null) {
-            if (!score.hasVolume() || !volume.equals(score.getVolume())) {
-                score.setVolume(volume);
-                sb.append(" volume:")
-                        .append(volume);
-            }
-        }
-
-        if (sb.length() > 0) {
-            logger.info("Parameters{0}", sb);
-        }
-
-        // Parts
+        // Score Parts
         for (int i = 0; i < parts.size(); i++) {
             try {
-                ScorePart scorePart = score.getPartList()
-                        .get(i);
+                ScorePart scorePart = score.getPartList().get(i);
                 PartData data = parts.get(i);
 
                 // Part name
@@ -211,51 +147,95 @@ public class ParametersTask
                         ex);
             }
         }
+
+        // Pages
+        for (PageParameters params : pages) {
+            Page page = score.getPage(params.index);
+            sb.append(" {page:").append(params.index);
+
+            // Page Binarization
+            if (params.filterDescriptor != null) {
+                if (page.getFilterParam().setSpecific(params.filterDescriptor)) {
+                    sb.append(" filter:")
+                            .append(params.filterDescriptor);
+                }
+            }
+
+            // Page Language
+            if (params.language != null) {
+                Param<String> context = page.getTextParam();
+                if (page.getTextParam().setSpecific(params.language)) {
+                    sb.append(" language:")
+                            .append(params.language);
+                }
+            }
+
+            sb.append("}");
+        }
+
+        if (sb.length() > 0) {
+            logger.info("{0}parameters{1}", score.getLogPrefix(), sb);
+        }
     }
 
     //--------//
     // epilog //
     //--------//
     /**
-     * Determine from which step we should rebuild the current score
+     * Determine from which step we should rebuild, page per page.
      *
      * @param sheet the related sheet
      */
     @Override
     public void epilog (Sheet sheet)
     {
-        Step latestStep = Stepping.getLatestStep(sheet);
-        Step from = null;
 
-        if (slotChanged) {
-            from = Steps.valueOf(Steps.PAGES);
-        }
+        final Step scaleStep = Steps.valueOf(Steps.SCALE);
+        final Step textsStep = Steps.valueOf(Steps.TEXTS);
+        final Step symbolsStep = Steps.valueOf(Steps.SYMBOLS);
+        final Step scoreStep = Steps.valueOf(Steps.SCORE);
 
-        if (languageChanged) {
-            for (TreeNode pn : new ArrayList<>(sheet.getScore().getPages())) {
-                final Page page = (Page) pn;
-                final Sheet theSheet = page.getSheet();
-                for (SystemInfo system : theSheet.getSystems()) {
-                    system.getTextBuilder().switchLanguageTexts();
+        Step latestStep = Stepping.getLatestMandatoryStep(sheet);
+
+        for (TreeNode pn : new ArrayList<>(sheet.getScore().getPages())) {
+            final Page page = (Page) pn;
+            Step from = null;
+
+            // Language
+            if (Steps.compare(latestStep, textsStep) >= 0) {
+                Param<String> param = page.getTextParam();
+                if (param.needsUpdate()) {
+                    logger.fine("Page {0} needs TEXT with {1}",
+                            page.getId(), param.getTarget());
+                    // Convert the text items as much as possible
+                    final Sheet theSheet = page.getSheet();
+                    for (SystemInfo system : theSheet.getSystems()) {
+                        system.getTextBuilder().switchLanguageTexts();
+                    }
+
+                    // Reprocess this page from SYMBOLS step
+                    from = symbolsStep;
                 }
             }
 
-            from = Steps.valueOf(Steps.SYMBOLS);
-        }
-
-        Step scaleStep = Steps.valueOf(Steps.SCALE);
-
-        if (filterChanged) {
+            // Binarization
             if (Steps.compare(latestStep, scaleStep) >= 0) {
-                from = scaleStep;
-            } else {
-                from = null;
+                Param<FilterDescriptor> param = page.getFilterParam();
+                if (param.needsUpdate()) {
+                    logger.fine("Page {0} needs SCALE with {1}",
+                            page.getId(), param.getTarget());
+                    //  Reprocess this page from SCALE step
+                    from = scaleStep;
+                }
+
             }
+
+            Stepping.reprocessSheet(from, sheet, null, true, false);
         }
 
-        if ((from != null) && Stepping.shouldReprocessSheet(from, sheet)) {
-            logger.info("Rebuilding from {0}", from);
-            Stepping.reprocessSheet(from, sheet, null, true);
+        // Final SCORE (merge) step?
+        if (latestStep == scoreStep) {
+            Stepping.reprocessSheet(scoreStep, sheet, null, true, true);
         }
 
         super.epilog(sheet);
@@ -265,77 +245,38 @@ public class ParametersTask
     // setFilter //
     //-----------//
     /**
+     * Set binarization filter at proper scope level.
+     *
      * @param filterDescriptor the filter to use for pixels binarization
+     * @param page             not null for page setting
      */
-    public void setFilter (FilterDescriptor filterDescriptor)
+    public void setFilter (FilterDescriptor filterDescriptor,
+                           Page page)
     {
-        this.filterDescriptor = filterDescriptor;
-    }
-
-    //-----------//
-    // getFilter //
-    //-----------//
-    /**
-     * @return the filter to use for pixels binarization
-     */
-    public FilterDescriptor getFilter ()
-    {
-        return filterDescriptor;
+        if (page != null) {
+            getParams(page).filterDescriptor = filterDescriptor;
+        } else {
+            this.filterDescriptor = filterDescriptor;
+        }
     }
 
     //-------------//
     // setLanguage //
     //-------------//
     /**
+     * Set language at proper scope level.
+     *
      * @param language the language code to set
+     * @param page     not null for page setting
      */
-    public void setLanguage (String language)
+    public void setLanguage (String language,
+                             Page page)
     {
-        this.language = language;
-    }
-
-    //---------------//
-    // setSlotMargin //
-    //---------------//
-    /**
-     * @param slotMargin the new Slot horizontal margin
-     */
-    public void setSlotMargin (double slotMargin)
-    {
-        this.slotMargin = slotMargin;
-    }
-
-    //---------------//
-    // setSlotPolicy //
-    //---------------//
-    /**
-     * @param slotPolicy the new Slot Policy
-     */
-    public void setSlotPolicy (SlotPolicy slotPolicy)
-    {
-        this.slotPolicy = slotPolicy;
-    }
-
-    //----------//
-    // setTempo //
-    //----------//
-    /**
-     * @param tempo the tempo to set
-     */
-    public void setTempo (int tempo)
-    {
-        this.tempo = tempo;
-    }
-
-    //-----------//
-    // setVolume //
-    //-----------//
-    /**
-     * @param volume the volume to set
-     */
-    public void setVolume (int volume)
-    {
-        this.volume = volume;
+        if (page != null) {
+            getParams(page).language = language;
+        } else {
+            this.language = language;
+        }
     }
 
     //-----------------//
@@ -351,29 +292,9 @@ public class ParametersTask
                     .append(filterDescriptor);
         }
 
-        if (slotPolicy != null) {
-            sb.append(" slotPolicy:")
-                    .append(slotPolicy);
-        }
-
-        if (slotMargin != null) {
-            sb.append(" slotMargin:")
-                    .append(slotMargin);
-        }
-
         if (language != null) {
             sb.append(" language:")
                     .append(language);
-        }
-
-        if (tempo != null) {
-            sb.append(" tempo:")
-                    .append(tempo);
-        }
-
-        if (volume != null) {
-            sb.append(" volume:")
-                    .append(volume);
         }
 
         for (PartData data : parts) {
@@ -381,24 +302,55 @@ public class ParametersTask
                     .append(data);
         }
 
+        for (PageParameters params : pages) {
+            sb.append(" ")
+                    .append(params);
+        }
+
         return sb.toString() + super.internalsString();
+    }
+
+    //-----------//
+    // getParams //
+    //-----------//
+    /**
+     * [May create] and report the parameters for the provided page.
+     *
+     * @param page the provided page
+     * @return the page parameters
+     */
+    private PageParameters getParams (Page page)
+    {
+        int index = page.getIndex();
+        for (PageParameters params : pages) {
+            if (params.index == index) {
+                return params;
+            }
+        }
+
+        // Not found, create one
+        PageParameters params = new PageParameters();
+        params.index = index;
+        pages.add(params);
+
+        return params;
     }
 
     //~ Inner Classes ----------------------------------------------------------
     //----------//
     // PartData //
     //----------//
-    private static class PartData
+    public static class PartData
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** Midi Instrument */
-        @XmlAttribute
-        private final int program;
-
         /** Name of the part */
         @XmlAttribute
-        private final String name;
+        public final String name;
+
+        /** Midi Instrument */
+        @XmlAttribute
+        public final int program;
 
         //~ Constructors -------------------------------------------------------
         public PartData (String name,
@@ -419,6 +371,60 @@ public class ParametersTask
         public String toString ()
         {
             return "{name:" + name + " program:" + program + "}";
+        }
+    }
+
+    //----------------//
+    // PageParameters //
+    //----------------//
+    /**
+     * Parameters for a page.
+     */
+    public static class PageParameters
+    {
+
+        /** Page unique index. */
+        @XmlAttribute(name = "index")
+        private int index;
+
+        /** Language code. */
+        @XmlElement(name = "language")
+        private String language;
+
+        /** Pixel filter. */
+        @XmlElements({
+            @XmlElement(name = "global-filter",
+                        type = GlobalDescriptor.class),
+            @XmlElement(name = "adaptive-filter",
+                        type = AdaptiveDescriptor.class)
+        })
+        private FilterDescriptor filterDescriptor;
+
+        //~ Constructors -------------------------------------------------------
+        //
+        /** No-arg constructor needed by JAXB */
+        public PageParameters ()
+        {
+        }
+
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder("{page#");
+            sb.append(index);
+
+            if (filterDescriptor != null) {
+                sb.append(" filter:")
+                        .append(filterDescriptor);
+            }
+
+            if (language != null) {
+                sb.append(" language:")
+                        .append(language);
+            }
+
+            sb.append("}");
+            return sb.toString();
         }
     }
 }
