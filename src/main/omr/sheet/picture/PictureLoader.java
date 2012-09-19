@@ -11,11 +11,20 @@
 // </editor-fold>
 package omr.sheet.picture;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.log.Logger;
 
-import omr.ui.symbol.TextFont;
-
 import omr.util.FileUtil;
+
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
+import org.apache.pdfbox.pdmodel.PDPage;
+
+import org.jpedal.PdfDecoder;
+import org.jpedal.exception.PdfException;
+import org.jpedal.fonts.FontMappings;
 
 import com.sun.pdfview.PDFFile;
 import com.sun.pdfview.PDFPage;
@@ -34,6 +43,7 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Iterator;
+import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -43,23 +53,36 @@ import javax.imageio.stream.ImageInputStream;
 import javax.media.jai.JAI;
 
 /**
- * PictureLoader separates static methods for loading an image from a
- * file from the image processing methods in the Picture class.
+ * Class {@code PictureLoader} gathers helper functions for {@link
+ * Picture} to handle the loading of one or several images out of an
+ * input file.
  *
- * It leverages the JAI, ImageIO, and PDF Renderer libraries.
+ * <p>It leverages several software pieces: JAI, ImageIO, and PDF libraries.
  *
- * While loading, if possible, empty info strings will be sent to the logger,
- * incrementing the step monitor to show loading progress.
+ * <p>Regarding PDF, we have not yet found the perfect solution that works in
+ * all cases. Several libraries are made available here and can be switched
+ * at run time by setting the value of constant {@code PDFLibrary} between:
+ * PDFRenderer, PDFBox or JPedal.
  *
  * @author Hervé Bitteur
  * @author Brenton Partridge
+ * @author Maxim Poliakovski
  */
 public class PictureLoader
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
+
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(PictureLoader.class);
+    
+    /** Scaling for PDF rendering. */
+    private static final float PDF_SCALING = 4.0f;
+    
+    /** Resolution for PDF rendering (scaling * screen resolution). */
+    private static final int PDF_DPI = (int) PDF_SCALING * 72;
 
     //~ Constructors -----------------------------------------------------------
     /**
@@ -70,14 +93,15 @@ public class PictureLoader
     }
 
     //~ Methods ----------------------------------------------------------------
+    //
     //----------//
     // loadFile //
     //----------//
     /**
-     * Loads a sequence of RenderedImage's from a file.
+     * Loads a sequence of RenderedImage instances from a file.
      *
      * If ImageIO can read the file, it is used preferentially.
-     * If not, or ImageIO has an error, PDF Renderer is used for files
+     * If not, or if ImageIO has an error, a PDF library is used for files
      * ending with ".pdf" and JAI is used for all other files.
      *
      * @param imgFile the image file to load
@@ -98,7 +122,7 @@ public class PictureLoader
 
         logger.info("Loading {0} ...", imgFile);
 
-        logger.fine("Using ImageIO");
+        logger.fine("Trying ImageIO");
 
         SortedMap<Integer, RenderedImage> images = loadImageIO(imgFile, index);
 
@@ -106,7 +130,6 @@ public class PictureLoader
             String extension = FileUtil.getExtension(imgFile);
 
             if (extension.equalsIgnoreCase(".pdf")) {
-                logger.fine("Using PDF renderer");
                 images = loadPDF(imgFile, index);
             } else {
                 logger.fine("Using JAI");
@@ -126,7 +149,7 @@ public class PictureLoader
     // loadImageIO //
     //-------------//
     /**
-     * Try to load a sequence of images out of the provided stream
+     * Try to load a sequence of images, using ImageIO.
      *
      * @param imgFile the input image file
      * @param index   if not null, specifies (counted from 1) which single image
@@ -182,7 +205,7 @@ public class PictureLoader
                         BufferedImage img = reader.read(i - 1);
                         images.put(i, img);
                         logger.info("Loaded image #{0} ({1} x {2})",
-                                    new Object[]{i, img.getWidth(), img.
+                                new Object[]{i, img.getWidth(), img.
                                     getHeight()});
                     }
                 }
@@ -207,7 +230,9 @@ public class PictureLoader
     // loadJAI //
     //---------//
     /**
-     * Load an image, using JAI
+     * Try to load an image, using JAI.
+     * This seems limited to a single image, thus no index parameter is to be
+     * provided.
      *
      * @param imgFile the input file
      * @return a map of one image, or null if failed to load
@@ -234,7 +259,7 @@ public class PictureLoader
     // loadPDF //
     //---------//
     /**
-     * Load a sequence of images out of a PDF file
+     * Load a sequence of images out of a PDF file.
      *
      * @param imgFile the input PDF file
      * @param index   if not null, specifies (counted from 1) which single image
@@ -244,7 +269,28 @@ public class PictureLoader
     private static SortedMap<Integer, RenderedImage> loadPDF (File imgFile,
                                                               Integer index)
     {
-        double res = 1.0 / TextFont.TO_POINT;
+        switch (constants.PDFLibrary.getValue()) {
+        case "PDFRenderer":
+            return try_PDFRenderer(imgFile, index);
+        case "PDFBox":
+            return try_PDFBox(imgFile, index);
+        case "JPedal":
+            return try_JPedal(imgFile, index);
+        default:
+            logger.warning("Unknown PDF library: "
+                           + constants.PDFLibrary.getValue());
+            return null;
+        }
+    }
+
+    //-----------------//
+    // try_PDFRenderer //
+    //-----------------//
+    private static SortedMap<Integer, RenderedImage> try_PDFRenderer (
+            File imgFile,
+            Integer index)
+    {
+        logger.fine("Trying PDFRenderer");
 
         try {
             // set up the PDF reading
@@ -270,16 +316,15 @@ public class PictureLoader
 
                 for (int i = 1; i <= imageCount; i++) {
                     if ((index == null) || (index == i)) {
-                        // PDF pages are accessed starting from 1 (vs 0)!!!
-                        PDFPage page = pdfFile.getPage(i);
+                        PDFPage page = pdfFile.getPage(i); // 1-based
 
                         // Get the dimensions
                         Rectangle2D bbox = page.getBBox();
                         Rectangle rect = new Rectangle(
                                 0,
                                 0,
-                                (int) (bbox.getWidth() * res),
-                                (int) (bbox.getHeight() * res));
+                                (int) (bbox.getWidth() * PDF_SCALING),
+                                (int) (bbox.getHeight() * PDF_SCALING));
 
                         // Create and configure a graphics object
                         BufferedImage img = new BufferedImage(
@@ -305,8 +350,8 @@ public class PictureLoader
                         images.put(i, img);
 
                         logger.info("{0} loaded image #{1} ({2} x {3})",
-                                    imgFile.getName(), i,
-                                    img.getWidth(), img.getHeight());
+                                imgFile.getName(), i,
+                                img.getWidth(), img.getHeight());
                     }
                 }
 
@@ -320,8 +365,129 @@ public class PictureLoader
             }
         } catch (IOException e) {
             logger.warning("Unable to load PDF", e);
-
             return null;
         }
+    }
+
+    //------------//
+    // try_PDFBox //
+    //------------//
+    private static SortedMap<Integer, RenderedImage> try_PDFBox (File imgFile,
+                                                                 Integer index)
+    {
+        logger.fine("Trying PDFBox");
+        try {
+            PDDocument doc = null;
+
+            try {
+                doc = PDDocument.load(imgFile.getCanonicalPath());
+
+                // Image count
+                int imageCount = doc.getNumberOfPages();
+
+                if (imageCount > 1) {
+                    logger.info("{0} contains {1} images",
+                            imgFile.getName(), imageCount);
+                }
+
+                PDDocumentCatalog catalog = doc.getDocumentCatalog();
+                List<PDPage> pages = (List<PDPage>) catalog.getAllPages();
+
+                SortedMap<Integer, RenderedImage> images = new TreeMap<>();
+
+                for (int i = 1; i <= imageCount; i++) {
+                    if ((index == null) || (index == i)) {
+                        PDPage page = pages.get(i - 1); // 0-based
+                        BufferedImage img = page.convertToImage(
+                                BufferedImage.TYPE_BYTE_GRAY, PDF_DPI);
+                        if (true) {
+                            ImageIO.write(img, "png", new File("t" + i + ".png"));
+                        }
+                        images.put(i, img);
+
+                        logger.info("{0} loaded image #{1} ({2} x {3})",
+                                imgFile.getName(), i,
+                                img.getWidth(), img.getHeight());
+                    }
+                }
+
+                return images;
+            } finally {
+                if (doc != null) {
+                    doc.close();
+                }
+            }
+        } catch (IOException ex) {
+            logger.warning("Unable to load PDF", ex);
+            return null;
+        }
+    }
+
+
+    //------------//
+    // try_JPedal //
+    //------------//
+    private static SortedMap<Integer, RenderedImage> try_JPedal (File imgFile,
+                                                                 Integer index)
+    {
+        logger.fine("Trying JPedal");
+        try {
+            PdfDecoder decode_pdf = null;
+
+            try {
+                decode_pdf = new PdfDecoder(true);
+                decode_pdf.openPdfFile(imgFile.getPath());
+
+                //decode_pdf.setExtractionMode(255, 288, 4);
+                FontMappings.setFontReplacements();
+                decode_pdf.useHiResScreenDisplay(true);
+                decode_pdf.getDPIFactory().setDpi(PDF_DPI);
+                decode_pdf.setPageParameters(PDF_SCALING, 1);
+
+                // Image count
+                int imageCount = decode_pdf.getPageCount();
+
+                if (imageCount > 1) {
+                    logger.info("{0} contains {1} images",
+                            imgFile.getName(), imageCount);
+                }
+
+                SortedMap<Integer, RenderedImage> images = new TreeMap<>();
+
+                for (int i = 1; i <= imageCount; i++) {
+                    if ((index == null) || (index == i)) {
+                        BufferedImage img = decode_pdf.getPageAsImage(i); // 1-based
+                        images.put(i, img);
+
+                        logger.info("{0} loaded image #{1} ({2} x {3})",
+                                imgFile.getName(), i,
+                                img.getWidth(), img.getHeight());
+                    }
+                }
+
+                return images;
+            } finally {
+                if (decode_pdf != null && decode_pdf.isOpen()) {
+                    decode_pdf.closePdfFile();
+                }
+            }
+        } catch (PdfException ex) {
+            logger.warning("Unable to load PDF", ex);
+            return null;
+        }
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+
+        Constant.String PDFLibrary = new Constant.String(
+                "PDFBox",
+                "Library for PDF handling: PDFRenderer, PDFBox or JPedal.");
+
     }
 }
