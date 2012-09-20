@@ -46,7 +46,6 @@ import omr.sheet.SystemInfo;
 import omr.util.TreeNode;
 
 import java.util.EnumSet;
-import java.util.logging.Level;
 
 /**
  * Class {@code TimeSignatureRetriever} checks carefully the first
@@ -55,7 +54,7 @@ import java.util.logging.Level;
  * @author Hervé Bitteur
  */
 public class TimeSignatureRetriever
-    extends AbstractScoreVisitor
+        extends AbstractScoreVisitor
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -64,16 +63,15 @@ public class TimeSignatureRetriever
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
-        TimeSignatureRetriever.class);
+            TimeSignatureRetriever.class);
 
     //~ Instance fields --------------------------------------------------------
-
     // Scale-dependent constants
     private int timeSigWidth;
+
     private int yOffset;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------------------//
     // TimeSignatureRetriever //
     //------------------------//
@@ -85,12 +83,12 @@ public class TimeSignatureRetriever
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // visit Page //
     //------------//
     /**
      * Page hierarchy (sole) entry point.
+     *
      * @param page the page to check
      * @return false
      */
@@ -104,8 +102,8 @@ public class TimeSignatureRetriever
         try {
             // We simply consider the very first measure of every staff
             ScoreSystem system = page.getFirstSystem();
-            Measure     firstMeasure = system.getFirstRealPart()
-                                             .getFirstMeasure();
+            Measure firstMeasure = system.getFirstRealPart()
+                    .getFirstMeasure();
 
             // If we have some TS, then it's OK
             if (hasTimeSig(firstMeasure)) {
@@ -117,25 +115,25 @@ public class TimeSignatureRetriever
 
             if (roi.width < timeSigWidth) {
                 logger.fine("No room for time sig: {0}", roi.width);
-                
+
                 return false;
             }
 
             for (Staff.SystemIterator sit = new Staff.SystemIterator(
-                firstMeasure); sit.hasNext();) {
+                    firstMeasure); sit.hasNext();) {
                 Staff staff = sit.next();
 
                 if (staff.isDummy()) {
                     continue;
                 }
 
-                int   center = roi.x + (roi.width / 2);
+                int center = roi.x + (roi.width / 2);
                 Glyph compound = system.getInfo()
-                                       .buildCompound(
-                    null,
-                    false,
-                    system.getInfo().getGlyphs(),
-                    new TimeSigAdapter(
+                        .buildCompound(
+                        null,
+                        false,
+                        system.getInfo().getGlyphs(),
+                        new TimeSigAdapter(
                         system.getInfo(),
                         Grades.timeMinGrade,
                         ShapeSet.FullTimes,
@@ -145,15 +143,15 @@ public class TimeSignatureRetriever
                 if (compound != null) {
                     // Insert time sig in proper measure
                     TimeSignature.populateFullTime(
-                        compound,
-                        firstMeasure,
-                        staff);
+                            compound,
+                            firstMeasure,
+                            staff);
                 }
             }
         } catch (Exception ex) {
             logger.warning(
-                getClass().getSimpleName() + " Error visiting " + page,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + page,
+                    ex);
         }
 
         return false; // No navigation
@@ -163,28 +161,29 @@ public class TimeSignatureRetriever
     // getRoi //
     //--------//
     /**
-     * Retrieve the free space where a time signature could be within the first
-     * measure
+     * Retrieve the free space where a time signature could be within
+     * the first measure width.
+     *
      * @param firstMeasure the containing measure (whatever the part)
      * @return a degenerated rectangle, just to provide left and right bounds
      */
     private PixelRectangle getRoi (Measure firstMeasure)
     {
         ScoreSystem system = firstMeasure.getSystem();
-        int         left = 0; // Min
-        int         right = system.getTopLeft().x +
-                            system.getDimension().width; // Max
+        int left = 0; // Min
+        int right = system.getTopLeft().x
+                    + system.getDimension().width; // Max
 
         for (Staff.SystemIterator sit = new Staff.SystemIterator(firstMeasure);
-             sit.hasNext();) {
+                sit.hasNext();) {
             Staff staff = sit.next();
 
             if (staff.isDummy()) {
                 continue;
             }
 
-            int          staffId = staff.getId();
-            Measure      measure = sit.getMeasure();
+            int staffId = staff.getId();
+            Measure measure = sit.getMeasure();
 
             // Before: clef? + key signature?
             KeySignature keySig = measure.getFirstMeasureKey(staffId);
@@ -206,7 +205,7 @@ public class TimeSignatureRetriever
 
             if (chord != null) {
                 for (TreeNode tn : chord.getNotes()) {
-                    Note  note = (Note) tn;
+                    Note note = (Note) tn;
                     Glyph accid = note.getAccidental();
 
                     if (accid != null) {
@@ -217,8 +216,12 @@ public class TimeSignatureRetriever
                 }
             }
 
-            logger.fine("Staff:{0} left:{1} right:{2}",
-                        new Object[]{staffId, left, right});
+            // Limit right to the abscissa of the measure ending barline
+            if (measure.getRightX() != null) {
+                right = Math.min(right, measure.getRightX());
+            }
+
+            logger.fine("Staff:{0} left:{1} right:{2}", staffId, left, right);
         }
 
         return new PixelRectangle(left, 0, right - left, 0);
@@ -232,17 +235,17 @@ public class TimeSignatureRetriever
      * signature
      *
      * @param measure the provided measure (in fact we care only about the
-     * measure id, regardless of the part)
+     *                measure id, regardless of the part)
      * @return true if a time sig exists in some staff of the measure
      */
     private boolean hasTimeSig (Measure measure)
     {
         for (Staff.SystemIterator sit = new Staff.SystemIterator(measure);
-             sit.hasNext();) {
+                sit.hasNext();) {
             Staff staff = sit.next();
 
             if (sit.getMeasure()
-                   .getTimeSignature(staff) != null) {
+                    .getTimeSignature(staff) != null) {
                 return true;
             }
         }
@@ -251,21 +254,22 @@ public class TimeSignatureRetriever
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Scale.Fraction timeSigWidth = new Scale.Fraction(
-            2d,
-            "Width of a time signature");
+                2d,
+                "Width of a time signature");
+
         Scale.Fraction yOffset = new Scale.Fraction(
-            0.5d,
-            "Time signature vertical offset since staff line");
+                0.5d,
+                "Time signature vertical offset since staff line");
+
     }
 
     //----------------//
@@ -275,20 +279,20 @@ public class TimeSignatureRetriever
      * Compound adapter to search for a time sig shape
      */
     private class TimeSigAdapter
-        extends CompoundBuilder.TopShapeAdapter
+            extends CompoundBuilder.TopShapeAdapter
     {
         //~ Instance fields ----------------------------------------------------
 
         final Staff staff;
-        final int   center;
+
+        final int center;
 
         //~ Constructors -------------------------------------------------------
-
-        public TimeSigAdapter (SystemInfo     system,
-                               double         minGrade,
+        public TimeSigAdapter (SystemInfo system,
+                               double minGrade,
                                EnumSet<Shape> desiredShapes,
-                               Staff          staff,
-                               int            center)
+                               Staff staff,
+                               int center)
         {
             super(system, minGrade, desiredShapes);
             this.staff = staff;
@@ -296,31 +300,30 @@ public class TimeSignatureRetriever
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public PixelRectangle computeReferenceBox ()
         {
-            StaffInfo      staffInfo = staff.getInfo();
+            StaffInfo staffInfo = staff.getInfo();
             PixelRectangle newBox = new PixelRectangle(
-                center,
-                staffInfo.getFirstLine().yAt(center) +
-                (staffInfo.getHeight() / 2),
-                0,
-                0);
+                    center,
+                    staffInfo.getFirstLine().yAt(center)
+                    + (staffInfo.getHeight() / 2),
+                    0,
+                    0);
             newBox.grow(
-                (timeSigWidth / 2),
-                (staffInfo.getHeight() / 2) - yOffset);
+                    (timeSigWidth / 2),
+                    (staffInfo.getHeight() / 2) - yOffset);
 
             // Draw the box, for visual debug
             SystemPart part = system.getScoreSystem()
-                                    .getPartAt(newBox.getCenter());
-            Barline    barline = part.getStartingBarline();
-            Glyph      line = null;
+                    .getPartAt(newBox.getCenter());
+            Barline barline = part.getStartingBarline();
+            Glyph line = null;
 
             if (barline != null) {
                 line = Glyphs.firstOf(
-                    barline.getGlyphs(),
-                    Barline.linePredicate);
+                        barline.getGlyphs(),
+                        Barline.linePredicate);
 
                 if (line != null) {
                     line.addAttachment("ti" + staff.getId(), newBox);

@@ -88,12 +88,13 @@ public abstract class TextBasedItem
     //-------------//
     public PixelPoint getLocation ()
     {
-        if (baseline == null) {
+        Line2D bl = getBaseline();
+        if (bl == null) {
             return null;
         }
 
-        return new PixelPoint((int) Math.rint(baseline.getX1()),
-                              (int) Math.rint(baseline.getY1()));
+        return new PixelPoint((int) Math.rint(bl.getX1()),
+                              (int) Math.rint(bl.getY1()));
     }
 
     //---------------//

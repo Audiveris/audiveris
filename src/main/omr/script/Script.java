@@ -205,7 +205,7 @@ public class Script
         // Run the tasks in sequence
         try {
             for (ScriptTask task : tasks) {
-                Page page = null;
+                Page page;
 
                 if (task instanceof SheetTask) {
                     Integer pageIndex = ((SheetTask) task).getPageIndex();

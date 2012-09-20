@@ -142,7 +142,7 @@ public class SectionSets
                     Section section = lag.getVertexById(sectionId.id);
 
                     if (section == null) {
-                        logger.warning(
+                        logger.warning(sheet.getLogPrefix() +
                             "Cannot find section for " + sectionId,
                             new Throwable());
                     } else {

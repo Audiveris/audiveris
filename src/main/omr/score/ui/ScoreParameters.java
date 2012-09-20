@@ -1122,10 +1122,18 @@ public class ScoreParameters
         @Override
         public boolean isValid ()
         {
-            String item = read();
-            task.setLanguage(codeOf(item), page);
+            task.setLanguage(codeOf(read()), page);
 
             return true;
+        }
+        
+        /** Overridden version, to use codeOf(language). */
+        @Override
+        public void commit ()
+        {
+            if (isSelected()) {
+                backup.setSpecific(codeOf(read()));
+            }
         }
 
         @Override

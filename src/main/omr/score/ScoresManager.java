@@ -660,7 +660,7 @@ public class ScoresManager
 
         Constant.String defaultPrintDirectory = new Constant.String(
                 WellKnowns.DEFAULT_PRINT_FOLDER.toString(),
-                "Default directory for writing sheet PDF files");
+                "Default directory for printing sheet files");
 
         Constant.Boolean defaultInjectSignature = new Constant.Boolean(
                 true,

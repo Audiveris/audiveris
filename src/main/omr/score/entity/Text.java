@@ -27,6 +27,7 @@ import omr.text.TextWord;
 import omr.ui.symbol.TextFont;
 
 import java.awt.Font;
+import java.awt.geom.Point2D;
 
 /**
  * Class {@code Text} handles any textual score entity.
@@ -160,7 +161,7 @@ public abstract class Text
         }
 
         logger.fine("Populating {0} {1} \"{2}\"",
-                    sentence, role, sentence.getValue());
+                sentence, role, sentence.getValue());
 
         if (role == null) {
             return;
@@ -183,10 +184,14 @@ public abstract class Text
                     itemStr = role.getStringHolder(nbChar);
                 }
 
+                Point2D p1 = word.getBaseline().getP1();
+                PixelPoint start = new PixelPoint(
+                        (int) Math.rint(p1.getX()),
+                        (int) Math.rint(p1.getY()));
                 glyph.setTranslation(
                         new LyricsItem(
                         sentence,
-                        new PixelPoint(itemBox.x, location.y), // TODO: review!
+                        start,
                         glyph,
                         itemBox.width,
                         itemStr));
@@ -323,11 +328,11 @@ public abstract class Text
     {
         StringBuilder sb = new StringBuilder();
         sb.append("{Text");
-        
+
         if (sentence.getRole() != null) {
             sb.append(" ").append(sentence.getRole());
         }
-        
+
         sb.append(internalsString());
 
         if (getContent() != null) {
@@ -385,6 +390,7 @@ public abstract class Text
             composer,
             lyricist,
             arranger;
+
         }
 
         //~ Constructors -------------------------------------------------------

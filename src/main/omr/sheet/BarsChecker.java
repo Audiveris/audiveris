@@ -194,10 +194,10 @@ public class BarsChecker
 
             if (logger.isFineEnabled() || stick.isVip()) {
                 logger.info("suite => {0}{1} for {2}",
-                            (float) res,
-                            (stick.getResult() != null)
-                            ? (" " + stick.getResult()) : "",
-                            stick);
+                        (float) res,
+                        (stick.getResult() != null)
+                        ? (" " + stick.getResult()) : "",
+                        stick);
             }
 
             if ((stick.isBar() && stick.isManualShape()) || res >= minResult) {
@@ -224,10 +224,10 @@ public class BarsChecker
                 } else {
                     if (logger.isFineEnabled()) {
                         logger.fine("Non-Part-defining Bar line {0}{1}",
-                                    (context.topStaff != -1)
-                                    ? (" topIdx=" + context.topStaff) : "",
-                                    (context.botStaff != -1)
-                                    ? (" botIdx=" + context.botStaff) : "");
+                                (context.topStaff != -1)
+                                ? (" topIdx=" + context.topStaff) : "",
+                                (context.botStaff != -1)
+                                ? (" botIdx=" + context.botStaff) : "");
                     }
 
                     stick.setResult(BAR_NOT_PART_DEFINING);
@@ -236,7 +236,7 @@ public class BarsChecker
                 if (stick.isBar()) {
                     if (logger.isFineEnabled() || stick.isVip()) {
                         logger.info("Purged {0} {1}",
-                                    stick.idString(), stick.getShape());
+                                stick.idString(), stick.getShape());
                     }
 
                     stick.setShape(null);
@@ -282,7 +282,7 @@ public class BarsChecker
             public boolean check (Section section)
             {
                 return (section.getGlyph() == null)
-                        || (section.getGlyph().getShape() != Shape.STAFF_LINE);
+                       || (section.getGlyph().getShape() != Shape.STAFF_LINE);
             }
         };
 
@@ -669,7 +669,7 @@ public class BarsChecker
                 "Half height of box to look for chunks");
 
         Constant.Ratio chunkRatioHigh = new Constant.Ratio(
-                1.8,
+                3.0,
                 "High Minimum ratio of alien pixels to detect chunks");
 
         Constant.Ratio chunkRatioLow = new Constant.Ratio(
@@ -763,6 +763,7 @@ public class BarsChecker
                 "cotangent",
                 0.1,
                 "Maximum cotangent for checking a barline candidate");
+
     }
 
     //------------//
@@ -811,11 +812,11 @@ public class BarsChecker
 
             // Normalize the ratio with stick length
             double ratio = (1000 * aliens) / ((double) area * stick.getLength(
-                                              Orientation.VERTICAL));
+                    Orientation.VERTICAL));
 
             logger.fine("{0} {1} aliens:{2} area:{3} ratio:{4}",
-                        stick.idString(), getName(), aliens, area,
-                        (float) ratio);
+                    stick.idString(), getName(), aliens, area,
+                    (float) ratio);
 
             return ratio;
         }
@@ -1083,7 +1084,7 @@ public class BarsChecker
                 Point2D bot = staff.getLastLine().getEndPoint(RIGHT);
                 double y = (top.getY() + bot.getY()) / 2;
                 double x = (stick instanceof Filament)
-                           ? ((Filament) stick).getPositionAt(
+                        ? ((Filament) stick).getPositionAt(
                         y,
                         Orientation.VERTICAL) : stick.getLine().xAtY(y);
                 dist = Math.min(dist, staff.getAbscissa(RIGHT) - x);
@@ -1197,8 +1198,8 @@ public class BarsChecker
         protected TopRightChunkCheck ()
         {
             super("TRChunk",
-                  "Check for no big chunk stuck on upper right side of stick",
-                  TOP_RIGHT_CHUNK);
+                    "Check for no big chunk stuck on upper right side of stick",
+                    TOP_RIGHT_CHUNK);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -1228,11 +1229,11 @@ public class BarsChecker
         protected VerticalCheck ()
         {
             super("Vertical",
-                  "Check that stick is vertical, according to global slope",
-                  constants.maxSlopeLow,
-                  constants.maxSlopeHigh,
-                  false,
-                  NON_VERTICAL);
+                    "Check that stick is vertical, according to global slope",
+                    constants.maxSlopeLow,
+                    constants.maxSlopeHigh,
+                    false,
+                    NON_VERTICAL);
         }
 
         //~ Methods ------------------------------------------------------------

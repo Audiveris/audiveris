@@ -1160,17 +1160,22 @@ public class Score
         @Override
         public List<PartData> getSpecific ()
         {
-            List<PartData> data = new ArrayList<>();
-            for (ScorePart scorePart : getPartList()) {
-                
-                // Initial setting for part midi program
-                int prog = (scorePart.getMidiProgram() != null)
-                        ? scorePart.getMidiProgram()
-                        : scorePart.getDefaultProgram();
+            List<ScorePart> list = getPartList();
+            if (list != null) {
+                List<PartData> data = new ArrayList<>();
+                for (ScorePart scorePart : list) {
 
-                data.add(new PartData(scorePart.getName(), prog));
+                    // Initial setting for part midi program
+                    int prog = (scorePart.getMidiProgram() != null)
+                            ? scorePart.getMidiProgram()
+                            : scorePart.getDefaultProgram();
+
+                    data.add(new PartData(scorePart.getName(), prog));
+                }
+                return data;
+            } else {
+                return null;
             }
-            return data;
         }
 
         @Override

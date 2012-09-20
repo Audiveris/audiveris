@@ -13,6 +13,8 @@ package omr.text.tesseract;
 
 import omr.WellKnowns;
 
+import omr.sheet.SystemInfo;
+
 import omr.text.FontInfo;
 import omr.text.TextChar;
 import omr.text.TextLine;
@@ -40,7 +42,6 @@ import java.util.List;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
-import omr.sheet.SystemInfo;
 
 /**
  * Class {@code TesseractOrder} carries a processing order submitted

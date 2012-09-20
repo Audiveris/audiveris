@@ -1372,7 +1372,7 @@ public class BasicSection
         }
 
         if (isVip()) {
-            logger.info("{0} linkedTo {1}", new Object[]{this, glyph});
+            logger.info("{0} linkedTo {1}", this, glyph);
 
             if (glyph != null) {
                 glyph.setVip();

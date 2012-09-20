@@ -126,7 +126,7 @@ public class TextBuilder
 
         for (TextWord word : line.getWords()) {
             if (word.getConfidence() >= constants.minConfidence.getValue()
-                    && word.getLength() > 1) {
+                && word.getLength() > 1) {
                 reliableWords++;
                 if (word.getFontInfo().isItalic) {
                     italicWords++;
@@ -158,7 +158,7 @@ public class TextBuilder
         int minConf = constants.minConfidence.getValue();
         if (conf == null || conf < minConf) {
             logger.fine("      Too low confidence {0} vs {1} for {2}",
-                        conf, minConf, textLine);
+                    conf, minConf, textLine);
             return false;
         }
 
@@ -236,7 +236,7 @@ public class TextBuilder
 
             if (fontInfo.pointsize > params.maxFontSize) {
                 logger.fine("Too big font {0} vs {1} on {2}",
-                            fontInfo.pointsize, params.maxFontSize, textLine);
+                        fontInfo.pointsize, params.maxFontSize, textLine);
                 return false;
             }
         }
@@ -335,9 +335,9 @@ public class TextBuilder
             for (TextWord word : line.getWords()) {
                 Glyph glyph = word.getGlyph();
 
-                if (glyph.getTextWord() != word) {
+                if (glyph == null || glyph.getTextWord() != word) {
                     logger.fine("{0} purging old {1}", system.idString(), word);
-                    toRemove.add(word);;
+                    toRemove.add(word);
                 }
             }
 
@@ -362,7 +362,7 @@ public class TextBuilder
     {
         Set<TextLine> sentences = system.getSentences();
         logger.info("{0} {1} sentences: {2}",
-                    title, system.idString(), sentences.size());
+                title, system.idString(), sentences.size());
 
         for (TextLine sentence : sentences) {
             logger.info("   {0}", sentence);
@@ -511,11 +511,11 @@ public class TextBuilder
 
         return getOcr()
                 .recognize(glyph.getImage(),
-                           glyph.getBounds().getLocation(),
-                           language,
-                           OCR.LayoutMode.SINGLE_BLOCK,
-                           system,
-                           label);
+                glyph.getBounds().getLocation(),
+                language,
+                OCR.LayoutMode.SINGLE_BLOCK,
+                system,
+                label);
     }
 
     //------------------//
@@ -540,7 +540,7 @@ public class TextBuilder
             for (Section section : allSections) {
                 // Do we contain a section not (yet) assigned?
                 if (!section.isProcessed()
-                        && charBox.contains(section.getBounds())) {
+                    && charBox.contains(section.getBounds())) {
                     set.add(section);
                     section.setProcessed(true);
                 }
@@ -668,7 +668,7 @@ public class TextBuilder
                         Rectangle headBounds = getDeskewedCore(head);
                         if (headBounds.intersects(candidateBounds)) {
                             logger.fine("   merging {0} into {1}",
-                                        candidate, head);
+                                    candidate, head);
                             head.addWords(candidate.getWords());
                             candidate.setProcessed(true);
                             candidate = head;
@@ -704,10 +704,10 @@ public class TextBuilder
     {
         Point2D P1 = line.getDskOrigin();
         Point p1 = new Point((int) Math.rint(P1.getX()),
-                             (int) Math.rint(P1.getY()));
+                (int) Math.rint(P1.getY()));
         Point2D P2 = system.getSkew().deskewed(line.getBaseline().getP2());
         Point p2 = new Point((int) Math.rint(P2.getX()),
-                             (int) Math.rint(P2.getY()));
+                (int) Math.rint(P2.getY()));
         Rectangle rect = new Rectangle(p1);
         rect.add(p2);
 
@@ -748,7 +748,7 @@ public class TextBuilder
                 int prevStop = prevBounds.x + prevBounds.width;
                 int gap = word.getBounds().x - prevStop;
                 logger.fine("      gap {0} vs {1} to {2}",
-                            gap, params.minWordDx, word);
+                        gap, params.minWordDx, word);
 
                 if (gap < params.minWordDx) {
                     toRemove.add(prevWord);
@@ -806,10 +806,10 @@ public class TextBuilder
                     // Check for a separator in the new manual value
                     if (!word.getChars().isEmpty()) {
                         logger.fine("Manual modif for {0}",
-                                    wordGlyph.idString());
+                                wordGlyph.idString());
                         subWords = getSubWords(word,
-                                               line,
-                                               new WordScanner.ManualScanner(
+                                line,
+                                new WordScanner.ManualScanner(
                                 wordGlyph.getTextValue(),
                                 line.isLyrics(),
                                 word.getChars()));
@@ -827,14 +827,14 @@ public class TextBuilder
                             newWord.setGlyph(wordGlyph);
                             subWords.add(newWord);
                             wordGlyph.setTextWord(wordGlyph.getOcrLanguage(),
-                                                  newWord);
+                                    newWord);
                         }
                     }
                 }
             } else {
                 subWords = getSubWords(word,
-                                       line,
-                                       new WordScanner.OcrScanner(
+                        line,
+                        new WordScanner.OcrScanner(
                         word.getValue(),
                         line.isLyrics(),
                         word.getChars()));
@@ -893,7 +893,7 @@ public class TextBuilder
                         if (gap > params.maxWordDx) {
                             int splitPos = words.indexOf(word);
                             List<TextWord> lineWords = words.subList(0,
-                                                                     splitPos);
+                                    splitPos);
                             TextLine newLine = new TextLine(system, lineWords);
                             logger.fine("      subLine {0}", newLine);
                             newStandards.add(newLine);
@@ -972,7 +972,7 @@ public class TextBuilder
                         line);
 
                 logger.fine("      subWord ''{0}'' from ''{1}''",
-                            newWord.getValue(), word.getValue());
+                        newWord.getValue(), word.getValue());
                 subWords.add(newWord);
             }
         }
@@ -1027,7 +1027,7 @@ public class TextBuilder
         final String language = textParam.getTarget();
         if (logger.isFineEnabled()) {
             logger.info("{0} switchLanguageTexts lan:{1}",
-                        system.idString(), language);
+                    system.idString(), language);
         }
         textParam.setActual(language);
 
@@ -1035,21 +1035,21 @@ public class TextBuilder
             // Launch OCR on the whole line image
             List<Glyph> glyphs = oldLine.getWordGlyphs();
             Glyph compound = glyphs.size() == 1
-                             ? glyphs.get(0)
-                             : system.
+                    ? glyphs.get(0)
+                    : system.
                     registerGlyph(system.buildTransientCompound(glyphs));
 
             List<TextLine> lines = retrieveOcrLine(compound, language);
             if (lines == null || lines.size() != 1) {
                 logger.fine("{0} No valid replacement for {1}",
-                            system.idString(), oldLine);
+                        system.idString(), oldLine);
             } else {
                 TextLine newLine = lines.get(0);
                 recutStandardWords(newLine);
 
                 if (logger.isFineEnabled()) {
                     logger.info("{0} refreshing {1} by {2}",
-                                system.idString(), oldLine, newLine);
+                            system.idString(), oldLine, newLine);
                     oldLine.dump();
                     newLine.dump();
                 }
@@ -1066,7 +1066,7 @@ public class TextBuilder
                         }
                     } else {
                         logger.fine("{0} no word for {1} in {2}",
-                                    system.idString(), oldWord, newLine);
+                                system.idString(), oldWord, newLine);
                     }
                 }
 
@@ -1146,6 +1146,7 @@ public class TextBuilder
         Scale.Fraction minWordDx = new Scale.Fraction(
                 0.25,
                 "Min horizontal gap between two non-lyrics words");
+
     }
 
     //------------//

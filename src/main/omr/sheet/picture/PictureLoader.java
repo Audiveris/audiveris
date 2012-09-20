@@ -400,9 +400,6 @@ public class PictureLoader
                         PDPage page = pages.get(i - 1); // 0-based
                         BufferedImage img = page.convertToImage(
                                 BufferedImage.TYPE_BYTE_GRAY, PDF_DPI);
-                        if (true) {
-                            ImageIO.write(img, "png", new File("t" + i + ".png"));
-                        }
                         images.put(i, img);
 
                         logger.info("{0} loaded image #{1} ({2} x {3})",
@@ -486,7 +483,7 @@ public class PictureLoader
     {
 
         Constant.String PDFLibrary = new Constant.String(
-                "PDFBox",
+                "PDFRenderer",
                 "Library for PDF handling: PDFRenderer, PDFBox or JPedal.");
 
     }

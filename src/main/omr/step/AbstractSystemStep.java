@@ -144,7 +144,7 @@ public abstract class AbstractSystemStep
      * @param sheet   the containing sheet
      */
     private void doitPerSystem (Collection<SystemInfo> systems,
-                                Sheet sheet)
+                                final Sheet sheet)
     {
         try {
             Collection<Callable<Void>> tasks = new ArrayList<>();
@@ -171,7 +171,7 @@ public abstract class AbstractSystemStep
 
                                     doSystem(system);
                                 } catch (Exception ex) {
-                                    logger.warning(
+                                    logger.warning(sheet.getLogPrefix() +
                                             "Interrupt on " + system,
                                             ex);
                                 }

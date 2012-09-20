@@ -125,10 +125,8 @@ public class PatternsChecker
 
                 totalModifs += modifs;
             } catch (Throwable ex) {
-                logger.warning(
-                        system.idString() + " error running pattern "
-                        + pattern.name,
-                        ex);
+                logger.warning(system.getLogPrefix() + 
+                               " error running pattern " + pattern.name, ex);
             }
         }
 

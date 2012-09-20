@@ -820,7 +820,7 @@ public class SystemInfo
         StringBuilder sb = new StringBuilder(sheet.getLogPrefix());
 
         if (sb.length() > 1) {
-            sb.insert(sb.length() - 1, "S" + id);
+            sb.insert(sb.length() - 2, "-S" + id);
         } else {
             sb.append("S").append(id).append(" ");
         }

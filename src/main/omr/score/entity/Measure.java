@@ -1233,8 +1233,7 @@ public class Measure
     // getRightX //
     //-----------//
     /**
-     * Report the abscissa of the end of the measure, relative to
-     * system/part left edge.
+     * Report the abscissa of the end of the measure.
      *
      * @return part-based abscissa of right side of the measure
      */

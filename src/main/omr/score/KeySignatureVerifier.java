@@ -113,7 +113,7 @@ public class KeySignatureVerifier
                                final KeySignature bestKey)
     {
         logger.fine("Merging {0} for shape {1}",
-                    new Object[]{Glyphs.toString(glyphs), bestKey.getShape()});
+                    Glyphs.toString(glyphs), bestKey.getShape());
 
         SystemInfo systemInfo = system.getInfo();
         Glyphs.purgeManuals(glyphs);
@@ -147,8 +147,9 @@ public class KeySignatureVerifier
 
             return compound;
         } else {
-            logger.info("Could not find {0} in {1}",
-                        new Object[]{bestKey.getShape(), Glyphs.toString(glyphs)});
+            logger.info("{0}Could not find {1} in {2}",
+                    systemInfo.getLogPrefix(),
+                    bestKey.getShape(), Glyphs.toString(glyphs));
 
             return null;
         }
