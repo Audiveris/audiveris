@@ -273,12 +273,12 @@ class BasicRecognition
         Shape oldShape = getShape();
 
         if ((oldShape != null) && (oldShape != shape)
-                && (oldShape != Shape.GLYPH_PART)) {
+            && (oldShape != Shape.GLYPH_PART)) {
             forbidShape(oldShape);
 
             if (glyph.isVip()) {
                 logger.info("Shape {0} forbidden for {1}",
-                            new Object[]{oldShape, glyph.idString()});
+                        oldShape, glyph.idString());
             }
         }
 

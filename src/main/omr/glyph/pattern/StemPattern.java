@@ -48,8 +48,8 @@ public class StemPattern
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(StemPattern.class);
 
-    /** Predicate to filter only reliable symbols attached to a stem */
-    private static final Predicate<Glyph> reliableStemSymbols = new Predicate<Glyph>()
+    /** Predicate to filter reliable symbols attached to a stem. */
+    public static final Predicate<Glyph> reliableStemSymbols = new Predicate<Glyph>()
     {
 
         @Override

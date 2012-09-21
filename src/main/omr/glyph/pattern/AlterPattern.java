@@ -30,6 +30,8 @@ import omr.sheet.SystemInfo;
 import omr.util.HorizontalSide;
 
 import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.SortedSet;
 
 /**
@@ -153,7 +155,7 @@ public class AlterPattern
                 // Check horizontal distance
                 final PixelRectangle rightBox = other.getBounds();
                 final int rightX = rightBox.x
-                        + (rightBox.width / 2);
+                                   + (rightBox.width / 2);
                 final int dx = rightX - leftX;
 
                 if (dx > maxCloseStemDx) {
@@ -173,7 +175,7 @@ public class AlterPattern
 
                 if (logger.isFineEnabled()) {
                     logger.fine("close stems: {0}",
-                                Glyphs.toString(glyph, other));
+                            Glyphs.toString(glyph, other));
                 }
 
                 // "hide" the stems to not perturb evaluation
@@ -205,7 +207,7 @@ public class AlterPattern
                     nb++;
 
                     logger.fine("{0}Compound #{1} rebuilt as {2}",
-                                new Object[]{system.getLogPrefix(), compound.
+                            new Object[]{system.getLogPrefix(), compound.
                                 getId(), compound.getShape()});
                 } else {
                     // Restore stem shapes
@@ -282,7 +284,17 @@ public class AlterPattern
                 continue;
             }
 
-            // "hide" the stems to not perturb evaluation
+            // If stem already has notehead or flag/beam, skip it
+            Set<Glyph> goods = new HashSet<>();
+            Set<Glyph> bads = new HashSet<>();
+            glyph.getSymbolsBefore(StemPattern.reliableStemSymbols, goods, bads);
+            glyph.getSymbolsAfter(StemPattern.reliableStemSymbols, goods, bads);
+            if (!goods.isEmpty()) {
+                logger.fine("Skipping good stem {0}", glyph);
+                continue;
+            }
+
+            // "hide" the stems temporarily to not perturb evaluation
             glyph.setShape(null);
 
             Glyph compound = system.buildCompound(
@@ -295,10 +307,10 @@ public class AlterPattern
                 nb++;
 
                 logger.fine("{0}Compound #{1} rebuilt as {2}",
-                            system.getLogPrefix(), 
-                            compound.getId(), compound.getShape());
+                        system.getLogPrefix(),
+                        compound.getId(), compound.getShape());
             } else {
-                // Restore stem shapes
+                // Restore stem shape
                 glyph.setShape(Shape.STEM);
             }
         }
@@ -344,40 +356,34 @@ public class AlterPattern
                 0.3,
                 "Minimum grade for sharp/natural sign verification");
 
-        //
         Evaluation.Grade flatMinGrade = new Evaluation.Grade(
                 20d,
                 "Minimum grade for flat sign verification");
 
-        //
         Scale.Fraction maxCloseStemDx = new Scale.Fraction(
                 0.7d,
                 "Maximum horizontal distance for close stems");
 
-        //
         Scale.Fraction maxAlterStemLength = new Scale.Fraction(
                 3.5,
                 "Maximum length for pseudo-stem(s) in alteration sign");
 
-        //
         Scale.Fraction maxNaturalOverlap = new Scale.Fraction(
                 2.0d,
                 "Maximum vertical overlap for natural stems");
 
-        //
         Scale.Fraction minCloseStemOverlap = new Scale.Fraction(
                 0.5d,
                 "Minimum vertical overlap for close stems");
 
-        //
         Scale.Fraction flatHeadHeight = new Scale.Fraction(
                 1d,
                 "Typical height of flat head");
 
-        //
         Scale.Fraction flatHeadWidth = new Scale.Fraction(
                 0.5d,
                 "Typical width of flat head");
+
     }
 
     //-------------//
@@ -415,7 +421,15 @@ public class AlterPattern
         @Override
         public boolean isCandidateSuitable (Glyph glyph)
         {
-            return !glyph.isManualShape();
+
+            if (glyph.isManualShape()) {
+                return false;
+            }
+
+            Shape shape = glyph.getShape();
+
+            return !ShapeSet.StemSymbols.contains(shape)
+                   || shape == Shape.BEAM_HOOK;
         }
     }
 

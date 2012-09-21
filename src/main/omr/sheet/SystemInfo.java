@@ -1012,7 +1012,7 @@ public class SystemInfo
     // getStaffAt //
     //------------//
     /**
-     * Retrieve the staff, <b>within</b> the  system, whose area 
+     * Retrieve the staff, <b>within</b> the system, whose area
      * contains the provided point.
      *
      * @param point the provided point
@@ -1111,10 +1111,12 @@ public class SystemInfo
      * otherwise.
      *
      * @param minGrade the minimum acceptable grade for this processing
+     * @param wide     flag for extra wide compound box
      */
-    public void inspectGlyphs (double minGrade)
+    public void inspectGlyphs (double minGrade,
+                               boolean wide)
     {
-        glyphInspector.inspectGlyphs(minGrade);
+        glyphInspector.inspectGlyphs(minGrade, wide);
     }
 
     //-----------------------//

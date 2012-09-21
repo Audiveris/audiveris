@@ -406,11 +406,9 @@ public class CheckPanel<C extends Checkable>
     {
         // Allocate value fields (3 per check)
         final int checkNb = suite.getChecks().size();
-        values = new JTextField[checkNb][];
+        values = new JTextField[checkNb][3];
 
         for (int n = 0; n < checkNb; n++) {
-            values[n] = new JTextField[3];
-
             for (int i = 0; i <= 2; i++) {
                 JTextField field = new JTextField(FIELD_WIDTH);
                 field.setEditable(false);

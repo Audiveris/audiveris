@@ -266,7 +266,7 @@ public class TesseractOrder
                 if (it.IsAtBeginningOf(Level.WORD)) {
                     FontInfo fontInfo = getFont(it.WordFontAttributes());
                     if (fontInfo == null) {
-                        logger.warning("No font info on {0}", label);
+                        logger.fine("No font info on {0}", label);
                         return null;
                     }
                     word = new TextWord(

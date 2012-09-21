@@ -107,8 +107,10 @@ public class GlyphInspector
      * otherwise.
      *
      * @param minGrade the minimum acceptable grade for this processing
+     * @param wide     flag for extra wide box
      */
-    public void inspectGlyphs (double minGrade)
+    public void inspectGlyphs (double minGrade,
+                               boolean wide)
     {
         logger.fine("S#{0} inspectGlyphs start", system.getId());
 
@@ -119,7 +121,7 @@ public class GlyphInspector
         system.removeInactiveGlyphs();
 
         // For Compounds
-        retrieveCompounds(minGrade);
+        retrieveCompounds(minGrade, wide);
         system.removeInactiveGlyphs();
         evaluateGlyphs(minGrade);
         system.removeInactiveGlyphs();
@@ -133,15 +135,17 @@ public class GlyphInspector
      * considered as parts of compound glyphs.
      *
      * @param minGrade minimum acceptable grade
+     * @param wide     flag for extra wide box
      */
-    private void retrieveCompounds (double minGrade)
+    private void retrieveCompounds (double minGrade,
+                                    boolean wide)
     {
         // Use a copy to avoid concurrent modifications
         List<Glyph> glyphs = new ArrayList<>(system.getGlyphs());
 
         for (Glyph seed : glyphs) {
             // Now process this seed, by looking at neighbors
-            BasicAdapter adapter = new BasicAdapter(system, minGrade, seed);
+            BasicAdapter adapter = new BasicAdapter(system, minGrade, seed, wide);
 
             if (adapter.isCandidateSuitable(seed)) {
                 system.buildCompound(seed, true, glyphs, adapter);
@@ -158,9 +162,14 @@ public class GlyphInspector
     {
         //~ Instance fields ----------------------------------------------------
 
-        Scale.Fraction boxWiden = new Scale.Fraction(
+        Scale.Fraction boxMargin = new Scale.Fraction(
                 0.25,
-                "Box widening to check intersection with compound");
+                "Box margin to check intersection with compound");
+
+        Scale.Fraction boxWiden = new Scale.Fraction(
+                0.5,
+                "Box special abscissa margin to check intersection with compound");
+
     }
 
     //--------------//
@@ -170,16 +179,18 @@ public class GlyphInspector
      * Class {@code BasicAdapter} is a CompoundAdapter meant to
      * retrieve all compounds (in a system).
      */
-    private class BasicAdapter
+    private static class BasicAdapter
             extends CompoundBuilder.AbstractAdapter
     {
         //~ Instance fields ----------------------------------------------------
 
-        Glyph stem = null;
+        private Glyph stem = null;
 
-        int stemX;
+        private int stemX;
 
-        int stemToSeed;
+        private int stemToSeed;
+
+        private final boolean wide;
 
         //~ Constructors -------------------------------------------------------
         /**
@@ -190,9 +201,11 @@ public class GlyphInspector
          */
         public BasicAdapter (SystemInfo system,
                              double minGrade,
-                             Glyph seed)
+                             Glyph seed,
+                             boolean wide)
         {
             super(system, minGrade);
+            this.wide = wide;
 
             stem = seed.getFirstStem();
 
@@ -215,9 +228,14 @@ public class GlyphInspector
             PixelRectangle newBox = seed.getBounds();
 
             Scale scale = system.getScoreSystem().getScale();
-            int boxWiden = scale.toPixels(
-                    GlyphInspector.constants.boxWiden);
-            newBox.grow(boxWiden, boxWiden);
+            int boxMargin = scale.toPixels(GlyphInspector.constants.boxMargin);
+            int boxWiden = scale.toPixels(GlyphInspector.constants.boxWiden);
+            
+            if (wide) {
+                newBox.grow(boxWiden, boxMargin);
+            } else {
+                newBox.grow(boxMargin, boxMargin);
+            }
 
             return newBox;
         }
@@ -232,9 +250,9 @@ public class GlyphInspector
             }
 
             if (glyph.isKnown()
-                    && (glyph.isManualShape()
-                        || (!partShapes.contains(shape)
-                            && (glyph.getGrade() > Grades.compoundPartMaxGrade)))) {
+                && (glyph.isManualShape()
+                    || (!partShapes.contains(shape)
+                        && (glyph.getGrade() > Grades.compoundPartMaxGrade)))) {
                 return false;
             }
 
@@ -250,12 +268,12 @@ public class GlyphInspector
         public boolean isCompoundValid (Glyph compound)
         {
             Evaluation eval = GlyphNetwork.getInstance().vote(compound, system,
-                                                              minGrade);
+                    minGrade);
 
             if ((eval != null)
-                    && eval.shape.isWellKnown()
-                    && (eval.shape != Shape.CLUTTER)
-                    && (!seed.isKnown() || (eval.grade > seed.getGrade()))) {
+                && eval.shape.isWellKnown()
+                && (eval.shape != Shape.CLUTTER)
+                && (!seed.isKnown() || (eval.grade > seed.getGrade()))) {
                 chosenEvaluation = eval;
 
                 return true;

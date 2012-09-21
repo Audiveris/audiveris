@@ -669,11 +669,11 @@ public class BarsChecker
                 "Half height of box to look for chunks");
 
         Constant.Ratio chunkRatioHigh = new Constant.Ratio(
-                3.0,
+                4.0,
                 "High Minimum ratio of alien pixels to detect chunks");
 
         Constant.Ratio chunkRatioLow = new Constant.Ratio(
-                1.0,
+                2.0,
                 "Low Minimum ratio of alien pixels to detect chunks");
 
         Scale.Fraction maxStaffShiftDyHigh = new Scale.Fraction(
