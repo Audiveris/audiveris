@@ -279,16 +279,13 @@ public class SymbolsEditor
         {
             super.contextAdded(pt, movement);
 
-            if (ViewParameters.getInstance().isSectionSelectionEnabled()) {
-                // Section mode
-            } else {
-                // Glyph mode: Retrieve the selected glyphs
-                Set<Glyph> glyphs = nest.getSelectedGlyphSet();
+            // Regardless of the selection mode (section or glyph)
+            // we let the user play with the current glyph if so desired.
+            Set<Glyph> glyphs = nest.getSelectedGlyphSet();
 
-                if (movement == MouseMovement.RELEASING) {
-                    if ((glyphs != null) && !glyphs.isEmpty()) {
-                        showPagePopup(pt);
-                    }
+            if (movement == MouseMovement.RELEASING) {
+                if ((glyphs != null) && !glyphs.isEmpty()) {
+                    showPagePopup(pt);
                 }
             }
         }

@@ -274,22 +274,6 @@ public class Steps
         //~ Constructors -------------------------------------------------------
 
         /**
-         * Normal constructor
-         * @param unit         the enclosing unit
-         * @param name         the constant name
-         * @param defaultValue the default Step value
-         * @param description  the semantic of the constant
-         */
-        public Constant (java.lang.String unit,
-                         java.lang.String name,
-                         Step             defaultValue,
-                         java.lang.String description)
-        {
-            super(null, defaultValue.toString(), description);
-            setUnitAndName(unit, name);
-        }
-
-        /**
          * Specific constructor, where 'unit' and 'name' are assigned later
          * @param defaultValue the default Step value
          * @param description  the semantic of the constant

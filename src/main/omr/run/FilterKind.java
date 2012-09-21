@@ -55,24 +55,6 @@ public enum FilterKind
     public static class Constant
             extends omr.constant.Constant
     {
-
-        /**
-         * Normal constructor
-         *
-         * @param unit         the enclosing unit
-         * @param name         the constant name
-         * @param defaultValue the default FilterKind value
-         * @param description  the semantic of the constant
-         */
-        public Constant (java.lang.String unit,
-                         java.lang.String name,
-                         FilterKind defaultValue,
-                         java.lang.String description)
-        {
-            super(null, defaultValue.toString(), description);
-            setUnitAndName(unit, name);
-        }
-
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later
          *
