@@ -13,8 +13,6 @@ package omr.step;
 
 import omr.log.Logger;
 
-import omr.score.Score;
-
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 

@@ -341,44 +341,8 @@ public class Main
                         public Void call ()
                                 throws Exception
                         {
-                            long start = System.currentTimeMillis();
-                            Script script = null;
-                            File file = new File(scriptName);
-                            logger.info("Loading script file {0} ...", file);
-
-                            try {
-                                FileInputStream fis = new FileInputStream(file);
-                                script = ScriptManager.getInstance().load(fis);
-                                fis.close();
-                                script.run();
-
-                                long stop = System.currentTimeMillis();
-                                logger.info(
-                                        "Script file {0} run in {1} ms",
-                                        new Object[]{file, stop - start});
-                            } catch (ProcessingCancellationException pce) {
-                                Score score = script.getScore();
-                                logger.warning("Cancelled " + score, pce);
-
-                                if (score != null) {
-                                    score.getBench().recordCancellation();
-                                }
-                            } catch (FileNotFoundException ex) {
-                                logger.warning(
-                                        "Cannot find script file {0}",
-                                        file);
-                            } catch (Exception ex) {
-                                logger.warning("Exception occurred", ex);
-                            } finally {
-                                // Close when in batch mode
-                                if ((gui == null) && (script != null)) {
-                                    Score score = script.getScore();
-
-                                    if (score != null) {
-                                        score.close();
-                                    }
-                                }
-                            }
+                            ScriptManager.getInstance().loadAndRun(
+                                    new File(scriptName));
 
                             return null;
                         }

@@ -13,6 +13,15 @@ package omr.script;
 
 import omr.log.Logger;
 
+import omr.Main;
+
+import omr.score.Score;
+
+import omr.step.ProcessingCancellationException;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -87,6 +96,44 @@ public class ScriptManager
         }
     }
 
+    //------------//
+    // loadAndRun //
+    //------------//
+    public void loadAndRun (File file)
+    {
+        Script script = null;
+        try {
+            long start = System.currentTimeMillis();
+            logger.info("Loading script file {0} ...", file);
+            try (FileInputStream fis = new FileInputStream(file)) {
+                script = load(fis);
+            }
+            script.run();
+            long stop = System.currentTimeMillis();
+            logger.info("Script file {0} run in {1} ms", file, stop - start);
+        } catch (ProcessingCancellationException pce) {
+            Score score = script.getScore();
+            logger.warning("Cancelled " + score, pce);
+
+            if (score != null) {
+                score.getBench().recordCancellation();
+            }
+        } catch (FileNotFoundException ex) {
+            logger.warning("Cannot find script file {0}", file);
+        } catch (Exception ex) {
+            logger.warning("Exception occurred", ex);
+        } finally {
+            // Close when in batch mode
+            if ((Main.getGui() == null) && (script != null)) {
+                Score score = script.getScore();
+
+                if (score != null) {
+                    score.close();
+                }
+            }
+        }
+    }
+
     //-------//
     // store //
     //-------//
@@ -138,5 +185,6 @@ public class ScriptManager
         //~ Static fields/initializers -----------------------------------------
 
         public static final ScriptManager INSTANCE = new ScriptManager();
+
     }
 }

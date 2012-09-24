@@ -11,9 +11,6 @@
 // </editor-fold>
 package omr.step;
 
-import omr.constant.Constant;
-import omr.constant.ConstantSet;
-
 import omr.log.Logger;
 
 import omr.score.Score;
@@ -53,9 +50,6 @@ import javax.swing.SwingUtilities;
 public class Stepping
 {
     //~ Static fields/initializers ---------------------------------------------
-
-    /** Specific application parameters */
-    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Stepping.class);
@@ -246,6 +240,7 @@ public class Stepping
 
         try {
             // Determine starting step and stopping step
+            final Step loadStep = Steps.valueOf(Steps.LOAD);
             Step start;
             Step stop;
 
@@ -275,7 +270,6 @@ public class Stepping
 
             // Remove the LOAD step (unless it is explicitly desired)
             // LOAD step may appear only in reprocessSheet()
-            Step loadStep = Steps.valueOf(Steps.LOAD);
 
             if (!desiredSteps.contains(loadStep)) {
                 orderedSteps.remove(loadStep);
@@ -482,7 +476,7 @@ public class Stepping
                                         final Score score)
     {
         if (score.isMultiPage()) {
-            if (constants.pagesInParallel.getValue()) {
+            if (OmrExecutors.defaultParallelism.getTarget() == true) {
                 // Process all sheets in parallel
                 List<Callable<Void>> tasks = new ArrayList<>();
 
@@ -681,21 +675,5 @@ public class Stepping
 
         long stopTime = System.currentTimeMillis();
         logger.fine("End of step set in {0} ms.", (stopTime - startTime));
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /** Should we apply steps in parallel (vs in sequence) on score pages */
-        Constant.Boolean pagesInParallel = new Constant.Boolean(
-                false,
-                "Should we process score pages in parallel?");
-
     }
 }

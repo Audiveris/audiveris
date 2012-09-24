@@ -17,6 +17,8 @@ import omr.log.Logger;
 
 import omr.score.Score;
 
+import omr.script.ScriptManager;
+
 import omr.step.Step;
 import omr.step.Stepping;
 import omr.step.Steps;
@@ -75,8 +77,7 @@ public class FileDropHandler
             return false;
         }
 
-        /* Check to see if the source actions contains the COPY action
-         */
+        /* Check to see if the source actions contains the COPY action */
         boolean copySupported = (COPY & support.getSourceDropActions()) == COPY;
 
         /* If COPY is supported, choose COPY and accept the transfer */
@@ -113,7 +114,11 @@ public class FileDropHandler
 
             /* Loop through the files */
             for (File file : fileList) {
-                new DropTask(file, defaultStep.getTarget()).execute();
+                if (file.getName().endsWith(ScriptManager.SCRIPT_EXTENSION)) {
+                    new DropScriptTask(file).execute();
+                } else {
+                    new DropImageTask(file, defaultStep.getTarget()).execute();
+                }
             }
         } catch (UnsupportedFlavorException ex) {
             logger.warning("Unsupported flavor in drag & drop", ex);
@@ -143,10 +148,10 @@ public class FileDropHandler
 
     }
 
-    //----------//
-    // DropTask //
-    //----------//
-    private static class DropTask
+    //---------------//
+    // DropImageTask //
+    //---------------//
+    private static class DropImageTask
             extends BasicTask
     {
         //~ Instance fields ----------------------------------------------------
@@ -156,8 +161,8 @@ public class FileDropHandler
         private final Step target;
 
         //~ Constructors -------------------------------------------------------
-        public DropTask (File file,
-                         Step target)
+        public DropImageTask (File file,
+                              Step target)
         {
             this.file = file;
             this.target = target;
@@ -168,10 +173,43 @@ public class FileDropHandler
         protected Void doInBackground ()
                 throws Exception
         {
-            logger.info("Dropping file {0}", file);
+            logger.info("Dropping image file {0}", file);
 
             Score score = new Score(file);
-            Stepping.processScore(Collections.singleton(target), score);
+            final Step loadStep = Steps.valueOf(Steps.LOAD);
+
+            if (target.equals(loadStep)) {
+                Stepping.processScore(Collections.EMPTY_SET, score);
+            } else {
+                Stepping.processScore(Collections.singleton(target), score);
+            }
+
+            return null;
+        }
+    }
+
+    //----------------//
+    // DropScriptTask //
+    //----------------//
+    private static class DropScriptTask
+            extends BasicTask
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        private final File file;
+
+        //~ Constructors -------------------------------------------------------
+        public DropScriptTask (File file)
+        {
+            this.file = file;
+        }
+
+        //~ Methods ------------------------------------------------------------
+        @Override
+        protected Void doInBackground ()
+                throws Exception
+        {
+            ScriptManager.getInstance().loadAndRun(file);
 
             return null;
         }
