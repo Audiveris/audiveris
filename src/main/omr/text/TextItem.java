@@ -29,7 +29,7 @@ public abstract class TextItem
     private PixelRectangle bounds;
 
     /** Item value. */
-    private final String value;
+    private String value;
 
     //~ Constructors -----------------------------------------------------------
     //
@@ -48,7 +48,7 @@ public abstract class TextItem
         if (bounds != null) {
             this.bounds = new PixelRectangle(bounds);
         }
-        
+
         this.value = value;
     }
 
@@ -122,6 +122,19 @@ public abstract class TextItem
         return value;
     }
 
+    //----------//
+    // setValue //
+    //----------//
+    /**
+     * Modify the item value.
+     *
+     * @param value the new item value
+     */
+    protected void setValue (String value)
+    {
+        this.value = value;
+    }
+
     //---------//
     // valueOf //
     //---------//
@@ -164,7 +177,7 @@ public abstract class TextItem
     {
         StringBuilder sb = new StringBuilder("{");
         sb.append(getClass().getSimpleName());
-        sb.append('@').append(Integer.toHexString(hashCode()));
+        ///sb.append('@').append(Integer.toHexString(hashCode()));
 
         sb.append(internalsString());
 
@@ -184,8 +197,8 @@ public abstract class TextItem
 
         if (getBounds() != null) {
             sb.append(String.format(" bounds[%d,%d,%d,%d]",
-                                    bounds.x, bounds.y,
-                                    bounds.width, bounds.height));
+                    bounds.x, bounds.y,
+                    bounds.width, bounds.height));
         }
 
         return sb.toString();

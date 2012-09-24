@@ -13,6 +13,8 @@ package omr.text;
 
 import omr.glyph.facets.Glyph;
 
+import omr.log.Logger;
+
 import omr.score.common.PixelRectangle;
 
 import omr.ui.symbol.TextFont;
@@ -35,6 +37,9 @@ public class TextWord
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(TextWord.class);
+
     /** Comparator based on word size. */
     public static final Comparator<TextWord> bySize = new Comparator<TextWord>()
     {
@@ -43,7 +48,7 @@ public class TextWord
                             TextWord o2)
         {
             return Integer.compare(o1.getValue().length(),
-                                   o2.getValue().length());
+                    o2.getValue().length());
         }
     };
 
@@ -156,9 +161,9 @@ public class TextWord
                 box,
                 value,
                 new Line2D.Double(box.x,
-                                  box.y + box.height,
-                                  box.x + box.width,
-                                  box.y + box.height),
+                box.y + box.height,
+                box.x + box.width,
+                box.y + box.height),
                 100, // Confidence
                 FontInfo.createDefault(fontSize),
                 null);
@@ -194,14 +199,15 @@ public class TextWord
     {
         return super.getValue();
     }
-    
+
     /**
-     * Report the length of this word value, expressed in a number of 
+     * Report the length of this word value, expressed in a number of
      * chars.
+     *
      * @return the length of the manual value of the associated glyph if any,
-     * otherwise the length of the internal value.
+     *         otherwise the length of the internal value.
      */
-    public int getLength()
+    public int getLength ()
     {
         return getValue().length();
     }
@@ -257,11 +263,11 @@ public class TextWord
         TextLine line = words[0].textLine;
 
         return new TextWord(baselineOf(Arrays.asList(words)),
-                            sb.toString(),
-                            fontInfo,
-                            confidenceOf(Arrays.asList(words)),
-                            chars,
-                            line);
+                sb.toString(),
+                fontInfo,
+                confidenceOf(Arrays.asList(words)),
+                chars,
+                line);
     }
 
     //---------//
@@ -333,8 +339,8 @@ public class TextWord
     {
         if (preciseFontSize == null) {
             preciseFontSize = TextFont.computeFontSize(getValue(),
-                                                       fontInfo,
-                                                       getBounds().getSize());
+                    fontInfo,
+                    getBounds().getSize());
         }
 
         return preciseFontSize;
@@ -388,6 +394,32 @@ public class TextWord
         // Translate contained descriptorrs
         for (TextChar ch : chars) {
             ch.translate(dx, dy);
+        }
+
+        // Piggy-back processing: Check word value WRT chars values
+        checkValue();
+    }
+
+    //------------//
+    // checkValue //
+    //------------//
+    /**
+     * Make sure word value is consistent with sequence of chars values.
+     */
+    private void checkValue ()
+    {
+        StringBuilder sb = new StringBuilder();
+
+        for (TextChar ch : chars) {
+            sb.append(ch.getValue());
+        }
+
+        String sbValue = sb.toString();
+
+        if (!getInternalValue().equals(sbValue)) {
+            logger.fine("Word at {0} updated from ''{1}'' to ''{2}''",
+                    getBounds(), getInternalValue(), sbValue);
+            setValue(sbValue);
         }
     }
 

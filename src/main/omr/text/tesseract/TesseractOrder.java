@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.text.tesseract;
 
+import java.awt.Rectangle;
 import omr.WellKnowns;
 
 import omr.sheet.SystemInfo;
@@ -242,6 +243,8 @@ public class TesseractOrder
      */
     private List<TextLine> getLines ()
     {
+        final int maxDashWidth = system.getScoreSystem().getScale().getInterline();
+
         ResultIterator it = api.GetIterator();
 
         List<TextLine> lines = new ArrayList<>(); // Lines built so far
@@ -291,10 +294,16 @@ public class TesseractOrder
                 }
 
                 // Char/symbol to be processed
-                word.addChar(
-                        new TextChar(
-                        it.BoundingBox(Level.SYMBOL),
-                        it.GetUTF8Text(Level.SYMBOL)));
+
+                // Fix long "—" vs short "-"
+                String charValue = it.GetUTF8Text(Level.SYMBOL);
+                Rectangle charBox = it.BoundingBox(Level.SYMBOL);
+                if (charValue.equals("—") && charBox.width <= maxDashWidth) {
+                    charValue = "-";                    
+                    // Containing word value will be updated later
+                }
+
+                word.addChar(new TextChar(charBox, charValue));
             } while (it.Next(Level.SYMBOL));
 
             return lines;

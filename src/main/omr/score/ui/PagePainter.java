@@ -787,8 +787,8 @@ public abstract class PagePainter
     private void paintWord (TextWord word)
     {
         // Use precise word font size for long enough words
-        // But prefer mean line font size for too short words
-        Float fontSize = word.getLength() > 1
+        // But prefer mean line font size for too short words (and lyrics)
+        Float fontSize = (word.getLength() > 1 && !word.getTextLine().isLyrics())
                          ? word.getPreciseFontSize()
                          : word.getTextLine().getMeanFontSize();
 
