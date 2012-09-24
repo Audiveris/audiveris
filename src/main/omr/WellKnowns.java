@@ -14,6 +14,7 @@ package omr;
 import omr.log.Logger;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.util.Locale;
 
@@ -42,40 +43,40 @@ public class WellKnowns
 
     /** Specific prefix for application folders */
     private static final String TOOL_PREFIX = "/" + TOOL_COMPANY + "/"
-            + TOOL_NAME;
+                                              + TOOL_NAME;
 
     //----------//
     // PLATFORM //
     //----------//
     
     /** Character encoding */
-    public static final String encoding = "UTF-8";
+    public static final String ENCODING = "UTF-8";
 
     /** Are we using a Linux OS? */
     public static final boolean LINUX = System.getProperty("os.name")
-                                              .toLowerCase(Locale.ENGLISH)
-                                              .startsWith("linux");
+            .toLowerCase(Locale.ENGLISH)
+            .startsWith("linux");
 
     /** Are we using a Mac OS? */
     public static final boolean MAC_OS_X = System.getProperty("os.name")
-                                                 .toLowerCase(Locale.ENGLISH)
-                                                 .startsWith("mac os x");
+            .toLowerCase(Locale.ENGLISH)
+            .startsWith("mac os x");
 
     /** Are we using a Windows OS? */
     public static final boolean WINDOWS = System.getProperty("os.name")
-                                                .toLowerCase(Locale.ENGLISH)
-                                                .startsWith("windows");
+            .toLowerCase(Locale.ENGLISH)
+            .startsWith("windows");
 
     /** Precise OS architecture */
     public static final String OS_ARCH = System.getProperty("os.arch");
 
     /** File separator for the current platform */
     public static final String FILE_SEPARATOR = System.getProperty(
-        "file.separator");
+            "file.separator");
 
     /** Line separator for the current platform */
     public static final String LINE_SEPARATOR = System.getProperty(
-        "line.separator");
+            "line.separator");
 
     /** Redirection, if any, of standard out and err stream */
     public static final String STD_OUT_ERROR = System.getProperty("stdouterr");
@@ -94,9 +95,7 @@ public class WellKnowns
     public static final File RES_FOLDER = new File(PROGRAM_FOLDER, "res");
 
     /** The folder where Tesseract OCR material is stored */
-    public static final File OCR_FOLDER = LINUX
-                                          ? new File("/usr/local/share")
-                                          : new File(PROGRAM_FOLDER, "ocr");
+    public static final File OCR_FOLDER = getOcrFolder();
 
     /** The folder where documentations files are stored */
     public static final File DOC_FOLDER = new File(PROGRAM_FOLDER, "www");
@@ -116,21 +115,13 @@ public class WellKnowns
 
     /** The folder where global configuration data is stored */
     public static final File SETTINGS_FOLDER = new File(
-        CONFIG_FOLDER,
-        "settings");
+            CONFIG_FOLDER,
+            "settings");
 
     /** The folder where plugin scripts are found */
     public static final File PLUGINS_FOLDER = new File(
-        CONFIG_FOLDER,
-        "plugins");
-
-    static {
-        /** Adjust logging if needed */
-        setLogging();
-
-        /** Disable DirecDraw by default */
-        disableDirectDraw();
-    }
+            CONFIG_FOLDER,
+            "plugins");
 
     //------//
     // DATA //
@@ -141,8 +132,8 @@ public class WellKnowns
 
     /** The folder where examples are stored */
     public static final File EXAMPLES_FOLDER = new File(
-        DATA_FOLDER,
-        "examples");
+            DATA_FOLDER,
+            "examples");
 
     /** The folder where temporary data can be stored */
     public static final File TEMP_FOLDER = new File(DATA_FOLDER, "temp");
@@ -158,31 +149,41 @@ public class WellKnowns
 
     /** The default folder where benches data is stored */
     public static final File DEFAULT_BENCHES_FOLDER = new File(
-        DATA_FOLDER,
-        "benches");
+            DATA_FOLDER,
+            "benches");
 
     /** The default folder where MIDI data is stored */
     public static final File DEFAULT_MIDI_FOLDER = new File(
-        DATA_FOLDER,
-        "midi");
+            DATA_FOLDER,
+            "midi");
 
     /** The default folder where PDF data is stored */
     public static final File DEFAULT_PRINT_FOLDER = new File(
-        DATA_FOLDER,
-        "print");
+            DATA_FOLDER,
+            "print");
 
     /** The default folder where scripts data is stored */
     public static final File DEFAULT_SCRIPTS_FOLDER = new File(
-        DATA_FOLDER,
-        "scripts");
+            DATA_FOLDER,
+            "scripts");
 
     /** The default folder where scores data is stored */
     public static final File DEFAULT_SCORES_FOLDER = new File(
-        DATA_FOLDER,
-        "scores");
-    
+            DATA_FOLDER,
+            "scores");
+
+    /** The logging definition file, if any */
+    private static final File LOGGING_FILE = getLoggingFile();
+
+    static {
+        /** Disable DirecDraw by default */
+        disableDirectDraw();
+
+        /** Log declared data (debug) */
+        logDeclaredData();
+    }
+
     //~ Constructors -----------------------------------------------------------
-    
     //------------//
     // WellKnowns // Not meant to be instantiated
     //------------//
@@ -227,7 +228,7 @@ public class WellKnowns
         try {
             /** Classes container, beware of escaped blanks */
             return new File(
-                WellKnowns.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+                    WellKnowns.class.getProtectionDomain().getCodeSource().getLocation().toURI());
         } catch (URISyntaxException ex) {
             System.err.println("Cannot decode container, " + ex);
             throw new RuntimeException(ex);
@@ -256,15 +257,16 @@ public class WellKnowns
         if (WINDOWS) {
             return getUserDataFolder();
         } else if (MAC_OS_X) {
-        	String config = System.getenv("XDG_CONFIG_HOME");
-        	if (config != null) {
-        		return new File(config + System.getProperty("user.dir"));
-        	}
-        	String home = System.getenv("HOME");
+            String config = System.getenv("XDG_CONFIG_HOME");
+            if (config != null) {
+                return new File(config + System.getProperty("user.dir"));
+            }
+            String home = System.getenv("HOME");
             if (home != null) {
-                 return new File(System.getProperty("user.dir"));}
-                 throw new RuntimeException("HOME environment variable is not set");
-                 
+                return new File(System.getProperty("user.dir"));
+            }
+            throw new RuntimeException("HOME environment variable is not set");
+
         } else if (LINUX) {
             String config = System.getenv("XDG_CONFIG_HOME");
 
@@ -292,8 +294,9 @@ public class WellKnowns
         if (isProject) {
             // For development environment CONFIG = DATA = PROGRAM
             return PROGRAM_FOLDER;
-        } else 
+        } else {
             return getUserDataFolder();
+        }
     }
 
     //-------------------//
@@ -309,17 +312,17 @@ public class WellKnowns
             }
 
             throw new RuntimeException(
-                "APPDATA environment variable is not set");
+                    "APPDATA environment variable is not set");
         } else if (MAC_OS_X) {
-        	String data = System.getenv("XDG_DATA_HOME");
-        	if (data != null) {
-        	     return new File(System.getProperty("user.dir"));
-        	 }
-        	String home = System.getenv("HOME");
-        	if (home != null) {
-        	return new File(System.getProperty("user.dir"));
-        	}
-        	throw new RuntimeException("HOME environment variable is not set");       	
+            String data = System.getenv("XDG_DATA_HOME");
+            if (data != null) {
+                return new File(System.getProperty("user.dir"));
+            }
+            String home = System.getenv("HOME");
+            if (home != null) {
+                return new File(System.getProperty("user.dir"));
+            }
+            throw new RuntimeException("HOME environment variable is not set");
         } else if (LINUX) {
             String data = System.getenv("XDG_DATA_HOME");
 
@@ -347,7 +350,33 @@ public class WellKnowns
         // .../build/classes when running from classes files
         // .../dist/audiveris.jar when running from the jar archive
         return CLASS_CONTAINER.getParentFile()
-                              .getParentFile();
+                .getParentFile();
+    }
+
+    //--------------//
+    // getOcrFolder //
+    //--------------//
+    private static File getOcrFolder ()
+    {
+        // First, try to use TESSDATA_PREFIX environment variable
+        // which would denote a Tesseract installation
+        final String TESSDATA_PREFIX = "TESSDATA_PREFIX";
+        final String tessPrefix = System.getenv(TESSDATA_PREFIX);
+
+        if (tessPrefix != null) {
+            File dir = new File(tessPrefix);
+            if (dir.isDirectory()) {
+                // TODO: check directory content?
+                return dir;
+            }
+        }
+
+        // Fallback using ocr subdirectory of Audiveris
+        if (LINUX) {
+            return new File("/usr/local/share");
+        } else {
+            return new File(PROGRAM_FOLDER, "ocr");
+        }
     }
 
     //-----------//
@@ -359,31 +388,32 @@ public class WellKnowns
         // are running from the development folder (with data & settings as
         // subfolders) rather than from a standard folder (installed with 
         // distinct location for application data & config).
-    	// There are other possible "src" symoble does not work for example other program invoking audiveris.jar file
-    	// so added one more condition to check if class_container having .jar extension
+        // There are other possible "src" symoble does not work for example other program invoking audiveris.jar file
+        // so added one more condition to check if class_container having .jar extension
         File devFolder = new File(PROGRAM_FOLDER, "src");
         String s = CLASS_CONTAINER.getName();
-        String ext=null;
+        String ext = null;
         int i = s.lastIndexOf('.');
-            if (i > 0 &&  i < s.length() - 1) {
-                ext=s.substring(i+1).toLowerCase();
-         }
-        return devFolder.exists()||ext=="jar";
+        if (i > 0 && i < s.length() - 1) {
+            ext = s.substring(i + 1).toLowerCase();
+        }
+        return devFolder.exists() || ext == "jar";
     }
 
-    //------------//
-    // setLogging //
-    //------------//
-    private static void setLogging ()
+    //----------------//
+    // getLoggingFile //
+    //----------------//
+    private static File getLoggingFile ()
     {
         final String LOGGING_KEY = "java.util.logging.config.file";
         final String LOGGING_NAME = "logging.properties";
+        File loggingFile = null;
 
         // Set logging configuration file (if none already defined)
         final String loggingProp = System.getProperty(LOGGING_KEY);
         if (loggingProp == null) {
             // Check for a user file
-            File loggingFile = new File(SETTINGS_FOLDER, LOGGING_NAME);
+            loggingFile = new File(USER_FOLDER, LOGGING_NAME);
 
             if (loggingFile.exists()) {
                 System.setProperty(LOGGING_KEY, loggingFile.toString());
@@ -392,7 +422,24 @@ public class WellKnowns
             System.out.println("Logging already defined by " + loggingProp);
         }
 
-        /** Set up logger mechanism */
-        Logger.getLogger(WellKnowns.class);
+        return loggingFile;
+    }
+
+    //-----------------//
+    // logDeclaredData //
+    //-----------------//
+    private static void logDeclaredData ()
+    {
+        final Logger logger = Logger.getLogger(WellKnowns.class);
+
+        if (logger.isFineEnabled()) {
+            for (Field field : WellKnowns.class.getDeclaredFields()) {
+                try {
+                    logger.fine("{0}= {1}", field.getName(), field.get(null));
+                } catch (IllegalAccessException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
     }
 }

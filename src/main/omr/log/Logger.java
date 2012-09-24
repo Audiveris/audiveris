@@ -403,11 +403,11 @@ public class Logger
 
                 logger = Logger.getLogger("stdout");
                 los = new LoggingOutputStream(logger, StdOutErrLevel.STDOUT);
-                System.setOut(new PrintStream(los, true, WellKnowns.encoding));
+                System.setOut(new PrintStream(los, true, WellKnowns.ENCODING));
 
                 logger = Logger.getLogger("stderr");
                 los = new LoggingOutputStream(logger, StdOutErrLevel.STDERR);
-                System.setErr(new PrintStream(los, true, WellKnowns.encoding));
+                System.setErr(new PrintStream(los, true, WellKnowns.ENCODING));
             } catch (IOException | SecurityException ex) {
                 ex.printStackTrace();
             }
@@ -433,11 +433,11 @@ public class Logger
             consoleHandler.setFilter(new LogEmptyMessageFilter());
 
             try {
-                consoleHandler.setEncoding(WellKnowns.encoding);
+                consoleHandler.setEncoding(WellKnowns.ENCODING);
             } catch (SecurityException | UnsupportedEncodingException ex) {
                 System.err.
                         println(
-                        "Cannot setEncoding to " + WellKnowns.encoding + " exception: " + ex);
+                        "Cannot setEncoding to " + WellKnowns.ENCODING + " exception: " + ex);
             }
         }
 

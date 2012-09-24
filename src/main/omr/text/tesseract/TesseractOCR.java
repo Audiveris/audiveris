@@ -62,16 +62,16 @@ public class TesseractOCR
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(TesseractOCR.class);
 
-    /** Singleton */
+    /** Singleton. */
     private static final OCR INSTANCE = new TesseractOCR();
 
-    /** Latin encoder, to check character validity */
+    /** Latin encoder, to check character validity. (not used yet) */
     private static final CharsetEncoder encoder = Charset.forName("iso-8859-1").
             newEncoder();
 
     //~ Instance fields --------------------------------------------------------
     //
-    /** To assign a serial number to each image processing order */
+    /** To assign a serial number to each image processing order. */
     private final AtomicInteger serial = new AtomicInteger(0);
 
     //~ Constructors -----------------------------------------------------------

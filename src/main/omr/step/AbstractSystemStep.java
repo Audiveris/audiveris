@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.concurrent.Callable;
 
 /**
- * Class {@code AbstractSystemStep} is a basis for any step working in 
+ * Class {@code AbstractSystemStep} is a basis for any step working in
  * parallel on the sheet systems.
  *
  * @author Hervé Bitteur
@@ -158,21 +158,20 @@ public abstract class AbstractSystemStep
                 tasks.add(
                         new Callable<Void>()
                         {
-
                             @Override
                             public Void call ()
                                     throws Exception
                             {
                                 try {
                                     logger.fine("{0} doSystem #{1}",
-                                                new Object[]{
-                                                AbstractSystemStep.this, system.
-                                                getId()});
+                                            AbstractSystemStep.this,
+                                            system.idString());
 
                                     doSystem(system);
                                 } catch (Exception ex) {
-                                    logger.warning(sheet.getLogPrefix() +
-                                            "Interrupt on " + system,
+                                    logger.warning(sheet.getLogPrefix()
+                                                   + "Interrupt on "
+                                                   + system.idString(),
                                             ex);
                                 }
 
