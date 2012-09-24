@@ -75,7 +75,7 @@ public abstract class GlyphTask
                 getClass().getSimpleName() + " needs at least one glyph");
         }
 
-        this.glyphs = new TreeSet<>(Glyph.abscissaComparator);
+        this.glyphs = new TreeSet<>(Glyph.byAbscissa);
         this.glyphs.addAll(glyphs);
     }
 

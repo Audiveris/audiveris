@@ -23,6 +23,7 @@ import omr.math.ReversePathIterator;
 
 import omr.run.Orientation;
 
+import omr.score.common.PixelPoint;
 import omr.score.entity.Staff;
 
 import omr.sheet.Dash;
@@ -50,12 +51,11 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import omr.score.common.PixelPoint;
 
 /**
  * Class {@code StaffInfo} handles the physical informations of a staff
  * with its lines.
- * Note: All methods are meant to provide correct results, rehardless of the
+ * Note: All methods are meant to provide correct results, regardless of the
  * actual number of lines in the staff instance.
  *
  * @author Hervé Bitteur
@@ -78,7 +78,7 @@ public class StaffInfo
             return Integer.compare(o1.id, o2.id);
         }
     };
-    
+
     //~ Instance fields --------------------------------------------------------
     //
     /** Sequence of the staff lines. (from top to bottom) */
@@ -115,7 +115,7 @@ public class StaffInfo
     private GeoPath area;
 
     /** Map of ledgers nearby. */
-    private final Map<Integer, SortedSet<Ledger>> ledgerMap = new TreeMap<>();
+    private final Map<Integer, SortedSet<Glyph>> ledgerMap = new TreeMap<>();
 
     /** Corresponding staff entity in the score hierarchy. */
     private Staff scoreStaff;
@@ -169,23 +169,69 @@ public class StaffInfo
      * Add a ledger to the collection (which is lazily created)
      *
      * @param ledger the ledger to add
+     * @param index  the staff-based index for ledger line
      */
-    public void addLedger (Ledger ledger)
+    public void addLedger (Glyph ledger,
+                           int index)
     {
         if (ledger == null) {
             throw new IllegalArgumentException("Cannot register a null ledger");
         }
 
-        int pitch = ledger.getLineIndex();
-        SortedSet<Ledger> ledgerSet = ledgerMap.get(pitch);
+        SortedSet<Glyph> ledgerSet = ledgerMap.get(index);
 
         if (ledgerSet == null) {
-            ledgerSet = new TreeSet<>(Dash.abscissaComparator);
-            ledgerMap.put(pitch, ledgerSet);
+            ledgerSet = new TreeSet<>(Glyph.byAbscissa);
+            ledgerMap.put(index, ledgerSet);
         }
 
         ledgerSet.add(ledger);
-        scoreStaff.getSystem().getInfo().addToLedgersCollection(ledger);
+    }
+
+    //-----------//
+    // addLedger //
+    //-----------//
+    /**
+     * Add a ledger to the collection, computing line index from
+     * glyph pitch position.
+     *
+     * @param ledger the ledger to add
+     */
+    public void addLedger (Glyph ledger)
+    {
+        if (ledger == null) {
+            throw new IllegalArgumentException("Cannot register a null ledger");
+        }
+
+        addLedger(ledger,
+                getLedgerLineIndex(pitchPositionOf(ledger.getCentroid())));
+    }
+
+    //--------------//
+    // removeLedger //
+    //--------------//
+    /**
+     * Remove a legder from staff collection.
+     *
+     * @param ledger the ledger to remove
+     * @return true if actually removed, false if not found
+     */
+    public boolean removeLedger (Glyph ledger)
+    {
+        if (ledger == null) {
+            throw new IllegalArgumentException("Cannot remove a null ledger");
+        }
+
+        // Browse all staff ledger indices
+        for (SortedSet<Glyph> ledgerSet : ledgerMap.values()) {
+            if (ledgerSet.remove(ledger)) {
+                return true;
+            }
+        }
+
+        // Not found
+        logger.fine("Could not find ledger {0}", ledger.idString());
+        return false;
     }
 
     //------//
@@ -296,9 +342,9 @@ public class StaffInfo
      * @param point the provided point
      * @return the closest ledger found, or null
      */
-    public Ledger getClosestLedger (Point2D point)
+    public IndexedLedger getClosestLedger (Point2D point)
     {
-        Ledger bestLedger = null;
+        IndexedLedger bestLedger = null;
         double top = getFirstLine().yAt(point.getX());
         double bottom = getLastLine().yAt(point.getX());
         double rawPitch = (4.0d * ((2 * point.getY()) - bottom - top)) / (bottom
@@ -333,12 +379,11 @@ public class StaffInfo
                 searchBox.getHeight() + (2 * interline));
 
         // Browse all staff ledgers
-        Set<Ledger> foundLedgers = new HashSet<>();
-
-        for (Set<Ledger> set : ledgerMap.values()) {
-            for (Ledger ledger : set) {
+        Set<IndexedLedger> foundLedgers = new HashSet<>();
+        for (Map.Entry<Integer, SortedSet<Glyph>> entry : ledgerMap.entrySet()) {
+            for (Glyph ledger : entry.getValue()) {
                 if (ledger.getBounds().intersects(searchBox)) {
-                    foundLedgers.add(ledger);
+                    foundLedgers.add(new IndexedLedger(ledger, entry.getKey()));
                 }
             }
         }
@@ -347,13 +392,13 @@ public class StaffInfo
             // Use the closest ledger
             double bestDist = Double.MAX_VALUE;
 
-            for (Ledger ledger : foundLedgers) {
-                Point2D center = ledger.getStick().getAreaCenter();
+            for (IndexedLedger iLedger : foundLedgers) {
+                Point2D center = iLedger.glyph.getAreaCenter();
                 double dist = Math.abs(center.getY() - point.getY());
 
                 if (dist < bestDist) {
                     bestDist = dist;
-                    bestLedger = ledger;
+                    bestLedger = iLedger;
                 }
             }
         }
@@ -514,7 +559,7 @@ public class StaffInfo
     //--------------//
     // getLedgerMap //
     //--------------//
-    public Map<Integer, SortedSet<Ledger>> getLedgerMap ()
+    public Map<Integer, SortedSet<Glyph>> getLedgerMap ()
     {
         return ledgerMap;
     }
@@ -529,7 +574,7 @@ public class StaffInfo
      *                  distance from staff
      * @return the proper set of ledgers, or null
      */
-    public SortedSet<Ledger> getLedgers (int lineIndex)
+    public SortedSet<Glyph> getLedgers (int lineIndex)
     {
         return ledgerMap.get(lineIndex);
     }
@@ -627,15 +672,15 @@ public class StaffInfo
     public NotePosition getNotePosition (Point2D point)
     {
         double pitch = pitchPositionOf(point);
-        Ledger bestLedger = null;
+        IndexedLedger bestLedger = null;
 
         // If we are rather far from the staff, try getting help from ledgers
         if (Math.abs(pitch) > lines.size()) {
             bestLedger = getClosestLedger(point);
 
             if (bestLedger != null) {
-                Point2D center = bestLedger.getStick().getAreaCenter();
-                int ledgerPitch = bestLedger.getPitchPosition();
+                Point2D center = bestLedger.glyph.getAreaCenter();
+                int ledgerPitch = getLedgerPitchPosition(bestLedger.index);
                 double deltaPitch = (2d * (point.getY() - center.getY())) / specificScale.
                         getInterline();
                 pitch = ledgerPitch + deltaPitch;
@@ -643,6 +688,48 @@ public class StaffInfo
         }
 
         return new NotePosition(this, pitch, bestLedger);
+    }
+
+    //------------------------//
+    // getLedgerPitchPosition //
+    //------------------------//
+    /**
+     * Report the pitch position of a ledger WRT the related staff
+     *
+     * @param the ledger line index
+     * @return the ledger pitch position
+     */
+    public static int getLedgerPitchPosition (int lineIndex)
+    {
+        //        // Safer, for the time being...
+        //        if (getStaff()
+        //                .getLines()
+        //                .size() != 5) {
+        //            throw new RuntimeException("Only 5-line staves are supported");
+        //        }
+        if (lineIndex > 0) {
+            return 4 + (2 * lineIndex);
+        } else {
+            return -4 + (2 * lineIndex);
+        }
+    }
+
+    //--------------------//
+    // getLedgerLineIndex //
+    //--------------------//
+    /**
+     * Compute staff-based line index, based on provided pitch position
+     *
+     * @param pitchPosition the provided pitch position
+     * @return the computed line index
+     */
+    public static int getLedgerLineIndex (double pitchPosition)
+    {
+        if (pitchPosition > 0) {
+            return (int) Math.rint(pitchPosition / 2) - 2;
+        } else {
+            return (int) Math.rint(pitchPosition / 2) + 2;
+        }
     }
 
     //---------------//
@@ -876,5 +963,25 @@ public class StaffInfo
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //---------------//
+    // IndexedLedger //
+    //---------------//
+    public static class IndexedLedger
+    {
+
+        /** The ledger glyph. */
+        public final Glyph glyph;
+
+        /** Staff-based line index. (-1, -2, ... above, +1, +2, ... below) */
+        public final int index;
+
+        public IndexedLedger (Glyph ledger,
+                              int index)
+        {
+            this.glyph = ledger;
+            this.index = index;
+        }
     }
 }

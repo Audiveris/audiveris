@@ -426,7 +426,7 @@ public class LinesRetriever
 
             if (secondInterline != null) {
                 secondFilaments = discardedFilaments;
-                Collections.sort(secondFilaments, Glyph.idComparator);
+                Collections.sort(secondFilaments, Glyph.byId);
                 logger.info("{0}Searching clusters with secondInterline: {1}",
                             sheet.getLogPrefix(), secondInterline);
                 secondClustersRetriever = new ClustersRetriever(

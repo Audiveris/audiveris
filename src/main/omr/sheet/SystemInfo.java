@@ -32,6 +32,8 @@ import omr.lag.Section;
 
 import omr.log.Logger;
 
+import omr.math.GeoPath;
+
 import omr.score.SystemTranslator;
 import omr.score.common.PixelDimension;
 import omr.score.common.PixelPoint;
@@ -49,21 +51,21 @@ import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
 import omr.util.Navigable;
 import omr.util.Predicate;
+import omr.util.VerticalSide;
 
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentSkipListSet;
-import omr.math.GeoPath;
-import omr.util.VerticalSide;
 
 /**
  * Class {@code SystemInfo} gathers information from the original
@@ -150,9 +152,6 @@ public class SystemInfo
             unmodifiableCollection(
             hSections);
 
-    /** Retrieved ledgers in this system */
-    private final List<Glyph> ledgers = new ArrayList<>();
-
     /** Retrieved tenuto signs in this system */
     private final List<Glyph> tenutos = new ArrayList<>();
 
@@ -170,7 +169,7 @@ public class SystemInfo
 
     /** Collection of (active?) glyphs in this system */
     private final SortedSet<Glyph> glyphs = new ConcurrentSkipListSet<>(
-            Glyph.abscissaComparator);
+            Glyph.byAbscissa);
 
     /** Unmodifiable view of the glyphs collection */
     private final SortedSet<Glyph> glyphsView = Collections.
@@ -288,19 +287,6 @@ public class SystemInfo
     public void addToGlyphsCollection (Glyph glyph)
     {
         glyphs.add(glyph);
-    }
-
-    //------------------------//
-    // addToLedgersCollection //
-    //------------------------//
-    /**
-     * This is a private entry meant for StaffInfo only.
-     *
-     * @param ledger the ledger to add to the system ledger glyph collection
-     */
-    public void addToLedgersCollection (Ledger ledger)
-    {
-        ledgers.add(ledger.getStick());
     }
 
     //------------------------//
@@ -763,19 +749,6 @@ public class SystemInfo
         return staves.get(staves.size() - 1);
     }
 
-    //------------//
-    // getLedgers //
-    //------------//
-    /**
-     * Report non-modifiable view of ledgers found.
-     *
-     * @return the ledger collection
-     */
-    public List<Glyph> getLedgers ()
-    {
-        return Collections.unmodifiableList(ledgers);
-    }
-
     //---------//
     // getLeft //
     //---------//
@@ -909,7 +882,8 @@ public class SystemInfo
                     // Delta pitch from closest reference ledger
                     double otherDp = Math.abs(
                             otherPos.getPitchPosition()
-                            - otherPos.getLedger().getPitchPosition());
+                            - StaffInfo.getLedgerPitchPosition(
+                            otherPos.getLedger().index));
 
                     if (otherDp < dp) {
                         logger.fine("   otherPos: {0}", pos);
@@ -1198,20 +1172,6 @@ public class SystemInfo
     public boolean removeFromGlyphsCollection (Glyph glyph)
     {
         return glyphs.remove(glyph);
-    }
-
-    //-----------------------------//
-    // removeFromLedgersCollection //
-    //-----------------------------//
-    /**
-     * This is a private entry meant for StaffInfo only.
-     *
-     * @param ledger the ledger to remove from the system ledger glyph
-     *               collection
-     */
-    public void removeFromLedgersCollection (Ledger ledger)
-    {
-        ledgers.remove(ledger.getStick());
     }
 
     //-------------//

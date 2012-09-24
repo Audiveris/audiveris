@@ -148,6 +148,16 @@ public class ShapeSet
             STRONG_ACCENT,
             ARPEGGIATO));
 
+    public static final ShapeSet Attributes = new ShapeSet(
+            PEDAL_MARK,
+            shapesOf(
+            OTTAVA_ALTA,
+            OTTAVA_BASSA,
+            PEDAL_MARK,
+            PEDAL_UP_MARK,
+            TUPLET_THREE,
+            TUPLET_SIX));
+
     public static final ShapeSet Barlines = new ShapeSet(
             LEFT_REPEAT_SIGN,
             shapesOf(
@@ -265,25 +275,19 @@ public class ShapeSet
             TIME_FOUR_FOUR,
             shapesOf(PartialTimes, FullTimes));
 
-    public static final ShapeSet Others = new ShapeSet(
-            PEDAL_MARK,
-            shapesOf(
-            OTTAVA_ALTA,
-            OTTAVA_BASSA,
-            PEDAL_MARK,
-            PEDAL_UP_MARK,
-            TUPLET_THREE,
-            TUPLET_SIX,
-            SLUR,
-            STEM));
-
     public static final ShapeSet Physicals = new ShapeSet(
-            TEXT,
-            shapesOf(TEXT, CHARACTER, CLUTTER, DOT_set));
-
-    public static final ShapeSet Logicals = new ShapeSet(
-            REPEAT_DOT,
-            shapesOf(REPEAT_DOT, AUGMENTATION_DOT, ENDING));
+            LEDGER,
+            shapesOf(
+            TEXT, 
+            CHARACTER, 
+            CLUTTER,
+            SLUR,
+            LEDGER, 
+            STEM, 
+            ENDING, 
+            DOT_set,
+            REPEAT_DOT, 
+            AUGMENTATION_DOT));
 
     // =========================================================================
     // Below are EnumSet instances, used programmatically.

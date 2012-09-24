@@ -12,6 +12,7 @@
 package omr.sheet;
 
 import omr.grid.StaffInfo;
+import omr.grid.StaffInfo.IndexedLedger;
 
 /**
  * Class {@code NotePosition} handles the precise position of a note-like
@@ -23,46 +24,45 @@ public class NotePosition
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** The related staff */
+    /** The related staff. */
     private final StaffInfo staff;
 
-    /** The precise pitch position wrt the staff */
+    /** The precise pitch position wrt the staff. */
     private final double pitchPosition;
 
-    /** The closest ledger if any */
-    private final Ledger ledger;
+    /** The closest ledger if any. */
+    private final IndexedLedger indexedLedger;
 
     //~ Constructors -----------------------------------------------------------
-
     //--------------//
     // NotePosition //
     //--------------//
     /**
      * Creates a new NotePosition object.
-     * @param staff the related staff
+     *
+     * @param staff         the related staff
      * @param pitchPosition the precise pitch position
-     * @param ledger the closest ledger if any
+     * @param indexedLedger the closest ledger if any
      */
     public NotePosition (StaffInfo staff,
-                         double    pitchPosition,
-                         Ledger    ledger)
+                         double pitchPosition,
+                         IndexedLedger indexedLedger)
     {
         this.staff = staff;
-        this.ledger = ledger;
+        this.indexedLedger = indexedLedger;
         this.pitchPosition = pitchPosition;
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // getLedger //
-    //------------//
+    //-----------//
     /**
      * @return the ledger
      */
-    public Ledger getLedger ()
+    public IndexedLedger getLedger ()
     {
-        return ledger;
+        return indexedLedger;
     }
 
     //------------------//
@@ -97,14 +97,14 @@ public class NotePosition
         sb.append(getClass().getSimpleName());
 
         sb.append(" staff#")
-          .append(staff.getId());
+                .append(staff.getId());
 
         sb.append(" pitch:")
-          .append((float) pitchPosition);
+                .append((float) pitchPosition);
 
-        if (ledger != null) {
+        if (indexedLedger != null) {
             sb.append(" ledger#")
-              .append(ledger.getStick().getId());
+                    .append(indexedLedger.glyph.getId());
         }
 
         sb.append("}");

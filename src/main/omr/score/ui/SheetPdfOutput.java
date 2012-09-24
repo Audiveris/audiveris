@@ -31,10 +31,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 
 /**
- * Class {@code SheetPdfOutput} defines a specific ScoreView meant to produce
- * a physical PDF output of a score
+ * Class {@code SheetPdfOutput} produces a physical PDF output of a 
+ * score.
  *
- * <p>TODO: Implement a PDF with multiple output oages
+ * <p>TODO: Implement a PDF with multiple output pages
  *
  * @author Hervé Bitteur
  */

@@ -241,7 +241,7 @@ public class ClefPattern
 
             List<Glyph> outerGlyphs = system.lookupIntersectedGlyphs(outer);
             outerGlyphs.removeAll(glyphs);
-            Collections.sort(outerGlyphs, Glyph.reverseWeightComparator);
+            Collections.sort(outerGlyphs, Glyph.byReverseWeight);
 
             final double minWeight = constants.minWeight.getValue();
 

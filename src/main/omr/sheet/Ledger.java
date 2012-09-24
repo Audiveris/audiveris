@@ -21,12 +21,13 @@ import omr.grid.StaffInfo;
  *
  * @author Hervé Bitteur
  */
+@Deprecated
 public class Ledger
     extends Dash
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** Precise line index outside of staff nearby */
+    /** Precise line index outside of staff nearby. */
     private final int lineIndex;
 
     //~ Constructors -----------------------------------------------------------

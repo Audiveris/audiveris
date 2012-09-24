@@ -18,8 +18,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Class {@code GhostDropAdapter} is a MouseAdapter specifically meant for
- * handling {@link GhostDropEvent} instances.
+ * Class {@code GhostDropAdapter} is a MouseAdapter specifically meant
+ * for handling {@link GhostDropEvent} instances.
  *
  * @param <A> the precise type for action carried by the drop
  * @author Hervé Bitteur (from Romain Guy's demo)

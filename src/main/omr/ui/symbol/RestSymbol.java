@@ -103,8 +103,8 @@ public class RestSymbol
             p.linesLayout = font.layout(linesSymbol.getString());
             r = p.linesLayout.getBounds();
 
-            // Define specific origin
-            p.origin = new Point(
+            // Define specific offset
+            p.offset = new Point(
                 0,
                 (int) Math.rint(rs.getY() + (rs.getHeight() / 2)));
         } else {

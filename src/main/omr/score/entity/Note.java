@@ -82,6 +82,7 @@ public class Note
         F,
         /** Sol */
         G;
+
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -401,23 +402,22 @@ public class Note
                             noteRef.x - accidCenter.x,
                             noteRef.y - accidCenter.y);
                     logger.fine("{0} {1}",
-                                new Object[]{measure.getContextString(), toNote});
+                            new Object[]{measure.getContextString(), toNote});
 
                     if (toNote.x > (2 * maxDx)) {
                         break ChordLoop; // Other chords/notes will be too far
                     }
 
                     if ((toNote.x >= minDx)
-                            && (toNote.x <= maxDx)
-                            && (Math.abs(toNote.y) <= maxDy)) {
+                        && (toNote.x <= maxDx)
+                        && (Math.abs(toNote.y) <= maxDy)) {
                         candidates.add(note);
                     }
                 }
             }
         }
 
-        logger.fine("{0} Candidates={1}", new Object[]{candidates.size(),
-                                                       candidates});
+        logger.fine("{0} Candidates={1}", candidates.size(), candidates);
 
         // Select the best note candidate, the one whose ordinate is closest
         if (!candidates.isEmpty()) {
@@ -448,12 +448,14 @@ public class Note
                 mirrored.accidental = glyph;
                 glyph.addTranslation(mirrored);
                 logger.fine("{0} accidental {1} at {2} (mirrored)",
-                            new Object[]{mirrored.getContextString(), glyph.
+                        new Object[]{mirrored.getContextString(), glyph.
                             getShape(), mirrored.getCenter()});
             }
         } else {
             // Deassign the glyph
-            glyph.setShape(null, Evaluation.ALGORITHM);
+            if (!glyph.isManualShape()) {
+                glyph.setShape(null, Evaluation.ALGORITHM);
+            }
         }
     }
 
@@ -568,7 +570,7 @@ public class Note
                             }
 
                             if ((note.getStep() == getStep())
-                                    && (note.getAccidental() != null)) {
+                                && (note.getAccidental() != null)) {
                                 switch (note.getAccidental().getShape()) {
                                 case SHARP:
                                     return alter = 1;
@@ -1141,5 +1143,6 @@ public class Note
         Scale.Fraction maxCenterDy = new Scale.Fraction(
                 0.1d,
                 "Maximum absolute dy between note center and centroid");
+
     }
 }

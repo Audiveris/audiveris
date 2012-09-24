@@ -414,7 +414,7 @@ public class SticksBuilder
         merge();
 
         // Sort sticks found
-        Collections.sort(sticks, Glyph.idComparator);
+        Collections.sort(sticks, Glyph.byId);
 
         logger.fine("End of scanning area, found {0} stick(s): {1}",
                     new Object[]{sticks.size(), Glyphs.toString(sticks)});

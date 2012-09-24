@@ -33,36 +33,39 @@ public class Symbols
 
     /** Map of (simple) symbols */
     private static final EnumMap<Shape, ShapeSymbol> sym = new EnumMap<>(
-        Shape.class);
+            Shape.class);
 
     /** Map of decorated symbols */
     private static final EnumMap<Shape, ShapeSymbol> dec = new EnumMap<>(
-        Shape.class);
+            Shape.class);
 
     /** Symbol of '8' char for ottava sign (alta or bassa) on F & G clefs */
     public static final BasicSymbol SYMBOL_OTTAVA = new BasicSymbol(false, 165);
 
     /** Symbol for upper part of brace */
     public static final BasicSymbol SYMBOL_BRACE_UPPER_HALF = new BasicSymbol(
-        167);
+            167);
 
     /** Symbol for lower part of brace */
     public static final BasicSymbol SYMBOL_BRACE_LOWER_HALF = new BasicSymbol(
-        234);
+            234);
 
     /** Symbol for upper serif of bracket */
     public static final BasicSymbol SYMBOL_BRACKET_UPPER_SERIF = new BasicSymbol(
-        194);
+            194);
 
     /** Symbol for lower serif of bracket */
     public static final BasicSymbol SYMBOL_BRACKET_LOWER_SERIF = new BasicSymbol(
-        76);
+            76);
 
     /** Symbol for staff lines */
     public static final BasicSymbol SYMBOL_STAFF_LINES = new BasicSymbol(61);
 
     /** Symbol for stem */
     public static final BasicSymbol SYMBOL_STEM = new BasicSymbol(92);
+
+    /** Symbol for ledger */
+    public static final BasicSymbol SYMBOL_LEDGER = new BasicSymbol(45);
 
     /** Symbol for a complete quarter (head + stem) */
     public static final BasicSymbol SYMBOL_QUARTER = new BasicSymbol(113);
@@ -72,23 +75,23 @@ public class Symbols
 
     /** Symbol for FLAG_1 */
     public static final ShapeSymbol SYMBOL_FLAG_1 = new ShapeSymbol(
-        FLAG_1,
-        106);
+            FLAG_1,
+            106);
 
     /** Symbol for FLAG_2 */
     public static final ShapeSymbol SYMBOL_FLAG_2 = new ShapeSymbol(
-        FLAG_2,
-        107);
+            FLAG_2,
+            107);
 
     /** Symbol for FLAG_1_UP */
     public static final ShapeSymbol SYMBOL_FLAG_1_UP = new ShapeSymbol(
-        FLAG_1_UP,
-        74);
+            FLAG_1_UP,
+            74);
 
     /** Symbol for FLAG_2_UP */
     public static final ShapeSymbol SYMBOL_FLAG_2_UP = new ShapeSymbol(
-        FLAG_2_UP,
-        75);
+            FLAG_2_UP,
+            75);
 
     static {
         assignSymbols();
@@ -96,7 +99,6 @@ public class Symbols
     }
 
     //~ Constructors -----------------------------------------------------------
-
     //---------//
     // Symbols // This is just a functional class, no instance is needed
     //---------//
@@ -105,17 +107,17 @@ public class Symbols
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // getSymbol //
     //-----------//
     /**
      * Return a symbol from its definition in MusicFont.
+     *
      * @param shape     the symbol related shape
      * @param decorated true for a decorated symbol, false for a simple one
      * @return the desired symbol, or null if none found
      */
-    public static ShapeSymbol getSymbol (Shape   shape,
+    public static ShapeSymbol getSymbol (Shape shape,
                                          boolean decorated)
     {
         if (decorated) {
@@ -134,6 +136,7 @@ public class Symbols
     //-----------//
     /**
      * Return a simple symbol from its definition in MusicFont.
+     *
      * @param shape the symbol shape
      * @return the desired symbol, or null if none
      */
@@ -164,6 +167,7 @@ public class Symbols
         dec.put(DECRESCENDO, new DecrescendoSymbol(false, DECRESCENDO));
         dec.put(ENDING, new EndingSymbol());
         dec.put(HALF_REST, new RestSymbol(HALF_REST, true, 238));
+        dec.put(LEDGER, new LedgerSymbol(true));
         dec.put(LONG_REST, new LongRestSymbol(true));
         dec.put(NON_DRAGGABLE, new NonDraggableSymbol(192));
         dec.put(SLUR, new SlurSymbol());
@@ -294,7 +298,7 @@ public class Symbols
         sharpKey(5, KEY_SHARP_5);
         sharpKey(6, KEY_SHARP_6);
         sharpKey(7, KEY_SHARP_7);
-        //        map(LEDGER);
+        sym.put(LEDGER, new LedgerSymbol(false));
         map(LEFT_REPEAT_SIGN, 93);
         sym.put(LONG_REST, new LongRestSymbol(false));
         map(MORDENT, 109);
@@ -353,16 +357,16 @@ public class Symbols
         map(TURN_set, 84);
         map(TURN, 84);
         sym.put(
-            INVERTED_TURN,
-            new TransformedSymbol(
+                INVERTED_TURN,
+                new TransformedSymbol(
                 false,
                 INVERTED_TURN,
                 TURN,
                 ShapeSymbol.verticalFlip));
         sym.put(TURN_SLASH, new TurnSlashSymbol(false));
         sym.put(
-            TURN_UP,
-            new TransformedSymbol(
+                TURN_UP,
+                new TransformedSymbol(
                 false,
                 TURN_UP,
                 TURN,
@@ -379,11 +383,10 @@ public class Symbols
     }
 
     //- Convenient methods -----------------------------------------------------
-
     //-----------//
     // flagsDown //
     //-----------//
-    private static void flagsDown (int   count,
+    private static void flagsDown (int count,
                                    Shape shape)
     {
         sym.put(shape, new FlagsDownSymbol(count, false, shape));
@@ -392,7 +395,7 @@ public class Symbols
     //---------//
     // flagsUp //
     //---------//
-    private static void flagsUp (int   count,
+    private static void flagsUp (int count,
                                  Shape shape)
     {
         sym.put(shape, new FlagsUpSymbol(count, false, shape));
@@ -401,7 +404,7 @@ public class Symbols
     //----------//
     // flatKey //
     //----------//
-    private static void flatKey (int   key,
+    private static void flatKey (int key,
                                  Shape shape)
     {
         sym.put(shape, new KeyFlatSymbol(key, false, shape));
@@ -410,8 +413,8 @@ public class Symbols
     //-------//
     // heads //
     //-------//
-    private static void heads (int    count,
-                               Shape  shape,
+    private static void heads (int count,
+                               Shape shape,
                                int... codes)
     {
         sym.put(shape, new HeadsSymbol(count, false, shape, codes));
@@ -420,7 +423,7 @@ public class Symbols
     //-----//
     // map //
     //-----//
-    private static void map (Shape  shape,
+    private static void map (Shape shape,
                              int... codes)
     {
         sym.put(shape, new ShapeSymbol(shape, codes));
@@ -430,8 +433,8 @@ public class Symbols
     // numDen //
     //--------//
     private static void numDen (Shape shape,
-                                int   num,
-                                int   den)
+                                int num,
+                                int den)
     {
         sym.put(shape, new NumDenSymbol(shape, num, den));
     }
@@ -440,7 +443,7 @@ public class Symbols
     // ottava //
     //--------//
     private static void ottava (boolean isAlta,
-                                Shape   shape,
+                                Shape shape,
                                 int... codes)
     {
         sym.put(shape, new OttavaClefSymbol(isAlta, false, shape, codes));
@@ -449,7 +452,7 @@ public class Symbols
     //----------//
     // sharpKey //
     //----------//
-    private static void sharpKey (int   key,
+    private static void sharpKey (int key,
                                   Shape shape)
     {
         sym.put(shape, new KeySharpSymbol(key, false, shape));
@@ -458,7 +461,7 @@ public class Symbols
     //---------//
     // slanted //
     //---------//
-    private static void slanted (Shape  shape,
+    private static void slanted (Shape shape,
                                  int... codes)
     {
         sym.put(shape, new SlantedSymbol(shape, codes));
@@ -467,7 +470,7 @@ public class Symbols
     //-------//
     // small //
     //-------//
-    private static void small (Shape  shape,
+    private static void small (Shape shape,
                                int... codes)
     {
         sym.put(shape, new ResizedSymbol(shape, 0.67d, codes));

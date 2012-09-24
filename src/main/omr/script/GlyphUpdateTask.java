@@ -89,7 +89,7 @@ public abstract class GlyphUpdateTask
     @Override
     protected void retrieveGlyphs ()
     {
-        glyphs = new TreeSet<>(Glyph.abscissaComparator);
+        glyphs = new TreeSet<>(Glyph.byAbscissa);
 
         for (Collection<Section> set : sectionSets.getSets(sheet)) {
             Glyph      glyph = null;

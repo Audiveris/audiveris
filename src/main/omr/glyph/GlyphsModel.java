@@ -29,6 +29,8 @@ import omr.step.Step;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import omr.grid.StaffInfo;
+import omr.sheet.Ledger;
 
 /**
  * Class {@code GlyphsModel} is a common model for synchronous glyph
@@ -97,7 +99,7 @@ public class GlyphsModel
      * @param glyphs   the collection of glyphs to be assigned
      * @param shape    the shape to be assigned
      * @param compound flag to build one compound, rather than assign each
-     * individual glyph
+     *                 individual glyph
      * @param grade    the grade we have wrt the assigned shape
      */
     public void assignGlyphs (Collection<Glyph> glyphs,
@@ -299,8 +301,8 @@ public class GlyphsModel
 
             boolean isTransient = glyph.isTransient();
             logger.fine("Assign {0}{1} to {2}",
-                        new Object[]{isTransient ? "compound " : "",
-                                     glyph.idString(), shape});
+                    new Object[]{isTransient ? "compound " : "",
+                                 glyph.idString(), shape});
 
             // Remember the latest shape assigned
             setLatestShape(shape);
@@ -311,9 +313,9 @@ public class GlyphsModel
 
         // Should we persist the assigned glyph?
         if ((shape != null)
-                && (grade == Evaluation.MANUAL)
-                && (Main.getGui() != null)
-                && ScoreActions.getInstance().isManualPersisted()) {
+            && (grade == Evaluation.MANUAL)
+            && (Main.getGui() != null)
+            && ScoreActions.getInstance().isManualPersisted()) {
             // Record the glyph description to disk
             GlyphRepository.getInstance().recordOneGlyph(glyph, sheet);
         }
@@ -350,7 +352,14 @@ public class GlyphsModel
             return;
         }
 
-        SystemInfo system = sheet.getSystemOf(glyph.getAreaCenter());
+
+        SystemInfo system = sheet.getSystemOf(glyph);
+
+        // Special case for ledger glyph
+        if (glyph.getShape() == Shape.LEDGER) {
+            StaffInfo staff = system.getStaffAt(glyph.getAreaCenter());
+            staff.removeLedger(glyph);            
+        }
 
         if (system != null) {
             system.removeGlyph(glyph);

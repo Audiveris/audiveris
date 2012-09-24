@@ -17,7 +17,8 @@ import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 
 /**
- * Class {@code LongRestSymbol} is a basis for WHOLE_REST and HALF_REST symbols
+ * Class {@code LongRestSymbol} is a basis for WHOLE_REST and HALF_REST
+ * symbols.
  *
  * @author Hervé Bitteur
  */

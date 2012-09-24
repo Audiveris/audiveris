@@ -187,7 +187,7 @@ public class BasicSymbol
         SymbolImage img = new SymbolImage(
             p.rect.width,
             p.rect.height,
-            p.origin);
+            p.offset);
 
         // Paint the image
         Graphics2D g = (Graphics2D) img.getGraphics();
@@ -493,13 +493,13 @@ public class BasicSymbol
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** Specific origin if any */
-        Point origin;
+        /** Specific offset, if any, from area center. */
+        Point offset;
 
-        /** (Main) layout */
+        /** (Main) layout. */
         TextLayout layout;
 
-        /** Image bounds */
+        /** Image bounds. */
         Rectangle rect;
     }
 }

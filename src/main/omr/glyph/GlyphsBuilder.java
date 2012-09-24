@@ -73,7 +73,6 @@ public class GlyphsBuilder
     private static final Logger logger = Logger.getLogger(GlyphsBuilder.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** The dedicated system */
     private final SystemInfo system;
 
@@ -85,15 +84,16 @@ public class GlyphsBuilder
 
     /** Margins for a stem */
     private final int stemXMargin;
+
     private final int stemYMargin;
 
     //~ Constructors -----------------------------------------------------------
-
     //---------------//
     // GlyphsBuilder //
     //---------------//
     /**
      * Creates a system-dedicated builder of glyphs.
+     *
      * @param system the dedicated system
      */
     public GlyphsBuilder (SystemInfo system)
@@ -110,18 +110,18 @@ public class GlyphsBuilder
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // buildGlyph //
     //------------//
     /**
      * Build a glyph from a collection of sections, with a link back
      * from the sections to the glyph.
-     * @param scale the context scale
+     *
+     * @param scale    the context scale
      * @param sections the provided members of the future glyph
      * @return the newly built glyph
      */
-    public static Glyph buildGlyph (Scale               scale,
+    public static Glyph buildGlyph (Scale scale,
                                     Collection<Section> sections)
     {
         Glyph glyph = new BasicGlyph(scale.getInterline());
@@ -139,13 +139,14 @@ public class GlyphsBuilder
     /**
      * Browse through the provided sections not assigned to known
      * glyphs, and build new glyphs out of connected sections.
+     *
      * @param sections the sections to browse
-     * @param nest the nest to host glyphs
-     * @param scale the sheet scale
+     * @param nest     the nest to host glyphs
+     * @param scale    the sheet scale
      */
     public static List<Glyph> retrieveGlyphs (List<Section> sections,
-                                              Nest          nest,
-                                              Scale         scale)
+                                              Nest nest,
+                                              Scale scale)
     {
         List<Glyph> created = new ArrayList<>();
 
@@ -182,6 +183,7 @@ public class GlyphsBuilder
      * Add a brand new glyph as an active glyph in proper system and nest.
      * 'Active' means that all member sections are set to point back to the
      * containing glyph.
+     *
      * @param glyph the brand new glyph
      * @return the original glyph as inserted in the glyph nest
      */
@@ -200,6 +202,7 @@ public class GlyphsBuilder
     /**
      * Build a glyph from a collection of sections, with a link back
      * from the sections to the glyph, using the system scale.
+     *
      * @param sections the provided members of the future glyph
      * @return the newly built glyph
      */
@@ -214,6 +217,7 @@ public class GlyphsBuilder
     /**
      * Make a new transient glyph out of a collection of (sub) glyphs,
      * by merging all their member sections.
+     *
      * @param parts the collection of (sub) glyphs
      * @return the brand new (compound) glyph
      */
@@ -234,6 +238,7 @@ public class GlyphsBuilder
     //---------------------//
     /**
      * Make a new transient glyph out of a collection of sections.
+     *
      * @param sections the collection of sections
      * @return the brand new transientglyph
      */
@@ -266,6 +271,7 @@ public class GlyphsBuilder
      * Compute all the features that will be used to recognize the
      * glyph at hand.
      * (it's a mix of moments plus a few other characteristics).
+     *
      * @param glyph the glyph at hand
      */
     public void computeGlyphFeatures (Glyph glyph)
@@ -274,8 +280,8 @@ public class GlyphsBuilder
         glyph.getCentroid();
 
         PixelPoint center = glyph.getAreaCenter();
-        Staff      staff = system.getScoreSystem()
-                                 .getStaffAt(center);
+        Staff staff = system.getScoreSystem()
+                .getStaffAt(center);
 
         // Connected stems
         int stemNb = 0;
@@ -293,8 +299,8 @@ public class GlyphsBuilder
 
         // Has a related ledger ?
         glyph.setWithLedger(
-            checkDashIntersect(
-                system.getLedgers(),
+                checkDashIntersect(
+                system.getGlyphs(),
                 ledgerBox(glyph.getBounds())));
 
         // Vertical position wrt staff
@@ -308,6 +314,7 @@ public class GlyphsBuilder
      * Just register this glyph (as inactive) in order to persist glyph
      * info such as TextInfo.
      * Use {@link #addGlyph} instead to fully add the glyph as active.
+     *
      * @param glyph the glyph to just register
      * @return the proper (original) glyph
      * @see #addGlyph
@@ -329,6 +336,7 @@ public class GlyphsBuilder
     //-------------//
     /**
      * Remove a glyph from the containing system glyph list.
+     *
      * @param glyph the glyph to remove
      */
     public void removeGlyph (Glyph glyph)
@@ -345,6 +353,7 @@ public class GlyphsBuilder
     /**
      * In a given system area, browse through all sections not assigned
      * to known glyphs, and build new glyphs out of connected sections.
+     *
      * @param compute if true, compute the characteristics of the created glyphs
      */
     public void retrieveGlyphs (boolean compute)
@@ -368,9 +377,9 @@ public class GlyphsBuilder
 
                 // Publish the error on north side only of the boundary
                 SystemInfo north = (system.getId() < alienSystem.getId())
-                                   ? system : alienSystem;
+                        ? system : alienSystem;
                 north.getScoreSystem()
-                     .addError(glyph, "Glyph crosses system south boundary");
+                        .addError(glyph, "Glyph crosses system south boundary");
             }
         }
 
@@ -389,6 +398,7 @@ public class GlyphsBuilder
     //-----------//
     /**
      * Report an enlarged box of a given (stem) glyph.
+     *
      * @param stem the stem
      * @return the enlarged stem box
      */
@@ -405,15 +415,16 @@ public class GlyphsBuilder
     //-----------//
     /**
      * Report the stem lookup box on the specified side only
+     *
      * @param stem the stem glyph
      * @param side the desired side for the box
      * @return the proper stem side box
      */
-    public PixelRectangle stemBoxOf (Glyph          stem,
+    public PixelRectangle stemBoxOf (Glyph stem,
                                      HorizontalSide side)
     {
         PixelRectangle box = stem.getBounds();
-        int            width = box.width;
+        int width = box.width;
         box.grow(stemXMargin, stemYMargin);
         box.width = 2 * stemXMargin;
 
@@ -430,10 +441,11 @@ public class GlyphsBuilder
     /**
      * Consider all sections transitively connected to the provided
      * section in order to populate the provided glyph.
-     * @param glyph the provided glyph
+     *
+     * @param glyph   the provided glyph
      * @param section the section to consider
      */
-    private static void considerConnection (Glyph   glyph,
+    private static void considerConnection (Glyph glyph,
                                             Section section)
     {
         // Check whether this section is suitable to expand the glyph
@@ -465,11 +477,11 @@ public class GlyphsBuilder
     // checkDashIntersect //
     //--------------------//
     private boolean checkDashIntersect (Iterable<Glyph> items,
-                                        PixelRectangle  box)
+                                        PixelRectangle box)
     {
         for (Glyph item : items) {
-            if (item.getBounds()
-                    .intersects(box)) {
+            if (item.getShape() == Shape.LEDGER
+                && item.getBounds().intersects(box)) {
                 return true;
             }
         }
@@ -491,9 +503,9 @@ public class GlyphsBuilder
     //------------//
     // lookupStem //
     //------------//
-    private Glyph lookupStem (HorizontalSide    side,
+    private Glyph lookupStem (HorizontalSide side,
                               Collection<Glyph> glyphs,
-                              Glyph             glyph)
+                              Glyph glyph)
     {
         if (glyph.isStem()) {
             return null;
@@ -505,7 +517,7 @@ public class GlyphsBuilder
         for (Glyph s : glyphs) {
             // Check bounding box intersection
             if (s.isStem() && s.isActive() && s.getBounds()
-                                               .intersects(box)) {
+                    .intersects(box)) {
                 // Check close distance
                 PixelRectangle b = stemBoxOf(s);
 
@@ -521,27 +533,27 @@ public class GlyphsBuilder
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Scale.Fraction ledgerHeighten = new Scale.Fraction(
-            0.1,
-            "Box heightening to check intersection with ledger");
+                0.1,
+                "Box heightening to check intersection with ledger");
 
         //
         Scale.Fraction stemXMargin = new Scale.Fraction(
-            0.1d, //0.05,
-            "Box widening to check intersection with stem");
+                0.1d, //0.05,
+                "Box widening to check intersection with stem");
 
         //
         Scale.Fraction stemYMargin = new Scale.Fraction(
-            0.2d, //0.1,
-            "Box heightening to check intersection with stem");
+                0.2d, //0.1,
+                "Box heightening to check intersection with stem");
+
     }
 }

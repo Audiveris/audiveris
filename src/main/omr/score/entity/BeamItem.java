@@ -201,7 +201,7 @@ public class BeamItem
     public int compareTo (BeamItem other)
     {
         // Delegate to underlying glyph
-        return Glyph.abscissaComparator.compare(glyph, other.glyph);
+        return Glyph.byAbscissa.compare(glyph, other.glyph);
     }
 
     //-----------//

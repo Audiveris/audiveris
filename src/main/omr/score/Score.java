@@ -184,7 +184,7 @@ public class Score
      */
     public void close ()
     {
-        logger.info("Score. Closing {0}", this);
+        logger.info("Closing {0}", this);
 
         // Check whether the score script has been saved (or user has declined)
         if ((Main.getGui() != null) && !ScriptActions.checkStored(getScript())) {

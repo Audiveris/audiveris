@@ -238,10 +238,8 @@ public class SheetPainter
         } catch (ConcurrentModificationException ignored) {
             return false;
         } catch (Exception ex) {
-            logger.
-                    warning(
-                    getClass().getSimpleName() + " Error visiting " + systemInfo,
-                    ex);
+            logger.warning(getClass().getSimpleName()
+                           + " Error visiting " + systemInfo.idString(), ex);
         }
 
         return false;
@@ -262,11 +260,16 @@ public class SheetPainter
         for (Glyph glyph : systemInfo.getGlyphs()) {
             if (glyph.isVirtual()) {
                 ShapeSymbol symbol = Symbols.getSymbol(glyph.getShape());
-                symbol.paintSymbol(
-                        g,
-                        musicFont,
-                        glyph.getAreaCenter(),
-                        Alignment.AREA_CENTER);
+                if (symbol == null) {
+                    systemInfo.getScoreSystem().addError(glyph,
+                            "No symbol for " + glyph.idString());
+                } else {
+                    symbol.paintSymbol(
+                            g,
+                            musicFont,
+                            glyph.getAreaCenter(),
+                            Alignment.AREA_CENTER);
+                }
             }
         }
     }

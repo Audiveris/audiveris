@@ -15,7 +15,6 @@ import omr.glyph.Shape;
 
 import omr.score.common.PixelPoint;
 
-import java.awt.Point;
 import java.awt.Rectangle;
 
 /**

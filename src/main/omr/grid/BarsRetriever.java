@@ -507,7 +507,7 @@ public class BarsRetriever
         if (bar != null) {
             // We use the heaviest stick among the system-embracing bar sticks
             SortedSet<Glyph> allSticks = new TreeSet<>(
-                    Glyph.reverseWeightComparator);
+                    Glyph.byReverseWeight);
 
             for (Glyph stick : bar.getSticksAncestors()) {
                 Point2D start = stick.getStartPoint(VERTICAL);
@@ -940,7 +940,7 @@ public class BarsRetriever
 
             // Pick up the heaviest bar stick
             SortedSet<Glyph> allSticks = new TreeSet<>(
-                    Glyph.reverseWeightComparator);
+                    Glyph.byReverseWeight);
 
             // Use long sticks first
             for (Glyph stick : bar.getSticksAncestors()) {

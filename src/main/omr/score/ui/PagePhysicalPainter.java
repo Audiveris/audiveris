@@ -178,7 +178,7 @@ public class PagePhysicalPainter
     public boolean visit (Barline barline)
     {
         if (!barline.getBox().intersects(oldClip)
-                || systemInfo.getSheet().getStaffManager().getStaves().isEmpty()) {
+            || systemInfo.getSheet().getStaffManager().getStaves().isEmpty()) {
             return false;
         }
 
@@ -332,7 +332,7 @@ public class PagePhysicalPainter
 
                 // Draw slot vertical lines ?
                 if (parameters.isSlotPainting()
-                        && (measure.getSlots() != null)) {
+                    && (measure.getSlots() != null)) {
                     for (Slot slot : measure.getSlots()) {
                         drawSlot(false, measure, slot, Colors.SLOT);
                     }
@@ -532,8 +532,10 @@ public class PagePhysicalPainter
             g.setColor(defaultColor);
 
             // Ledgers
-            for (Glyph ledger : systemInfo.getLedgers()) {
-                ledger.renderLine(g);
+            for (Glyph glyph : systemInfo.getGlyphs()) {
+                if (glyph.getShape() == Shape.LEDGER && glyph.isActive()) {
+                    glyph.renderLine(g);
+                }
             }
 
             // Endings

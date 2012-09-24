@@ -528,7 +528,7 @@ public class Glyphs
      */
     public static SortedSet<Glyph> sortedSet (Glyph... glyphs)
     {
-        SortedSet<Glyph> set = new TreeSet<>(Glyph.abscissaComparator);
+        SortedSet<Glyph> set = new TreeSet<>(Glyph.byAbscissa);
 
         if (glyphs.length > 0) {
             set.addAll(Arrays.asList(glyphs));
@@ -547,7 +547,7 @@ public class Glyphs
      */
     public static SortedSet<Glyph> sortedSet (Collection<Glyph> glyphs)
     {
-        SortedSet<Glyph> set = new TreeSet<>(Glyph.abscissaComparator);
+        SortedSet<Glyph> set = new TreeSet<>(Glyph.byAbscissa);
         set.addAll(glyphs);
 
         return set;

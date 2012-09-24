@@ -94,18 +94,7 @@ public class DeleteTask
     public void core (Sheet sheet)
             throws Exception
     {
-        //        switch (orientation) {
-        //        case HORIZONTAL :
-        //            sheet.getHorizontalsBuilder()
-        //                 .getController()
-        //                 .syncDelete(this);
-        //
-        //            break;
-        //
-        //        case VERTICAL :
         sheet.getSymbolsController().syncDelete(this);
-
-        //        }
     }
 
     //--------//
@@ -180,8 +169,7 @@ public class DeleteTask
         glyphs = new LinkedHashSet<>();
 
         for (PixelPoint location : locations) {
-            Glyph glyph = null;
-            glyph = sheet.getNest().lookupVirtualGlyph(location);
+            Glyph glyph = sheet.getNest().lookupVirtualGlyph(location);
             glyphs.add(glyph);
             logger.fine("To be deleted: {0}", glyph);
         }

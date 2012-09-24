@@ -109,29 +109,28 @@ public class LedgerPattern
         int nb = 0;
 
         for (StaffInfo staff : system.getStaves()) {
-            Map<Integer, SortedSet<Ledger>> ledgerMap = staff.getLedgerMap();
+            Map<Integer, SortedSet<Glyph>> ledgerMap = staff.getLedgerMap();
 
-            for (Iterator<Entry<Integer, SortedSet<Ledger>>> iter = ledgerMap.
+            for (Iterator<Entry<Integer, SortedSet<Glyph>>> iter = ledgerMap.
                     entrySet().iterator();
                     iter.hasNext();) {
-                Entry<Integer, SortedSet<Ledger>> entry = iter.next();
-                SortedSet<Ledger> ledgerSet = entry.getValue();
+                Entry<Integer, SortedSet<Glyph>> entry = iter.next();
+                SortedSet<Glyph> ledgerSet = entry.getValue();
                 List<Glyph> ledgerGlyphs = new ArrayList<>();
 
-                for (Ledger ledger : ledgerSet) {
-                    ledgerGlyphs.add(ledger.getStick());
+                for (Glyph ledger : ledgerSet) {
+                    ledgerGlyphs.add(ledger);
                 }
 
                 // Process 
-                for (Iterator<Ledger> it = ledgerSet.iterator(); it.hasNext();) {
-                    Ledger ledger = it.next();
-                    Glyph glyph = ledger.getStick();
+                for (Iterator<Glyph> it = ledgerSet.iterator(); it.hasNext();) {
+                    Glyph ledger = it.next();
                     Set<Glyph> neighbors = new HashSet<>();
 
-                    if (isInvalid(glyph, neighbors)) {
+                    if (isInvalid(ledger, neighbors)) {
                         // Check if we can forge a ledger-compatible neighbor
                         Glyph compound = system.buildCompound(
-                                glyph,
+                                ledger,
                                 false,
                                 system.getGlyphs(),
                                 new LedgerAdapter(
@@ -143,20 +142,10 @@ public class LedgerPattern
                         if (compound == null) {
                             // Here, we have not found any convincing neighbor
                             // Let's invalid this pseudo ledger
-                            logger.fine("Invalid ledger {0}", glyph);
-                            glyph.setShape(null);
-                            glyph.clearTranslations();
-                            system.removeFromLedgersCollection(ledger);
+                            logger.fine("Invalid ledger {0}", ledger);
+                            ledger.setShape(null);
                             it.remove();
                             nb++;
-
-                            // Nullify neighbors evaluations, since they may have
-                            // been biased by ledger presence
-                            //                            for (Glyph g : neighbors) {
-                            //                                if (!g.isManualShape()) {
-                            //                                    g.resetEvaluation();
-                            //                                }
-                            //                            }
                         }
                     }
                 }

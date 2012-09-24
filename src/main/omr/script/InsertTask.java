@@ -38,6 +38,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
+import omr.grid.StaffInfo;
 
 /**
  * Class {@code InsertTask} inserts a set of (virtual) glyphs into the
@@ -123,7 +124,7 @@ public class InsertTask
     {
         super.epilog(sheet);
 
-        logger.fine(toString());
+        logger.fine("{0}", this);
 
         // Take inserted glyph(s) as selected glyph(s)
         sheet.getNest().getGlyphService().publish(
@@ -216,9 +217,17 @@ public class InsertTask
                     sheet.getScale().getInterline(),
                     location);
 
+            // TODO: Some location other than the areacenter may be desired
+            // (depending on the shape)?
             SystemInfo system = sheet.getSystemOf(glyph.getAreaCenter());
             glyph = system.addGlyph(glyph);
             system.computeGlyphFeatures(glyph);
+
+            // Specific for LEDGERs: add them to related staff
+            if (shape == Shape.LEDGER) {
+                StaffInfo staff = system.getStaffAt(glyph.getAreaCenter());
+                staff.addLedger(glyph);
+            }
 
             glyphs.add(glyph);
         }

@@ -15,34 +15,34 @@ import java.awt.Point;
 import java.awt.image.BufferedImage;
 
 /**
- * Class {@code SymbolImage} is a BufferedImage with the ability to define
- * a reference point, defined as a translation from the area center.
+ * Class {@code SymbolImage} is a {@link BufferedImage} with the
+ * ability to define a reference point, specified as a translation
+ * from the area center.
  *
  * @author Hervé Bitteur
  */
 public class SymbolImage
-    extends BufferedImage
+        extends BufferedImage
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** The reference point for this image */
+    /** The reference point for this image. */
     private final Point refPoint;
 
     //~ Constructors -----------------------------------------------------------
-
     //-------------//
     // SymbolImage //
     //-------------//
     /**
      * Creates a new SymbolImage object.
      *
-     * @param width image width in pixels
-     * @param height image height in pixels
+     * @param width    image width in pixels
+     * @param height   image height in pixels
      * @param refPoint the reference point, if any, with coordinated defined
-     * from image center
+     *                 from image center
      */
-    public SymbolImage (int   width,
-                        int   height,
+    public SymbolImage (int width,
+                        int height,
                         Point refPoint)
     {
         super(width, height, BufferedImage.TYPE_INT_ARGB);
@@ -50,12 +50,12 @@ public class SymbolImage
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-------------//
     // getRefPoint //
     //-------------//
     /**
-     * Report a copy of image reference point if any
+     * Report the (copy of) image reference point if any.
+     *
      * @return the refPoint if any, otherwise null
      */
     public Point getRefPoint ()

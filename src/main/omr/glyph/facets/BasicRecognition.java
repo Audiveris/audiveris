@@ -21,7 +21,6 @@ import omr.score.entity.TimeRational;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
 
 /**
  * Class {@code BasicRecognition} is the basic implementation of a

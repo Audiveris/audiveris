@@ -97,6 +97,7 @@ public class ShapeBoard
     static {
         heights.put(ShapeSet.Accidentals, 40);
         heights.put(ShapeSet.Articulations, 60);
+        heights.put(ShapeSet.Attributes, 40);
         heights.put(ShapeSet.Barlines, 100);
         heights.put(ShapeSet.Beams, 60);
         heights.put(ShapeSet.Clefs, 140);
@@ -109,9 +110,7 @@ public class ShapeBoard
         heights.put(ShapeSet.Ornaments, 80);
         heights.put(ShapeSet.Rests, 120);
         heights.put(ShapeSet.Times, 130);
-        heights.put(ShapeSet.Others, 90);
-        heights.put(ShapeSet.Physicals, 40);
-        heights.put(ShapeSet.Logicals, 40);
+        heights.put(ShapeSet.Physicals, 150);
     }
 
     //~ Instance fields --------------------------------------------------------
