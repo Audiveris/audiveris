@@ -204,11 +204,11 @@ public class Tuplet
                                                        Staff requiredStaff)
     {
         logger.fine("{0} {1}{2}",
-                    new Object[]{glyph.getShape(),
-                                 glyph.idString(),
-                                 (requiredStaff != null)
-                                 ? (" staff#" + requiredStaff.getId())
-                                 : ""});
+                new Object[]{glyph.getShape(),
+                             glyph.idString(),
+                             (requiredStaff != null)
+                    ? (" staff#" + requiredStaff.getId())
+                    : ""});
 
         // We consider each candidate in turn, with its duration
         // in order to determine the duration base of the tuplet
@@ -470,8 +470,15 @@ public class Tuplet
                 dump();
             }
 
-            return status.label + " sequence in " + glyph.getShape() + " "
-                    + total + " vs " + expectedTotal;
+            StringBuilder sb = new StringBuilder();
+            sb.append(status.label).append(" sequence in ")
+                    .append(glyph.getShape()).append(": ").append(total);
+
+            if (expectedTotal != Rational.MAX_VALUE) {
+                sb.append(" vs ").append(expectedTotal);
+            }
+
+            return sb.toString();
         }
 
         public Rational getTotal ()
@@ -535,7 +542,7 @@ public class Tuplet
             int signX = glyph.getAreaCenter().x;
 
             return (signX >= chords.first().getTailLocation().x)
-                    && (signX <= chords.last().getTailLocation().x);
+                   && (signX <= chords.last().getTailLocation().x);
         }
     }
 }

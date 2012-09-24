@@ -179,8 +179,8 @@ public abstract class Slot
             // Use the stem abscissa or the note abscissa, according to policy
             PixelPoint pt = (policy == SlotPolicy.STEM_BASED
                              && glyph.getStemNumber() == 1)
-                            ? glyph.getFirstStem().getAreaCenter()
-                            : glyph.getAreaCenter();
+                    ? glyph.getFirstStem().getAreaCenter()
+                    : glyph.getAreaCenter();
 
             // First, look for a compatible slot
             for (Slot slot : measure.getSlots()) {
@@ -197,8 +197,8 @@ public abstract class Slot
 
             // No compatible slot found, so let's create a brand new one
             Slot slot = (policy == SlotPolicy.STEM_BASED)
-                        ? new StemBasedSlot(measure, pt)
-                        : new HeadBasedSlot(measure);
+                    ? new StemBasedSlot(measure, pt)
+                    : new HeadBasedSlot(measure);
 
             slot.addGlyph(glyph);
 
@@ -235,6 +235,7 @@ public abstract class Slot
     {
         // Allocate 1 chord per stem, per rest, per (whole) note
         for (Glyph glyph : glyphs) {
+            glyph.clearTranslations();
             if (glyph.getStemNumber() > 0) {
                 // Beware of noteheads with 2 stems, we need to duplicate them
                 // in order to actually have two logical chords.
@@ -273,7 +274,7 @@ public abstract class Slot
         Collections.sort(chords, chordComparator);
 
         logger.fine("buildVoices for Slot#{0} Actives={1} Chords={2}",
-                    getId(), activeChords, chords);
+                getId(), activeChords, chords);
 
         // Use the active chords before this slot to compute start time
         computeStartTime(activeChords);
@@ -319,7 +320,7 @@ public abstract class Slot
             if (index < endingChords.size()) {
                 Voice voice = endingChords.get(index).getVoice();
                 logger.fine("Slot#{0} Reusing voice#{1}",
-                            getId(), voice.getId());
+                        getId(), voice.getId());
 
                 Chord ch = chords.get(i);
 
@@ -555,7 +556,10 @@ public abstract class Slot
      */
     public void includeSlot (Slot that)
     {
-        glyphs.addAll(that.glyphs);
+        // This will recompute the slot refPoint
+        for (Glyph glyph : that.glyphs) {
+            addGlyph(glyph);
+        }
     }
 
     //---------------//
@@ -713,7 +717,7 @@ public abstract class Slot
                 sb.append(" Ch#").append(String.format("%02d", chord.getId()));
                 sb.append(" St").append(chord.getStaff().getId());
                 sb.append(" Dur=").append(String.format("%5s",
-                                                        chord.getDuration()));
+                        chord.getDuration()));
             } else {
                 sb.append("----------------------");
             }
@@ -749,7 +753,7 @@ public abstract class Slot
 
                 if (chord.getVoice() == null) {
                     logger.fine("{0} Slot#{1} creating voice for Ch#{2}",
-                                chord.getContextString(), id, chord.getId());
+                            chord.getContextString(), id, chord.getId());
 
                     // Add a new voice
                     new Voice(chord);
@@ -862,8 +866,8 @@ public abstract class Slot
             Chord oldChord = olds.get(ip);
 
             if ((newChord.getVoice() != null)
-                    && (oldChord.getVoice() != null)
-                    && (newChord.getVoice() != oldChord.getVoice())) {
+                && (oldChord.getVoice() != null)
+                && (newChord.getVoice() != oldChord.getVoice())) {
                 return INCOMPATIBLE_VOICES;
             } else if (newChord.getStaff() != oldChord.getStaff()) {
                 return STAFF_DIFF;

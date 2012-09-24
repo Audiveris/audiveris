@@ -52,14 +52,16 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
+import omr.text.TextLine;
+
 import omr.util.HorizontalSide;
 import omr.util.TreeNode;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import omr.text.TextLine;
 
 /**
  * Class {@code SystemTranslator} performs all translation tasks for
@@ -302,7 +304,7 @@ public class SystemTranslator
             // DOT_set-shape staccato is processed by DotTranslation,
             // while STACCATO-shape staccato is processed here
             return Articulations.contains(shape)
-                    && (shape != Shape.ARPEGGIATO);
+                   && (shape != Shape.ARPEGGIATO);
         }
 
         @Override
@@ -396,6 +398,13 @@ public class SystemTranslator
     private class ChordTranslator
             extends Translator
     {
+
+        Scale scale = system.getScale();
+
+        int minSlotSpacing = scale.toPixels(Page.getMinSlotSpacing());
+
+        int minStemSpacing = scale.toPixels(Page.getMinSlotSpacing());
+        
         //~ Constructors -------------------------------------------------------
 
         public ChordTranslator ()
@@ -430,7 +439,7 @@ public class SystemTranslator
             Shape shape = glyph.getShape();
 
             return Rests.contains(shape) || NoteHeads.contains(shape)
-                    || Notes.contains(shape);
+                   || Notes.contains(shape);
         }
 
         @Override
@@ -446,10 +455,8 @@ public class SystemTranslator
 
         private void checkMinSpacing (Measure measure)
         {
-            Scale scale = system.getScale();
             Slot prevSlot = null;
 
-            int minSlotSpacing = scale.toPixels(Page.getMinSlotSpacing());
             int minSpacing = Integer.MAX_VALUE;
             Slot minSlot = null;
 
@@ -470,7 +477,7 @@ public class SystemTranslator
                 measure.addError(
                         minSlot.getLocationGlyph(),
                         "Suspicious narrow spacing of slots: "
-                        + scale.pixelsToFrac(minSpacing));
+                        + (float) scale.pixelsToFrac(minSpacing));
             }
         }
 
@@ -496,21 +503,21 @@ public class SystemTranslator
                 Slot prevSlot = null;
                 Set<Glyph> prevStems = null;
 
-                for (Iterator<Slot> it = measure.getSlots().iterator(); it.
-                        hasNext();) {
+                for (Iterator<Slot> it = measure.getSlots().iterator();
+                        it.hasNext();) {
                     Slot slot = it.next();
 
                     if (prevSlot != null) {
-                        // Look for stem in common
-                        Set<Glyph> stems = slot.getStems();
-                        stems.retainAll(prevStems);
+                        // Look for stem in common (or very close in abscissa)
+                        Set<Glyph> commonStems = checkCommonStems(
+                                prevStems, slot.getStems());
 
-                        if (!stems.isEmpty()) {
+                        if (!commonStems.isEmpty()) {
                             logger.fine(
                                     "{0} merging slots #{1} & #{2} around {3}",
                                     measure.getContextString(),
                                     prevSlot.getId(), slot.getId(),
-                                    Glyphs.toString("stems", stems));
+                                    Glyphs.toString("stems", commonStems));
 
                             prevSlot.includeSlot(slot);
                             it.remove();
@@ -524,6 +531,37 @@ public class SystemTranslator
                     prevStems = slot.getStems();
                 }
             } while (purging);
+        }
+
+        /**
+         * Check for common stems. (either shared or too close in abscissa)
+         *
+         * @param prevStems stems of previous slot
+         * @param stems     stems of the current slot
+         * @return the set of common stems, perhaps empty
+         */
+        private Set<Glyph> checkCommonStems (Set<Glyph> prevStems,
+                                             Set<Glyph> stems)
+        {
+            Set<Glyph> commons = new HashSet<>();
+            for (Glyph stem : stems) {
+                if (prevStems.contains(stem)) {
+                    commons.add(stem);
+                } else {
+                    int xStem = stem.getAreaCenter().x;
+                    for (Glyph s : prevStems) {
+                        int xPrev = s.getAreaCenter().x;
+                        if (Math.abs(xStem - xPrev) < minStemSpacing) {
+                            logger.fine("Slots with close stems {0} {1}",
+                                    s.idString(), stem.idString());
+                            commons.add(stem);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return commons;
         }
     }
 
@@ -637,7 +675,7 @@ public class SystemTranslator
             Shape shape = glyph.getShape();
 
             return Dynamics.contains(shape) && (shape != Shape.CRESCENDO)
-                    && (shape != Shape.DECRESCENDO);
+                   && (shape != Shape.DECRESCENDO);
         }
 
         @Override
@@ -668,7 +706,7 @@ public class SystemTranslator
         public boolean isRelevant (Glyph glyph)
         {
             return (glyph.getShape() == Shape.FERMATA)
-                    || (glyph.getShape() == Shape.FERMATA_BELOW);
+                   || (glyph.getShape() == Shape.FERMATA_BELOW);
         }
 
         @Override
@@ -779,7 +817,7 @@ public class SystemTranslator
         public boolean isRelevant (Glyph glyph)
         {
             return (glyph.getShape().isSharpBased())
-                    || (glyph.getShape().isFlatBased());
+                   || (glyph.getShape().isFlatBased());
         }
 
         @Override
@@ -878,8 +916,8 @@ public class SystemTranslator
             final Shape shape = glyph.getShape();
 
             return (shape == Shape.TR) || (shape == Shape.TURN)
-                    || (shape == Shape.MORDENT)
-                    || (shape == Shape.INVERTED_MORDENT);
+                   || (shape == Shape.MORDENT)
+                   || (shape == Shape.INVERTED_MORDENT);
         }
 
         @Override
@@ -909,7 +947,7 @@ public class SystemTranslator
             Shape shape = glyph.getShape();
 
             return (shape == Shape.PEDAL_MARK)
-                    || (shape == Shape.PEDAL_UP_MARK);
+                   || (shape == Shape.PEDAL_UP_MARK);
         }
 
         @Override
@@ -1176,8 +1214,8 @@ public class SystemTranslator
                 Shape shape = glyph.getShape();
 
                 if (glyph.isWellKnown()
-                        && (shape != Shape.CLUTTER)
-                        && !glyph.isTranslated()) {
+                    && (shape != Shape.CLUTTER)
+                    && !glyph.isTranslated()) {
                     // Check for glyph relevance
                     if (isRelevant(glyph)) {
                         // Determine part/staff/measure containment
