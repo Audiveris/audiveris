@@ -300,7 +300,8 @@ public class ScaleBuilder
             return beamEntry.getKey();
         } else {
             if (backPeak != null) {
-                logger.info("No beam peak found, computing a default value");
+                logger.info("{0}{1}", sheet.getLogPrefix(), 
+                        "No beam peak found, computing a default value");
 
                 return (int) Math.rint(0.7 * backPeak.getKey().best);
             } else {

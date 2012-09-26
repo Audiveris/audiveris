@@ -207,7 +207,7 @@ public class Plugin
             Process process = pb.start();
             InputStream is = process.getInputStream();
             InputStreamReader isr = new InputStreamReader(is,
-                                                          WellKnowns.ENCODING);
+                                                          WellKnowns.FILE_ENCODING);
             BufferedReader br = new BufferedReader(isr);
 
             // Consume process output
@@ -269,7 +269,7 @@ public class Plugin
         if (engine != null) {
             try {
                 InputStream is = new FileInputStream(file);
-                Reader reader = new InputStreamReader(is, WellKnowns.ENCODING);
+                Reader reader = new InputStreamReader(is, WellKnowns.FILE_ENCODING);
                 engine.eval(reader);
 
                 // Retrieve information from script

@@ -22,6 +22,7 @@ import org.jdesktop.application.ResourceMap;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -47,11 +48,10 @@ public class MemoryMeter
     /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** A kilo as 2**10 */
-    private static final int KILO = 1024;
+    /** A mega as 2**20 */
+    private static final double MEGA = 1024 * 1024;
 
     //~ Instance fields --------------------------------------------------------
-
     /** Default foreground color, when under alarm threshold */
     private Color defaultForeground;
 
@@ -77,7 +77,6 @@ public class MemoryMeter
     private int lastThreshold = 0;
 
     //~ Constructors -----------------------------------------------------------
-
     //-------------//
     // MemoryMeter //
     //-------------//
@@ -97,7 +96,6 @@ public class MemoryMeter
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------------//
     // collectGarbage //
     //----------------//
@@ -151,19 +149,19 @@ public class MemoryMeter
     private void defineUI ()
     {
         ApplicationContext applicationContext = MainGui.getInstance()
-                                                       .getContext();
+                .getContext();
         component.setLayout(new BorderLayout());
 
         // Progress bar
+        progressBar.setPreferredSize(new Dimension(90, 20));
         progressBar.setName("progressBar");
-        progressBar.setToolTipText("Current used memory from global memory");
-        progressBar.setString("0KB / 0KB");
+        progressBar.setToolTipText("Used memory / Global memory");
         progressBar.setStringPainted(true);
         component.add(progressBar, BorderLayout.CENTER);
 
         // Garbage collector button
         JButton button = new JButton(
-            applicationContext.getActionMap(this).get("collectGarbage"));
+                applicationContext.getActionMap(this).get("collectGarbage"));
         button.setBorder(BorderFactory.createRaisedBevelBorder());
         component.add(button, BorderLayout.EAST);
 
@@ -181,40 +179,39 @@ public class MemoryMeter
     private void initialize ()
     {
         // Displayer
-        displayer = new Runnable() {
+        displayer = new Runnable()
+        {
             @Override
-                public void run ()
-                {
-                    int totalKB = (int) (Memory.total() / KILO);
-                    int usedKB = (int) (Memory.occupied() / KILO);
-                    int thresholdKB = (int) Math.rint(
-                        constants.alarmThreshold.getValue() * totalKB);
+            public void run ()
+            {
+                int total = (int) Math.rint(Memory.total() / MEGA);
+                int used = (int) Math.rint(Memory.occupied() / MEGA);
+                int threshold = (int) Math.rint(
+                        constants.alarmThreshold.getValue() * total);
 
-                    if ((totalKB != lastTotal) ||
-                        (usedKB != lastUsed) ||
-                        (thresholdKB != lastThreshold)) {
-                        progressBar.setMaximum(totalKB);
-                        progressBar.setValue(usedKB);
-                        progressBar.setString(
-                            String.format(
-                                "%,.1f/%,.0f MB",
-                                (float) usedKB / KILO,
-                                (float) totalKB / KILO));
-                        lastTotal = totalKB;
-                        lastUsed = usedKB;
-                        lastThreshold = thresholdKB;
+                if ((total != lastTotal)
+                    || (used != lastUsed)
+                    || (threshold != lastThreshold)) {
+                    progressBar.setMaximum(total);
+                    progressBar.setValue(used);
+                    progressBar.setString(
+                            String.format("%d/%d MB", used, total));
+                    lastTotal = total;
+                    lastUsed = used;
+                    lastThreshold = threshold;
 
-                        if (usedKB > thresholdKB) {
-                            progressBar.setForeground(Color.red);
-                        } else {
-                            progressBar.setForeground(defaultForeground);
-                        }
+                    if (used > threshold) {
+                        progressBar.setForeground(Color.red);
+                    } else {
+                        progressBar.setForeground(defaultForeground);
                     }
                 }
-            };
+            }
+        };
 
         // Monitoring thread
-        Thread monitorThread = new Thread() {
+        Thread monitorThread = new Thread()
+        {
             @Override
             public void run ()
             {
@@ -238,24 +235,24 @@ public class MemoryMeter
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         /** Display period */
         Constant.Integer displayPeriod = new Constant.Integer(
-            "MilliSeconds",
-            2000,
-            "Memory display period");
+                "MilliSeconds",
+                2000,
+                "Memory display period");
 
         /** Alarm threshold ratio */
         Constant.Ratio alarmThreshold = new Constant.Ratio(
-            0.75,
-            "Memory alarm threshold, expressed in ratio of total memory");
+                0.75,
+                "Memory alarm threshold, expressed in ratio of total memory");
+
     }
 }

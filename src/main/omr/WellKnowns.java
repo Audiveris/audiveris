@@ -15,6 +15,7 @@ import omr.log.Logger;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.util.Locale;
 
@@ -23,7 +24,7 @@ import java.util.Locale;
  * shared within Audiveris application.
  *
  * <p>Note that a few initial operations are performed here, because they need
- * to be done before any other class is loaded.
+ * to take place before any other class is loaded.
  *
  * @author Hervé Bitteur
  */
@@ -34,91 +35,91 @@ public class WellKnowns
     //----------//
     // IDENTITY //
     //----------//
-    
-    /** Application name: {@value} */
+    //
+    /** Application name: {@value}. */
     public static final String TOOL_NAME = "audiveris";
 
-    /** Application company name: {@value} */
+    /** Application company name: {@value}. */
     public static final String TOOL_COMPANY = "AudiverisLtd";
 
-    /** Specific prefix for application folders */
+    /** Specific prefix for application folders: {@value}. */
     private static final String TOOL_PREFIX = "/" + TOOL_COMPANY + "/"
                                               + TOOL_NAME;
 
     //----------//
     // PLATFORM //
     //----------//
-    
-    /** Character encoding */
-    public static final String ENCODING = "UTF-8";
+    //
+    /** File character encoding. */
+    public static final String FILE_ENCODING = getFileEncoding();
 
-    /** Are we using a Linux OS? */
+    /** Are we using a Linux OS?. */
     public static final boolean LINUX = System.getProperty("os.name")
             .toLowerCase(Locale.ENGLISH)
             .startsWith("linux");
 
-    /** Are we using a Mac OS? */
+    /** Are we using a Mac OS?. */
     public static final boolean MAC_OS_X = System.getProperty("os.name")
             .toLowerCase(Locale.ENGLISH)
             .startsWith("mac os x");
 
-    /** Are we using a Windows OS? */
+    /** Are we using a Windows OS?. */
     public static final boolean WINDOWS = System.getProperty("os.name")
             .toLowerCase(Locale.ENGLISH)
             .startsWith("windows");
 
-    /** Precise OS architecture */
+    /** Precise OS architecture. */
     public static final String OS_ARCH = System.getProperty("os.arch");
-
-    /** File separator for the current platform */
+    
+    /** File separator for the current platform. */
     public static final String FILE_SEPARATOR = System.getProperty(
             "file.separator");
 
-    /** Line separator for the current platform */
+    /** Line separator for the current platform. */
     public static final String LINE_SEPARATOR = System.getProperty(
             "line.separator");
 
-    /** Redirection, if any, of standard out and err stream */
+    /** Redirection, if any, of standard out and err stream. */
     public static final String STD_OUT_ERROR = System.getProperty("stdouterr");
 
     //---------//
     // PROGRAM //
     //---------//
-
-    /** The container from which the application classes were loaded */
+    //
+    /** The container from which the application classes were loaded. */
     public static final File CLASS_CONTAINER = getClassContainer();
 
-    /** Program installation folder for this application */
+    /** Program installation folder for this application. */
     private static final File PROGRAM_FOLDER = getProgramFolder();
 
-    /** The folder where resource data is stored */
+    /** The folder where resource data is stored. */
     public static final File RES_FOLDER = new File(PROGRAM_FOLDER, "res");
 
-    /** The folder where Tesseract OCR material is stored */
+    /** The folder where Tesseract OCR material is stored. */
     public static final File OCR_FOLDER = getOcrFolder();
 
-    /** The folder where documentations files are stored */
+    /** The folder where documentations files are stored. */
     public static final File DOC_FOLDER = new File(PROGRAM_FOLDER, "www");
 
-    /** Trick to detect a development environment rather than a standard one */
+    /** Trick to detect a development environment rather than a standard one. */
     private static final boolean isProject = isProject();
 
     //--------//
     // CONFIG //
     //--------//
-
-    /** The folder where user specific data is stored */
+    //
+    /** The folder where user specific data is stored. */
     public static final File USER_FOLDER = getUserConfigFolder();
 
-    /** Base folder for config */
+    /** Base folder for config. */
     private static final File CONFIG_FOLDER = getConfigFolder();
 
-    /** The folder where global configuration data is stored */
+    /** The folder where global configuration data is stored. */
     public static final File SETTINGS_FOLDER = new File(
             CONFIG_FOLDER,
             "settings");
 
-    /** The folder where plugin scripts are found */
+    /** The folder where plugin scripts are found. */
     public static final File PLUGINS_FOLDER = new File(
             CONFIG_FOLDER,
             "plugins");
@@ -126,64 +127,72 @@ public class WellKnowns
     //------//
     // DATA //
     //------//
-
-    /** Base folder for data */
+    //
+    /** Base folder for data. */
     private static final File DATA_FOLDER = getDataFolder();
 
-    /** The folder where examples are stored */
+    /** The folder where examples are stored. */
     public static final File EXAMPLES_FOLDER = new File(
             DATA_FOLDER,
             "examples");
 
-    /** The folder where temporary data can be stored */
+    /** The folder where temporary data can be stored. */
     public static final File TEMP_FOLDER = new File(DATA_FOLDER, "temp");
 
-    /** The folder where evaluation data is stored */
+    /** The folder where evaluation data is stored. */
     public static final File EVAL_FOLDER = new File(DATA_FOLDER, "eval");
 
-    /** The folder where training material is stored */
+    /** The folder where training material is stored. */
     public static final File TRAIN_FOLDER = new File(DATA_FOLDER, "train");
 
-    /** The folder where symbols information is stored */
+    /** The folder where symbols information is stored. */
     public static final File SYMBOLS_FOLDER = new File(TRAIN_FOLDER, "symbols");
 
-    /** The default folder where benches data is stored */
+    /** The default folder where benches data is stored. */
     public static final File DEFAULT_BENCHES_FOLDER = new File(
             DATA_FOLDER,
             "benches");
 
-    /** The default folder where MIDI data is stored */
+    /** The default folder where MIDI data is stored. */
     public static final File DEFAULT_MIDI_FOLDER = new File(
             DATA_FOLDER,
             "midi");
 
-    /** The default folder where PDF data is stored */
+    /** The default folder where PDF data is stored. */
     public static final File DEFAULT_PRINT_FOLDER = new File(
             DATA_FOLDER,
             "print");
 
-    /** The default folder where scripts data is stored */
+    /** The default folder where scripts data is stored. */
     public static final File DEFAULT_SCRIPTS_FOLDER = new File(
             DATA_FOLDER,
             "scripts");
 
-    /** The default folder where scores data is stored */
+    /** The default folder where scores data is stored. */
     public static final File DEFAULT_SCORES_FOLDER = new File(
             DATA_FOLDER,
             "scores");
 
-    /** The logging definition file, if any */
+    //---------//
+    // LOGGING //
+    //---------//
+    //
+    /** The logging definition file, if any. */
     private static final File LOGGING_FILE = getLoggingFile();
 
     static {
-        /** Disable DirecDraw by default */
-        disableDirectDraw();
-
-        /** Log declared data (debug) */
+        /** Log declared data (debug). */
         logDeclaredData();
     }
 
+    // Miscellaneous actions
+    static {
+        /** Disable DirecDraw by default. */
+        disableDirectDraw();
+    }
+
     //~ Constructors -----------------------------------------------------------
+    //
     //------------//
     // WellKnowns // Not meant to be instantiated
     //------------//
@@ -192,7 +201,7 @@ public class WellKnowns
     }
 
     //~ Methods ----------------------------------------------------------------
-
+    //
     //--------------//
     // ensureLoaded //
     //--------------//
@@ -388,16 +397,18 @@ public class WellKnowns
         // are running from the development folder (with data & settings as
         // subfolders) rather than from a standard folder (installed with 
         // distinct location for application data & config).
-        // There are other possible "src" symoble does not work for example other program invoking audiveris.jar file
+        // There are other possible "src" symbol does not work for example other program invoking audiveris.jar file
         // so added one more condition to check if class_container having .jar extension
         File devFolder = new File(PROGRAM_FOLDER, "src");
         String s = CLASS_CONTAINER.getName();
         String ext = null;
         int i = s.lastIndexOf('.');
+
         if (i > 0 && i < s.length() - 1) {
             ext = s.substring(i + 1).toLowerCase();
         }
-        return devFolder.exists() || ext == "jar";
+
+        return devFolder.exists() || "jar".equals(ext);
     }
 
     //----------------//
@@ -405,24 +416,51 @@ public class WellKnowns
     //----------------//
     private static File getLoggingFile ()
     {
-        final String LOGGING_KEY = "java.util.logging.config.file";
+        final String JAVA_LOGGING_KEY = "java.util.logging.config.file";
+        final String APACHE_LOGGING_KEY = "log4j.configuration";
+
         final String LOGGING_NAME = "logging.properties";
         File loggingFile = null;
 
         // Set logging configuration file (if none already defined)
-        final String loggingProp = System.getProperty(LOGGING_KEY);
+        final String loggingProp = System.getProperty(JAVA_LOGGING_KEY);
         if (loggingProp == null) {
             // Check for a user file
             loggingFile = new File(USER_FOLDER, LOGGING_NAME);
 
             if (loggingFile.exists()) {
-                System.setProperty(LOGGING_KEY, loggingFile.toString());
+
+                // Set property for java.util.logging
+                System.setProperty(JAVA_LOGGING_KEY, loggingFile.toString());
+
+                // Set property for log4j
+                try {
+                    final String url = loggingFile.toURI().toURL().toString();
+                    System.setProperty(APACHE_LOGGING_KEY, url);
+                } catch (MalformedURLException ex) {
+                    ex.printStackTrace();
+                }
             }
         } else {
-            System.out.println("Logging already defined by " + loggingProp);
+            ///System.out.println("Logging already defined by " + loggingProp);
         }
 
+//        System.out.println("prop " + JAVA_LOGGING_KEY + "= " + System.getProperty(JAVA_LOGGING_KEY));
+//        System.out.println("prop " + APACHE_LOGGING_KEY + "= " + System.getProperty(APACHE_LOGGING_KEY));
+
         return loggingFile;
+    }
+
+    //-----------------//
+    // getFileEncoding //
+    //-----------------//
+    private static String getFileEncoding ()
+    {
+        final String ENCODING_KEY = "file.encoding";
+        final String ENCODING_VALUE = "UTF-8";
+
+        System.setProperty(ENCODING_KEY, ENCODING_VALUE);
+        return ENCODING_VALUE;
     }
 
     //-----------------//
