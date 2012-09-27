@@ -40,6 +40,14 @@
                 font-size: 6em;
                 text-align: right;
             }
+            
+            .no_border {
+                border: 0;
+            }
+
+            .cell-spaced {
+                border-spacing: 20px;
+            }
 
             /* -- ids -- */
 
@@ -63,7 +71,7 @@
                 margin: 0;
             }
             #script-snippet {
-                width: 85%;
+                width: 65%;
             }
             #warped{
                 margin-right: 10px;
@@ -343,6 +351,11 @@
                 <li>All major formats are supported, notably PDF, TIFF, JPG,
                     PNG, BMP.
                 </li>
+                <li>
+                    One input file leads to one score. 
+                    One multi-page input file (PDF and TIFF formats provide this
+                    feature) leads to one score composed of as many pages.
+                </li>
                 <li>Prefer gray level images, with pixels value in the 0 - 255
                     range, to black and white images.
                     Color images are supported as well.
@@ -449,7 +462,7 @@
             <h4 id="sheet-display-modes">
                 Sheet display modes
             </h4>
-            <table class="side" border="0" cellspacing="20px">
+            <table class="no-border side cell-spaced">
                 <tr>
                     <th></th>
                     <th>Picture tab</th>
@@ -568,17 +581,21 @@
             <dl>
                 <dt>Pixel</dt>
                 <dd>A pixel is the smallest picture element in the input image. 
-                    A pixels exhibits a specific color, generally a level of 
+                    A pixel exhibits a specific color, generally a level of 
                     gray.
-                    Using a binarization threshold, we can separate foreground 
-                    (black) pixels from background (white) pixels.</dd>
+                    Using a binarization filter, we can separate foreground 
+                    (rather black) pixels from background (rather white) pixels.
+                </dd>
                 <dt>Run</dt>
                 <dd>A run is a horizontal or vertical vector of pixels of the
-                    same color. A black pixel is "assigned" to exactly one run.
+                    same kind (foreground or background).
+                    A black (foreground) pixel is "assigned" to exactly one run.
                 </dd>
                 <dt>Section</dt>
                 <dd>A section is a sequence of adjacent black runs, all of the
-                    same orientation. A run belongs to exactly one section.</dd>
+                    same orientation. 
+                    Sections do not overlap, hence a run belongs to exactly one
+                    section.</dd>
                 <dt>Glyph</dt>
                 <dd>A glyph is nothing but a set of sections, perhaps from
                     different orientations. A section may belong to many 
@@ -645,14 +662,15 @@
                 </h4>
 
                 <img class="right" title="boards" alt="boards" 
-                     width="301" height="581" src="../images/boards.png"/>
+                     src="../images/boards.png"/>
                 <img class="right" title="Boards selection" 
                      width="175" height="286"
                      src="../images/boards-selection.png" />
 
                 <p>By a right-click in boards pane, you get access to
                     boards selection, to customize which boards should be 
-                    displayed or hidden:
+                    displayed or hidden (this depends on the type of view at
+                    hand - picture, runs, data):
                 </p>
 
                 <dl>
@@ -665,6 +683,10 @@
                         fields are both output and input fields. 
                         Just modify their values and press return to modify
                         the selected location.</dd>
+
+                    <dt>Binarization</dt>
+                    <dd>Displays the binarization environment that applies for 
+                        the current pixel.</dd>
 
                     <dt>Run (Hori/Vert)</dt>
                     <dd>Displays the current black Run (horizontal or vertical)
@@ -764,48 +786,75 @@
             <h4 id="score-parameters">
                 Score parameters
             </h4>
-            <img title="Score parameters" class="right" 
-                 width="382" height="445"
-                 src="../images/chula-parameters.png" />
-            <p>This convenient dialog box gathers a selected number of global
-                and key score parameters.
+            <p>This dialog let you display and modify major parameters.
                 It can be accessed through menu <code>Score</code> | 
                 <code>Set parameters...</code> or via the related toolbar icon 
                 <img class="icon" width="16" height="16" 
-                     src="../images/Edit16.gif" />
+                     src="../images/Edit16.gif" />.
             </p>
-            <ol>
-                <li>Global parameters (they concern the whole application):
-                    <dl>
-                        <dt>Call-Stack</dt>
-                        <dd>Print out the calling stack whenever some exception
-                            is thrown</dd>
-                        <dt>Script</dt>
-                        <dd>Prompt the user for saving the current script when
-                            closing a score</dd>
-                        <dt>Drag n' Drop</dt>
-                        <dd>Define the default step to be performed when an
-                            input file is dropped on the application window</dd>
-                    </dl>
-                </li>
-                <li>Key score parameters (they concern just the current score,
-                    unless the box <code>Set as default</code> is checked):
-                    <dl>
-                        <dt>Foreground Pixels</dt>
-                        <dd>Define the threshold on gray level to separate
-                            foreground pixels (level &lt;= threshold) and 
-                            background pixels (level &gt; threshold)</dd>
-                        <dt>Time Slots</dt>
-                        <dd>Define the abscissa margin around time slots
-                            (expressed in interline fraction)</dd>
-                        <dt>Text</dt>
-                        <dd>Define the dominant language for OCR'ed text</dd>
-                        <dt>Parts</dt>
-                        <dd>Define name and MIDI instrument for each part</dd>
-                    </dl>
-                </li>                
-            </ol>
+            <p>
+                It is organized in several tabs to describe default, score and 
+                page scopes:
+            </p>
+            <img title="Default parameters" class="right" 
+                 src="../images/parameters-default.png" />
+            <p><code>Default</code> parameters:
+                <br/>
+                (They concern the whole application and persist across 
+                application runs)
+            </p>
+            <dl>
+                <dt>Text</dt>
+                <dd>Define the dominant language for OCR'ed text</dd>
+                <dt>Binarization</dt>
+                <dd>Select the kind of filter (global or adaptive) and adjust
+                    the related values.</dd>
+                <dt>Drag n' Drop</dt>
+                <dd>Define the default step to be performed when an
+                    image file is dropped on the application window</dd>
+                <dt>Script</dt>
+                <dd>Prompt the user for saving the current script when
+                    closing a score</dd>
+                <dt>On error</dt>
+                <dd>Print out the calling stack whenever any exception
+                    is thrown</dd>
+                <dt>Parallelism</dt>
+                <dd>Define whether machine parallelism should be used.</dd>
+            </dl>
 
+            <p class="clear"></p>
+            <img title="Score parameters" class="right" 
+                 src="../images/parameters-score.png" />
+            <p><code>Score</code> parameters:
+                <br/>
+                (They concern just the current score and apply to all pages in 
+                the score, unless otherwise specified at page level)
+            </p>
+            <dl>
+               <dt>Parts</dt>
+                <dd>This section is specific to the score level and is displayed
+                    only when step <code>SCORE</code> has been reached.
+                    It defines the name and MIDI instrument for each part</dd>
+            </dl>
+                
+            <p class="clear"></p>
+            <img title="Page parameters" class="right" 
+                 src="../images/parameters-page.png" />
+            <p><code>Page</code> parameters:
+                <br/>
+                (They override the default or score parameters for the current
+                page. Pages tabs are present only for multi-page scores)
+            </p>
+            <p>
+                Here we are telling Audiveris to use an adaptive binarization
+                filter for this particular page.
+            </p>
+            <p>
+                The two coefficients are adjustable in the adaptive formula:<br/>
+                threshold = <code>meanCoeff</code> * mean + 
+                <code>stdDevCoeff</code> * stdDev;
+            </p>
+                
             <h4 id="errors-window">
                 Errors window
             </h4>
@@ -1227,23 +1276,37 @@ Known step names are in order (non case-sensitive):
                 constant <code>omr.script.ScriptActions.closeConfirmation</code>.
             </p>
             <p>
-                For example, say you load the file <code>chula.png</code>, set
-                the default language to French (code is <code>fra</code>) in the 
-                score parameters and launch the <code>EXPORT</code> step.
-                You should by default get the following script 
-                (<code>scripts/chula.script.xml</code>):
+                For example, say you load the file 
+                <code>Dichterliebe01.pdf</code>, set
+                the default language to German (code is <code>deu</code>) in the 
+                score parameters, for the first page decide to use an
+                <code>adaptive</code> binarization and finally launch the 
+                <code>EXPORT</code> step.
+                You should get the following script 
+                (<code>Dichterliebe01.script.xml</code>):
             </p>
             <div id="script-snippet" class="snippet">
                 <pre>
 &lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;
-&lt;script file="examples\chula.png"&gt;
-    &lt;parameters foreground="140" language="fra" slot-margin="0.5" slot-policy="HEAD_BASED"/&gt;
+&lt;script file="D:\soft\audiveris\examples\Dichterliebe01.pdf"&gt;
+    &lt;parameters&gt;
+        &lt;language&gt;deu&lt;/language&gt;
+        &lt;page index="1"&gt;
+            &lt;adaptive-filter mean-coeff="0.7" std-dev-coeff="0.9"/&gt;
+        &lt;/page&gt;
+    &lt;/parameters&gt;
     &lt;step name="EXPORT"/&gt;
-&lt;/script&gt;</pre>
+&lt;/script&gt;
+</pre>
             </div>
             <p>Such scripts can be replayed later. Knowledgeable users can even
                 write scripts from scratch and typically submit them in
                 batch mode.
+            </p>
+            <p>
+                A script can be launched via the command line, via the menu
+                <code>File</code> | <code>Load script</code>, or via 
+                drag n' drop from the file explorer.                    
             </p>
 
             <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
@@ -1618,20 +1681,71 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
             <p>This step is usually implicit. Loading an input file, regardless
                 how this file is selected, is considered as performing the 
                 <code>LOAD</code> step.
+                At the end of this step, each page of the input file is 
+                displayed as a separate tab in the main window.
             </p>
             <p>
                 At any time, by manually selecting the menu <code>Steps</code> |
-                <code>Load</code>, you can force the program to reload the input
-                file and reach again the same final mandatory step.
+                <code>Load</code>, you can force the program to reload the 
+                current page and reach again the same final mandatory step.
             </p>
 
             <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
             <h3 id="scale-step">
                 Scale step
-            </h3>
-            <p>By analyzing the histograms of vertical run lengths for black
-                (foreground) and white (background), the program retrieves key 
-                information about the music sheet.
+            </h3>            
+            <p>
+                Before any digital processing can take place, each pixel must be
+                extracted from the image and flagged as either foreground or 
+                background:
+            </p>
+            <ul>
+                <li>
+                    The default binarization filter uses a <b>global</b> 
+                    approach, based on a single threshold value for all pixels 
+                    of the image. 
+                    All pixels with a gray level which is less than or equal to
+                    the threshold are considered as foreground, the others as 
+                    background.
+                    This approach assumes that the image illumination is 
+                    rather uniform.
+                </li>
+                <li>
+                    For images with non-uniform illumination, you can select an
+                    <b>adaptive</b> filter, which determines the threshold value
+                    for each pixel individually, by using mean value and 
+                    standard deviation in a small window around the pixel at 
+                    hand.
+                </li>
+            </ul>
+            
+            <img title="Non-uniform image" 
+                 src="../images/nonuniform-picture.png" class="right" />
+            <p>Example of a non-uniform input image, which exhibits a horizontal
+                illumination gradient:</p>
+            
+            <p class="clear">
+                Nota: The following displays of the internal runs tables are
+                driven by the constant <code>omr.grid.GridBuilder.showRuns</code>.
+            </p>
+            <img title="Global filter" 
+                 src="../images/nonuniform-global.png" class="right" />
+            <p>Binarization with the global filter:
+                Too much pepper on the left, too much salt on the right!
+            </p>
+            
+            <p class="clear"></p>
+            <img title="Adaptive filter" 
+                 src="../images/nonuniform-adaptive.png" class="right" />
+            <p>Binarization with the adaptive filter:
+            The whole staff is readable.</p>
+                
+            <p class="clear">
+                Now that it can pick up just the foreground pixels, 
+                the program can aggregate them into vertical runs.
+                And simply by analyzing the histograms of run lengths for 
+                foreground pixels (and for background pixels as well), it
+                retrieves key information about the music sheet.
             </p>
             <p>
                 Via <code>File</code> | <code>Display Scale Plots</code> you
@@ -1688,7 +1802,7 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
             <p>
                 Note that this intrinsic referential allows Audiveris to 
                 directly cope with skewed page and / or wavy lines with no
-                deskewing of other processing.
+                deskewing or other processing.
             </p>
             <p>
                 If you wish, you can still ask Audiveris to produce a "dewarped"
@@ -1707,7 +1821,7 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                 image. Note the pixels colors are not modified, only
                 their coordinates are.
             </p>
-            <table border="0" >
+            <table class="no-border" >
                 <tr>
                     <td>
                         <img title="Warped image" width="436" height="335" 

@@ -145,7 +145,7 @@ public class RunsTableView
         case HORIZONTAL: {
             int minRow = Math.max(clip.y, 0);
             int maxRow = Math.min((clip.y + clip.height), table.getHeight())
-                    - 1;
+                         - 1;
 
             for (int row = minRow; row <= maxRow; row++) {
                 List<Run> seq = table.getSequence(row);
@@ -182,9 +182,10 @@ public class RunsTableView
     //----------//
     protected Color runColor (Run run)
     {
-        int level = run.getLevel();
-
-        return new Color(level, level, level);
+//        int level = run.getLevel();
+//
+//        return new Color(level, level, level);
+        return Color.BLACK;
     }
 
     //-------------//
@@ -211,7 +212,7 @@ public class RunsTableView
         MouseMovement movement = locationEvent.movement;
 
         if ((hint != SelectionHint.LOCATION_ADD)
-                && (hint != SelectionHint.LOCATION_INIT)) {
+            && (hint != SelectionHint.LOCATION_INIT)) {
             return;
         }
 

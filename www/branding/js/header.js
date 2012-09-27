@@ -10,6 +10,7 @@ insert("Home",         "index.html");
 insert("Snapshots",    "docs/manual/snapshots.html");
 insert("Installation", "docs/manual/installation.html");
 insert("Releases",     "docs/manual/releases.html");
+insert("API",          "docs/api/index.html");
 insert("Handbook",     "docs/manual/handbook.html");
 document.write("        </ul>");
 document.write("    </nav>            ");
@@ -22,7 +23,7 @@ document.write("    </a>");
 // Download button
 document.write("    <a id='download-button' href='" + context.root + "docs/manual/installation.html'>");
 document.write("        <div id='download-version'>");
-document.write("            <b>V4.1beta</b>");
+document.write("            <b>V4.2</b>");
 document.write("        </div>");
 document.write("    </a>");
 
