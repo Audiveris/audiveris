@@ -65,6 +65,7 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import javax.media.jai.JAI;
+import omr.util.StopWatch;
 
 /**
  * Class {@code PictureLoader} gathers helper functions for {@link
@@ -574,6 +575,8 @@ public class PictureLoader
             Integer id)
     {
         logger.fine("Trying Ghostscript process");
+        StopWatch watch = new StopWatch("GSProcess");
+        watch.start("load");
 
         // Create a temporary tiff file from the PDF input
         Path temp = null;
@@ -586,12 +589,11 @@ public class PictureLoader
 
         // Arguments for Ghostscript
         List<String> gsArgs = new ArrayList<>();
-        ////gsArgs.add(execName);
         gsArgs.add("-dQUIET");
         gsArgs.add("-dNOPAUSE");
         gsArgs.add("-dBATCH");
         gsArgs.add("-dSAFER");
-        gsArgs.add("-sDEVICE=tiffscaled8");
+        gsArgs.add("-sDEVICE=" + constants.ghostscriptDevice.getValue());
         gsArgs.add("-r300");
         gsArgs.add("-sOutputFile=" + temp);
         if (id != null) {
@@ -653,6 +655,7 @@ public class PictureLoader
             } catch (IOException ex) {
                 logger.warning("Error deleting file " + temp, ex);
             }
+            watch.print();
         }
     }
 
@@ -719,5 +722,9 @@ public class PictureLoader
                 "GSProcess",
                 "Library: PDFRenderer, PDFBox, JPedal, Ghostscript or GSProcess");
 
+        Constant.String ghostscriptDevice = new Constant.String(
+                "tiff24nc",
+                "Ghostscript device for intermediate tiff file:"
+                + " tiff24nc or tiffscaled8");
     }
 }

@@ -90,8 +90,7 @@ public class MeasureFixer
     @Override
     public boolean visit (Page page)
     {
-        logger.fine("{0} Visiting {1}", new Object[]{getClass().getSimpleName(),
-                                                     page});
+        logger.fine("{0} Visiting {1}", getClass().getSimpleName(), page);
         page.acceptChildren(this);
 
         // Remember the number of measures in this page
@@ -110,8 +109,7 @@ public class MeasureFixer
     @Override
     public boolean visit (Score score)
     {
-        logger.fine("{0} Visiting {1}", new Object[]{getClass().getSimpleName(),
-                                                     score});
+        logger.fine("{0} Visiting {1}", getClass().getSimpleName(), score);
         score.acceptChildren(this);
 
         return false;
@@ -131,8 +129,7 @@ public class MeasureFixer
     @Override
     public boolean visit (ScoreSystem system)
     {
-        logger.fine("{0} Visiting {1}", new Object[]{getClass().getSimpleName(),
-                                                     system});
+        logger.fine("{0} Visiting {1}", getClass().getSimpleName(), system);
 
         this.system = system;
 
@@ -153,10 +150,10 @@ public class MeasureFixer
             measureTermination = getMeasureTermination();
 
             logger.fine("measureFinal:{0}{1}",
-                        new Object[]{measureTermination,
-                                     (measureTermination != null)
-                                     ? ("=" + measureTermination)
-                                     : ""});
+                    measureTermination,
+                    (measureTermination != null)
+                    ? ("=" + measureTermination)
+                    : "");
 
             if (isEmpty()) {
                 logger.fine("empty");
@@ -164,19 +161,17 @@ public class MeasureFixer
                 // All this vertical measure is empty (no notes/rests)
                 // We will merge with the following measure, if any
                 if (im < imMax) {
-                    setId(
-                            (lastId != null) ? (lastId + 1)
+                    setId((lastId != null) ? (lastId + 1)
                             : ((prevSystemLastId != null)
-                               ? (prevSystemLastId + 1) : 1),
+                            ? (prevSystemLastId + 1) : 1),
                             false);
                 }
             } else if (isPickup()) {
                 logger.fine("pickup");
                 setImplicit();
-                setId(
-                        (lastId != null) ? (-lastId)
+                setId((lastId != null) ? (-lastId)
                         : ((prevSystemLastId != null)
-                           ? (-prevSystemLastId) : 0),
+                        ? (-prevSystemLastId) : 0),
                         false);
             } else if (isSecondRepeatHalf()) {
                 logger.fine("secondHalf");
@@ -185,7 +180,7 @@ public class MeasureFixer
                 shortenFirstHalf();
 
                 setImplicit();
-                setId(lastId, true);
+                setId((lastId != null) ? lastId : prevSystemLastId, true);
             } else if (isRealStart()) {
                 logger.fine("realStart");
                 merge(); // Merge with previous vertical measure
@@ -194,10 +189,9 @@ public class MeasureFixer
                 logger.fine("normal");
 
                 // Normal measure
-                setId(
-                        (lastId != null) ? (lastId + 1)
+                setId((lastId != null) ? (lastId + 1)
                         : ((prevSystemLastId != null)
-                           ? (prevSystemLastId + 1) : 1),
+                        ? (prevSystemLastId + 1) : 1),
                         false);
             }
 
@@ -261,7 +255,8 @@ public class MeasureFixer
     // isEmpty //
     //---------//
     /**
-     * Check for an empty measure: perhaps clef and key sig, but no note or rest
+     * Check for an empty measure: perhaps clef and key sig, but no note
+     * or rest
      *
      * @return true if so
      */
@@ -281,31 +276,33 @@ public class MeasureFixer
     private boolean isPickup ()
     {
         return (system.getChildIndex() == 0) && (im == 0)
-                && (measureTermination != null)
-                && (measureTermination.compareTo(Rational.ZERO) < 0);
+               && (measureTermination != null)
+               && (measureTermination.compareTo(Rational.ZERO) < 0);
     }
 
     //-------------//
     // isRealStart //
     //-------------//
     /**
-     * Check for a measure in second position, while following an empty measure
+     * Check for a measure in second position, while following an empty
+     * measure
      *
      * @return true if so
      */
     private boolean isRealStart ()
     {
         return (im == 1)
-                && (prevVerticals.get(0).getActualDuration().equals(
-                    Rational.ZERO))
-                && (measureTermination != null);
+               && (prevVerticals.get(0).getActualDuration().equals(
+                Rational.ZERO))
+               && (measureTermination != null);
     }
 
     //--------------------//
     // isSecondRepeatHalf //
     //--------------------//
     /**
-     * Check for an implicit measure as the second half of a repeat sequence
+     * Check for an implicit measure as the second half of a repeat
+     * sequence
      *
      * @return true if so
      */
@@ -313,13 +310,13 @@ public class MeasureFixer
     {
         // Check for partial first half
         if ((prevMeasureTermination == null)
-                || (prevMeasureTermination.compareTo(Rational.ZERO) >= 0)) {
+            || (prevMeasureTermination.compareTo(Rational.ZERO) >= 0)) {
             return false;
         }
 
         // Check for partial second half
         if ((measureTermination == null)
-                || (measureTermination.compareTo(Rational.ZERO) >= 0)) {
+            || (measureTermination.compareTo(Rational.ZERO) >= 0)) {
             return false;
         }
 
@@ -329,7 +326,7 @@ public class MeasureFixer
         Shape shape = barline.getShape();
 
         if ((shape != Shape.RIGHT_REPEAT_SIGN)
-                && (shape != Shape.BACK_TO_BACK_REPEAT_SIGN)) {
+            && (shape != Shape.BACK_TO_BACK_REPEAT_SIGN)) {
             return false;
         }
 
@@ -362,7 +359,8 @@ public class MeasureFixer
     // removeMeasures //
     //----------------//
     /**
-     * Remove the vertical measures that correspond to the provided indices
+     * Remove the vertical measures that correspond to the provided
+     * indices
      *
      * @param toRemove sequence of indices to remove, perhaps empty
      * @param system   the containing system
@@ -397,7 +395,7 @@ public class MeasureFixer
     private void setId (int id,
                         boolean isSecondHalf)
     {
-        logger.fine("-> id={0}{1}", new Object[]{id, isSecondHalf ? " SH" : ""});
+        logger.fine("-> id={0}{1}", id, isSecondHalf ? " SH" : "");
 
         for (Measure measure : verticals) {
             measure.setPageId(id, isSecondHalf);

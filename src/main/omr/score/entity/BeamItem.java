@@ -103,20 +103,20 @@ public class BeamItem
         Line absoluteLine = glyph.getLine();
         double yMidLeft = absoluteLine.yAtX((double) box.x);
         double yMidRight = absoluteLine.yAtX(
-                (double) (box.x + box.width));
+                (double) (box.x + box.width - 1));
         double deltaMid1 = Math.min(yMidLeft, yMidRight) - box.y;
         double deltaMid2 = (box.y + box.height)
-                - Math.max(yMidLeft, yMidRight);
+                           - Math.max(yMidLeft, yMidRight);
 
         // Beware, the stick line is not reliable for beam hooks
         if ((deltaMid1 < 0) || (deltaMid2 < 0)) {
             logger.fine("Strange beam item at {0} slope={1}",
-                        new Object[]{glyph.idString(),
-                                     glyph.getLine().getSlope()});
+                    new Object[]{glyph.idString(),
+                                 glyph.getLine().getSlope()});
 
             // Make a simple horizontal beam item
             left = new PixelPoint(box.x, box.y + (box.height / 2));
-            right = new PixelPoint(box.x + box.width, box.y + (box.height / 2));
+            right = new PixelPoint(box.x + box.width - 1, box.y + (box.height / 2));
         } else {
             double deltaMid = (deltaMid1 + deltaMid2) / 2.0;
             double deltaY = (((4 * packIndex) + 1) * deltaMid) / ((2 * packCard)
@@ -128,11 +128,11 @@ public class BeamItem
             if (yMidLeft > yMidRight) {
                 // This is an ascending beam
                 left = new PixelPoint(box.x, lowY);
-                right = new PixelPoint(box.x + box.width, highY);
+                right = new PixelPoint(box.x + box.width - 1, highY);
             } else {
                 // This is a descending beam
                 left = new PixelPoint(box.x, highY);
-                right = new PixelPoint(box.x + box.width, lowY);
+                right = new PixelPoint(box.x + box.width - 1, lowY);
             }
         }
 
@@ -141,8 +141,7 @@ public class BeamItem
         }
 
         if (isVip() || logger.isFineEnabled()) {
-            logger.info("{0} Created {1}",
-                        new Object[]{measure.getContextString(), this});
+            logger.info("{0} Created {1}", measure.getContextString(), this);
         }
     }
 
@@ -374,8 +373,8 @@ public class BeamItem
                 Beam.populate(item, measure);
             }
         } catch (Exception ex) {
-            logger.warning(
-                    "Error creating BeamItem from glyph #" + glyph.getId(),
+            logger.warning(measure.getContextString()
+                           + " Error creating BeamItem from glyph #" + glyph.getId(),
                     ex);
         }
     }
