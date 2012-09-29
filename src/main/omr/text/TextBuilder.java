@@ -24,12 +24,14 @@ import omr.log.Logger;
 import omr.math.LineUtilities;
 
 import omr.score.common.PixelRectangle;
+import omr.score.entity.Page;
 
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
 import omr.text.tesseract.TesseractOCR;
 
+import omr.util.LiveParam;
 import omr.util.WrappedBoolean;
 import omr.util.XmlUtilities;
 
@@ -45,8 +47,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import omr.score.entity.Page;
-import omr.util.Param;
 
 /**
  * Class {@code TextBuilder} provide features to check, build and
@@ -1023,7 +1023,7 @@ public class TextBuilder
     public void switchLanguageTexts ()
     {
         final Page page = system.getSheet().getPage();
-        final Param<String> textParam = page.getTextParam();
+        final LiveParam<String> textParam = page.getTextParam();
         final String language = textParam.getTarget();
         if (logger.isFineEnabled()) {
             logger.info("{0} switchLanguageTexts lan:{1}",

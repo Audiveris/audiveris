@@ -877,7 +877,7 @@ public class HorizontalsBuilder
         // Constants specified WRT mean line thickness
         // -------------------------------------------
         Scale.LineFraction maxSectionThickness = new Scale.LineFraction(
-                1.75,
+                1.85,
                 "Maximum horizontal section thickness WRT mean line height");
 
         Scale.LineFraction maxFilamentThickness = new Scale.LineFraction(

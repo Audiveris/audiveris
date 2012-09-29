@@ -399,14 +399,10 @@ public class SystemTranslator
             extends Translator
     {
 
-        Scale scale = system.getScale();
+        /** Specific checker for slots in each measure. */
+        SlotChecker slotChecker = new SlotChecker(system);
 
-        int minSlotSpacing = scale.toPixels(Page.getMinSlotSpacing());
-
-        int minStemSpacing = scale.toPixels(Page.getMinSlotSpacing());
-        
         //~ Constructors -------------------------------------------------------
-
         public ChordTranslator ()
         {
             super("Chord");
@@ -416,11 +412,7 @@ public class SystemTranslator
         @Override
         public void browse (Measure measure)
         {
-            // Allocate proper chords in every slot
-            purgeSlots(measure);
-
-            // Check that slots are not too close to each other
-            checkMinSpacing(measure);
+            slotChecker.check(measure);
         }
 
         @Override
@@ -445,123 +437,7 @@ public class SystemTranslator
         @Override
         public void translate (Glyph glyph)
         {
-            Score score = system.getScore();
-            Slot.populate(
-                    glyph,
-                    currentMeasure,
-                    score.hasSlotPolicy() ? score.getSlotPolicy()
-                    : Score.getDefaultSlotPolicy());
-        }
-
-        private void checkMinSpacing (Measure measure)
-        {
-            Slot prevSlot = null;
-
-            int minSpacing = Integer.MAX_VALUE;
-            Slot minSlot = null;
-
-            for (Slot slot : measure.getSlots()) {
-                if (prevSlot != null) {
-                    int spacing = slot.getX() - prevSlot.getX();
-
-                    if (minSpacing > spacing) {
-                        minSpacing = spacing;
-                        minSlot = slot;
-                    }
-                }
-
-                prevSlot = slot;
-            }
-
-            if (minSpacing < minSlotSpacing) {
-                measure.addError(
-                        minSlot.getLocationGlyph(),
-                        "Suspicious narrow spacing of slots: "
-                        + (float) scale.pixelsToFrac(minSpacing));
-            }
-        }
-
-        private void purgeSlots (Measure measure)
-        {
-            boolean purging;
-
-            do {
-                purging = false;
-
-                // Allocate proper chords in every slot
-                measure.getChords().retainAll(measure.getWholeChords());
-
-                int id = 0;
-
-                for (Slot slot : measure.getSlots()) {
-                    slot.getChords().clear();
-                    slot.setId(++id);
-                    slot.allocateChordsAndNotes();
-                }
-
-                // Check that the same chord is not linked to more than one slot
-                Slot prevSlot = null;
-                Set<Glyph> prevStems = null;
-
-                for (Iterator<Slot> it = measure.getSlots().iterator();
-                        it.hasNext();) {
-                    Slot slot = it.next();
-
-                    if (prevSlot != null) {
-                        // Look for stem in common (or very close in abscissa)
-                        Set<Glyph> commonStems = checkCommonStems(
-                                prevStems, slot.getStems());
-
-                        if (!commonStems.isEmpty()) {
-                            logger.fine(
-                                    "{0} merging slots #{1} & #{2} around {3}",
-                                    measure.getContextString(),
-                                    prevSlot.getId(), slot.getId(),
-                                    Glyphs.toString("stems", commonStems));
-
-                            prevSlot.includeSlot(slot);
-                            it.remove();
-                            purging = true;
-
-                            break;
-                        }
-                    }
-
-                    prevSlot = slot;
-                    prevStems = slot.getStems();
-                }
-            } while (purging);
-        }
-
-        /**
-         * Check for common stems. (either shared or too close in abscissa)
-         *
-         * @param prevStems stems of previous slot
-         * @param stems     stems of the current slot
-         * @return the set of common stems, perhaps empty
-         */
-        private Set<Glyph> checkCommonStems (Set<Glyph> prevStems,
-                                             Set<Glyph> stems)
-        {
-            Set<Glyph> commons = new HashSet<>();
-            for (Glyph stem : stems) {
-                if (prevStems.contains(stem)) {
-                    commons.add(stem);
-                } else {
-                    int xStem = stem.getAreaCenter().x;
-                    for (Glyph s : prevStems) {
-                        int xPrev = s.getAreaCenter().x;
-                        if (Math.abs(xStem - xPrev) < minStemSpacing) {
-                            logger.fine("Slots with close stems {0} {1}",
-                                    s.idString(), stem.idString());
-                            commons.add(stem);
-                            break;
-                        }
-                    }
-                }
-            }
-
-            return commons;
+            Slot.populate(glyph, currentMeasure);
         }
     }
 

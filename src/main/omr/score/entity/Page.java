@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.score.entity;
 
-import omr.constant.ConstantSet;
-
 import omr.log.Logger;
 
 import omr.run.FilterDescriptor;
@@ -27,7 +25,7 @@ import omr.sheet.Sheet;
 
 import omr.step.StepException;
 
-import omr.util.Param;
+import omr.util.LiveParam;
 import omr.util.TreeNode;
 
 import java.awt.image.RenderedImage;
@@ -45,9 +43,6 @@ public class Page
     extends PageNode
 {
     //~ Static fields/initializers ---------------------------------------------
-
-    /** Specific application parameters */
-    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Page.class);
@@ -76,10 +71,10 @@ public class Page
     private Integer deltaMeasureId;
     
     /** Param for pixel filter. */
-    private final Param<FilterDescriptor> filterContext;
+    private final LiveParam<FilterDescriptor> filterContext;
     
     /** Param for text language. */
-    private final Param<String> textContext;
+    private final LiveParam<String> textContext;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -106,8 +101,8 @@ public class Page
             id = score.getRadix();
         }
 
-        filterContext = new Param<>(score.getFilterParam());
-        textContext = new Param<>(score.getTextParam());
+        filterContext = new LiveParam<>(score.getFilterParam());
+        textContext = new LiveParam<>(score.getTextParam());
         
         sheet = new Sheet(this, image);
     }
@@ -117,7 +112,7 @@ public class Page
     //----------------//
     // getFilterParam //
     //----------------//
-    public Param<FilterDescriptor> getFilterParam ()
+    public LiveParam<FilterDescriptor> getFilterParam ()
     {
         return filterContext;
     }
@@ -125,21 +120,9 @@ public class Page
     //--------------//
     // getTextParam //
     //--------------//
-    public Param<String> getTextParam ()
+    public LiveParam<String> getTextParam ()
     {
         return textContext;
-    }
-
-    //-------------------//
-    // getMinSlotSpacing //
-    //-------------------//
-    /**
-     * Report the minimum acceptable spacing between slots.
-     * @return the minimum spacing (in interline fraction)
-     */
-    public static Scale.Fraction getMinSlotSpacing ()
-    {
-        return constants.minSlotSpacing;
     }
 
     //--------//
@@ -479,21 +462,5 @@ public class Page
     public String toString ()
     {
         return "{Page " + id + "}";
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /** Minimum spacing between slots before alerting user */
-        private final Scale.Fraction minSlotSpacing = new Scale.Fraction(
-            1.1d,
-            "Minimum spacing between slots before alerting user");
     }
 }

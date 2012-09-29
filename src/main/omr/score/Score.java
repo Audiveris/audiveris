@@ -28,14 +28,13 @@ import omr.score.entity.MeasureId.MeasureRange;
 import omr.score.entity.Page;
 import omr.score.entity.ScoreNode;
 import omr.score.entity.ScorePart;
-import omr.score.entity.SlotPolicy;
 import omr.score.ui.ScoreTree;
 import omr.score.visitor.ScoreVisitor;
 
+import omr.script.ParametersTask.PartData;
 import omr.script.Script;
 import omr.script.ScriptActions;
 
-import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.picture.PictureLoader;
 import omr.sheet.ui.SheetsController;
@@ -54,7 +53,6 @@ import java.util.Map.Entry;
 import java.util.SortedMap;
 
 import javax.swing.JFrame;
-import omr.script.ParametersTask.PartData;
 
 /**
  * Class {@code Score} handles a score hierarchy, composed of one or
@@ -124,12 +122,6 @@ public class Score
 
     /** The script of user actions on this score */
     private Script script;
-
-    /** The (score) slot policy */
-    private SlotPolicy slotPolicy;
-
-    /** The (score) slot horizontal margin, expressed in interline fraction */
-    private Double slotMargin;
 
     /** Handling of binarization filter parameter. */
     private final Param<FilterDescriptor> filterParam =
@@ -308,32 +300,6 @@ public class Score
     public Param<List<PartData>> getPartsParam ()
     {
         return partsParam;
-    }
-
-    //----------------------//
-    // getDefaultSlotMargin //
-    //----------------------//
-    /**
-     * Report the default horizontal Slot margin.
-     *
-     * @return the slotMargin (in interline fraction)
-     */
-    public static double getDefaultSlotMargin ()
-    {
-        return constants.defaultSlotMargin.getValue();
-    }
-
-    //----------------------//
-    // getDefaultSlotPolicy //
-    //----------------------//
-    /**
-     * Report the default policy to be used for retrieval of time slots.
-     *
-     * @return the default time slot policy
-     */
-    public static SlotPolicy getDefaultSlotPolicy ()
-    {
-        return constants.defaultSlotPolicy.getValue();
     }
 
     //-----------------//
@@ -575,32 +541,6 @@ public class Score
         return true;
     }
 
-    //----------------------//
-    // setDefaultSlotMargin //
-    //----------------------//
-    /**
-     * Assign the default slot margin.
-     *
-     * @param fraction the horizontal margin, expressed in interline fraction
-     */
-    public static void setDefaultSlotMargin (double fraction)
-    {
-        constants.defaultSlotMargin.setValue(fraction);
-    }
-
-    //----------------------//
-    // setDefaultSlotPolicy //
-    //----------------------//
-    /**
-     * Assign the default slot policy.
-     *
-     * @param slotPolicy the slot policy
-     */
-    public static void setDefaultSlotPolicy (SlotPolicy slotPolicy)
-    {
-        constants.defaultSlotPolicy.setValue(slotPolicy);
-    }
-
     //-----------------//
     // setDefaultTempo //
     //-----------------//
@@ -781,37 +721,6 @@ public class Score
         return scriptFile;
     }
 
-    //---------------//
-    // getSlotMargin //
-    //---------------//
-    /**
-     * Report the current horizontal Slot margin.
-     * If the value is not yet set, it is set to the default value and returned.
-     *
-     * @return the slotMargin (in interline fraction)
-     */
-    public double getSlotMargin ()
-    {
-        if (!hasSlotMargin()) {
-            slotMargin = getDefaultSlotMargin();
-        }
-
-        return slotMargin;
-    }
-
-    //---------------//
-    // getSlotPolicy //
-    //---------------//
-    /**
-     * Report the policy used for retrieval of time slots in this score.
-     *
-     * @return the score time slot policy
-     */
-    public SlotPolicy getSlotPolicy ()
-    {
-        return slotPolicy;
-    }
-
     //----------//
     // getTempo //
     //----------//
@@ -859,27 +768,6 @@ public class Score
     public boolean hasLanguage ()
     {
         return language != null;
-    }
-
-    //---------------//
-    // hasSlotMargin //
-    //---------------//
-    /**
-     * Check whether slotMargin is defined for this score.
-     *
-     * @return true if slotMargin is defined
-     */
-    public boolean hasSlotMargin ()
-    {
-        return slotMargin != null;
-    }
-
-    //---------------//
-    // hasSlotPolicy //
-    //---------------//
-    public boolean hasSlotPolicy ()
-    {
-        return slotPolicy != null;
     }
 
     //----------//
@@ -1024,32 +912,6 @@ public class Score
         this.scriptFile = scriptFile;
     }
 
-    //---------------//
-    // setSlotMargin //
-    //---------------//
-    /**
-     * Assign the slot margin for this score.
-     *
-     * @param slotMargin the horizontal margin, expressed in interline fraction
-     */
-    public void setSlotMargin (double slotMargin)
-    {
-        this.slotMargin = slotMargin;
-    }
-
-    //---------------//
-    // setSlotPolicy //
-    //---------------//
-    /**
-     * Assign the slot policy for this score.
-     *
-     * @param slotPolicy the policy for determining slots
-     */
-    public void setSlotPolicy (SlotPolicy slotPolicy)
-    {
-        this.slotPolicy = slotPolicy;
-    }
-
     //----------//
     // setTempo //
     //----------//
@@ -1139,14 +1001,6 @@ public class Score
                 "Volume",
                 64,
                 "Default Volume in 0..127 range");
-
-        SlotPolicy.Constant defaultSlotPolicy = new SlotPolicy.Constant(
-                SlotPolicy.HEAD_BASED,
-                "Default policy for determining time slots (HEAD_BASED or SLOT_BASED)");
-
-        Scale.Fraction defaultSlotMargin = new Scale.Fraction(
-                0.5,
-                "Default horizontal margin between a slot and a glyph candidate");
 
     }
 

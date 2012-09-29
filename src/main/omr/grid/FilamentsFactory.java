@@ -230,7 +230,7 @@ public class FilamentsFactory
             createFilaments(source);
 
             logger.fine("{0} {1} filaments created.",
-                        orientation, filaments.size());
+                    orientation, filaments.size());
 
             // Merge filaments into larger filaments
             watch.start("mergeFilaments");
@@ -447,7 +447,7 @@ public class FilamentsFactory
                 // Determine maximum consistent resulting thickness
                 double maxConsistentThickness = maxConsistentThickness(one);
                 double maxSpace = expanding ? params.maxExpansionSpace
-                                  : params.maxSpace;
+                        : params.maxSpace;
 
                 // Measure thickness at various coord values of overlap
                 // Provided that the overlap is long enough
@@ -455,7 +455,7 @@ public class FilamentsFactory
 
                 for (int iq = 1; iq <= valNb; iq++) {
                     double midCoord = overlapStart
-                            - ((iq * coordGap) / (valNb + 1));
+                                      - ((iq * coordGap) / (valNb + 1));
                     double onePos = one.getPositionAt(midCoord, orientation);
                     double twoPos = two.getPositionAt(midCoord, orientation);
                     double posGap = Math.abs(onePos - twoPos);
@@ -495,7 +495,7 @@ public class FilamentsFactory
 
                     // Check thickness consistency
                     if ((-coordGap <= params.maxInvolvingLength)
-                            && (thickness > maxConsistentThickness)) {
+                        && (thickness > maxConsistentThickness)) {
                         if (logger.isFineEnabled() || areVips) {
                             logger.
                                     info(
@@ -511,8 +511,8 @@ public class FilamentsFactory
 
                     // Check space between overlapped filaments
                     double space = thickness
-                            - (one.getThicknessAt(midCoord, orientation)
-                               + two.getThicknessAt(midCoord, orientation));
+                                   - (one.getThicknessAt(midCoord, orientation)
+                                      + two.getThicknessAt(midCoord, orientation));
 
                     if (space > maxSpace) {
                         if (logger.isFineEnabled() || areVips) {
@@ -549,7 +549,7 @@ public class FilamentsFactory
                 int posMargin = (int) Math.rint(
                         Math.max(oneThickness, twoThickness) / 2);
                 double posGap = Math.abs(stop.getY() - start.getY())
-                        - posMargin;
+                                - posMargin;
 
                 if (posGap > params.maxPosGap) {
                     if (logger.isFineEnabled() || areVips) {
@@ -728,8 +728,8 @@ public class FilamentsFactory
                             // Check more closely
                             if (canMerge(fil, glyph, true)) {
                                 if (logger.isFineEnabled()
-                                        || fil.isVip()
-                                        || glyph.isVip()) {
+                                    || fil.isVip()
+                                    || glyph.isVip()) {
                                     logger.info(
                                             "Merging {0} w/ {1}",
                                             new Object[]{
@@ -820,8 +820,8 @@ public class FilamentsFactory
                             // Check for a possible merge
                             if (canMerge(head, candidate, false)) {
                                 if (logger.isFineEnabled()
-                                        || head.isVip()
-                                        || candidate.isVip()) {
+                                    || head.isVip()
+                                    || candidate.isVip()) {
                                     logger.info(
                                             "Merged {0} into {1}",
                                             candidate, head);
@@ -945,6 +945,7 @@ public class FilamentsFactory
         Scale.Fraction maxInvolvingLength = new Scale.Fraction(
                 2,
                 "Maximum filament length to apply thickness test");
+
     }
 
     //------------//

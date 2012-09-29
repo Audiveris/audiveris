@@ -575,8 +575,8 @@ public class PictureLoader
             Integer id)
     {
         logger.fine("Trying Ghostscript process");
-        StopWatch watch = new StopWatch("GSProcess");
-        watch.start("load");
+        ///StopWatch watch = new StopWatch("GSProcess");
+        ///watch.start("load");
 
         // Create a temporary tiff file from the PDF input
         Path temp = null;
@@ -655,7 +655,7 @@ public class PictureLoader
             } catch (IOException ex) {
                 logger.warning("Error deleting file " + temp, ex);
             }
-            watch.print();
+            ///watch.print();
         }
     }
 

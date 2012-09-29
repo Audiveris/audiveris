@@ -73,6 +73,9 @@ public class PagesStep
     @Override
     public void displayUI (Sheet sheet)
     {
+        // Since we may have purged slots, let's reset highlighted slot if any
+        sheet.getSymbolsEditor().highLight(null, null);
+        
         Steps.valueOf(Steps.SYMBOLS).displayUI(sheet);
     }
 

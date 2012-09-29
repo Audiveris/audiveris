@@ -46,6 +46,7 @@ import static omr.ui.symbol.Alignment.*;
 import omr.ui.symbol.MusicFont;
 import omr.ui.util.UIUtilities;
 
+import omr.util.TreeNode;
 import omr.util.VerticalSide;
 
 import java.awt.Color;
@@ -97,6 +98,35 @@ public class PagePhysicalPainter
     }
 
     //~ Methods ----------------------------------------------------------------
+    //---------------//
+    // highlightSlot //
+    //---------------//
+    /**
+     * Highlight a slot with its related chords (stem / notehead)
+     *
+     * @param measure the containing measure
+     * @param slot    the slot to highlight
+     */
+    public void highlightSlot (Measure measure,
+                               Slot slot)
+    {
+        Color oldColor = g.getColor();
+        g.setColor(Colors.SLOT_CURRENT);
+
+        // Draw the slot components
+        for (Chord chord : slot.getChords()) {
+            visit(chord);
+            for (TreeNode tn : chord.getNotes()) {
+                 Note note = (Note) tn;
+                 visit(note);
+            }
+        }
+
+        // Highlight the vertical slot line
+        drawSlot(false, measure, slot, Colors.SLOT_CURRENT);
+        g.setColor(oldColor);
+    }
+
     //----------//
     // drawSlot //
     //----------//
@@ -155,8 +185,7 @@ public class PagePhysicalPainter
                 Rational slotStartTime = slot.getStartTime();
 
                 if (slotStartTime != null) {
-                    paint(
-                            basicLayout(slotStartTime.toString(), halfAT),
+                    paint(basicLayout(slotStartTime.toString(), halfAT),
                             new PixelPoint(x, top - annotationDy),
                             BOTTOM_CENTER);
                 }

@@ -12,24 +12,29 @@
 package omr.text;
 
 import omr.constant.ConstantSet;
+
 import omr.glyph.Glyphs;
 import omr.glyph.facets.Glyph;
 
 import omr.grid.LineInfo;
 import omr.grid.StaffInfo;
+
 import omr.lag.Section;
 
 import omr.log.Logger;
 
 import omr.math.GeoPath;
 import omr.math.ReversePathIterator;
+
 import omr.score.common.PixelRectangle;
+import omr.score.entity.Page;
 
 
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
 import omr.util.HorizontalSide;
+import omr.util.LiveParam;
 import omr.util.Navigable;
 import omr.util.Predicate;
 
@@ -39,8 +44,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import omr.score.entity.Page;
-import omr.util.Param;
 
 /**
  * Class {@code TextScanner} retrieves the text lines by using OCR on
@@ -104,7 +107,7 @@ public class TextScanner
     public void scanSystem ()
     {
         final Page page = system.getSheet().getPage();
-        final Param<String> textParam = page.getTextParam();
+        final LiveParam<String> textParam = page.getTextParam();
         final String language = textParam.getTarget();
         logger.fine("scanSystem lan:{0} on {1}", language, system.idString());
         textParam.setActual(language);

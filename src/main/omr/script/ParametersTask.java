@@ -26,6 +26,7 @@ import omr.step.Step;
 import omr.step.Stepping;
 import omr.step.Steps;
 
+import omr.util.LiveParam;
 import omr.util.Param;
 import omr.util.TreeNode;
 
@@ -203,7 +204,7 @@ public class ParametersTask
 
             // Language
             if (Steps.compare(latestStep, textsStep) >= 0) {
-                Param<String> param = page.getTextParam();
+                LiveParam<String> param = page.getTextParam();
                 if (param.needsUpdate()) {
                     logger.fine("Page {0} needs TEXT with {1}",
                             page.getId(), param.getTarget());
@@ -220,7 +221,7 @@ public class ParametersTask
 
             // Binarization
             if (Steps.compare(latestStep, scaleStep) >= 0) {
-                Param<FilterDescriptor> param = page.getFilterParam();
+                LiveParam<FilterDescriptor> param = page.getFilterParam();
                 if (param.needsUpdate()) {
                     logger.fine("Page {0} needs SCALE with {1}",
                             page.getId(), param.getTarget());

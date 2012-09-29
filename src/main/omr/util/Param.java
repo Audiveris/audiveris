@@ -36,9 +36,6 @@ public class Param<E>
     /** Specifically set parameter, if any. */
     protected E specific;
 
-    /** Actually used parameter, if any. */
-    protected E actual;
-
     //~ Constructors -----------------------------------------------------------
     //
     //-------//
@@ -95,30 +92,6 @@ public class Param<E>
     }
 
     //-----------//
-    // setActual //
-    //-----------//
-    public void setActual (E actual)
-    {
-        this.actual = actual;
-    }
-
-    //-----------//
-    // getActual //
-    //-----------//
-    public E getActual ()
-    {
-        return actual;
-    }
-
-    //-------------//
-    // needsUpdate //
-    //-------------//
-    public boolean needsUpdate ()
-    {
-        return !getTarget().equals(actual);
-    }
-
-    //-----------//
     // getTarget //
     //-----------//
     public E getTarget ()
@@ -138,8 +111,27 @@ public class Param<E>
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{Param");
+        StringBuilder sb = new StringBuilder("{");
+        sb.append(getClass().getSimpleName());
+        sb.append(internalsString());
+        sb.append("}");
+        
+        return sb.toString();
+    }
 
+    //-----------------//
+    // internalsString //
+    //-----------------//
+    /**
+     * Return the string of the internals of this class, typically for
+     * inclusion in a toString. 
+     *
+     * @return the string of internals
+     */
+    protected String internalsString ()
+    {
+        StringBuilder sb = new StringBuilder();
+        
         if (parent != null) {
             sb.append(" parent:").append(parent);
         }
@@ -147,12 +139,7 @@ public class Param<E>
         if (getSpecific() != null) {
             sb.append(" specific:").append(getSpecific());
         }
-
-        if (actual != null) {
-            sb.append(" actual:").append(actual);
-        }
-
-        sb.append("}");
+        
         return sb.toString();
     }
 }

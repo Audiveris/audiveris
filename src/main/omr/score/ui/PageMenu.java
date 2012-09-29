@@ -39,7 +39,7 @@ import javax.swing.JPopupMenu;
 /**
  * Class {@code PageMenu} defines the popup menu which is linked to the
  * current selection in page editor view.
- * <p>It points to 3 sub-menus: measure, slot, glyph</p>
+ * <p>It points to 4 sub-menus: measure, slot, glyphs, boundaries</p>
  *
  * @author Hervé Bitteur
  */
@@ -51,7 +51,6 @@ public class PageMenu
     private static final Logger logger = Logger.getLogger(PageMenu.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** The related page */
     private final Page page;
 
@@ -63,33 +62,39 @@ public class PageMenu
 
     /** Submenus */
     private final MeasureMenu measureMenu = new MeasureMenu();
-    private final SlotMenu       slotMenu = new SlotMenu();
-    private final SymbolMenu     symbolMenu;
+
+    private final SlotMenu slotMenu = new SlotMenu();
+
+    private final SymbolMenu symbolMenu;
+
     private final BoundaryEditor boundaryEditor;
 
     // Context
-    private int         glyphNb = 0;
+    private int glyphNb = 0;
+
     private ScoreSystem system;
-    private Measure     measure;
-    private Slot        slot;
+
+    private Measure measure;
+
+    private Slot slot;
 
     //~ Constructors -----------------------------------------------------------
-
     //----------//
     // PageMenu //
     //----------//
     /**
      * Create the page menu.
+     *
      * @param page the related page
      */
-    public PageMenu (Page       page,
+    public PageMenu (Page page,
                      SymbolMenu symbolMenu)
     {
         this.page = page;
         this.symbolMenu = symbolMenu;
 
         boundaryEditor = page.getSheet()
-                             .getBoundaryEditor();
+                .getBoundaryEditor();
 
         popup = new JPopupMenu();
         defineLayout();
@@ -101,7 +106,6 @@ public class PageMenu
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // getPopup //
     //----------//
@@ -118,12 +122,13 @@ public class PageMenu
     //------------//
     /**
      * Update the popup menu according to the currently selected glyphs.
+     *
      * @param point the point designated in the page display
      */
     public void updateMenu (PixelPoint point)
     {
         // Analyze the context to retrieve designated system, measure & slot
-        Sheet            sheet = page.getSheet();
+        Sheet sheet = page.getSheet();
         List<SystemInfo> systems = sheet.getSystems();
 
         if (systems != null) {
@@ -137,7 +142,11 @@ public class PageMenu
 
                 if (measure != null) {
                     slot = measure.getClosestSlot(point);
+                } else {
+                    slot = null;
                 }
+                
+                page.getSheet().getSymbolsEditor().highLight(measure, slot);
             }
 
             // Update all dynamic actions accordingly
@@ -182,7 +191,6 @@ public class PageMenu
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // DynAction //
     //-----------//
@@ -191,7 +199,7 @@ public class PageMenu
      * be updated according to the current glyph selection context.
      */
     public abstract class DynAction
-        extends AbstractAction
+            extends AbstractAction
     {
         //~ Constructors -------------------------------------------------------
 
@@ -202,7 +210,6 @@ public class PageMenu
         }
 
         //~ Methods ------------------------------------------------------------
-
         public abstract void update ();
     }
 
@@ -315,12 +322,11 @@ public class PageMenu
     //            }
     //        }
     //    }
-
     //-------------//
     // MeasureMenu //
     //-------------//
     private class MeasureMenu
-        extends DynAction
+            extends DynAction
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -328,7 +334,6 @@ public class PageMenu
         private final JMenu menu;
 
         //~ Constructors -------------------------------------------------------
-
         //-------------//
         // MeasureMenu //
         //-------------//
@@ -344,7 +349,6 @@ public class PageMenu
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -377,7 +381,6 @@ public class PageMenu
         }
 
         //~ Inner Classes ------------------------------------------------------
-
         //------------//
         // DumpAction //
         //------------//
@@ -385,7 +388,7 @@ public class PageMenu
          * Dump the current measure
          */
         private class DumpAction
-            extends DynAction
+                extends DynAction
         {
             //~ Constructors ---------------------------------------------------
 
@@ -393,12 +396,11 @@ public class PageMenu
             {
                 putValue(NAME, "Dump voices");
                 putValue(
-                    SHORT_DESCRIPTION,
-                    "Dump the voices of the selected measure");
+                        SHORT_DESCRIPTION,
+                        "Dump the voices of the selected measure");
             }
 
             //~ Methods --------------------------------------------------------
-
             @Override
             public void actionPerformed (ActionEvent e)
             {
@@ -411,7 +413,6 @@ public class PageMenu
                 setEnabled(measure != null);
             }
         }
-
         //        //------------//
         //        // PlayAction //
         //        //------------//
@@ -465,7 +466,7 @@ public class PageMenu
     // SlotMenu //
     //----------//
     private class SlotMenu
-        extends DynAction
+            extends DynAction
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -473,7 +474,6 @@ public class PageMenu
         private final JMenu menu;
 
         //~ Constructors -------------------------------------------------------
-
         public SlotMenu ()
         {
             menu = new JMenu("Slot");
@@ -481,7 +481,6 @@ public class PageMenu
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -517,7 +516,6 @@ public class PageMenu
         }
 
         //~ Inner Classes ------------------------------------------------------
-
         //------------------//
         // DumpChordsAction //
         //------------------//
@@ -525,7 +523,7 @@ public class PageMenu
          * Dump the chords of the current slot
          */
         private class DumpChordsAction
-            extends DynAction
+                extends DynAction
         {
             //~ Constructors ---------------------------------------------------
 
@@ -533,12 +531,11 @@ public class PageMenu
             {
                 putValue(NAME, "Dump chords");
                 putValue(
-                    SHORT_DESCRIPTION,
-                    "Dump the chords of the selected slot");
+                        SHORT_DESCRIPTION,
+                        "Dump the chords of the selected slot");
             }
 
             //~ Methods --------------------------------------------------------
-
             @Override
             public void actionPerformed (ActionEvent e)
             {
@@ -559,7 +556,7 @@ public class PageMenu
          * Dump the voices of the current slot
          */
         private class DumpVoicesAction
-            extends DynAction
+                extends DynAction
         {
             //~ Constructors ---------------------------------------------------
 
@@ -567,12 +564,11 @@ public class PageMenu
             {
                 putValue(NAME, "Dump voices");
                 putValue(
-                    SHORT_DESCRIPTION,
-                    "Dump the voices of the selected slot");
+                        SHORT_DESCRIPTION,
+                        "Dump the voices of the selected slot");
             }
 
             //~ Methods --------------------------------------------------------
-
             @Override
             public void actionPerformed (ActionEvent e)
             {

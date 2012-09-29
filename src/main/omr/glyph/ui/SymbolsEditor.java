@@ -320,28 +320,30 @@ public class SymbolsEditor
             this.highlightedMeasure = measure;
             this.highlightedSlot = slot;
 
-            // Safer
-            if ((measure == null) || (slot == null)) {
-                repaint(); // To erase previous highlight
+            repaint(); // To erase previous highlight
 
-                return;
-            }
-
-            ScoreSystem system = measure.getSystem();
-            PixelDimension dimension = system.getDimension();
-            PixelRectangle systemBox = new PixelRectangle(system.getTopLeft().x,
-                    system.getTopLeft().y, dimension.width,
-                    dimension.height
-                    + system.getLastPart().getLastStaff().getHeight());
-
-            // Make the measure rectangle visible
-            PixelRectangle rect = measure.getBox();
-            int margin = constants.measureMargin.getValue();
-            // Actually, use the whole system height
-            rect.y = systemBox.y;
-            rect.height = systemBox.height;
-            rect.grow(margin, margin);
-            showFocusLocation(rect, false);
+//            // Make the measure visible
+//            // Safer
+//            if ((measure == null) || (slot == null)) {
+//
+//                return;
+//            }
+//
+//            ScoreSystem system = measure.getSystem();
+//            PixelDimension dimension = system.getDimension();
+//            PixelRectangle systemBox = new PixelRectangle(system.getTopLeft().x,
+//                    system.getTopLeft().y, dimension.width,
+//                    dimension.height
+//                    + system.getLastPart().getLastStaff().getHeight());
+//
+//            // Make the measure rectangle visible
+//            PixelRectangle rect = measure.getBox();
+//            int margin = constants.measureMargin.getValue();
+//            // Actually, use the whole system height
+//            rect.y = systemBox.y;
+//            rect.height = systemBox.height;
+//            rect.grow(margin, margin);
+//            showFocusLocation(rect, false);
         }
 
         //---------//
@@ -454,8 +456,7 @@ public class SymbolsEditor
 
                 // The slot being played, if any
                 if (highlightedSlot != null) {
-                    painter.drawSlot(true, highlightedMeasure, highlightedSlot,
-                            Colors.SLOT_CURRENT);
+                    painter.highlightSlot(highlightedMeasure, highlightedSlot);
                 }
             }
         }
