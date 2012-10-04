@@ -56,7 +56,6 @@ public class PluginStep
             Steps.PLUGIN,
             Level.SCORE_LEVEL,
             Mandatory.OPTIONAL,
-            Redoable.REDOABLE,
             DATA_TAB,
             "Launch the default plugin");
 

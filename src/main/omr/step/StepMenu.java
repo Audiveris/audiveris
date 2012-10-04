@@ -226,19 +226,12 @@ public class StepMenu
                 setState(false);
                 action.setEnabled(false);
             } else {
+                action.setEnabled(true);
                 if (action.step.isMandatory()) {
                     final boolean done = action.step.isDone(sheet);
-
                     setState(done);
-
-                    if (action.step.isRedoable()) {
-                        action.setEnabled(true);
-                    } else {
-                        action.setEnabled(!done);
-                    }
                 } else {
                     setState(false);
-
                     action.setEnabled(true);
                 }
 

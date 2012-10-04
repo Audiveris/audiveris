@@ -91,9 +91,9 @@ public class Stepping
      * @param sheet the sheet to be processed
      * @throws StepException
      */
-    public static void doOneSheetStep (final Step step,
-                                       Sheet sheet,
-                                       Collection<SystemInfo> systems)
+    private static void doOneSheetStep (final Step step,
+                                        Sheet sheet,
+                                        Collection<SystemInfo> systems)
             throws StepException
     {
         long startTime = System.currentTimeMillis();
@@ -167,7 +167,7 @@ public class Stepping
      * @param sheet the sheet concerned
      * @param step  the step notified
      */
-    public static void notifyStep (final Sheet sheet,
+    static void notifyStep (final Sheet sheet,
                                    final Step step)
     {
         if (monitor != null) {
@@ -370,7 +370,7 @@ public class Stepping
             impactedSystems = sheet.getSystems();
         }
 
-        logger.fine("{0}Rebuild launched from {1} on{2}",
+        logger.fine("{0}Rebuild launched from {1} on {2}",
                 sheet.getLogPrefix(),
                 step,
                 SystemInfo.toString(impactedSystems));
@@ -402,32 +402,6 @@ public class Stepping
         }
     }
 
-    //----------------------//
-    // shouldReprocessSheet //
-    //----------------------//
-    /**
-     * Check whether some steps need to be reperformed, starting from
-     * step 'from'.
-     *
-     * @param from  the step to rebuild from
-     * @param sheet the sheet to check
-     * @param merge true if SCORE (merge) step is allowed
-     * @return true if some reprocessing must take place
-     */
-    public static boolean shouldReprocessSheet (Step from,
-                                                Sheet sheet,
-                                                boolean merge)
-    {
-        Step latest = getLatestMandatoryStep(sheet);
-        Step scoreStep = Steps.valueOf(Steps.SCORE);
-
-        if (!merge && latest == scoreStep) {
-            latest = Steps.previous(latest);
-        }
-
-        return (latest == null) || (compare(latest, from) >= 0);
-    }
-
     //----------------//
     // doOneScoreStep //
     //----------------//
@@ -440,7 +414,7 @@ public class Stepping
      * @throws StepException
      */
     private static void doOneScoreStep (final Step step,
-                                        Score score)
+                                        final Score score)
             throws StepException
     {
         long startTime = System.currentTimeMillis();
@@ -653,11 +627,11 @@ public class Stepping
             // Finally, perform steps that must be done at score level
             // SCORE step if present, must be done first, and in case of failure
             // must prevent the following score-level steps to run.
-            Step mergeStep = Steps.valueOf(Steps.SCORE);
+            Step scoreStep = Steps.valueOf(Steps.SCORE);
 
-            if (stepSet.contains(mergeStep)) {
-                stepSet.remove(mergeStep);
-                doOneScoreStep(mergeStep, score);
+            if (stepSet.contains(scoreStep)) {
+                stepSet.remove(scoreStep);
+                doOneScoreStep(scoreStep, score);
             }
 
             // Perform the other score-level steps, if any

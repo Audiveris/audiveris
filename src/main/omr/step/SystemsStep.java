@@ -41,7 +41,6 @@ public class SystemsStep
             Steps.SYSTEMS,
             Level.SHEET_LEVEL,
             Mandatory.MANDATORY,
-            Redoable.REDOABLE,
             DATA_TAB,
             "Split all data per system");
     }

@@ -805,6 +805,7 @@ public class Score
     public void remove (Page page)
     {
         getPages().remove(page);
+        setMultiPage(getPages().size() > 1);
     }
 
     //--------------------//

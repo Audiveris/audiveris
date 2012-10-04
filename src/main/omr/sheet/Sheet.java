@@ -1067,16 +1067,16 @@ public class Sheet
      */
     public void remove (boolean closing)
     {
-        logger.fine("remove sheet {0} closing:{1}", new Object[]{this, closing});
+        logger.fine("remove sheet {0} closing:{1}", this, closing);
+
+        // Close the related page
+        getScore().remove(page);
 
         // Close related UI assembly if any
         if (assembly != null) {
             SheetsController.getInstance().removeAssembly(this);
             assembly.close();
         }
-
-        // Close the related page
-        getScore().remove(page);
 
         if (picture != null) {
             picture.close();

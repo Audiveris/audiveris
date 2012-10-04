@@ -46,16 +46,6 @@ public interface Step
         OPTIONAL;
     }
 
-    public enum Redoable
-    {
-        //~ Enumeration constant initializers ----------------------------------
-
-        /** Step can be redone at will */
-        REDOABLE,
-        /** Step cannot be redone at will (but a previous step may be) */
-        NON_REDOABLE;
-    }
-
     public enum Level
     {
         //~ Enumeration constant initializers ----------------------------------
@@ -121,13 +111,6 @@ public interface Step
      * @return true for mandatory
      */
     public boolean isMandatory ();
-
-    /**
-     * Is the step repeatable at will?.
-     *
-     * @return true for redoable
-     */
-    public boolean isRedoable ();
 
     /**
      * Does the step need to be performed at score level only?

@@ -51,7 +51,6 @@ public class LoadStep
             Steps.LOAD,
             Level.SHEET_LEVEL,
             Mandatory.MANDATORY,
-            Redoable.REDOABLE,
             Step.PICTURE_TAB,
             "Reload the sheet picture");
     }

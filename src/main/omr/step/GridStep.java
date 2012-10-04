@@ -38,7 +38,6 @@ public class GridStep
             Steps.GRID,
             Level.SHEET_LEVEL,
             Mandatory.MANDATORY,
-            Redoable.REDOABLE,
             "Dewarped",
             "Retrieve the grid of all systems");
     }

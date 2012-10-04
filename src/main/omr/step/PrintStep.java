@@ -47,7 +47,6 @@ public class PrintStep
             Steps.PRINT,
             Level.SCORE_LEVEL,
             Mandatory.OPTIONAL,
-            Redoable.REDOABLE,
             DATA_TAB,
             "Write the output PDF file");
     }

@@ -48,7 +48,6 @@ public class SticksStep
             Steps.STICKS,
             Level.SHEET_LEVEL,
             Mandatory.MANDATORY,
-            Redoable.REDOABLE,
             DATA_TAB,
             "Extract vertical & horizontal sticks");
     }

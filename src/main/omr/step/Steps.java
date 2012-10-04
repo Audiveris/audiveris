@@ -51,8 +51,6 @@ public class Steps
 
     // Optional step names
     public static final String             PRINT = "PRINT";
-    public static final String             PLAY = "PLAY";
-    public static final String             MIDI = "MIDI";
     public static final String             EXPORT = "EXPORT";
     public static final String             PLUGIN = "PLUGIN";
 
@@ -79,8 +77,6 @@ public class Steps
         // Optional steps, in whatever order
         // ---------------------------------
         addStep(new PrintStep());
-        //        addStep(new PlayStep());
-        //        addStep(new MidiStep());
         addStep(new ExportStep());
 
         // Plugin step depends on default plugin

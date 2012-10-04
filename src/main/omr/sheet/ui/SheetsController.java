@@ -292,17 +292,15 @@ public class SheetsController
 
             // Make sure the first sheet of a multipage score is OK
             // We need to modify the tab label for the score (new) first tab
-            if (score.getPages().size() > 1) {
-                Page firstPage = (Page) score.getPages().get(0);
-                Sheet firstSheet = firstPage.getSheet();
-                int firstIndex = tabbedPane.indexOfComponent(
-                        firstSheet.getAssembly().getComponent());
+            Page firstPage = (Page) score.getPages().get(0);
+            Sheet firstSheet = firstPage.getSheet();
+            int firstIndex = tabbedPane.indexOfComponent(
+                    firstSheet.getAssembly().getComponent());
 
-                if (firstIndex != -1) {
-                    tabbedPane.setTitleAt(
-                            firstIndex,
-                            defineTitleFor(firstSheet));
-                }
+            if (firstIndex != -1) {
+                tabbedPane.setTitleAt(
+                        firstIndex,
+                        defineTitleFor(firstSheet));
             }
         }
     }

@@ -64,7 +64,6 @@ public class SymbolsStep
                 Steps.SYMBOLS,
                 Level.SHEET_LEVEL,
                 Mandatory.MANDATORY,
-                Redoable.REDOABLE,
                 DATA_TAB,
                 "Apply specific glyph patterns");
     }

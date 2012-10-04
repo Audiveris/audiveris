@@ -46,18 +46,16 @@ public abstract class AbstractSystemStep
      *
      * @param level       score level only or sheet level
      * @param mandatory   step must be done before any output
-     * @param redoable    step can be redone at will
      * @param label       The title of the related (or most relevant) view tab
      * @param description A step description for the end user
      */
     public AbstractSystemStep (String name,
                                Level level,
                                Mandatory mandatory,
-                               Redoable redoable,
                                String label,
                                String description)
     {
-        super(name, level, mandatory, redoable, label, description);
+        super(name, level, mandatory, label, description);
     }
 
     //~ Methods ----------------------------------------------------------------

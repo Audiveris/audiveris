@@ -45,6 +45,7 @@ public class DurationRetriever
             DurationRetriever.class);
 
     //~ Instance fields --------------------------------------------------------
+    //
     /** Map of Measure id -> Measure duration, whatever the containing part */
     private final Map<PageBased, Rational> measureDurations = new HashMap<>();
 
@@ -52,6 +53,7 @@ public class DurationRetriever
     private int pass = 1;
 
     //~ Constructors -----------------------------------------------------------
+    //
     //-------------------//
     // DurationRetriever //
     //-------------------//
@@ -63,6 +65,7 @@ public class DurationRetriever
     }
 
     //~ Methods ----------------------------------------------------------------
+    //
     //---------------//
     // visit Measure //
     //---------------//

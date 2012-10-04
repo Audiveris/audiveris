@@ -44,7 +44,6 @@ public class TextsStep
                 Steps.TEXTS,
                 Level.SHEET_LEVEL,
                 Mandatory.MANDATORY,
-                Redoable.REDOABLE,
                 DATA_TAB,
                 "Retrieve texts items in each system area");
     }

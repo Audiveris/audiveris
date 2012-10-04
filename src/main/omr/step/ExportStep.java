@@ -47,7 +47,6 @@ public class ExportStep
             Steps.EXPORT,
             Level.SCORE_LEVEL,
             Mandatory.OPTIONAL,
-            Redoable.REDOABLE,
             DATA_TAB,
             "Export the score to MusicXML file");
     }

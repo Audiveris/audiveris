@@ -232,9 +232,9 @@ public class Slot
     {
         glyphs.add(glyph);
         
-        PixelPoint sysPt = glyph.getLocation();
-        xPop.includeValue(sysPt.x);
-        yPop.includeValue(sysPt.y);
+        PixelPoint point = glyph.getLocation();
+        xPop.includeValue(point.x);
+        yPop.includeValue(point.y);
 
         refPoint = null;
     }

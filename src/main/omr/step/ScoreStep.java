@@ -55,7 +55,6 @@ public class ScoreStep
             Steps.SCORE,
             Level.SCORE_LEVEL,
             Mandatory.MANDATORY,
-            Redoable.REDOABLE,
             DATA_TAB,
             "Build the final score");
     }

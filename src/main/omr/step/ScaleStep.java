@@ -46,7 +46,6 @@ public class ScaleStep
             Steps.SCALE,
             Level.SHEET_LEVEL,
             Mandatory.MANDATORY,
-            Redoable.REDOABLE,
             PICTURE_TAB,
             "Compute general scale");
     }

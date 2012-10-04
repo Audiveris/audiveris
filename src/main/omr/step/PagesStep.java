@@ -61,7 +61,6 @@ public class PagesStep
                 Steps.PAGES,
                 Level.SHEET_LEVEL,
                 Mandatory.MANDATORY,
-                Redoable.REDOABLE,
                 DATA_TAB,
                 "Translate glyphs to score items");
     }

@@ -50,7 +50,6 @@ public class MeasuresStep
             Steps.MEASURES,
             Level.SHEET_LEVEL,
             Mandatory.MANDATORY,
-            Redoable.REDOABLE,
             DATA_TAB,
             "Retrieve Measures from Bar sticks");
     }
