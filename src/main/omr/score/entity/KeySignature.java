@@ -143,14 +143,14 @@ public class KeySignature
         setStaff(staff);
 
         logger.fine("{0} KeySignature created: {1}",
-                    new Object[]{getContextString(), this});
+                getContextString(), this);
     }
 
     //--------------//
     // KeySignature //
     //--------------//
     /**
-     * Create a key signature, with containing measure, by cloning 
+     * Create a key signature, with containing measure, by cloning
      * another one
      *
      * @param measure the containing measure
@@ -172,7 +172,7 @@ public class KeySignature
         setCenter(new PixelPoint(other.getCenter().x, 0));
 
         logger.fine("{0} KeySignature cloned: {1}",
-                    new Object[]{getContextString(), this});
+                getContextString(), this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -229,12 +229,12 @@ public class KeySignature
     //----------------------//
     /**
      * Report the actual reference abscissa for the nth item.
-     * The reference is the left edge of stick for a flat item and the center 
+     * The reference is the left edge of stick for a flat item and the center
      * of the two sticks for a sharp item.
      *
      * @param n the signed index (one-based) of the desired item
      * @return the absolute pixel abscissa of the item reference, or null if
-     * not available
+     *         not available
      */
     public Integer getItemPixelAbscissa (int n)
     {
@@ -252,7 +252,7 @@ public class KeySignature
     //-----------------//
     /**
      * Report the pitch position of the nth item, within the given clef.
-     * 'n' is negative for flats and positive for sharps, and start at 1 for 
+     * 'n' is negative for flats and positive for sharps, and start at 1 for
      * sharps (and at -1 for flats)
      *
      * @param n        the signed index (one-based) of the desired item
@@ -306,7 +306,7 @@ public class KeySignature
     // populate //
     //----------//
     /**
-     * Populate the score with a key signature built from the provided 
+     * Populate the score with a key signature built from the provided
      * glyph
      *
      * @param glyph   the source glyph
@@ -351,7 +351,7 @@ public class KeySignature
             Shape shape = g.getShape();
 
             if (ShapeSet.StemSymbols.contains(shape)
-                    || ShapeSet.Notes.getShapes().contains(shape)) {
+                || ShapeSet.Notes.getShapes().contains(shape)) {
                 logger.fine("Cannot accept {0} as neighbor", shape);
                 return false;
             }
@@ -370,14 +370,13 @@ public class KeySignature
 
             // Check distance
             if (!glyphFatBox.intersects(keysig.getBox())) {
-                logger.fine("Glyph {0} too far from {1}", new Object[]{glyph.
-                            getId(), keysig});
+                logger.fine("Glyph {0} too far from {1}", glyph.getId(), keysig);
 
                 continue;
             } else if (((glyph.getShape().isSharpBased())
                         && (keysig.getKey() < 0))
-                    || ((glyph.getShape().isFlatBased())
-                        && (keysig.getKey() > 0))) {
+                       || ((glyph.getShape().isFlatBased())
+                           && (keysig.getKey() > 0))) {
                 // Check sharp or flat key sig, wrt current glyph
                 logger.fine(
                         "Cannot extend opposite key signature with glyph {0}",
@@ -401,7 +400,7 @@ public class KeySignature
 
             if (!checkPitchPosition(glyph, center, staff, clef)) {
                 logger.fine("Cannot start a new key signature with glyph {0}",
-                            glyph.getId());
+                        glyph.getId());
                 return false;
             }
 
@@ -477,7 +476,7 @@ public class KeySignature
             }
 
             pitchPosition = getStandardPosition(getKey())
-                    + clefToDelta(clefKind);
+                            + clefToDelta(clefKind);
         }
 
         return pitchPosition;
@@ -636,7 +635,7 @@ public class KeySignature
     // reset //
     //-------//
     /**
-     * Invalidate cached data, so that it gets lazily recomputed when 
+     * Invalidate cached data, so that it gets lazily recomputed when
      * needed.
      */
     @Override
@@ -736,16 +735,16 @@ public class KeySignature
                                           Clef clef)
     {
         int[] deltas = (clef != null)
-                       ? new int[]{clefToDelta(clef.getShape())}
-                       : new int[]{0, 2, 1};
+                ? new int[]{clefToDelta(clef.getShape())}
+                : new int[]{0, 2, 1};
 
         for (int delta : deltas) {
             double dif = staff.pitchPositionOf(center) - positions[index]
-                    - delta;
+                         - delta;
 
             if (Math.abs(dif) <= (constants.keyYMargin.getValue() * 2)) {
                 logger.fine("Correct pitch position for glyph {0}",
-                            glyph.getId());
+                        glyph.getId());
                 return true;
             }
         }
@@ -787,7 +786,7 @@ public class KeySignature
      * Determine clef kind, based on delta pitch position
      *
      * @param delta the delta in pitch position between the actual glyphs
-     * position and the theoretical position based on key
+     *              position and the theoretical position based on key
      * @return the kind of clef
      */
     private Shape deltaToClef (int delta)
@@ -811,7 +810,7 @@ public class KeySignature
     // getCentroid //
     //-------------//
     /**
-     * Report the actual center of mass of the glyphs that compose the 
+     * Report the actual center of mass of the glyphs that compose the
      * signature
      *
      * @return the PixelPoint that represent the center of mass
@@ -896,9 +895,8 @@ public class KeySignature
         }
 
         int delta = (int) Math.rint(realPos - theoPos);
-        logger.fine("theoPos={0} realPos={1} delta={2}", new Object[]{theoPos,
-                                                                      realPos,
-                                                                      delta});
+        logger.fine("theoPos={0} realPos={1} delta={2}",
+                theoPos, realPos, delta);
 
         Shape kind = deltaToClef(delta);
 
@@ -1037,5 +1035,6 @@ public class KeySignature
         Constant.Ratio heightRatio = new Constant.Ratio(
                 0.5d,
                 "Histogram ratio for detection of sharp/flat sticks ");
+
     }
 }

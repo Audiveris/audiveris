@@ -305,9 +305,9 @@ public class LinearEvaluator
 
         // Check sizes
         if ((one == null)
-                || (one.length != inputSize)
-                || (two == null)
-                || (two.length != inputSize)) {
+            || (one.length != inputSize)
+            || (two == null)
+            || (two.length != inputSize)) {
             throw new IllegalArgumentException(
                     "Patterns are null or inconsistent with the LinearEvaluator");
         }
@@ -355,9 +355,8 @@ public class LinearEvaluator
             }
 
             category.include(sample.pattern);
-            logger.fine("Accu {0} count:{1}", new Object[]{category.getId(),
-                                                           category.
-                        getCardinality()});
+            logger.fine("Accu {0} count:{1}",
+                    category.getId(), category.getCardinality());
         }
 
         computeCategoriesParams();
@@ -371,7 +370,7 @@ public class LinearEvaluator
      * LinearEvaluator.
      *
      * @param in the input stream that contains the evaluator definition in XML
-     * format. The stream is not closed by this method
+     *           format. The stream is not closed by this method
      * @return the allocated network.
      * @exception JAXBException raised when unmarshalling goes wrong
      */
@@ -429,9 +428,8 @@ public class LinearEvaluator
     {
         // Compute parameters means & weights for each category
         for (Category category : categories.values()) {
-            logger.fine("Computing {0} count:{1}", new Object[]{category.getId(),
-                                                                category.
-                        getCardinality()});
+            logger.fine("Computing {0} count:{1}",
+                    category.getId(), category.getCardinality());
             category.compute();
         }
 
@@ -593,7 +591,7 @@ public class LinearEvaluator
                 double dif = one[p] - two[p];
                 sb.append(
                         String.format(df,
-                                      dif * dif * parameters[p].defaultWeight));
+                        dif * dif * parameters[p].defaultWeight));
             }
 
             return sb.toString();
@@ -655,7 +653,7 @@ public class LinearEvaluator
                     } catch (Exception ex) {
                         logger.warning(
                                 "Category {0} cannot compute parameters ex:{1}",
-                                       new Object[]{id, ex});
+                                id, ex);
                     }
                 }
             } else {
@@ -842,6 +840,7 @@ public class LinearEvaluator
              * => a mean value and weight computed as 1/variance
              */
             NOMINAL;
+
         }
 
         //~ Instance fields ----------------------------------------------------

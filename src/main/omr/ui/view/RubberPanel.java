@@ -119,8 +119,7 @@ public class RubberPanel
         setZoom(zoom);
         setRubber(rubber);
 
-        logger.fine("new RubberPanel zoom={0} rubber={1}", new Object[]{zoom,
-                                                                        rubber});
+        logger.fine("new RubberPanel zoom={0} rubber={1}", zoom, rubber);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -274,8 +273,7 @@ public class RubberPanel
                 return;
             }
 
-            logger.fine("{0} onEvent {1}", new Object[]{getClass().getName(),
-                                                        event});
+            logger.fine("{0} onEvent {1}", getClass().getName(), event);
 
             if (event instanceof LocationEvent) {
                 // Location => move view focus on this location w/ markers
@@ -332,8 +330,7 @@ public class RubberPanel
     public void rectangleZoomed (final Rectangle rect,
                                  MouseMovement movement)
     {
-        logger.fine("{0} rectangleZoomed {1}", new Object[]{getClass().getName(),
-                                                            rect});
+        logger.fine("{0} rectangleZoomed {1}", getClass().getName(), rect);
 
         if (rect != null) {
             // First focus on center of the specified rectangle
@@ -344,7 +341,6 @@ public class RubberPanel
             SwingUtilities.invokeLater(
                     new Runnable()
                     {
-
                         @Override
                         public void run ()
                         {
@@ -385,7 +381,7 @@ public class RubberPanel
     public void setLocationService (SelectionService locationService)
     {
         if ((this.locationService != null)
-                && (this.locationService != locationService)) {
+            && (this.locationService != locationService)) {
             this.locationService.unsubscribe(LocationEvent.class, this);
         }
 
@@ -490,8 +486,7 @@ public class RubberPanel
      */
     public void subscribe ()
     {
-        logger.fine("Subscribe {0} {1}", new Object[]{getClass().getSimpleName(),
-                                                      getName()});
+        logger.fine("Subscribe {0} {1}", getClass().getSimpleName(), getName());
 
         // Subscribe to location events
         if (locationService != null) {
@@ -547,8 +542,7 @@ public class RubberPanel
      */
     public void unsubscribe ()
     {
-        logger.fine("Unsubscribe {0} {1}", new Object[]{
-                    getClass().getSimpleName(), getName()});
+        logger.fine("Unsubscribe {0} {1}", getClass().getSimpleName(), getName());
 
         // Unsubscribe to location events
         if (locationService != null) {
@@ -629,8 +623,7 @@ public class RubberPanel
                                      MouseMovement movement,
                                      SelectionHint hint)
     {
-        logger.fine("setFocusLocation rect={0} hint={1}", new Object[]{rect,
-                                                                       hint});
+        logger.fine("setFocusLocation rect={0} hint={1}", rect, hint);
 
         // Publish the new user-selected location
         if (locationService != null) {
@@ -655,5 +648,6 @@ public class RubberPanel
         PixelCount focusMargin = new PixelCount(
                 20,
                 "Margin visible around a focus");
+
     }
 }

@@ -58,7 +58,6 @@ public class Slur
     /** To order slurs vertically within a measure */
     public static final Comparator<Slur> verticalComparator = new Comparator<Slur>()
     {
-
         @Override
         public int compare (Slur s1,
                             Slur s2)
@@ -70,7 +69,6 @@ public class Slur
     /** Predicate for a orphan slur at the end of its system/part */
     public static final Predicate<Slur> isEndingOrphan = new Predicate<Slur>()
     {
-
         @Override
         public boolean check (Slur slur)
         {
@@ -95,7 +93,6 @@ public class Slur
     /** Predicate for a orphan slur at the beginning of its system/part */
     public static final Predicate<Slur> isBeginningOrphan = new Predicate<Slur>()
     {
-
         @Override
         public boolean check (Slur slur)
         {
@@ -297,7 +294,7 @@ public class Slur
         // Should we allocate the slur entity?
         if ((leftEnd != null) || (rightEnd != null)) {
             SystemPart part = (leftEnd != null) ? leftEnd.note.getPart()
-                              : rightEnd.note.getPart();
+                    : rightEnd.note.getPart();
             Slur slur = new Slur(
                     part,
                     glyph,
@@ -344,8 +341,8 @@ public class Slur
     public boolean canExtend (Slur prevSlur)
     {
         return (this.leftExtension == null)
-                && (prevSlur.rightExtension == null)
-                && this.isCompatibleWith(prevSlur);
+               && (prevSlur.rightExtension == null)
+               && this.isCompatibleWith(prevSlur);
     }
 
     //-----------//
@@ -368,9 +365,7 @@ public class Slur
         this.tie = isATie;
 
         logger.fine("{0} connection #{1} -> #{2}",
-                    new Object[]{isATie ? "Tie" : "Slur",
-                                 prevSlur.glyph.getId(),
-                                 this.glyph.getId()});
+                isATie ? "Tie" : "Slur", prevSlur.glyph.getId(), glyph.getId());
     }
 
     //----------//
@@ -531,7 +526,7 @@ public class Slur
                 sb.append(" L=").append(leftNote.getStep()).append(leftNote.
                         getOctave());
             } else if ((leftExtension != null)
-                    && (leftExtension.leftNote != null)) {
+                       && (leftExtension.leftNote != null)) {
                 sb.append(" LE=").append(leftExtension.leftNote.getStep()).
                         append(leftExtension.leftNote.getOctave());
             }
@@ -540,7 +535,7 @@ public class Slur
                 sb.append(" R=").append(rightNote.getStep()).append(rightNote.
                         getOctave());
             } else if ((rightExtension != null)
-                    && (rightExtension.rightNote != null)) {
+                       && (rightExtension.rightNote != null)) {
                 sb.append(" RE=").append(rightExtension.rightNote.getStep()).
                         append(rightExtension.rightNote.getOctave());
             }
@@ -612,7 +607,7 @@ public class Slur
                                            Note n2)
     {
         return (n1 != null) && (n2 != null) && (n1.getStep() == n2.getStep())
-                && (n1.getOctave() == n2.getOctave());
+               && (n1.getOctave() == n2.getOctave());
 
         // TODO: what about alteration, if we have not processed them yet ???
     }
@@ -633,8 +628,8 @@ public class Slur
         final double DX = curve.getX2() - curve.getX1();
         final double DY = curve.getY2() - curve.getY1();
         final double power = (curve.getCtrlX1() * DY)
-                - (curve.getCtrlY1() * DX) - (curve.getX1() * DY)
-                + (curve.getY1() * DX);
+                             - (curve.getCtrlY1() * DX) - (curve.getX1() * DY)
+                             + (curve.getY1() * DX);
 
         return power < 0;
     }
@@ -665,8 +660,7 @@ public class Slur
         if (prevStaff.getId() != staff.getId()) {
             logger.fine(
                     "prevSlur#{0} prevStaff:{1} slur#{2} staff:{3} different staff id",
-                        new Object[]{prevSlur.getId(), prevStaff.getId(), this.
-                        getId(), staff.getId()});
+                    prevSlur.getId(), prevStaff.getId(), getId(), staff.getId());
             return false;
         }
 
@@ -686,7 +680,7 @@ public class Slur
         double deltaPitch = pp - prevPp;
         boolean res = Math.abs(deltaPitch) <= (constants.maxDeltaY.getValue() * 2);
         logger.fine("prevSlur#{0} slur#{1} deltaPitch:{2} res:{3}",
-                    new Object[]{prevSlur.getId(), this.getId(), deltaPitch, res});
+                prevSlur.getId(), this.getId(), deltaPitch, res);
 
         return res;
     }
@@ -811,6 +805,7 @@ public class Slur
         Scale.Fraction maxDeltaY = new Scale.Fraction(
                 4,
                 "Maximum difference in vertical position between connecting slurs");
+
     }
 
     //-----//
@@ -872,9 +867,9 @@ public class Slur
                             MeasureNode n2)
         {
             PixelPoint p1 = (n1 instanceof Chord)
-                            ? ((Chord) n1).getTailLocation() : n1.getCenter();
+                    ? ((Chord) n1).getTailLocation() : n1.getCenter();
             PixelPoint p2 = (n2 instanceof Chord)
-                            ? ((Chord) n2).getTailLocation() : n2.getCenter();
+                    ? ((Chord) n2).getTailLocation() : n2.getCenter();
 
             return Double.compare(p1.distance(ref), p2.distance(ref));
         }

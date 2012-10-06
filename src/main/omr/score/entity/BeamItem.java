@@ -111,8 +111,7 @@ public class BeamItem
         // Beware, the stick line is not reliable for beam hooks
         if ((deltaMid1 < 0) || (deltaMid2 < 0)) {
             logger.fine("Strange beam item at {0} slope={1}",
-                    new Object[]{glyph.idString(),
-                                 glyph.getLine().getSlope()});
+                    glyph.idString(), glyph.getLine().getSlope());
 
             // Make a simple horizontal beam item
             left = new PixelPoint(box.x, box.y + (box.height / 2));

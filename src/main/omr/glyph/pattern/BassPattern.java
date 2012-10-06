@@ -83,7 +83,7 @@ public class BassPattern
         for (Glyph top : system.getGlyphs()) {
             // Look for top dot
             if ((top.getShape() != Shape.DOT_set)
-                    || (Math.abs(top.getPitchPosition() - -3) > maxBassDotPitchDy)) {
+                || (Math.abs(top.getPitchPosition() - -3) > maxBassDotPitchDy)) {
                 continue;
             }
 
@@ -93,7 +93,7 @@ public class BassPattern
             // Look for bottom dot right underneath, and in the same staff
             for (Glyph bot : system.getGlyphs()) {
                 if ((bot.getShape() != Shape.DOT_set)
-                        || (Math.abs(bot.getPitchPosition() - -1) > maxBassDotPitchDy)) {
+                    || (Math.abs(bot.getPitchPosition() - -1) > maxBassDotPitchDy)) {
                     continue;
                 }
 
@@ -106,8 +106,7 @@ public class BassPattern
                 }
 
                 // Here we have a couple
-                logger.fine("Got bass dots #{0} & #{1}", new Object[]{
-                            top.getId(), bot.getId()});
+                logger.fine("Got bass dots #{0} & #{1}", top.getId(), bot.getId());
 
                 Glyph compound = system.buildCompound(
                         top,
@@ -164,7 +163,7 @@ public class BassPattern
         public boolean isCandidateSuitable (Glyph glyph)
         {
             return !glyph.isManualShape()
-                    || ShapeSet.BassClefs.contains(glyph.getShape());
+                   || ShapeSet.BassClefs.contains(glyph.getShape());
         }
     }
 
@@ -184,5 +183,6 @@ public class BassPattern
                 "pitch",
                 0.5,
                 "Ordinate tolerance on a Bass dot pitch position");
+
     }
 }

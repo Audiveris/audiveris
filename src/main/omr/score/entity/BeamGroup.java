@@ -82,8 +82,7 @@ public class BeamGroup
         measure.addGroup(this);
         id = measure.getBeamGroups().indexOf(this) + 1;
 
-        logger.fine("{0} Created {1}", new Object[]{measure.getContextString(),
-                                                    this});
+        logger.fine("{0} Created {1}", measure.getContextString(), this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -164,8 +163,8 @@ public class BeamGroup
         }
 
         if (isVip() || logger.isFineEnabled()) {
-            logger.info("{0} Added {1} to {2}", new Object[]{measure.
-                        getContextString(), beam, this});
+            logger.info("{0} Added {1} to {2}",
+                    measure.getContextString(), beam, this);
         }
     }
 
@@ -500,7 +499,7 @@ public class BeamGroup
                             prevChord = chord;
                         } else if (prevChord != chord) {
                             logger.fine("{0} Suspicious BeamGroup {1}",
-                                        new Object[]{measure, this});
+                                    measure, this);
 
                             // Split the beam group here
                             return new SplitOrder(this, beam, prevChord, chord);
@@ -626,6 +625,7 @@ public class BeamGroup
                 "loops",
                 10,
                 "Maximum number of loops allowed for splitting beam groups");
+
     }
 
     //------------//

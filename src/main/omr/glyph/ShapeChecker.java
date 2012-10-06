@@ -303,8 +303,8 @@ public class ShapeChecker
         // For debugging only
         if (eval.grade >= 0.1) {
             logger.info("{0}{1} {2} weight:{3} {4} corrected as {5}",
-                    new Object[]{system.getLogPrefix(), glyph, eval, glyph.
-                        getWeight(), glyph.getBounds(), newShape});
+                    system.getLogPrefix(), glyph, eval, glyph.getWeight(), 
+                    glyph.getBounds(), newShape);
         }
     }
 

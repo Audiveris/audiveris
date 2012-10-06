@@ -29,7 +29,7 @@ import javax.swing.event.ChangeListener;
  * Class {@code Zoom} encapsulates a zoom ratio, which is typically
  * the ratio between display values (such as the size of the display of
  * an entity) and model values (such as the size of the entity itself).
- * 
+ *
  * For example, a Zoom with ratio set to a 2.0 value would double the display
  * of a given entity.
  *
@@ -118,8 +118,7 @@ public class Zoom
     public Zoom (LogSlider slider,
                  double ratio)
     {
-        logger.fine("Zoom created" + " slider={0} ratio={1}", new Object[]{
-                    slider, ratio});
+        logger.fine("Zoom created" + " slider={0} ratio={1}", slider, ratio);
         setSlider(slider);
         setRatio(ratio);
     }
@@ -137,8 +136,7 @@ public class Zoom
     public void addChangeListener (ChangeListener listener)
     {
         listeners.add(listener);
-        logger.fine("addChangeListener {0} -> {1}", new Object[]{listener,
-                                                                 listeners.size()});
+        logger.fine("addChangeListener {0} -> {1}", listener, listeners.size());
     }
 
     //------------------//
@@ -155,7 +153,7 @@ public class Zoom
                 changeEvent = new ChangeEvent(this);
             }
 
-            logger.fine("{0} Firing {1}", new Object[]{this, listener});
+            logger.fine("{0} Firing {1}", this, listener);
             listener.stateChanged(changeEvent);
         }
     }
@@ -325,13 +323,12 @@ public class Zoom
             slider.addChangeListener(
                     new ChangeListener()
                     {
-
                         @Override
                         public void stateChanged (ChangeEvent e)
                         {
                             // Forward the new zoom ratio
                             if (constants.continuousSliderReading.getValue()
-                                    || !slider.getValueIsAdjusting()) {
+                                || !slider.getValueIsAdjusting()) {
                                 double newRatio = slider.getDoubleValue();
                                 logger.fine("Slider firing zoom newRatio={0}", newRatio);
 
@@ -358,7 +355,7 @@ public class Zoom
     public String toString ()
     {
         return "{Zoom#" + id + " listeners=" + listeners.size() + " ratio="
-                + ratio + "}";
+               + ratio + "}";
     }
 
     //-------------//
@@ -448,5 +445,6 @@ public class Zoom
         Constant.Boolean continuousSliderReading = new Constant.Boolean(
                 true,
                 "Should we allow continuous reading of the zoom slider");
+
     }
 }

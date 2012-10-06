@@ -57,7 +57,6 @@ public class ClefPattern
     /** Specific predicate to filter clef shapes */
     private static final Predicate<Shape> clefShapePredicate = new Predicate<Shape>()
     {
-
         @Override
         public boolean check (Shape shape)
         {
@@ -68,7 +67,6 @@ public class ClefPattern
     /** Specific predicate to filter clef glyphs */
     private static final Predicate<Glyph> clefGlyphPredicate = new Predicate<Glyph>()
     {
-
         @Override
         public boolean check (Glyph glyph)
         {
@@ -145,8 +143,7 @@ public class ClefPattern
 
             // We must find a clef out of these glyphs
             Collection<Glyph> glyphs = system.lookupIntersectedGlyphs(inner);
-            logger.fine("{0}{1}", new Object[]{staffId, Glyphs.toString(" int",
-                                                                        glyphs)});
+            logger.fine("{0}{1}", staffId, Glyphs.toString(" int", glyphs));
 
             // We assume than there can't be any alien among them, so we should 
             // rebuild the larger glyph which the alien had wrongly segmented
@@ -206,7 +203,7 @@ public class ClefPattern
                 // Remember grade of the best existing clef
                 for (Glyph glyph : clefs) {
                     if ((orgClef == null)
-                            || (glyph.getGrade() > orgClef.getGrade())) {
+                        || (glyph.getGrade() > orgClef.getGrade())) {
                         orgClef = glyph;
                     }
                 }
@@ -226,11 +223,11 @@ public class ClefPattern
                 clefShapePredicate);
 
         if ((vote != null)
-                && ((orgClef == null) || (vote.grade > orgClef.getGrade()))) {
+            && ((orgClef == null) || (vote.grade > orgClef.getGrade()))) {
             // We now have a clef!
             // Look around for an even better result...
-            logger.fine("{0} built from {1}", new Object[]{vote.shape, Glyphs.
-                        toString(glyphs)});
+            logger.fine("{0} built from {1}",
+                    vote.shape, Glyphs.toString(glyphs));
 
             // Look for larger stuff
             PixelRectangle outer = compound.getBounds();
@@ -262,9 +259,7 @@ public class ClefPattern
                         clefShapePredicate);
 
                 if ((newVote != null) && (newVote.grade > vote.grade)) {
-                    logger.fine("{0} better built with {1}", new Object[]{vote,
-                                                                          g.
-                                idString()});
+                    logger.fine("{0} better built with {1}", vote, g.idString());
 
                     compound = newCompound;
                     vote = newVote;
@@ -275,8 +270,7 @@ public class ClefPattern
             compound = system.addGlyph(compound);
             compound.setShape(vote.shape, Evaluation.ALGORITHM);
 
-            logger.fine("{0} rebuilt as {1}", new Object[]{vote.shape, compound.
-                        idString()});
+            logger.fine("{0} rebuilt as {1}", vote.shape, compound.idString());
 
             return true;
         } else {
@@ -316,5 +310,6 @@ public class ClefPattern
         Scale.AreaFraction minWeight = new Scale.AreaFraction(
                 0.1,
                 "Minimum normalized weight to be added to a clef");
+
     }
 }

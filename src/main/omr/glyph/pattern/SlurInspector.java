@@ -299,8 +299,7 @@ public class SlurInspector
             } catch (NoSlurCurveException ex) {
                 if (logger.isFineEnabled()) {
                     logger.info("{0}Abnormal curve slur#{1}",
-                                new Object[]{system.getSheet().getLogPrefix(),
-                                             slur.getId()});
+                            system.getSheet().getLogPrefix(), slur.getId());
                 }
 
                 slur.setShape(null);
@@ -414,13 +413,12 @@ public class SlurInspector
                 if (newSlur != null) {
                     if (oldSlur.isVip() || logger.isFineEnabled()) {
                         logger.info("Trimmed slur #{0} as smaller #{1}",
-                                    new Object[]{oldSlur.getId(),
-                                                 newSlur.getId()});
+                                oldSlur.getId(), newSlur.getId());
                     }
                 } else {
                     if (oldSlur.isVip() || logger.isFineEnabled()) {
                         logger.info("Giving up slur #{0} w/ {1}",
-                                    new Object[]{oldSlur.getId(), collected});
+                                oldSlur.getId(), collected);
                     }
 
                     left.addAll(collected);
@@ -444,9 +442,7 @@ public class SlurInspector
             }
         } else {
             logger.warning("{0} No section left when trimming slur #{1}",
-                           new Object[]{
-                        system.getScoreSystem().getContextString(), oldSlur.
-                        getId()});
+                    system.getScoreSystem().getContextString(), oldSlur.getId());
 
             return null;
         }
@@ -563,8 +559,7 @@ public class SlurInspector
                         logger.fine("Discard {0}", section);
                     }
                 } catch (Exception ex) {
-                    logger.fine("{0} w/ {1}",
-                                new Object[]{ex.getMessage(), section});
+                    logger.fine("{0} w/ {1}", ex.getMessage(), section);
                 }
             }
         }
@@ -617,8 +612,8 @@ public class SlurInspector
      *
      * @param root the slur glyph to extend
      * @return the extended slur glyph if any, or null. A non-null glyph
-     * is returned IFF we have found a slur which is both larger than the
-     * initial slur and valid.
+     *         is returned IFF we have found a slur which is both larger than the
+     *         initial slur and valid.
      */
     private Glyph extendSlur (Glyph root)
     {
@@ -633,8 +628,8 @@ public class SlurInspector
             SideLoop:
             while (true) {
                 if (root.isVip() || logger.isFineEnabled()) {
-                    logger.info("Trying to {0} extend slur #{1}", new Object[]{
-                                side, root.getId()});
+                    logger.info("Trying to {0} extend slur #{1}",
+                            side, root.getId());
                 }
 
                 // Look at neighboring glyphs (TODO: should be incremental?)
@@ -647,8 +642,7 @@ public class SlurInspector
                 if (compound != null) {
                     if (root.isVip() || logger.isFineEnabled()) {
                         logger.info("Slur #{0} {1} extended as #{2}",
-                                    new Object[]{root.getId(), side, compound.
-                                    getId()});
+                                root.getId(), side, compound.getId());
 
                         if (root.isVip()) {
                             compound.setVip();
@@ -689,8 +683,8 @@ public class SlurInspector
      *
      * @param root the slur glyph to extend
      * @return the extended slur glyph if any, or null. A non-null glyph
-     * is returned IFF we have found a slur which is both larger than the
-     * initial slur and valid.
+     *         is returned IFF we have found a slur which is both larger than the
+     *         initial slur and valid.
      */
     private Glyph extendSlurSections (Glyph root,
                                       HorizontalSide side)
@@ -746,7 +740,7 @@ public class SlurInspector
 
                 if (!section.isProcessed()) {
                     if (adapter.isSectionClose(section)
-                            && adapter.isSectionSuitable(section)) {
+                        && adapter.isSectionSuitable(section)) {
                         neighbors.add(section);
                         section.setProcessed(true);
                     }
@@ -784,8 +778,8 @@ public class SlurInspector
                             if (root.isVip() || logger.isFineEnabled()) {
                                 logger.info(
                                         "Slur #{0} extended as #{1} with {2}",
-                                        new Object[]{root.getId(), compound.
-                                            getId(), Sections.toString(added)});
+                                        root.getId(), compound.getId(),
+                                        Sections.toString(added));
 
                                 if (root.isVip()) {
                                     compound.setVip();
@@ -803,7 +797,7 @@ public class SlurInspector
                     if (!sectionOk) {
                         if (root.isVip() || logger.isFineEnabled()) {
                             logger.info("Slur #{0} excluding section#{1}",
-                                        new Object[]{root.getId(), section});
+                                    root.getId(), section);
                         }
 
                         break;
@@ -864,8 +858,8 @@ public class SlurInspector
             if (seedSection == null) {
                 logger.fine("No suitable seed section found");
             } else {
-                logger.fine("Seed section is {0} dist:{1}", new Object[]{
-                            seedSection, seedDist.value});
+                logger.fine("Seed section is {0} dist:{1}",
+                        seedSection, seedDist.value);
             }
         }
 
@@ -975,8 +969,7 @@ public class SlurInspector
 
         if (slur.isVip()) {
             if (cause != null) {
-                logger.info("Invalid slur #{0} : {1}", new Object[]{slur.getId(),
-                                                                    cause});
+                logger.info("Invalid slur #{0} : {1}", slur.getId(), cause);
             } else {
                 logger.info("Valid slur #{0}", slur.getId());
             }
@@ -1074,6 +1067,7 @@ public class SlurInspector
                 "tangent",
                 0.05,
                 "Maximum slope for staff line tangent");
+
     }
 
     //----------------------//
@@ -1114,7 +1108,6 @@ public class SlurInspector
         /** To sort sections according to the distance to slur end */
         public Comparator<Section> sectionComparator = new Comparator<Section>()
         {
-
             @Override
             public int compare (Section s1,
                                 Section s2)
@@ -1153,7 +1146,7 @@ public class SlurInspector
                 endPt = (side == LEFT) ? seed.getStartPoint(HORIZONTAL)
                         : seed.getStopPoint(HORIZONTAL);
                 cp = (side == LEFT) ? seed.getStopPoint(HORIZONTAL)
-                     : seed.getStartPoint(HORIZONTAL);
+                        : seed.getStartPoint(HORIZONTAL);
             } else {
                 endPt = (side == LEFT) ? curve.getP1() : curve.getP2();
                 cp = (side == LEFT) ? curve.getCtrlP1() : curve.getCtrlP2();
@@ -1161,12 +1154,12 @@ public class SlurInspector
 
             // Exact ending point (?)
             PixelRectangle roi = (side == LEFT)
-                                 ? new PixelRectangle(
+                    ? new PixelRectangle(
                     seedBox.x,
                     seedBox.y,
                     1,
                     seedBox.height)
-                                 : new PixelRectangle(
+                    : new PixelRectangle(
                     (seedBox.x + seedBox.width) - 1,
                     seedBox.y,
                     1,
@@ -1268,7 +1261,7 @@ public class SlurInspector
             }
 
             return (!glyph.isManualShape() && (shape == Shape.CLUTTER))
-                    || (glyph.getGrade() <= Grades.compoundPartMaxGrade);
+                   || (glyph.getGrade() <= Grades.compoundPartMaxGrade);
         }
 
         @Override

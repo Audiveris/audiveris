@@ -262,7 +262,7 @@ public class Voice
                     sb.append("null");
                 }
 
-                logger.fine("{0}: {1}", new Object[]{this, sb});
+                logger.fine("{0}: {1}", this, sb);
             }
 
             // Do we have a regular pattern?
@@ -428,7 +428,7 @@ public class Voice
 
         slotTable.put(slot.getId(), chordInfo);
         updateSlotTable();
-        logger.fine("setSlotInfo slot#{0} {1}", new Object[]{slot.getId(), this});
+        logger.fine("setSlotInfo slot#{0} {1}", slot.getId(), this);
     }
 
     //----------//

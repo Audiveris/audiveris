@@ -115,13 +115,13 @@ public enum TextRole
         if (box == null) {
             return null;
         }
-        
+
         Sheet sheet = systemInfo.getSheet();
         ScoreSystem system = systemInfo.getScoreSystem();
         Scale scale = system.getScale();
         PixelPoint left = new PixelPoint(box.x, box.y + (box.height / 2));
         PixelPoint right = new PixelPoint(box.x + box.width,
-                                          box.y + (box.height / 2));
+                box.y + (box.height / 2));
 
         // First system in page?
         boolean firstSystem = system.getId() == 1;
@@ -141,7 +141,7 @@ public enum TextRole
         Staff staff = system.getStaffAt(left);
         int staffDy = Math.abs(staff.getTopLeft().y - box.y);
         boolean closeToStaff = staffDy
-                <= scale.toPixels(constants.maxStaffDy);
+                               <= scale.toPixels(constants.maxStaffDy);
 
         // Begins before the part?
         boolean leftOfStaves = system.isLeftOfStaves(left);
@@ -150,13 +150,13 @@ public enum TextRole
         int maxCenterDx = scale.toPixels(constants.maxCenterDx);
         int pageCenter = sheet.getWidth() / 2;
         boolean pageCentered = Math.abs((box.x + (box.width / 2))
-                - pageCenter) <= maxCenterDx;
+                                        - pageCenter) <= maxCenterDx;
 
         // Right aligned with staves?
         int maxRightDx = scale.toPixels(constants.maxRightDx);
         boolean rightAligned = Math.abs(right.x - system.getTopLeft().x
-                - system.getDimension().width)
-                <= maxRightDx;
+                                        - system.getDimension().width)
+                               <= maxRightDx;
 
         // Short Sentence?
         int maxShortLength = scale.toPixels(constants.maxShortLength);
@@ -171,14 +171,12 @@ public enum TextRole
         boolean highText = box.height >= minTitleHeight;
 
         logger.fine("{0} firstSystem={1} lastSystem={2} systemPosition={3}"
-                + " partPosition={4} closeToStaff={5} leftOfStaves={6}"
-                + " pageCentered={7} rightAligned={8} shortSentence={9}"
-                + " highText={10}",
-                    new Object[]{
-                    box, firstSystem, lastSystem, systemPosition,
-                    partPosition, closeToStaff, leftOfStaves, pageCentered,
-                    rightAligned, shortSentence, highText
-                });
+                    + " partPosition={4} closeToStaff={5} leftOfStaves={6}"
+                    + " pageCentered={7} rightAligned={8} shortSentence={9}"
+                    + " highText={10}",
+                box, firstSystem, lastSystem, systemPosition,
+                partPosition, closeToStaff, leftOfStaves, pageCentered,
+                rightAligned, shortSentence, highText);
 
         // Decisions ...
         switch (systemPosition) {
@@ -217,7 +215,7 @@ public enum TextRole
             if (leftOfStaves) {
                 return new TextRoleInfo(TextRole.Name);
             } else if (partPosition == StaffPosition.BELOW_STAVES
-                    && (isItalic == null || !isItalic)) {
+                       && (isItalic == null || !isItalic)) {
                 return new TextRoleInfo(TextRole.Lyrics);
             } else {
                 return new TextRoleInfo(TextRole.Direction);
@@ -270,5 +268,6 @@ public enum TextRole
         Scale.Fraction minTitleHeight = new Scale.Fraction(
                 3,
                 "Minimum height for a title text");
+
     }
 }

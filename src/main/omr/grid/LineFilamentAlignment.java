@@ -27,7 +27,7 @@ import java.awt.geom.Point2D;
 import java.util.List;
 
 /**
- * Class {@code LineFilamentAlignment} is a GlyphAlignment 
+ * Class {@code LineFilamentAlignment} is a GlyphAlignment
  * implementation meant for long staff lines filaments.
  *
  * @author Hervé Bitteur
@@ -65,9 +65,9 @@ public class LineFilamentAlignment
     // fillHoles //
     //-----------//
     /**
-     * Fill large holes (due to missing intermediate points) in 
-     * this filament, by interpolating (or extrapolating) from the 
-     * collection of rather parallel fils, this filament is part of 
+     * Fill large holes (due to missing intermediate points) in
+     * this filament, by interpolating (or extrapolating) from the
+     * collection of rather parallel fils, this filament is part of
      * (at provided pos index).
      *
      * @param pos  the index of this filament in the provided collection
@@ -96,11 +96,11 @@ public class LineFilamentAlignment
                 if (holeLength > maxHoleLength) {
                     // Try to insert artificial intermediate point(s)
                     int insert = (int) Math.rint(holeLength / virtualLength)
-                            - 1;
+                                 - 1;
 
                     if (insert > 0) {
                         logger.fine("Hole before ip: {0} insert:{1} for {2}",
-                                    new Object[]{ip, insert, this});
+                                ip, insert, this);
                         double dx = holeLength / (insert + 1);
 
                         for (int i = 1; i <= insert; i++) {
@@ -152,6 +152,7 @@ public class LineFilamentAlignment
         final Scale.Fraction maxHoleLength = new Scale.Fraction(
                 8,
                 "Maximum length for holes without intermediate points");
+
     }
 
     //--------//
@@ -189,10 +190,10 @@ public class LineFilamentAlignment
         // findInsertion //
         //---------------//
         /**
-         * Look for a suitable insertion point. 
-         * A point is returned only if it can be computed by interpolation, 
-         * which needs one reference above and one reference below. 
-         * Extrapolation is not reliable enough, so no insertion point is 
+         * Look for a suitable insertion point.
+         * A point is returned only if it can be computed by interpolation,
+         * which needs one reference above and one reference below.
+         * Extrapolation is not reliable enough, so no insertion point is
          * returned if we lack reference above or below.
          *
          * @return the computed insertion point, or null

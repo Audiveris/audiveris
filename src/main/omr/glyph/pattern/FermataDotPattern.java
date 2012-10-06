@@ -74,13 +74,13 @@ public class FermataDotPattern
 
         for (final Glyph fermata : system.getGlyphs()) {
             if ((fermata.getShape() != Shape.FERMATA)
-                    && (fermata.getShape() != Shape.FERMATA_BELOW)) {
+                && (fermata.getShape() != Shape.FERMATA_BELOW)) {
                 continue;
             }
 
             if (fermata.isVip() || logger.isFineEnabled()) {
-                logger.info("Checking fermata #{0} {1}", new Object[]{fermata.
-                            getId(), fermata.getEvaluation()});
+                logger.info("Checking fermata #{0} {1}",
+                        fermata.getId(), fermata.getEvaluation());
             }
 
             // Find related dot within glyph box
@@ -90,20 +90,19 @@ public class FermataDotPattern
                     system.getGlyphs(),
                     new Predicate<Glyph>()
                     {
-
                         @Override
                         public boolean check (Glyph glyph)
                         {
                             return (glyph != fermata)
-                                    && glyph.getBounds().intersects(box)
-                                    && dots.contains(glyph.getShape());
+                                   && glyph.getBounds().intersects(box)
+                                   && dots.contains(glyph.getShape());
                         }
                     });
 
             for (Glyph candidate : candidates) {
                 if (fermata.isVip()
-                        || candidate.isVip()
-                        || logger.isFineEnabled()) {
+                    || candidate.isVip()
+                    || logger.isFineEnabled()) {
                     logger.info("Dot candidate #{0}", candidate);
                 }
 
@@ -121,8 +120,7 @@ public class FermataDotPattern
 
                     if (compound.isVip() || logger.isFineEnabled()) {
                         logger.info("Compound #{0} built as {1}",
-                                    new Object[]{compound.getId(), compound.
-                                    getEvaluation()});
+                                compound.getId(), compound.getEvaluation());
                     }
 
                     nb++;

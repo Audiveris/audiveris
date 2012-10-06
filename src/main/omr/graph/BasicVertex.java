@@ -109,7 +109,7 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
     @Override
     public void addTarget (V target)
     {
-        logger.fine("adding edge from {0} to {1}", new Object[]{this, target});
+        logger.fine("adding edge from {0} to {1}", this, target);
 
         // Assert we have real target
         if (target == null) {

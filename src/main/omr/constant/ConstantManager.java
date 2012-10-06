@@ -497,19 +497,19 @@ public class ConstantManager
                     if (properties.remove(key) != null) {
                         logger.fine(
                                 "Removing User value for key: {0} = {1}",
-                                new Object[]{key, current});
+                                key, current);
                     }
                 } else if (!current.equals(source)) {
                     logger.fine(
                             "Writing User value for key: {0} = {1}",
-                            new Object[]{key, current});
+                            key, current);
 
                     properties.setProperty(key, current);
                 } else {
                     if (properties.remove(key) != null) {
                         logger.fine(
                                 "Removing User value for key: {0} = {1}",
-                                new Object[]{key, current});
+                                key, current);
                     }
                 }
             }

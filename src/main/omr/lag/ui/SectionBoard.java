@@ -204,8 +204,7 @@ public class SectionBoard
                         // of section fields (which include this id).
                         if (!updating) {
                             Integer sectionId = (Integer) id.getValue();
-                            logger.fine("sectionId={0} for {1}", new Object[]{
-                                        sectionId, lag});
+                            logger.fine("sectionId={0} for {1}", sectionId, lag);
 
                             idSelecting = true;
                             lag.getSectionService().publish(
@@ -330,7 +329,7 @@ public class SectionBoard
             updating = true;
 
             final Section section = (sectionEvent != null)
-                                    ? sectionEvent.getData() : null;
+                    ? sectionEvent.getData() : null;
             dump.setEnabled(section != null);
 
             Integer sectionId = null;
@@ -437,5 +436,6 @@ public class SectionBoard
         Constant.Boolean hideRelationFields = new Constant.Boolean(
                 true,
                 "Should we hide section relation fields when empty?");
+
     }
 }

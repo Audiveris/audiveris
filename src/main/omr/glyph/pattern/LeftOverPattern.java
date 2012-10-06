@@ -71,8 +71,8 @@ public class LeftOverPattern
 
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.isKnown()
-                    || glyph.isManualShape()
-                    || (glyph.getNormalizedWeight() < minWeight)) {
+                || glyph.isManualShape()
+                || (glyph.getNormalizedWeight() < minWeight)) {
                 continue;
             }
 
@@ -86,8 +86,8 @@ public class LeftOverPattern
                 glyph.setEvaluation(vote);
 
                 if (logger.isFineEnabled() || glyph.isVip()) {
-                    logger.info("LeftOver {0} vote: {1}", new Object[]{glyph.
-                                idString(), vote});
+                    logger.info("LeftOver {0} vote: {1}", 
+                            glyph.idString(), vote);
                 }
 
                 successNb++;
@@ -109,5 +109,6 @@ public class LeftOverPattern
         Scale.AreaFraction minWeight = new Scale.AreaFraction(
                 0.3,
                 "Minimum normalized weight to be a left over glyph");
+
     }
 }

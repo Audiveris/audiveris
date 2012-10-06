@@ -189,9 +189,9 @@ public class FilamentAlignment
         if (orientation == Orientation.HORIZONTAL) {
             if ((coord < startPoint.getX()) || (coord > stopPoint.getX())) {
                 double sl = (stopPoint.getY() - startPoint.getY()) / (stopPoint.
-                                                                      getX()
+                        getX()
                                                                       - startPoint.
-                                                                      getX());
+                        getX());
 
                 return startPoint.getY() + (sl * (coord - startPoint.getX()));
             } else {
@@ -200,9 +200,9 @@ public class FilamentAlignment
         } else {
             if ((coord < startPoint.getY()) || (coord > stopPoint.getY())) {
                 double sl = (stopPoint.getX() - startPoint.getX()) / (stopPoint.
-                                                                      getY()
+                        getY()
                                                                       - startPoint.
-                                                                      getY());
+                        getY());
 
                 return startPoint.getX() + (sl * (coord - startPoint.getY()));
             } else {
@@ -267,8 +267,7 @@ public class FilamentAlignment
             if (rad < constants.minRadius.getValue()) {
                 if (logger.isFineEnabled() || glyph.isVip()) {
                     logger.info("Polishing F#{0} minRad: {1} seq:{2} {3}",
-                                new Object[]{glyph.getId(), (float) rad, idx,
-                                             points.get(idx)});
+                            glyph.getId(), (float) rad, idx, points.get(idx));
                 }
 
                 // Adjust the removable point for first & last points
@@ -320,7 +319,7 @@ public class FilamentAlignment
 
                 if (section != null) {
                     logger.fine("Removed section#{0} from {1} F{2}",
-                                section.getId(), orientation, glyph.getId());
+                            section.getId(), orientation, glyph.getId());
                     glyph.removeSection(section, Linking.LINK_BACK);
                     modified = true;
                 }
@@ -397,14 +396,14 @@ public class FilamentAlignment
             // We need a rough orientation right now
             Orientation orientation = getRoughOrientation();
             Point2D orientedStart = (startPoint == null) ? null
-                                    : orientation.oriented(startPoint);
+                    : orientation.oriented(startPoint);
             Point2D orientedStop = (stopPoint == null) ? null
-                                   : orientation.oriented(stopPoint);
+                    : orientation.oriented(stopPoint);
             Rectangle oBounds = orientation.oriented(glyph.getBounds());
             double oStart = (orientedStart != null) ? orientedStart.getX()
-                            : oBounds.x;
+                    : oBounds.x;
             double oStop = (orientedStop != null) ? orientedStop.getX()
-                           : (oBounds.x + (oBounds.width - 1));
+                    : (oBounds.x + (oBounds.width - 1));
             double length = oStop - oStart + 1;
 
             Rectangle oProbe = new Rectangle(oBounds);
@@ -478,7 +477,7 @@ public class FilamentAlignment
             double dc = Math.abs(
                     coord
                     - ((orientation == Orientation.HORIZONTAL) ? p.getX() : p.
-                       getY()));
+                    getY()));
 
             if ((dc <= margin) && (dc < bestDeltacoord)) {
                 bestDeltacoord = dc;
@@ -555,7 +554,7 @@ public class FilamentAlignment
         Rectangle box = glyph.getBounds();
 
         return (box.height > box.width) ? Orientation.VERTICAL
-               : Orientation.HORIZONTAL;
+                : Orientation.HORIZONTAL;
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -582,5 +581,6 @@ public class FilamentAlignment
         Scale.Fraction minRadius = new Scale.Fraction(
                 12,
                 "Minimum acceptable radius of curvature");
+
     }
 }

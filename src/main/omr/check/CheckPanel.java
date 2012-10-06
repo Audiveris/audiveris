@@ -354,7 +354,7 @@ public class CheckPanel<C extends Checkable>
                 bounds[ic][i] = field;
 
                 Constant.Double constant = (i == 0) ? check.getLowConstant()
-                                           : check.getHighConstant();
+                        : check.getHighConstant();
 
                 field.setText(textOf(constant.getValue()));
                 field.setToolTipText(
@@ -463,13 +463,13 @@ public class CheckPanel<C extends Checkable>
     //-------------//
     // ParamAction //
     //-------------//
-    private  class ParamAction
+    private class ParamAction
             extends AbstractAction
     {
         //~ Methods ------------------------------------------------------------
 
         /**
-         * Method run whenever user presses Return/Enter in one of 
+         * Method run whenever user presses Return/Enter in one of
          * the parameter fields
          */
         @Override
@@ -498,8 +498,8 @@ public class CheckPanel<C extends Checkable>
                 // Check the bounds wrt the corresponding fields
                 for (int i = 0; i < 2; i++) {
                     final Constant.Double constant = (i == 0)
-                                                     ? check.getLowConstant()
-                                                     : check.getHighConstant();
+                            ? check.getLowConstant()
+                            : check.getHighConstant();
 
                     // Simplistic test to detect modification
                     final JTextField field = bounds[ic][i];
@@ -532,8 +532,7 @@ public class CheckPanel<C extends Checkable>
                         } catch (Exception ex) {
                             logger.warning(
                                     "Error in {0}, {1}",
-                                    new Object[]{context,
-                                                 ex.getLocalizedMessage()});
+                                    context, ex.getLocalizedMessage());
                         }
                     }
                 }

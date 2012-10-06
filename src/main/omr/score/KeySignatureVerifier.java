@@ -113,7 +113,7 @@ public class KeySignatureVerifier
                                final KeySignature bestKey)
     {
         logger.fine("Merging {0} for shape {1}",
-                    Glyphs.toString(glyphs), bestKey.getShape());
+                Glyphs.toString(glyphs), bestKey.getShape());
 
         SystemInfo systemInfo = system.getInfo();
         Glyphs.purgeManuals(glyphs);
@@ -130,7 +130,6 @@ public class KeySignatureVerifier
                 Grades.keySigMinGrade,
                 new Predicate<Shape>()
                 {
-
                     @Override
                     public boolean check (Shape shape)
                     {
@@ -141,7 +140,7 @@ public class KeySignatureVerifier
         if (vote != null) {
             // We now have a key sig!
             logger.fine("{0} built from {1}",
-                        new Object[]{vote.shape, Glyphs.toString(glyphs)});
+                    vote.shape, Glyphs.toString(glyphs));
             compound = systemInfo.addGlyph(compound);
             compound.setShape(vote.shape, Evaluation.ALGORITHM);
 
@@ -162,7 +161,7 @@ public class KeySignatureVerifier
                                      int systemStaffIndex)
     {
         return system.getContextString() + "M" + (measureIndex + 1) + "F"
-                + staffOf(systemStaffIndex).getId();
+               + staffOf(systemStaffIndex).getId();
     }
 
     //--------------//
@@ -208,8 +207,7 @@ public class KeySignatureVerifier
             StaffInfo staffInfo = staff.getInfo();
 
             logger.fine("{0} Forcing key signature to {1}",
-                        new Object[]{getContextString(iMeasure, iStaff),
-                                     bestKey.getKey()});
+                    getContextString(iMeasure, iStaff), bestKey.getKey());
 
             try {
                 // Define the box to intersect keysig glyph(s)
@@ -310,8 +308,8 @@ public class KeySignatureVerifier
 
         // Some keys found in this vertical measure?
         if (keyFound) {
-            logger.fine("{0} key(s) found in M{1}", new Object[]{system.
-                        getContextString(), im});
+            logger.fine("{0} key(s) found in M{1}",
+                    system.getContextString(), im);
 
             // Browse all staves for sharp/flat compatibility
             // If compatible, adjust all keysigs to the longest
@@ -364,5 +362,6 @@ public class KeySignatureVerifier
         Scale.Fraction yOffset = new Scale.Fraction(
                 0.5d,
                 "Key signature vertical offset since staff line");
+
     }
 }

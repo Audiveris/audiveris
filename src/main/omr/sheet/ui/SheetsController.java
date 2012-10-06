@@ -152,7 +152,7 @@ public class SheetsController
                     comp,
                     sheet.getScore().getImagePath());
         }
-        
+
         return assembly;
     }
 
@@ -163,8 +163,7 @@ public class SheetsController
     public synchronized void dumpAllAssemblies ()
     {
         for (SheetAssembly assembly : assemblies) {
-            logger.info("Assembly of {0} {1}", new Object[]{assembly.getSheet(),
-                                                            assembly});
+            logger.info("Assembly of {0} {1}", assembly.getSheet(), assembly);
         }
     }
 
@@ -398,8 +397,8 @@ public class SheetsController
         Score score = page.getScore();
         int index = page.getIndex();
         String label = score.isMultiPage()
-                       ? ((page == score.getFirstPage()) ? sheet.getId()
-                          : ("#" + index)) : score.getRadix();
+                ? ((page == score.getFirstPage()) ? sheet.getId()
+                : ("#" + index)) : score.getRadix();
 
         return label;
     }
@@ -437,5 +436,6 @@ public class SheetsController
         Constant.Ratio initialZoomRatio = new Constant.Ratio(
                 0.5,
                 "Initial zoom ratio for displayed sheet pictures");
+
     }
 }

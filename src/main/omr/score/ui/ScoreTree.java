@@ -239,6 +239,7 @@ public class ScoreTree
         Constant.Boolean hideEmptyDummies = new Constant.Boolean(
                 false,
                 "Should we hide empty dummy containers");
+
     }
 
     //-----------------//
@@ -387,8 +388,7 @@ public class ScoreTree
         {
             // Determines whether the icon shows up to the left.
             // Return true for any node with no children
-            logger.fine("isLeaf. node={0} {1}",
-                        new Object[]{node, getChildCount(node) == 0});
+            logger.fine("isLeaf. node={0} {1}", node, getChildCount(node) == 0);
 
             return getChildCount(node) == 0;
         }
@@ -465,7 +465,7 @@ public class ScoreTree
 
             // Not found, so let's build it
             logger.fine("Retrieving relevants of {0} {1}",
-                        new Object[]{node, node.getClass()});
+                    node, node.getClass());
 
             // Case of Named Collection
             if (node instanceof NamedCollection) {
@@ -481,8 +481,7 @@ public class ScoreTree
                 }
 
                 if (logger.isFineEnabled()) {
-                    logger.fine("{0} nb={1}", new Object[]{node,
-                                                           relevants.size()});
+                    logger.fine("{0} nb={1}", node, relevants.size());
                 }
 
                 return relevants;
@@ -495,8 +494,7 @@ public class ScoreTree
                 nodeMap.put(node, relevants);
 
                 if (logger.isFineEnabled()) {
-                    logger.fine("{0} nb={1}", new Object[]{node,
-                                                           relevants.size()});
+                    logger.fine("{0} nb={1}", node, relevants.size());
                 }
 
                 return relevants;
@@ -556,7 +554,7 @@ public class ScoreTree
                             if (!coll.isEmpty()) {
                                 relevants.add(
                                         new NamedCollection(field.getName(),
-                                                            coll));
+                                        coll));
                             }
 
                             continue;
@@ -584,7 +582,7 @@ public class ScoreTree
             } while (filter.isClassRelevant(classe));
 
             if (logger.isFineEnabled()) {
-                logger.fine("{0} nb={1}", new Object[]{node, relevants.size()});
+                logger.fine("{0} nb={1}", node, relevants.size());
             }
 
             return relevants;
@@ -599,8 +597,8 @@ public class ScoreTree
 
             // We display dummy containers only when they are not empty
             if (constants.hideEmptyDummies.getValue()
-                    && (node instanceof NamedCollection
-                        || (node instanceof Container))) {
+                && (node instanceof NamedCollection
+                    || (node instanceof Container))) {
                 return getChildCount(node) > 0;
             } else {
                 return true;

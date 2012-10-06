@@ -301,8 +301,7 @@ public class GlyphsModel
 
             boolean isTransient = glyph.isTransient();
             logger.fine("Assign {0}{1} to {2}",
-                    new Object[]{isTransient ? "compound " : "",
-                                 glyph.idString(), shape});
+                    isTransient ? "compound " : "", glyph.idString(), shape);
 
             // Remember the latest shape assigned
             setLatestShape(shape);
@@ -358,7 +357,7 @@ public class GlyphsModel
         // Special case for ledger glyph
         if (glyph.getShape() == Shape.LEDGER) {
             StaffInfo staff = system.getStaffAt(glyph.getAreaCenter());
-            staff.removeLedger(glyph);            
+            staff.removeLedger(glyph);
         }
 
         if (system != null) {

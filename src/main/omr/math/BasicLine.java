@@ -240,7 +240,7 @@ public class BasicLine
     public void includePoint (double x,
                               double y)
     {
-        logger.fine("includePoint x={0} y={1}", new Object[]{x, y});
+        logger.fine("includePoint x={0} y={1}", x, y);
 
         n += 1;
         sx += x;
@@ -477,7 +477,7 @@ public class BasicLine
         // Make a choice between horizontal vs vertical
         double hDen = (n * sx2) - (sx * sx);
         double vDen = (n * sy2) - (sy * sy);
-        logger.fine("hDen={0} vDen={1}", new Object[]{hDen, vDen});
+        logger.fine("hDen={0} vDen={1}", hDen, vDen);
 
         if (abs(hDen) >= abs(vDen)) {
             // Use a rather horizontal orientation, y = mx +p

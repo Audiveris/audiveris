@@ -147,12 +147,11 @@ public class BorderBuilder
                 glyphs,
                 new Predicate<Glyph>()
                 {
-
                     @Override
                     public boolean check (Glyph glyph)
                     {
                         return (glyph.getShape() == Shape.STAFF_LINE)
-                                || (glyph.getWeight() < minGlyphWeight);
+                               || (glyph.getWeight() < minGlyphWeight);
                     }
                 });
 
@@ -233,7 +232,7 @@ public class BorderBuilder
                                 index + 1,
                                 blobs.size())) {
                             if (b.intersects(rect)) {
-                                logger.fine("{0} + {1}", new Object[]{b, blob});
+                                logger.fine("{0} + {1}", b, blob);
 
                                 b.add(blob);
                                 it.remove();
@@ -382,8 +381,7 @@ public class BorderBuilder
             int bot = botLimit.getY(x, +1);
 
             if (top > bot) {
-                logger.warning("{0} closed at x: {1}", new Object[]{idString(),
-                                                                    x});
+                logger.warning("{0} closed at x: {1}", idString(), x);
             }
 
             int y = (top + bot) / 2;
@@ -433,7 +431,7 @@ public class BorderBuilder
                 Point pt = line.getPoint(index);
 
                 if (topLimit.intersects(lastPoint, pt)
-                        || botLimit.intersects(lastPoint, pt)) {
+                    || botLimit.intersects(lastPoint, pt)) {
                     // Backup 
                     for (int i = lastIndex + 1, iBreak = index - 1; i < iBreak;
                             i++) {
@@ -457,8 +455,8 @@ public class BorderBuilder
             line.removePoint(p);
         }
 
-        logger.fine("{0}Smart S{1}-S{2} system border: {3}", new Object[]{sheet.
-                    getLogPrefix(), prevSystem.getId(), system.getId(), line});
+        logger.fine("{0}Smart S{1}-S{2} system border: {3}",
+                sheet.getLogPrefix(), prevSystem.getId(), system.getId(), line);
 
         return line;
     }
@@ -486,6 +484,7 @@ public class BorderBuilder
         Scale.AreaFraction minGlyphWeight = new Scale.AreaFraction(
                 0.1,
                 "Minimum weight for free glyph");
+
     }
 
     //-----------//
@@ -633,8 +632,8 @@ public class BorderBuilder
         {
             for (Rectangle rect : boxes) {
                 if (rect.intersectsLine(p1.x, p1.y, p2.x, p2.y)) {
-                    logger.fine("{0} intersects from {1} to {2}", new Object[]{
-                                rect, p1, p2});
+                    logger.fine("{0} intersects from {1} to {2}",
+                            rect, p1, p2);
                     return true;
                 }
             }

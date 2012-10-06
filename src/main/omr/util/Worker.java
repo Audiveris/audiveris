@@ -68,7 +68,6 @@ public abstract class Worker<T>
     {
         Runnable doConstruct = new Runnable()
         {
-
             @Override
             public void run ()
             {
@@ -77,8 +76,8 @@ public abstract class Worker<T>
                 } finally {
                     threadVar.clear();
                     logger.fine("{0} finished after {1} ms",
-                                new Object[]{Worker.this.getClass().getName(),
-                                             System.currentTimeMillis() - startTime});
+                            Worker.this.getClass().getName(),
+                            System.currentTimeMillis() - startTime);
                 }
             }
         };

@@ -300,9 +300,9 @@ public class SystemsBuilder
             }
         }
 
-        logger.fine("S#{0}-{1} : {2}{3}", new Object[]{prevSystem.getId(),
-                                                       system.getId(), polygon.
-                    getBounds(), Glyphs.toString(" inter:", intersected)});
+        logger.fine("S#{0}-{1} : {2}{3}", prevSystem.getId(),
+                system.getId(), polygon.getBounds(),
+                Glyphs.toString(" inter:", intersected));
 
         // If the yellow zone is empty, keep the border
         // Otherwise, use the more complex approach
@@ -351,7 +351,7 @@ public class SystemsBuilder
 
         sheet.getBench().recordSystemCount(sysNb);
 
-        logger.info("{0}{1}", new Object[]{sheet.getLogPrefix(), sb.toString()});
+        logger.info("{0}{1}", sheet.getLogPrefix(), sb.toString());
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -366,5 +366,6 @@ public class SystemsBuilder
         Scale.Fraction yellowZoneHalfHeight = new Scale.Fraction(
                 1,
                 "Half height of inter-system yellow zone");
+
     }
 }

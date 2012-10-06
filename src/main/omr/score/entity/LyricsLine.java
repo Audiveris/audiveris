@@ -48,7 +48,6 @@ public class LyricsLine
     /** For comparing (TreeNode) LyricsLine instances on their ordinate */
     public static final Comparator<TreeNode> yComparator = new Comparator<TreeNode>()
     {
-
         @Override
         public int compare (TreeNode tn1,
                             TreeNode tn2)
@@ -102,7 +101,7 @@ public class LyricsLine
 
             if (line.isAlignedWith(item.getReferencePoint())) {
                 line.addItem(item);
-                logger.fine("Added {0} into {1}", new Object[]{item, line});
+                logger.fine("Added {0} into {1}", item, line);
                 return;
             }
         }
@@ -304,5 +303,6 @@ public class LyricsLine
         Scale.Fraction maxItemDy = new Scale.Fraction(
                 2,
                 "Maximum vertical distance between a lyrics line and a lyrics item");
+
     }
 }

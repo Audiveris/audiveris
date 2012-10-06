@@ -167,12 +167,12 @@ public class MeasuresBuilder
                     } else {
                         // TODO
                         logger.warning("No intersection at index {0} in {1}",
-                                       is, align);
+                                is, align);
                     }
                 }
 
                 logger.fine("S#{0} {1}" + " - Created measure " + " with {2}",
-                            new Object[]{scoreSystem.getId(), part, barline});
+                        scoreSystem.getId(), part, barline);
             }
         }
 
@@ -279,7 +279,7 @@ public class MeasuresBuilder
 
                 if (prevMeasure != null) {
                     final int measureWidth = measure.getBarline().getCenter().x
-                            - prevMeasure.getBarline().getCenter().x;
+                                             - prevMeasure.getBarline().getCenter().x;
 
                     if (measureWidth <= maxDoubleDx) {
                         // Lines are side by side or one above the other?
@@ -295,7 +295,7 @@ public class MeasuresBuilder
                                     getBarline());
 
                             logger.fine("Merged two close barlines into {0}",
-                                        prevMeasure.getBarline());
+                                    prevMeasure.getBarline());
                         } else {
                             // No overlap => one above the other
                             logger.
@@ -340,8 +340,7 @@ public class MeasuresBuilder
         if (dx < minWidth) {
             // Adjust system parameters if needed : topLeft and dimension
             if (dx != 0) {
-                logger.fine("Adjusting firstX={0} {1}",
-                            new Object[]{dx, system});
+                logger.fine("Adjusting firstX={0} {1}", dx, system);
 
                 scoreSystem.getTopLeft().translate(dx, 0);
                 scoreSystem.getDimension().width -= dx;
@@ -420,5 +419,6 @@ public class MeasuresBuilder
         Scale.Fraction maxBarOffset = new Scale.Fraction(
                 1.0,
                 "Vertical offset used to detect that a bar extends past a staff");
+
     }
 }

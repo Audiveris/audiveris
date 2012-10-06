@@ -100,7 +100,7 @@ public class Chord
             }
 
             return n1.getChord().getStemDir() * (n2.getCenter().y - n1.
-                                                 getCenter().y);
+                    getCenter().y);
         }
     };
 
@@ -268,7 +268,7 @@ public class Chord
             // Additional check on stem dir, if left & right agree
             if (left.getStemDir() == right.getStemDir()) {
                 if (chord.getReferencePoint() == null
-                        || chord.getStemDir() != left.getStemDir()) {
+                    || chord.getStemDir() != left.getStemDir()) {
                     continue;
                 }
             }
@@ -767,8 +767,8 @@ public class Chord
 
             for (Slur slur : note.getSlurs()) {
                 if (slur.isTie()
-                        && (slur.getLeftNote() == note)
-                        && (slur.getRightNote() != null)) {
+                    && (slur.getLeftNote() == note)
+                    && (slur.getRightNote() != null)) {
                     tied.add(slur.getRightNote().getChord());
                 }
             }
@@ -1114,8 +1114,7 @@ public class Chord
     {
         // Already done?
         if (this.startTime == null) {
-            logger.fine("setStartTime {0} for chord #{1}", new Object[]{
-                        startTime, getId()});
+            logger.fine("setStartTime {0} for chord #{1}", startTime, getId());
 
             this.startTime = startTime;
 
@@ -1172,7 +1171,7 @@ public class Chord
         if (this.voice == null) {
             final String contextString = getContextString();
             logger.fine("{0} Ch#{1} setVoice {2}",
-                        new Object[]{contextString, id, voice.getId()});
+                    contextString, id, voice.getId());
 
             this.voice = voice;
 
@@ -1188,8 +1187,7 @@ public class Chord
                 if (group != null) {
                     logger.fine(
                             "{0} Ch#{1} extending voice#{2} to group#{3}",
-                            new Object[]{contextString, id, voice.getId(),
-                                         group.getId()});
+                            contextString, id, voice.getId(), group.getId());
 
                     group.setVoice(voice);
                 }
@@ -1198,24 +1196,21 @@ public class Chord
                 SortedSet<Chord> tied = getFollowingTiedChords();
 
                 for (Chord chord : tied) {
-                    logger.fine("{0} tied to {1}", new Object[]{this, chord});
+                    logger.fine("{0} tied to {1}", this, chord);
 
                     // Check the tied chords belong to the same measure
                     if (this.getMeasure() == chord.getMeasure()) {
                         logger.
                                 fine(
                                 "{0} Ch#{1} extending voice#{2} to tied chord#{3}",
-                                new Object[]{contextString, id,
-                                             voice.getId(),
-                                             chord.getId()});
+                                contextString, id, voice.getId(), chord.getId());
 
                         chord.setVoice(voice);
                     } else {
                         // Chords tied across measure boundary
                         logger.fine("{0} Cross tie {1} -> {2}",
-                                    new Object[]{contextString,
-                                                 toShortString(), chord.
-                                    toShortString()});
+                                contextString,
+                                toShortString(), chord.toShortString());
                     }
                 }
             }
@@ -1464,7 +1459,7 @@ public class Chord
                     Note distantNote = tie.getDistantNote(slur);
 
                     if ((distantNote != null)
-                            && (distantNote.getMeasure() == getMeasure())) {
+                        && (distantNote.getMeasure() == getMeasure())) {
                         distantNotes.add(distantNote);
                         distantChords.add(distantNote.getChord());
                     }
@@ -1475,7 +1470,7 @@ public class Chord
         if (distantChords.size() > 1) {
             logger.
                     fine("{0} Ch#{1} with multiple tied chords: {2}",
-                         new Object[]{getContextString(), getId(), distantChords});
+                    getContextString(), getId(), distantChords);
 
             // Prepare the split of this chord, using the most distant note from
             // chord head
@@ -1773,6 +1768,7 @@ public class Chord
         Scale.Fraction minStemFragmentLength = new Scale.Fraction(
                 2d,
                 "Minimum length for stem fragment in split");
+
     }
 
     //-------------//

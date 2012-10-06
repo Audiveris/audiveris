@@ -149,7 +149,7 @@ public class PartConnection
      * page result to be provided via MusicXML.
      *
      * @param pages the sequence of pages, as (proxymusic) ScorePartwise
-     * instances
+     *              instances
      */
     public static PartConnection connectProxyPages (
             SortedMap<Integer, ScorePartwise> pages)
@@ -269,8 +269,8 @@ public class PartConnection
             for (ListIterator<Candidate> it = sequence.listIterator(
                     sequence.size()); it.hasPrevious();) {
                 Candidate candidate = it.previous();
-                logger.fine("Processing candidate {0} count:{1}", new Object[]{
-                            candidate, candidate.getStaffCount()});
+                logger.fine("Processing candidate {0} count:{1}",
+                        candidate, candidate.getStaffCount());
 
                 // Check with scoreParts currently defined
                 resultIndex++;
@@ -294,7 +294,7 @@ public class PartConnection
                     } else {
                         // Can we use names? Just for fun for the time being
                         if ((candidate.getName() != null)
-                                && (result.getName() != null)) {
+                            && (result.getName() != null)) {
                             boolean namesOk = candidate.getName().
                                     equalsIgnoreCase(
                                     result.getName());
@@ -303,16 +303,15 @@ public class PartConnection
 
                             if (!namesOk) {
                                 logger.fine("\"{0}\" vs \"{1}\"",
-                                            new Object[]{candidate.getName(),
-                                                         result.getName()});
+                                        candidate.getName(), result.getName());
                             }
                         }
 
                         // We are compatible
                         candidateMap.put(candidate, result);
-                        logger.fine(
-                                "Compatible. Mapped candidate {0} to result {1}",
-                                    new Object[]{candidate, result});
+                        logger.fine("Compatible."
+                                    + " Mapped candidate {0} to result {1}",
+                                candidate, result);
 
                         rawMap.get(result).add(candidate);
                     }
@@ -351,7 +350,7 @@ public class PartConnection
         Result result = candidate.createResult();
         candidateMap.put(candidate, result);
         logger.fine("Creation. Mapped candidate {0} to result {1}",
-                    new Object[]{candidate, result});
+                candidate, result);
 
         candidates.add(candidate);
         rawMap.put(result, candidates);
@@ -539,7 +538,7 @@ public class PartConnection
 
             result.setName(getName());
             result.setAbbreviation(getAbbreviation());
-            logger.fine("Created {0} from {1}", new Object[]{result, this});
+            logger.fine("Created {0} from {1}", result, this);
 
             return result;
         }
@@ -772,7 +771,7 @@ public class PartConnection
                     new ScorePart(0, getStaffCount()));
             result.setName(getName());
             result.setAbbreviation(getAbbreviation());
-            logger.fine("Created {0} from {1}", new Object[]{result, this});
+            logger.fine("Created {0} from {1}", result, this);
 
             return result;
         }
@@ -927,7 +926,7 @@ public class PartConnection
                     new ScorePart(0, getStaffCount()));
             result.setName(getName());
             result.setAbbreviation(getAbbreviation());
-            logger.fine("Created {0} from {1}", new Object[]{result, this});
+            logger.fine("Created {0} from {1}", result, this);
 
             return result;
         }

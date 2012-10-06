@@ -85,7 +85,6 @@ public class ScoreChecker
     /** Specific predicate for beam hooks */
     private static final Predicate<Shape> hookPredicate = new Predicate<Shape>()
     {
-
         @Override
         public boolean check (Shape shape)
         {
@@ -108,7 +107,7 @@ public class ScoreChecker
      * Creates a new ScoreChecker object.
      *
      * @param modified This is actually an out parameter, to tell if one or
-     * several entities have been modified by the score visit
+     *                 several entities have been modified by the score visit
      */
     public ScoreChecker (WrappedBoolean modified)
     {
@@ -130,7 +129,7 @@ public class ScoreChecker
     {
         try {
             if (!beam.isHook()
-                    || beam.getItems().first().getGlyph().isManualShape()) {
+                || beam.getItems().first().getGlyph().isManualShape()) {
                 return true;
             }
 
@@ -242,7 +241,7 @@ public class ScoreChecker
      *
      * @param measure the measure to browse
      * @return true. The real output is stored in the modified global which is
-     * set to true if at least a beam_hook has been fixed.
+     *         set to true if at least a beam_hook has been fixed.
      */
     @Override
     public boolean visit (Measure measure)
@@ -316,8 +315,8 @@ public class ScoreChecker
     public boolean visit (TimeSignature timeSignature)
     {
         try {
-            logger.fine("{0} Checking {1}", new Object[]{timeSignature.
-                        getContextString(), timeSignature});
+            logger.fine("{0} Checking {1}",
+                    timeSignature.getContextString(), timeSignature);
 
             // Trigger computation of Num & Den if not already done
             Shape shape = timeSignature.getShape();
@@ -327,7 +326,7 @@ public class ScoreChecker
                 // (with no equivalent predefined shape)
                 // Just check we are able to get num and den
                 if ((timeSignature.getNumerator() == null)
-                        || (timeSignature.getDenominator() == null)) {
+                    || (timeSignature.getDenominator() == null)) {
                     timeSignature.addError(
                             "Time signature with no rational value");
                 } else {
@@ -373,11 +372,11 @@ public class ScoreChecker
         for (Note note : list) {
             if (lastNote != null) {
                 double deltaPitch = note.getPitchPosition()
-                        - lastNote.getPitchPosition();
+                                    - lastNote.getPitchPosition();
 
                 if (Math.abs(deltaPitch) < minDeltaPitch) {
                     logger.fine("Too small delta pitch between {0} & {1}",
-                                new Object[]{note, lastNote});
+                            note, lastNote);
                     mergeNotes(lastNote, note);
 
                     return false;
@@ -442,13 +441,11 @@ public class ScoreChecker
                 }
             }
 
-            logger.fine("{0} aligned on shape {1}", new Object[]{chord,
-                                                                 bestShape});
+            logger.fine("{0} aligned on shape {1}", chord, bestShape);
 
             final Shape baseShape = bestShape; // Must be final
             Predicate<Shape> predicate = new Predicate<Shape>()
             {
-
                 final Collection<Shape> desiredShapes = Arrays.asList(
                         Note.getActualShape(baseShape, 1),
                         Note.getActualShape(baseShape, 2),
@@ -564,14 +561,14 @@ public class ScoreChecker
 
                     try {
                         logger.fine("{0} Created time sig {1}/{2}",
-                                    new Object[]{sig.getContextString(), sig.
-                                    getNumerator(), sig.getDenominator()});
+                                sig.getContextString(),
+                                sig.getNumerator(), sig.getDenominator());
                     } catch (InvalidTimeSignature ignored) {
                         logger.warning("InvalidTimeSignature", ignored);
                     }
                 } else {
-                    logger.fine("{0} Existing sig {1}", new Object[]{sig.
-                                getContextString(), sig});
+                    logger.fine("{0} Existing sig {1}",
+                            sig.getContextString(), sig);
                 }
             }
         }
@@ -610,7 +607,6 @@ public class ScoreChecker
         ScoreSystem system = chord.getSystem();
         Predicate<Shape> predicate = new Predicate<Shape>()
         {
-
             @Override
             public boolean check (Shape shape)
             {
@@ -623,8 +619,8 @@ public class ScoreChecker
 
         if (!chord.getBeams().isEmpty()) {
             // We trust beams
-            logger.fine("{0} Head/beam conflict in {1}", new Object[]{chord.
-                        getContextString(), chord});
+            logger.fine("{0} Head/beam conflict in {1}",
+                    chord.getContextString(), chord);
             fix = true;
         } else if (chord.getFlagsNumber() > 0) {
             // Check grade of flag(s)
@@ -634,8 +630,8 @@ public class ScoreChecker
                 flagGrade = Math.max(flagGrade, flag.getGrade());
             }
 
-            logger.fine("{0} Head/flag conflict in {1}", new Object[]{chord.
-                        getContextString(), chord});
+            logger.fine("{0} Head/flag conflict in {1}",
+                    chord.getContextString(), chord);
 
             if (noteGrade <= flagGrade) {
                 fix = true;
@@ -706,7 +702,7 @@ public class ScoreChecker
 
                 // Still consistent?
                 if ((num == bestSig.getNumerator())
-                        && (den == bestSig.getDenominator())) {
+                    && (den == bestSig.getDenominator())) {
                     continue;
                 }
 
@@ -767,7 +763,7 @@ public class ScoreChecker
 
                     // Still consistent?
                     if ((num != manualSig.getNumerator())
-                            || (den != manualSig.getDenominator())) {
+                        || (den != manualSig.getDenominator())) {
                         sig.addError("Inconsistent time signature");
                         manualSig.addError("Inconsistent time signature");
 
@@ -789,7 +785,7 @@ public class ScoreChecker
                              Note second)
     {
         if ((first.getShape() == Shape.NOTEHEAD_VOID)
-                && (second.getShape() == Shape.NOTEHEAD_VOID)) {
+            && (second.getShape() == Shape.NOTEHEAD_VOID)) {
             List<Glyph> glyphs = new ArrayList<>();
 
             glyphs.addAll(first.getGlyphs());
@@ -856,7 +852,7 @@ public class ScoreChecker
                 glyph.setShape(vote.shape, Evaluation.ALGORITHM);
 
                 logger.fine("{0} recognized as {1}",
-                            new Object[]{glyph.idString(), vote.shape});
+                        glyph.idString(), vote.shape);
 
                 modified.set(true);
             }
@@ -893,5 +889,6 @@ public class ScoreChecker
                 "PitchPosition",
                 1.5,
                 "Minimum pitch difference between note heads on same stem side");
+
     }
 }

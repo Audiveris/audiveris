@@ -314,7 +314,7 @@ public class UnitTreeTable
 
         objects.add(object);
 
-        logger.fine("path to {0} objects:{1}", new Object[]{fullName, objects});
+        logger.fine("path to {0} objects:{1}", fullName, objects);
 
         return new TreePath(objects.toArray());
     }

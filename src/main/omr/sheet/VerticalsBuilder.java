@@ -49,10 +49,10 @@ import omr.glyph.ShapeChecker;
 
 /**
  * Class {@code VerticalsBuilder} is in charge of retrieving all the
- * vertical sticks of a dedicated system. 
- * 
+ * vertical sticks of a dedicated system.
+ *
  * Bars are assumed to have been already recognized, so this accounts for stems,
- * vertical edges of endings, and potentially parts of alterations 
+ * vertical edges of endings, and potentially parts of alterations
  * (sharp, natural, flat).
  *
  * @author Hervé Bitteur
@@ -116,6 +116,7 @@ public class VerticalsBuilder
     //------------------//
     /**
      * Creates a new VerticalsBuilder object.
+     *
      * @param system the related system
      */
     public VerticalsBuilder (SystemInfo system)
@@ -133,6 +134,7 @@ public class VerticalsBuilder
     //----------------------//
     /**
      * Create a brand new check suite for stem glyph candidates
+     *
      * @param isShort should we look for short (vs standard) stems?
      * @return the check suite ready for use
      */
@@ -146,6 +148,7 @@ public class VerticalsBuilder
     //-------------------//
     /**
      * Actually build the new verticals glyphs out of the dedicated system
+     *
      * @return the number of stems found
      * @throws omr.step.StepException
      */
@@ -175,6 +178,7 @@ public class VerticalsBuilder
     //---------------------//
     /**
      * Decompose the provided glyph into stems + leaves
+     *
      * @param glyph   the glyph to decompose
      * @param isShort are we looking for short (vs standard) stems?
      */
@@ -201,7 +205,7 @@ public class VerticalsBuilder
             int nb = retrieveVerticals(verticalsArea.retrieveSticks(), isShort);
 
             if (nb > 0) {
-                logger.fine("{0} stem{1}", new Object[]{nb, (nb > 1) ? "s" : ""});
+                logger.fine("{0} stem{1}", nb, (nb > 1) ? "s" : "");
             } else {
                 logger.fine("No stem found");
             }
@@ -216,6 +220,7 @@ public class VerticalsBuilder
     /**
      * This method retrieve compliant vertical entities (stems) within a
      * collection of vertical sticks, and in the context of a system
+     *
      * @param sticks  the provided collection of vertical sticks
      * @param isShort true for short stems
      * @return the number of stems found
@@ -231,7 +236,7 @@ public class VerticalsBuilder
         int stemNb = 0;
 
         logger.fine("Searching verticals among {0} sticks from {1}",
-                    new Object[]{sticks.size(), Glyphs.toString(sticks)});
+                sticks.size(), Glyphs.toString(sticks));
 
         for (Glyph stick : sticks) {
             stick = system.addGlyph(stick);
@@ -245,8 +250,8 @@ public class VerticalsBuilder
                 logger.fine("Too distant stem {0}", stick.idString());
                 continue;
             }
-            
-            
+
+
             if (!stick.isShapeForbidden(Shape.STEM)) {
                 // Run the various Checks
                 double res = suite.pass(stick);
@@ -281,6 +286,7 @@ public class VerticalsBuilder
 
         /**
          * Create a new instance
+         *
          * @param isShort for short stems
          */
         public StemCheckSuite (boolean isShort)
@@ -370,6 +376,7 @@ public class VerticalsBuilder
         Scale.Fraction minStaffDxLow = new Scale.Fraction(
                 0,
                 "Low Minimum horizontal distance between a stem and a staff edge");
+
     }
 
     //---------------------//
@@ -442,7 +449,7 @@ public class VerticalsBuilder
             // We process section for which glyph is null
             // or GLYPH_PART, NO_LEGAL_TIME, NOISE, STRUCTURE
             boolean result = (section.getGlyph() == null)
-                    || !section.getGlyph().isWellKnown();
+                             || !section.getGlyph().isWellKnown();
 
             return result;
         }

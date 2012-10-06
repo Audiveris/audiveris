@@ -176,8 +176,7 @@ public class Plugin
         List<String> args;
 
         try {
-            logger.fine("{0} doInBackground on {1}", new Object[]{
-                        Plugin.this, exportFile});
+            logger.fine("{0} doInBackground on {1}", Plugin.this, exportFile);
 
             Invocable inv = (Invocable) engine;
             Object obj = inv.invokeFunction(
@@ -186,19 +185,18 @@ public class Plugin
 
             if (obj instanceof List) {
                 args = (List<String>) obj; // Unchecked by compiler
-                logger.fine("{0} command args: {1}", Plugin.this, args);
+                logger.fine("{0} command args: {1}", this, args);
             } else {
                 return null;
             }
         } catch (ScriptException | NoSuchMethodException ex) {
-            logger.warning(Plugin.this + " error invoking javascript", ex);
+            logger.warning(this + " error invoking javascript", ex);
 
             return null;
         }
 
         // Spawn the command
-        logger.info("Launching {0} on {1}",
-                    new Object[]{Plugin.this.getTitle(), score.getRadix()});
+        logger.info("Launching {0} on {1}", getTitle(), score.getRadix());
 
         ProcessBuilder pb = new ProcessBuilder(args);
         pb = pb.redirectErrorStream(true);
@@ -207,7 +205,7 @@ public class Plugin
             Process process = pb.start();
             InputStream is = process.getInputStream();
             InputStreamReader isr = new InputStreamReader(is,
-                                                          WellKnowns.FILE_ENCODING);
+                    WellKnowns.FILE_ENCODING);
             BufferedReader br = new BufferedReader(isr);
 
             // Consume process output
@@ -223,10 +221,10 @@ public class Plugin
 
                 if (exitValue != 0) {
                     logger.warning("{0} exited with value {1}",
-                                   new Object[]{Plugin.this, exitValue});
+                            Plugin.this, exitValue);
                 } else {
                     logger.fine("{0} exit value is {1}",
-                                new Object[]{Plugin.this, exitValue});
+                            Plugin.this, exitValue);
                 }
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
@@ -276,7 +274,7 @@ public class Plugin
                 title = (String) engine.get("pluginTitle");
                 tip = (String) engine.get("pluginTip");
             } catch (FileNotFoundException | UnsupportedEncodingException |
-                     ScriptException ex) {
+                    ScriptException ex) {
                 logger.warning(this + " error", ex);
             }
         } else {

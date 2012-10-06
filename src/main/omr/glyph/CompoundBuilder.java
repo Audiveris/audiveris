@@ -99,7 +99,7 @@ public class CompoundBuilder
         for (Glyph g : suitables) {
             if (includeSeed || (g != seed)) {
                 if (adapter.isCandidateSuitable(g)
-                        && adapter.isCandidateClose(g)) {
+                    && adapter.isCandidateClose(g)) {
                     neighbors.add(g);
                 }
             }
@@ -107,8 +107,8 @@ public class CompoundBuilder
 
         if (neighbors.size() >= minCount) {
             if (logger.isFineEnabled()) {
-                logger.fine("neighbors={0} seed={1}", new Object[]{Glyphs.
-                            toString(neighbors), seed});
+                logger.fine("neighbors={0} seed={1}",
+                        Glyphs.toString(neighbors), seed);
             }
 
             Glyph compound = system.buildTransientCompound(neighbors);
@@ -118,8 +118,8 @@ public class CompoundBuilder
                 compound = system.addGlyph(compound);
                 compound.setEvaluation(adapter.getChosenEvaluation());
 
-                logger.fine("Compound #{0} built as {1}", new Object[]{compound.
-                            getId(), compound.getShape()});
+                logger.fine("Compound #{0} built as {1}",
+                        compound.getId(), compound.getShape());
 
                 return compound;
             }
@@ -196,8 +196,8 @@ public class CompoundBuilder
          *
          * @param compound the resulting compound glyph to check
          * @return true if the compound is found OK. The compound shape is not
-         * assigned by this method, but can be later retrieved through
-         * getChosenEvaluation() method.
+         *         assigned by this method, but can be later retrieved through
+         *         getChosenEvaluation() method.
          */
         boolean isCompoundValid (Glyph compound);
 
@@ -370,7 +370,6 @@ public class CompoundBuilder
         /** Specific predicate for desired shapes */
         protected final Predicate<Shape> predicate = new Predicate<Shape>()
         {
-
             @Override
             public boolean check (Shape shape)
             {

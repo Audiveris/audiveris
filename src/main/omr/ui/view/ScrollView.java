@@ -60,7 +60,7 @@ public class ScrollView
     //------------//
     /**
      * Create a bare view pane.
-     * Other related entities, such as view, pixel monitor or zoom, can be 
+     * Other related entities, such as view, pixel monitor or zoom, can be
      * added later programmatically via setXXX() methods).
      * <p>The increment related to mouse wheel movement can be adapted via the
      * unitIncrement class constant.
@@ -91,14 +91,14 @@ public class ScrollView
     //-----------//
     /**
      * Define the zoom ratio so that the full height of the model can be
-     * visible. 
+     * visible.
      * We force the zoom ratio to stand within the range of the slider.
      */
     public void fitHeight ()
     {
         Rectangle vr = view.getVisibleRect();
         Dimension dim = view.getModelSize();
-        logger.fine("fitHeight vr={0} dim={1}", new Object[]{vr, dim});
+        logger.fine("fitHeight vr={0} dim={1}", vr, dim);
 
         setZoomRatio((double) (vr.height) / (double) dim.height);
     }
@@ -114,7 +114,7 @@ public class ScrollView
     {
         Rectangle vr = view.getVisibleRect();
         Dimension dim = view.getModelSize();
-        logger.fine("fitWhole vr={0} dim={1}", new Object[]{vr, dim});
+        logger.fine("fitWhole vr={0} dim={1}", vr, dim);
 
         setZoomRatio(
                 Math.min(
@@ -127,17 +127,17 @@ public class ScrollView
     //----------//
     /**
      * Define the zoom ratio so that the full width of the model can be
-     * visible. 
+     * visible.
      * We force the zoom ratio to stand within the range of the slider.
      *
      * @return true if we have been able to fit the display width, false
-     * otherwise which happens when the display width is zero
+     *         otherwise which happens when the display width is zero
      */
     public boolean fitWidth ()
     {
         Rectangle vr = view.getVisibleRect();
         Dimension dim = view.getModelSize();
-        logger.fine("fitWidth vr={0} dim={1}", new Object[]{vr, dim});
+        logger.fine("fitWidth vr={0} dim={1}", vr, dim);
 
         if ((vr.width > 0) && (dim.width > 0)) {
             setZoomRatio((double) (vr.width) / (double) dim.width);
@@ -166,7 +166,7 @@ public class ScrollView
     //----------------//
     /**
      * Retrieve the coordinates of what is currently the focus point of
-     * the display. 
+     * the display.
      * Typically, this is the center of the rubber rectangle.
      *
      * @return the focus point, or null if the view is null
@@ -181,7 +181,7 @@ public class ScrollView
                 return center; // Of rubber band
             } else {
                 logger.fine("getRubberFocus panelcenter={0}",
-                            view.getPanelCenter());
+                        view.getPanelCenter());
                 return view.getPanelCenter(); // Of visible rectangle
             }
         } else {
@@ -195,8 +195,8 @@ public class ScrollView
     // getRubberSelection //
     //--------------------//
     /**
-     * Retrieve a copy of the rubber rectangle, or a zero-height, 
-     * zero-width rectangle at {@code getRubberFocus()} if the rubber 
+     * Retrieve a copy of the rubber rectangle, or a zero-height,
+     * zero-width rectangle at {@code getRubberFocus()} if the rubber
      * rectangle does not exist.
      *
      * @return the rubber selection, or null if the view is null
@@ -280,5 +280,6 @@ public class ScrollView
                 "pixels",
                 20,
                 "Size of mouse wheel increment for ScrollView");
+
     }
 }

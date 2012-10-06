@@ -401,7 +401,7 @@ public class SheetAssembly
     {
         ViewTab currentTab = getCurrentViewTab();
         logger.fine("SheetAssembly stateChanged previousTab:{0} currentTab:{1}",
-                new Object[]{previousTab, currentTab});
+                previousTab, currentTab);
 
         if (currentTab != previousTab) {
             if (previousTab != null) {
@@ -554,7 +554,7 @@ public class SheetAssembly
         public void deselected ()
         {
             logger.fine("SheetAssembly: {0} viewTab.deselected for {1}",
-                    new Object[]{sheet.getId(), this});
+                    sheet.getId(), this);
 
             // Disconnection of events
             RubberPanel rubberPanel = scrollView.getView();
@@ -594,8 +594,7 @@ public class SheetAssembly
         public void selected ()
         {
             logger.fine("SheetAssembly: {0} viewTabSelected for {1} dim:{2}",
-                    new Object[]{sheet.getId(), this, scrollView.getView().
-                        getPreferredSize()});
+                    sheet.getId(), this, scrollView.getView().getPreferredSize());
 
             // Link rubber with proper view
             RubberPanel rubberPanel = scrollView.getView();
@@ -606,8 +605,7 @@ public class SheetAssembly
             rubberPanel.subscribe();
 
             // Restore display of proper context
-            logger.fine("{0} showing:{1}", new Object[]{this, component.
-                        isShowing()});
+            logger.fine("{0} showing:{1}", this, component.isShowing());
 
             if (component.isShowing()) {
                 displayBoards();

@@ -160,7 +160,6 @@ public class BasicNest
     }
 
     //~ Methods ----------------------------------------------------------------
-    
     //----------//
     // addGlyph //
     //----------//
@@ -437,13 +436,11 @@ public class BasicNest
                 // Reuse the existing glyph
                 if (logger.isFineEnabled()) {
                     logger.fine("new avatar of #{0}{1}{2}",
-                                new Object[]{
-                                original.getId(),
-                                Sections.
-                                toString(" members", glyph.getMembers()),
-                                Sections.toString(" original", original.
-                                getMembers())
-                            });
+                            original.getId(),
+                            Sections.
+                            toString(" members", glyph.getMembers()),
+                            Sections.toString(" original", original.
+                            getMembers()));
                 }
 
                 glyph = original;
@@ -470,10 +467,8 @@ public class BasicNest
                     Glyph oldGlyph = originals.remove(oldSig);
 
                     if (oldGlyph != null) {
-                        logger.
-                                fine(
-                                "Updating registration of {0} oldGlyph:{1}",
-                                new Object[]{glyph.idString(), oldGlyph.getId()});
+                        logger.fine("Updating registration of {0} oldGlyph:{1}",
+                                glyph.idString(), oldGlyph.getId());
                     }
                 }
             }
@@ -481,9 +476,8 @@ public class BasicNest
             originals.put(newSig, glyph);
             glyph.setRegisteredSignature(newSig);
 
-            logger.fine(
-                    "Registered {0} as original {1}",
-                    new Object[]{glyph.idString(), glyph.getSignature()});
+            logger.fine("Registered {0} as original {1}",
+                    glyph.idString(), glyph.getSignature());
         }
 
         // Special for virtual glyphs
@@ -639,7 +633,7 @@ public class BasicNest
 
             // Publish Glyph
             Glyph glyph = glyphsFound.isEmpty() ? null
-                          : glyphsFound.iterator().next();
+                    : glyphsFound.iterator().next();
             publish(new GlyphEvent(this, hint, movement, glyph));
 
             // Publish GlyphSet
@@ -689,8 +683,8 @@ public class BasicNest
         // In glyph-selection mode, for non-transient glyphs
         // (and only if we have interested subscribers)
         if ((hint != GLYPH_TRANSIENT)
-                && !ViewParameters.getInstance().isSectionSelectionEnabled()
-                && (subscribersCount(GlyphSetEvent.class) > 0)) {
+            && !ViewParameters.getInstance().isSectionSelectionEnabled()
+            && (subscribersCount(GlyphSetEvent.class) > 0)) {
             // Update glyph set
             Set<Glyph> glyphs = getSelectedGlyphSet();
 
@@ -801,6 +795,7 @@ public class BasicNest
         Constant.String vipGlyphs = new Constant.String(
                 "",
                 "(Debug) Comma-separated list of VIP glyphs");
+
     }
 
     //------------//

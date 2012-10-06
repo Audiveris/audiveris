@@ -200,7 +200,7 @@ public class SymbolsController
             for (Object entity : glyph.getTranslations()) {
                 if (entity instanceof Note) {
                     Note note = (Note) entity;
-                    logger.info("{0}->{1}", new Object[]{note, note.getChord()});
+                    logger.info("{0}->{1}", note, note.getChord());
                 } else {
                     logger.info(entity.toString());
                 }

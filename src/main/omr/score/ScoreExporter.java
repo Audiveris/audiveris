@@ -442,7 +442,7 @@ public class ScoreExporter
             method.invoke(
                     element.getValue(),
                     (articulation.getReferencePoint().y < current.note.
-                     getCenter().y)
+                    getCenter().y)
                     ? AboveBelow.ABOVE : AboveBelow.BELOW);
 
             // Default-Y
@@ -479,7 +479,7 @@ public class ScoreExporter
             Shape shape = barline.getShape();
 
             if ((shape != omr.glyph.Shape.THIN_BARLINE)
-                    && (shape != omr.glyph.Shape.PART_DEFINING_BARLINE)) {
+                && (shape != omr.glyph.Shape.PART_DEFINING_BARLINE)) {
                 try {
                     proxymusic.Barline pmBarline = factory.createBarline();
                     proxymusic.BarStyleColor barStyleColor = factory.
@@ -490,7 +490,7 @@ public class ScoreExporter
                         pmBarline.setLocation(RightLeftMiddle.RIGHT);
 
                         if ((shape == RIGHT_REPEAT_SIGN)
-                                || (shape == BACK_TO_BACK_REPEAT_SIGN)) {
+                            || (shape == BACK_TO_BACK_REPEAT_SIGN)) {
                             barStyleColor.setValue(BarStyle.LIGHT_HEAVY);
 
                             Repeat repeat = factory.createRepeat();
@@ -502,7 +502,7 @@ public class ScoreExporter
                         pmBarline.setLocation(RightLeftMiddle.LEFT);
 
                         if ((shape == LEFT_REPEAT_SIGN)
-                                || (shape == BACK_TO_BACK_REPEAT_SIGN)) {
+                            || (shape == BACK_TO_BACK_REPEAT_SIGN)) {
                             barStyleColor.setValue(BarStyle.HEAVY_LIGHT);
 
                             Repeat repeat = factory.createRepeat();
@@ -640,9 +640,9 @@ public class ScoreExporter
 
                 // Placement
                 direction.
-                         setPlacement(
-                         (words.getReferencePoint().y < current.note.getCenter().y)
-                         ? AboveBelow.ABOVE : AboveBelow.BELOW);
+                        setPlacement(
+                        (words.getReferencePoint().y < current.note.getCenter().y)
+                        ? AboveBelow.ABOVE : AboveBelow.BELOW);
 
                 // default-y
                 pmWords.setDefaultY(yOf(words.getReferencePoint(), staff));
@@ -898,7 +898,7 @@ public class ScoreExporter
             }
 
             ///logger.info("Visiting " + measure);
-            logger.fine("{0} : {1}", new Object[]{measure, isFirst});
+            logger.fine("{0} : {1}", measure, isFirst);
 
             current.measure = measure;
             tupletNumbers.clear();
@@ -930,7 +930,7 @@ public class ScoreExporter
             // Do we need to create & export a dummy initial measure?
             if (((measureRange != null) && !measure.isTemporary()
                  && (measure.getIdValue() > 1))
-                    && // TODO: Following line is illegal
+                && // TODO: Following line is illegal
                     (measure.getScoreId().equals(measureRange.getFirstId()))) {
                 insertCurrentContext(measure);
             }
@@ -1160,7 +1160,7 @@ public class ScoreExporter
                         Rational termination = voice.getTermination();
 
                         if ((termination != null)
-                                && (termination.compareTo(Rational.ZERO) < 0)) {
+                            && (termination.compareTo(Rational.ZERO) < 0)) {
                             Rational delta = termination.opposite();
                             insertForward(delta, voice.getLastChord());
                             timeCounter = timeCounter.plus(delta);
@@ -1302,7 +1302,7 @@ public class ScoreExporter
             // For specific mirrored note
             if (note.getMirroredNote() != null) {
                 int fbn = note.getChord().getFlagsNumber()
-                        + note.getChord().getBeams().size();
+                          + note.getChord().getBeams().size();
 
                 if ((fbn > 0) && (note.getShape() == NOTEHEAD_VOID)) {
                     // Indicate that the head should not be filled
@@ -1466,8 +1466,8 @@ public class ScoreExporter
 
             Page prevPage = (Page) page.getPreviousSibling();
             current.pageMeasureIdOffset = (prevPage == null) ? 0
-                                          : (current.pageMeasureIdOffset
-                                             + prevPage.getDeltaMeasureId());
+                    : (current.pageMeasureIdOffset
+                       + prevPage.getDeltaMeasureId());
             current.scale = page.getScale();
         } catch (Exception ex) {
             logger.warning(
@@ -1566,7 +1566,7 @@ public class ScoreExporter
             java.lang.String soft = WellKnowns.TOOL_NAME;
 
             if ((Main.getToolBuild() != null)
-                    && !Main.getToolBuild().isEmpty()) {
+                && !Main.getToolBuild().isEmpty()) {
                 soft += (" " + Main.getToolBuild());
             }
 
@@ -1755,7 +1755,7 @@ public class ScoreExporter
             // Make sure we have notes (or extension) on both sides
             // TODO: Make an exception for slurs at beginning of page!
             if ((slur.getLeftNote() == null)
-                    && (slur.getLeftExtension() == null)) {
+                && (slur.getLeftExtension() == null)) {
                 slur.addError("Non left-connected slur is not exported");
 
                 return false;
@@ -1763,7 +1763,7 @@ public class ScoreExporter
 
             // TODO: Make an exception for slurs at end of page!
             if ((slur.getRightNote() == null)
-                    && (slur.getRightExtension() == null)) {
+                && (slur.getRightExtension() == null)) {
                 slur.addError("Non right-connected slur is not exported");
 
                 return false;
@@ -1822,8 +1822,8 @@ public class ScoreExporter
                     slurNumbers.remove(slur);
 
                     logger.fine("{0} last use {1} -> {2}",
-                                new Object[]{current.note.getContextString(),
-                                             num, slurNumbers.toString()});
+                            current.note.getContextString(),
+                            num, slurNumbers.toString());
                 } else {
                     // Determine first available number
                     for (num = 1; num <= 6; num++) {
@@ -1837,9 +1837,8 @@ public class ScoreExporter
                             pmSlur.setNumber(num);
 
                             logger.fine("{0} first use {1} -> {2}",
-                                        new Object[]{current.note.
-                                        getContextString(), num, slurNumbers.
-                                        toString()});
+                                    current.note.getContextString(), 
+                                    num, slurNumbers.toString());
 
                             break;
                         }
@@ -2138,9 +2137,9 @@ public class ScoreExporter
 
                 // Placement
                 direction.
-                         setPlacement(
-                         (wedge.getReferencePoint().y < current.note.getCenter().y)
-                         ? AboveBelow.ABOVE : AboveBelow.BELOW);
+                        setPlacement(
+                        (wedge.getReferencePoint().y < current.note.getCenter().y)
+                        ? AboveBelow.ABOVE : AboveBelow.BELOW);
 
                 // default-y
                 pmWedge.setDefaultY(yOf(wedge.getReferencePoint(), staff));
@@ -2240,7 +2239,7 @@ public class ScoreExporter
                                      Time right)
     {
         return (getNum(left).equals(getNum(right)))
-                && (getDen(left).equals(getDen(right)));
+               && (getDen(left).equals(getDen(right)));
     }
 
     //----------//
@@ -2549,7 +2548,7 @@ public class ScoreExporter
             Staff staff = (Staff) sn;
             int right = measure.getLeftX(); // Right of dummy = Left of current
             int midY = (staff.getTopLeft().y + (staff.getHeight() / 2))
-                    - measure.getSystem().getTopLeft().y;
+                       - measure.getSystem().getTopLeft().y;
             PixelPoint staffPoint = new PixelPoint(right, midY);
 
             // Clef?
@@ -2903,8 +2902,8 @@ public class ScoreExporter
                             final Clef clef = it.next();
 
                             if (measure.isDummy()
-                                    || measure.isTemporary()
-                                    || (clef.getCenter().x <= abscissa)) {
+                                || measure.isTemporary()
+                                || (clef.getCenter().x <= abscissa)) {
                                 // Consume this clef
                                 clef.accept(ScoreExporter.this);
                             } else {

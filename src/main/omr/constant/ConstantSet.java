@@ -262,15 +262,16 @@ public abstract class ConstantSet
                     tempMap.put(name, constant);
                 } else {
                     logger.severe(
-                            "ConstantSet in unit ''{0}'' contains a non Constant field ''{1}'' obj= {2}",
-                                  new Object[]{unit, name, obj});
+                            "ConstantSet in unit ''{0}'' contains a non"
+                            + " Constant field ''{1}'' obj= {2}", 
+                            unit, name, obj);
                 }
             }
 
             // Assign the constructed map atomically
             map = tempMap;
         } catch (SecurityException | IllegalArgumentException |
-                 IllegalAccessException ex) {
+                IllegalAccessException ex) {
             logger.warning("Error initializing map of ConstantSet " + this, ex);
         }
     }

@@ -23,7 +23,7 @@ import java.util.List;
 
 /**
  * Class {@code SectionsBuilder} populates a full lag, by building the
- * lag sections and junctions, out of a provided {@link RunsTable} 
+ * lag sections and junctions, out of a provided {@link RunsTable}
  * instance.
  *
  * @author Hervé Bitteur
@@ -184,8 +184,7 @@ public class SectionsBuilder
     private void continueSection (Section section,
                                   Run run)
     {
-        logger.fine("Continuing section {0} with {1}",
-                    new Object[]{section, run});
+        logger.fine("Continuing section {0} with {1}", section, run);
 
         section.append(run);
         nextActives.add(section);
@@ -246,8 +245,7 @@ public class SectionsBuilder
             }
 
             if (lastRun.getStop() >= nextStart) {
-                logger.fine("Overlap from {0} to {1}",
-                            new Object[]{lastRun, run});
+                logger.fine("Overlap from {0} to {1}", lastRun, run);
                 overlappingSections.add(section);
             }
         }
@@ -316,8 +314,7 @@ public class SectionsBuilder
             }
 
             if (run.getStop() >= prevStart) {
-                logger.fine("Overlap from {0} to {1}",
-                            new Object[]{lastRun, run});
+                logger.fine("Overlap from {0} to {1}", lastRun, run);
                 overlapNb++;
                 overlapRun = run;
             }
@@ -334,10 +331,10 @@ public class SectionsBuilder
         case 1: // Continue if consistent
             if (junctionPolicy.consistentRun(overlapRun, section)) {
                 logger.fine("Perhaps extending section {0} with run {1}",
-                            new Object[]{section, overlapRun});
+                        section, overlapRun);
             } else {
                 logger.fine("Incompatible height between {0} and run {1}",
-                            new Object[]{section, overlapRun});
+                        section, overlapRun);
                 finish(section);
             }
             break;

@@ -74,7 +74,7 @@ public class PagesStep
     {
         // Since we may have purged slots, let's reset highlighted slot if any
         sheet.getSymbolsEditor().highLight(null, null);
-        
+
         Steps.valueOf(Steps.SYMBOLS).displayUI(sheet);
     }
 
@@ -94,8 +94,8 @@ public class PagesStep
 
         for (int iter = 1; modified.isSet() && (iter <= iterMax); iter++) {
             modified.set(false);
-            logger.fine("System#{0} translation iter #{1}",
-                        new Object[]{system.getId(), iter});
+            logger.fine("System#{0} translation iter #{1}", 
+                    system.getId(), iter);
 
             // Clear errors for this system only (and this step)
             if (Main.getGui() != null) {
@@ -184,5 +184,6 @@ public class PagesStep
                 "count",
                 2,
                 "Maximum number of iterations for PAGES task");
+
     }
 }

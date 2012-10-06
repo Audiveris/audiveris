@@ -96,8 +96,7 @@ public class Beam
 
         id = 1 + getChildIndex();
 
-        logger.fine("{0} Created {1}", new Object[]{measure.getContextString(),
-                                                    this});
+        logger.fine("{0} Created {1}", measure.getContextString(), this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -135,7 +134,7 @@ public class Beam
         beam.addItem(item);
 
         ////glyph.addTranslation(item);
-        logger.fine("{0} {1}", new Object[]{beam.getContextString(), beam});
+        logger.fine("{0} {1}", beam.getContextString(), beam);
     }
 
     //--------//
@@ -267,7 +266,7 @@ public class Beam
                         // part of the same group
                         switchGroup(group);
                         logger.fine("{0} Reused {1} for {2}",
-                                    new Object[]{getContextString(), group, this});
+                                getContextString(), group, this);
 
                         return;
                     }
@@ -279,7 +278,7 @@ public class Beam
         switchGroup(new BeamGroup(getMeasure()));
 
         logger.fine("{0} Created new {1} for {2}",
-                    new Object[]{getContextString(), getGroup(), this});
+                getContextString(), getGroup(), this);
     }
 
     //------//
@@ -472,7 +471,7 @@ public class Beam
     public void switchGroup (BeamGroup group)
     {
         logger.fine("Switching {0} from {1} to {2}",
-                    new Object[]{this, this.group, group});
+                this, this.group, group);
 
         // Trivial noop case
         if (this.group == group) {
@@ -596,8 +595,8 @@ public class Beam
         }
 
         if (isVip() || logger.isFineEnabled()) {
-            logger.info("{0} Added {1} to {2}", new Object[]{getMeasure().
-                        getContextString(), item, this});
+            logger.info("{0} Added {1} to {2}",
+                    getMeasure().getContextString(), item, this);
         }
     }
 
@@ -625,7 +624,7 @@ public class Beam
 
         if (logging) {
             logger.info("dy={0} vs {1}", (float) Math.abs(dy),
-                        constants.maxDistance.getValue());
+                    constants.maxDistance.getValue());
         }
 
         if (Math.abs(dy) > constants.maxDistance.getValue()) {
@@ -640,7 +639,7 @@ public class Beam
 
             if (logging) {
                 logger.info("dx={0} vs {1}", (float) dx,
-                            constants.maxGap.getValue());
+                        constants.maxGap.getValue());
             }
 
             if (dx <= constants.maxGap.getValue()) {
@@ -695,5 +694,6 @@ public class Beam
         Scale.Fraction maxGap = new Scale.Fraction(
                 0.5,
                 "Maximum gap along alignment with beam left or right extremum");
+
     }
 }

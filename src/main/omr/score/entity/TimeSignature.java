@@ -37,7 +37,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class {@code TimeSignature} encapsulates a time signature, 
+ * Class {@code TimeSignature} encapsulates a time signature,
  * which may be composed of one or several glyphs.
  *
  * @author Hervé Bitteur
@@ -93,12 +93,12 @@ public class TimeSignature
     private final boolean isDummy;
 
     /**
-     * Precise time signature shape (if any, since we may have no 
-     * predefined shape for complex time signatures). 
-     * 
-     * Since a time signature may be composed incrementally through several 
-     * glyphs, its shape is determined only when needed. 
-     * 
+     * Precise time signature shape (if any, since we may have no
+     * predefined shape for complex time signatures).
+     *
+     * Since a time signature may be composed incrementally through several
+     * glyphs, its shape is determined only when needed.
+     *
      * In case of failure, a NO_LEGAL_TIME shape is assigned,
      * preventing any further computation until a reset is performed on this
      * item (such a reset is performed for example when an additional glyph is
@@ -115,6 +115,7 @@ public class TimeSignature
     //--------------//
     /**
      * Create a time signature, with containing measure and related staff
+     *
      * @param measure the containing measure
      * @param staff   the related staff
      */
@@ -134,6 +135,7 @@ public class TimeSignature
     /**
      * Create a time signature, with containing measure and related staff, and
      * information copied from the provided time signature
+     *
      * @param measure the containing measure
      * @param staff   the related staff
      * @param other   the other time signature to clone
@@ -170,6 +172,7 @@ public class TimeSignature
     //--------------//
     /**
      * Check whether the provided value is a rather common time signature
+     *
      * @param timeRational
      * @return true if the provided sig is acceptable
      */
@@ -198,6 +201,7 @@ public class TimeSignature
     /**
      * Replaces in situ this time signature by the logical information of
      * 'newSig'.
+     *
      * @param newSig the correct sig to assign in lieu of this one
      */
     public void copy (TimeSignature newSig)
@@ -229,6 +233,7 @@ public class TimeSignature
     //----------------//
     /**
      * Report the bottom part of the time signature.
+     *
      * @return the bottom part
      * @throws InvalidTimeSignature
      */
@@ -255,6 +260,7 @@ public class TimeSignature
     //----------------------//
     /**
      * Report the sequence of shapes that depict the denominator.
+     *
      * @return for example: [1, 6] if denominator is 16
      */
     public List<Shape> getDenominatorShapes ()
@@ -271,6 +277,7 @@ public class TimeSignature
     //--------------//
     /**
      * Report the top part of the time signature.
+     *
      * @return the top part
      * @throws InvalidTimeSignature
      */
@@ -297,6 +304,7 @@ public class TimeSignature
     //--------------------//
     /**
      * Report the sequence of shapes that depict the numerator.
+     *
      * @return for example: [1, 2] if numerator is 12
      */
     public List<Shape> getNumeratorShapes ()
@@ -332,6 +340,7 @@ public class TimeSignature
     //-----------------//
     /**
      * Report the time signature as a rational
+     *
      * @return the num/den time rational, or null
      */
     public TimeRational getTimeRational ()
@@ -349,6 +358,7 @@ public class TimeSignature
     //---------//
     /**
      * Report whether this time signature has been built artificially
+     *
      * @return true if artificial
      */
     public boolean isDummy ()
@@ -361,6 +371,7 @@ public class TimeSignature
     //----------//
     /**
      * Report whether this time signature is based on manual assignment
+     *
      * @return true if manually assigned
      */
     public boolean isManual ()
@@ -375,6 +386,7 @@ public class TimeSignature
      * Modify in situ this time signature using provided shape and rational. We
      * use the intersected glyphs of the old sig as the glyphs for the newly
      * built signature.
+     *
      * @param shape        the shape (perhaps null) of correct signature
      * @param timeRational the new sig rational value
      */
@@ -400,8 +412,7 @@ public class TimeSignature
                 compound.setTimeRational(timeRational);
             }
 
-            logger.fine("{0} assigned to {1}", new Object[]{shape, compound.
-                        idString()});
+            logger.fine("{0} assigned to {1}", shape, compound.idString());
         }
 
         setRational(timeRational);
@@ -412,6 +423,7 @@ public class TimeSignature
     //----------//
     /**
      * Populate the score with a time signature built from the provided glyph
+     *
      * @param glyph   the source glyph
      * @param measure containing measure
      * @param staff   the related staff
@@ -429,7 +441,7 @@ public class TimeSignature
 
         if (unitDx < measure.getScale().toPixels(constants.minTimeOffset)) {
             logger.fine("Too small offset for time signature" + " (glyph #{0})",
-                        glyph.getId());
+                    glyph.getId());
 
             return false;
         }
@@ -449,8 +461,10 @@ public class TimeSignature
     //------------------//
     /**
      * We create a full time signature with just the provided glyph.
-     * (assumed to be the whole signature, perhaps composed of several digits, 
-     * for example one digit for the numerator and one digit for the denominator)
+     * (assumed to be the whole signature, perhaps composed of several digits,
+     * for example one digit for the numerator and one digit for the
+     * denominator)
+     *
      * @param glyph   the provided (multi-digit) glyph
      * @param measure the containing measure
      * @param staff   the related satff
@@ -472,7 +486,7 @@ public class TimeSignature
             return true;
         } else {
             logger.fine("Second whole time signature ({0}" + ")"
-                    + " in the same measure", glyph.idString());
+                        + " in the same measure", glyph.idString());
 
             return false;
         }
@@ -483,31 +497,32 @@ public class TimeSignature
     //------------//
     /**
      * Report the num/den pair of predefined timesig shapes.
+     *
      * @param shape the queried shape
      * @return the related num/den or null
      */
     public static TimeRational rationalOf (Shape shape)
     {
         switch (shape) {
-            case COMMON_TIME:
-            case TIME_FOUR_FOUR:
-                return new TimeRational(4, 4);
+        case COMMON_TIME:
+        case TIME_FOUR_FOUR:
+            return new TimeRational(4, 4);
 
-            case CUT_TIME:
-            case TIME_TWO_TWO:
-                return new TimeRational(2, 2);
+        case CUT_TIME:
+        case TIME_TWO_TWO:
+            return new TimeRational(2, 2);
 
-            case TIME_TWO_FOUR:
-                return new TimeRational(2, 4);
+        case TIME_TWO_FOUR:
+            return new TimeRational(2, 4);
 
-            case TIME_THREE_FOUR:
-                return new TimeRational(3, 4);
+        case TIME_THREE_FOUR:
+            return new TimeRational(3, 4);
 
-            case TIME_SIX_EIGHT:
-                return new TimeRational(6, 8);
+        case TIME_SIX_EIGHT:
+            return new TimeRational(6, 8);
 
-            default:
-                return null;
+        default:
+            return null;
         }
     }
 
@@ -515,7 +530,7 @@ public class TimeSignature
     // reset //
     //-------//
     /**
-     * Invalidate cached data, so that it gets lazily recomputed when 
+     * Invalidate cached data, so that it gets lazily recomputed when
      * needed.
      */
     @Override
@@ -532,6 +547,7 @@ public class TimeSignature
     //-------------//
     /**
      * Force this time signature to align to the provided rational value.
+     *
      * @param timeRational the forced value
      */
     public void setRational (TimeRational timeRational)
@@ -545,6 +561,7 @@ public class TimeSignature
     //----------//
     /**
      * Report a readable description.
+     *
      * @return description
      */
     @Override
@@ -592,44 +609,44 @@ public class TimeSignature
     private static Shape getNumericShape (int val)
     {
         switch (val) {
-            case 0:
-                return TIME_ZERO;
+        case 0:
+            return TIME_ZERO;
 
-            case 1:
-                return TIME_ONE;
+        case 1:
+            return TIME_ONE;
 
-            case 2:
-                return TIME_TWO;
+        case 2:
+            return TIME_TWO;
 
-            case 3:
-                return TIME_THREE;
+        case 3:
+            return TIME_THREE;
 
-            case 4:
-                return TIME_FOUR;
+        case 4:
+            return TIME_FOUR;
 
-            case 5:
-                return TIME_FIVE;
+        case 5:
+            return TIME_FIVE;
 
-            case 6:
-                return TIME_SIX;
+        case 6:
+            return TIME_SIX;
 
-            case 7:
-                return TIME_SEVEN;
+        case 7:
+            return TIME_SEVEN;
 
-            case 8:
-                return TIME_EIGHT;
+        case 8:
+            return TIME_EIGHT;
 
-            case 9:
-                return TIME_NINE;
+        case 9:
+            return TIME_NINE;
 
-            case 12:
-                return TIME_TWELVE;
+        case 12:
+            return TIME_TWELVE;
 
-            case 16:
-                return TIME_SIXTEEN;
+        case 16:
+            return TIME_SIXTEEN;
 
-            default:
-                return null;
+        default:
+            return null;
         }
     }
 
@@ -642,41 +659,41 @@ public class TimeSignature
 
         if (shape != null) {
             switch (shape) {
-                case TIME_ZERO:
-                    return 0;
+            case TIME_ZERO:
+                return 0;
 
-                case TIME_ONE:
-                    return 1;
+            case TIME_ONE:
+                return 1;
 
-                case TIME_TWO:
-                    return 2;
+            case TIME_TWO:
+                return 2;
 
-                case TIME_THREE:
-                    return 3;
+            case TIME_THREE:
+                return 3;
 
-                case TIME_FOUR:
-                    return 4;
+            case TIME_FOUR:
+                return 4;
 
-                case TIME_FIVE:
-                    return 5;
+            case TIME_FIVE:
+                return 5;
 
-                case TIME_SIX:
-                    return 6;
+            case TIME_SIX:
+                return 6;
 
-                case TIME_SEVEN:
-                    return 7;
+            case TIME_SEVEN:
+                return 7;
 
-                case TIME_EIGHT:
-                    return 8;
+            case TIME_EIGHT:
+                return 8;
 
-                case TIME_NINE:
-                    return 9;
+            case TIME_NINE:
+                return 9;
 
-                case TIME_TWELVE:
-                    return 12;
+            case TIME_TWELVE:
+                return 12;
 
-                case TIME_SIXTEEN:
-                    return 16;
+            case TIME_SIXTEEN:
+                return 16;
             }
         }
 
@@ -706,6 +723,7 @@ public class TimeSignature
     /**
      * We add the provided glyph to a time signature composed of single
      * digits.
+     *
      * @param glyph   the provided (single-digit) glyph
      * @param measure the containing measure
      * @param staff   the related staff
@@ -728,7 +746,7 @@ public class TimeSignature
 
             if (dist > max) {
                 logger.fine("Time signature part ({0}" + ")"
-                        + " too far from previous one", glyph.idString());
+                            + " too far from previous one", glyph.idString());
 
                 return false;
             }
@@ -748,6 +766,7 @@ public class TimeSignature
     //---------------------//
     /**
      * Compute the actual members of time rational.
+     *
      * @throws InvalidTimeSignature
      */
     private void computeTimeRational ()
@@ -766,8 +785,8 @@ public class TimeSignature
                 if (theShape != null) {
                     if (ShapeSet.FullTimes.contains(theShape)) {
                         TimeRational theRational = (theShape == CUSTOM_TIME)
-                                                   ? theGlyph.getTimeRational()
-                                                   : rationalOf(theShape);
+                                ? theGlyph.getTimeRational()
+                                : rationalOf(theShape);
 
                         if (theRational != null) {
                             shape = theShape;
@@ -793,8 +812,8 @@ public class TimeSignature
                     int pitch = (int) Math.rint(
                             getStaff().pitchPositionOf(computeGlyphCenter(glyph)));
                     Integer value = getNumericValue(glyph);
-                    logger.fine("pitch={0} value={1} glyph={2}", new Object[]{
-                                pitch, value, glyph});
+                    logger.fine("pitch={0} value={1} glyph={2}",
+                            pitch, value, glyph);
 
                     if (value != null) {
                         if (pitch < 0) {
@@ -831,8 +850,11 @@ public class TimeSignature
     //-----------------//
     /**
      * Look for a predefined shape, if any, that would correspond to the
-     * current <code>num</code> and <code>den</code> values of this time
+     * current
+     * <code>num</code> and
+     * <code>den</code> values of this time
      * sig.
+     *
      * @return the shape found or null
      */
     private static Shape predefinedShape (TimeRational timeRational)
@@ -857,8 +879,11 @@ public class TimeSignature
     //-----------------//
     /**
      * Look for a predefined shape, if any, that would correspond to the
-     * current <code>num</code> and <code>den</code> values of this time
+     * current
+     * <code>num</code> and
+     * <code>den</code> values of this time
      * sig.
+     *
      * @return the shape found or null
      */
     private Shape predefinedShape ()
@@ -876,7 +901,7 @@ public class TimeSignature
     //----------------------//
     /**
      * Used to signal that a time signature is invalid.
-     * (for example because some of its parts are missing or incorrectly 
+     * (for example because some of its parts are missing or incorrectly
      * recognized)
      */
     public static class InvalidTimeSignature
@@ -907,5 +932,6 @@ public class TimeSignature
                 1d,
                 "Minimum horizontal offset for a time"
                 + " signature since start of measure");
+
     }
 }

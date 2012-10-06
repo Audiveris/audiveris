@@ -113,7 +113,7 @@ public class ScoreReductor
                 new Rational[durations.size()]);
         Rational divisor = Rational.gcd(durationArray);
         logger.fine("durations={0} divisor={1}",
-                    new Object[]{Arrays.deepToString(durationArray), divisor});
+                Arrays.deepToString(durationArray), divisor);
 
         return divisor.den;
     }

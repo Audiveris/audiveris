@@ -204,11 +204,11 @@ public class Tuplet
                                                        Staff requiredStaff)
     {
         logger.fine("{0} {1}{2}",
-                new Object[]{glyph.getShape(),
-                             glyph.idString(),
-                             (requiredStaff != null)
-                    ? (" staff#" + requiredStaff.getId())
-                    : ""});
+                glyph.getShape(),
+                glyph.idString(),
+                (requiredStaff != null)
+                ? (" staff#" + requiredStaff.getId())
+                : "");
 
         // We consider each candidate in turn, with its duration
         // in order to determine the duration base of the tuplet

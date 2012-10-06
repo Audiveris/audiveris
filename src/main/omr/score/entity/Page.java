@@ -192,7 +192,7 @@ public class Page
            .append(sb)
            .append("]");
 
-        logger.info("{0}{1}", new Object[]{sheet.getLogPrefix(), msg.toString()});
+        logger.info("{0}{1}", sheet.getLogPrefix(), msg.toString());
     }
 
     //-------------------//

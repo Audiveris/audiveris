@@ -52,7 +52,6 @@ public class LineCluster
     /** For comparing LineCluster instances on their true length */
     public static final Comparator<LineCluster> reverseLengthComparator = new Comparator<LineCluster>()
     {
-
         @Override
         public int compare (LineCluster c1,
                             LineCluster c2)
@@ -256,9 +255,9 @@ public class LineCluster
      * @param x         the provided abscissa
      * @param xMargin   maximum abscissa margin for horizontal extrapolation
      * @param interline the standard interline value, used for vertical
-     * extrapolations
+     *                  extrapolations
      * @return the sequence of cluster points, from top to bottom, with perhaps
-     * some holes indicated by null values
+     *         some holes indicated by null values
      */
     public List<Point2D> getPointsAt (double x,
                                       int xMargin,
@@ -316,8 +315,8 @@ public class LineCluster
             // Interpolate vertically
             if ((prevPos != null) && (nextPos != null)) {
                 y = prevVal
-                        + (((pos - prevPos) * (nextVal - prevVal)) / (nextPos
-                                                                      - prevPos));
+                    + (((pos - prevPos) * (nextVal - prevVal)) / (nextPos
+                                                                  - prevPos));
             } else {
                 // Extrapolate vertically, only for one interline max
                 if ((prevPos != null) && ((pos - prevPos) == 1)) {
@@ -328,8 +327,8 @@ public class LineCluster
                     // Extrapolate horizontally on a short distance
                     FilamentLine line = lines.get(pos);
                     Point2D point = (x <= line.getStartPoint().getX())
-                                    ? line.getStartPoint()
-                                    : line.getStopPoint();
+                            ? line.getStartPoint()
+                            : line.getStopPoint();
                     double dx = x - point.getX();
 
                     if (Math.abs(dx) <= xMargin) {
@@ -399,8 +398,7 @@ public class LineCluster
             }
 
             meanTrueLength /= lines.size();
-            logger.fine("TrueLength: {0} for {1}", new Object[]{meanTrueLength,
-                                                                this});
+            logger.fine("TrueLength: {0} for {1}", meanTrueLength, this);
 
             trueLength = meanTrueLength;
         }
@@ -451,7 +449,7 @@ public class LineCluster
                         if (thickness > line.fil.getScale().getMaxFore()) {
                             if (filament.isVip() || logger.isFineEnabled()) {
                                 logger.info("No room for {0} in {1}",
-                                            new Object[]{filament, this});
+                                        filament, this);
                             }
 
                             return false;
@@ -662,9 +660,8 @@ public class LineCluster
                           int pivotPos)
     {
         if (logger.isFineEnabled() || pivot.isVip()) {
-            logger.info("{0} include pivot:{1} at pos:{2}", new Object[]{this,
-                                                                         pivot.
-                        getId(), pivotPos});
+            logger.info("{0} include pivot:{1} at pos:{2}",
+                    this, pivot.getId(), pivotPos);
 
             if (pivot.isVip()) {
                 setVip();
@@ -682,7 +679,7 @@ public class LineCluster
             comb.setProcessed(true);
 
             int deltaPos = pivotPos - comb.getIndex(pivot);
-            logger.fine("{0} deltaPos:{1}", new Object[]{comb, deltaPos});
+            logger.fine("{0} deltaPos:{1}", comb, deltaPos);
 
             // Dispatch content of comb to proper lines
             for (int i = 0; i < comb.getCount(); i++) {
@@ -697,7 +694,7 @@ public class LineCluster
 
                     if (fil.isVip()) {
                         logger.info("Adding {0} to {1} at pos {2}",
-                                    new Object[]{fil, this, pos});
+                                fil, this, pos);
                         setVip();
                     }
 
@@ -727,8 +724,8 @@ public class LineCluster
                           int deltaPos)
     {
         if (logger.isFineEnabled() || isVip() || that.isVip()) {
-            logger.info("Inclusion of {0} into {1} deltaPos:{2}", new Object[]{
-                        that, this, deltaPos});
+            logger.info("Inclusion of {0} into {1} deltaPos:{2}",
+                    that, this, deltaPos);
 
             if (that.isVip()) {
                 setVip();

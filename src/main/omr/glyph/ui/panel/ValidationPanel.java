@@ -52,16 +52,15 @@ import javax.swing.JProgressBar;
  * @author Hervé Bitteur
  */
 class ValidationPanel
-    implements Observer
+        implements Observer
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
-        ValidationPanel.class);
+            ValidationPanel.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Swing component */
     private final Panel component;
 
@@ -80,7 +79,7 @@ class ValidationPanel
     /** User interface that handles glyphs selection */
     private final SelectionPanel selectionPanel;
 
-    /** User interface that handles evaluator training*/
+    /** User interface that handles evaluator training */
     private final TrainingPanel trainingPanel;
 
     /** User action to validate the evaluator against whole or core base */
@@ -88,22 +87,22 @@ class ValidationPanel
 
     /** Display percentage of glyphs correctly recognized */
     private LDoubleField pcValue = new LDoubleField(
-        false,
-        "% OK",
-        "Percentage of recognized glyphs",
-        " %5.2f%%");
+            false,
+            "% OK",
+            "Percentage of recognized glyphs",
+            " %5.2f%%");
 
     /** Display number of glyphs correctly recognized */
     private LIntegerField positiveValue = new LIntegerField(
-        false,
-        "Glyphs OK",
-        "Number of glyphs correctly recognized");
+            false,
+            "Glyphs OK",
+            "Number of glyphs correctly recognized");
 
     /** Display number of glyphs mistaken with some other shape */
     private LIntegerField falsePositiveValue = new LIntegerField(
-        false,
-        "False Pos.",
-        "Number of glyphs incorrectly recognized");
+            false,
+            "False Pos.",
+            "Number of glyphs incorrectly recognized");
 
     /** Collection of glyph names leading to false positives */
     private List<String> falsePositives = new ArrayList<>();
@@ -113,9 +112,9 @@ class ValidationPanel
 
     /** Display number of glyphs not recognized */
     private LIntegerField negativeValue = new LIntegerField(
-        false,
-        "Negative",
-        "Number of glyphs not recognized");
+            false,
+            "Negative",
+            "Number of glyphs not recognized");
 
     /** Collection of glyph names not recognized (negatives) */
     private List<String> negatives = new ArrayList<>();
@@ -124,20 +123,20 @@ class ValidationPanel
     private NegativeAction negativeAction = new NegativeAction();
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new ValidationPanel object.
-     * @param task the current training activity
-     * @param standardWidth standard width for fields & buttons
-     * @param evaluator the evaluator to validate
+     *
+     * @param task           the current training activity
+     * @param standardWidth  standard width for fields & buttons
+     * @param evaluator      the evaluator to validate
      * @param selectionPanel user panel for glyph selection
-     * @param trainingPanel user panel for evaluator training
+     * @param trainingPanel  user panel for evaluator training
      */
     public ValidationPanel (GlyphTrainer.Task task,
-                            String            standardWidth,
-                            ShapeEvaluator    evaluator,
-                            SelectionPanel    selectionPanel,
-                            TrainingPanel     trainingPanel)
+                            String standardWidth,
+                            ShapeEvaluator evaluator,
+                            SelectionPanel selectionPanel,
+                            TrainingPanel trainingPanel)
     {
         this.evaluator = evaluator;
         this.selectionPanel = selectionPanel;
@@ -151,12 +150,12 @@ class ValidationPanel
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------------//
     // getComponent //
     //--------------//
     /**
      * Give access to the encapsulated swing component.
+     *
      * @return the user panel
      */
     public JComponent getComponent ()
@@ -172,12 +171,12 @@ class ValidationPanel
      * verification actions whenever a new task activity is notified.
      * These actions are then re-enabled only at the end of the validation run.
      *
-     * @param obs not used
+     * @param obs    not used
      * @param unused not used
      */
     @Override
     public void update (Observable obs,
-                        Object     unused)
+                        Object unused)
     {
         negativeAction.setEnabled(!negatives.isEmpty());
         falsePositiveAction.setEnabled(!falsePositives.isEmpty());
@@ -193,11 +192,11 @@ class ValidationPanel
 
         /** Common JGoogies builder for this class and its subclass if any */
         FormLayout layout = Panel.makeFormLayout(
-            3,
-            4,
-            "",
-            standardWidth,
-            standardWidth);
+                3,
+                4,
+                "",
+                standardWidth,
+                standardWidth);
         PanelBuilder builder = new PanelBuilder(layout, component);
 
         // Validation title & progress bar
@@ -218,15 +217,15 @@ class ValidationPanel
 
         JButton validateButton = new JButton(validateAction);
         validateButton.setToolTipText(
-            "Validate the evaluator on current base of glyphs");
+                "Validate the evaluator on current base of glyphs");
 
         JButton negativeButton = new JButton(negativeAction);
         negativeButton.setToolTipText(
-            "Display the impacted glyphs for verification");
+                "Display the impacted glyphs for verification");
 
         JButton falsePositiveButton = new JButton(falsePositiveAction);
         falsePositiveButton.setToolTipText(
-            "Display the impacted glyphs for verification");
+                "Display the impacted glyphs for verification");
 
         builder.add(validateButton, cst.xy(3, r));
         builder.add(pcValue.getLabel(), cst.xy(5, r));
@@ -240,7 +239,9 @@ class ValidationPanel
     //---------------//
     private void runValidation ()
     {
-        logger.info("Validating {0} evaluator on {1} base ...", new Object[]{evaluator.getName(), trainingPanel.useWhole() ? "whole" : "core"});
+        logger.info("Validating {0} evaluator on {1} base ...",
+                evaluator.getName(),
+                trainingPanel.useWhole() ? "whole" : "core");
 
         // Empty the display
         positiveValue.setText("");
@@ -253,9 +254,9 @@ class ValidationPanel
         negatives.clear();
         falsePositives.clear();
 
-        int                positives = 0;
+        int positives = 0;
         Collection<String> gNames = selectionPanel.getBase(
-            trainingPanel.useWhole());
+                trainingPanel.useWhole());
 
         progressBar.setValue(0);
         progressBar.setMaximum(gNames.size());
@@ -269,22 +270,22 @@ class ValidationPanel
 
             if (glyph != null) {
                 Evaluation vote = evaluator.rawVote(
-                    glyph,
-                    Grades.validationMinGrade,
-                    null);
+                        glyph,
+                        Grades.validationMinGrade,
+                        null);
 
                 if (vote == null) {
                     negatives.add(gName);
                     System.out.printf("%-35s not recognized%n", gName);
                 } else if (vote.shape.getPhysicalShape() == glyph.getShape()
-                                                                 .getPhysicalShape()) {
+                        .getPhysicalShape()) {
                     positives++;
                 } else {
                     falsePositives.add(gName);
                     System.out.printf(
-                        "%-35s mistaken for %s%n",
-                        gName,
-                        vote.shape.getPhysicalShape());
+                            "%-35s mistaken for %s%n",
+                            gName,
+                            vote.shape.getPhysicalShape());
                 }
             }
 
@@ -292,10 +293,11 @@ class ValidationPanel
             progressBar.setValue(index);
         }
 
-        int    total = gNames.size();
+        int total = gNames.size();
         double pc = ((double) positives * 100) / (double) total;
         String pcStr = String.format(" %5.2f%%", pc);
-        logger.info("{0}Evaluator. Ratio={1} : {2}/{3}", new Object[]{evaluator.getName(), pcStr, positives, total});
+        logger.info("{0}Evaluator. Ratio={1} : {2}/{3}", 
+                evaluator.getName(), pcStr, positives, total);
         positiveValue.setValue(positives);
         pcValue.setValue(pc);
         negativeValue.setValue(negatives.size());
@@ -303,12 +305,11 @@ class ValidationPanel
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //---------------------//
     // FalsePositiveAction //
     //---------------------//
     private class FalsePositiveAction
-        extends AbstractAction
+            extends AbstractAction
     {
         //~ Constructors -------------------------------------------------------
 
@@ -318,14 +319,13 @@ class ValidationPanel
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
             SampleVerifier.getInstance()
-                         .verify(falsePositives);
+                    .verify(falsePositives);
             SampleVerifier.getInstance()
-                         .setVisible(true);
+                    .setVisible(true);
         }
     }
 
@@ -333,7 +333,7 @@ class ValidationPanel
     // NegativeAction //
     //----------------//
     private class NegativeAction
-        extends AbstractAction
+            extends AbstractAction
     {
         //~ Constructors -------------------------------------------------------
 
@@ -343,14 +343,13 @@ class ValidationPanel
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
             SampleVerifier.getInstance()
-                         .verify(negatives);
+                    .verify(negatives);
             SampleVerifier.getInstance()
-                         .setVisible(true);
+                    .setVisible(true);
         }
     }
 
@@ -358,7 +357,7 @@ class ValidationPanel
     // ValidateAction //
     //----------------//
     private class ValidateAction
-        extends AbstractAction
+            extends AbstractAction
     {
         //~ Constructors -------------------------------------------------------
 
@@ -368,12 +367,12 @@ class ValidationPanel
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
             executor.execute(
-                new Runnable() {
+                    new Runnable()
+                    {
                         @Override
                         public void run ()
                         {
@@ -381,7 +380,7 @@ class ValidationPanel
                             runValidation();
                             negativeAction.setEnabled(negatives.size() > 0);
                             falsePositiveAction.setEnabled(
-                                !falsePositives.isEmpty());
+                                    !falsePositives.isEmpty());
                             setEnabled(true);
                         }
                     });

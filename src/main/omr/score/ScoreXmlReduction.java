@@ -119,10 +119,13 @@ public class ScoreXmlReduction
 
         /** Fragment was processed correctly */
         OK,
-        /** Some invalid XML characters had to be skipped */
+        /** Some invalid XML
+         * characters had to be skipped */
         CHARACTERS_SKIPPED,
-        /** The fragment as a whole could not be processed */
+        /** The fragment as
+         * a whole could not be processed */
         FRAGMENT_FAILED;
+
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -152,8 +155,8 @@ public class ScoreXmlReduction
      * Creates a new ScoreXmlReduction object.
      *
      * @param fragments a map of XML fragments, one entry per page, the key
-     * being the page number and the value being the MusicXML fragment produced
-     * from the page.
+     *                  being the page number and the value being the MusicXML fragment produced
+     *                  from the page.
      */
     public ScoreXmlReduction (Map<Integer, String> fragments)
     {
@@ -200,7 +203,7 @@ public class ScoreXmlReduction
         // Checking parameters
         if (args.length != 3) {
             for (int i = 0; i < args.length; i++) {
-                logger.info("args[{0}] = \"{1}\"", new Object[]{i, args[i]});
+                logger.info("args[{0}] = \"{1}\"", i, args[i]);
             }
 
             throw new IllegalArgumentException(
@@ -489,10 +492,8 @@ public class ScoreXmlReduction
                     ScoreInstrument si = old.getScoreInstrument().get(idx - 1);
 
                     if (idx > newInstruments.size()) {
-                        logger.fine("{0} #{1} Creating {2}", new Object[]{result,
-                                                                          idx,
-                                                                          stringOf(
-                                    si)});
+                        logger.fine("{0} #{1} Creating {2}",
+                                result, idx, stringOf(si));
                         newInstruments.add(si);
                         si.setId("P" + result.getId() + "-I" + idx);
 
@@ -505,10 +506,8 @@ public class ScoreXmlReduction
                             }
                         }
                     } else {
-                        logger.fine("{0} #{1} Reusing {2}", new Object[]{result,
-                                                                         idx,
-                                                                         stringOf(
-                                    si)});
+                        logger.fine("{0} #{1} Reusing {2}",
+                                result, idx, stringOf(si));
                     }
 
                     newInsts.put(si, newInstruments.get(idx - 1));
@@ -539,8 +538,8 @@ public class ScoreXmlReduction
                 ScorePart oldScorePart = (ScorePart) part.getId();
                 ScorePart newScorePart = newParts.get(oldScorePart);
                 logger.info("page:{0} old:{1} new:{2}",
-                            new Object[]{entry.getKey(), oldScorePart.getId(),
-                                         newScorePart.getId()});
+                        entry.getKey(), oldScorePart.getId(),
+                        newScorePart.getId());
 
                 Part globalPart = partData.get(newScorePart);
 
@@ -553,9 +552,9 @@ public class ScoreXmlReduction
                 // Update measure in situ and reference them from containing part
                 for (Measure measure : part.getMeasure()) {
                     logger.fine("page#{0} part:{1} Measure#{2}",
-                                new Object[]{entry.getKey(),
-                                             oldScorePart.getId(), measure.
-                                getNumber()});
+                            entry.getKey(),
+                            oldScorePart.getId(),
+                            measure.getNumber());
 
                     // New page?
                     if (!isFirstPage && isFirstMeasure) {
@@ -601,8 +600,8 @@ public class ScoreXmlReduction
      * @param globalPartwise the global partwise we have built
      * @return the marshalled string
      * @throws JAXBException
-throws
-     *                                                                                                                                                                                         IOException
+     *                       throws
+     *                       IOException
      */
     private String buildOutput (ScorePartwise globalPartwise)
             throws JAXBException, IOException
@@ -630,9 +629,8 @@ throws
             ScorePart spr = (ScorePart) entry.getKey().getUnderlyingObject();
 
             for (proxymusic.ScoreInstrument si : spr.getScoreInstrument()) {
-                logger.fine("-- final inst: {0} {1}", new Object[]{si.getId(),
-                                                                   si.
-                            getInstrumentName()});
+                logger.fine("-- final inst: {0} {1}",
+                        si.getId(), si.getInstrumentName());
             }
 
             for (Candidate candidate : entry.getValue()) {
@@ -641,8 +639,8 @@ throws
                 ScorePart sp = (ScorePart) candidate.getUnderlyingObject();
 
                 for (proxymusic.ScoreInstrument si : sp.getScoreInstrument()) {
-                    logger.fine("-- instrument: {0} {1}", new Object[]{
-                                si.getId(), si.getInstrumentName()});
+                    logger.fine("-- instrument: {0} {1}",
+                            si.getId(), si.getInstrumentName());
                 }
             }
         }
@@ -669,10 +667,8 @@ throws
                     ScoreInstrument si = old.getScoreInstrument().get(idx - 1);
 
                     if (idx > newInstruments.size()) {
-                        logger.fine("{0} #{1} Creating {2}", new Object[]{result,
-                                                                          idx,
-                                                                          stringOf(
-                                    si)});
+                        logger.fine("{0} #{1} Creating {2}",
+                                result, idx, stringOf(si));
                         newInstruments.add(si);
                         si.setId("P" + result.getId() + "-I" + idx);
 
@@ -685,10 +681,8 @@ throws
                             }
                         }
                     } else {
-                        logger.fine("{0} #{1} Reusing {2}", new Object[]{result,
-                                                                         idx,
-                                                                         stringOf(
-                                    si)});
+                        logger.fine("{0} #{1} Reusing {2}",
+                                result, idx, stringOf(si));
                     }
 
                     newInsts.put(si, newInstruments.get(idx - 1));
@@ -701,25 +695,25 @@ throws
 
                 // Identification
                 if ((old.getIdentification() != null)
-                        && (newSP.getIdentification() == null)) {
+                    && (newSP.getIdentification() == null)) {
                     newSP.setIdentification(old.getIdentification());
                 }
 
                 // Midi device
                 if ((old.getMidiDevice() != null)
-                        && (newSP.getMidiDevice() == null)) {
+                    && (newSP.getMidiDevice() == null)) {
                     newSP.setMidiDevice(old.getMidiDevice());
                 }
 
                 // Name display
                 if ((old.getPartNameDisplay() != null)
-                        && (newSP.getPartNameDisplay() == null)) {
+                    && (newSP.getPartNameDisplay() == null)) {
                     newSP.setPartNameDisplay(old.getPartNameDisplay());
                 }
 
                 // Abbreviation display
                 if ((old.getPartAbbreviationDisplay() != null)
-                        && (newSP.getPartAbbreviationDisplay() == null)) {
+                    && (newSP.getPartAbbreviationDisplay() == null)) {
                     newSP.setPartAbbreviationDisplay(
                             old.getPartAbbreviationDisplay());
                 }
@@ -874,7 +868,7 @@ throws
 
         /** For user feedback */
         String range = " of [" + pageNumbers.first() + ".."
-                + pageNumbers.last() + "]...";
+                       + pageNumbers.last() + "]...";
 
         /* Load pages content */
         SortedMap<Integer, ScorePartwise> pages = new TreeMap<>();
@@ -893,7 +887,7 @@ throws
 
             if (stripped.isSet()) {
                 logger.warning("Illegal XML characters found in fragment #{0}",
-                               pageNumber);
+                        pageNumber);
                 statuses.put(pageNumber, Status.CHARACTERS_SKIPPED);
             }
 
@@ -905,7 +899,7 @@ throws
                 pages.put(pageNumber, partwise);
             } catch (Exception ex) {
                 logger.warning("Could not unmarshall fragment #{0} {1}",
-                               new Object[]{pageNumber, ex});
+                        pageNumber, ex);
                 statuses.put(pageNumber, Status.FRAGMENT_FAILED);
             }
         }

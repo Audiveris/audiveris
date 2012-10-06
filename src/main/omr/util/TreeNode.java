@@ -25,6 +25,7 @@ import java.util.List;
  * A TreeNode has : <ul> <li> A parent (which may be null) to which the TreeNode
  * belongs <li> A list (which may be empty) of contained chidren, for which the
  * TreeNode is the parent. </ul>
+ *
  * @author Hervé Bitteur
  */
 public abstract class TreeNode
@@ -52,6 +53,7 @@ public abstract class TreeNode
     //----------//
     /**
      * Create a node in the tree, given its parent.
+     *
      * @param parent the containing node, or null otherwise
      */
     public TreeNode (TreeNode parent)
@@ -69,11 +71,12 @@ public abstract class TreeNode
     //----------//
     /**
      * Add a child in the list of node children.
+     *
      * @param node the child to include
      */
     public synchronized void addChild (TreeNode node)
     {
-        logger.fine("addChild {0} for {1}", new Object[]{node, this});
+        logger.fine("addChild {0} for {1}", node, this);
 
         children.add(node);
         node.setParent(this);
@@ -83,7 +86,7 @@ public abstract class TreeNode
     // dumpChildren //
     //--------------//
     /**
-     * Utility to dump recursively all the children of this node, 
+     * Utility to dump recursively all the children of this node,
      * with no starting indentation.
      */
     public void dumpChildren ()
@@ -95,8 +98,9 @@ public abstract class TreeNode
     // dumpChildren //
     //--------------//
     /**
-     * Utility to dump recursively all the children of this node, 
+     * Utility to dump recursively all the children of this node,
      * with the starting indentation specified.
+     *
      * @param level the starting indentation level
      */
     public void dumpChildren (final int level)
@@ -113,6 +117,7 @@ public abstract class TreeNode
     //----------//
     /**
      * Utility to dump the current node, with no indentation.
+     *
      * @return true, so that processing continues
      */
     public boolean dumpNode ()
@@ -126,6 +131,7 @@ public abstract class TreeNode
     /**
      * Utility to dump the current node, with the specified level of
      * indentation.
+     *
      * @param level the desired indentation level
      * @return true, so that processing continues
      */
@@ -140,8 +146,9 @@ public abstract class TreeNode
     // getChildIndex //
     //---------------//
     /**
-     * Report the index (counted from 0) of this node within the 
+     * Report the index (counted from 0) of this node within the
      * children sequence of its parent.
+     *
      * @return the child index (or -1 if there is no parent)
      */
     public int getChildIndex ()
@@ -158,6 +165,7 @@ public abstract class TreeNode
     //-------------//
     /**
      * Report the list of (direct) children.
+     *
      * @return the children
      */
     public List<TreeNode> getChildren ()
@@ -172,6 +180,7 @@ public abstract class TreeNode
     //-------------//
     /**
      * Report the list of (direct) children.
+     *
      * @return the children
      */
     @SuppressWarnings("unchecked")
@@ -187,6 +196,7 @@ public abstract class TreeNode
     //----------------//
     /**
      * Report the next node in the children of this node parent.
+     *
      * @return the next sibling node, or null if none
      */
     public TreeNode getNextSibling ()
@@ -207,6 +217,7 @@ public abstract class TreeNode
     //-----------//
     /**
      * Report the parent of this node.
+     *
      * @return the node just higher in the tree, or null if none
      */
     public TreeNode getParent ()
@@ -219,6 +230,7 @@ public abstract class TreeNode
     //--------------------//
     /**
      * Report the previous node in the children of this node parent.
+     *
      * @return the previous sibling node, or null if none
      */
     public TreeNode getPreviousSibling ()
@@ -256,11 +268,12 @@ public abstract class TreeNode
     //-----------//
     /**
      * Modify the link to the parent of this node.
+     *
      * @param parent the (new) parent
      */
     public void setParent (TreeNode parent)
     {
-        logger.fine("setParent parent={0} for {1}", new Object[]{parent, this});
+        logger.fine("setParent parent={0} for {1}", parent, this);
         this.parent = parent;
     }
 }

@@ -280,7 +280,7 @@ public class Measure
         // Remove all direct children except barlines
         for (Iterator<TreeNode> it = children.iterator(); it.hasNext();) {
             VisitableNode node = (VisitableNode) it.next();
-            
+
             if (!(node instanceof Barline)) {
                 it.remove();
             }
@@ -328,17 +328,17 @@ public class Measure
 
         // Populate the dummy measure, staff per staff
         SystemPart part = this.getPart();
-        
+
         for (TreeNode sn : part.getStaves()) {
             Staff staff = (Staff) sn;
             int right = getLeftX(); // Right of dummy = Left of current
             int midY = (staff.getTopLeft().y + (staff.getHeight() / 2))
-                    - getSystem().getTopLeft().y;
+                       - getSystem().getTopLeft().y;
             PixelPoint staffPoint = new PixelPoint(right, midY);
 
             // Clef?
             Clef clef = getClefBefore(staffPoint, staff);
-            
+
             if (clef != null) {
                 new Clef(
                         dummyMeasure,
@@ -351,7 +351,7 @@ public class Measure
 
             // Key?
             KeySignature key = getKeyBefore(staffPoint, staff);
-            
+
             if (key != null) {
                 key.createDummyCopy(
                         dummyMeasure,
@@ -360,14 +360,14 @@ public class Measure
 
             // Time?
             TimeSignature time = getCurrentTimeSignature();
-            
+
             if (time != null) {
                 time.createDummyCopy(
                         dummyMeasure,
                         new PixelPoint(right - 20, midY));
             }
         }
-        
+
         return dummyMeasure;
     }
 
@@ -521,24 +521,24 @@ public class Measure
         // Look in this measure, with same staff, going forward
         for (TreeNode cn : getClefs()) {
             clef = (Clef) cn;
-            
+
             if ((clef.getStaff().getId() == staffId)
-                    && (clef.getCenter().x >= point.x)) {
+                && (clef.getCenter().x >= point.x)) {
                 return clef;
             }
         }
 
         // Look in all following measures, with the same staff id
         Measure measure = this;
-        
+
         while ((measure = measure.getFollowing()) != null) {
             clef = measure.getFirstMeasureClef(staffId);
-            
+
             if (clef != null) {
                 return clef;
             }
         }
-        
+
         return null; // No clef later defined
     }
 
@@ -558,7 +558,7 @@ public class Measure
     {
         // First, look in this measure, with same staff, going backwards
         Clef clef = getMeasureClefBefore(point, staff);
-        
+
         if (clef != null) {
             return clef;
         }
@@ -568,15 +568,15 @@ public class Measure
 
         // Look in all preceding measures, with the same staff id
         Measure measure = this;
-        
+
         while ((measure = measure.getPrecedingInPage()) != null) {
             clef = measure.getLastMeasureClef(staffId);
-            
+
             if (clef != null) {
                 return clef;
             }
         }
-        
+
         return null; // No clef previously defined
     }
 
@@ -622,16 +622,16 @@ public class Measure
     {
         Chord bestChord = null;
         int bestDx = Integer.MAX_VALUE;
-        
+
         for (Chord chord : chords) {
             int dx = Math.abs(chord.getHeadLocation().x - point.x);
-            
+
             if (dx < bestDx) {
                 bestDx = dx;
                 bestChord = chord;
             }
         }
-        
+
         return bestChord;
     }
 
@@ -649,17 +649,17 @@ public class Measure
     {
         Chord bestChord = null;
         int bestDx = Integer.MAX_VALUE;
-        
+
         for (TreeNode node : getChords()) {
             Chord chord = (Chord) node;
             int dx = Math.abs(chord.getHeadLocation().x - point.x);
-            
+
             if (dx < bestDx) {
                 bestDx = dx;
                 bestChord = chord;
             }
         }
-        
+
         return bestChord;
     }
 
@@ -707,16 +707,16 @@ public class Measure
     {
         Slot bestSlot = null;
         int bestDx = Integer.MAX_VALUE;
-        
+
         for (Slot slot : getSlots()) {
             int dx = Math.abs(slot.getX() - point.x);
-            
+
             if (dx < bestDx) {
                 bestDx = dx;
                 bestSlot = slot;
             }
         }
-        
+
         return bestSlot;
     }
 
@@ -768,21 +768,21 @@ public class Measure
         // Backward from this measure to the beginning of the score
         Measure measure = this;
         Page page = getPage();
-        
+
         while (measure != null) {
             // Check in the measure
             TimeSignature ts = measure.getTimeSignature();
-            
+
             if (ts != null) {
                 return ts;
             }
 
             // Move to preceding measure (same part)
             measure = measure.getPrecedingInPage();
-            
+
             if (measure == null) {
                 page = page.getPrecedingInScore();
-                
+
                 if (page == null) {
                     return null;
                 } else {
@@ -791,7 +791,7 @@ public class Measure
                 }
             }
         }
-        
+
         return null; // Not found !!!
     }
 
@@ -809,11 +809,11 @@ public class Measure
     {
         // First choose the staff, then the slot/chord
         Chord chord = getClosestChordAbove(point);
-        
+
         if (chord == null) {
             chord = getClosestChordBelow(point);
         }
-        
+
         return chord;
     }
 
@@ -830,7 +830,7 @@ public class Measure
     {
         // Choose the x-closest slot
         Slot slot = getClosestSlot(point);
-        
+
         if (slot != null) {
             // Choose the y-closest staff
             Staff staff = getPart().getStaffAt(point);
@@ -838,7 +838,7 @@ public class Measure
             // Are we below or above the staff?
             StaffInfo staffInfo = staff.getInfo();
             double pitch = staffInfo.pitchPositionOf(point);
-            
+
             if (pitch > 0) {
                 return slot.getChordAbove(point);
             } else {
@@ -880,7 +880,7 @@ public class Measure
                 int numerator;
                 int denominator;
                 TimeSignature ts = getCurrentTimeSignature();
-                
+
                 if (ts != null) {
                     numerator = ts.getNumerator();
                     denominator = ts.getDenominator();
@@ -888,10 +888,10 @@ public class Measure
                     numerator = 4;
                     denominator = 4;
                 }
-                
+
                 expectedDuration = new Rational(numerator, denominator);
             }
-            
+
             return expectedDuration;
         } catch (NullPointerException npe) {
             throw new InvalidTimeSignature();
@@ -913,12 +913,12 @@ public class Measure
         // Going forward
         for (TreeNode cn : getClefs()) {
             Clef clef = (Clef) cn;
-            
+
             if (clef.getStaff().getId() == staffId) {
                 return clef;
             }
         }
-        
+
         return null;
     }
 
@@ -936,12 +936,12 @@ public class Measure
     {
         for (TreeNode kn : getKeySignatures()) {
             KeySignature key = (KeySignature) kn;
-            
+
             if (key.getStaff().getId() == staffId) {
                 return key;
             }
         }
-        
+
         return null;
     }
 
@@ -957,13 +957,13 @@ public class Measure
     public Measure getFollowing ()
     {
         Measure nextMeasure = (Measure) getNextSibling();
-        
+
         if (nextMeasure != null) {
             return nextMeasure;
         }
-        
+
         SystemPart followingPart = getPart().getFollowing();
-        
+
         if (followingPart != null) {
             return followingPart.getFirstMeasure();
         } else {
@@ -1014,31 +1014,31 @@ public class Measure
         if (point == null) {
             throw new NullPointerException();
         }
-        
+
         KeySignature ks;
         int staffId = staff.getId();
 
         // Look in this measure, with same staff, going backwards
         for (int ik = getKeySignatures().size() - 1; ik >= 0; ik--) {
             ks = (KeySignature) getKeySignatures().get(ik);
-            
+
             if ((ks.getStaff().getId() == staffId)
-                    && (ks.getCenter().x < point.x)) {
+                && (ks.getCenter().x < point.x)) {
                 return ks;
             }
         }
 
         // Look in previous measures in the system part and the preceding ones
         Measure measure = this;
-        
+
         while ((measure = measure.getPrecedingInPage()) != null) {
             ks = measure.getLastMeasureKey(staffId);
-            
+
             if (ks != null) {
                 return ks;
             }
         }
-        
+
         return null; // Not found (in this page)
     }
 
@@ -1083,12 +1083,12 @@ public class Measure
         // Going backwards
         for (int ic = getClefs().size() - 1; ic >= 0; ic--) {
             Clef clef = (Clef) getClefs().get(ic);
-            
+
             if (clef.getStaff().getId() == staffId) {
                 return clef;
             }
         }
-        
+
         return null;
     }
 
@@ -1107,12 +1107,12 @@ public class Measure
         // Going backwards
         for (int ik = getKeySignatures().size() - 1; ik >= 0; ik--) {
             KeySignature key = (KeySignature) getKeySignatures().get(ik);
-            
+
             if (key.getStaff().getId() == staffId) {
                 return key;
             }
         }
-        
+
         return null;
     }
 
@@ -1128,19 +1128,19 @@ public class Measure
     public Rational getLastSoundTime ()
     {
         Rational lastTime = Rational.ZERO;
-        
+
         for (TreeNode chordNode : getChords()) {
             Chord chord = (Chord) chordNode;
-            
+
             if (!chord.isAllRests()) {
                 Rational time = chord.getStartTime().plus(chord.getDuration());
-                
+
                 if (time.compareTo(lastTime) > 0) {
                     lastTime = time;
                 }
             }
         }
-        
+
         return lastTime;
     }
 
@@ -1179,13 +1179,13 @@ public class Measure
         // Look in this measure, with same staff, going backwards
         for (int ic = getClefs().size() - 1; ic >= 0; ic--) {
             clef = (Clef) getClefs().get(ic);
-            
+
             if ((clef.getStaff().getId() == staffId)
-                    && (clef.getCenter().x <= point.x)) {
+                && (clef.getCenter().x <= point.x)) {
                 return clef;
             }
         }
-        
+
         return null; // No clef previously defined
     }
 
@@ -1215,13 +1215,13 @@ public class Measure
     public Measure getPrecedingInPage ()
     {
         Measure prevMeasure = (Measure) getPreviousSibling();
-        
+
         if (prevMeasure != null) {
             return prevMeasure;
         }
-        
+
         SystemPart precedingPart = getPart().getPrecedingInPage();
-        
+
         if (precedingPart != null) {
             return precedingPart.getLastMeasure();
         } else {
@@ -1287,7 +1287,7 @@ public class Measure
                            Staff staff)
     {
         return (staff != null) ? staff.getId()
-               : getPart().getStaffAt(point).getId();
+                : getPart().getStaffAt(point).getId();
     }
 
     //----------------//
@@ -1317,12 +1317,12 @@ public class Measure
     {
         for (TreeNode node : timesigs.getChildren()) {
             TimeSignature ts = (TimeSignature) node;
-            
+
             if (ts.getStaff() == staff) {
                 return ts;
             }
         }
-        
+
         return null; // Not found
     }
 
@@ -1340,7 +1340,7 @@ public class Measure
         for (TreeNode node : timesigs.getChildren()) {
             return (TimeSignature) node;
         }
-        
+
         return null; // Not found
     }
 
@@ -1392,14 +1392,14 @@ public class Measure
     {
         Staff desiredStaff = getSystem().getStaffAbove(point);
         Collection<Chord> found = new ArrayList<>();
-        
+
         for (Chord chord : getWholeChords()) {
             if ((chord.getStaff() == desiredStaff)
-                    && (chord.getHeadLocation().y < point.y)) {
+                && (chord.getHeadLocation().y < point.y)) {
                 found.add(chord);
             }
         }
-        
+
         return found;
     }
 
@@ -1417,14 +1417,14 @@ public class Measure
     {
         Staff desiredStaff = getSystem().getStaffBelow(point);
         Collection<Chord> found = new ArrayList<>();
-        
+
         for (Chord chord : getWholeChords()) {
             if ((chord.getStaff() == desiredStaff)
-                    && (chord.getHeadLocation().y > point.y)) {
+                && (chord.getHeadLocation().y > point.y)) {
                 found.add(chord);
             }
         }
-        
+
         return found;
     }
 
@@ -1501,14 +1501,14 @@ public class Measure
         timesigs.getChildren().addAll(right.timesigs.getChildren());
         chords.getChildren().addAll(right.chords.getChildren());
         beams.getChildren().addAll(right.beams.getChildren());
-        
+
         slots.addAll(right.slots);
         beamGroups.addAll(right.beamGroups);
         wholeChords.addAll(right.wholeChords);
         voices.addAll(right.voices);
-        
+
         setBox(getBox().union(right.getBox()));
-        
+
         insideBarline = barline;
         addChild(right.barline);
     }
@@ -1524,18 +1524,18 @@ public class Measure
     public void printChords (String title)
     {
         StringBuilder sb = new StringBuilder();
-        
+
         if (title != null) {
             sb.append(title);
         }
-        
+
         sb.append(this);
-        
+
         for (TreeNode cn : getChords()) {
             Chord chord = (Chord) cn;
             sb.append("\n").append(chord);
         }
-        
+
         logger.info(sb.toString());
     }
 
@@ -1550,17 +1550,17 @@ public class Measure
     public void printSlots (String title)
     {
         StringBuilder sb = new StringBuilder();
-        
+
         if (title != null) {
             sb.append(title);
         }
-        
+
         sb.append(this);
-        
+
         for (Slot slot : this.getSlots()) {
             sb.append("\n").append(slot.toChordString());
         }
-        
+
         logger.info(sb.toString());
     }
 
@@ -1587,21 +1587,21 @@ public class Measure
         // Slot headers
         if (!slots.isEmpty()) {
             sb.append("\n    ");
-            
+
             for (Slot slot : slots) {
                 if (slot.getStartTime() != null) {
                     sb.append("|").append(String.format("%-5s", slot.
                             getStartTime()));
                 }
             }
-            
+
             sb.append("|").append(getCurrentDuration());
         }
-        
+
         for (Voice voice : voices) {
             sb.append("\n").append(voice.toStrip());
         }
-        
+
         logger.info(sb.toString());
     }
 
@@ -1615,7 +1615,7 @@ public class Measure
     public void resetAbscissae ()
     {
         reset();
-        
+
         if (barline != null) {
             barline.reset();
         }
@@ -1744,34 +1744,32 @@ public class Measure
         // Remove any final forward mark consistent with the shortening
         for (Voice voice : voices) {
             Rational duration = voice.getTermination();
-            
+
             if (duration != null) {
                 if (duration.equals(shortening)) {
                     if (!voice.isWhole()) {
                         // Remove the related mark
                         Chord chord = voice.getLastChord();
-                        
+
                         if (chord != null) {
                             int nbMarks = chord.getMarks().size();
-                            
+
                             if (nbMarks > 0) {
                                 Mark mark = chord.getMarks().get(nbMarks - 1);
-                                
                                 logger.fine("{0} Removing final forward: {1}",
-                                            new Object[]{getContextString(),
-                                                         (Rational) mark.
-                                            getData()});
+                                        getContextString(), 
+                                        (Rational) mark.getData());
                                 chord.getMarks().remove(mark);
                             } else {
                                 chord.
                                         addError(
                                         "No final mark to remove in a partial measure");
-                                
+
                                 return;
                             }
                         } else {
                             addError("No final chord in " + voice);
-                            
+
                             return;
                         }
                     }
@@ -1780,7 +1778,7 @@ public class Measure
                             "Non consistent partial measure shortening:"
                             + shortening.opposite() + " " + voice + ": "
                             + duration.opposite());
-                    
+
                     return;
                 }
             }
@@ -1805,7 +1803,7 @@ public class Measure
         // Start of the measure
         int leftX;
         Measure prevMeasure = (Measure) getPreviousSibling();
-        
+
         if (prevMeasure == null) { // Very first measure in the staff
             leftX = getSystem().getTopLeft().x;
         } else {
@@ -1814,7 +1812,7 @@ public class Measure
 
         // End of the measure
         int rightX;
-        
+
         if (barline != null) {
             rightX = barline.getCenter().x;
         } else {
@@ -1822,7 +1820,7 @@ public class Measure
             ScoreSystem system = getSystem();
             rightX = system.getTopLeft().x + system.getDimension().width;
         }
-        
+
         PixelRectangle partBox = getPart().getBox();
         setBox(
                 new PixelRectangle(
@@ -1884,24 +1882,24 @@ public class Measure
     private String getCurrentDuration ()
     {
         Rational measureDur = Rational.ZERO;
-        
+
         for (Slot slot : getSlots()) {
             if (slot.getStartTime() != null) {
                 for (Chord chord : slot.getChords()) {
                     Rational chordEnd = slot.getStartTime().plus(chord.
                             getDuration());
-                    
+
                     if (chordEnd.compareTo(measureDur) > 0) {
                         measureDur = chordEnd;
                     }
                 }
             }
         }
-        
+
         if (measureDur.equals(Rational.ZERO) && !getWholeChords().isEmpty()) {
             return "W";
         }
-        
+
         return String.format("%-5s", measureDur.toString());
     }
 }

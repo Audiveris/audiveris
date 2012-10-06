@@ -86,7 +86,7 @@ public class GlyphRegression
         if (engine != null) {
             if (engine.getInputSize() != ShapeDescription.length()) {
                 final String msg = "Linear Evaluator data is obsolete,"
-                        + " it must be retrained from scratch";
+                                   + " it must be retrained from scratch";
                 logger.warning(msg);
                 JOptionPane.showMessageDialog(null, msg);
 
@@ -112,7 +112,6 @@ public class GlyphRegression
             Main.getGui().addExitListener(
                     new ExitListener()
                     {
-
                         @Override
                         public boolean canExit (EventObject eo)
                         {
@@ -749,7 +748,7 @@ public class GlyphRegression
      * parameter value of the provided pattern.
      *
      * @param pattern the collection of parameters to check with respect to
-     * targeted shape
+     *                targeted shape
      * @param shape   the targeted shape
      * @return the name of the first failing check, null otherwise
      */
@@ -776,7 +775,7 @@ public class GlyphRegression
 
             if ((min != null) && (val < min)) {
                 logger.fine("{0} failed on minimum for {1} {2} < {3}",
-                            new Object[]{shape, label, val, min});
+                        shape, label, val, min);
                 return label + ".min";
             }
 
@@ -784,7 +783,7 @@ public class GlyphRegression
 
             if ((max != null) && (val > max)) {
                 logger.fine("{0} failed on maximum for {1} {2} > {3}",
-                            new Object[]{shape, label, val, max});
+                        shape, label, val, max);
                 return label + ".max";
             }
         }
@@ -806,6 +805,7 @@ public class GlyphRegression
 
         /** Constraint on maximum, if any */
         Double max;
+
     }
 
     //-----------//
@@ -825,5 +825,6 @@ public class GlyphRegression
                 "factor",
                 1.3,
                 "Factor applied to all maximum constraints");
+
     }
 }

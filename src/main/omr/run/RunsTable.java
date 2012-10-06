@@ -551,7 +551,7 @@ public class RunsTable
                 return;
             }
 
-            logger.fine("RunsTable {0}: {1}", new Object[]{name, locationEvent});
+            logger.fine("RunsTable {0}: {1}", name, locationEvent);
 
             if (locationEvent instanceof LocationEvent) {
                 // Location => Run

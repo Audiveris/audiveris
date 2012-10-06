@@ -207,8 +207,8 @@ public class AlterPattern
                     nb++;
 
                     logger.fine("{0}Compound #{1} rebuilt as {2}",
-                            new Object[]{system.getLogPrefix(), compound.
-                                getId(), compound.getShape()});
+                            system.getLogPrefix(), 
+                            compound.getId(), compound.getShape());
                 } else {
                     // Restore stem shapes
                     glyph.setShape(Shape.STEM);

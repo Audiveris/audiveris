@@ -295,9 +295,9 @@ public class NeuralNetwork
 
         // Make sure backup is compatible with this neural network
         if ((backup.hiddenWeights.length != hiddenSize)
-                || (backup.hiddenWeights[0].length != (inputSize + 1))
-                || (backup.outputWeights.length != outputSize)
-                || (backup.outputWeights[0].length != (hiddenSize + 1))) {
+            || (backup.hiddenWeights[0].length != (inputSize + 1))
+            || (backup.outputWeights.length != outputSize)
+            || (backup.outputWeights[0].length != (hiddenSize + 1))) {
             throw new IllegalArgumentException("Incompatible backup");
         }
 
@@ -316,7 +316,7 @@ public class NeuralNetwork
      * @param inputs  the provided input values
      * @param hiddens provided buffer for hidden values, or null
      * @param outputs preallocated array for the computed output values, or null
-     * if not already allocated
+     *                if not already allocated
      *
      * @return the computed output values
      */
@@ -328,9 +328,9 @@ public class NeuralNetwork
         if (inputs == null) {
             logger.severe("run method. inputs array is null");
         } else if (inputs.length != inputSize) {
-            logger.severe(
-                    "run method. input size {0} not consistent with network input layer {1}",
-                          new Object[]{inputs.length, inputSize});
+            logger.severe("run method. input size {0} not consistent with"
+                          + " network input layer {1}",
+                    inputs.length, inputSize);
         }
 
         // Allocate the hiddens if not provided
@@ -345,9 +345,9 @@ public class NeuralNetwork
         if (outputs == null) {
             outputs = new double[outputSize];
         } else if (outputs.length != outputSize) {
-            logger.severe(
-                    "run method. output size {0} not consistent with network output layer {1}",
-                          new Object[]{outputs.length, outputSize});
+            logger.severe("run method. output size {0} not consistent with"
+                          + " network output layer {1}",
+                    outputs.length, outputSize);
         }
 
         // Then, compute the output values
@@ -376,7 +376,7 @@ public class NeuralNetwork
      * Set the learning rate
      *
      * @param learningRate the learning rate to use for each iteration
-     * (typically in the 0.0 .. 1.0 range)
+     *                     (typically in the 0.0 .. 1.0 range)
      */
     public void setLearningRate (double learningRate)
     {
@@ -403,7 +403,7 @@ public class NeuralNetwork
      * Set the momentum value
      *
      * @param momentum the fraction of previous move to be reported on the next
-     * correction
+     *                 correction
      */
     public void setMomentum (double momentum)
     {
@@ -527,14 +527,14 @@ public class NeuralNetwork
                 for (int o = outputSize - 1; o >= 0; o--) {
                     for (int h = hiddenSize - 1; h >= 0; h--) {
                         double dw = (learningRate * outputGrads[o] * hiddens[h])
-                                + (momentum * outputDeltas[o][h + 1]);
+                                    + (momentum * outputDeltas[o][h + 1]);
                         outputWeights[o][h + 1] += dw;
                         outputDeltas[o][h + 1] = dw;
                     }
 
                     // Bias
                     double dw = (learningRate * outputGrads[o])
-                            + (momentum * outputDeltas[o][0]);
+                                + (momentum * outputDeltas[o][0]);
                     outputWeights[o][0] += dw;
                     outputDeltas[o][0] = dw;
                 }
@@ -543,14 +543,14 @@ public class NeuralNetwork
                 for (int h = hiddenSize - 1; h >= 0; h--) {
                     for (int i = inputSize - 1; i >= 0; i--) {
                         double dw = (learningRate * hiddenGrads[h] * inputs[ip][i])
-                                + (momentum * hiddenDeltas[h][i + 1]);
+                                    + (momentum * hiddenDeltas[h][i + 1]);
                         hiddenWeights[h][i + 1] += dw;
                         hiddenDeltas[h][i + 1] = dw;
                     }
 
                     // Bias
                     double dw = (learningRate * hiddenGrads[h])
-                            + (momentum * hiddenDeltas[h][0]);
+                                + (momentum * hiddenDeltas[h][0]);
                     hiddenWeights[h][0] += dw;
                     hiddenDeltas[h][0] = dw;
                 }
@@ -606,7 +606,7 @@ public class NeuralNetwork
      * NeuralNetwork
      *
      * @param in the input stream that contains the network definition in XML
-     * format. The stream is not closed by this method
+     *           format. The stream is not closed by this method
      *
      * @return the allocated network.
      * @exception JAXBException raised when unmarshalling goes wrong
@@ -729,9 +729,9 @@ public class NeuralNetwork
      * Re-entrant method
      *
      * @param ins
-    param weights
-param
-     *                                                                              outs
+     *            param weights
+     *            param
+     *            outs
      */
     private void forward (double[] ins,
                           double[][] weights,

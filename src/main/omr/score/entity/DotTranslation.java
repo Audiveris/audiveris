@@ -81,7 +81,7 @@ public class DotTranslation
                                     PixelPoint dotCenter)
     {
         logger.fine("{0} populateDot {1}",
-                    new Object[]{measure.getContextString(), glyph});
+                measure.getContextString(), glyph);
 
         // Keep specific shape only if manually assigned
         if (!glyph.isManualShape()) {
@@ -174,13 +174,12 @@ public class DotTranslation
                                 dotCenter.x - noteRef.x,
                                 dotCenter.y - noteRef.y);
 
-                        logger.fine("Augmentation {0} {1}", new Object[]{toDot,
-                                                                         note});
+                        logger.fine("Augmentation {0} {1}", toDot, note);
 
                         if (((glyph.getShape() == getTargetShape())
                              && glyph.isManualShape())
-                                || ((toDot.x > 0) && (toDot.x <= maxDx)
-                                    && (Math.abs(toDot.y) <= maxDy))) {
+                            || ((toDot.x > 0) && (toDot.x <= maxDx)
+                                && (Math.abs(toDot.y) <= maxDy))) {
                             distances.put(toDot.distanceSq(0, 0), note);
                         } else if (toDot.x < (-2 * maxDx)) {
                             break ChordLoop; // Speed up
@@ -198,8 +197,8 @@ public class DotTranslation
                 Note mirror = note.getMirroredNote();
 
                 if ((mirror == null)
-                        || (note.getChord().getDuration().compareTo(mirror.
-                            getChord().getDuration()) > 0)) {
+                    || (note.getChord().getDuration().compareTo(mirror.
+                        getChord().getDuration()) > 0)) {
                     return new AugmentationResult(note, firstKey);
                 } else {
                     return new AugmentationResult(mirror, firstKey);
@@ -237,8 +236,8 @@ public class DotTranslation
                 glyph.setTranslation(note);
                 note.getChord().setDotsNumber((second != null) ? 2 : 1);
 
-                logger.fine("{0} dot#{1} Augmented {2}", new Object[]{note.
-                            getContextString(), glyph.getId(), note});
+                logger.fine("{0} dot#{1} Augmented {2}",
+                        note.getContextString(), glyph.getId(), note);
             }
 
             @Override
@@ -272,8 +271,8 @@ public class DotTranslation
                     }
 
                     if (!g.isTranslated()
-                            && ((g.getShape() == DOT_set)
-                                || (g.getShape() == AUGMENTATION_DOT))) {
+                        && ((g.getShape() == DOT_set)
+                            || (g.getShape() == AUGMENTATION_DOT))) {
                         // Check relative position
                         PixelPoint gCenter = g.getLocation();
                         int dx = gCenter.x - dotCenter.x;
@@ -340,20 +339,20 @@ public class DotTranslation
             // Check  wrt starting barline on left and ending barline on right
             Measure prevMeasure = (Measure) measure.getPreviousSibling();
             Barline leftBar = (prevMeasure != null) ? prevMeasure.getBarline()
-                              : measure.getPart().getStartingBarline();
+                    : measure.getPart().getStartingBarline();
             Barline rightBar = measure.getBarline();
 
             for (Barline bar : Arrays.asList(leftBar, rightBar)) {
                 if (bar != null) {
                     final int dx = (bar == leftBar)
-                                   ? (dotCenter.x - bar.getRightX())
-                                   : (bar.getLeftX() - dotCenter.x);
+                            ? (dotCenter.x - bar.getRightX())
+                            : (bar.getLeftX() - dotCenter.x);
 
-                    logger.fine("Repeat dx:{0} {1}", new Object[]{dx, bar});
+                    logger.fine("Repeat dx:{0} {1}", dx, bar);
 
                     if (((glyph.getShape() == getTargetShape())
                          && glyph.isManualShape())
-                            || ((dx > 0) && (dx <= maxDx))) {
+                        || ((dx > 0) && (dx <= maxDx))) {
                         distances.put(new Double(dx * dx), bar);
                     }
                 }
@@ -394,8 +393,7 @@ public class DotTranslation
                 barline.addGlyph(glyph);
 
                 logger.fine("{0} dot#{1} Repeat dot for {2}",
-                            new Object[]{barline.getContextString(),
-                                         glyph.getId(), barline});
+                        barline.getContextString(), glyph.getId(), barline);
             }
 
             @Override
@@ -451,13 +449,12 @@ public class DotTranslation
                                     dotCenter.x - noteRef.x,
                                     dotCenter.y - noteRef.y);
 
-                            logger.fine("Staccato {0} {1}", new Object[]{toDot,
-                                                                         note});
+                            logger.fine("Staccato {0} {1}", toDot, note);
 
                             if (((glyph.getShape() == getTargetShape())
                                  && glyph.isManualShape())
-                                    || ((Math.abs(toDot.x) <= maxDx)
-                                        && (Math.abs(toDot.y) <= maxDy))) {
+                                || ((Math.abs(toDot.x) <= maxDx)
+                                    && (Math.abs(toDot.y) <= maxDy))) {
                                 distances.put(toDot.distanceSq(0, 0), chord);
                             } else if (toDot.x < (-2 * maxDx)) {
                                 break ChordLoop; // Speed up
@@ -501,8 +498,8 @@ public class DotTranslation
                 glyph.setTranslation(
                         new Articulation(measure, dotCenter, chord, glyph));
 
-                logger.fine("{0} dot#{1} Staccato {2}", new Object[]{chord.
-                            getContextString(), glyph.getId(), chord});
+                logger.fine("{0} dot#{1} Staccato {2}",
+                        chord.getContextString(), glyph.getId(), chord);
             }
 
             @Override
@@ -576,7 +573,7 @@ public class DotTranslation
             public String toString ()
             {
                 return "{" + getClass().getSimpleName() + " dist:" + (float) dist
-                        + " " + internals() + "}";
+                       + " " + internals() + "}";
             }
 
             protected String internals ()
@@ -625,5 +622,6 @@ public class DotTranslation
         Scale.Fraction maxStaccatoDotDx = new Scale.Fraction(
                 0.75d,
                 "Maximum dx between note and staccato dot");
+
     }
 }

@@ -108,14 +108,13 @@ public class GlyphRepository
     /** Specific filter for glyph files */
     private static final FileFilter glyphFilter = new FileFilter()
     {
-
         @Override
         public boolean accept (File file)
         {
             String ext = FileUtil.getExtension(file);
 
             return file.isDirectory() || ext.equals(FILE_EXTENSION)
-                    || ext.equals(SYMBOL_EXTENSION);
+                   || ext.equals(SYMBOL_EXTENSION);
         }
     };
 
@@ -125,7 +124,6 @@ public class GlyphRepository
     /** For comparing shape names */
     public static final Comparator<String> shapeComparator = new Comparator<String>()
     {
-
         @Override
         public int compare (String s1,
                             String s2)
@@ -167,7 +165,7 @@ public class GlyphRepository
      * Report the file name w/o extension of a gName.
      *
      * @param gName glyph name, using format "folder/name.number.xml"
-     * or "folder/name.xml"
+     *              or "folder/name.xml"
      * @return the 'name' or 'name.number' part of the format
      */
     public static String fileNameOf (String gName)
@@ -191,7 +189,7 @@ public class GlyphRepository
      * Report the shape name of a gName.
      *
      * @param gName glyph name, using format "folder/name.number.xml" or
-     * "folder/name.xml"
+     *              "folder/name.xml"
      * @return the 'name' part of the format
      */
     public static String shapeNameOf (String gName)
@@ -449,8 +447,7 @@ public class GlyphRepository
             }
 
             if (recordGlyph(glyph, shape, sheetDir) > 0) {
-                logger.info("Stored {0} into {1}", new Object[]{glyph.idString(),
-                                                                sheetDir});
+                logger.info("Stored {0} into {1}", glyph.idString(), sheetDir);
             }
         } else {
             logger.warning("Not recordable {0}", glyph);
@@ -471,7 +468,7 @@ public class GlyphRepository
      *
      * @param sheet           the sheet whose glyphs are to be stored
      * @param emptyStructures flag to specify if the Structure directory must be
-     * emptied beforehand
+     *                        emptied beforehand
      */
     public void recordSheetGlyphs (Sheet sheet,
                                    boolean emptyStructures)
@@ -500,8 +497,7 @@ public class GlyphRepository
         // Refresh glyph populations
         refreshBases();
 
-        logger.info("{0} glyphs stored from {1}", new Object[]{glyphNb, sheet.
-                    getId()});
+        logger.info("{0} glyphs stored from {1}", glyphNb, sheet.getId());
     }
 
     //--------------//
@@ -582,7 +578,7 @@ public class GlyphRepository
         for (String gName : coreBase) {
             final boolean isIcon = isIcon(gName);
             final File source = isIcon
-                                ? new File(
+                    ? new File(
                     WellKnowns.SYMBOLS_FOLDER.getParentFile(),
                     gName) : new File(WellKnowns.TRAIN_FOLDER, gName);
 
@@ -600,8 +596,7 @@ public class GlyphRepository
 
                 copyNb++;
             } catch (IOException ex) {
-                logger.warning("Cannot copy {0} to {1}", new Object[]{source,
-                                                                      target});
+                logger.warning("Cannot copy {0} to {1}", source, target);
             }
         }
 
@@ -813,7 +808,7 @@ public class GlyphRepository
                     getName();
         } else {
             return file.getParentFile().getParentFile().getName() + File.separator
-                    + file.getParentFile().getName() + File.separator + file.
+                   + file.getParentFile().getName() + File.separator + file.
                     getName();
         }
     }
@@ -927,8 +922,7 @@ public class GlyphRepository
     {
         File[] files = listLegalFiles(dir);
 
-        logger.fine("Browsing directory {0} total:{1}",
-                    new Object[]{dir, files.length});
+        logger.fine("Browsing directory {0} total:{1}", dir, files.length);
 
         if (files != null) {
             for (File file : files) {

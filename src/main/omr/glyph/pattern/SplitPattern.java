@@ -94,9 +94,9 @@ public class SplitPattern
 
         for (Glyph glyph : system.getGlyphs()) {
             if (!glyph.isActive()
-                    || glyph.isKnown()
-                    || (glyph.getStemNumber() == 0)
-                    || (glyph.getWeight() < minGlyphWeight)) {
+                || glyph.isKnown()
+                || (glyph.getStemNumber() == 0)
+                || (glyph.getWeight() < minGlyphWeight)) {
                 continue;
             }
 
@@ -243,7 +243,7 @@ public class SplitPattern
                 }
             } else {
                 if (master.isVip() || logger.isFineEnabled()) {
-                    logger.info("{0} for chunk {1}", new Object[]{vote, chunk});
+                    logger.info("{0} for chunk {1}", vote, chunk);
                 }
 
                 chunk.setEvaluation(vote);
@@ -252,8 +252,7 @@ public class SplitPattern
 
         // Now actually perform the split!
         if (master.isVip() || logger.isFineEnabled()) {
-            logger.info("{0}Performing {1}", new Object[]{system.getLogPrefix(),
-                                                          bestSplit});
+            logger.info("{0}Performing {1}", system.getLogPrefix(), bestSplit);
         }
 
         for (Glyph glyph : bestSplit.sigs.values()) {
@@ -280,6 +279,7 @@ public class SplitPattern
         Scale.AreaFraction minChunkWeight = new Scale.AreaFraction(
                 0.025,
                 "Minimum normalized weight of a chunk to be part of a split");
+
     }
 
     //-------//

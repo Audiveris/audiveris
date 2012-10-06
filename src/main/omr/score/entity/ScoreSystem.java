@@ -66,7 +66,7 @@ public class ScoreSystem
      * @param info      the physical information retrieved from the sheet
      * @param page      the containing page
      * @param topLeft   the coordinates of the upper left point of the system
-     * in its containing page
+     *                  in its containing page
      * @param dimension the dimension of the system
      */
     public ScoreSystem (SystemInfo info,
@@ -287,8 +287,7 @@ public class ScoreSystem
             }
         }
 
-        logger.fine("{0} No part {1} found",
-                    new Object[]{getContextString(), id});
+        logger.fine("{0} No part {1} found", getContextString(), id);
 
         return null;
     }

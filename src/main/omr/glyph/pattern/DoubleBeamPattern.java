@@ -69,8 +69,8 @@ public class DoubleBeamPattern
 
         for (final Glyph beam : system.getGlyphs()) {
             if ((beam.getShape() != Shape.BEAM)
-                    || beam.isManualShape()
-                    || (beam.getStemNumber() != 1)) {
+                || beam.isManualShape()
+                || (beam.getStemNumber() != 1)) {
                 continue;
             }
 
@@ -88,19 +88,18 @@ public class DoubleBeamPattern
                     system.getGlyphs(),
                     new Predicate<Glyph>()
                     {
-
                         @Override
                         public boolean check (Glyph glyph)
                         {
                             return (glyph != stem) && (glyph != beam)
-                                    && (glyph.getShape() == Shape.BEAM)
-                                    && glyph.getBounds().intersects(beamBox);
+                                   && (glyph.getShape() == Shape.BEAM)
+                                   && glyph.getBounds().intersects(beamBox);
                         }
                     });
 
             for (Glyph candidate : candidates) {
                 if (beam.isVip() || candidate.isVip()
-                        || logger.isFineEnabled()) {
+                    || logger.isFineEnabled()) {
                     logger.info("Beam candidate #{0}", candidate);
                 }
 
@@ -118,8 +117,7 @@ public class DoubleBeamPattern
 
                     if (compound.isVip() || logger.isFineEnabled()) {
                         logger.info("Compound #{0} built as {1}",
-                                    new Object[]{compound.getId(),
-                                                 compound.getEvaluation()});
+                                compound.getId(), compound.getEvaluation());
                     }
 
                     nb++;

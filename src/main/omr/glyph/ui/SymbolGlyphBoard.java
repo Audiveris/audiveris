@@ -292,8 +292,8 @@ public class SymbolGlyphBoard
                                 shape == Shape.CUSTOM_TIME);
 
                         TimeRational timeRational = (shape == Shape.CUSTOM_TIME)
-                                                    ? glyph.getTimeRational()
-                                                    : TimeSignature.rationalOf(
+                                ? glyph.getTimeRational()
+                                : TimeSignature.rationalOf(
                                 shape);
 
                         if (timeRational != null) {
@@ -415,7 +415,7 @@ public class SymbolGlyphBoard
                     getLastEvent(
                     GlyphSetEvent.class);
             Set<Glyph> glyphs = (glyphsEvent != null)
-                                ? glyphsEvent.getData() : null;
+                    ? glyphsEvent.getData() : null;
 
             if ((glyphs != null) && !glyphs.isEmpty()) {
                 // Read shape information
@@ -430,8 +430,8 @@ public class SymbolGlyphBoard
                 // Text?
                 if (shape.isText()) {
                     logger.fine("Text=''{0}'' Role={1}",
-                                new Object[]{textField.getText().trim(),
-                                             roleCombo.getSelectedItem()});
+                            textField.getText().trim(),
+                            roleCombo.getSelectedItem());
 
                     CreatorType type = null;
                     TextRole role = roleCombo.getSelectedItem();

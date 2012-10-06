@@ -115,8 +115,7 @@ public class SymbolsStep
         // Iterate
         for (int iter = 1; iter <= constants.MaxPatternsIterations.getValue();
                 iter++) {
-            logger.fine("System#{0} patterns iter #{1}",
-                    new Object[]{system.getId(), iter});
+            logger.fine("System#{0} patterns iter #{1}", system.getId(), iter);
 
             if (Main.getGui() != null) {
                 system.getSheet().getErrorsEditor().clearSystem(this, system.

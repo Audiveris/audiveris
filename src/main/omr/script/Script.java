@@ -180,15 +180,14 @@ public class Script
     //-----//
     /**
      * This methods runs sequentially and synchronously the various
-     * tasks of the script. 
-     * It is up to the caller to run this method in a separate thread if so 
+     * tasks of the script.
+     * It is up to the caller to run this method in a separate thread if so
      * desired.
      */
     public void run ()
     {
         logger.fine("Running {0}{1}",
-                    new Object[]{this, (score != null) ? (" on score " + score.
-                                                          getRadix()) : ""});
+                this, (score != null) ? (" on score " + score.getRadix()) : "");
 
         // Make score concrete (with its pages/sheets)
         if (score == null) {
@@ -213,7 +212,7 @@ public class Script
 
                     if (page == null) {
                         logger.warning("Script error. No page for index {0}",
-                                       pageIndex);
+                                pageIndex);
 
                         continue;
                     }
@@ -222,7 +221,7 @@ public class Script
                 }
 
                 Sheet sheet = page.getSheet();
-                logger.fine("Running {0} on {1}", new Object[]{task, sheet});
+                logger.fine("Running {0} on {1}", task, sheet);
 
                 try {
                     // Run the task synchronously (prolog/core/epilog)

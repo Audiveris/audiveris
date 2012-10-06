@@ -402,7 +402,7 @@ public class Note
                             noteRef.x - accidCenter.x,
                             noteRef.y - accidCenter.y);
                     logger.fine("{0} {1}",
-                            new Object[]{measure.getContextString(), toNote});
+                            measure.getContextString(), toNote);
 
                     if (toNote.x > (2 * maxDx)) {
                         break ChordLoop; // Other chords/notes will be too far
@@ -436,10 +436,9 @@ public class Note
 
             bestNote.accidental = glyph;
             glyph.addTranslation(bestNote);
-            logger.fine("{0} accidental {1} at {2}", new Object[]{bestNote.
-                        getContextString(), glyph.getShape(),
-                                                                  bestNote.
-                        getCenter()});
+            logger.fine("{0} accidental {1} at {2}",
+                    bestNote.getContextString(),
+                    glyph.getShape(), bestNote.getCenter());
 
             // Apply also to mirrored note if any
             Note mirrored = bestNote.getMirroredNote();
@@ -448,8 +447,8 @@ public class Note
                 mirrored.accidental = glyph;
                 glyph.addTranslation(mirrored);
                 logger.fine("{0} accidental {1} at {2} (mirrored)",
-                        new Object[]{mirrored.getContextString(), glyph.
-                            getShape(), mirrored.getCenter()});
+                        mirrored.getContextString(),
+                        glyph.getShape(), mirrored.getCenter());
             }
         } else {
             // Deassign the glyph

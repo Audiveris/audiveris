@@ -857,7 +857,7 @@ public class SystemInfo
         StaffInfo staff = getStaffAt(point);
         NotePosition pos = staff.getNotePosition(point);
 
-        logger.fine("{0} -> {1}", new Object[]{point, pos});
+        logger.fine("{0} -> {1}", point, pos);
 
         double pitch = pos.getPitchPosition();
 

@@ -78,7 +78,7 @@ public abstract class Bench
 
         props.setProperty(key, value);
 
-        logger.fine("addProp key:{0} value:{1}", new Object[]{key, value});
+        logger.fine("addProp key:{0} value:{1}", key, value);
     }
 
     //-------//

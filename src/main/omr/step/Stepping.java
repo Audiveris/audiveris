@@ -168,7 +168,7 @@ public class Stepping
      * @param step  the step notified
      */
     static void notifyStep (final Sheet sheet,
-                                   final Step step)
+                            final Step step)
     {
         if (monitor != null) {
             final boolean finished = sheet.getCurrentStep() == null;
@@ -517,8 +517,8 @@ public class Stepping
                 doOneSheetStep(step, sheet, systems);
             }
         } catch (StepException se) {
-            logger.info("{0}Processing stopped. {1}", new Object[]{sheet.
-                        getLogPrefix(), se.getMessage()});
+            logger.info("{0}Processing stopped. {1}",
+                    sheet.getLogPrefix(), se.getMessage());
         }
     }
 

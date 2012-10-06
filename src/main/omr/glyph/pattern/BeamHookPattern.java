@@ -70,7 +70,7 @@ public class BeamHookPattern
             if (hook.getStemNumber() != 1) {
                 if (hook.isVip() || logger.isFineEnabled()) {
                     logger.info("{0} stem(s) for beam hook #{1}",
-                                new Object[]{hook.getStemNumber(), hook.getId()});
+                            hook.getStemNumber(), hook.getId());
                 }
 
                 hook.setShape(null);
@@ -93,7 +93,7 @@ public class BeamHookPattern
                 }
 
                 int hookDy = hook.getCentroid().y
-                        - stem.getCentroid().y;
+                             - stem.getCentroid().y;
 
                 // Look for other stuff on the stem
                 PixelRectangle stemBox = system.stemBoxOf(stem);
@@ -108,7 +108,7 @@ public class BeamHookPattern
                         Shape shape = g.getShape();
 
                         if (ShapeSet.Beams.contains(shape)
-                                && (shape != Shape.BEAM_HOOK)) {
+                            && (shape != Shape.BEAM_HOOK)) {
                             if (hook.isVip() || logger.isFineEnabled()) {
                                 logger.info("Confirmed beam hook #{0}", hook.
                                         getId());

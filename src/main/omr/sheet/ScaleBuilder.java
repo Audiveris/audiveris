@@ -225,7 +225,7 @@ public class ScaleBuilder
                 computeBeam(),
                 computeSecondInterline());
 
-        logger.info("{0}{1}", new Object[]{sheet.getLogPrefix(), scale});
+        logger.info("{0}{1}", sheet.getLogPrefix(), scale);
 
         sheet.getBench().recordScale(scale);
 
@@ -300,7 +300,7 @@ public class ScaleBuilder
             return beamEntry.getKey();
         } else {
             if (backPeak != null) {
-                logger.info("{0}{1}", sheet.getLogPrefix(), 
+                logger.info("{0}{1}", sheet.getLogPrefix(),
                         "No beam peak found, computing a default value");
 
                 return (int) Math.rint(0.7 * backPeak.getKey().best);

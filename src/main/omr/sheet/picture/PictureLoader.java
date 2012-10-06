@@ -332,8 +332,8 @@ public class PictureLoader
                 int imageCount = pdfFile.getNumPages();
 
                 if (imageCount > 1) {
-                    logger.info("{0} contains {1} images", new Object[]{imgFile.
-                                getName(), imageCount});
+                    logger.info("{0} contains {1} images",
+                            imgFile.getName(), imageCount);
                 }
 
                 SortedMap<Integer, RenderedImage> images = new TreeMap<>();
@@ -726,5 +726,6 @@ public class PictureLoader
                 "tiff24nc",
                 "Ghostscript device for intermediate tiff file:"
                 + " tiff24nc or tiffscaled8");
+
     }
 }

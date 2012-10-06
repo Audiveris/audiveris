@@ -56,7 +56,7 @@ public abstract class AbstractEvaluationEngine
 
     /** Number of shapes to differentiate. */
     protected static final int shapeCount = 1
-            + Shape.LAST_PHYSICAL_SHAPE.ordinal();
+                                            + Shape.LAST_PHYSICAL_SHAPE.ordinal();
 
     /** A special evaluation array, used to report NOISE. */
     protected static final Evaluation[] noiseEvaluations = {
@@ -93,7 +93,7 @@ public abstract class AbstractEvaluationEngine
 
             // Allowed?
             if (conditions.contains(Condition.ALLOWED)
-                    && glyph.isShapeForbidden(eval.shape)) {
+                && glyph.isShapeForbidden(eval.shape)) {
                 continue;
             }
 
@@ -110,8 +110,8 @@ public abstract class AbstractEvaluationEngine
                 // In case the specific checks have changed eval shape
                 // we have to retest against the glyph blacklist
                 if ((eval.shape != oldEval.shape)
-                        && conditions.contains(Condition.ALLOWED)
-                        && glyph.isShapeForbidden(eval.shape)) {
+                    && conditions.contains(Condition.ALLOWED)
+                    && glyph.isShapeForbidden(eval.shape)) {
                     continue;
                 }
             }
@@ -147,8 +147,8 @@ public abstract class AbstractEvaluationEngine
         if (file.exists()) {
             try {
                 Files.move(file.toPath(),
-                           file.toPath().resolveSibling(getBackupName()),
-                           StandardCopyOption.REPLACE_EXISTING);
+                        file.toPath().resolveSibling(getBackupName()),
+                        StandardCopyOption.REPLACE_EXISTING);
             } catch (Exception ex) {
                 logger.warning("Could not backup " + file, ex);
             }
@@ -186,7 +186,7 @@ public abstract class AbstractEvaluationEngine
                                Predicate<Shape> predicate)
     {
         Evaluation[] evals = evaluate(glyph, null, 1, minGrade,
-                                      EnumSet.of(ALLOWED), predicate);
+                EnumSet.of(ALLOWED), predicate);
 
         if (evals.length > 0) {
             return evals[0];
@@ -218,7 +218,7 @@ public abstract class AbstractEvaluationEngine
                             Predicate<Shape> predicate)
     {
         Evaluation[] evals = evaluate(glyph, system, 1, minGrade, conditions,
-                                      predicate);
+                predicate);
 
         if (evals.length > 0) {
             return evals[0];
@@ -237,7 +237,7 @@ public abstract class AbstractEvaluationEngine
                             Predicate<Shape> predicate)
     {
         Evaluation[] evals = evaluate(glyph, system, 1, minGrade,
-                                      EnumSet.of(ALLOWED, CHECKED), predicate);
+                EnumSet.of(ALLOWED, CHECKED), predicate);
 
         if (evals.length > 0) {
             return evals[0];
@@ -255,7 +255,7 @@ public abstract class AbstractEvaluationEngine
                             double minGrade)
     {
         Evaluation[] evals = evaluate(glyph, system, 1, minGrade,
-                                      EnumSet.of(ALLOWED, CHECKED), null);
+                EnumSet.of(ALLOWED, CHECKED), null);
 
         if (evals.length > 0) {
             return evals[0];
@@ -270,6 +270,7 @@ public abstract class AbstractEvaluationEngine
     /**
      * Report the simple file name, including extension but excluding
      * parent, which contains the marshalled data of the evaluator.
+     *
      * @return the file name
      */
     protected abstract String getFileName ();
@@ -281,6 +282,7 @@ public abstract class AbstractEvaluationEngine
      * Run the evaluator with the specified glyph, and return a
      * sequence of interpretations (ordered from best to worst) with
      * no additional check.
+     *
      * @param glyph the glyph to be examined
      * @return the ordered best evaluations
      */
@@ -297,11 +299,12 @@ public abstract class AbstractEvaluationEngine
     //-----------//
     /**
      * The specific unmarshalling method which builds a suitable engine.
+     *
      * @param is the input stream to read
      * @return the newly built evaluation engine
      * @throws JAXBException
-throws
-     *                                                                                                                                                                                                       IOException
+     *                       throws
+     *                       IOException
      */
     protected abstract Object unmarshal (InputStream is)
             throws JAXBException, IOException;
@@ -313,6 +316,7 @@ throws
      * Unmarshal the evaluation engine from the most suitable backup.
      * If the standard file does not exist or cannot be unmarshalled, the
      * backup file, if any, is tried.
+     *
      * @return the unmarshalled engine, or null if everything failed
      */
     protected Object unmarshal ()
@@ -332,8 +336,7 @@ throws
         if (obj == null) {
             logger.warning("Could not load {0}", backup);
         } else {
-            logger.info("{0} unmarshalled from {1}", new Object[]{getName(),
-                                                                  backup});
+            logger.info("{0} unmarshalled from {1}", getName(), backup);
         }
 
         return obj;
@@ -352,6 +355,7 @@ throws
     //-----------//
     /**
      * Unmarshal the evaluation engine using provided file.
+     *
      * @return the unmarshalled engine, or null if failed
      */
     private Object unmarshal (File file)
@@ -379,7 +383,7 @@ throws
     {
         if (is == null) {
             logger.warning("No data stream for {0} engine as {1}",
-                           new Object[]{getName(), name});
+                    getName(), name);
         } else {
             try {
                 Object engine = unmarshal(is);
@@ -406,6 +410,7 @@ throws
     {
 
         Scale.AreaFraction minWeight = new Scale.AreaFraction(0.08,
-                                                              "Minimum normalized weight to be considered not a noise");
+                "Minimum normalized weight to be considered not a noise");
+
     }
 }

@@ -102,7 +102,6 @@ public class GlyphBoard
     /** Predicate for known glyphs */
     protected static final Predicate<Glyph> knownPredicate = new Predicate<Glyph>()
     {
-
         @Override
         public boolean check (Glyph glyph)
         {
@@ -186,7 +185,6 @@ public class GlyphBoard
         dump.addActionListener(
                 new ActionListener()
                 {
-
                     @Override
                     public void actionPerformed (ActionEvent e)
                     {
@@ -278,8 +276,8 @@ public class GlyphBoard
                 return;
             }
 
-            logger.fine("GlyphBoard selfUpdating={0} : {1}", new Object[]{
-                        selfUpdating, event});
+            logger.fine("GlyphBoard selfUpdating={0} : {1}", 
+                    selfUpdating, event);
 
             if (event instanceof GlyphEvent) {
                 // Display Glyph parameters (while preventing circular updates)
@@ -302,7 +300,7 @@ public class GlyphBoard
      * CallBack triggered by a change in one of the spinners.
      *
      * @param e the change event, this allows to retrieve the originating
-     * spinner
+     *          spinner
      */
     @Override
     public void stateChanged (ChangeEvent e)
@@ -479,6 +477,7 @@ public class GlyphBoard
         PixelCount shapeIconWidth = new PixelCount(
                 50,
                 "Exact pixel width for the shape icon field");
+
     }
 
     //----------------//
@@ -527,7 +526,6 @@ public class GlyphBoard
                         if (noVirtuals) {
                             new BasicTask()
                             {
-
                                 @Override
                                 protected Void doInBackground ()
                                         throws Exception
@@ -557,7 +555,6 @@ public class GlyphBoard
                         } else {
                             new BasicTask()
                             {
-
                                 @Override
                                 protected Void doInBackground ()
                                         throws Exception

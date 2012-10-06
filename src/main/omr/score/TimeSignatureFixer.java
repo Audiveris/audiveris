@@ -51,7 +51,6 @@ public class TimeSignatureFixer
     /** Used to sort integers by decreasing value */
     protected static final Comparator<Integer> reverseIntComparator = new Comparator<Integer>()
     {
-
         @Override
         public int compare (Integer e1,
                             Integer e2)
@@ -149,10 +148,12 @@ public class TimeSignatureFixer
     // checkTimeSigs //
     //---------------//
     /**
-     * Perform the analysis on the provided range of measures, retrieving the
-     * most significant intrinsic time sig as determined by measures chords.
+     * Perform the analysis on the provided range of measures,
+     * retrieving the most significant intrinsic time sig as determined
+     * by measures chords.
      * Based on this "intrinsic" time information, modify the explicit time
      * signatures accordingly.
+     *
      * @param startMeasure beginning of the measure range
      * @param stopMeasure  end of the measure range
      */
@@ -160,8 +161,7 @@ public class TimeSignatureFixer
                                 Measure stopMeasure)
     {
         logger.fine("checkTimeSigs on measure range {0}..{1}",
-                    new Object[]{startMeasure.getPageId(),
-                                 stopMeasure.getPageId()});
+                startMeasure.getPageId(), stopMeasure.getPageId());
 
         // Retrieve the best possible time signature(s)
         SortedMap<Integer, TimeRational> bestSigs = retrieveBestSigs(
@@ -192,13 +192,10 @@ public class TimeSignatureFixer
 
                         if (!timeRational.equals(bestRational)) {
                             logger.info("{0}Measure#{1} {2}T{3} {4}->{5}",
-                                        new Object[]{measure.getPage().
-                                        getSheet().
-                                        getLogPrefix(), measure.getPageId(),
-                                                     staff.getContextString(),
-                                                     staff.getId(),
-                                                     timeRational,
-                                                     bestRational});
+                                    measure.getPage().getSheet().getLogPrefix(),
+                                    measure.getPageId(),
+                                    staff.getContextString(),
+                                    staff.getId(), timeRational, bestRational);
                             sig.modify(null, bestRational);
                         }
                     } catch (Exception ex) {
@@ -221,6 +218,7 @@ public class TimeSignatureFixer
     /**
      * Check whether the provided measure contains at least one explicit time
      * signature
+     *
      * @param measure the provided measure (in fact we care only about the
      *                measure id, regardless of the part)
      * @return true if a time sig exists in some staff of the measure
@@ -239,9 +237,9 @@ public class TimeSignatureFixer
                     getTimeSignature(staff);
 
             if (sig != null) {
-                logger.fine("Measure#{0} {1}T{2} {3}", new Object[]{measure.
-                            getPageId(), staff.getContextString(), staff.getId(),
-                                                                    sig});
+                logger.fine("Measure#{0} {1}T{2} {3}",
+                        measure.getPageId(), staff.getContextString(),
+                        staff.getId(), sig);
 
                 if (sig.isManual()) {
                     isManual.set(true);
@@ -280,7 +278,7 @@ public class TimeSignatureFixer
         while (true) {
             // Retrieve info
             logger.fine("Checking measure#{0} idx:{1}",
-                        new Object[]{m.getPageId(), m.getChildIndex()});
+                    m.getPageId(), m.getChildIndex());
 
             ScoreSystem system = m.getSystem();
 
@@ -295,8 +293,7 @@ public class TimeSignatureFixer
 
                 for (Voice voice : measure.getVoices()) {
                     TimeRational timeRational = voice.getInferredTimeSignature();
-                    logger.fine("Voice#{0}: {1}", new Object[]{voice.getId(),
-                                                               timeRational});
+                    logger.fine("Voice#{0}: {1}", voice.getId(), timeRational);
 
                     if (timeRational != null) {
                         // Update histogram

@@ -75,7 +75,6 @@ public class ClustersRetriever
      */
     private static final Comparator<Filament> startComparator = new Comparator<Filament>()
     {
-
         @Override
         public int compare (Filament f1,
                             Filament f2)
@@ -92,7 +91,6 @@ public class ClustersRetriever
      */
     private static final Comparator<Filament> stopComparator = new Comparator<Filament>()
     {
-
         @Override
         public int compare (Filament f1,
                             Filament f2)
@@ -108,7 +106,6 @@ public class ClustersRetriever
     /** Comparator on cluster ordinate */
     public Comparator<LineCluster> ordinateComparator = new Comparator<LineCluster>()
     {
-
         @Override
         public int compare (LineCluster c1,
                             LineCluster c2)
@@ -228,8 +225,7 @@ public class ClustersRetriever
 
         logger.info(
                 "{0}Retrieved line clusters: {1} of size: {2} with interline: {3}",
-                new Object[]{sheet.getLogPrefix(), clusters.size(), popSize,
-                             interline});
+                sheet.getLogPrefix(), clusters.size(), popSize, interline);
 
         return discardedFilaments;
     }
@@ -374,7 +370,7 @@ public class ClustersRetriever
      * @param one      first cluster
      * @param two      second cluster
      * @param deltaPos output: the delta in positions between these clusters
-     * if the test has succeeded
+     *                 if the test has succeeded
      * @return true if successful
      */
     private boolean canMerge (LineCluster one,
@@ -407,7 +403,7 @@ public class ClustersRetriever
                     two.getPointsAt(xMid, params.maxExpandDx, interline, slope)),
                     deltaPos);
         } else if (gap > params.maxMergeDx) {
-            logger.fine("Gap too wide between {0} & {1}", new Object[]{one, two});
+            logger.fine("Gap too wide between {0} & {1}", one, two);
 
             return false;
         } else {
@@ -426,8 +422,7 @@ public class ClustersRetriever
         }
 
         // Check best distance
-        logger.fine("canMerge dist: {0} one:{1} two:{2}", new Object[]{dist, one,
-                                                                       two});
+        logger.fine("canMerge dist: {0} one:{1} two:{2}", dist, one, two);
 
         return dist <= params.maxMergeDy;
     }
@@ -450,8 +445,7 @@ public class ClustersRetriever
         double minLength = medianLength * constants.minClusterLengthRatio.
                 getValue();
 
-        logger.fine("medianLength: {0} minLength: {1}", new Object[]{
-                    medianLength, minLength});
+        logger.fine("medianLength: {0} minLength: {1}", medianLength, minLength);
 
         return minLength;
     }
@@ -540,8 +534,7 @@ public class ClustersRetriever
     private void dumpClusters ()
     {
         for (LineCluster cluster : clusters) {
-            logger.info("{0} {1}", new Object[]{cluster.getCenter(), cluster.
-                        toString()});
+            logger.info("{0} {1}", cluster.getCenter(), cluster.toString());
         }
     }
 
@@ -607,12 +600,11 @@ public class ClustersRetriever
 
                         if (cluster.includeFilamentByIndex(fil, index)) {
                             if (logger.isFineEnabled()
-                                    || fil.isVip()
-                                    || cluster.isVip()) {
+                                || fil.isVip()
+                                || cluster.isVip()) {
                                 logger.info(
                                         "Aggregated F{0} to C{1} at index {2}",
-                                        new Object[]{fil.getId(),
-                                                     cluster.getId(), index});
+                                        fil.getId(), cluster.getId(), index);
 
                                 if (fil.isVip()) {
                                     cluster.setVip();
@@ -626,8 +618,7 @@ public class ClustersRetriever
                     } else {
                         if (areVips) {
                             logger.info("{0}dy={1} vs {2}",
-                                        new Object[]{vips, dy,
-                                                     params.maxExpandDy});
+                                    vips, dy, params.maxExpandDy);
                         }
                     }
                 }
@@ -733,7 +724,7 @@ public class ClustersRetriever
 
                 // Merge
                 logger.info("Pairing clusters C{0} & C{1}",
-                            new Object[]{cluster.getId(), cl.getId()});
+                        cluster.getId(), cl.getId());
                 cluster.mergeWith(cl, 0);
                 clusters.remove(cl);
 
@@ -790,8 +781,7 @@ public class ClustersRetriever
                         // Try a merge
                         if (canMerge(head, candidate, deltaPos)) {
                             logger.fine("Merging {0} with {1} delta:{2}",
-                                        new Object[]{candidate, head,
-                                                     deltaPos.value});
+                                    candidate, head, deltaPos.value);
 
                             // Do the merge
                             candidate.mergeWith(head, deltaPos.value);
@@ -943,7 +933,7 @@ public class ClustersRetriever
 
         /** Number of vertical samples to collect */
         int sampleCount = -1
-                + (int) Math.rint(
+                          + (int) Math.rint(
                 (double) pictureWidth / params.samplingDx);
 
         /** Exact columns abscissae */
@@ -979,7 +969,7 @@ public class ClustersRetriever
 
                             if (prevFily.filament.isVip()) {
                                 logger.info("Created {0} with {1}",
-                                            new Object[]{comb, prevFily.filament});
+                                        comb, prevFily.filament);
                             }
                         }
 
@@ -988,7 +978,7 @@ public class ClustersRetriever
 
                         if (fily.filament.isVip()) {
                             logger.info("Appended {0} to {1}",
-                                        new Object[]{fily.filament, comb});
+                                    fily.filament, comb);
                         }
                     } else {
                         // No comb active
@@ -1017,7 +1007,7 @@ public class ClustersRetriever
 
         for (LineFilament fil : filaments) {
             if ((x >= fil.getStartPoint(HORIZONTAL).getX())
-                    && (x <= fil.getStopPoint(HORIZONTAL).getX())) {
+                && (x <= fil.getStopPoint(HORIZONTAL).getX())) {
                 list.add(new FilY(fil, fil.getPositionAt(x, HORIZONTAL)));
             }
         }
@@ -1048,8 +1038,8 @@ public class ClustersRetriever
         // Should be 4 for bass tab, 5 for standard notation, 6 for guitar tab
         popSize = histo.getMaxBucket();
 
-        logger.fine("{0}Popular line comb: {1} histo:{2}", new Object[]{sheet.
-                    getLogPrefix(), popSize, histo.dataString()});
+        logger.fine("{0}Popular line comb: {1} histo:{2}", 
+                sheet.getLogPrefix(), popSize, histo.dataString());
     }
 
     //--------------//
@@ -1114,6 +1104,7 @@ public class ClustersRetriever
         Constant.Ratio minClusterLengthRatio = new Constant.Ratio(
                 0.3,
                 "Minimum cluster length (as ratio of median length)");
+
     }
 
     //------//

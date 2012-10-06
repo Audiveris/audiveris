@@ -66,7 +66,7 @@ import java.util.SortedSet;
  * @author Hervé Bitteur
  */
 public class BasicGlyph
-    implements Glyph
+        implements Glyph
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -74,16 +74,22 @@ public class BasicGlyph
     private static final Logger logger = Logger.getLogger(BasicGlyph.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** All needed facets */
     final GlyphAdministration administration;
+
     final GlyphComposition composition;
-    final GlyphDisplay     display;
+
+    final GlyphDisplay display;
+
     final GlyphEnvironment environment;
-    final GlyphGeometry    geometry;
+
+    final GlyphGeometry geometry;
+
     final GlyphRecognition recognition;
+
     final GlyphTranslation translation;
-    final GlyphAlignment   alignment;
+
+    final GlyphAlignment alignment;
 
     // The content facet is not final to allow lazy allocation
     protected GlyphContent content;
@@ -92,12 +98,12 @@ public class BasicGlyph
     final Set<GlyphFacet> facets = new LinkedHashSet<>();
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // BasicGlyph //
     //------------//
     /**
      * Create a new BasicGlyph object.
+     *
      * @param interline the scaling interline value
      */
     public BasicGlyph (int interline)
@@ -118,6 +124,7 @@ public class BasicGlyph
     /**
      * Create a new BasicGlyph object from a GlyphValue instance
      * (typically unmarshalled from XML).
+     *
      * @param value the GlyphValue "builder" object
      */
     public BasicGlyph (GlyphValue value)
@@ -140,11 +147,12 @@ public class BasicGlyph
     //------------//
     /**
      * Create a glyph with a specific alignment class.
+     *
      * @param interline      the scaling information
      * @param alignmentClass the specific alignment class
      */
-    protected BasicGlyph (int                            interline,
-                          Class<?extends GlyphAlignment> alignmentClass)
+    protected BasicGlyph (int interline,
+                          Class<? extends GlyphAlignment> alignmentClass)
     {
         addFacet(administration = new BasicAdministration(this));
         addFacet(composition = new BasicComposition(this));
@@ -158,21 +166,20 @@ public class BasicGlyph
 
         try {
             Constructor<?> constructor = alignmentClass.getConstructor(
-                new Class<?>[] { Glyph.class });
+                    new Class<?>[]{Glyph.class});
             theAlignment = (GlyphAlignment) constructor.newInstance(
-                new Object[] { this });
+                    new Object[]{this});
         } catch (Exception ex) {
             logger.severe("Cannot instantiate BasicGlyph with {0} ex:{1}",
-                          new Object[]{alignmentClass, ex});
+                    alignmentClass, ex);
         }
 
         addFacet(alignment = theAlignment);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     @Override
-    public void addAttachment (String         id,
+    public void addAttachment (String id,
                                java.awt.Shape attachment)
     {
         display.addAttachment(id, attachment);
@@ -205,7 +212,7 @@ public class BasicGlyph
 
     @Override
     public void colorize (Collection<Section> sections,
-                          Color               color)
+                          Color color)
     {
         display.colorize(sections, color);
     }
@@ -253,8 +260,8 @@ public class BasicGlyph
     }
 
     @Override
-    public int getAlienPixelsFrom (Lag                lag,
-                                   PixelRectangle     absRoi,
+    public int getAlienPixelsFrom (Lag lag,
+                                   PixelRectangle absRoi,
                                    Predicate<Section> predicate)
     {
         return environment.getAlienPixelsFrom(lag, absRoi, predicate);
@@ -414,7 +421,7 @@ public class BasicGlyph
     public String getManualValue ()
     {
         return getContent()
-                   .getManualValue();
+                .getManualValue();
     }
 
     @Override
@@ -469,7 +476,7 @@ public class BasicGlyph
     public String getOcrLanguage ()
     {
         return getContent()
-                   .getOcrLanguage();
+                .getOcrLanguage();
     }
 
     @Override
@@ -491,7 +498,7 @@ public class BasicGlyph
     }
 
     @Override
-    public double getPositionAt (double      coord,
+    public double getPositionAt (double coord,
                                  Orientation orientation)
     {
         return alignment.getPositionAt(coord, orientation);
@@ -559,16 +566,16 @@ public class BasicGlyph
 
     @Override
     public void getSymbolsAfter (Predicate<Glyph> predicate,
-                                 Set<Glyph>       goods,
-                                 Set<Glyph>       bads)
+                                 Set<Glyph> goods,
+                                 Set<Glyph> bads)
     {
         environment.getSymbolsAfter(predicate, goods, bads);
     }
 
     @Override
     public void getSymbolsBefore (Predicate<Glyph> predicate,
-                                  Set<Glyph>       goods,
-                                  Set<Glyph>       bads)
+                                  Set<Glyph> goods,
+                                  Set<Glyph> bads)
     {
         environment.getSymbolsBefore(predicate, goods, bads);
     }
@@ -583,21 +590,21 @@ public class BasicGlyph
     public TextRoleInfo getTextRole ()
     {
         return getContent()
-                   .getTextRole();
+                .getTextRole();
     }
 
     @Override
     public PixelPoint getTextLocation ()
     {
         return getContent()
-                   .getTextLocation();
+                .getTextLocation();
     }
 
     @Override
     public String getTextValue ()
     {
         return getContent()
-                   .getTextValue();
+                .getTextValue();
     }
 
     @Override
@@ -613,7 +620,7 @@ public class BasicGlyph
     }
 
     @Override
-    public double getThicknessAt (double      coord,
+    public double getThicknessAt (double coord,
                                   Orientation orientation)
     {
         return alignment.getThicknessAt(coord, orientation);
@@ -823,7 +830,7 @@ public class BasicGlyph
     public void setManualValue (String manualValue)
     {
         getContent()
-            .setManualValue(manualValue);
+                .setManualValue(manualValue);
     }
 
     @Override
@@ -871,7 +878,7 @@ public class BasicGlyph
     }
 
     @Override
-    public void setShape (Shape  shape,
+    public void setShape (Shape shape,
                           double grade)
     {
         recognition.setShape(shape, grade);
@@ -884,7 +891,7 @@ public class BasicGlyph
     }
 
     @Override
-    public void setStem (Glyph          stem,
+    public void setStem (Glyph stem,
                          HorizontalSide side)
     {
         environment.setStem(stem, side);
@@ -937,6 +944,7 @@ public class BasicGlyph
     //----------//
     /**
      * Register a facet
+     *
      * @param facet the facet to register
      */
     final void addFacet (GlyphFacet facet)
@@ -1006,9 +1014,9 @@ public class BasicGlyph
         StringBuilder sb = new StringBuilder();
 
         sb.append("{")
-          .append(getClass().getSimpleName())
-          .append("#")
-          .append(this.getId());
+                .append(getClass().getSimpleName())
+                .append("#")
+                .append(this.getId());
 
         sb.append(internalsString());
 
@@ -1025,6 +1033,7 @@ public class BasicGlyph
      * inclusion in a toString.
      * The overriding methods, if any, should return a string that begins with
      * a " " followed by some content.
+     *
      * @return the string of internals
      */
     protected String internalsString ()
@@ -1033,37 +1042,37 @@ public class BasicGlyph
 
         if (getShape() != null) {
             sb.append(" ")
-              .append(recognition.getEvaluation());
+                    .append(recognition.getEvaluation());
 
             if (getShape()
                     .getPhysicalShape() != getShape()) {
                 sb.append(" physical=")
-                  .append(getShape().getPhysicalShape());
+                        .append(getShape().getPhysicalShape());
             }
         }
 
         if (getPartOf() != null) {
             sb.append(" partOf#")
-              .append(getPartOf().getId());
+                    .append(getPartOf().getId());
         }
 
         if (getCentroid() != null) {
             sb.append(" centroid=[")
-              .append(getCentroid().x)
-              .append(",")
-              .append(getCentroid().y)
-              .append("]");
+                    .append(getCentroid().x)
+                    .append(",")
+                    .append(getCentroid().y)
+                    .append("]");
         }
 
         if (isTranslated()) {
             sb.append(" trans=[")
-              .append(getTranslations())
-              .append("]");
+                    .append(getTranslations())
+                    .append("]");
         }
 
         if (getResult() != null) {
             sb.append(" ")
-              .append(getResult());
+                    .append(getResult());
         }
 
         return sb.toString();
