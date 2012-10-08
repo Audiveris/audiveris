@@ -47,6 +47,7 @@ import omr.ui.util.UIUtilities;
 import static omr.util.HorizontalSide.*;
 import omr.util.Predicate;
 import omr.util.StopWatch;
+import omr.util.VipUtil;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -57,7 +58,6 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.StringTokenizer;
 
 /**
  * Class {@code LinesRetriever} retrieves the staff lines of a sheet.
@@ -1020,7 +1020,8 @@ public class LinesRetriever
                     scale.toPixelsDouble(constants.maxStickerExtension));
 
             // VIPs
-            vipSections = decodeIds(constants.horizontalVipSections.getValue());
+            vipSections = VipUtil.decodeIds(
+                    constants.horizontalVipSections.getValue());
 
             if (logger.isFineEnabled()) {
                 Main.dumping.dump(this);
@@ -1029,25 +1030,6 @@ public class LinesRetriever
             if (!vipSections.isEmpty()) {
                 logger.info("Horizontal VIP sections: {0}", vipSections);
             }
-        }
-
-        //~ Methods ------------------------------------------------------------
-        private List<Integer> decodeIds (String str)
-        {
-            List<Integer> ids = new ArrayList<>();
-
-            // Retrieve the list of ids
-            StringTokenizer st = new StringTokenizer(str, ",");
-
-            while (st.hasMoreTokens()) {
-                try {
-                    ids.add(Integer.decode(st.nextToken().trim()));
-                } catch (Exception ex) {
-                    logger.warning("Illegal id", ex);
-                }
-            }
-
-            return ids;
         }
     }
 }

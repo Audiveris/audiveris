@@ -23,16 +23,26 @@ import omr.util.Param;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import javax.swing.AbstractListModel;
 
 /**
  * Class {@code Language} handles the collection of language codes with
- * their related full name, as well as the default language.
+ * their related full name, as well as the default language
+ * specification.
  *
- * <p>Note: This is implemented as a (sorted) map, since a compiled enum would
- * not provide the ability to add new items dynamically.
+ * <p>A language specification specifies a list of languages.
+ * It is a string formatted as LAN[+LAN]*
+ *
+ * <p>Note: languages are implemented as a (sorted) map, since a compiled enum
+ * would not provide the ability to add new items at run time.
  *
  * @author Hervé Bitteur
  */
@@ -46,30 +56,26 @@ public class Language
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Language.class);
 
-    /** Languages file name */
+    /** Languages file name. */
     private static final String LANG_FILE_NAME = "ISO639-3.xml";
 
-    /** Map of language code -> language full name */
-    private static final SortedMap<String, String> codes = new TreeMap<>();
+    /** Separator in a specification. */
+    public static final String SEP_CHAR = "+";
 
-    static {
-        File inputFile = new File(WellKnowns.RES_FOLDER, LANG_FILE_NAME);
-        Properties langNames = new Properties();
+    /** Default language specification (such as ENG+DEU+ITA). */
+    public static final Param<String> defaultSpecification = new Default();
 
-        try (InputStream input = new FileInputStream(inputFile)) {
-            langNames.loadFromXML(input);
-            for (String code : langNames.stringPropertyNames()) {
-                codes.put(code, langNames.getProperty(code, code));
-            }
-        } catch (Throwable ex) {
-            logger.severe("Error loading " + inputFile, ex);
-        }
-    }
+    /** Language used when specification is empty. */
+    private static final String NO_SPEC = "eng";
 
-    /** Default parameter. */
-    public static final Param<String> defaultLanguage = new Default();
+    /** Model usable in a JList, lazily created. */
+    private static LanguageModel model;
 
     //~ Constructors -----------------------------------------------------------
+    //
+    //----------//
+    // Language //
+    //----------//
     /** Not meant to be instantiated */
     private Language ()
     {
@@ -77,55 +83,20 @@ public class Language
 
     //~ Methods ----------------------------------------------------------------
     //
-    //-------------//
-    // getConstant //
-    //-------------//
-    public static Constant.String getConstant ()
+    //----------//
+    // getModel //
+    //----------//
+    public static LanguageModel getModel ()
     {
-        return constants.defaultLanguageCode;
-    }
-
-    //--------------------//
-    // getDefaultLanguage //
-    //--------------------//
-    /**
-     * Report the global default language code
-     *
-     * @return the global default language code
-     */
-    public static String getDefaultLanguage ()
-    {
-        return constants.defaultLanguageCode.getValue();
-    }
-
-    //--------//
-    // nameOf //
-    //--------//
-    /**
-     * Report the language name mapped to a language code
-     *
-     * @param code the language code
-     * @return the language full name, or null if unknown
-     */
-    public static String nameOf (String code)
-    {
-        return codes.get(code);
-    }
-
-    //--------------------//
-    // setDefaultLanguage //
-    //--------------------//
-    /**
-     * Assign the new global default language code
-     *
-     * @param code global default language code
-     */
-    public static void setDefaultLanguage (String code)
-    {
-        constants.defaultLanguageCode.setValue(code);
+        if (model == null) {
+            model = new LanguageModel();
+        }
+        
+        return model;
     }
 
     //~ Inner Classes ----------------------------------------------------------
+    //
     //-----------//
     // Constants //
     //-----------//
@@ -134,9 +105,9 @@ public class Language
     {
         //~ Instance fields ----------------------------------------------------
 
-        Constant.String defaultLanguageCode = new Constant.String(
-                "eng",
-                "3-letter code for the default sheet language");
+        Constant.String defaultSpecification = new Constant.String(
+                NO_SPEC,
+                "List of 3-letter codes, separated by '+'");
 
     }
 
@@ -150,20 +121,176 @@ public class Language
         @Override
         public String getSpecific ()
         {
-            return constants.defaultLanguageCode.getValue();
+            return constants.defaultSpecification.getValue();
         }
 
         @Override
         public boolean setSpecific (String specific)
         {
             if (!getSpecific().equals(specific)) {
-                constants.defaultLanguageCode.setValue(specific);
-                logger.info("Default language is now ''{0}''", specific);
+                constants.defaultSpecification.setValue(specific);
+                logger.info("Default language specification is now ''{0}''",
+                        specific);
 
                 return true;
             }
 
             return false;
+        }
+    }
+
+    //---------------//
+    // LanguageModel //
+    //---------------//
+    /**
+     * A swing JList model to support manual handling of language codes.
+     */
+    public static class LanguageModel
+            extends AbstractListModel<String>
+    {
+
+        /** Map of language code -> language full name. */
+        private final SortedMap<String, String> codes = new TreeMap<>();
+
+        /** Convenient sequence of codes, parallel to sorted map. */
+        private final List<String> codesList;
+
+        public LanguageModel ()
+        {
+            // Build the map of all possible codes
+            File inputFile = new File(WellKnowns.RES_FOLDER, LANG_FILE_NAME);
+
+            Properties langNames = new Properties();
+            try (InputStream input = new FileInputStream(inputFile)) {
+                langNames.loadFromXML(input);
+                for (String code : langNames.stringPropertyNames()) {
+                    codes.put(code, langNames.getProperty(code, code));
+                }
+            } catch (Throwable ex) {
+                logger.severe("Error loading " + inputFile, ex);
+            }
+
+            // Now, keep only the supported codes
+            // TODO: Protect against no OCR!
+            Set<String> supported = TextBuilder.getOcr().getLanguages();
+            codes.keySet().retainAll(supported);
+
+            // Create parallel list of codes
+            codesList = new ArrayList<>(codes.keySet());
+        }
+
+        @Override
+        public int getSize ()
+        {
+            return codesList.size();
+        }
+
+        @Override
+        public String getElementAt (int index)
+        {
+            return itemOf(codesList.get(index));
+        }
+
+        /**
+         * Report the array of indices for the spec codes.
+         *
+         * @param spec the provided spec
+         * @return the array of indices in the model.
+         *         If the spec is empty, an empty int array is returned
+         */
+        public int[] indicesOf (String spec)
+        {
+            if (spec.trim().isEmpty()) {
+                return new int[0];
+            } else {
+                List<String> list = codesOf(spec);
+                int[] ints = new int[list.size()];
+
+                for (int i = 0; i < ints.length; i++) {
+                    String code = list.get(i);
+                    ints[i] = codesList.indexOf(code);
+                }
+
+                return ints;
+            }
+        }
+
+        /**
+         * Report the full language name mapped to a language code.
+         *
+         * @param code the language code, such as "eng"
+         * @return the corresponding language full name, such as "English",
+         *         or null if unknown
+         */
+        public String nameOf (String code)
+        {
+            return codes.get(code);
+        }
+
+        /**
+         * Report a list item built as: "code (full name)".
+         *
+         * @param provided code, such as "fra"
+         * @return the related list item, such as "fra (French)"
+         */
+        public String itemOf (String code)
+        {
+            String fullName = nameOf(code);
+
+            if (fullName != null) {
+                return code + " (" + fullName + ")";
+            } else {
+                return code;
+            }
+        }
+
+        /**
+         * Convert a language specification (DEU+FRA+ITA) to a sequence
+         * of codes [DEU, FRA, ITA].
+         *
+         * @param spec the language specification to parse
+         * @return the sequence of codes.
+         */
+        private List<String> codesOf (String spec)
+        {
+            final String[] tokens = spec.split("\\" + SEP_CHAR);
+            return Arrays.asList(tokens);
+        }
+
+        /**
+         * Build the spec string out of the provided sequence of codes.
+         *
+         * @param list the provided codes
+         * @return the resulting specification string.
+         *         The "eng" string is returned if the provided list is empty.
+         */
+        public String specOf (Collection<String> list)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            for (String item : list) {
+                if (sb.length() > 0) {
+                    sb.append(Language.SEP_CHAR);
+                }
+                sb.append(model.codeOf(item));
+            }
+
+            if (sb.length() > 0) {
+                return sb.toString();
+            } else {
+                return NO_SPEC;
+            }
+        }
+
+        /**
+         * Report the code out of a list item.
+         *
+         * @param item the list item, such as "eng (English)"
+         * @return the code, such as "eng"
+         */
+        public String codeOf (String item)
+        {
+            return item.substring(0, 3);
         }
     }
 }

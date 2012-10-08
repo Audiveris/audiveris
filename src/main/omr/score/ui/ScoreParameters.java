@@ -33,7 +33,7 @@ import omr.step.Step;
 import omr.step.Steps;
 
 import omr.text.Language;
-import omr.text.TextBuilder;
+import omr.text.Language.LanguageModel;
 import omr.text.OCR.UnavailableOcrException;
 
 import omr.ui.FileDropHandler;
@@ -55,17 +55,20 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.TreeSet;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 /**
  * Class {@code ScoreParameters} is a dialog that allows the user to
@@ -77,7 +80,7 @@ import javax.swing.event.ChangeListener;
  *
  * <p>It addresses:
  * <ul>
- * <li>Text language</li>
+ * <li>Text language specification</li>
  * <li>Binarization parameters</li>
  * <li>Step triggerred by drag and drop</li>
  * <li>Prompt for saving script on closing</li>
@@ -162,7 +165,7 @@ public class ScoreParameters
 
         // Default panel
         TextPane defaultTextPane = createTextPane(
-                null, null, null, Language.defaultLanguage);
+                null, null, null, Language.defaultSpecification);
         FilterPane defaultFilterPane = new FilterPane(
                 null, null, null, FilterDescriptor.defaultFilter);
 
@@ -400,7 +403,8 @@ public class ScoreParameters
                 logicalRowCount += pane.getLogicalRowCount();
             }
 
-            FormLayout layout = Panel.makeFormLayout(logicalRowCount, 3);
+            FormLayout layout = Panel.makeFormLayout(logicalRowCount, 3,
+                    "right:", "30dlu", "35dlu");
             PanelBuilder builder = new PanelBuilder(layout, this);
             builder.setDefaultDialogBorder();
 
@@ -872,17 +876,6 @@ public class ScoreParameters
 
             // Let's impose the id!
             id.setText(scorePart.getPid());
-
-//            // Initial setting for part name
-//            name.setText(
-//                    (scorePart.getName() != null) ? scorePart.getName()
-//                    : scorePart.getDefaultName());
-//
-//            // Initial setting for part midi program
-//            int prog = (scorePart.getMidiProgram() != null)
-//                    ? scorePart.getMidiProgram()
-//                    : scorePart.getDefaultProgram();
-//            midiBox.setSelectedIndex(prog - 1);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -1081,19 +1074,25 @@ public class ScoreParameters
     // TextPane //
     //----------//
     /**
-     * Pane to set the dominant text language.
+     * Pane to set the dominant text language specification.
      * Scope can be: default, score, page.
      */
     private class TextPane
             extends Pane<String>
+            implements ListSelectionListener
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** ComboBox for text language */
-        private final JComboBox<String> langCombo = createLangCombo();
+        LanguageModel model = Language.getModel();
 
-        private final JLabel langLabel = new JLabel("Language",
-                SwingConstants.RIGHT);
+        /** List for choosing elements of language specification. */
+        private final JList<String> langList = new JList<>(model);
+
+        /** Put the list into a scroll pane. */
+        private final JScrollPane langScroll = new JScrollPane(langList);
+
+        /** Resulting visible specification. */
+        private final JLabel langSpec = new JLabel("", SwingConstants.RIGHT);
 
         //~ Constructors -------------------------------------------------------
         public TextPane (Score score,
@@ -1101,8 +1100,14 @@ public class ScoreParameters
                          TextPane parent,
                          Param<String> backup)
         {
-            super("Text", score, page, parent, backup);
+            super("Language", score, page, parent, backup);
 
+            langList.setLayoutOrientation(JList.VERTICAL);
+            langList.setToolTipText("Dominant languages for textual items");
+            langList.setVisibleRowCount(5);
+            langList.addListSelectionListener(this);
+
+            langSpec.setToolTipText("Resulting specification");
         }
 
         //~ Methods ------------------------------------------------------------
@@ -1113,8 +1118,8 @@ public class ScoreParameters
         {
             r = super.defineLayout(builder, cst, r);
 
-            builder.add(langLabel, cst.xyw(5, r, 3));
-            builder.add(langCombo, cst.xyw(9, r, 3));
+            builder.add(langSpec, cst.xyw(1, r, 7));
+            builder.add(langScroll, cst.xyw(9, r, 3));
 
             return r + 2;
         }
@@ -1122,73 +1127,45 @@ public class ScoreParameters
         @Override
         public boolean isValid ()
         {
-            task.setLanguage(codeOf(read()), page);
+            task.setLanguage(read(), page);
 
             return true;
-        }
-        
-        /** Overridden version, to use codeOf(language). */
-        @Override
-        public void commit ()
-        {
-            if (isSelected()) {
-                backup.setSpecific(codeOf(read()));
-            }
         }
 
         @Override
         protected String read ()
         {
-            return langCombo.getItemAt(langCombo.getSelectedIndex());
-        }
-
-        /** Report the code out of a label */
-        private String codeOf (String label)
-        {
-            return label.substring(0, 3);
-        }
-
-        /** Report an item made of code and full name */
-        private String itemOf (String code)
-        {
-            String fullName = Language.nameOf(code);
-
-            if (fullName != null) {
-                return code + " (" + fullName + ")";
-            } else {
-                return code;
-            }
-        }
-
-        /** Create a combo box filled with supported language items */
-        private JComboBox<String> createLangCombo ()
-        {
-            // Build the item list, only with the supported languages
-            List<String> items = new ArrayList<>();
-
-            for (String code : new TreeSet<>(
-                    TextBuilder.getOcr().getLanguages())) {
-                items.add(itemOf(code));
-            }
-
-            JComboBox<String> combo = new JComboBox<>(
-                    items.toArray(new String[items.size()]));
-            combo.setToolTipText("Dominant language for textual items");
-
-            return combo;
+            return model.specOf(langList.getSelectedValuesList());
         }
 
         @Override
-        protected void display (String code)
+        protected void display (String spec)
         {
-            langCombo.setSelectedItem(itemOf(code));
+            int[] indices = model.indicesOf(spec);
+
+            if (indices.length > 0 && indices[0] != -1) {
+                // Scroll to first index found?
+                String firstElement = model.getElementAt(indices[0]);
+                langList.setSelectedValue(firstElement, true);
+
+                // Flag all selected indices
+                langList.setSelectedIndices(indices);
+            }
+
+            langSpec.setText(spec);
         }
 
         @Override
         protected void setEnabled (boolean bool)
         {
-            langCombo.setEnabled(bool);
-            langLabel.setEnabled(bool);
+            langList.setEnabled(bool);
+            langSpec.setEnabled(bool);
+        }
+
+        @Override
+        public void valueChanged (ListSelectionEvent e)
+        {
+            langSpec.setText(read());
         }
     }
 

@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -297,13 +296,11 @@ public class UnitManager
                 "List of units known as containing a ConstantSet and/or a Logger");
 
         // Initialize units using the constant 'units'
-        StringTokenizer st = new StringTokenizer(units.getValue(), SEPARATOR);
+        final String[] tokens = units.getValue().split(SEPARATOR);
 
         storeIt = false;
 
-        while (st.hasMoreTokens()) {
-            String unit = st.nextToken();
-
+        for (String unit : tokens) {
             try {
                 ///System.out.println ("pre-loading '" + unit + "'...");
                 Class.forName(unit); // This loads its ConstantSet and Logger
@@ -356,7 +353,7 @@ public class UnitManager
                         Constant constant = set.getConstant(i);
 
                         if (constant.getName().toLowerCase().contains(str)
-                                || constant.getDescription().toLowerCase().
+                            || constant.getDescription().toLowerCase().
                                 contains(str)) {
                             found.add(constant);
                         }

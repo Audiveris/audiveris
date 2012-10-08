@@ -49,6 +49,7 @@ import omr.ui.util.UIUtilities;
 
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
+import omr.util.VipUtil;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -64,7 +65,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -1852,7 +1852,8 @@ public class BarsRetriever
             maxBarCoordGap = scale.toPixels(constants.maxBarCoordGap);
 
             // VIPs
-            vipSections = decode(constants.verticalVipSections.getValue());
+            vipSections = VipUtil.decodeIds(
+                    constants.verticalVipSections.getValue());
 
             if (logger.isFineEnabled()) {
                 Main.dumping.dump(this);
@@ -1861,25 +1862,6 @@ public class BarsRetriever
             if (!vipSections.isEmpty()) {
                 logger.info("Vertical VIP sections: {0}", vipSections);
             }
-        }
-
-        //~ Methods ------------------------------------------------------------
-        private List<Integer> decode (String str)
-        {
-            List<Integer> ids = new ArrayList<>();
-
-            // Retrieve the list of ids
-            StringTokenizer st = new StringTokenizer(str, ",");
-
-            while (st.hasMoreTokens()) {
-                try {
-                    ids.add(Integer.decode(st.nextToken().trim()));
-                } catch (Exception ex) {
-                    logger.warning("Illegal id", ex);
-                }
-            }
-
-            return ids;
         }
     }
 }

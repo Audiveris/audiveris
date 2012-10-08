@@ -129,11 +129,10 @@ public class Score
 
     /** Handling of language parameter. */
     private final Param<String> textParam =
-            new Param<>(Language.defaultLanguage);
+            new Param<>(Language.defaultSpecification);
 
     /** Handling of parts name and program. */
-    private final Param<List<PartData>> partsParam =
-            new PartsParam();
+    private final Param<List<PartData>> partsParam = new PartsParam();
 
     //~ Constructors -----------------------------------------------------------
     //-------//
@@ -393,24 +392,6 @@ public class Score
     public String getImagePath ()
     {
         return imageFile.getPath();
-    }
-
-    //-------------//
-    // getLanguage //
-    //-------------//
-    /**
-     * Report the dominant language in the score text.
-     * If the value is not yet set, it is set to the default value and returned.
-     *
-     * @return the dominant language
-     */
-    public String getLanguage ()
-    {
-        if (!hasLanguage()) {
-            language = Language.getDefaultLanguage();
-        }
-
-        return language;
     }
 
     //--------------------//

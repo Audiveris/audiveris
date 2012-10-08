@@ -47,6 +47,8 @@ import omr.selection.UserEvent;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
+import omr.util.VipUtil;
+
 import org.bushe.swing.event.EventSubscriber;
 
 import java.util.ArrayList;
@@ -56,7 +58,6 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -813,7 +814,7 @@ public class BasicNest
         //~ Constructors -------------------------------------------------------
         public Parameters ()
         {
-            vipGlyphs = decode(constants.vipGlyphs.getValue());
+            vipGlyphs = VipUtil.decodeIds(constants.vipGlyphs.getValue());
 
             if (logger.isFineEnabled()) {
                 Main.dumping.dump(this);
@@ -822,25 +823,6 @@ public class BasicNest
             if (!vipGlyphs.isEmpty()) {
                 logger.info("VIP glyphs: {0}", vipGlyphs);
             }
-        }
-
-        //~ Methods ------------------------------------------------------------
-        private List<Integer> decode (String str)
-        {
-            List<Integer> ids = new ArrayList<>();
-
-            // Retrieve the list of ids
-            StringTokenizer st = new StringTokenizer(str, ",");
-
-            while (st.hasMoreTokens()) {
-                try {
-                    ids.add(Integer.decode(st.nextToken().trim()));
-                } catch (Exception ex) {
-                    logger.warning("Illegal glyph id", ex);
-                }
-            }
-
-            return ids;
         }
     }
 }

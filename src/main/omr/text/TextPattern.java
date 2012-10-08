@@ -108,7 +108,7 @@ public class TextPattern
      */
     private void checkOrphanGlyphs ()
     {
-        String language = system.getScoreSystem().getScore().getLanguage();
+        String language = system.getSheet().getPage().getTextParam().getTarget();
 
         for (Glyph glyph : system.getGlyphs()) {
             if (!isOrphan(glyph)) {
@@ -192,7 +192,7 @@ public class TextPattern
      */
     private void checkModifiedValue (TextLine line)
     {
-        String language = system.getScoreSystem().getScore().getLanguage();
+        String language = system.getSheet().getPage().getTextParam().getTarget();
         boolean altered = false;
         List<Section> lineSections = new ArrayList<>();
 

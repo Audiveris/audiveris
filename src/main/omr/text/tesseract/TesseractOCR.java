@@ -117,7 +117,7 @@ public class TesseractOCR
                         WellKnowns.OCR_FOLDER.getPath());
                 return new TreeSet<>(Arrays.asList(langs));
             } catch (Throwable ex) {
-                logger.warning("Error in loading languages", ex);
+                logger.warning("Error in loading Tesseract languages", ex);
                 throw new UnavailableOcrException();
             }
         }

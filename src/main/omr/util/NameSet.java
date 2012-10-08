@@ -19,9 +19,9 @@ import net.jcip.annotations.ThreadSafe;
 
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -48,7 +48,6 @@ public class NameSet
     private static final String SEPARATOR = ";";
 
     //~ Instance fields --------------------------------------------------------
-
     /** Global name for this set */
     private final String setName;
 
@@ -62,7 +61,6 @@ public class NameSet
     private final int maxNameNb;
 
     //~ Constructors -----------------------------------------------------------
-
     //---------//
     // NameSet //
     //---------//
@@ -70,29 +68,22 @@ public class NameSet
      * Creates a new set of names, with some customizing parameters.
      *
      * @param setName   Global name for this set
-     * @param constant the backing constant string
+     * @param constant  the backing constant string
      * @param maxNameNb Maximum number of elements in this name set
      */
-    public NameSet (String          setName,
+    public NameSet (String setName,
                     Constant.String constant,
-                    int             maxNameNb)
+                    int maxNameNb)
     {
         this.setName = setName;
         this.constant = constant;
         this.maxNameNb = maxNameNb;
 
         // Retrieve the list of names in history
-        StringTokenizer st = new StringTokenizer(
-            constant.getValue(),
-            SEPARATOR);
-
-        while (st.hasMoreTokens()) {
-            names.add(st.nextToken());
-        }
+        names.addAll(Arrays.asList(constant.getValue().split(SEPARATOR)));
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----//
     // add //
     //-----//
@@ -130,14 +121,14 @@ public class NameSet
      * Return an up-to-date menu that can be used to trigger actions related to
      * the designated name.
      *
-     * @param menu the existing menu to update
+     * @param menu     the existing menu to update
      * @param listener The ActionListener to be triggered. (the selected name
      *                 can be retrieved by the listener in the ActionEvent, by
      *                 using the ActionEvent.getActionCommand method)
      *
      * @return the JMenu, ready to be inserted in a menu hierarchy.
      */
-    public JMenu menu (JMenu          menu,
+    public JMenu menu (JMenu menu,
                        ActionListener listener)
     {
         // Don't fully destroy the menu, just clean all its items, so that the
@@ -182,11 +173,11 @@ public class NameSet
      * Create a brand new menu for name selection, with label provided for the
      * menu and action listener
      *
-     * @param label the text in the menu item
+     * @param label    the text in the menu item
      * @param listener the listener to be trigerred on item selection
      * @return the menu ready to be inserted
      */
-    public JMenu menu (String         label,
+    public JMenu menu (String label,
                        ActionListener listener)
     {
         return new MyMenu(label, listener).getMenu();
@@ -237,20 +228,18 @@ public class NameSet
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //--------//
     // MyMenu //
     //--------//
     private class MyMenu
-        extends DynamicMenu
+            extends DynamicMenu
     {
         //~ Instance fields ----------------------------------------------------
 
         private ActionListener listener;
 
         //~ Constructors -------------------------------------------------------
-
-        public MyMenu (String         label,
+        public MyMenu (String label,
                        ActionListener listener)
         {
             super(label);
@@ -258,7 +247,6 @@ public class NameSet
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         protected void buildItems ()
         {
@@ -268,7 +256,7 @@ public class NameSet
                     JMenuItem menuItem = new JMenuItem(f);
                     menuItem.addActionListener(listener);
                     getMenu()
-                        .add(menuItem);
+                            .add(menuItem);
                 }
             }
         }
