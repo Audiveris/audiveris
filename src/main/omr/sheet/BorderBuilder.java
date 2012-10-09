@@ -39,6 +39,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import omr.constant.Constant;
 
 /**
  * Class {@code BorderBuilder} implements a smart approach
@@ -77,13 +78,13 @@ public class BorderBuilder
 
     //~ Instance fields --------------------------------------------------------
     //
-    /** Related sheet */
+    /** Related sheet. */
     private final Sheet sheet;
 
-    /** System above */
+    /** System above. */
     private final SystemInfo prevSystem;
 
-    /** System below */
+    /** System below. */
     private final SystemInfo system;
 
     // GlyphRect-based limits 
@@ -91,8 +92,11 @@ public class BorderBuilder
 
     private Limit botLimit;
 
-    /** Free blobs */
+    /** Free blobs. */
     private List<GlyphRect> blobs = new ArrayList<>();
+
+    /** Has the user been warned about a closed border?. */
+    private boolean userWarned;
 
     // Scale-dependent parameters
     private final double flatness;
@@ -174,11 +178,11 @@ public class BorderBuilder
         // Build a raw border out of the two limits
         BrokenLine rawBorder = getRawBorder();
 
-        if (false) {
-            return rawBorder;
+        if (constants.useSmoothBorders.isSet()) {
+            // Return the smooth border
+            return getSmoothBorder(rawBorder);
         } else {
-            // Return the refined border
-            return getRefinedBorder(rawBorder);
+            return rawBorder;
         }
     }
 
@@ -189,8 +193,8 @@ public class BorderBuilder
     {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("Border S#").append(prevSystem.getId()).append("/S#").append(system.
-                getId());
+        sb.append("Border between systems S#").append(prevSystem.getId())
+                .append(" & S#").append(system.getId());
 
         return sb.toString();
     }
@@ -383,12 +387,13 @@ public class BorderBuilder
             int top = topLimit.getY(x, -1);
             int bot = botLimit.getY(x, +1);
 
-            if (top > bot) {
-                logger.warning("{0}{1} closed at x: {2}",
-                        sheet.getLogPrefix(), idString(), x);
-            }
-
             int y = (top + bot) / 2;
+
+            if (top > bot && !userWarned) {
+                logger.warning("{0}{1} got closed at x:{2} y:{3}",
+                        sheet.getLogPrefix(), idString(), x, y);
+                userWarned = true;
+            }
 
             if (x == xMax) {
                 // Very last point
@@ -409,16 +414,16 @@ public class BorderBuilder
         return line;
     }
 
-    //------------------//
-    // getRefinedBorder //
-    //------------------//
+    //-----------------//
+    // getSmoothBorder //
+    //-----------------//
     /**
-     * Refine the raw border as much as possible
+     * Smoothen the raw border as much as possible
      *
      * @param line the initial (raw) border
-     * @return the refined border
+     * @return the smooth border
      */
-    private BrokenLine getRefinedBorder (BrokenLine line)
+    private BrokenLine getSmoothBorder (BrokenLine line)
     {
         // 1/Start with left point
         // 2/Try to skip the following points until a limit is intersected
@@ -436,7 +441,7 @@ public class BorderBuilder
 
                 if (topLimit.intersects(lastPoint, pt)
                     || botLimit.intersects(lastPoint, pt)) {
-                    // Backup 
+                    // Step back 
                     for (int i = lastIndex + 1, iBreak = index - 1; i < iBreak;
                             i++) {
                         Point p = line.getPoint(lastIndex + 1);
@@ -488,6 +493,10 @@ public class BorderBuilder
         Scale.AreaFraction minGlyphWeight = new Scale.AreaFraction(
                 0.1,
                 "Minimum weight for free glyph");
+
+        Constant.Boolean useSmoothBorders = new Constant.Boolean(
+                true,
+                "Should we use smooth inter-system borders?");
 
     }
 

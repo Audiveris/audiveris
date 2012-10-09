@@ -252,7 +252,13 @@ public class SystemsBuilder
                         new Point(sheet.getWidth(), line.yAtX(sheet.getWidth())));
 
                 // Check if the border is acceptable and replace it if needed
-                border = refineBorder(border, prevSystem, system);
+                BrokenLine newBorder = refineBorder(border, prevSystem, system);
+
+                if (newBorder != null) {
+                    border = newBorder;
+                } else {
+                    // Use basic border as a temporary virtual border only
+                }
 
                 prevSystem.setBoundary(
                         new SystemBoundary(prevSystem, prevBorder, border));
