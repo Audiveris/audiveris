@@ -303,7 +303,7 @@ public class ShapeChecker
         // For debugging only
         if (eval.grade >= 0.1) {
             logger.info("{0}{1} {2} weight:{3} {4} corrected as {5}",
-                    system.getLogPrefix(), glyph, eval, glyph.getWeight(), 
+                    system.getLogPrefix(), glyph, eval, glyph.getWeight(),
                     glyph.getBounds(), newShape);
         }
     }
@@ -459,6 +459,9 @@ public class ShapeChecker
 
                 Barline insideBar = measure.getInsideBarline();
                 Staff staff = part.getStaffAt(point);
+                if (staff == null) {
+                    return false;
+                }
                 Clef clef = measure.getFirstMeasureClef(staff.getId());
                 int start = (clef != null)
                         ? (clef.getBox().x + clef.getBox().width)
@@ -560,8 +563,7 @@ public class ShapeChecker
 
                     default:
                         ///logger.warning("Bad beam #" + glyph.getId() + " nb:" + nb);
-                        eval.failure = new Evaluation.Failure(
-                                "beamThickness");
+                        eval.failure = new Evaluation.Failure("beamThickness");
 
                         return false;
                     }
@@ -739,6 +741,12 @@ public class ShapeChecker
                 // A note / rest / dynamic cannot be too far from a staff
                 PixelPoint center = glyph.getAreaCenter();
                 StaffInfo staff = system.getStaffAt(center);
+
+                // Staff may be null when we are modifying system boundaries
+                if (staff == null) {
+                    return false;
+                }
+
                 int gap = staff.getGapTo(glyph);
                 int maxGap = system.getScoreSystem().getScale().toPixels(
                         constants.maxGapToStaff);

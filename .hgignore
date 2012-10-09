@@ -47,5 +47,6 @@ train/core/*
 eval/backup-neural-network.xml
 nbproject/configs
 www/docs/api
+www/nbproject
 ocr/tessdata/*
 ocr/tessdata

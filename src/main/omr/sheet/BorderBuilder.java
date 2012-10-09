@@ -76,6 +76,7 @@ public class BorderBuilder
     private static final Logger logger = Logger.getLogger(BorderBuilder.class);
 
     //~ Instance fields --------------------------------------------------------
+    //
     /** Related sheet */
     private final Sheet sheet;
 
@@ -103,6 +104,7 @@ public class BorderBuilder
     private final int yMargin;
 
     //~ Constructors -----------------------------------------------------------
+    //
     //---------------//
     // BorderBuilder //
     //---------------//
@@ -129,6 +131,7 @@ public class BorderBuilder
     }
 
     //~ Methods ----------------------------------------------------------------
+    //
     //-------------//
     // buildBorder //
     //-------------//
@@ -381,7 +384,8 @@ public class BorderBuilder
             int bot = botLimit.getY(x, +1);
 
             if (top > bot) {
-                logger.warning("{0} closed at x: {1}", idString(), x);
+                logger.warning("{0}{1} closed at x: {2}",
+                        sheet.getLogPrefix(), idString(), x);
             }
 
             int y = (top + bot) / 2;

@@ -100,38 +100,11 @@ public class BrokenLineTest
         assertEquals(expResult, result);
     }
 
-    /**
-     * Test of setStickyDistance method, of class BrokenLine.
-     */
-    @Test
-    public void setStickyDistance ()
-    {
-        System.out.println("setStickyDistance");
-
-        int stickyDistance = 123;
-        instance.setStickyDistance(stickyDistance);
-        assertEquals(stickyDistance, instance.getStickyDistance());
-    }
-
-    /**
-     * Test of getStickyDistance method, of class BrokenLine.
-     */
-    @Test
-    public void getStickyDistance ()
-    {
-        System.out.println("getStickyDistance");
-
-        int expResult = 1;
-        int result = instance.getStickyDistance();
-        assertEquals(expResult, result);
-    }
-
     @Before
     public void setUp ()
     {
         ///System.out.println("setUp");
         instance = new BrokenLine(p0, p1, p2, p3);
-        instance.setStickyDistance(1);
     }
 
     /**
@@ -178,13 +151,7 @@ public class BrokenLineTest
         System.out.println("before: " + instance.getSequenceString());
 
         Point point = new Point(11, 2);
-        instance.setStickyDistance(1);
-
-        Point result = instance.findPoint(point);
-        assertEquals(expResult, result);
-
-        instance.setStickyDistance(0);
-        assertEquals(null, instance.findPoint(point));
+        assertEquals(p1, instance.findPoint(point));
     }
 
     /**
@@ -197,14 +164,9 @@ public class BrokenLineTest
         System.out.println("before: " + instance.getSequenceString());
 
         Point point = new Point(11, 3);
-        instance.setStickyDistance(2);
         assertEquals(p1, instance.findSegment(point));
 
-        instance.setStickyDistance(0);
-        assertEquals(null, instance.findSegment(point));
-
         instance = new BrokenLine();
-        instance.setStickyDistance(2);
         assertEquals(null, instance.findSegment(point));
         instance.addPoint(p1);
         assertEquals(null, instance.findSegment(point));

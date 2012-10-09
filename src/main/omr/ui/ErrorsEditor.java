@@ -127,10 +127,6 @@ public class ErrorsEditor
                           final String text)
     {
         final Step step = getCurrentStep();
-        if (step == null) {
-            logger.warning("BINGO null step for sheet {0}", sheet);
-            logger.warning("BINGO");
-        }
         
         SwingUtilities.invokeLater(
                 new Runnable()

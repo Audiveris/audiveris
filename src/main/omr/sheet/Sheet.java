@@ -944,8 +944,8 @@ public class Sheet
     // getSystemsNear //
     //----------------//
     /**
-     * Report the ordered list of systems containing or close to the provided
-     * point
+     * Report the ordered list of systems containing or close to the
+     * provided point.
      *
      * @param point the provided point
      * @return a collection of systems ordered by increasing distance from the
@@ -1270,40 +1270,40 @@ public class Sheet
         vLag.setServices(locationService, getNest().getGlyphService());
     }
 
-    //----------------//
-    // splitBarSticks //
-    //----------------//
+    //-------------//
+    // splitGlyphs //
+    //-------------//
     /**
-     * Split the bar sticks among systems
+     * Split the sheet glyphs among systems
      *
-     * @param barSticks the collection of all bar sticks
      * @return the set of modified systems
      */
-    public Set<SystemInfo> splitBarSticks (Collection<? extends Glyph> barSticks)
+    public Set<SystemInfo> splitGlyphs ()
     {
-        Set<SystemInfo> modified = new LinkedHashSet<>();
-        Map<SystemInfo, SortedSet<Glyph>> glyphs = new HashMap<>();
-
+        Map<SystemInfo, SortedSet<Glyph>> glyphsMap = new HashMap<>();
         for (SystemInfo system : systems) {
-            glyphs.put(
+            glyphsMap.put(
                     system,
                     new ConcurrentSkipListSet<>(system.getGlyphs()));
             system.clearGlyphs();
         }
 
-        // Assign the bar sticks to the proper system glyphs collection
-        for (Glyph stick : barSticks) {
-            if (stick.isActive()) {
-                SystemInfo system = getSystemOf(stick);
+        // Assign the glyphs to the proper system glyphs collection
+        for (Glyph glyph : nest.getAllGlyphs()) {
+            if (glyph.isActive()) {
+                SystemInfo system = getSystemOf(glyph);
 
                 if (system != null) {
-                    system.addGlyph(stick);
+                    system.addGlyph(glyph);
+                } else {
+                    glyph.setShape(null);
                 }
             }
         }
 
+        Set<SystemInfo> modified = new LinkedHashSet<>();
         for (SystemInfo system : systems) {
-            if (!(system.getGlyphs().equals(glyphs.get(system)))) {
+            if (!(system.getGlyphs().equals(glyphsMap.get(system)))) {
                 modified.add(system);
             }
         }
@@ -1321,9 +1321,8 @@ public class Sheet
      */
     public Set<SystemInfo> splitHorizontalSections ()
     {
-        Set<SystemInfo> modifiedSystems = new LinkedHashSet<>();
+        // Take a snapshot of sections collection per system and clear it
         Map<SystemInfo, Collection<Section>> sections = new HashMap<>();
-
         for (SystemInfo system : systems) {
             Collection<Section> systemSections = system.
                     getMutableHorizontalSections();
@@ -1331,6 +1330,7 @@ public class Sheet
             systemSections.clear();
         }
 
+        // Now dispatch the lag sections among the systems
         for (Section section : getHorizontalLag().getSections()) {
             SystemInfo system = getSystemOf(section.getCentroid());
             // Link section -> system
@@ -1342,6 +1342,8 @@ public class Sheet
             }
         }
 
+        // Detect precisely which systems have been modified
+        Set<SystemInfo> modifiedSystems = new LinkedHashSet<>();
         for (SystemInfo system : systems) {
             if (!(system.getMutableHorizontalSections().equals(
                     sections.get(system)))) {
@@ -1362,9 +1364,8 @@ public class Sheet
      */
     public Set<SystemInfo> splitVerticalSections ()
     {
-        Set<SystemInfo> modifiedSystems = new LinkedHashSet<>();
+        // Take a snapshot of sections collection per system and clear it
         Map<SystemInfo, Collection<Section>> sections = new HashMap<>();
-
         for (SystemInfo system : systems) {
             Collection<Section> systemSections = system.
                     getMutableVerticalSections();
@@ -1372,6 +1373,7 @@ public class Sheet
             systemSections.clear();
         }
 
+        // Now dispatch the lag sections among the systems
         for (Section section : getVerticalLag().getSections()) {
             SystemInfo system = getSystemOf(section.getCentroid());
             // Link section -> system
@@ -1383,6 +1385,8 @@ public class Sheet
             }
         }
 
+        // Detect precisely which systems have been modified
+        Set<SystemInfo> modifiedSystems = new LinkedHashSet<>();
         for (SystemInfo system : systems) {
             if (!(system.getMutableVerticalSections().equals(
                     sections.get(system)))) {

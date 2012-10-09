@@ -54,14 +54,14 @@ import javax.xml.bind.annotation.XmlRootElement;
  * <dd>A point sufficiently close to the last location of a point being dragged
  * is considered as the new location for this point. This UI feature is actually
  * beyond the scope of BrokenLine, so only the default dragging value is handled
- * here for convenience. See {@link #getDefaultDraggingDistance}.
+ * here for convenience. See {@link #getDraggingDistance}.
  * </dd>
  * </dl>
  *
  * <p><b>Nota:</b> Internal reference points data can still be modified at any
  * time, since the BrokenLine, just like a List, merely handles points pointers.
  * For example, to move a point, just call point.setLocation() method.</p>
- * 
+ *
  * <p>This ability of dynamic modification is the main reason why this class
  * is not simply implemented as a Path2D. If a Path2D instance is needed,
  * use the {@link #toGeoPath()} conversion method.
@@ -89,12 +89,6 @@ public class BrokenLine
     /** Dummy collection of points, just for (un) marshalling */
     @XmlElement(name = "point")
     private final List<PointFacade> xps = new ArrayList<>();
-
-    /** Default sticky distance */
-    private int stickyDistance = getDefaultStickyDistance();
-
-    /** Max distance for colinearity */
-    private int colinearDistance = constants.colinearDistance.getValue();
 
     //~ Constructors -----------------------------------------------------------
     //
@@ -147,10 +141,12 @@ public class BrokenLine
      */
     public final void resetPoints (Collection<Point> points)
     {
-        if (points != null) {
-            Collection<Point> newPoints = new ArrayList<>(points);
+        if (this.points != points) {
             this.points.clear();
-            this.points.addAll(newPoints);
+
+            if (points != null) {
+                this.points.addAll(points);
+            }
         }
     }
 
@@ -180,7 +176,7 @@ public class BrokenLine
     public Point findPoint (Point point)
     {
         Rectangle window = new Rectangle(point);
-        window.grow(stickyDistance, stickyDistance);
+        window.grow(getStickyDistance(), getStickyDistance());
 
         for (Point pt : points) {
             if (window.contains(pt)) {
@@ -204,6 +200,7 @@ public class BrokenLine
      */
     public Point findSegment (Point point)
     {
+        final int sqrStickyDistance = getStickyDistance() * getStickyDistance();
         Point bestPoint = null;
         double bestDistSq = java.lang.Double.MAX_VALUE;
 
@@ -230,67 +227,11 @@ public class BrokenLine
             prevPt = pt;
         }
 
-        if (bestDistSq <= (stickyDistance * stickyDistance)) {
+        if (bestDistSq <= sqrStickyDistance) {
             return bestPoint;
         } else {
             return null;
         }
-    }
-
-    //---------------------//
-    // getColinearDistance //
-    //---------------------//
-    /**
-     * Report the maximum distance (from a segment for colinearity).
-     *
-     * @return the maximum distance, specified in pixels
-     */
-    public int getColinearDistance ()
-    {
-        return colinearDistance;
-    }
-
-    //----------------------------//
-    // getDefaultColinearDistance //
-    //----------------------------//
-    /**
-     * Report the default colinear distance.
-     * This value can be overridden for the current BrokenLine instance, through
-     * method {@link #setColinearDistance}.
-     *
-     * @return the (default) maximum distance, specified in pixels
-     */
-    public static int getDefaultColinearDistance ()
-    {
-        return constants.colinearDistance.getValue();
-    }
-
-    //----------------------------//
-    // getDefaultDraggingDistance //
-    //----------------------------//
-    /**
-     * Report the default dragging distance.
-     *
-     * @return the (default) dragging distance, specified in pixels
-     */
-    public static int getDefaultDraggingDistance ()
-    {
-        return constants.draggingDistance.getValue();
-    }
-
-    //--------------------------//
-    // getDefaultStickyDistance //
-    //--------------------------//
-    /**
-     * Report the default sticky distance.
-     * This value can be overridden for the current BrokenLine instance, through
-     * method {@link #setStickyDistance}.
-     *
-     * @return the (default) maximum distance, specified in pixels
-     */
-    public static int getDefaultStickyDistance ()
-    {
-        return constants.stickyDistance.getValue();
     }
 
     //----------//
@@ -349,19 +290,6 @@ public class BrokenLine
         sb.append("]");
 
         return sb.toString();
-    }
-
-    //-------------------//
-    // getStickyDistance //
-    //-------------------//
-    /**
-     * Report the maximum distance (from a point, from a segment).
-     *
-     * @return the maximum distance, specified in pixels
-     */
-    public int getStickyDistance ()
-    {
-        return stickyDistance;
     }
 
     //---------//
@@ -435,7 +363,7 @@ public class BrokenLine
                     getPoint(index + 1));
             double dist = line.ptLineDist(point);
 
-            return dist <= colinearDistance;
+            return dist <= constants.colinearDistance.getValue();
         } else {
             return false;
         }
@@ -452,34 +380,6 @@ public class BrokenLine
     public void removePoint (Point point)
     {
         points.remove(point);
-    }
-
-    //---------------------//
-    // setColinearDistance //
-    //---------------------//
-    /**
-     * Set the colinear distance for all methods that need this margin
-     * value.
-     *
-     * @param colinearDistance the new value, specified in pixels
-     */
-    public void setColinearDistance (int colinearDistance)
-    {
-        this.colinearDistance = colinearDistance;
-    }
-
-    //-------------------//
-    // setStickyDistance //
-    //-------------------//
-    /**
-     * Set the sticky distance for all methods that need this margin
-     * value.
-     *
-     * @param stickyDistance the new value, specified in pixels
-     */
-    public void setStickyDistance (int stickyDistance)
-    {
-        this.stickyDistance = stickyDistance;
     }
 
     //------//
@@ -553,7 +453,7 @@ public class BrokenLine
     {
         GeoPath path = new GeoPath();
         boolean started = false;
-        
+
         for (Point point : points) {
             if (!started) {
                 path.moveTo(point.x, point.y);
@@ -564,6 +464,32 @@ public class BrokenLine
         }
 
         return path;
+    }
+
+    //---------------------//
+    // getDraggingDistance //
+    //---------------------//
+    /**
+     * Report the dragging distance.
+     *
+     * @return the dragging distance, specified in pixels
+     */
+    public static int getDraggingDistance ()
+    {
+        return constants.draggingDistance.getValue();
+    }
+
+    //-------------------//
+    // getStickyDistance //
+    //-------------------//
+    /**
+     * Report the maximum distance (from a point, from a segment).
+     *
+     * @return the maximum distance, specified in pixels
+     */
+    public static int getStickyDistance ()
+    {
+        return constants.stickyDistance.getValue();
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -580,13 +506,11 @@ public class BrokenLine
                 2,
                 "Maximum distance from a point to a segment to be colinear");
 
-        //
         Constant.Integer stickyDistance = new Constant.Integer(
                 "pixels",
                 5,
                 "Maximum distance from a point or segment to get stuck to it");
 
-        //
         Constant.Integer draggingDistance = new Constant.Integer(
                 "pixels",
                 25,

@@ -44,18 +44,19 @@ public class BrokenLineContext
     public final BrokenLine line;
 
     //~ Constructors -----------------------------------------------------------
-
+    //
     //-------------------//
     // BrokenLineContext //
     //-------------------//
     /**
      * Creates a new BrokenLineContext object.
-     * @param systemAbove DOCUMENT ME!
-     * @param systemBelow DOCUMENT ME!
-     * @param line DOCUMENT ME!
+     *
+     * @param systemAbove Id of system above the line, or zero
+     * @param systemBelow Id of system below the line, or zero
+     * @param line        The broken line
      */
-    public BrokenLineContext (int        systemAbove,
-                              int        systemBelow,
+    public BrokenLineContext (int systemAbove,
+                              int systemBelow,
                               BrokenLine line)
     {
         this.systemAbove = systemAbove;
@@ -74,17 +75,16 @@ public class BrokenLineContext
     }
 
     //~ Methods ----------------------------------------------------------------
-
     @Override
     public String toString ()
     {
         StringBuilder sb = new StringBuilder("{Context");
         sb.append(" above:")
-          .append(systemAbove);
+                .append(systemAbove);
         sb.append(" below:")
-          .append(systemBelow);
+                .append(systemBelow);
         sb.append(" line:")
-          .append(line);
+                .append(line);
 
         return sb.toString();
     }

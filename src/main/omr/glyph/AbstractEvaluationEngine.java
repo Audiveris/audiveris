@@ -80,6 +80,7 @@ public abstract class AbstractEvaluationEngine
         List<Evaluation> best = new ArrayList<>();
         Evaluation[] evals = getRawEvaluations(glyph);
 
+        EvalsLoop:
         for (Evaluation eval : evals) {
             // Bounding test?
             if ((best.size() >= count) || (eval.grade < minGrade)) {
@@ -101,6 +102,7 @@ public abstract class AbstractEvaluationEngine
             if (conditions.contains(Condition.CHECKED)) {
                 Evaluation oldEval = new Evaluation(eval.shape, eval.grade);
                 double[] ins = ShapeDescription.features(glyph);
+                // This may change the eval shape...
                 glyphChecker.annotate(system, eval, glyph, ins);
 
                 if (eval.failure != null) {
@@ -116,7 +118,12 @@ public abstract class AbstractEvaluationEngine
                 }
             }
 
-            // Everything is OK
+            // Everything is OK, add the shape if not already in the list
+            for (Evaluation e : best) {
+                if (e.shape == eval.shape) {
+                    continue EvalsLoop;
+                }
+            }
             best.add(eval);
         }
 

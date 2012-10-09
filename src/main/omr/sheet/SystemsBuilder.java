@@ -140,7 +140,7 @@ public class SystemsBuilder
         ///sheet.splitHorizontals();
         sheet.splitHorizontalSections();
         sheet.splitVerticalSections();
-        sheet.splitBarSticks(nest.getAllGlyphs());
+        sheet.splitGlyphs();
     }
 
     //------------------------//

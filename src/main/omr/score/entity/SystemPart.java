@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import omr.grid.StaffInfo;
 import omr.sheet.PartInfo;
 
 /**
@@ -616,7 +617,13 @@ public class SystemPart
      */
     public Staff getStaffAt (PixelPoint point)
     {
-        Staff staff = getSystem().getInfo().getStaffAt(point).getScoreStaff();
+        // This may fail 
+        StaffInfo staffInfo = getSystem().getInfo().getStaffAt(point);
+        if (staffInfo == null) {
+            return null;
+        }
+        
+        Staff staff = staffInfo.getScoreStaff();
 
         if (staves.getChildren().contains(staff)) {
             return staff;

@@ -1375,13 +1375,27 @@ public class SystemInfo
         logger.fine("{0} setBoundary {1}", idString(), boundary);
         this.boundary = boundary;
 
-        // We have a new system boundary on north and south sides
+        updateBoundary();
+    }
 
-        // So update top limit of first staff
+    //----------------//
+    // updateBoundary //
+    //----------------//
+    /**
+     * We have a new (or modified) system boundary.
+     * So let's update the system boundary polygon as well as the limits of
+     * the first and  last staves.
+     */
+    public void updateBoundary ()
+    {
+        // Reset the system polygon
+        boundary.update();
+
+        // Update top limit of first staff
         GeoPath topPath = boundary.getLimit(VerticalSide.TOP).toGeoPath();
         getFirstStaff().setLimit(VerticalSide.TOP, topPath);
 
-        // And update bottom limit of last staff
+        // Update bottom limit of last staff
         GeoPath bottomPath = boundary.getLimit(VerticalSide.BOTTOM).toGeoPath();
         getLastStaff().setLimit(VerticalSide.BOTTOM, bottomPath);
     }

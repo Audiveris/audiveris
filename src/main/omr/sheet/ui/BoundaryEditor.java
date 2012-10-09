@@ -36,8 +36,8 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 /**
- * Class {@code BoundaryEditor} handles the modification of systems
- * boundaries.
+ * Class {@code BoundaryEditor} handles the manual modification of
+ * systems boundaries.
  *
  * @author Hervé Bitteur
  */
@@ -49,36 +49,39 @@ public class BoundaryEditor
     private static final Logger logger = Logger.getLogger(BoundaryEditor.class);
 
     //~ Instance fields --------------------------------------------------------
-
-    /** Related sheet */
+    //
+    /** Related sheet. */
     private final Sheet sheet;
 
-    /** Concrete menu */
+    /** Concrete menu. */
     private final JMenu menu;
 
-    /** Set of actions to update menu according to current selections */
+    /** Set of actions to update menu according to current selections. */
     private final Collection<DynAction> dynActions = new HashSet<>();
 
-    /** Acceptable distance since last reference point (while dragging) */
-    private final int maxDraggingDelta = BrokenLine.getDefaultDraggingDistance();
+    /** Acceptable distance since last reference point. (while dragging) */
+    private final int maxDraggingDelta = BrokenLine.getDraggingDistance();
 
-    /** Ongoing modification session? */
+    /** Ongoing modification session?. */
     private boolean sessionOngoing = false;
 
-    /** Set of modified lines in an edition session */
+    /** Set of modified lines in an edition session. */
     private Set<BrokenLine> modifiedLines = new HashSet<>();
 
-    // Latest designated reference point, if any */
-    private Point      lastPoint = null;
+    /** Designated reference point, if any. */
+    private Point currentPoint = null;
 
-    // Latest designated line, meaningful only if lastPoint is not null */
-    private BrokenLine lastLine = null;
+    /** Line containing the currentPoint, if any. */
+    private BrokenLine currentLine = null;
 
-    // Latest designated system, meaningful only if lastPoint is not null */
-    private SystemInfo lastSystem;
+    /**
+     * One of the two systems that contain the current line, if any.
+     * We don't need to know which one it is precisely.
+     */
+    private SystemInfo currentSystem = null;
 
     //~ Constructors -----------------------------------------------------------
-
+    //
     //----------------//
     // BoundaryEditor //
     //----------------//
@@ -97,7 +100,6 @@ public class BoundaryEditor
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------//
     // getMenu //
     //---------//
@@ -114,7 +116,8 @@ public class BoundaryEditor
      * Note that systems limit lines are modified online but subsequent
      * updates on system content (glyph, etc) will not be performed before
      * user explicitly asks for completion, which triggers an asynchronous
-     * update of system content and reprocessing of steps.
+     * update of system/staff content and reprocessing of steps.
+     *
      * @param pt Current location of user mouse
      */
     public void inspectBoundary (Point pt)
@@ -123,62 +126,56 @@ public class BoundaryEditor
             return;
         }
 
-        // Are we close to the lastPoint?
-        if (lastPoint != null) {
-            Rectangle rect = new Rectangle(lastPoint);
+        if (currentPoint != null) {
+            // Are we close enough to the current reference point?
+            Rectangle rect = new Rectangle(currentPoint);
             rect.grow(maxDraggingDelta, maxDraggingDelta);
 
             if (!rect.contains(pt)) {
-                lastPoint = null;
+                currentPoint = null;
             }
         }
 
-        if (lastPoint == null) {
-            // Are we close to any existing refPoint?
-            lastSystem = sheet.getSystemsNear(pt)
-                              .iterator()
-                              .next();
+        if (currentPoint == null) {
+            // Are we close enough to any existing reference point?
+            currentSystem = sheet.getSystemsNear(pt).iterator().next();
 
-            for (BrokenLine line : lastSystem.getBoundary()
-                                             .getLimits()) {
-                lastPoint = line.findPoint(pt);
+            for (BrokenLine line : currentSystem.getBoundary().getLimits()) {
+                currentPoint = line.findPoint(pt);
 
-                if (lastPoint != null) {
-                    lastLine = line;
+                if (currentPoint != null) {
+                    currentLine = line;
 
                     break;
                 }
             }
         }
 
-        if (lastPoint != null) {
-            // Move the current ref point to user pt
-            lastPoint.setLocation(pt);
+        if (currentPoint != null) {
+            // Move the current reference point to user pt
+            currentPoint.setLocation(pt);
+            modifiedLines.add(currentLine);
 
             // If now we get colinear segments, let's merge them
-            if (lastLine.isColinear(lastPoint)) {
-                lastLine.removePoint(lastPoint);
-                modifiedLines.add(lastLine);
-                lastPoint = null;
+            if (currentLine.isColinear(currentPoint)) {
+                currentLine.removePoint(currentPoint);
+                currentPoint = null;
             }
 
             updateSystemPair();
         } else {
             // Are we close to a segment, to define a new ref point?
-            lastSystem = sheet.getSystemsNear(pt)
-                              .iterator()
-                              .next();
+            currentSystem = sheet.getSystemsNear(pt).iterator().next();
 
-            for (BrokenLine line : lastSystem.getBoundary()
-                                             .getLimits()) {
+            for (BrokenLine line : currentSystem.getBoundary().getLimits()) {
                 Point segmentStart = line.findSegment(pt);
 
                 if (segmentStart != null) {
                     // Add a new ref point
-                    lastPoint = pt;
-                    lastLine = line;
+                    currentPoint = pt;
+                    currentLine = line;
                     line.insertPointAfter(pt, segmentStart);
-                    modifiedLines.add(lastLine);
+                    modifiedLines.add(currentLine);
                     updateSystemPair();
 
                     break;
@@ -214,25 +211,28 @@ public class BoundaryEditor
     // updateSystemPair //
     //------------------//
     /**
-     * Update the lastSystem, as well as the system which shares the line with
-     * lastSystem, if any.
+     * Update the current system, as well as the other system (if any)
+     * which shares the currentLine with the provided system.
      */
     private void updateSystemPair ()
     {
-        List<SystemInfo> systems = sheet.getSystems();
-        int              sysIdx = lastSystem.getId() - 1;
-        SystemBoundary   boundary = lastSystem.getBoundary();
-
         // Update lastSystem
-        boundary.update();
+        currentSystem.updateBoundary();
+
+        // Find other system, if any, sharing this currentLine
+        List<SystemInfo> systems = sheet.getSystems();
+        int sysIdx = currentSystem.getId() - 1;
+        SystemBoundary boundary = currentSystem.getBoundary();
 
         SystemInfo sharingSystem = null;
 
-        if (lastLine == boundary.getLimit(VerticalSide.BOTTOM)) {
+        if (currentLine == boundary.getLimit(VerticalSide.BOTTOM)) {
+            // Sharing system is the following system, if any
             if (sysIdx < (systems.size() - 1)) {
                 sharingSystem = systems.get(sysIdx + 1);
             }
         } else {
+            // Sharing system is the preceding system, if any
             if (sysIdx > 0) {
                 sharingSystem = systems.get(sysIdx - 1);
             }
@@ -240,25 +240,23 @@ public class BoundaryEditor
 
         if (sharingSystem != null) {
             // Update sharing system
-            sharingSystem.getBoundary()
-                         .update();
+            sharingSystem.updateBoundary();
         }
 
-        sheet.getSymbolsEditor()
-             .refresh();
+        // Update user display
+        sheet.getSymbolsEditor().refresh();
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // DynAction //
     //-----------//
     /**
-     * Base implementation, to register the dynamic actions that need to be
-     * updated according to the current context.
+     * Base implementation, to register the dynamic actions that need
+     * to be updated according to the current context.
      */
     public abstract class DynAction
-        extends AbstractAction
+            extends AbstractAction
     {
         //~ Constructors -------------------------------------------------------
 
@@ -269,7 +267,6 @@ public class BoundaryEditor
         }
 
         //~ Methods ------------------------------------------------------------
-
         public abstract void update ();
     }
 
@@ -277,7 +274,7 @@ public class BoundaryEditor
     // StartAction //
     //-------------//
     private class StartAction
-        extends DynAction
+            extends DynAction
     {
         //~ Constructors -------------------------------------------------------
 
@@ -288,20 +285,17 @@ public class BoundaryEditor
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
             logger.info("Boundaries edition started...");
-            lastPoint = null;
-            lastLine = null;
-            lastSystem = null;
+            currentPoint = null;
+            currentLine = null;
             modifiedLines.clear();
             sessionOngoing = true;
 
-            // Highlignt border lines
-            sheet.getSymbolsEditor()
-                 .refresh();
+            // Highlight border lines
+            sheet.getSymbolsEditor().refresh();
         }
 
         @Override
@@ -315,7 +309,7 @@ public class BoundaryEditor
     // StopAction //
     //------------//
     private class StopAction
-        extends DynAction
+            extends DynAction
     {
         //~ Constructors -------------------------------------------------------
 
@@ -326,7 +320,6 @@ public class BoundaryEditor
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -334,14 +327,15 @@ public class BoundaryEditor
                 // At least, one limit line has been modified
                 logger.info("Completing boundaries edition...");
                 sheet.getSymbolsController()
-                     .asyncModifyBoundaries(modifiedLines);
+                        .asyncModifyBoundaries(modifiedLines);
             } else {
                 logger.info("No boundary modified");
             }
 
             sessionOngoing = false;
-            sheet.getSymbolsEditor()
-                 .refresh();
+
+            // De-highlight border lines
+            sheet.getSymbolsEditor().refresh();
         }
 
         @Override

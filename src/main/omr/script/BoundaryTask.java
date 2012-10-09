@@ -28,6 +28,7 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import omr.sheet.SystemBoundary;
 
 /**
  * Class {@code BoundaryTask} modifies systems boundaries
@@ -36,25 +37,25 @@ import javax.xml.bind.annotation.XmlElement;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class BoundaryTask
-    extends SheetTask
+        extends SheetTask
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** The collection of line contexts  */
+    /** The collection of line contexts */
     @XmlElement(name = "context")
     private final List<BrokenLineContext> contexts;
 
     //~ Constructors -----------------------------------------------------------
-
     //--------------//
     // BoundaryTask //
     //--------------//
     /**
      * Creates a new BoundaryTask object.
-     * @param sheet the related sheet
+     *
+     * @param sheet    the related sheet
      * @param contexts the collections of lines contexts
      */
-    public BoundaryTask (Sheet                   sheet,
+    public BoundaryTask (Sheet sheet,
                          List<BrokenLineContext> contexts)
     {
         super(sheet);
@@ -71,16 +72,15 @@ public class BoundaryTask
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------//
     // core //
     //------//
     @Override
     public void core (Sheet sheet)
-        throws Exception
+            throws Exception
     {
         for (BrokenLineContext context : contexts) {
-            // Use a copy of the point sequence
+            // Use a deep copy of the points sequence
             List<Point> copy = new ArrayList<>();
 
             for (Point p : context.line.getPoints()) {
@@ -89,18 +89,20 @@ public class BoundaryTask
 
             if (context.systemAbove != 0) {
                 SystemInfo system = sheet.getSystems()
-                                         .get(context.systemAbove - 1);
-                BrokenLine brokenLine = system.getBoundary()
-                                              .getLimit(VerticalSide.BOTTOM);
+                        .get(context.systemAbove - 1);
+                SystemBoundary boundary = system.getBoundary();
+                BrokenLine brokenLine = boundary.getLimit(VerticalSide.BOTTOM);
                 brokenLine.resetPoints(copy);
+                system.updateBoundary();
             }
 
             if (context.systemBelow != 0) {
                 SystemInfo system = sheet.getSystems()
-                                         .get(context.systemBelow - 1);
-                BrokenLine brokenLine = system.getBoundary()
-                                              .getLimit(VerticalSide.TOP);
+                        .get(context.systemBelow - 1);
+                SystemBoundary boundary = system.getBoundary();
+                BrokenLine brokenLine = boundary.getLimit(VerticalSide.TOP);
                 brokenLine.resetPoints(copy);
+                system.updateBoundary();
             }
         }
     }
@@ -112,15 +114,14 @@ public class BoundaryTask
     public void epilog (Sheet sheet)
     {
         // Resplit systems content
-        sheet.getSystemsBuilder()
-             .splitSystemEntities();
+        sheet.getSystemsBuilder().splitSystemEntities();
 
         // Update the following steps if any
         Stepping.reprocessSheet(
-            Steps.valueOf(Steps.STICKS),
-            sheet,
-            sheet.getSystems(),
-            false);
+                Steps.valueOf(Steps.STICKS),
+                sheet,
+                sheet.getSystems(),
+                false);
     }
 
     //-----------------//
@@ -134,7 +135,7 @@ public class BoundaryTask
 
         for (BrokenLineContext context : contexts) {
             sb.append(" ")
-              .append(context);
+                    .append(context);
         }
 
         sb.append("]");
