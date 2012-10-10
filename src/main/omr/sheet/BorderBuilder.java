@@ -146,10 +146,12 @@ public class BorderBuilder
         LineInfo botLine = system.getFirstStaff().getFirstLine();
         PixelRectangle box = topLine.getBounds();
         box.add(botLine.getBounds());
+        final PixelRectangle interBox = box;
 
-        Set<Glyph> glyphs = sheet.getNest().lookupIntersectedGlyphs(box);
+        Set<Glyph> glyphs = sheet.getNest().lookupIntersectedGlyphs(interBox);
 
         // Remove small glyphs and the staff lines themselves
+        // Also remove glyphs that embrace the whole intersystem
         Glyphs.purge(
                 glyphs,
                 new Predicate<Glyph>()
@@ -157,8 +159,24 @@ public class BorderBuilder
                     @Override
                     public boolean check (Glyph glyph)
                     {
-                        return (glyph.getShape() == Shape.STAFF_LINE)
-                               || (glyph.getWeight() < minGlyphWeight);
+                        // Purge staff lines
+                        if (glyph.getShape() == Shape.STAFF_LINE) {
+                            return true;
+                        }
+                        
+                        // Purge abnormally tall glyphs
+                        PixelRectangle glyphBox = glyph.getBounds();
+                        if (glyphBox.y <= interBox.y && 
+                            glyphBox.y + glyphBox.height >= interBox.y + interBox.height) {
+                            return true;
+                        }
+                        
+                        // Purge too light glyphs
+                        if (glyph.getWeight() < minGlyphWeight) {
+                            return true;
+                        }
+                        
+                        return false;
                     }
                 });
 
