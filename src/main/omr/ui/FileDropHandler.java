@@ -144,7 +144,7 @@ public class FileDropHandler
 
         private final Steps.Constant defaultStep = new Steps.Constant(
                 Steps.valueOf(Steps.LOAD),
-                "Default step executed when a file is dropped");
+                "Default step launched when an image file is dropped");
 
     }
 

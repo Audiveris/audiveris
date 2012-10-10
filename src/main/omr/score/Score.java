@@ -255,6 +255,9 @@ public class Score
 
             // Insert in sheet history
             ScoresManager.getInstance().getHistory().add(getImagePath());
+            if (Main.getGui() != null) {
+                Main.getGui().setHistoryEnabled(true);
+            }
         }
     }
 

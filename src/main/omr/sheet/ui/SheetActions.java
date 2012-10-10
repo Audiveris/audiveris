@@ -35,7 +35,6 @@ import omr.ui.util.UIUtilities;
 import omr.util.BasicTask;
 
 import org.jdesktop.application.Action;
-import org.jdesktop.application.Task;
 
 import java.awt.event.ActionEvent;
 import java.io.File;

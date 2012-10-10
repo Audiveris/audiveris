@@ -72,7 +72,7 @@ public enum Shape
     //
     // Sets --------------------------------------------------------------------
     //
-    DOT_set("Dot set"),
+    DOT_set("Dot set", new Color(0x0cccc)),
     FERMATA_set("Set of Fermata's"),
     HW_REST_set("Half & Whole Rest set"),
     TIME_69_set("Time 6 & 9 set"),
@@ -97,19 +97,19 @@ public enum Shape
     //
     // Clefs -------------------------------------------------------------------
     //
-    G_CLEF("Small Treble Clef"),
-    G_CLEF_SMALL("Small Treble Clef"),
-    G_CLEF_8VA("Ottava Alta"),
-    G_CLEF_8VB("Ottava Bassa"),
-    C_CLEF("Ut Clef"),
-    F_CLEF("Small Bass Clef"),
+    G_CLEF("Treble Clef", new Color(0xff99ff)),
+    G_CLEF_SMALL("Small Treble Clef", new Color(0xff99ff)),
+    G_CLEF_8VA("Treble Clef Ottava Alta", new Color(0xff99ff)),
+    G_CLEF_8VB("Treble Clef Ottava Bassa", new Color(0xff99ff)),
+    C_CLEF("Ut Clef", new Color(0xff99ff)),
+    F_CLEF("Bass Clef"),
     F_CLEF_SMALL("Small Bass Clef"),
     F_CLEF_8VA("Bass Clef Ottava Alta"),
     F_CLEF_8VB("Bass Clef Ottava Bassa"),
     PERCUSSION_CLEF("Percussion Clef"),
-    FLAT("Minus one half step"),
-    NATURAL("Natural value"),
-    SHARP("Plus one half step"),
+    FLAT("Minus one half step", new Color(0x00aaaa)),
+    NATURAL("Natural value", new Color(0x0066ff)),
+    SHARP("Plus one half step", new Color(0x3399ff)),
     DOUBLE_SHARP("Double Sharp"),
     DOUBLE_FLAT("Double Flat"),
     TIME_ZERO("Digit 0"),
@@ -127,10 +127,10 @@ public enum Shape
     TIME_TWO_FOUR("Rational 2/4"),
     TIME_THREE_FOUR("Rational 3/4"),
     TIME_SIX_EIGHT("Rational 6/8"),
-    COMMON_TIME("Alpha = 4/4"),
+    COMMON_TIME("Alpha = 4/4", new Color(0xcc6600)),
     CUT_TIME("Semi-Alpha = 2/2"),
-    OTTAVA_ALTA("8 va"),
-    OTTAVA_BASSA("8 vb"),
+    OTTAVA_ALTA("8 va", new Color(0xcc66ff)),
+    OTTAVA_BASSA("8 vb", new Color(0xcc66ff)),
     //
     // Key signatures ----------------------------------------------------------
     //
@@ -160,9 +160,9 @@ public enum Shape
     //
     // Noteheads ---------------------------------------------------------------
     //
-    NOTEHEAD_VOID("Hollow node head for halves"),
-    NOTEHEAD_VOID_2("Pack of two hollow node heads for halves"),
-    NOTEHEAD_VOID_3("Pack of three hollow node heads for halves"),
+    NOTEHEAD_VOID("Hollow node head for halves", new Color(0xffcc00)),
+    NOTEHEAD_VOID_2("Pack of two hollow node heads for halves", new Color(0xffcc00)),
+    NOTEHEAD_VOID_3("Pack of three hollow node heads for halves", new Color(0xffcc00)),
     NOTEHEAD_BLACK("Filled node head for quarters and less"),
     NOTEHEAD_BLACK_2("Pack of two filled node heads for quarters and less"),
     NOTEHEAD_BLACK_3("Pack of three filled node heads for quarters and less"),
@@ -180,7 +180,7 @@ public enum Shape
     BEAM_2("Pack of 2 beams"),
     BEAM_3("Pack of 3 beams"),
     BEAM_HOOK("Hook of a beam attached on one stem"),
-    SLUR("Slur tying notes"),
+    SLUR("Slur tying notes", new Color(0xbb8888)),
     //
     // Articulation ------------------------------------------------------------
     //
@@ -225,16 +225,16 @@ public enum Shape
     //
     // Tuplets -----------------------------------------------------------------
     //
-    TUPLET_THREE("3"),
-    TUPLET_SIX("6"),
-    PEDAL_MARK("Pedal down"),
-    PEDAL_UP_MARK("Pedal downup"),
+    TUPLET_THREE("3", new Color(0xcc00cc)),
+    TUPLET_SIX("6", new Color(0xcc00cc)),
+    PEDAL_MARK("Pedal down", new Color(0x009999)),
+    PEDAL_UP_MARK("Pedal downup", new Color(0x009999)),
     //
     // Miscellaneous -----------------------------------------------------------
     //
-    CLUTTER("Pure clutter"), 
-    CHARACTER("A letter"), 
-    TEXT("Sequence of letters & spaces"), 
+    CLUTTER("Pure clutter", new Color(0x999900)),
+    CHARACTER("A letter"),
+    TEXT("Sequence of letters & spaces", new Color(0x9999ff)),
     //
     // =========================================================================
     // This is the end of physical shapes.
@@ -246,68 +246,68 @@ public enum Shape
     //
     // Shapes from shape sets --------------------------------------------------
     //
-    REPEAT_DOT("Repeat dot", DOT_set), 
-    AUGMENTATION_DOT("Augmentation Dot", DOT_set), 
-    STACCATO("Staccato dot", DOT_set), 
-    FERMATA("Fermata", FERMATA_set), 
-    FERMATA_BELOW("Fermata Below", FERMATA_set), 
-    WHOLE_REST("Rest for whole measure", HW_REST_set), 
-    HALF_REST("Rest for a 1/2", HW_REST_set), 
-    TIME_SIX("Digit 6", TIME_69_set), 
-    TIME_NINE("Digit 9", TIME_69_set), 
-    FLAG_1("Single flag down", FLAG_1_set), 
-    FLAG_1_UP("Single flag up", FLAG_1_set), 
-    FLAG_2("Double flag down", FLAG_2_set), 
-    FLAG_2_UP("Double flag up", FLAG_2_set), 
-    FLAG_3("Triple flag down", FLAG_3_set), 
-    FLAG_3_UP("Triple flag up", FLAG_3_set), 
-    FLAG_4("Quadruple flag down", FLAG_4_set), 
-    FLAG_4_UP("Quadruple flag up", FLAG_4_set), 
-    FLAG_5("Quintuple flag down", FLAG_5_set), 
-    FLAG_5_UP("Quintuple flag up", FLAG_5_set), 
-    CRESCENDO("Crescendo", WEDGE_set), 
-    DECRESCENDO("Decrescendo", WEDGE_set), 
-    TURN("Turn", TURN_set), 
-    INVERTED_TURN("Inverted Turn", TURN_set), 
-    TURN_UP("Turn Up", TURN_set), 
+    REPEAT_DOT("Repeat dot", DOT_set, new Color(0x0000ff)),
+    AUGMENTATION_DOT("Augmentation Dot", DOT_set),
+    STACCATO("Staccato dot", DOT_set),
+    FERMATA("Fermata", FERMATA_set),
+    FERMATA_BELOW("Fermata Below", FERMATA_set),
+    WHOLE_REST("Rest for whole measure", HW_REST_set),
+    HALF_REST("Rest for a 1/2", HW_REST_set),
+    TIME_SIX("Digit 6", TIME_69_set),
+    TIME_NINE("Digit 9", TIME_69_set),
+    FLAG_1("Single flag down", FLAG_1_set),
+    FLAG_1_UP("Single flag up", FLAG_1_set),
+    FLAG_2("Double flag down", FLAG_2_set),
+    FLAG_2_UP("Double flag up", FLAG_2_set),
+    FLAG_3("Triple flag down", FLAG_3_set),
+    FLAG_3_UP("Triple flag up", FLAG_3_set),
+    FLAG_4("Quadruple flag down", FLAG_4_set),
+    FLAG_4_UP("Quadruple flag up", FLAG_4_set),
+    FLAG_5("Quintuple flag down", FLAG_5_set),
+    FLAG_5_UP("Quintuple flag up", FLAG_5_set),
+    CRESCENDO("Crescendo", WEDGE_set),
+    DECRESCENDO("Decrescendo", WEDGE_set),
+    TURN("Turn", TURN_set),
+    INVERTED_TURN("Inverted Turn", TURN_set),
+    TURN_UP("Turn Up", TURN_set),
     //
     // Bars --------------------------------------------------------------------
     //
-    PART_DEFINING_BARLINE("Bar line that defines a part"), 
-    THIN_BARLINE("Thin bar line"), 
-    THICK_BARLINE("Thick bar line"), 
-    DOUBLE_BARLINE("Double thin bar line"), 
-    FINAL_BARLINE("Thin / Thick bar line"), 
-    REVERSE_FINAL_BARLINE("Thick / Thin bar line"), 
-    LEFT_REPEAT_SIGN("Thick / Thin bar line + Repeat dots"), 
-    RIGHT_REPEAT_SIGN("Repeat dots + Thin / Thick bar line"), 
-    BACK_TO_BACK_REPEAT_SIGN("Repeat dots + Thin / Thick / Thin + REPEAT_DOTS"), 
-    ENDING("Alternate ending"), 
+    PART_DEFINING_BARLINE("Bar line that defines a part"),
+    THIN_BARLINE("Thin bar line"),
+    THICK_BARLINE("Thick bar line"),
+    DOUBLE_BARLINE("Double thin bar line"),
+    FINAL_BARLINE("Thin / Thick bar line"),
+    REVERSE_FINAL_BARLINE("Thick / Thin bar line"),
+    LEFT_REPEAT_SIGN("Thick / Thin bar line + Repeat dots"),
+    RIGHT_REPEAT_SIGN("Repeat dots + Thin / Thick bar line"),
+    BACK_TO_BACK_REPEAT_SIGN("Repeat dots + Thin / Thick / Thin + REPEAT_DOTS"),
+    ENDING("Alternate ending"),
     //
     // Miscellaneous
     //
-    REPEAT_DOT_PAIR("Pair of repeat dots"), 
-    NOISE("Too small stuff"), 
-    STAFF_LINE("Staff Line"), 
-    LEDGER("Ledger"), 
-    ENDING_HORIZONTAL("Horizontal part of ending"), 
-    ENDING_VERTICAL("Vertical part of ending"), 
+    REPEAT_DOT_PAIR("Pair of repeat dots"),
+    NOISE("Too small stuff", new Color(0xcccccc)),
+    STAFF_LINE("Staff Line", new Color(0xffffcc)),
+    LEDGER("Ledger", new Color(0xaaaaaa)),
+    ENDING_HORIZONTAL("Horizontal part of ending"),
+    ENDING_VERTICAL("Vertical part of ending"),
     //
     // Stems
     //
-    STEM("Stem"), 
+    STEM("Stem", new Color(0xccff66)),
     //
     // Key signatures ----------------------------------------------------------
     //
-    KEY_FLAT_1("One Flat"), 
-    KEY_SHARP_1("One Sharp"), 
+    KEY_FLAT_1("One Flat"),
+    KEY_SHARP_1("One Sharp"),
     //
     // Other stuff -------------------------------------------------------------
     //
-    FORWARD("To indicate a forward"), 
-    NON_DRAGGABLE("Non draggable shape"), 
-    GLYPH_PART("Part of a larger glyph"), 
-    CUSTOM_TIME("Time signature defined by user"), 
+    FORWARD("To indicate a forward"),
+    NON_DRAGGABLE("Non draggable shape"),
+    GLYPH_PART("Part of a larger glyph"),
+    CUSTOM_TIME("Time signature defined by user"),
     NO_LEGAL_TIME("No Legal Time Shape");
     //
     // =========================================================================
@@ -333,12 +333,10 @@ public enum Shape
         }
     };
 
-    //--------------------------------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
+    //
     /** Explanation of the glyph shape */
     private final String description;
-
-    /** Related display color */
-    private Color color;
 
     /** Potential related symbol */
     private ShapeSymbol symbol;
@@ -355,16 +353,20 @@ public enum Shape
     /** Potential related physical shape */
     private Shape physicalShape;
 
-    /** Related permanent color */
+    /** Related color */
+    private Color color;
+
+    /** Related color constant */
     private Constant.Color constantColor;
 
     //--------------------------------------------------------------------------
+    //
     //-------//
     // Shape //
     //-------//
     Shape ()
     {
-        this("", null); // No param
+        this("", null, null);
     }
 
     //-------//
@@ -372,7 +374,16 @@ public enum Shape
     //-------//
     Shape (String description)
     {
-        this(description, null);
+        this(description, null, null);
+    }
+
+    //-------//
+    // Shape //
+    //-------//
+    Shape (String description,
+           Color color)
+    {
+        this(description, null, color);
     }
 
     //-------//
@@ -381,14 +392,25 @@ public enum Shape
     Shape (String description,
            Shape physicalShape)
     {
+        this(description, physicalShape, null);
+    }
+
+    //-------//
+    // Shape //
+    //-------//
+    Shape (String description,
+           Shape physicalShape,
+           Color color)
+    {
         this.description = description;
         this.physicalShape = physicalShape;
+        this.color = color;
 
         // Create the underlying constant
         constantColor = new Constant.Color(
                 getClass().getName(), // Unit
                 name() + ".color", // Name
-                "#000000", // DefaultValue: Black
+                Constant.Color.encodeColor(color != null ? color : Color.BLACK),
                 "Color for shape " + name());
     }
 
@@ -559,7 +581,7 @@ public enum Shape
         // Assign the shape display color
         if (!constantColor.isSourceValue()) {
             setColor(constantColor.getValue()); // Use the shape specific color
-        } else {
+        } else if (this.color == null) {
             setColor(color); // Use the provided (range) default color
         }
     }

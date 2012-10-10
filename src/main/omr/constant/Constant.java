@@ -34,7 +34,8 @@ import java.util.concurrent.atomic.AtomicReference;
  * <ul> <li> {@link Constant.Angle} </li> <li> {@link Constant.Boolean} </li>
  * <li> {@link Constant.Color} </li> <li> {@link Constant.Double} </li> <li>
  * {@link Constant.Integer} </li> <li> {@link Constant.Ratio} </li>
- * <li> {@link Constant.String} </li> </ul> </p>
+ * <li> {@link Constant.String} </li> 
+ * <li>and others...</li></ul> </p>
  *
  * @author Hervé Bitteur
  */
@@ -50,38 +51,39 @@ public abstract class Constant
     //
     // Data assigned at construction time
     //-----------------------------------
-    /** Unit (if relevant) used by the quantity measured */
+    /** Unit (if relevant) used by the quantity measured. */
     private final java.lang.String quantityUnit;
 
-    /** Source-provided value to be used if needed */
+    /** Source-provided value to be used if needed. */
     private final java.lang.String sourceString;
 
-    /** Semantic */
+    /** Semantic. */
     private final java.lang.String description;
 
     // Data assigned at ConstantSet initMap time
     //------------------------------------------
-    /** Name of the Constant */
+    /** Name of the Constant. */
     private volatile java.lang.String name;
 
-    /** Fully qualified Constant name (unit.name) */
+    /** Fully qualified Constant name. (unit.name) */
     private volatile java.lang.String qualifiedName;
 
     // Data modified at any time
     //--------------------------
-    /** Initial Value (used for reset) Assigned once */
+    /** Initial Value (used for reset). Assigned once */
     private java.lang.String initialString;
 
-    /** Current data */
+    /** Current data. */
     private AtomicReference<Tuple> tuple = new AtomicReference<>();
 
     //~ Constructors -----------------------------------------------------------
+    //
     //----------//
     // Constant //
     //----------//
     /**
-     * Creates a constant instance, while providing a default value, in case the
-     * external property is not yet defined.
+     * Creates a constant instance, while providing a default value, 
+     * in case the external property is not yet defined.
      *
      * @param quantityUnit Unit used as base for measure, if relevant
      * @param sourceString Source value, expressed by a string literal which
@@ -110,13 +112,14 @@ public abstract class Constant
     }
 
     //~ Methods ----------------------------------------------------------------
+    //
     //----------//
     // setValue //
     //----------//
     /**
-     * Modify the current value of the constant; this abstract method is
-     * actually defined in each subclass, to enforce validation of the provided
-     * string with respect to the target constant type.
+     * Modify the current value of the constant.
+     * This abstract method is actually defined in each subclass, to enforce 
+     * validation of the provided string with respect to the target constant type.
      *
      * @param string the new value, as a string to be checked
      */
@@ -126,7 +129,7 @@ public abstract class Constant
     // getCurrentString //
     //------------------//
     /**
-     * Get the current value, as a String type. This is package private.
+     * Get the current value, as a String type.
      *
      * @return the String view of the value
      */
@@ -242,8 +245,8 @@ public abstract class Constant
     // isSourceValue //
     //---------------//
     /**
-     * Report whether the current constant value is the source one (not altered
-     * by either properties read from disk, of value changed later)
+     * Report whether the current constant value is the source one.
+     * (not altered by either properties read from disk, of value changed later)
      *
      * @return true if still the source value, false otherwise
      */
@@ -267,18 +270,18 @@ public abstract class Constant
     // reset //
     //-------//
     /**
-     * Forget any modification made, and reset to the initial value.
+     * Forget any modification made, and reset to the source value.
      */
     public void reset ()
     {
-        setTuple(initialString, decode(initialString));
+        setTuple(sourceString, decode(sourceString));
     }
 
     //---------//
     // setUnit //
     //---------//
     /**
-     * (package access) Allows to record the unit and name of the constant
+     * Allows to record the unit and name of the constant.
      *
      * @param unit the unit (class name) this constant belongs to
      * @param name the constant name
@@ -356,8 +359,8 @@ public abstract class Constant
     // decode //
     //--------//
     /**
-     * Convert a given string to the proper object value, as implemented by each
-     * subclass
+     * Convert a given string to the proper object value, as 
+     * implemented by each subclass.
      *
      * @param str the encoded string
      * @return the decoded object
@@ -381,8 +384,8 @@ public abstract class Constant
     // setTuple //
     //----------//
     /**
-     * Modifies the current parameter data in an atomic way, and remember the
-     * very first value (the initial string).
+     * Modify the current parameter data in an atomic way, 
+     * and remember the very first value (the initial string).
      *
      * @param str The new value (as a string)
      * @param val The new value (as an object)
@@ -412,8 +415,8 @@ public abstract class Constant
     // getValueOrigin //
     //----------------//
     /**
-     * Convenient method, reporting the origin of the current value for this
-     * constant, either SRC, DEF or USR.
+     * Convenient method, reporting the origin of the current value for
+     * this constant, either SRC or USR.
      *
      * @return a mnemonic for the value origin
      */
@@ -422,15 +425,10 @@ public abstract class Constant
         ConstantManager mgr = ConstantManager.getInstance();
         java.lang.String cur = getCurrentString();
         java.lang.String usr = mgr.getConstantUserValue(qualifiedName);
-        java.lang.String def = mgr.getConstantDefaultValue(qualifiedName);
         java.lang.String src = sourceString;
 
         if (cur.equals(src)) {
             return "SRC";
-        }
-
-        if (cur.equals(def)) {
-            return "DEF";
         }
 
         if (cur.equals(usr)) {
@@ -444,8 +442,8 @@ public abstract class Constant
     // checkInitialized //
     //------------------//
     /**
-     * Check the unit+name have been assigned to this constant object. They are
-     * mandatory to link the constant to the persistency mechanism.
+     * Check the unit+name have been assigned to this constant object.
+     * They are mandatory to link the constant to the persistency mechanism.
      */
     private void checkInitialized ()
     {
@@ -469,8 +467,9 @@ public abstract class Constant
     // getTuple //
     //----------//
     /**
-     * Report the current tuple data, which may imply to trigger the assignment
-     * of qualified name to the constant, in order to get property data
+     * Report the current tuple data, which may imply to trigger the 
+     * assignment of qualified name to the constant, in order to get 
+     * property data
      *
      * @return the current tuple data
      */
@@ -583,8 +582,10 @@ public abstract class Constant
     // Color //
     //-------//
     /**
-     * A subclass of Constant, meant to store a {@link java.awt.Color} value.
-     */
+     * A subclass of Constant, meant to store a {@link java.awt.Color}
+     * value.
+     * They have a disk repository which is separate from the other constants.
+    */
     public static class Color
             extends Constant
     {
@@ -605,30 +606,6 @@ public abstract class Constant
         {
             super(null, defaultValue, description);
             setUnitAndName(unit, name);
-        }
-
-        /**
-         * Normal constructor, with a String type for default value
-         *
-         * @param defaultValue the default (String) RGB value
-         * @param description  the semantic of the constant
-         */
-        public Color (java.lang.String defaultValue,
-                      java.lang.String description)
-        {
-            super(null, defaultValue, description);
-        }
-
-        /**
-         * Specific constructor, where 'unit' and 'name' are assigned later
-         *
-         * @param defaultValue the (int) RGB default value
-         * @param description  the semantic of the constant
-         */
-        public Color (int defaultValue,
-                      java.lang.String description)
-        {
-            this(java.lang.Integer.toString(defaultValue), description);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -881,8 +858,8 @@ public abstract class Constant
 
         //~ Methods ------------------------------------------------------------
         /**
-         * Retrieve the current constant value. Actually this is synonymous with
-         * currentString()
+         * Retrieve the current constant value. 
+         * Actually this is synonymous with currentString()
          *
          * @return the current (string) value
          */
@@ -913,8 +890,8 @@ public abstract class Constant
     // Tuple //
     //-------//
     /**
-     * Class used to handle the tuple currentString + currentValue in an atomic
-     * way
+     * Class used to handle the tuple [currentString + currentValue]
+     * in an atomic way.
      */
     private static class Tuple
     {

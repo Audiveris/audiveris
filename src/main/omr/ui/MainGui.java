@@ -71,6 +71,7 @@ import java.util.EventObject;
 import java.util.concurrent.Callable;
 
 import javax.swing.*;
+import omr.util.NameSet;
 
 /**
  * Class {@code MainGui} is the Java User Interface, the main class for
@@ -122,6 +123,9 @@ public class MainGui
 
     private JSplitPane horiSplitPane;
 
+    /** History of recent files. */
+    private JMenuItem historyMenu;
+
     //~ Constructors -----------------------------------------------------------
     //---------//
     // MainGui //
@@ -161,7 +165,7 @@ public class MainGui
     // displayConfirmation //
     //---------------------//
     /**
-     * Allow to display a confirmation dialog with a message.
+     * Allow to display a modal confirmation dialog with a message.
      *
      * @param message the message asking for confirmation
      * @return true if confirmed, false otherwise
@@ -216,6 +220,12 @@ public class MainGui
     //------------------------//
     // displayModelessConfirm //
     //------------------------//
+    /**
+     * Allow to display a non-modal confirmation dialog.
+     *
+     * @param message the confirmation message
+     * @return the option chosen
+     */
     public int displayModelessConfirm (String message)
     {
         return ModelessOptionPane.showModelessConfirmDialog(
@@ -542,7 +552,6 @@ public class MainGui
         addExitListener(
                 new ExitListener()
                 {
-
                     @Override
                     public boolean canExit (EventObject e)
                     {
@@ -650,9 +659,9 @@ public class MainGui
         JMenu sheetMenu = new SeparableMenu();
 
         // Specific history sub-menu
-        JMenuItem historyMenu = ScoresManager.getInstance().getHistory().menu(
-                "Sheet History",
-                new HistoryListener());
+        NameSet history = ScoresManager.getInstance().getHistory();
+        historyMenu = history.menu("Sheet History", new HistoryListener());
+        setHistoryEnabled(!history.isEmpty());
         sheetMenu.add(historyMenu);
 
         // Specific step menu
@@ -687,6 +696,14 @@ public class MainGui
         if (WellKnowns.MAC_OS_X) {
             MacApplication.setupMacMenus();
         }
+    }
+
+    //-------------------//
+    // setHistoryEnabled //
+    //-------------------//
+    public void setHistoryEnabled (boolean bool)
+    {
+        historyMenu.setEnabled(bool);
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -725,12 +742,11 @@ public class MainGui
             revalidate();
 
             if ((boards != null)
-                    && GuiActions.getInstance().isBoardsDisplayed()) {
+                && GuiActions.getInstance().isBoardsDisplayed()) {
                 // Make sure we have enough room
                 SwingUtilities.invokeLater(
                         new Runnable()
                         {
-
                             @Override
                             public void run ()
                             {
@@ -806,6 +822,7 @@ public class MainGui
         private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
                 true,
                 "Should we preload costly packages in the background?");
+
     }
 
     //-----------------//
@@ -823,8 +840,12 @@ public class MainGui
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            File file = new File(e.getActionCommand());
-            new OpenTask(file).execute();
+            final String name = e.getActionCommand().trim();
+
+            if (!name.isEmpty()) {
+                File file = new File(name);
+                new OpenTask(file).execute();
+            }
         }
     }
 }

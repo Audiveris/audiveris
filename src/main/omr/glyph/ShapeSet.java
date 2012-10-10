@@ -136,10 +136,12 @@ public class ShapeSet
      */
     public static final ShapeSet Accidentals = new ShapeSet(
             SHARP,
+            new Color(0x9933ff),
             shapesOf(FLAT, NATURAL, SHARP, DOUBLE_SHARP, DOUBLE_FLAT));
 
     public static final ShapeSet Articulations = new ShapeSet(
             ARPEGGIATO,
+            new Color(0xff6699),
             shapesOf(
             ACCENT,
             TENUTO,
@@ -150,6 +152,7 @@ public class ShapeSet
 
     public static final ShapeSet Attributes = new ShapeSet(
             PEDAL_MARK,
+            new Color(0x000000),
             shapesOf(
             OTTAVA_ALTA,
             OTTAVA_BASSA,
@@ -160,6 +163,7 @@ public class ShapeSet
 
     public static final ShapeSet Barlines = new ShapeSet(
             LEFT_REPEAT_SIGN,
+            new Color(0x0000ff),
             shapesOf(
             PART_DEFINING_BARLINE,
             THIN_BARLINE,
@@ -173,14 +177,17 @@ public class ShapeSet
 
     public static final ShapeSet Beams = new ShapeSet(
             BEAM,
+            new Color(0x33ffff),
             shapesOf(BEAM, BEAM_2, BEAM_3, BEAM_HOOK));
 
     public static final ShapeSet Clefs = new ShapeSet(
             G_CLEF,
+            new Color(0xcc00cc),
             shapesOf(TrebleClefs, BassClefs, shapesOf(C_CLEF, PERCUSSION_CLEF)));
 
     public static final ShapeSet Dynamics = new ShapeSet(
             DYNAMICS_F,
+            new Color(0x009999),
             shapesOf(
             DYNAMICS_CHAR_M,
             DYNAMICS_CHAR_R,
@@ -208,6 +215,7 @@ public class ShapeSet
 
     public static final ShapeSet Flags = new ShapeSet(
             FLAG_1,
+            new Color(0x99cc00),
             shapesOf(
             FLAG_1,
             FLAG_1_UP,
@@ -222,14 +230,17 @@ public class ShapeSet
 
     public static final ShapeSet Keys = new ShapeSet(
             KEY_SHARP_3,
+            new Color(0x00ffff),
             shapesOf(FlatKeys, SharpKeys));
 
     public static final ShapeSet NoteHeads = new ShapeSet(
             NOTEHEAD_BLACK,
+            new Color(0xff9966),
             shapesOf(BlackNoteHeads, VoidNoteHeads));
 
     public static final ShapeSet Markers = new ShapeSet(
             CODA,
+            new Color(0x888888),
             shapesOf(
             DAL_SEGNO,
             DA_CAPO,
@@ -242,10 +253,12 @@ public class ShapeSet
 
     public static final ShapeSet Notes = new ShapeSet(
             BREVE,
+            new Color(0xff66cc),
             shapesOf(BREVE, WHOLE_NOTE, WHOLE_NOTE_2, WHOLE_NOTE_3));
 
     public static final ShapeSet Ornaments = new ShapeSet(
             MORDENT,
+            new Color(0xcc3300),
             shapesOf(
             GRACE_NOTE_SLASH,
             GRACE_NOTE,
@@ -259,6 +272,7 @@ public class ShapeSet
 
     public static final ShapeSet Rests = new ShapeSet(
             QUARTER_REST,
+            new Color(0x99ff66),
             shapesOf(
             LONG_REST,
             BREVE_REST,
@@ -273,20 +287,22 @@ public class ShapeSet
 
     public static final ShapeSet Times = new ShapeSet(
             TIME_FOUR_FOUR,
+            new Color(0xcc3300),
             shapesOf(PartialTimes, FullTimes));
 
     public static final ShapeSet Physicals = new ShapeSet(
             LEDGER,
+            new Color(0x9999ff),
             shapesOf(
-            TEXT, 
-            CHARACTER, 
+            TEXT,
+            CHARACTER,
             CLUTTER,
             SLUR,
-            LEDGER, 
-            STEM, 
-            ENDING, 
+            LEDGER,
+            STEM,
+            ENDING,
             DOT_set,
-            REPEAT_DOT, 
+            REPEAT_DOT,
             AUGMENTATION_DOT));
 
     // =========================================================================
@@ -336,6 +352,7 @@ public class ShapeSet
     }
 
     //~ Instance fields --------------------------------------------------------
+    //
     /** Name of the set */
     private String name;
 
@@ -348,27 +365,32 @@ public class ShapeSet
     /** The representative shape for this set */
     private final Shape rep;
 
-    /** Current color */
+    /** Assigned color */
     private Color color;
 
-    /** Related permanent color */
+    /** Related color constant */
     private Constant.Color constantColor;
 
     //~ Constructors -----------------------------------------------------------
-    //------------//
+    //----------//
     // ShapeSet //
-    //------------//
+    //----------//
     /**
      * Creates a new ShapeSet object from a collection of shapes.
      *
      * @param rep    the representative shape
+     * @param color  the default color assigned
      * @param shapes the provided collection of shapes
      */
     public ShapeSet (Shape rep,
+                     Color color,
                      Collection<Shape> shapes)
     {
         // The representative shape
         this.rep = rep;
+
+        // The default color
+        this.color = color != null ? color : Color.BLACK;
 
         // The set of shapes
         this.shapes = EnumSet.noneOf(Shape.class);
@@ -550,8 +572,8 @@ public class ShapeSet
     public static Collection<Shape> shapesOf (Collection<Shape> col)
     {
         Collection<Shape> shapes = (col instanceof List)
-                                   ? new ArrayList<Shape>()
-                                   : EnumSet.noneOf(Shape.class);
+                ? new ArrayList<Shape>()
+                : EnumSet.noneOf(Shape.class);
 
         shapes.addAll(col);
 
@@ -572,8 +594,8 @@ public class ShapeSet
                                               Collection<Shape> col2)
     {
         Collection<Shape> shapes = (col1 instanceof List)
-                                   ? new ArrayList<Shape>()
-                                   : EnumSet.noneOf(Shape.class);
+                ? new ArrayList<Shape>()
+                : EnumSet.noneOf(Shape.class);
 
         shapes.addAll(col1);
         shapes.addAll(col2);
@@ -597,8 +619,8 @@ public class ShapeSet
                                               Collection<Shape> col3)
     {
         Collection<Shape> shapes = (col1 instanceof List)
-                                   ? new ArrayList<Shape>()
-                                   : EnumSet.noneOf(Shape.class);
+                ? new ArrayList<Shape>()
+                : EnumSet.noneOf(Shape.class);
 
         shapes.addAll(col1);
         shapes.addAll(col2);
@@ -673,7 +695,7 @@ public class ShapeSet
      *
      * @param color the display color
      */
-    public void setColor (Color color)
+    private void setColor (Color color)
     {
         this.color = color;
     }
@@ -708,12 +730,12 @@ public class ShapeSet
         for (Field field : ShapeSet.class.getDeclaredFields()) {
             if (field.getType() == ShapeSet.class) {
                 try {
-                    ShapeSet range = (ShapeSet) field.get(null);
-                    range.setName(field.getName());
+                    ShapeSet set = (ShapeSet) field.get(null);
+                    set.setName(field.getName());
 
                     // Create shape color for all contained shapes
-                    for (Shape shape : range.shapes) {
-                        shape.createShapeColor(range.getColor());
+                    for (Shape shape : set.shapes) {
+                        shape.createShapeColor(set.getColor());
                         colored.add(shape);
                     }
                 } catch (IllegalAccessException ex) {
@@ -757,18 +779,16 @@ public class ShapeSet
     private void setName (String name)
     {
         this.name = name;
+
         constantColor = new Constant.Color(
                 getClass().getName(),
                 name + ".color",
-                "#000000",
+                Constant.Color.encodeColor(color),
                 "Color code for set " + name);
 
-        // Assign the set display color
+        // Check for a user-modified value
         if (!constantColor.isSourceValue()) {
             setColor(constantColor.getValue());
-        } else {
-            // Use the default color
-            setColor(Color.black);
         }
     }
 

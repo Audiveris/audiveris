@@ -57,7 +57,6 @@ public class Options
     private static final Logger logger = Logger.getLogger(Options.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** The interface window */
     private JFrame frame;
 
@@ -77,27 +76,46 @@ public class Options
     private Integer rowIndex;
 
     /** Dump */
-    private final AbstractAction dumping = new AbstractAction() {
+    private final AbstractAction dumping = new AbstractAction()
+    {
         @Override
         public void actionPerformed (ActionEvent e)
         {
             UnitManager.getInstance()
-                       .dumpAllUnits();
+                    .dumpAllUnits();
         }
     };
 
     /** Check */
-    private final AbstractAction checking = new AbstractAction() {
+    private final AbstractAction checking = new AbstractAction()
+    {
         @Override
         public void actionPerformed (ActionEvent e)
         {
             UnitManager.getInstance()
-                       .checkAllUnits();
+                    .checkAllUnits();
+        }
+    };
+
+    /** Reset */
+    private final AbstractAction resetting = new AbstractAction()
+    {
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            MainGui gui = Main.getGui();
+            if (gui != null) {
+                if (true == gui.displayConfirmation(
+                        "Reset all constants to their factory value?")) {
+                    UnitManager.getInstance().resetAllUnits();
+                }
+            }
         }
     };
 
     /** Back */
-    private final AbstractAction backSearch = new AbstractAction() {
+    private final AbstractAction backSearch = new AbstractAction()
+    {
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -116,7 +134,8 @@ public class Options
     };
 
     /** Forward */
-    private final AbstractAction forwardSearch = new AbstractAction() {
+    private final AbstractAction forwardSearch = new AbstractAction()
+    {
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -134,9 +153,7 @@ public class Options
         }
     };
 
-
     //~ Constructors -----------------------------------------------------------
-
     //---------//
     // Options //
     //---------//
@@ -147,13 +164,13 @@ public class Options
     {
         // Preload constant units
         UnitManager.getInstance()
-                   .preLoadUnits(Main.class.getName());
+                .preLoadUnits(Main.class.getName());
 
         frame = new JFrame();
         frame.setName("optionsFrame");
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.getContentPane()
-             .setLayout(new BorderLayout());
+                .setLayout(new BorderLayout());
 
         JToolBar toolBar = new JToolBar(JToolBar.HORIZONTAL);
         frame.add(toolBar, BorderLayout.NORTH);
@@ -167,6 +184,11 @@ public class Options
         JButton checkButton = new JButton(checking);
         checkButton.setName("optionsCheckButton");
         toolBar.add(checkButton);
+
+        // Reset button
+        JButton resetButton = new JButton(resetting);
+        resetButton.setName("optionsResetButton");
+        toolBar.add(resetButton);
 
         // Some space
         toolBar.add(Box.createHorizontalStrut(100));
@@ -197,19 +219,20 @@ public class Options
 
         // Needed to process user input when RETURN/ENTER is pressed
         toolBar.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-               .put(KeyStroke.getKeyStroke("ENTER"), "EnterAction");
+                .put(KeyStroke.getKeyStroke("ENTER"), "EnterAction");
         toolBar.getActionMap()
-               .put("EnterAction", forwardSearch);
+                .put("EnterAction", forwardSearch);
 
         // Resources injection
         ResourceMap resource = Application.getInstance()
-                                          .getContext()
-                                          .getResourceMap(Options.class);
+                .getContext()
+                .getResourceMap(Options.class);
         resource.injectComponents(frame);
 
         // Make sure the search entry field gets the focus at creation time
         frame.addWindowListener(
-            new WindowAdapter() {
+                new WindowAdapter()
+                {
                     @Override
                     public void windowOpened (WindowEvent e)
                     {
@@ -219,7 +242,6 @@ public class Options
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------------//
     // getComponent //
     //--------------//
@@ -237,10 +259,10 @@ public class Options
     private void setSelection ()
     {
         searchString = searchField.getText()
-                                  .trim();
+                .trim();
 
         Set<Object> matches = UnitManager.getInstance()
-                                         .searchUnits(searchString);
+                .searchUnits(searchString);
         rows = unitTreeTable.setNodesSelection(matches);
 
         if (rows == null) {

@@ -39,11 +39,11 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.tree.TreePath;
 
 /**
- * Class {@code UnitTreeTable} is a user interface that combines a tree to
- * display the hierarchy of Units, that contains ConstantSets and/or Loggers,
- * and a table to display and edit the various Constants in each ConstantSet as
- * well as the logger level of units.
- * <p/>
+ * Class {@code UnitTreeTable} is a user interface that combines a tree
+ * to display the hierarchy of Units, that contains ConstantSets and/or
+ * Loggers, and a table to display and edit the various Constants in
+ * each ConstantSet as well as the logger level of units.
+ *
  * @author Hervé Bitteur
  */
 public class UnitTreeTable
@@ -73,9 +73,9 @@ public class UnitTreeTable
     // UnitTreeTable //
     //---------------//
     /**
-     * Create a User Interface JTreeTable dedicated to the handling of unit
-     * constants and loggers.
-     * <p/>
+     * Create a User Interface JTreeTable dedicated to the handling of
+     * unit constants and loggers.
+     *
      * @param model the corresponding data model
      */
     public UnitTreeTable (UnitModel model)
@@ -116,39 +116,39 @@ public class UnitTreeTable
         UnitModel.Column column = UnitModel.Column.values()[col];
 
         switch (column) {
-            case LOGMOD: {
-                Object node = nodeForRow(row);
+        case LOGMOD: {
+            Object node = nodeForRow(row);
 
-                if (node instanceof UnitNode) { // LOGGER
+            if (node instanceof UnitNode) { // LOGGER
 
-                    UnitNode unit = (UnitNode) node;
-                    Logger unitLogger = unit.getLogger();
+                UnitNode unit = (UnitNode) node;
+                Logger unitLogger = unit.getLogger();
 
-                    if (unitLogger != null) {
-                        Level level = unitLogger.getEffectiveLevel();
-                        loggerCombo.setSelectedItem(level.toString());
+                if (unitLogger != null) {
+                    Level level = unitLogger.getEffectiveLevel();
+                    loggerCombo.setSelectedItem(level.toString());
 
-                        return loggerEditor;
-                    }
-                } else if (node instanceof Constant) { // MODIF
-
-                    return getDefaultEditor(Boolean.class);
+                    return loggerEditor;
                 }
+            } else if (node instanceof Constant) { // MODIF
+
+                return getDefaultEditor(Boolean.class);
             }
+        }
 
-            break;
+        break;
 
-            case VALUE: {
-                Object obj = getModel().getValueAt(row, col);
+        case VALUE: {
+            Object obj = getModel().getValueAt(row, col);
 
-                if (obj instanceof Boolean) {
-                    return getDefaultEditor(Boolean.class);
-                }
+            if (obj instanceof Boolean) {
+                return getDefaultEditor(Boolean.class);
             }
+        }
 
-            break;
+        break;
 
-            default:
+        default:
         }
 
         // Default cell editor (determined by column class)
@@ -159,14 +159,11 @@ public class UnitTreeTable
     // getCellRenderer //
     //-----------------//
     /**
-     * Used by the UI to get the proper renderer for each given cell in the
-     * table. For the 'MODIF' column for example, we are able to differentiate
-     * rows for Constant (where this Modif flag makes sense) from any other row
-     * where Modif is irrelevant and thus left totally blank.
-     * <p/>
+     * Used by the UI to get the proper renderer for each given cell in
+     * the table.
+     *
      * @param row row in the table
      * @param col column in the table
-     * <p/>
      * @return the best renderer for the cell.
      */
     @Override
@@ -176,36 +173,36 @@ public class UnitTreeTable
         UnitModel.Column column = UnitModel.Column.values()[col];
 
         switch (column) {
-            case LOGMOD: {
-                Object obj = getModel().getValueAt(row, col);
+        case LOGMOD: {
+            Object obj = getModel().getValueAt(row, col);
 
-                if (obj instanceof Boolean) {
-                    // A constant => Modif flag
-                    return getDefaultRenderer(Boolean.class);
-                } else if (obj instanceof Level) {
-                    // A logger level
-                    return loggerRenderer;
-                } else {
-                    // A node (unit or package)
-                    return getDefaultRenderer(Object.class);
-                }
+            if (obj instanceof Boolean) {
+                // A constant => Modif flag
+                return getDefaultRenderer(Boolean.class);
+            } else if (obj instanceof Level) {
+                // A logger level
+                return loggerRenderer;
+            } else {
+                // A node (unit or package)
+                return getDefaultRenderer(Object.class);
             }
+        }
 
-            case VALUE: {
-                Object obj = getModel().getValueAt(row, col);
+        case VALUE: {
+            Object obj = getModel().getValueAt(row, col);
 
-                if (obj instanceof Boolean) {
-                    return getDefaultRenderer(Boolean.class);
-                } else {
-                    return valueRenderer;
-                }
+            if (obj instanceof Boolean) {
+                return getDefaultRenderer(Boolean.class);
+            } else {
+                return valueRenderer;
             }
+        }
 
-            case PIXEL:
-                return pixelRenderer;
+        case PIXEL:
+            return pixelRenderer;
 
-            default:
-                return getDefaultRenderer(getColumnClass(col));
+        default:
+            return getDefaultRenderer(getColumnClass(col));
         }
     }
 
@@ -214,6 +211,7 @@ public class UnitTreeTable
     //--------------------//
     /**
      * Scroll so that the provided row gets visible
+     *
      * @param row the provided row
      */
     public void scrollRowToVisible (int row)
@@ -236,6 +234,7 @@ public class UnitTreeTable
     //-------------------//
     /**
      * Select the rows that correspond to the provided nodes
+     *
      * @param matches the nodes to select
      * @return the relevant rows
      */
@@ -281,8 +280,9 @@ public class UnitTreeTable
     // adjustColumns //
     //---------------//
     /**
-     * Allows to adjust the related columnModel, for each and every column
-     * <p/>
+     * Allows to adjust the related columnModel, for each and every
+     * column
+     *
      * @param cModel the proper table column model
      */
     private void adjustColumns ()
@@ -291,7 +291,7 @@ public class UnitTreeTable
 
         // Columns widths
         for (UnitModel.Column c : UnitModel.Column.values()) {
-            cModel.getColumn(c.ordinal()).setPreferredWidth(c.width);
+            cModel.getColumn(c.ordinal()).setPreferredWidth(c.getWidth());
         }
     }
 
@@ -324,6 +324,7 @@ public class UnitTreeTable
     //------------//
     /**
      * Return the tree node facing the provided table row
+     *
      * @param row the provided row
      * @return the corresponding tree node
      */
@@ -336,8 +337,8 @@ public class UnitTreeTable
     // preExpandPackages //
     //-------------------//
     /**
-     * Before displaying the tree, expand all nodes that correspond to packages
-     * (PackageNode).
+     * Before displaying the tree, expand all nodes that correspond to 
+     * packages (PackageNode).
      */
     private void preExpandPackages ()
     {

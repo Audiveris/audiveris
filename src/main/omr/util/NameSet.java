@@ -79,11 +79,23 @@ public class NameSet
         this.constant = constant;
         this.maxNameNb = maxNameNb;
 
-        // Retrieve the list of names in history
-        names.addAll(Arrays.asList(constant.getValue().split(SEPARATOR)));
+        // Retrieve the list of names already in the set
+        String[] vals = constant.getValue().split(SEPARATOR);
+        if (!vals[0].isEmpty()) {
+            names.addAll(Arrays.asList(vals));
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
+    //
+    //---------//
+    // isEmpty //
+    //---------//
+    public synchronized boolean isEmpty ()
+    {
+        return names.isEmpty();
+    }
+
     //-----//
     // add //
     //-----//
@@ -118,8 +130,8 @@ public class NameSet
     // menu //
     //------//
     /**
-     * Return an up-to-date menu that can be used to trigger actions related to
-     * the designated name.
+     * Return an up-to-date menu that can be used to trigger actions
+     * related to the designated name.
      *
      * @param menu     the existing menu to update
      * @param listener The ActionListener to be triggered. (the selected name
@@ -255,8 +267,7 @@ public class NameSet
                 for (String f : names) {
                     JMenuItem menuItem = new JMenuItem(f);
                     menuItem.addActionListener(listener);
-                    getMenu()
-                            .add(menuItem);
+                    getMenu().add(menuItem);
                 }
             }
         }

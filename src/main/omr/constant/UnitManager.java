@@ -56,13 +56,14 @@ public class UnitManager
     private static final Logger logger = Logger.getLogger(UnitManager.class);
 
     //~ Instance fields --------------------------------------------------------
-    /** The root node */
+    //
+    /** The root node. */
     private final PackageNode root = new PackageNode("<root>", null);
 
-    /** Map of PackageNodes and UnitNodes */
+    /** Map of PackageNodes and UnitNodes. */
     private final ConcurrentHashMap<String, Node> mapOfNodes = new ConcurrentHashMap<>();
 
-    /** Set of names of ConstantSets that still need to be initialized */
+    /** Set of names of ConstantSets that still need to be initialized. */
     private final ConcurrentSkipListSet<String> dirtySets = new ConcurrentSkipListSet<>();
 
     /**
@@ -71,7 +72,7 @@ public class UnitManager
      */
     private Constant.String units;
 
-    /** Flag to avoid storing units being pre-loaded */
+    /** Flag to avoid storing units being pre-loaded. */
     private volatile boolean storeIt = false;
 
     //~ Constructors -----------------------------------------------------------
@@ -168,14 +169,6 @@ public class UnitManager
         dumpStrings(
                 "Unused User properties",
                 ConstantManager.getInstance().getUnusedUserProperties());
-
-        dumpStrings(
-                "Unused Default properties",
-                ConstantManager.getInstance().getUnusedDefaultProperties());
-
-        dumpStrings(
-                "Useless Default properties",
-                ConstantManager.getInstance().getUselessDefaultProperties());
     }
 
     //----------------//
@@ -188,7 +181,7 @@ public class UnitManager
     public void checkDirtySets ()
     {
         int rookies = 0;
-
+        
         // We use (and clear) the collection of rookies
         for (Iterator<String> it = dirtySets.iterator(); it.hasNext();) {
             String name = it.next();
@@ -531,5 +524,28 @@ public class UnitManager
 
         // No intermediate parent found, so hook it to the root itself
         getRoot().addChild(child);
+    }
+
+    //---------------//
+    // resetAllUnits //
+    //---------------//
+    /**
+     * Reset all constants to their factory (source) value.
+     */
+    public void resetAllUnits ()
+    {
+        for (Node node : mapOfNodes.values()) {
+            if (node instanceof UnitNode) {
+                UnitNode unit = (UnitNode) node;
+                ConstantSet set = unit.getConstantSet();
+
+                if (set != null) {
+                    for (int i = 0; i < set.size(); i++) {
+                        Constant constant = set.getConstant(i);
+                        constant.reset();
+                    }
+                }
+            }
+        }
     }
 }

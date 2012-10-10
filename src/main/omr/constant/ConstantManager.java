@@ -65,8 +65,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * pixels.</li>
  *
  * <li>{@code 11} is the constant value. This is the value used by the
- * application, provided it is not overridden in the DEFAULT or USER properties
- * files, or later via a dedicated GUI tool.</li>
+ * application, provided it is not overridden in the USER properties file
+ * or later via a dedicated GUI tool.</li>
  *
  * <li><code>"Minimum resolution, expressed as number of pixels per interline"
  * </code> is the constant description, which will be used as a tool tip in
@@ -74,31 +74,21 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * </li><br/>
  *
- * <li>Then, <b>DEFAULT</b> values, contained in a property file named
- * <em><b>"settings/run.default.properties"</b></em> can assign overriding
- * values to some constants. For example, the {@code minInterline} constant
- * above could be altered by the following line in this default file:
+ * <li>Then, <b>USER</b> values, contained in a property file named 
+ * <em><b>"run.properties"</b></em> can assign overriding values to some 
+ * constants.  For example, the {@code minInterline} constant
+ * above could be altered by the following line in this user file:
  * <pre>
  * omr.sheet.ScaleBuilder.minInterline=12</pre>
- * This file is mandatory, although it can be empty, and must be located in the
- * <u>settings</u> subfolder of the user's config hierarchy.
- * If this file is not found at start-up the application is stopped.
- * Typically, this file defines values for a distribution of the application,
- * for example Linux and Windows binaries might need different values for some
- * constants.
- * The only way to modify the content of this file is to manually edit it, and
- * this should be reserved to a knowledgeable person.</li> <br/>
- *
- * <li>Then, <b>USER</b> values, may be contained in another property file
- * named <em><b>"run.properties"</b></em>.
  * This file is modified every time the user updates the value of a constant by
  * means of the provided Constant user interface at run-time.
- * The file is not mandatory, and is located in the user application data folder.
- * Its values override the SOURCE (and DEFAULT if any) corresponding constants.
+ * The file is not mandatory, and is located in the user application data
+ * folder.
+ * Its values override the SOURCE corresponding constants.
  * Typically, these USER values represent some modification made by the end user
  * at run-time and thus saved from one run to the other.
- * The format of the user file is the same as the default file, and it is not
- * meant to be edited manually, but rather through the provided GUI tool.</li>
+ * The file is not meant to be edited manually, but rather through the provided
+ * GUI tool.</li>
  * <br/>
  *
  * <li>Then, <b>CLI</b> values, as set on the command line interface, by means
@@ -115,14 +105,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * graphical user interface. These constant values defined at the GUI level are
  * persisted in the USER file.</li> </ol>
  *
- * <p>The difference between DEFAULT and USER files, besides the fact that USER
- * values override DEFAULT values, is that there is exactly one DEFAULT file but
- * there may be zero or several USER files. They address different purposes.
- * Different users on the same machine may want to have some common Audiveris
- * technical values, while allowing separate user-related values for each
- * user. The common (shared) values should go to the DEFAULT file, while the
- * user specific values should go to the USER file.
- *
  * <p> The whole set of constant values is stored on disk when the application
  * is closed. Doing so, the disk values are always kept in synch with the
  * program values, <b>provided the application is normally closed rather than
@@ -130,11 +112,11 @@ import java.util.concurrent.ConcurrentHashMap;
  * {@link #storeResource} method.
  *
  * <p> Only the USER property file is written, the SOURCE values in the source
- * code, or the potential overriding DEFAULT values, are not altered. Moreover,
- * if the user has modified a value in such a way that the final value is the
- * same as found in the DEFAULT file, the value is simply discarded from the
- * USER property file. Doing so, the USER property file really contains only the
- * additions of this particular user.</p>
+ * code are not altered. Moreover, if the user has modified a value in such a 
+ * way that the final value is the same as in the source, the value is simply 
+ * discarded from the USER property file.
+ * Doing so, the USER property file really contains only the additions of this 
+ * particular user.</p>
  *
  * @author Hervé Bitteur
  */
@@ -146,9 +128,6 @@ public class ConstantManager
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
             ConstantManager.class);
-
-    /** Default properties file name */
-    private static final String DEFAULT_FILE_NAME = "run.default.properties";
 
     /** User properties file name */
     private static final String USER_FILE_NAME = "run.properties";
@@ -163,14 +142,9 @@ public class ConstantManager
      */
     protected final ConcurrentHashMap<String, Constant> constants = new ConcurrentHashMap<>();
 
-    /** Default properties */
-    private final DefaultHolder defaultHolder = new DefaultHolder(
-            new File(WellKnowns.SETTINGS_FOLDER, DEFAULT_FILE_NAME));
-
     /** User properties */
     private final UserHolder userHolder = new UserHolder(
-            new File(WellKnowns.USER_FOLDER, USER_FILE_NAME),
-            defaultHolder);
+            new File(WellKnowns.USER_FOLDER, USER_FILE_NAME));
 
     //~ Constructors -----------------------------------------------------------
     //-----------------//
@@ -185,15 +159,14 @@ public class ConstantManager
     // getAllProperties //
     //------------------//
     /**
-     * Report the whole collection of properties (coming from DEFAULT
-     * and USER sources) backed up on disk.
+     * Report the whole collection of properties (coming from USER
+     * sources) backed up on disk.
      *
      * @return the collection of constant properties
      */
     public Collection<String> getAllProperties ()
     {
-        SortedSet<String> props = new TreeSet<>(defaultHolder.getKeys());
-        props.addAll(userHolder.getKeys());
+        SortedSet<String> props = new TreeSet<>(userHolder.getKeys());
 
         return props;
     }
@@ -248,22 +221,8 @@ public class ConstantManager
             }
         }
 
-        // Fallback on using default/user value
+        // Fallback on using user value
         return userHolder.getProperty(qName);
-    }
-
-    //----------------------------//
-    // getUnusedDefaultProperties //
-    //----------------------------//
-    /**
-     * Report the collection of DEFAULT properties that do not relate to
-     * any known application Constant.
-     *
-     * @return the potential old stuff in DEFAULT properties
-     */
-    public Collection<String> getUnusedDefaultProperties ()
-    {
-        return defaultHolder.getUnusedKeys();
     }
 
     //-------------------------//
@@ -278,20 +237,6 @@ public class ConstantManager
     public Collection<String> getUnusedUserProperties ()
     {
         return userHolder.getUnusedKeys();
-    }
-
-    //-----------------------------//
-    // getUselessDefaultProperties //
-    //-----------------------------//
-    /**
-     * Report the collection of used DEFAULT properties but whose
-     * content is equal to the source value (and are thus useless).
-     *
-     * @return the useless items in DEFAULT properties
-     */
-    public Collection<String> getUselessDefaultProperties ()
-    {
-        return defaultHolder.getUselessKeys();
     }
 
     //----------------//
@@ -324,14 +269,6 @@ public class ConstantManager
     public void storeResource ()
     {
         userHolder.store();
-    }
-
-    //-------------------------//
-    // getConstantDefaultValue //
-    //-------------------------//
-    String getConstantDefaultValue (String qName)
-    {
-        return defaultHolder.getProperty(qName);
     }
 
     //----------------------//
@@ -400,7 +337,7 @@ public class ConstantManager
                 Constant constant = constants.get((String) entry.getKey());
 
                 if ((constant != null)
-                        && constant.getSourceString().equals(entry.getValue())) {
+                    && constant.getSourceString().equals(entry.getValue())) {
                     props.add((String) entry.getKey());
                 }
             }
@@ -425,28 +362,12 @@ public class ConstantManager
             } catch (FileNotFoundException ignored) {
                 // This is not at all an error
                 logger.fine("[{0}" + "]" + " No property file {1}",
-                            ConstantManager.class.getName(),
-                            file.getAbsolutePath());
+                        ConstantManager.class.getName(),
+                        file.getAbsolutePath());
             } catch (IOException ex) {
                 logger.severe("Error loading constants file {0}",
-                              file.getAbsolutePath());
+                        file.getAbsolutePath());
             }
-        }
-    }
-
-    //---------------//
-    // DefaultHolder //
-    //---------------//
-    private class DefaultHolder
-            extends AbstractHolder
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public DefaultHolder (File file)
-        {
-            super(file);
-            properties = new Properties();
-            load();
         }
     }
 
@@ -454,33 +375,27 @@ public class ConstantManager
     // UserHolder //
     //------------//
     /**
-     * Triggers the loading of property files, first the default,
-     * then the user values if any.
+     * Triggers the loading of user property file.
      * Any modification made at run-time will be saved in the user part.
      */
     private class UserHolder
             extends AbstractHolder
     {
-        //~ Instance fields ----------------------------------------------------
-
-        private final AbstractHolder defaultHolder;
 
         //~ Constructors -------------------------------------------------------
-        public UserHolder (File file,
-                           AbstractHolder defaultHolder)
+        public UserHolder (File file)
         {
             super(file);
-            this.defaultHolder = defaultHolder;
-            properties = new Properties(defaultHolder.properties);
+            properties = new Properties();
             load();
         }
 
         //~ Methods ------------------------------------------------------------
         /**
          * Remove from the USER collection the properties that are
-         * already in the DEFAULT collection with identical value,
+         * already in the source with identical value,
          * and insert properties that need to reflect the current values
-         * which differ from DEFAULT or from source.
+         * which differ from source.
          */
         public void cleanup ()
         {
@@ -490,16 +405,9 @@ public class ConstantManager
                 final Constant constant = entry.getValue();
 
                 final String current = constant.getCurrentString();
-                final String def = defaultHolder.getProperty(key);
                 final String source = constant.getSourceString();
 
-                if ((def != null) && current.equals(def)) {
-                    if (properties.remove(key) != null) {
-                        logger.fine(
-                                "Removing User value for key: {0} = {1}",
-                                key, current);
-                    }
-                } else if (!current.equals(source)) {
+                if (!current.equals(source)) {
                     logger.fine(
                             "Writing User value for key: {0} = {1}",
                             key, current);
@@ -531,13 +439,13 @@ public class ConstantManager
             // Then write down the properties
             try (FileOutputStream out = new FileOutputStream(file)) {
                 properties.store(out,
-                                 " Audiveris user properties file. Do not edit");
+                        " Audiveris user properties file. Do not edit");
             } catch (FileNotFoundException ex) {
                 logger.warning("Property file {0} not found or not writable",
-                               file.getAbsolutePath());
+                        file.getAbsolutePath());
             } catch (IOException ex) {
                 logger.warning("Error while storing the property file {0}",
-                               file.getAbsolutePath());
+                        file.getAbsolutePath());
             }
         }
     }

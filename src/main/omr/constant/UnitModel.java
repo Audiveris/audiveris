@@ -23,20 +23,22 @@ import omr.ui.treetable.TreeTableModel;
 import javax.swing.JOptionPane;
 
 /**
- * Class {@code UnitModel} implements a data model for units suitable for
- * use in a JTreeTable.
+ * Class {@code UnitModel} implements a data model for units suitable
+ * for use in a JTreeTable.
  *
- * <p>A row in the UnitModel can be any instance of the 3 following types: <ul>
+ * <p>A row in the UnitModel can be any instance of the 3 following types:
+ * <ul>
  *
  * <li><b>PackageNode</b> to represent a package. Its children rows can be
- * either (sub) PackageNodes or UnitNodes.
+ * either (sub) PackageNodes or UnitNodes.</li>
  *
  * <li><b>UnitNode</b> to represent a class that contains a ConstantSet or a
  * Logger or both. Its parent node is a PackageNode. Its children rows (if any)
- * are the Constants of its ConstantSet.
+ * are the Constants of its ConstantSet.</li>
  *
  * <li><b>Constant</b> to represent a constant within a ConstantSet. In that
- * case, its parent node is a UnitNode. It has no children rows. </ul>
+ * case, its parent node is a UnitNode. It has no children rows.</li>
+ * </ul>
  *
  * @author Hervé Bitteur
  */
@@ -57,63 +59,55 @@ public class UnitModel
         //~ Enumeration constant initializers ----------------------------------
 
         /**
-         * The left column, assigned to tree structure, allows expansion and
-         * collapsing of sub-tree portions
+         * The left column, assigned to tree structure, allows expansion
+         * and collapsing of sub-tree portions.
          */
         TREE("Unit", true, 280, TreeTableModel.class),
         /**
-         * Editable column shared by {@link omr.log.Logger} entity if node
-         * is a unit, and by modification flag if node is a constant. Empty
-         * if node is a package.
+         * Editable column shared by {@link omr.log.Logger} entity if
+         * node is a unit, and by modification flag if node is a constant.
+         * Empty if node is a package.
          */
         LOGMOD("Log/Mod", true, 50, String.class),
         /**
-         * Column that recalls the constant type, and thus the possible range of
-         * values
+         * Column that recalls the constant type, and thus the possible
+         * range of values.
          */
         TYPE("Type", false, 70, String.class),
         /**
-         * Column for the units, if any, used for the value
+         * Column for the units, if any, used for the value.
          */
         UNIT("Unit", false, 70, String.class),
         /**
-         * Column relevant only for constants which are fractions of interline,
-         * as defined by {@link omr.sheet.Scale.Fraction}: the equivalent
-         * number of pixels is displayed, according to the scale of the
-         * currently selected Sheet. If there is no current Sheet, then just a
-         * question mark (?) is displayed
+         * Column relevant only for constants which are fractions of
+         * interline, as defined by {@link omr.sheet.Scale.Fraction}.
+         * The equivalent number of pixels is displayed, according to the scale
+         * of the currently selected Sheet.
+         * If there is no current Sheet, then just a question mark (?) is shown
          */
         PIXEL("Pixels", false, 30, String.class),
         /**
-         * Editable column for constant current value, with related tool tip
-         * retrieved from the constant declaration
+         * Editable column for constant current value, with related tool
+         * tip retrieved from the constant declaration.
          */
         VALUE("Value", true, 100, String.class),
         /**
-         * Column dedicated to constant descrption
+         * Column dedicated to constant description.
          */
         DESC("Description", false, 350, String.class);
         //~ Instance fields ----------------------------------------------------
 
-        /**
-         * Java class to handle column content
-         */
-        final Class<?> type;
+        /** Java class to handle column content. */
+        private final Class<?> type;
 
-        /**
-         * Is this column user editable?
-         */
-        final boolean editable;
+        /** Is this column user editable?. */
+        private final boolean editable;
 
-        /**
-         * Header for the column
-         */
-        final String header;
+        /** Header for the column. */
+        private final String header;
 
-        /**
-         * Width for column display
-         */
-        final int width;
+        /** Width for column display. */
+        private final int width;
 
         //~ Constructors -------------------------------------------------------
         //--------//
@@ -129,6 +123,14 @@ public class UnitModel
             this.width = width;
             this.type = type;
         }
+
+        //----------//
+        // getWidth //
+        //----------//
+        public int getWidth ()
+        {
+            return width;
+        }
     }
 
     //~ Constructors -----------------------------------------------------------
@@ -136,7 +138,7 @@ public class UnitModel
     // UnitModel //
     //-----------//
     /**
-     * Builds the model
+     * Builds the model.
      */
     public UnitModel ()
     {
@@ -148,8 +150,7 @@ public class UnitModel
     // getChild //
     //----------//
     /**
-     * Returns the child of {@code parent</code> at index
-     * <code>index} in
+     * Returns the child of {@code parent} at index {@code index} in
      * the parent's child array.
      *
      * @param parent a node in the tree, obtained from this data source
@@ -189,7 +190,6 @@ public class UnitModel
      * Returns the number of children of {@code parent}.
      *
      * @param parent a node in the tree, obtained from this data source
-     *
      * @return the number of children of the node {@code parent}
      */
     @Override
@@ -225,10 +225,9 @@ public class UnitModel
     // getColumnClass //
     //----------------//
     /**
-     * Report the class for instances in the provided column
+     * Report the class for instances in the provided column.
      *
      * @param column the desired column
-     *
      * @return the class for all cells in this column
      */
     @Override
@@ -241,7 +240,7 @@ public class UnitModel
     // getColumnCount //
     //----------------//
     /**
-     * Report the number of column in the table
+     * Report the number of column in the table.
      *
      * @return the table number of columns
      */
@@ -255,10 +254,9 @@ public class UnitModel
     // getColumnName //
     //---------------//
     /**
-     * Report the name of the column at hand
+     * Report the name of the column at hand.
      *
      * @param column the desired column
-     *
      * @return the column name
      */
     @Override
@@ -271,11 +269,10 @@ public class UnitModel
     // getValueAt //
     //------------//
     /**
-     * Report the value of a cell
+     * Report the value of a cell.
      *
      * @param node the desired node
      * @param col  the related column
-     *
      * @return the cell value
      */
     @Override
@@ -300,8 +297,7 @@ public class UnitModel
                 return null;
             } else if (node instanceof Constant) {
                 Constant constant = (Constant) node;
-
-                return Boolean.valueOf(constant.isModified());
+                return Boolean.valueOf(!constant.isSourceValue());
             }
 
             return "";
@@ -338,7 +334,7 @@ public class UnitModel
                 Constant constant = (Constant) node;
 
                 return (constant.getQuantityUnit() != null)
-                       ? constant.getQuantityUnit() : "";
+                        ? constant.getQuantityUnit() : "";
             } else {
                 return "";
             }
@@ -349,8 +345,8 @@ public class UnitModel
                 Constant constant = (Constant) node;
 
                 if (constant instanceof Scale.Fraction
-                        || constant instanceof Scale.LineFraction
-                        || constant instanceof Scale.AreaFraction) {
+                    || constant instanceof Scale.LineFraction
+                    || constant instanceof Scale.AreaFraction) {
                     // Compute the equivalent in pixels of this interline-based
                     // fraction, line or area fraction, provided that we have a
                     // current sheet and its scale is available.
@@ -404,7 +400,6 @@ public class UnitModel
      *
      * @param node   the related tree node
      * @param column the related table column
-     *
      * @return true if editable
      */
     @Override
@@ -416,8 +411,7 @@ public class UnitModel
         if (col == Column.LOGMOD) {
             if (node instanceof Constant) {
                 Constant constant = (Constant) node;
-
-                return Boolean.valueOf(constant.isModified());
+                return Boolean.valueOf(!constant.isSourceValue());
             } else if (node instanceof UnitNode) {
                 return true;
             } else {
@@ -432,11 +426,9 @@ public class UnitModel
     // isLeaf //
     //--------//
     /**
-     * Returns {@code true</code> if
-     * <code>node} is a leaf.
+     * Returns {@code true} if {@code node} is a leaf.
      *
      * @param node a node in the tree, obtained from this data source
-     *
      * @return true if {@code node} is a leaf
      */
     @Override

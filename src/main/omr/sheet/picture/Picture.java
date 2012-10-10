@@ -400,7 +400,7 @@ public class Picture
     {
         logger.info("Converting RGB image to gray ...");
 
-        if (constants.useMaxChannelForColorToGray.isSet()) {
+        if (constants.useMaxChannelInColorToGray.isSet()) {
             // We use the max value among the RGB channels
             int width = image.getWidth();
             int height = image.getHeight();
@@ -567,10 +567,9 @@ public class Picture
     {
         //~ Instance fields ----------------------------------------------------
 
-        Constant.Boolean useMaxChannelForColorToGray = new Constant.Boolean(
+        Constant.Boolean useMaxChannelInColorToGray = new Constant.Boolean(
                 true,
-                "Should we use max channel rather than standard luminance in "
-                + "RGAtoGray transform");
+                "Should we use max channel rather than standard luminance?");
 
     }
 }
