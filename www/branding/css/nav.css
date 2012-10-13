@@ -16,48 +16,34 @@ a {
 a:hover, a:focus {
     color: #FF4C00;
 }
-code.key {
-    color: #0000FF;
-    background: white;
-    font-weight: bold;
-    border: 1px solid gray;
-    border-radius: 3px;
-}
-dt {
-    margin-top: 10px;
-    font-weight: bold
-}
-strong {
-    color: #A1B55D;
-}
 
 /* Navigation */
-#navigation {
+nav {
     background: white;
     font-size: 90%;
 }
-#navigation a {
+nav a {
     /*    color: #FF6533;*/
     color: #8888ff;
 }
-#navigation a:hover, #navigation a:focus {
+nav a:hover, nav a:focus {
     background: rgba(250,250,255,1); 
     color: #4444ff;
 }
 
 /* Main content */
-#content {
+.main {
     color: #363B29;
     /*	background: #cbd888;*/
     background-color: rgba(250,250,255,1); 
 }
-#content a {
+.main a {
     color: #332510;
 }
-#content a:hover, #content a:focus {
+.main a:hover, .main a:focus {
     color: #6E5122;
 }
-#content strong {
+.main strong {
     color: #181A12;
 }
 
@@ -70,26 +56,24 @@ body {
 }
 
 /* Navigation */
-#navigation {
+nav {
     position: fixed;
-    /*    top: 20px;*/
-    padding-left: 10px;
-    width: 15%;
+    width: 14%;
     float: left;
     font-size: 0.75em; 
     line-height: 0.75;
 }
-#navigation ul {
+nav ul {
     margin: 0;
     padding: 0;
     list-style: none;
 }
-#navigation ul li {
+nav ul li {
     margin-left: 10px;
     padding: 0;
     list-style: none;
 }
-#navigation a {
+nav a {
     display: block;
     height: 1%;
     /*    padding: 6px 6px 6px 10px;*/
@@ -100,30 +84,37 @@ body {
     color:#000000;
     font-weight: bold;
 }
-#navigation li a {
+nav li a {
     color: #000000;
 }
-#navigation li li a {
+nav li li a {
     color: #000000;
     font-weight: normal;
 }
-#navigation li li li a {
+nav li li li a {
     color: #666666;
 }
-#navigation li li li li a {
+nav li li li li a {
     color: #aaaaaa;
 }
-/* Content */
-#content {
-    margin: 20px;
-    padding: 20px;
-    margin-left: 15%;
-    margin-bottom: 20px;
+/* Main */
+div.main {
+    margin-top: 0px;
+    margin-right: 0px;
+    margin-bottom: 0px;
+    margin-left: 14%;
+    width: 82%;
+    
+/*    padding-top: 0px;
+    padding-right: 20px;
+    padding-bottom: 20px;
+    padding-left: 20px;*/
+    padding: 0;
 }
-#content > :first-child {
+/*.main > :first-child {
     margin-top: 10px;
-}
-#content li {
+}*/
+.main li {
     margin-top: 5pt;
 }
 

@@ -66,7 +66,14 @@ div.main h1 {
 }
 .chapter {
     page-break-before: always;
+}
+.chapter h2 {
+    text-align: center;    
+}
+.chapter figcaption {
     text-align: center;
+    font-size: 0.7em;
+    font-style: italic;
 }
 
 /* --- Lists --- */
@@ -164,6 +171,7 @@ pre strong {
     font-weight: normal;
     color: black;
 }
+
 div.main {
     float: left;
     margin: 15px;
@@ -264,6 +272,29 @@ footer {
 
 h3.title {
     border-bottom: 1px solid silver;  
+}
+
+code.button,
+code.key {
+    background: white;
+    border: 1px solid gray;
+    padding-left: 2px;
+    padding-right: 2px;
+}
+
+code.key {
+    color: #0000FF;
+    font-weight: bold;
+    border-radius: 3px;
+}
+
+dt {
+    margin-top: 10px;
+    font-weight: bold
+}
+
+strong {
+    color: #A1B55D;
 }
 
 /* --- Specific --- */
