@@ -21,7 +21,7 @@ import net.jcip.annotations.NotThreadSafe;
  * deviation values based on vertical tiles of integrals.
  *
  * <p>This implementation is meant to be functionally equivalent to
- * {@link RandomAdaptivePixelSource} with similar performances but much lower
+ * {@link RandomFilter} with similar performances but much lower
  * memory requirements.
  *
  * <p>It uses a vertical window which performs the computation in constant time,

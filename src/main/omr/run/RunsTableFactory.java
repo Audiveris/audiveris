@@ -63,7 +63,6 @@ public class RunsTableFactory
      * @param source      the source to read runs from.
      *                    Orientation parameter is used to properly access the
      *                    source pixels.
-     * @param maxLevel    maximum gray level to be a foreground pixel
      * @param minLength   the minimum length for each run
      */
     public RunsTableFactory (Orientation orientation,

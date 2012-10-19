@@ -230,7 +230,7 @@ public class Language
         /**
          * Report a list item built as: "code (full name)".
          *
-         * @param provided code, such as "fra"
+         * @param code provided code, such as "fra"
          * @return the related list item, such as "fra (French)"
          */
         public String itemOf (String code)

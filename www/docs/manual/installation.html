@@ -5,23 +5,28 @@
 <html>
     <head>
         <title>Audiveris - Installation</title>
-        <script>context = {page:"Installation", root:"../../"};</script>
+        <script>context = {page: "Installation", root: "../../"};</script>
         <meta name="classification" content="Procedure for Audiveris installation"/>
         <meta name="description" content="How to download and install Audiveris"/>
 
         <meta name="author" content="Hervé Bitteur"/>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <link rel="icon" href="../../branding/images/audiveris-icons-256.ico" type="image/x-icon"/>
+
         <link rel="stylesheet" href="../../branding/css/global.css"/>
         <style type="text/css">
-            /*<![CDATA[*/
-            h1.page-title {
-                text-align: center
-            }
-            .block  {
+            /*<![CDATA[*/            
+            article  {
                 width: 93%;
             }
-            div#summary  {
+
+            nav h2 {
+                font-size: 1.5em;
+                margin: 0;
+                padding: 0;
+            }
+
+            #summary  {
                 width: 320px;
             }
             /*]]>*/
@@ -29,14 +34,14 @@
 
     </head>
     <body>
-        <script src="../../branding/js/header.js"> </script> 
+        <script src="../../branding/js/header.js"></script> 
         <div class="main">
 
-            <h1 class="page-title">
+            <h1 class="center">
                 Installation
             </h1>
-                
-            <div class="block" id="summary">
+
+            <nav id="summary">
                 <h2>Summary</h2>
                 <ul>
                     <li><a href="#download">Download</a></li>
@@ -47,9 +52,9 @@
                     <li><a href="#java">Java</a></li>
                     <li><a href="#cpp">C++</a> (to allow OCR features)</li>
                 </ul>
-            </div>
+            </nav>
 
-            <div class="block" id="download">
+            <article id="download">
                 <h2>Downloading Audiveris</h2>
                 <p>
                     The latest distribution material is always available on the 
@@ -89,13 +94,13 @@
                             Building</a> section.
                     </dd>
                 </dl>
-            </div>
-                
-            <div class="block" id="system">
+            </article>
+
+            <article id="system">
                 <h2>Operating system</h2>
                 <ul>
                     <li>
-                        
+
                         Today Audiveris runs on <b>Windows</b> and <b>Linux</b>.
                     </li>
                     <li>
@@ -110,9 +115,9 @@
                         the connection to Tesseract is not yet implemented for this platform.
                     </li>
                 </ul>
-            </div>
+            </article>
 
-            <div class="block" id="windows">
+            <article id="windows">
                 <h2>Windows</h2>
                 If needed by your environment, the Windows installer takes care 
                 of all system-level components, namely:
@@ -133,82 +138,94 @@
                 Audiveris application data and configuration information are
                 installed under the user location pointed by the 
                 <code>%APPDATA%</code> environment variable.
-            </div>
+            </article>
 
-            <div class="block" id="building">
+            <article id="building">
                 <h2>Building from source</h2>
                 This section gathers instructions about building Audiveris from 
                 the source distribution.
                 <dl>
+                    <dt>Folders</dt>
+                    <dd>
+                        The file <a href="../../../dev/material/global-tree.txt">
+                            global-tree.text</a> describes the general 
+                        organization of Audiveris folders.
+                    </dd>
                     <dt> 
                     Preliminary check
                     </dt>
                     <dd>Make sure the definitions located in
                         <code>dev/build.default.properties</code> are properly
-                        overridden as needed in the <code>dev/build.properties</code>.
-                        This concerns especially the "companions" section
-                        which gathers pointers to jars of companion tools
-                        needed at build time.
+                        overridden as needed in a potential <code>build.properties</code>
+                        file located in your user directory. 
+                        The location depends on your system environment.
+                        For Windows, it's <code>%APPDATA%/AudiverisLtd/audiveris/build.properties</code>.
                     </dd>
-                        
+
                     <dt>
                     Using <b>NetBeans</b>
                     </dt>
                     <dd>
-                        <ol>
+                        <ul>
                             <li>
-                                Create a NetBeans project in the source distribution folder
-                                (creation of a Java project with existing Java sources)
+                                The source distribution already provides a 
+                                populated <code>nbproject</code> folder.
+                                Hence, you don't need to create a NetBeans 
+                                project, you can simply open this project from 
+                                within the NetBeans environment.
                             </li>
                             <li>
-                                Specify <code>src/main</code> and <code>src/test</code>
-                                as the respective source and test packages
-                                repositories.
+                                Directly clean and build the whole project using
+                                the NetBeans commands.
                             </li>
-                            <li>
-                                Rename the provided <code>build-for-netbeans.xml</code> file 
-                                as <code>build.xml</code> to be properly picked up by NetBeans.
-                                This customized file will dispatch to the Ant targets
-                                defined in the <code>dev</code> subfolder.
-                            </li>
-                            <li>
-                                Define the needed jar libraries. 
-                                Those needed for run time are located in
-                                the <code>dev/externals</code> folder.
-                                Those needed for build time only are located in
-                                the <code>dev/tools</code> folder.
-                            </li>
-                            <li>
-                                Clean and build the whole project
-                            </li>
-                        </ol>
-                            
+                        </ul>
+
                     </dd>
                     <dt>
                     Using <b>Ant</b>
                     </dt>
                     <dd>
-                        <ol>
+                        Whether you use NetBeans or prefer using Ant directly,
+                        the building is handled by the <code>build.xml</code>
+                        file located in Audiveris root folder.
+                        This file imports the NetBeans targets (located in 
+                        <code>nbproject</code>) and a specific system-dependent
+                        file (<code>dev/windows/-windows.xml</code> for Windows,
+                        <code>dev/unix/-unix.xml</code> for Linux).
+                        The organization of Ant tasks is described by this
+                        <a target="_blank" href="../../../dev/material/tasks-graph.pdf">graph</a>.
+                        <ul>
                             <li>
-                                Launch Ant on the <code>dev/build.xml</code> file 
-                                to process the default target. This builds the
+                                From Audiveris root directory, you can launch 
+                                <code>ant clean jar run</code>. This builds the
                                 Audiveris jar file and launches the application.
                             </li>
                             <li>
-                                Other Ant targets are available, for example to 
-                                build Windows executables and installer.
+                                Other Ant targets are available. 
+                                For example the command <code>ant installers</code>
+                                builds the installers (both 32-bit and 64-bit)
+                                for the system you are running (either Windows
+                                or Linux).
                             </li>
-                        </ol>
-                        [Note #1: This applies for the Windows environment. Building for Linux will
-                        need additional operations still to be documented]
-                        <br/>
-                        [Note #2: The file <code>dev/material/global-tree.txt</code>
-                        describes the mapping of Audiveris folders]
+                        </ul>
+                    </dd>
+
+                    <dt>Building Windows installers</dt>
+                    <dd>
+                        Windows installers are built in the form of 
+                        <code>.msi</code> files.
+                        The command <code>ant installers</code> takes care of
+                        their building under Windows, but needs the free 
+                        <abbr title="Windows installer XML">WiX</abbr> software
+                        to be installed beforehand and made available on the path.
+                        As of this writing, we use version 3.5 of the WiX 
+                        toolset, available at <a href="http://wix.codeplex.com/">
+                            http://wix.codeplex.com/</a>.
                     </dd>
                 </dl>
-            </div>
-                
-            <div class="block" id="font">
+            </article>
+
+            <article id="font">
                 <h2>MusicalSymbols font</h2>
                 Audiveris makes use of a free font named <b>MusicalSymbols.ttf</b>.
                 The font is needed for interactive mode (score display) and
@@ -228,9 +245,9 @@
                         Audiveris directory).
                     </li>
                 </ul>
-            </div>
-                
-            <div class="block" id="java">
+            </article>
+
+            <article id="java">
                 <h2>Java runtime</h2>
                 <b>Java 7</b>, or higher, is required.
                 <ul>
@@ -238,15 +255,15 @@
                         For Windows, the application launcher will make sure
                         you have at least Java 7 installed.
                     </li>
-                        
+
                     <li>For Linux, you can download and install the latest Java 
                         version from <a href="http://www.java.com/en/download/">Sun/Oracle site</a>
                         or IcedTea from <a href="http://openjdk.java.net/projects/icedtea/">OpenJDK site</a>.
                     </li>
                 </ul>
-            </div>
-                
-            <div class="block" id="cpp">
+            </article>
+
+            <article id="cpp">
                 <h2>C++ runtime</h2>
                 <p>
                     C++ runtime environment is needed to run Tesseract OCR which
@@ -257,18 +274,18 @@
                         C++ runtime installation if needed.
                     </li>
                     <li>
-                    For Linux, 
-                    <span style="text-decoration: line-through;">
-                    download the <code>tesjeract</code> source
-                        from <a href="http://code.google.com/p/tesjeract/">http://code.google.com/p/tesjeract/</a>
-                        and follow the provided instructions to build this interface.
-                        <br/>
-                    </span>
+                        For Linux, 
+                        <span style="text-decoration: line-through;">
+                            download the <code>tesjeract</code> source
+                            from <a href="http://code.google.com/p/tesjeract/">http://code.google.com/p/tesjeract/</a>
+                            and follow the provided instructions to build this interface.
+                            <br/>
+                        </span>
                         Documentation for Linux bridge to Tesseract V3 should be
                         published shortly.
                     </li>
                 </ul>
-            </div>
+            </article>
 
         </div>
         <script src="../../branding/js/footer.js"></script> 

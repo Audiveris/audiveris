@@ -52,19 +52,22 @@
     <property name="Company"   value="${Name} Ltd." />
     <property name="CompanyId" value="${Name}Ltd" />
     <property environment="env"/>    
+    <property name="dev.dir"   location="${basedir}/dev"/>
     
-    <!-- Environment (user) for Mac variants -->
+    <!-- Environment (user) for Mac variants, if any -->
     <!-- TODO: implement this for Mac -->        
     
-    <!-- Environment (user) for Windows variants -->
-    <property file="${env.APPDATA}/${CompanyId}/${name}/build.properties"/>        
+    <!-- Environment (user) for Windows variants, if any -->
+    <property file="${env.APPDATA}/${CompanyId}/${name}/settings/build.properties"/>        
     
-    <!-- Environment (user) for Unix variants -->
-    <property file="${env.XDG_CONFIG_HOME}/${CompanyId}/${name}/build.properties"/>        
-    <property file="${env.HOME}/.config/${CompanyId}/${name}/build.properties"/>        
+    <!-- Environment (user) for Unix variants, if any -->
+    <property file="${env.XDG_CONFIG_HOME}/${CompanyId}/${name}/settings/build.properties"/>        
+    <property file="${env.HOME}/.config/${CompanyId}/${name}/settings/build.properties"/>  
+          
+     <!-- Environment (developer specific), if any -->
+    <property file="${dev.dir}/build.properties"/>
     
     <!-- Environment (default) -->
-    <property name="dev.dir"   location="${basedir}/dev"/>
     <property file="${dev.dir}/build.default.properties"/>
     
     <!-- Classpaths -->    
@@ -104,7 +107,7 @@
         <os family="windows"/>
     </condition>
     <echo level="verbose" message="windows-import=${windows-import}" />
-     <import optional="true" file="${windows-import}" /> 
+    <import optional="true" file="${windows-import}" /> 
 
     <!-- Import NetBeans implementation targets -->
     <import file="nbproject/build-impl.xml"/>
@@ -330,7 +333,7 @@
 
         <!-- Prepare a (half) manifest -->
         <echo file="${basedir}/manifest.mf" append="false">Manifest-Version: 1.0
-Built-By: ${build.owner}
+Built-By: ${Company}
 Specification-Title: ${Name}
 Specification-Vendor: ${Company}
 Specification-Version: ${impl.version}

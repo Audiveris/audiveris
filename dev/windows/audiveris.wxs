@@ -18,20 +18,24 @@ Assumption: myArch is set to either x64 or x86
 <?if $(var.myArch)=x64 ?>
 
 <!-- This Product GUID must be changed for each release shipped -->
-<?define myProductId  = "e7fe4613-845a-4c3d-9a0c-57dedafb36e2" ?>
+<?define myProductId  = "f5441af8-8701-4cee-8c66-cf66b1ffc147" ?>
 <?define mySystemRef  = "System64Folder" ?>
 <?define myProgramRef = "ProgramFiles64Folder" ?>
 <?define myFullDll    = "$(var.myDll)\x64" ?>
 <?define myVC         = "$(var.myMsmDir)\Microsoft_VC90_CRT_x86_x64.msm" ?>
+<?define myGsDll      = "gsdll64.dll" ?>
+<?define myGsExe      = "gswin64c.exe" ?>
 
 <?else ?>
 
 <!-- This Product GUID must be changed for each release shipped -->
-<?define myProductId  = "ce9d386e-8061-41fb-83ca-38419cd471bc" ?>
+<?define myProductId  = "08ea756a-712f-42d7-9d7e-a9188bb74e4e" ?>
 <?define mySystemRef  = "SystemFolder" ?>
 <?define myProgramRef = "ProgramFilesFolder" ?>
 <?define myFullDll    = "$(var.myDll)\x86" ?>
 <?define myVC         = "$(var.myMsmDir)\Microsoft_VC90_CRT_x86.msm" ?>
+<?define myGsDll      = "gsdll32.dll" ?>
+<?define myGsExe      = "gswin32c.exe" ?>
 
 <?endif ?>
 
@@ -145,6 +149,18 @@ Assumption: myArch is set to either x64 or x86
                 </Component>
                 <!-- lib (in separate gen-common-lib.wxs) -->
             </Directory>
+            
+            <!-- Ghostscript folder -->
+            <Directory Id="gsDirId" Name="gs">
+                <Directory Id="gsWindowsDirId" Name="windows">
+                    <Directory Id="gsWindowsArchDirId" Name="$(var.myArch)">
+                        <Component Id="gs.CID" Guid="5d20148c-4abb-4d76-835e-8bf0369dea0e">
+                            <File Id="gs.dll" Name='$(var.myGsDll)' DiskId='1' Source='$(var.myGs)\$(var.myArch)\$(var.myGsDll)' />
+                            <File Id="gs.exe" Name='$(var.myGsExe)' DiskId='1' Source='$(var.myGs)\$(var.myArch)\$(var.myGsExe)' />
+                        </Component>
+                    </Directory>                        
+                </Directory>
+            </Directory>
       
             <!-- ocr     (in separate gen-common-ocr.wxs) -->
             <!-- res     (in separate gen-common-res.wxs) -->                        
@@ -180,8 +196,38 @@ Assumption: myArch is set to either x64 or x86
                 <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" 
                                Name="data" Type="string" Value="installed" KeyPath="yes" />
             </Component>
+            
+            <!-- Pre-populate settings folder with templates -->
+            <Directory Id="settingsDirId" Name="settings">
+                <!-- Handle the removal of settings directory -->
+                <Component Id="settings.CID" Guid="727ca284-5993-4f56-b050-706ae6ff95ab">
+                    <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" 
+                                   Name="settings" Type="string" Value="installed" KeyPath="yes" />
+                    <RemoveFolder Id='settingsDirId' Directory='settingsDirId' On='uninstall'/>
+                </Component>
+                
+                <!-- Template for settings/build.properties -->
+                <Component Id="buildProperties.CID" Guid="13ac0e4e-fd3c-4dda-a8d8-021758c40de4">
+                    <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]\settings" 
+                                   Name="build.properties" Type="string" Value="installed" KeyPath="yes" />
+                    <File Id="buildProperties" Name="build.properties" DiskId="1" Source="$(var.myTemplates)\build.properties" />
+                </Component>
+                
+                <!-- Template for settings/logging.properties -->
+                <Component Id="loggingProperties.CID" Guid="8e6e4be5-0f3f-42fd-b27f-0ec71c9cbc20">
+                    <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]\settings" 
+                                   Name="logging.properties" Type="string" Value="installed" KeyPath="yes" />
+                    <File Id="loggingProperties" Name="logging.properties" DiskId="1" Source="$(var.myTemplates)\logging.properties" />
+                </Component>
+                
+                <!-- Template for settings/user-actions.xml -->
+                <Component Id="userActions.CID" Guid="d26b7dca-1521-489e-90d2-441ff2185323">
+                    <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]\settings" 
+                                   Name="user-actions.xml" Type="string" Value="installed" KeyPath="yes" />
+                    <File Id="userActions" Name="user-actions.xml" DiskId="1" Source="$(var.myTemplates)\user-actions.xml" />
+                </Component>
+            </Directory>
       
-            <!-- settings (in separate gen-user-settings.wxs) -->
             <!-- eval     (in separate gen-user-eval.wxs) -->
             <!-- examples (in separate gen-user-examples.wxs) -->
             <!-- plugins  (in separate gen-user-plugins.wxs) -->
@@ -196,16 +242,6 @@ Assumption: myArch is set to either x64 or x86
                     <RemoveFolder Id="benchesDirId" On="uninstall" />                                
                 </Component>
             </Directory>  
-      
-            <!-- midi    empty folder -->
-            <Directory Id="midiDirId" Name="midi" >
-                <Component Id="midi.CID" Guid="927b3d25-b64c-4b90-8e3d-61b7207e66ee">
-                    <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" 
-                                   Name="midi" Type="string" Value="installed" KeyPath="yes" />
-                    <CreateFolder />
-                    <RemoveFolder Id="midiDirId" On="uninstall" />                                
-                </Component>
-            </Directory>             
       
             <!-- print   empty folder -->
             <Directory Id="printDirId" Name="print" >
@@ -286,12 +322,19 @@ Assumption: myArch is set to either x64 or x86
                 <ComponentRef Id="bat.CID" />
                 <ComponentRef Id="programMenu.CID" />
                 <ComponentRef Id="jar.CID" />
+                <ComponentRef Id="gs.CID" />
                 <ComponentRef Id="data.CID" />
+                
+                <ComponentRef Id="settings.CID" />
+                <ComponentRef Id="buildProperties.CID" />
+                <ComponentRef Id="loggingProperties.CID" />
+                <ComponentRef Id="userActions.CID" />
+                
                 <ComponentRef Id="benches.CID" />
-                <ComponentRef Id="midi.CID" />
                 <ComponentRef Id="print.CID" />
                 <ComponentRef Id="scripts.CID" />
                 <ComponentRef Id="scores.CID" />
+                
                 <ComponentRef Id="fonts.CID" />
         
                 <ComponentRef Id="bridge.CID" />
@@ -300,7 +343,6 @@ Assumption: myArch is set to either x64 or x86
         
                 <ComponentGroupRef Id="lib.CID" />
                 <ComponentGroupRef Id="res.CID" />
-                <ComponentGroupRef Id="settings.CID" />
                 <ComponentGroupRef Id="eval.CID" />
             </Feature>
       

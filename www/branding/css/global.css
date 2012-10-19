@@ -16,7 +16,6 @@ html {
 }
 
 body {
-    /*    font-family: Helvetica, Arial, Verdana, sans-serif;*/
     font-family: Verdana, "Bitstream Vera Sans", "Lucida Grande", sans-serif; /* 3 */
     font-size: 0.9em; 
     line-height: 1.25;
@@ -27,12 +26,12 @@ body {
     background-color: rgba(250,250,255,1); 
 }
 
-.block a:link,
-.block a:visited {
+article a:link,
+article a:visited {
     color: #245678;
 }
 
-.block a:hover {
+article a:hover {
     color: #4FA3F9;
     text-decoration: underline;
 }
@@ -64,6 +63,11 @@ h5 {font-size: 1.2em;}
 div.main h1 {
     text-shadow: 4px 4px 6px rgba(0,0,0,0.5);
 }
+
+.center {
+    text-align: center;
+}
+
 .chapter {
     page-break-before: always;
 }
@@ -162,8 +166,6 @@ pre {
     width: 95%;
     overflow: auto;
     overflow-y: hidden;
-    /*    margin: .75em 0;
-        padding: 12px;*/
     background: ivory;
     color: #555;
 }
@@ -198,9 +200,8 @@ header {
     background: linear-gradient(top,  rgba(210,235,249,1) 0%,rgba(250,250,255,1) 100%);  /* W3C */
 }
 
-.block  {
+article  {
     float: left;
-    width: 200px;
     margin: 10px;
     padding: 0px;
     padding-left: 20px;
@@ -213,18 +214,25 @@ header {
     box-shadow: 0px 2px 2px 1px rgba(45,20,6,0.2);
 }
 
-.block h2 {
+article h2 {
     font-size: 140%;
     padding-bottom: 2px;
     border-bottom: 1px solid #cccccc;      
 }
+
 .chapter-title {
     font-size: x-large;
     color: #4444AA;
 }
+
+.clear {
+    clear: both;
+}
+
 .code {
     margin-left: 50pt;
 }
+
 .note {
     page-break-inside: avoid;
     margin-left: 50pt;
@@ -234,6 +242,7 @@ header {
     border-radius: 6px;
     box-shadow: 0px 2px 2px 1px rgba(45,20,6,0.2);
 }
+
 .page-title {
     text-align: center
 }

@@ -212,8 +212,8 @@ public class ActionManager
     {
         // Load classes first for system actions, then for user actions
         File[] files = new File[]{
-            new File(WellKnowns.SETTINGS_FOLDER, "system-actions.xml"),
-            new File(WellKnowns.USER_FOLDER, "user-actions.xml")};
+            new File(WellKnowns.RES_FOLDER, "system-actions.xml"),
+            new File(WellKnowns.SETTINGS_FOLDER, "user-actions.xml")};
 
         for (int i = 0; i < files.length; i++) {
             File file = files[i];

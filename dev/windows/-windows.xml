@@ -53,7 +53,7 @@
             if="${is.windows}">
     
         <echo message="Building msi installer for arch ${arch}" />
-        <echo message="Beware, this task takes a couple of minutes..." />    
+        <echo message="Beware, this task takes several minutes and produces many warnings..." />
     
         <!-- Compilation -->
         <wix mode="candle"> 
@@ -74,10 +74,11 @@
             <candleParameter name="myOcr"          value="${ocr.dir}"/>
             <candleParameter name="myPlugins"      value="${plugins.dir}"/>
             <candleParameter name="myRes"          value="${res.dir}"/>
-            <candleParameter name="mySettings"     value="${settings.dir}"/>
             <candleParameter name="mySoftware"     value="${name}"/>
+            <candleParameter name="myTemplates"    value="${templates.dir}"/>
             <candleParameter name="myTrain"        value="${train.dir}"/>
             <candleParameter name="myWww"          value="${www.dir}"/>
+            <candleParameter name="myGs"           value="${gs.windows.dir}"/>
       
             <candleArg line="-out ${dist.dir}\"/>             
             <candleArg line="-arch ${arch}"/>        
@@ -116,10 +117,9 @@
     <!--  - D O - I N S T A L L E R S  -->
     <!-- ============================= -->
     <target name="-do-installers"
-            depends="-hg-tip"
             if="${is.windows}">
         
-        <!-- wix task definition (et al.) -->
+        <!-- Definition for wix task (et al.) -->
         <taskdef 
             resource="org/apache/ant/dotnet/antlib.xml"
             classpathref="tools.classpath" />
@@ -140,7 +140,7 @@
     <!--  - E X E  -->
     <!-- ========= -->
     <target name="-exe"           
-            depends="-launch4j-taskdef"
+            depends="-launch4j"
             if="${is.windows}">                
     
         <!-- Build Windows executable without console -->
@@ -159,7 +159,7 @@
     <!--  - E X E - C O N S O L E  -->
     <!-- ========================= -->
     <target name="-exe-console"   
-            depends="-launch4j-taskdef"
+            depends="-launch4j"
             if="${is.windows}">
     
         <!-- Build Windows executable with console -->
@@ -181,10 +181,10 @@
             depends="-execs, -wxs-generation, -do-installers, -wix-cleanup, -wxs-cleanup"
             if="${is.windows}"/>
   
-    <!-- =================================== -->
-    <!--  - L A U N C H 4 J - T A S K D E F  -->
-    <!-- =================================== -->
-    <target name="-launch4j-taskdef"
+    <!-- =================== -->
+    <!--  - L A U N C H 4 J  -->
+    <!-- =================== -->
+    <target name="-launch4j"
             if="${is.windows}">
         <!-- launch4j task definition -->
         <taskdef name="launch4j"
@@ -297,16 +297,6 @@
             <arg line="-cg examples.CID"/>
             <arg line="-var var.myExamples"/>
             <arg line="-out ${dev.windows.dir}/gen-user-examples.wxs"/>
-        </exec>
-    
-        <echo message="buiding ${dev.windows.dir}/gen-user-settings.wxs" />
-        <exec executable="java">
-            <arg line="-jar ${tools.dir}/wix-heat-user.jar"/>
-            <arg value="${settings.dir}"/>
-            <arg line="-dr adProductDirId"/>
-            <arg line="-cg settings.CID"/>
-            <arg line="-var var.mySettings"/>
-            <arg line="-out ${dev.windows.dir}/gen-user-settings.wxs"/>
         </exec>
     
         <echo message="buiding ${dev.windows.dir}/gen-user-eval.wxs" />

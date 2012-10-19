@@ -292,7 +292,7 @@ public class AdaptiveFilter
         /**
          * Create a tile instance.
          *
-         * @param tileWitdh tile width
+         * @param tileWidth tile width
          * @param height    tile height = image height
          * @param squared   true for squared values, false for plain values
          */

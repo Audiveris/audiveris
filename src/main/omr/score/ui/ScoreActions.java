@@ -117,7 +117,7 @@ public class ScoreActions
      * Make sure that the score parameters are properly set up, even by
      * prompting the user for them, otherwise return false
      *
-     * @param score the provided score
+     * @param sheet the provided sheet
      * @return true if OK, false otherwise
      */
     public static boolean checkParameters (Sheet sheet)

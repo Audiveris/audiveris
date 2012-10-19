@@ -103,12 +103,7 @@ div.main {
     margin-right: 0px;
     margin-bottom: 0px;
     margin-left: 14%;
-    width: 82%;
-    
-/*    padding-top: 0px;
-    padding-right: 20px;
-    padding-bottom: 20px;
-    padding-left: 20px;*/
+    width: 82%;    
     padding: 0;
 }
 /*.main > :first-child {
@@ -133,8 +128,5 @@ img.icon {
 .side {
     float: left;
     margin: 0 40px 20px 0;
-}
-.clear {
-    clear: both;
 }
 

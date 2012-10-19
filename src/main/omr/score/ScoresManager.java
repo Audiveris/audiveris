@@ -84,7 +84,6 @@ public class ScoresManager
             Main.getGui().addExitListener(
                     new ExitListener()
                     {
-
                         @Override
                         public boolean canExit (EventObject e)
                         {
@@ -309,32 +308,6 @@ public class ScoresManager
         return constants.defaultInputDirectory.getValue();
     }
 
-    //--------------------//
-    // getDefaultMidiFile //
-    //--------------------//
-    /**
-     * Report the file to which the MIDI data would be written by default.
-     *
-     * @param folder the target folder if any
-     * @param score  the score to export
-     * @return the default file
-     */
-    public File getDefaultMidiFile (File folder,
-                                    Score score)
-    {
-        if (score.getMidiFile() != null) {
-            return score.getMidiFile();
-        }
-
-        String child = score.getRadix() + MidiAbstractions.MIDI_EXTENSION;
-
-        if (folder != null) {
-            return new File(folder, child);
-        } else {
-            return new File(constants.defaultMidiDirectory.getValue(), child);
-        }
-    }
-
     //---------------------//
     // getDefaultPrintFile //
     //---------------------//
@@ -375,7 +348,7 @@ public class ScoresManager
             history = new NameSet(
                     "Images History",
                     constants.imagesHistory,
-                    10);
+                    constants.historySize.getValue());
         }
 
         return history;
@@ -495,7 +468,7 @@ public class ScoresManager
     {
         // Check if we do save bench data
         if ((Main.getBenchPath() == null)
-                && !constants.saveBenchToDisk.getValue()) {
+            && !constants.saveBenchToDisk.getValue()) {
             return;
         }
 
@@ -654,10 +627,6 @@ public class ScoresManager
                 WellKnowns.DEFAULT_BENCHES_FOLDER.toString(),
                 "Default directory for saved benches");
 
-        Constant.String defaultMidiDirectory = new Constant.String(
-                WellKnowns.DEFAULT_MIDI_FOLDER.toString(),
-                "Default directory for writing Midi files");
-
         Constant.String defaultPrintDirectory = new Constant.String(
                 WellKnowns.DEFAULT_PRINT_FOLDER.toString(),
                 "Default directory for printing sheet files");
@@ -670,6 +639,11 @@ public class ScoresManager
                 "",
                 "History of loaded images");
 
+        Constant.Integer historySize = new Constant.Integer(
+                "count",
+                10,
+                "Maximum number of files names kept in history");
+
         Constant.String defaultInputDirectory = new Constant.String(
                 WellKnowns.EXAMPLES_FOLDER.toString(),
                 "Default directory for selection of image files");
@@ -677,5 +651,6 @@ public class ScoresManager
         Constant.String defaultDewarpDirectory = new Constant.String(
                 WellKnowns.EXAMPLES_FOLDER.toString(),
                 "Default directory for saved dewarped images");
+
     }
 }

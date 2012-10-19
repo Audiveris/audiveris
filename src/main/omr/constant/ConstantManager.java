@@ -83,7 +83,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * This file is modified every time the user updates the value of a constant by
  * means of the provided Constant user interface at run-time.
  * The file is not mandatory, and is located in the user application data
- * folder.
+ * {@code settings} folder.
  * Its values override the SOURCE corresponding constants.
  * Typically, these USER values represent some modification made by the end user
  * at run-time and thus saved from one run to the other.
@@ -144,7 +144,7 @@ public class ConstantManager
 
     /** User properties */
     private final UserHolder userHolder = new UserHolder(
-            new File(WellKnowns.USER_FOLDER, USER_FILE_NAME));
+            new File(WellKnowns.SETTINGS_FOLDER, USER_FILE_NAME));
 
     //~ Constructors -----------------------------------------------------------
     //-----------------//

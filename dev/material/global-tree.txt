@@ -8,17 +8,17 @@
 
 Target System folders (read-only)
 ---------------------
+Windows: <SystemFolder> or <System64Folder>
 
-for Windows:
-<SystemFolder or System64Folder>/jniTesseract3Bridge.dll
-<SystemFolder or System64Folder>/jniTesseract3Bridge.dll.manifest
-<SystemFolder or System64Folder>/liblept168.dll
-<SystemFolder or System64Folder>/libtesseract302.dll
+./jniTesseract3Bridge.dll
+./jniTesseract3Bridge.dll.manifest
+./liblept168.dll
+./libtesseract302.dll
 
 Target Program folders                  WellKnowns.PROGRAM_FOLDER (read-only)
 ----------------------
+Windows: %ProgramFiles%/AudiverisLtd/audiveris/
 
-./
 ./audiveris.exe
 ./audiveris.l4j.ini
 ./audiveris-console.exe
@@ -28,8 +28,8 @@ Target Program folders                  WellKnowns.PROGRAM_FOLDER (read-only)
 ./dist/
 ./dist/audiveris.jar
 ./dist/lib/
+./dist/lib/ALL-LICENSES.txt
 ./dist/lib/Jama-1.0.2.jar
-./dist/lib/PDFRenderer.jar
 ./dist/lib/bsaf-1.9.1.jar
 ./dist/lib/clibwrapper_jiio.jar
 ./dist/lib/eventbus-1.4.jar
@@ -39,15 +39,24 @@ Target Program folders                  WellKnowns.PROGRAM_FOLDER (read-only)
 ./dist/lib/jai_imageio.jar
 ./dist/lib/jcommon-1.0.16.jar
 ./dist/lib/jfreechart-1.0.13.jar
-./dist/lib/jgoodies-common-1.3.0.jar
-./dist/lib/jgoodies-forms-1.5.0.jar
-./dist/lib/jgoodies-looks-2.5.0.jar
+./dist/lib/jgoodies-common-1.4.0.jar
+./dist/lib/jgoodies-common-LICENSE.txt
+./dist/lib/jgoodies-forms-1.6.0.jar
+./dist/lib/jgoodies-forms-LICENSE.txt
+./dist/lib/jgoodies-looks-2.5.2.jar
+./dist/lib/jgoodies-looks-LICENSE.txt
 ./dist/lib/jlfgr-1_0.jar
 ./dist/lib/mlibwrapper_jai.jar
 ./dist/lib/proxymusic-2.0.jar
 ./dist/lib/tesseract-3.jar
 
-./ocr/                                  WellKnowns.OCR_FOLDER (read-only?)
+./gs/                                   WellKnowns.GS_FOLDER (read-only)
+./gs/windows/x64/gsdll64.dll
+./gs/windows/x64/gswin64.exe
+./gs/windows/x86/gsdll32.dll
+./gs/windows/x86/gswin32.exe
+
+./ocr/                                  WellKnowns.OCR_FOLDER (read-only)
 ./ocr/tessdata/
 ./ocr/tessdata/deu.traineddata
 ./ocr/tessdata/eng.traineddata
@@ -61,32 +70,32 @@ Target Program folders                  WellKnowns.PROGRAM_FOLDER (read-only)
 ./res/all-icons-256.ico
 ./res/splash.bmp
 ./res/splash.png
+./res/system-actions.xml
 
-./www/                                  WellKnowns.DOC_FOLDER (read-only?)
+./www/                                  WellKnowns.DOC_FOLDER (read-only)
 ./www/index.html
 ./www/branding
 ./www/docs
 
-Target User config folders              WellKnowns.CONFIG_FOLDER
---------------------------
+Target User folder                      WellKnowns.USER_FOLDER (read-write)
+------------------
+Windows: %APP_DATA%/AudiverisLtd/audiveris/
 
-./settings/                             WellKnowns.SETTINGS_FOLDER (read-only)
-./settings/run.default.properties
-./settings/system-actions.xml
+A few persistency files handled by Swing Application Framework:
+./mainFrame.session.xml
+./optionsFrame.session.xml
+./[others...].session.xml
 
-[APP_DATA]                              WellKnowns.USER_FOLDER (read-write)
-[APP_DATA]/logging.properties
-[APP_DATA]/run.properties
-[APP_DATA]/build.properties
-[APP_DATA]/user-actions.xml
+./settings/                             WellKnowns.SETTINGS_FOLDER (read-write)
+./settings/logging.properties
+./settings/run.properties
+./settings/build.properties
+./settings/user-actions.xml
 
 ./plugins/                              WellKnowns.PLUGINS_FOLDER (read-write?)
 ./plugins/musescore.js
 ./plugins/finale.js
 ./plugins/finale-notepad.js
-
-Target User data folders                WellKnowns.DATA_FOLDER
-------------------------
 
 ./examples/                             WellKnowns.EXAMPLES_FOLDER (read-write)
 ./examples/Dichterliebe01.pdf
@@ -106,7 +115,6 @@ Target User data folders                WellKnowns.DATA_FOLDER
 ./eval/                                 WellKnowns.EVAL_FOLDER (read-write)
 ./eval/linear-evaluator.xml     
 ./eval/neural-network.xml
-But we should have a backup of them...
 
 ./train/                                WellKnowns.TRAIN_FOLDER (read-write)
 ./train/core
@@ -114,13 +122,13 @@ But we should have a backup of them...
 ./train/sheets
 ./train/symbols
 
-./benches/  [user populated]            WellKnowns.BENCHES_FOLDER (r-w)
-./midi/     [user populated]            WellKnowns.MIDI_FOLDER    (r-w)
-./print/    [user populated]            WellKnowns.PRINT_FOLDER   (r-w)
-./scripts/  [user populated]            WellKnowns.SCRIPTS_FOLDER (r-w)
-./scores/   [user populated]            WellKnowns.SCORES_FOLDER  (r-w)
+./benches/  [user populated]            WellKnowns.BENCHES_FOLDER (read-write)
+./midi/     [user populated]            WellKnowns.MIDI_FOLDER    (read-write)
+./print/    [user populated]            WellKnowns.PRINT_FOLDER   (read-write)
+./scripts/  [user populated]            WellKnowns.SCRIPTS_FOLDER (read-write)
+./scores/   [user populated]            WellKnowns.SCORES_FOLDER  (read-write)
 
-Development only folders
+Development only folders                [exist only on a development machine]
 ------------------------
 
 ./.hg/
@@ -131,9 +139,32 @@ Development only folders
 
 ./dev/                                  [Support for build]
 ./dev/build.default.properties
-./dev/build.properties
-./dev/jars.xml
 ./dev/utils.xml
+
+./dev/externals/                        [jar files for runtime]
+./dev/externals/ALL-LICENSES.txt
+./dev/externals/bsaf-1.9.1.jar
+./dev/externals/clibwrapper_jiio.jar
+./dev/externals/eventbus-1.4.jar
+./dev/externals/iText-5.0.4.jar
+./dev/externals/jai_codec.jar
+./dev/externals/jai_core.jar
+./dev/externals/jai_imageio.jar
+./dev/externals/Jama-1.0.2.jar
+./dev/externals/javacpp.jar
+./dev/externals/jcip-annotations.jar
+./dev/externals/jcommon-1.0.16.jar
+./dev/externals/jfreechart-1.0.13.jar
+./dev/externals/jgoodies-common-1.4.0.jar
+./dev/externals/jgoodies-common-LICENSE.txt
+./dev/externals/jgoodies-forms-1.6.0.jar
+./dev/externals/jgoodies-forms-LICENSE.txt
+./dev/externals/jgoodies-looks-2.5.2.jar
+./dev/externals/jgoodies-looks-LICENSE.txt
+./dev/externals/jlfgr-1_0.jar
+./dev/externals/mlibwrapper_jai.jar
+./dev/externals/proxymusic-2.0.jar
+./dev/externals/tesseract-3.jar
 
 ./dev/jalopy/                           [Source code formatting]
 ./dev/jalopy/java-convention.xml
@@ -141,32 +172,16 @@ Development only folders
 ./dev/mac/                              [Mac targets]
 ./dev/mac/-mac.xml
 
-./dev/unix/                             [Unix targets]
-./dev/unix/-unix.xml
-
-./dev/windows/                          [Windows targets]
-./dev/windows/-windows.xml
-./dev/windows/audiveris.wxs
-./dev/windows/Microsoft_VC90_CRT_x86.msm
-./dev/windows/Microsoft_VC90_CRT_x86_X=x64.msm
-
-./dev/windows/dll/                      [Tesseract libraries]
-./dev/windows/dll/x64/
-./dev/windows/dll/x64/jniTesseract3Bridge.dll
-./dev/windows/dll/x64/jniTesseract3Bridge.dll.manifest
-./dev/windows/dll/x64/liblept168.dll
-./dev/windows/dll/x64/libtesseract302.dll
-./dev/windows/dll/x86/
-./dev/windows/dll/x86/jniTesseract3Bridge.dll
-./dev/windows/dll/x86/jniTesseract3Bridge.dll.manifest
-./dev/windows/dll/x86/liblept168.dll
-./dev/windows/dll/x86/libtesseract302.dll
-
-./dev/material/                         [Miscellaneous]
+./dev/material/                         [Misc. development material]
 ./dev/material/MusicalSymbols.pdf
 ./dev/material/MusicalSymbols.ttf
 ./dev/material/global-tree.txt
 ./dev/material/tasks-graph.uxf
+
+./dev/templates/                        [Templates to pre-populate user data]
+./dev/templates/build.properties
+./dev/templates/logging.properties
+./dev/templates/user-actions.xml
 
 ./dev/tools/                            [jar files for build time]
 ./dev/tools/ant-contrib-1.0b3.jar
@@ -192,27 +207,26 @@ Development only folders
 ./dev/tools/lib/ivy-1.3.1.jar
 ./dev/tools/lib/umlet.LICENCES.txt
 
-./dev/externals/                        [jar files for runtime]
-./dev/externals/Jama-1.0.2.jar
-./dev/externals/PDFRenderer.jar
-./dev/externals/bsaf-1.9.1.jar
-./dev/externals/clibwrapper_jiio.jar
-./dev/externals/eventbus-1.4.jar
-./dev/externals/iText-5.0.4.jar
-./dev/externals/jai_codec.jar
-./dev/externals/jai_core.jar
-./dev/externals/jai_imageio.jar
-./dev/externals/javacpp.jar
-./dev/externals/jcip-annotations.jar
-./dev/externals/jcommon-1.0.16.jar
-./dev/externals/jfreechart-1.0.13.jar
-./dev/externals/jgoodies-common-1.3.0.jar
-./dev/externals/jgoodies-forms-1.5.0.jar
-./dev/externals/jgoodies-looks-2.5.0.jar
-./dev/externals/jlfgr-1_0.jar
-./dev/externals/mlibwrapper_jai.jar
-./dev/externals/proxymusic-2.0.jar
-./dev/externals/tesseract-3.jar
+./dev/unix/                             [Unix targets]
+./dev/unix/-unix.xml
+
+./dev/windows/                          [Windows targets]
+./dev/windows/-windows.xml
+./dev/windows/audiveris.wxs
+./dev/windows/Microsoft_VC90_CRT_x86.msm
+./dev/windows/Microsoft_VC90_CRT_x86_X=x64.msm
+
+./dev/windows/dll/                      [Tesseract libraries]
+./dev/windows/dll/x64/
+./dev/windows/dll/x64/jniTesseract3Bridge.dll
+./dev/windows/dll/x64/jniTesseract3Bridge.dll.manifest
+./dev/windows/dll/x64/liblept168.dll
+./dev/windows/dll/x64/libtesseract302.dll
+./dev/windows/dll/x86/
+./dev/windows/dll/x86/jniTesseract3Bridge.dll
+./dev/windows/dll/x86/jniTesseract3Bridge.dll.manifest
+./dev/windows/dll/x86/liblept168.dll
+./dev/windows/dll/x86/libtesseract302.dll
 
 ./nbproject/                            [NetBeans project folder]
 ./nbproject/build-impl.xml
@@ -224,5 +238,5 @@ Development only folders
 ./nbproject/private/private.properties
 ./nbproject/private/private.xml
 
-./src/
+./src/                                  [Source code]
 ./src/...etc...

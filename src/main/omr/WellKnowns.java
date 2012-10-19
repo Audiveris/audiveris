@@ -42,42 +42,42 @@ public class WellKnowns
     /** Application company name: {@value}. */
     public static final String TOOL_COMPANY = "AudiverisLtd";
 
-    /** Specific prefix for application folders: {@value}. */
-    private static final String TOOL_PREFIX = "/" + TOOL_COMPANY + "/"
-                                              + TOOL_NAME;
+    /** Specific prefix for application folders: {@value} */
+    private static final String TOOL_PREFIX =
+            "/" + TOOL_COMPANY + "/" + TOOL_NAME;
 
     //----------//
     // PLATFORM //
     //----------//
     //
-    /** File character encoding. */
-    public static final String FILE_ENCODING = getFileEncoding();
+    /** Name of operating system */
+    private static final String OS_NAME =
+            System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
 
     /** Are we using a Linux OS?. */
-    public static final boolean LINUX = System.getProperty("os.name")
-            .toLowerCase(Locale.ENGLISH)
-            .startsWith("linux");
+    public static final boolean LINUX = OS_NAME.startsWith("linux");
 
     /** Are we using a Mac OS?. */
-    public static final boolean MAC_OS_X = System.getProperty("os.name")
-            .toLowerCase(Locale.ENGLISH)
-            .startsWith("mac os x");
+    public static final boolean MAC_OS_X = OS_NAME.startsWith("mac os x");
 
     /** Are we using a Windows OS?. */
-    public static final boolean WINDOWS = System.getProperty("os.name")
-            .toLowerCase(Locale.ENGLISH)
-            .startsWith("windows");
+    public static final boolean WINDOWS = OS_NAME.startsWith("windows");
 
     /** Precise OS architecture. */
     public static final String OS_ARCH = System.getProperty("os.arch");
-    
+
+    /** Are we using Windows on 64 bit architecture?. */
+    public static final boolean WINDOWS_64 =
+            WINDOWS && System.getenv("ProgramFiles(x86)") != null;
+
+    /** File character encoding. */
+    public static final String FILE_ENCODING = getFileEncoding();
+
     /** File separator for the current platform. */
-    public static final String FILE_SEPARATOR = System.getProperty(
-            "file.separator");
+    public static final String FILE_SEPARATOR = System.getProperty("file.separator");
 
     /** Line separator for the current platform. */
-    public static final String LINE_SEPARATOR = System.getProperty(
-            "line.separator");
+    public static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
     /** Redirection, if any, of standard out and err stream. */
     public static final String STD_OUT_ERROR = System.getProperty("stdouterr");
@@ -89,8 +89,11 @@ public class WellKnowns
     /** The container from which the application classes were loaded. */
     public static final File CLASS_CONTAINER = getClassContainer();
 
-    /** Program installation folder for this application. */
+    /** Program installation folder for this application */
     private static final File PROGRAM_FOLDER = getProgramFolder();
+
+    /** The folder where Ghostscript is installed. */
+    public static final File GS_FOLDER = new File(PROGRAM_FOLDER, "gs");
 
     /** The folder where resource data is stored. */
     public static final File RES_FOLDER = new File(PROGRAM_FOLDER, "res");
@@ -101,83 +104,74 @@ public class WellKnowns
     /** The folder where documentations files are stored. */
     public static final File DOC_FOLDER = new File(PROGRAM_FOLDER, "www");
 
-    /** Trick to detect a development environment rather than a standard one. */
+    /** Flag a development environment rather than a standard one */
     private static final boolean isProject = isProject();
 
-    //--------//
-    // CONFIG //
-    //--------//
+    //-------------//
+    // USER CONFIG // Configuration files the user can edit on his own
+    //-------------// So this applies for settings and plugins folders
     //
-    /** The folder where user specific data is stored. */
-    public static final File USER_FOLDER = getUserConfigFolder();
-
-    /** Base folder for config. */
-    private static final File CONFIG_FOLDER = getConfigFolder();
+    /** Base folder for config */
+    private static final File CONFIG_FOLDER = isProject ? PROGRAM_FOLDER
+            : getConfigFolder();
 
     /** The folder where global configuration data is stored. */
-    public static final File SETTINGS_FOLDER = new File(
-            CONFIG_FOLDER,
-            "settings");
+    public static final File SETTINGS_FOLDER =
+            new File(CONFIG_FOLDER, "settings");
 
     /** The folder where plugin scripts are found. */
-    public static final File PLUGINS_FOLDER = new File(
-            CONFIG_FOLDER,
-            "plugins");
+    public static final File PLUGINS_FOLDER =
+            new File(CONFIG_FOLDER, "plugins");
 
-    //------//
-    // DATA //
-    //------//
+    //-----------//
+    // USER DATA // User-specific data, except configuration stuff
+    //-----------//
     //
-    /** Base folder for data. */
-    private static final File DATA_FOLDER = getDataFolder();
+    /** Base folder for data */
+    private static final File DATA_FOLDER = isProject ? PROGRAM_FOLDER
+            : getDataFolder();
 
     /** The folder where examples are stored. */
-    public static final File EXAMPLES_FOLDER = new File(
-            DATA_FOLDER,
-            "examples");
+    public static final File EXAMPLES_FOLDER =
+            new File(DATA_FOLDER, "examples");
 
     /** The folder where temporary data can be stored. */
-    public static final File TEMP_FOLDER = new File(DATA_FOLDER, "temp");
+    public static final File TEMP_FOLDER =
+            new File(DATA_FOLDER, "temp");
 
     /** The folder where evaluation data is stored. */
-    public static final File EVAL_FOLDER = new File(DATA_FOLDER, "eval");
+    public static final File EVAL_FOLDER =
+            new File(DATA_FOLDER, "eval");
 
     /** The folder where training material is stored. */
-    public static final File TRAIN_FOLDER = new File(DATA_FOLDER, "train");
+    public static final File TRAIN_FOLDER =
+            new File(DATA_FOLDER, "train");
 
     /** The folder where symbols information is stored. */
-    public static final File SYMBOLS_FOLDER = new File(TRAIN_FOLDER, "symbols");
+    public static final File SYMBOLS_FOLDER =
+            new File(TRAIN_FOLDER, "symbols");
 
     /** The default folder where benches data is stored. */
-    public static final File DEFAULT_BENCHES_FOLDER = new File(
-            DATA_FOLDER,
-            "benches");
-
-    /** The default folder where MIDI data is stored. */
-    public static final File DEFAULT_MIDI_FOLDER = new File(
-            DATA_FOLDER,
-            "midi");
+    public static final File DEFAULT_BENCHES_FOLDER =
+            new File(DATA_FOLDER, "benches");
 
     /** The default folder where PDF data is stored. */
-    public static final File DEFAULT_PRINT_FOLDER = new File(
-            DATA_FOLDER,
-            "print");
+    public static final File DEFAULT_PRINT_FOLDER =
+            new File(DATA_FOLDER, "print");
 
     /** The default folder where scripts data is stored. */
-    public static final File DEFAULT_SCRIPTS_FOLDER = new File(
-            DATA_FOLDER,
-            "scripts");
+    public static final File DEFAULT_SCRIPTS_FOLDER =
+            new File(DATA_FOLDER, "scripts");
 
     /** The default folder where scores data is stored. */
-    public static final File DEFAULT_SCORES_FOLDER = new File(
-            DATA_FOLDER,
-            "scores");
+    public static final File DEFAULT_SCORES_FOLDER =
+            new File(DATA_FOLDER, "scores");
 
     //---------//
     // LOGGING //
     //---------//
     //
-    /** The logging definition file, if any. */
+    /** The logging definition file, if any */
     private static final File LOGGING_FILE = getLoggingFile();
 
     static {
@@ -249,22 +243,9 @@ public class WellKnowns
     //-----------------//
     private static File getConfigFolder ()
     {
-        if (isProject) {
-            // For development environment CONFIG = DATA = PROGRAM
-            return PROGRAM_FOLDER;
-        } else {
-            // Standard case: config data is in user appdata
-            return USER_FOLDER;
-        }
-    }
-
-    //---------------------//
-    // getUserConfigFolder //
-    //---------------------//
-    private static File getUserConfigFolder ()
-    {
         if (WINDOWS) {
-            return getUserDataFolder();
+            // For windows, CONFIG = DATA
+            return getDataFolder();
         } else if (MAC_OS_X) {
             String config = System.getenv("XDG_CONFIG_HOME");
             if (config != null) {
@@ -299,19 +280,6 @@ public class WellKnowns
     // getDataFolder //
     //---------------//
     private static File getDataFolder ()
-    {
-        if (isProject) {
-            // For development environment CONFIG = DATA = PROGRAM
-            return PROGRAM_FOLDER;
-        } else {
-            return getUserDataFolder();
-        }
-    }
-
-    //-------------------//
-    // getUserDataFolder //
-    //-------------------//
-    private static File getUserDataFolder ()
     {
         if (WINDOWS) {
             String appdata = System.getenv("APPDATA");
@@ -397,18 +365,15 @@ public class WellKnowns
         // are running from the development folder (with data & settings as
         // subfolders) rather than from a standard folder (installed with 
         // distinct location for application data & config).
-        // There are other possible "src" symbol does not work for example other program invoking audiveris.jar file
-        // so added one more condition to check if class_container having .jar extension
+        
+        // To handle the case of other program invoking audiveris.jar file
+        // we add test about "res" and "eval"
+        
         File devFolder = new File(PROGRAM_FOLDER, "src");
-        String s = CLASS_CONTAINER.getName();
-        String ext = null;
-        int i = s.lastIndexOf('.');
-
-        if (i > 0 && i < s.length() - 1) {
-            ext = s.substring(i + 1).toLowerCase();
-        }
-
-        return devFolder.exists() || "jar".equals(ext);
+        File resFolder = new File(PROGRAM_FOLDER, "res");
+        File evalFolder = new File(PROGRAM_FOLDER, "eval");
+        
+        return devFolder.exists() && resFolder.exists() && evalFolder.exists();
     }
 
     //----------------//
@@ -426,10 +391,9 @@ public class WellKnowns
         final String loggingProp = System.getProperty(JAVA_LOGGING_KEY);
         if (loggingProp == null) {
             // Check for a user file
-            loggingFile = new File(USER_FOLDER, LOGGING_NAME);
+            loggingFile = new File(SETTINGS_FOLDER, LOGGING_NAME);
 
             if (loggingFile.exists()) {
-
                 // Set property for java.util.logging
                 System.setProperty(JAVA_LOGGING_KEY, loggingFile.toString());
 

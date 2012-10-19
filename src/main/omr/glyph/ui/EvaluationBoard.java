@@ -36,9 +36,9 @@ import omr.ui.Colors;
 import omr.ui.util.Panel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.FormFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.FormSpecs;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -240,8 +240,9 @@ class EvaluationBoard
                 selector.buttons.size());
 
         for (int i = 0; i < visibleButtons; i++) {
-            layout.appendRow(FormFactory.PREF_ROWSPEC);
+            layout.appendRow(FormSpecs.PREF_ROWSPEC);
         }
+        ///SystemUtils.IS_OS_WINDOWS
 
         // Uncomment following line to have fixed sized rows, whether
         // they are filled or not

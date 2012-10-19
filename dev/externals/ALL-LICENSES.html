@@ -1,0 +1,294 @@
+<!-- ======================================================================= -->
+<!--          e x t e r n a l s / A L L - L I C E N S E S . h t m l          -->
+<!-- ======================================================================= -->
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Licenses for all external libraries</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link rel="stylesheet" href="../../www/branding/css/global.css"/>
+        <style type="text/css">
+            /*<![CDATA[*/
+h1 {
+    font-size: 3em;
+    padding-top: 50px;
+}
+
+article {
+    width: auto;
+    height: 250px;
+}
+
+p.desc {
+    font-style: italic;
+}
+
+p.license:before {
+    content: "License: ";
+}
+
+p.site:before {
+    content: "Site: ";
+}
+
+ul {
+    padding-left: 0;
+}
+ul:before {
+    content: "Components: ";
+}
+
+li {
+    margin-left: 30px;
+}
+
+/* Specific ids */
+#jai,
+#jgoodies {
+    height: auto;
+}
+            /*]]>*/
+        </style>
+        
+    </head>
+    <body>
+        <h1 class="center">Licenses of external components</h1>
+        <p>
+            This page describes all the external Java libraries used by 
+            Audiveris, and notably their related open source license.
+        </p>
+        <p>
+            Libraries used at run-time are gathered in folder <code>dev/externals</code> and
+            those used only at build time are gathered in folder <code>dev/tools</code>.
+        </p>
+        
+        <h1>Runtime libraries</h1>
+        
+        <section>
+            
+            <article id="bsaf">
+                <h2>BSAF</h2>
+                <p class="full-name">Better Swing Application Framework</p>
+                <p class="desc">Framework to help handle the life cycle of a Swing application</p>
+                <p class="license">GNU Lesser General Public Licence (LGPL)</p>
+                <p class="site">
+                    <a href="http://kenai.com/projects/bsaf/pages/Home">http://kenai.com/projects/bsaf/pages/Home</a>
+                </p>
+                <ul>
+                    <li>bsaf-1.9.1.jar</li>
+                </ul>
+            </article>
+
+            <article id="eventbus">
+                <h2>Event Bus</h2>
+                <p class="desc">Used as a bus for all user-related events</p>
+                <p class="license">Apache V2.0</p>
+                <p class="site">
+                    <a href="http://eventbus.org/">http://eventbus.org/</a>
+                </p>
+                <ul>
+                    <li>eventbus-1.4.jar</li>
+                </ul>
+            </article>
+
+            <article id="itext">
+                <h2>iText</h2>
+                <p class="desc">Used for writing PDF files</p>
+                <p class="license">GNU Affero General Public License</p>
+                <p class="site">
+                    <a href="http://itextpdf.com/">http://itextpdf.com/</a>
+                </p>
+                <ul>
+                    <li>iText-5.0.4.jar</li>
+                </ul>
+            </article>            
+
+            <article id="jai">
+                <h2>JAI</h2>
+                <p class="full-name">Java Advanced Imaging</p>
+                <p class="desc">Used for some image processing</p>
+                <p class="license">Sun Binary Code License</p>
+                <p class="site">
+                    <a href="http://www.oracle.com/technetwork/java/current-142188.html">http://www.oracle.com/technetwork/java/current-142188.html</a>
+                </p>
+                <ul>
+                    <li>clibwrapper_jiio.jar</li>
+                    <li>jai_codec.jar</li>
+                    <li>jai_core.jar</li>
+                    <li>jai_imageio.jar</li>
+                    <li>mlibwrapper_jai.jar</li>
+                </ul>
+            </article>
+
+            <article id="jama">
+                <h2>JAMA</h2>
+                <p class="full-name">Java Matrix Package</p>
+                <p class="desc">Basic linear algebra package for Java</p>
+                <p class="license">Public Domain</p>
+                <p class="site"><a href="http://math.nist.gov/javanumerics/jama/">http://math.nist.gov/javanumerics/jama/</a></p>
+                <ul>
+                    <li>Jama-1.0.2.jar</li>
+                </ul>
+            </article>
+
+            <article id="javacpp">
+                <h2>JavaCPP</h2>
+                <p class="full-name"></p>
+                <p class="desc">Access to native C++ from Java (used by TessBridge)</p>
+                <p class="license">GNU General Public License (GPL) V2</p>
+                <p class="site">
+                    <a href="http://code.google.com/p/javacpp/">http://code.google.com/p/javacpp/</a>
+                </p>
+                <ul>
+                    <li>javacpp.jar</li>
+                </ul>
+            </article>
+
+            <article id="jcip">
+                <h2>JCIP</h2>
+                <p class="full-name">Java Concurrency In Practice annotations</p>
+                <p class="desc">Source annotations for describing thread-safety policies</p>
+                <p class="license">Creative Commons Attribution License</p>
+                <p class="site">
+                    <a href="http://jcip.net/annotations/">http://jcip.net/annotations/</a>
+                </p>
+                <ul>
+                    <li>jcip-annotations.jar</li>
+                </ul>
+            </article>
+
+            <article id="jfreechart">
+                <h2>JFreechart</h2>
+                <p class="desc">Java chart library</p>
+                <p class="license">GNU Lesser General Public Licence (LGPL)</p>
+                <p class="site">
+                    <a href="http://www.jfree.org/jfreechart/">http://www.jfree.org/jfreechart/</a>
+                </p>
+                <ul>
+                    <li>jcommon-1.0.16.jar</li>
+                    <li>jfreechart-1.0.13.jar</li>
+                </ul>
+            </article>
+
+            <article id="jgoodies">
+                <h2>JGoodies</h2>
+                <p class="full-name">JGoodies Looks &amp; JGoodies Forms</p>
+                <p class="desc">Java user interface on top of Swing</p>
+                <p class="license">BSD open source license</p>
+                <p class="site">
+                    <a href="http://www.jgoodies.com/">http://www.jgoodies.com/</a>
+                </p>
+                <ul>
+                    <li>jgoodies-common-1.3.0.jar</li>
+                    <li>jgoodies-forms-1.5.0.jar</li>
+                    <li>jgoodies-looks-2.5.0.jar</li>
+                </ul>
+            </article>
+
+            <article id="jlfgr">
+                <h2>Java Look and Feel Graphics</h2>
+                <p class="desc">Collection of toolbar button graphics</p>
+                <p class="license">Java look and feel license</p>
+                <p class="site">
+                    <a href="http://www.oracle.com/technetwork/java/index-138612.html">http://www.oracle.com/technetwork/java/index-138612.html</a>
+                </p>
+                <ul>
+                    <li>jlfgr-1_0.jar</li>
+                </ul>
+            </article>
+
+            <article id="proxymusic">
+                <h2>ProxyMusic</h2>
+                <p class="desc">Mapping between Java and MusicXML</p>
+                <p class="license">GNU Lesser General Public Licence (LGPL)</p>
+                <p class="site">
+                    <a href="http://proxymusic.kenai.com/">http://proxymusic.kenai.com/</a>
+                </p>
+                <ul>
+                    <li>proxymusic-2.0.jar</li>
+                </ul>
+            </article>
+
+            <article id="tesseract">
+                <h2>Tesseract</h2>
+                <p class="full-name">TessBridge</p>
+                <p class="desc">(Java bridge to) Tesseract OCR V3</p>
+                <p class="license">Apache License 2.0</p>
+                <p class="site">
+                    <a href="http://code.google.com/p/tesseract-ocr/">http://code.google.com/p/tesseract-ocr/</a>
+                </p>
+                <ul>
+                    <li>tesseract-3.jar</li>
+                </ul>
+            </article>
+        </section>
+        
+        <h1 class="clear">Build time libraries</h1>
+        
+        <section>
+
+            <article id="ant-contrib">
+                <h2>ant-contrib</h2>
+                <p class="full-name">Ant-Contrib tasks</p>
+                <p class="desc">Collection of tasks for Apache Ant</p>
+                <p class="license">Apache Software License</p>
+                <p class="site">
+                    <a href="http://ant-contrib.sourceforge.net/">http://ant-contrib.sourceforge.net/</a>
+                </p>
+                <ul>
+                    <li>ant-contrib-1.0b3.jar</li>
+                </ul>
+            </article>
+
+            <article id="ant-dotnet">
+                <h2>ant-dotnet</h2>
+                <p class="desc">Ant tasks for .Net</p>
+                <p class="license">Apache Software License</p>
+                <p class="site">
+                    <a href="http://ant-contrib.sourceforge.net/">http://ant-contrib.sourceforge.net/</a>
+                </p>
+                <ul>
+                    <li>ant-dotnet-1.1.jar</li>
+                </ul>
+            </article>
+
+            <article id="ant4hg">
+                <h2>ant4hg</h2>
+                <p class="desc">Ant tasks for Hg (Mercurial)</p>
+                <p class="license">GNU Lesser General Public Licence 3.0 (LGPLv3)</p>
+                <p class="site">
+                    <a href="http://ant4hg.free.fr/">http://ant4hg.free.fr/</a>
+                </p>
+                <ul>
+                    <li>ant4hg.jar</li>
+                </ul>
+            </article>
+
+            <article id="junit">
+                <h2>JUnit</h2>
+                <p class="desc">Resources for test driven development</p>
+                <p class="license">JUnit Common Public License v1.0</p>
+                <p class="site">
+                    <a href="http://www.junit.org/">http://www.junit.org/</a>
+                </p>
+                <ul>
+                    <li>junit-4.7</li>
+                </ul>
+            </article>
+
+            <article id="umlet">
+                <h2>UMLet</h2>
+                <p class="desc">Free UML Tool for Fast UML Diagrams</p>
+                <p class="license">GNU General Public License</p>
+                <p class="site">
+                    <a href="http://www.umlet.com/">http://www.umlet.com/</a>
+                </p>
+                <ul>
+                    <li>umlet.jar</li>
+                </ul>
+            </article>
+            
+            
+        </section>
+    </body>
+</html>

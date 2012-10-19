@@ -696,7 +696,7 @@ public class StaffInfo
     /**
      * Report the pitch position of a ledger WRT the related staff
      *
-     * @param the ledger line index
+     * @param lineIndex the ledger line index
      * @return the ledger pitch position
      */
     public static int getLedgerPitchPosition (int lineIndex)

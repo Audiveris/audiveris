@@ -57,7 +57,7 @@ public class SlotChecker
     /**
      * Creates a new SlotChecker object.
      *
-     * @param measure the containing measure
+     * @param system the containing system
      */
     public SlotChecker (ScoreSystem system)
     {
