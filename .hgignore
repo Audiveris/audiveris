@@ -6,7 +6,8 @@ syntax: regexp
 \.chg\..*$
 \.conflict\~$
 \.log$
-\.exe$
+audiveris\.exe$
+audiveris-console\.exe$
 \.mf$
 \.mid$
 \.msi$
