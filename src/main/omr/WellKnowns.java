@@ -348,9 +348,9 @@ public class WellKnowns
             }
         }
 
-        // Fallback using ocr subdirectory of Audiveris
+        // Fallback to default directory
         if (LINUX) {
-            return new File("/usr/local/share");
+            return new File("/usr/share/tesseract-ocr");
         } else {
             return new File(PROGRAM_FOLDER, "ocr");
         }
