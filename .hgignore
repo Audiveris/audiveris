@@ -20,6 +20,7 @@ build$
 dist$
 jars$
 midi$
+nbproject/configs$
 pdf$
 print$
 scores$
@@ -34,6 +35,7 @@ bin
 manifest.mf
 nbbuild.xml
 .classpath
+
 # Now, switch to glob syntax -------------------------------------------------
 syntax: glob
 
@@ -49,6 +51,6 @@ train/core/*
 eval/backup-neural-network.xml
 nbproject/configs
 www/docs/api
-www/nbproject
+nbproject/configs
 ocr/tessdata/*
 ocr/tessdata
