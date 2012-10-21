@@ -48,7 +48,7 @@ import java.util.TreeSet;
  * Class {@code Chord} represents an ensemble of entities (rests, notes)
  * attached to the same stem if any, and that occur on the same time in
  * a staff.
- * <p><b>NB</>We assume that all notes of a chord have the same duration.
+ * <p><b>NB</b>We assume that all notes of a chord have the same duration.
  *
  * @author Hervé Bitteur
  */
