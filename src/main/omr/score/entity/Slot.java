@@ -42,16 +42,30 @@ import java.util.TreeMap;
 
 /**
  * Class {@code Slot} represents a roughly defined time slot within a
- * measure, to gather all chord entities (rests, whole notes or
- * noteheads) that occur at the same time because their abscissae are
- * roughly the same.
+ * measure, to gather all chords that start at the same time.
  *
- * <p>The slot embraces all the staves of this part measure. Perhaps we should
+ * <div style="float: right;">
+ * <img src="doc-files/Slot.png" alt="diagram">
+ * </div>
+ *
+ * <p>On the diagram shown, slots are indicated by vertical blue lines.</p>
+ *
+ * <p>The key point is to determine when two chords should belong or
+ * not to the same time slot:
+ * <ul>
+ * <li>Chords that share a common stem belong to the same slot.</li>
+ * <li>Chords that originate from the same physical glyph belong to the same
+ * slot. (for example a note head with one stem on left and one stem on right
+ * leads to two overlapping logical chords)</li>
+ * <li>Chords within the same beam group, but not on the same stem, cannot
+ * belong to the same slot.</li>
+ * <li>Similar abscissa is only an indication, it is not always reliable.</li>
+ * </ul>
+ * </p>
+ *
+ * <p>The slot embraces all the staves of its part measure. Perhaps we should
  * consider merging slots between parts as well?
  *
- * <p>On the following picture, slots are indicated by vertical blue lines
- * <br/>
- * <img src="doc-files/Slot.png" alt="diagram">
  *
  * @author Hervé Bitteur
  */
@@ -99,11 +113,11 @@ public class Slot
     public static final Param<Double> defaultMargin = new DefaultMargin();
 
     //~ Instance fields --------------------------------------------------------
-
     /** The containing measure. */
     @Navigable(false)
     private Measure measure;
     //
+
     /** Id unique within the containing measure. */
     private int id;
 
@@ -182,8 +196,8 @@ public class Slot
         final boolean logging = glyph.isVip() || logger.isFineEnabled();
 
         if (logging) {
-            logger.info(measure.getContextString() + 
-                        " Populating slot with {0}", glyph);
+            logger.info("{0} Populating slot with {1}", 
+                    measure.getContextString(), glyph);
         }
 
         // Special case for measure rests: they don't belong to any time slot,
@@ -231,7 +245,7 @@ public class Slot
     protected void addGlyph (Glyph glyph)
     {
         glyphs.add(glyph);
-        
+
         PixelPoint point = glyph.getLocation();
         xPop.includeValue(point.x);
         yPop.includeValue(point.y);
@@ -603,7 +617,7 @@ public class Slot
     {
         Scale scale = measure.getScale();
         int dx = Math.abs(sysPt.x - getX());
-        
+
         return scale.pixelsToFrac(dx) <= defaultMargin.getTarget();
     }
 
@@ -913,7 +927,7 @@ public class Slot
             }
         }
     }
-    
+
     //~ Inner Classes ----------------------------------------------------------
     //
     //-----------//
@@ -955,5 +969,4 @@ public class Slot
             return false;
         }
     }
-    
 }

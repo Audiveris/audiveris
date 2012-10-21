@@ -9,9 +9,10 @@
 Target System folders (read-only)
 ---------------------
 Windows: <SystemFolder> or <System64Folder>
+see http://msdn.microsoft.com/en-us/library/aa372057.aspx
 
-./jniTesseract3Bridge.dll
-./jniTesseract3Bridge.dll.manifest
+./jniTessBridge.dll
+./jniTessBridge.dll.manifest
 ./liblept168.dll
 ./libtesseract302.dll
 
@@ -77,14 +78,9 @@ Windows: %ProgramFiles%/AudiverisLtd/audiveris/
 ./www/branding
 ./www/docs
 
-Target User folder                      WellKnowns.USER_FOLDER (read-write)
-------------------
+Target User Config folder               WellKnowns.CONFIG_FOLDER (read-write)
+-------------------------
 Windows: %APP_DATA%/AudiverisLtd/audiveris/
-
-A few persistency files handled by Swing Application Framework:
-./mainFrame.session.xml
-./optionsFrame.session.xml
-./[others...].session.xml
 
 ./settings/                             WellKnowns.SETTINGS_FOLDER (read-write)
 ./settings/logging.properties
@@ -96,6 +92,15 @@ A few persistency files handled by Swing Application Framework:
 ./plugins/musescore.js
 ./plugins/finale.js
 ./plugins/finale-notepad.js
+
+Target User Data folder                 WellKnowns.DATA_FOLDER (read-write)
+-------------------------
+Windows: %APP_DATA%/AudiverisLtd/audiveris/ (same as DATA_FOLDER for Windows)
+
+A few persistency files handled by Swing Application Framework:
+./mainFrame.session.xml
+./optionsFrame.session.xml
+./[others...].session.xml
 
 ./examples/                             WellKnowns.EXAMPLES_FOLDER (read-write)
 ./examples/Dichterliebe01.pdf
@@ -240,3 +245,6 @@ Development only folders                [exist only on a development machine]
 
 ./src/                                  [Source code]
 ./src/...etc...
+
+./settings/                             [Used in case of development only]
+./plugins/                              [Used in case of development only]

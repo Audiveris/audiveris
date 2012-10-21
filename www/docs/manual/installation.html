@@ -66,15 +66,26 @@
                     <b>Binary</b> distribution:
                     </dt>
                     <dd>
-                        For Windows users, a Microsoft Installer file is 
-                        made available, using a <b>audiveris-V.v.revision.msi</b>
-                        naming schema.
-                        Simply download this file and launch the installation by
-                        double-clicking on the downloaded file. 
+                        For Windows users, a pair of Microsoft Installer files 
+                        is made available to address the 32-bit and 64-bit 
+                        architectures.
+                        The files are named respectively
+                        <code>audiveris-V.v.revision-x86.msi</code> (for 32-bit) and
+                        <code>audiveris-V.v.revision-x64.msi</code> (for 64-bit).
                         <br/>
+                        Simply download the file that fits your architecture 
+                        and launch the installation by a double-click on the 
+                        downloaded file. 
                         This is nothing more to do.
                         For further details, you can refer to the <a href="#windows">
                             Windows</a> section.
+                        <p>Nota: Audiveris Java code calls some C++ files via 
+                            <code>jni</code>.
+                            On a 64-bit machine, with a 64-bit
+                            Java environment, make sure to use the 64-bit 
+                            Audiveris release otherwise the C++ library will
+                            fail to load.
+                        </p>
                     </dd>
                     <dt>
                     <b>Source</b> distribution:

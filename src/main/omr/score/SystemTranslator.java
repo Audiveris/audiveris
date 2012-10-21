@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.score;
 
-import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import static omr.glyph.ShapeSet.*;
 import omr.glyph.facets.Glyph;
@@ -48,7 +47,6 @@ import omr.score.entity.TimeSignature;
 import omr.score.entity.Tuplet;
 import omr.score.entity.Wedge;
 
-import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
@@ -58,10 +56,7 @@ import omr.util.HorizontalSide;
 import omr.util.TreeNode;
 
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Class {@code SystemTranslator} performs all translation tasks for

@@ -86,7 +86,7 @@ public class SlotChecker
     // checkCommonStems //
     //------------------//
     /**
-     * Check for common stems. (either shared or too close in abscissa)
+     * Check for common stems.
      *
      * @param prevStems stems of previous slot
      * @param stems     stems of the current slot
@@ -99,22 +99,6 @@ public class SlotChecker
         for (Glyph stem : stems) {
             if (prevStems.contains(stem)) {
                 commons.add(stem);
-            } else {
-                int xStem = stem.getAreaCenter().x;
-
-                for (Glyph s : prevStems) {
-                    int xPrev = s.getAreaCenter().x;
-
-                    if (Math.abs(xStem - xPrev) < minSlotSpacing) {
-                        logger.fine(
-                                "Slots with close stems {0} {1}",
-                                s.idString(),
-                                stem.idString());
-                        commons.add(stem);
-
-                        break;
-                    }
-                }
             }
         }
 
@@ -195,7 +179,7 @@ public class SlotChecker
                 Slot slot = it.next();
 
                 if (prevSlot != null) {
-                    // Look for stem in common (or very close in abscissa)
+                    // Look for stem in common
                     Set<Glyph> commonStems = checkCommonStems(
                             prevStems,
                             slot.getStems());

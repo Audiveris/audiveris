@@ -23,12 +23,9 @@
             h1.title {
                 text-align: center
             }
-            div.block {
+            article {
                 position: relative;
-                right: 20px;
-                margin-left: 20px;
-                margin-right: 20px;
-                width: 96%;
+                padding: 10px;
             }
             .label {
                 clear:left;
@@ -50,12 +47,13 @@
                 padding-bottom: 0px;
                 border: 1px solid #ffdddd;
             }
+            
             #pending-block {
                 background-color:#eeeeee;
                 left: 34%;
                 width: 60%;
             }
-            #pending-block .desc {
+            #pending-block.desc {
                 background-color:#f8eeee;
             }
             /*]]>*/
@@ -66,11 +64,11 @@
         <script src="../../branding/js/header.js"></script> 
         <div class="main">
 
-            <h1 class="chapter">Releases</h1>
+            <h1 class="chapter center">Releases</h1>
 
             <!-- =========================================================== -->
 
-            <div id="pending-block" class="block">
+            <article id="pending-block">
                 <h3 id="PENDING">To do...</h3>
 
 
@@ -126,10 +124,10 @@
                         </li>
                     </ul>
                 </div>
-            </div>
+            </article>
 
             <!-- =========================================================== -->
-            <div class="block">
+            <article>
 
                 <h3 id="R4.2">
                     4.2 Release
@@ -161,14 +159,17 @@
                 <div class="desc">
                     <ul>
                         <li>
-                            <b>Installation:</b> All major OSes 
-                            (<code>Windows</code>, <code>Linux</code>, 
-                            <code>Mac</code>) and machine architectures
-                            (<code>x86</code> and <code>x64</code>) are 
-                            supported via dedicated installers. 
+                            <b>Installation:</b> Major OSes
+                            <code>Windows</code> and <code>Linux</code> and machine architectures
+                            <code>x86</code> and <code>x64</code> are 
+                            supported via dedicated installers.                             
                             The installers take care of all Audiveris
                             dependencies (Java runtime, C++ runtime, musical 
                             font, etc).
+                            <br>
+                            Nota: Support for <code>MacOS</code> has been dropped
+                            from the scope of this release to avoid further delays.
+                            
                         </li>
                         <li>
                             <b>OCR:</b> A few selected languages are pre-installed
@@ -257,15 +258,15 @@
                             <b>Doc:</b> A comprehensive Handbook is now available
                             from Audiveris web page, as well as the API JavaDoc
                             of the current release.
-                            The former installation tab is now merged with the
-                            first chapter of the handbook.
+<!--                            The former installation tab is now merged with the
+                            first chapter of the handbook.-->
                         </li>
                     </ul>
                 </div>
-            </div>
+            </article>
 
             <!-- =========================================================== -->
-            <div class="block">
+            <article>
 
                 <h3 id="R4.1">
                     4.1 Release
@@ -369,10 +370,10 @@
                         </li>
                     </ul>
                 </div>
-            </div>
+            </article>
 
             <!-- =========================================================== -->
-            <div class="block">
+            <article>
 
                 <h3 id="R4.0">
                     4.0 Release
@@ -439,11 +440,11 @@
                         </li>
                     </ul>
                 </div>
-            </div>
+            </article>
 
 
             <!-- =========================================================== -->
-            <div class="block">
+            <article>
 
                 <h3 id="R3.4">
                     3.4 Release
@@ -643,10 +644,10 @@
                         </li>
                     </ul>
                 </div>
-            </div>
+            </article>
 
             <!-- =========================================================== -->
-            <div class="block">
+            <article>
                 <h3 id="R3.3">3.3 Release
                 </h3>
 
@@ -867,9 +868,9 @@
                     </ul>
                 </div>
 
-            </div>
+            </article>
             <!-- =========================================================== -->
-            <div class="block">
+            <article>
                 <h3 id="R3.2">
                     3.2c Release
                 </h3>
@@ -1155,9 +1156,9 @@
                     </ul>
                 </div>
 
-            </div>
+            </article>
             <!-- =========================================================== -->
-            <div class="block">
+            <article>
                 <h3 id="R3.1">3.1 Release
                 </h3>
 
@@ -1276,9 +1277,9 @@
                         </li>
                     </ul>
                 </div>
-            </div>
+            </article>
             <!-- =========================================================== -->
-            <div class="block">
+            <article>
                 <h3 id="R3.0">3.0 Release
                 </h3>
 
@@ -1380,9 +1381,9 @@
                         </li>
                     </ul>
                 </div>
-            </div>
+            </article>
             <!-- =========================================================== -->
-            <div class="block">
+            <article>
                 <h3 id="R2.4">2.4 Release
                 </h3>
 
@@ -1474,9 +1475,9 @@
                         </li>
                     </ul>
                 </div>
-            </div>
+            </article>
             <!-- =========================================================== -->
-            <div class="block">
+            <article>
                 <h3 id="R2.3">2.3 Release
 
                 </h3>
@@ -1602,9 +1603,9 @@
                         </li>
                     </ul>
                 </div>
-            </div>
+            </article>
             <!-- =========================================================== -->
-            <div class="block">
+            <article>
                 <h3 id="R2.2">2.2 Release
 
                 </h3> 
@@ -1732,9 +1733,9 @@
                         </li>
                     </ul>
                 </div>
-            </div>
+            </article>
             <!-- =========================================================== -->
-            <div class="block">
+            <article>
                 <h3 id="R2.1">2.1 Release
 
                 </h3>
@@ -1805,9 +1806,9 @@
                         </li>
                     </ul>
                 </div>
-            </div>
+            </article>
             <!-- =========================================================== -->
-            <div class="block">
+            <article>
                 <h3 id="R2.0">2.0 Release
                 </h3>
 
@@ -1837,7 +1838,7 @@
                         </li>
                     </ul>
                 </div>
-            </div>
+            </article>
         </div>
         <script src="../../branding/js/footer.js"></script> 
     </body>
