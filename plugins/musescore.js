@@ -5,7 +5,8 @@
 /* -------------------------------------------------------------------------- */
 
 /* Variable to modify according to your environment */
-var pathToExec = "P:/MuseScore/bin/mscore.exe";
+//var pathToExec = "P:/MuseScore/bin/mscore.exe";
+var pathToExec = "C:/Program Files (x86)/MuseScore/bin/mscore.exe";
 
 /* Title for menu item */
 pluginTitle = 'MuseScore';

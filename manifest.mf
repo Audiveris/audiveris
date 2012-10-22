@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Built-By: ${build.owner}
+Built-By: Audiveris Ltd.
 Specification-Title: Audiveris
 Specification-Vendor: Audiveris Ltd.
-Specification-Version: 4.2.3187
+Specification-Version: 4.2.3240
