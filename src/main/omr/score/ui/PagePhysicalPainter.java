@@ -241,8 +241,8 @@ public class PagePhysicalPainter
             Point2D botCenter = botLine.verticalIntersection(bar);
 
             if (shape != null) {
-                BarPainter barPainter = BarPainter.getBarPainter(shape);
-                barPainter.draw(g, topCenter, botCenter, part);
+            BarPainter barPainter = BarPainter.getBarPainter(shape);
+            barPainter.draw(g, topCenter, botCenter, part);
             } else {
                 barline.addError("Barline with no recognized shape");
             }

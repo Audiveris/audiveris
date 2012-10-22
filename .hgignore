@@ -1,7 +1,6 @@
 # First, use regexp syntax -------------------------------------------------------
 syntax: regexp
 
-\..*~$
 \.hgignore$
 \.chg\..*$
 \.conflict\~$
@@ -49,7 +48,6 @@ audiveris.bat
 manifest.mf
 train/core/*
 eval/backup-neural-network.xml
-nbproject/configs
 www/docs/api
 nbproject/configs
 ocr/tessdata/*

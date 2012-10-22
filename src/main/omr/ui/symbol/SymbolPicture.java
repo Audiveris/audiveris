@@ -14,13 +14,11 @@ package omr.ui.symbol;
 import omr.log.Logger;
 
 import omr.run.PixelFilter;
-import omr.run.FilterDescriptor;
 
 import net.jcip.annotations.ThreadSafe;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
-import omr.run.GlobalDescriptor;
 
 /**
  * Class {@code SymbolPicture} is an adapter which wraps a ShapeSymbol
@@ -30,7 +28,7 @@ import omr.run.GlobalDescriptor;
  */
 @ThreadSafe
 public class SymbolPicture
-    implements PixelFilter
+        implements PixelFilter
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -38,7 +36,6 @@ public class SymbolPicture
     private static final Logger logger = Logger.getLogger(SymbolPicture.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Image data buffer */
     private final DataBuffer dataBuffer;
 
@@ -50,20 +47,21 @@ public class SymbolPicture
 
     /**
      * Current max foreground pixel value.
-     * Anything from 0 (black) up to 192 included (light gray) is considered as black
+     * Anything from 0 (black) up to 192 included (light gray) is considered as
+     * black
      * Anything brighter than gray is considered as white (background)
      */
     private final int maxForeground = 216; // Was Color.LIGHT_GRAY.getRed();
 
     //~ Constructors -----------------------------------------------------------
-
     /** Creates a new instance of SymbolPicture
+     *
      * @param image the underlying image
      */
     public SymbolPicture (BufferedImage image)
     {
         dataBuffer = image.getData()
-                          .getDataBuffer();
+                .getDataBuffer();
 
         width = image.getWidth();
         height = image.getHeight();

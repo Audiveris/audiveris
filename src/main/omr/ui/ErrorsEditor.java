@@ -127,7 +127,7 @@ public class ErrorsEditor
                           final String text)
     {
         final Step step = getCurrentStep();
-        
+
         SwingUtilities.invokeLater(
                 new Runnable()
                 {
@@ -271,12 +271,12 @@ public class ErrorsEditor
     private Step getCurrentStep ()
     {
         Step step = sheet.getCurrentStep();
-        
+
         if (step == null) {
             ///step = sheet.getScore().getFirstPage().getSheet().getCurrentStep();
             step = Steps.valueOf(Steps.SCORE);
         }
-        
+
         return step;
     }
 

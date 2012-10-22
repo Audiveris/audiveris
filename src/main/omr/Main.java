@@ -19,7 +19,6 @@ import omr.log.Logger;
 
 import omr.score.Score;
 
-import omr.script.Script;
 import omr.script.ScriptManager;
 
 import omr.step.ProcessingCancellationException;
@@ -35,8 +34,6 @@ import omr.util.OmrExecutors;
 import org.jdesktop.application.Application;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;

@@ -26,8 +26,6 @@ import omr.run.Orientation;
 import omr.score.common.PixelPoint;
 import omr.score.entity.Staff;
 
-import omr.sheet.Dash;
-import omr.sheet.Ledger;
 import omr.sheet.NotePosition;
 import omr.sheet.Scale;
 
