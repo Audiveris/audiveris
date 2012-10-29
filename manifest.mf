@@ -2,4 +2,4 @@ Manifest-Version: 1.0
 Built-By: Audiveris Ltd.
 Specification-Title: Audiveris
 Specification-Vendor: Audiveris Ltd.
-Specification-Version: 4.2.3240
+Specification-Version: 4.2.

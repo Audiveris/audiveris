@@ -27,7 +27,7 @@
     <target name="-clean"
             if="${is.unix}">
         <!-- Remove all the generated outputs for Unix -->
-        <echo message="unix.-clean is void for the time being" />
+        <delete dir="${dist.dir}/AudiverisLinux" includeemptydirs="true"/>
     </target>
   
   
@@ -38,7 +38,46 @@
     <target name="-installers"
             depends=""
             if="${is.unix}">
-        <echo message="unix.-installers is void for the time being" />
+        <echo message="Build generic Linux package" />
+        
+        <!-- First phase: building generic Linux package -->
+        <!-- add the wrapper script -->
+        <mkdir dir="${dist.dir}/AudiverisLinux"/>
+        <copy 
+           verbose="${verbose}"
+           todir="${dist.dir}/AudiverisLinux"
+           file="${dev.dir}/unix/audiveris.sh">
+        </copy>
+        
+        <!-- copy over application jar and its libraries -->
+        <mkdir dir="${dist.dir}/AudiverisLinux/AudiverisApp"/>
+        <!--<mkdir dir="${dist.dir}/AudiverisLinux/AudiverisApp/dist"/> -->
+        
+        <copy 
+           verbose="${verbose}"
+           todir="${dist.dir}/AudiverisLinux/AudiverisApp/dist">
+           <fileset dir="${dist.dir}"
+                     includes="*.jar"/>
+        </copy>
+        <copy todir="${dist.dir}/AudiverisLinux/AudiverisApp/dist/lib">
+            <fileset dir="${dist.dir}/lib"/>
+        </copy>
+        
+        <!-- copy over JNI libraries -->
+        <copy todir="${dist.dir}/AudiverisLinux/AudiverisApp/TessBridgeJNI">
+            <fileset dir="${dev.dir}/unix/TessBridgeJNI"/>
+        </copy>
+        
+        <!-- copy over resources, examples and documentation -->
+        <copy todir="${dist.dir}/AudiverisLinux/AudiverisApp/res">
+            <fileset dir="${res.dir}"/>
+        </copy>
+        <copy todir="${dist.dir}/AudiverisLinux/AudiverisApp/examples">
+            <fileset dir="${examples.dir}"/>
+        </copy>
+        <copy todir="${dist.dir}/AudiverisLinux/AudiverisApp/www">
+            <fileset dir="${www.dir}"/>
+        </copy>
     </target>
   
 </project>
