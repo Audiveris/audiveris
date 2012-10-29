@@ -42,7 +42,12 @@
     </condition>
     <echo level="verbose" message="is.mac=${is.mac}" />
     <condition property="is.unix" else="false">
-        <os family="unix" />
+        <and>
+            <os family="unix" />
+            <not>
+                <os family="mac" />
+            </not>
+        </and>
     </condition>
     <echo level="verbose" message="is.unix=${is.unix}" />
 
@@ -336,7 +341,7 @@
 Built-By: ${Company}
 Specification-Title: ${Name}
 Specification-Vendor: ${Company}
-Specification-Version: ${impl.version}
+Specification-Version: ${impl.version}i
 </echo>
 
         <!-- Copy resource properties to classes -->

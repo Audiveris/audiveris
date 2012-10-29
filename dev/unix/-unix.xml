@@ -25,7 +25,7 @@
     <!--  - C L E A N  -->
     <!-- ============= -->
     <target name="-clean"
-            if="${is.unix}" unless="${is.mac}">
+            if="${is.unix}">
         <!-- Remove all the generated outputs for Unix -->
         <delete dir="${dist.dir}/AudiverisLinux" includeemptydirs="true"/>
     </target>
@@ -37,7 +37,7 @@
     <!-- Build Unix installers for x86 and x64 architectures-->
     <target name="-installers"
             depends=""
-            if="${is.unix}" unless="${is.mac}">
+            if="${is.unix}">
         <echo message="Build generic Linux package" />
         
         <!-- First phase: building generic Linux package -->
