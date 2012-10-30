@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.score.entity;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import omr.Main;
 
 import omr.constant.ConstantSet;
@@ -37,17 +40,20 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class {@code Beam} represents a beam "line", that may
- * be composed of several BeamItem instances, aligned horizontally one
- * after the other, along the same line.
+ * <div style="float: right;">
+ * <img src="doc-files/Beam.jpg" alt="diagram">
+ * </div>
+ *
+ * Class {@code Beam} represents a beam "line", that may be composed of
+ * several BeamItem "segments", aligned horizontally one after the
+ * other, along the same line.
  * It can degenerate to just a single beam hook.
  *
  * @author Hervé Bitteur
  */
 public class Beam
         extends MeasureNode
-        implements Comparable<Beam>,
-                   Vip
+        implements Vip
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -58,31 +64,33 @@ public class Beam
     private static final Logger logger = Logger.getLogger(Beam.class);
 
     //~ Instance fields --------------------------------------------------------
-    /** (Debug) flag this object as VIP */
+    //
+    /** (Debug) flag this object as VIP. */
     private boolean vip;
 
-    /** Id for debug */
+    /** Id for debug. */
     private final int id;
 
-    /** The containing beam group */
+    /** The containing beam group. */
     private BeamGroup group;
 
-    /** Items that compose this beam, sorted by abscissa */
+    /** Items that compose this beam, sorted by abscissa. */
     private SortedSet<BeamItem> items = new TreeSet<>();
 
-    /** Sequence of Chords that are linked by this beam, ordered by abscissa */
-    private SortedSet<Chord> chords = new TreeSet<>();
+    /** Chords that are linked by this beam. */
+    private List<Chord> chords = new ArrayList<>();
 
-    /** Line equation for the beam */
+    /** Line equation for the beam. */
     private Line line;
 
-    /** Left point of beam */
+    /** Left point of beam. */
     private PixelPoint left;
 
-    /** Right point of beam */
+    /** Right point of beam. */
     private PixelPoint right;
 
     //~ Constructors -----------------------------------------------------------
+    //
     //------//
     // Beam //
     //------//
@@ -100,6 +108,7 @@ public class Beam
     }
 
     //~ Methods ----------------------------------------------------------------
+    //
     //----------//
     // populate //
     //----------//
@@ -115,7 +124,7 @@ public class Beam
         ///logger.info("Populating " + glyph);
         Beam beam = null;
 
-        // Browse existing beams, to check if this glyph can be appended
+        // Browse existing beams, to check if this item can be appended
         for (TreeNode node : measure.getBeams()) {
             Beam b = (Beam) node;
 
@@ -133,7 +142,6 @@ public class Beam
 
         beam.addItem(item);
 
-        ////glyph.addTranslation(item);
         logger.fine("{0} {1}", beam.getContextString(), beam);
     }
 
@@ -156,7 +164,9 @@ public class Beam
      */
     public void addChord (Chord chord)
     {
-        chords.add(chord);
+        if (!chords.contains(chord)) {
+            chords.add(chord);
+        }
     }
 
     //------------------//
@@ -171,8 +181,9 @@ public class Beam
         if (chords.isEmpty()) {
             addError("No chords connected to " + this);
         } else {
-            Chord first = chords.first();
-            Chord last = chords.last();
+            Collections.sort(chords, Chord.byAbscissa);
+            Chord first = chords.get(0);
+            Chord last = chords.get(chords.size() - 1);
             boolean started = false;
 
             // Add interleaved chords if any, plus relevant chords of the group
@@ -185,7 +196,7 @@ public class Beam
                 }
 
                 if (started) {
-                    chords.add(chord);
+                    addChord(chord);
                     chord.addBeam(this);
                 }
 
@@ -195,58 +206,7 @@ public class Beam
             }
         }
     }
-
-    //-----------//
-    // compareTo //
-    //-----------//
-    /**
-     * Implement the order between two beams (of the same BeamGroup).
-     * We use the order along the first common chord, starting from chord tail.
-     * Note that, apart from the trivial case where a beam is compared to
-     * itself,
-     * two beams of the same group cannot be equal.
-     *
-     * @param other the other beam to be compared with
-     * @return -1, 0, +1 according to the comparison result
-     */
-    @Override
-    public int compareTo (Beam other)
-    {
-        // Process trivial case
-        if (this == other) {
-            return 0;
-        }
-
-        // Find a common chord, and use reverse order from head location
-        for (Chord chord : chords) {
-            if (other.chords.contains(chord)) {
-                int x = chord.getStem().getLocation().x;
-                int y = getLine().yAtX(x);
-                int yOther = other.getLine().yAtX(x);
-                int yHead = chord.getHeadLocation().y;
-
-                int result = Integer.signum(
-                        Math.abs(yHead - yOther) - Math.abs(yHead - y));
-
-                if (result == 0) {
-                    // This should not happen
-                    //                    logger.warning(
-                    //                        other.getContextString() + " equality between " +
-                    //                        this.toLongString() + " and " + other.toLongString());
-                    //                    logger.warning(
-                    //                        "Beam comparison data " + "x=" + x + " y=" + y +
-                    //                        " yOther=" + yOther + " yHead=" + yHead);
-                    addError(chord.getStem(), "Weird beam configuration");
-                }
-
-                return result;
-            }
-        }
-
-        // This case corresponds to two beam hooks, use abscissa to order them
-        return Integer.signum(this.left.x - other.left.x);
-    }
-
+    
     //----------------//
     // determineGroup //
     //----------------//
@@ -264,7 +224,7 @@ public class Beam
                     if (this.chords.contains(chord)) {
                         // We have a chord in common with this beam, so we are
                         // part of the same group
-                        switchGroup(group);
+                        switchToGroup(group);
                         logger.fine("{0} Reused {1} for {2}",
                                 getContextString(), group, this);
 
@@ -275,7 +235,7 @@ public class Beam
         }
 
         // No compatible group found, let's build a new one
-        switchGroup(new BeamGroup(getMeasure()));
+        switchToGroup(new BeamGroup(getMeasure()));
 
         logger.fine("{0} Created new {1} for {2}",
                 getContextString(), getGroup(), this);
@@ -297,13 +257,13 @@ public class Beam
     // getChords //
     //-----------//
     /**
-     * Report the sequence of chords that are linked by this beam.
+     * Report the chords that are linked by this beam.
      *
-     * @return the sorted set of linked chords
+     * @return the linked chords
      */
-    public SortedSet<Chord> getChords ()
+    public List<Chord> getChords ()
     {
-        return chords;
+        return Collections.unmodifiableList(chords);
     }
 
     //----------//
@@ -345,20 +305,6 @@ public class Beam
     public SortedSet<BeamItem> getItems ()
     {
         return items;
-    }
-
-    //----------//
-    // getLevel //
-    //----------//
-    /**
-     * Report the level of this beam within the containing BeamGroup,
-     * starting from 1.
-     *
-     * @return the beam level in its group
-     */
-    public int getLevel ()
-    {
-        return getGroup().getLevel(this);
     }
 
     //---------//
@@ -459,16 +405,16 @@ public class Beam
         vip = true;
     }
 
-    //-------------//
-    // switchGroup //
-    //-------------//
+    //---------------//
+    // switchToGroup //
+    //---------------//
     /**
-     * Switch this beam to a BeamGroup, by setting the link both ways
+     * Move this beam to a BeamGroup, by setting the link both ways
      * between this beam and the containing group.
      *
      * @param group the (new) containing beam group
      */
-    public void switchGroup (BeamGroup group)
+    public void switchToGroup (BeamGroup group)
     {
         logger.fine("Switching {0} from {1} to {2}",
                 this, this.group, group);
@@ -507,13 +453,8 @@ public class Beam
 
         sb.append(" #").append(id);
 
-        if (getGroup() != null) {
-            sb.append(" lv=").append(getLevel());
-        }
-
         sb.append(" left=").append(getPoint(LEFT));
-
-        sb.append(" right=").append(getPoint(LEFT));
+        sb.append(" right=").append(getPoint(RIGHT));
 
         sb.append(BeamItem.toString(items));
         sb.append("}");
@@ -533,8 +474,8 @@ public class Beam
         try {
             sb.append("#").append(id);
 
-            if (getGroup() != null) {
-                sb.append(" lv=").append(getLevel());
+            if (isHook()) {
+                sb.append(" hook");
             }
 
             sb.append(BeamItem.toString(items));
@@ -666,7 +607,7 @@ public class Beam
 
                 if (!sideChords.isEmpty()) {
                     for (Chord chord : sideChords) {
-                        chords.add(chord);
+                        addChord(chord);
                         chord.addBeam(this);
                     }
                 } else {
@@ -676,6 +617,20 @@ public class Beam
                 }
             }
         }
+    }
+
+    //-----------//
+    // getGlyphs //
+    //-----------//
+    @Override
+    public Collection<Glyph> getGlyphs ()
+    {
+        List<Glyph> glyphs = new ArrayList<>();
+        
+        for (BeamItem item : items) {
+            glyphs.add(item.getGlyph());
+        }
+        return glyphs;
     }
 
     //~ Inner Classes ----------------------------------------------------------

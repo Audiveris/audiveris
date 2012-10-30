@@ -11,10 +11,6 @@
 // </editor-fold>
 package omr.score.entity;
 
-import omr.constant.ConstantSet;
-
-import omr.glyph.facets.Glyph;
-
 import omr.log.Logger;
 
 import omr.math.InjectionSolver;
@@ -23,49 +19,29 @@ import omr.math.Rational;
 
 import omr.score.common.PixelPoint;
 
-import omr.sheet.Scale;
-
-import omr.util.HorizontalSide;
 import omr.util.Navigable;
-import omr.util.Param;
 import omr.util.TreeNode;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * Class {@code Slot} represents a roughly defined time slot within a
- * measure, to gather all chords that start at the same time.
- *
  * <div style="float: right;">
  * <img src="doc-files/Slot.png" alt="diagram">
  * </div>
  *
- * <p>On the diagram shown, slots are indicated by vertical blue lines.</p>
+ * Class {@code Slot} represents a roughly defined time slot within a
+ * measure, to gather all chords that start at the same time.
  *
- * <p>The key point is to determine when two chords should belong or
- * not to the same time slot:
- * <ul>
- * <li>Chords that share a common stem belong to the same slot.</li>
- * <li>Chords that originate from the same physical glyph belong to the same
- * slot. (for example a note head with one stem on left and one stem on right
- * leads to two overlapping logical chords)</li>
- * <li>Chords within the same beam group, but not on the same stem, cannot
- * belong to the same slot.</li>
- * <li>Similar abscissa is only an indication, it is not always reliable.</li>
- * </ul>
- * </p>
+ * <p>On the diagram shown, slots are indicated by vertical blue lines.</p>
  *
  * <p>The slot embraces all the staves of its part measure. Perhaps we should
  * consider merging slots between parts as well?
- *
  *
  * @author Hervé Bitteur
  */
@@ -74,67 +50,23 @@ public class Slot
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Specific application parameters */
-    private static final Constants constants = new Constants();
-
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Slot.class);
 
-    /** Chord comparator to sort chords vertically within the same slot */
-    public static final Comparator<Chord> chordComparator = new Comparator<Chord>()
-    {
-        @Override
-        public int compare (Chord c1,
-                            Chord c2)
-        {
-            Note n1 = (Note) c1.getNotes().get(0);
-            Note n2 = (Note) c2.getNotes().get(0);
-
-            // First : staff
-            int dStaff = n1.getStaff().getId() - n2.getStaff().getId();
-
-            if (dStaff != 0) {
-                return Integer.signum(dStaff);
-            }
-
-            // Second : head ordinate
-            int dHead = c1.getHeadLocation().y - c2.getHeadLocation().y;
-
-            if (dHead != 0) {
-                return Integer.signum(dHead);
-            }
-
-            // Third : chord id
-            return Integer.signum(c1.getId() - c2.getId());
-        }
-    };
-
-    /** Default slot abscissa margin. (in interline fraction) */
-    public static final Param<Double> defaultMargin = new DefaultMargin();
-
     //~ Instance fields --------------------------------------------------------
+    //
     /** The containing measure. */
     @Navigable(false)
     private Measure measure;
-    //
 
     /** Id unique within the containing measure. */
-    private int id;
+    private final int id;
 
     /** Reference point of the slot. */
     private PixelPoint refPoint;
 
-    /** Abscissae of all glyphs. */
-    private Population xPop = new Population();
-
-    /** Ordinates of all glyphs. */
-    private Population yPop = new Population();
-
-    /** Collection of glyphs in the slot. */
-    private List<Glyph> glyphs = new ArrayList<>();
-
-    /** Chords in this slot, sorted by staff, then by ordinate. */
-    private List<Chord> chords = new ArrayList<>();
+    /** Chords incoming into this slot, sorted by staff then ordinate. */
+    private List<Chord> incomings = new ArrayList<>();
 
     /** Time offset since measure start. */
     private Rational startTime;
@@ -152,6 +84,8 @@ public class Slot
     public Slot (Measure measure)
     {
         this.measure = measure;
+
+        id = 1 + measure.getSlots().size();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -181,218 +115,109 @@ public class Slot
         }
     }
 
-    //----------//
-    // populate //
-    //----------//
-    /**
-     * Populate a slot with the provided note glyph.
-     *
-     * @param glyph   a chord-relevant glyph (rest, note or notehead)
-     * @param measure the containing measure
-     */
-    public static void populate (Glyph glyph,
-                                 Measure measure)
+    //-----------//
+    // setChords //
+    //-----------//
+    public void setChords (Collection<Chord> chords)
     {
-        final boolean logging = glyph.isVip() || logger.isFineEnabled();
+        this.incomings.addAll(chords);
 
-        if (logging) {
-            logger.info("{0} Populating slot with {1}", 
-                    measure.getContextString(), glyph);
+        for (Chord chord : chords) {
+            chord.setSlot(this);
         }
 
-        // Special case for measure rests: they don't belong to any time slot,
-        // and their duration is the measure duration
-        if (glyph.getShape().isMeasureRest()) {
-            measure.addWholeChord(glyph);
-        } else {
-            // Use the note abscissa
-            PixelPoint pt = glyph.getAreaCenter();
+        // Compute slot refPoint as average of chords centers
+        Population xPop = new Population();
+        Population yPop = new Population();
 
-            // First, look for a compatible slot
-            for (Slot slot : measure.getSlots()) {
-                if (slot.isAlignedWith(pt)) {
-                    if (logging) {
-                        logger.info("{0} Joining slot {1}", measure, slot);
-                    }
-
-                    slot.addGlyph(glyph);
-
-                    return;
-                }
-            }
-
-            // No compatible slot found, so let's create a brand new one
-            Slot slot = new Slot(measure);
-
-            slot.addGlyph(glyph);
-
-            if (logging) {
-                logger.info("{0} Creating new slot {1}", measure, slot);
-            }
-
-            measure.getSlots().add(slot);
+        for (Chord chord : chords) {
+            PixelPoint center = chord.getCenter();
+            xPop.includeValue(center.x);
+            yPop.includeValue(center.y);
         }
+
+        refPoint = new PixelPoint(
+                (int) Math.rint(xPop.getMeanValue()),
+                (int) Math.rint(yPop.getMeanValue()));
     }
 
-    //----------//
-    // addGlyph //
-    //----------//
+    //-------------//
+    // duildVoices //
+    //-------------//
     /**
-     * Insert a glyph (supposedly from a chord) into this slot.
+     * Compute the various voices in this slot.
      *
-     * @param glyph the glyph to insert
+     * @param endingChords the chords that end right at this slot, with their
+     *                     voice not available because their group is continuing.
      */
-    protected void addGlyph (Glyph glyph)
+    public void buildVoices (List<Chord> endingChords)
     {
-        glyphs.add(glyph);
+        logger.fine("endingChords={0}", endingChords);
+        logger.fine("incomings={0}", incomings);
 
-        PixelPoint point = glyph.getLocation();
-        xPop.includeValue(point.x);
-        yPop.includeValue(point.y);
+        // Sort chords vertically
+        Collections.sort(incomings, Chord.byOrdinate);
 
-        refPoint = null;
-    }
+        // Some chords already have the voice assigned
+        List<Chord> endings = new ArrayList<>(endingChords);
+        List<Chord> rookies = new ArrayList<>();
 
-    //------------------------//
-    // allocateChordsAndNotes //
-    //------------------------//
-    /**
-     * Based on the current collection of glyphs within this slot,
-     * allocate the proper chords, a strategy based on each
-     * glyph-related stem.
-     */
-    public void allocateChordsAndNotes ()
-    {
-        // Allocate 1 chord per stem, per rest, per (whole) note
-        for (Glyph glyph : glyphs) {
-            glyph.clearTranslations();
-            if (glyph.getStemNumber() > 0) {
-                // Beware of noteheads with 2 stems, we need to duplicate them
-                // in order to actually have two logical chords.
-                for (HorizontalSide side : HorizontalSide.values()) {
-                    Glyph stem = glyph.getStem(side);
+        for (Chord ch : incomings) {
+            if (ch.getVoice() != null) {
+                // Needed to populate the voice slotTable
+                ch.setVoice(ch.getVoice());
 
-                    if (stem != null) {
-                        Chord chord = getStemChord(stem);
-                        Note.createPack(chord, glyph);
+                // Remove the ending chord with the same voice
+                for (Iterator<Chord> it = endings.iterator(); it.hasNext();) {
+                    Chord c = it.next();
+                    if (c.getVoice() == ch.getVoice()) {
+                        it.remove();
+                        break;
                     }
                 }
+
             } else {
-                Chord chord = new Chord(measure, this);
-                chords.add(chord);
-                Note.createPack(chord, glyph);
+                rookies.add(ch);
             }
         }
-    }
 
-    //-------------//
-    // BuildVoices //
-    //-------------//
-    /**
-     * Compute the various voices and start times in this slot.
-     *
-     * @param activeChords the chords which were active right before this slot
-     */
-    public void buildVoices (List<Chord> activeChords)
-    {
-        // Safer
-        if (!allChordsHaveNotes()) {
+        // Nothing left to assign?
+        if (rookies.isEmpty()) {
             return;
         }
 
-        // Sort chords vertically  within the slot
-        Collections.sort(chords, chordComparator);
+        // Try to map some ending voices to some rookies
+        if (!endings.isEmpty()) {
+            InjectionSolver solver = new InjectionSolver(
+                    rookies.size(),
+                    endings.size() + rookies.size(),
+                    new MyDistance(rookies, endings));
+            int[] links = solver.solve();
 
-        logger.fine("buildVoices for Slot#{0} Actives={1} Chords={2}",
-                getId(), activeChords, chords);
+            for (int i = 0; i < links.length; i++) {
+                int index = links[i];
 
-        // Use the active chords before this slot to compute start time
-        computeStartTime(activeChords);
+                // Map new chord to an ending chord?
+                if (index < endings.size()) {
+                    Voice voice = endings.get(index).getVoice();
+                    logger.fine("Slot#{0} Reusing voice#{1}",
+                            getId(), voice.getId());
 
-        // Chords that are ending, with their voice available
-        List<Chord> endingChords = new ArrayList<>();
+                    Chord ch = rookies.get(i);
 
-        // Chords that are ending, with voice not available (beam group)
-        List<Chord> passingChords = new ArrayList<>();
+                    try {
+                        ch.setVoice(voice);
+                    } catch (Exception ex) {
+                        ch.addError("Failed to set voice of chord");
 
-        for (Chord chord : activeChords) {
-            // Look for chord that finishes at the slot at hand
-            // Make sure voice is really available
-            if (!chord.isWholeDuration()) {
-                if ((chord.getEndTime().compareTo(startTime) <= 0)) {
-                    BeamGroup group = chord.getBeamGroup();
-
-                    if ((group == null) || (chord == group.getChords().last())) {
-                        endingChords.add(chord);
-                    } else {
-                        passingChords.add(chord);
+                        return;
                     }
-                }
-            } else {
-                // Chord (and its voice) continues past the slot at hand
-            }
-        }
-
-        logger.fine("endingChords={0}", endingChords);
-        logger.fine("passingChords={0}", passingChords);
-        logger.fine("Chords={0}", chords);
-
-        InjectionSolver solver = new InjectionSolver(
-                chords.size(),
-                endingChords.size() + chords.size(),
-                new MyDistance(chords, endingChords));
-        int[] links = solver.solve();
-
-        for (int i = 0; i < links.length; i++) {
-            int index = links[i];
-
-            // Map new chord to an ending chord?
-            if (index < endingChords.size()) {
-                Voice voice = endingChords.get(index).getVoice();
-                logger.fine("Slot#{0} Reusing voice#{1}",
-                        getId(), voice.getId());
-
-                Chord ch = chords.get(i);
-
-                try {
-                    ch.setVoice(voice);
-                } catch (Exception ex) {
-                    ch.addError("Failed to set voice of chord");
-
-                    return;
                 }
             }
         }
 
         // Assign remaining non-mapped chords, using first voice available
-        assignVoices(chords);
-
-        // Purge collection of active chords for this slot
-        // Add the chords that start with this slot
-        activeChords.removeAll(endingChords);
-        activeChords.removeAll(passingChords); // ?????
-        activeChords.addAll(chords);
-        Collections.sort(activeChords, chordComparator);
-    }
-
-    //--------------------//
-    // allChordsHaveNotes //
-    //--------------------//
-    /**
-     * Check that each of the chords have notes, and thus can be used
-     *
-     * @return true if OK
-     */
-    private boolean allChordsHaveNotes ()
-    {
-        for (Chord chord : chords) {
-            if (chord.getNotes().isEmpty()) {
-                chord.addError("Chord without note " + chord);
-                return false;
-            }
-        }
-
-        return true;
+        assignVoices();
     }
 
     //-----------//
@@ -421,14 +246,6 @@ public class Slot
      */
     public int getX ()
     {
-        if (refPoint == null) {
-            if (xPop.getCardinality() > 0) {
-                refPoint = new PixelPoint(
-                        (int) Math.rint(xPop.getMeanValue()),
-                        (int) Math.rint(yPop.getMeanValue()));
-            }
-        }
-
         return refPoint.x;
     }
 
@@ -493,7 +310,7 @@ public class Slot
      */
     public List<Chord> getChords ()
     {
-        return chords;
+        return incomings;
     }
 
     //-------------------//
@@ -533,23 +350,6 @@ public class Slot
         return id;
     }
 
-    //------------------//
-    // getLocationGlyph //
-    //------------------//
-    /**
-     * Report a glyph that can be used to show the location of the slot.
-     *
-     * @return a glyph from the slot
-     */
-    public Glyph getLocationGlyph ()
-    {
-        if (!glyphs.isEmpty()) {
-            return glyphs.iterator().next();
-        } else {
-            return null;
-        }
-    }
-
     //--------------//
     // getStartTime //
     //--------------//
@@ -562,71 +362,6 @@ public class Slot
     public Rational getStartTime ()
     {
         return startTime;
-    }
-
-    //----------//
-    // getStems //
-    //----------//
-    /**
-     * Report the set of all stems that belong to this slot.
-     *
-     * @return the set of related stems
-     */
-    public Set<Glyph> getStems ()
-    {
-        Set<Glyph> stems = new HashSet<>();
-
-        for (Chord chord : chords) {
-            Glyph stem = chord.getStem();
-
-            if (stem != null) {
-                stems.add(stem);
-            }
-        }
-
-        return stems;
-    }
-
-    //-------------//
-    // includeSlot //
-    //-------------//
-    /**
-     * Include the other slot into this one.
-     *
-     * @param that the other slot to include
-     */
-    public void includeSlot (Slot that)
-    {
-        // This will recompute the slot refPoint
-        for (Glyph glyph : that.glyphs) {
-            addGlyph(glyph);
-        }
-    }
-
-    //---------------//
-    // isAlignedWith //
-    //---------------//
-    /**
-     * Check whether a system point is roughly aligned with this slot
-     * instance.
-     *
-     * @param sysPt the system point to check
-     * @return true if aligned
-     */
-    public boolean isAlignedWith (PixelPoint sysPt)
-    {
-        Scale scale = measure.getScale();
-        int dx = Math.abs(sysPt.x - getX());
-
-        return scale.pixelsToFrac(dx) <= defaultMargin.getTarget();
-    }
-
-    //-------//
-    // setId //
-    //-------//
-    public void setId (int id)
-    {
-        this.id = id;
     }
 
     //--------------//
@@ -710,20 +445,20 @@ public class Slot
         StringBuilder sb = new StringBuilder();
         sb.append("{Slot#").append(id);
 
-        sb.append(" x=").append(getX());
+        if (refPoint != null) {
+            sb.append(" x=").append(getX());
+        }
 
         if (startTime != null) {
             sb.append(" start=").append(startTime);
         }
 
-        sb.append(" glyphs=[");
-
-        for (Glyph glyph : glyphs) {
-            sb.append("#").append(glyph.getId()).append("/").append(glyph.
-                    getShape()).append(" ");
+        sb.append(" incomings=[");
+        for (Chord chord : incomings) {
+            sb.append("#").append(chord.getId());
         }
-
         sb.append("]");
+
         sb.append("}");
 
         return sb.toString();
@@ -781,17 +516,24 @@ public class Slot
      *
      * @param chords the collection of chords to process for this slot
      */
-    private void assignVoices (Collection<Chord> chords)
+    private void assignVoices ()
     {
         // Assign remaining non-mapped chords, using first voice available
-        for (Chord chord : chords) {
+        // with staff continuity whenever possible
+        for (Chord chord : incomings) {
             // Process only the chords that have no voice assigned yet
             if (chord.getVoice() == null) {
+                // Try to reuse an existing voice
                 for (Voice voice : measure.getVoices()) {
                     if (voice.isFree(this)) {
-                        chord.setVoice(voice);
+                        // Don't migrate a voice from one staff to another
+                        Chord latestVoiceChord = voice.getChordBefore(this);
+                        if (latestVoiceChord != null
+                            && latestVoiceChord.getStaff() == chord.getStaff()) {
+                            chord.setVoice(voice);
 
-                        break;
+                            break;
+                        }
                     }
                 }
 
@@ -804,67 +546,6 @@ public class Slot
                 }
             }
         }
-    }
-
-    //------------------//
-    // computeStartTime //
-    //------------------//
-    /**
-     * Based on the active chords before this slot, determine the next
-     * expiration time, which governs this slot.
-     *
-     * @param activeChords
-     */
-    private void computeStartTime (Collection<Chord> activeChords)
-    {
-        Rational slotTime = Rational.MAX_VALUE;
-
-        for (Chord chord : activeChords) {
-            if (!chord.isWholeDuration()) { // Skip the "whole" chords
-
-                Rational endTime = chord.getEndTime();
-
-                if (endTime.compareTo(slotTime) < 0) {
-                    slotTime = endTime;
-                }
-            }
-        }
-
-        if (slotTime.equals(Rational.MAX_VALUE)) {
-            slotTime = Rational.ZERO;
-        }
-
-        logger.fine("slotTime={0}", slotTime);
-
-        setStartTime(slotTime);
-    }
-
-    //--------------//
-    // getStemChord //
-    //--------------//
-    /**
-     * Given a stem, look up for a chord that already contains it,
-     * otherwise create a brand new chord to host the stem.
-     *
-     * @param stem the stem to look up
-     * @return the existing/created chord that contains the stem
-     */
-    private Chord getStemChord (Glyph stem)
-    {
-        // Check we don't already have this stem in a chord
-        for (Chord chord : chords) {
-            if (chord.getStem() == stem) {
-                return chord;
-            }
-        }
-
-        // Not found, so let's create it
-        Chord chord = new Chord(measure, this);
-        chords.add(chord);
-        chord.setStem(stem);
-        stem.setTranslation(chord);
-
-        return chord;
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -925,48 +606,6 @@ public class Slot
 
                 return dy + (2 * dStem);
             }
-        }
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
-    //
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-
-        Scale.Fraction xMargin = new Scale.Fraction(
-                0.4,
-                "Default abscissa margin between a slot and a glyph candidate");
-
-    }
-
-    //--------------//
-    // DefaultMargin //
-    //--------------//
-    private static class DefaultMargin
-            extends Param<Double>
-    {
-
-        @Override
-        public Double getSpecific ()
-        {
-            return constants.xMargin.getValue();
-        }
-
-        @Override
-        public boolean setSpecific (Double specific)
-        {
-            if (!getSpecific().equals(specific)) {
-                constants.xMargin.setValue(specific);
-                logger.info("Default slot margin is now ''{0}''", specific);
-
-                return true;
-            }
-
-            return false;
         }
     }
 }

@@ -28,11 +28,8 @@ import omr.util.TreeNode;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
  * Class {@code Measure} handles a measure of a system part, that is
@@ -94,7 +91,7 @@ public class Measure
     private MeasureId.PageBased id;
 
     /** Identified time slots within the measure */
-    private SortedSet<Slot> slots;
+    private List<Slot> slots;
 
     /**
      * Chords of just whole rest (thus handled outside slots)
@@ -196,49 +193,48 @@ public class Measure
         voices.add(voice);
     }
 
-    //-------------//
-    // buildVoices //
-    //-------------//
-    /**
-     * Browse the slots and chords, in order to compute the various
-     * voices and start times.
-     */
-    public void buildVoices ()
-    {
-        // Debug
-        if (logger.isFineEnabled()) {
-            printChords("Initial chords for ");
-        }
-
-        // The 'activeChords' collection gathers the chords that are "active"
-        // (not terminated) at the time slot being considered. Initially, it
-        // contains just the whole chords.
-        List<Chord> activeChords = new ArrayList<>(getWholeChords());
-        Collections.sort(activeChords);
-
-        // Create voices for whole chords
-        for (Chord chord : activeChords) {
-            chord.setStartTime(Rational.ZERO);
-            Voice.createWholeVoice(chord);
-        }
-
-        // Process slot after slot, if any
-        try {
-            for (Slot slot : getSlots()) {
-                slot.buildVoices(activeChords);
-            }
-        } catch (Exception ex) {
-            logger.warning(
-                    "Error building voices in measure " + getPageId(),
-                    ex);
-        }
-
-        // Debug
-        if (logger.isFineEnabled()) {
-            printVoices("Final voices for ");
-        }
-    }
-
+//    //-------------//
+//    // buildVoices //
+//    //-------------//
+//    /**
+//     * Browse the slots and chords, in order to compute the various
+//     * voices and start times.
+//     */
+//    public void buildVoices ()
+//    {
+//        // Debug
+//        if (logger.isFineEnabled()) {
+//            printChords("Initial chords for ");
+//        }
+//
+//        // The 'activeChords' collection gathers the chords that are "active"
+//        // (not terminated) at the time slot being considered. Initially, it
+//        // contains just the whole chords.
+//        List<Chord> activeChords = new ArrayList<>(getWholeChords());
+//        Collections.sort(activeChords, Chord.byAbscissa);
+//
+//        // Create voices for whole chords
+//        for (Chord chord : activeChords) {
+//            chord.setStartTime(Rational.ZERO);
+//            Voice.createWholeVoice(chord);
+//        }
+//
+//        // Process slot after slot, if any
+//        try {
+//            for (Slot slot : getSlots()) {
+//                slot.buildVoices(activeChords);
+//            }
+//        } catch (Exception ex) {
+//            logger.warning(
+//                    "Error building voices in measure " + getPageId(),
+//                    ex);
+//        }
+//
+//        // Debug
+//        if (logger.isFineEnabled()) {
+//            printVoices("Final voices for ");
+//        }
+//    }
     //---------------//
     // checkDuration //
     //---------------//
@@ -291,7 +287,6 @@ public class Measure
         excess = null;
         implicit = false;
         setFirstHalf(false);
-        /// = 0;
 
         // (Re)Allocate specific children lists
         clefs = new Container(this, "Clefs");
@@ -305,7 +300,7 @@ public class Measure
         //        texts = new TextList(this);
 
         // Should this be a MeasureNode ??? TODO
-        slots = new TreeSet<>();
+        slots = new ArrayList<>();
         beamGroups = new ArrayList<>();
         wholeChords = new ArrayList<>();
         voices = new ArrayList<>();
@@ -1268,7 +1263,7 @@ public class Measure
      *
      * @return the collection of slots
      */
-    public SortedSet<Slot> getSlots ()
+    public List<Slot> getSlots ()
     {
         return slots;
     }
@@ -1757,7 +1752,7 @@ public class Measure
                             if (nbMarks > 0) {
                                 Mark mark = chord.getMarks().get(nbMarks - 1);
                                 logger.fine("{0} Removing final forward: {1}",
-                                        getContextString(), 
+                                        getContextString(),
                                         (Rational) mark.getData());
                                 chord.getMarks().remove(mark);
                             } else {
@@ -1860,6 +1855,14 @@ public class Measure
         wholeChords.add(chord);
     }
 
+    //---------------//
+    // addWholeChord //
+    //---------------//
+    public void addWholeChord (Chord chord)
+    {
+        wholeChords.add(chord);
+    }
+
     //--------------//
     // addWholeRest //
     //--------------//
@@ -1874,6 +1877,10 @@ public class Measure
         Chord chord = new Chord(this, null);
         Note.createWholeRest(staff, chord, center);
         wholeChords.add(chord);
+
+        chord.setStartTime(Rational.ZERO);
+        Voice.createWholeVoice(chord);
+
     }
 
     //--------------------//
@@ -1901,5 +1908,37 @@ public class Measure
         }
 
         return String.format("%-5s", measureDur.toString());
+    }
+
+    //-------------//
+    // swapVoiceId //
+    //-------------//
+    /**
+     * Change the id of the provided voice to the provided id
+     * (and change the other voice, if any, which owned the provided id).
+     *
+     * @param voice the voice whose id must be changed
+     * @param id    the new id
+     */
+    public void swapVoiceId (Voice voice,
+                      int id)
+    {
+        // Existing voice?
+        Voice oldOwner = null;
+        for (Voice v : getVoices()) {
+            if (v.getId() == id) {
+                oldOwner = v;
+                break;
+            }
+        }
+
+        // Change voice id
+        int oldId = voice.getId();
+        voice.setId(id);
+
+        // Assign the oldId to the oldOwner, if any
+        if (oldOwner != null) {
+            oldOwner.setId(oldId);
+        }
     }
 }

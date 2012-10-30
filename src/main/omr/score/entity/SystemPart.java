@@ -13,11 +13,15 @@ package omr.score.entity;
 
 import omr.glyph.facets.Glyph;
 
+import omr.grid.StaffInfo;
+
 import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.visitor.ScoreVisitor;
+
+import omr.sheet.PartInfo;
 
 import omr.util.Predicate;
 import omr.util.TreeNode;
@@ -26,8 +30,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import omr.grid.StaffInfo;
-import omr.sheet.PartInfo;
 
 /**
  * Class {@code SystemPart} handles each of the various parts found in
@@ -358,7 +360,6 @@ public class SystemPart
 
                 // Create dummy Whole rest (w/ no precise location)
                 dummyMeasure.addWholeRest(dummyStaff, null);
-                dummyMeasure.buildVoices();
             }
 
             dummyMeasure.setBox(
@@ -622,7 +623,7 @@ public class SystemPart
         if (staffInfo == null) {
             return null;
         }
-        
+
         Staff staff = staffInfo.getScoreStaff();
 
         if (staves.getChildren().contains(staff)) {
@@ -774,6 +775,53 @@ public class SystemPart
         for (TreeNode node : getLyrics()) {
             LyricsLine line = (LyricsLine) node;
             line.refineLyricSyllables();
+        }
+    }
+
+    //-------------------//
+    // connectTiedVoices //
+    //-------------------//
+    /**
+     * Make sure that notes tied across measures keep the same voice.
+     * This is performed for all ties in this part.
+     */
+    public void connectTiedVoices ()
+    {
+        for (TreeNode tn : getSlurs()) {
+            Slur slur = (Slur) tn;
+
+            if (!slur.isTie()) {
+                continue;
+            }
+
+            // Voice on left (perhaps in a previous measure / system / page)
+            Note leftNote = slur.getLeftNote();
+            if (leftNote == null) {
+                Slur leftExtension = slur.getLeftExtension();
+                if (leftExtension == null) {
+                    continue;
+                }
+                leftNote = leftExtension.getLeftNote();
+                if (leftNote == null) {
+                    continue;
+                }
+            }
+            Chord leftChord = leftNote.getChord();
+            Voice leftVoice = leftChord.getVoice();
+
+            // Voice on right
+            Note rightNote = slur.getRightNote();
+            if (rightNote == null) {
+                continue;
+            }
+            Chord rightChord = rightNote.getChord();
+            Voice rightVoice = rightChord.getVoice();
+
+
+            if (leftVoice.getId() != rightVoice.getId()) {
+                logger.fine("Tie to map {0} and {1}", leftChord, rightChord);
+                rightChord.getMeasure().swapVoiceId(rightVoice, leftVoice.getId());
+            }
         }
     }
 

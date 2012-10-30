@@ -1102,12 +1102,12 @@ public class ScoreExporter
             ClefIterators clefIters = new ClefIterators(measure);
 
             // Insert clefs that occur before first time slot
-            SortedSet<Slot> slots = measure.getSlots();
+            List<Slot> slots = measure.getSlots();
 
             if (slots.isEmpty()) {
                 clefIters.push(null, null);
             } else {
-                clefIters.push(slots.first().getX(), null);
+                clefIters.push(slots.get(0).getX(), null);
             }
 
             // Now voice per voice
@@ -1350,7 +1350,7 @@ public class ScoreExporter
             // Beams ?
             for (Beam beam : chord.getBeams()) {
                 proxymusic.Beam pmBeam = factory.createBeam();
-                pmBeam.setNumber(beam.getLevel());
+                pmBeam.setNumber(1 + chord.getBeams().indexOf(beam));
 
                 if (beam.isHook()) {
                     if (beam.getCenter().x > chord.getStem().getLocation().x) {
@@ -1359,9 +1359,10 @@ public class ScoreExporter
                         pmBeam.setValue(BeamValue.BACKWARD_HOOK);
                     }
                 } else {
-                    if (beam.getChords().first() == chord) {
+                    List<Chord> chords = beam.getChords();
+                    if (chords.get(0) == chord) {
                         pmBeam.setValue(BeamValue.BEGIN);
-                    } else if (beam.getChords().last() == chord) {
+                    } else if (chords.get(chords.size() -1) == chord) {
                         pmBeam.setValue(BeamValue.END);
                     } else {
                         pmBeam.setValue(BeamValue.CONTINUE);

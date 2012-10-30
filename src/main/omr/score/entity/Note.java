@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -522,64 +523,40 @@ public class Note
     // getAlter //
     //----------//
     /**
-     * Report the actual alteration of this note, taking into account the
-     * accidental of this note if any, the accidental of previous note with same
-     * step within the same measure, and finally the current key signature.
+     * Report the actual alteration of this note, taking into account
+     * the accidental of this note if any, the accidental of previous
+     * note with same step within the same measure, and finally the
+     * current key signature.
      *
      * @return the actual alteration
      */
     public int getAlter ()
     {
         if (alter == null) {
+            // Look for local accidental
             if (accidental != null) {
-                // TODO: handle double flat & double sharp !!!
-                switch (accidental.getShape()) {
-                case SHARP:
-                    return alter = 1;
-
-                case FLAT:
-                    return alter = -1;
-
-                default:
-                }
+                return alter = alterationOf(accidental);
             }
 
-            // Look for a previous accidental with the same note step in the measure
-            Collection<Slot> collection = getMeasure().getSlots();
-            Slot[] slots = collection.toArray(
-                    new Slot[collection.size()]);
+            // Look for previous accidental with same note step in the measure
+            List<Slot> slots = getMeasure().getSlots();
 
             boolean started = false;
+            for (ListIterator<Slot> it = slots.listIterator(slots.size());
+                    it.hasPrevious();) {
+                Slot slot = it.previous();
 
-            for (int is = slots.length - 1; is >= 0; is--) {
-                Slot slot = slots[is];
+                // Inspect all notes of all chords
+                for (Chord chord : slot.getChords()) {
+                    for (TreeNode node : chord.getNotes()) {
+                        Note note = (Note) node;
 
-                if (slot.isAlignedWith(getCenter())) {
-                    started = true;
-                }
-
-                if (started) {
-                    // Inspect all notes of all chords
-                    for (Chord chord : slot.getChords()) {
-                        for (TreeNode node : chord.getNotes()) {
-                            Note note = (Note) node;
-
-                            if (note == this) {
-                                continue;
-                            }
-
-                            if ((note.getStep() == getStep())
-                                && (note.getAccidental() != null)) {
-                                switch (note.getAccidental().getShape()) {
-                                case SHARP:
-                                    return alter = 1;
-
-                                case FLAT:
-                                    return alter = -1;
-
-                                default:
-                                }
-                            }
+                        if (note == this) {
+                            started = true;
+                        } else if (started
+                                   && (note.getStep() == getStep())
+                                   && (note.getAccidental() != null)) {
+                            return alter = alterationOf(note.getAccidental());
                         }
                     }
                 }
@@ -592,11 +569,39 @@ public class Note
                 return alter = ks.getAlterFor(getStep());
             }
 
-            // By default ...
+            // Nothing found, so...
             alter = 0;
         }
 
         return alter;
+    }
+
+    //--------------//
+    // alterationOf //
+    //--------------//
+    /**
+     * Report the pitch alteration that corresponds to the provided
+     * accidental.
+     *
+     * @param accidental the provided accidental
+     * @return the pitch impact
+     */
+    private int alterationOf (Glyph accidental)
+    {
+        switch (accidental.getShape()) {
+        case SHARP:
+            return 1;
+        case DOUBLE_SHARP:
+            return 2;
+        case FLAT:
+            return -1;
+        case DOUBLE_FLAT:
+            return -2;
+        default:
+            logger.warning("Weird shape {0} for accidental {1}",
+                    accidental.getShape(), accidental.idString());
+            return 0; // Should not happen
+        }
     }
 
     //-----------------//

@@ -153,7 +153,7 @@ public class Score
         // Related bench
         bench = new ScoreBench(this);
 
-        // Register this scpre instance
+        // Register this score instance
         ScoresManager.getInstance().addInstance(this);
     }
 
@@ -193,12 +193,6 @@ public class Score
         if (scoreTree != null) {
             scoreTree.close();
         }
-
-//        // Close Midi interface if needed
-//        if (Main.getGui() != null) {
-//            ScoresManager.getInstance()
-//                         .midiClose(this);
-//        }
 
         // Complete and store all bench data
         ScoresManager.getInstance().storeBench(bench, null, true);

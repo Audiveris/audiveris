@@ -134,7 +134,7 @@ public class ScoreChecker
             }
 
             Glyph glyph = beam.getItems().first().getGlyph();
-            SortedSet<Chord> chords = beam.getChords();
+            List<Chord> chords = beam.getChords();
 
             if (chords.size() > 1) {
                 beam.addError(glyph, "Beam hook connected to several chords");
@@ -150,7 +150,7 @@ public class ScoreChecker
 
             // Check that there is at least one full beam on the same chord
             // And vertically closer than the chord head 
-            Chord chord = chords.first();
+            Chord chord = chords.get(0);
             int stemX = chord.getStem().getLocation().x;
             double hookY = glyph.getCentroid().y;
             int headY = chord.getHeadLocation().y;
@@ -253,9 +253,7 @@ public class ScoreChecker
 
             // Check the beam groups for non-recognized hooks
             for (BeamGroup group : measure.getBeamGroups()) {
-                SortedSet<Chord> chords = group.getChords();
-
-                for (Chord chord : chords) {
+                for (Chord chord : group.getChords()) {
                     Glyph stem = chord.getStem();
 
                     // We could have rests (w/o stem!)

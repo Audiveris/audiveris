@@ -530,6 +530,21 @@ public class ScoreSystem
         }
     }
 
+    //-------------------//
+    // connectTiedVoices //
+    //-------------------//
+    /**
+     * Make sure that notes tied across measures keep the same voice.
+     * This is performed for all measures in this system.
+     */
+    public void connectTiedVoices ()
+    {
+        for (TreeNode node : getParts()) {
+            SystemPart part = (SystemPart) node;
+            part.connectTiedVoices();
+        }
+    }
+
     //----------//
     // setWidth //
     //----------//

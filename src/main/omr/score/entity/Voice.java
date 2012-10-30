@@ -46,19 +46,22 @@ public class Voice
     {
         //~ Enumeration constant initializers ----------------------------------
 
-        /** A chord begins at this slot */
+        /** A chord begins at this slot. */
         BEGIN,
-        /** A chord is still active at this slot */
+        /** A chord is still active
+         * at this slot. */
         CONTINUE;
+
     }
 
     //~ Instance fields --------------------------------------------------------
+    //
     /** Containing measure */
     @Navigable(false)
     private final Measure measure;
 
     /** The voice id */
-    private final int id;
+    private int id;
 
     /**
      * Map (SlotId -> ChordInfo) to store chord information for each slot.
@@ -82,6 +85,7 @@ public class Voice
     private TimeRational inferredTimeSig;
 
     //~ Constructors -----------------------------------------------------------
+    //
     //-------//
     // Voice //
     //-------//
@@ -100,9 +104,30 @@ public class Voice
     }
 
     //~ Methods ----------------------------------------------------------------
+    //----------------//
+    // getChordBefore //
+    //----------------//
+    /**
+     * Retrieve the latest chord, if any, before the provided slot.
+     *
+     * @param slot the provided slot
+     * @return the latest chord, in this voice, before this slot
+     */
+    public Chord getChordBefore (Slot slot)
+    {
+        for (int sid = slot.getId() - 1; sid > 0; sid--) {
+            ChordInfo info = slotTable.get(sid);
+            if (info != null) {
+                return info.getChord();
+            }
+        }
+
+        return null;
+    }
     //---------------//
     // checkDuration //
     //---------------//
+
     /**
      * Check the duration of the voice, compared to measure expected
      * duration.
@@ -176,6 +201,21 @@ public class Voice
     }
 
     //-------//
+    // setId //
+    //-------//
+    /**
+     * Change the voice id (to rename voices)
+     *
+     * @param id the new id value
+     */
+    public void setId (int id)
+    {
+        logger.fine("measure#{0} {1} renamed as {2}", 
+                measure.getIdValue(), this, id);
+        this.id = id;
+    }
+
+    //-------//
     // getId //
     //-------//
     /**
@@ -196,7 +236,7 @@ public class Voice
      * content of this voice.
      *
      * @return the "intrinsic" time signature rational value for this voice,
-     * or null
+     *         or null
      */
     public TimeRational getInferredTimeSignature ()
     {
@@ -508,8 +548,8 @@ public class Voice
 
                 if (info == null) {
                     if ((lastChord != null)
-                            && (lastChord.getEndTime().compareTo(slot.
-                                getStartTime()) > 0)) {
+                        && (lastChord.getEndTime().compareTo(slot.
+                            getStartTime()) > 0)) {
                         setSlotInfo(
                                 slot,
                                 new ChordInfo(lastChord, Status.CONTINUE));

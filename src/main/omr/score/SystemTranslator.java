@@ -60,7 +60,7 @@ import java.util.List;
 
 /**
  * Class {@code SystemTranslator} performs all translation tasks for
- * a given system.
+ * a given system, translating glyphs to score entities.
  */
 public class SystemTranslator
 {
@@ -71,25 +71,29 @@ public class SystemTranslator
             SystemTranslator.class);
 
     //~ Instance fields --------------------------------------------------------
-    /** The physical system */
+    /** The physical system. */
     private final SystemInfo systemInfo;
 
-    /** The logical system */
+    /** The logical system. */
     private ScoreSystem system;
 
-    /** The current systempart */
+    /** The current systempart. */
     private SystemPart currentPart;
 
-    /** The current staff */
+    /** The current staff. */
     private Staff currentStaff;
 
-    /** The current point in current system */
+    /** The current point in current system. */
     private PixelPoint currentCenter;
 
-    /** The current measure */
+    /** The current measure. */
     private Measure currentMeasure;
 
     //~ Constructors -----------------------------------------------------------
+    //
+    //------------------//
+    // SystemTranslator //
+    //------------------//
     /**
      * Creates a new SystemTranslator object.
      *
@@ -101,6 +105,7 @@ public class SystemTranslator
     }
 
     //~ Methods ----------------------------------------------------------------
+    //
     //----------------//
     // translateFinal //
     //----------------//
@@ -129,6 +134,7 @@ public class SystemTranslator
             ScoreSystem syst = info.getScoreSystem();
             syst.fillMissingParts();
             syst.connectSystemInitialSlurs();
+            syst.connectTiedVoices();
             syst.refineLyricSyllables();
         }
     }
@@ -159,19 +165,19 @@ public class SystemTranslator
         // Measure impact
         //---------------
 
-        // Slot, Chord, Note
+        // Chord, Note
         translate(new ChordTranslator());
-        // Slur
+        // Slur (-> chord or note)
         translate(new SlurTranslator());
-        // Beam (-> chord), BeamGroup
+        // Beam (-> chord), BeamItem, BeamGroup
         translate(new BeamTranslator());
         // Flag (-> chord)
         translate(new FlagTranslator());
         // Dots (-> chord) as staccato / augmentation / repeat
         translate(new DotTranslator());
-        // Tuplets
+        // Tuplets (-> chords)
         translate(new TupletTranslator());
-        // Finalize measure ties, voices & durations, barlines
+        // Finalize measure slots, ties, voices & durations, barlines
         translate(new MeasureTranslator());
 
         // Local impact
@@ -395,8 +401,7 @@ public class SystemTranslator
     {
 
         /** Specific checker for slots in each measure. */
-        SlotChecker slotChecker = new SlotChecker(system);
-
+        ///VARIANT: SlotBuilder slotBuilder = new SlotBuilder(system);
         //~ Constructors -------------------------------------------------------
         public ChordTranslator ()
         {
@@ -407,7 +412,7 @@ public class SystemTranslator
         @Override
         public void browse (Measure measure)
         {
-            slotChecker.check(measure);
+            ///VARIANT: slotBuilder.check(measure);
         }
 
         @Override
@@ -432,7 +437,8 @@ public class SystemTranslator
         @Override
         public void translate (Glyph glyph)
         {
-            Slot.populate(glyph, currentMeasure);
+            ///VARIANT: Slot.populate(glyph, currentMeasure);
+            Chord.populate(glyph, currentMeasure);
         }
     }
 
@@ -709,6 +715,9 @@ public class SystemTranslator
     private class MeasureTranslator
             extends Translator
     {
+
+        SlotBuilder slotBuilder = new SlotBuilder(system);
+        
         //~ Constructors -------------------------------------------------------
 
         public MeasureTranslator ()
@@ -720,11 +729,11 @@ public class SystemTranslator
         @Override
         public void browse (Measure measure)
         {
-            // Check that a chord is not tied to different slots
+            // Check that a chord is not tied to different chords
             measure.checkTiedChords();
-
-            // Determine the voices within this measure
-            measure.buildVoices();
+            
+            // Build slots and voices
+            slotBuilder.buildSlots(measure);
 
             // Make sure all barline glyphs point to it
             Barline barline = measure.getBarline();
@@ -732,6 +741,7 @@ public class SystemTranslator
             if (barline != null) {
                 barline.translateGlyphs();
             }
+
         }
 
         @Override

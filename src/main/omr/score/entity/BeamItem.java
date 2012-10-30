@@ -46,14 +46,15 @@ public class BeamItem
     private static final Logger logger = Logger.getLogger(BeamItem.class);
 
     //~ Instance fields --------------------------------------------------------
-    /** (Debug) flag this object as VIP */
+    //
+    /** (Debug) flag this object as VIP. */
     private boolean vip;
 
-    /** The containing measure */
+    /** The containing measure. */
     @Navigable(false)
     private final Measure measure;
 
-    /** The underlying glyph */
+    /** The underlying glyph. */
     private final Glyph glyph;
 
     /**
@@ -62,22 +63,23 @@ public class BeamItem
      */
     private final int packCard;
 
-    /* Index within the beam pack. Index = 0 for an isolated beam */
+    /** Index within the beam pack. Index = 0 for an isolated beam */
     private final int packIndex;
 
-    /** The center of the beam item */
+    /** The center of the beam item. */
     private PixelPoint center;
 
-    /** Line equation for the beam item */
+    /** Line equation for the beam item. */
     private Line line;
 
-    /** Left point of beam item */
+    /** Left point of beam item. */
     private final PixelPoint left;
 
-    /** Right point of beam item */
+    /** Right point of beam item. */
     private final PixelPoint right;
 
     //~ Constructors -----------------------------------------------------------
+    //
     //----------//
     // BeamItem //
     //----------//

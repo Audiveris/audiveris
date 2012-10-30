@@ -55,7 +55,7 @@ public class Slur
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Slur.class);
 
-    /** To order slurs vertically within a measure */
+    /** To order slurs vertically within a measure. */
     public static final Comparator<Slur> verticalComparator = new Comparator<Slur>()
     {
         @Override
@@ -66,7 +66,7 @@ public class Slur
         }
     };
 
-    /** Predicate for a orphan slur at the end of its system/part */
+    /** Predicate for a orphan slur at the end of its system/part. */
     public static final Predicate<Slur> isEndingOrphan = new Predicate<Slur>()
     {
         @Override
@@ -90,7 +90,7 @@ public class Slur
         }
     };
 
-    /** Predicate for a orphan slur at the beginning of its system/part */
+    /** Predicate for a orphan slur at the beginning of its system/part. */
     public static final Predicate<Slur> isBeginningOrphan = new Predicate<Slur>()
     {
         @Override
@@ -115,6 +115,7 @@ public class Slur
     };
 
     //~ Instance fields --------------------------------------------------------
+    //
     /** Underlying glyph */
     private final Glyph glyph;
 

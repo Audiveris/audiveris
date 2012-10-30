@@ -214,7 +214,7 @@ public class Tuplet
         // in order to determine the duration base of the tuplet
         TupletCollector collector = new TupletCollector(
                 glyph,
-                new TreeSet<Chord>());
+                new TreeSet<Chord>(Chord.byAbscissa));
 
         // Check that all chords are on the same staff
         Staff commonStaff = null;

@@ -327,7 +327,7 @@ public abstract class PagePainter
             if (beam.isHook()) {
                 // Just a hook stuck to a stem on one side
                 if (!beam.getChords().isEmpty()) {
-                    Chord chord = beam.getChords().first();
+                    Chord chord = beam.getChords().get(0);
 
                     if (chord.getCenter().x < beam.getCenter().x) {
                         left.x -= dx;

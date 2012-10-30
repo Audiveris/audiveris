@@ -16,9 +16,13 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
+import omr.math.Line;
 import omr.math.Rational;
 
 import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
+
+import omr.sheet.Scale;
 
 import omr.util.HorizontalSide;
 import omr.util.Navigable;
@@ -26,6 +30,7 @@ import omr.util.TreeNode;
 import omr.util.Vip;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.SortedSet;
@@ -50,21 +55,62 @@ public class BeamGroup
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(BeamGroup.class);
 
+//    /** A Beam comparator based on level. (within the same group only) */
+//    private static final Comparator<Beam> byLevel = new Comparator<Beam>()
+//    {
+//        @Override
+//        public int compare (Beam b1,
+//                            Beam b2)
+//        {
+//            if (b1 == b2) {
+//                return 0;
+//            }
+//
+//            // Find a common chord, and use reverse order from head location
+//            for (Chord chord : b1.getChords()) {
+//                if (b2.getChords().contains(chord)) {
+//                    int x = chord.getStem().getLocation().x;
+//                    int y = b1.getLine().yAtX(x);
+//                    int yOther = b2.getLine().yAtX(x);
+//                    int yHead = chord.getHeadLocation().y;
+//
+//                    int result = Integer.signum(
+//                            Math.abs(yHead - yOther) - Math.abs(yHead - y));
+//
+//                    if (result == 0) {
+//                        // This should not happen
+//                        //                    logger.warning(
+//                        //                        other.getContextString() + " equality between " +
+//                        //                        this.toLongString() + " and " + other.toLongString());
+//                        //                    logger.warning(
+//                        //                        "Beam comparison data " + "x=" + x + " y=" + y +
+//                        //                        " yOther=" + yOther + " yHead=" + yHead);
+//                        b1.addError(chord.getStem(), "Weird beam configuration");
+//                    }
+//
+//                    return result;
+//                }
+//            }
+//
+//            // No common chord
+//        }
+//    };
     //~ Instance fields --------------------------------------------------------
-    /** (Debug) flag this object as VIP */
+    //
+    /** (Debug) flag this object as VIP. */
     private boolean vip;
 
-    /** Id for debug mainly */
+    /** Id for debug mainly. */
     private final int id;
 
-    /** Containing measure */
+    /** Containing measure. */
     @Navigable(false)
     private final Measure measure;
 
-    /** Sorted collection of contained beams */
-    private SortedSet<Beam> beams = new TreeSet<>();
+    /** Collection of contained beams. */
+    private List<Beam> beams = new ArrayList<>();
 
-    /** Same voice for all chords of this beam group */
+    /** Same voice for all chords of this beam group. */
     private Voice voice;
 
     //~ Constructors -----------------------------------------------------------
@@ -111,6 +157,7 @@ public class BeamGroup
         // Separate illegal beam groups
         BeamGroup.SplitOrder split;
 
+        // In case something goes wrong, use an upper limit to loop
         int loopNb = constants.maxSplitLoops.getValue();
 
         while ((split = checkBeamGroups(measure)) != null) {
@@ -211,11 +258,11 @@ public class BeamGroup
     // getBeams //
     //----------//
     /**
-     * Report the ordered set of beams that are part of this group.
+     * Report the beams that are part of this group.
      *
-     * @return the sorted set of contained beams
+     * @return the collection of contained beams
      */
-    public SortedSet<Beam> getBeams ()
+    public List<Beam> getBeams ()
     {
         return beams;
     }
@@ -229,17 +276,38 @@ public class BeamGroup
      *
      * @return the (perhaps empty) collection of 'beamed' chords.
      */
-    public SortedSet<Chord> getChords ()
+    public List<Chord> getChords ()
     {
-        SortedSet<Chord> chords = new TreeSet<>();
+        List<Chord> chords = new ArrayList<>();
 
         for (Beam beam : getBeams()) {
             for (Chord chord : beam.getChords()) {
-                chords.add(chord);
+                if (!chords.contains(chord)) {
+                    chords.add(chord);
+                }
             }
         }
 
+        Collections.sort(chords, Chord.byAbscissa);
         return chords;
+    }
+
+    //--------------//
+    // getLastChord //
+    //--------------//
+    /**
+     * Report the last chord on the right.
+     *
+     * @return the last chord
+     */
+    public Chord getLastChord ()
+    {
+        List<Chord> chords = getChords();
+        if (!chords.isEmpty()) {
+            return chords.get(chords.size() - 1);
+        } else {
+            return null;
+        }
     }
 
     //-------------//
@@ -254,7 +322,7 @@ public class BeamGroup
     public Rational getDuration ()
     {
         Rational duration = null;
-        SortedSet<Chord> chords = new TreeSet<>();
+        SortedSet<Chord> chords = new TreeSet<>(Chord.byAbscissa);
 
         for (Beam beam : beams) {
             for (Chord chord : beam.getChords()) {
@@ -383,7 +451,7 @@ public class BeamGroup
                 prevChord = chord;
             }
         } else if (!this.voice.equals(voice)) {
-            getChords().first().addError(
+            getChords().get(0).addError(
                     "Group. Reassigning voice from " + this.voice + " to " + voice
                     + " in " + this);
         }
@@ -464,7 +532,7 @@ public class BeamGroup
     private static SplitOrder checkBeamGroups (Measure measure)
     {
         for (BeamGroup group : measure.getBeamGroups()) {
-            SplitOrder split = group.checkGroup();
+            SplitOrder split = group.checkForSplit();
 
             if (split != null) {
                 return split;
@@ -474,39 +542,50 @@ public class BeamGroup
         return null;
     }
 
-    //------------//
-    // checkGroup //
-    //------------//
+    //---------------//
+    // checkForSplit //
+    //---------------//
     /**
      * Run a consistency check on the group, and detect when a group
-     * has to be splitted.
+     * has to be split.
      *
      * @return the split order parameters, or null if no split is needed
      */
-    private SplitOrder checkGroup ()
+    private SplitOrder checkForSplit ()
     {
         // Make sure all chords are part of the same group
-        // We use the fact that for any given slot, there must be at most one
-        // chord for this beam group
-        // TODO: Another possibility might be to use beam slope and proximity 
-        for (Slot slot : measure.getSlots()) {
-            Chord prevChord = null;
+        // We check the vertical distance between any chord and the beams
+        // above or below the chord.
+        for (Chord chord : getChords()) {
+            PixelRectangle chordBox = chord.getBox();
+            for (Beam beam : beams) {
+                // Skip beams attached to this chord
+                if (beam.getChords().contains(chord)) {
+                    continue;
+                }
+                // Check abscissa overlap
+                PixelRectangle beamBox = beam.getBox();
+                int xOverlap = Math.min(chordBox.x + chordBox.width,
+                        beamBox.x + beamBox.width)
+                               - Math.max(chordBox.x, beamBox.x);
+                if (xOverlap <= 0) {
+                    continue;
+                }
 
-            for (Beam beam : this.beams) {
-                for (Chord chord : beam.getChords()) {
-                    if (slot.getChords().contains(chord)) {
-                        if (prevChord == null) {
-                            prevChord = chord;
-                        } else if (prevChord != chord) {
-                            logger.fine("{0} Suspicious BeamGroup {1}",
-                                    measure, this);
-
-                            // Split the beam group here
-                            return new SplitOrder(this, beam, prevChord, chord);
-                        }
-                    }
+                // Check vertical distance
+                Line line = beam.getLine();
+                PixelPoint tail = chord.getTailLocation();
+                int tailDy = Math.abs(line.yAtX(tail.x) - tail.y);
+                double normedDy = chord.getScale().pixelsToFrac(tailDy);
+                double maxChordDy = constants.maxChordDy.getValue();
+                if (normedDy > maxChordDy) {
+                    logger.fine("Vertical gap between {0} and {1}, {2} vs {3}",
+                            chord, beam, normedDy, maxChordDy);
+                    // Split the beam group here
+                    return new SplitOrder(this, chord);
                 }
             }
+
         }
 
         return null; // everything is OK
@@ -516,50 +595,40 @@ public class BeamGroup
     // splitChord //
     //------------//
     /**
-     * We actually split a chord which embraces the two beam groups.
+     * We actually split the chord which embraces the two beam groups.
+     * At this point, each beam has been moved to its proper group, either
+     * this (old) group or the (new) alienGroup.
+     * What remains to be done is to split the pivot chord between the two.
      *
-     * @param chord      the chord to split
-     * @param split      the split parameters
-     * @param alienGroup the alien beam group
+     * @param pivotChord the chord to split
+     * @param alienGroup the new beam group (based on alienChord)
      */
-    private void splitChord (Chord chord,
-                             SplitOrder split,
+    private void splitChord (Chord pivotChord,
                              BeamGroup alienGroup)
     {
-        logger.fine("Shared : {0}", chord);
+        logger.fine("Shared : {0}", pivotChord);
 
-        Chord alienChord = chord.duplicate();
+        // Create a clone of pivotChord (w/o any beam initially)
+        Chord cloneChord = pivotChord.duplicate();
 
-        // Split beams properly between chord & alienChord
-        boolean started = false;
-
-        for (Iterator<Beam> bit = chord.getBeams().iterator(); bit.hasNext();) {
+        List<Beam> alienBeams = alienGroup.getBeams();
+        for (Iterator<Beam> bit = pivotChord.getBeams().iterator(); bit.hasNext();) {
             Beam beam = bit.next();
-
-            if (!started && (beam == split.alienBeam)) {
-                started = true;
-            }
-
-            if (started) {
-                logger.fine("Beam to switch: {0}", beam.toLongString());
-
+            
+            if (alienBeams.contains(beam)) {
                 // Cut the link chord -> beam
                 bit.remove();
-
                 // Cut the link chord <- beam
-                beam.removeChord(chord);
+                beam.removeChord(pivotChord);
 
-                // Link beam to alienChord
-                alienChord.addBeam(beam);
-                beam.addChord(alienChord);
-
-                // Switch beam group
-                beam.switchGroup(alienGroup);
+                // Link beam to cloneChord
+                cloneChord.addBeam(beam);
+                beam.addChord(cloneChord);
             }
         }
 
-        logger.fine("Remaining : {0}", chord);
-        logger.fine("Alien : {0}", alienChord);
+        logger.fine("Remaining : {0}", pivotChord);
+        logger.fine("Alien : {0}", cloneChord);
     }
 
     //------------//
@@ -574,32 +643,34 @@ public class BeamGroup
     {
         logger.fine("processing {0}", split);
 
-        BeamGroup alienGroup = new BeamGroup(measure);
+        // The group on alienChord side
+        BeamGroup chordGroup = new BeamGroup(measure);
 
         // Check all former beams: any beam linked to the alienChord should be
-        // moved to the alienGroup as well.
-        List<Beam> alienBeams = new ArrayList<>(); // To avoid concurrent modifs
+        // moved to the chordGroup.
+        List<Beam> chordBeams = new ArrayList<>(); // To avoid concurrent modifs
 
         for (Beam beam : beams) {
             if (beam.getChords().contains(split.alienChord)) {
-                alienBeams.add(beam);
+                chordBeams.add(beam);
             }
         }
 
         // Now make the switch
-        for (Beam beam : alienBeams) {
-            beam.switchGroup(alienGroup);
+        for (Beam beam : chordBeams) {
+            beam.switchToGroup(chordGroup);
         }
 
         // Detect the chord which is shared by the two groups
         // And duplicate this chord for both groups
-        for (Beam aBeam : alienGroup.beams) {
+        for (Beam aBeam : chordGroup.beams) {
             for (Chord aChord : aBeam.getChords()) {
+                // Compare with chords left in group
                 for (Beam beam : this.beams) {
                     for (Chord chord : beam.getChords()) {
                         // Is this (alien) chord also part of the old Group ?
                         if (chord == aChord) {
-                            splitChord(chord, split, alienGroup);
+                            splitChord(chord, chordGroup);
 
                             return;
                         }
@@ -618,13 +689,14 @@ public class BeamGroup
     {
         //~ Instance fields ----------------------------------------------------
 
-        /**
-         * Maximum number of loops allowed for splitting beam groups
-         */
         Constant.Integer maxSplitLoops = new Constant.Integer(
                 "loops",
                 10,
                 "Maximum number of loops allowed for splitting beam groups");
+
+        Scale.Fraction maxChordDy = new Scale.Fraction(
+                0.5,
+                "Maximum vertical gap between a chord and a beam");
 
     }
 
@@ -640,27 +712,17 @@ public class BeamGroup
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** The beam group to be split */
+        /** The beam group to be split. */
         final BeamGroup group;
 
-        /** The beam of this group to feed an alien group */
-        final Beam alienBeam;
-
-        /** The first chord in the slot */
-        final Chord firstChord;
-
-        /** The second chord in the same slot, meant for the alien group */
+        /** A chord of this group, where multiplicity was detected. */
         final Chord alienChord;
 
         //~ Constructors -------------------------------------------------------
         public SplitOrder (BeamGroup group,
-                           Beam alienBeam,
-                           Chord firstChord,
                            Chord alienChord)
         {
             this.group = group;
-            this.alienBeam = alienBeam;
-            this.firstChord = firstChord;
             this.alienChord = alienChord;
         }
 
@@ -671,8 +733,6 @@ public class BeamGroup
             StringBuilder sb = new StringBuilder();
             sb.append("{Split");
             sb.append("\n\tgroup=").append(group);
-            sb.append("\n\tfirstChord=").append(firstChord);
-            sb.append("\n\talienBeam=").append(alienBeam);
             sb.append("\n\talienChord=").append(alienChord);
             sb.append("}");
 

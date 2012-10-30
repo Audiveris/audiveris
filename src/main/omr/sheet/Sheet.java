@@ -1078,13 +1078,15 @@ public class Sheet
             assembly.close();
         }
 
-        if (picture != null) {
-            picture.close();
-        }
+        picture.close();
 
         // If no sheet is left, force score closing
-        if (!closing && score.getPages().isEmpty()) {
-            score.close();
+        if (!closing) {
+            if (!score.getPages().isEmpty()) {
+                logger.info("Removed {0}", page);
+            } else {
+                score.close();
+            }
         }
     }
 
