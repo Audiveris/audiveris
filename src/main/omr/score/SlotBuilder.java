@@ -510,13 +510,6 @@ public class SlotBuilder
                     pendings.add(chord);
                 }
             }
-
-            if (measure.getIdValue() == 3 && measure.getPart().getId() == -2) {
-                logger.warning("BINGO");
-                logger.setLevel("FINEST");
-            } else {
-                logger.setLevel("INFO");
-            }
             
             // Assign chords to time slots
             while (!pendings.isEmpty()) {
