@@ -83,12 +83,6 @@ public class Beam
     /** Line equation for the beam. */
     private Line line;
 
-    /** Left point of beam. */
-    private PixelPoint left;
-
-    /** Right point of beam. */
-    private PixelPoint right;
-
     //~ Constructors -----------------------------------------------------------
     //
     //------//
@@ -206,7 +200,7 @@ public class Beam
             }
         }
     }
-    
+
     //----------------//
     // determineGroup //
     //----------------//
@@ -321,9 +315,9 @@ public class Beam
             line = new BasicLine();
 
             // Take left side of first item, and right side of last item
-            left = getPoint(LEFT);
+            PixelPoint left = getPoint(LEFT);
             line.includePoint(left.x, left.y);
-            right = getPoint(RIGHT);
+            PixelPoint right = getPoint(RIGHT);
             line.includePoint(right.x, right.y);
         }
 
@@ -345,6 +339,27 @@ public class Beam
         } else {
             return items.last().getPoint(RIGHT);
         }
+    }
+
+    //----------//
+    // setPoint //
+    //----------//
+    /**
+     * Assign the point that define the desired edge of the beam.
+     *
+     * @param side  the desired side
+     * @param point the PixelPoint coordinates of the point on desired side
+     */
+    public void setPoint (HorizontalSide side,
+                          PixelPoint point)
+    {
+        if (side == LEFT) {
+            items.first().setPoint(LEFT, point);
+        } else {
+            items.last().setPoint(RIGHT, point);
+        }
+        
+        reset();
     }
 
     //--------//
@@ -497,7 +512,9 @@ public class Beam
     @Override
     protected void computeCenter ()
     {
-        getLine();
+        PixelPoint left = getPoint(LEFT);
+        PixelPoint right = getPoint(RIGHT);
+
         setCenter(
                 new PixelPoint((left.x + right.x) / 2, (left.y + right.y) / 2));
     }
@@ -514,8 +531,6 @@ public class Beam
         super.reset();
 
         line = null;
-        left = null;
-        right = null;
     }
 
     //---------//
@@ -626,7 +641,7 @@ public class Beam
     public Collection<Glyph> getGlyphs ()
     {
         List<Glyph> glyphs = new ArrayList<>();
-        
+
         for (BeamItem item : items) {
             glyphs.add(item.getGlyph());
         }

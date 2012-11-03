@@ -515,6 +515,8 @@ public class BeamGroup
                 double dy = (right.x - left.x) * slope;
                 left.y = (int) Math.rint(yMid - (dy / 2));
                 right.y = (int) Math.rint(yMid + (dy / 2));
+                beam.setPoint(HorizontalSide.LEFT, left);
+                beam.setPoint(HorizontalSide.RIGHT, right);
             }
         }
     }
@@ -614,7 +616,7 @@ public class BeamGroup
         List<Beam> alienBeams = alienGroup.getBeams();
         for (Iterator<Beam> bit = pivotChord.getBeams().iterator(); bit.hasNext();) {
             Beam beam = bit.next();
-            
+
             if (alienBeams.contains(beam)) {
                 // Cut the link chord -> beam
                 bit.remove();

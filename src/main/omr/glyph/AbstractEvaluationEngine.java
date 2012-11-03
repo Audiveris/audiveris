@@ -27,8 +27,6 @@ import omr.sheet.SystemInfo;
 import omr.util.Predicate;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -149,19 +147,6 @@ public abstract class AbstractEvaluationEngine
     public void marshal ()
     {
         final File file = new File(WellKnowns.EVAL_FOLDER, getFileName());
-
-        // First, make a backup copy of current file if it exists
-        if (file.exists()) {
-            try {
-                Files.move(file.toPath(),
-                        file.toPath().resolveSibling(getBackupName()),
-                        StandardCopyOption.REPLACE_EXISTING);
-            } catch (Exception ex) {
-                logger.warning("Could not backup " + file, ex);
-            }
-        }
-
-        // Then save engine to file
         OutputStream os = null;
 
         try {
@@ -320,30 +305,35 @@ public abstract class AbstractEvaluationEngine
     // unmarshal //
     //-----------//
     /**
-     * Unmarshal the evaluation engine from the most suitable backup.
-     * If the standard file does not exist or cannot be unmarshalled, the
-     * backup file, if any, is tried.
+     * Unmarshal the evaluation engine from the most suitable file.
+     * If a user file does not exist or cannot be unmarshalled, the
+     * system default file is used
      *
      * @return the unmarshalled engine, or null if everything failed
      */
     protected Object unmarshal ()
     {
-        // Try standard file
+        // First try user file, if any (in EVAL folder)
         File file = new File(WellKnowns.EVAL_FOLDER, getFileName());
-        Object obj = unmarshal(file);
+        if (file.exists()) {
+            Object obj = unmarshal(file);
 
-        if (obj != null) {
-            return obj;
+            if (obj == null) {
+                logger.warning("Could not load {0}", file);
+            } else {
+                logger.info("{0} unmarshalled from {1}", getName(), file);
+                return obj;
+            }
         }
 
-        // Try backup file
-        File backup = new File(WellKnowns.EVAL_FOLDER, getBackupName());
-        obj = unmarshal(backup);
+        // Use default file (in RES folder)
+        file = new File(WellKnowns.RES_FOLDER, getBackupName());
+        Object obj = unmarshal(file);
 
         if (obj == null) {
-            logger.warning("Could not load {0}", backup);
+            logger.warning("Could not load {0}", file);
         } else {
-            logger.info("{0} unmarshalled from {1}", getName(), backup);
+            logger.info("{0} unmarshalled from {1}", getName(), file);
         }
 
         return obj;

@@ -128,6 +128,9 @@ public class StaffManager
                         middle.lineTo(x, y);
                     }
                 }
+                
+                // Point on right side
+                middle.lineTo(width, (prevLine.yAt(width) + nextLine.yAt(width)) / 2);
 
                 prevStaff.setLimit(BOTTOM, middle);
                 staff.setLimit(TOP, middle);

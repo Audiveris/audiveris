@@ -449,24 +449,21 @@ public class ScaleBuilder
 
         // Second foreground peak (beam)?
         if ((forePeak != null) && (backPeak != null)) {
-            // Take first local max for which key (beam thickness) is larger
-            // than twice the mean line thickness
+            // Take most frequent local max for which key (beam thickness) is 
+            // larger than twice the mean line thickness and smaller than
+            // mean interline.
             List<MaxEntry<Integer>> foreMaxima = foreHisto.getLocalMaxima();
             double minBeamLineRatio = constants.minBeamLineRatio.getValue();
+            double minHeight = minBeamLineRatio * forePeak.getKey().best;
+            double maxHeight = backPeak.getKey().best + forePeak.getKey().best;
 
             for (MaxEntry<Integer> max : foreMaxima) {
-                if (max.getKey() <= (minBeamLineRatio * forePeak.getKey().best)) {
-                    continue;
-                }
+                if (max.getKey() >= minHeight && max.getKey() <= maxHeight) {
+                    beamEntry = max;
+                    sb.append(" beam:").append(beamEntry);
 
-                if (max.getKey() > backPeak.getKey().best) {
                     break;
                 }
-
-                beamEntry = max;
-                sb.append(" beam:").append(beamEntry);
-
-                break;
             }
         }
 

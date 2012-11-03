@@ -162,9 +162,11 @@ Assumption: myArch is set to either x64 or x86
                 </Directory>
             </Directory>
       
-            <!-- ocr     (in separate gen-common-ocr.wxs) -->
-            <!-- res     (in separate gen-common-res.wxs) -->                        
-            <!-- www     (in separate gen-common-www.wxs) -->
+            <!-- ocr      (in separate gen-common-ocr.wxs) -->
+            <!-- res      (in separate gen-common-res.wxs) -->                        
+            <!-- www      (in separate gen-common-www.wxs) -->
+            <!-- eval     (in separate gen-common-eval.wxs) -->
+            <!-- examples (in separate gen-common-examples.wxs) -->
         </DirectoryRef>            
     
         <!-- ====== -->
@@ -228,8 +230,6 @@ Assumption: myArch is set to either x64 or x86
                 </Component>
             </Directory>
       
-            <!-- eval     (in separate gen-user-eval.wxs) -->
-            <!-- examples (in separate gen-user-examples.wxs) -->
             <!-- plugins  (in separate gen-user-plugins.wxs) -->
             <!-- train    (in separate gen-user-train.wxs) -->
       

@@ -104,6 +104,10 @@ public class WellKnowns
     /** The folder where documentations files are stored. */
     public static final File DOC_FOLDER = new File(PROGRAM_FOLDER, "www");
 
+    /** The folder where examples are stored. */
+    public static final File EXAMPLES_FOLDER =
+            new File(PROGRAM_FOLDER, "examples");
+
     /** Flag a development environment rather than a standard one */
     private static final boolean isProject = isProject();
 
@@ -130,10 +134,6 @@ public class WellKnowns
     /** Base folder for data */
     private static final File DATA_FOLDER = isProject ? PROGRAM_FOLDER
             : getDataFolder();
-
-    /** The folder where examples are stored. */
-    public static final File EXAMPLES_FOLDER =
-            new File(DATA_FOLDER, "examples");
 
     /** The folder where temporary data can be stored. */
     public static final File TEMP_FOLDER =

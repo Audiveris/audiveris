@@ -5,44 +5,34 @@
 <html lang="en">
     <head>
         <title>Audiveris - Open music scanner</title>
-        <script>context = {page:"Home", root:"./"};</script>        
+        <script>context = {page: "Home", root: "./"};</script>        
         <meta name="classification" content="Audiveris home page" />
         <meta name="description" content="Root of Audiveris presentation" />
-        
+
         <meta name="author" content="Hervé Bitteur" />
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">     
-            
+
         <link rel="icon" href="branding/images/audiveris-icons-256.ico" type="image/x-icon" />
         <link rel="stylesheet" href="branding/css/global.css"/>
-            
+        <link rel="stylesheet" href="branding/css/top-nav.css"/>
+
         <style type="text/css">
             /*<![CDATA[*/
             #highlights {
                 font-size: 13px;
                 float: left;
                 width: 320px;
-                margin-top: 0px;
-            }
-            #highlights ul {
-                margin: 0px;
-                margin-bottom: 10px;
+                margin: 0 0 10px 20px; /* top right bottom left */
             }
             #abstract {
-                width: 540px;
-                padding-top: 30px;
-            }
-            #snapshot {
-                float: left;
-                width: 220px;
-                height: 172px;
-                margin-top: 5px;
-                box-shadow:0px 5px 5px rgba(0,0,0,0.3);
+                width: 560px;
+                padding-top: 10px;
             }
             #thumbnail {
                 position: absolute;
                 left:350px;
                 top:320px;
-                    
+
             }
             #news {
                 width: 180px;
@@ -64,51 +54,53 @@
     </head>
     <body>
         <script src="branding/js/header.js"></script> 
-        
-        <div class="main">
+
+        <section class="main">
             <article id="abstract">
-                <b><i>Audiveris</i></b> 
-                is an open-source <b><i>Optical Music Recognition</i></b> 
-                software which processes the image of a music sheet to 
-                automatically provide <i>symbolic</i> music information in 
-                <b>MusicXML</b> standard.
-                <br/>
-                This opens the door to many tools (score editor, MIDI 
-                sequencer, ...) which can use this symbolic data for such tasks
-                as edit, play, print, re-publish, transpose, query, etc.
+                <p>
+                    <b><i>Audiveris</i></b> 
+                    is an open-source <b><i>Optical Music Recognition</i></b> 
+                    software which processes the image of a music sheet to 
+                    automatically provide <i>symbolic</i> music information in 
+                    <b>MusicXML</b> standard.
+                    <br/>
+                    This opens the door to many tools (score editor, MIDI 
+                    sequencer, ...) which can use this symbolic data for such 
+                    tasks as edit, play, print, re-publish, transpose, query, 
+                    etc.
+                </p>
 
                 <p>Main features:</p>
 
-                <div id="highlights">
-                    <ul>
-                        <li>Printed music as input (no handwritten music)</li>
-                        <li>Standard music notation (no tablatures yet)</li>
-                        <li>Input formats: PDF, JPG, PNG, TIFF, BMP, ...</li>
-                        <li>Output format: <a href="http://www.recordare.com/xml.html">MusicXML</a> version 2</li>
-                        <li>Any number of pages per score, of parts per system,
-                            of staves per part, of voices per measure</li>
-                        <li>Internal neural network trainable by end user</li>
-                        <li>Available on Windows, Linux and Mac</li>
-                        <li>GNU GPL V2 license</li>
-                    </ul>
-                </div>
-                <div id="snapshot">
-                    <a href="docs/manual/snapshots.html">
-                        <img src="docs/images/dichterliebe-pict-voices-220.png">
-                    </a>
-                </div>
+                <ul id="highlights">
+                    <li>Printed music as input (no handwritten music)</li>
+                    <li>Standard music notation (no tablatures yet)</li>
+                    <li>Input formats: PDF, JPG, PNG, TIFF, BMP, ...</li>
+                    <li>Output format: 
+                        <a href="http://www.recordare.com/xml.html">
+                            MusicXML</a> version 2</li>
+                    <li>Any number of pages per score, of parts per system,
+                        of staves per part, of voices per measure</li>
+                    <li>Internal neural network trainable by end user</li>
+                    <li>Available on Windows and Linux</li>
+                    <li>GNU GPL V2 license</li>
+                </ul>
+
+                <a href="docs/manual/snapshots.html">
+                    <img src="docs/images/voices.png" width="220">
+                </a>
             </article>
 
             <article id="news">
                 <h2>News</h2>
-                <ul class="light">
-                    <li><a class="light" href="docs/manual/releases.html">V4.2 release</a>
-                        <div class="creation-date">October xx, 2012</div>
+                <ul>
+                    <li><a href="docs/manual/releases.html">V4.2 release</a>
+                        <div class="creation-date">November xx, 2012</div>
                     </li>
-                    <li><a class="light" href="http://kenai.com/projects/audiveris/downloads">Windows installers for x86 and x64 arch.</a>
+                    <li><a href="http://kenai.com/projects/audiveris/downloads">Windows installers for x86 and x64 arch.</a>
                         <div class="creation-date">August 3, 2012</div>
                     </li>
-                    <li><a class="light" href="docs/manual/AudiverisFosdem2012.v3.pdf">Presentation at FOSDEM 2012</a>
+                    <li><a href="docs/manual/AudiverisFosdem2012.v3.pdf">Presentation at FOSDEM 2012</a>
                         <div class="creation-date">January 11, 2012</div>
                     </li>
                 </ul>
@@ -146,8 +138,8 @@
                     <li>Microedition features to enable crowd-sourcing approaches</li>
                 </ul>
             </article>
-        </div>       
-        
+        </section>       
+
         <script src="branding/js/footer.js"></script> 
     </body>
 </html>

@@ -510,7 +510,7 @@ public class SlotBuilder
                     pendings.add(chord);
                 }
             }
-            
+
             // Assign chords to time slots
             while (!pendings.isEmpty()) {
                 // Hosting time slot

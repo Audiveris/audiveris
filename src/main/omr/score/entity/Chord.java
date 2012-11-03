@@ -84,6 +84,12 @@ public class Chord
         public int compare (Chord c1,
                             Chord c2)
         {
+            if (c1.getHeadLocation() == null) {
+                logger.warning("{0} BINGO c1 {1}", c1.getMeasure().getContextString(), c1);
+            }
+            if (c2.getHeadLocation() == null) {
+                logger.warning("{0} BINGO c2 {1}", c1.getMeasure().getContextString(), c2);
+            }
             return Integer.signum(c1.getHeadLocation().x - c2.getHeadLocation().x);
         }
     };

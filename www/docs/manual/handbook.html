@@ -23,53 +23,25 @@
 
         <link rel="stylesheet" href="../../branding/css/global.css" />
         <link rel="stylesheet" href="../../branding/css/title-numbering.css" />
-        <link rel="stylesheet" href="../../branding/css/nav.css" />
+        <link rel="stylesheet" href="../../branding/css/left-nav.css" />
 
         <style type="text/css">
             /*<![CDATA[*/
-            /*            @page { 
-                            margin-left: 1cm; 
-                            margin-right: 1cm; 
-                            margin-top: 2cm; 
-                            margin-bottom: 1cm 
-                        }*/
-
-            /* Header */
-            header {
-                float: left;
-                width: 100%;
-                padding-left: 20px;
-                padding-right: 20px;
-                position: static;
-                height: 500px;
-            }
-            header figure {
-                border-bottom: 1px blue solid;
-            }
-            header img {
-                box-shadow: none;
-            }
-            header a {
-                color: #000000;
-                text-decoration: none;
-            }
-            header a:link, 
-            header a:visited,
-            header a:hover,
-            header a:active {
-                color: #000000;
+            /* -- Printing -- */
+            @page { 
+                margin-left: 1cm; 
+                margin-right: 1cm; 
+                margin-top: 2cm; 
+                margin-bottom: 1cm 
             }
 
-            /* Content */
-
+            /* -- Content -- */
             h1 {
                 font-size: 6em;
-                text-align: right;
                 text-align: center;
             }
-
-            .no_border {
-                border: 0;
+            h2 {
+                text-align: center;
             }
 
             .cell-spaced {
@@ -77,10 +49,10 @@
             }
 
             /* -- ids -- */
-
             #cli-snippet {
-                width: 88%;
-                margin-left: 20px;  
+                width: 700px;
+                margin-left: 20px;                 
+                font-size: 0.9em; 
             }
             #java-snippet {
                 width: 650px;
@@ -91,18 +63,17 @@
             #script-snippet {
                 width: 580px;
             }
-            #warped{
-                margin-right: 10px;
-            }
-            #dewarped {
-                margin-left: 10px;
+            #warped,
+            #dewarped{
+                float: left;
+                margin: 10px;
             }
             /*]]>*/
         </style>
     </head>
 
     <body>
-        <div class="main">
+        <div class="main" id="content">
             <header>
                 <a href="../../index.html">
                     <figure>
@@ -114,17 +85,19 @@
                 <h1>
                     Handbook
                 </h1>
-                This documentation applies to Audiveris version 4.2 and above.
+                <p>
+                    This documentation applies to Audiveris version 4.2 and above.
+                </p>
             </header>
 
             <!-- =========================================================== -->
 
-            <section id="getting-started" class="chapter">
-                <h2>
+            <section>
+                <h2 id="getting-started">
                     Getting started
                 </h2>
 
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
                 <article id="installation">
                     <h3>
                         Installation
@@ -139,24 +112,36 @@
                     <img class="side" width="305" height="239" title="Welcome screen" 
                          alt="msi-welcome" src="../images/msi-welcome.png" />
                     <p>
-                        For Windows users, a Microsoft Installer file is available in
-                        the <a href=
-                               "http://kenai.com/projects/audiveris/downloads">download
-                            area</a> of Audiveris project. Select the latest version
-                        with a <code>.msi</code> extension and click on the link to
-                        start the download.
+                        For Windows users, a pair of Microsoft Installer files 
+                        is available in the 
+                        <a href="http://kenai.com/projects/audiveris/downloads">
+                            download area</a> of Audiveris project.
+                        The files are named respectively
+                        <code>audiveris-V.v.revision-x86.msi</code> (for 32-bit) and
+                        <code>audiveris-V.v.revision-x64.msi</code> (for 64-bit).
                     </p>
-                    <p>
-                        When the download is complete, simply start the installation by
-                        a double click on the downloaded file.
+                    <p>Nota: Audiveris Java code calls some C++ files via 
+                        <code>jni</code>.
+                        On a 64-bit machine, with a 64-bit
+                        Java environment, make sure to use the 64-bit 
+                        Audiveris release otherwise the C++ library will
+                        fail to load.
+                    </p>
+                    <p>                    
+                        Download the file that fits your architecture 
+                        and launch the installation by a double-click on the 
+                        downloaded file. 
                     </p>
 
                     <br class="clear"/>
                     <img class="side" width="305" height="239" title="License screen" 
                          alt="msi-license" src="../images/msi-license.png" />
                     <p>
-                        The next screen allows to browse the Audiveris license (GNU GPL
-                        V2). If you agree with the license, check the dedicated check
+                        The first screen after the welcome screen allows to 
+                        browse the Audiveris license:
+                        <a href="http://www.gnu.org/licenses/gpl-2.0.html#SEC1">
+                            GNU GPL V2</a>.
+                        If you agree with the license, check the dedicated check
                         box and proceed to the next installation screen.
                     </p>
 
@@ -189,10 +174,10 @@
                     <p>
                         To launch Audiveris under Windows use:
                     </p>
-                    <div class="code">
+                    <p class="indent">
                         <code>Start</code> | <code>All Programs</code> | 
                         <code>audiveris</code> | <code>audiveris application</code>
-                    </div>
+                    </p>
                     <p>
                         There are other ways to launch Audiveris, for example to open a
                         Console, to run in batch, to specify launch parameters, etc.
@@ -250,7 +235,7 @@
                     </p>
                 </article>
 
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
                 <article id="tessdata">
                     <h3>
@@ -275,7 +260,7 @@
                     </p>
                 </article>
 
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
                 <article id="loading-an-image">
                     <h3>
@@ -323,7 +308,7 @@
                     </ul>
                 </article>
 
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
                 <article id="transcription">
                     <h3>
@@ -342,7 +327,7 @@
                     </p>
                     <br class="clear"/>
 
-                    <img class="right" title="Step selection" width="177" height="363"
+                    <img class="right" title="Step selection" 
                          alt="score-step" src="../images/chula-score-step.png" />
                     <p>
                         You can as well select the SCORE target through the menu 
@@ -358,7 +343,7 @@
                             some output is asked for.
                             See the <a href="cli">Command Line Interface</a> section for
                             a quick presentation of the steps sequence and the 
-                            <a href="internals">Internals</a> chapter for further 
+                            <a href="#internals">Internals</a> chapter for further 
                             details.</li>
                         <li>The subsequent steps (<code>PRINT</code>, <code>EXPORT</code>,
                             <code>PLUGIN</code>), those displayed after the separating 
@@ -490,7 +475,7 @@
                     </p>
                 </article>
 
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
                 <article id="outputs">
                     <h3>
@@ -529,11 +514,11 @@
 
             <!-- =========================================================== -->
 
-            <section id="basics" class="chapter">
-                <h2>
+            <section>
+                <h2 id="basics">
                     Basics
                 </h2>
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
                 <article id="entities">
                     <h3>
@@ -584,7 +569,7 @@
                     </ul>
                 </article>
 
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
                 <article id="tools">
                     <h3>
@@ -862,7 +847,7 @@
                     </p>
                 </article>
 
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
                 <article id="glyph-merge">
                     <h3>
@@ -903,7 +888,7 @@
                         the <code>SLUR</code> shape.</p>
                 </article>
 
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
                 <article id="glyph-assignment">
                     <h3>
@@ -935,7 +920,7 @@
                         allows to manually deassign a glyph shape.</p>
                 </article>
 
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
                 <article id="glyph-split">
                     <h3>
@@ -1007,7 +992,7 @@
                     </p>
                 </article>
 
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
                 <article id="glyph-insertion">
                     <h3>
@@ -1094,7 +1079,7 @@
                     </ul>
                 </article>
 
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
                 <article id="text-correction">
                     <h3>
@@ -1117,7 +1102,7 @@
                     </p>
                     <ul>
                         <li>In the Chula example at hand, the number "<code>31</code>"
-                            was not detected in the the upper right corner. 
+                            was not detected in the upper right corner. 
                             The solution is to select the glyph by a "lasso" and assign
                             the TEXT shape. This triggers the OCR, which should 
                             recognize the proper digits.
@@ -1135,19 +1120,150 @@
 
             <!-- =========================================================== -->
 
-            <section id="advanced" class="chapter">
-                <h2>
+            <section>
+                <h2 id="advanced">
                     Advanced
                 </h2>
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+                <article id="building">
+                    <h3>
+                        Building from Source
+                    </h3>
+                    <p>
+                        If you want to modify Audiveris and rebuild it from 
+                        source, read the instructions gathered in this section.
+                    </p>
+                    <dl>
+                        <dt>
+                        Use of <b>NetBeans</b>
+                        </dt>
+                        <dd>
+                            <p>
+                                This is by far the easiest way, whatever your 
+                                operating system, to download all the source 
+                                pieces from Kenai Mercurial (Hg) repository
+                                and build Audiveris from them.
+                            </p>
+                            <p>
+                                Assuming you have NetBeans installed, from
+                                the IDE top menu, select <code>Team</code> |
+                                <code>Mercurial</code> | 
+                                <code>Clone Other...</code> which will take
+                                you through 3 steps:
+                            </p>
+                            <ol>
+                                <li>In the "Mercurial Repository" step, set the
+                                    Repository URL to the Kenai address 
+                                    <code>https://hg.kenai.com/hg/audiveris~hg</code></li>
+                                <li>In the "Mercurial Paths" step, you can keep the proposed paths</li>
+                                <li>In the "Destination Directory" step, select
+                                    the Parent Directory and the Clone Name of
+                                    your choice, for example "audiveris~hg"</li>
+                            </ol>
+                            <p>
+                                This will clone the remote Kenai repository to 
+                                the chosen local "audiveris~hg" directory and 
+                                open the project automatically.
+                            </p>
+                            <p>
+                                This is all you need to Clean, Build and Run 
+                                Audiveris from NetBeans.
+                                [Note: If you wish, you can as well launch Ant 
+                                commands like <code>ant clean jar run</code>
+                                from the local directory].
+                            </p>
+                            <p>
+                                To go further, the <code>build.xml</code> file, 
+                                which is used by NetBeans and Ant, provides the
+                                <code>installers</code> target to build the pair
+                                of installers (32-bit and 64-bit) for the OS 
+                                you are running.
+                            </p>
+                        </dd>
+
+                        <dt>Building Windows installers</dt>
+                        <dd>
+                            <p>
+                                Windows installers are built in the form of 
+                                <code>.msi</code> files.
+                                Their building requires the downloading and 
+                                installation of 2 external utilities:
+                            </p>
+                            <ul>
+                                <li>
+                                    <b>Launch4j</b>, available on
+                                    <a href="http://launch4j.sourceforge.net/">
+                                        http://launch4j.sourceforge.net/</a>,
+                                    is needed to wrap the Java application into
+                                    <code>.exe</code> files.
+                                    The variable <code>launch4j.dir</code> must
+                                    point to launch4j installation directory.
+                                </li>
+                                <li>
+                                    <abbr title="Windows installer XML"><b>WiX</b></abbr>,
+                                    available on
+                                    <a href="http://wix.codeplex.com/">
+                                        http://wix.codeplex.com/</a>,
+                                    is needed to build the <code>.msi</code>
+                                    files.
+                                    As of this writing, we use version 3.5 of 
+                                    the WiX toolset, which must be available on
+                                    the path.
+                                </li>
+                            </ul>                            
+                        </dd>
+
+                        <dt>Building Linux installers</dt>
+                        <dd>
+                            <p>
+                                *TO BE PROVIDED*
+                            </p>
+                        </dd>
+
+                        <dt> 
+                        Customization
+                        </dt>
+                        <dd>
+                            <p>
+                                The build process uses global variables
+                                gathered in <code>dev/build.default.properties
+                                </code> file.
+                            </p>
+                            <p>
+                                To adapt the build process to your environment,
+                                you can override some of these variables
+                                (like the <code>launch4j.dir</code> above)
+                                in a potential <code>build.properties</code> file.
+                                This file can be located in the <code>dev</code>
+                                directory or in the user directory.
+                                For Windows, the user directory is 
+                                <code>%APPDATA%/AudiverisLtd/audiveris</code>.
+                            </p>
+                        </dd>
+
+                        <dt>Organization</dt>
+                        <dd>
+                            For your information, the general organization of
+                            the Audiveris directories is described in the file 
+                            <a href="../../../dev/material/global-tree.txt">
+                                dev/material/global-tree.text</a>.                            
+                        </dd>
+                    </dl>
+                </article>
+
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
                 <article id="cli">
                     <h3>
                         Command line interface
                     </h3>
                     <p>Here is the summary you get when launching Audiveris with the 
                         <code>-help</code> parameter:</p>
-                    <div id="cli-snippet" class="snippet">
-                        <textarea cols="95" rows="27" >Command line syntax:
+
+                    <textarea id="cli-snippet" class="snippet" rows="28">
+Command line syntax:
    java [JVM options] -jar &lt;audiveris.jar&gt; [parameters*]
 Parameters syntax:
    [-help]                             Prints help about command line interface and stops
@@ -1175,8 +1291,7 @@ Known step names are in order (non case-sensitive):
    PRINT       : Write the output PDF file
    EXPORT      : Export the score to MusicXML file
    PLUGIN      : Launch the default plugin (MuseScore)
-                        </textarea>
-                    </div>
+                    </textarea>
 
                     <p>You can also use the executables named <code>audiveris.exe</code>
                         or <code>audiveris-console.exe</code> which are just wrappers 
@@ -1249,7 +1364,7 @@ Known step names are in order (non case-sensitive):
                     </dl>
                 </article>
 
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
                 <article id="script">
                     <h3>
@@ -1300,7 +1415,7 @@ Known step names are in order (non case-sensitive):
                     </p>
                 </article>
 
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
                 <article id="plugins">
                     <h3>
@@ -1363,7 +1478,7 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                     </dl>
                 </article>
 
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
                 <article id="options">
                     <h3>
@@ -1452,7 +1567,7 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                         located at the top of the Options window.
                 </article>
 
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
                 <article id="training">
                     <h3>
@@ -1675,8 +1790,8 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
 
             <!-- =========================================================== -->
 
-            <section id="internals" class="chapter">
-                <h2>
+            <section>
+                <h2 id="internals">
                     Internals
                 </h2>
                 <p>Audiveris is not just a music scanning program.
@@ -1689,7 +1804,7 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                     of each formalized program step.
                 </p>
 
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
                 <article id="load-step">
                     <h3>
@@ -1708,7 +1823,7 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                     </p>
                 </article>
 
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
                 <article id="scale-step">
                     <h3>
@@ -1802,14 +1917,20 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                     </p>
                 </article>
 
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
                 <article id="grid-step">
                     <h3>
                         Grid step
                     </h3>
-                    <img title="Grid of staves and barlines" width="436" height="335"
-                         src="../images/warped-grid.png" class="right" />
+
+                    <figure class="right">
+                        <img title="Grid of staves and barlines"
+                             src="../images/warped-grid.png" />
+                        <figcaption>
+                            Staff lines implemented as natural splines
+                        </figcaption>
+                    </figure>
                     <p>By aggregating long horizontal sections into filaments, and
                         gathering them into clusters of vertically spaced 
                         filaments, Audiveris retrieves staves skeletons.
@@ -1845,33 +1966,36 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                         <code>omr.grid.TargetBuilder.storeDewarp</code> to true.
                     </p>
                     <p>
-                        See below the initial (warped) image and the final (dewarped) 
-                        image. Note the pixels colors are not modified, only
-                        their coordinates are.
+                        See below the differences between the initial (warped) 
+                        image and the final (dewarped) image. 
+                        Note the pixels colors are not modified, only their 
+                        coordinates are.
                     </p>
-                    <table class="no-border" >
-                        <tr>
-                            <td>
-                                <img title="Warped image" width="436" height="335" 
-                                     id="warped" src="../images/warped-input.png"/>
-                            </td>
-                            <td>
-                                <img title="Dewarped image" width="436" height="335" 
-                                     id="dewarped" src="../images/dewarped-output.png"/>
-                            </td>
-                        </tr>
-                    </table>
+
+                    <figure id="warped">
+                        <img title="Warped" src="../images/warped-input.png"/>
+                        <figcaption>Initial warped image</figcaption>
+                    </figure>
+
+                    <figure id="dewarped">
+                        <img title="Dewarped" src="../images/dewarped-output.png"/>
+                        <figcaption>Final dewarped image</figcaption>
+                    </figure>
                 </article>
 
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
                 <article id="systems-step">
                     <h3>
                         Systems step
                     </h3>
-                    <img title="Edition of system boundaries" class="right"
-                         width="442" height="190"
-                         src="../images/boundary-edition.png" />
+                    <figure class="right">
+                        <img title="Edition of system boundaries"
+                             src="../images/boundary-edition.png" />
+                        <figcaption>
+                            Manual edition of system boundaries
+                        </figcaption>
+                    </figure>
                     <p>
                         The <code>SYSTEMS</code> step handles the separation between
                         systems, and the dispatching of all sections and glyphs to
@@ -1902,13 +2026,18 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                     </p>
                 </article>
 
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
                 <article id="measures-step">
                     <h3>
                         Measures step
                     </h3>
-                    <img title="Measures" class="right" width="411" height="191"
-                         src="../images/measures.png" />
+                    <figure class="right">
+                        <img title="Measures"
+                             src="../images/measures.png" />
+                        <figcaption>
+                            Measures defined by barlines
+                        </figcaption>
+                    </figure>
                     <p>
                         The <code>MEASURES</code> step uses the barlines candidates to
                         build and check the measures of every system. 
@@ -1917,13 +2046,18 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                     </p>
                 </article>
 
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
                 <article id="texts-step">
                     <h3>
                         Texts step
                     </h3>
-                    <img title="Texts" class="right" width="612" height="205"
-                         src="../images/chula-system-text.png" />
+                    <figure class="right">
+                        <img title="Texts" width="612"
+                             src="../images/chula-system-text.png" />
+                        <figcaption>
+                            System filtered image passed to OCR
+                        </figcaption>
+                    </figure>
                     <p>
                         The <code>TEXTS</code> step works on each system in 
                         parallel.
@@ -1940,14 +2074,17 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                     </p>
                 </article>
 
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
                 <article id="sticks-step">
                     <h3>
                         Sticks step
                     </h3>
-                    <img title="Vertical & horizontal sticks" class="right" 
-                         width="342" height="196" src="../images/sticks.png" />
+                    <figure class="right">
+                        <img title="Vertical & horizontal sticks" 
+                             src="../images/sticks.png" />
+                        <figcaption>Ledgers and stems</figcaption>
+                    </figure>
                     <p>
                         The <code>STICKS</code> step searches systems for sticks, either
                         horizontal or vertical.
@@ -1960,14 +2097,19 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                     </ul>
                 </article>
 
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
                 <article id="symbols-step">
                     <h3>
                         Symbols step
                     </h3>
-                    <img title="Identified symbols" class="right" 
-                         width="342" height="196" src="../images/symbols.png" />
+                    <figure class="right">
+                        <img title="Identified symbols" 
+                             src="../images/symbols.png" />
+                        <figcaption>
+                            Noteheads in orange and beams in cyan
+                        </figcaption>
+                    </figure>
                     <p>
                         The <code>SYMBOLS</code> step aggregates unassigned sections 
                         that connect either horizontally or vertically into glyphs.
@@ -1989,14 +2131,17 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                     </p>
                 </article>
 
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
                 <article id="pages-step">
                     <h3>
                         Pages step
                     </h3>
-                    <img title="Translated entities" class="right" 
-                         width="342" height="196" src="../images/pages.png" />
+                    <figure class="right">
+                        <img title="Translated entities" 
+                             src="../images/pages.png" />
+                        <figcaption>Logical entities</figcaption>
+                    </figure>
                     <p>
                         The <code>PAGES</code> step works at page level to translate
                         all assigned glyphs to their corresponding score logical 
@@ -2008,14 +2153,17 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                     </p>
                 </article>
 
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
                 <article id="score-step">
                     <h3>
                         Score step
                     </h3>
-                    <img title="Score voices" class="right" 
-                         width="297" height="209" src="../images/voices.png" />
+                    <figure class="right">
+                    <img title="Score voices"
+                         src="../images/voices.png" />
+                        <figcaption>One color for each voice</figcaption>
+                    </figure>
                     <p>
                         The <code>SCORE</code> step connects the various pages of a
                         multi-page score (this step is almost void for a single-page
@@ -2054,82 +2202,87 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
             </section>
         </div>
 
-        <nav>
-            <p style="text-align: center;">Handbook</p>
-            <ol>
-                <li><a href="#getting-started">Getting started</a>
-                    <ul>
-                        <li><a href="#installation">Installation</a>
-                            <ul>
-                                <li><a href="#windows">Windows</a>
-                                    <ul>
-                                        <li><a href="#launching-audiveris">Launching</a></li>
-                                    </ul>
-                                </li>
-                                <li><a href="#linux">Linux</a></li>
-                            </ul>
-                        </li>
-                        <li> <a href="#tessdata">OCR languages</a></li>
-                        <li><a href="#loading-an-image">Loading an image</a></li>
-                        <li><a href="#transcription">Transcription</a>
-                            <ul>
-                                <li><a href="#main-window-layout">Window layout</a></li>
-                                <li><a href="#sheet-display-modes">Display modes</a></li>
-                            </ul>
-                        </li>
-                        <li><a href="#outputs">Outputs</a></li>
-                    </ul>
-                </li>
-                <li><a href="#basics">Basics</a>
-                    <ul>
-                        <li><a href="#entities">Entities</a></li>
-                        <li><a href="#tools">User tools</a>
-                            <ul>
-                                <li><a href="#selections">Selections</a></li>
-                                <li><a href="#boards">Boards</a></li>
-                                <li><a href="#context-menu">Context menu</a></li>
-                                <li><a href="#score-parameters">Score parameters</a></li>
-                                <li><a href="#errors-window">Error window</a></li>
-                            </ul>
-                        </li>
-                        <li><a href="#glyph-merge">Merge</a></li>
-                        <li><a href="#glyph-assignment">Assignment</a></li>
-                        <li><a href="#glyph-split">Split</a></li>
-                        <li><a href="#glyph-insertion">Insertion</a></li>
-                        <li><a href="#text-correction">Text correction</a></li>
-                    </ul>
-                </li>
-                <li><a href="#advanced">Advanced</a>
-                    <ul>
-                        <li><a href="#cli">Command line</a></li>
-                        <li><a href="#script">Script</a></li>
-                        <li><a href="#plugins">Plugins</a></li>
-                        <li><a href="#options">Options</a></li>
-                        <li><a href="#training">Training</a>
-                            <ul>
-                                <li><a href="#persist-manuals">Persistence</a></li>
-                                <li><a href="#save-score-samples">Saving samples</a></li>
-                                <li><a href="#sample-verifier">Sample verifier</a></li>
-                                <li><a href="#trainer">Trainer</a></li>
-                            </ul>
-                        </li>
-                    </ul>
-                </li>
-                <li><a href="#internals">Internals</a>
-                    <ul>
-                        <li><a href="#load-step">Load</a></li>
-                        <li><a href="#scale-step">Scale</a></li>
-                        <li><a href="#grid-step">Grid</a></li>
-                        <li><a href="#systems-step">Systems</a></li>
-                        <li><a href="#measures-step">Measures</a></li>
-                        <li><a href="#texts-step">Texts</a></li>
-                        <li><a href="#sticks-step">Sticks</a></li>
-                        <li><a href="#symbols-step">Symbols</a></li>
-                        <li><a href="#pages-step">Pages</a></li>
-                        <li><a href="#score-step">Score</a></li>
-                    </ul>
-                </li>
-            </ol>
-        </nav>
+        <!-- =============================================================== -->
+
+        <div class="left-column">
+            <nav>
+                <p class="center"><a href="#content">Content</a></p>
+                <ol>
+                    <li><a href="#getting-started">Getting started</a>
+                        <ul>
+                            <li><a href="#installation">Installation</a>
+                                <ul>
+                                    <li><a href="#windows">Windows</a>
+                                        <ul>
+                                            <li><a href="#launching-audiveris">Launching</a></li>
+                                        </ul>
+                                    </li>
+                                    <li><a href="#linux">Linux</a></li>
+                                </ul>
+                            </li>
+                            <li> <a href="#tessdata">OCR languages</a></li>
+                            <li><a href="#loading-an-image">Loading an image</a></li>
+                            <li><a href="#transcription">Transcription</a>
+                                <ul>
+                                    <li><a href="#main-window-layout">Window layout</a></li>
+                                    <li><a href="#sheet-display-modes">Display modes</a></li>
+                                </ul>
+                            </li>
+                            <li><a href="#outputs">Outputs</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#basics">Basics</a>
+                        <ul>
+                            <li><a href="#entities">Entities</a></li>
+                            <li><a href="#tools">User tools</a>
+                                <ul>
+                                    <li><a href="#selections">Selections</a></li>
+                                    <li><a href="#boards">Boards</a></li>
+                                    <li><a href="#context-menu">Context menu</a></li>
+                                    <li><a href="#score-parameters">Score parameters</a></li>
+                                    <li><a href="#errors-window">Error window</a></li>
+                                </ul>
+                            </li>
+                            <li><a href="#glyph-merge">Merge</a></li>
+                            <li><a href="#glyph-assignment">Assignment</a></li>
+                            <li><a href="#glyph-split">Split</a></li>
+                            <li><a href="#glyph-insertion">Insertion</a></li>
+                            <li><a href="#text-correction">Text correction</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#advanced">Advanced</a>
+                        <ul>
+                            <li><a href="#building">Building from source</a></li>
+                            <li><a href="#cli">Command line</a></li>
+                            <li><a href="#script">Script</a></li>
+                            <li><a href="#plugins">Plugins</a></li>
+                            <li><a href="#options">Options</a></li>
+                            <li><a href="#training">Training</a>
+                                <ul>
+                                    <li><a href="#persist-manuals">Persistence</a></li>
+                                    <li><a href="#save-score-samples">Saving samples</a></li>
+                                    <li><a href="#sample-verifier">Sample verifier</a></li>
+                                    <li><a href="#trainer">Trainer</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                    <li><a href="#internals">Internals</a>
+                        <ul>
+                            <li><a href="#load-step">Load</a></li>
+                            <li><a href="#scale-step">Scale</a></li>
+                            <li><a href="#grid-step">Grid</a></li>
+                            <li><a href="#systems-step">Systems</a></li>
+                            <li><a href="#measures-step">Measures</a></li>
+                            <li><a href="#texts-step">Texts</a></li>
+                            <li><a href="#sticks-step">Sticks</a></li>
+                            <li><a href="#symbols-step">Symbols</a></li>
+                            <li><a href="#pages-step">Pages</a></li>
+                            <li><a href="#score-step">Score</a></li>
+                        </ul>
+                    </li>
+                </ol>
+            </nav>
+        </div>
     </body>
 </html>

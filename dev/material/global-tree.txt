@@ -51,6 +51,21 @@ Windows: %ProgramFiles%/AudiverisLtd/audiveris/
 ./dist/lib/proxymusic-2.0.jar
 ./dist/lib/tesseract-3.jar
 
+./examples/                             WellKnowns.EXAMPLES_FOLDER (read-only)
+./examples/Dichterliebe01.pdf
+./examples/SchbAvMaSample.pdf
+./examples/Straight_Page_1.png
+./examples/allegretto.png
+./examples/batuque.png
+./examples/carmen-1.png
+./examples/chula.1bit.bmp
+./examples/chula.png
+./examples/cucaracha.png
+./examples/estudio.png
+./examples/hove.png
+./examples/tzigane2.png
+./examples/zizi.png
+
 ./gs/                                   WellKnowns.GS_FOLDER (read-only)
 ./gs/windows/x64/gsdll64.dll
 ./gs/windows/x64/gswin64.exe
@@ -72,6 +87,8 @@ Windows: %ProgramFiles%/AudiverisLtd/audiveris/
 ./res/splash.bmp
 ./res/splash.png
 ./res/system-actions.xml
+./res/linear-evaluator.xml             (system default)
+./res/neural-network.xml               (system default)
 
 ./www/                                  WellKnowns.DOC_FOLDER (read-only)
 ./www/index.html
@@ -102,24 +119,9 @@ A few persistency files handled by Swing Application Framework:
 ./optionsFrame.session.xml
 ./[others...].session.xml
 
-./examples/                             WellKnowns.EXAMPLES_FOLDER (read-write)
-./examples/Dichterliebe01.pdf
-./examples/SchbAvMaSample.pdf
-./examples/Straight_Page_1.png
-./examples/allegretto.png
-./examples/batuque.png
-./examples/carmen-1.png
-./examples/chula.1bit.bmp
-./examples/chula.png
-./examples/cucaracha.png
-./examples/estudio.png
-./examples/hove.png
-./examples/tzigane2.png
-./examples/zizi.png
-
 ./eval/                                 WellKnowns.EVAL_FOLDER (read-write)
-./eval/linear-evaluator.xml     
-./eval/neural-network.xml
+./eval/linear-evaluator.xml             (user trained)
+./eval/neural-network.xml               (user-trained)
 
 ./train/                                WellKnowns.TRAIN_FOLDER (read-write)
 ./train/core

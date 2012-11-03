@@ -212,7 +212,8 @@ public class ClustersRetriever
 
         // Check relevance
         if ((popSize < 4) || (popSize > 6)) {
-            logger.warning("Giving up spurious line comb size: {0}", popSize);
+            logger.info("{0}Giving up spurious line comb size: {1}",
+                    sheet.getLogPrefix(), popSize);
 
             return discardedFilaments;
         }
@@ -1038,7 +1039,7 @@ public class ClustersRetriever
         // Should be 4 for bass tab, 5 for standard notation, 6 for guitar tab
         popSize = histo.getMaxBucket();
 
-        logger.fine("{0}Popular line comb: {1} histo:{2}", 
+        logger.fine("{0}Popular line comb: {1} histo:{2}",
                 sheet.getLogPrefix(), popSize, histo.dataString());
     }
 

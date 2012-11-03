@@ -13,7 +13,6 @@ h1 {
     counter-reset: h2;
 }
 h1:before {
-    /*                content: counter(h1) ". ";*/
     counter-increment: h1;
 }
 

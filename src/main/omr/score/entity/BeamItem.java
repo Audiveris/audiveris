@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.score.entity;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
@@ -41,6 +44,9 @@ public class BeamItem
                    Vip
 {
     //~ Static fields/initializers ---------------------------------------------
+
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(BeamItem.class);
@@ -73,10 +79,10 @@ public class BeamItem
     private Line line;
 
     /** Left point of beam item. */
-    private final PixelPoint left;
+    private PixelPoint left;
 
     /** Right point of beam item. */
-    private final PixelPoint right;
+    private PixelPoint right;
 
     //~ Constructors -----------------------------------------------------------
     //
@@ -101,39 +107,46 @@ public class BeamItem
         this.packIndex = packIndex;
 
         // Location of left and right points
+        // For hooks, the stick line is not reliable
         PixelRectangle box = glyph.getBounds();
-        Line absoluteLine = glyph.getLine();
-        double yMidLeft = absoluteLine.yAtX((double) box.x);
-        double yMidRight = absoluteLine.yAtX(
-                (double) (box.x + box.width - 1));
-        double deltaMid1 = Math.min(yMidLeft, yMidRight) - box.y;
-        double deltaMid2 = (box.y + box.height)
-                           - Math.max(yMidLeft, yMidRight);
-
-        // Beware, the stick line is not reliable for beam hooks
-        if ((deltaMid1 < 0) || (deltaMid2 < 0)) {
-            logger.fine("Strange beam item at {0} slope={1}",
-                    glyph.idString(), glyph.getLine().getSlope());
-
+        if (glyph.getShape() == Shape.BEAM_HOOK) {
             // Make a simple horizontal beam item
             left = new PixelPoint(box.x, box.y + (box.height / 2));
             right = new PixelPoint(box.x + box.width - 1, box.y + (box.height / 2));
         } else {
-            double deltaMid = (deltaMid1 + deltaMid2) / 2.0;
-            double deltaY = (((4 * packIndex) + 1) * deltaMid) / ((2 * packCard)
-                                                                  - 1);
-            int highY = (int) Math.rint(box.y + deltaY);
-            int lowY = (int) Math.rint(
-                    (box.y + box.height) - (2 * deltaMid) + deltaY);
+            // Check line slope
+            Line glyphLine = glyph.getLine();
 
-            if (yMidLeft > yMidRight) {
-                // This is an ascending beam
-                left = new PixelPoint(box.x, lowY);
-                right = new PixelPoint(box.x + box.width - 1, highY);
+            if (Math.abs(glyphLine.getSlope()) > constants.maxBeamSlope.getValue()) {
+                // Slope is not realistic, use horizontal lines
+                double halfHeight = box.height / (packCard * 2);
+                int y = box.y + (int) Math.rint(halfHeight * (2 * packIndex + 1));
+                left = new PixelPoint(box.x, y);
+                right = new PixelPoint(box.x + box.width - 1, y);
             } else {
-                // This is a descending beam
-                left = new PixelPoint(box.x, highY);
-                right = new PixelPoint(box.x + box.width - 1, lowY);
+                double yMidLeft = glyphLine.yAtX((double) box.x);
+                double yMidRight = glyphLine.yAtX(
+                        (double) (box.x + box.width - 1));
+                double deltaMid1 = Math.min(yMidLeft, yMidRight) - box.y;
+                double deltaMid2 = (box.y + box.height)
+                                   - Math.max(yMidLeft, yMidRight);
+
+                double deltaMid = (deltaMid1 + deltaMid2) / 2.0;
+                double deltaY = (((4 * packIndex) + 1) * deltaMid) / ((2 * packCard)
+                                                                      - 1);
+                int highY = (int) Math.rint(box.y + deltaY);
+                int lowY = (int) Math.rint(
+                        (box.y + box.height) - (2 * deltaMid) + deltaY);
+
+                if (yMidLeft > yMidRight) {
+                    // This is an ascending beam
+                    left = new PixelPoint(box.x, lowY);
+                    right = new PixelPoint(box.x + box.width - 1, highY);
+                } else {
+                    // This is a descending beam
+                    left = new PixelPoint(box.x, highY);
+                    right = new PixelPoint(box.x + box.width - 1, lowY);
+                }
             }
         }
 
@@ -264,15 +277,38 @@ public class BeamItem
     /**
      * Report the point that defines the desired edge of the beam item.
      *
-     * @return the PixelPoint coordinates of the point on desired side
+     * @return (a copy) of the point on desired side
      */
     public PixelPoint getPoint (HorizontalSide side)
     {
         if (side == HorizontalSide.LEFT) {
-            return left;
+            return new PixelPoint(left);
         } else {
-            return right;
+            return new PixelPoint(right);
         }
+    }
+
+    //----------//
+    // setPoint //
+    //----------//
+    /**
+     * Set the point that defines the desired edge of the beam item.
+     *
+     * @param side  the desired side
+     * @param point the new point on desired side
+     */
+    public void setPoint (HorizontalSide side,
+                          PixelPoint point)
+    {
+        if (side == HorizontalSide.LEFT) {
+            this.left = point;
+        } else {
+            this.right = point;
+        }
+
+        // Invalidate
+        line = null;
+        center = null;
     }
 
     //---------//
@@ -375,7 +411,8 @@ public class BeamItem
             }
         } catch (Exception ex) {
             logger.warning(measure.getContextString()
-                           + " Error creating BeamItem from glyph #" + glyph.getId(),
+                           + " Error creating BeamItem from glyph #"
+                           + glyph.getId(),
                     ex);
         }
     }
@@ -407,5 +444,21 @@ public class BeamItem
 
             return 0;
         }
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        Constant.Double maxBeamSlope = new Constant.Double(
+                "slope",
+                1.0,
+                "Maximum slope for a beam item line");
+
     }
 }

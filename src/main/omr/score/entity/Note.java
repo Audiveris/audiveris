@@ -291,29 +291,36 @@ public class Note
     public static void createPack (Chord chord,
                                    Glyph glyph)
     {
-        final int card = packCardOf(glyph.getShape());
 
-        // Test on ordinates between stem (if any) and note
-        // Be strict when glyph has 2 stems and more relaxed with just one stem
+        // When the glyph is stuck to 2 stems, we have to filter which items
+        // go on one stem and which items on the other.
+        // If we have 0 or 1 stem, no specific test, take all items
+        final int card = packCardOf(glyph.getShape());
         final Glyph stem = chord.getStem();
         PixelRectangle stemBox = null;
         Scale scale = chord.getScale();
+        Integer stemDir = null;
 
-        if (stem != null) {
+        if (glyph.getStemNumber() >= 2) {
             stemBox = stem.getBounds();
             stemBox.grow(
                     scale.toPixels(constants.maxStemDx),
-                    scale.toPixels(
-                    (glyph.getStemNumber() >= 2) ? constants.maxMultiStemDy
-                    : constants.maxSingleStemDy));
+                    scale.toPixels(constants.maxMultiStemDy));
+            // Stem dir (-1:down, +1:up)
+            stemDir = Integer.signum(glyph.getAreaCenter().y - stem.getAreaCenter().y);
         }
 
+        // Index goes from top to bottom
         for (int i = 0; i < card; i++) {
             PixelRectangle itemBox = getItemBox(glyph, i, scale.getInterline());
 
-            if (stem != null) {
-                if (!itemBox.intersects(stemBox)) {
-                    continue;
+            if (stemDir != null) {
+                // Apply the stem test, except on the item closest to the stem
+                if ((stemDir == 1 && i > 0)
+                    || (stemDir == -1 && i < card - 1)) {
+                    if (!itemBox.intersects(stemBox)) {
+                        continue;
+                    }
                 }
             }
 

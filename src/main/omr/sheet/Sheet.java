@@ -1083,7 +1083,8 @@ public class Sheet
         // If no sheet is left, force score closing
         if (!closing) {
             if (!score.getPages().isEmpty()) {
-                logger.info("Removed {0}", page);
+                logger.info("{0}Removed page #{1}",
+                        page.getScore().getLogPrefix(), page.getIndex());
             } else {
                 score.close();
             }

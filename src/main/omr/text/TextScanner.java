@@ -192,7 +192,7 @@ public class TextScanner
                         // Check position wrt closest staff
                         StaffInfo staff = system.getStaffAt(glyph.getAreaCenter());
                         GeoPath contour = pathMap.get(staff);
-                        if (contour.intersects(glyph.getBounds())) {
+                        if (contour != null && contour.intersects(glyph.getBounds())) {
                             return false;
                         }
 

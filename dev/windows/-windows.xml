@@ -286,28 +286,28 @@
             <arg line="-var var.myWww"/>
             <arg line="-out ${dev.windows.dir}/gen-common-www.wxs"/>
         </exec>
-    
-        <!-- Folders for user location -->
-    
-        <echo message="buiding ${dev.windows.dir}/gen-user-examples.wxs" />
+        
+        <echo message="buiding ${dev.windows.dir}/gen-common-examples.wxs" />
         <exec executable="java">
             <arg line="-jar ${tools.dir}/wix-heat-user.jar"/>
             <arg value="${examples.dir}"/>
-            <arg line="-dr adProductDirId"/>
+            <arg line="-dr INSTALLDIR"/>
             <arg line="-cg examples.CID"/>
             <arg line="-var var.myExamples"/>
-            <arg line="-out ${dev.windows.dir}/gen-user-examples.wxs"/>
+            <arg line="-out ${dev.windows.dir}/gen-common-examples.wxs"/>
         </exec>
     
-        <echo message="buiding ${dev.windows.dir}/gen-user-eval.wxs" />
+        <echo message="buiding ${dev.windows.dir}/gen-common-eval.wxs" />
         <exec executable="java">
             <arg line="-jar ${tools.dir}/wix-heat-user.jar"/>
             <arg value="${eval.dir}"/>
-            <arg line="-dr adProductDirId"/>
+            <arg line="-dr INSTALLDIR"/>
             <arg line="-cg eval.CID"/>
             <arg line="-var var.myEval"/>
-            <arg line="-out ${dev.windows.dir}/gen-user-eval.wxs"/>
+            <arg line="-out ${dev.windows.dir}/gen-common-eval.wxs"/>
         </exec>
+    
+        <!-- Folders for user location -->    
     
         <echo message="buiding ${dev.windows.dir}/gen-user-plugins.wxs" />
         <exec executable="java">

@@ -1,0 +1,113 @@
+/* --------------------------------------------------------------------------*/
+/*                                                                           */
+/*                             t o p - n a v . c s s                         */
+/*                                                                           */
+/*    Layout with a fixed navigation menu on the top                         */
+/*                                                                           */
+/* --------------------------------------------------------------------------*/
+
+/* Main content */
+.main {
+    float: left;
+    margin: 15px;
+    margin-top: 120px;
+}
+
+/* Global navigation bar */
+ul.tabs {
+    position:relative; 
+    top: 10px;
+    z-index: 10;
+    height: 21px;
+    width: 450px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    padding-left: 36px;
+}
+
+.tabs li {
+    display:inline;
+}
+
+.tabs a {
+    padding-top: 5px;
+    float: left; 
+    width: 75px; 
+    height: 21px; 
+    overflow: hidden;
+    font-size: 12px;
+    text-align: center;
+    text-decoration: none;
+    border-radius:3px;
+    box-shadow: 0px 2px 2px 0px rgba(0,0,0,0.5), 0px 2px 2px 0px rgba(255, 255, 255, 0.5) inset;
+}
+
+.tabs a:link,
+.tabs a:visited {
+    color: white;
+    background-color: #7496b8;
+}            
+.tabs a:hover {
+    background-color:#535898;
+}
+
+.tabs a:active {
+    box-shadow:  0px 2px 2px 0px rgba(0,0,0,0.8) inset;
+}
+
+/* Color for current page */
+.tabs a.current:link,
+.tabs a.current:visited,
+.tabs a.current:hover,
+.tabs a.current:active {
+    background-color:#030878;
+}            
+
+/* Download button */
+#download-button {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    width: 195px;
+    height: 73px;
+    background:  url('../images/download_now.png') no-repeat;
+    text-decoration: none;
+    border-radius: 6px;
+    box-shadow:0px 5px 5px rgba(0,0,0,0.3),
+        0px 5px 5px 0px rgba(255, 255, 255, 0.3) inset;
+}
+
+#download-button:active {
+    box-shadow:  0px 5px 5px 0px rgba(0,0,0,0.3) inset;
+}
+
+#download-version {
+    position: absolute;
+    left: 13px;
+    top: 8px;
+    color: white;
+    text-shadow: 2px 2px #888888;
+}
+
+/* Logo */
+#logo {
+    position:absolute;
+    left: 5px;
+    top: 0px;               
+    height: 95px;
+    width: 195px;
+    text-decoration: none;
+    background:  url('../images/logo-audiveris-195x80.png') no-repeat;
+}
+
+#logo-subtitle {
+    position: absolute;
+    right: 0px;
+    bottom: 0px;
+    text-align: right;
+    color: black;
+    font-size: 14px;
+    text-shadow: 0px 2px 3px rgba(0,0,0,0.3);
+}

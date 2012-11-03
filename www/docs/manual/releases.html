@@ -14,44 +14,32 @@
         <link rel="icon" href="docs/images/audiveris-icons-256.ico" type="image/x-icon" />
 
         <link rel="stylesheet" href="../../branding/css/global.css"/>
+        <link rel="stylesheet" href="../../branding/css/top-nav.css"/>
         <style type="text/css">
             /*<![CDATA[*/
-            th {
-                vertical-align: middle;
-                background-color: #eee;
-            }
-            h1.title {
-                text-align: center
-            }
             article {
                 position: relative;
-                padding: 10px;
             }
+
             .label {
                 clear:left;
                 float: left;
                 width: 150px;
-                font-size: 16px;
-                font-weight: 400;
                 color:#aa0000;
             }
             .desc {
                 position: relative;
                 right: 0;
-                background-color:#fffff4;
-                margin-top: 0px;
-                margin-bottom: 10px;
-                margin-left:160px;
-                padding: 10px;
-                padding-top: 0px;
-                padding-bottom: 0px;
+                margin: 0 0 10px 160px; /* top right bottom left */                
+                padding: 0 10px 0 10px; /* top right bottom left */                
                 border: 1px solid #ffdddd;
+                background-color:#fffff4;
             }
-            
+
             #pending-block {
-                background-color:#eeeeee;
                 left: 34%;
                 width: 60%;
+                background-color:#eeeeee;
             }
             #pending-block.desc {
                 background-color:#f8eeee;
@@ -64,7 +52,7 @@
         <script src="../../branding/js/header.js"></script> 
         <div class="main">
 
-            <h1 class="chapter center">Releases</h1>
+            <h1 class="center">Releases</h1>
 
             <!-- =========================================================== -->
 
@@ -77,7 +65,8 @@
                     which should be addressed in future releases.
                     So don't waste time searching for them in the current 
                     release, but vote on 
-                    <a href="http://kenai.com/projects/audiveris/forums/message-forum">Audiveris forum</a>
+                    <a href="http://kenai.com/projects/audiveris/forums/message-forum">
+                        Audiveris forum</a>
                     and perhaps volunteer for their implementation.
                 </div>
 
@@ -134,7 +123,7 @@
                 </h3>
 
                 <div class="date">
-                    xx-Oct-2012
+                    xx-Nov-2012
                 </div>
                 <div class="label">
                     Introduction
@@ -160,30 +149,34 @@
                     <ul>
                         <li>
                             <b>Installation:</b> Major OSes
-                            <code>Windows</code> and <code>Linux</code> and machine architectures
-                            <code>x86</code> and <code>x64</code> are 
-                            supported via dedicated installers.                             
+                            <code>Windows</code> and <code>Linux</code> and 
+                            machine architectures <code>x86</code> and 
+                            <code>x64</code> are supported via dedicated 
+                            installers.                             
                             The installers take care of all Audiveris
                             dependencies (Java runtime, C++ runtime, musical 
                             font, etc).
                             <br>
-                            Nota: Support for <code>MacOS</code> has been dropped
-                            from the scope of this release to avoid further delays.
-                            
+                            Nota: Support for <code>MacOS</code> has been 
+                            dropped from the scope of this release to avoid 
+                            further delays.
+
                         </li>
                         <li>
-                            <b>OCR:</b> A few selected languages are pre-installed
-                            with Audiveris distribution (<code>deu</code>,
-                            <code>eng</code>, <code>fra</code>, <code>ita</code>).
-                            Additional languages can be supported
-                            by downloading the related trained data from the
+                            <b>OCR:</b> A few selected languages are 
+                            pre-installed with Audiveris distribution 
+                            (<code>deu</code>, <code>eng</code>, 
+                            <code>fra</code>, <code>ita</code>).
+                            Additional languages can be supported by 
+                            downloading the related trained data from the
                             dedicated
                             <a href="http://code.google.com/p/tesseract-ocr/downloads/list">
                                 Tesseract web page</a>.
                         </li>
                         <li>
-                            <b>NetBeans:</b> A pre-populated <code>nbproject</code>
-                            folder provides NetBeans support out-of-the-box.
+                            <b>NetBeans:</b> A pre-populated 
+                            <code>nbproject</code> folder provides NetBeans 
+                            support out-of-the-box.
                         </li>
                     </ul>
                 </div>
@@ -258,8 +251,8 @@
                             <b>Doc:</b> A comprehensive Handbook is now available
                             from Audiveris web page, as well as the API JavaDoc
                             of the current release.
-<!--                            The former installation tab is now merged with the
-                            first chapter of the handbook.-->
+                            The former installation tab is now merged with the
+                            first chapter of the handbook.
                         </li>
                     </ul>
                 </div>
@@ -1320,8 +1313,7 @@
                     </ul>
                 </div>
                 <div class="label">
-                    <th>
-                        New Features
+                    New Features
                 </div>
                 <div class="desc">
                     <ul>
@@ -1347,8 +1339,7 @@
                     </ul>
                 </div>
                 <div class="label">
-                    <th>
-                        Bug Fixes
+                    Bug Fixes
                 </div>
                 <div class="desc">
                     A lot!
