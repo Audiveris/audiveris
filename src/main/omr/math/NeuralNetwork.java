@@ -29,8 +29,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code NeuralNetwork} implements a back-propagation neural
- * network, with one input layer, one hidden layer and one output layer. The
- * transfer function is the sigmoid.
+ * network, with one input layer, one hidden layer and one output layer.
+ * The transfer function is the sigmoid.
  *
  * <p>This neuralNetwork class can be stored on disk in XML form (through
  * the {@link #marshal} and {@link #unmarshal} methods).
@@ -54,41 +54,52 @@ public class NeuralNetwork
     private static volatile JAXBContext jaxbContext;
 
     //~ Instance fields --------------------------------------------------------
-    /** Size of input layer */
+    //
+    /** Size of input layer. */
     @XmlAttribute(name = "input-size")
     private final int inputSize;
 
-    /** Size of hidden layer */
+    /** Size of hidden layer. */
     @XmlAttribute(name = "hidden-size")
     private final int hiddenSize;
 
-    /** Size of output layer */
+    /** Size of output layer. */
     @XmlAttribute(name = "output-size")
     private final int outputSize;
 
-    /** Weights for hidden layer */
+    /** Labels of input cells. */
+    @XmlElementWrapper(name = "input-labels")
+    @XmlElement(name = "input")
+    private final String[] inputLabels;
+
+    /** Labels of output cells. */
+    @XmlElementWrapper(name = "output-labels")
+    @XmlElement(name = "output")
+    private final String[] outputLabels;
+
+    /** Weights to hidden layer. */
     @XmlElementWrapper(name = "hidden-weights")
     @XmlElement(name = "row")
     private double[][] hiddenWeights;
 
-    /** Weights for output layer */
+    /** Weights to output layer. */
     @XmlElementWrapper(name = "output-weights")
     @XmlElement(name = "row")
     private double[][] outputWeights;
 
-    /** Flag to stop training */
+    /** Flag to stop training. */
     private transient volatile boolean stopping = false;
 
-    /** Learning Rate parameter */
+    /** Learning Rate parameter. */
     private transient volatile double learningRate = 0.40;
 
-    /** Max Error parameter */
+    /** Max Error parameter. */
     private transient volatile double maxError = 1E-4;
 
-    /** Momentum for faster convergence */
+    /** Momentum for faster convergence. */
     private transient volatile double momentum = 0.25;
 
-    /** Number of epochs when training */
+    /** Number of epochs when training. */
     private transient volatile int epochs = 1000;
 
     //~ Constructors -----------------------------------------------------------
@@ -96,18 +107,22 @@ public class NeuralNetwork
     // NeuralNetwork //
     //---------------//
     /**
-     * Create a neural network, with specified number of cells in each layer,
-     * and default values.
+     * Create a neural network, with specified number of cells in each
+     * layer, and default values.
      *
-     * @param inputSize  number of cells in input layer
-     * @param hiddenSize number of cells in hidden layer
-     * @param outputSize number of cells in output layer
-     * @param amplitude  amplitude ( <= 1.0) for initial random values
+     * @param inputSize    number of cells in input layer
+     * @param hiddenSize   number of cells in hidden layer
+     * @param outputSize   number of cells in output layer
+     * @param amplitude    amplitude ( <= 1.0) for initial random values
+     * @param inputLabels  array of labels for input cells, or null
+     * @param outputLabels array of labels for output cells, or null
      */
     public NeuralNetwork (int inputSize,
                           int hiddenSize,
                           int outputSize,
-                          double amplitude)
+                          double amplitude,
+                          String[] inputLabels,
+                          String[] outputLabels)
     {
         // Cache parameters
         this.inputSize = inputSize;
@@ -122,6 +137,20 @@ public class NeuralNetwork
         // +1 for bias
         outputWeights = createMatrix(outputSize, hiddenSize + 1, amplitude);
 
+        // Labels for input, if any
+        this.inputLabels = inputLabels;
+        if (inputLabels != null && inputLabels.length != inputSize) {
+            throw new IllegalArgumentException("Inconsistent input labels "
+                                               + inputLabels + " vs " + inputSize);
+        }
+
+        // Labels for output, if any
+        this.outputLabels = outputLabels;
+        if (outputLabels != null && outputLabels.length != outputSize) {
+            throw new IllegalArgumentException("Inconsistent output labels "
+                                               + outputLabels + " vs " + outputSize);
+        }
+
         logger.fine("Network created");
     }
 
@@ -129,13 +158,15 @@ public class NeuralNetwork
     // NeuralNetwork //
     //---------------//
     /**
-     * Create a neural network, with specified number of cells in each layer,
-     * and specific parameters
+     * Create a neural network, with specified number of cells in each
+     * layer, and specific parameters
      *
      * @param inputSize    number of cells in input layer
      * @param hiddenSize   number of cells in hidden layer
      * @param outputSize   number of cells in output layer
      * @param amplitude    amplitude ( <= 1.0) for initial random values
+     * @param inputLabels  array of labels for input cells, or null
+     * @param outputLabels array of labels for output cells, or null
      * @param learningRate learning rate factor
      * @param momentum     momentum from last adjustment
      * @param maxError     threshold to stop training
@@ -145,12 +176,15 @@ public class NeuralNetwork
                           int hiddenSize,
                           int outputSize,
                           double amplitude,
+                          String[] inputLabels,
+                          String[] outputLabels,
                           double learningRate,
                           double momentum,
                           double maxError,
                           int epochs)
     {
-        this(inputSize, hiddenSize, outputSize, amplitude);
+        this(inputSize, hiddenSize, outputSize, amplitude,
+                inputLabels, outputLabels);
 
         // Cache parameters
         this.learningRate = learningRate;
@@ -168,15 +202,19 @@ public class NeuralNetwork
         inputSize = -1;
         hiddenSize = -1;
         outputSize = -1;
+        inputLabels = null;
+        outputLabels = null;
     }
 
     //~ Methods ----------------------------------------------------------------
+    //
     //--------//
     // backup //
     //--------//
     /**
-     * Return a backup of the internal memory of this network. Generally used
-     * right after network creation to save the initial conditions.
+     * Return a backup of the internal memory of this network.
+     * Generally used right after network creation to save the initial
+     * conditions.
      *
      * @return an opaque copy of the network memory
      */
@@ -280,9 +318,9 @@ public class NeuralNetwork
     // restore //
     //---------//
     /**
-     * Restore the internal memory of a Network, from a previous Backup. This
-     * does not reset the current parameters such as learning rate, momentum,
-     * maxError or epochs.
+     * Restore the internal memory of a Network, from a previous Backup.
+     * This does not reset the current parameters such as learning rate,
+     * momentum, maxError or epochs.
      *
      * @param backup a backup previously made
      */
@@ -311,7 +349,8 @@ public class NeuralNetwork
     //-----//
     /**
      * Run the neural network on an array of input values, and return the
-     * computed output values. This method writes into the hiddens buffer.
+     * computed output values.
+     * This method writes into the hiddens buffer.
      *
      * @param inputs  the provided input values
      * @param hiddens provided buffer for hidden values, or null
@@ -360,7 +399,8 @@ public class NeuralNetwork
     // setEpochs //
     //-----------//
     /**
-     * set the number of iterations for training the network with a given input
+     * Set the number of iterations for training the network with a
+     * given input.
      *
      * @param epochs number of iterations
      */
@@ -373,7 +413,7 @@ public class NeuralNetwork
     // setLearningRate //
     //-----------------//
     /**
-     * Set the learning rate
+     * Set the learning rate.
      *
      * @param learningRate the learning rate to use for each iteration
      *                     (typically in the 0.0 .. 1.0 range)
@@ -387,7 +427,7 @@ public class NeuralNetwork
     // setMaxError //
     //-------------//
     /**
-     * Set the maximum error level
+     * Set the maximum error level.
      *
      * @param maxError maximum error
      */
@@ -400,7 +440,7 @@ public class NeuralNetwork
     // setMomentum //
     //-------------//
     /**
-     * Set the momentum value
+     * Set the momentum value.
      *
      * @param momentum the fraction of previous move to be reported on the next
      *                 correction
@@ -414,7 +454,7 @@ public class NeuralNetwork
     // stop //
     //------//
     /**
-     * A means to externally stop the current training
+     * A means to externally stop the current training.
      */
     public void stop ()
     {
@@ -426,10 +466,10 @@ public class NeuralNetwork
     // train //
     //-------//
     /**
-     * Train the neural network on a collection of input patterns, so that it
-     * delivers the expected outputs within maxError. This method is not
-     * optimized for absolute speed, but rather for being able to keep the best
-     * weights values.
+     * Train the neural network on a collection of input patterns,
+     * so that it delivers the expected outputs within maxError.
+     * This method is not optimized for absolute speed, but rather for being
+     * able to keep the best weights values.
      *
      * @param inputs         the provided patterns of values for input cells
      * @param desiredOutputs the corresponding desired values for output cells
@@ -603,7 +643,7 @@ public class NeuralNetwork
     //-----------//
     /**
      * Unmarshal the provided XML stream to allocate the corresponding
-     * NeuralNetwork
+     * NeuralNetwork.
      *
      * @param in the input stream that contains the network definition in XML
      *           format. The stream is not closed by this method
@@ -625,10 +665,9 @@ public class NeuralNetwork
     // cloneMatrix //
     //-------------//
     /**
-     * Create a clone of the provided matrix
+     * Create a clone of the provided matrix.
      *
      * @param matrix the matrix to clone
-     *
      * @return the clone
      */
     private static double[][] cloneMatrix (double[][] matrix)
@@ -650,8 +689,8 @@ public class NeuralNetwork
     // createMatrix //
     //--------------//
     /**
-     * Create and initialize a matrix, with random values. Random values are
-     * between -amplitude and +amplitude
+     * Create and initialize a matrix, with random values.
+     * Random values are between -amplitude and +amplitude
      *
      * @param rowNb number of rows
      * @param colNb number of columns
@@ -694,8 +733,8 @@ public class NeuralNetwork
     // dumpMatrix //
     //------------//
     /**
-     * Dump a matrix (assumed to be a true rectangular matrix, with all rows of
-     * the same length).
+     * Dump a matrix (assumed to be a true rectangular matrix,
+     * with all rows of the same length).
      *
      * @param matrix the matrix to dump
      */
@@ -726,12 +765,11 @@ public class NeuralNetwork
     // forward //
     //---------//
     /**
-     * Re-entrant method
+     * Re-entrant method.
      *
-     * @param ins
-     *            param weights
-     *            param
-     *            outs
+     * @param ins     input cells
+     * @param weights applied weights
+     * @param outs    output cells
      */
     private void forward (double[] ins,
                           double[][] weights,
@@ -759,10 +797,9 @@ public class NeuralNetwork
     // sigmoid //
     //---------//
     /**
-     * Simple sigmoid function, with a step around 0 abscissa
+     * Simple sigmoid function, with a step around 0 abscissa.
      *
      * @param val abscissa
-     *
      * @return the related function value
      */
     private double sigmoid (double val)
@@ -770,7 +807,34 @@ public class NeuralNetwork
         return 1.0d / (1.0d + Math.exp(-val));
     }
 
+    //----------------//
+    // getInputLabels //
+    //----------------//
+    /**
+     * Report the input labels, if any.
+     *
+     * @return the inputLabels, perhaps null
+     */
+    public String[] getInputLabels ()
+    {
+        return inputLabels;
+    }
+
+    //-----------------//
+    // getOutputLabels //
+    //-----------------//
+    /**
+     * Report the output labels, if any.
+     *
+     * @return the outputLabels, perhaps null
+     */
+    public String[] getOutputLabels ()
+    {
+        return outputLabels;
+    }
+
     //~ Inner Interfaces -------------------------------------------------------
+    //
     //---------//
     // Monitor //
     //---------//
@@ -804,6 +868,7 @@ public class NeuralNetwork
     }
 
     //~ Inner Classes ----------------------------------------------------------
+    //
     //--------//
     // Backup //
     //--------//

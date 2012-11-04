@@ -27,7 +27,6 @@ public abstract class ShapeDescription
     private static final Descriptor INSTANCE = new ShapeDescriptorART();
 
     //~ Methods ----------------------------------------------------------------
-
     //--------------//
     // boolAsDouble //
     //--------------//
@@ -41,6 +40,7 @@ public abstract class ShapeDescription
     //----------//
     /**
      * Report the features that describe a given glyph.
+     *
      * @param glyph the glyph to describe
      * @return the glyph shape features, an array of size length()
      */
@@ -50,10 +50,11 @@ public abstract class ShapeDescription
     }
 
     //-------------------//
-    // getFeatureIndex //
+    // getParameterIndex //
     //-------------------//
     /**
      * Report the index of parameters for the provided label.
+     *
      * @param label the provided label
      * @return the parameter index
      */
@@ -63,10 +64,11 @@ public abstract class ShapeDescription
     }
 
     //--------------------//
-    // getFeatureLabels //
+    // getParameterLabels //
     //--------------------//
     /**
      * Report the parameters labels.
+     *
      * @return the array of parameters labels
      */
     public static String[] getParameterLabels ()
@@ -79,6 +81,7 @@ public abstract class ShapeDescription
     //--------//
     /**
      * Report the number of features handled.
+     *
      * @return the number of features
      */
     public static int length ()
@@ -87,7 +90,7 @@ public abstract class ShapeDescription
     }
 
     //~ Inner Interfaces -------------------------------------------------------
-
+    //
     //------------//
     // Descriptor //
     //------------//
@@ -98,6 +101,7 @@ public abstract class ShapeDescription
         /**
          * Key method which gathers the various features meant to
          * describe a glyph and recognize a shape.
+         *
          * @param glyph the glyph to describe
          * @return the glyph shape features, an array of size length()
          */
@@ -105,6 +109,7 @@ public abstract class ShapeDescription
 
         /**
          * Report the index of features for the provided label.
+         *
          * @param label the provided label
          * @return the feature index
          */
@@ -112,12 +117,14 @@ public abstract class ShapeDescription
 
         /**
          * Report the features labels.
+         *
          * @return the array of feature labels
          */
         String[] getFeatureLabels ();
 
         /**
          * Report the number of features handled.
+         *
          * @return the number of features
          */
         int length ();

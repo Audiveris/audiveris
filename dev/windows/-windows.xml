@@ -63,7 +63,6 @@
             <candleParameter name="myConsole"      value="${name}-console"/>
             <candleParameter name="myDll"          value="${dll.dir}"/>
             <candleParameter name="myDistLib"      value="${dist.dir}/lib"/>
-            <candleParameter name="myEval"         value="${eval.dir}"/>
             <candleParameter name="myExamples"     value="${examples.dir}"/>
             <candleParameter name="myProductName"  value="${name}"/>
             <candleParameter name="myIconSource"   value="${res.dir}/all-icons-256.ico"/>
@@ -111,6 +110,19 @@
         <delete verbose="${verbose}">
             <fileset dir="${basedir}" includes="*.exe, *.bat"/>
         </delete> 
+    </target>
+  
+  
+    <!-- ===================== -->
+    <!--  - C O P Y - E V A L  -->
+    <!-- ===================== -->
+    <target name="-copy-eval"
+            if="${is.windows}">
+        <!-- Copy the local eval content (if any) to res folder -->
+        <copy verbose="${verbose}" todir="${res.dir}" overwrite="true">
+            <fileset dir="${eval.dir}" includes="neural-network.xml"/>
+            <fileset dir="${eval.dir}" includes="linear-evaluator.xml"/>
+        </copy> 
     </target>
   
     <!-- ============================= -->
@@ -178,7 +190,7 @@
     <!-- ======================= -->
     <!-- Build Windows installers for x86 and x64 architectures-->
     <target name="-installers"
-            depends="-execs, -wxs-generation, -do-installers, -wix-cleanup, -wxs-cleanup"
+            depends="-execs, -copy-eval, -wxs-generation, -do-installers, -wix-cleanup, -wxs-cleanup"
             if="${is.windows}"/>
   
     <!-- =================== -->
@@ -288,23 +300,14 @@
         </exec>
         
         <echo message="buiding ${dev.windows.dir}/gen-common-examples.wxs" />
-        <exec executable="java">
-            <arg line="-jar ${tools.dir}/wix-heat-user.jar"/>
+        <exec executable="heat">
+            <arg value="dir"/>
             <arg value="${examples.dir}"/>
+            <arg line="${heat.options}"/>
             <arg line="-dr INSTALLDIR"/>
             <arg line="-cg examples.CID"/>
             <arg line="-var var.myExamples"/>
             <arg line="-out ${dev.windows.dir}/gen-common-examples.wxs"/>
-        </exec>
-    
-        <echo message="buiding ${dev.windows.dir}/gen-common-eval.wxs" />
-        <exec executable="java">
-            <arg line="-jar ${tools.dir}/wix-heat-user.jar"/>
-            <arg value="${eval.dir}"/>
-            <arg line="-dr INSTALLDIR"/>
-            <arg line="-cg eval.CID"/>
-            <arg line="-var var.myEval"/>
-            <arg line="-out ${dev.windows.dir}/gen-common-eval.wxs"/>
         </exec>
     
         <!-- Folders for user location -->    

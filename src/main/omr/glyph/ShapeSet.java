@@ -405,9 +405,31 @@ public class ShapeSet
     }
 
     //~ Methods ----------------------------------------------------------------
+    //
+    //-----------------------//
+    // getPhysicalShapeNames //
+    //-----------------------//
+    /**
+     * Report the names of all the physical shapes.
+     *
+     * @return the array of names for shapes up to LAST_PHYSICAL_SHAPE
+     */
+    public static String[] getPhysicalShapeNames ()
+    {
+        int shapeCount = 1 + LAST_PHYSICAL_SHAPE.ordinal();
+        String[] names = new String[shapeCount];
+        
+        for (Shape shape : allPhysicalShapes) {
+            names[shape.ordinal()] = shape.name();
+        }
+        
+        return names;
+    }
+    
     //-----------------//
     // addAllShapeSets //
     //-----------------//
+
     /**
      * Populate the given menu with all ShapeSet instances defined
      * in this class.

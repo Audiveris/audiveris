@@ -35,7 +35,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.logging.Level;
 
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
@@ -356,7 +355,8 @@ class TrainingPanel
             if (confirmationRequired) {
                 int answer = JOptionPane.showConfirmDialog(
                     component,
-                    "Do you really want to retrain evaluator from scratch?");
+                    "Do you really want to retrain " + engine.getName()
+                        + " from scratch?");
 
                 if (answer != JOptionPane.YES_OPTION) {
                     return;

@@ -34,8 +34,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EventObject;
+import java.util.List;
 
-import javax.swing.JOptionPane;
 import javax.xml.bind.JAXBException;
 
 /**
@@ -82,21 +82,9 @@ public class GlyphRegression
         // Unmarshal from backup data
         engine = (LinearEvaluator) unmarshal();
 
-        // Basic check
-        if (engine != null) {
-            if (engine.getInputSize() != ShapeDescription.length()) {
-                final String msg = "Linear Evaluator data is obsolete,"
-                                   + " it must be retrained from scratch";
-                logger.warning(msg);
-                JOptionPane.showMessageDialog(null, msg);
-
-                engine = null;
-            }
-        }
-
         if (engine == null) {
             // Get a brand new one (not trained)
-            logger.info("Creating a brand new LinearEvaluator");
+            logger.info("Creating a brand new {0}", getName());
             engine = new LinearEvaluator(ShapeDescription.getParameterLabels());
         } else {
             defineConstraints();
@@ -153,6 +141,58 @@ public class GlyphRegression
     //            return true;
     //        }
     //    }
+    //--------------//
+    // isCompatible //
+    //--------------//
+    @Override
+    protected final boolean isCompatible (Object obj)
+    {
+        if (obj instanceof LinearEvaluator) {
+            LinearEvaluator anEngine = (LinearEvaluator) obj;
+
+            // Check parameters names, they must be identical
+            if (!Arrays.equals(
+                    anEngine.getParameterNames(),
+                    ShapeDescription.getParameterLabels())) {
+                if (logger.isFineEnabled()) {
+                    logger.fine("Engine parameters: {0}",
+                            Arrays.toString(anEngine.getParameterNames()));
+                    logger.fine("Shape  parameters: {0}",
+                            Arrays.toString(ShapeDescription.getParameterLabels()));
+                }
+                return false;
+            }
+
+            // Check categories names. Order is not relevant
+            // Engine categories must be a subset of physical shapes
+            String[] categories = anEngine.getCategoryNames();
+
+            String[] shapes = ShapeSet.getPhysicalShapeNames();
+            String[] sortedShapes = Arrays.copyOf(shapes, shapes.length);
+
+            List<String> extraNames = new ArrayList<>(Arrays.asList(categories));
+            extraNames.removeAll(Arrays.asList(sortedShapes));
+
+            if (!extraNames.isEmpty()) {
+                if (logger.isFineEnabled()) {
+                    Arrays.sort(categories);
+                    logger.fine("Engine categories: {0}",
+                            Arrays.toString(categories));
+                    Arrays.sort(sortedShapes);
+                    logger.fine("Physical   shapes: {0}",
+                            Arrays.toString(sortedShapes));
+                    logger.fine("Extra names found in {0}: {1}",
+                            getName(), extraNames);
+                }
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return false;
+        }
+    }
+
     //------//
     // dump //
     //------//
@@ -305,9 +345,9 @@ public class GlyphRegression
     // getName //
     //---------//
     @Override
-    public String getName ()
+    public final String getName ()
     {
-        return "Regression";
+        return "Linear Evaluator";
     }
 
     //---------------//
@@ -466,7 +506,7 @@ public class GlyphRegression
 
         for (Glyph glyph : base) {
             try {
-                Shape shape = glyph.getShape();
+                Shape shape = glyph.getShape().getPhysicalShape();
                 Sample sample = new Sample(
                         shape.toString(),
                         ShapeDescription.features(glyph));

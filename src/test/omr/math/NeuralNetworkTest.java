@@ -26,41 +26,42 @@ import java.io.FileOutputStream;
 import javax.xml.bind.*;
 
 /**
- * Class <code>NeuralNetworkTest</code> performs unit tests on
+ * Class
+ * <code>NeuralNetworkTest</code> performs unit tests on
  * NeuralNetwork class.
  *
  * @author Hervé Bitteur
  * @version $Id$
  */
 public class NeuralNetworkTest
-    extends BaseTestCase
+        extends BaseTestCase
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final double  maxMSE = 0.3;
+    private static final double maxMSE = 0.3;
+
     private static NeuralNetwork nn;
 
     //~ Methods ----------------------------------------------------------------
-
     //-------------------//
     // testBackupRestore //
     //-------------------//
     //@Test
     public void testBackupRestore ()
     {
-        double[][]            inputs = new double[][] {
-                                           { 0, 0 },
-                                           { 1, 0 },
-                                           { 0, 1 },
-                                           { 1, 1 }
-                                       };
+        double[][] inputs = new double[][]{
+            {0, 0},
+            {1, 0},
+            {0, 1},
+            {1, 1}
+        };
 
-        double[][]            desiredOutputs = new double[][] {
-                                                   { 0 },
-                                                   { 1 },
-                                                   { 1 },
-                                                   { 0 }
-                                               };
+        double[][] desiredOutputs = new double[][]{
+            {0},
+            {1},
+            {1},
+            {0}
+        };
         NeuralNetwork.Monitor monitor = new MyMonitor();
 
         do {
@@ -95,28 +96,28 @@ public class NeuralNetworkTest
         pp.restore(backup);
 
         assertNears(
-            "0 xor 0 should be 0",
-            0d,
-            pp.run(new double[] { 0, 0 }, null, null)[0],
-            0.1d);
+                "0 xor 0 should be 0",
+                0d,
+                pp.run(new double[]{0, 0}, null, null)[0],
+                0.1d);
 
         assertNears(
-            "1 xor 0 should be 1",
-            1d,
-            pp.run(new double[] { 1, 0 }, null, null)[0],
-            0.1d);
+                "1 xor 0 should be 1",
+                1d,
+                pp.run(new double[]{1, 0}, null, null)[0],
+                0.1d);
 
         assertNears(
-            "0 xor 1 should be 1",
-            1d,
-            pp.run(new double[] { 0, 1 }, null, null)[0],
-            0.1d);
+                "0 xor 1 should be 1",
+                1d,
+                pp.run(new double[]{0, 1}, null, null)[0],
+                0.1d);
 
         assertNears(
-            "1 xor 1 should be 0",
-            0d,
-            pp.run(new double[] { 1, 1 }, null, null)[0],
-            0.1d);
+                "1 xor 1 should be 0",
+                0d,
+                pp.run(new double[]{1, 1}, null, null)[0],
+                0.1d);
     }
 
     //-----------------//
@@ -124,21 +125,21 @@ public class NeuralNetworkTest
     //-----------------//
     //@Test
     public void testMarshalling ()
-        throws JAXBException, FileNotFoundException
+            throws JAXBException, FileNotFoundException
     {
-        double[][]            inputs = new double[][] {
-                                           { 0, 0 },
-                                           { 1, 0 },
-                                           { 0, 1 },
-                                           { 1, 1 }
-                                       };
+        double[][] inputs = new double[][]{
+            {0, 0},
+            {1, 0},
+            {0, 1},
+            {1, 1}
+        };
 
-        double[][]            desiredOutputs = new double[][] {
-                                                   { 0 },
-                                                   { 1 },
-                                                   { 1 },
-                                                   { 0 }
-                                               };
+        double[][] desiredOutputs = new double[][]{
+            {0},
+            {1},
+            {1},
+            {0}
+        };
         NeuralNetwork.Monitor monitor = new MyMonitor();
 
         do {
@@ -171,19 +172,19 @@ public class NeuralNetworkTest
     //@Test
     public void testOr ()
     {
-        double[][]            inputs = new double[][] {
-                                           { 0, 0 },
-                                           { 1, 0 },
-                                           { 0, 1 },
-                                           { 1, 1 }
-                                       };
+        double[][] inputs = new double[][]{
+            {0, 0},
+            {1, 0},
+            {0, 1},
+            {1, 1}
+        };
 
-        double[][]            desiredOutputs = new double[][] {
-                                                   { 0 },
-                                                   { 1 },
-                                                   { 1 },
-                                                   { 1 }
-                                               };
+        double[][] desiredOutputs = new double[][]{
+            {0},
+            {1},
+            {1},
+            {1}
+        };
         NeuralNetwork.Monitor monitor = new MyMonitor();
 
         do {
@@ -193,28 +194,28 @@ public class NeuralNetworkTest
         nn.dump();
 
         assertNears(
-            "0 or 0 should be 0",
-            0d,
-            nn.run(new double[] { 0, 0 }, null, null)[0],
-            0.1d);
+                "0 or 0 should be 0",
+                0d,
+                nn.run(new double[]{0, 0}, null, null)[0],
+                0.1d);
 
         assertNears(
-            "1 or 0 should be 1",
-            1d,
-            nn.run(new double[] { 1, 0 }, null, null)[0],
-            0.1d);
+                "1 or 0 should be 1",
+                1d,
+                nn.run(new double[]{1, 0}, null, null)[0],
+                0.1d);
 
         assertNears(
-            "0 or 1 should be 1",
-            1d,
-            nn.run(new double[] { 0, 1 }, null, null)[0],
-            0.1d);
+                "0 or 1 should be 1",
+                1d,
+                nn.run(new double[]{0, 1}, null, null)[0],
+                0.1d);
 
         assertNears(
-            "1 or 1 should be 1",
-            1d,
-            nn.run(new double[] { 1, 1 }, null, null)[0],
-            0.1d);
+                "1 or 1 should be 1",
+                1d,
+                nn.run(new double[]{1, 1}, null, null)[0],
+                0.1d);
     }
 
     //---------//
@@ -223,19 +224,19 @@ public class NeuralNetworkTest
     //@Test
     public void testXOr ()
     {
-        double[][]            inputs = new double[][] {
-                                           { 0, 0 },
-                                           { 1, 0 },
-                                           { 0, 1 },
-                                           { 1, 1 }
-                                       };
+        double[][] inputs = new double[][]{
+            {0, 0},
+            {1, 0},
+            {0, 1},
+            {1, 1}
+        };
 
-        double[][]            desiredOutputs = new double[][] {
-                                                   { 0 },
-                                                   { 1 },
-                                                   { 1 },
-                                                   { 0 }
-                                               };
+        double[][] desiredOutputs = new double[][]{
+            {0},
+            {1},
+            {1},
+            {0}
+        };
         NeuralNetwork.Monitor monitor = new MyMonitor();
 
         do {
@@ -245,28 +246,28 @@ public class NeuralNetworkTest
         nn.dump();
 
         assertNears(
-            "0 xor 0 should be 0",
-            0d,
-            nn.run(new double[] { 0, 0 }, null, null)[0],
-            0.1d);
+                "0 xor 0 should be 0",
+                0d,
+                nn.run(new double[]{0, 0}, null, null)[0],
+                0.1d);
 
         assertNears(
-            "1 xor 0 should be 1",
-            1d,
-            nn.run(new double[] { 1, 0 }, null, null)[0],
-            0.1d);
+                "1 xor 0 should be 1",
+                1d,
+                nn.run(new double[]{1, 0}, null, null)[0],
+                0.1d);
 
         assertNears(
-            "0 xor 1 should be 1",
-            1d,
-            nn.run(new double[] { 0, 1 }, null, null)[0],
-            0.1d);
+                "0 xor 1 should be 1",
+                1d,
+                nn.run(new double[]{0, 1}, null, null)[0],
+                0.1d);
 
         assertNears(
-            "1 xor 1 should be 0",
-            0d,
-            nn.run(new double[] { 1, 1 }, null, null)[0],
-            0.1d);
+                "1 xor 1 should be 0",
+                0d,
+                nn.run(new double[]{1, 1}, null, null)[0],
+                0.1d);
     }
 
     //---------------//
@@ -280,17 +281,19 @@ public class NeuralNetworkTest
         double learningRate = 0.25;
         double momentum = 0.25;
         double maxError = 0.02;
-        int    epochs = 500000;
+        int epochs = 500000;
 
         return new NeuralNetwork(
-            inputSize,
-            hiddenSize,
-            outputSize,
-            amplitude,
-            learningRate,
-            momentum,
-            maxError,
-            epochs);
+                inputSize,
+                hiddenSize,
+                outputSize,
+                amplitude,
+                null,
+                null,
+                learningRate,
+                momentum,
+                maxError,
+                epochs);
     }
 
     private NeuralNetwork createNetwork ()
@@ -299,22 +302,21 @@ public class NeuralNetworkTest
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // MyMonitor //
     //-----------//
     private static class MyMonitor
-        implements NeuralNetwork.Monitor
+            implements NeuralNetwork.Monitor
     {
         //~ Methods ------------------------------------------------------------
 
-        public void epochEnded (int    epochIndex,
+        public void epochEnded (int epochIndex,
                                 double mse)
         {
             if ((epochIndex % 10000) == 0) {
                 System.out.println(
-                    "epochEnded." + " epochIndex=" + epochIndex + " mse=" +
-                    mse);
+                        "epochEnded." + " epochIndex=" + epochIndex + " mse="
+                        + mse);
 
                 // Test for convergence
                 if (epochIndex > 100000) {
@@ -323,12 +325,12 @@ public class NeuralNetworkTest
             }
         }
 
-        public void trainingStarted (final int    epochIndex,
+        public void trainingStarted (final int epochIndex,
                                      final double mse)
         {
             System.out.println(
-                "trainingStarted." + " epochIndex=" + epochIndex + " mse=" +
-                mse);
+                    "trainingStarted." + " epochIndex=" + epochIndex + " mse="
+                    + mse);
         }
     }
 }

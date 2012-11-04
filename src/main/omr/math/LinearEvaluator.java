@@ -122,6 +122,55 @@ public class LinearEvaluator
     }
 
     //~ Methods ----------------------------------------------------------------
+    //
+    //-------------------//
+    // getParameterNames //
+    //-------------------//
+    /**
+     * Report the sequence of parameter names.
+     *
+     * @return the sequence of parameter names
+     */
+    public String[] getParameterNames ()
+    {
+        if (parameters == null) {
+            return new String[0];
+        } else {
+            String[] names = new String[parameters.length];
+
+            for (int i = 0; i < parameters.length; i++) {
+                names[i] = parameters[i].name;
+            }
+
+            return names;
+        }
+    }
+
+    //------------------//
+    // getCategoryNames //
+    //------------------//
+    /**
+     * Report the collection of category names (order is irrelevant).
+     *
+     * @return the collection of category names
+     */
+    public String[] getCategoryNames ()
+    {
+        if (categories == null) {
+            return new String[0];
+        } else {
+            Collection<Category> values = categories.values();
+            String[] names = new String[values.size()];
+
+            int index = 0;
+            for (Category cat : values) {
+                names[index++] = cat.getId();
+            }
+
+            return names;
+        }
+    }
+
     //--------------//
     // getInputSize //
     //--------------//

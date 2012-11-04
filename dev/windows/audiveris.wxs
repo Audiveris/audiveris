@@ -165,7 +165,6 @@ Assumption: myArch is set to either x64 or x86
             <!-- ocr      (in separate gen-common-ocr.wxs) -->
             <!-- res      (in separate gen-common-res.wxs) -->                        
             <!-- www      (in separate gen-common-www.wxs) -->
-            <!-- eval     (in separate gen-common-eval.wxs) -->
             <!-- examples (in separate gen-common-examples.wxs) -->
         </DirectoryRef>            
     
@@ -240,6 +239,16 @@ Assumption: myArch is set to either x64 or x86
                                    Name="benches" Type="string" Value="installed" KeyPath="yes" />
                     <CreateFolder />
                     <RemoveFolder Id="benchesDirId" On="uninstall" />                                
+                </Component>
+            </Directory>  
+      
+            <!-- eval    empty folder -->
+            <Directory Id="evalDirId" Name="eval" >
+                <Component Id="eval.CID" Guid="1b1d1a65-7ad2-4929-b9db-ab2da20978b5">                                
+                    <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" 
+                                   Name="eval" Type="string" Value="installed" KeyPath="yes" />
+                    <CreateFolder />
+                    <RemoveFolder Id="evalDirId" On="uninstall" />                                
                 </Component>
             </Directory>  
       
@@ -331,9 +340,10 @@ Assumption: myArch is set to either x64 or x86
                 <ComponentRef Id="userActions.CID" />
                 
                 <ComponentRef Id="benches.CID" />
+                <ComponentRef Id="eval.CID" />
                 <ComponentRef Id="print.CID" />
-                <ComponentRef Id="scripts.CID" />
                 <ComponentRef Id="scores.CID" />
+                <ComponentRef Id="scripts.CID" />
                 
                 <ComponentRef Id="fonts.CID" />
         
@@ -343,7 +353,6 @@ Assumption: myArch is set to either x64 or x86
         
                 <ComponentGroupRef Id="lib.CID" />
                 <ComponentGroupRef Id="res.CID" />
-                <ComponentGroupRef Id="eval.CID" />
             </Feature>
       
             <!-- VC++ runtime (this leads to many warnings) -->

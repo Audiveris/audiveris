@@ -255,7 +255,7 @@
         <echo message="date=${ant4hg.log.date}" />
         <echo message="summary=${ant4hg.log.summary}" />
         -->
-         
+        
         <property name="impl.version" value="${spec.version}.${ant4hg.log.revision}" />
         <property name="impl.name" value="${name}-${impl.version}" />
 
@@ -341,7 +341,7 @@
 Built-By: ${Company}
 Specification-Title: ${Name}
 Specification-Vendor: ${Company}
-Specification-Version: ${impl.version}i
+Specification-Version: ${impl.version}
 </echo>
 
         <!-- Copy resource properties to classes -->

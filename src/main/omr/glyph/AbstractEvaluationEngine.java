@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
+import javax.swing.JOptionPane;
 import javax.xml.bind.JAXBException;
 
 /**
@@ -44,6 +45,7 @@ import javax.xml.bind.JAXBException;
 public abstract class AbstractEvaluationEngine
         implements EvaluationEngine
 {
+    //~ Static fields/initializers ---------------------------------------------
 
     /** Specific application parameters */
     private static final Constants constants = new Constants();
@@ -61,9 +63,13 @@ public abstract class AbstractEvaluationEngine
         new Evaluation(Shape.NOISE, Evaluation.ALGORITHM)
     };
 
+    //~ Instance fields --------------------------------------------------------
+    //
     /** The glyph checker for additional specific checks. */
     protected ShapeChecker glyphChecker = ShapeChecker.getInstance();
 
+    //~ Methods ----------------------------------------------------------------
+    //
     //----------//
     // evaluate //
     //----------//
@@ -294,9 +300,7 @@ public abstract class AbstractEvaluationEngine
      *
      * @param is the input stream to read
      * @return the newly built evaluation engine
-     * @throws JAXBException
-     *                       throws
-     *                       IOException
+     * @throws JAXBException, IOException
      */
     protected abstract Object unmarshal (InputStream is)
             throws JAXBException, IOException;
@@ -313,7 +317,7 @@ public abstract class AbstractEvaluationEngine
      */
     protected Object unmarshal ()
     {
-        // First try user file, if any (in EVAL folder)
+        // First try user file, if any (in user EVAL folder)
         File file = new File(WellKnowns.EVAL_FOLDER, getFileName());
         if (file.exists()) {
             Object obj = unmarshal(file);
@@ -321,31 +325,52 @@ public abstract class AbstractEvaluationEngine
             if (obj == null) {
                 logger.warning("Could not load {0}", file);
             } else {
-                logger.info("{0} unmarshalled from {1}", getName(), file);
-                return obj;
+                if (!isCompatible(obj)) {
+                    final String msg = "Obsolete user data for " + getName()
+                                       + ", trying default data";
+                    logger.warning(msg);
+                    JOptionPane.showMessageDialog(null, msg);
+                } else {
+                    // Tell the user we are not using the default
+                    logger.info("{0} unmarshalled from {1}", getName(), file);
+                    return obj;
+                }
             }
         }
 
-        // Use default file (in RES folder)
-        file = new File(WellKnowns.RES_FOLDER, getBackupName());
+        // Use default file (in program RES folder)
+        file = new File(WellKnowns.RES_FOLDER, getFileName());
         Object obj = unmarshal(file);
 
         if (obj == null) {
             logger.warning("Could not load {0}", file);
         } else {
-            logger.info("{0} unmarshalled from {1}", getName(), file);
+            if (!isCompatible(obj)) {
+                final String msg = "Obsolete default data for " + getName()
+                                   + ", please retrain from scratch";
+                logger.warning(msg);
+                JOptionPane.showMessageDialog(null, msg);
+
+                obj = null;
+            } else {
+                logger.fine("{0} unmarshalled from {1}", getName(), file);
+            }
         }
 
         return obj;
     }
 
-    //---------------//
-    // getBackupName //
-    //---------------//
-    private String getBackupName ()
-    {
-        return "backup-" + getFileName();
-    }
+    //--------------//
+    // isCompatible //
+    //--------------//
+    /**
+     * Make sure the provided engine object is compatible with the
+     * current application.
+     *
+     * @param obj the engine object
+     * @return true if engine is usable and found compatible
+     */
+    protected abstract boolean isCompatible (Object obj);
 
     //-----------//
     // unmarshal //

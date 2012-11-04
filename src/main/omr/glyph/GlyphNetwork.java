@@ -31,26 +31,27 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 
-import javax.swing.JOptionPane;
 import javax.xml.bind.JAXBException;
 
 /**
- * Class {@code GlyphNetwork} encapsulates a neural network dedicated
- * to glyph recognition.
- * It wraps the generic {@link omr.math.NeuralNetwork} with application
+ * Class {@code GlyphNetwork} encapsulates a neural network customized
+ * for glyph recognition.
+ * It wraps the generic {@link NeuralNetwork} with application
  * information, for training, storing, loading and using the neural network.
  *
  * <p>The application neural network data is loaded as follows: <ol>
- * <li>It first tries to find a file in the /config sub-folder of the
- * application, looking for a file named 'neural-network.xml' which contains a
- * custom definition of the network, typically after a training.</li>
- * <li>If not found, it falls back reading the default definition from the
- * application resource, reading the /config/neural-network.xml file provided
- * in the distribution jar file.</ol></p>
+ * <li>It first tries to find a file named 'eval/neural-network.xml' in the
+ * application user area.
+ * If any, this file contains a custom definition of the network, typically
+ * after a user training.</li>
  *
- * <p>Similarly, after a training of the neural network, the data is stored as
- * the custom definition in the local file 'config/neural-network.xml', which
- * will be picked up first when the application is run again.</p>
+ * <li>If not found, it falls back reading the default definition from the
+ * application resource, reading the 'res/neural-network.xml' file in the
+ * application program area.</ol></p>
+ *
+ * <p>After a user training of the neural network, the data is stored as
+ * the custom definition in the user local file 'eval/neural-network.xml',
+ * which will be picked up first when the application is run again.</p>
  *
  * @author Hervé Bitteur
  */
@@ -68,45 +69,36 @@ public class GlyphNetwork
     /** The singleton. */
     private static volatile GlyphNetwork INSTANCE;
 
-    /** Neural network backup file name. */
-    private static final String BACKUP_FILE_NAME = "neural-network.xml";
+    /** Neural network file name. */
+    private static final String FILE_NAME = "neural-network.xml";
 
     //~ Instance fields --------------------------------------------------------
-    /** The underlying neural network */
+    //
+    /** The underlying neural network. */
     private NeuralNetwork engine;
 
     //~ Constructors -----------------------------------------------------------
+    //
     //--------------//
     // GlyphNetwork //
     //--------------//
     /**
-     * Create an instance of glyph neural network.
+     * Private constructor, to create a glyph neural network.
      */
     private GlyphNetwork ()
     {
-        // Unmarshal from backup data
+        // Unmarshal from user or default data, if compatible
         engine = (NeuralNetwork) unmarshal();
-
-        // Basic check
-        if (engine != null) {
-            if (engine.getOutputSize() != shapeCount) {
-                final String msg = "Neural Network data is obsolete,"
-                        + " it must be retrained from scratch";
-                logger.warning(msg);
-                JOptionPane.showMessageDialog(null, msg);
-
-                engine = null;
-            }
-        }
 
         if (engine == null) {
             // Get a brand new one (not trained)
-            logger.info("Creating a brand new GlyphNetwork");
+            logger.info("Creating a brand new {0}", getName());
             engine = createNetwork();
         }
     }
 
     //~ Methods ----------------------------------------------------------------
+    //
     //-------------//
     // getInstance //
     //-------------//
@@ -126,6 +118,41 @@ public class GlyphNetwork
         }
 
         return INSTANCE;
+    }
+
+    //--------------//
+    // isCompatible //
+    //--------------//
+    @Override
+    protected final boolean isCompatible (Object obj)
+    {
+        if (obj instanceof NeuralNetwork) {
+            NeuralNetwork anEngine = (NeuralNetwork) obj;
+
+            if (!Arrays.equals(anEngine.getInputLabels(),
+                    ShapeDescription.getParameterLabels())) {
+                if (logger.isFineEnabled()) {
+                    logger.fine("Engine inputs: {0}",
+                            Arrays.toString(anEngine.getInputLabels()));
+                    logger.fine("Shape  inputs: {0}",
+                            Arrays.toString(ShapeDescription.getParameterLabels()));
+                }
+                return false;
+            }
+            if (!Arrays.equals(anEngine.getOutputLabels(),
+                    ShapeSet.getPhysicalShapeNames())) {
+                if (logger.isFineEnabled()) {
+                    logger.fine("Engine  outputs: {0}",
+                            Arrays.toString(anEngine.getOutputLabels()));
+                    logger.fine("Physical shapes: {0}",
+                            Arrays.toString(ShapeSet.getPhysicalShapeNames()));
+                }
+                return false;
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 
     //------//
@@ -215,9 +242,9 @@ public class GlyphNetwork
      * @return a simple name
      */
     @Override
-    public String getName ()
+    public final String getName ()
     {
-        return "Neural";
+        return "Neural Network";
     }
 
     //------------//
@@ -310,7 +337,7 @@ public class GlyphNetwork
     // stop //
     //------//
     /**
-     * Forward "Stop" order to the network being trained.
+     * Forward the "Stop" order to the network being trained.
      */
     @Override
     public void stop ()
@@ -335,7 +362,7 @@ public class GlyphNetwork
                        StartingMode mode)
     {
         if (glyphs.isEmpty()) {
-            logger.warning("No glyph to retrain Network Evaluator");
+            logger.warning("No glyph to retrain Neural Network evaluator");
 
             return;
         }
@@ -343,7 +370,7 @@ public class GlyphNetwork
         int quorum = constants.quorum.getValue();
 
         // Determine cardinality for each shape
-        EnumMap<Shape,List<Glyph>> shapeGlyphs = new EnumMap<>(Shape.class);
+        EnumMap<Shape, List<Glyph>> shapeGlyphs = new EnumMap<>(Shape.class);
 
         for (Glyph glyph : glyphs) {
             Shape shape = glyph.getShape();
@@ -414,7 +441,7 @@ public class GlyphNetwork
     @Override
     protected String getFileName ()
     {
-        return BACKUP_FILE_NAME;
+        return FILE_NAME;
     }
 
     //-------------------//
@@ -479,6 +506,8 @@ public class GlyphNetwork
                 shapeCount,
                 shapeCount,
                 getAmplitude(),
+                ShapeDescription.getParameterLabels(), // Input labels
+                ShapeSet.getPhysicalShapeNames(), // Output labels
                 getLearningRate(),
                 getMomentum(),
                 getMaxError(),
@@ -497,29 +526,25 @@ public class GlyphNetwork
                 0.5,
                 "Initial weight amplitude");
 
-        //
         Constant.Ratio learningRate = new Constant.Ratio(
                 0.2,
                 "Learning Rate");
 
-        //
         Constant.Integer listEpochs = new Constant.Integer(
                 "Epochs",
                 4000,
                 "Number of epochs for training on list of glyphs");
 
-        //
         Constant.Integer quorum = new Constant.Integer(
                 "Glyphs",
                 10,
                 "Minimum number of glyphs for each shape");
 
-        //
         Evaluation.Grade maxError = new Evaluation.Grade(
                 1E-3,
                 "Threshold to stop training");
 
-        //
         Constant.Ratio momentum = new Constant.Ratio(0.2, "Training momentum");
+
     }
 }
