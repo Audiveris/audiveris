@@ -89,7 +89,8 @@ public class TimeSignature
     }
 
     //~ Instance fields --------------------------------------------------------
-    /** Flag a time sig not created out of its glyphs */
+    //
+    /** Flag a time sig not created out of its glyphs. */
     private final boolean isDummy;
 
     /**
@@ -106,10 +107,11 @@ public class TimeSignature
      */
     private Shape shape;
 
-    /** Actual TimeRational components */
+    /** Actual TimeRational components. */
     private TimeRational timeRational;
 
     //~ Constructors -----------------------------------------------------------
+    //
     //---------------//
     // TimeSignature //
     //--------------//
@@ -133,8 +135,8 @@ public class TimeSignature
     // TimeSignature //
     //--------------//
     /**
-     * Create a time signature, with containing measure and related staff, and
-     * information copied from the provided time signature
+     * Create a time signature, with containing measure and related
+     * staff, and information copied from the provided time signature.
      *
      * @param measure the containing measure
      * @param staff   the related staff
@@ -167,6 +169,7 @@ public class TimeSignature
     }
 
     //~ Methods ----------------------------------------------------------------
+    //
     //--------------//
     // isAcceptable //
     //--------------//
@@ -580,7 +583,9 @@ public class TimeSignature
                 sb.append(" ").append(getShape());
             }
 
-            sb.append(" center=").append(getCenter());
+            if (getCenter() != null) {
+                sb.append(" center=").append(getCenter());
+            }
 
             if (!getGlyphs().isEmpty()) {
                 sb.append(" ").append(Glyphs.toString(getGlyphs()));

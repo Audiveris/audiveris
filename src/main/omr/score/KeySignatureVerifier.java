@@ -146,7 +146,7 @@ public class KeySignatureVerifier
 
             return compound;
         } else {
-            logger.info("{0}Could not find {1} in {2}",
+            logger.fine("{0}Could not find {1} in {2}",
                     systemInfo.getLogPrefix(),
                     bestKey.getShape(), Glyphs.toString(glyphs));
 

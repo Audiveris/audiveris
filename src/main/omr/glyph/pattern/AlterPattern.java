@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.glyph.pattern;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import omr.constant.ConstantSet;
 
 import omr.glyph.CompoundBuilder;
@@ -31,8 +34,10 @@ import omr.util.HorizontalSide;
 
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
+import omr.util.Vip;
 
 /**
  * Class {@code AlterPattern} implements a pattern for alteration
@@ -55,6 +60,7 @@ public class AlterPattern
     private static final Logger logger = Logger.getLogger(AlterPattern.class);
 
     //~ Instance fields --------------------------------------------------------
+    //
     // Scale-dependent constants for alter verification
     private final int maxCloseStemDx;
 
@@ -73,7 +79,7 @@ public class AlterPattern
 
     private final PairAdapter naturalAdapter;
 
-    /** Collection of (short) stems, sorted on abscissa */
+    /** Collection of (short) stems, sorted by abscissa. */
     private SortedSet<Glyph> stems;
 
     //~ Constructors -----------------------------------------------------------
@@ -140,79 +146,55 @@ public class AlterPattern
 
         for (Glyph glyph : stems) {
             if (!glyph.isStem()) {
-                continue;
+                continue; // Already consumed
             }
 
-            final PixelRectangle leftBox = glyph.getBounds();
-            final int leftX = leftBox.x + (leftBox.width / 2);
+            // Retrieve interesting stem pairs in the neighborhood
+            List<StemPair> pairs = getNeighboringPairs(glyph);
 
-            //logger.info("Checking stems close to glyph #" + glyph.getId());
-            for (Glyph other : stems.tailSet(glyph)) {
-                if ((other == glyph) || !other.isStem()) {
-                    continue;
+            // Inspect pairs by increasing distance
+            for (StemPair pair : pairs) {
+                if (!pair.left.isStem() || !pair.right.isStem()) {
+                    continue; // This pair is no longer relevant
                 }
-
-                // Check horizontal distance
-                final PixelRectangle rightBox = other.getBounds();
-                final int rightX = rightBox.x
-                                   + (rightBox.width / 2);
-                final int dx = rightX - leftX;
-
-                if (dx > maxCloseStemDx) {
-                    break; // Since the set is sorted, no candidate is left
-                }
-
-                // Check vertical overlap
-                final int commonTop = Math.max(leftBox.y, rightBox.y);
-                final int commonBot = Math.min(
-                        leftBox.y + leftBox.height,
-                        rightBox.y + rightBox.height);
-                final int overlap = commonBot - commonTop;
-
-                if (overlap < minCloseStemOverlap) {
-                    continue;
-                }
-
-                if (logger.isFineEnabled()) {
-                    logger.fine("close stems: {0}",
-                            Glyphs.toString(glyph, other));
+                
+                if (pair.isVip()) {
+                    logger.info("{0} Alter pair: {1}", glyph.idString(), pair);
                 }
 
                 // "hide" the stems to not perturb evaluation
-                glyph.setShape(null);
-                other.setShape(null);
+                pair.left.setShape(null);
+                pair.right.setShape(null);
 
-                PairAdapter adapter = null;
+                PairAdapter adapter;
 
-                if (overlap <= maxNaturalOverlap) {
+                if (pair.overlap <= maxNaturalOverlap) {
                     logger.fine("NATURAL sign?");
-
                     adapter = naturalAdapter;
                 } else {
                     logger.fine("SHARP sign?");
-
                     adapter = sharpAdapter;
                 }
 
                 // Prepare the adapter with proper stem boxes
-                adapter.setStemBoxes(leftBox, rightBox);
+                adapter.setStemBoxes(pair.left.getBounds(),
+                        pair.right.getBounds());
 
                 Glyph compound = system.buildCompound(
-                        glyph,
+                        pair.left,
                         true,
                         system.getGlyphs(),
                         adapter);
 
                 if (compound != null) {
                     nb++;
-
                     logger.fine("{0}Compound #{1} rebuilt as {2}",
-                            system.getLogPrefix(), 
+                            system.getLogPrefix(),
                             compound.getId(), compound.getShape());
                 } else {
                     // Restore stem shapes
-                    glyph.setShape(Shape.STEM);
-                    other.setShape(Shape.STEM);
+                    pair.left.setShape(Shape.STEM);
+                    pair.right.setShape(Shape.STEM);
                 }
             }
         }
@@ -329,18 +311,90 @@ public class AlterPattern
      */
     private SortedSet<Glyph> retrieveShortStems ()
     {
-        final SortedSet<Glyph> stems = Glyphs.sortedSet();
+        final SortedSet<Glyph> shortStems = Glyphs.sortedSet();
 
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.isStem() && glyph.isActive()) {
                 // Check stem length
                 if (glyph.getBounds().height <= maxAlterStemLength) {
-                    stems.add(glyph);
+                    shortStems.add(glyph);
                 }
             }
         }
 
-        return stems;
+        return shortStems;
+    }
+
+    //---------------------//
+    // getNeighboringPairs //
+    //---------------------//
+    /**
+     * Retrieve all pairs of stems, transitively close to the provided
+     * seed, to pickup the most promising pair for natural/sharp alter.
+     *
+     * @param seed the stem seed
+     * @return the collection of stems pairs
+     */
+    private List<StemPair> getNeighboringPairs (Glyph seed)
+    {
+        List<StemPair> pairs = new ArrayList<>();
+
+        // First, come up with candidate stems
+        SortedSet<Glyph> neighbors = Glyphs.sortedSet(Arrays.asList(seed));
+        PixelRectangle box = seed.getBounds();
+
+        for (Glyph glyph : stems) {
+            if (glyph != seed && glyph.isStem()) {
+                PixelRectangle glyphBox = glyph.getBounds();
+                glyphBox.grow(maxCloseStemDx, 0);
+
+                if (box.intersects(glyphBox)) {
+                    neighbors.add(glyph);
+                    box.add(glyph.getBounds());
+                } else if (glyphBox.x > box.x + box.width) {
+                    break;
+                }
+            }
+        }
+
+        // Second, evaluate pairs and keep only the possible ones
+        for (Glyph left : neighbors) {
+            final PixelRectangle leftBox = left.getBounds();
+            final int leftX = leftBox.x + (leftBox.width / 2);
+
+            for (Glyph other : neighbors.tailSet(left)) {
+                if ((other == left)) {
+                    continue;
+                }
+
+                // Check horizontal distance
+                final PixelRectangle rightBox = other.getBounds();
+                final int rightX = rightBox.x + (rightBox.width / 2);
+                if (rightX - leftX > maxCloseStemDx) {
+                    continue;
+                }
+
+                // Check vertical overlap
+                final int commonTop = Math.max(leftBox.y, rightBox.y);
+                final int commonBot = Math.min(
+                        leftBox.y + leftBox.height,
+                        rightBox.y + rightBox.height);
+                final int overlap = commonBot - commonTop;
+
+                if (overlap < minCloseStemOverlap) {
+                    continue;
+                }
+
+                // Evaluate compatibility
+                double deltaLength = Math.abs(leftBox.height - rightBox.height);
+                double deltaRatio = deltaLength
+                                    / Math.max(leftBox.height, rightBox.height);
+                pairs.add(new StemPair(left, other, overlap, deltaRatio));
+            }
+        }
+
+        Collections.sort(pairs);
+        return pairs;
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -541,6 +595,77 @@ public class AlterPattern
             newBox.grow(maxCloseStemDx / 2, minCloseStemOverlap / 2);
 
             return newBox;
+        }
+    }
+
+    //----------//
+    // StemPair //
+    //----------//
+    /**
+     * Data about a possible pair of stems for a sharp/natural alter.
+     */
+    private class StemPair
+            implements Comparable<StemPair>, Vip
+    {
+
+        /** Stem on left side. */
+        final Glyph left;
+
+        /** Stem on right side. */
+        final Glyph right;
+
+        /** Vertical overlap. */
+        final int overlap;
+
+        /** Info about pair "distance" (to pick the best pair). */
+        final double distance;
+
+        boolean vip = false;
+
+        public StemPair (Glyph left,
+                     Glyph right,
+                     int overlap,
+                     double distance)
+        {
+            this.left = left;
+            this.right = right;
+            this.overlap = overlap;
+            this.distance = distance;
+
+            if (left.isVip() || right.isVip()) {
+                setVip();
+            }
+        }
+
+        /** To sort pairs. */
+        @Override
+        public int compareTo (StemPair that)
+        {
+            return Double.compare(this.distance, that.distance);
+        }
+
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder("{Stems");
+            sb.append(" #").append(left.getId());
+            sb.append(" #").append(right.getId());
+            sb.append(" over:").append(overlap);
+            sb.append(" dist:").append((float) distance);
+            sb.append("}");
+            return sb.toString();
+        }
+
+        @Override
+        public final boolean isVip ()
+        {
+            return vip;
+        }
+
+        @Override
+        public final void setVip ()
+        {
+            this.vip = true;
         }
     }
 }

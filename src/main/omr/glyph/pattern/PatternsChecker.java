@@ -11,11 +11,15 @@
 // </editor-fold>
 package omr.glyph.pattern;
 
+import javax.swing.SwingUtilities;
 import omr.glyph.Grades;
 
 import omr.log.Logger;
 
 import omr.sheet.SystemInfo;
+import omr.step.Step;
+import omr.step.Stepping;
+import omr.step.Steps;
 
 import omr.text.TextPattern;
 
@@ -77,11 +81,6 @@ public class PatternsChecker
             // Refresh ...
             new RefreshPattern(system, true),
             //
-            // Text patterns
-            //            new TextBorderPattern(system), // Glyphs -> Text
-            //            new TextGreedyPattern(system), // Glyphs -> Text
-            //            new TextAreaPattern(system), //   Glyphs -> Text
-            //            new SentencePattern(system), // Text -> sentences
             new TextPattern(system),
             ///new TextCheckerPattern(system), // Debug stuff
 
@@ -108,6 +107,19 @@ public class PatternsChecker
         StringBuilder sb = new StringBuilder();
 
         system.inspectGlyphs(Grades.symbolMinGrade, false);
+        
+//        final Step symbolsStep = Steps.valueOf(Steps.SYMBOLS);
+//
+//        // Continuing, update UI
+//        SwingUtilities.invokeLater(
+//                new Runnable()
+//                {
+//                    @Override
+//                    public void run ()
+//                    {
+//                        symbolsStep.displayUI(system.getSheet());
+//                    }
+//                });
 
         for (GlyphPattern pattern : patterns) {
             logger.fine("Starting {0}", pattern);
@@ -124,8 +136,8 @@ public class PatternsChecker
 
                 totalModifs += modifs;
             } catch (Throwable ex) {
-                logger.warning(system.getLogPrefix() + 
-                               " error running pattern " + pattern.name, ex);
+                logger.warning(system.getLogPrefix()
+                               + " error running pattern " + pattern.name, ex);
             }
         }
 

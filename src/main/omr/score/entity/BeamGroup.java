@@ -154,6 +154,12 @@ public class BeamGroup
             beam.determineGroup();
         }
 
+        // Close the connections between chords/stems and beams
+        for (TreeNode node : measure.getBeams()) {
+            Beam beam = (Beam) node;
+            beam.closeConnections();
+        }
+
         // Separate illegal beam groups
         BeamGroup.SplitOrder split;
 
@@ -177,12 +183,6 @@ public class BeamGroup
             for (BeamGroup group : measure.getBeamGroups()) {
                 logger.fine("   {0}", group);
             }
-        }
-
-        // Close the connections between chords/stems and beams
-        for (TreeNode node : measure.getBeams()) {
-            Beam beam = (Beam) node;
-            beam.closeConnections();
         }
 
         // Harmonize the slopes of all beams within each beam group
@@ -561,6 +561,10 @@ public class BeamGroup
         for (Chord chord : getChords()) {
             PixelRectangle chordBox = chord.getBox();
             for (Beam beam : beams) {
+                // Beam hooks are not concerned
+                if (beam.isHook()) {
+                    continue;
+                }
                 // Skip beams attached to this chord
                 if (beam.getChords().contains(chord)) {
                     continue;
@@ -574,10 +578,16 @@ public class BeamGroup
                     continue;
                 }
 
-                // Check vertical distance
+                // Check vertical gap
                 Line line = beam.getLine();
                 PixelPoint tail = chord.getTailLocation();
-                int tailDy = Math.abs(line.yAtX(tail.x) - tail.y);
+                int lineY = line.yAtX(tail.x);
+                int yOverlap = Math.min(lineY, chordBox.y + chordBox.height)
+                               - Math.max(lineY, chordBox.y);
+                if (yOverlap >= 0) {
+                    continue;
+                }
+                int tailDy = Math.abs(lineY - tail.y);
                 double normedDy = chord.getScale().pixelsToFrac(tailDy);
                 double maxChordDy = constants.maxChordDy.getValue();
                 if (normedDy > maxChordDy) {

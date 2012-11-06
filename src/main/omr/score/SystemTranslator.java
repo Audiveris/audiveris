@@ -400,8 +400,6 @@ public class SystemTranslator
             extends Translator
     {
 
-        /** Specific checker for slots in each measure. */
-        ///VARIANT: SlotBuilder slotBuilder = new SlotBuilder(system);
         //~ Constructors -------------------------------------------------------
         public ChordTranslator ()
         {
@@ -409,21 +407,6 @@ public class SystemTranslator
         }
 
         //~ Methods ------------------------------------------------------------
-        @Override
-        public void browse (Measure measure)
-        {
-            ///VARIANT: slotBuilder.check(measure);
-        }
-
-        @Override
-        public void completeSystem ()
-        {
-            super.completeSystem();
-
-            if (logger.isFineEnabled()) {
-                Slot.dumpSystemSlots(system);
-            }
-        }
 
         @Override
         public boolean isRelevant (Glyph glyph)
@@ -437,7 +420,6 @@ public class SystemTranslator
         @Override
         public void translate (Glyph glyph)
         {
-            ///VARIANT: Slot.populate(glyph, currentMeasure);
             Chord.populate(glyph, currentMeasure);
         }
     }
@@ -717,9 +699,8 @@ public class SystemTranslator
     {
 
         SlotBuilder slotBuilder = new SlotBuilder(system);
-        
-        //~ Constructors -------------------------------------------------------
 
+        //~ Constructors -------------------------------------------------------
         public MeasureTranslator ()
         {
             super("Measure");
@@ -731,7 +712,7 @@ public class SystemTranslator
         {
             // Check that a chord is not tied to different chords
             measure.checkTiedChords();
-            
+
             // Build slots and voices
             slotBuilder.buildSlots(measure);
 

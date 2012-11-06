@@ -41,6 +41,7 @@ import java.util.ListIterator;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import omr.util.HorizontalSide;
 
 /**
  * Class {@code Note} represents the characteristics of a note.
@@ -283,22 +284,54 @@ public class Note
     // createPack //
     //------------//
     /**
-     * Create a bunch of Note instances for one note pack
+     * Create a bunch of Note instances for one note pack glyph.
+     * A note pack is a glyph whose shape "contains" several notes, just like
+     * a NOTEHEAD_BLACK_3 shape represents a vertical sequence of 3 heads.
+     * Within a pack, notes are numbered by their vertical top down index,
+     * counted from 0.
      *
-     * @param chord the containing chord
-     * @param glyph the underlying glyph of the note pack
+     * <p>If we have 0 or 1 stem attached to the provided glyph, no specific
+     * test is needed, all the note instances are created on the provided chord.
+     * </p>
+     *
+     * <p>When the underlying glyph is stuck to 2 stems, we have to decide
+     * which notes go to one stem (the left chord), which notes go to the other
+     * (the right chord) and which notes go to both.
+     * Every stem gets at least the vertically closest note.
+     * At the end, to make sure that all notes from the initial pack are 
+     * actually assigned, we force the unassigned notes to the stem at hand.
+     * </p>
+     *
+     * <p>(On the diagram below with a note pack of 3, the two upper notes
+     * will go to the right stem, and the third note will go to the left stem).
+     * </p>
+     * <img src="doc-files/Note-Pack.png" alt="Pack of 3">
+     *
+     * <p>(On the diagram below with a note pack of 1, the "mirrored" note is 
+     * duplicated, one instance goes to the left stem and the other to the 
+     * right stem).
+     * </p>
+     * <img src="doc-files/Note-Pack-both.png" alt="Shared note">
+     *
+     * @param chord      the containing chord
+     * @param glyph      the underlying glyph of the note pack
+     * @param assigned   (input/output) the set of note indices assigned so far
+     * @param completing true if all unassigned notes must be assigned now
      */
     public static void createPack (Chord chord,
-                                   Glyph glyph)
+                                   Glyph glyph,
+                                   Set<Integer> assigned,
+                                   boolean completing)
     {
-
-        // When the glyph is stuck to 2 stems, we have to filter which items
-        // go on one stem and which items on the other.
-        // If we have 0 or 1 stem, no specific test, take all items
+        // Number of "notes" to create (not counting the duplicates)
         final int card = packCardOf(glyph.getShape());
+
         final Glyph stem = chord.getStem();
         PixelRectangle stemBox = null;
         Scale scale = chord.getScale();
+
+        // Variable stemSir exists only when we have a dual stem situation.
+        // It gives the direction of the stem at hand (-1:down, +1:up)
         Integer stemDir = null;
 
         if (glyph.getStemNumber() >= 2) {
@@ -306,7 +339,6 @@ public class Note
             stemBox.grow(
                     scale.toPixels(constants.maxStemDx),
                     scale.toPixels(constants.maxMultiStemDy));
-            // Stem dir (-1:down, +1:up)
             stemDir = Integer.signum(glyph.getAreaCenter().y - stem.getAreaCenter().y);
         }
 
@@ -319,7 +351,11 @@ public class Note
                 if ((stemDir == 1 && i > 0)
                     || (stemDir == -1 && i < card - 1)) {
                     if (!itemBox.intersects(stemBox)) {
-                        continue;
+                        // Stem check failed.
+                        // Force assignment if unassigned and this is the end.
+                        if (assigned.contains(i) || !completing) {
+                            continue;
+                        }
                     }
                 }
             }
@@ -328,6 +364,7 @@ public class Note
                     itemBox.x + (itemBox.width / 2),
                     itemBox.y + (itemBox.height / 2));
             glyph.addTranslation(new Note(chord, glyph, center, card, i));
+            assigned.add(i);
         }
     }
 
@@ -688,8 +725,8 @@ public class Note
     // getTypeDuration //
     //-----------------//
     /**
-     * Report the duration indicated by the shape of the note head (regardless
-     * of any beam, flag, dot or tuplet)
+     * Report the duration indicated by the shape of the note head
+     * (regardless of any beam, flag, dot or tuplet).
      *
      * @param shape the shape of the note head
      * @return the corresponding duration
@@ -790,10 +827,12 @@ public class Note
     // getNoteDuration //
     //-----------------//
     /**
-     * Report the duration of this note, based purely on its shape and the
-     * number of beams or flags. This does not take into account the potential
-     * augmentation dots, nor tuplets. The purpose of this method is to find out
-     * the name of the note ("eighth" versus "quarter" for example)
+     * Report the duration of this note, based purely on its shape and
+     * the number of beams or flags. 
+     * This does not take into account the potential augmentation dots, nor 
+     * tuplets.
+     * The purpose of this method is to find out the name of the note 
+     * ("eighth" versus "quarter" for example)
      *
      * @return the intrinsic note duration
      */
@@ -807,12 +846,12 @@ public class Note
 
             if (fbn > 0) {
                 /**
-                 * Beware, some mirrored notes exhibit a void note head because
-                 * the same head is shared by a half-note and at the same time
-                 * by a beam group.
+                 * Beware, some mirrored notes exhibit a void note head
+                 * because the same head is shared by a half-note and at
+                 * the same time by a beam group.
                  * In the case of the beam/flag side of the mirror, strictly
                  * speaking, the note head should be considered as black.
-                 * */
+                 */
                 if ((shape == NOTEHEAD_VOID) && (getMirroredNote() != null)) {
                     dur = getTypeDuration(NOTEHEAD_BLACK);
                 }
@@ -831,8 +870,8 @@ public class Note
     // getOctave //
     //-----------//
     /**
-     * Report the octave for this note, using the current clef, and the pitch
-     * position of the note
+     * Report the octave for this note, using the current clef, and the
+     * pitch position of the note.
      *
      * @return the related octave
      */
@@ -1053,8 +1092,8 @@ public class Note
     // getItemBox //
     //------------//
     /**
-     * Compute the bounding box of item with rank 'index' in the provided note
-     * pack glyph
+     * Compute the bounding box of item with rank 'index' in the 
+     * provided note pack glyph.
      */
     private static PixelRectangle getItemBox (Glyph glyph,
                                               int index,
@@ -1084,7 +1123,7 @@ public class Note
     //---------------//
     /**
      * Compute the center of item with rank 'index' in the provided note
-     * pack glyph
+     * pack glyph.
      */
     private static PixelPoint getItemCenter (Glyph glyph,
                                              int index,
@@ -1100,7 +1139,7 @@ public class Note
     //------------//
     // packCardOf //
     //------------//
-    private static int packCardOf (Shape shape)
+    public static int packCardOf (Shape shape)
     {
         switch (shape) {
         case NOTEHEAD_VOID_3:

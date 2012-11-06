@@ -35,6 +35,7 @@ import omr.util.TreeNode;
 
 import java.awt.Polygon;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -63,7 +64,7 @@ public class Chord
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(Chord.class);
 
-    /** Compare two chords by abscissa within a measure */
+    /** Compare two chords by abscissa within a measure. */
     public static final Comparator<TreeNode> byNodeAbscissa = new Comparator<TreeNode>()
     {
         @Override
@@ -77,19 +78,13 @@ public class Chord
         }
     };
 
-    /** Compare two chords by abscissa within a measure */
+    /** Compare two chords by abscissa within a measure. */
     public static final Comparator<Chord> byAbscissa = new Comparator<Chord>()
     {
         @Override
         public int compare (Chord c1,
                             Chord c2)
         {
-            if (c1.getHeadLocation() == null) {
-                logger.warning("{0} BINGO c1 {1}", c1.getMeasure().getContextString(), c1);
-            }
-            if (c2.getHeadLocation() == null) {
-                logger.warning("{0} BINGO c2 {1}", c1.getMeasure().getContextString(), c2);
-            }
             return Integer.signum(c1.getHeadLocation().x - c2.getHeadLocation().x);
         }
     };
@@ -124,8 +119,8 @@ public class Chord
     };
 
     /**
-     * Compare two notes of the same chord, ordered by increasing distance from
-     * chord head ordinate
+     * Compare two notes of the same chord, ordered by increasing
+     * distance from chord head ordinate.
      */
     public static Comparator<TreeNode> noteHeadComparator = new Comparator<TreeNode>()
     {
@@ -449,16 +444,15 @@ public class Chord
                                  Measure measure)
     {
         glyph.clearTranslations();
-
-        // TODO: All the chords that are created/linked to the provided glyph
-        // will necessarily be in the same time slot. We should record this now?
-        // Or later use Chord -> Notes -> Glyph(s) and check for common glyph
+        Set<Integer> assigned = new HashSet<>();
 
         // Allocate 1 chord per stem, per rest, per whole note
         if (glyph.getStemNumber() > 0) {
             // Beware of noteheads with 2 stems, we need to duplicate them
             // in order to actually have two logical chords.
+            // Sides are browsed LEFT, then RIGHT
             for (HorizontalSide side : HorizontalSide.values()) {
+                boolean completing = side == HorizontalSide.RIGHT;
                 Glyph stem = glyph.getStem(side);
 
                 if (stem != null) {
@@ -467,7 +461,7 @@ public class Chord
                         // At this point, we can have at most one chord per stem
                         // Join the chord(s)
                         for (Chord chord : chords) {
-                            Note.createPack(chord, glyph);
+                            Note.createPack(chord, glyph, assigned, completing);
                         }
 
                     } else {
@@ -475,14 +469,14 @@ public class Chord
                         Chord chord = new Chord(measure, null);
                         chord.setStem(stem);
                         stem.setTranslation(chord);
-                        Note.createPack(chord, glyph);
+                        Note.createPack(chord, glyph, assigned, completing);
                     }
                 }
             }
         } else {
-            // Create a new stem-less chord (rest or whole note)
+            // Create a brand-new stem-less chord (rest or whole note)
             Chord chord = new Chord(measure, null);
-            Note.createPack(chord, glyph);
+            Note.createPack(chord, glyph, assigned, true);
 
             // Keep track of measure rests (linked to no time slot)
             if (glyph.getShape().isMeasureRest()) {

@@ -189,8 +189,8 @@ public class TimeSignatureFixer
                 if (sig != null) {
                     try {
                         TimeRational timeRational = sig.getTimeRational();
-
-                        if (!timeRational.equals(bestRational)) {
+                        if (timeRational == null
+                            || !timeRational.equals(bestRational)) {
                             logger.info("{0}Measure#{1} {2}T{3} {4}->{5}",
                                     measure.getPage().getSheet().getLogPrefix(),
                                     measure.getPageId(),
@@ -200,9 +200,7 @@ public class TimeSignatureFixer
                         }
                     } catch (Exception ex) {
                         sig.addError(
-                                sig.getGlyphs().
-                                iterator().
-                                next(),
+                                sig.getGlyphs().iterator().next(),
                                 "Could not check time signature " + ex);
                     }
                 }

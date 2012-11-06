@@ -327,6 +327,7 @@ public abstract class AbstractEvaluationEngine
             } else {
                 if (!isCompatible(obj)) {
                     final String msg = "Obsolete user data for " + getName()
+                                       + " in " + file
                                        + ", trying default data";
                     logger.warning(msg);
                     JOptionPane.showMessageDialog(null, msg);
@@ -347,6 +348,7 @@ public abstract class AbstractEvaluationEngine
         } else {
             if (!isCompatible(obj)) {
                 final String msg = "Obsolete default data for " + getName()
+                                   + " in " + file
                                    + ", please retrain from scratch";
                 logger.warning(msg);
                 JOptionPane.showMessageDialog(null, msg);

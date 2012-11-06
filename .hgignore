@@ -17,6 +17,7 @@ audiveris-console\.exe$
 benches$
 build$
 dist$
+eval$
 jars$
 midi$
 nbproject/configs$

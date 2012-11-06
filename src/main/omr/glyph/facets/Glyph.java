@@ -46,7 +46,7 @@ public interface Glyph
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** For comparing glyphs according to their height */
+    /** For comparing glyphs according to their height. */
     public static final Comparator<Glyph> byHeight = new Comparator<Glyph>() {
         @Override
         public int compare (Glyph o1,
@@ -56,7 +56,7 @@ public interface Glyph
         }
     };
 
-    /** For comparing glyphs according to their decreasing weight */
+    /** For comparing glyphs according to their decreasing weight. */
     public static final Comparator<Glyph> byReverseWeight = new Comparator<Glyph>() {
         @Override
         public int compare (Glyph o1,
@@ -66,7 +66,7 @@ public interface Glyph
         }
     };
 
-    /** For comparing glyphs according to their id */
+    /** For comparing glyphs according to their id. */
     public static final Comparator<Glyph> byId = new Comparator<Glyph>() {
         @Override
         public int compare (Glyph o1,
@@ -76,8 +76,8 @@ public interface Glyph
         }
     };
 
-    /** For comparing glyphs according to their absolute abscissa,
-     * then ordinate, then id */
+    /** For comparing glyphs according to their abscissa,
+     * then ordinate, then id. */
     public static final Comparator<Glyph> byAbscissa = new Comparator<Glyph>() {
         @Override
         public int compare (Glyph o1,
@@ -111,8 +111,8 @@ public interface Glyph
         }
     };
 
-    /** For comparing glyphs according to their absolute ordinate,
-     * then abscissa, then id */
+    /** For comparing glyphs according to their ordinate,
+     * then abscissa, then id. */
     public static final Comparator<Glyph> ordinateComparator = new Comparator<Glyph>() {
         @Override
         public int compare (Glyph o1,

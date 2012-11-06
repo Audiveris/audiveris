@@ -170,7 +170,8 @@ public class ScoreChecker
 
             // No real beam found on the same chord, so let's discard the hook
             if (glyph.isVip() || logger.isFineEnabled()) {
-                logger.info("Removing false beam hook {0}", glyph.idString());
+                logger.info("{0} Removing false beam hook {1}", 
+                        beam.getMeasure().getContextString(), glyph.idString());
             }
 
             glyph.setShape(null);

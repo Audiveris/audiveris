@@ -246,7 +246,7 @@ public class Dynamics
         Shape shape = shapes.get(sig.toString());
 
         if (shape == null) {
-            addError("Invalid dynamics signature:" + sig);
+            addError("Invalid dynamics signature: " + sig);
         }
 
         return shape;

@@ -33,26 +33,28 @@ import java.util.Collections;
  * @author Hervé Bitteur
  */
 public abstract class SystemNode
-    extends PageNode
+        extends PageNode
 {
     //~ Enumerations -----------------------------------------------------------
 
     /** Relative vertical position with respect to the staves of the system
      * or part at hand */
-    public enum StaffPosition {
+    public enum StaffPosition
+    {
         //~ Enumeration constant initializers ----------------------------------
-
 
         /** Above the first real staff of this entity */
         ABOVE_STAVES,
-        /** Somewhere within the staves of this entity (system or part) */
-        WITHIN_STAVES, 
-        /** Below the last staff of this entity */
+        /** Somewhere
+         * within the staves of this entity (system or part) */
+        WITHIN_STAVES,
+        /** Below the last staff of
+         * this entity */
         BELOW_STAVES;
+
     }
 
     //~ Instance fields --------------------------------------------------------
-
     /** Containing system */
     @Navigable(false)
     private final ScoreSystem system;
@@ -64,12 +66,12 @@ public abstract class SystemNode
     protected PixelPoint center;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // SystemNode //
     //------------//
     /**
      * Create a SystemNode
+     *
      * @param container the (direct) container of the node
      */
     public SystemNode (PageNode container)
@@ -90,7 +92,6 @@ public abstract class SystemNode
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------//
     // accept //
     //--------//
@@ -105,6 +106,7 @@ public abstract class SystemNode
     //----------//
     /**
      * Register a system-based error in the ErrorsWindow
+     *
      * @param text the error message
      */
     public void addError (String text)
@@ -117,17 +119,18 @@ public abstract class SystemNode
     //----------//
     /**
      * Register a system-based error in the ErrorsWindow, with the related glyph
+     *
      * @param glyph the related glyph
-     * @param text the error message
+     * @param text  the error message
      */
-    public void addError (Glyph  glyph,
+    public void addError (Glyph glyph,
                           String text)
     {
         if ((getPage() != null) && (getPage()
-                                        .getSheet() != null)) {
+                .getSheet() != null)) {
             getPage()
-                .getSheet()
-                .addError(this, glyph, text);
+                    .getSheet()
+                    .addError(this, glyph, text);
         }
     }
 
@@ -136,6 +139,7 @@ public abstract class SystemNode
     //--------------------//
     /**
      * Compute the bounding center of a glyph
+     *
      * @param glyph the glyph
      * @return the glyph center
      */
@@ -149,6 +153,7 @@ public abstract class SystemNode
     //--------//
     /**
      * Report a copy of the bounding box of the entity.
+     *
      * @return the box
      */
     public PixelRectangle getBox ()
@@ -169,6 +174,7 @@ public abstract class SystemNode
     //-----------//
     /**
      * Report a copy of the center of this entity.
+     *
      * @return the center point
      */
     public PixelPoint getCenter ()
@@ -192,7 +198,7 @@ public abstract class SystemNode
     {
         StringBuilder sb = new StringBuilder(super.getContextString());
         sb.append("S")
-          .append(system.getId());
+                .append(system.getId());
 
         return sb.toString();
     }
@@ -202,6 +208,7 @@ public abstract class SystemNode
     //--------------//
     /**
      * Report the dimension of the entity
+     *
      * @return the entity dimension
      */
     public PixelDimension getDimension ()
@@ -222,6 +229,7 @@ public abstract class SystemNode
     //-----------//
     /**
      * Report the containing system
+     *
      * @return the containing system
      */
     public ScoreSystem getSystem ()
@@ -233,13 +241,14 @@ public abstract class SystemNode
     // computeBox //
     //------------//
     /**
-     * Compute the bounding box of this entity, wrt to the system top-left corner.
+     * Compute the bounding box of this entity, wrt to the system top-left
+     * corner.
      * Unless overridden, this method raises an exception.
      */
     protected void computeBox ()
     {
         throw new RuntimeException(
-            "computeBox() not implemented in " + getClass().getName());
+                "computeBox() not implemented in " + getClass().getName());
     }
 
     //---------------//
@@ -265,10 +274,12 @@ public abstract class SystemNode
     //------------------//
     /**
      * Compute the bounding box of a collection of glyphs
+     *
      * @param glyphs the collection of glyph components
      * @return the bounding box
      */
-    protected PixelRectangle computeGlyphsBox (Collection<?extends Glyph> glyphs)
+    protected PixelRectangle computeGlyphsBox (
+            Collection<? extends Glyph> glyphs)
     {
         if ((glyphs == null) || (getSystem() == null)) {
             return null;
@@ -292,16 +303,25 @@ public abstract class SystemNode
     //---------------------//
     /**
      * Compute the bounding center of a collection of glyphs
+     *
      * @param glyphs the collection of glyph components
      * @return the area center
      */
-    protected PixelPoint computeGlyphsCenter (Collection<?extends Glyph> glyphs)
+    protected PixelPoint computeGlyphsCenter (Collection<? extends Glyph> glyphs)
     {
+        if (glyphs == null) {
+            return null;
+        }
+
         PixelRectangle glyphsBox = computeGlyphsBox(glyphs);
 
+        if (glyphsBox == null) {
+            return null;
+        }
+        
         return new PixelPoint(
-            glyphsBox.x + (glyphsBox.width / 2),
-            glyphsBox.y + (glyphsBox.height / 2));
+                glyphsBox.x + (glyphsBox.width / 2),
+                glyphsBox.y + (glyphsBox.height / 2));
     }
 
     //-------//
@@ -321,6 +341,7 @@ public abstract class SystemNode
     //--------//
     /**
      * Assign the bounding box
+     *
      * @param box the bounding box
      */
     protected void setBox (PixelRectangle box)
@@ -333,6 +354,7 @@ public abstract class SystemNode
     //-----------//
     /**
      * Remember the center of this system node
+     *
      * @param center the system-based center of the system node
      */
     protected void setCenter (PixelPoint center)
