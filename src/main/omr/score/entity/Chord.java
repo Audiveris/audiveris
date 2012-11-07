@@ -35,7 +35,6 @@ import omr.util.TreeNode;
 
 import java.awt.Polygon;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -654,42 +653,6 @@ public class Chord
         }
     }
 
-//    //-----------//
-//    // compareTo //
-//    //-----------//
-//    /**
-//     * Compare this chord with another chord, to implement order based
-//     * first on slot abscissa, then on head ordinate within the same
-//     * slot, finally by id.
-//     *
-//     * @param otherChord the other chord
-//     * @return -1, 0, +1 according to the comparison result
-//     */
-//    @Override
-//    public int compareTo (Chord otherChord)
-//    {
-//        Slot otherSlot = otherChord.getSlot();
-//
-//        // Slot first
-//        if (slot == null) {
-//            if (otherSlot == null) {
-//                return Integer.signum(
-//                        getHeadLocation().y - otherChord.getHeadLocation().y);
-//            } else {
-//                return -1; // Wholes are before slot-based chords
-//            }
-//        } else {
-//            if (otherSlot == null) {
-//                return +1; // Wholes are before slot-based chords
-//            } else if (slot != otherSlot) {
-//                // Slot comparison
-//                return slot.compareTo(otherSlot);
-//            } else {
-//                // Chord comparison within the same slot
-//                return Slot.chordComparator.compare(this, otherChord);
-//            }
-//        }
-//    }
     //-----------//
     // duplicate //
     //-----------//
@@ -705,6 +668,7 @@ public class Chord
         // Beams are not copied
         Chord clone = new Chord(getMeasure(), slot);
         clone.stem = stem;
+        stem.addTranslation(clone);
 
         // Notes (we make a deep copy of each note)
         List<TreeNode> notesCopy = new ArrayList<>();
@@ -1593,14 +1557,25 @@ public class Chord
         for (TreeNode nn : getNotes()) {
             Note note = (Note) nn;
 
-            for (Slur slur : note.getSlurs()) {
+            // Use a COPY of slurs to allow concurrent deletion
+            for (Slur slur : new ArrayList<>(note.getSlurs())) {
                 if (tie.isRelevant(slur, note)) {
                     Note distantNote = tie.getDistantNote(slur);
 
-                    if ((distantNote != null)
-                        && (distantNote.getMeasure() == getMeasure())) {
-                        distantNotes.add(distantNote);
-                        distantChords.add(distantNote.getChord());
+                    if (distantNote != null) {
+                        // Safety check
+                        if (distantNote == note
+                            || distantNote.getChord() == this) {
+                            // This slur is a loop on the same note or chord!
+                            logger.warning("Looping slur detected {0}", slur);
+                            slur.destroy();
+                            continue;
+                        }
+                        
+                        if (distantNote.getMeasure() == getMeasure()) {
+                            distantNotes.add(distantNote);
+                            distantChords.add(distantNote.getChord());
+                        }
                     }
                 }
             }
@@ -1610,8 +1585,8 @@ public class Chord
             logger.fine("{0} Ch#{1} with multiple tied chords: {2}",
                     getContextString(), getId(), distantChords);
 
-            // Prepare the split of this chord, using the most distant note from
-            // chord head
+            // Prepare the split of this chord, using the most distant note 
+            // from chord head
             SortedSet<Note> tiedNotes = new TreeSet<>(noteHeadComparator);
 
             for (Note distantNote : distantNotes) {

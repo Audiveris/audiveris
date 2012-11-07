@@ -32,12 +32,9 @@ import omr.log.Logger;
 
 import omr.run.RunBoard;
 
-import omr.score.common.PixelDimension;
 import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 
 import omr.score.entity.Measure;
-import omr.score.entity.ScoreSystem;
 import omr.score.entity.Slot;
 
 import omr.score.ui.PageMenu;
@@ -301,7 +298,7 @@ public class SymbolsEditor
                 // Glyph mode
                 pointSelected(pt, movement);
             }
-
+            
             showPagePopup(pt);
         }
 

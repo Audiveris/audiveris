@@ -38,7 +38,6 @@ import omr.score.entity.Page;
 import omr.score.entity.Pedal;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Segno;
-import omr.score.entity.Slot;
 import omr.score.entity.Slur;
 import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
@@ -407,7 +406,6 @@ public class SystemTranslator
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public boolean isRelevant (Glyph glyph)
         {

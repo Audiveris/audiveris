@@ -280,7 +280,7 @@ public class BoundaryEditor
 
         public StartAction ()
         {
-            putValue(NAME, "Start");
+            putValue(NAME, "Start edition");
             putValue(SHORT_DESCRIPTION, "Start boundaries edition");
         }
 
@@ -315,7 +315,7 @@ public class BoundaryEditor
 
         public StopAction ()
         {
-            putValue(NAME, "Complete");
+            putValue(NAME, "Complete edition");
             putValue(SHORT_DESCRIPTION, "Complete ongoing edition");
         }
 

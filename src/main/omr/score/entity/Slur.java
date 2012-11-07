@@ -182,6 +182,30 @@ public class Slur
     }
 
     //~ Methods ----------------------------------------------------------------
+    //---------//
+    // destroy //
+    //---------//
+    /**
+     * Destroy this slur instance.
+     */
+    public void destroy ()
+    {
+        if (glyph != null) {
+            glyph.setShape(null);
+            glyph.clearTranslations();
+        }
+
+        if (leftNote != null) {
+            leftNote.removeSlur(this);
+        }
+
+        if (rightNote != null) {
+            rightNote.removeSlur(this);
+        }
+
+        getParent().getChildren().remove(this);
+    }
+
     //----------//
     // populate //
     //----------//
@@ -296,16 +320,23 @@ public class Slur
         if ((leftEnd != null) || (rightEnd != null)) {
             SystemPart part = (leftEnd != null) ? leftEnd.note.getPart()
                     : rightEnd.note.getPart();
-            Slur slur = new Slur(
-                    part,
-                    glyph,
-                    curve,
-                    below,
-                    (leftEnd != null) ? leftEnd.note : null,
-                    (rightEnd != null) ? rightEnd.note : null);
-            glyph.setTranslation(slur);
+            if (leftEnd != null && rightEnd != null
+                && leftEnd.note == rightEnd.note) {
+                // Slur looping on the same note!
+                logger.fine("Looping slur {0}", glyph.idString());
+                glyph.setShape(null);
+            } else {
+                Slur slur = new Slur(
+                        part,
+                        glyph,
+                        curve,
+                        below,
+                        (leftEnd != null) ? leftEnd.note : null,
+                        (rightEnd != null) ? rightEnd.note : null);
+                glyph.setTranslation(slur);
 
-            logger.finest(slur.toString());
+                logger.finest(slur.toString());
+            }
         } else {
             system.addError(glyph, "Slur with no embraced notes");
         }

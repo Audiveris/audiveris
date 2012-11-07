@@ -48,7 +48,6 @@ dev/material/*.jpg
 audiveris.bat
 manifest.mf
 train/core/*
-eval/backup-neural-network.xml
 www/docs/api
 nbproject/configs
 ocr/tessdata/*

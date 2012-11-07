@@ -77,41 +77,12 @@ public class SlurInspector
     private static final Logger logger = Logger.getLogger(SlurInspector.class);
 
     //~ Instance fields --------------------------------------------------------
+    //
     /** Compound adapter to extend slurs */
     private final SlurCompoundAdapter adapter;
 
-    // Cached system-dependent constants
-    private final int interline;
-
-    private final int minChunkWeight;
-
-    private final int minExtensionWeight;
-
-    private final double maxChunkThickness;
-
-    private final int slurBoxDx;
-
-    private final int slurBoxDy;
-
-    private final int targetHypot;
-
-    private final int targetLineHypot;
-
-    private final int targetLineTangentHypot;
-
-    private final int minSlurWidth;
-
-    private final int minExtensionHeight;
-
-    private final int largeSlurWidth;
-
-    private final double maxCircleDistance;
-
-    private final double minCircleRadius;
-
-    private final double maxCircleRadius;
-
-    private final double maxTangentSlope;
+    /** Scale-dependent parameters. */
+    private final Parameters params;
 
     //~ Constructors -----------------------------------------------------------
     //---------------//
@@ -128,24 +99,7 @@ public class SlurInspector
 
         adapter = new SlurCompoundAdapter(system);
 
-        // Compute scale-dependent parameters
-        interline = scale.getInterline();
-        minChunkWeight = scale.toPixels(constants.minChunkWeight);
-        minExtensionWeight = scale.toPixels(constants.minExtensionWeight);
-        maxChunkThickness = scale.toPixels(constants.maxChunkThickness);
-        slurBoxDx = scale.toPixels(constants.slurBoxDx);
-        slurBoxDy = scale.toPixels(constants.slurBoxDy);
-        targetHypot = scale.toPixels(constants.slurBoxHypot);
-        targetLineHypot = scale.toPixels(constants.slurLineBoxHypot);
-        targetLineTangentHypot = scale.toPixels(
-                constants.slurLineTangentBoxHypot);
-        minSlurWidth = scale.toPixels(constants.minSlurWidth);
-        minExtensionHeight = scale.toPixels(constants.minExtensionHeight);
-        maxCircleDistance = scale.toPixelsDouble(constants.maxCircleDistance);
-        minCircleRadius = scale.toPixels(constants.minCircleRadius);
-        maxCircleRadius = scale.toPixels(constants.maxCircleRadius);
-        largeSlurWidth = scale.toPixels(constants.largeSlurWidth);
-        maxTangentSlope = constants.maxTangentSlope.getValue();
+        params = new Parameters(system.getSheet().getScale());
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -208,7 +162,7 @@ public class SlurInspector
         Circle circle = new Circle(left, middle, right, xx, yy);
 
         // Switch to points fitting, if needed
-        if ((circle.getDistance() > maxCircleDistance)) {
+        if ((circle.getDistance() > params.maxCircleDistance)) {
             logger.fine("Using total fit for slur {0}", box);
             circle = new Circle(xx, yy);
         }
@@ -461,7 +415,7 @@ public class SlurInspector
     {
         if (null == getInvalidity(sections, null)) {
             // Build new slur glyph with sections kept
-            Glyph newGlyph = new BasicGlyph(interline);
+            Glyph newGlyph = new BasicGlyph(params.interline);
 
             for (Section section : sections) {
                 newGlyph.addSection(section, Glyph.Linking.LINK_BACK);
@@ -548,7 +502,7 @@ public class SlurInspector
                     double distance = circle.getDistance();
                     logger.fine("dist={0}", distance);
 
-                    if (distance <= ((lastDistance + maxCircleDistance) / 2)) {
+                    if (distance <= ((lastDistance + params.maxCircleDistance) / 2)) {
                         collected.add(section);
                         lastDistance = distance;
                         section.setProcessed(true);
@@ -590,7 +544,7 @@ public class SlurInspector
             for (Iterator<Section> it = isolated.iterator(); it.hasNext();) {
                 Section section = it.next();
                 PixelRectangle sectBox = section.getBounds();
-                sectBox.grow(slurBoxDx, slurBoxDy);
+                sectBox.grow(params.slurBoxDx, params.slurBoxDy);
 
                 if (sectBox.intersects(slurBox)) {
                     slurBox.add(sectBox);
@@ -766,7 +720,7 @@ public class SlurInspector
                     double distance = computeCircle(config).getDistance();
                     logger.fine("dist={0}", distance);
 
-                    if (distance <= ((lastDistance + maxCircleDistance) / 2)) {
+                    if (distance <= ((lastDistance + params.maxCircleDistance) / 2)) {
                         Glyph compound = system.buildTransientGlyph(config);
 
                         if (adapter.isCompoundValid(compound)) {
@@ -832,7 +786,7 @@ public class SlurInspector
             // Check minimum weight
             int weight = seed.getWeight();
 
-            if (weight < minChunkWeight) {
+            if (weight < params.minChunkWeight) {
                 break; // Since sections are sorted
             }
 
@@ -841,14 +795,14 @@ public class SlurInspector
                     seed.getMeanThickness(VERTICAL),
                     seed.getMeanThickness(HORIZONTAL));
 
-            if (thickness > maxChunkThickness) {
+            if (thickness > params.maxChunkThickness) {
                 continue;
             }
 
             Circle circle = computeCircle(Arrays.asList(seed));
             double dist = circle.getDistance();
 
-            if ((dist <= maxCircleDistance) && (dist < seedDist.value)) {
+            if ((dist <= params.maxCircleDistance) && (dist < seedDist.value)) {
                 seedDist.value = dist;
                 seedSection = seed;
             }
@@ -886,8 +840,8 @@ public class SlurInspector
         // Check distance to circle
         double dist = circle.getDistance();
 
-        if (dist > maxCircleDistance) {
-            return "distance " + (float) dist + " vs " + maxCircleDistance;
+        if (dist > params.maxCircleDistance) {
+            return "distance " + (float) dist + " vs " + params.maxCircleDistance;
         }
 
         // Check curve is computable
@@ -898,12 +852,12 @@ public class SlurInspector
         // Check radius 
         double radius = circle.getRadius();
 
-        if (radius < minCircleRadius) {
-            return "small radius " + (float) radius + " vs " + minCircleRadius;
+        if (radius < params.minCircleRadius) {
+            return "small radius " + (float) radius + " vs " + params.minCircleRadius;
         }
 
-        if (radius > maxCircleRadius) {
-            return "large radius " + (float) radius + " vs " + maxCircleRadius;
+        if (radius > params.maxCircleRadius) {
+            return "large radius " + (float) radius + " vs " + params.maxCircleRadius;
         }
 
         //        // Check curve bounds are rather close to slur box
@@ -987,82 +941,62 @@ public class SlurInspector
     {
         //~ Instance fields ----------------------------------------------------
 
-        //
         Scale.Fraction maxCircleDistance = new Scale.Fraction(
                 0.006,
                 "Maximum distance to approximating circle for a slur");
 
-        //
         Scale.Fraction minCircleRadius = new Scale.Fraction(
                 0.7,
                 "Minimum circle radius for a slur");
 
-        //
         Scale.Fraction maxCircleRadius = new Scale.Fraction(
                 100,
                 "Maximum circle radius for a slur");
 
-        //
-        Scale.Fraction largeSlurWidth = new Scale.Fraction(
-                30,
-                "Minimum width to detect a really large slur");
-
-        //
         Scale.AreaFraction minChunkWeight = new Scale.AreaFraction(
                 0.3, //0.5,
                 "Minimum weight of a chunk to be part of slur computation");
 
-        //
         Scale.AreaFraction minExtensionWeight = new Scale.AreaFraction(
                 0.01,
                 "Minimum weight of a glyph to be considered for slur extension");
 
-        //
         Scale.Fraction slurBoxDx = new Scale.Fraction(
                 0.7,
                 "Extension abscissa when looking for slur compound");
 
-        //
         Scale.Fraction slurBoxDy = new Scale.Fraction(
                 0.4,
                 "Extension ordinate when looking for slur compound");
 
-        //
         Scale.Fraction slurBoxHypot = new Scale.Fraction(
                 0.9,
                 "Extension length when looking for line-free slur compound");
 
-        //
         Scale.Fraction slurLineBoxHypot = new Scale.Fraction(
                 1.5,
                 "Extension length when looking for line-touching slur compound");
 
-        //
         Scale.Fraction slurLineTangentBoxHypot = new Scale.Fraction(
                 3.0,
                 "Extension length when looking for line-tangent slur compound");
 
-        //
         Scale.Fraction minSlurWidth = new Scale.Fraction(
                 2,
                 "Minimum width to use curve rather than line for extension");
 
-        //
         Scale.LineFraction minExtensionHeight = new Scale.LineFraction(
                 2,
                 "Minimum height for extension box, specified as LineFraction");
 
-        //
         Scale.LineFraction maxChunkThickness = new Scale.LineFraction(
                 1.8,
                 "Maximum mean thickness of a chunk to be part of slur computation");
 
-        //
         Constant.Ratio maxHeightRatio = new Constant.Ratio(
                 2.0,
                 "Maximum height ratio between curve height and glyph height");
 
-        //
         Constant.Double maxTangentSlope = new Constant.Double(
                 "tangent",
                 0.05,
@@ -1137,7 +1071,7 @@ public class SlurInspector
         public PixelRectangle computeReferenceBox ()
         {
             PixelRectangle seedBox = seed.getBounds();
-            boolean isShort = seedBox.width <= minSlurWidth;
+            boolean isShort = seedBox.width <= params.minSlurWidth;
             Point2D cp; // Related control point
 
             if (isShort) {
@@ -1180,23 +1114,22 @@ public class SlurInspector
             final int intPitch = (int) Math.rint(pitch);
 
             double target;
-            PixelRectangle rect = null;
 
             if ((Math.abs(intPitch) <= 4) && ((intPitch % 2) == 0)) {
                 // TODO: beware of vertical 
                 double slope = (ep.getY() - cp.getY()) / (ep.getX()
                                                           - cp.getX());
 
-                if (Math.abs(slope) <= maxTangentSlope) {
+                if (Math.abs(slope) <= params.maxTangentSlope) {
                     // This end touches a staff line, with horizontal tangent
-                    target = targetLineTangentHypot;
+                    target = params.targetLineTangentHypot;
                 } else {
                     // This end touches a staff line not horizontally
-                    target = targetLineHypot;
+                    target = params.targetLineHypot;
                 }
             } else {
                 // No staff line is involved, use smaller margins
-                target = targetHypot;
+                target = params.targetHypot;
             }
 
             Point2D cp2pt = new Point2D.Double(
@@ -1208,19 +1141,19 @@ public class SlurInspector
                     ep.getX() + (lambda * cp2pt.getX()),
                     ep.getY() + (lambda * cp2pt.getY()));
 
-            rect = new PixelRectangle(
+            PixelRectangle rect = new PixelRectangle(
                     (int) Math.rint(Math.min(ext.getX(), ep.getX())),
                     (int) Math.rint(Math.min(ext.getY(), ep.getY())),
                     (int) Math.rint(Math.abs(ext.getX() - ep.getX())),
                     (int) Math.rint(Math.abs(ext.getY() - ep.getY())));
 
             // Ensure minimum box height
-            if (rect.height < minExtensionHeight) {
+            if (rect.height < params.minExtensionHeight) {
                 rect.grow(
                         0,
                         1
                         + (int) Math.rint(
-                        (minExtensionHeight - rect.height) / 2.0));
+                        (params.minExtensionHeight - rect.height) / 2.0));
             }
 
             seed.addAttachment(((side == LEFT) ? "e^" : "^e"), rect);
@@ -1240,12 +1173,12 @@ public class SlurInspector
                     glyph.getMeanThickness(VERTICAL),
                     glyph.getMeanThickness(HORIZONTAL));
 
-            if (thickness > maxChunkThickness) {
+            if (thickness > params.maxChunkThickness) {
                 return false;
             }
 
             // Check minimum weight
-            if (glyph.getWeight() < minExtensionWeight) {
+            if (glyph.getWeight() < params.minExtensionWeight) {
                 return false;
             }
 
@@ -1296,13 +1229,13 @@ public class SlurInspector
                     section.getMeanThickness(VERTICAL),
                     section.getMeanThickness(HORIZONTAL));
 
-            if (thickness > maxChunkThickness) {
+            if (thickness > params.maxChunkThickness) {
                 return false;
             }
 
             if ((glyph == null) || !glyph.isKnown()) {
                 // Check section weight
-                if (section.getWeight() >= minExtensionWeight) {
+                if (section.getWeight() >= params.minExtensionWeight) {
                     return true;
                 } else {
                     return false;
@@ -1384,6 +1317,65 @@ public class SlurInspector
                         ptSegDistSq(
                         endPt);
             }
+        }
+    }
+
+    //------------//
+    // Parameters //
+    //------------//
+    private static class Parameters
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final int interline;
+
+        final int minChunkWeight;
+
+        final int minExtensionWeight;
+
+        final double maxChunkThickness;
+
+        final int slurBoxDx;
+
+        final int slurBoxDy;
+
+        final int targetHypot;
+
+        final int targetLineHypot;
+
+        final int targetLineTangentHypot;
+
+        final int minSlurWidth;
+
+        final int minExtensionHeight;
+
+        final double maxCircleDistance;
+
+        final double minCircleRadius;
+
+        final double maxCircleRadius;
+
+        final double maxTangentSlope;
+
+        //~ Constructors -------------------------------------------------------
+        public Parameters (Scale scale)
+        {
+            interline = scale.getInterline();
+            minChunkWeight = scale.toPixels(constants.minChunkWeight);
+            minExtensionWeight = scale.toPixels(constants.minExtensionWeight);
+            maxChunkThickness = scale.toPixels(constants.maxChunkThickness);
+            slurBoxDx = scale.toPixels(constants.slurBoxDx);
+            slurBoxDy = scale.toPixels(constants.slurBoxDy);
+            targetHypot = scale.toPixels(constants.slurBoxHypot);
+            targetLineHypot = scale.toPixels(constants.slurLineBoxHypot);
+            targetLineTangentHypot = scale.toPixels(
+                    constants.slurLineTangentBoxHypot);
+            minSlurWidth = scale.toPixels(constants.minSlurWidth);
+            minExtensionHeight = scale.toPixels(constants.minExtensionHeight);
+            maxCircleDistance = scale.toPixelsDouble(constants.maxCircleDistance);
+            minCircleRadius = scale.toPixels(constants.minCircleRadius);
+            maxCircleRadius = scale.toPixels(constants.maxCircleRadius);
+            maxTangentSlope = constants.maxTangentSlope.getValue();
         }
     }
 }

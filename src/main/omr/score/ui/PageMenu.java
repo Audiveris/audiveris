@@ -11,12 +11,16 @@
 // </editor-fold>
 package omr.score.ui;
 
+import omr.glyph.facets.Glyph;
 import omr.glyph.ui.SymbolMenu;
+import omr.glyph.ui.SymbolsController;
 
 import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
+import omr.score.entity.Chord;
 import omr.score.entity.Measure;
+import omr.score.entity.Note;
 import omr.score.entity.Page;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Slot;
@@ -27,9 +31,12 @@ import omr.sheet.SystemInfo;
 import omr.sheet.ui.BoundaryEditor;
 
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.JMenu;
@@ -65,12 +72,16 @@ public class PageMenu
 
     private final SlotMenu slotMenu = new SlotMenu();
 
+    private final ChordMenu chordMenu = new ChordMenu();
+
     private final SymbolMenu symbolMenu;
 
     private final BoundaryEditor boundaryEditor;
 
     // Context
     private int glyphNb = 0;
+
+    private int chordNb = 0;
 
     private ScoreSystem system;
 
@@ -145,7 +156,7 @@ public class PageMenu
                 } else {
                     slot = null;
                 }
-                
+
                 page.getSheet().getSymbolsEditor().highLight(measure, slot);
             }
 
@@ -157,6 +168,9 @@ public class PageMenu
 
         // Update symbol menu
         glyphNb = symbolMenu.updateMenu();
+
+        // Update chord menu
+        chordNb = chordMenu.updateMenu();
 
         // Update boundary menu
         boundaryEditor.updateMenu();
@@ -179,6 +193,11 @@ public class PageMenu
         // Slot
         if (slot != null) {
             popup.add(slotMenu.getMenu());
+        }
+
+        // Related chords?
+        if (chordNb > 0) {
+            popup.add(chordMenu.getMenu());
         }
 
         // Symbol
@@ -334,9 +353,6 @@ public class PageMenu
         private final JMenu menu;
 
         //~ Constructors -------------------------------------------------------
-        //-------------//
-        // MeasureMenu //
-        //-------------//
         /**
          * Create the popup menu
          *
@@ -460,6 +476,85 @@ public class PageMenu
         //                setEnabled(measure != null);
         //            }
         //        }
+    }
+
+    //-----------//
+    // ChordMenu //
+    //-----------//
+    private class ChordMenu
+            extends DynAction
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Concrete menu */
+        private final JMenuItem menu;
+
+        //~ Constructors -------------------------------------------------------
+        public ChordMenu ()
+        {
+            menu = new JMenuItem("Chord");
+            menu.setEnabled(false);
+        }
+
+        public JMenuItem getMenu ()
+        {
+            return menu;
+        }
+
+        @Override
+        public void update ()
+        {
+            if (chordNb > 0) {
+                menu.setText("Chords");
+            } else {
+                menu.setText("no chords");
+            }
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+           // Void
+        }
+
+        public int updateMenu ()
+        {
+            SymbolsController controller = page.getSheet().getSymbolsController();
+            Set<Glyph> glyphs = controller.getNest().getSelectedGlyphSet();
+            Set<Chord> chords = new HashSet<>();
+
+            for (Glyph glyph : glyphs) {
+                for (Object obj : glyph.getTranslations()) {
+                    if (obj instanceof Note) {
+                        Note note = (Note) obj;
+                        Chord chord = note.getChord();
+                        if (chord != null) {
+                            chords.add(chord);
+                        }
+                    } else if (obj instanceof Chord) {
+                        chords.add((Chord) obj);
+                    }
+                }
+            }
+
+            if (!chords.isEmpty()) {
+                List<Chord> chordList = new ArrayList<>(chords);
+                Collections.sort(chordList, Chord.byAbscissa);
+
+                StringBuilder sb = new StringBuilder();
+                for (Chord chord : chordList) {
+                    if (sb.length() > 0) {
+                        sb.append(", ");
+                    }
+                    sb.append("Chord #")
+                            .append(chord.getId());
+                }
+
+                menu.setText(sb.toString());
+            }
+
+            return chords.size();
+        }
     }
 
     //----------//

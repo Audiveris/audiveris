@@ -24,8 +24,8 @@ import java.util.Collections;
 import java.util.Set;
 
 /**
- * Class {@code SymbolMenu} defines the menu menu which is linked to
- * the current selection of either one or several glyphs.
+ * Class {@code SymbolMenu} defines the menu  which is linked to
+ * the current selection of one or several glyphs.
  *
  * @author Hervé Bitteur
  */
@@ -37,7 +37,6 @@ public class SymbolMenu
     // Links to partnering entities
     private final ShapeFocusBoard shapeFocus;
 
-    /////private final SymbolsController symbolsController;
     private final ShapeEvaluator evaluator;
 
     // To handle proposed compound shape

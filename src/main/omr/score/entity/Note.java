@@ -33,15 +33,14 @@ import omr.sheet.Scale;
 
 import omr.util.TreeNode;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import omr.util.HorizontalSide;
 
 /**
  * Class {@code Note} represents the characteristics of a note.
@@ -125,7 +124,7 @@ public class Note
     private Integer octave;
 
     /** Tie / slurs */
-    private List<Slur> slurs = new ArrayList<>();
+    private Set<Slur> slurs = new HashSet<>();
 
     /** Lyrics syllables (in different lines) */
     private SortedSet<LyricsItem> syllables;
@@ -388,6 +387,19 @@ public class Note
     public void addSlur (Slur slur)
     {
         slurs.add(slur);
+    }
+
+    //------------//
+    // removeSlur //
+    //------------//
+    /**
+     * Remove a slur from the collection of slurs connected to this note
+     *
+     * @param slur the slur to remove
+     */
+    public void removeSlur (Slur slur)
+    {
+        slurs.remove(slur);
     }
 
     //-------------//
@@ -941,9 +953,9 @@ public class Note
      *
      * @return a perhaps empty collection of slurs
      */
-    public List<Slur> getSlurs ()
+    public Set<Slur> getSlurs ()
     {
-        return slurs;
+        return Collections.unmodifiableSet(slurs);
     }
 
     //---------//

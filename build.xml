@@ -328,6 +328,8 @@
         <delete verbose="${verbose}">
             <fileset dir="${dist.dir}" 
                      includes="README.TXT"/>
+            <fileset dir="${basedir}" 
+                     includes="manifest.mf"/>
         </delete>
     </target>
 

@@ -182,7 +182,8 @@ public class Beam
 
             // Add interleaved chords if any, plus relevant chords of the group
             SortedSet<Chord> adds = Chord.lookupInterleavedChords(first, last);
-            adds.addAll(group.getChords());
+            adds.add(first);
+            adds.add(last);
 
             for (Chord chord : adds) {
                 if (chord == first) {

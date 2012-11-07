@@ -240,6 +240,11 @@ public class NestView
 
                 // Draw attachments, if any
                 glyph.renderAttachments(g);
+                
+                // Draw glyph line?
+                if (ViewParameters.getInstance().isLinePainting()) {
+                    glyph.renderLine(g);
+                }
             }
             
             g.setStroke(oldStroke);

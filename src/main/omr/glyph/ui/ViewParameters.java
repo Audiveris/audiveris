@@ -23,7 +23,8 @@ import java.awt.event.ActionEvent;
 
 /**
  * Class {@code ViewParameters} handles parameters for SceneView,
- * using properties referenced through their programmatic name to avoid typos.
+ * using properties referenced through their programmatic name to avoid
+ * typos.
  *
  * @author Hervé Bitteur
  */
