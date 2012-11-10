@@ -452,15 +452,16 @@ public abstract class Board
         {
             CellConstraints cst = new CellConstraints();
             FormLayout layout = new FormLayout(
-                    ((dumpButton != null)
-                     ? ("154dlu," + Panel.getFieldInterval() + ",35dlu") : "192dlu"),
+                    "152"
+                    + "dlu," + Panel.getFieldInterval() + ",35dlu",
                     "pref");
             PanelBuilder builder = new PanelBuilder(layout, this);
 
-            builder.addSeparator(title, cst.xy(1, 1));
-
             if (dumpButton != null) {
-                builder.add(dumpButton, cst.xy(3, 1));
+                builder.addSeparator(title, cst.xy(1, 1));
+                builder.add(dumpButton, cst.xyw(3, 1, 1));
+            } else {
+                builder.addSeparator(title, cst.xyw(1, 1, 3));
             }
         }
     }

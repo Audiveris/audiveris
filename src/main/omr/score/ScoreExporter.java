@@ -1362,7 +1362,7 @@ public class ScoreExporter
                     List<Chord> chords = beam.getChords();
                     if (chords.get(0) == chord) {
                         pmBeam.setValue(BeamValue.BEGIN);
-                    } else if (chords.get(chords.size() -1) == chord) {
+                    } else if (chords.get(chords.size() - 1) == chord) {
                         pmBeam.setValue(BeamValue.END);
                     } else {
                         pmBeam.setValue(BeamValue.CONTINUE);
@@ -1455,12 +1455,7 @@ public class ScoreExporter
         try {
             logger.fine("Visiting {0}", page);
 
-            if (isFirst.page == null) {
-                isFirst.page = true;
-            } else {
-                isFirst.page = false;
-            }
-
+            isFirst.page = (page == score.getFirstPage());
             isFirst.system = true;
             isFirst.measure = true;
             current.page = page;
@@ -1595,7 +1590,7 @@ public class ScoreExporter
                 defaults.setScaling(scaling);
                 scaling.setMillimeters(
                         new BigDecimal(
-                        "" + ((current.scale.getInterline() * 25.4 * 4) / 300))); // Assuming 300 DPI
+                        String.format("%.4f", (current.scale.getInterline() * 25.4 * 4) / 300))); // Assuming 300 DPI
                 scaling.setTenths(new BigDecimal(40));
 
                 // [Defaults]/PageLayout (using first page)
@@ -1838,7 +1833,7 @@ public class ScoreExporter
                             pmSlur.setNumber(num);
 
                             logger.fine("{0} first use {1} -> {2}",
-                                    current.note.getContextString(), 
+                                    current.note.getContextString(),
                                     num, slurNumbers.toString());
 
                             break;
@@ -2776,7 +2771,7 @@ public class ScoreExporter
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** We are writing the first score scorePart of the score */
+        /** We are writing the first score part of the score */
         boolean scorePart;
 
         /** We are writing the first page of the score */

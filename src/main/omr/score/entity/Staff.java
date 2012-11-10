@@ -50,7 +50,7 @@ public class Staff
     private StaffInfo info;
 
     /** Id of staff in containing system part */
-    private int id;
+    private final int id;
 
     /** Flag an artificial staff */
     private boolean dummy;

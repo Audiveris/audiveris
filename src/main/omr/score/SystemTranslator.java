@@ -382,7 +382,9 @@ public class SystemTranslator
         @Override
         public boolean isRelevant (Glyph glyph)
         {
-            return glyph.getShape() == Shape.BRACE;
+            Shape shape = glyph.getShape();
+            
+            return shape == Shape.BRACE || shape == Shape.BRACKET;
         }
 
         @Override

@@ -313,7 +313,7 @@ public class TextScanner
                 "Maximum glyph width");
 
         Scale.Fraction maxGlyphHeight = new Scale.Fraction(
-                4,
+                5,
                 "Maximum glyph height");
 
     }

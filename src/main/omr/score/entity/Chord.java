@@ -1567,7 +1567,7 @@ public class Chord
                         if (distantNote == note
                             || distantNote.getChord() == this) {
                             // This slur is a loop on the same note or chord!
-                            logger.warning("Looping slur detected {0}", slur);
+                            logger.info("Looping slur detected {0}", slur);
                             slur.destroy();
                             continue;
                         }

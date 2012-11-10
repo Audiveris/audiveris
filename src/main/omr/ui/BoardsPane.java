@@ -39,11 +39,12 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 
 /**
- * Class {@code BoardsPane} defines a view on a set of user {@link Board}
- * instances, where data related to current point, run, section, glyph, etc
- * can be displayed in dedicated boards.
+ * Class {@code BoardsPane} defines a view on a set of user {@link
+ * Board} instances, where data related to current point, run, section,
+ * glyph, etc can be displayed in dedicated boards.
  *
- * <p>There is one BoardsPane instance for each view of the same sheet.
+ * <p>There is one BoardsPane instance for each view of the same sheet,
+ * each with its own collection of board instances.
  *
  * @author Hervé Bitteur
  */
@@ -55,7 +56,6 @@ public class BoardsPane
     private static final Logger logger = Logger.getLogger(BoardsPane.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** The concrete UI component */
     private final Panel component;
 
@@ -69,12 +69,12 @@ public class BoardsPane
     private MouseAdapter mouseAdapter = new MyMouseAdapter();
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // BoardsPane //
     //------------//
     /**
      * Create a BoardsPane, with initial boards.
+     *
      * @param boards the initial collection of boards
      */
     public BoardsPane (List<Board> boards)
@@ -99,6 +99,7 @@ public class BoardsPane
     //------------//
     /**
      * Create a BoardsPane, with initial boards.
+     *
      * @param boards the initial collection of boards
      */
     public BoardsPane (Board... boards)
@@ -107,19 +108,18 @@ public class BoardsPane
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // addBoard //
     //----------//
     /**
      * Dynamically add a board into BoardsPane structure.
+     *
      * @param board the board instance to add
      */
     public void addBoard (Board board)
     {
         // Avoid duplicates
         if (getBoard(board.getName()) != null) {
-            ///logger.info("Duplicate " + board);
             return;
         }
 
@@ -133,7 +133,8 @@ public class BoardsPane
     // connect //
     //---------//
     /**
-     * Invoked when the boardsPane has been selected.
+     * Invoked when the boardsPane has been selected, in order to 
+     * connect all the contained boards to their inputs.
      */
     public void connect ()
     {
@@ -164,6 +165,7 @@ public class BoardsPane
     //--------------//
     /**
      * Report the UI component.
+     *
      * @return the concrete component
      */
     public JComponent getComponent ()
@@ -176,6 +178,7 @@ public class BoardsPane
     //---------//
     /**
      * Report the unique name for this boards pane.
+     *
      * @return the declared name
      */
     public String getName ()
@@ -188,6 +191,7 @@ public class BoardsPane
     //-------------//
     /**
      * Dynamically remove a board from BoardsPane structure.
+     *
      * @param board the board instance to remove
      */
     public void removeBoard (Board board)
@@ -201,6 +205,7 @@ public class BoardsPane
     //---------//
     /**
      * Assign the unique name for this boards pane.
+     *
      * @param name the assigned name
      */
     public void setName (String name)
@@ -219,8 +224,8 @@ public class BoardsPane
         sb.append(getClass().getSimpleName());
 
         sb.append(" ")
-          .append(name)
-          .append(" [");
+                .append(name)
+                .append(" [");
 
         boolean first = true;
 
@@ -253,7 +258,7 @@ public class BoardsPane
     {
         connect();
 
-        int       count = component.getComponentCount();
+        int count = component.getComponentCount();
         Component comp = component.getComponent(count - 1);
         component.remove(comp);
         component.add(defineLayout());
@@ -267,9 +272,9 @@ public class BoardsPane
     private JPanel defineLayout ()
     {
         // Prepare layout elements
-        final String  panelInterline = Panel.getPanelInterline();
+        final String panelInterline = Panel.getPanelInterline();
         StringBuilder sbr = new StringBuilder();
-        boolean       first = true;
+        boolean first = true;
 
         for (Board board : boards) {
             if (board.isSelected()) {
@@ -277,8 +282,8 @@ public class BoardsPane
                     first = false;
                 } else {
                     sbr.append(", ")
-                       .append(panelInterline)
-                       .append(", ");
+                            .append(panelInterline)
+                            .append(", ");
                 }
 
                 sbr.append("pref");
@@ -287,7 +292,7 @@ public class BoardsPane
 
         FormLayout layout = new FormLayout("pref", sbr.toString());
 
-        Panel      panel = new Panel();
+        Panel panel = new Panel();
         panel.setNoInsets();
 
         PanelBuilder builder = new PanelBuilder(layout, panel);
@@ -318,7 +323,7 @@ public class BoardsPane
     {
         for (Board b : boards) {
             if (b.getName()
-                 .equals(title)) {
+                    .equals(title)) {
                 return b;
             }
         }
@@ -327,7 +332,6 @@ public class BoardsPane
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //----------------//
     // MyMouseAdapter //
     //----------------//
@@ -335,8 +339,8 @@ public class BoardsPane
      * Subclassed to offer mouse interaction.
      */
     private class MyMouseAdapter
-        extends MouseAdapter
-        implements ItemListener
+            extends MouseAdapter
+            implements ItemListener
     {
         //~ Methods ------------------------------------------------------------
 
@@ -345,13 +349,14 @@ public class BoardsPane
         //------------------//
         /**
          * Triggered from popup menu.
+         *
          * @param e menu item event
          */
         @Override
         public void itemStateChanged (ItemEvent e)
         {
             JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getItem();
-            Board             board = getBoard(item.getText());
+            Board board = getBoard(item.getText());
             board.setSelected(item.getState());
         }
 
@@ -360,6 +365,7 @@ public class BoardsPane
         //--------------//
         /**
          * Triggered when mouse is pressed.
+         *
          * @param e mouse event
          */
         @Override
@@ -377,12 +383,12 @@ public class BoardsPane
 
                 for (Board board : boards) {
                     JMenuItem item = new JCheckBoxMenuItem(
-                        board.getName(),
-                        board.isSelected());
+                            board.getName(),
+                            board.isSelected());
                     item.addItemListener(this);
                     item.setToolTipText(
-                        board.isSelected() ? "Deselect this board?"
-                                                : "Select this board?");
+                            board.isSelected() ? "Deselect this board?"
+                            : "Select this board?");
                     popup.add(item);
                 }
 

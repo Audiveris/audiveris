@@ -60,23 +60,14 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class {@code GlyphBoard} defines a UI board dedicated to the display of
- * {@link Glyph} information, with several spinners : <ol>
+ * Class {@code GlyphBoard} defines a UI board dedicated to the display
+ * of {@link Glyph} information.
  *
- * <li>The universal <b>globalSpinner</b>, to browse through <i>all</i> glyphs
+ * <p>The universal <b>globalSpinner</b> addresses <i>all</i> glyphs
  * currently defined in the nest (note that glyphs can be dynamically created or
- * destroyed). This includes all the various (vertical) sticks (which are
- * special glyphs) built during the previous steps, for example the bar
- * lines. For other instances (such as for HorizontalsBuilder), these would be
- * horizontal sticks.
+ * destroyed).
  *
- * <li>The <b>knownSpinner</b> for known symbols (that is with a defined shape).
- * This spinner is a subset of the globalSpinner.
- *
- * </ol>The ids handled by each of these spinners can dynamically vary, since
- * glyphs can change their status.
- *
- * <p>Any spinner can also be used to select a glyph by directly entering the
+ * <p>The spinner can be used to select a glyph by directly entering the
  * glyph id value into the spinner field
  *
  * @author Hervé Bitteur

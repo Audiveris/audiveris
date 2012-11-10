@@ -161,7 +161,9 @@ public class ClefPattern
             if (!impacted.isEmpty()) {
                 // Rebuild the larger glyph
                 Glyph larger = system.buildCompound(impacted);
-                logger.fine("Rebuilt stem-segmented {0}", larger.idString());
+                if (larger != null) {
+                    logger.fine("Rebuilt stem-segmented {0}", larger.idString());
+                }
 
                 // Recompute the set of intersected glyphs
                 glyphs = system.lookupIntersectedGlyphs(inner);

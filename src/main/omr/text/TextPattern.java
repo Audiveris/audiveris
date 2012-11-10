@@ -53,7 +53,7 @@ public class TextPattern
     public TextPattern (
             SystemInfo system)
     {
-        super("text", system);
+        super("Text", system);
     }
 
     //~ Methods ----------------------------------------------------------------

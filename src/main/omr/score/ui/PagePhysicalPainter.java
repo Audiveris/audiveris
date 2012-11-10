@@ -53,8 +53,11 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Stroke;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ConcurrentModificationException;
+import omr.math.Line;
+import omr.math.LineUtilities;
 
 /**
  * Class {@code PagePhysicalPainter} paints the recognized page
@@ -117,8 +120,8 @@ public class PagePhysicalPainter
         for (Chord chord : slot.getChords()) {
             visit(chord);
             for (TreeNode tn : chord.getNotes()) {
-                 Note note = (Note) tn;
-                 visit(note);
+                Note note = (Note) tn;
+                visit(note);
             }
         }
 
@@ -241,8 +244,8 @@ public class PagePhysicalPainter
             Point2D botCenter = botLine.verticalIntersection(bar);
 
             if (shape != null) {
-            BarPainter barPainter = BarPainter.getBarPainter(shape);
-            barPainter.draw(g, topCenter, botCenter, part);
+                BarPainter barPainter = BarPainter.getBarPainter(shape);
+                barPainter.draw(g, topCenter, botCenter, part);
             } else {
                 barline.addError("Barline with no recognized shape");
             }
@@ -598,8 +601,7 @@ public class PagePhysicalPainter
     @Override
     protected PixelRectangle braceBox (SystemPart part)
     {
-        PixelRectangle braceBox = part.getBrace()
-                .getBounds();
+        PixelRectangle braceBox = part.getBrace().getBounds();
 
         // Cheat a little, so that top and bottom are aligned with part extrema
         int leftX = braceBox.x + braceBox.width;
@@ -615,6 +617,31 @@ public class PagePhysicalPainter
         braceBox.height = bot - top + 1;
 
         return braceBox;
+    }
+
+    //-------------//
+    // bracketLine //
+    //-------------//
+    @Override
+    protected Line2D bracketLine (SystemPart part)
+    {
+        // Driving line of the brace
+        final Line line = part.getBrace().getLine();
+
+        // We use the left points of the embraced staves to adjust ordinates
+        // This assumes we are close to left side (or the slope is small).
+        // Another way would be to impose the slope to the bracket line
+        // as we do with barlines.
+        Point2D top = part.getFirstStaff().getInfo()
+                .getFirstLine().getLeftPoint();
+        Point2D bot = part.getLastStaff().getInfo()
+                .getLastLine().getLeftPoint();
+
+        return new Line2D.Double(
+                new Point2D.Double(
+                line.xAtY(top.getY()), top.getY()),
+                new Point2D.Double(
+                line.xAtY(bot.getY()), bot.getY()));
     }
 
     //--------------//

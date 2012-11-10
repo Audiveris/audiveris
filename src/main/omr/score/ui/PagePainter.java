@@ -34,6 +34,7 @@ import omr.score.entity.Coda;
 import omr.score.entity.Dynamics;
 import omr.score.entity.Fermata;
 import omr.score.entity.KeySignature;
+import omr.score.entity.LyricsItem;
 import omr.score.entity.MeasureElement;
 import omr.score.entity.Note;
 import omr.score.entity.Ornament;
@@ -54,6 +55,9 @@ import omr.score.visitor.AbstractScoreVisitor;
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
+import omr.text.TextLine;
+import omr.text.TextWord;
+
 import omr.ui.symbol.Alignment;
 import static omr.ui.symbol.Alignment.*;
 import static omr.ui.symbol.Alignment.Horizontal.*;
@@ -63,6 +67,7 @@ import omr.ui.symbol.OmrFont;
 import omr.ui.symbol.ShapeSymbol;
 import omr.ui.symbol.Symbols;
 import static omr.ui.symbol.Symbols.*;
+import omr.ui.symbol.TextFont;
 import omr.ui.util.UIUtilities;
 
 import omr.util.HorizontalSide;
@@ -80,13 +85,10 @@ import java.awt.Stroke;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Line2D;
 import java.util.ConcurrentModificationException;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import omr.text.TextWord;
-import omr.score.entity.LyricsItem;
-import omr.text.TextLine;
-import omr.ui.symbol.TextFont;
 
 /**
  * Class {@code PagePainter} is an abstract class that defines common
@@ -584,9 +586,9 @@ public abstract class PagePainter
             if (stem != null) {
                 // Note is attached to a stem, link note display to the stem
                 paint(shape,
-                      noteLocation(note),
-                      (center.x < chord.getTailLocation().x) ? MIDDLE_RIGHT
-                      : MIDDLE_LEFT);
+                        noteLocation(note),
+                        (center.x < chord.getTailLocation().x) ? MIDDLE_RIGHT
+                        : MIDDLE_LEFT);
             } else {
                 // Standard display
                 paint(shape.getPhysicalShape(), noteLocation(note));
@@ -597,8 +599,8 @@ public abstract class PagePainter
 
             if (accid != null) {
                 paint(accid.getShape(),
-                      accidentalLocation(note, accid),
-                      BASELINE_CENTER);
+                        accidentalLocation(note, accid),
+                        BASELINE_CENTER);
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
@@ -664,7 +666,7 @@ public abstract class PagePainter
                     if (voice == null) {
                         voice = chord.getVoice();
                     } else if ((chord.getVoice() != null)
-                            && (chord.getVoice() != voice)) {
+                               && (chord.getVoice() != voice)) {
                         ///slur.addError("Tie with different voices");
                     }
                 }
@@ -706,22 +708,45 @@ public abstract class PagePainter
                 return false;
             }
 
-            // Draw a brace?
+            // Draw a brace/bracket?
             if (part.getBrace() != null) {
-                // We have nice half braces in MusicalSymbols font
-                final PixelRectangle box = braceBox(part);
-                final PixelPoint center = box.getCenter();
-                final PixelDimension halfDim = new PixelDimension(
-                        box.width,
-                        box.height / 2);
-                paint(
-                        musicFont.layout(SYMBOL_BRACE_UPPER_HALF, halfDim),
-                        center,
-                        BOTTOM_CENTER);
-                paint(
-                        musicFont.layout(SYMBOL_BRACE_LOWER_HALF, halfDim),
-                        center,
-                        TOP_CENTER);
+                if (part.getBrace().getShape() == Shape.BRACE) {
+                    // We have nice half braces in MusicalSymbols font
+                    final PixelRectangle box = braceBox(part);
+                    final PixelPoint center = box.getCenter();
+                    final PixelDimension halfDim = new PixelDimension(
+                            box.width,
+                            box.height / 2);
+                    paint(
+                            musicFont.layout(SYMBOL_BRACE_UPPER_HALF, halfDim),
+                            center,
+                            BOTTOM_CENTER);
+                    paint(
+                            musicFont.layout(SYMBOL_BRACE_LOWER_HALF, halfDim),
+                            center,
+                            TOP_CENTER);
+                } else if (part.getBrace().getShape() == Shape.BRACKET) {
+                    TextLayout trunk = musicFont.layout(Shape.THICK_BARLINE);
+                    double width = trunk.getBounds().getWidth();
+                    double barWidth = 0.5 * part.getScale().getInterline();
+                    AffineTransform at = AffineTransform.getScaleInstance(barWidth/width, 1);
+                    
+                    final Line2D line = bracketLine(part);
+                    PixelPoint topLeft = new PixelPoint(
+                            (int) Math.rint(line.getX1() - barWidth / 2),
+                            (int) Math.rint(line.getY1()));
+                    PixelPoint botLeft = new PixelPoint(
+                            (int) Math.rint(line.getX2() - barWidth / 2),
+                            (int) Math.rint(line.getY2()));
+                    
+                    TextLayout upper = musicFont.layout(SYMBOL_BRACKET_UPPER_SERIF.getString(), at);
+                    TextLayout lower = musicFont.layout(SYMBOL_BRACKET_LOWER_SERIF.getString(), at);
+                    paint(upper, topLeft, BASELINE_LEFT);
+                    paint(lower, botLeft, BASELINE_LEFT);
+                    
+                    BarPainter barPainter = BarPainter.getBarPainter(Shape.THICK_BARLINE);
+                    barPainter.draw(g, line.getP1(), line.getP2(), part);
+                }
             }
 
             // Render the part starting barline, if any
@@ -789,12 +814,12 @@ public abstract class PagePainter
         // Use precise word font size for long enough words
         // But prefer mean line font size for too short words (and lyrics)
         Float fontSize = (word.getLength() > 1 && !word.getTextLine().isLyrics())
-                         ? word.getPreciseFontSize()
-                         : word.getTextLine().getMeanFontSize();
+                ? word.getPreciseFontSize()
+                : word.getTextLine().getMeanFontSize();
 
         Font font = (fontSize != null && word.getFontInfo() != null)
-                    ? new TextFont(word.getFontInfo()).deriveFont(fontSize)
-                    : TextFont.baseTextFont;
+                ? new TextFont(word.getFontInfo()).deriveFont(fontSize)
+                : TextFont.baseTextFont;
 
         FontRenderContext frc = g.getFontRenderContext();
         TextLayout layout = new TextLayout(word.getValue(), font, frc);
@@ -914,6 +939,18 @@ public abstract class PagePainter
      */
     protected abstract PixelRectangle braceBox (SystemPart part);
 
+    //-------------//
+    // bracketLine //
+    //-------------//
+    /**
+     * Report the vertical driving line (barline) to be used for a
+     * given bracket
+     *
+     * @param part the related part
+     * @return the line to drive the painting
+     */
+    protected abstract Line2D bracketLine (SystemPart part);
+
     //--------------//
     // noteLocation //
     //--------------//
@@ -941,7 +978,7 @@ public abstract class PagePainter
     {
         FontRenderContext frc = g.getFontRenderContext();
         Font font = (fat == null) ? basicFont
-                    : basicFont.deriveFont(fat);
+                : basicFont.deriveFont(fat);
 
         return new TextLayout(str, font, frc);
     }
@@ -1229,5 +1266,6 @@ public abstract class PagePainter
         final Scale.Fraction keySigItemDx = new Scale.Fraction(
                 1.1,
                 "dx between items in a key signature");
+
     }
 }

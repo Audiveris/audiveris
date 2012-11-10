@@ -44,7 +44,7 @@ public class BracketSymbol
     // BracketSymbol //
     //---------------//
     /**
-     * Create a BracketSymbol (which is mad of upper and lower parts)
+     * Create a BracketSymbol (which is made of upper and lower parts)
      *
      * @param isIcon true for an icon
      */

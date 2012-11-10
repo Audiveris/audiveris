@@ -818,25 +818,21 @@ public class Slur
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** Abscissa extension when looking for embraced notes */
         Scale.Fraction areaDx = new Scale.Fraction(
                 1.7,
                 "Abscissa extension when looking for embraced notes");
 
-        /** Abscissa margin when looking for embraced notes */
-        Scale.Fraction areaXMargin = new Scale.Fraction(
-                0.5,
-                "Abscissa margin when looking for embraced notes");
-
-        /** Ordinate extension when looking for embraced notes */
         Scale.Fraction areaDy = new Scale.Fraction(
-                5,
+                5.5,
                 "Ordinate extension when looking for embraced notes");
 
-        /** Maximum difference in vertical position between connecting slurs */
+        Scale.Fraction areaXMargin = new Scale.Fraction(
+                0.5,
+                "Abscissa inside margin when looking for embraced notes");
+
         Scale.Fraction maxDeltaY = new Scale.Fraction(
                 4,
-                "Maximum difference in vertical position between connecting slurs");
+                "Maximum difference in interlines between connecting slurs");
 
     }
 

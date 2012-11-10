@@ -1132,7 +1132,7 @@ public class TextBuilder
                 "Maximum ratio between ocr aspect and glyph aspect");
 
         Scale.Fraction maxFontSize = new Scale.Fraction(
-                5.0,
+                7.0,
                 "Max font size wrt interline");
 
         Scale.Fraction maxLyricsDy = new Scale.Fraction(

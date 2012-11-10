@@ -77,7 +77,7 @@ public class SystemPart
     /** The corresponding ScorePart */
     private ScorePart scorePart;
 
-    /** A brace attached if any */
+    /** A brace (or bracket) attached if any */
     private Glyph brace;
 
     /** Specific child : sequence of staves that belong to this system part */
@@ -338,7 +338,6 @@ public class SystemPart
                                 nextClef);
                     }
 
-                    isFirstMeasure = false;
                 } else {
                     dummyStaff = (Staff) dummyPart.getStaves().get(staffIndex);
                 }
@@ -368,6 +367,8 @@ public class SystemPart
                     nextPart.getBox().y,
                     measure.getBox().width,
                     nextPart.getBox().height));
+            
+            isFirstMeasure = false;
         }
 
         if (logger.isFineEnabled()) {
@@ -844,7 +845,7 @@ public class SystemPart
     // setBrace //
     //----------//
     /**
-     * @param brace the brace to set
+     * @param brace the brace (or bracket) to set
      */
     public void setBrace (Glyph brace)
     {
