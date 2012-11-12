@@ -153,7 +153,7 @@ public class SlurInspector
                 middle.getX(),
                 left.getY() + ((middle.getX() - left.getX()) * slope));
         double dy = middle.getY() - inter.getY();
-        double dx = -dy * slope;
+        double dx = -dy * (slope / (1 + slope * slope));
         middle = getSlurPointNearX(
                 box.x + (box.width / 2) + (int) Math.rint(dx),
                 sections,
@@ -1109,7 +1109,12 @@ public class SlurInspector
                 ep = endPt; // Better than nothing
             }
 
-            final StaffInfo staff = system.getStaffAt(endPt);
+            StaffInfo staff = system.getStaffAt(endPt);
+            if (staff == null) {
+                // Weird case, where the slur crosses system boundaries
+                Point2D otherEnd = (side == LEFT) ? curve.getP2() : curve.getP1();
+                staff = system.getStaffAt(otherEnd);
+            }
             final double pitch = staff.pitchPositionOf(endPt);
             final int intPitch = (int) Math.rint(pitch);
 

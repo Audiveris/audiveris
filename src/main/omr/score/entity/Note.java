@@ -297,7 +297,7 @@ public class Note
      * which notes go to one stem (the left chord), which notes go to the other
      * (the right chord) and which notes go to both.
      * Every stem gets at least the vertically closest note.
-     * At the end, to make sure that all notes from the initial pack are 
+     * At the end, to make sure that all notes from the initial pack are
      * actually assigned, we force the unassigned notes to the stem at hand.
      * </p>
      *
@@ -306,8 +306,8 @@ public class Note
      * </p>
      * <img src="doc-files/Note-Pack.png" alt="Pack of 3">
      *
-     * <p>(On the diagram below with a note pack of 1, the "mirrored" note is 
-     * duplicated, one instance goes to the left stem and the other to the 
+     * <p>(On the diagram below with a note pack of 1, the "mirrored" note is
+     * duplicated, one instance goes to the left stem and the other to the
      * right stem).
      * </p>
      * <img src="doc-files/Note-Pack-both.png" alt="Shared note">
@@ -653,6 +653,8 @@ public class Note
             return -1;
         case DOUBLE_FLAT:
             return -2;
+        case NATURAL:
+            return 0;
         default:
             logger.warning("Weird shape {0} for accidental {1}",
                     accidental.getShape(), accidental.idString());
@@ -840,10 +842,10 @@ public class Note
     //-----------------//
     /**
      * Report the duration of this note, based purely on its shape and
-     * the number of beams or flags. 
-     * This does not take into account the potential augmentation dots, nor 
+     * the number of beams or flags.
+     * This does not take into account the potential augmentation dots, nor
      * tuplets.
-     * The purpose of this method is to find out the name of the note 
+     * The purpose of this method is to find out the name of the note
      * ("eighth" versus "quarter" for example)
      *
      * @return the intrinsic note duration
@@ -1104,7 +1106,7 @@ public class Note
     // getItemBox //
     //------------//
     /**
-     * Compute the bounding box of item with rank 'index' in the 
+     * Compute the bounding box of item with rank 'index' in the
      * provided note pack glyph.
      */
     private static PixelRectangle getItemBox (Glyph glyph,
