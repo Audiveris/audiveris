@@ -76,6 +76,7 @@ public class LogPane
     {
         // Build the scroll pane
         component = new JScrollPane();
+        component.setBorder(null);
 
         // log/status area
         logArea = new JTextPane();

@@ -91,6 +91,7 @@ public class ErrorsEditor
         this.sheet = sheet;
         list = new JList<>(model);
         scrollPane = new JScrollPane(list);
+        scrollPane.setBorder(null);
         list.addListSelectionListener(listener);
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }

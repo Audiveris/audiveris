@@ -35,15 +35,11 @@ import omr.ui.view.RubberPanel;
 import omr.ui.view.ScrollView;
 import omr.ui.view.Zoom;
 
-import omr.util.WeakPropertyChangeListener;
-
 import org.bushe.swing.event.EventService;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -70,8 +66,7 @@ import javax.swing.event.ChangeListener;
  * @author Hervé Bitteur
  */
 public class SheetAssembly
-        implements ChangeListener,
-                   PropertyChangeListener
+        implements ChangeListener
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -79,36 +74,17 @@ public class SheetAssembly
     private static final Logger logger = Logger.getLogger(SheetAssembly.class);
 
     //~ Instance fields --------------------------------------------------------
-    /** Link with sheet */
+    //
+    /** Link with sheet. */
     private final Sheet sheet;
 
-    /** Service of sheetlocation */
+    /** Service of sheetlocation. */
     private final EventService locationService;
 
-    /*
-     * component: boardsPane1:
-     * +---+------------------------------------+ +----------+
-     * | s | viewsPane: | | board A |boardsPane2:
-     * | l |tab1\tab2\_________________________ | | |--+
-     * | i | | | | |
-     * | d | ViewTab.scrollView: | |----------| |
-     * | e | | | board B | |
-     * | r | | |----------|--|
-     * | | | | board C | |
-     * | | | | |--|
-     * | | | |----------| |
-     * | | | | board X | |
-     * +---+------------------------------------+ | |--|
-     * | | |
-     * | | |
-     * +----------+ |
-     * | |
-     * +----------+
-     */
-    /** The concrete UI component */
+    /** The concrete UI component. */
     private Panel component = new Panel();
 
-    /** To manually control the zoom ratio */
+    /** To manually control the zoom ratio. */
     private final LogSlider slider = new LogSlider(
             2,
             5,
@@ -117,19 +93,19 @@ public class SheetAssembly
             4,
             0);
 
-    /** Tabbed container for all views of the sheet */
+    /** Tabbed container for all views of the sheet. */
     private final JTabbedPane viewsPane = new JTabbedPane();
 
-    /** Zoom, with default ratio set to 1 */
+    /** Zoom, with default ratio set to 1. */
     private final Zoom zoom = new Zoom(slider, 1);
 
-    /** Mouse adapter */
+    /** Mouse adapter. */
     private final Rubber rubber = new Rubber(zoom);
 
-    /** Map: scrollPane -> view tab */
+    /** Map: scrollPane -> view tab. */
     private final Map<JScrollPane, ViewTab> tabs = new HashMap<>();
 
-    /** Previously selected tab */
+    /** Previously selected tab. */
     private ViewTab previousTab = null;
 
     //~ Constructors -----------------------------------------------------------
@@ -155,11 +131,6 @@ public class SheetAssembly
 
         // To be notified of view selection (manually or programmatically)
         viewsPane.addChangeListener(this);
-
-        // Weakly listen to GUI Actions parameters
-        GuiActions.getInstance().addPropertyChangeListener(
-                GuiActions.ERRORS_DISPLAYED,
-                new WeakPropertyChangeListener(this));
 
         logger.fine("SheetAssembly created.");
 
@@ -254,11 +225,7 @@ public class SheetAssembly
 
         // Display the errors pane of this assembly?
         if (GuiActions.getInstance().isErrorsDisplayed()) {
-            logger.fine("Errors window ON");
-            Main.getGui().showErrorsPane(getErrorsPane());
-        } else {
-            logger.fine("Errors window OFF");
-            Main.getGui().hideErrorsPane(null);
+            Main.getGui().showErrors(getErrorsPane());
         }
     }
 
@@ -282,8 +249,8 @@ public class SheetAssembly
 
         tabs.clear(); // Useful ???
 
-        // Remove the error pane (for this sheet)
-        Main.getGui().hideErrorsPane(sheet.getErrorsEditor().getComponent());
+        // Hide the error messages (for this sheet)
+        Main.getGui().hideErrors(sheet.getErrorsEditor().getComponent());
     }
 
     //--------------//
@@ -329,23 +296,6 @@ public class SheetAssembly
     public Sheet getSheet ()
     {
         return sheet;
-    }
-
-    //----------------//
-    // propertyChange //
-    //----------------//
-    /**
-     * Called whenever the property ERRORS_DISPLAYED has changed in the
-     * GuiActions instance.
-     * This will trigger the inclusion or exclusion of the errors panel
-     * into/from the assembly display.
-     *
-     * @param evt unused
-     */
-    @Override
-    public void propertyChange (PropertyChangeEvent evt)
-    {
-        assemblySelected();
     }
 
     //---------------//
