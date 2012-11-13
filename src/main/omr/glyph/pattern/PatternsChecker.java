@@ -11,15 +11,11 @@
 // </editor-fold>
 package omr.glyph.pattern;
 
-import javax.swing.SwingUtilities;
 import omr.glyph.Grades;
 
 import omr.log.Logger;
 
 import omr.sheet.SystemInfo;
-import omr.step.Step;
-import omr.step.Stepping;
-import omr.step.Steps;
 
 import omr.text.TextPattern;
 
@@ -74,6 +70,7 @@ public class PatternsChecker
             new SplitPattern(system),
             new LedgerPattern(system),
             new AlterPattern(system),
+            new StemPattern(system),
             system.getSlurInspector(),
             new BassPattern(system),
             new ClefPattern(system),

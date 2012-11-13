@@ -54,7 +54,7 @@ public class TextLine
                             TextLine o2)
         {
             return Double.compare(o1.getDskOrigin().getX(),
-                                  o2.getDskOrigin().getX());
+                    o2.getDskOrigin().getX());
         }
     };
 
@@ -66,7 +66,7 @@ public class TextLine
                             TextLine o2)
         {
             return Double.compare(o1.getDskOrigin().getY(),
-                                  o2.getDskOrigin().getY());
+                    o2.getDskOrigin().getY());
         }
     };
 
@@ -80,10 +80,14 @@ public class TextLine
     private final List<TextWord> words = new ArrayList<>();
 
     /** Unmodifiable view of the words sequence. */
+    @Navigable(false)
     private final List<TextWord> wordsView = Collections.unmodifiableList(words);
 
     /** Deskewed origin. */
     private Point2D dskOrigin;
+
+    /** Average font for the line. */
+    private FontInfo meanFont;
 
     /**
      * Role of this text line.
@@ -301,40 +305,72 @@ public class TextLine
         }
     }
 
-    //-----------------//
-    // getMeanFontSize //
-    //-----------------//
+    //-------------//
+    // getMeanFont //
+    //-------------//
     /**
-     * Compute a mean font size on representative words.
+     * Build a mean font (size, bold, serif) on representative words.
      *
-     * @return the mean font size, ,or null if not available
+     * @return the most representative font, or null if not available
      */
-    public Float getMeanFontSize ()
+    public FontInfo getMeanFont ()
     {
-        float sumSize = 0;
-        int wordCount = 0;
+        if (meanFont == null) {
+            int charCount = 0; // Number of (representative) characters
+            int boldCount = 0; // Number of rep chars with bold attribute
+            int italicCount = 0; // Number of rep chars with italic attribute
+            int serifCount = 0; // Number of rep chars with serif attribute
+            int monospaceCount = 0; // Number of rep chars with monospace attribute
+            int smallcapsCount = 0; // Number of rep chars with smallcaps attribute
+            int underlinedCount = 0; // Number of rep chars with underlined attribute
+            float sizeTotal = 0; // Total of font sizes on rep chars
 
-        for (TextWord word : words) {
-            // Discard one-char words, they are not reliable
-            if (word.getLength() > 1) {
-                wordCount++;
-                sumSize += word.getPreciseFontSize();
-            }
-        }
+            for (TextWord word : words) {
+                int length = word.getLength();
+                // Discard one-char words, they are not reliable
+                if (length > 1) {
+                    charCount += length;
+                    sizeTotal += word.getPreciseFontSize() * length;
+                    FontInfo info = word.getFontInfo();
 
-        if (wordCount > 0) {
-            return sumSize / wordCount;
-        } else {
-            if (getFirstWord() == null) {
-                logger.warning("No word in {0}", this);
+                    if (info.isBold) {
+                        boldCount += length;
+                    }
+                    if (info.isItalic) {
+                        italicCount += length;
+                    }
+                    if (info.isUnderlined) {
+                        underlinedCount += length;
+                    }
+                    if (info.isMonospace) {
+                        monospaceCount += length;
+                    }
+                    if (info.isSerif) {
+                        serifCount += word.getLength();
+                    }
+                    if (info.isSmallcaps) {
+                        smallcapsCount += length;
+                    }
+                }
             }
-            FontInfo fontInfo = getFirstWord().getFontInfo();
-            if (fontInfo != null) {
-                return (float) fontInfo.pointsize;
+
+            if (charCount > 0) {
+                int quorum = charCount / 2;
+                meanFont = new FontInfo(boldCount >= quorum, // isBold,
+                        italicCount >= quorum, // isItalic,
+                        underlinedCount >= quorum, // isUnderlined,
+                        monospaceCount >= quorum, // isMonospace,
+                        serifCount >= quorum, // isSerif,
+                        smallcapsCount >= quorum, // isSmallcaps,
+                        (int) Math.rint((double) sizeTotal / charCount),
+                        "DummyFont");
             } else {
-                return null;
+                // We have no representative data, let's use the first word
+                meanFont = getFirstWord().getFontInfo();
             }
         }
+
+        return meanFont;
     }
 
     //---------//
@@ -479,6 +515,7 @@ public class TextLine
 
         dskOrigin = null;
         roleInfo = null;
+        meanFont = null;
     }
 
     //----------//

@@ -287,8 +287,8 @@ public abstract class Text
      */
     public int getExportedFontSize ()
     {
-        // Round it to nearest integer
-        return (int) Math.rint(sentence.getMeanFontSize() * TextFont.TO_POINT);
+        return (int) Math.rint(sentence.getMeanFont().pointsize
+                               * TextFont.TO_POINT);
     }
 
     //-------------//

@@ -51,15 +51,14 @@ public class StemPattern
     /** Predicate to filter reliable symbols attached to a stem. */
     public static final Predicate<Glyph> reliableStemSymbols = new Predicate<Glyph>()
     {
-
         @Override
         public boolean check (Glyph glyph)
         {
             Shape shape = glyph.getShape();
 
             boolean res = glyph.isWellKnown()
-                    && ShapeSet.StemSymbols.contains(shape)
-                    && (shape != Shape.BEAM_HOOK);
+                          && ShapeSet.StemSymbols.contains(shape)
+                          && (shape != Shape.BEAM_HOOK);
 
             return res;
         }
@@ -83,7 +82,7 @@ public class StemPattern
     /**
      * In a specified system, look for all stems that should not be kept,
      * rebuild surrounding glyphs and try to recognize them.
-     * If this action does not lead to some recognized symbol, then we restore 
+     * If this action does not lead to some recognized symbol, then we restore
      * the stems.
      *
      * @return the number of symbols recognized
@@ -99,7 +98,7 @@ public class StemPattern
         List<Glyph> SuspectedStems = new ArrayList<>();
 
         for (Glyph glyph : system.getGlyphs()) {
-            if (!glyph.isStem() || glyph.isManualShape() || !glyph.isActive()) {
+            if (glyph.isStem() && !glyph.isManualShape() && glyph.isActive()) {
                 Set<Glyph> goods = new HashSet<>();
                 Set<Glyph> bads = new HashSet<>();
                 glyph.getSymbolsBefore(reliableStemSymbols, goods, bads);
@@ -186,12 +185,14 @@ public class StemPattern
                         Shape shape = g.getShape();
 
                         if ((shape != null)
-                                && !g.isManualShape()
-                                && !ShapeSet.StemSymbols.contains(shape)) {
+                            && !g.isManualShape()
+                            && !ShapeSet.StemSymbols.contains(shape)) {
                             g.setShape(null);
                         }
                     }
                 }
+            } else if (stem.isVip()) {
+                logger.info("StemPattern deassigned stem#{0}", stem.getId());
             }
         }
 
