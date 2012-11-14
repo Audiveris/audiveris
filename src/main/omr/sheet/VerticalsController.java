@@ -197,7 +197,7 @@ public class VerticalsController
             super("StemCheck", null, eventService, eventList);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods ------------------------------------------------------------        
         @Override
         public void onEvent (UserEvent event)
         {
@@ -218,8 +218,7 @@ public class VerticalsController
                         if (Math.abs(glyph.getInvertedSlope()) <= constants.maxCoTangentForCheck.
                                 getValue()) {
                             // Get a fresh suite
-                            setSuite(system.createStemCheckSuite(true));
-                            tellObject(glyph);
+                            applySuite(system.createStemCheckSuite(true), glyph);
 
                             return;
                         }

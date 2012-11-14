@@ -579,10 +579,9 @@ public class BarsChecker
                         // Make sure this is a rather vertical stick
                         if (Math.abs(glyph.getInvertedSlope()) <= constants.maxCoTangentForCheck.
                                 getValue()) {
-                            // To get a fresh suite
-                            setSuite(new BarCheckSuite());
+                            // Apply a fresh suite
                             context = new BarsChecker.GlyphContext(glyph);
-                            tellObject(context);
+                            applySuite(new BarCheckSuite(), context);
 
                             return;
                         }

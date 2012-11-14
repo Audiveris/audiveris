@@ -133,7 +133,7 @@ public class BoardsPane
     // connect //
     //---------//
     /**
-     * Invoked when the boardsPane has been selected, in order to 
+     * Invoked when the boardsPane has been selected, in order to
      * connect all the contained boards to their inputs.
      */
     public void connect ()
@@ -142,6 +142,8 @@ public class BoardsPane
         for (Board board : boards) {
             if (board.isSelected()) {
                 board.connect();
+            } else {
+                board.disconnect();
             }
         }
     }

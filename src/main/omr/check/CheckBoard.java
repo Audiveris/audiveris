@@ -55,7 +55,7 @@ public class CheckBoard<C extends Checkable>
      * @param name             the name of the check
      * @param suite            the check suite to be used
      * @param selectionService which selection service to use
-     * @param eventList        which even classes to expect
+     * @param eventList        which event classes to expect
      */
     public CheckBoard (String name,
                        CheckSuite<C> suite,
@@ -63,11 +63,11 @@ public class CheckBoard<C extends Checkable>
                        Class[] eventList)
     {
         super(name,
-              Board.CHECK.position,
-              selectionService,
-              eventList,
-              false, // Dump
-              false); // Selected
+                Board.CHECK.position,
+                selectionService,
+                eventList,
+                false, // Dump
+                false); // Selected
         checkPanel = new CheckPanel<>(suite);
 
         if (suite != null) {
@@ -104,15 +104,18 @@ public class CheckBoard<C extends Checkable>
         }
     }
 
-    //----------//
-    // setSuite //
-    //----------//
+    //------------//
+    // applySuite //
+    //------------//
     /**
-     * Assign a (new) suite to the check board.
+     * Assign a (new) suite to the check board and apply it to the
+     * provided object.
      *
-     * @param suite the (new) check suite to be used
+     * @param suite  the (new) check suite to be used
+     * @param object the object to apply the checks suite on
      */
-    public synchronized void setSuite (CheckSuite<C> suite)
+    public synchronized void applySuite (CheckSuite<C> suite,
+                                         C object)
     {
         final boolean toBuild = checkPanel.getComponent() == null;
         checkPanel.setSuite(suite);
@@ -120,6 +123,8 @@ public class CheckBoard<C extends Checkable>
         if (toBuild) {
             defineLayout(suite.getName());
         }
+
+        tellObject(object);
     }
 
     //------------//
