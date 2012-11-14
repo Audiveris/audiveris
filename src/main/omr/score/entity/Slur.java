@@ -819,7 +819,7 @@ public class Slur
         //~ Instance fields ----------------------------------------------------
 
         Scale.Fraction areaDx = new Scale.Fraction(
-                1.7,
+                2,
                 "Abscissa extension when looking for embraced notes");
 
         Scale.Fraction areaDy = new Scale.Fraction(
