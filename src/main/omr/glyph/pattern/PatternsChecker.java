@@ -60,6 +60,7 @@ public class PatternsChecker
             //
             new CaesuraPattern(system),
             new BeamHookPattern(system),
+            new DotPattern(system),
             // Refresh ...
             new RefreshPattern(system, false),
             new DoubleBeamPattern(system),

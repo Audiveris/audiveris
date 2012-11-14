@@ -89,7 +89,7 @@ public class DotTranslation
         }
 
         Shape shape = glyph.getShape();
-
+        
         /** To remember results of trials */
         SortedSet<Trial.Result> results = new TreeSet<>();
 

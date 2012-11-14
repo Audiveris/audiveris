@@ -912,36 +912,15 @@ public class SystemTranslator
         }
 
         @Override
-        public void computeLocation (Glyph glyph)
-        {
-            systemBox = glyph.getBounds();
-            currentCenter = new PixelPoint(
-                    systemBox.x + (systemBox.width / 2),
-                    systemBox.y + systemBox.height);
-            currentStaff = system.getTextStaff(
-                    glyph.getTextRole().role,
-                    currentCenter);
-            currentPart = currentStaff.getPart();
-        }
-
-        @Override
         public boolean isRelevant (Glyph glyph)
         {
-            return false; //return glyph.isText();
+            return false; // Text is not handled at glyph but system level
         }
 
         @Override
         public void translate (Glyph glyph)
         {
-//            Sentence sentence = (Sentence) glyph.getChain();
-//
-//            // Translate the sentence here
-//            // Using the left edge for x and the baseline for y
-//            if (sentence != null) {
-//                Text.populate(sentence, sentence.getLocation());
-//            } else {
-//                system.addError(glyph, "Text with no enclosing sentence");
-//            }
+            // Void
         }
     }
 

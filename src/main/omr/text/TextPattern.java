@@ -129,17 +129,17 @@ public class TextPattern
                 // Use OCR on this glyph
                 logger.fine("Orphan text {0}", glyph.idString());
                 List<TextLine> lines = textBuilder.retrieveOcrLine(glyph,
-                                                                   language);
+                        language);
                 if (lines != null) {
                     lines = textBuilder.recomposeLines(lines);
                     textBuilder.mapGlyphs(lines,
-                                          glyph.getMembers(),
-                                          language);
+                            glyph.getMembers(),
+                            language);
 
                 }
                 if (lines == null || lines.isEmpty()) {
                     logger.fine("{0} No valid text in {1}",
-                                system.idString(), glyph.idString());
+                            system.idString(), glyph.idString());
                     if (!glyph.isManualShape()) {
                         glyph.setShape(null);
                     }
@@ -214,16 +214,13 @@ public class TextPattern
             if (!glyph.getTextValue().equals(word.getInternalValue())) {
                 // Here the glyph (manual) value has been modified
                 altered = true;
-                textBuilder.splitWords(Arrays.asList(word),
-                                       line);
+                textBuilder.splitWords(Arrays.asList(word), line);
             }
         }
 
         // Remap glyphs if line has been altered
         if (altered) {
-            textBuilder.mapGlyphs(Arrays.asList(line),
-                                  lineSections,
-                                  language);
+            textBuilder.mapGlyphs(Arrays.asList(line), lineSections, language);
         }
     }
 
