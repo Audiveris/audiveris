@@ -254,6 +254,9 @@ public abstract class PagePainter
     public boolean visit (Arpeggiate arpeggiate)
     {
         try {
+            // Voice color?
+            handleVoiceColor(arpeggiate);
+
             // Draw an arpeggiate symbol with proper height
             // Using half-height of arpeggiate character as the elementary unit
             // We need clipping to draw half characters
@@ -390,17 +393,7 @@ public abstract class PagePainter
     {
         try {
             // Voice indication ?
-            if (coloredVoices) {
-                g.setColor(defaultColor);
-
-                Voice voice = chord.getVoice();
-
-                if (voice != null) {
-                    g.setColor(colorOf(chord.getVoice()));
-                } else {
-                    ///chord.addError("No voice for chord " + chord);
-                }
-            }
+            handleVoiceColor(chord);
 
             // Flags ?
             final int fn = chord.getFlagsNumber();
@@ -530,21 +523,7 @@ public abstract class PagePainter
     @Override
     public boolean visit (MeasureElement measureElement)
     {
-        if (coloredVoices) {
-            g.setColor(defaultColor);
-
-            if (measureElement instanceof AbstractNotation) {
-                Chord chord = measureElement.getChord();
-
-                if (chord != null) {
-                    Voice voice = chord.getVoice();
-
-                    if (voice != null) {
-                        g.setColor(colorOf(voice));
-                    }
-                }
-            }
-        }
+        handleVoiceColor(measureElement);
 
         try {
             if (measureElement.getShape() != null) {
@@ -673,8 +652,6 @@ public abstract class PagePainter
 
                 if (voice != null) {
                     g.setColor(colorOf(voice));
-                } else {
-                    ///slur.addError("No voice for tie");
                 }
             }
         }
@@ -729,8 +706,8 @@ public abstract class PagePainter
                     TextLayout trunk = musicFont.layout(Shape.THICK_BARLINE);
                     double width = trunk.getBounds().getWidth();
                     double barWidth = 0.5 * part.getScale().getInterline();
-                    AffineTransform at = AffineTransform.getScaleInstance(barWidth/width, 1);
-                    
+                    AffineTransform at = AffineTransform.getScaleInstance(barWidth / width, 1);
+
                     final Line2D line = bracketLine(part);
                     PixelPoint topLeft = new PixelPoint(
                             (int) Math.rint(line.getX1() - barWidth / 2),
@@ -738,12 +715,12 @@ public abstract class PagePainter
                     PixelPoint botLeft = new PixelPoint(
                             (int) Math.rint(line.getX2() - barWidth / 2),
                             (int) Math.rint(line.getY2()));
-                    
+
                     TextLayout upper = musicFont.layout(SYMBOL_BRACKET_UPPER_SERIF.getString(), at);
                     TextLayout lower = musicFont.layout(SYMBOL_BRACKET_LOWER_SERIF.getString(), at);
                     paint(upper, topLeft, BASELINE_LEFT);
                     paint(lower, botLeft, BASELINE_LEFT);
-                    
+
                     BarPainter barPainter = BarPainter.getBarPainter(Shape.THICK_BARLINE);
                     barPainter.draw(g, line.getP1(), line.getP2(), part);
                 }
@@ -806,9 +783,42 @@ public abstract class PagePainter
         return true;
     }
 
+    //------------------//
+    // handleVoiceColor //
+    //------------------//
+    private void handleVoiceColor (MeasureElement measureElement)
+    {
+        if (coloredVoices) {
+            g.setColor(defaultColor);
+
+            if (measureElement instanceof AbstractNotation) {
+                handleVoiceColor(measureElement.getChord());
+            }
+        }
+
+    }
+
+    //------------------//
+    // handleVoiceColor //
+    //------------------//
+    private void handleVoiceColor (Chord chord)
+    {
+        if (coloredVoices) {
+            g.setColor(defaultColor);
+
+            if (chord != null) {
+                Voice voice = chord.getVoice();
+
+                if (voice != null) {
+                    g.setColor(colorOf(voice));
+                }
+            }
+        }
+    }
     //-----------//
     // paintWord //
     //-----------//
+
     private void paintWord (TextWord word)
     {
 //        // Use precise word font size for long enough words
@@ -820,7 +830,7 @@ public abstract class PagePainter
 //        Font font = (fontSize != null && word.getFontInfo() != null)
 //                ? new TextFont(word.getFontInfo()).deriveFont(fontSize)
 //                : TextFont.baseTextFont;
-        
+
         Font font = new TextFont(word.getTextLine().getMeanFont());
         FontRenderContext frc = g.getFontRenderContext();
         TextLayout layout = new TextLayout(word.getValue(), font, frc);

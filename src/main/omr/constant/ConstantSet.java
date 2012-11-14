@@ -84,13 +84,19 @@ public abstract class ConstantSet
         System.out.println("\n[" + unit + "]");
 
         for (Constant constant : getMap().values()) {
+            String origin = constant.getValueOrigin();
+            if (origin.equals("SRC")) {
+                origin = "";
+            } else {
+                origin = "[" + origin + "]";
+            }
             System.out.printf(
-                    "%-25s %12s %-14s =[%3s] %-25s\t%s%n",
+                    "%-25s %12s %-14s =%5s %-25s\t%s%n",
                     constant.getName(),
                     constant.getShortTypeName(),
                     (constant.getQuantityUnit() != null)
                     ? ("(" + constant.getQuantityUnit() + ")") : "",
-                    constant.getValueOrigin(),
+                    origin,
                     constant.getCurrentString(),
                     constant.getDescription());
         }
@@ -263,7 +269,7 @@ public abstract class ConstantSet
                 } else {
                     logger.severe(
                             "ConstantSet in unit ''{0}'' contains a non"
-                            + " Constant field ''{1}'' obj= {2}", 
+                            + " Constant field ''{1}'' obj= {2}",
                             unit, name, obj);
                 }
             }

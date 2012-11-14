@@ -366,7 +366,7 @@ public class VerticalsBuilder
                 "Low Minimum length for a short stem");
 
         Scale.Fraction maxStemThickness = new Scale.Fraction(
-                0.4,
+                0.3,
                 "Maximum thickness of an interesting vertical stick");
 
         Scale.Fraction minStaffDxHigh = new Scale.Fraction(
