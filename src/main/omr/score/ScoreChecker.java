@@ -52,7 +52,6 @@ import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.SortedSet;
 
 /**
  * Class {@code ScoreChecker} can visit the score hierarchy and perform
@@ -170,7 +169,7 @@ public class ScoreChecker
 
             // No real beam found on the same chord, so let's discard the hook
             if (glyph.isVip() || logger.isFineEnabled()) {
-                logger.info("{0} Removing false beam hook {1}", 
+                logger.info("{0} Removing false beam hook {1}",
                         beam.getMeasure().getContextString(), glyph.idString());
             }
 
@@ -656,8 +655,8 @@ public class ScoreChecker
     // findBestTimeSig //
     //-----------------//
     /**
-     * Report the best time signature for all parallel measures (among all the
-     * parallel candidate time signatures)
+     * Report the best time signature for all parallel measures
+     * (among all the parallel candidate time signatures)
      *
      * @param measure the reference measure
      * @return the best signature, or null if no suitable signature found
@@ -729,9 +728,9 @@ public class ScoreChecker
     // findManualTimeSig //
     //-------------------//
     /**
-     * Report a suitable manually assigned time signature, if any. For this, we
-     * need to find a manual time sig, after having checked that all manual time
-     * sigs in the measure are consistent.
+     * Report a suitable manually assigned time signature, if any.
+     * For this, we need to find a manual time sig, after having checked that
+     * all manual time sigs in the measure are consistent.
      *
      * @param measure the reference measure
      * @return the suitable manual sig, if any
@@ -809,7 +808,8 @@ public class ScoreChecker
     // searchHooks //
     //-------------//
     /**
-     * Search unrecognized beam hooks among the glyphs around the provided chord
+     * Search unrecognized beam hooks among the glyphs around the
+     * provided chord.
      *
      * @param chord  the provided chord
      * @param glyphs the surrounding glyphs

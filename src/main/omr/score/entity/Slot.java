@@ -142,7 +142,7 @@ public class Slot
     }
 
     //-------------//
-    // duildVoices //
+    // buildVoices //
     //-------------//
     /**
      * Compute the various voices in this slot.
@@ -526,17 +526,21 @@ public class Slot
                 // Try to reuse an existing voice
                 for (Voice voice : measure.getVoices()) {
                     if (voice.isFree(this)) {
-                        // Don't migrate a voice from one staff to another
-                        Chord latestVoiceChord = voice.getChordBefore(this);
-                        if (latestVoiceChord != null
-                            && latestVoiceChord.getStaff() == chord.getStaff()) {
-                            chord.setVoice(voice);
-
-                            break;
+                        // If we have more than one incoming,
+                        // avoid migrating a voice from one staff to another
+                        if (incomings.size() > 1) {
+                            Chord latestVoiceChord = voice.getChordBefore(this);
+                            if (latestVoiceChord != null
+                                && latestVoiceChord.getStaff() != chord.getStaff()) {
+                                continue;
+                            }
                         }
+                        chord.setVoice(voice);
+                        break;
                     }
                 }
 
+                // No compatible voice found, let's create a new one
                 if (chord.getVoice() == null) {
                     logger.fine("{0} Slot#{1} creating voice for Ch#{2}",
                             chord.getContextString(), id, chord.getId());

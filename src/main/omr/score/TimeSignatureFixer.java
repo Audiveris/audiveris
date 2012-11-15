@@ -33,9 +33,9 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * Class {@code TimeSignatureFixer} can visit the score hierarchy to check
- * whether each of the time signatures are consistent with most of measures
- * intrinsic time signature.
+ * Class {@code TimeSignatureFixer} can visit the score hierarchy to
+ * check whether each of the time signatures is consistent with most of
+ * measures intrinsic time signature.
  *
  * @author Hervé Bitteur
  */
@@ -199,8 +199,7 @@ public class TimeSignatureFixer
                             sig.modify(null, bestRational);
                         }
                     } catch (Exception ex) {
-                        sig.addError(
-                                sig.getGlyphs().iterator().next(),
+                        sig.addError(sig.getGlyphs().iterator().next(),
                                 "Could not check time signature " + ex);
                     }
                 }

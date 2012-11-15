@@ -38,7 +38,7 @@ import java.util.EnumSet;
  * @author Hervé Bitteur
  */
 public class TimePattern
-    extends GlyphPattern
+        extends GlyphPattern
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -49,9 +49,9 @@ public class TimePattern
     private static final Logger logger = Logger.getLogger(TimePattern.class);
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new TimePattern object.
+     *
      * @param system the containing system
      */
     public TimePattern (SystemInfo system)
@@ -60,12 +60,12 @@ public class TimePattern
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // runPattern //
     //------------//
     /**
      * Check that each staff begins with a time
+     *
      * @return the number of times rebuilt
      */
     @Override
@@ -74,17 +74,17 @@ public class TimePattern
         int successNb = 0;
 
         for (Glyph glyph : system.getGlyphs()) {
-            if (!ShapeSet.Times.contains(glyph.getShape()) ||
-                glyph.isManualShape()) {
+            if (!ShapeSet.Times.contains(glyph.getShape())
+                || glyph.isManualShape()) {
                 continue;
             }
 
             // We must find a time out of these glyphs
             Glyph compound = system.buildCompound(
-                glyph,
-                true,
-                system.getGlyphs(),
-                new TimeSigAdapter(
+                    glyph,
+                    true,
+                    system.getGlyphs(),
+                    new TimeSigAdapter(
                     system,
                     Grades.timeMinGrade,
                     ShapeSet.FullTimes));
@@ -98,21 +98,26 @@ public class TimePattern
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Scale.Fraction xOffset = new Scale.Fraction(
-            0.25d,
-            "Core Time horizontal offset");
+                0.25d,
+                "Core Time horizontal offset");
+
         Scale.Fraction yOffset = new Scale.Fraction(
-            0.25d,
-            "Core Time vertical offset");
+                0.25d,
+                "Core Time vertical offset");
+
+        Scale.Fraction timeWidth = new Scale.Fraction(
+                1.6,
+                "Typical width of a time signature");
+
     }
 
     //----------------//
@@ -122,36 +127,39 @@ public class TimePattern
      * Compound adapter to search for a time sig shape
      */
     private class TimeSigAdapter
-        extends CompoundBuilder.TopRawAdapter
+            extends CompoundBuilder.TopRawAdapter
     {
         //~ Constructors -------------------------------------------------------
 
-        public TimeSigAdapter (SystemInfo     system,
-                               double         minGrade,
+        public TimeSigAdapter (SystemInfo system,
+                               double minGrade,
                                EnumSet<Shape> desiredShapes)
         {
             super(system, minGrade, desiredShapes);
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public PixelRectangle computeReferenceBox ()
         {
             // Retrieve environment (staff)
-            final int      xOffset = scale.toPixels(constants.xOffset);
-            final int      yOffset = scale.toPixels(constants.yOffset);
+            final int xOffset = scale.toPixels(constants.xOffset);
+            final int yOffset = scale.toPixels(constants.yOffset);
+            final int timeWidth = scale.toPixels(constants.timeWidth);
 
             // Define the core box to intersect time glyph(s)
-            PixelPoint     center = seed.getAreaCenter();
-            StaffInfo      staff = system.getStaffAt(center);
+            PixelPoint center = seed.getAreaCenter();
+            StaffInfo staff = system.getStaffAt(center);
 
             PixelRectangle rect = seed.getBounds();
+            if (rect.width < timeWidth) {
+                rect.grow(timeWidth - rect.width, 0);
+            }
             rect.grow(-xOffset, 0);
             rect.y = staff.getFirstLine()
-                          .yAt(center.x) + yOffset;
+                    .yAt(center.x) + yOffset;
             rect.height = staff.getLastLine()
-                               .yAt(center.x) - yOffset - rect.y;
+                    .yAt(center.x) - yOffset - rect.y;
 
             // Draw the time core box, for visual debug
             seed.addAttachment("t", rect);

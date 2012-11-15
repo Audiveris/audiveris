@@ -554,6 +554,8 @@ public class SlotBuilder
                 measure.getSlots().add(slot);
                 slot.setChords(incomings);
                 slot.setStartTime(startTime);
+                
+                // Determine the voice of each chord of the slot
                 slot.buildVoices(endings);
 
                 // Update for next iteration
