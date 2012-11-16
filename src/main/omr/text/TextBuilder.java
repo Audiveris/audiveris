@@ -1115,7 +1115,7 @@ public class TextBuilder
 
         Constant.Integer minConfidence = new Constant.Integer(
                 "0..100",
-                70,
+                75,
                 "Minimum confidence for OCR validity");
 
         Constant.Integer maxCharCountForAspectCheck = new Constant.Integer(

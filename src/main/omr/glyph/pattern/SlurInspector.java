@@ -51,6 +51,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -75,6 +76,12 @@ public class SlurInspector
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(SlurInspector.class);
+
+    /** Shapes suitable for extensions. */
+    private static final EnumSet<Shape> extShapes = EnumSet.copyOf(
+            ShapeSet.shapesOf(
+            ShapeSet.Dots,
+            ShapeSet.shapesOf(Shape.CLUTTER, Shape.CHARACTER)));
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -1198,7 +1205,7 @@ public class SlurInspector
                 return true;
             }
 
-            return (!glyph.isManualShape() && (shape == Shape.CLUTTER))
+            return (!glyph.isManualShape() && extShapes.contains(shape))
                    || (glyph.getGrade() <= Grades.compoundPartMaxGrade);
         }
 
