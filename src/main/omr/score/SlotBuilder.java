@@ -38,6 +38,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -75,13 +76,8 @@ public class SlotBuilder
     /** The containing system. */
     private final ScoreSystem system;
 
-    /** System scale. */
-    private final Scale scale;
-
-    /** Scaled parameters. */
-    private final int maxSlotDx;
-
-    private final int minChordDy;
+    /** Scale-dependent parameters. */
+    private final Parameters params;
 
     //~ Constructors -----------------------------------------------------------
     //
@@ -97,10 +93,7 @@ public class SlotBuilder
     {
         this.system = system;
 
-        scale = system.getScale();
-
-        maxSlotDx = scale.toPixels(constants.maxSlotDx);
-        minChordDy = scale.toPixels(constants.minChordDy);
+        params = new Parameters(system.getScale());
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -319,6 +312,7 @@ public class SlotBuilder
             }
 
             // Location-based relationships
+            List<ChordPair> adjacencies = new ArrayList<>();
             index = 0;
             for (TreeNode pn : measure.getChords()) {
                 index++;
@@ -326,6 +320,8 @@ public class SlotBuilder
                 if (ch1.isWholeDuration()) {
                     continue;
                 }
+                PixelRectangle box1 = ch1.getBox();
+
                 for (TreeNode n : measure.getChords().subList(index, chordCount)) {
                     Chord ch2 = (Chord) n;
                     if (ch2.isWholeDuration() || getRel(ch1, ch2) != null) {
@@ -333,21 +329,31 @@ public class SlotBuilder
                     }
 
                     // Check y overlap
-                    PixelRectangle box1 = ch1.getBox();
                     PixelRectangle box2 = ch2.getBox();
-                    int overlap = Math.min(box1.y + box1.height, box2.y + box2.height)
-                                  - Math.max(box1.y, box2.y);
-                    if (overlap >= minChordDy) {
-                        if (ch1.getCenter().x <= ch2.getCenter().x) {
-                            setRel(ch1, ch2, Rel.OVERLAPPING_BEFORE);
-                            setRel(ch2, ch1, Rel.OVERLAPPING_AFTER);
+                    int yOverlap = Math.min(box1.y + box1.height, box2.y + box2.height)
+                                   - Math.max(box1.y, box2.y);
+                    if (yOverlap > 0) {
+                        // Boxes overlap vertically
+                        // Check horizontal void gap
+                        int xGap = Math.max(box1.x, box2.x)
+                                   - Math.min(box1.x + box1.width, box2.x + box2.width);
+                        if (xGap <= params.maxChordXGap) {
+                            setRel(ch1, ch2, Rel.CLOSE);
+                            setRel(ch2, ch1, Rel.CLOSE);
+                            adjacencies.add(new ChordPair(ch1, ch2));
                         } else {
-                            setRel(ch2, ch1, Rel.OVERLAPPING_BEFORE);
-                            setRel(ch1, ch2, Rel.OVERLAPPING_AFTER);
+                            if (ch1.getCenter().x <= ch2.getCenter().x) {
+                                setRel(ch1, ch2, Rel.OVERLAPPING_BEFORE);
+                                setRel(ch2, ch1, Rel.OVERLAPPING_AFTER);
+                            } else {
+                                setRel(ch2, ch1, Rel.OVERLAPPING_BEFORE);
+                                setRel(ch1, ch2, Rel.OVERLAPPING_AFTER);
+                            }
                         }
                     } else {
+                        // Boxes do not overlap vertically
                         int dx = Math.abs(ch1.getCenter().x - ch2.getCenter().x);
-                        if (dx <= maxSlotDx) {
+                        if (dx <= params.maxSlotDx) {
                             setRel(ch1, ch2, Rel.CLOSE);
                             setRel(ch2, ch1, Rel.CLOSE);
                         } else {
@@ -357,6 +363,24 @@ public class SlotBuilder
                             } else {
                                 setRel(ch2, ch1, Rel.LONG_BEFORE);
                                 setRel(ch1, ch2, Rel.LONG_AFTER);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Process detected adjacencies
+            if (!adjacencies.isEmpty()) {
+                logger.fine("Adjacencies: {0}", adjacencies);
+                for (ChordPair pair : adjacencies) {
+                    // Since ch1 ~ ch2, all neighbors of ch1 ~ neighbors of ch2
+                    Set<Chord> n1 = getClosure(pair.one);
+                    Set<Chord> n2 = getClosure(pair.two);
+                    for (Chord ch1 : n1) {
+                        for (Chord ch2 : n2) {
+                            if (ch1 != ch2) {
+                                setRel(ch1, ch2, Rel.CLOSE);
+                                setRel(ch2, ch1, Rel.CLOSE);
                             }
                         }
                     }
@@ -405,6 +429,25 @@ public class SlotBuilder
 
             }
             logger.info("\n{0}", sb);
+        }
+
+        //------------//
+        // getClosure //
+        //------------//
+        private Set<Chord> getClosure (Chord chord)
+        {
+            Set<Chord> closes = new LinkedHashSet<>();
+            closes.add(chord);
+
+            for (TreeNode cn : measure.getChords()) {
+                Chord ch = (Chord) cn;
+                if (getRel(chord, ch) == Rel.CLOSE
+                    || getRel(ch, chord) == Rel.CLOSE) {
+                    closes.add(ch);
+                }
+            }
+
+            return closes;
         }
 
         //----------//
@@ -554,7 +597,7 @@ public class SlotBuilder
                 measure.getSlots().add(slot);
                 slot.setChords(incomings);
                 slot.setStartTime(startTime);
-                
+
                 // Determine the voice of each chord of the slot
                 slot.buildVoices(endings);
 
@@ -675,6 +718,30 @@ public class SlotBuilder
     }
 
     //-----------//
+    // ChordPair //
+    //-----------//
+    private static class ChordPair
+    {
+
+        final Chord one;
+
+        final Chord two;
+
+        public ChordPair (Chord one,
+                          Chord two)
+        {
+            this.one = one;
+            this.two = two;
+        }
+
+        @Override
+        public String toString ()
+        {
+            return "{ch#" + one.getId() + ",ch#" + two.getId() + "}";
+        }
+    }
+
+    //-----------//
     // Constants //
     //-----------//
     private static final class Constants
@@ -685,9 +752,28 @@ public class SlotBuilder
                 1.0,
                 "Maximum horizontal delta between a slot and a chord");
 
-        Scale.Fraction minChordDy = new Scale.Fraction(
-                0.25,
-                "Minimum vertical overlap for chords");
+        Scale.Fraction maxChordXGap = new Scale.Fraction(
+                0.5,
+                "Maximum horizontal gap between adjacent chords bounds");
 
+    }
+
+    //------------//
+    // Parameters //
+    //------------//
+    private static class Parameters
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        private final int maxSlotDx;
+
+        private final int maxChordXGap;
+
+        //~ Constructors -------------------------------------------------------
+        public Parameters (Scale scale)
+        {
+            maxSlotDx = scale.toPixels(constants.maxSlotDx);
+            maxChordXGap = scale.toPixels(constants.maxChordXGap);
+        }
     }
 }

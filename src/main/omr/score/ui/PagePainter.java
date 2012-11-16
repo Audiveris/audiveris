@@ -358,21 +358,24 @@ public abstract class PagePainter
             polygon.addPoint(right.x, right.y + dy);
             polygon.addPoint(right.x, right.y - dy);
 
-            // Related voices
+            // Use related voices (if already set)
             Set<Voice> voices = new LinkedHashSet<>();
-
             for (Chord chord : beam.getChords()) {
                 Voice voice = chord.getVoice();
-
                 if (voice != null) {
                     voices.add(voice);
-                } else {
-                    ///chord.addError("No voice for chord");
                 }
             }
 
-            for (Voice voice : voices) {
-                g.setColor(colorOf(voice));
+            if (!voices.isEmpty()) {
+                // Paint all colors, one on top of the other
+                for (Voice voice : voices) {
+                    g.setColor(colorOf(voice));
+                    g.fill(polygon);
+                }
+            } else {
+                // Paint with default color
+                g.setColor(defaultColor);
                 g.fill(polygon);
             }
         } catch (ConcurrentModificationException ignored) {
