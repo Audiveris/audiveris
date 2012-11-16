@@ -147,13 +147,13 @@ public class SymbolsEditor
 
         focus = new ShapeFocusBoard(sheet, symbolsController,
                 new ActionListener()
-                {
-                    @Override
-                    public void actionPerformed (ActionEvent e)
-                    {
-                        view.repaint();
-                    }
-                }, false);
+        {
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                view.repaint();
+            }
+        }, false);
 
         pageMenu = new PageMenu(sheet.getPage(),
                 new SymbolMenu(symbolsController, evaluator, focus));
@@ -298,7 +298,7 @@ public class SymbolsEditor
                 // Glyph mode
                 pointSelected(pt, movement);
             }
-            
+
             showPagePopup(pt);
         }
 
@@ -502,7 +502,8 @@ public class SymbolsEditor
             SelectionHint hint = sectionSetEvent.hint;
             MouseMovement movement = sectionSetEvent.movement;
 
-            if (hint == SelectionHint.LOCATION_ADD) {
+            if (hint == SelectionHint.LOCATION_ADD
+                || hint == SelectionHint.LOCATION_INIT) {
                 // Collect section sets from all lags
                 List<Section> allSections = new ArrayList<>();
 
@@ -514,29 +515,34 @@ public class SymbolsEditor
                     }
                 }
 
-                if (allSections.isEmpty()) {
-                    return;
-                }
-
-                ///logger.info("SymbolsEditor got all " + Sections.toString(all));
                 try {
                     Glyph compound = null;
-                    SystemInfo system = sheet.getSystemOfSections(allSections);
+                    if (!allSections.isEmpty()) {
+                        SystemInfo system = sheet.getSystemOfSections(allSections);
 
-                    if (system != null) {
-                        compound = system.buildTransientGlyph(allSections);
+                        if (system != null) {
+                            compound = system.buildTransientGlyph(allSections);
+                        }
                     }
 
+                    logger.fine("Editor. Publish glyph {0}", compound);
                     publish(new GlyphEvent(this, SelectionHint.GLYPH_TRANSIENT,
                             movement, compound));
 
-                    publish(new GlyphSetEvent(this,
-                            SelectionHint.GLYPH_TRANSIENT, movement,
-                            Glyphs.sortedSet(compound)));
+                    if (compound != null) {
+                        publish(new GlyphSetEvent(this,
+                                SelectionHint.GLYPH_TRANSIENT, movement,
+                                Glyphs.sortedSet(compound)));
+                    } else {
+                        publish(new GlyphSetEvent(this,
+                                SelectionHint.GLYPH_TRANSIENT, movement,
+                                null));
+                    }
                 } catch (IllegalArgumentException ex) {
                     // All sections do not belong to the same system
                     // No compound is allowed and displayed
-                    logger.warning("Sections from different systems {0}", Sections.toString(allSections));
+                    logger.warning("Sections from different systems {0}", 
+                            Sections.toString(allSections));
                 }
             }
         }

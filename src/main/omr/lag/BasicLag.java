@@ -463,7 +463,7 @@ public class BasicLag
         MouseMovement movement = locationEvent.movement;
 
         if ((hint != SelectionHint.LOCATION_ADD)
-                && (hint != SelectionHint.LOCATION_INIT)) {
+            && (hint != SelectionHint.LOCATION_INIT)) {
             return;
         }
 
@@ -476,7 +476,7 @@ public class BasicLag
 
                 // Publish (first) Section found
                 Section section = sectionsFound.isEmpty() ? null
-                                  : sectionsFound.iterator().next();
+                        : sectionsFound.iterator().next();
                 publish(new SectionEvent(this, hint, movement, section));
 
                 // Publish whole SectionSet
@@ -506,7 +506,7 @@ public class BasicLag
         MouseMovement movement = runEvent.movement;
 
         if ((hint != SelectionHint.LOCATION_ADD)
-                && (hint != SelectionHint.LOCATION_INIT)) {
+            && (hint != SelectionHint.LOCATION_INIT)) {
             return;
         }
 
@@ -600,18 +600,18 @@ public class BasicLag
                 }
             }
 
+            logger.fine("{0}. Publish section set {1}", getName(), sections);
             publish(new SectionSetEvent(this, hint, movement, sections));
-        }
-
-        if (glyphService != null) {
+        } else if (glyphService != null) {
             // Section -> Glyph
             if ((hint == LOCATION_ADD)
-                    || (hint == LOCATION_INIT)
-                    || (hint == SECTION_INIT)) {
+                || (hint == LOCATION_INIT)
+                || (hint == SECTION_INIT)) {
                 // Select related Glyph if any
                 Glyph glyph = (section != null) ? section.getGlyph() : null;
 
                 if (glyph != null) {
+                    logger.fine("{0}. Publish glyph {1}", getName(), glyph);
                     glyphService.publish(
                             new GlyphEvent(this, hint, movement, glyph));
                 }
