@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.score.entity;
 
+import java.util.ArrayList;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
@@ -25,7 +26,9 @@ import omr.score.visitor.ScoreVisitor;
 import omr.util.TreeNode;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -95,9 +98,7 @@ public class Tuplet
 
         // Let's gather the set of possible chords, ordered by their distance
         // (abscissa-based) to the position of the tuplet sign.
-        SortedSet<Chord> candidates = new TreeSet<>(
-                new DxComparator(point));
-
+        List<Chord> candidates = new ArrayList<>();
         for (TreeNode node : measure.getChords()) {
             Chord chord = (Chord) node;
             if (chord.getReferencePoint() != null) {
@@ -107,6 +108,7 @@ public class Tuplet
                 }
             }
         }
+        Collections.sort(candidates, new DxComparator(point));
 
         // Now, get the properly embraced chords
         SortedSet<Chord> chords = getEmbracedChords(
@@ -161,8 +163,8 @@ public class Tuplet
     // expectedCount //
     //---------------//
     /**
-     * Report the number of basic items governed by the tuplet A given chord may
-     * represent several basic items (chords of base duration)
+     * Report the number of basic items governed by the tuplet.
+     * A given chord may represent several basic items (chords of base duration)
      *
      * @param shape the tuplet shape
      * @return 3 or 6
@@ -187,8 +189,9 @@ public class Tuplet
     // getEmbracedChords //
     //-------------------//
     /**
-     * Report the proper collection of chords that are embraced by the tuplet
-     * <p/>
+     * Report the proper collection of chords that are embraced by the
+     * tuplet
+     *
      * @param glyph         underlying glyph
      * @param measure       measure where the sign is located
      * @param point         location for the sign
@@ -200,7 +203,7 @@ public class Tuplet
     private static SortedSet<Chord> getEmbracedChords (Glyph glyph,
                                                        Measure measure,
                                                        PixelPoint point,
-                                                       SortedSet<Chord> candidates,
+                                                       List<Chord> candidates,
                                                        Staff requiredStaff)
     {
         logger.fine("{0} {1}{2}",
@@ -288,7 +291,8 @@ public class Tuplet
     // getFactor //
     //-----------//
     /**
-     * Report the tuplet factor that corresponds to the provided tuplet sign
+     * Report the tuplet factor that corresponds to the provided tuplet
+     * sign
      *
      * @param glyph the tuplet sign
      * @return the related factor
@@ -378,7 +382,8 @@ public class Tuplet
     // TupletCollector //
     //-----------------//
     /**
-     * In charge of incrementally collecting the chords for a given tuplet sign
+     * In charge of incrementally collecting the chords for a given
+     * tuplet sign.
      */
     private static class TupletCollector
     {

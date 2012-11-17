@@ -752,9 +752,7 @@ public class BasicNest
             } catch (IllegalArgumentException ex) {
                 // All glyphs do not belong to the same system
                 // No compound is allowed and displayed
-                logger.warning(
-                        "Glyphs from different systems {0}",
-                        Glyphs.toString(glyphs));
+                logger.warning("Selecting glyphs from different systems");
             }
         }
     }

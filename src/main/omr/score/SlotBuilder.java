@@ -268,9 +268,32 @@ public class SlotBuilder
             // Sort measure chords by abscissa
             Collections.sort(measure.getChords(), Chord.byNodeAbscissa);
 
+            // Allocate matrix of inter-chord relartionships
             int chordCount = measure.getChords().size();
             matrix = new Rel[chordCount][chordCount];
 
+            // BeamGroup-based relationships
+            inspectBeams();
+
+            // Seed-based relationships
+            inspectSeeds();
+
+            // Location-based relationships
+            inspectLocations();
+
+            if (logger.isFineEnabled()) {
+                dumpRelationships();
+            }
+        }
+
+        //--------------//
+        // inspectBeams //
+        //--------------//
+        /**
+         * Derive some inter-chord relationships from BeamGroup's.
+         */
+        private void inspectBeams ()
+        {
             // BeamGroup-based relationships
             for (BeamGroup group : measure.getBeamGroups()) {
                 Set<Chord> chordSet = new HashSet<>();
@@ -288,8 +311,17 @@ public class SlotBuilder
                     prevChord = chord;
                 }
             }
+        }
 
-            // Seed-based relationships
+        //--------------//
+        // inspectSeeds //
+        //--------------//
+        /**
+         * Derive some inter-chords relationships from shared seeds.
+         */
+        private void inspectSeeds ()
+        {
+            final int chordCount = measure.getChords().size();
             int index = 0;
             for (TreeNode pn : measure.getChords()) {
                 index++;
@@ -310,10 +342,20 @@ public class SlotBuilder
                     }
                 }
             }
+        }
 
-            // Location-based relationships
+        //------------------//
+        // inspectLocations //
+        //------------------//
+        /**
+         * Derive the missing inter-chord relationships from chords
+         * relative locations.
+         */
+        private void inspectLocations ()
+        {
+            final int chordCount = measure.getChords().size();
             List<ChordPair> adjacencies = new ArrayList<>();
-            index = 0;
+            int index = 0;
             for (TreeNode pn : measure.getChords()) {
                 index++;
                 Chord ch1 = (Chord) pn;
@@ -334,10 +376,7 @@ public class SlotBuilder
                                    - Math.max(box1.y, box2.y);
                     if (yOverlap > 0) {
                         // Boxes overlap vertically
-                        // Check horizontal void gap
-                        int xGap = Math.max(box1.x, box2.x)
-                                   - Math.min(box1.x + box1.width, box2.x + box2.width);
-                        if (xGap <= params.maxChordXGap) {
+                        if (areAdjacent(ch1, ch2)) {
                             setRel(ch1, ch2, Rel.CLOSE);
                             setRel(ch2, ch1, Rel.CLOSE);
                             adjacencies.add(new ChordPair(ch1, ch2));
@@ -386,10 +425,40 @@ public class SlotBuilder
                     }
                 }
             }
+        }
 
-            if (logger.isFineEnabled()) {
-                dumpRelationships();
+        //-------------//
+        // areAdjacent //
+        //-------------//
+        private boolean areAdjacent (Chord ch1,
+                                     Chord ch2)
+        {
+            final PixelRectangle box1 = ch1.getBox();
+            final PixelRectangle box2 = ch2.getBox();
+
+            // Check horizontal void gap
+            final int xGap = Math.max(box1.x, box2.x)
+                             - Math.min(box1.x + box1.width, box2.x + box2.width);
+
+            if (xGap > params.maxChordXGap) {
+                return false;
             }
+
+            // If stem directions are identical -> false
+            if (ch1.getStem() != null
+                && ch2.getStem() != null) {
+                if (ch1.getStemDir() == ch2.getStemDir()) {
+                    return false;
+                }
+
+                // If beam on each side -> false (different groups!)
+                if (!ch1.getBeams().isEmpty()
+                    && !ch2.getBeams().isEmpty()) {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         //-------------------//

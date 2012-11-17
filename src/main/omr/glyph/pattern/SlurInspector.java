@@ -81,7 +81,8 @@ public class SlurInspector
     private static final EnumSet<Shape> extShapes = EnumSet.copyOf(
             ShapeSet.shapesOf(
             ShapeSet.Dots,
-            ShapeSet.shapesOf(Shape.CLUTTER, Shape.CHARACTER)));
+            ShapeSet.shapesOf(Shape.CLUTTER, Shape.CHARACTER,
+            Shape.LEDGER, Shape.TENUTO)));
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -997,7 +998,7 @@ public class SlurInspector
                 "Minimum height for extension box, specified as LineFraction");
 
         Scale.LineFraction maxChunkThickness = new Scale.LineFraction(
-                1.8,
+                2,
                 "Maximum mean thickness of a chunk to be part of slur computation");
 
         Constant.Ratio maxHeightRatio = new Constant.Ratio(
