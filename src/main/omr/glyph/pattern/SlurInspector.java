@@ -927,6 +927,11 @@ public class SlurInspector
      */
     private boolean isValid (Glyph slur)
     {
+        // Make sure we are not trying to reassign a blacklisted shape
+        if (slur.isShapeForbidden(Shape.SLUR)) {
+            return false;
+        }
+        
         Object cause = getInvalidity(slur.getMembers(), slur.getCircle());
 
         if (slur.isVip()) {

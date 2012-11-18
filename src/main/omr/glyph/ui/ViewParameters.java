@@ -128,10 +128,10 @@ public class ViewParameters
         firePropertyChange(LINE_PAINTING, oldValue, value);
     }
 
-    //----------------------------//
-    // setSectionSelectionEnabled //
-    //----------------------------//
-    public void setSectionSelectionEnabled (boolean value)
+    //----------------//
+    // setSectionMode //
+    //----------------//
+    public void setSectionMode (boolean value)
     {
         boolean oldValue = sectionMode;
         sectionMode = value;
