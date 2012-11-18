@@ -440,13 +440,22 @@ public class SlotBuilder
             final int xGap = Math.max(box1.x, box2.x)
                              - Math.min(box1.x + box1.width, box2.x + box2.width);
 
-            if (xGap > params.maxChordXGap) {
+            if (xGap > params.maxAdjacencyGap) {
                 return false;
             }
+            if (xGap < 0) {
+                return true;
+            }
 
-            // If stem directions are identical -> false
             if (ch1.getStem() != null
                 && ch2.getStem() != null) {
+
+                // If they share the same stem -> true
+                if (ch1.getStem() == ch2.getStem()) {
+                    return true;
+                }
+
+                // If stem directions are identical -> false
                 if (ch1.getStemDir() == ch2.getStemDir()) {
                     return false;
                 }
@@ -456,9 +465,18 @@ public class SlotBuilder
                     && !ch2.getBeams().isEmpty()) {
                     return false;
                 }
-            }
 
-            return true;
+                // Check abscissa gap between stems
+                if (Math.abs(ch1.getHeadLocation().x - ch2.getHeadLocation().x)
+                    > params.maxSlotDx) {
+                    return false;
+                }
+                
+                // All tests are OK
+                return true;
+            } else {
+                return false;
+            }
         }
 
         //-------------------//
@@ -801,6 +819,8 @@ public class SlotBuilder
         {
             this.one = one;
             this.two = two;
+            logger.fine("Adjacent {0}@{1} & {2}@{3}",
+                    one, one.getHeadLocation(), two, two.getHeadLocation());
         }
 
         @Override
@@ -821,7 +841,7 @@ public class SlotBuilder
                 1.0,
                 "Maximum horizontal delta between a slot and a chord");
 
-        Scale.Fraction maxChordXGap = new Scale.Fraction(
+        Scale.Fraction maxAdjacencyGap = new Scale.Fraction(
                 0.5,
                 "Maximum horizontal gap between adjacent chords bounds");
 
@@ -836,13 +856,13 @@ public class SlotBuilder
 
         private final int maxSlotDx;
 
-        private final int maxChordXGap;
+        private final int maxAdjacencyGap;
 
         //~ Constructors -------------------------------------------------------
         public Parameters (Scale scale)
         {
             maxSlotDx = scale.toPixels(constants.maxSlotDx);
-            maxChordXGap = scale.toPixels(constants.maxChordXGap);
+            maxAdjacencyGap = scale.toPixels(constants.maxAdjacencyGap);
         }
     }
 }
