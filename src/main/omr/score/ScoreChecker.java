@@ -25,6 +25,7 @@ import omr.glyph.facets.Glyph;
 import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
+import omr.score.common.PixelRectangle;
 import omr.score.entity.Beam;
 import omr.score.entity.BeamGroup;
 import omr.score.entity.Chord;
@@ -201,6 +202,9 @@ public class ScoreChecker
 
             // Check void note heads WRT flags or beams
             checkVoidHeads(chord);
+
+            // Check note heads do not appear on both stem head and tail
+            checkHeadLocations(chord);
         } catch (Exception ex) {
             logger.warning(
                     getClass().getSimpleName() + " Error visiting " + chord,
@@ -398,8 +402,7 @@ public class ScoreChecker
      */
     private void checkNoteConsistency (Chord chord)
     {
-        EnumMap<Shape, List<Note>> shapes = new EnumMap<>(
-                Shape.class);
+        EnumMap<Shape, List<Note>> shapes = new EnumMap<>(Shape.class);
 
         for (TreeNode node : chord.getNotes()) {
             Note note = (Note) node;
@@ -418,8 +421,7 @@ public class ScoreChecker
         }
 
         if (shapes.keySet().size() > 1) {
-            chord.addError(
-                    chord.getStem(),
+            chord.addError(chord.getStem(),
                     "Note inconsistency in " + chord + shapes);
 
             // Check evaluations
@@ -602,8 +604,7 @@ public class ScoreChecker
             return;
         }
 
-        ScoreSystem system = chord.getSystem();
-        Predicate<Shape> predicate = new Predicate<Shape>()
+        Predicate<Shape> blackHeadPredicate = new Predicate<Shape>()
         {
             @Override
             public boolean check (Shape shape)
@@ -642,11 +643,49 @@ public class ScoreChecker
                 Evaluation vote = evaluator.rawVote(
                         glyph,
                         Grades.consistentNoteMinGrade,
-                        predicate);
+                        blackHeadPredicate);
 
                 if (vote != null) {
                     glyph.setEvaluation(vote);
                 }
+            }
+        }
+    }
+
+    //--------------------//
+    // checkHeadLocations //
+    //--------------------//
+    /**
+     * Check that note heads do not appear on both stem head and tail.
+     * On tail we can have nothing or beams or flags, but no heads
+     *
+     * @param chord the chord to check
+     */
+    private void checkHeadLocations (Chord chord)
+    {
+        // This test applies only to chords with stem
+        Glyph stem = chord.getStem();
+        if (stem == null) {
+            return;
+        }
+
+        PixelRectangle tailBox = new PixelRectangle(chord.getTailLocation());
+        int halfTailBoxSide = chord.getScale().toPixels(constants.halfTailBoxSide);
+        tailBox.grow(halfTailBoxSide, halfTailBoxSide);
+
+        for (TreeNode node : chord.getNotes()) {
+            Note note = (Note) node;
+
+            // If note is close to tail, it can't be a note
+            if (note.getBox().intersects(tailBox)) {
+                for (Glyph glyph : note.getGlyphs()) {
+                    if (logger.isFineEnabled() || glyph.isVip()) {
+                        logger.info("Note {0} too close to tail of stem {1}",
+                                note, stem);
+                    }
+                    glyph.setShape(null);
+                }
+                modified.set(true);
             }
         }
     }
@@ -888,6 +927,10 @@ public class ScoreChecker
                 "PitchPosition",
                 1.5,
                 "Minimum pitch difference between note heads on same stem side");
+
+        Scale.Fraction halfTailBoxSide = new Scale.Fraction(
+                1,
+                "Half side of box on stem tail to exclude notes");
 
     }
 }

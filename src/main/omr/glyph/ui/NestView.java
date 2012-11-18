@@ -88,9 +88,9 @@ public class NestView
         this.nest = nest;
         this.controller = controller;
         this.lags = lags;
-        
+
         setName(nest.getName() + "-View");
-        
+
         setBackground(Color.white);
 
         // (Weakly) listening on ViewParameters and PaintingParameters
@@ -155,12 +155,11 @@ public class NestView
     public void render (Graphics2D g)
     {
         // Should we draw the section borders?
-        final boolean drawBorders = ViewParameters.getInstance()
-                .isSectionSelectionEnabled();
+        final boolean drawBorders = ViewParameters.getInstance().isSectionMode();
 
         // Stroke for borders
         final Stroke oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
-        
+
         if (lags != null) {
             for (Lag lag : lags) {
                 // Render all sections, using the colors they have been assigned
@@ -191,7 +190,7 @@ public class NestView
     {
         // Check the clipping
         Rectangle box = glyph.getBounds();
-        
+
         if ((box != null) && box.intersects(g.getClipBounds())) {
             g.fillRect(box.x, box.y, box.width, box.height);
         }
@@ -216,19 +215,19 @@ public class NestView
 
         // Render the selected glyph(s) if any
         Set<Glyph> glyphs = nest.getSelectedGlyphSet();
-        
+
         if (glyphs != null) {
             // Decorations first
             Stroke oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
             g.setColor(Color.blue);
-            
+
             for (Glyph glyph : glyphs) {
                 // Draw character boxes for textual glyphs?
                 if (glyph.isText()) {
                     if (ViewParameters.getInstance()
                             .isLetterBoxPainting()) {
                         TextWord word = glyph.getTextWord();
-                        
+
                         if (word != null) {
                             for (TextChar ch : word.getChars()) {
                                 Rectangle b = ch.getBounds();
@@ -240,36 +239,35 @@ public class NestView
 
                 // Draw attachments, if any
                 glyph.renderAttachments(g);
-                
+
                 // Draw glyph line?
                 if (ViewParameters.getInstance().isLinePainting()) {
                     glyph.renderLine(g);
                 }
             }
-            
+
             g.setStroke(oldStroke);
         }
 
         // Glyph areas second, using XOR mode for the area
-        if (!ViewParameters.getInstance()
-                .isSectionSelectionEnabled()) {
+        if (!ViewParameters.getInstance().isSectionMode()) {
             // Glyph selection mode
             if (glyphs != null) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setColor(Color.black);
                 g2.setXORMode(Color.darkGray);
-                
+
                 for (Glyph glyph : glyphs) {
                     renderGlyphArea(glyph, g2);
                 }
-                
+
                 g2.dispose();
             }
         } else {
             // Section selection mode
             for (Lag lag : lags) {
                 Set<Section> selected = lag.getSelectedSectionSet();
-                
+
                 if ((selected != null) && !selected.isEmpty()) {
                     for (Section section : selected) {
                         section.renderSelected(g);
@@ -292,7 +290,7 @@ public class NestView
 
         void renderItems (Graphics2D g);
     }
-    
+
     //------------------//
     // WeakItemRenderer //
     //------------------//
@@ -301,17 +299,17 @@ public class NestView
     {
 
         protected final WeakReference<ItemRenderer> weakRenderer;
-        
+
         public WeakItemRenderer (ItemRenderer renderer)
         {
             weakRenderer = new WeakReference<>(renderer);
         }
-        
+
         @Override
         public void renderItems (Graphics2D g)
         {
             ItemRenderer renderer = weakRenderer.get();
-            
+
             if (renderer != null) {
                 renderer.renderItems(g);
             }

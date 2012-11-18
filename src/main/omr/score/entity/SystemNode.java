@@ -87,7 +87,6 @@ public abstract class SystemNode
             }
         }
 
-        ///throw new RuntimeException("Creating a SystemNode with no ScoreSystem");
         system = null;
     }
 
@@ -118,7 +117,8 @@ public abstract class SystemNode
     // addError //
     //----------//
     /**
-     * Register a system-based error in the ErrorsWindow, with the related glyph
+     * Register a system-based error in the ErrorsWindow, with the
+     * related glyph
      *
      * @param glyph the related glyph
      * @param text  the error message
@@ -241,8 +241,7 @@ public abstract class SystemNode
     // computeBox //
     //------------//
     /**
-     * Compute the bounding box of this entity, wrt to the system top-left
-     * corner.
+     * Compute the bounding box of this entity.
      * Unless overridden, this method raises an exception.
      */
     protected void computeBox ()
@@ -255,8 +254,7 @@ public abstract class SystemNode
     // computeCenter //
     //---------------//
     /**
-     * Compute the center of this entity, wrt to the system top-left corner.
-     * Unless overridden, this method raises an exception.
+     * Compute the center of this entity.
      */
     protected void computeCenter ()
     {

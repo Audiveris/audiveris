@@ -294,7 +294,7 @@ public class SymbolsEditor
         public void contextSelected (Point pt,
                                      MouseMovement movement)
         {
-            if (!ViewParameters.getInstance().isSectionSelectionEnabled()) {
+            if (!ViewParameters.getInstance().isSectionMode()) {
                 // Glyph mode
                 pointSelected(pt, movement);
             }
@@ -389,7 +389,7 @@ public class SymbolsEditor
             if (painting.isInputPainting()) {
                 // Should we draw the section borders?
                 final boolean drawBorders = ViewParameters.getInstance()
-                        .isSectionSelectionEnabled();
+                        .isSectionMode();
 
                 // Stroke for borders
                 final Stroke oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
@@ -493,7 +493,7 @@ public class SymbolsEditor
         @SuppressWarnings("unchecked")
         private void handleEvent (SectionSetEvent sectionSetEvent)
         {
-            if (!ViewParameters.getInstance().isSectionSelectionEnabled()) {
+            if (!ViewParameters.getInstance().isSectionMode()) {
                 // Glyph selection mode
                 return;
             }

@@ -46,15 +46,15 @@ public class ViewParameters
     public static final String LINE_PAINTING = "linePainting";
 
     /** Should the Sections selection be enabled  */
-    public static final String SECTION_SELECTION_ENABLED = "sectionSelectionEnabled";
+    public static final String SECTION_MODE = "sectionMode";
 
     /** Should the stick attachments be painted */
     public static final String ATTACHMENT_PAINTING = "attachmentPainting";
 
     //~ Instance fields --------------------------------------------------------
 
-    /** Dynamic flag to remember if section selection is enabled */
-    private boolean sectionSelectionEnabled = false;
+    /** Dynamic flag to remember if section mode is enabled */
+    private boolean sectionMode = false;
 
     //~ Methods ----------------------------------------------------------------
 
@@ -90,12 +90,12 @@ public class ViewParameters
         return constants.linePainting.getValue();
     }
 
-    //---------------------------//
-    // isSectionSelectionEnabled //
-    //---------------------------//
-    public boolean isSectionSelectionEnabled ()
+    //---------------//
+    // isSectionMode //
+    //---------------//
+    public boolean isSectionMode ()
     {
-        return sectionSelectionEnabled;
+        return sectionMode;
     }
 
     //-----------------------//
@@ -133,9 +133,9 @@ public class ViewParameters
     //----------------------------//
     public void setSectionSelectionEnabled (boolean value)
     {
-        boolean oldValue = sectionSelectionEnabled;
-        sectionSelectionEnabled = value;
-        firePropertyChange(SECTION_SELECTION_ENABLED, oldValue, value);
+        boolean oldValue = sectionMode;
+        sectionMode = value;
+        firePropertyChange(SECTION_MODE, oldValue, value);
     }
 
     //-------------------//
@@ -181,11 +181,9 @@ public class ViewParameters
      * Action that toggles the ability to select Sections (rather than Glyphs)
      * @param e the event that triggered this action
      */
-    @Action(selectedProperty = SECTION_SELECTION_ENABLED)
+    @Action(selectedProperty = SECTION_MODE)
     public void toggleSections (ActionEvent e)
     {
-        //        logger.info(
-        //            "Section mode is " + (isSectionSelectionEnabled() ? "on" : "off"));
     }
 
     //~ Inner Interfaces -------------------------------------------------------

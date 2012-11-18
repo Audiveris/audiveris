@@ -468,7 +468,7 @@ public class BasicLag
         }
 
         // Section selection mode?
-        if (ViewParameters.getInstance().isSectionSelectionEnabled()) {
+        if (ViewParameters.getInstance().isSectionMode()) {
             // Non-degenerated rectangle? 
             if ((rect.width > 0) && (rect.height > 0)) {
                 // Look for enclosed sections
@@ -566,7 +566,7 @@ public class BasicLag
         }
 
         // In section-selection mode, update section set
-        if (ViewParameters.getInstance().isSectionSelectionEnabled()) {
+        if (ViewParameters.getInstance().isSectionMode()) {
             // Section mode: Update section set
             Set<Section> sections = getSelectedSectionSet();
 

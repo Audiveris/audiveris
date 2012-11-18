@@ -684,7 +684,7 @@ public class BasicNest
         // In glyph-selection mode, for non-transient glyphs
         // (and only if we have interested subscribers)
         if ((hint != GLYPH_TRANSIENT)
-            && !ViewParameters.getInstance().isSectionSelectionEnabled()
+            && !ViewParameters.getInstance().isSectionMode()
             && (subscribersCount(GlyphSetEvent.class) > 0)) {
             // Update glyph set
             Set<Glyph> glyphs = getSelectedGlyphSet();
@@ -726,7 +726,7 @@ public class BasicNest
      */
     private void handleEvent (GlyphSetEvent glyphSetEvent)
     {
-        if (ViewParameters.getInstance().isSectionSelectionEnabled()) {
+        if (ViewParameters.getInstance().isSectionMode()) {
             // Section mode
             return;
         }
