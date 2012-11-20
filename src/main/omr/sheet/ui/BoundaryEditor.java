@@ -92,7 +92,7 @@ public class BoundaryEditor
     {
         this.sheet = sheet;
 
-        menu = new JMenu("Boundaries");
+        menu = new JMenu("Boundaries ...");
         menu.add(new JMenuItem(new StartAction()));
         menu.add(new JMenuItem(new StopAction()));
 

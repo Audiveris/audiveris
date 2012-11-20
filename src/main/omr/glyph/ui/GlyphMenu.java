@@ -40,7 +40,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 /**
- * Abstract class {@code GlyphMenu} is the base for all glyph-based 
+ * Abstract class {@code GlyphMenu} is the base for glyph-based 
  * menus such as {@link SymbolMenu}.
  * It also provides implementation for basic actions: copy, paste, assign,
  * compound, deassign and dump.
@@ -49,7 +49,8 @@ import javax.swing.JMenuItem;
  * are inserted between such groups.</p>
  *
  * <p>Actions are also organized according to their target menu level, to
- * allow actions to be dispatched into a hierarchy of menus.</p>
+ * allow actions to be dispatched into a hierarchy of menus.
+ * Although currently all levels are set to 0.</p>
  *
  * @author Hervé Bitteur
  */
@@ -298,6 +299,7 @@ public abstract class GlyphMenu
         public void actionPerformed (ActionEvent e)
         {
             JMenuItem source = (JMenuItem) e.getSource();
+            logger.warning("BINGO AssignListener about to assign set: {0}", nest.getSelectedGlyphSet());
             controller.asyncAssignGlyphs(
                 nest.getSelectedGlyphSet(),
                 Shape.valueOf(source.getText()),

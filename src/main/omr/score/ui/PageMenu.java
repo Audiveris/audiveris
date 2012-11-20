@@ -46,7 +46,8 @@ import javax.swing.JPopupMenu;
 /**
  * Class {@code PageMenu} defines the popup menu which is linked to the
  * current selection in page editor view.
- * <p>It points to 4 sub-menus: measure, slot, glyphs, boundaries</p>
+ * <p>It points to several sub-menus: measure, slot, chords, glyphs, boundaries
+ * </p>
  *
  * @author Hervé Bitteur
  */
@@ -58,38 +59,53 @@ public class PageMenu
     private static final Logger logger = Logger.getLogger(PageMenu.class);
 
     //~ Instance fields --------------------------------------------------------
-    /** The related page */
+    //
+    /** The related page. */
     private final Page page;
 
-    /** Set of actions to update menu according to current selections */
+    /** Actions to update according to current selections. */
     private final Collection<DynAction> dynActions = new HashSet<>();
 
-    /** Concrete popup menu */
+    /** Concrete popup menu. */
     private final JPopupMenu popup;
 
-    /** Submenus */
+    /** Measure submenu. */
     private final MeasureMenu measureMenu = new MeasureMenu();
 
+    /** Slot submenu. */
     private final SlotMenu slotMenu = new SlotMenu();
 
+    /** Chord submenu. */
     private final ChordMenu chordMenu = new ChordMenu();
 
+    /** Glyph submenu. */
     private final SymbolMenu symbolMenu;
 
+    /** Boundary submenu. */
     private final BoundaryEditor boundaryEditor;
 
     // Context
-    private int glyphNb = 0;
-
-    private int chordNb = 0;
-
+    //
+    /** Selected system. */
     private ScoreSystem system;
 
+    /** Selected measure. */
     private Measure measure;
 
+    /** Selected slot. */
     private Slot slot;
 
+    /** Selected chords. */
+    private Set<Chord> selectedChords;
+
+    /** Number of chords referred to. */
+    private int chordNb = 0;
+
+    /** Number of glyphs in the selection. */
+    private int glyphNb = 0;
+
     //~ Constructors -----------------------------------------------------------
+    //
     //----------//
     // PageMenu //
     //----------//
@@ -104,8 +120,7 @@ public class PageMenu
         this.page = page;
         this.symbolMenu = symbolMenu;
 
-        boundaryEditor = page.getSheet()
-                .getBoundaryEditor();
+        boundaryEditor = page.getSheet().getBoundaryEditor();
 
         popup = new JPopupMenu();
         defineLayout();
@@ -117,6 +132,7 @@ public class PageMenu
     }
 
     //~ Methods ----------------------------------------------------------------
+    //
     //----------//
     // getPopup //
     //----------//
@@ -210,12 +226,13 @@ public class PageMenu
     }
 
     //~ Inner Classes ----------------------------------------------------------
+    //
     //-----------//
     // DynAction //
     //-----------//
     /**
-     * Base implementation, to register the dynamic actions that need to
-     * be updated according to the current glyph selection context.
+     * Base implementation, to register the dynamic actions that need
+     * to be updated according to the current glyph selection context.
      */
     public abstract class DynAction
             extends AbstractAction
@@ -232,115 +249,6 @@ public class PageMenu
         public abstract void update ();
     }
 
-    //    //---------//
-    //    // DynItem //
-    //    //---------//
-    //    /**
-    //     * A JMenuItem which can be updated
-    //     */
-    //    private abstract class DynItem
-    //        extends JMenuItem
-    //    {
-    //        //~ Constructors -------------------------------------------------------
-    //
-    //        public DynItem ()
-    //        {
-    //            // Record the instance
-    //            dynItems.add(this);
-    //
-    //            // Initially update the item
-    //            update();
-    //
-    //            setEnabled(false);
-    //        }
-    //
-    //        //~ Methods ------------------------------------------------------------
-    //
-    //        public abstract void update ();
-    //    }
-    //
-    //    //----------------//
-    //    // AdditionalItem //
-    //    //----------------//
-    //    /**
-    //     * Used to host additional JMenuItem, without being directly updated
-    //     */
-    //    private static class AdditionalItem
-    //        extends JMenuItem
-    //    {
-    //        //~ Constructors -------------------------------------------------------
-    //
-    //        public AdditionalItem (String text)
-    //        {
-    //            super(text);
-    //            setEnabled(false);
-    //        }
-    //    }
-    //
-    //    //-----------//
-    //    // ChordItem //
-    //    //-----------//
-    //    /**
-    //     * Used to host information about the first chord of the translation,
-    //     * while the subsequent ones are hosted in additional items
-    //     */
-    //    private class ChordItem
-    //        extends DynItem
-    //    {
-    //        //~ Methods ------------------------------------------------------------
-    //
-    //        public void update ()
-    //        {
-    //            // Remove all subsequent Chord additional items
-    //            int pos = popup.getComponentIndex(this);
-    //
-    //            if (pos != -1) {
-    //                int index = pos + 1;
-    //
-    //                while (popup.getComponentCount() > index) {
-    //                    Component comp = popup.getComponent(index);
-    //
-    //                    if (comp instanceof AdditionalItem) {
-    //                        popup.remove(index);
-    //                    } else {
-    //                        break;
-    //                    }
-    //                }
-    //            }
-    //
-    //            Set<Glyph> glyphs = page.getSheet()
-    //                                    .getVerticalLag()
-    //                                    .getSelectedGlyphSet();
-    //
-    //            if ((glyphs != null) && !glyphs.isEmpty()) {
-    //                Glyph glyph = glyphs.iterator()
-    //                                    .next();
-    //
-    //                if (glyph.isTranslated()) {
-    //                    int itemNb = 0;
-    //
-    //                    for (Object entity : glyph.getTranslations()) {
-    //                        if (entity instanceof Note) {
-    //                            Note note = (Note) entity;
-    //                            itemNb++;
-    //
-    //                            if (itemNb == 1) {
-    //                                setText(note.getChord().toShortString());
-    //                            } else {
-    //                                popup.add(
-    //                                    new AdditionalItem(
-    //                                        note.getChord().toShortString()));
-    //                            }
-    //                        }
-    //                    }
-    //                } else {
-    //                    setText("");
-    //                }
-    //            } else {
-    //                setText("");
-    //            }
-    //        }
-    //    }
     //-------------//
     // MeasureMenu //
     //-------------//
@@ -411,8 +319,7 @@ public class PageMenu
             public DumpAction ()
             {
                 putValue(NAME, "Dump voices");
-                putValue(
-                        SHORT_DESCRIPTION,
+                putValue(SHORT_DESCRIPTION,
                         "Dump the voices of the selected measure");
             }
 
@@ -429,71 +336,27 @@ public class PageMenu
                 setEnabled(measure != null);
             }
         }
-        //        //------------//
-        //        // PlayAction //
-        //        //------------//
-        //        /**
-        //         * Play the current measure
-        //         */
-        //        private class PlayAction
-        //            extends DynAction
-        //        {
-        //            //~ Constructors ---------------------------------------------------
-        //
-        //            public PlayAction ()
-        //            {
-        //                putValue(NAME, "Play");
-        //                putValue(SHORT_DESCRIPTION, "Play the selected measure");
-        //            }
-        //
-        //            //~ Methods --------------------------------------------------------
-        //
-        //            @Override
-        //            public void actionPerformed (ActionEvent e)
-        //            {
-        //                try {
-        //                    if (logger.isFineEnabled()) {
-        //                        logger.fine("Play " + measure);
-        //                    }
-        //
-        //                    Score score = page.getScore();
-        //                    MidiAgentFactory.getAgent()
-        //                                    .reset();
-        //                    new MidiActions.PlayTask(
-        //                        score,
-        //                        new MeasureId.MeasureRange(
-        //                            score,
-        //                            measure.getScoreId(),
-        //                            measure.getScoreId())).execute();
-        //                } catch (Exception ex) {
-        //                    logger.warning("Cannot play measure", ex);
-        //                }
-        //            }
-        //
-        //            @Override
-        //            public void update ()
-        //            {
-        //                setEnabled(measure != null);
-        //            }
-        //        }
     }
 
     //-----------//
     // ChordMenu //
     //-----------//
+    /**
+     * Dump the chords that translate the selected glyphs.
+     */
     private class ChordMenu
             extends DynAction
     {
         //~ Instance fields ----------------------------------------------------
 
         /** Concrete menu */
-        private final JMenuItem menu;
+        private final JMenu menu;
 
         //~ Constructors -------------------------------------------------------
         public ChordMenu ()
         {
-            menu = new JMenuItem("Chord");
-            menu.setEnabled(false);
+            menu = new JMenu("Chord");
+            defineLayout();
         }
 
         public JMenuItem getMenu ()
@@ -514,14 +377,14 @@ public class PageMenu
         @Override
         public void actionPerformed (ActionEvent e)
         {
-           // Void
+            // Void
         }
 
         public int updateMenu ()
         {
             SymbolsController controller = page.getSheet().getSymbolsController();
             Set<Glyph> glyphs = controller.getNest().getSelectedGlyphSet();
-            Set<Chord> chords = new HashSet<>();
+            selectedChords = new HashSet<>();
 
             for (Glyph glyph : glyphs) {
                 for (Object obj : glyph.getTranslations()) {
@@ -529,16 +392,16 @@ public class PageMenu
                         Note note = (Note) obj;
                         Chord chord = note.getChord();
                         if (chord != null) {
-                            chords.add(chord);
+                            selectedChords.add(chord);
                         }
                     } else if (obj instanceof Chord) {
-                        chords.add((Chord) obj);
+                        selectedChords.add((Chord) obj);
                     }
                 }
             }
 
-            if (!chords.isEmpty()) {
-                List<Chord> chordList = new ArrayList<>(chords);
+            if (!selectedChords.isEmpty()) {
+                List<Chord> chordList = new ArrayList<>(selectedChords);
                 Collections.sort(chordList, Chord.byAbscissa);
 
                 StringBuilder sb = new StringBuilder();
@@ -549,11 +412,53 @@ public class PageMenu
                     sb.append("Chord #")
                             .append(chord.getId());
                 }
+                sb.append(" ...");
 
                 menu.setText(sb.toString());
             }
 
-            return chords.size();
+            return selectedChords.size();
+        }
+
+        private void defineLayout ()
+        {
+            menu.add(new JMenuItem(new DumpAction()));
+        }
+
+        //~ Inner Classes ------------------------------------------------------
+        //------------//
+        // DumpAction //
+        //------------//
+        /**
+         * Dump the current chord(s)
+         */
+        private class DumpAction
+                extends DynAction
+        {
+            //~ Constructors ---------------------------------------------------
+
+            public DumpAction ()
+            {
+                putValue(NAME, "Dump chord(s)");
+                putValue(SHORT_DESCRIPTION,
+                        "Dump the selected chord(s)");
+            }
+
+            //~ Methods --------------------------------------------------------
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                // Dump the selected chords
+                for (Chord chord : selectedChords) {
+                    logger.info(chord.toString());
+                }
+            }
+
+            @Override
+            public void update ()
+            {
+                setEnabled(chordNb > 0);
+            }
         }
     }
 
@@ -606,27 +511,27 @@ public class PageMenu
         private void defineLayout ()
         {
             // Slot
-            menu.add(new JMenuItem(new DumpChordsAction()));
+            menu.add(new JMenuItem(new DumpSlotChordsAction()));
             menu.add(new JMenuItem(new DumpVoicesAction()));
         }
 
         //~ Inner Classes ------------------------------------------------------
-        //------------------//
-        // DumpChordsAction //
-        //------------------//
+        //
+        //----------------------//
+        // DumpSlotChordsAction //
+        //----------------------//
         /**
          * Dump the chords of the current slot
          */
-        private class DumpChordsAction
+        private class DumpSlotChordsAction
                 extends DynAction
         {
             //~ Constructors ---------------------------------------------------
 
-            public DumpChordsAction ()
+            public DumpSlotChordsAction ()
             {
                 putValue(NAME, "Dump chords");
-                putValue(
-                        SHORT_DESCRIPTION,
+                putValue(SHORT_DESCRIPTION,
                         "Dump the chords of the selected slot");
             }
 
@@ -658,8 +563,7 @@ public class PageMenu
             public DumpVoicesAction ()
             {
                 putValue(NAME, "Dump voices");
-                putValue(
-                        SHORT_DESCRIPTION,
+                putValue(SHORT_DESCRIPTION,
                         "Dump the voices of the selected slot");
             }
 
