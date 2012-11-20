@@ -980,8 +980,8 @@ public abstract class PagePainter
     // basicLayout //
     //-------------//
     /**
-     * Build a TextLayout from a String of BasicFont characters (transformed by
-     * the provided AffineTransform if any)
+     * Build a TextLayout from a String of BasicFont characters
+     * (transformed by the provided AffineTransform if any)
      *
      * @param str the string of proper codes
      * @param fat potential affine transformation

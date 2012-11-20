@@ -32,6 +32,8 @@ import omr.util.HorizontalSide;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 
@@ -276,6 +278,9 @@ public class GlyphsBuilder
      */
     public void computeGlyphFeatures (Glyph glyph)
     {
+        if (glyph.isVip()) {
+            logger.fine("computeGlyphFeatures for {0}", glyph.idString());
+        }
         // Mass center (which makes sure moments are available)
         glyph.getCentroid();
 
@@ -511,25 +516,45 @@ public class GlyphsBuilder
             return null;
         }
 
-        // Box for searching for a stem
-        PixelRectangle box = stemBoxOf(glyph, side);
-
+        // Box for stem(s) lookup
+        final PixelRectangle box = stemBoxOf(glyph, side);
+        final List<Glyph> stems = new ArrayList<>();
+        
         for (Glyph s : glyphs) {
             // Check bounding box intersection
-            if (s.isStem() && s.isActive() && s.getBounds()
-                    .intersects(box)) {
-                // Check close distance
+            if (s.isStem() && s.isActive() && s.getBounds().intersects(box)) {
+                // Use section intersection for confirmation
                 PixelRectangle b = stemBoxOf(s);
 
                 for (Section section : glyph.getMembers()) {
                     if (section.intersects(b)) {
-                        return s;
+                        stems.add(s);
+                        break;
                     }
                 }
             }
         }
 
-        return null;
+        // Pick best stem found, if any
+        if (stems.isEmpty()) {
+            return null;
+        } else {
+            if (stems.size() > 1) {
+                Collections.sort(stems, new Comparator<Glyph>()
+                {
+                    @Override
+                    public int compare (Glyph g1,
+                                        Glyph g2)
+                    {
+                        // Use ordinate overlap
+                        int overlap1 = box.intersection(g1.getBounds()).height;
+                        int overlap2 = box.intersection(g2.getBounds()).height;
+                        return Integer.compare(overlap1, overlap2);
+                    }
+                });
+            }
+            return stems.get(0);
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------

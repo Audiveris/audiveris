@@ -989,7 +989,7 @@ public class SticksBuilder
                 "Minimum value for section aspect (length / thickness)");
 
         Scale.Fraction maxDeltaCoord = new Scale.Fraction(
-                0.25,
+                0.175,
                 "Maximum difference of ordinates when merging two sticks");
 
         Scale.Fraction maxDeltaPos = new Scale.Fraction(

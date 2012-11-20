@@ -121,9 +121,15 @@ public class TimeSignatureFixer
                 measure = measure.getFollowing();
             }
 
-            if ((startMeasure != null) && !startManual) {
-                // Complete the ongoing time sig analysis
-                checkTimeSigs(startMeasure, stopMeasure);
+            if (startMeasure != null) {
+                if (!startManual) {
+                    // Complete the ongoing time sig analysis
+                    checkTimeSigs(startMeasure, stopMeasure);
+                }
+            } else {
+                // Whole page without explicit time signature
+                checkTimeSigs(part.getFirstMeasure(),
+                        page.getLastSystem().getFirstPart().getLastMeasure());
             }
         } catch (Exception ex) {
             logger.warning("TimeSignatureFixer. Error visiting " + page, ex);
@@ -167,6 +173,9 @@ public class TimeSignatureFixer
         SortedMap<Integer, TimeRational> bestSigs = retrieveBestSigs(
                 startMeasure,
                 stopMeasure);
+        logger.fine("{0}Best inferred time sigs in [M#{1},M#{2}]: {3}",
+                startMeasure.getPage().getSheet().getLogPrefix(),
+                startMeasure.getIdValue(), stopMeasure.getIdValue(), bestSigs);
 
         if (!bestSigs.isEmpty()) {
             TimeRational bestRational = bestSigs.get(bestSigs.firstKey());
@@ -213,8 +222,8 @@ public class TimeSignatureFixer
     // hasTimeSig //
     //------------//
     /**
-     * Check whether the provided measure contains at least one explicit time
-     * signature
+     * Check whether the provided measure contains at least one explicit
+     * time signature.
      *
      * @param measure the provided measure (in fact we care only about the
      *                measure id, regardless of the part)
@@ -230,8 +239,7 @@ public class TimeSignatureFixer
         for (Staff.SystemIterator sit = new Staff.SystemIterator(measure);
                 sit.hasNext();) {
             Staff staff = sit.next();
-            TimeSignature sig = sit.getMeasure().
-                    getTimeSignature(staff);
+            TimeSignature sig = sit.getMeasure().getTimeSignature(staff);
 
             if (sig != null) {
                 logger.fine("Measure#{0} {1}T{2} {3}",
@@ -253,8 +261,8 @@ public class TimeSignatureFixer
     // retrieveBestSigs //
     //------------------//
     /**
-     * By inspecting each voice in the provided measure range, determine the
-     * best intrinsic time signatures
+     * By inspecting each voice in the provided measure range,
+     * determine the best intrinsic time signatures.
      *
      * @param startMeasure beginning of the measure range
      * @param stopMeasure  end of the measure range
@@ -267,9 +275,7 @@ public class TimeSignatureFixer
         // Retrieve the significant measure informations
         Map<TimeRational, Integer> sigs = new LinkedHashMap<>();
         Measure m = startMeasure;
-        int mIndex = m.getParent().
-                getChildren().
-                indexOf(m);
+        int mIndex = m.getParent().getChildren().indexOf(m);
 
         // Loop on measure range
         while (true) {
@@ -281,8 +287,7 @@ public class TimeSignatureFixer
 
             for (TreeNode pNode : system.getParts()) {
                 SystemPart part = (SystemPart) pNode;
-                Measure measure = (Measure) part.getMeasures().
-                        get(mIndex);
+                Measure measure = (Measure) part.getMeasures().get(mIndex);
 
                 if (logger.isFineEnabled()) {
                     measure.printVoices(null);
@@ -290,7 +295,8 @@ public class TimeSignatureFixer
 
                 for (Voice voice : measure.getVoices()) {
                     TimeRational timeRational = voice.getInferredTimeSignature();
-                    logger.fine("Voice#{0}: {1}", voice.getId(), timeRational);
+                    logger.fine("Voice#{0} time inferred: {1}",
+                            voice.getId(), timeRational);
 
                     if (timeRational != null) {
                         // Update histogram
@@ -313,9 +319,7 @@ public class TimeSignatureFixer
             } else {
                 // Move to next measure
                 m = m.getFollowing();
-                mIndex = m.getParent().
-                        getChildren().
-                        indexOf(m);
+                mIndex = m.getParent().getChildren().indexOf(m);
             }
         }
 

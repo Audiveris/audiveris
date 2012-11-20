@@ -21,12 +21,13 @@ import omr.score.common.PixelRectangle;
 import omr.score.visitor.ScoreVisitor;
 
 /**
- * Class {@code Wedge} represents a crescendo or decrescendo (diminuendo)
+ * Class {@code Wedge} represents a crescendo (&lt;) or a
+ * decrescendo (&gt;).
  *
  * @author Hervé Bitteur
  */
 public class Wedge
-    extends AbstractDirection
+        extends AbstractDirection
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -34,36 +35,34 @@ public class Wedge
     private static final Logger logger = Logger.getLogger(Wedge.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Vertical spread in units */
     private final int spread;
 
     //~ Constructors -----------------------------------------------------------
-
     //-------//
     // Wedge //
     //-------//
     /**
-     * Creates a new instance of Wedge edge (there must be one for the wedge
-     * start, and one for the wedge stop).
+     * Creates a new instance of Wedge edge.
+     * (there must be one for the wedge start, and one for the wedge stop).
      *
      * @param measure measure that contains this wedge edge
-     * @param start indicate a wedge start
-     * @param point middle point on wedge edge
-     * @param chord a related chord if any
-     * @param glyph the underlying glyph
+     * @param start   indicate a wedge start
+     * @param point   middle point on wedge edge
+     * @param chord   a related chord if any
+     * @param glyph   the underlying glyph
      */
-    public Wedge (Measure    measure,
-                  boolean    start,
+    public Wedge (Measure measure,
+                  boolean start,
                   PixelPoint point,
-                  Chord      chord,
-                  Glyph      glyph)
+                  Chord chord,
+                  Glyph glyph)
     {
         super(measure, start, point, chord, glyph);
 
         // Spread
-        if ((start && (getShape() == Shape.DECRESCENDO)) ||
-            (!start && (getShape() == Shape.CRESCENDO))) {
+        if ((start && (getShape() == Shape.DECRESCENDO))
+            || (!start && (getShape() == Shape.CRESCENDO))) {
             spread = glyph.getBounds().height;
         } else {
             spread = 0;
@@ -71,28 +70,30 @@ public class Wedge
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // populate //
     //----------//
     /**
      * Used by SystemTranslator to allocate the wedges
      *
-     * @param glyph underlying glyph
+     * @param glyph           underlying glyph
      * @param startingMeasure measure where left side is located
-     * @param startingPoint location for left point
+     * @param startingPoint   location for left point
      */
-    public static void populate (Glyph      glyph,
-                                 Measure    startingMeasure,
+    public static void populate (Glyph glyph,
+                                 Measure startingMeasure,
                                  PixelPoint startingPoint)
     {
-        ScoreSystem    system = startingMeasure.getSystem();
-        SystemPart     part = startingMeasure.getPart();
+        if (glyph.isVip()) {
+            logger.fine("Wedge.populate {0}", glyph.idString());
+        }
+        
+        SystemPart part = startingMeasure.getPart();
         PixelRectangle box = glyph.getBounds();
 
         // Start
         glyph.setTranslation(
-            new Wedge(
+                new Wedge(
                 startingMeasure,
                 true,
                 startingPoint,
@@ -101,11 +102,11 @@ public class Wedge
 
         // Stop
         PixelPoint endingPoint = new PixelPoint(
-            box.x + box.width,
-            box.y + (box.height / 2));
-        Measure    endingMeasure = part.getMeasureAt(endingPoint);
+                box.x + box.width,
+                box.y + (box.height / 2));
+        Measure endingMeasure = part.getMeasureAt(endingPoint);
         glyph.addTranslation(
-            new Wedge(
+                new Wedge(
                 endingMeasure,
                 false,
                 endingPoint,

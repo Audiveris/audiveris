@@ -28,6 +28,7 @@ import omr.score.entity.Note;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Slot;
 import omr.score.entity.Voice;
+import static omr.score.SlotBuilder.Rel.*;
 
 import omr.sheet.Scale;
 
@@ -160,33 +161,36 @@ public class SlotBuilder
     /**
      * Describes the oriented relationship between two chords.
      */
-    private static enum Rel
+    protected static enum Rel
     {
 
-        /** Strong.
-         * Stem-located before in the same beam group */
-        GROUP_BEFORE("<|"),
-        /** Strong.
-         * Abscissa-located before the vertically overlapping chord */
-        OVERLAPPING_BEFORE(" <"),
-        /** Strong.
-         * Important abscissa difference in different staves */
-        LONG_BEFORE("<<"),
-        /** Strong.
-         * Identical thanks to an originating glyph in common */
-        IDENTICAL(" ="),
-        /** Weak.
-         * No important difference */
-        CLOSE(" $"),
-        /** Strong.
-         * Stem-located after in the same beam group */
-        GROUP_AFTER("|>"),
-        /** Strong.
-         * Abscissa-located after the vertically overlapping chord */
-        OVERLAPPING_AFTER("> "),
-        /** Strong.
-         * Important abscissa difference in different staves */
-        LONG_AFTER(">>");
+        /**
+         * Strongly before.
+         * Stem-located before in the same beam group.
+         * Abscissa-located before the vertically overlapping chord.
+         * Important abscissa difference in different staves.
+         */
+        BEFORE("B"),
+        //
+        /** Strongly after.
+         * Stem-located after in the same beam group.
+         * Abscissa-located after the vertically overlapping chord.
+         * Important abscissa difference in different staves.
+         */
+        AFTER("A"),
+        //
+        /**
+         * Strongly equal.
+         * Identical thanks to an originating glyph in common.
+         * Adjacency detected in same staff.
+         */
+        EQUAL("="),
+        //
+        /**
+         * Weakly close.
+         * No important difference, use other separation criteria.
+         */
+        CLOSE("?");
 
         private final String mnemo;
 
@@ -228,18 +232,10 @@ public class SlotBuilder
                     return 0;
                 } else {
                     switch (rel) {
-                    case GROUP_BEFORE:
-                        return -1;
-                    case OVERLAPPING_BEFORE:
-                        return -1;
-                    case LONG_BEFORE:
+                    case BEFORE:
                         return -1;
 
-                    case GROUP_AFTER:
-                        return 1;
-                    case OVERLAPPING_AFTER:
-                        return 1;
-                    case LONG_AFTER:
+                    case AFTER:
                         return 1;
 
                     default:
@@ -305,8 +301,8 @@ public class SlotBuilder
                 Chord prevChord = null;
                 for (Chord chord : groupChords) {
                     if (prevChord != null) {
-                        setRel(prevChord, chord, Rel.GROUP_BEFORE);
-                        setRel(chord, prevChord, Rel.GROUP_AFTER);
+                        setRel(prevChord, chord, BEFORE);
+                        setRel(chord, prevChord, AFTER);
                     }
                     prevChord = chord;
                 }
@@ -337,8 +333,8 @@ public class SlotBuilder
 
                     // Check for common note glyph
                     if (haveCommonSeed(ch1, ch2)) {
-                        setRel(ch1, ch2, Rel.IDENTICAL);
-                        setRel(ch2, ch1, Rel.IDENTICAL);
+                        setRel(ch1, ch2, EQUAL);
+                        setRel(ch2, ch1, EQUAL);
                     }
                 }
             }
@@ -377,31 +373,31 @@ public class SlotBuilder
                     if (yOverlap > 0) {
                         // Boxes overlap vertically
                         if (areAdjacent(ch1, ch2)) {
-                            setRel(ch1, ch2, Rel.CLOSE);
-                            setRel(ch2, ch1, Rel.CLOSE);
+                            setRel(ch1, ch2, EQUAL);
+                            setRel(ch2, ch1, EQUAL);
                             adjacencies.add(new ChordPair(ch1, ch2));
                         } else {
                             if (ch1.getCenter().x <= ch2.getCenter().x) {
-                                setRel(ch1, ch2, Rel.OVERLAPPING_BEFORE);
-                                setRel(ch2, ch1, Rel.OVERLAPPING_AFTER);
+                                setRel(ch1, ch2, BEFORE);
+                                setRel(ch2, ch1, AFTER);
                             } else {
-                                setRel(ch2, ch1, Rel.OVERLAPPING_BEFORE);
-                                setRel(ch1, ch2, Rel.OVERLAPPING_AFTER);
+                                setRel(ch2, ch1, BEFORE);
+                                setRel(ch1, ch2, AFTER);
                             }
                         }
                     } else {
                         // Boxes do not overlap vertically
                         int dx = Math.abs(ch1.getCenter().x - ch2.getCenter().x);
                         if (dx <= params.maxSlotDx) {
-                            setRel(ch1, ch2, Rel.CLOSE);
-                            setRel(ch2, ch1, Rel.CLOSE);
+                            setRel(ch1, ch2, CLOSE);
+                            setRel(ch2, ch1, CLOSE);
                         } else {
                             if (ch1.getCenter().x <= ch2.getCenter().x) {
-                                setRel(ch1, ch2, Rel.LONG_BEFORE);
-                                setRel(ch2, ch1, Rel.LONG_AFTER);
+                                setRel(ch1, ch2, BEFORE);
+                                setRel(ch2, ch1, AFTER);
                             } else {
-                                setRel(ch2, ch1, Rel.LONG_BEFORE);
-                                setRel(ch1, ch2, Rel.LONG_AFTER);
+                                setRel(ch2, ch1, BEFORE);
+                                setRel(ch1, ch2, AFTER);
                             }
                         }
                     }
@@ -418,8 +414,12 @@ public class SlotBuilder
                     for (Chord ch1 : n1) {
                         for (Chord ch2 : n2) {
                             if (ch1 != ch2) {
-                                setRel(ch1, ch2, Rel.CLOSE);
-                                setRel(ch2, ch1, Rel.CLOSE);
+                                if (getRel(ch1, ch2) != EQUAL) {
+                                    setRel(ch1, ch2, CLOSE);
+                                }
+                                if (getRel(ch2, ch1) != EQUAL) {
+                                    setRel(ch2, ch1, CLOSE);
+                                }
                             }
                         }
                     }
@@ -471,7 +471,7 @@ public class SlotBuilder
                     > params.maxSlotDx) {
                     return false;
                 }
-                
+
                 // All tests are OK
                 return true;
             } else {
@@ -502,12 +502,12 @@ public class SlotBuilder
                 sb.append("\n");
                 sb.append(String.format("%2d", iy + 1));
                 for (int ix = 0; ix < matrix.length; ix++) {
-                    sb.append(" ");
+                    sb.append("  ");
                     Rel rel = line[ix];
                     if (rel != null) {
                         sb.append(rel);
                     } else {
-                        sb.append(" -");
+                        sb.append(".");
                     }
                 }
 
@@ -528,8 +528,10 @@ public class SlotBuilder
 
             for (TreeNode cn : measure.getChords()) {
                 Chord ch = (Chord) cn;
-                if (getRel(chord, ch) == Rel.CLOSE
-                    || getRel(ch, chord) == Rel.CLOSE) {
+                Rel rel1 = getRel(chord, ch);
+                Rel rel2 = getRel(ch, chord);
+                if (rel1 == CLOSE || rel1 == EQUAL
+                    || rel2 == CLOSE || rel2 == EQUAL) {
                     closes.add(ch);
                 }
             }
@@ -838,7 +840,7 @@ public class SlotBuilder
     {
 
         Scale.Fraction maxSlotDx = new Scale.Fraction(
-                1.0,
+                0.75,
                 "Maximum horizontal delta between a slot and a chord");
 
         Scale.Fraction maxAdjacencyGap = new Scale.Fraction(

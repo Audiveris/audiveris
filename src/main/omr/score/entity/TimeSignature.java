@@ -386,8 +386,9 @@ public class TimeSignature
     // modify //
     //--------//
     /**
-     * Modify in situ this time signature using provided shape and rational. We
-     * use the intersected glyphs of the old sig as the glyphs for the newly
+     * Modify in situ this time signature using provided shape and
+     * rational value.
+     * We use the intersected glyphs of the old sig as the glyphs for the newly
      * built signature.
      *
      * @param shape        the shape (perhaps null) of correct signature
@@ -418,7 +419,7 @@ public class TimeSignature
             logger.fine("{0} assigned to {1}", shape, compound.idString());
         }
 
-        setRational(timeRational);
+        setRational(timeRational, shape);
     }
 
     //----------//
@@ -546,17 +547,24 @@ public class TimeSignature
     }
 
     //-------------//
-    // setTimeRational //
+    // setRational //
     //-------------//
     /**
      * Force this time signature to align to the provided rational value.
      *
      * @param timeRational the forced value
+     * @param shape        the forced shape, if any
      */
-    public void setRational (TimeRational timeRational)
+    public void setRational (TimeRational timeRational,
+                             Shape shape)
     {
         this.timeRational = timeRational;
-        shape = predefinedShape();
+        
+        if (shape != null) {
+            this.shape = shape;
+        } else {
+            this.shape = predefinedShape();
+        }
     }
 
     //----------//

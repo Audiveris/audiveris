@@ -739,13 +739,14 @@ public class ScoreChecker
 
                 // Still consistent?
                 if ((num == bestSig.getNumerator())
-                    && (den == bestSig.getDenominator())) {
+                    && (den == bestSig.getDenominator())
+                    && sig.getShape() == bestSig.getShape()) {
                     continue;
                 }
 
                 // Inconsistency detected
                 if (manualSig != null) {
-                    // Assign this manual sig to this (incorrect) sig
+                    // Assign this manual sig to this (different) sig
                     sig.copy(manualSig);
                 } else {
                     // Inconsistent sigs

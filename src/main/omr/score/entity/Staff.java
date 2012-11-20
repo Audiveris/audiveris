@@ -296,7 +296,8 @@ public class Staff
     //----------------//
     /**
      * Class {@code SystemIterator} implements an iterator on the
-     * sequence of staves within all parallel measures of a system.
+     * sequence of staves within all parallel measures of a system
+     * whatever the containing part.
      */
     public static class SystemIterator
         implements Iterator<Staff>

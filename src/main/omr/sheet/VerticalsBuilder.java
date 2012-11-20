@@ -160,7 +160,7 @@ public class VerticalsBuilder
 
         // We cannot reuse the sticks, since thick sticks are allowed for bars
         // but not for stems.
-        SticksBuilder verticalsArea = new SticksBuilder(
+        SticksBuilder verticalsBuilder = new SticksBuilder(
                 Orientation.VERTICAL,
                 scale,
                 sheet.getNest(),
@@ -168,9 +168,9 @@ public class VerticalsBuilder
                 system.getVerticalSections(),
                 new MySectionPredicate()),
                 false);
-        verticalsArea.setMaxThickness(constants.maxStemThickness);
+        verticalsBuilder.setMaxThickness(constants.maxStemThickness);
 
-        return retrieveVerticals(verticalsArea.retrieveSticks(), false);
+        return retrieveVerticals(verticalsBuilder.retrieveSticks(), false);
     }
 
     //---------------------//

@@ -827,21 +827,20 @@ public class Measure
         Slot slot = getClosestSlot(point);
 
         if (slot != null) {
-            // Choose the y-closest staff
-            Staff staff = getPart().getStaffAt(point);
-
-            // Are we below or above the staff?
-            StaffInfo staffInfo = staff.getInfo();
-            double pitch = staffInfo.pitchPositionOf(point);
-
-            if (pitch > 0) {
-                return slot.getChordAbove(point);
-            } else {
-                return slot.getChordBelow(point);
+            // First, try above
+            Chord chordAbove = slot.getChordAbove(point);
+            if (chordAbove != null) {
+                return chordAbove;
             }
-        } else {
-            return null;
+
+            // Second, try below
+            Chord chordBelow = slot.getChordBelow(point);
+            if (chordBelow != null) {
+                return chordBelow;
+            }
         }
+
+        return null;
     }
 
     //-----------//
@@ -1921,7 +1920,7 @@ public class Measure
      * @param id    the new id
      */
     public void swapVoiceId (Voice voice,
-                      int id)
+                             int id)
     {
         // Existing voice?
         Voice oldOwner = null;

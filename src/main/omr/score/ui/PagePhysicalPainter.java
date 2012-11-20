@@ -53,11 +53,12 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Stroke;
+import java.awt.font.TextLayout;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ConcurrentModificationException;
 import omr.math.Line;
-import omr.math.LineUtilities;
 
 /**
  * Class {@code PagePhysicalPainter} paints the recognized page
@@ -184,11 +185,19 @@ public class PagePhysicalPainter
                         .yAt(x);
                 g.drawLine(x, top, x, bottom);
 
-                // Draw slot start time
+                // Draw slot start time (with a maximum font size)
                 Rational slotStartTime = slot.getStartTime();
-
                 if (slotStartTime != null) {
-                    paint(basicLayout(slotStartTime.toString(), halfAT),
+                    TextLayout layout;
+                    double zoom = g.getTransform().getScaleX();
+                    if (zoom <= 2) {
+                        layout = basicLayout(slotStartTime.toString(), halfAT);
+                    } else {
+                        AffineTransform at = AffineTransform.
+                                getScaleInstance(1 / zoom, 1 / zoom);
+                        layout = basicLayout(slotStartTime.toString(), at);
+                    }
+                    paint(layout,
                             new PixelPoint(x, top - annotationDy),
                             BOTTOM_CENTER);
                 }
