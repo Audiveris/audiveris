@@ -51,6 +51,9 @@ public class ViewParameters
     /** Should the stick attachments be painted */
     public static final String ATTACHMENT_PAINTING = "attachmentPainting";
 
+    /** Should the translation links be painted */
+    public static final String TRANSLATION_PAINTING = "translationPainting";
+
     //~ Instance fields --------------------------------------------------------
 
     /** Dynamic flag to remember if section mode is enabled */
@@ -72,6 +75,14 @@ public class ViewParameters
     public boolean isAttachmentPainting ()
     {
         return constants.attachmentPainting.getValue();
+    }
+
+    //--------------_--------//
+    // isTranslationPainting //
+    //---------------_-------//
+    public boolean isTranslationPainting ()
+    {
+        return constants.translationPainting.getValue();
     }
 
     //---------------------//
@@ -106,6 +117,16 @@ public class ViewParameters
         boolean oldValue = constants.attachmentPainting.getValue();
         constants.attachmentPainting.setValue(value);
         firePropertyChange(ATTACHMENT_PAINTING, oldValue, value);
+    }
+
+    //------------------------//
+    // setTranslationPainting //
+    //------------------------//
+    public void setTranslationPainting (boolean value)
+    {
+        boolean oldValue = constants.translationPainting.getValue();
+        constants.translationPainting.setValue(value);
+        firePropertyChange(TRANSLATION_PAINTING, oldValue, value);
     }
 
     //----------------------//
@@ -147,6 +168,18 @@ public class ViewParameters
      */
     @Action(selectedProperty = ATTACHMENT_PAINTING)
     public void toggleAttachments (ActionEvent e)
+    {
+    }
+
+    //--------------------//
+    // toggleTranslations //
+    //--------------------//
+    /**
+     * Action that toggles the display of translations in selected sticks
+     * @param e the event that triggered this action
+     */
+    @Action(selectedProperty = TRANSLATION_PAINTING)
+    public void toggleTranslations (ActionEvent e)
     {
     }
 
@@ -212,14 +245,16 @@ public class ViewParameters
             true,
             "Should the letter boxes be painted");
 
-        //
         final Constant.Boolean linePainting = new Constant.Boolean(
             false,
             "Should the stick lines be painted");
 
-        //
         final Constant.Boolean attachmentPainting = new Constant.Boolean(
             false,
             "Should the staff & glyph attachments be painted");
+
+        final Constant.Boolean translationPainting = new Constant.Boolean(
+            true,
+            "Should the glyph translations links be painted");
     }
 }

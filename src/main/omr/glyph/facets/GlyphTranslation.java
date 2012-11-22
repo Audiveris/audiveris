@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.glyph.facets;
 
+import omr.score.entity.PartNode;
+
+import java.awt.Graphics2D;
 import java.util.Collection;
 
 /**
@@ -28,7 +31,7 @@ interface GlyphTranslation
      * Add a score entity as a translation for this glyph
      * @param entity the counterpart of this glyph on the score side
      */
-    void addTranslation (Object entity);
+    void addTranslation (PartNode entity);
 
     /**
      * Remove all the links to score entities
@@ -39,7 +42,7 @@ interface GlyphTranslation
      * Report the collection of score entities this glyph contributes to
      * @return the collection of entities that are translations of this glyph
      */
-    Collection<Object> getTranslations ();
+    Collection<PartNode> getTranslations ();
 
     /**
      * Report whether this glyph is translated to a score entity
@@ -51,5 +54,5 @@ interface GlyphTranslation
      * Assign a unique score translation for this glyph
      * @param entity the score entity that is a translation of this glyph
      */
-    void setTranslation (Object entity);
+    void setTranslation (PartNode entity);
 }

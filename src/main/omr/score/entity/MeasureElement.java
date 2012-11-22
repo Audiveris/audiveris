@@ -23,6 +23,10 @@ import omr.score.common.PixelPoint;
 
 import omr.sheet.Scale;
 
+import java.awt.geom.Line2D;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Class {@code MeasureElement} is the basis for measure elements
  * (directions, notations, etc.)
@@ -35,7 +39,7 @@ import omr.sheet.Scale;
  * @author Hervé Bitteur
  */
 public abstract class MeasureElement
-    extends MeasureNode
+        extends MeasureNode
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -46,7 +50,6 @@ public abstract class MeasureElement
     private static final Constants constants = new Constants();
 
     //~ Instance fields --------------------------------------------------------
-
     /** The precise shape */
     private Shape shape;
 
@@ -57,20 +60,20 @@ public abstract class MeasureElement
     private final Chord chord;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new instance
-     * @param measure the containing measure
-     * @param start is this a starting element (of a two-piece entity)
+     *
+     * @param measure        the containing measure
+     * @param start          is this a starting element (of a two-piece entity)
      * @param referencePoint the reference location within the system
-     * @param chord the related chord, if any
-     * @param glyph the underlying glyph
+     * @param chord          the related chord, if any
+     * @param glyph          the underlying glyph
      */
-    public MeasureElement (Measure    measure,
-                           boolean    start,
+    public MeasureElement (Measure measure,
+                           boolean start,
                            PixelPoint referencePoint,
-                           Chord      chord,
-                           Glyph      glyph)
+                           Chord chord,
+                           Glyph glyph)
     {
         super(measure);
 
@@ -84,7 +87,6 @@ public abstract class MeasureElement
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // getChord //
     //----------//
@@ -121,6 +123,19 @@ public abstract class MeasureElement
         return start;
     }
 
+    //---------------------//
+    // getTranslationLinks //
+    //---------------------//
+    @Override
+    public List<Line2D> getTranslationLinks (Glyph glyph)
+    {
+        if (chord != null) {
+            return chord.getTranslationLinks(glyph);
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
     //----------//
     // toString //
     //----------//
@@ -131,15 +146,15 @@ public abstract class MeasureElement
 
         // Actual element class name
         String name = getClass()
-                          .getName();
-        int    period = name.lastIndexOf('.');
+                .getName();
+        int period = name.lastIndexOf('.');
         sb.append("{")
-          .append((period != -1) ? name.substring(period + 1) : name);
+                .append((period != -1) ? name.substring(period + 1) : name);
 
         try {
             // Shape
             sb.append(" ")
-              .append(getShape());
+                    .append(getShape());
 
             // Start ?
             if (!isStart()) {
@@ -148,37 +163,37 @@ public abstract class MeasureElement
 
             // Point
             sb.append(" ref[x=")
-              .append(getReferencePoint().x)
-              .append(",y=")
-              .append(getReferencePoint().y)
-              .append("]");
+                    .append(getReferencePoint().x)
+                    .append(",y=")
+                    .append(getReferencePoint().y)
+                    .append("]");
 
             // Box
             sb.append(" box[x=")
-              .append(getBox().x)
-              .append(",y=")
-              .append(getBox().y)
-              .append(",w=")
-              .append(getBox().width)
-              .append(",h=")
-              .append(getBox().height)
-              .append("]");
+                    .append(getBox().x)
+                    .append(",y=")
+                    .append(getBox().y)
+                    .append(",w=")
+                    .append(getBox().width)
+                    .append(",h=")
+                    .append(getBox().height)
+                    .append("]");
 
             // Glyphs
             sb.append(" ")
-              .append(Glyphs.toString(glyphs));
+                    .append(Glyphs.toString(glyphs));
 
             // Chord
             sb.append(" ")
-              .append(chord.getContextString())
-              .append(" ")
-              .append(chord);
+                    .append(chord.getContextString())
+                    .append(" ")
+                    .append(chord);
         } catch (NullPointerException e) {
             sb.append(" INVALID");
         }
 
         sb.append(internalsString())
-          .append("}");
+                .append("}");
 
         return sb.toString();
     }
@@ -186,13 +201,13 @@ public abstract class MeasureElement
     //-----------//
     // findChord //
     //-----------//
-    protected static Chord findChord (Measure    measure,
+    protected static Chord findChord (Measure measure,
                                       PixelPoint point)
     {
         // Shift on abscissa (because of left side of note heads)
         int dx = measure.getSystem()
-                        .getScale()
-                        .toPixels(constants.slotShift);
+                .getScale()
+                .toPixels(constants.slotShift);
 
         return measure.getEventChord(new PixelPoint(point.x + dx, point.y));
     }
@@ -203,7 +218,7 @@ public abstract class MeasureElement
     protected Shape computeShape ()
     {
         return getGlyph()
-                   .getShape();
+                .getShape();
     }
 
     //-----------------//
@@ -233,19 +248,19 @@ public abstract class MeasureElement
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         /** Abscissa shift when looking for time slot (half a note head) */
         Scale.Fraction slotShift = new Scale.Fraction(
-            0.5,
-            "Abscissa shift when looking for time slot " +
-            "(half a note head)");
+                0.5,
+                "Abscissa shift when looking for time slot "
+                + "(half a note head)");
+
     }
 }

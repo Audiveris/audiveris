@@ -299,7 +299,6 @@ public abstract class GlyphMenu
         public void actionPerformed (ActionEvent e)
         {
             JMenuItem source = (JMenuItem) e.getSource();
-            logger.warning("BINGO AssignListener about to assign set: {0}", nest.getSelectedGlyphSet());
             controller.asyncAssignGlyphs(
                 nest.getSelectedGlyphSet(),
                 Shape.valueOf(source.getText()),

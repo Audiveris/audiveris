@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.score.entity;
 
+import java.awt.Graphics2D;
+import java.awt.geom.Line2D;
+import java.util.Arrays;
 import omr.glyph.Glyphs;
 import omr.glyph.facets.Glyph;
 
@@ -21,11 +24,12 @@ import omr.util.TreeNode;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.SortedSet;
 
 /**
  * Class {@code PartNode} is an abstract class that is subclassed for
- * any SystemNode that is contained in a system part. 
+ * any SystemNode that is contained in a system part.
  * So this class encapsulates a direct link to the enclosing part.
  *
  * <p>A link to a related staff is provided as a potential tag only, since all
@@ -38,7 +42,7 @@ import java.util.SortedSet;
  * @author Hervé Bitteur
  */
 public abstract class PartNode
-    extends SystemNode
+        extends SystemNode
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -52,12 +56,12 @@ public abstract class PartNode
     private PixelPoint referencePoint;
 
     //~ Constructors -----------------------------------------------------------
-
     //----------//
     // PartNode //
     //----------//
     /**
      * Create a PartNode.
+     *
      * @param container the (direct) container of the node
      */
     public PartNode (SystemNode container)
@@ -66,7 +70,6 @@ public abstract class PartNode
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------//
     // accept //
     //--------//
@@ -81,6 +84,7 @@ public abstract class PartNode
     //----------//
     /**
      * Insert a glyph into the collection of underlying glyphs.
+     *
      * @param glyph the glyph to insert
      */
     public void addGlyph (Glyph glyph)
@@ -99,7 +103,7 @@ public abstract class PartNode
     {
         StringBuilder sb = new StringBuilder(super.getContextString());
         sb.append("P")
-          .append(getPart().getId());
+                .append(getPart().getId());
 
         return sb.toString();
     }
@@ -109,6 +113,7 @@ public abstract class PartNode
     //-----------//
     /**
      * Report the collection of physical glyphs that compose this entity.
+     *
      * @return the collection of glyphs, which may be empty
      */
     public Collection<Glyph> getGlyphs ()
@@ -121,6 +126,7 @@ public abstract class PartNode
     //---------//
     /**
      * Report the containing part.
+     *
      * @return the containing part entity
      */
     public SystemPart getPart ()
@@ -138,10 +144,11 @@ public abstract class PartNode
     // getReferencePoint //
     //-------------------//
     /**
-     * Report the point of reference for this element, which is 
-     * generally the element box center, but may be different. 
-     * For example, the reference point of a DirectionStatement is located on 
+     * Report the point of reference for this element, which is
+     * generally the element box center, but may be different.
+     * For example, the reference point of a DirectionStatement is located on
      * the left side on the base line.
+     *
      * @return the point of reference for this element
      */
     public PixelPoint getReferencePoint ()
@@ -158,6 +165,7 @@ public abstract class PartNode
     //----------//
     /**
      * Report the related staff if any.
+     *
      * @return the related staff, or null
      */
     public Staff getStaff ()
@@ -178,6 +186,7 @@ public abstract class PartNode
     //----------//
     /**
      * Assign the related staff.
+     *
      * @param staff the related staff
      */
     public void setStaff (Staff staff)
@@ -185,11 +194,29 @@ public abstract class PartNode
         this.staff = staff;
     }
 
+    //---------------------//
+    // getTranslationLinks //
+    //---------------------//
+    /**
+     * Report the translation link(s) between the provided glyph and
+     * this translating entity.
+     *
+     * @param glyph an originating glyph
+     * @return the collection of links, perhaps empty but not null.
+     */
+    public List<Line2D> getTranslationLinks (Glyph glyph)
+    {
+        PixelPoint from = glyph.getLocation();
+        PixelPoint to = getReferencePoint();
+        Line2D line = new Line2D.Double(from, to);
+        return Arrays.asList(line);
+    }
+
     //------------//
     // computeBox //
     //------------//
     /**
-     * Compute the bounding box  of this entity.
+     * Compute the bounding box of this entity.
      * Unless overridden, this method works on the glyphs collection
      */
     @Override

@@ -27,7 +27,10 @@ import omr.text.TextWord;
 import omr.ui.symbol.TextFont;
 
 import java.awt.Font;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Class {@code Text} handles any textual score entity.
@@ -262,6 +265,15 @@ public abstract class Text
     public boolean accept (ScoreVisitor visitor)
     {
         return visitor.visit(this);
+    }
+
+    //---------------------//
+    // getTranslationLinks //
+    //---------------------//
+    @Override
+    public List<Line2D> getTranslationLinks (Glyph glyph)
+    {
+        return Collections.emptyList(); // By default
     }
 
     //------------//

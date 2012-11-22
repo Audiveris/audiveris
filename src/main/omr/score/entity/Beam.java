@@ -37,7 +37,6 @@ import omr.util.Vip;
 
 import java.util.List;
 import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
  * <div style="float: right;">
@@ -74,9 +73,6 @@ public class Beam
     /** The containing beam group. */
     private BeamGroup group;
 
-    /** Items that compose this beam, sorted by abscissa. */
-    private SortedSet<BeamItem> items = new TreeSet<>();
-
     /** Chords that are linked by this beam. */
     private List<Chord> chords = new ArrayList<>();
 
@@ -92,7 +88,7 @@ public class Beam
      *
      * @param measure the enclosing measure
      */
-    public Beam (Measure measure)
+    private Beam (Measure measure)
     {
         super(measure);
 
@@ -107,12 +103,18 @@ public class Beam
     // populate //
     //----------//
     /**
-     * Populate a (or create a brand new) beam with this glyph.
+     * Retrieve (or create a brand new) beam to host the item known by
+     * its left and right points.
+     * Remark: We cannot create the BeamItem instance before its hosting
+     * Beam instance exists.
      *
-     * @param item    a beam item
+     * @param left    left point of the candidate
+     * @param right   right point of the candidate
      * @param measure the containing measure
+     * @return the (perhaps new) containing Beam instance
      */
-    public static void populate (BeamItem item,
+    public static Beam populate (PixelPoint left,
+                                 PixelPoint right,
                                  Measure measure)
     {
         ///logger.info("Populating " + glyph);
@@ -122,7 +124,7 @@ public class Beam
         for (TreeNode node : measure.getBeams()) {
             Beam b = (Beam) node;
 
-            if (b.isCompatibleWith(item)) {
+            if (b.isCompatibleWith(left, right)) {
                 beam = b;
 
                 break;
@@ -134,9 +136,12 @@ public class Beam
             beam = new Beam(measure);
         }
 
-        beam.addItem(item);
+//////////////////        beam.addItem(item);
+        // TODO: preserve order in items !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         logger.fine("{0} {1}", beam.getContextString(), beam);
+
+        return beam;
     }
 
     //--------//
@@ -297,9 +302,35 @@ public class Beam
      *
      * @return the ordered set of beam items
      */
-    public SortedSet<BeamItem> getItems ()
+    public List<TreeNode> getItems ()
     {
-        return items;
+        return children;
+    }
+
+    //--------------//
+    // getFirstItem //
+    //--------------//
+    /**
+     * Report the first of beam items
+     *
+     * @return the first item (on left)
+     */
+    public BeamItem getFirstItem ()
+    {
+        return (BeamItem) getItems().get(0);
+    }
+
+    //-------------//
+    // getLastItem //
+    //-------------//
+    /**
+     * Report the last of beam items
+     *
+     * @return the last item (on right)
+     */
+    public BeamItem getLastItem ()
+    {
+        return (BeamItem) getItems().get(getItems().size() - 1);
     }
 
     //---------//
@@ -312,7 +343,7 @@ public class Beam
      */
     public Line getLine ()
     {
-        if ((line == null) && !items.isEmpty()) {
+        if ((line == null) && !getItems().isEmpty()) {
             line = new BasicLine();
 
             // Take left side of first item, and right side of last item
@@ -336,9 +367,9 @@ public class Beam
     public PixelPoint getPoint (HorizontalSide side)
     {
         if (side == LEFT) {
-            return items.first().getPoint(LEFT);
+            return getFirstItem().getPoint(LEFT);
         } else {
-            return items.last().getPoint(RIGHT);
+            return getLastItem().getPoint(RIGHT);
         }
     }
 
@@ -355,11 +386,11 @@ public class Beam
                           PixelPoint point)
     {
         if (side == LEFT) {
-            items.first().setPoint(LEFT, point);
+            getFirstItem().setPoint(LEFT, point);
         } else {
-            items.last().setPoint(RIGHT, point);
+            getLastItem().setPoint(RIGHT, point);
         }
-        
+
         reset();
     }
 
@@ -368,7 +399,7 @@ public class Beam
     //--------//
     public boolean isHook ()
     {
-        return items.first().isHook();
+        return getFirstItem().isHook();
     }
 
     //-------//
@@ -389,13 +420,9 @@ public class Beam
      */
     public void linkChords ()
     {
-        for (BeamItem item : items) {
-            //////////////////////////////////////////////////////////////////
-            // TODO for a beam (non hook) both stems must exist and be linked
-            //////////////////////////////////////////////////////////////////
+        for (TreeNode node : getItems()) {
+            BeamItem item = (BeamItem) node;
             linkChordsOnStems(item);
-
-            // Include other stems in the middle
         }
     }
 
@@ -454,30 +481,6 @@ public class Beam
         this.group = group;
     }
 
-    //--------------//
-    // toLongString //
-    //--------------//
-    /**
-     * A rather lengthy version of toString().
-     *
-     * @return a complete description string
-     */
-    public String toLongString ()
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append("{Beam");
-
-        sb.append(" #").append(id);
-
-        sb.append(" left=").append(getPoint(LEFT));
-        sb.append(" right=").append(getPoint(RIGHT));
-
-        sb.append(BeamItem.toString(items));
-        sb.append("}");
-
-        return sb.toString();
-    }
-
     //----------//
     // toString //
     //----------//
@@ -494,7 +497,13 @@ public class Beam
                 sb.append(" hook");
             }
 
-            sb.append(BeamItem.toString(items));
+            sb.append(" items[");
+            for (TreeNode node : getItems()) {
+                BeamItem item = (BeamItem) node;
+                sb.append("#").append(item.getGlyph().getId());
+            }
+            sb.append("]");
+
         } catch (NullPointerException e) {
             sb.append(" INVALID");
         }
@@ -534,50 +543,38 @@ public class Beam
         line = null;
     }
 
-    //---------//
-    // addItem //
-    //---------//
-    /**
-     * Insert a (BEAM/BEAM_HOOK) item as a component of this beam.
-     *
-     * @param item the beam item to insert
-     */
-    private void addItem (BeamItem item)
+    //----------//
+    // addChild //
+    //----------//
+    @Override
+    public void addChild (TreeNode node)
     {
-        items.add(item);
+        super.addChild(node);
+
         reset();
-
-        if (item.isVip()) {
-            setVip();
-        }
-
-        if (isVip() || logger.isFineEnabled()) {
-            logger.info("{0} Added {1} to {2}",
-                    getMeasure().getContextString(), item, this);
-        }
     }
 
     //------------------//
     // isCompatibleWith //
     //------------------//
     /**
-     * Check compatibility of a given BeamItem with this Beam instance.
+     * Check compatibility of a candidate item with this Beam instance.
      * We use alignment and distance criterias.
      *
-     * @param item the beam item to check for compatibility
+     * @param left  left point of item candidate
+     * @param right right point of item candidate
      * @return true if compatible
      */
-    private boolean isCompatibleWith (BeamItem item)
+    private boolean isCompatibleWith (PixelPoint left,
+                                      PixelPoint right)
     {
-        boolean logging = isVip() || item.isVip() || logger.isFineEnabled();
-
-        if (logging) {
-            logger.info("Check beam item {0} with {1}", item, this);
-        }
+        boolean logging = isVip() || logger.isFineEnabled();
 
         // Check alignment, using distance to line
-        PixelPoint gsp = item.getCenter();
-        double dy = getScale().pixelsToFrac(getLine().distanceOf(gsp.x, gsp.y));
+        int centerX = (left.x + right.x) / 2;
+        int centerY = (left.y + right.y) / 2;
+        double dy = getScale().pixelsToFrac(
+                getLine().distanceOf(centerX, centerY));
 
         if (logging) {
             logger.info("dy={0} vs {1}", (float) Math.abs(dy),
@@ -590,9 +587,9 @@ public class Beam
 
         // Check distance along the same alignment
         for (HorizontalSide side : HorizontalSide.values()) {
-            double dx = getScale().pixelsToFrac(
-                    item.getPoint(side).distance(
-                    getPoint((side == LEFT) ? RIGHT : LEFT)));
+            PixelPoint itemPoint = (side == LEFT) ? left : right;
+            PixelPoint beamPoint = getPoint((side == LEFT) ? RIGHT : LEFT);
+            double dx = getScale().pixelsToFrac(itemPoint.distance(beamPoint));
 
             if (logging) {
                 logger.info("dx={0} vs {1}", (float) dx,
@@ -628,8 +625,6 @@ public class Beam
                     }
                 } else {
                     addError("Beam with no chord on " + side + " stem");
-
-
                 }
             }
         }
@@ -643,7 +638,8 @@ public class Beam
     {
         List<Glyph> glyphs = new ArrayList<>();
 
-        for (BeamItem item : items) {
+        for (TreeNode node : getItems()) {
+            BeamItem item = (BeamItem) node;
             glyphs.add(item.getGlyph());
         }
         return glyphs;

@@ -11,11 +11,13 @@
 // </editor-fold>
 package omr.score.entity;
 
+import java.awt.Graphics2D;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.util.TreeNode;
 
 import java.util.Comparator;
+import omr.glyph.facets.Glyph;
 
 /**
  * Class {@code MeasureNode} is an abstract class that is subclassed for
@@ -80,7 +82,7 @@ public abstract class MeasureNode
     {
         return visitor.visit(this);
     }
-
+    
     //------------------//
     // getContextString //
     //------------------//

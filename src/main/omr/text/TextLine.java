@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import omr.score.entity.PartNode;
 
 /**
  * Class {@code TextLine} defines a non-mutable structure to report all
@@ -563,7 +564,7 @@ public class TextLine
      *
      * @param entity the same score entity for all sentence items
      */
-    public void setGlyphsTranslation (Object entity)
+    public void setGlyphsTranslation (PartNode entity)
     {
         for (TextWord word : words) {
             Glyph glyph = word.getGlyph();

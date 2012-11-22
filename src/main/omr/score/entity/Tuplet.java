@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.score.entity;
 
+import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
@@ -47,39 +48,47 @@ public class Tuplet
     private static final Logger logger = Logger.getLogger(Tuplet.class);
 
     //~ Instance fields --------------------------------------------------------
-    /** Last chord in the tuplet sequence */
-    private final Chord lastChord;
+    //
+    /**
+     * Set of chords involved in the tuplet sequence.
+     */
+    private final SortedSet<Chord> chords;
 
     //~ Constructors -----------------------------------------------------------
+    //
     //--------//
     // Tuplet //
     //--------//
     /**
      * Creates a new instance of Tuplet event
-     * <p/>
-     * @param measure    measure that contains this tuplet
-     * @param point      location of tuplet sign
-     * @param firstChord the first embraced chord
-     * @param lastChord  the last embraced chord
-     * @param glyph      the underlying glyph
+     *
+     * @param measure measure that contains this tuplet
+     * @param point   location of tuplet sign
+     * @param chords  the embraced chords
+     * @param glyph   the underlying glyph
      */
-    public Tuplet (Measure measure,
-                   PixelPoint point,
-                   Chord firstChord,
-                   Chord lastChord,
-                   Glyph glyph)
+    private Tuplet (Measure measure,
+                    PixelPoint point,
+                    SortedSet<Chord> chords,
+                    Glyph glyph)
     {
-        super(measure, point, firstChord, glyph);
+        super(measure, point, chords.first(), glyph);
 
-        // Link last embraced chords to this tuplet instance
-        this.lastChord = lastChord;
+        this.chords = chords;
 
-        if (lastChord != null) {
-            lastChord.addNotation(this);
+        // Apply the tuplet factor to each chord embraced
+        DurationFactor factor = getFactor(glyph);
+
+        for (Chord chord : chords) {
+            chord.setTupletFactor(factor);
         }
+
+        // Link last embraced chord to this tuplet instance
+        chords.last().addNotation(this);
     }
 
     //~ Methods ----------------------------------------------------------------
+    //
     //----------//
     // populate //
     //----------//
@@ -123,16 +132,8 @@ public class Tuplet
                     new Tuplet(
                     measure,
                     point,
-                    chords.first(),
-                    chords.last(),
+                    chords,
                     glyph));
-
-            // Apply the tuplet factor to each chord embraced
-            DurationFactor factor = getFactor(glyph);
-
-            for (Chord chord : chords) {
-                chord.setTupletFactor(factor);
-            }
         } else {
             // Nullify shape unless manual
             if (!glyph.isManualShape()) {
@@ -150,13 +151,28 @@ public class Tuplet
         return visitor.visit(this);
     }
 
+    //---------------------//
+    // getTranslationLinks //
+    //---------------------//
+    @Override
+    public List<Line2D> getTranslationLinks (Glyph glyph)
+    {
+        List<Line2D> links = new ArrayList<>();
+
+        for (Chord chord : chords) {
+            links.addAll(chord.getTranslationLinks(glyph));
+        }
+
+        return links;
+    }
+
     //-----------------//
     // internalsString //
     //-----------------//
     @Override
     protected String internalsString ()
     {
-        return super.internalsString() + " " + lastChord;
+        return super.internalsString() + " " + chords.last();
     }
 
     //---------------//
@@ -314,6 +330,7 @@ public class Tuplet
     }
 
     //~ Inner Classes ----------------------------------------------------------
+    //
     //--------------//
     // DxComparator //
     //--------------//

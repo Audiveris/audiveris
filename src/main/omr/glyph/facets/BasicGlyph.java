@@ -34,6 +34,7 @@ import omr.run.Orientation;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
+import omr.score.entity.PartNode;
 import omr.score.entity.TimeRational;
 
 import omr.sheet.SystemInfo;
@@ -193,7 +194,7 @@ public class BasicGlyph
     }
 
     @Override
-    public void addTranslation (Object entity)
+    public void addTranslation (PartNode entity)
     {
         translation.addTranslation(entity);
     }
@@ -633,7 +634,7 @@ public class BasicGlyph
     }
 
     @Override
-    public Collection<Object> getTranslations ()
+    public Collection<PartNode> getTranslations ()
     {
         return translation.getTranslations();
     }
@@ -910,7 +911,7 @@ public class BasicGlyph
     }
 
     @Override
-    public void setTranslation (Object entity)
+    public void setTranslation (PartNode entity)
     {
         translation.setTranslation(entity);
     }

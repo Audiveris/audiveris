@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.score.entity;
 
+import java.awt.Graphics2D;
+import java.awt.geom.Line2D;
+import java.util.Arrays;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
@@ -374,6 +377,30 @@ public class Note
     public boolean accept (ScoreVisitor visitor)
     {
         return visitor.visit(this);
+    }
+
+    //---------------------//
+    // getTranslationLinks //
+    //---------------------//
+    @Override
+    public List<Line2D> getTranslationLinks (Glyph glyph)
+    {
+        if (getGlyphs().contains(glyph)) {
+            Chord chord = getChord();
+            if (chord != null) {
+                PixelPoint from = glyph.getLocation();
+                Glyph stem = chord.getStem();
+                PixelPoint to = stem != null
+                        ? stem.getAreaCenter()
+                        : chord.getReferencePoint();
+                Line2D line = new Line2D.Double(from, to);
+                return Arrays.asList(line);
+            } else {
+                return Collections.emptyList();
+            }
+        } else {
+            return super.getTranslationLinks(glyph);
+        }
     }
 
     //---------//

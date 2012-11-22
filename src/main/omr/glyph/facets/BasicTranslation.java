@@ -11,9 +11,19 @@
 // </editor-fold>
 package omr.glyph.facets;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Stroke;
+import omr.score.entity.PartNode;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import omr.score.common.PixelPoint;
+import omr.score.entity.MeasureElement;
+import omr.ui.Colors;
+import omr.ui.util.UIUtilities;
+import omr.util.TreeNode;
 
 /**
  * Class {@code BasicTranslation} is the basic implementation of the
@@ -22,16 +32,15 @@ import java.util.Set;
  * @author Hervé Bitteur
  */
 class BasicTranslation
-    extends BasicFacet
-    implements GlyphTranslation
+        extends BasicFacet
+        implements GlyphTranslation
 {
     //~ Instance fields --------------------------------------------------------
 
     /** Set of translation(s) of this glyph on the score side */
-    private Set<Object> translations = new HashSet<>();
+    private Set<PartNode> translations = new HashSet<>();
 
     //~ Constructors -----------------------------------------------------------
-
     //------------------//
     // BasicTranslation //
     //------------------//
@@ -46,12 +55,11 @@ class BasicTranslation
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------------//
     // addTranslation //
     //----------------//
     @Override
-    public void addTranslation (Object entity)
+    public void addTranslation (PartNode entity)
     {
         translations.add(entity);
     }
@@ -80,7 +88,7 @@ class BasicTranslation
     // getTranslations //
     //-----------------//
     @Override
-    public Collection<Object> getTranslations ()
+    public Collection<PartNode> getTranslations ()
     {
         return translations;
     }
@@ -107,7 +115,7 @@ class BasicTranslation
     // setTranslation //
     //----------------//
     @Override
-    public void setTranslation (Object entity)
+    public void setTranslation (PartNode entity)
     {
         translations.clear();
         addTranslation(entity);

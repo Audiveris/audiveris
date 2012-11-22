@@ -331,7 +331,7 @@ public class SystemTranslator
         @Override
         public void browse (Measure measure)
         {
-            // Allocate beams to chords, and populate beam groups
+            // Link beams to chords, and populate beam groups
             BeamGroup.populate(measure);
         }
 

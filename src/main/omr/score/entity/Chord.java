@@ -34,7 +34,9 @@ import omr.util.HorizontalSide;
 import omr.util.TreeNode;
 
 import java.awt.Polygon;
+import java.awt.geom.Line2D;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -491,6 +493,21 @@ public class Chord
     public boolean accept (ScoreVisitor visitor)
     {
         return visitor.visit(this);
+    }
+
+    //---------------------//
+    // getTranslationLinks //
+    //---------------------//
+    @Override
+    public List<Line2D> getTranslationLinks (Glyph glyph)
+    {
+        PixelPoint from = glyph.getLocation();
+        PixelPoint to = stem != null
+                ? stem.getAreaCenter()
+                : getReferencePoint();
+
+        Line2D line = new Line2D.Double(from, to);
+        return Arrays.asList(line);
     }
 
     //---------//
@@ -1571,7 +1588,7 @@ public class Chord
                             slur.destroy();
                             continue;
                         }
-                        
+
                         if (distantNote.getMeasure() == getMeasure()) {
                             distantNotes.add(distantNote);
                             distantChords.add(distantNote.getChord());

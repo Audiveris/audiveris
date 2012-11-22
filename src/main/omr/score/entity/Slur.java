@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.score.entity;
 
+import java.awt.Graphics2D;
 import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
@@ -29,6 +30,7 @@ import omr.util.Predicate;
 import omr.util.TreeNode;
 
 import java.awt.geom.CubicCurve2D;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -116,28 +118,28 @@ public class Slur
 
     //~ Instance fields --------------------------------------------------------
     //
-    /** Underlying glyph */
+    /** Underlying glyph. */
     private final Glyph glyph;
 
-    /** Underlying curve */
+    /** Underlying curve. */
     private final CubicCurve2D curve;
 
-    /** Note on left side, if any */
+    /** Note on left side, if any. */
     private final Note leftNote;
 
-    /** Note on right side, if any */
+    /** Note on right side, if any. */
     private final Note rightNote;
 
-    /** Slur extension on left side, if any */
+    /** Slur extension on left side, if any. */
     private Slur leftExtension;
 
-    /** Slur extension on right side, if any */
+    /** Slur extension on right side, if any. */
     private Slur rightExtension;
 
-    /** Placement / orientation */
+    /** Placement / orientation. */
     private final boolean below;
 
-    /** Is a Tie (else a plain slur) */
+    /** Is a Tie (else a plain slur). */
     private boolean tie;
 
     //~ Constructors -----------------------------------------------------------
@@ -527,6 +529,27 @@ public class Slur
     public void resetRightExtension ()
     {
         rightExtension = null;
+    }
+
+    //---------------------//
+    // getTranslationLinks //
+    //---------------------//
+    @Override
+    public List<Line2D> getTranslationLinks (Glyph glyph)
+    {
+        List<Line2D> links = new ArrayList<>();
+
+        if (leftNote != null) {
+            PixelPoint to = leftNote.getReferencePoint();
+            links.add(new Line2D.Double(curve.getP1(), to));
+        }
+
+        if (rightNote != null) {
+            PixelPoint to = rightNote.getReferencePoint();
+            links.add(new Line2D.Double(curve.getP2(), to));
+        }
+
+        return links;
     }
 
     //----------//

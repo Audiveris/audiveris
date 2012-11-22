@@ -107,6 +107,9 @@ public class Colors
     /** Tangents */
     public static final Color TANGENT = new Color(0, 0, 0, 100);
 
+    /** Translation links */
+    public static final Color TRANSLATION_LINK = Color.red;
+
     /** System kind of bracket */
     public static final Color SYSTEM_BRACKET = Color.yellow;
 

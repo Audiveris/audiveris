@@ -26,10 +26,11 @@ import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
 import omr.util.HorizontalSide;
-import omr.util.Navigable;
+import omr.util.TreeNode;
 import omr.util.Vip;
 
-import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 
 /**
  * Class {@code BeamItem} represents either a single beam hook
@@ -40,8 +41,8 @@ import java.util.Collection;
  * @author Hervé Bitteur
  */
 public class BeamItem
-        implements Comparable<BeamItem>,
-                   Vip
+        extends MeasureNode
+        implements Vip
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -51,29 +52,34 @@ public class BeamItem
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(BeamItem.class);
 
+    /** Compare two BeamItem instances by abscissa within a Beam. */
+    public static final Comparator<TreeNode> byNodeAbscissa = new Comparator<TreeNode>()
+    {
+        @Override
+        public int compare (TreeNode tn1,
+                            TreeNode tn2)
+        {
+            BeamItem item1 = (BeamItem) tn1;
+            BeamItem item2 = (BeamItem) tn2;
+
+            // Delegate to underlying glyph
+            return Glyph.byAbscissa.compare(item1.getGlyph(), item2.getGlyph());
+        }
+    };
+
     //~ Instance fields --------------------------------------------------------
     //
     /** (Debug) flag this object as VIP. */
     private boolean vip;
 
-    /** The containing measure. */
-    @Navigable(false)
-    private final Measure measure;
-
-    /** The underlying glyph. */
-    private final Glyph glyph;
-
     /**
-     * Cardinality of the containing beam pack (nb of stuck glyphs).
+     * Cardinality of the containing beam pack (nb of stuck items).
      * Card = 1 for an isolated beam
      */
     private final int packCard;
 
     /** Index within the beam pack. Index = 0 for an isolated beam */
     private final int packIndex;
-
-    /** The center of the beam item. */
-    private PixelPoint center;
 
     /** Line equation for the beam item. */
     private Line line;
@@ -89,73 +95,41 @@ public class BeamItem
     //----------//
     // BeamItem //
     //----------//
-    /** Create a new instance of beam item, as part of a beam pack.
+    /** Create a new instance of beam item, as part of a beam item pack.
      *
-     * @param measure   the containing measure
+     * @param Beam      the containing beam instance
      * @param glyph     the underlying glyph
+     * @param left      the left defining point
+     * @param right     the right defining point
      * @param packCard  the number of items in the pack
      * @param packIndex the zero-based index of this item in the pack
      */
-    private BeamItem (Measure measure,
+    private BeamItem (Beam beam,
                       Glyph glyph,
+                      PixelPoint left,
+                      PixelPoint right,
                       int packCard,
                       int packIndex)
     {
-        this.measure = measure;
-        this.glyph = glyph;
+        super(beam);
+
+        addGlyph(glyph);
+
         this.packCard = packCard;
         this.packIndex = packIndex;
+        this.left = new PixelPoint(left);
+        this.right = new PixelPoint(right);
 
-        // Location of left and right points
-        // For hooks, the stick line is not reliable
-        PixelRectangle box = glyph.getBounds();
-        if (glyph.getShape() == Shape.BEAM_HOOK) {
-            // Make a simple horizontal beam item
-            left = new PixelPoint(box.x, box.y + (box.height / 2));
-            right = new PixelPoint(box.x + box.width - 1, box.y + (box.height / 2));
-        } else {
-            // Check line slope
-            Line glyphLine = glyph.getLine();
-
-            if (Math.abs(glyphLine.getSlope()) > constants.maxBeamSlope.getValue()) {
-                // Slope is not realistic, use horizontal lines
-                double halfHeight = box.height / (packCard * 2);
-                int y = box.y + (int) Math.rint(halfHeight * (2 * packIndex + 1));
-                left = new PixelPoint(box.x, y);
-                right = new PixelPoint(box.x + box.width - 1, y);
-            } else {
-                double yMidLeft = glyphLine.yAtX((double) box.x);
-                double yMidRight = glyphLine.yAtX(
-                        (double) (box.x + box.width - 1));
-                double deltaMid1 = Math.min(yMidLeft, yMidRight) - box.y;
-                double deltaMid2 = (box.y + box.height)
-                                   - Math.max(yMidLeft, yMidRight);
-
-                double deltaMid = (deltaMid1 + deltaMid2) / 2.0;
-                double deltaY = (((4 * packIndex) + 1) * deltaMid) / ((2 * packCard)
-                                                                      - 1);
-                int highY = (int) Math.rint(box.y + deltaY);
-                int lowY = (int) Math.rint(
-                        (box.y + box.height) - (2 * deltaMid) + deltaY);
-
-                if (yMidLeft > yMidRight) {
-                    // This is an ascending beam
-                    left = new PixelPoint(box.x, lowY);
-                    right = new PixelPoint(box.x + box.width - 1, highY);
-                } else {
-                    // This is a descending beam
-                    left = new PixelPoint(box.x, highY);
-                    right = new PixelPoint(box.x + box.width - 1, lowY);
-                }
-            }
-        }
+        // Keep the items sorted by abscissa in Beam container
+        Collections.sort(beam.getItems(), BeamItem.byNodeAbscissa);
 
         if (glyph.isVip()) {
             setVip();
+            beam.setVip();
         }
 
         if (isVip() || logger.isFineEnabled()) {
-            logger.info("{0} Created {1}", measure.getContextString(), this);
+            logger.info("{0} Created {1}", beam.getContextString(), this);
         }
     }
 
@@ -176,65 +150,19 @@ public class BeamItem
         createPack(measure, glyph);
     }
 
-    //----------//
-    // toString //
-    //----------//
+    //---------------//
+    // computeCenter //
+    //---------------//
     /**
-     * Convenient method, to build a string with just the ids of the
-     * items collection.
-     *
-     * @param items the collection of beam items
-     * @return the string built
-     */
-    public static String toString (Collection<? extends BeamItem> items)
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append(" items[");
-
-        for (BeamItem item : items) {
-            sb.append("#").append(item.glyph.getId());
-        }
-
-        sb.append("]");
-
-        return sb.toString();
-    }
-
-    //-----------//
-    // compareTo //
-    //-----------//
-    /**
-     * Compare (horizontally) to another BeamItem, by delegating to
-     * the underlying glyph.
-     *
-     * @param other the other BeamItem instance
-     * @return -1, 0 or 1
+     * Compute the center of this beam item (which is different from the
+     * glyph center in case of a multi-beam pack glyph).
      */
     @Override
-    public int compareTo (BeamItem other)
+    protected void computeCenter ()
     {
-        // Delegate to underlying glyph
-        return Glyph.byAbscissa.compare(glyph, other.glyph);
-    }
-
-    //-----------//
-    // getCenter //
-    //-----------//
-    /**
-     * Report the center of the beam item (which is different from the
-     * glyph center in case of a multi-beam pack glyph).
-     *
-     * @return the system-based center of the beam item
-     */
-    public PixelPoint getCenter ()
-    {
-        if (center == null) {
-            center = new PixelPoint(
-                    (left.x + right.x) / 2,
-                    (left.y + right.y) / 2);
-        }
-
-        return center;
+        setCenter(new PixelPoint(
+                (left.x + right.x) / 2,
+                (left.y + right.y) / 2));
     }
 
     //----------//
@@ -247,7 +175,7 @@ public class BeamItem
      */
     public Glyph getGlyph ()
     {
-        return glyph;
+        return glyphs.first();
     }
 
     //---------//
@@ -321,7 +249,7 @@ public class BeamItem
      */
     public Glyph getStem (HorizontalSide side)
     {
-        return glyph.getStem(side);
+        return getGlyph().getStem(side);
     }
 
     //--------//
@@ -334,7 +262,7 @@ public class BeamItem
      */
     public boolean isHook ()
     {
-        return glyph.getShape() == Shape.BEAM_HOOK;
+        return getGlyph().getShape() == Shape.BEAM_HOOK;
     }
 
     //-------//
@@ -365,7 +293,7 @@ public class BeamItem
         sb.append("{BeamItem");
 
         try {
-            sb.append(" ").append(glyph.idString());
+            sb.append(" ").append(getGlyph().idString());
 
             if (packCard != 1) {
                 sb.append(" [").append(packIndex).append("/").append(packCard).
@@ -392,7 +320,8 @@ public class BeamItem
     // createPack //
     //------------//
     /**
-     * Create a bunch of BeamItem instances for one pack.
+     * Create a bunch of BeamItem instances for one pack, and create
+     * or augment the containing Beam instance.
      *
      * @param measure the containing measure
      * @param glyph   the underlying glyph of the beam pack
@@ -400,19 +329,68 @@ public class BeamItem
     private static void createPack (Measure measure,
                                     Glyph glyph)
     {
-        int size = packCardOf(glyph.getShape());
+        int card = packCardOf(glyph.getShape());
         glyph.clearTranslations();
 
         try {
-            for (int i = 0; i < size; i++) {
-                BeamItem item = new BeamItem(measure, glyph, size, i);
+            for (int i = 0; i < card; i++) {
+                // Compute item defining points
+                PixelPoint left;
+                PixelPoint right;
+
+                // For hooks, the stick line is not reliable
+                PixelRectangle box = glyph.getBounds();
+                if (glyph.getShape() == Shape.BEAM_HOOK) {
+                    // Make a simple horizontal beam item
+                    left = new PixelPoint(box.x, box.y + (box.height / 2));
+                    right = new PixelPoint(box.x + box.width - 1, box.y + (box.height / 2));
+                } else {
+                    // Check line slope
+                    Line glyphLine = glyph.getLine();
+
+                    if (Math.abs(glyphLine.getSlope()) > constants.maxBeamSlope.getValue()) {
+                        // Slope is not realistic, use horizontal lines
+                        double halfHeight = box.height / (card * 2);
+                        int y = box.y + (int) Math.rint(halfHeight * (2 * i + 1));
+                        left = new PixelPoint(box.x, y);
+                        right = new PixelPoint(box.x + box.width - 1, y);
+                    } else {
+                        double yMidLeft = glyphLine.yAtX((double) box.x);
+                        double yMidRight = glyphLine.yAtX(
+                                (double) (box.x + box.width - 1));
+                        double deltaMid1 = Math.min(yMidLeft, yMidRight) - box.y;
+                        double deltaMid2 = (box.y + box.height)
+                                           - Math.max(yMidLeft, yMidRight);
+
+                        double deltaMid = (deltaMid1 + deltaMid2) / 2.0;
+                        double deltaY = (((4 * i) + 1) * deltaMid) / ((2 * card) - 1);
+                        int highY = (int) Math.rint(box.y + deltaY);
+                        int lowY = (int) Math.rint(
+                                (box.y + box.height) - (2 * deltaMid) + deltaY);
+
+                        if (yMidLeft > yMidRight) {
+                            // This is an ascending beam
+                            left = new PixelPoint(box.x, lowY);
+                            right = new PixelPoint(box.x + box.width - 1, highY);
+                        } else {
+                            // This is a descending beam
+                            left = new PixelPoint(box.x, highY);
+                            right = new PixelPoint(box.x + box.width - 1, lowY);
+                        }
+                    }
+                }
+
+                // Retrieve/create the hosting Beam instance
+                Beam beam = Beam.populate(left, right, measure);
+
+                // Finally, allocate the BeamItem instance
+                BeamItem item = new BeamItem(beam, glyph, left, right, card, i);
                 glyph.addTranslation(item);
-                Beam.populate(item, measure);
             }
         } catch (Exception ex) {
             logger.warning(measure.getContextString()
-                           + " Error creating BeamItem from glyph #"
-                           + glyph.getId(),
+                           + " Error creating BeamItem from "
+                           + glyph.idString(),
                     ex);
         }
     }

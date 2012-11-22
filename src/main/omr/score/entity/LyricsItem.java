@@ -11,6 +11,10 @@
 // </editor-fold>
 package omr.score.entity;
 
+import java.awt.Graphics2D;
+import java.awt.geom.Line2D;
+import java.util.Arrays;
+import java.util.Collections;
 import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
@@ -30,6 +34,7 @@ import omr.text.TextWord;
 import omr.util.TreeNode;
 
 import java.util.Comparator;
+import java.util.List;
 
 /**
  * Class {@code LyricsItem} is specific subclass of Text, meant for one
@@ -76,6 +81,7 @@ public class LyricsItem
         Hyphen,
         /** A real syllable */
         Syllable;
+
     }
 
     /**
@@ -89,10 +95,12 @@ public class LyricsItem
         SINGLE,
         /** Syllable that begins a word */
         BEGIN,
-        /** Syllable at the middle of a word */
+        /** Syllable at the middle of a
+         * word */
         MIDDLE,
         /** Syllable that ends a word */
         END;
+
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -296,7 +304,7 @@ public class LyricsItem
             }
 
             if ((measure.getBarline()
-                 .getRightX() + maxDx) < centerX) {
+                    .getRightX() + maxDx) < centerX) {
                 continue;
             }
 
@@ -322,6 +330,9 @@ public class LyricsItem
                     if (!note.isRest()) {
                         note.addSyllable(this);
                         mappedChord = bestChord;
+                        if (word != null && word.getGlyph() != null) {
+                            word.getGlyph().setTranslation(this);
+                        }
                     }
 
                     return;
@@ -330,6 +341,19 @@ public class LyricsItem
         }
 
         addError(seed, "Could not find note for " + this);
+    }
+
+    //---------------------//
+    // getTranslationLinks //
+    //---------------------//
+    @Override
+    public List<Line2D> getTranslationLinks (Glyph glyph)
+    {
+        if (mappedChord != null) {
+            return mappedChord.getTranslationLinks(glyph);
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     //-------------//
@@ -406,5 +430,6 @@ public class LyricsItem
         Scale.Fraction maxItemDx = new Scale.Fraction(
                 4,
                 "Maximum horizontal distance between a note and its lyrics item");
+
     }
 }

@@ -128,12 +128,12 @@ public class ScoreChecker
     public boolean visit (Beam beam)
     {
         try {
-            if (!beam.isHook()
-                || beam.getItems().first().getGlyph().isManualShape()) {
+            Glyph glyph = beam.getFirstItem().getGlyph();
+            
+            if (!beam.isHook() || glyph.isManualShape()) {
                 return true;
             }
 
-            Glyph glyph = beam.getItems().first().getGlyph();
             List<Chord> chords = beam.getChords();
 
             if (chords.size() > 1) {
