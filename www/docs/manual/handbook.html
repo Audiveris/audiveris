@@ -578,7 +578,16 @@
 
                     <h4 id="selections">
                         Selections
-                    </h4>
+                    </h4>                        
+
+                    <figure class="right">
+                        <img title="Tuplet links" alt="tuplet links" 
+                             src="../images/tuplet-links.png"/>
+                        <figcaption>
+                            Tuplet glyph linked to 3 chords
+                        </figcaption>
+                    </figure>
+
                     <p>There are 2 selections modes, glyph-based (the default) or 
                         section-based.
                         <br/>
@@ -588,6 +597,7 @@
                         <img class="icon" width="16" height="16" 
                              src="../images/Application16.gif" />
                     </p>
+
                     <p>
                         In section selection mode, section boundaries are shown while
                         these boundaries do not appear in glyph selection mode.
@@ -608,6 +618,29 @@
                             are fully contained by the lasso rectangle.</li>
                     </ul>
 
+                    <figure class="right">
+                        <img title="Head links" alt="head links" 
+                             src="../images/head-links.png"/>
+                        <figcaption>
+                            Head glyph reused by 2 chords
+                        </figcaption>
+                    </figure>
+
+                    <p>
+                        When in glyph selection mode (the default), the selected
+                        glyph may display links to its related translated entities.
+                        The links appear as short straight lines (and are driven
+                        by the option <code>Views</code> | <code>Show glyph 
+                            Translations</code>).
+                    </p>
+                    <p>
+                        Images next to this paragraph depict: 
+                    </p>
+                    <ol>
+                        <li>A tuplet glyph linked to its 3 embraced chords</li>
+                        <li>A note head glyph shared by 2 different chords</li>
+                    </ol>
+                        
                     <div id="boards">
                         <h4>
                             Boards
@@ -2160,8 +2193,8 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                         Score step
                     </h3>
                     <figure class="right">
-                    <img title="Score voices"
-                         src="../images/voices.png" />
+                        <img title="Score voices"
+                             src="../images/voices.png" />
                         <figcaption>One color for each voice</figcaption>
                     </figure>
                     <p>
