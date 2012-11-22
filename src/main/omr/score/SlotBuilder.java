@@ -117,43 +117,6 @@ public class SlotBuilder
         checker.buildSlots();
         checker.refineVoices();
     }
-//
-//    //-----------------//
-//    // checkMinSpacing //
-//    //-----------------//
-//    /**
-//     * Check that slots are not too close to each other.
-//     *
-//     * @param measure the containing measure
-//     */
-//    private void checkMinSpacing (Measure measure)
-//    {
-//        logger.fine("{0} checkMinSpacing", measure.getContextString());
-//        Slot prevSlot = null;
-//
-//        int minSpacing = Integer.MAX_VALUE;
-//        Slot minSlot = null;
-//
-//        for (Slot slot : measure.getSlots()) {
-//            if (prevSlot != null) {
-//                int spacing = slot.getX() - prevSlot.getX();
-//
-//                if (minSpacing > spacing) {
-//                    minSpacing = spacing;
-//                    minSlot = slot;
-//                }
-//            }
-//
-//            prevSlot = slot;
-//        }
-//
-//        if (minSlot != null && minSpacing < minSlotSpacing) {
-//            measure.addError(
-//                    minSlot.getLocationGlyph(),
-//                    "Suspicious narrow spacing of slots: "
-//                    + (float) scale.pixelsToFrac(minSpacing));
-//        }
-//    }
 
     //-----//
     // Rel //
@@ -220,7 +183,10 @@ public class SlotBuilder
         /** Inter-chord relationships for the current measure. */
         private Rel[][] matrix;
 
-        /** A chord comparator based on inter-chord relationships. */
+        /**
+         * A chord comparator based on inter-chord relationships
+         * and then on startTime when known.
+         */
         private Comparator<Chord> byRel = new Comparator<Chord>()
         {
             @Override
@@ -239,7 +205,13 @@ public class SlotBuilder
                         return 1;
 
                     default:
-                        return 0;
+                        // Use start time difference when known
+                        if (c1.getStartTime() != null
+                            && c2.getStartTime() != null) {
+                            return c1.getStartTime().compareTo(c2.getStartTime());
+                        } else {
+                            return 0;
+                        }
                     }
                 }
             }
@@ -840,7 +812,7 @@ public class SlotBuilder
     {
 
         Scale.Fraction maxSlotDx = new Scale.Fraction(
-                0.75,
+                1,
                 "Maximum horizontal delta between a slot and a chord");
 
         Scale.Fraction maxAdjacencyGap = new Scale.Fraction(
