@@ -55,6 +55,7 @@ import omr.score.visitor.AbstractScoreVisitor;
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
+import omr.text.FontInfo;
 import omr.text.TextLine;
 import omr.text.TextWord;
 
@@ -824,21 +825,14 @@ public abstract class PagePainter
 
     private void paintWord (TextWord word)
     {
-//        // Use precise word font size for long enough words
-//        // But prefer mean line font size for too short words (and lyrics)
-//        Float fontSize = (word.getLength() > 1 && !word.getTextLine().isLyrics())
-//                ? word.getPreciseFontSize()
-//                : word.getTextLine().getMeanFontSize();
-//
-//        Font font = (fontSize != null && word.getFontInfo() != null)
-//                ? new TextFont(word.getFontInfo()).deriveFont(fontSize)
-//                : TextFont.baseTextFont;
-
-        Font font = new TextFont(word.getTextLine().getMeanFont());
-        FontRenderContext frc = g.getFontRenderContext();
-        TextLayout layout = new TextLayout(word.getValue(), font, frc);
-
-        paint(layout, word.getLocation(), BASELINE_LEFT);
+        FontInfo meanFont = word.getTextLine().getMeanFont();
+        
+        if (meanFont != null) {
+            Font font = new TextFont(meanFont);
+            FontRenderContext frc = g.getFontRenderContext();
+            TextLayout layout = new TextLayout(word.getValue(), font, frc);
+            paint(layout, word.getLocation(), BASELINE_LEFT);
+        }
     }
 
     //---------------------//

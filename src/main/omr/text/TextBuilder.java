@@ -47,6 +47,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * Class {@code TextBuilder} provide features to check, build and
@@ -69,6 +72,9 @@ public class TextBuilder
 
     /** Abnormal characters. */
     private static final char[] ABNORMAL_CHARS = new char[]{'\\'};
+
+    /** Regexp for abnormal words. */
+    private static final Pattern ABNORMAL_WORDS = getAbnormalWords();
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -201,6 +207,14 @@ public class TextBuilder
             return false;
         }
 
+        // Check for invalid word values
+        if (ABNORMAL_WORDS != null) {
+            Matcher matcher = ABNORMAL_WORDS.matcher(value);
+            if (matcher.matches()) {
+                logger.fine("Abnormal word value {0}", word);
+                return false;
+            }
+        }
 
 //        PixelRectangle box = word.getBounds();
 //        String str = word.getValue();
@@ -1104,6 +1118,24 @@ public class TextBuilder
         return null;
     }
 
+    //------------------//
+    // getAbnormalWords //
+    //------------------//
+    /**
+     * Compile the provided regexp to detect abnormal words
+     *
+     * @return the pattern for abnormal words, if successful
+     */
+    private static Pattern getAbnormalWords ()
+    {
+        try {
+            return Pattern.compile(constants.abnormalWordRegexp.getValue());
+        } catch (PatternSyntaxException pse) {
+            logger.warning("Error in regexp for abnormal words", pse);
+            return null;
+        }
+    }
+
     //~ Inner Classes ----------------------------------------------------------
     //-----------//
     // Constants //
@@ -1112,6 +1144,10 @@ public class TextBuilder
             extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
+
+        Constant.String abnormalWordRegexp = new Constant.String(
+                "^[\\.°>]$",
+                "Regular expression to detect abnormal words");
 
         Constant.Integer minConfidence = new Constant.Integer(
                 "0..100",

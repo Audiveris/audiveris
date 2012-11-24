@@ -88,6 +88,7 @@ public class TextPattern
 
         // Global recomposition of all lines
         List<TextLine> lines = textBuilder.recomposeLines(system.getSentences());
+        system.getSentences().clear();
         system.getSentences().addAll(lines);
 
         // Purge lines

@@ -62,20 +62,21 @@ public class TextScanner
     private static final Logger logger = Logger.getLogger(TextScanner.class);
 
     //~ Instance fields --------------------------------------------------------
-    /** The dedicated system */
+    //
+    /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
 
-    /** TextBuilder companion */
+    /** TextBuilder companion. */
     private final TextBuilder textBuilder;
 
-    // Scale-dependent parameters
+    /** Scale-dependent parameters. */
     private final Parameters params;
 
-    // Glyphs involved
+    /** Glyphs involved. */
     private Collection<Glyph> allGlyphs;
 
-    // Sections involved
+    /** Sections involved. */
     private Collection<Section> allSections = new ArrayList<>();
 
     //~ Constructors -----------------------------------------------------------

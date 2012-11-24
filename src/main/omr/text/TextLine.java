@@ -367,7 +367,11 @@ public class TextLine
                         "DummyFont");
             } else {
                 // We have no representative data, let's use the first word
-                meanFont = getFirstWord().getFontInfo();
+                if (getFirstWord() != null) {
+                    meanFont = getFirstWord().getFontInfo();
+                } else {
+                    logger.severe("TextLine with no first word {0}", this);
+                }
             }
         }
 
