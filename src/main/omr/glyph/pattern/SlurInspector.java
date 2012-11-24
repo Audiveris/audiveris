@@ -461,7 +461,7 @@ public class SlurInspector
      *
      * @param members      the glyph sections
      * @param seedSection  the starting seed section
-     * @param lastDistance
+     * @param lastDistance the fitting distance to current circle
      * @return the list of sections collected (including seed section)
      */
     private List<Section> collectMemberSections (List<Section> members,
@@ -510,7 +510,7 @@ public class SlurInspector
                     double distance = circle.getDistance();
                     logger.fine("dist={0}", distance);
 
-                    if (distance <= ((lastDistance + params.maxCircleDistance) / 2)) {
+                    if (distance <= extendedDistance(lastDistance)) {
                         collected.add(section);
                         lastDistance = distance;
                         section.setProcessed(true);
@@ -574,8 +574,8 @@ public class SlurInspector
      *
      * @param root the slur glyph to extend
      * @return the extended slur glyph if any, or null. A non-null glyph
-     *         is returned IFF we have found a slur which is both larger than the
-     *         initial slur and valid.
+     *         is returned IFF we have found a slur which is both larger than
+     *         the initial slur and valid.
      */
     private Glyph extendSlur (Glyph root)
     {
@@ -674,7 +674,6 @@ public class SlurInspector
         }
 
         // Initial conditions
-        double lastDistance = getCircle(root).getDistance();
         adapter.setSide(side);
 
         // Loop on extensions
@@ -728,7 +727,7 @@ public class SlurInspector
                     double distance = computeCircle(config).getDistance();
                     logger.fine("dist={0}", distance);
 
-                    if (distance <= ((lastDistance + params.maxCircleDistance) / 2)) {
+                    if (distance <= adapter.extendedDistance()) {
                         Glyph compound = system.buildTransientGlyph(config);
 
                         if (adapter.isCompoundValid(compound)) {
@@ -931,7 +930,7 @@ public class SlurInspector
         if (slur.isShapeForbidden(Shape.SLUR)) {
             return false;
         }
-        
+
         Object cause = getInvalidity(slur.getMembers(), slur.getCircle());
 
         if (slur.isVip()) {
@@ -945,78 +944,23 @@ public class SlurInspector
         return cause == null;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
+    //------------------//
+    // extendedDistance //
+    //------------------//
+    /**
+     * Report the maximum extended circle distance, knowing the
+     * circle distance of the current slur.
+     *
+     * @param lastDistance current slur fitting distance
+     * @return extended maximum distance
+     */
+    private double extendedDistance (double lastDistance)
     {
-        //~ Instance fields ----------------------------------------------------
-
-        Scale.Fraction maxCircleDistance = new Scale.Fraction(
-                0.006,
-                "Maximum distance to approximating circle for a slur");
-
-        Scale.Fraction minCircleRadius = new Scale.Fraction(
-                0.7,
-                "Minimum circle radius for a slur");
-
-        Scale.Fraction maxCircleRadius = new Scale.Fraction(
-                100,
-                "Maximum circle radius for a slur");
-
-        Scale.AreaFraction minChunkWeight = new Scale.AreaFraction(
-                0.3, //0.5,
-                "Minimum weight of a chunk to be part of slur computation");
-
-        Scale.AreaFraction minExtensionWeight = new Scale.AreaFraction(
-                0.01,
-                "Minimum weight of a glyph to be considered for slur extension");
-
-        Scale.Fraction slurBoxDx = new Scale.Fraction(
-                0.7,
-                "Extension abscissa when looking for slur compound");
-
-        Scale.Fraction slurBoxDy = new Scale.Fraction(
-                0.4,
-                "Extension ordinate when looking for slur compound");
-
-        Scale.Fraction slurBoxHypot = new Scale.Fraction(
-                0.9,
-                "Extension length when looking for line-free slur compound");
-
-        Scale.Fraction slurLineBoxHypot = new Scale.Fraction(
-                1.5,
-                "Extension length when looking for line-touching slur compound");
-
-        Scale.Fraction slurLineTangentBoxHypot = new Scale.Fraction(
-                3.0,
-                "Extension length when looking for line-tangent slur compound");
-
-        Scale.Fraction minSlurWidth = new Scale.Fraction(
-                2,
-                "Minimum width to use curve rather than line for extension");
-
-        Scale.LineFraction minExtensionHeight = new Scale.LineFraction(
-                2,
-                "Minimum height for extension box, specified as LineFraction");
-
-        Scale.LineFraction maxChunkThickness = new Scale.LineFraction(
-                2,
-                "Maximum mean thickness of a chunk to be part of slur computation");
-
-        Constant.Ratio maxHeightRatio = new Constant.Ratio(
-                2.0,
-                "Maximum height ratio between curve height and glyph height");
-
-        Constant.Double maxTangentSlope = new Constant.Double(
-                "tangent",
-                0.05,
-                "Maximum slope for staff line tangent");
-
+        return (lastDistance + params.maxCircleDistance) / 2;
     }
 
+    //~ Inner Classes ----------------------------------------------------------
+    //
     //----------------------//
     // NoSlurCurveException //
     //----------------------//
@@ -1040,11 +984,11 @@ public class SlurInspector
     {
         //~ Instance fields ----------------------------------------------------
 
-        // Underlying slur circle 
-        protected Circle circle;
-
-        // Underlying slur circle 
+        // Underlying slur curve 
         protected CubicCurve2D curve;
+
+        // Current fitting distance
+        protected double distance;
 
         // Current extension side
         protected HorizontalSide side;
@@ -1083,8 +1027,8 @@ public class SlurInspector
         @Override
         public PixelRectangle computeReferenceBox ()
         {
-            PixelRectangle seedBox = seed.getBounds();
-            boolean isShort = seedBox.width <= params.minSlurWidth;
+            PixelRectangle sBox = seed.getBounds(); // Seed box
+            boolean isShort = sBox.width <= params.minSlurWidth;
             Point2D cp; // Related control point
 
             if (isShort) {
@@ -1101,19 +1045,9 @@ public class SlurInspector
 
             // Exact ending point (?)
             PixelRectangle roi = (side == LEFT)
-                    ? new PixelRectangle(
-                    seedBox.x,
-                    seedBox.y,
-                    1,
-                    seedBox.height)
-                    : new PixelRectangle(
-                    (seedBox.x + seedBox.width) - 1,
-                    seedBox.y,
-                    1,
-                    seedBox.height);
-
+                    ? new PixelRectangle(sBox.x, sBox.y, 1, sBox.height)
+                    : new PixelRectangle((sBox.x + sBox.width) - 1, sBox.y, 1, sBox.height);
             Point2D ep = seed.getRectangleCentroid(roi);
-
             if (ep != null) {
                 if (side == RIGHT) {
                     ep.setLocation(ep.getX() + 1, ep.getY());
@@ -1128,15 +1062,14 @@ public class SlurInspector
                 Point2D otherEnd = (side == LEFT) ? curve.getP2() : curve.getP1();
                 staff = system.getStaffAt(otherEnd);
             }
+
+            // Is the slur end touching a staff line?
             final double pitch = staff.pitchPositionOf(endPt);
             final int intPitch = (int) Math.rint(pitch);
-
             double target;
-
             if ((Math.abs(intPitch) <= 4) && ((intPitch % 2) == 0)) {
                 // TODO: beware of vertical 
-                double slope = (ep.getY() - cp.getY()) / (ep.getX()
-                                                          - cp.getX());
+                double slope = (ep.getY() - cp.getY()) / (ep.getX() - cp.getX());
 
                 if (Math.abs(slope) <= params.maxTangentSlope) {
                     // This end touches a staff line, with horizontal tangent
@@ -1219,11 +1152,18 @@ public class SlurInspector
         public boolean isCompoundValid (Glyph compound)
         {
             if (isValid(compound)) {
-                chosenEvaluation = new Evaluation(
-                        Shape.SLUR,
-                        Evaluation.ALGORITHM);
+                // Is distance still OK?
+                double compoundDistance = getCircle(compound).getDistance();
+                if (compoundDistance <= extendedDistance()) {
+                    chosenEvaluation = new Evaluation(
+                            Shape.SLUR,
+                            Evaluation.ALGORITHM);
 
-                return true;
+                    return true;
+                } else {
+                    logger.fine("{0} Degrading distance {1} vs {2}",
+                            seed, compoundDistance, extendedDistance());
+                }
             }
 
             return false;
@@ -1283,8 +1223,8 @@ public class SlurInspector
         {
             box = null;
 
-            // Side-effect: compute underlying circle & curve
-            circle = getCircle(seed);
+            // Side-effect: compute underlying curve
+            Circle circle = getCircle(seed);
 
             if (circle.getRadius().isInfinite()) {
                 throw new NoSlurCurveException();
@@ -1298,6 +1238,9 @@ public class SlurInspector
                 seed.addAttachment("^", curve);
             }
 
+            // Side-effect: compute current circle distance
+            distance = circle.getDistance();
+
             return super.setSeed(seed);
         }
 
@@ -1309,6 +1252,16 @@ public class SlurInspector
         public void setSide (HorizontalSide side)
         {
             this.side = side;
+        }
+
+        /**
+         * Report the maximum extended circle distance.
+         *
+         * @return extended maximum distance
+         */
+        private double extendedDistance ()
+        {
+            return SlurInspector.this.extendedDistance(distance);
         }
 
         /**
@@ -1332,8 +1285,7 @@ public class SlurInspector
             } else {
                 // Use box left vertical
                 return new Line2D.Double(b.x, b.y, b.x, b.y + b.height).
-                        ptSegDistSq(
-                        endPt);
+                        ptSegDistSq(endPt);
             }
         }
     }
@@ -1395,5 +1347,76 @@ public class SlurInspector
             maxCircleRadius = scale.toPixels(constants.maxCircleRadius);
             maxTangentSlope = constants.maxTangentSlope.getValue();
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        Scale.Fraction maxCircleDistance = new Scale.Fraction(
+                0.006,
+                "Maximum distance to approximating circle for a slur");
+
+        Scale.Fraction minCircleRadius = new Scale.Fraction(
+                0.7,
+                "Minimum circle radius for a slur");
+
+        Scale.Fraction maxCircleRadius = new Scale.Fraction(
+                100,
+                "Maximum circle radius for a slur");
+
+        Scale.AreaFraction minChunkWeight = new Scale.AreaFraction(
+                0.3,
+                "Minimum weight of a chunk to be part of slur computation");
+
+        Scale.AreaFraction minExtensionWeight = new Scale.AreaFraction(
+                0.01,
+                "Minimum weight of a glyph to be considered for slur extension");
+
+        Scale.Fraction slurBoxDx = new Scale.Fraction(
+                0.7,
+                "Extension abscissa when looking for slur compound");
+
+        Scale.Fraction slurBoxDy = new Scale.Fraction(
+                0.4,
+                "Extension ordinate when looking for slur compound");
+
+        Scale.Fraction slurBoxHypot = new Scale.Fraction(
+                0.9,
+                "Extension length when looking for line-free slur compound");
+
+        Scale.Fraction slurLineBoxHypot = new Scale.Fraction(
+                1.5,
+                "Extension length when looking for line-touching slur compound");
+
+        Scale.Fraction slurLineTangentBoxHypot = new Scale.Fraction(
+                3.0,
+                "Extension length when looking for line-tangent slur compound");
+
+        Scale.Fraction minSlurWidth = new Scale.Fraction(
+                2,
+                "Minimum width to use curve rather than line for extension");
+
+        Scale.LineFraction minExtensionHeight = new Scale.LineFraction(
+                2,
+                "Minimum height for extension box, specified as LineFraction");
+
+        Scale.LineFraction maxChunkThickness = new Scale.LineFraction(
+                2,
+                "Maximum mean thickness of a chunk to be part of slur computation");
+
+        Constant.Ratio maxHeightRatio = new Constant.Ratio(
+                2.0,
+                "Maximum height ratio between curve height and glyph height");
+
+        Constant.Double maxTangentSlope = new Constant.Double(
+                "tangent",
+                0.05,
+                "Maximum slope for staff line tangent");
+
     }
 }

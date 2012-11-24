@@ -182,7 +182,7 @@ public class CompoundBuilder
         boolean isCandidateClose (Glyph glyph);
 
         /**
-         * Predicate for a glyph to be a potential part of the building
+         * Predicate for a glyph to be a potential part of the building.
          * (the location criteria is handled by {@link #isCandidateClose}).
          *
          * @param glyph the glyph to check
@@ -210,7 +210,7 @@ public class CompoundBuilder
         PixelRectangle setSeed (Glyph seed);
 
         /**
-         * Should we filter the provided candidates? (by calling
+         * Should we filter the provided candidates?. (by calling
          * {@link #isCandidateSuitable} and {@link #isCandidateClose}).
          *
          * @return true to apply filter
