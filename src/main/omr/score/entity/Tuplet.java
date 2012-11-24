@@ -103,7 +103,9 @@ public class Tuplet
                                  Measure measure,
                                  PixelPoint point)
     {
-        logger.fine("Tuplet. populate {0}", glyph);
+        if (glyph.isVip()) {
+            logger.info("Tuplet. populate {0}", glyph);
+        }
 
         // Let's gather the set of possible chords, ordered by their distance
         // (abscissa-based) to the position of the tuplet sign.
@@ -271,12 +273,7 @@ public class Tuplet
                         verticals.first().getStaff());
             }
 
-            // If we have a beam, we must take the whole beam group
-            if (!chord.getBeams().isEmpty()) {
-                collector.includeAll(chord.getBeamGroup().getChords());
-            } else {
-                collector.include(chord);
-            }
+            collector.include(chord);
 
             // Check we have collected the exact amount of time
             if (collector.isTooLong()) {
