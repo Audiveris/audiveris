@@ -83,6 +83,10 @@ public class Ornament
                                  Measure    measure,
                                  PixelPoint point)
     {
+        if (glyph.isVip()) {
+            logger.info("Ornament. populate {0}", glyph.idString());
+        }
+        
         // An Ornament relates to the note below on the same time slot
         Slot slot = measure.getClosestSlot(point);
 

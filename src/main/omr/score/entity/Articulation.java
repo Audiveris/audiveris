@@ -95,6 +95,10 @@ public class Articulation
                                  Measure measure,
                                  PixelPoint point)
     {
+        if (glyph.isVip()) {
+            logger.info("Articulation. populate {0}", glyph.idString());
+        }
+        
         // An Articulation relates to the note below or above on the same time slot
         Chord chord = measure.getEventChord(point);
 

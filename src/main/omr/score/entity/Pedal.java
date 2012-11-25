@@ -13,6 +13,7 @@ package omr.score.entity;
 
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
+import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
@@ -25,6 +26,11 @@ import omr.score.visitor.ScoreVisitor;
 public class Pedal
     extends AbstractDirection
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(Pedal.class);
+    
     //~ Constructors -----------------------------------------------------------
 
     //-------//
@@ -67,6 +73,10 @@ public class Pedal
                                  Measure    measure,
                                  PixelPoint point)
     {
+        if (glyph.isVip()) {
+            logger.info("Pedal. populate {0}", glyph.idString());
+        }
+        
         glyph.setTranslation(
             new Pedal(measure, point, findChord(measure, point), glyph));
     }

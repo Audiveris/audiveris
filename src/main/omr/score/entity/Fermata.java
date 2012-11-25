@@ -67,6 +67,10 @@ public class Fermata
                                  Measure    measure,
                                  PixelPoint point)
     {
+        if (glyph.isVip()) {
+            logger.info("Fermata. populate {0}", glyph.idString());
+        }
+
         // A Fermata relates to the note on the same time slot
         // With placement depending on fermata upright / inverted.
         // Beware of whole rests which are handled separately.

@@ -12,6 +12,7 @@
 package omr.score.entity;
 
 import omr.glyph.facets.Glyph;
+import omr.log.Logger;
 
 import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
@@ -24,6 +25,11 @@ import omr.score.visitor.ScoreVisitor;
 public class Segno
     extends AbstractDirection
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(Segno.class);
+    
     //~ Constructors -----------------------------------------------------------
 
     //-------//
@@ -61,6 +67,10 @@ public class Segno
                                  Measure    measure,
                                  PixelPoint point)
     {
+        if (glyph.isVip()) {
+            logger.info("Segno. populate {0}", glyph.idString());
+        }
+
         Slot slot = measure.getClosestSlot(point);
 
         if (slot != null) {

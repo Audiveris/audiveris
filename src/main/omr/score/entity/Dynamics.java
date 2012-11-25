@@ -194,6 +194,10 @@ public class Dynamics
                                  Measure    measure,
                                  PixelPoint point)
     {
+        if (glyph.isVip()) {
+            logger.info("Dynamics. populate {0}", glyph.idString());
+        }
+
         // Can we gather with another dynamics letter? (e.g. m + p -> mp)
         for (TreeNode node : measure.getChildren()) {
             if (node instanceof Dynamics) {

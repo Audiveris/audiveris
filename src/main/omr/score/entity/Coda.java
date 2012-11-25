@@ -13,6 +13,8 @@ package omr.score.entity;
 
 import omr.glyph.facets.Glyph;
 
+import omr.log.Logger;
+
 import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
 
@@ -22,8 +24,13 @@ import omr.score.visitor.ScoreVisitor;
  * @author Hervé Bitteur
  */
 public class Coda
-    extends AbstractDirection
+        extends AbstractDirection
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(Coda.class);
+    
     //~ Constructors -----------------------------------------------------------
 
     //-------//
@@ -33,37 +40,40 @@ public class Coda
      * Creates a new instance of Coda event
      *
      * @param measure measure that contains this mark
-     * @param point location of mark
-     * @param chord the chord related to the mark, if any
-     * @param glyph the underlying glyph
+     * @param point   location of mark
+     * @param chord   the chord related to the mark, if any
+     * @param glyph   the underlying glyph
      */
-    public Coda (Measure    measure,
+    public Coda (Measure measure,
                  PixelPoint point,
-                 Chord      chord,
-                 Glyph      glyph)
+                 Chord chord,
+                 Glyph glyph)
     {
         super(measure, point, chord, glyph);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // populate //
     //----------//
     /**
      * Used by SystemTranslator to allocate the coda marks
      *
-     * @param glyph underlying glyph
+     * @param glyph   underlying glyph
      * @param measure measure where the mark is located
-     * @param point location for the mark
+     * @param point   location for the mark
      */
-    public static void populate (Glyph      glyph,
-                                 Measure    measure,
+    public static void populate (Glyph glyph,
+                                 Measure measure,
                                  PixelPoint point)
     {
+        if (glyph.isVip()) {
+            logger.info("Coda. populate {0}", glyph.idString());
+        }
+
         Slot slot = measure.getClosestSlot(point);
         glyph.setTranslation(
-            new Coda(measure, point, slot.getChordBelow(point), glyph));
+                new Coda(measure, point, slot.getChordBelow(point), glyph));
     }
 
     //--------//

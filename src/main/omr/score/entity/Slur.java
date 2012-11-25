@@ -221,7 +221,9 @@ public class Slur
     public static void populate (Glyph glyph,
                                  ScoreSystem system)
     {
-        logger.fine("Populating slur {0}", glyph.idString());
+        if (glyph.isVip()) {
+            logger.info("Slur. populate {0}", glyph.idString());
+        }
 
         // Compute the approximating circle
         Circle circle = system.getInfo().getSlurInspector().getCircle(glyph);

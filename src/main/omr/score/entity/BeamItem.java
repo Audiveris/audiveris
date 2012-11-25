@@ -147,6 +147,10 @@ public class BeamItem
     public static void populate (Glyph glyph,
                                  Measure measure)
     {
+        if (glyph.isVip()) {
+            logger.info("BeamItem. populate {0}", glyph.idString());
+        }
+        
         createPack(measure, glyph);
     }
 

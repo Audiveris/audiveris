@@ -85,7 +85,7 @@ public class Wedge
                                  PixelPoint startingPoint)
     {
         if (glyph.isVip()) {
-            logger.fine("Wedge.populate {0}", glyph.idString());
+            logger.info("Wedge. populate {0}", glyph.idString());
         }
         
         SystemPart part = startingMeasure.getPart();

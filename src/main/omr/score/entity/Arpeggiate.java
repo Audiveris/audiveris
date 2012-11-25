@@ -79,6 +79,10 @@ public class Arpeggiate
                                  Measure    measure,
                                  PixelPoint point)
     {
+        if (glyph.isVip()) {
+            logger.info("Arpeggiate. populate {0}", glyph.idString());
+        }
+        
         // A Arpeggiate relates to ALL the embraced note(s)
         // We look on the right
         int        dx = measure.getScale()

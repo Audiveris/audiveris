@@ -444,6 +444,10 @@ public class Chord
     public static void populate (Glyph glyph,
                                  Measure measure)
     {
+        if (glyph.isVip()) {
+            logger.info("Chord. populate {0}", glyph.idString());
+        }
+        
         glyph.clearTranslations();
         Set<Integer> assigned = new HashSet<>();
 
