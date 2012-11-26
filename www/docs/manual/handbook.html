@@ -68,8 +68,46 @@
                 float: left;
                 margin: 10px;
             }
+
+            /* -- Collapsing TOC items -- */
+            input {
+                border-style: none;
+                background: #eefefe;
+                color: black;
+                margin: 0;
+                padding: 0;
+            }
+            .expandable {
+                -moz-transition: height .5s;
+                -ms-transition: height .5s;
+                -o-transition: height .5s;
+                -webkit-transition: height .5s;
+                transition: height .5s;
+                height: 0;
+                overflow: hidden;
+            }  
+            .inline {
+                display: inline;
+            }
             /*]]>*/
         </style>
+        <script>
+            function expand(id) {
+                var section = document.getElementById(id + "-ul");
+                if (section.clientHeight) {
+                    // Collapsing the section
+                    section.style.height = 0;
+                } else {
+                    // Expanding the section
+                    var wrapper = document.querySelector('.wrapper');
+                    section.style.height = wrapper.clientHeight + "px";
+                }
+
+                // Update button value
+                var button = document.getElementById(id);
+                button.value = button.value === '+' ? '-' : '+';
+            }
+        </script>
     </head>
 
     <body>
@@ -2385,78 +2423,89 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
             <nav>
                 <p class="center"><a href="#content">Content</a></p>
                 <ol>
-                    <li><a href="#getting-started">Getting started</a>
-                        <ul>
-                            <li><a href="#installation">Installation</a>
-                                <ul>
-                                    <li><a href="#windows">Windows</a>
-                                        <ul>
-                                            <li><a href="#launching-audiveris">Launching</a></li>
-                                        </ul>
-                                    </li>
-                                    <li><a href="#linux">Linux</a></li>
-                                </ul>
-                            </li>
-                            <li> <a href="#tessdata">OCR languages</a></li>
-                            <li><a href="#loading-an-image">Loading an image</a></li>
-                            <li><a href="#transcription">Transcription</a>
-                                <ul>
-                                    <li><a href="#main-window-layout">Window layout</a></li>
-                                    <li><a href="#sheet-display-modes">Display modes</a></li>
-                                </ul>
-                            </li>
-                            <li><a href="#outputs">Outputs</a></li>
+                    <li><a class="inline" href="#getting-started">Getting started</a> 
+                        <input type="button" onclick="expand(this.id)" value="+" id="toc-getting-started">
+                        <ul id="toc-getting-started-ul" class="expandable">                  
+                            <div class="wrapper">                            
+                                <li><a href="#installation">Installation</a>
+                                    <ul>
+                                        <li><a href="#windows">Windows</a>
+                                            <ul>
+                                                <li><a href="#launching-audiveris">Launching</a></li>
+                                            </ul>
+                                        </li>
+                                        <li><a href="#linux">Linux</a></li>
+                                    </ul>
+                                </li>
+                                <li> <a href="#tessdata">OCR languages</a></li>
+                                <li><a href="#loading-an-image">Loading an image</a></li>
+                                <li><a href="#transcription">Transcription</a>
+                                    <ul>
+                                        <li><a href="#main-window-layout">Window layout</a></li>
+                                        <li><a href="#sheet-display-modes">Display modes</a></li>
+                                    </ul>
+                                </li>
+                                <li><a href="#outputs">Outputs</a></li>
+                            </div>
                         </ul>
                     </li>
-                    <li><a href="#basics">Basics</a>
-                        <ul>
-                            <li><a href="#entities">Entities</a></li>
-                            <li><a href="#tools">User tools</a>
-                                <ul>
-                                    <li><a href="#mouse">Mouse</a></li>
-                                    <li><a href="#boards">Boards</a></li>
-                                    <li><a href="#context-menu">Context menu</a></li>
-                                    <li><a href="#score-parameters">Score parameters</a></li>
-                                    <li><a href="#errors-window">Error window</a></li>
-                                </ul>
-                            </li>
-                            <li><a href="#glyph-merge">Merge</a></li>
-                            <li><a href="#glyph-assignment">Assignment</a></li>
-                            <li><a href="#glyph-split">Split</a></li>
-                            <li><a href="#glyph-insertion">Insertion</a></li>
-                            <li><a href="#text-correction">Text correction</a></li>
-                            <li><a href="#whole-examples">Whole examples</a></li>
+                    <li><a class="inline" href="#basics">Basics</a>
+                        <input type="button" onclick="expand(this.id)" value="+" id="toc-basics">
+                        <ul id="toc-basics-ul" class="expandable">                  
+                            <div class="wrapper">                            
+                                <li><a href="#entities">Entities</a></li>
+                                <li><a href="#tools">User tools</a>
+                                    <ul>
+                                        <li><a href="#mouse">Mouse</a></li>
+                                        <li><a href="#boards">Boards</a></li>
+                                        <li><a href="#context-menu">Context menu</a></li>
+                                        <li><a href="#score-parameters">Score parameters</a></li>
+                                        <li><a href="#errors-window">Error window</a></li>
+                                    </ul>
+                                </li>
+                                <li><a href="#glyph-merge">Merge</a></li>
+                                <li><a href="#glyph-assignment">Assignment</a></li>
+                                <li><a href="#glyph-split">Split</a></li>
+                                <li><a href="#glyph-insertion">Insertion</a></li>
+                                <li><a href="#text-correction">Text correction</a></li>
+                                <li><a href="#whole-examples">Whole examples</a></li>
+                            </div>
                         </ul>
                     </li>
-                    <li><a href="#advanced">Advanced</a>
-                        <ul>
-                            <li><a href="#building">Building from source</a></li>
-                            <li><a href="#cli">Command line</a></li>
-                            <li><a href="#script">Script</a></li>
-                            <li><a href="#plugins">Plugins</a></li>
-                            <li><a href="#options">Options</a></li>
-                            <li><a href="#training">Training</a>
-                                <ul>
-                                    <li><a href="#persist-manuals">Persistence</a></li>
-                                    <li><a href="#save-score-samples">Saving samples</a></li>
-                                    <li><a href="#sample-verifier">Sample verifier</a></li>
-                                    <li><a href="#trainer">Trainer</a></li>
-                                </ul>
-                            </li>
+                    <li><a class="inline" href="#advanced">Advanced</a>
+                        <input type="button" onclick="expand(this.id)" value="+" id="toc-advanced">
+                        <ul id="toc-advanced-ul" class="expandable">                  
+                            <div class="wrapper">                            
+                                <li><a href="#building">Building from source</a></li>
+                                <li><a href="#cli">Command line</a></li>
+                                <li><a href="#script">Script</a></li>
+                                <li><a href="#plugins">Plugins</a></li>
+                                <li><a href="#options">Options</a></li>
+                                <li><a href="#training">Training</a>
+                                    <ul>
+                                        <li><a href="#persist-manuals">Persistence</a></li>
+                                        <li><a href="#save-score-samples">Saving samples</a></li>
+                                        <li><a href="#sample-verifier">Sample verifier</a></li>
+                                        <li><a href="#trainer">Trainer</a></li>
+                                    </ul>
+                                </li>
+                            </div>
                         </ul>
                     </li>
-                    <li><a href="#internals">Internals</a>
-                        <ul>
-                            <li><a href="#load-step">Load</a></li>
-                            <li><a href="#scale-step">Scale</a></li>
-                            <li><a href="#grid-step">Grid</a></li>
-                            <li><a href="#systems-step">Systems</a></li>
-                            <li><a href="#measures-step">Measures</a></li>
-                            <li><a href="#texts-step">Texts</a></li>
-                            <li><a href="#sticks-step">Sticks</a></li>
-                            <li><a href="#symbols-step">Symbols</a></li>
-                            <li><a href="#pages-step">Pages</a></li>
-                            <li><a href="#score-step">Score</a></li>
+                    <li><a class="inline" href="#internals">Internals</a>
+                        <input type="button" onclick="expand(this.id)" value="+" id="toc-internals">
+                        <ul id="toc-internals-ul" class="expandable">                  
+                            <div class="wrapper">                            
+                                <li><a href="#load-step">Load</a></li>
+                                <li><a href="#scale-step">Scale</a></li>
+                                <li><a href="#grid-step">Grid</a></li>
+                                <li><a href="#systems-step">Systems</a></li>
+                                <li><a href="#measures-step">Measures</a></li>
+                                <li><a href="#texts-step">Texts</a></li>
+                                <li><a href="#sticks-step">Sticks</a></li>
+                                <li><a href="#symbols-step">Symbols</a></li>
+                                <li><a href="#pages-step">Pages</a></li>
+                                <li><a href="#score-step">Score</a></li>
                         </ul>
                     </li>
                 </ol>
