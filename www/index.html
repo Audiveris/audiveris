@@ -34,20 +34,15 @@
                 top:320px;
 
             }
-            #news {
-                width: 180px;
-            }
+            #news,
             #support {
                 width: 180px;
             }
-            #development {
-                width: 330px;
-            }
-            #help {
-                width: 395px;
-            }
-            #download {
-                width: 800px;
+            #examples, 
+            #development,
+            #help, 
+            #evolutions {
+                width: 365px;
             }
             /*]]>*/
         </style>
@@ -119,6 +114,20 @@
 
             </article>
 
+            <article id="examples">
+                <h2>Examples</h2>
+                <p><a href="http://www.makemusic.com/musicxml/music/example-set">
+                        MakeMusic</a>
+                    site provides a set of representative PDF input scores with 
+                    their MusicXML counterparts.
+                </p> 
+                <p>Audiveris
+                    <a href="http://kenai.com/projects/audiveris/pages/RecordareExamples">
+                        Wiki</a> details how it can be used to 
+                    process each of these examples.
+                </p>
+            </article>
+
             <article id="development">
                 <h2>Development</h2>
                 <p>Audiveris is developed in Java, and invokes Google Tesseract
@@ -133,10 +142,22 @@
                 <ul>
                     <li>Coupling with <a href="http://musescore.org">MuseScore</a>
                         to edit, print, play, etc</li>
-                    <li>Use of cloud computing to provide "OMR as a service"</li>
+                    <li>Cloud computing to provide "OMR as a service"</li>
                     <li>Automated evaluation of transcription results</li>
-                    <li>Microedition features to enable crowd-sourcing approaches</li>
+                    <li>Microedition features to enable crowd-sourcing</li>
                 </ul>
+            </article>
+
+            <article id="evolutions">
+                <h2>Evolutions</h2>
+                <ul>
+                    <li>Test campaign on large data set?</li>
+                    <li>Implementation of missing features: endings, cue notes?</li>
+                    <li>Text OCR extended to musical symbols?</li>
+                    <li>Support for low-quality scans?</li>
+                </ul>
+                Please share your expectations on Audiveris 
+                <a href="http://kenai.com/projects/audiveris/forums/message-forum">forum</a>!
             </article>
         </section>       
 

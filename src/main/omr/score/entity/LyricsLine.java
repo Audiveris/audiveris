@@ -93,7 +93,7 @@ public class LyricsLine
     public static void populate (LyricsItem item,
                                  SystemPart part)
     {
-        logger.info("Populating LyricsLine with {0}", item);
+        logger.fine("LyricsLine. populate  with {0}", item);
 
         // First look for a suitable lyrics line
         for (TreeNode node : part.getLyrics()) {

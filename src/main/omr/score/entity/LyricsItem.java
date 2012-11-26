@@ -11,10 +11,6 @@
 // </editor-fold>
 package omr.score.entity;
 
-import java.awt.Graphics2D;
-import java.awt.geom.Line2D;
-import java.util.Arrays;
-import java.util.Collections;
 import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
@@ -33,6 +29,8 @@ import omr.text.TextWord;
 
 import omr.util.TreeNode;
 
+import java.awt.geom.Line2D;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 

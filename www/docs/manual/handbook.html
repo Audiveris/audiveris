@@ -576,71 +576,172 @@
                         Main user tools
                     </h3>
 
-                    <h4 id="selections">
-                        Selections
+                    <h4 id="mouse">
+                        Mouse
                     </h4>                        
 
-                    <figure class="right">
-                        <img title="Tuplet links" alt="tuplet links" 
-                             src="../images/tuplet-links.png"/>
-                        <figcaption>
-                            Tuplet glyph linked to 3 chords
-                        </figcaption>
-                    </figure>
+                    <dl>
 
-                    <p>There are 2 selections modes, glyph-based (the default) or 
-                        section-based.
-                        <br/>
-                        To switch from one mode to the other, use the toggle menu item
-                        <code>Views</code> | <code>Enable section selection</code> 
-                        or the related toolbar icon
-                        <img class="icon" width="16" height="16" 
-                             src="../images/Application16.gif" />
-                    </p>
+                        <dt>Moving</dt>
+                        <dd>
+                            <p>
+                                The page image is usually larger than the 
+                                window where the page is displayed.
+                                You can move the display over the page using 
+                                different means:
+                            </p>
+                            <ul>
+                                <li>
+                                    By moving the scroll bars,
+                                </li>
+                                <li>
+                                    By keeping the mouse left button pressed, 
+                                    and moving the selection point near a border
+                                    of the display,
+                                </li>
+                                <li>
+                                    By keeping both mouse buttons pressed, 
+                                    and dragging the image with the selection
+                                    point.
+                                </li>
+                            </ul>
+                        </dd>
 
-                    <p>
-                        In section selection mode, section boundaries are shown while
-                        these boundaries do not appear in glyph selection mode.
-                        And the mouse-based selection works as expected, pointing to
-                        either glyph entities or section entities.
-                    </p>
-                    <p>
-                        A left-click in an entity area selects this entity 
-                        (and deselects the entity previously selected if any).
-                    </p>
-                    <p>To select several entities:</p>
-                    <ul>
-                        <li>Either select each entity, one after the other, keeping the 
-                            <code class="key">CTRL</code> key pressed.</li>
-                        <li>Or, by  dragging the mouse while keeping the 
-                            <code class="key">SHIFT</code> key pressed, use a 
-                            rectangular "lasso" to grab all the entities whose bounds 
-                            are fully contained by the lasso rectangle.</li>
-                    </ul>
+                        <dt>Zoom</dt>
+                        <dd>
+                            <p>
+                                When modifying the zoom factor, the display will
+                                remain focused on the selected entities, if any.
+                            </p>
+                            <p>
+                                It can be adjusted in the range [1:8 to 16:1]
+                            </p>
+                            <ul>
+                                <li>
+                                    By using the vertical logarithmic slider
+                                    located on the left side of the sheet window.
+                                </li>
+                                <li>
+                                    By using the mouse wheel while keeping the 
+                                    <code class="key">CTRL</code> key pressed.  
+                                </li>
+                                <li>
+                                    By using the rectangular "lasso" while 
+                                    keeping both the keys
+                                    <code class="key">CTRL</code> and
+                                    <code class="key">SHIFT</code> pressed. 
+                                    When releasing the mouse, the zoom will
+                                    be adjusted so that both rectangle sides 
+                                    get fully visible.
+                                </li>
+                                <li>
+                                    By using the predefined buttons
+                                    <img class="icon" width="16" height="16" 
+                                         src="../images/AlignJustifyHorizontal16.gif" />
+                                    and
+                                    <img class="icon" width="16" height="16" 
+                                         src="../images/AlignJustifyVertical16.gif" />,
+                                    you can adjust the zoom according to the 
+                                    page width or height, respectively.
+                                </li>
+                            </ul>
+                        </dd>
 
-                    <figure class="right">
-                        <img title="Head links" alt="head links" 
-                             src="../images/head-links.png"/>
-                        <figcaption>
-                            Head glyph reused by 2 chords
-                        </figcaption>
-                    </figure>
+                        <figure class="right">
+                            <img title="Tuplet links" alt="tuplet links" 
+                                 src="../images/tuplet-links.png"/>
+                            <figcaption>
+                                Tuplet glyph linked to 3 chords
+                            </figcaption>
+                            <img title="Head links" alt="head links" 
+                                 src="../images/head-links.png"/>
+                            <figcaption>
+                                Head glyph reused by 2 chords
+                            </figcaption>
+                        </figure>
 
-                    <p>
-                        When in glyph selection mode (the default), the selected
-                        glyph may display links to its related translated entities.
-                        The links appear as short straight lines (and are driven
-                        by the option <code>Views</code> | <code>Show glyph 
-                            Translations</code>).
-                    </p>
-                    <p>
-                        Images next to this paragraph depict: 
-                    </p>
-                    <ol>
-                        <li>A tuplet glyph linked to its 3 embraced chords</li>
-                        <li>A note head glyph shared by 2 different chords</li>
-                    </ol>
-                        
+                        <dt>Selection modes</dt>
+                        <dd>
+                            <p>
+                                There are 2 selections modes available: 
+                                <b>glyph</b>-based (the default) or
+                                <b>section</b>-based.
+                                To switch from one mode to the other, use the
+                                toggle menu item <code>Views</code> | 
+                                <code>Enable section selection</code> or the 
+                                related toolbar icon
+                                <img class="icon" width="16" height="16" 
+                                     src="../images/Application16.gif" />
+                            </p>
+                            <p>
+                                The mouse-based selection works as expected, 
+                                pointing to either glyph entities or section 
+                                entities.
+                            </p>
+                            <p>
+                                In section-selection mode, section boundaries
+                                are shown while these boundaries do not appear
+                                in glyph-selection mode.
+                            </p>
+                            <p>
+                                In glyph-selection mode, the selected
+                                glyph may display links to its related 
+                                translated entities.
+                                The links appear as short straight lines (and 
+                                are driven by the option <code>Views</code> | 
+                                <code>Show glyph Translations</code>).
+                                <br/>
+                                Images next to this paragraph depict: 
+                            </p>
+                            <ol>
+                                <li>
+                                    A tuplet glyph linked to its 3 embraced
+                                    chords
+                                </li>
+                                <li>
+                                    A note head glyph shared by 2 different 
+                                    chords
+                                </li>
+                            </ol>
+                        </dd>
+
+                        <dt>Multi-selection</dt>
+                        <dd>
+                            <p>
+                                A left-click in an entity area selects this 
+                                entity (and deselects the entity previously 
+                                selected if any).
+                            </p>
+                            <p>To select several entities:</p>
+                            <ul>
+                                <li>
+                                    Either select each entity, one after the 
+                                    other, keeping the <code class="key">CTRL</code>
+                                    key pressed.
+                                    In section mode, since entities are usually
+                                    rather small, you don't need to click on 
+                                    each and every section, simply keep the 
+                                    mouse pressed and move the pointer over the 
+                                    desired sections.
+                                </li>
+                                <li>
+                                    Or, by  dragging the mouse while keeping the 
+                                    <code class="key">SHIFT</code> key pressed,
+                                    use a rectangular "lasso" to grab all the 
+                                    entities whose bounds are fully contained 
+                                    by the lasso rectangle.
+                                </li>
+                            </ul>
+
+                            <p>
+                                Whatever the selection mode and the number of 
+                                selected entities, a right-click will display a 
+                                popup <a href="#context-menu">context menu</a>
+                                related to these entities.
+                            </p>
+                        </dd>
+                    </dl>
+
                     <div id="boards">
                         <h4>
                             Boards
@@ -726,7 +827,7 @@
                             Context menu
                         </h4>
 
-                        <img class="side" title="Context menu" width="426" height="410"
+                        <img class="side" title="Context menu" 
                              src="../images/context-menu.png" />
 
                         <p>With a right click in the sheet view, you get a popup menu
@@ -751,6 +852,10 @@
                             <dd>Information / actions on the current time slot within
                                 the current measure.</dd>
 
+                            <dt>Chord #c...</dt>
+                            <dd>Information / actions on the selected chord(s)
+                                in the current time slot.</dd>
+
                             <dt>Glyphs...</dt>
                             <dd>If a glyph is selected, as depicted in the example shown,
                                 many glyph-related actions are enabled, depending on the
@@ -759,10 +864,12 @@
                             <dt>Boundaries...</dt>
                             <dd>This allows to start or stop a series of manual 
                                 modifications of system boundaries. 
-                                By dragging system boundaries, you can manually and 
-                                very precisely define the boundaries.
-                                When you are done with boundaries modification, stop the
-                                session in order to trigger all needed recomputations.
+                                By dragging system boundaries, you can manually
+                                and very precisely adjust the broken lines that
+                                define inter-system boundaries.
+                                When you are done with boundaries modification,
+                                stop the session in order to trigger all needed 
+                                recomputations.
                             </dd>
 
                         </dl>
@@ -1148,6 +1255,43 @@
                             such as the text role or the text type.
                         </li>
                     </ul>
+                </article>
+
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+                <article id="whole-examples">
+                    <h3>
+                        Whole examples
+                    </h3>
+                    <p>
+                        Audiveris is installed with a hand-full of typical 
+                        input files located in the <code>examples</code> folder
+                        of program installation directory.
+                        Almost all pictures used in this handbook are snapshots
+                        of these examples.
+                    </p>
+                    <p>
+                        Another source of examples is the online repository of
+                        MusicXML examples as available on 
+                        <a href="http://www.makemusic.com/musicxml/music/example-set">
+                            MakeMusic site</a>.
+                        There you can find a large dozen of examples with their
+                        PDF input and their XML / MXL outputs.
+                        These are good quality PDF files which exhibit a wide
+                        set of representative music features.
+                    </p>
+                    <p>
+                        Actually, one of the objectives of Audiveris 4.2 release
+                        was to be able to process these former Recordare 
+                        examples with as good results as possible, even if some
+                        manual processing was still necessary.
+                        The detailed processing of each of these examples is 
+                        documented in the dedicated online 
+                        <a href="http://kenai.com/projects/audiveris/pages/RecordareExamples">
+                            Audiveris Wiki page</a>.
+                        Browsing this Wiki should give you a more realistic view
+                        of concrete Audiveris processing and manual interactions.
+                    </p>
                 </article>
             </section>
 
@@ -2269,7 +2413,7 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                             <li><a href="#entities">Entities</a></li>
                             <li><a href="#tools">User tools</a>
                                 <ul>
-                                    <li><a href="#selections">Selections</a></li>
+                                    <li><a href="#mouse">Mouse</a></li>
                                     <li><a href="#boards">Boards</a></li>
                                     <li><a href="#context-menu">Context menu</a></li>
                                     <li><a href="#score-parameters">Score parameters</a></li>
@@ -2281,6 +2425,7 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                             <li><a href="#glyph-split">Split</a></li>
                             <li><a href="#glyph-insertion">Insertion</a></li>
                             <li><a href="#text-correction">Text correction</a></li>
+                            <li><a href="#whole-examples">Whole examples</a></li>
                         </ul>
                     </li>
                     <li><a href="#advanced">Advanced</a>
