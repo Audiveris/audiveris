@@ -42,6 +42,7 @@
             }
             h2 {
                 text-align: center;
+                padding-top: 2em;
             }
 
             .cell-spaced {
@@ -69,11 +70,29 @@
                 margin: 10px;
             }
 
-            /* -- Collapsing TOC items -- */
+            /* -- Smooth targets -- */
+            h2:target,
+            h3:target {
+                padding-top: 2em;
+                padding-bottom: 1em;
+            }
+            article:target {
+                margin-top: 2em;
+                background-color: #fffaf2;
+                border-radius: 12px;
+                box-shadow: 0px 4px 4px 2px rgba(45,20,6,0.8);
+            }
+            h2,
+            h3,
+            article {
+                transition:all .5s ease;
+            }
+
+            /* -- Expandable TOC items -- */
             input {
                 border-style: none;
-                background: #eefefe;
-                color: black;
+                background: #fafaff;
+                color: gray;
                 margin: 0;
                 padding: 0;
             }
@@ -86,26 +105,25 @@
                 height: 0;
                 overflow: hidden;
             }  
-            .inline {
-                display: inline;
-            }
             /*]]>*/
         </style>
-        <script>
-            function expand(id) {
-                var section = document.getElementById(id + "-ul");
-                if (section.clientHeight) {
-                    // Collapsing the section
-                    section.style.height = 0;
-                } else {
-                    // Expanding the section
-                    var wrapper = document.querySelector('.wrapper');
-                    section.style.height = wrapper.clientHeight + "px";
-                }
 
-                // Update button value
-                var button = document.getElementById(id);
-                button.value = button.value === '+' ? '-' : '+';
+        <script>
+            function expand(input) {
+                if (document.querySelector) {
+                    var div = input.parentNode.querySelector(".expandable");
+                    if (div.clientHeight) {
+                        // Collapse div
+                        div.style.height = 0;
+                    } else {
+                        // Expand div
+                        var wrapper = div.querySelector("*");
+                        div.style.height = wrapper.clientHeight + "px";
+                    }
+
+                    // Toggle button value
+                    input.value = input.value === '+' ? '-' : '+';
+                }
             }
         </script>
     </head>
@@ -2424,9 +2442,9 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                 <p class="center"><a href="#content">Content</a></p>
                 <ol>
                     <li><a class="inline" href="#getting-started">Getting started</a> 
-                        <input type="button" onclick="expand(this.id)" value="+" id="toc-getting-started">
-                        <ul id="toc-getting-started-ul" class="expandable">                  
-                            <div class="wrapper">                            
+                        <input type="button" onclick="expand(this)" value="+">
+                        <div class="expandable">                            
+                            <ul>                  
                                 <li><a href="#installation">Installation</a>
                                     <ul>
                                         <li><a href="#windows">Windows</a>
@@ -2446,13 +2464,13 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                                     </ul>
                                 </li>
                                 <li><a href="#outputs">Outputs</a></li>
-                            </div>
-                        </ul>
+                            </ul>
+                        </div>
                     </li>
                     <li><a class="inline" href="#basics">Basics</a>
-                        <input type="button" onclick="expand(this.id)" value="+" id="toc-basics">
-                        <ul id="toc-basics-ul" class="expandable">                  
-                            <div class="wrapper">                            
+                        <input type="button" onclick="expand(this)" value="+">
+                        <div class="expandable">                            
+                            <ul>                  
                                 <li><a href="#entities">Entities</a></li>
                                 <li><a href="#tools">User tools</a>
                                     <ul>
@@ -2469,13 +2487,13 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                                 <li><a href="#glyph-insertion">Insertion</a></li>
                                 <li><a href="#text-correction">Text correction</a></li>
                                 <li><a href="#whole-examples">Whole examples</a></li>
-                            </div>
-                        </ul>
+                            </ul>
+                        </div>
                     </li>
                     <li><a class="inline" href="#advanced">Advanced</a>
-                        <input type="button" onclick="expand(this.id)" value="+" id="toc-advanced">
-                        <ul id="toc-advanced-ul" class="expandable">                  
-                            <div class="wrapper">                            
+                        <input type="button" onclick="expand(this)" value="+">
+                        <div class="expandable">                            
+                            <ul>                  
                                 <li><a href="#building">Building from source</a></li>
                                 <li><a href="#cli">Command line</a></li>
                                 <li><a href="#script">Script</a></li>
@@ -2489,13 +2507,13 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                                         <li><a href="#trainer">Trainer</a></li>
                                     </ul>
                                 </li>
-                            </div>
-                        </ul>
+                            </ul>
+                        </div>
                     </li>
                     <li><a class="inline" href="#internals">Internals</a>
-                        <input type="button" onclick="expand(this.id)" value="+" id="toc-internals">
-                        <ul id="toc-internals-ul" class="expandable">                  
-                            <div class="wrapper">                            
+                        <input type="button" onclick="expand(this)" value="+">
+                        <div class="expandable">                            
+                            <ul>                  
                                 <li><a href="#load-step">Load</a></li>
                                 <li><a href="#scale-step">Scale</a></li>
                                 <li><a href="#grid-step">Grid</a></li>
@@ -2506,7 +2524,8 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                                 <li><a href="#symbols-step">Symbols</a></li>
                                 <li><a href="#pages-step">Pages</a></li>
                                 <li><a href="#score-step">Score</a></li>
-                        </ul>
+                            </ul>
+                        </div>
                     </li>
                 </ol>
             </nav>

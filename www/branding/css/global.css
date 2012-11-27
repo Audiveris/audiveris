@@ -29,16 +29,13 @@ h1, h2, h3, h4, h5 {
     clear: both;
     color: #4444AA;
 }
-h1, h2, h3 {
+h1, h2, h3, h4, h5 {
     margin: 1em 0 1em 0;
 }
 h3.title {
     border-bottom: 1px solid silver;  
 }
 
-h4, h5 {
-    margin: 1em 0 .5em 0;
-}
 h1 {
     font-family: Georgia, "Bitstream Vera Serif", Norasi, serif;
     font-size: 4em;
@@ -240,6 +237,10 @@ strong {
 
 .indent {
     margin-left: 50pt;
+}
+
+.inline {
+    display: inline;
 }
 
 .no_border {

@@ -82,7 +82,7 @@ header {
     float: left;
     width: 100%;
     position: static;
-    height: 500px;
+    height: 400px;
 }
 header figure {
     border-bottom: 1px blue solid;
