@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.sheet.picture;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.log.Logger;
 
 import omr.util.FileUtil;
@@ -48,6 +51,9 @@ import javax.media.jai.JAI;
 public class PictureLoader
 {
     //~ Static fields/initializers ---------------------------------------------
+
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(PictureLoader.class);
@@ -259,7 +265,7 @@ public class PictureLoader
         gsArgs.add("-dBATCH");
         gsArgs.add("-dSAFER");
         gsArgs.add("-sDEVICE=tiffscaled8");
-        gsArgs.add("-r300");
+        gsArgs.add("-r" + constants.pdfResolution.getValue());
         gsArgs.add("-sOutputFile=" + temp);
         if (id != null) {
             gsArgs.add("-dFirstPage=" + id);
@@ -316,5 +322,21 @@ public class PictureLoader
         }
 
         return null;
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        Constant.Integer pdfResolution = new Constant.Integer(
+                "DPI",
+                300,
+                "Resolution for PDF images");
+
     }
 }
