@@ -20,7 +20,7 @@ document.write("   <div id='logo-subtitle'>Open Music Scanner</div>");
 document.write("</a>");
 
 // Download button
-document.write("<a id='download-button' href='" + context.root + "docs/manual/installation.html'>");
+document.write("<a id='download-button' href='http://kenai.com/projects/audiveris/downloads'>");
 document.write("    <div id='download-version'>");
 document.write("        <b>V4.2</b>");
 document.write("    </div>");
@@ -29,7 +29,7 @@ document.write("</a>");
 document.write("</header>");
 
 function insert(label, url) {
-    if (label == context.page) {
+    if (label === context.page) {
         document.write("        <li><a class='current' href='" + context.root + url + "'>" + label + "</a></li>");        
     } else {
         document.write("        <li><a href='" + context.root + url + "'>" + label + "</a></li>");        
