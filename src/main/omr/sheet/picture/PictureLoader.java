@@ -336,7 +336,7 @@ public class PictureLoader
         Constant.Integer pdfResolution = new Constant.Integer(
                 "DPI",
                 300,
-                "Resolution for PDF images");
+                "DPI resolution for PDF images");
 
     }
 }

@@ -23,6 +23,7 @@ import omr.math.Histogram;
 import omr.math.Histogram.MaxEntry;
 import omr.math.Histogram.PeakEntry;
 
+import omr.run.FilterDescriptor;
 import omr.run.Orientation;
 import omr.run.Run;
 import omr.run.RunsTable;
@@ -50,8 +51,6 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
-import omr.run.PixelFilter;
-import omr.run.FilterDescriptor;
 
 /**
  * Class {@code ScaleBuilder} encapsulates the computation of a sheet
@@ -99,40 +98,40 @@ public class ScaleBuilder
 
     //~ Instance fields --------------------------------------------------------
     //
-    /** Keeper of run length histograms, for foreground & background */
-    private HistoKeeper histoKeeper;
-
-    /** Related sheet */
+    /** Related sheet. */
     private Sheet sheet;
 
-    /** Histogram on foreground runs */
+    /** Keeper of run length histograms, for foreground & background. */
+    private HistoKeeper histoKeeper;
+
+    /** Histogram on foreground runs. */
     private Histogram<Integer> foreHisto;
 
-    /** Histogram on background runs */
+    /** Histogram on background runs. */
     private Histogram<Integer> backHisto;
 
-    /** Absolute population percentage for validating an extremum */
+    /** Absolute population percentage for validating an extremum. */
     private final double quorumRatio = constants.quorumRatio.getValue();
 
-    /** Relative population percentage for reading foreground spread */
+    /** Relative population percentage for reading foreground spread. */
     private final double foreSpreadRatio = constants.foreSpreadRatio.getValue();
 
-    /** Relative population percentage for reading background spread */
+    /** Relative population percentage for reading background spread. */
     private final double backSpreadRatio = constants.backSpreadRatio.getValue();
 
-    /** Foreground peak */
+    /** Foreground peak. */
     private PeakEntry<Double> forePeak;
 
-    /** Second frequent length of foreground runs found in the picture */
+    /** Second frequent length of foreground runs found, if any. */
     private MaxEntry<Integer> beamEntry;
 
-    /** Most frequent length of background runs found in the picture */
+    /** Most frequent length of background runs found. */
     private PeakEntry<Double> backPeak;
 
-    /** Second frequent length of background runs found in the picture */
+    /** Second frequent length of background runs found, if any. */
     private PeakEntry<Double> secondBackPeak;
 
-    /** Resulting scale, if any */
+    /** Resulting scale, if any. */
     private Scale scale;
 
     //~ Constructors -----------------------------------------------------------
@@ -197,7 +196,7 @@ public class ScaleBuilder
                 0);
         RunsTable wholeVertTable = factory.createTable("whole");
         sheet.setWholeVerticalTable(wholeVertTable);
-        factory = null;
+        factory = null; // To allow garbage collection ASAP
 
         if (constants.printWatch.isSet()) {
             watch.print();
@@ -451,11 +450,11 @@ public class ScaleBuilder
         if ((forePeak != null) && (backPeak != null)) {
             // Take most frequent local max for which key (beam thickness) is 
             // larger than twice the mean line thickness and smaller than
-            // mean interline.
+            // mean white gap between staff lines.
             List<MaxEntry<Integer>> foreMaxima = foreHisto.getLocalMaxima();
             double minBeamLineRatio = constants.minBeamLineRatio.getValue();
             double minHeight = minBeamLineRatio * forePeak.getKey().best;
-            double maxHeight = backPeak.getKey().best + forePeak.getKey().best;
+            double maxHeight = backPeak.getKey().best;
 
             for (MaxEntry<Integer> max : foreMaxima) {
                 if (max.getKey() >= minHeight && max.getKey() <= maxHeight) {
@@ -636,7 +635,7 @@ public class ScaleBuilder
                 "Factor applied on line thickness spread");
 
         final Constant.Ratio minBeamLineRatio = new Constant.Ratio(
-                2.0,
+                2.5,
                 "Minimum ratio between beam thickness and line thickness");
 
         final Constant.Boolean printWatch = new Constant.Boolean(
