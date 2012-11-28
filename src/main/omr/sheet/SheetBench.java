@@ -29,7 +29,7 @@ import java.util.Date;
  * @author Hervé Bitteur
  */
 public class SheetBench
-    extends Bench
+        extends Bench
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -40,7 +40,6 @@ public class SheetBench
     private static final String INTERRUPTION_KEY = "whole.interrupted";
 
     //~ Instance fields --------------------------------------------------------
-
     /** The related sheet */
     private final Sheet sheet;
 
@@ -57,12 +56,12 @@ public class SheetBench
     private final Date date = new Date(startTime);
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // SheetBench //
     //------------//
     /**
      * Creates a new SheetBench object.
+     *
      * @param sheet the related sheet
      */
     public SheetBench (Sheet sheet)
@@ -73,14 +72,13 @@ public class SheetBench
         score = sheet.getScore();
 
         addProp(
-            "image",
-            score.getImagePath() + "#" + sheet.getPage().getIndex());
+                "image",
+                score.getImagePath() + "#" + sheet.getPage().getIndex());
 
         flushBench();
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // getSheet //
     //----------//
@@ -126,8 +124,32 @@ public class SheetBench
         addProp("scale.mainFore", "" + scale.getMainFore());
         addProp("scale.interline", "" + scale.getInterline());
 
+        if (scale.getMaxFore() != null) {
+            addProp("scale.maxFore", "" + scale.getMaxFore());
+        }
+
+        if (scale.getMaxInterline() != null) {
+            addProp("scale.maxInterline", "" + scale.getMaxInterline());
+        }
+
+        if (scale.getMinInterline() != null) {
+            addProp("scale.minInterline", "" + scale.getMinInterline());
+        }
+
         if (scale.getSecondInterline() != null) {
             addProp("scale.secondInterline", "" + scale.getSecondInterline());
+        }
+
+        if (scale.getMaxSecondInterline() != null) {
+            addProp("scale.maxSecondInterline", "" + scale.getMaxSecondInterline());
+        }
+
+        if (scale.getMinSecondInterline() != null) {
+            addProp("scale.minSecondInterline", "" + scale.getMinSecondInterline());
+        }
+
+        if (scale.getMainBeam() != null) {
+            addProp("scale.mainBeam", "" + scale.getMainBeam());
         }
     }
 
@@ -154,8 +176,8 @@ public class SheetBench
                             long duration)
     {
         addProp(
-            "step." + step.getName().toLowerCase() + ".duration",
-            "" + duration);
+                "step." + step.getName().toLowerCase() + ".duration",
+                "" + duration);
         flushBench();
     }
 
@@ -172,6 +194,7 @@ public class SheetBench
     //---------//
     /**
      * Redirect to the score bench, with the sheet prefix
+     *
      * @param radix the provided radix
      * @param value the property value
      */
@@ -180,7 +203,7 @@ public class SheetBench
                                   String value)
     {
         score.getBench()
-             .addProp(sheetPrefix + radix, value);
+                .addProp(sheetPrefix + radix, value);
     }
 
     //------------//
@@ -193,6 +216,6 @@ public class SheetBench
     protected final void flushBench ()
     {
         score.getBench()
-             .flushBench();
+                .flushBench();
     }
 }
